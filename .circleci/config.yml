@@ -564,8 +564,8 @@ commands:
           name: Run dependency vulnerability analysis
           command: |
             cd ~/project
-            ~/dependency-check/bin/dependency-check.sh --noupdate \
-                --project "EtherCis" --format JSON \
+            ~/dependency-check/bin/dependency-check.sh \
+                --project "EHRBase" --format JSON \
                 -o vulnerability_analysis.json --scan .
       - run:
           name: Convert vulnerability analysis to sonar issues
