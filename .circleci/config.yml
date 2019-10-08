@@ -183,7 +183,7 @@ jobs:
   deploy-snapshot-artifact:
     docker:
       - image: circleci/openjdk:8-jdk
-      - image: ehrbaseorg/ehrbase-database-docker:11.5
+      - image: ehrbaseorg/ehrbase-database-docker
         environment:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -201,7 +201,7 @@ jobs:
   deploy-release-artifact:
     docker:
       - image: circleci/openjdk:8-jdk
-      - image: ehrbase/ehrbase-database-docker:11.5
+      - image: ehrbaseorg/ehrbase-database-docker:11.5
         environment:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
