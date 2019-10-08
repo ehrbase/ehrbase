@@ -1,0 +1,40 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_types/DV_GENERAL_TIME_SPECIFICATION.json",
+    "title": "DV_GENERAL_TIME_SPECIFICATION",
+    "description": "Specifies points in time in a general syntax. Based on the HL7v3 GTS data type.",
+    "$comments": "Defined in Data_types IM, inherits from DV_TIME_SPECIFICATION",
+    "type": "object",
+    "properties": {
+        "value": {
+            "description": "The specification, in the HL7v3 syntax for `PIVL` or `EIVL` types.",
+            "$ref": "all.json#/definitions/DV_PARSABLE"
+        }
+    },
+    "required": [
+        "value"
+    ],
+    "$inherits": [
+        "all.json#/definitions/DV_TIME_SPECIFICATION"
+    ],
+    "$functions": {
+        "calendar_alignment": {
+            "description": "Calendar alignment extracted from value.",
+            "return": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/String"
+            }
+        },
+        "event_alignment": {
+            "description": "Event alignment extracted from value. ",
+            "return": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/String"
+            }
+        },
+        "institution_specified": {
+            "description": "Extracted from value.",
+            "return": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/Boolean"
+            }
+        }
+    }
+}

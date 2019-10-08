@@ -1,0 +1,135 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Composition/EVENT_CONTEXT.json",
+    "title": "EVENT_CONTEXT",
+    "description": "Documents the context information of a healthcare event involving the subject of care and the health system. The context information recorded here are independent of the attributes recorded in the version audit, which document the  system interaction  context, i.e. the context of a user interacting with the health record system. Healthcare events include patient contacts, and any other business activity, such as pathology investigations which take place on behalf of the patient. ",
+    "$comments": "Defined in Composition IM, inherits from PATHABLE",
+    "type": "object",
+    "properties": {
+        "start_time": {
+            "description": "Start time of the clinical session or other kind of event during which a provider performs a service of any kind for the patient. ",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_types/all.json#/definitions/DV_DATE_TIME"
+        },
+        "end_time": {
+            "description": "Optional end time of the clinical session. \n",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_types/all.json#/definitions/DV_DATE_TIME"
+        },
+        "location": {
+            "description": "The actual location where the session occurred, e.g. 'microbiology lab 2', 'home', 'ward A3'  and so on.",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/String"
+        },
+        "setting": {
+            "description": "The setting in which the clinical session took place. Coded using the openEHR Terminology,  setting  group. ",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_types/all.json#/definitions/DV_CODED_TEXT"
+        },
+        "other_context": {
+            "description": "Other optional context which will be archetyped.",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_structures/all.json#/definitions/ITEM_STRUCTURE"
+        },
+        "health_care_facility": {
+            "description": "The health care facility under whose care the event took place. This is the most specific workgroup or delivery unit within a care delivery enterprise that has an official identifier in the health system, and can be used to ensure medico-legal accountability. ",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Common/all.json#/definitions/PARTY_IDENTIFIED"
+        },
+        "participations": {
+            "description": "Parties involved in the healthcare event. These would normally include the physician(s) and often the patient (but not the latter if the clinical session is a pathology test for example). ",
+            "type": "array",
+            "items": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Common/all.json#/definitions/PARTICIPATION"
+            }
+        }
+    },
+    "required": [
+        "start_time",
+        "setting"
+    ],
+    "$inherits": [
+        "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Common/all.json#/definitions/PATHABLE"
+    ],
+    "$functions": {
+        "parent": {
+            "description": "Parent of this node in a compositional hierarchy. \n",
+            "return": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Common/all.json#/definitions/PATHABLE"
+            }
+        },
+        "item_at_path": {
+            "description": "The item at a path (relative to this item); only valid for unique paths, i.e. paths that resolve to a single item. ",
+            "parameters": {
+                "a_path": {
+                    "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/String"
+                }
+            },
+            "required_parameters": [
+                "a_path"
+            ],
+            "return": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/Any"
+            }
+        },
+        "items_at_path": {
+            "description": "List of items corresponding to a non-unique path.",
+            "parameters": {
+                "a_path": {
+                    "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/String"
+                }
+            },
+            "required_parameters": [
+                "a_path"
+            ],
+            "return": {
+                "type": "array",
+                "items": {
+                    "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/Any"
+                }
+            }
+        },
+        "path_exists": {
+            "description": "True if the path exists in the data with respect to the current item. ",
+            "parameters": {
+                "a_path": {
+                    "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/String"
+                }
+            },
+            "required_parameters": [
+                "a_path"
+            ],
+            "return": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/Boolean"
+            }
+        },
+        "path_unique": {
+            "description": "True if the path corresponds to a single item in the data. ",
+            "parameters": {
+                "a_path": {
+                    "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/String"
+                }
+            },
+            "required_parameters": [
+                "a_path"
+            ],
+            "return": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/Boolean"
+            }
+        },
+        "path_of_item": {
+            "description": "The path to an item relative to the root of this archetyped structure.",
+            "parameters": {
+                "a_loc": {
+                    "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Common/all.json#/definitions/PATHABLE"
+                }
+            },
+            "required_parameters": [
+                "a_loc"
+            ],
+            "return": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/String"
+            }
+        }
+    },
+    "$invariants": {
+        "Pre": "path_exists (a_path)",
+        "Setting_valid": "Terminology (Terminology_id_openehr).has_code_for_group_id (Group_id_setting, setting.defining_code)",
+        "Participations_validity": "participations /= Void implies not participations.is_empty",
+        "location_valid": "location /= Void implies not location.is_empty"
+    }
+}

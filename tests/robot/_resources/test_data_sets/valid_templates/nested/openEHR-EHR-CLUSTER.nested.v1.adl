@@ -1,0 +1,71 @@
+archetype (adl_version=1.4)
+	openEHR-EHR-CLUSTER.nested.v1
+
+concept
+	[at0000]	-- Nested
+language
+	original_language = <[ISO_639-1::en]>
+description
+	original_author = <
+		["name"] = <"">
+	>
+	details = <
+		["en"] = <
+			language = <[ISO_639-1::en]>
+			purpose = <"">
+			use = <"">
+			misuse = <"">
+			copyright = <"">
+		>
+	>
+	lifecycle_state = <"0">
+	other_contributors = <>
+	other_details = <
+		["MD5-CAM-1.0.1"] = <"B27C4C390429955ABA1594832570F4C7">
+	>
+
+definition
+	CLUSTER[at0000] matches {	-- Nested
+		items cardinality matches {1..*; unordered} matches {
+			ELEMENT[at0001] occurrences matches {0..1} matches {	-- text
+				value matches {
+					DV_TEXT matches {*}
+				}
+			}
+			ELEMENT[at0002] occurrences matches {0..1} matches {	-- date
+				value matches {
+					DV_DATE_TIME matches {
+						value matches {yyyy-mm-ddTHH:MM:SS}
+					}
+				}
+			}
+			allow_archetype CLUSTER[at0004] occurrences matches {0..*} matches {	-- nested
+				include
+					archetype_id/value matches {/openEHR-EHR-CLUSTER\.nested2\.v1/}
+			}
+		}
+	}
+
+ontology
+	term_definitions = <
+		["en"] = <
+			items = <
+				["at0000"] = <
+					text = <"Nested">
+					description = <"unknown">
+				>
+				["at0001"] = <
+					text = <"text">
+					description = <"*">
+				>
+				["at0002"] = <
+					text = <"date">
+					description = <"*">
+				>
+				["at0004"] = <
+					text = <"nested">
+					description = <"*">
+				>
+			>
+		>
+	>

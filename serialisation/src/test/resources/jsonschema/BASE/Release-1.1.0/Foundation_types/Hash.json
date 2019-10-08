@@ -1,0 +1,104 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/Hash.json",
+    "title": "Hash",
+    "description": "Type representing a keyed table of values. V is the value type, and K the type of the keys. ",
+    "$comments": "Defined in Foundation_types IM, inherits from Container",
+    "type": "object",
+    "properties": {
+        "_type": {
+            "enum": [
+                "Hash",
+                "Hash<String, Hash<String, Hash<String, String>>>",
+                "Hash<String, Hash<String, String>>",
+                "Hash<String, String>",
+                "Hash<String, List<String>>",
+                "Hash<String, TRANSLATION_DETAILS>",
+                "Hash<String, RESOURCE_DESCRIPTION_ITEM>",
+                "Hash<String, ARCHETYPE_TERMINOLOGY>",
+                "Hash<String, VALUE_SET>",
+                "Hash<String, Hash<String, ARCHETYPE_TERM>>",
+                "Hash<String, ARCHETYPE_TERM>",
+                "Hash<String, Uri>",
+                "Hash <String, Hash<String, Uri>>",
+                "Hash<String, AOM_PROPERTY_MAPPING>",
+                "Hash<String, AOM_TYPE_MAPPING>"
+            ]
+        }
+    },
+    "$inherits": [
+        "all.json#/definitions/Container"
+    ],
+    "$children": [
+        "all.json#/definitions/Hash_of_String_Hash_of_String_Hash_of_String_String",
+        "all.json#/definitions/Hash_of_String_Hash_of_String_String",
+        "all.json#/definitions/Hash_of_String_String",
+        "all.json#/definitions/Hash_of_String_List_of_String",
+        "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Resource/all.json#/definitions/Hash_of_String_TRANSLATION_DETAILS",
+        "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Resource/all.json#/definitions/Hash_of_String_RESOURCE_DESCRIPTION_ITEM",
+        "https://specifications.openehr.org/releases/ITS-JSON/latest/components/AM/Release-2.0.6/Aom2/all.json#/definitions/Hash_of_String_ARCHETYPE_TERMINOLOGY",
+        "https://specifications.openehr.org/releases/ITS-JSON/latest/components/AM/Release-2.0.6/Aom2/all.json#/definitions/Hash_of_String_VALUE_SET",
+        "https://specifications.openehr.org/releases/ITS-JSON/latest/components/AM/Release-2.0.6/Aom2/all.json#/definitions/Hash_of_String_Hash_of_String_ARCHETYPE_TERM",
+        "https://specifications.openehr.org/releases/ITS-JSON/latest/components/AM/Release-2.0.6/Aom2/all.json#/definitions/Hash_of_String_ARCHETYPE_TERM",
+        "https://specifications.openehr.org/releases/ITS-JSON/latest/components/AM/Release-2.0.6/Aom2/all.json#/definitions/Hash_of_String_Uri",
+        "https://specifications.openehr.org/releases/ITS-JSON/latest/components/AM/Release-2.0.6/Aom2/all.json#/definitions/Hash_of_String_Hash_of_String_Uri",
+        "https://specifications.openehr.org/releases/ITS-JSON/latest/components/AM/Release-2.0.6/Aom2_profile/all.json#/definitions/Hash_of_String_AOM_PROPERTY_MAPPING",
+        "https://specifications.openehr.org/releases/ITS-JSON/latest/components/AM/Release-2.0.6/Aom2_profile/all.json#/definitions/Hash_of_String_AOM_TYPE_MAPPING"
+    ],
+    "$functions": {
+        "has": {
+            "description": "Test for membership of a value.",
+            "parameters": {
+                "v": {
+                    "$ref": "all.json#/definitions/T"
+                }
+            },
+            "required_parameters": [
+                "v"
+            ],
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "count": {
+            "description": "Number of items in container.",
+            "return": {
+                "$ref": "all.json#/definitions/Integer"
+            }
+        },
+        "is_empty": {
+            "description": "True if container is empty.",
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "has_key": {
+            "description": "Test for membership of a key.",
+            "parameters": {
+                "a_key": {
+                    "$ref": "all.json#/definitions/K"
+                }
+            },
+            "required_parameters": [
+                "a_key"
+            ],
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "item": {
+            "description": "Return item for key  a_key'.",
+            "parameters": {
+                "a_key": {
+                    "$ref": "all.json#/definitions/K"
+                }
+            },
+            "required_parameters": [
+                "a_key"
+            ],
+            "return": {
+                "$ref": "all.json#/definitions/V"
+            }
+        }
+    }
+}

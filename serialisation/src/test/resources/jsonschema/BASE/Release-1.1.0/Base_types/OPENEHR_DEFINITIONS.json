@@ -1,0 +1,7 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Base_types/OPENEHR_DEFINITIONS.json",
+    "title": "OPENEHR_DEFINITIONS",
+    "description": "Inheritance class to provide access to constants defined in other packages.",
+    "$comments": "Defined in Base_types IM"
+}

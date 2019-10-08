@@ -1,0 +1,42 @@
+<xml-fragment xsi:type="C_COMPLEX_OBJECT" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:v1="http://schemas.openehr.org/v1">
+  <v1:rm_type_name>DV_CODED_TEXT</v1:rm_type_name>
+  <v1:occurrences>
+    <v1:lower_included>true</v1:lower_included>
+    <v1:upper_included>true</v1:upper_included>
+    <v1:lower_unbounded>false</v1:lower_unbounded>
+    <v1:upper_unbounded>false</v1:upper_unbounded>
+    <v1:lower>1</v1:lower>
+    <v1:upper>1</v1:upper>
+  </v1:occurrences>
+  <v1:node_id/>
+  <v1:attributes xsi:type="C_SINGLE_ATTRIBUTE">
+    <v1:rm_attribute_name>defining_code</v1:rm_attribute_name>
+    <v1:existence>
+      <v1:lower_included>true</v1:lower_included>
+      <v1:upper_included>true</v1:upper_included>
+      <v1:lower_unbounded>false</v1:lower_unbounded>
+      <v1:upper_unbounded>false</v1:upper_unbounded>
+      <v1:lower>1</v1:lower>
+      <v1:upper>1</v1:upper>
+    </v1:existence>
+    <v1:children xsi:type="C_CODE_PHRASE">
+      <v1:rm_type_name>CODE_PHRASE</v1:rm_type_name>
+      <v1:occurrences>
+        <v1:lower_included>true</v1:lower_included>
+        <v1:upper_included>true</v1:upper_included>
+        <v1:lower_unbounded>false</v1:lower_unbounded>
+        <v1:upper_unbounded>false</v1:upper_unbounded>
+        <v1:lower>1</v1:lower>
+        <v1:upper>1</v1:upper>
+      </v1:occurrences>
+      <v1:node_id/>
+      <v1:terminology_id>
+        <v1:value>local</v1:value>
+      </v1:terminology_id>
+      <v1:code_list>at0006</v1:code_list>
+      <v1:code_list>at1028</v1:code_list>
+      <v1:code_list>at0007</v1:code_list>
+      <v1:code_list>at0008</v1:code_list>
+    </v1:children>
+  </v1:attributes>
+</xml-fragment>

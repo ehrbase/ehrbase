@@ -1,0 +1,55 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Base_types/UID_BASED_ID.json",
+    "title": "UID_BASED_ID",
+    "description": "Abstract model of UID-based identifiers consisting of a root part and an optional extension;\n\nlexical form: `root '::' extension`.",
+    "$comments": "Defined in Base_types IM, abstract, inherits from OBJECT_ID",
+    "type": "object",
+    "properties": {
+        "_type": {
+            "enum": [
+                "HIER_OBJECT_ID",
+                "OBJECT_VERSION_ID"
+            ]
+        },
+        "value": {
+            "description": "The value of the id in the form defined below. ",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/String"
+        }
+    },
+    "required": [
+        "_type",
+        "value"
+    ],
+    "$abstract": true,
+    "$inherits": [
+        "all.json#/definitions/OBJECT_ID"
+    ],
+    "$children": [
+        "all.json#/definitions/HIER_OBJECT_ID",
+        "all.json#/definitions/OBJECT_VERSION_ID"
+    ],
+    "$functions": {
+        "root": {
+            "description": "The identifier of the conceptual namespace in which the object exists, within the identification scheme. Returns the part to the left of the first '::' separator, if any, or else the whole string. ",
+            "return": {
+                "$ref": "all.json#/definitions/UID"
+            }
+        },
+        "extension": {
+            "description": "Optional local identifier of the object within the context of the root identifier. Returns the part to the right of the first '::' separator if any, or else any empty String.",
+            "return": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/String"
+            }
+        },
+        "has_extension": {
+            "description": "True if `_extension_ /= Void`.",
+            "return": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/Boolean"
+            }
+        }
+    },
+    "$invariants": {
+        "Has_extension_valid": "extension.is_empty xor has_extension"
+    }
+}

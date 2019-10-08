@@ -1,0 +1,1120 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<composition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ns2="http://schemas.openehr.org/v1"
+             xsi:type="ns2:COMPOSITION" archetype_node_id="openEHR-EHR-COMPOSITION.encounter.v1">
+    <ns2:name>
+        <ns2:value>Encounter</ns2:value>
+    </ns2:name>
+    <ns2:uid xsi:type="ns2:OBJECT_VERSION_ID">
+        <ns2:value>f16dd9db-b2cd-4e68-b08d-38bea43751b9::ripple_osi.ehrscape.c4h::1</ns2:value>
+    </ns2:uid>
+    <ns2:archetype_details>
+        <ns2:archetype_id>
+            <ns2:value>openEHR-EHR-COMPOSITION.encounter.v1</ns2:value>
+        </ns2:archetype_id>
+        <ns2:template_id>
+            <ns2:value>RIPPLE - Conformance Test template</ns2:value>
+        </ns2:template_id>
+        <ns2:rm_version>1.0.1</ns2:rm_version>
+    </ns2:archetype_details>
+    <ns2:language>
+        <ns2:terminology_id>
+            <ns2:value>ISO_639-1</ns2:value>
+        </ns2:terminology_id>
+        <ns2:code_string>en</ns2:code_string>
+    </ns2:language>
+    <ns2:territory>
+        <ns2:terminology_id>
+            <ns2:value>ISO_3166-1</ns2:value>
+        </ns2:terminology_id>
+        <ns2:code_string>GB</ns2:code_string>
+    </ns2:territory>
+    <ns2:category>
+        <ns2:value>event</ns2:value>
+        <ns2:defining_code>
+            <ns2:terminology_id>
+                <ns2:value>openehr</ns2:value>
+            </ns2:terminology_id>
+            <ns2:code_string>433</ns2:code_string>
+        </ns2:defining_code>
+    </ns2:category>
+    <ns2:composer xsi:type="ns2:PARTY_IDENTIFIED">
+        <ns2:name>Silvia Blake</ns2:name>
+    </ns2:composer>
+    <ns2:context>
+        <ns2:start_time>
+            <ns2:value>2015-12-02T17:41:56.809Z</ns2:value>
+        </ns2:start_time>
+        <ns2:setting>
+            <ns2:value>other care</ns2:value>
+            <ns2:defining_code>
+                <ns2:terminology_id>
+                    <ns2:value>openehr</ns2:value>
+                </ns2:terminology_id>
+                <ns2:code_string>238</ns2:code_string>
+            </ns2:defining_code>
+        </ns2:setting>
+        <ns2:other_context xsi:type="ns2:ITEM_TREE" archetype_node_id="at0001">
+            <ns2:name>
+                <ns2:value>Tree</ns2:value>
+            </ns2:name>
+            <ns2:items xsi:type="ns2:CLUSTER" archetype_node_id="openEHR-EHR-CLUSTER.composition_context_detail.v1">
+                <ns2:name>
+                    <ns2:value>Context detail</ns2:value>
+                </ns2:name>
+                <ns2:archetype_details>
+                    <ns2:archetype_id>
+                        <ns2:value>openEHR-EHR-CLUSTER.composition_context_detail.v1</ns2:value>
+                    </ns2:archetype_id>
+                    <ns2:rm_version>1.0.1</ns2:rm_version>
+                </ns2:archetype_details>
+                <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0001">
+                    <ns2:name>
+                        <ns2:value>Period of care identifier</ns2:value>
+                    </ns2:name>
+                    <ns2:value xsi:type="ns2:DV_TEXT">
+                        <ns2:value>Ident. 52</ns2:value>
+                    </ns2:value>
+                </ns2:items>
+                <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0008">
+                    <ns2:name>
+                        <ns2:value>Tags</ns2:value>
+                    </ns2:name>
+                    <ns2:value xsi:type="ns2:DV_TEXT">
+                        <ns2:value>Tags 96</ns2:value>
+                    </ns2:value>
+                </ns2:items>
+                <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0008">
+                    <ns2:name>
+                        <ns2:value>Tags #2</ns2:value>
+                    </ns2:name>
+                    <ns2:value xsi:type="ns2:DV_TEXT">
+                        <ns2:value>Tags 96</ns2:value>
+                    </ns2:value>
+                </ns2:items>
+                <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0009">
+                    <ns2:name>
+                        <ns2:value>Attachment</ns2:value>
+                    </ns2:name>
+                    <ns2:value xsi:type="ns2:DV_MULTIMEDIA">
+                        <ns2:alternate_text>alternate text</ns2:alternate_text>
+                        <ns2:uri>
+                            <ns2:value>http://med.tube.com/sample</ns2:value>
+                        </ns2:uri>
+                        <ns2:media_type>
+                            <ns2:terminology_id>
+                                <ns2:value>IANA_media-types</ns2:value>
+                            </ns2:terminology_id>
+                            <ns2:code_string>video/mp4</ns2:code_string>
+                        </ns2:media_type>
+                        <ns2:size>504903212</ns2:size>
+                    </ns2:value>
+                </ns2:items>
+            </ns2:items>
+        </ns2:other_context>
+        <ns2:health_care_facility>
+            <ns2:external_ref>
+                <ns2:id xsi:type="ns2:GENERIC_ID">
+                    <ns2:value>9091</ns2:value>
+                    <ns2:scheme>HOSPITAL-NS</ns2:scheme>
+                </ns2:id>
+                <ns2:namespace>HOSPITAL-NS</ns2:namespace>
+                <ns2:type>PARTY</ns2:type>
+            </ns2:external_ref>
+            <ns2:name>Hospital</ns2:name>
+        </ns2:health_care_facility>
+    </ns2:context>
+    <ns2:content xsi:type="ns2:SECTION" archetype_node_id="openEHR-EHR-SECTION.adhoc.v1">
+        <ns2:name>
+            <ns2:value>Ad hoc heading</ns2:value>
+        </ns2:name>
+        <ns2:archetype_details>
+            <ns2:archetype_id>
+                <ns2:value>openEHR-EHR-SECTION.adhoc.v1</ns2:value>
+            </ns2:archetype_id>
+            <ns2:rm_version>1.0.1</ns2:rm_version>
+        </ns2:archetype_details>
+        <ns2:items xsi:type="ns2:OBSERVATION" archetype_node_id="openEHR-EHR-OBSERVATION.pulse.v1">
+            <ns2:name>
+                <ns2:value>Pulse</ns2:value>
+            </ns2:name>
+            <ns2:archetype_details>
+                <ns2:archetype_id>
+                    <ns2:value>openEHR-EHR-OBSERVATION.pulse.v1</ns2:value>
+                </ns2:archetype_id>
+                <ns2:rm_version>1.0.1</ns2:rm_version>
+            </ns2:archetype_details>
+            <ns2:language>
+                <ns2:terminology_id>
+                    <ns2:value>ISO_639-1</ns2:value>
+                </ns2:terminology_id>
+                <ns2:code_string>en</ns2:code_string>
+            </ns2:language>
+            <ns2:encoding>
+                <ns2:terminology_id>
+                    <ns2:value>IANA_character-sets</ns2:value>
+                </ns2:terminology_id>
+                <ns2:code_string>UTF-8</ns2:code_string>
+            </ns2:encoding>
+            <ns2:subject xsi:type="ns2:PARTY_SELF"/>
+            <ns2:protocol xsi:type="ns2:ITEM_TREE" archetype_node_id="at0010">
+                <ns2:name>
+                    <ns2:value>List</ns2:value>
+                </ns2:name>
+                <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at1019">
+                    <ns2:name>
+                        <ns2:value>Method</ns2:value>
+                    </ns2:name>
+                    <ns2:value xsi:type="ns2:DV_CODED_TEXT">
+                        <ns2:value>Device</ns2:value>
+                        <ns2:defining_code>
+                            <ns2:terminology_id>
+                                <ns2:value>local</ns2:value>
+                            </ns2:terminology_id>
+                            <ns2:code_string>at1034</ns2:code_string>
+                        </ns2:defining_code>
+                    </ns2:value>
+                </ns2:items>
+                <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at1037">
+                    <ns2:name>
+                        <ns2:value>Findings Location</ns2:value>
+                    </ns2:name>
+                    <ns2:value xsi:type="ns2:DV_CODED_TEXT">
+                        <ns2:value>Femoral Artery - Left</ns2:value>
+                        <ns2:defining_code>
+                            <ns2:terminology_id>
+                                <ns2:value>local</ns2:value>
+                            </ns2:terminology_id>
+                            <ns2:code_string>at1043</ns2:code_string>
+                        </ns2:defining_code>
+                    </ns2:value>
+                </ns2:items>
+                <ns2:items xsi:type="ns2:CLUSTER" archetype_node_id="openEHR-EHR-CLUSTER.device.v1">
+                    <ns2:name>
+                        <ns2:value>Medical Device</ns2:value>
+                    </ns2:name>
+                    <ns2:archetype_details>
+                        <ns2:archetype_id>
+                            <ns2:value>openEHR-EHR-CLUSTER.device.v1</ns2:value>
+                        </ns2:archetype_id>
+                        <ns2:rm_version>1.0.1</ns2:rm_version>
+                    </ns2:archetype_details>
+                    <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0001">
+                        <ns2:name>
+                            <ns2:value>Device name</ns2:value>
+                        </ns2:name>
+                        <ns2:value xsi:type="ns2:DV_TEXT">
+                            <ns2:value>Device name 33</ns2:value>
+                        </ns2:value>
+                    </ns2:items>
+                    <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0021">
+                        <ns2:name>
+                            <ns2:value>Unique device identifier (UDI)</ns2:value>
+                        </ns2:name>
+                        <ns2:value xsi:type="ns2:DV_IDENTIFIER">
+                            <ns2:issuer>Issuer</ns2:issuer>
+                            <ns2:assigner>Assigner</ns2:assigner>
+                            <ns2:id>59466e78-d15c-4765-87da-20e56f1413a6</ns2:id>
+                            <ns2:type>Prescription</ns2:type>
+                        </ns2:value>
+                    </ns2:items>
+                    <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0004">
+                        <ns2:name>
+                            <ns2:value>Manufacturer</ns2:value>
+                        </ns2:name>
+                        <ns2:value xsi:type="ns2:DV_TEXT">
+                            <ns2:value>Manufacturer 6</ns2:value>
+                        </ns2:value>
+                    </ns2:items>
+                    <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0005">
+                        <ns2:name>
+                            <ns2:value>Date of manufacture</ns2:value>
+                        </ns2:name>
+                        <ns2:value xsi:type="ns2:DV_DATE_TIME">
+                            <ns2:value>2015-12-02T17:41:56.811Z</ns2:value>
+                        </ns2:value>
+                    </ns2:items>
+                </ns2:items>
+            </ns2:protocol>
+            <ns2:data archetype_node_id="at0002">
+                <ns2:name>
+                    <ns2:value>history</ns2:value>
+                </ns2:name>
+                <ns2:origin>
+                    <ns2:value>2015-12-02T17:41:56.809Z</ns2:value>
+                </ns2:origin>
+                <ns2:events xsi:type="ns2:POINT_EVENT" archetype_node_id="at0003">
+                    <ns2:name>
+                        <ns2:value>First event</ns2:value>
+                    </ns2:name>
+                    <ns2:time>
+                        <ns2:value>2015-12-02T17:41:56.809Z</ns2:value>
+                    </ns2:time>
+                    <ns2:data xsi:type="ns2:ITEM_TREE" archetype_node_id="at0001">
+                        <ns2:name>
+                            <ns2:value>structure</ns2:value>
+                        </ns2:name>
+                        <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0004">
+                            <ns2:name xsi:type="ns2:DV_CODED_TEXT">
+                                <ns2:value>Pulse Rate</ns2:value>
+                                <ns2:defining_code>
+                                    <ns2:terminology_id>
+                                        <ns2:value>local</ns2:value>
+                                    </ns2:terminology_id>
+                                    <ns2:code_string>at1026</ns2:code_string>
+                                </ns2:defining_code>
+                            </ns2:name>
+                            <ns2:value xsi:type="ns2:DV_QUANTITY">
+                                <ns2:magnitude>53.0</ns2:magnitude>
+                                <ns2:units>/min</ns2:units>
+                                <ns2:precision>0</ns2:precision>
+                            </ns2:value>
+                        </ns2:items>
+                        <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0005">
+                            <ns2:name>
+                                <ns2:value>Regularity</ns2:value>
+                            </ns2:name>
+                            <ns2:value xsi:type="ns2:DV_CODED_TEXT">
+                                <ns2:value>Regularly Irregular</ns2:value>
+                                <ns2:defining_code>
+                                    <ns2:terminology_id>
+                                        <ns2:value>local</ns2:value>
+                                    </ns2:terminology_id>
+                                    <ns2:code_string>at0007</ns2:code_string>
+                                </ns2:defining_code>
+                            </ns2:value>
+                        </ns2:items>
+                        <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at1022">
+                            <ns2:name>
+                                <ns2:value>Clinical Description</ns2:value>
+                            </ns2:name>
+                            <ns2:value xsi:type="ns2:DV_TEXT">
+                                <ns2:value>Clinical Description 14</ns2:value>
+                            </ns2:value>
+                        </ns2:items>
+                        <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at1023">
+                            <ns2:name>
+                                <ns2:value>Clinical Interpretation</ns2:value>
+                            </ns2:name>
+                            <ns2:value xsi:type="ns2:DV_TEXT">
+                                <ns2:value>Clinical Interpretation 23</ns2:value>
+                            </ns2:value>
+                        </ns2:items>
+                    </ns2:data>
+                </ns2:events>
+                <ns2:events xsi:type="ns2:POINT_EVENT" archetype_node_id="at0003">
+                    <ns2:name>
+                        <ns2:value>Second event</ns2:value>
+                    </ns2:name>
+                    <ns2:time>
+                        <ns2:value>2015-12-02T17:41:56.809Z</ns2:value>
+                    </ns2:time>
+                    <ns2:data xsi:type="ns2:ITEM_TREE" archetype_node_id="at0001">
+                        <ns2:name>
+                            <ns2:value>structure</ns2:value>
+                        </ns2:name>
+                        <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at1005">
+                            <ns2:name>
+                                <ns2:value>Pulse Presence</ns2:value>
+                            </ns2:name>
+                            <ns2:value xsi:type="ns2:DV_CODED_TEXT">
+                                <ns2:value>Present</ns2:value>
+                                <ns2:defining_code>
+                                    <ns2:terminology_id>
+                                        <ns2:value>local</ns2:value>
+                                    </ns2:terminology_id>
+                                    <ns2:code_string>at1024</ns2:code_string>
+                                </ns2:defining_code>
+                            </ns2:value>
+                        </ns2:items>
+                        <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0004">
+                            <ns2:name xsi:type="ns2:DV_CODED_TEXT">
+                                <ns2:value>Pulse Rate</ns2:value>
+                                <ns2:defining_code>
+                                    <ns2:terminology_id>
+                                        <ns2:value>local</ns2:value>
+                                    </ns2:terminology_id>
+                                    <ns2:code_string>at1026</ns2:code_string>
+                                </ns2:defining_code>
+                            </ns2:name>
+                            <ns2:value xsi:type="ns2:DV_QUANTITY">
+                                <ns2:magnitude>3.0</ns2:magnitude>
+                                <ns2:units>/min</ns2:units>
+                                <ns2:precision>0</ns2:precision>
+                            </ns2:value>
+                        </ns2:items>
+                        <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0005">
+                            <ns2:name>
+                                <ns2:value>Regularity</ns2:value>
+                            </ns2:name>
+                            <ns2:value xsi:type="ns2:DV_CODED_TEXT">
+                                <ns2:value>Regularly Irregular</ns2:value>
+                                <ns2:defining_code>
+                                    <ns2:terminology_id>
+                                        <ns2:value>local</ns2:value>
+                                    </ns2:terminology_id>
+                                    <ns2:code_string>at0007</ns2:code_string>
+                                </ns2:defining_code>
+                            </ns2:value>
+                        </ns2:items>
+                        <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at1023">
+                            <ns2:name>
+                                <ns2:value>Clinical Interpretation</ns2:value>
+                            </ns2:name>
+                            <ns2:value xsi:type="ns2:DV_TEXT">
+                                <ns2:value>Clinical Interpretation 34</ns2:value>
+                            </ns2:value>
+                        </ns2:items>
+                    </ns2:data>
+                </ns2:events>
+                <ns2:events xsi:type="ns2:INTERVAL_EVENT" archetype_node_id="at1036">
+                    <ns2:name>
+                        <ns2:value>Maximum</ns2:value>
+                    </ns2:name>
+                    <ns2:time>
+                        <ns2:value>2015-12-02T17:41:56.809Z</ns2:value>
+                    </ns2:time>
+                    <ns2:data xsi:type="ns2:ITEM_TREE" archetype_node_id="at0001">
+                        <ns2:name>
+                            <ns2:value>structure</ns2:value>
+                        </ns2:name>
+                        <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0004">
+                            <ns2:name xsi:type="ns2:DV_CODED_TEXT">
+                                <ns2:value>Heart Rate</ns2:value>
+                                <ns2:defining_code>
+                                    <ns2:terminology_id>
+                                        <ns2:value>local</ns2:value>
+                                    </ns2:terminology_id>
+                                    <ns2:code_string>at1027</ns2:code_string>
+                                </ns2:defining_code>
+                            </ns2:name>
+                            <ns2:value xsi:type="ns2:DV_QUANTITY">
+                                <ns2:magnitude>16.0</ns2:magnitude>
+                                <ns2:units>/min</ns2:units>
+                                <ns2:precision>0</ns2:precision>
+                            </ns2:value>
+                        </ns2:items>
+                    </ns2:data>
+                    <ns2:state xsi:type="ns2:ITEM_TREE" archetype_node_id="at0012">
+                        <ns2:name>
+                            <ns2:value>List</ns2:value>
+                        </ns2:name>
+                        <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0013">
+                            <ns2:name>
+                                <ns2:value>Position</ns2:value>
+                            </ns2:name>
+                            <ns2:value xsi:type="ns2:DV_CODED_TEXT">
+                                <ns2:value>Sitting</ns2:value>
+                                <ns2:defining_code>
+                                    <ns2:terminology_id>
+                                        <ns2:value>local</ns2:value>
+                                    </ns2:terminology_id>
+                                    <ns2:code_string>at1001</ns2:code_string>
+                                </ns2:defining_code>
+                            </ns2:value>
+                        </ns2:items>
+                        <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at1018">
+                            <ns2:name>
+                                <ns2:value>Confounding Factors</ns2:value>
+                            </ns2:name>
+                            <ns2:value xsi:type="ns2:DV_TEXT">
+                                <ns2:value>Confounding Factors 16</ns2:value>
+                            </ns2:value>
+                        </ns2:items>
+                    </ns2:state>
+                    <ns2:width>
+                        <ns2:value>P1DT11H11M</ns2:value>
+                    </ns2:width>
+                    <ns2:math_function>
+                        <ns2:value>maximum</ns2:value>
+                        <ns2:defining_code>
+                            <ns2:terminology_id>
+                                <ns2:value>openehr</ns2:value>
+                            </ns2:terminology_id>
+                            <ns2:code_string>144</ns2:code_string>
+                        </ns2:defining_code>
+                    </ns2:math_function>
+                </ns2:events>
+            </ns2:data>
+        </ns2:items>
+        <ns2:items xsi:type="ns2:EVALUATION" archetype_node_id="openEHR-EHR-EVALUATION.cpr_decision_uk.v1">
+            <ns2:name>
+                <ns2:value>CPR decision</ns2:value>
+            </ns2:name>
+            <ns2:archetype_details>
+                <ns2:archetype_id>
+                    <ns2:value>openEHR-EHR-EVALUATION.cpr_decision_uk.v1</ns2:value>
+                </ns2:archetype_id>
+                <ns2:rm_version>1.0.1</ns2:rm_version>
+            </ns2:archetype_details>
+            <ns2:language>
+                <ns2:terminology_id>
+                    <ns2:value>ISO_639-1</ns2:value>
+                </ns2:terminology_id>
+                <ns2:code_string>en</ns2:code_string>
+            </ns2:language>
+            <ns2:encoding>
+                <ns2:terminology_id>
+                    <ns2:value>IANA_character-sets</ns2:value>
+                </ns2:terminology_id>
+                <ns2:code_string>UTF-8</ns2:code_string>
+            </ns2:encoding>
+            <ns2:subject xsi:type="ns2:PARTY_SELF"/>
+            <ns2:protocol xsi:type="ns2:ITEM_TREE" archetype_node_id="at0010">
+                <ns2:name>
+                    <ns2:value>Tree</ns2:value>
+                </ns2:name>
+                <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0014">
+                    <ns2:name>
+                        <ns2:value>Discussion with informal carer</ns2:value>
+                    </ns2:name>
+                    <ns2:value xsi:type="ns2:DV_CODED_TEXT">
+                        <ns2:value>Resuscitation not discussed with informal carer</ns2:value>
+                        <ns2:defining_code>
+                            <ns2:terminology_id>
+                                <ns2:value>local</ns2:value>
+                            </ns2:terminology_id>
+                            <ns2:code_string>at0024</ns2:code_string>
+                        </ns2:defining_code>
+                    </ns2:value>
+                </ns2:items>
+                <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0009">
+                    <ns2:name>
+                        <ns2:value>Date for review of CPR decision</ns2:value>
+                    </ns2:name>
+                    <ns2:value xsi:type="ns2:DV_DATE_TIME">
+                        <ns2:value>2015-12-02T17:41:56.811Z</ns2:value>
+                    </ns2:value>
+                </ns2:items>
+            </ns2:protocol>
+            <ns2:data xsi:type="ns2:ITEM_TREE" archetype_node_id="at0001">
+                <ns2:name>
+                    <ns2:value>Tree</ns2:value>
+                </ns2:name>
+                <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0003">
+                    <ns2:name>
+                        <ns2:value>CPR decision</ns2:value>
+                    </ns2:name>
+                    <ns2:value xsi:type="ns2:DV_CODED_TEXT">
+                        <ns2:value>CPR decision status unknown</ns2:value>
+                        <ns2:defining_code>
+                            <ns2:terminology_id>
+                                <ns2:value>local</ns2:value>
+                            </ns2:terminology_id>
+                            <ns2:code_string>at0022</ns2:code_string>
+                        </ns2:defining_code>
+                    </ns2:value>
+                </ns2:items>
+                <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0002">
+                    <ns2:name>
+                        <ns2:value>Date of CPR decision</ns2:value>
+                    </ns2:name>
+                    <ns2:value xsi:type="ns2:DV_DATE_TIME">
+                        <ns2:value>2015-12-02T17:41:56.811Z</ns2:value>
+                    </ns2:value>
+                </ns2:items>
+            </ns2:data>
+        </ns2:items>
+        <ns2:items xsi:type="ns2:INSTRUCTION" archetype_node_id="openEHR-EHR-INSTRUCTION.request-procedure.v1">
+            <ns2:name>
+                <ns2:value>Procedure request</ns2:value>
+            </ns2:name>
+            <ns2:uid xsi:type="ns2:HIER_OBJECT_ID">
+                <ns2:value>9a3871f8-8105-44f9-a06c-5626acaf40a3</ns2:value>
+            </ns2:uid>
+            <ns2:archetype_details>
+                <ns2:archetype_id>
+                    <ns2:value>openEHR-EHR-INSTRUCTION.request-procedure.v1</ns2:value>
+                </ns2:archetype_id>
+                <ns2:rm_version>1.0.1</ns2:rm_version>
+            </ns2:archetype_details>
+            <ns2:language>
+                <ns2:terminology_id>
+                    <ns2:value>ISO_639-1</ns2:value>
+                </ns2:terminology_id>
+                <ns2:code_string>en</ns2:code_string>
+            </ns2:language>
+            <ns2:encoding>
+                <ns2:terminology_id>
+                    <ns2:value>IANA_character-sets</ns2:value>
+                </ns2:terminology_id>
+                <ns2:code_string>UTF-8</ns2:code_string>
+            </ns2:encoding>
+            <ns2:subject xsi:type="ns2:PARTY_SELF"/>
+            <ns2:other_participations>
+                <ns2:function>
+                    <ns2:value>performer</ns2:value>
+                </ns2:function>
+                <ns2:performer xsi:type="ns2:PARTY_IDENTIFIED">
+                    <ns2:name>Nurse Bailey</ns2:name>
+                </ns2:performer>
+                <ns2:mode>
+                    <ns2:value>not specified</ns2:value>
+                    <ns2:defining_code>
+                        <ns2:terminology_id>
+                            <ns2:value>openehr</ns2:value>
+                        </ns2:terminology_id>
+                        <ns2:code_string>193</ns2:code_string>
+                    </ns2:defining_code>
+                </ns2:mode>
+            </ns2:other_participations>
+            <ns2:protocol xsi:type="ns2:ITEM_TREE" archetype_node_id="at0008">
+                <ns2:name>
+                    <ns2:value>Tree</ns2:value>
+                </ns2:name>
+                <ns2:items xsi:type="ns2:CLUSTER" archetype_node_id="openEHR-EHR-CLUSTER.distribution.v1">
+                    <ns2:name>
+                        <ns2:value>Distribution</ns2:value>
+                    </ns2:name>
+                    <ns2:archetype_details>
+                        <ns2:archetype_id>
+                            <ns2:value>openEHR-EHR-CLUSTER.distribution.v1</ns2:value>
+                        </ns2:archetype_id>
+                        <ns2:rm_version>1.0.1</ns2:rm_version>
+                    </ns2:archetype_details>
+                    <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0008">
+                        <ns2:name>
+                            <ns2:value>Group category</ns2:value>
+                        </ns2:name>
+                        <ns2:value xsi:type="ns2:DV_TEXT">
+                            <ns2:value>Group category 26</ns2:value>
+                        </ns2:value>
+                    </ns2:items>
+                    <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0012">
+                        <ns2:name>
+                            <ns2:value>Urgent</ns2:value>
+                        </ns2:name>
+                        <ns2:value xsi:type="ns2:DV_BOOLEAN">
+                            <ns2:value>true</ns2:value>
+                        </ns2:value>
+                    </ns2:items>
+                    <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0006">
+                        <ns2:name>
+                            <ns2:value>Date sent</ns2:value>
+                        </ns2:name>
+                        <ns2:value xsi:type="ns2:DV_DATE_TIME">
+                            <ns2:value>2015-12-02T17:41:56.812Z</ns2:value>
+                        </ns2:value>
+                    </ns2:items>
+                </ns2:items>
+            </ns2:protocol>
+            <ns2:narrative>
+                <ns2:value>Human readable instruction narrative</ns2:value>
+            </ns2:narrative>
+            <ns2:activities archetype_node_id="at0001">
+                <ns2:name>
+                    <ns2:value>Request</ns2:value>
+                </ns2:name>
+                <ns2:description xsi:type="ns2:ITEM_TREE" archetype_node_id="at0009">
+                    <ns2:name>
+                        <ns2:value>Tree</ns2:value>
+                    </ns2:name>
+                    <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0121">
+                        <ns2:name>
+                            <ns2:value>Procedure requested</ns2:value>
+                        </ns2:name>
+                        <ns2:value xsi:type="ns2:DV_TEXT">
+                            <ns2:value>Procedure requested 79</ns2:value>
+                        </ns2:value>
+                    </ns2:items>
+                    <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0144">
+                        <ns2:name>
+                            <ns2:value>Latest date service required</ns2:value>
+                        </ns2:name>
+                        <ns2:value xsi:type="ns2:DV_DATE_TIME">
+                            <ns2:value>2015-12-02T17:41:56.812Z</ns2:value>
+                        </ns2:value>
+                    </ns2:items>
+                    <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0076">
+                        <ns2:name>
+                            <ns2:value>Supplementary information to follow</ns2:value>
+                        </ns2:name>
+                        <ns2:value xsi:type="ns2:DV_BOOLEAN">
+                            <ns2:value>true</ns2:value>
+                        </ns2:value>
+                    </ns2:items>
+                </ns2:description>
+                <ns2:timing>
+                    <ns2:value>R2/2015-12-02T17:00:00Z/P3M</ns2:value>
+                    <ns2:formalism>timing</ns2:formalism>
+                </ns2:timing>
+                <ns2:action_archetype_id>/.*/</ns2:action_archetype_id>
+            </ns2:activities>
+            <ns2:activities archetype_node_id="at0001">
+                <ns2:name>
+                    <ns2:value>Request #3</ns2:value>
+                </ns2:name>
+                <ns2:description xsi:type="ns2:ITEM_TREE" archetype_node_id="at0009">
+                    <ns2:name>
+                        <ns2:value>Tree</ns2:value>
+                    </ns2:name>
+                    <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0121">
+                        <ns2:name>
+                            <ns2:value>Procedure requested</ns2:value>
+                        </ns2:name>
+                        <ns2:value xsi:type="ns2:DV_TEXT">
+                            <ns2:value>Procedure requested 84</ns2:value>
+                        </ns2:value>
+                    </ns2:items>
+                    <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0144">
+                        <ns2:name>
+                            <ns2:value>Latest date service required</ns2:value>
+                        </ns2:name>
+                        <ns2:value xsi:type="ns2:DV_DATE_TIME">
+                            <ns2:value>2015-12-02T17:41:56.812Z</ns2:value>
+                        </ns2:value>
+                    </ns2:items>
+                    <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0076">
+                        <ns2:name>
+                            <ns2:value>Supplementary information to follow</ns2:value>
+                        </ns2:name>
+                        <ns2:value xsi:type="ns2:DV_BOOLEAN">
+                            <ns2:value>true</ns2:value>
+                        </ns2:value>
+                    </ns2:items>
+                </ns2:description>
+                <ns2:timing>
+                    <ns2:value>R2/2015-12-02T17:00:00Z/P1M</ns2:value>
+                    <ns2:formalism>timing</ns2:formalism>
+                </ns2:timing>
+                <ns2:action_archetype_id>/.*/</ns2:action_archetype_id>
+            </ns2:activities>
+        </ns2:items>
+        <ns2:items xsi:type="ns2:ACTION" archetype_node_id="openEHR-EHR-ACTION.procedure.v1">
+            <ns2:name>
+                <ns2:value>Procedure</ns2:value>
+            </ns2:name>
+            <ns2:archetype_details>
+                <ns2:archetype_id>
+                    <ns2:value>openEHR-EHR-ACTION.procedure.v1</ns2:value>
+                </ns2:archetype_id>
+                <ns2:rm_version>1.0.1</ns2:rm_version>
+            </ns2:archetype_details>
+            <ns2:language>
+                <ns2:terminology_id>
+                    <ns2:value>ISO_639-1</ns2:value>
+                </ns2:terminology_id>
+                <ns2:code_string>en</ns2:code_string>
+            </ns2:language>
+            <ns2:encoding>
+                <ns2:terminology_id>
+                    <ns2:value>IANA_character-sets</ns2:value>
+                </ns2:terminology_id>
+                <ns2:code_string>UTF-8</ns2:code_string>
+            </ns2:encoding>
+            <ns2:subject xsi:type="ns2:PARTY_SELF"/>
+            <ns2:protocol xsi:type="ns2:ITEM_TREE" archetype_node_id="at0053">
+                <ns2:name>
+                    <ns2:value>Tree</ns2:value>
+                </ns2:name>
+                <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0054">
+                    <ns2:name>
+                        <ns2:value>Requestor order identifier</ns2:value>
+                    </ns2:name>
+                    <ns2:value xsi:type="ns2:DV_TEXT">
+                        <ns2:value>Ident. 38</ns2:value>
+                    </ns2:value>
+                </ns2:items>
+                <ns2:items xsi:type="ns2:CLUSTER" archetype_node_id="openEHR-EHR-CLUSTER.person_name.v1">
+                    <ns2:name>
+                        <ns2:value>Person name</ns2:value>
+                    </ns2:name>
+                    <ns2:archetype_details>
+                        <ns2:archetype_id>
+                            <ns2:value>openEHR-EHR-CLUSTER.person_name.v1</ns2:value>
+                        </ns2:archetype_id>
+                        <ns2:rm_version>1.0.1</ns2:rm_version>
+                    </ns2:archetype_details>
+                    <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0006">
+                        <ns2:name>
+                            <ns2:value>Name type</ns2:value>
+                        </ns2:name>
+                        <ns2:value xsi:type="ns2:DV_CODED_TEXT">
+                            <ns2:value>AKA</ns2:value>
+                            <ns2:defining_code>
+                                <ns2:terminology_id>
+                                    <ns2:value>local</ns2:value>
+                                </ns2:terminology_id>
+                                <ns2:code_string>at0010</ns2:code_string>
+                            </ns2:defining_code>
+                        </ns2:value>
+                    </ns2:items>
+                    <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0022">
+                        <ns2:name>
+                            <ns2:value>Preferred name</ns2:value>
+                        </ns2:name>
+                        <ns2:value xsi:type="ns2:DV_BOOLEAN">
+                            <ns2:value>true</ns2:value>
+                        </ns2:value>
+                    </ns2:items>
+                    <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0001">
+                        <ns2:name>
+                            <ns2:value>Unstructured name</ns2:value>
+                        </ns2:name>
+                        <ns2:value xsi:type="ns2:DV_TEXT">
+                            <ns2:value>Unstructured name 16</ns2:value>
+                        </ns2:value>
+                    </ns2:items>
+                </ns2:items>
+                <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0056">
+                    <ns2:name>
+                        <ns2:value>Receiver order identifier</ns2:value>
+                    </ns2:name>
+                    <ns2:value xsi:type="ns2:DV_IDENTIFIER">
+                        <ns2:issuer>Issuer</ns2:issuer>
+                        <ns2:assigner>Assigner</ns2:assigner>
+                        <ns2:id>8fb20ec3-b285-4ab8-acd4-25bcd58cbd24</ns2:id>
+                        <ns2:type>Prescription</ns2:type>
+                    </ns2:value>
+                </ns2:items>
+            </ns2:protocol>
+            <ns2:time>
+                <ns2:value>2015-12-02T17:41:56.813Z</ns2:value>
+            </ns2:time>
+            <ns2:description xsi:type="ns2:ITEM_TREE" archetype_node_id="at0001">
+                <ns2:name>
+                    <ns2:value>Tree</ns2:value>
+                </ns2:name>
+                <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0002">
+                    <ns2:name>
+                        <ns2:value>Procedure name</ns2:value>
+                    </ns2:name>
+                    <ns2:value xsi:type="ns2:DV_TEXT">
+                        <ns2:value>Procedure name 40</ns2:value>
+                    </ns2:value>
+                </ns2:items>
+                <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0065">
+                    <ns2:name xsi:type="ns2:DV_CODED_TEXT">
+                        <ns2:value>Run-time coded name</ns2:value>
+                        <ns2:defining_code>
+                            <ns2:terminology_id>
+                                <ns2:value>SNOMED-CT</ns2:value>
+                            </ns2:terminology_id>
+                            <ns2:code_string>70901006</ns2:code_string>
+                        </ns2:defining_code>
+                    </ns2:name>
+                    <ns2:value xsi:type="ns2:DV_TEXT">
+                        <ns2:value>Method 0</ns2:value>
+                    </ns2:value>
+                </ns2:items>
+                <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0065">
+                    <ns2:name>
+                        <ns2:value>Method #1</ns2:value>
+                    </ns2:name>
+                    <ns2:value xsi:type="ns2:DV_TEXT">
+                        <ns2:value>Method #1 94</ns2:value>
+                    </ns2:value>
+                </ns2:items>
+                <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0066">
+                    <ns2:name>
+                        <ns2:value>Scheduled date/time</ns2:value>
+                    </ns2:name>
+                    <ns2:value xsi:type="ns2:DV_DATE_TIME">
+                        <ns2:value>2015-12-02T17:41:56.812Z</ns2:value>
+                    </ns2:value>
+                </ns2:items>
+            </ns2:description>
+            <ns2:ism_transition>
+                <ns2:current_state>
+                    <ns2:value>initial</ns2:value>
+                    <ns2:defining_code>
+                        <ns2:terminology_id>
+                            <ns2:value>openehr</ns2:value>
+                        </ns2:terminology_id>
+                        <ns2:code_string>524</ns2:code_string>
+                    </ns2:defining_code>
+                </ns2:current_state>
+            </ns2:ism_transition>
+        </ns2:items>
+        <ns2:items xsi:type="ns2:ADMIN_ENTRY" archetype_node_id="openEHR-EHR-ADMIN_ENTRY.inpatient_admission_uk.v1">
+            <ns2:name>
+                <ns2:value>Inpatient admission</ns2:value>
+            </ns2:name>
+            <ns2:archetype_details>
+                <ns2:archetype_id>
+                    <ns2:value>openEHR-EHR-ADMIN_ENTRY.inpatient_admission_uk.v1</ns2:value>
+                </ns2:archetype_id>
+                <ns2:rm_version>1.0.1</ns2:rm_version>
+            </ns2:archetype_details>
+            <ns2:language>
+                <ns2:terminology_id>
+                    <ns2:value>ISO_639-1</ns2:value>
+                </ns2:terminology_id>
+                <ns2:code_string>en</ns2:code_string>
+            </ns2:language>
+            <ns2:encoding>
+                <ns2:terminology_id>
+                    <ns2:value>IANA_character-sets</ns2:value>
+                </ns2:terminology_id>
+                <ns2:code_string>UTF-8</ns2:code_string>
+            </ns2:encoding>
+            <ns2:subject xsi:type="ns2:PARTY_SELF"/>
+            <ns2:data xsi:type="ns2:ITEM_TREE" archetype_node_id="at0001">
+                <ns2:name>
+                    <ns2:value>Tree</ns2:value>
+                </ns2:name>
+                <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0002">
+                    <ns2:name>
+                        <ns2:value>Date of admission</ns2:value>
+                    </ns2:name>
+                    <ns2:value xsi:type="ns2:DV_DATE_TIME">
+                        <ns2:value>2015-12-02T17:41:56.813Z</ns2:value>
+                    </ns2:value>
+                </ns2:items>
+                <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0003">
+                    <ns2:name>
+                        <ns2:value>Admission method</ns2:value>
+                    </ns2:name>
+                    <ns2:value xsi:type="ns2:DV_CODED_TEXT">
+                        <ns2:value>D.80 description</ns2:value>
+                        <ns2:defining_code>
+                            <ns2:terminology_id>
+                                <ns2:value>external_terminology</ns2:value>
+                            </ns2:terminology_id>
+                            <ns2:code_string>D.80</ns2:code_string>
+                        </ns2:defining_code>
+                    </ns2:value>
+                </ns2:items>
+                <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0009">
+                    <ns2:name>
+                        <ns2:value>Source of admission</ns2:value>
+                    </ns2:name>
+                    <ns2:value xsi:type="ns2:DV_TEXT">
+                        <ns2:value>Source of admission 42</ns2:value>
+                    </ns2:value>
+                </ns2:items>
+            </ns2:data>
+        </ns2:items>
+        <ns2:items xsi:type="ns2:OBSERVATION" archetype_node_id="openEHR-EHR-OBSERVATION.demo.v1">
+            <ns2:name>
+                <ns2:value>Demonstration</ns2:value>
+            </ns2:name>
+            <ns2:archetype_details>
+                <ns2:archetype_id>
+                    <ns2:value>openEHR-EHR-OBSERVATION.demo.v1</ns2:value>
+                </ns2:archetype_id>
+                <ns2:rm_version>1.0.1</ns2:rm_version>
+            </ns2:archetype_details>
+            <ns2:language>
+                <ns2:terminology_id>
+                    <ns2:value>ISO_639-1</ns2:value>
+                </ns2:terminology_id>
+                <ns2:code_string>en</ns2:code_string>
+            </ns2:language>
+            <ns2:encoding>
+                <ns2:terminology_id>
+                    <ns2:value>IANA_character-sets</ns2:value>
+                </ns2:terminology_id>
+                <ns2:code_string>UTF-8</ns2:code_string>
+            </ns2:encoding>
+            <ns2:subject xsi:type="ns2:PARTY_SELF"/>
+            <ns2:data archetype_node_id="at0001">
+                <ns2:name>
+                    <ns2:value>Event Series</ns2:value>
+                </ns2:name>
+                <ns2:origin>
+                    <ns2:value>2015-12-02T17:41:56.809Z</ns2:value>
+                </ns2:origin>
+                <ns2:events xsi:type="ns2:POINT_EVENT" archetype_node_id="at0002">
+                    <ns2:name>
+                        <ns2:value>Any event</ns2:value>
+                    </ns2:name>
+                    <ns2:time>
+                        <ns2:value>2015-12-02T17:41:56.809Z</ns2:value>
+                    </ns2:time>
+                    <ns2:data xsi:type="ns2:ITEM_TREE" archetype_node_id="at0003">
+                        <ns2:name>
+                            <ns2:value>Tree</ns2:value>
+                        </ns2:name>
+                        <ns2:items xsi:type="ns2:CLUSTER" archetype_node_id="at0004">
+                            <ns2:name>
+                                <ns2:value>Heading1</ns2:value>
+                            </ns2:name>
+                            <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0005">
+                                <ns2:name>
+                                    <ns2:value>Free text or coded</ns2:value>
+                                </ns2:name>
+                                <ns2:value xsi:type="ns2:DV_TEXT">
+                                    <ns2:value>Free text or coded 33</ns2:value>
+                                </ns2:value>
+                            </ns2:items>
+                            <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0006">
+                                <ns2:name>
+                                    <ns2:value>Text that uses Internal codes</ns2:value>
+                                </ns2:name>
+                                <ns2:value xsi:type="ns2:DV_CODED_TEXT">
+                                    <ns2:value>Reclining</ns2:value>
+                                    <ns2:defining_code>
+                                        <ns2:terminology_id>
+                                            <ns2:value>local</ns2:value>
+                                        </ns2:terminology_id>
+                                        <ns2:code_string>at0008</ns2:code_string>
+                                    </ns2:defining_code>
+                                </ns2:value>
+                            </ns2:items>
+                            <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0011">
+                                <ns2:name>
+                                    <ns2:value>Text that is sourced from an external terminology</ns2:value>
+                                </ns2:name>
+                                <ns2:value xsi:type="ns2:DV_CODED_TEXT">
+                                    <ns2:value>T.38 description</ns2:value>
+                                    <ns2:defining_code>
+                                        <ns2:terminology_id>
+                                            <ns2:value>external_terminology</ns2:value>
+                                        </ns2:terminology_id>
+                                        <ns2:code_string>T.38</ns2:code_string>
+                                    </ns2:defining_code>
+                                </ns2:value>
+                            </ns2:items>
+                            <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0012">
+                                <ns2:name>
+                                    <ns2:value>Quantity</ns2:value>
+                                </ns2:name>
+                                <ns2:value xsi:type="ns2:DV_QUANTITY">
+                                    <ns2:magnitude>96.63</ns2:magnitude>
+                                    <ns2:units>cm</ns2:units>
+                                    <ns2:precision>1</ns2:precision>
+                                </ns2:value>
+                            </ns2:items>
+                            <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0023">
+                                <ns2:name>
+                                    <ns2:value>Interval of Quantity</ns2:value>
+                                </ns2:name>
+                                <ns2:value xsi:type="ns2:DV_INTERVAL">
+                                    <ns2:lower xsi:type="ns2:DV_QUANTITY">
+                                        <ns2:magnitude>5.66</ns2:magnitude>
+                                        <ns2:units>cm</ns2:units>
+                                    </ns2:lower>
+                                    <ns2:upper xsi:type="ns2:DV_QUANTITY">
+                                        <ns2:magnitude>62.91</ns2:magnitude>
+                                        <ns2:units>cm</ns2:units>
+                                    </ns2:upper>
+                                    <ns2:lower_unbounded>false</ns2:lower_unbounded>
+                                    <ns2:upper_unbounded>false</ns2:upper_unbounded>
+                                </ns2:value>
+                            </ns2:items>
+                            <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0013">
+                                <ns2:name>
+                                    <ns2:value>Count</ns2:value>
+                                </ns2:name>
+                                <ns2:value xsi:type="ns2:DV_COUNT">
+                                    <ns2:magnitude>908</ns2:magnitude>
+                                </ns2:value>
+                            </ns2:items>
+                            <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0022">
+                                <ns2:name>
+                                    <ns2:value>Interval of Integer</ns2:value>
+                                </ns2:name>
+                                <ns2:value xsi:type="ns2:DV_INTERVAL">
+                                    <ns2:lower xsi:type="ns2:DV_COUNT">
+                                        <ns2:magnitude>4</ns2:magnitude>
+                                    </ns2:lower>
+                                    <ns2:upper xsi:type="ns2:DV_COUNT">
+                                        <ns2:magnitude>10</ns2:magnitude>
+                                    </ns2:upper>
+                                    <ns2:lower_unbounded>false</ns2:lower_unbounded>
+                                    <ns2:upper_unbounded>false</ns2:upper_unbounded>
+                                </ns2:value>
+                            </ns2:items>
+                            <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0028">
+                                <ns2:name>
+                                    <ns2:value>Proportion</ns2:value>
+                                </ns2:name>
+                                <ns2:value xsi:type="ns2:DV_PROPORTION">
+                                    <ns2:numerator>58.0</ns2:numerator>
+                                    <ns2:denominator>100.0</ns2:denominator>
+                                    <ns2:type>2</ns2:type>
+                                    <ns2:precision>0</ns2:precision>
+                                </ns2:value>
+                            </ns2:items>
+                            <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0014">
+                                <ns2:name>
+                                    <ns2:value>Date/Time</ns2:value>
+                                </ns2:name>
+                                <ns2:value xsi:type="ns2:DV_DATE_TIME">
+                                    <ns2:value>2015-12-02T17:41:56.816Z</ns2:value>
+                                </ns2:value>
+                            </ns2:items>
+                            <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0024">
+                                <ns2:name>
+                                    <ns2:value>Interval of Date</ns2:value>
+                                </ns2:name>
+                                <ns2:value xsi:type="ns2:DV_INTERVAL">
+                                    <ns2:lower xsi:type="ns2:DV_DATE_TIME">
+                                        <ns2:value>2015-12-02T17:41:56.817Z</ns2:value>
+                                    </ns2:lower>
+                                    <ns2:upper xsi:type="ns2:DV_DATE_TIME">
+                                        <ns2:value>2015-12-02T17:41:56.817Z</ns2:value>
+                                    </ns2:upper>
+                                    <ns2:lower_unbounded>false</ns2:lower_unbounded>
+                                    <ns2:upper_unbounded>false</ns2:upper_unbounded>
+                                </ns2:value>
+                            </ns2:items>
+                            <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0021">
+                                <ns2:name>
+                                    <ns2:value>Duration</ns2:value>
+                                </ns2:name>
+                                <ns2:value xsi:type="ns2:DV_DURATION">
+                                    <ns2:value>P1DT11H11M</ns2:value>
+                                </ns2:value>
+                            </ns2:items>
+                            <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0015">
+                                <ns2:name>
+                                    <ns2:value>Ordinal</ns2:value>
+                                </ns2:name>
+                                <ns2:value xsi:type="ns2:DV_ORDINAL">
+                                    <ns2:value>1</ns2:value>
+                                    <ns2:symbol>
+                                        <ns2:value>Slight pain</ns2:value>
+                                        <ns2:defining_code>
+                                            <ns2:terminology_id>
+                                                <ns2:value>local</ns2:value>
+                                            </ns2:terminology_id>
+                                            <ns2:code_string>at0039</ns2:code_string>
+                                        </ns2:defining_code>
+                                    </ns2:symbol>
+                                </ns2:value>
+                            </ns2:items>
+                            <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0026">
+                                <ns2:name>
+                                    <ns2:value>Multimedia</ns2:value>
+                                </ns2:name>
+                                <ns2:value xsi:type="ns2:DV_MULTIMEDIA">
+                                    <ns2:alternate_text>alternate text</ns2:alternate_text>
+                                    <ns2:uri>
+                                        <ns2:value>http://med.tube.com/sample</ns2:value>
+                                    </ns2:uri>
+                                    <ns2:media_type>
+                                        <ns2:terminology_id>
+                                            <ns2:value>IANA_media-types</ns2:value>
+                                        </ns2:terminology_id>
+                                        <ns2:code_string>text/xml</ns2:code_string>
+                                    </ns2:media_type>
+                                    <ns2:size>504903212</ns2:size>
+                                </ns2:value>
+                            </ns2:items>
+                            <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0027">
+                                <ns2:name>
+                                    <ns2:value>URI - resource identifier</ns2:value>
+                                </ns2:name>
+                                <ns2:value xsi:type="ns2:DV_URI">
+                                    <ns2:value>http://example.com/path/resource</ns2:value>
+                                </ns2:value>
+                            </ns2:items>
+                            <ns2:items xsi:type="ns2:ELEMENT" archetype_node_id="at0044">
+                                <ns2:name>
+                                    <ns2:value>Identifier</ns2:value>
+                                </ns2:name>
+                                <ns2:value xsi:type="ns2:DV_IDENTIFIER">
+                                    <ns2:issuer>Issuer</ns2:issuer>
+                                    <ns2:assigner>Assigner</ns2:assigner>
+                                    <ns2:id>0ffc464a-d954-46f0-9f77-05ed6877ccf5</ns2:id>
+                                    <ns2:type>Prescription</ns2:type>
+                                </ns2:value>
+                            </ns2:items>
+                        </ns2:items>
+                    </ns2:data>
+                </ns2:events>
+            </ns2:data>
+        </ns2:items>
+    </ns2:content>
+</composition>

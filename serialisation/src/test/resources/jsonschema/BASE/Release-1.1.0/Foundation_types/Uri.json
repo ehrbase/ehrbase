@@ -1,0 +1,58 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/Uri.json",
+    "title": "Uri",
+    "$comments": "Defined in Foundation_types IM, inherits from String",
+    "type": "string",
+    "$inherits": [
+        "all.json#/definitions/String"
+    ],
+    "$functions": {
+        "infix <": {
+            "description": "Arithmetic comparison. In conjunction with \u2018=\u2019, enables the definition of the operators \u2018>\u2019, \u2018>=\u2019, \u2018<=\u2019, \u2018<>\u2019. In real type systems, this operator might be defined on another class for comparability.",
+            "parameters": {
+                "other": {
+                    "$ref": "all.json#/definitions/Ordered"
+                }
+            },
+            "required_parameters": [
+                "other"
+            ],
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "infix +": {
+            "description": "Concatenation operator - causes \u2018other\u2019 to be appended to this string.",
+            "parameters": {
+                "other": {
+                    "$ref": "all.json#/definitions/String"
+                }
+            },
+            "required_parameters": [
+                "other"
+            ],
+            "return": {
+                "$ref": "all.json#/definitions/String"
+            }
+        },
+        "is_empty": {
+            "description": "True if string is empty, i.e. equal to \"\".",
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "is_integer": {
+            "description": "True if string can be parsed as an integer.",
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "as_integer": {
+            "description": "Return the integer corresponding to the integer value represented in this string.",
+            "return": {
+                "$ref": "all.json#/definitions/Integer"
+            }
+        }
+    }
+}

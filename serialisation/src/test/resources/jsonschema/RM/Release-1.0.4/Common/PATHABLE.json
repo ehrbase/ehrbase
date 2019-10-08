@@ -1,0 +1,177 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Common/PATHABLE.json",
+    "title": "PATHABLE",
+    "description": "The PATHABLE class defines the pathing capabilities used by nearly all classes in the openEHR reference model, mostly via inheritance of LOCATABLE. The defining characteristics of PATHABLE objects are that they can locate child objects using paths, and they know their parent object in a compositional hierarchy. The parent feature is defined as abstract in the model, and may be implemented in any way convenient.",
+    "$comments": "Defined in Common IM, abstract",
+    "properties": {
+        "_type": {
+            "enum": [
+                "ISM_TRANSITION",
+                "INSTRUCTION_DETAILS",
+                "EVENT_CONTEXT",
+                "FOLDER",
+                "EHR_ACCESS",
+                "EHR_STATUS",
+                "EXTRACT",
+                "EXTRACT_ACTION_REQUEST",
+                "EXTRACT_CHAPTER",
+                "EXTRACT_REQUEST",
+                "CONTACT",
+                "ADDRESS",
+                "PARTY_IDENTITY",
+                "CAPABILITY",
+                "PARTY_RELATIONSHIP",
+                "ACTIVITY",
+                "COMPOSITION",
+                "HISTORY",
+                "ITEM_TREE",
+                "ITEM_SINGLE",
+                "ITEM_TABLE",
+                "ITEM_LIST",
+                "HISTORY<ITEM_STRUCTURE>",
+                "CLUSTER",
+                "ELEMENT",
+                "POINT_EVENT",
+                "INTERVAL_EVENT",
+                "EXTRACT_ENTITY_CHAPTER",
+                "EXTRACT_FOLDER",
+                "OPENEHR_CONTENT_ITEM",
+                "GENERIC_CONTENT_ITEM",
+                "ROLE",
+                "AGENT",
+                "ORGANISATION",
+                "GROUP",
+                "PERSON",
+                "GENERIC_ENTRY",
+                "SECTION",
+                "WORK_PLAN",
+                "TASK_PLAN",
+                "ADMIN_ENTRY",
+                "OBSERVATION",
+                "EVALUATION",
+                "ACTION",
+                "INSTRUCTION",
+                "TASK_GROUP",
+                "DISPATCHABLE_TASK",
+                "PERFORMABLE_TASK",
+                "DECISION_GROUP",
+                "CONDITION_GROUP",
+                "EVENT_GROUP",
+                "ADHOC_GROUP",
+                "DECISION_BRANCH",
+                "CONDITION_BRANCH",
+                "EVENT_BRANCH",
+                "ADHOC_BRANCH",
+                "HAND_OFF",
+                "EXTERNAL_REQUEST",
+                "SYSTEM_REQUEST",
+                "SUB_PLAN",
+                "DEFINED_ACTION",
+                "MANUAL_NOTIFICATION",
+                "TIMER_EVENT",
+                "CALLBACK_NOTIFICATION",
+                "STATE_TRIGGER",
+                "TASK_TRANSITION",
+                "TIMELINE_MOMENT",
+                "CALENDAR_EVENT",
+                "DELAY_EVENT",
+                "SYSTEM_NOTIFICATION"
+            ]
+        }
+    },
+    "required": [
+        "_type"
+    ],
+    "$abstract": true,
+    "$children": [
+        "all.json#/definitions/LOCATABLE",
+        "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Composition/all.json#/definitions/ISM_TRANSITION",
+        "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Composition/all.json#/definitions/INSTRUCTION_DETAILS",
+        "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Composition/all.json#/definitions/EVENT_CONTEXT"
+    ],
+    "$functions": {
+        "parent": {
+            "description": "Parent of this node in a compositional hierarchy. \n",
+            "return": {
+                "$ref": "all.json#/definitions/PATHABLE"
+            }
+        },
+        "item_at_path": {
+            "description": "The item at a path (relative to this item); only valid for unique paths, i.e. paths that resolve to a single item. ",
+            "parameters": {
+                "a_path": {
+                    "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/String"
+                }
+            },
+            "required_parameters": [
+                "a_path"
+            ],
+            "return": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/Any"
+            }
+        },
+        "items_at_path": {
+            "description": "List of items corresponding to a non-unique path.",
+            "parameters": {
+                "a_path": {
+                    "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/String"
+                }
+            },
+            "required_parameters": [
+                "a_path"
+            ],
+            "return": {
+                "type": "array",
+                "items": {
+                    "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/Any"
+                }
+            }
+        },
+        "path_exists": {
+            "description": "True if the path exists in the data with respect to the current item. ",
+            "parameters": {
+                "a_path": {
+                    "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/String"
+                }
+            },
+            "required_parameters": [
+                "a_path"
+            ],
+            "return": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/Boolean"
+            }
+        },
+        "path_unique": {
+            "description": "True if the path corresponds to a single item in the data. ",
+            "parameters": {
+                "a_path": {
+                    "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/String"
+                }
+            },
+            "required_parameters": [
+                "a_path"
+            ],
+            "return": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/Boolean"
+            }
+        },
+        "path_of_item": {
+            "description": "The path to an item relative to the root of this archetyped structure.",
+            "parameters": {
+                "a_loc": {
+                    "$ref": "all.json#/definitions/PATHABLE"
+                }
+            },
+            "required_parameters": [
+                "a_loc"
+            ],
+            "return": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/String"
+            }
+        }
+    },
+    "$invariants": {
+        "Pre": "path_exists (a_path)"
+    }
+}

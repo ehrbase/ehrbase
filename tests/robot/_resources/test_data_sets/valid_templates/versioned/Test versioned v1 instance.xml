@@ -1,0 +1,172 @@
+<version xmlns="http://schemas.openehr.org/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="ORIGINAL_VERSION">
+  <contribution>
+    <id xsi:type="HIER_OBJECT_ID">
+      <value>95c2e0dc-7883-41b5-a1b5-48a572171fcb</value>
+    </id>
+    <namespace>EHR::COMMON</namespace>
+    <type>CONTRIBUTION</type>
+  </contribution>
+  <commit_audit>
+    <system_id>CABOLABS_EHR</system_id>
+    <committer xsi:type="PARTY_IDENTIFIED">
+      <external_ref>
+        <id xsi:type="HIER_OBJECT_ID">
+          <value>8ff31f09-ceaa-4157-b347-e90dcd13ba5d</value>
+        </id>
+        <namespace>DEMOGRAPHIC</namespace>
+        <type>PERSON</type>
+      </external_ref>
+      <name>Dr. Yamamoto</name>
+    </committer>
+    <time_committed>
+      <value>20190128T224243,598+0000</value>
+    </time_committed>
+    <change_type>
+      <value>creation</value>
+      <defining_code>
+        <terminology_id>
+          <value>openehr</value>
+        </terminology_id>
+        <code_string>249</code_string>
+      </defining_code>
+    </change_type>
+  </commit_audit>
+  <uid>
+    <value>d4479c4e-51aa-4912-acdb-b803d5ec4000::EMR_APP::1</value>
+  </uid>
+  <data xsi:type="COMPOSITION" archetype_node_id="openEHR-EHR-COMPOSITION.test_versioned.v1">
+    <name>
+      <value>Test versioned</value>
+    </name>
+    <archetype_details>
+      <archetype_id>
+        <value>openEHR-EHR-COMPOSITION.test_versioned.v1</value>
+      </archetype_id>
+      <template_id>
+        <value>test_versioned.en.v1</value>
+      </template_id>
+      <rm_version>1.0.2</rm_version>
+    </archetype_details>
+    <language>
+      <terminology_id>
+        <value>ISO_639-1</value>
+      </terminology_id>
+      <code_string>en</code_string>
+    </language>
+    <territory>
+      <terminology_id>
+        <value>ISO_3166-1</value>
+      </terminology_id>
+      <code_string>UY</code_string>
+    </territory>
+    <category>
+      <value>event</value>
+      <defining_code>
+        <terminology_id>
+          <value>openehr</value>
+        </terminology_id>
+        <code_string>433</code_string>
+      </defining_code>
+    </category>
+    <composer xsi:type="PARTY_IDENTIFIED">
+      <external_ref>
+        <id xsi:type="HIER_OBJECT_ID">
+          <value>64820457-e05f-432a-a323-90f2f6e4f59d</value>
+        </id>
+        <namespace>DEMOGRAPHIC</namespace>
+        <type>PERSON</type>
+      </external_ref>
+      <name>Dr. Yamamoto</name>
+    </composer>
+    <context>
+      <start_time>
+        <value>20190128T224243,656+0000</value>
+      </start_time>
+      <setting>
+        <value>Hospital B</value>
+        <defining_code>
+          <terminology_id>
+            <value>openehr</value>
+          </terminology_id>
+          <code_string>229</code_string>
+        </defining_code>
+      </setting>
+    </context>
+    <content archetype_node_id="openEHR-EHR-OBSERVATION.blood_pressure.v2" xsi:type="OBSERVATION">
+      <name>
+        <value>Blood pressure</value>
+      </name>
+      <language>
+        <terminology_id>
+          <value>ISO_639-1</value>
+        </terminology_id>
+        <code_string>en</code_string>
+      </language>
+      <encoding>
+        <terminology_id>
+          <value>Unicode</value>
+        </terminology_id>
+        <code_string>UTF-8</code_string>
+      </encoding>
+      <subject xsi:type="PARTY_SELF" />
+      <protocol archetype_node_id="at0011" xsi:type="ITEM_TREE">
+        <name>
+          <value>Tree</value>
+        </name><!-- SLOT IN /protocol[at0011]/items[at1057] NOT PROCESSED --><!-- SLOT IN /protocol[at0011]/items[at1025] NOT PROCESSED --><!-- SLOT IN /protocol[at0011]/items[at1058] NOT PROCESSED -->
+      </protocol>
+      <data archetype_node_id="at0001" xsi:type="HISTORY">
+        <name>
+          <value>History</value>
+        </name>
+        <origin xsi:type="DV_DATE_TIME">
+          <value>20190128T224243,753+0000</value>
+        </origin>
+        <events archetype_node_id="at0006" xsi:type="POINT_EVENT">
+          <name>
+            <value>Any event</value>
+          </name>
+          <time xsi:type="DV_DATE_TIME">
+            <value>20190128T224243,760+0000</value>
+          </time>
+          <data archetype_node_id="at0003" xsi:type="ITEM_TREE">
+            <name>
+              <value>blood pressure</value>
+            </name>
+            <items archetype_node_id="at0004" xsi:type="ELEMENT">
+              <name>
+                <value>Systolic</value>
+              </name>
+              <value xsi:type="DV_QUANTITY">
+                <magnitude>479.2898893356323</magnitude>
+                <units>mm[Hg]</units>
+              </value>
+            </items>
+            <items archetype_node_id="at0005" xsi:type="ELEMENT">
+              <name>
+                <value>Diastolic</value>
+              </name>
+              <value xsi:type="DV_QUANTITY">
+                <magnitude>983.6827516555786</magnitude>
+                <units>mm[Hg]</units>
+              </value>
+            </items>
+          </data>
+          <state archetype_node_id="at0007" xsi:type="ITEM_TREE">
+            <name>
+              <value>state structure</value>
+            </name><!-- SLOT IN /data[at0001]/events[at0006]/state[at0007]/items[at1030] NOT PROCESSED -->
+          </state>
+        </events>
+      </data>
+    </content>
+  </data>
+  <lifecycle_state>
+    <value>complete</value>
+    <defining_code>
+      <terminology_id>
+        <value>openehr</value>
+      </terminology_id>
+      <code_string>532</code_string>
+    </defining_code>
+  </lifecycle_state>
+</version>

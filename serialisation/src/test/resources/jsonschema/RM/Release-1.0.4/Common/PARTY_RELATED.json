@@ -1,0 +1,41 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Common/PARTY_RELATED.json",
+    "title": "PARTY_RELATED",
+    "description": "Proxy type for identifying a party and its relationship to the subject of the record. Use where the relationship between the party and the subject of the record must be known. ",
+    "$comments": "Defined in Common IM, inherits from PARTY_IDENTIFIED",
+    "type": "object",
+    "properties": {
+        "external_ref": {
+            "description": "Optional reference to more detailed demographic or identification information for this party, in an external system. ",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Base_types/all.json#/definitions/PARTY_REF"
+        },
+        "name": {
+            "description": "Optional human-readable name (in String form).",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/String"
+        },
+        "identifiers": {
+            "description": "One or more formal identifiers (possibly computable). \n",
+            "type": "array",
+            "items": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_types/all.json#/definitions/DV_IDENTIFIER"
+            }
+        },
+        "relationship": {
+            "description": "Relationship of subject of this ENTRY to the subject of the record. May be coded. If it is the patient, coded as  self. ",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_types/all.json#/definitions/DV_CODED_TEXT"
+        }
+    },
+    "required": [
+        "relationship"
+    ],
+    "$inherits": [
+        "all.json#/definitions/PARTY_IDENTIFIED"
+    ],
+    "$invariants": {
+        "Basic_validity": "name /= Void or identifiers /= Void or external_ref /= Void",
+        "Name_valid": "name /= Void implies not name.is_empty",
+        "Identifiers_valid": "identifiers /= Void implies not identifiers.is_empty",
+        "Relationship_valid": "terminology (Terminology_id_openehr).has_code_for_group_id (Group_id_subject_relationship, relationship.defining_code)"
+    }
+}

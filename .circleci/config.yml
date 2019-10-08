@@ -1,0 +1,827 @@
+version: 2.1
+
+# Copyright (c) 2019 Wladislaw Wagner (Vitasystems GmbH).
+# This file is part of Project EHRbase
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on a, Pablo Pazosn Vitasystems GmbHS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+
+#   88888888888  88        88  88888888ba   88888888ba         db         ad88888ba   88888888888
+#   88           88        88  88      "8b  88      "8b       d88b       d8"     "8b  88
+#   88           88        88  88      ,8P  88      ,8P      d8'`8b      Y8,          88
+#   88aaaaa      88aaaaaaaa88  88aaaaaa8P'  88aaaaaa8P'     d8'  `8b     `Y8aaaaa,    88aaaaa
+#   88"""""      88""""""""88  88""""88'    88""""""8b,    d8YaaaaY8b      `"""""8b,  88"""""
+#   88           88        88  88    `8b    88      `8b   d8""""""""8b           `8b  88
+#   88           88        88  88     `8b   88      a8P  d8'        `8b  Y8a     a8P  88
+#   88888888888  88        88  88      `8b  88888888P"  d8'          `8b  "Y88888P"   88888888888
+
+
+workflows:
+  git-flow:
+    jobs:
+      - build-artifacts:
+          context: org-global
+          filters:
+            branches:
+              only:
+                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+
+      - dependency-check:
+          context: org-global
+          requires:
+            - build-artifacts
+          filters:
+            branches:
+              only:
+                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+
+      - unit-tests:
+          context: org-global
+          filters:
+            branches:
+              only:
+                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+
+      - integration-tests:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              only:
+                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+          post-steps:
+            - provide-test-status-report-via-slack
+
+      - deploy-snapshot-artifact:
+          context: org-global
+          requires:
+            - unit-tests
+            - integration-tests
+          filters:
+            branches:
+              only:
+                - /^(release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+)$/
+
+      - deploy-release-artifact:
+          context: org-global
+          requires:
+            - unit-tests
+            - integration-tests
+          filters:
+            branches:
+              only:
+                - /^(master)$/
+
+      - sonar-analysis:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+            - integration-tests
+            - dependency-check
+          filters:
+            branches:
+              only:
+                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+
+
+
+
+
+jobs:
+#           88    ,ad8888ba,    88888888ba    ad88888ba
+#           88   d8"'    `"8b   88      "8b  d8"     "8b
+#           88  d8'        `8b  88      ,8P  Y8,
+#           88  88          88  88aaaaaa8P'  `Y8aaaaa,
+#           88  88          88  88""""""8b,    `"""""8b,
+#           88  Y8,        ,8P  88      `8b          `8b
+#   88,   ,d88   Y8a.    .a8P   88      a8P  Y8a     a8P
+#    "Y8888P"     `"Y8888Y"'    88888888P"    "Y88888P"
+
+  build-artifacts:
+    machine:
+      image: circleci/classic:201808-01
+    steps:
+      - configure-python-version
+      - checkout
+      - restore-build-artifacts-job-caches
+      - setup-database
+      - setup-maven-environment
+      - maven-package
+      - persist-target-folder
+      - save-build-artifacts-job-caches
+
+  dependency-check:
+    machine:
+      image: circleci/classic:201808-01
+    steps:
+      - configure-python-version
+      - checkout
+      - attach_workspace:
+          at: /home/circleci
+      - restore-dependency-check-job-caches
+      - run-dependency-check
+      - persist-dependency-check-results
+      - save-dependency-check-job-caches
+
+  unit-tests:
+    machine:
+      image: circleci/classic:201808-01
+    steps:
+      - configure-python-version
+      - checkout
+      - restore-unit-tests-job-caches
+      - setup-database
+      - setup-maven-environment
+      - maven-test
+      - save-unit-tests-job-caches
+      # - persist-unit-test-coverage
+
+  integration-tests:
+    machine:
+      image: ubuntu-1604:201903-01
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    steps:
+      - configure-python-version
+      - checkout
+      - restore-integration-tests-job-caches
+      - setup-jacoco-distribution
+      - attach-target-folder
+      - install-python-requirements
+      - run-integration-tests
+      # - collect-integration-coverage
+      - persist-integration-test-coverage
+      - save-integration-tests-job-caches
+
+  sonar-analysis:
+    machine:
+      image: circleci/classic:201808-01
+    steps:
+      - configure-python-version
+      - checkout
+      - attach_workspace:
+          at: /home/circleci
+      - restore-sonar-analysis-job-caches
+      - run-sonar-analysis
+      - save-sonar-analysis-job-caches
+
+  deploy-snapshot-artifact:
+    docker:
+      - image: circleci/openjdk:8-jdk
+      - image: ehrbaseorg/ehrbase-database-docker:11.5
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+    environment:
+      POSTGRES_DB_URL: postgresql://postgres@localhost/postgres
+      ETHERCIS_DB_URL: postgresql://postgres@localhost/ehrbase
+    steps:
+      - checkout
+      - restore-caches
+      - verify-version-is-snapshot
+      - setup-maven-environment
+      - deploy-maven-artifacts
+      - save-caches
+
+  deploy-release-artifact:
+    docker:
+      - image: circleci/openjdk:8-jdk
+      - image: ehrbase/ehrbase-database-docker:11.5
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+    environment:
+      POSTGRES_DB_URL: postgresql://postgres@localhost/postgres
+      ETHERCIS_DB_URL: postgresql://postgres@localhost/ehrbase
+    steps:
+      - checkout
+      - restore-caches
+      - verify-version-is-not-snapshot
+      - setup-maven-environment
+      - deploy-maven-artifacts
+      - save-caches
+
+
+
+
+
+commands:
+#     ,ad8888ba,    ,ad8888ba,    88b           d88  88b           d88         db         888b      88  88888888ba,     ad88888ba
+#    d8"'    `"8b  d8"'    `"8b   888b         d888  888b         d888        d88b        8888b     88  88      `"8b   d8"     "8b
+#   d8'           d8'        `8b  88`8b       d8'88  88`8b       d8'88       d8'`8b       88 `8b    88  88        `8b  Y8,
+#   88            88          88  88 `8b     d8' 88  88 `8b     d8' 88      d8'  `8b      88  `8b   88  88         88  `Y8aaaaa,
+#   88            88          88  88  `8b   d8'  88  88  `8b   d8'  88     d8YaaaaY8b     88   `8b  88  88         88    `"""""8b,
+#   Y8,           Y8,        ,8P  88   `8b d8'   88  88   `8b d8'   88    d8""""""""8b    88    `8b 88  88         8P          `8b
+#    Y8a.    .a8P  Y8a.    .a8P   88    `888'    88  88    `888'    88   d8'        `8b   88     `8888  88      .a8P   Y8a     a8P
+#     `"Y8888Y"'    `"Y8888Y"'    88     `8'     88  88     `8'     88  d8'          `8b  88      `888  88888888Y"'     "Y88888P"
+#                            88
+#                            88                         ,d             ,d                             ,d
+#                            88                         88             88                             88
+#   8b,dPPYba,   ,adPPYba,   88,dPPYba,    ,adPPYba,  MM88MMM        MM88MMM  ,adPPYba,  ,adPPYba,  MM88MMM  ,adPPYba,
+#   88P'   "Y8  a8"     "8a  88P'    "8a  a8"     "8a   88             88    a8P_____88  I8[    ""    88     I8[    ""
+#   88          8b       d8  88       d8  8b       d8   88             88    8PP"""""""   `"Y8ba,     88      `"Y8ba,
+#   88          "8a,   ,a8"  88b,   ,a8"  "8a,   ,a8"   88,            88,   "8b,   ,aa  aa    ]8I    88,    aa    ]8I
+#   88           `"YbbdP"'   8Y"Ybbd8"'    `"YbbdP"'    "Y888          "Y888  `"Ybbd8"'  `"YbbdP"'    "Y888  `"YbbdP"'
+#
+
+  run-integration-tests:
+    description: Run integration tests
+    steps:
+        - run:
+            name: Run integration tests with coverage
+            command: |
+                cd tests
+                robot -d results --console dotted --noncritical not-ready -L TRACE \
+                      -e obsolete \
+                      -e EHRSCAPE \
+                      --xunit junit-output.xml --xunitskipnoncritical \
+                      -v CODE_COVERAGE:True \
+                      -v JACOCO_LIB_PATH:/home/circleci/jacoco-0.8.2/lib \
+                      -v COVERAGE_DIR:/home/circleci/project/application/target robot/
+
+
+  set-slack-build-status:
+    description: Set status env at the end of a job based on success or failure.
+    steps:
+        - run:
+            name: Slack - Setting Failure Condition
+            when: on_fail
+            command: |
+                echo 'export SLACK_BUILD_STATUS="FAIL"' >> $BASH_ENV
+        - run:
+            when: on_success
+            name: Slack - Setting Success Condition
+            command: |
+              echo 'export SLACK_BUILD_STATUS="PASS"' >> $BASH_ENV
+
+
+  provide-test-status-report-via-slack:
+    description: Generates an integration test status report and sends it to our Slack channel
+    steps:
+        - set-slack-build-status
+        - run:
+            name: Download and install Chrome and Chromedriver
+            when: always
+            command: |
+                mkdir -p ~/downloads/chrome
+                cd ~/downloads/chrome
+                sudo killall -9 apt-get || true && \
+                sudo apt-get update && \
+                sudo apt-get install -f lsb-release libappindicator3-1
+                [ -e google-chrome.deb ] || curl -L -o google-chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+                sudo dpkg --configure -a
+                sudo dpkg -i google-chrome.deb
+                sudo sed -i 's|HERE/chrome"|HERE/chrome" --no-sandbox|g' /opt/google/chrome/google-chrome
+                rm google-chrome.deb
+                CHROME_VERSION=$(google-chrome --version | sed -r 's/[^0-9]+([0-9]+\.[0-9]+\.[0-9]+).*/\1/g')
+                CHROMEDRIVER_VERSION=$(curl -s https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION)
+                [ -e chromedriver_linux64.zip ] || wget https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip
+                unzip chromedriver_linux64.zip
+                sudo mv chromedriver /usr/local/bin/chromedriver
+                sudo chown root:root /usr/local/bin/chromedriver
+                sudo chmod +x /usr/local/bin/chromedriver
+        - run:
+            name: Check Browser Versions
+            when: always
+            command: |
+                which chromedriver
+                chromedriver --version
+                google-chrome --version
+        - run:
+            name: Generate and Send  Test Report To Slack Channel
+            when: always
+            command: |
+                cd tests
+                cp robot/_resources/status_report.robot  results/status_report.robot
+                cp robot/_resources/slack-message.json  results/slack-message.json
+                cp robot/_resources/logo.jpg results/logo.jpg
+                cd results
+                robot -d trash --output NONE --log NONE --noncritical chill status_report.robot
+        - store_test_results:
+            path: ~/project/tests/results/
+        - store_artifacts:
+            path: ~/project/tests/results/
+
+
+
+#                                                 88                 ad88
+#     ,d                             ,d           ""                d8"
+#     88                             88                             88
+#   MM88MMM  ,adPPYba,  ,adPPYba,  MM88MMM        88  8b,dPPYba,  MM88MMM  8b,dPPYba,  ,adPPYYba,
+#     88    a8P_____88  I8[    ""    88           88  88P'   `"8a   88     88P'   "Y8  ""     `Y8
+#     88    8PP"""""""   `"Y8ba,     88           88  88       88   88     88          ,adPPPPP88
+#     88,   "8b,   ,aa  aa    ]8I    88,          88  88       88   88     88          88,    ,88
+#     "Y888  `"Ybbd8"'  `"YbbdP"'    "Y888        88  88       88   88     88          `"8bbdP"Y8
+#
+
+  configure-python-version:
+    description: Configure Python version to 3.7.0
+    steps:
+      - run:
+          name: Configure Python version to 3.7.0
+          command: |
+            pyenv global 3.7.0
+
+
+  install-python-requirements:
+    description: Install Python requirements
+    steps:
+      - run:
+          name: Install Python requirements
+          command: |
+            python -c "import site; print(site.getsitepackages())"
+            pip install -r ~/project/tests/requirements.txt
+
+
+  setup-database:
+    description: Setup ehrbase database
+    steps:
+      - run:
+          name: Setup database
+          command: |
+            docker run --name ehrdb -e POSTGRES_USER=$POSTGRES_USER \
+            -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD -d \
+            -p 5432:5432 ehrbaseorg/ehrbase-database-docker
+
+
+  setup-file-repo:
+    description: Setup file repo
+    steps:
+      - run:
+          name: Unzip provided file repo
+          command: |
+            unzip ~/project/.circleci/file_repo_content.zip -d ~/project
+
+
+  setup-jacoco-distribution:
+    description: Download and unzip Jacoco distribution
+    steps:
+      - run:
+          name: Download and unzip Jacoco disribution
+          command: |
+            mkdir -p ~/download
+            cd ~/download
+            [ -e jacoco-0.8.2.zip ] || wget https://repo1.maven.org/maven2/org/jacoco/jacoco/0.8.2/jacoco-0.8.2.zip
+            mkdir -p ~/jacoco-0.8.2
+            unzip -uo jacoco-0.8.2.zip -d ~/jacoco-0.8.2
+
+
+  collect-integration-coverage:
+    description: Collect integration test coverage
+    steps:
+      - run:
+          name: Collect integration test coverage
+          command: |
+            java -jar ~/jacoco-0.8.2/lib/jacococli.jar dump \
+              --destfile=/home/circleci/project/application/target/jacoco-it.exec
+
+
+#                             88
+#                             ""    ,d             ,d                             ,d
+#                                   88             88                             88
+#   88       88  8b,dPPYba,   88  MM88MMM        MM88MMM  ,adPPYba,  ,adPPYba,  MM88MMM  ,adPPYba,
+#   88       88  88P'   `"8a  88    88             88    a8P_____88  I8[    ""    88     I8[    ""
+#   88       88  88       88  88    88             88    8PP"""""""   `"Y8ba,     88      `"Y8ba,
+#   "8a,   ,a88  88       88  88    88,            88,   "8b,   ,aa  aa    ]8I    88,    aa    ]8I
+#    `"YbbdP'Y8  88       88  88    "Y888          "Y888  `"Ybbd8"'  `"YbbdP"'    "Y888  `"YbbdP"'
+#
+
+  maven-test:
+    description: Test Maven app
+    steps:
+      - run:
+          name: Test Maven app
+          command: |
+            cd ~/project
+            mvn org.jacoco:jacoco-maven-plugin:0.8.2:prepare-agent test \
+                org.jacoco:jacoco-maven-plugin:0.8.2:report
+
+  persist-unit-test-coverage:
+    description: Persist unit test coverage report to workspace
+    steps:
+      - persist_to_workspace:
+          root: /home/circleci
+          paths:
+            - project/application/target/jacoco.exec
+
+
+  save-unit-tests-job-caches:
+    description: Save all caches in unit tests job
+    steps:
+      - save_cache:
+          key: job-unit-tests-v1-mvn-dependencies-{{ checksum "~/project/pom.xml" }}
+          paths:
+            - ~/.m2/repository
+
+  restore-unit-tests-job-caches:
+    description: Restore all caches in unit tests job
+    steps:
+      - restore_cache:
+          keys:
+            - job-unit-tests-v1-mvn-dependencies-{{ checksum "~/project/pom.xml" }}
+            - job-unit-tests-v1-mvn-dependencies
+
+
+#
+#
+#
+#   88,dPYba,,adPYba,   ,adPPYYba,  8b       d8   ,adPPYba,  8b,dPPYba,
+#   88P'   "88"    "8a  ""     `Y8  `8b     d8'  a8P_____88  88P'   `"8a
+#   88      88      88  ,adPPPPP88   `8b   d8'   8PP"""""""  88       88
+#   88      88      88  88,    ,88    `8b,d8'    "8b,   ,aa  88       88
+#   88      88      88  `"8bbdP"Y8      "8"       `"Ybbd8"'  88       88
+#
+
+  setup-maven-environment:
+    description: Setup access to private Maven repositories and install local dependencies
+    steps:
+      - run:
+          name: Install provided settings.xml
+          command: |
+            mkdir -p ~/.m2
+            cp ~/project/.circleci/settings.xml ~/.m2/
+
+
+  maven-package:
+    description: Package Maven app
+    steps:
+      - run:
+          name: Package Maven app
+          command: |
+            cd ~/project
+            mvn package -DskipTests
+
+
+  deploy-maven-artifacts:
+    description: Deploy Maven artifacts to their respective repositories
+    steps:
+      - run:
+          name: Build and deploy Maven artifacts
+          command: |
+            cd ~/project
+            mvn deploy
+
+
+#                           88
+#                           88
+#                           88
+#   8b,dPPYba,   ,adPPYba,  88   ,adPPYba,  ,adPPYYba,  ,adPPYba,   ,adPPYba,
+#   88P'   "Y8  a8P_____88  88  a8P_____88  ""     `Y8  I8[    ""  a8P_____88
+#   88          8PP"""""""  88  8PP"""""""  ,adPPPPP88   `"Y8ba,   8PP"""""""
+#   88          "8b,   ,aa  88  "8b,   ,aa  88,    ,88  aa    ]8I  "8b,   ,aa
+#   88           `"Ybbd8"'  88   `"Ybbd8"'  `"8bbdP"Y8  `"YbbdP"'   `"Ybbd8"'
+#
+
+  verify-version-is-snapshot:
+    description: Verify current version is a snapshot
+    steps:
+      - run:
+          name: Verify version is snapshot
+          command: |
+            chmod 744 ~/project/.circleci/verify_and_return_version.sh
+            chmod 744 ~/project/.circleci/fail_if_not_snapshot.sh
+            ~/project/.circleci/fail_if_not_snapshot.sh
+      - run:
+          name: Alert developers to non-snapshot version on release branch
+          when: on_fail
+          command: |
+            echo "Warning: non-snapshot version detected, no artifact will be deployed."
+
+
+  verify-version-is-not-snapshot:
+    description: Verify current version is not a snapshot
+    steps:
+      - run:
+          name: Verify version is not snapshot
+          command: |
+            chmod 744 ~/project/.circleci/verify_and_return_version.sh
+            chmod 744 ~/project/.circleci/fail_if_snapshot.sh
+            ~/project/.circleci/fail_if_snapshot.sh
+      - run:
+          name: Alert developers to snapshot version on master branch
+          when: on_fail
+          command: |
+            echo "Warning: snapshot version detected, no artifact will be deployed."
+
+
+#
+#
+#
+#   ,adPPYba,   ,adPPYba,   8b,dPPYba,   ,adPPYYba,  8b,dPPYba,
+#   I8[    ""  a8"     "8a  88P'   `"8a  ""     `Y8  88P'   "Y8
+#    `"Y8ba,   8b       d8  88       88  ,adPPPPP88  88
+#   aa    ]8I  "8a,   ,a8"  88       88  88,    ,88  88
+#   `"YbbdP"'   `"YbbdP"'   88       88  `"8bbdP"Y8  88
+#
+
+  run-sonar-analysis:
+    description: Run Sonar analysis
+    steps:
+      - run:
+          name: Install sonar scanner
+          command: |
+            mkdir -p ~/downloads
+            cd ~/downloads
+            [ -e sonar-scanner-cli-3.3.0.1492-linux.zip ] || wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.3.0.1492-linux.zip
+            unzip -uo sonar-scanner-cli-3.3.0.1492-linux.zip -d ~
+      - run:
+          name: Excecute Sonar analysis
+          command: |
+            ~/sonar-scanner-3.3.0.1492-linux/bin/sonar-scanner \
+            -Dsonar.login=$SONARCLOUD_TOKEN \
+            -Dsonar.branch.name=$CIRCLE_BRANCH \
+            -Dsonar.branch.target=$(python ~/project/.circleci/get_target_branch.py) \
+            -Dsonar.projectVersion=$(python ~/project/.circleci/verify_and_return_version.py)
+
+
+  run-dependency-check:
+    description: Run dependency vulnerability analysis
+    steps:
+      - run:
+          name: Install dependency check
+          command: |
+            mkdir -p ~/downloads
+            cd ~/downloads
+            [ -e dependency-check-5.2.2-release.zip ] || wget https://dl.bintray.com/jeremy-long/owasp/dependency-check-5.2.2-release.zip
+            mkdir -p ~/dependency_check
+            unzip -uo dependency-check*.zip -d ~
+      - run:
+          name: Run dependency vulnerability analysis
+          command: |
+            cd ~/project
+            ~/dependency-check/bin/dependency-check.sh --noupdate \
+                --project "EtherCis" --format JSON \
+                -o vulnerability_analysis.json --scan .
+      - run:
+          name: Convert vulnerability analysis to sonar issues
+          command: |
+            pyenv global 3.7.0
+            python ~/project/.circleci/convert_vulnerability_analysis.py \
+                ~/project/vulnerability_analysis.json \
+                ~/project/sonar_issues.json \
+                application/src/main/java/com/ethercis/application/HipOpenEhr.java
+
+
+#                                                88
+#                                                88
+#                                                88
+#   8b      db      d8   ,adPPYba,   8b,dPPYba,  88   ,d8   ,adPPYba,  8b,dPPYba,   ,adPPYYba,   ,adPPYba,   ,adPPYba,
+#   `8b    d88b    d8'  a8"     "8a  88P'   "Y8  88 ,a8"    I8[    ""  88P'    "8a  ""     `Y8  a8"     ""  a8P_____88
+#    `8b  d8'`8b  d8'   8b       d8  88          8888[       `"Y8ba,   88       d8  ,adPPPPP88  8b          8PP"""""""
+#     `8bd8'  `8bd8'    "8a,   ,a8"  88          88`"Yba,   aa    ]8I  88b,   ,a8"  88,    ,88  "8a,   ,aa  "8b,   ,aa
+#       YP      YP       `"YbbdP"'   88          88   `Y8a  `"YbbdP"'  88`YbbdP"'   `"8bbdP"Y8   `"Ybbd8"'   `"Ybbd8"'
+#                                                                      88
+#                                                                      88
+
+  persist-tests-folder:
+    description: Persist Robot tests folder to workspace
+    steps:
+      - persist_to_workspace:
+          root: /home/circleci
+          paths:
+            - project/tests
+
+  attach-tests-folder:
+    description: Attach Robot tests folder back to workspace
+    steps:
+      - attach_workspace:
+          at: /home/circleci
+
+
+  persist-integration-test-coverage:
+      description: Persist integration test coverage report to workspace
+      steps:
+        - persist_to_workspace:
+            root: /home/circleci
+            paths:
+              - project/application/target/jacoco-it.exec
+
+
+  persist-target-folder:
+    description: Persist target folder to workspace
+    steps:
+      - persist_to_workspace:
+          root: /home/circleci
+          paths:
+            - project/application/target
+
+  attach-target-folder:
+    description: Attach target folder back to workspace
+    steps:
+      - attach_workspace:
+          at: /home/circleci
+
+
+  persist-dependency-check-results:
+    description: Persist dependency check results
+    steps:
+      - persist_to_workspace:
+          root: /home/circleci
+          paths:
+            - project/sonar_issues.json
+
+
+
+#                                           88
+#                                           88
+#                                           88
+#        ,adPPYba,  ,adPPYYba,   ,adPPYba,  88,dPPYba,    ,adPPYba,
+#       a8"     ""  ""     `Y8  a8"     ""  88P'    "8a  a8P_____88
+#       8b          ,adPPPPP88  8b          88       88  8PP"""""""
+#       "8a,   ,aa  88,    ,88  "8a,   ,aa  88       88  "8b,   ,aa
+#        `"Ybbd8"'  `"8bbdP"Y8   `"Ybbd8"'  88       88   `"Ybbd8"'
+#
+
+  save-integration-tests-job-caches:
+    description: Save all caches in interation tests job
+    steps:
+        - save_cache:
+            key: job-integration-tests-v1-download-0.8.2
+            paths:
+                - ~/downloads
+        - save_cache:
+            key: job-integration-tests-v1-installation-0.8.2
+            paths:
+                - ~/jacoco-0.8.2
+        - save_cache:
+            key: job-integration-tests-v2-pip-{{ checksum "~/project/tests/requirements.txt" }}
+            paths:
+                - ~/.cache/pip
+                # - /opt/circleci/.pyenv/versions/3.7.0/lib/python3.7/site-packages
+        - save_cache:
+             key: google-chrome-incl-webdriver-75
+             paths:
+               - ~/downloads/chrome
+
+  restore-integration-tests-job-caches:
+    description: Restore all caches in interation tests job
+    steps:
+      - restore_cache:
+          keys:
+            - job-integration-tests-v1-download-0.8.2
+      - restore_cache:
+          keys:
+            - job-integration-tests-v1-installation-0.8.2
+      - restore_cache:
+          keys:
+            - job-integration-tests-v2-pip-{{ checksum "~/project/tests/requirements.txt" }}
+      - restore_cache:
+          keys: google-chrome-incl-webdriver-
+
+
+  save-dependency-check-job-caches:
+    description: Save all caches in dependency check job
+    steps:
+      - save_cache:
+          key: job-dependency-check-v1-download-5.2.2
+          paths:
+            - ~/downloads
+      - save_cache:
+          key: job-dependency-check-v1-installation-and-database-{{ epoch }}
+          paths:
+            - ~/dependency-check
+
+  restore-dependency-check-job-caches:
+    description: Restore all caches in dependency check job
+    steps:
+      - restore_cache:
+          keys:
+            - job-dependency-check-v1-download-5.2.2
+      - restore_cache:
+          keys:
+            - job-dependency-check-v1-installation-and-database
+
+
+  save-build-artifacts-job-caches:
+      description: Save all caches in building artifacts job
+      steps:
+        - save_cache:
+            key: job-build-artifacts-v1-mvn-dependencies-{{ checksum "~/project/pom.xml" }}
+            paths:
+              - ~/.m2/repository
+
+  restore-build-artifacts-job-caches:
+    description: Restore all caches in building artifacts job
+    steps:
+      - restore_cache:
+          keys:
+            - job-build-artifacts-v1-mvn-dependencies-{{ checksum "~/project/pom.xml" }}
+            - job-build-artifacts-v1-mvn-dependencies
+
+
+  save-sonar-analysis-job-caches:
+    description: Save all caches in dependency check job
+    steps:
+      - save_cache:
+          key: job-sonar-analysis-v1-download-3.3.0.1492
+          paths:
+            - ~/downloads
+      - save_cache:
+          key: job-sonar-analysis-v1-installation-3.3.0.1492
+          paths:
+            - ~/sonar-scanner-3.3.0.1492-linux
+      - save_cache:
+          key: job-sonar-analysis-v1-scannerwork-{{ epoch }}
+          paths:
+            - ~/project/.scannerwork
+      - save_cache:
+          key: job-sonar-analysis-v1-user-cache-{{ epoch }}
+          paths:
+            - ~/.sonar/cache
+
+  restore-sonar-analysis-job-caches:
+    description: Restore all caches in dependency check job
+    steps:
+      - restore_cache:
+          keys:
+            - job-sonar-analysis-v1-download-3.3.0.1492
+      - restore_cache:
+          keys:
+            - job-sonar-analysis-v1-installation-3.3.0.1492
+      - restore_cache:
+          keys:
+            - job-sonar-analysis-v1-scannerwork
+      - restore_cache:
+          keys:
+            - job-sonar-analysis-v1-user-cache
+
+
+  save-caches:
+    description: Save all caches
+    steps:
+      - save_cache:
+          paths:
+            - ~/.m2/repository
+          key: v1-mvn-dependencies-{{ checksum "pom.xml" }}
+
+      - save_cache:
+          paths:
+            - ~/dependency-check
+          key: v1-dependency-check-{{ epoch }}
+
+  restore-caches:
+    description: Restore all caches
+    steps:
+      - restore_cache:
+          keys:
+            - v1-mvn-dependencies-{{ checksum "pom.xml" }}
+            - v1-mvn-dependencies-
+      - restore_cache:
+          keys:
+            - v1-dependency-check-
+
+
+
+
+
+#   ██████╗  █████╗  ██████╗██╗  ██╗██╗   ██╗██████╗
+#   ██╔══██╗██╔══██╗██╔════╝██║ ██╔╝██║   ██║██╔══██╗
+#   ██████╔╝███████║██║     █████╔╝ ██║   ██║██████╔╝
+#   ██╔══██╗██╔══██║██║     ██╔═██╗ ██║   ██║██╔═══╝
+#   ██████╔╝██║  ██║╚██████╗██║  ██╗╚██████╔╝██║
+#   ╚═════╝ ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝ ╚═════╝ ╚═╝
+#
+#   [ BACKUP ]
+
+  # upload-test-status-report-to-slack:
+  #   description: Uploads status report to Slack
+  #   steps:
+  #       - run:
+  #           name: Upload test status report to Slack
+  #           command: |
+  #               curl -F file=@/home/circleci/project/tests/results/test-status-report.png \
+  #                    -F channels=playground \
+  #                    -F title="${CIRCLE_PROJECT_REPONAME} TEST STATUS | ${CIRCLE_BRANCH}"  \
+  #                    -H "Authorization: Bearer xoxp-701547379457-696494594291-710681511959-9c9a861be3770efdd4f8637a076bf8c8" \
+  #                    https://slack.com/api/files.upload
+
+
+  # save-chrome-and-chromedirver-download-cache:
+  #   description: Save Google Chrome and chromedriver download to cache
+  #   steps:
+  #     - save_cache:
+  #         key: google-chrome-incl-webdriver-{{ $CHROME_VERSION }}
+  #         paths:
+  #           - ~/downloads/chrome
+  #
+  #
+  # restore-chrome-and-chromedirver-download-cache:
+  #   description: Restore Google Chrome and chromedriver download from cache
+  #   steps:
+  #     - restore_cache:
+  #         key: google-chrome-incl-webdriver-

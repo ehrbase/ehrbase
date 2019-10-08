@@ -1,0 +1,12 @@
+<xml-fragment xsi:type="C_COMPLEX_OBJECT" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:v1="http://schemas.openehr.org/v1">
+  <v1:rm_type_name>DV_DURATION</v1:rm_type_name>
+  <v1:occurrences>
+    <v1:lower_included>true</v1:lower_included>
+    <v1:upper_included>true</v1:upper_included>
+    <v1:lower_unbounded>false</v1:lower_unbounded>
+    <v1:upper_unbounded>false</v1:upper_unbounded>
+    <v1:lower>1</v1:lower>
+    <v1:upper>1</v1:upper>
+  </v1:occurrences>
+  <v1:node_id/>
+</xml-fragment>

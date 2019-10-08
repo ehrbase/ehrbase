@@ -1,0 +1,110 @@
+{
+	"_type": "COMPOSITION",
+	"name": {
+		"_type": "DV_TEXT",
+		"value": "Minimal"
+	},
+	"archetype_node_id": "openEHR-EHR-COMPOSITION.minimal.v1",
+  "uid": {
+		"_type": "OBJECT_VERSION_ID",
+		"value": ""
+	},
+	"language": {
+		"_type": "CODE_PHRASE",
+		"terminology_id": {
+			"_type": "TERMINOLOGY_ID",
+			"value": "ISO_639-1"
+		},
+		"code_string": "en"
+	},
+	"territory": {
+		"_type": "CODE_PHRASE",
+		"terminology_id": {
+			"_type": "TERMINOLOGY_ID",
+			"value": "ISO_3166-1"
+		},
+		"code_string": "UY"
+	},
+	"category": {
+		"_type": "DV_CODED_TEXT",
+		"value": "------wrong------",
+		"defining_code": {
+			"_type": "CODE_PHRASE",
+			"terminology_id": {
+				"_type": "TERMINOLOGY_ID",
+				"value": "openehr"
+			},
+			"code_string": "433"
+		}
+	},
+	"context": {
+		"_type": "EVENT_CONTEXT_WRONG",
+		"start_time": {
+			"_type": "DV_DATE_TIME",
+			"value": "xxxxxxxxxxxxxx"
+		},
+		"setting": {
+			"_type": "DV_CODED_TEXT",
+			"value": "Hospital B",
+			"defining_code": {
+				"_type": "CODE_PHRASE",
+				"terminology_id": {
+					"_type": "TERMINOLOGY_ID",
+					"value": "openehr"
+				},
+				"code_string": "229"
+			}
+		}
+	},
+	"content": [{
+		"_type": "OBSERVATIONXXXXXXXXXXXXXXXXXXXXXXx",
+		"name": {
+			"_type": "DV_TEXT",
+			"value": "Minimal"
+		},
+		"BAD-----------": {
+			"_type": "HISTORY",
+			"name": {
+				"_type": "DV_TEXT",
+				"value": "Event Series"
+			},
+			"archetype_node_id": "at0001",
+			"origin": {
+				"_type": "DV_DATE_TIME",
+				"value": "2019-01-28T21:22:19,552+0000"
+			},
+			"events": [{
+				"_type": "POINT_EVENT",
+				"name": {
+					"_type": "DV_TEXT",
+					"value": "Cualquier evento"
+				},
+				"archetype_node_id": "at0002",
+				"time": {
+					"_type": "DV_DATE_TIME",
+					"value": "2019-01-28T21:22:19,562+0000"
+				},
+				"data": {
+					"_type": "ITEM_TREE",
+					"name": {
+						"_type": "DV_TEXT",
+						"value": "Arbol"
+					},
+					"archetype_node_id": "at0003",
+					"items": [{
+						"_type": "ELEMENT",
+						"name": {
+							"_type": "DV_TEXT",
+							"value": "text"
+						},
+						"archetype_node_id": "at0004",
+						"value": {
+							"_type": "DV_TEXT",
+							"value": "original value"
+						}
+					}]
+				}
+			}]
+		}
+	}]
+}

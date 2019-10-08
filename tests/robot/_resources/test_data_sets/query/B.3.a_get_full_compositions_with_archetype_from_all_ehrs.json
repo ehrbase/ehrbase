@@ -1,0 +1,3 @@
+{
+  "q": "SELECT c FROM COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1]"
+}

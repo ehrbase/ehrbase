@@ -1,0 +1,17 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Common/PARTY_SELF.json",
+    "title": "PARTY_SELF",
+    "description": "Party proxy representing the subject of the record. Used to indicate that the party is the owner of the record. May or may not have `_external_ref_` set. ",
+    "$comments": "Defined in Common IM, inherits from PARTY_PROXY",
+    "type": "object",
+    "properties": {
+        "external_ref": {
+            "description": "Optional reference to more detailed demographic or identification information for this party, in an external system. ",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Base_types/all.json#/definitions/PARTY_REF"
+        }
+    },
+    "$inherits": [
+        "all.json#/definitions/PARTY_PROXY"
+    ]
+}

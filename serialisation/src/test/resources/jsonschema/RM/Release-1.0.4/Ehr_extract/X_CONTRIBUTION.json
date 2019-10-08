@@ -1,0 +1,29 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Ehr_extract/X_CONTRIBUTION.json",
+    "title": "X_CONTRIBUTION",
+    "description": "Serialised form of Contribution for an Extract.",
+    "$comments": "Defined in Ehr_extract IM",
+    "type": "object",
+    "properties": {
+        "uid": {
+            "description": "Uid of Contribution in source system.",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Base_types/all.json#/definitions/HIER_OBJECT_ID"
+        },
+        "audit": {
+            "description": "Audit of Contribution in source system.",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Common/all.json#/definitions/AUDIT_DETAILS"
+        },
+        "versions": {
+            "description": "Serialised Versions from Contribution in source system.",
+            "type": "array",
+            "items": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Common/all.json#/definitions/VERSION"
+            }
+        }
+    },
+    "required": [
+        "uid",
+        "audit"
+    ]
+}

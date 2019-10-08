@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<composition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="COMPOSITION" archetype_node_id="openEHR-EHR-COMPOSITION.report-result.v1">
+		<name>
+			<value>Result Report</value>
+		</name>
+		<uid xsi:type="OBJECT_VERSION_ID">
+			<value>32806eb9-407b-4668-bf8d-825891e1d777::piri.ehrscape.com::1</value>
+		</uid>
+		<archetype_details>
+			<archetype_id>
+				<value>openEHR-EHR-COMPOSITION.report-result.v1</value>
+			</archetype_id>
+			<template_id>
+				<value>AddictionAlcoholTemplate</value>
+			</template_id>
+			<rm_version>1.0.2</rm_version>
+		</archetype_details>
+		<language>
+			<terminology_id>
+				<value>ISO_639-1</value>
+			</terminology_id>
+			<code_string>de</code_string>
+		</language>
+		<territory>
+			<terminology_id>
+				<value>ISO_3166-1</value>
+			</terminology_id>
+			<code_string>US</code_string>
+		</territory>
+		<category>
+			<value>event</value>
+			<defining_code>
+				<terminology_id>
+					<value>openehr</value>
+				</terminology_id>
+				<code_string>433</code_string>
+			</defining_code>
+		</category>
+		<composer xsi:type="PARTY_IDENTIFIED">
+			<name>Silvia Blake</name>
+		</composer>
+		<context>
+			<start_time>
+				<value>2019-03-25T19:42:37.445+01:00</value>
+			</start_time>
+			<setting>
+				<value>other care</value>
+				<defining_code>
+					<terminology_id>
+						<value>openehr</value>
+					</terminology_id>
+					<code_string>238</code_string>
+				</defining_code>
+			</setting>
+			<other_context xsi:type="ITEM_TREE" archetype_node_id="at0001">
+				<name>
+					<value>Tree</value>
+				</name>
+				<items xsi:type="ELEMENT" archetype_node_id="at0002">
+					<name>
+						<value>Report ID</value>
+					</name>
+					<value xsi:type="DV_TEXT">
+						<value>Report ID 51</value>
+					</value>
+				</items>
+				<items xsi:type="ELEMENT" archetype_node_id="at0005">
+					<name>
+						<value>Status</value>
+					</name>
+					<value xsi:type="DV_TEXT">
+						<value>Status 28</value>
+					</value>
+				</items>
+			</other_context>
+			<health_care_facility>
+				<external_ref>
+					<id xsi:type="GENERIC_ID">
+						<value>9091</value>
+						<scheme>HOSPITAL-NS</scheme>
+					</id>
+					<namespace>HOSPITAL-NS</namespace>
+					<type>PARTY</type>
+				</external_ref>
+				<name>Hospital</name>
+			</health_care_facility>
+			<participations>
+				<function>
+					<value>requester</value>
+				</function>
+				<performer xsi:type="PARTY_IDENTIFIED">
+					<external_ref>
+						<id xsi:type="GENERIC_ID">
+							<value>199</value>
+							<scheme>HOSPITAL-NS</scheme>
+						</id>
+						<namespace>HOSPITAL-NS</namespace>
+						<type>ANY</type>
+					</external_ref>
+					<name>Dr. Marcus Johnson</name>
+				</performer>
+				<mode>
+					<value>face-to-face communication</value>
+					<defining_code>
+						<terminology_id>
+							<value>openehr</value>
+						</terminology_id>
+						<code_string>216</code_string>
+					</defining_code>
+				</mode>
+			</participations>
+			<participations>
+				<function>
+					<value>performer</value>
+				</function>
+				<performer xsi:type="PARTY_IDENTIFIED">
+					<external_ref>
+						<id xsi:type="GENERIC_ID">
+							<value>198</value>
+							<scheme>HOSPITAL-NS</scheme>
+						</id>
+						<namespace>HOSPITAL-NS</namespace>
+						<type>ANY</type>
+					</external_ref>
+					<name>Lara Markham</name>
+				</performer>
+				<mode>
+					<value>not specified</value>
+					<defining_code>
+						<terminology_id>
+							<value>openehr</value>
+						</terminology_id>
+						<code_string>193</code_string>
+					</defining_code>
+				</mode>
+			</participations>
+		</context>
+		<content xsi:type="OBSERVATION" archetype_node_id="openEHR-EHR-OBSERVATION.alcohol_use.v1">
+			<name>
+				<value>Alcohol Use</value>
+			</name>
+			<archetype_details>
+				<archetype_id>
+					<value>openEHR-EHR-OBSERVATION.alcohol_use.v1</value>
+				</archetype_id>
+				<rm_version>1.0.2</rm_version>
+			</archetype_details>
+			<language>
+				<terminology_id>
+					<value>ISO_639-1</value>
+				</terminology_id>
+				<code_string>de</code_string>
+			</language>
+			<encoding>
+				<terminology_id>
+					<value>IANA_character-sets</value>
+				</terminology_id>
+				<code_string>UTF-8</code_string>
+			</encoding>
+			<subject xsi:type="PARTY_SELF"/>
+			<other_participations>
+				<function>
+					<value>requester</value>
+				</function>
+				<performer xsi:type="PARTY_IDENTIFIED">
+					<external_ref>
+						<id xsi:type="GENERIC_ID">
+							<value>199</value>
+							<scheme>HOSPITAL-NS</scheme>
+						</id>
+						<namespace>HOSPITAL-NS</namespace>
+						<type>ANY</type>
+					</external_ref>
+					<name>Dr. Marcus Johnson</name>
+				</performer>
+				<mode>
+					<value>face-to-face communication</value>
+					<defining_code>
+						<terminology_id>
+							<value>openehr</value>
+						</terminology_id>
+						<code_string>216</code_string>
+					</defining_code>
+				</mode>
+			</other_participations>
+			<other_participations>
+				<function>
+					<value>performer</value>
+				</function>
+				<performer xsi:type="PARTY_IDENTIFIED">
+					<external_ref>
+						<id xsi:type="GENERIC_ID">
+							<value>198</value>
+							<scheme>HOSPITAL-NS</scheme>
+						</id>
+						<namespace>HOSPITAL-NS</namespace>
+						<type>ANY</type>
+					</external_ref>
+					<name>Lara Markham</name>
+				</performer>
+				<mode>
+					<value>not specified</value>
+					<defining_code>
+						<terminology_id>
+							<value>openehr</value>
+						</terminology_id>
+						<code_string>193</code_string>
+					</defining_code>
+				</mode>
+			</other_participations>
+			<protocol xsi:type="ITEM_TREE" archetype_node_id="at0024">
+				<name>
+					<value>Tree</value>
+				</name>
+				<items xsi:type="ELEMENT" archetype_node_id="at0025">
+					<name>
+						<value>Standard Drink Definition</value>
+					</name>
+					<value xsi:type="DV_QUANTITY">
+						<magnitude>58.38</magnitude>
+						<units>gm</units>
+					</value>
+				</items>
+				<items xsi:type="ELEMENT" archetype_node_id="at0026">
+					<name>
+						<value>Average Use Frequency</value>
+					</name>
+					<value xsi:type="DV_QUANTITY">
+						<magnitude>46.15</magnitude>
+						<units>/d</units>
+					</value>
+				</items>
+			</protocol>
+			<data archetype_node_id="at0001">
+				<name>
+					<value>Event Series</value>
+				</name>
+				<origin>
+					<value>2019-03-25T19:42:37.445+01:00</value>
+				</origin>
+				<events xsi:type="POINT_EVENT" archetype_node_id="at0002">
+					<name>
+						<value>Any event</value>
+					</name>
+					<time>
+						<value>2019-03-25T19:42:37.445+01:00</value>
+					</time>
+					<data xsi:type="ITEM_TREE" archetype_node_id="at0003">
+						<name>
+							<value>Tree</value>
+						</name>
+						<items xsi:type="CLUSTER" archetype_node_id="at0005">
+							<name>
+								<value>Consumption Details</value>
+							</name>
+							<items xsi:type="ELEMENT" archetype_node_id="at0006">
+								<name>
+									<value>Form</value>
+								</name>
+								<value xsi:type="DV_TEXT">
+									<value>Form 6</value>
+								</value>
+							</items>
+							<items xsi:type="CLUSTER" archetype_node_id="at0015">
+								<name>
+									<value>Amount</value>
+								</name>
+								<items xsi:type="ELEMENT" archetype_node_id="at0014">
+									<name>
+										<value>Standard Drinks</value>
+									</name>
+									<value xsi:type="DV_QUANTITY">
+										<magnitude>27.17</magnitude>
+										<units>/h</units>
+									</value>
+								</items>
+							</items>
+							<items xsi:type="ELEMENT" archetype_node_id="at0017">
+								<name>
+									<value>Triggers</value>
+								</name>
+								<value xsi:type="DV_TEXT">
+									<value>Triggers 30</value>
+								</value>
+							</items>
+							<items xsi:type="ELEMENT" archetype_node_id="at0018">
+								<name>
+									<value>Context</value>
+								</name>
+								<value xsi:type="DV_TEXT">
+									<value>Context 5</value>
+								</value>
+							</items>
+						</items>
+						<items xsi:type="ELEMENT" archetype_node_id="at0019">
+							<name>
+								<value>Behavioural Issues</value>
+							</name>
+							<value xsi:type="DV_TEXT">
+								<value>Behavioural Issues 67</value>
+							</value>
+						</items>
+						<items xsi:type="ELEMENT" archetype_node_id="at0021">
+							<name>
+								<value>Comment</value>
+							</name>
+							<value xsi:type="DV_TEXT">
+								<value>Comment 30</value>
+							</value>
+						</items>
+					</data>
+				</events>
+				<events xsi:type="POINT_EVENT" archetype_node_id="at0023">
+					<name>
+						<value>Specified Day</value>
+					</name>
+					<time>
+						<value>2019-03-25T19:42:37.445+01:00</value>
+					</time>
+					<data xsi:type="ITEM_TREE" archetype_node_id="at0003">
+						<name>
+							<value>Tree</value>
+						</name>
+						<items xsi:type="CLUSTER" archetype_node_id="at0005">
+							<name>
+								<value>Consumption Details</value>
+							</name>
+							<items xsi:type="ELEMENT" archetype_node_id="at0006">
+								<name>
+									<value>Form</value>
+								</name>
+								<value xsi:type="DV_TEXT">
+									<value>Form 29</value>
+								</value>
+							</items>
+							<items xsi:type="CLUSTER" archetype_node_id="at0015">
+								<name>
+									<value>Amount</value>
+								</name>
+								<items xsi:type="ELEMENT" archetype_node_id="at0014">
+									<name>
+										<value>Standard Drinks</value>
+									</name>
+									<value xsi:type="DV_QUANTITY">
+										<magnitude>92.95</magnitude>
+										<units>/h</units>
+									</value>
+								</items>
+							</items>
+							<items xsi:type="ELEMENT" archetype_node_id="at0017">
+								<name>
+									<value>Triggers</value>
+								</name>
+								<value xsi:type="DV_TEXT">
+									<value>Triggers 11</value>
+								</value>
+							</items>
+							<items xsi:type="ELEMENT" archetype_node_id="at0018">
+								<name>
+									<value>Context</value>
+								</name>
+								<value xsi:type="DV_TEXT">
+									<value>Context 9</value>
+								</value>
+							</items>
+						</items>
+						<items xsi:type="ELEMENT" archetype_node_id="at0019">
+							<name>
+								<value>Behavioural Issues</value>
+							</name>
+							<value xsi:type="DV_TEXT">
+								<value>Behavioural Issues 85</value>
+							</value>
+						</items>
+						<items xsi:type="ELEMENT" archetype_node_id="at0021">
+							<name>
+								<value>Comment</value>
+							</name>
+							<value xsi:type="DV_TEXT">
+								<value>Comment 56</value>
+							</value>
+						</items>
+					</data>
+				</events>
+			</data>
+		</content>
+	</composition>

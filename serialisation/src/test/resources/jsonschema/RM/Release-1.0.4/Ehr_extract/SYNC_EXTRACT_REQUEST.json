@@ -1,0 +1,20 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Ehr_extract/SYNC_EXTRACT_REQUEST.json",
+    "title": "SYNC_EXTRACT_REQUEST",
+    "description": "Type of request designed for synchronisation of Contributions between openEHR servers.",
+    "$comments": "Defined in Ehr_extract IM, inherits from MESSAGE_CONTENT",
+    "type": "object",
+    "properties": {
+        "specification": {
+            "description": "Details of specification of synchronisation request.",
+            "$ref": "all.json#/definitions/SYNC_EXTRACT_SPEC"
+        }
+    },
+    "required": [
+        "specification"
+    ],
+    "$inherits": [
+        "all.json#/definitions/MESSAGE_CONTENT"
+    ]
+}

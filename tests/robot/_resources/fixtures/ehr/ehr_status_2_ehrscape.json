@@ -1,0 +1,18 @@
+{
+  "_type": "EHR_STATUS",
+  "subject": {
+    "_type": "PARTY_SELF",
+    "external_ref": {
+      "_type": "PARTY_REF",
+      "id": {
+        "_type": "GENERIC_ID",
+        "value": "123456789",
+        "scheme": "local"
+      },
+      "namespace": "patients",
+      "type": "PERSON"
+    }
+  },
+  "is_queryable": true,
+  "is_modifiable": false
+}

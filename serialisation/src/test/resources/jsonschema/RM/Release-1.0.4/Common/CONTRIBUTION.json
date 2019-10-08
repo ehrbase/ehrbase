@@ -1,0 +1,31 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Common/CONTRIBUTION.json",
+    "title": "CONTRIBUTION",
+    "description": "Documents a Contribution (change set) of one or more versions added to a change-controlled repository. ",
+    "$comments": "Defined in Common IM",
+    "type": "object",
+    "properties": {
+        "uid": {
+            "description": "Unique identifier for this Contribution. ",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Base_types/all.json#/definitions/HIER_OBJECT_ID"
+        },
+        "versions": {
+            "description": "Set of references to Versions causing changes to this EHR. Each contribution contains a list of versions, which may include paths pointing to any number of versionable items, i.e. items of types such as `COMPOSITION` and `FOLDER`. ",
+            "type": "array",
+            "items": {
+                "$ref": "all.json#/definitions/VERSION"
+            },
+            "minItems": 1
+        },
+        "audit": {
+            "description": "Audit trail corresponding to the committal of this Contribution. ",
+            "$ref": "all.json#/definitions/AUDIT_DETAILS"
+        }
+    },
+    "required": [
+        "uid",
+        "versions",
+        "audit"
+    ]
+}

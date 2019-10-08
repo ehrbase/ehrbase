@@ -1,0 +1,150 @@
+  <composition xmlns="http://schemas.openehr.org/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="COMPOSITION" archetype_node_id="openEHR-EHR-COMPOSITION.minimal.v1">
+    <name>
+      <value>Minimal</value>
+    </name>
+    <archetype_details>
+      <archetype_id>
+        <value>openEHR-EHR-COMPOSITION.minimal.v1</value>
+      </archetype_id>
+      <template_id>
+        <value>obs_inst.en.v1</value>
+      </template_id>
+      <rm_version>1.0.2</rm_version>
+    </archetype_details>
+    <language>
+      <terminology_id>
+        <value>ISO_639-1</value>
+      </terminology_id>
+      <code_string>en</code_string>
+    </language>
+    <territory>
+      <terminology_id>
+        <value>ISO_3166-1</value>
+      </terminology_id>
+      <code_string>UY</code_string>
+    </territory>
+    <category>
+      <value>event</value>
+      <defining_code>
+        <terminology_id>
+          <value>openehr</value>
+        </terminology_id>
+        <code_string>433</code_string>
+      </defining_code>
+    </category>
+    <composer xsi:type="PARTY_IDENTIFIED">
+      <external_ref>
+        <id xsi:type="HIER_OBJECT_ID">
+          <value>fae387eb-544d-4242-8bdf-13ab3415bb20</value>
+        </id>
+        <namespace>DEMOGRAPHIC</namespace>
+        <type>PERSON</type>
+      </external_ref>
+      <name>Dr. Yamamoto</name>
+    </composer>
+    <context>
+      <start_time>
+        <value>20190416T211223,400+0000</value>
+      </start_time>
+      <setting>
+        <value>Hospital B</value>
+        <defining_code>
+          <terminology_id>
+            <value>openehr</value>
+          </terminology_id>
+          <code_string>229</code_string>
+        </defining_code>
+      </setting>
+    </context>
+    <content archetype_node_id="openEHR-EHR-OBSERVATION.minimal.v1" xsi:type="OBSERVATION">
+      <name>
+        <value>Minimal</value>
+      </name>
+      <language>
+        <terminology_id>
+          <value>ISO_639-1</value>
+        </terminology_id>
+        <code_string>en</code_string>
+      </language>
+      <encoding>
+        <terminology_id>
+          <value>Unicode</value>
+        </terminology_id>
+        <code_string>UTF-8</code_string>
+      </encoding>
+      <subject xsi:type="PARTY_SELF" />
+      <data archetype_node_id="at0001" xsi:type="HISTORY">
+        <name>
+          <value>Event Series</value>
+        </name>
+        <origin xsi:type="DV_DATE_TIME">
+          <value>20190416T211223,403+0000</value>
+        </origin>
+        <events archetype_node_id="at0002" xsi:type="POINT_EVENT">
+          <name>
+            <value>Cualquier evento</value>
+          </name>
+          <time xsi:type="DV_DATE_TIME">
+            <value>20190416T211223,403+0000</value>
+          </time>
+          <data archetype_node_id="at0003" xsi:type="ITEM_TREE">
+            <name>
+              <value>Arbol</value>
+            </name>
+            <items archetype_node_id="at0004" xsi:type="ELEMENT">
+              <name>
+                <value>text</value>
+              </name>
+              <value xsi:type="DV_TEXT">
+                <value>PSJVtDWldOBiqWCywLUPEZVt.NpAGkt yjJbF.nNDxuIpPfryjuomTWxecmcXaFvhd cgPRfZ,hoRPruyvzmS,tvyTNnPTFXhnivuZnZnIihFNYqmcAUUDSOakICqmAqklFxEkDaCwiihNZZeyVmokObkQGxpKXzH YAwjnHVseWN,rOgRXELdepVXjR HWKTeOv gZyRwRihT EAyoJVF,BNilCOSSkmZibFqBhiCnfZwsazYzDCONLAGpG,FA</value>
+              </value>
+            </items>
+          </data>
+        </events>
+      </data>
+    </content>
+    <content archetype_node_id="openEHR-EHR-INSTRUCTION.minimal.v1" xsi:type="INSTRUCTION">
+      <name>
+        <value>Minimal</value>
+      </name>
+      <language>
+        <terminology_id>
+          <value>ISO_639-1</value>
+        </terminology_id>
+        <code_string>en</code_string>
+      </language>
+      <encoding>
+        <terminology_id>
+          <value>Unicode</value>
+        </terminology_id>
+        <code_string>UTF-8</code_string>
+      </encoding>
+      <subject xsi:type="PARTY_SELF" />
+      <narrative>
+        <value>zvtyWPynU.VjWdGaPiGHxWrvJxxQssULN,GVPaabF.YIJJha.qTxj.D ILiLxKrJBpklMfLVBzdSnGhHplKAhyoilnxvzaSfzMRnXQBOEzGihMYgkFZLOHKgffNziKu,ljVCsTQ ERfL iXyVXXIvTSjNkWeieCI.yiY.aRKVAx.owJcJiZqfPedevDaiUd,eXgnsfsXsJzCyAWrNEuaC.MvqjlgUJMaXUWsthpOjRxHYVQE.FGfcuhdfFFbKRb</value>
+      </narrative>
+      <activities archetype_node_id="at0001">
+        <name>
+          <value>Current Activity</value>
+        </name>
+        <description archetype_node_id="at0002" xsi:type="ITEM_TREE">
+          <name>
+            <value>Arbol</value>
+          </name>
+          <items archetype_node_id="at0003" xsi:type="ELEMENT">
+            <name>
+              <value>duration</value>
+            </name>
+            <value xsi:type="DV_DURATION">
+              <value>PT30M</value>
+            </value>
+          </items>
+        </description>
+        <timing>
+          <value>P1D</value>
+          <formalism>ISO8601</formalism>
+        </timing>
+        <action_archetype_id>openEHR-EHR-ACTION\.minimal\.v1</action_archetype_id>
+      </activities>
+    </content>
+  </composition>

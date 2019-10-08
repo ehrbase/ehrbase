@@ -1,0 +1,43 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Base_types/HIER_OBJECT_ID.json",
+    "title": "HIER_OBJECT_ID",
+    "description": "Concrete type corresponding to hierarchical identifiers of the form defined by UID_BASED_ID. ",
+    "$comments": "Defined in Base_types IM, inherits from UID_BASED_ID",
+    "type": "object",
+    "properties": {
+        "value": {
+            "description": "The value of the id in the form defined below. ",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/String"
+        }
+    },
+    "required": [
+        "value"
+    ],
+    "$inherits": [
+        "all.json#/definitions/UID_BASED_ID"
+    ],
+    "$functions": {
+        "root": {
+            "description": "The identifier of the conceptual namespace in which the object exists, within the identification scheme. Returns the part to the left of the first '::' separator, if any, or else the whole string. ",
+            "return": {
+                "$ref": "all.json#/definitions/UID"
+            }
+        },
+        "extension": {
+            "description": "Optional local identifier of the object within the context of the root identifier. Returns the part to the right of the first '::' separator if any, or else any empty String.",
+            "return": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/String"
+            }
+        },
+        "has_extension": {
+            "description": "True if `_extension_ /= Void`.",
+            "return": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/Boolean"
+            }
+        }
+    },
+    "$invariants": {
+        "Has_extension_valid": "extension.is_empty xor has_extension"
+    }
+}

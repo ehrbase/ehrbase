@@ -1,0 +1,106 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_types/DV_INTERVAL_of_DV_DATE_TIME.json",
+    "title": "DV_INTERVAL<DV_DATE_TIME>",
+    "$comments": "Defined in Data_types IM, inherits from DV_INTERVAL",
+    "type": "object",
+    "properties": {
+        "lower": {
+            "description": "Lower bound.",
+            "$ref": "all.json#/definitions/DV_DATE_TIME"
+        },
+        "upper": {
+            "description": "Upper bound.",
+            "$ref": "all.json#/definitions/DV_DATE_TIME"
+        },
+        "lower_unbounded": {
+            "description": "`lower` boundary open (i.e. = -infinity).",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/Boolean"
+        },
+        "upper_unbounded": {
+            "description": "`upper` boundary open (i.e. = +infinity).",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/Boolean"
+        },
+        "lower_included": {
+            "description": "`lower` boundary value included in range if not `lower_unbounded`.",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/Boolean"
+        },
+        "upper_included": {
+            "description": "`upper` boundary value included in range if not `upper_unbounded`.",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/Boolean"
+        }
+    },
+    "required": [
+        "lower_unbounded",
+        "upper_unbounded",
+        "lower_included",
+        "upper_included"
+    ],
+    "$inherits": [
+        "all.json#/definitions/DV_INTERVAL"
+    ],
+    "$functions": {
+        "has": {
+            "description": "True if `(lower_unbounded or lower_included and v >= lower) or v > lower and (upper_unbounded or upper_included and v <= upper or v < upper)`.",
+            "parameters": {
+                "e": {
+                    "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/T"
+                }
+            },
+            "required_parameters": [
+                "e"
+            ],
+            "return": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/Boolean"
+            }
+        },
+        "intersects": {
+            "description": "True if there is any overlap between intervals represented by Current and `other'. True if at least one limit of other is strictly inside the limits of this interval.",
+            "parameters": {
+                "other": {
+                    "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/Interval"
+                }
+            },
+            "required_parameters": [
+                "other"
+            ],
+            "return": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/Boolean"
+            }
+        },
+        "contains": {
+            "description": "True if current interval properly contains `other`? True if all points of `other` are inside the current interval.",
+            "parameters": {
+                "other": {
+                    "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/Interval"
+                }
+            },
+            "required_parameters": [
+                "other"
+            ],
+            "return": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/Boolean"
+            }
+        },
+        "is_equal": {
+            "description": "True if current object's interval is semantically same as `other`.",
+            "parameters": {
+                "other": {
+                    "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/Any"
+                }
+            },
+            "required_parameters": [
+                "other"
+            ],
+            "return": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/Boolean"
+            }
+        }
+    },
+    "$invariants": {
+        "Lower_included_valid": "lower_unbounded implies not lower_included",
+        "Upper_included_valid": "upper_unbounded implies not upper_included",
+        "Limits_consistent": "(not upper_unbounded and not lower_unbounded) implies (lower.is_strictly_comparable_to(upper) and lower <= upper)",
+        "Limits_comparable": "(not upper_unbounded and not lower_unbounded) implies lower.strictly_comparable_to (upper)"
+    }
+}

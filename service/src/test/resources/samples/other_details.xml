@@ -1,0 +1,73 @@
+<items xmlns="http://schemas.openehr.org/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       archetype_node_id="openEHR-EHR-ITEM_TREE.person_anonymised_parents.v0">
+    <name>
+        <value>Person anonymised parents</value>
+    </name>
+    <items xmlns:v1="http://schemas.openehr.org/v1" archetype_node_id="at0001" xsi:type="v1:CLUSTER">
+        <name>
+            <value>person</value>
+        </name>
+        <items archetype_node_id="openEHR-EHR-CLUSTER.person_anoymised_parent.v0" xsi:type="v1:CLUSTER">
+            <name>
+                <value>Person anonymised parent</value>
+            </name>
+            <archetype_details>
+                <archetype_id>
+                    <value>openEHR-EHR-CLUSTER.person_anoymised_parent.v0</value>
+                </archetype_id>
+                <rm_version>1.0.1</rm_version>
+            </archetype_details>
+            <items archetype_node_id="at0002" xsi:type="v1:ELEMENT">
+                <name>
+                    <value>Administrative Gender</value>
+                </name>
+                <value xsi:type="v1:DV_CODED_TEXT">
+                    <value>Male</value>
+                    <defining_code>
+                        <terminology_id>
+                            <value>local</value>
+                        </terminology_id>
+                        <code_string>at0003</code_string>
+                    </defining_code>
+                </value>
+            </items>
+            <items archetype_node_id="at0006" xsi:type="v1:ELEMENT">
+                <name>
+                    <value>Birth Sex</value>
+                </name>
+                <value xsi:type="v1:DV_CODED_TEXT">
+                    <value>Male</value>
+                    <defining_code>
+                        <terminology_id>
+                            <value>local</value>
+                        </terminology_id>
+                        <code_string>at0007</code_string>
+                    </defining_code>
+                </value>
+            </items>
+            <items archetype_node_id="at0009" xsi:type="v1:ELEMENT">
+                <name>
+                    <value>Vital Status</value>
+                </name>
+                <value xsi:type="v1:DV_CODED_TEXT">
+                    <value>OK</value>
+                    <defining_code>
+                        <terminology_id>
+                            <value>local</value>
+                        </terminology_id>
+                        <code_string>at0010</code_string>
+                    </defining_code>
+                </value>
+            </items>
+            <items archetype_node_id="at0012" xsi:type="v1:ELEMENT">
+                <name>
+                    <value>Birth Year</value>
+                </name>
+                <value xsi:type="v1:DV_DATE">
+                    <value>2013-01-01</value>
+                </value>
+            </items>
+        </items>
+    </items>
+</items>
+

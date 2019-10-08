@@ -1,0 +1,9 @@
+{
+  "_type": "FOLDER",
+  "name": {
+    "_type": "DV_TEXT",
+    "value": "Flat root",
+    "mappings": []
+  },
+  "archetype_node_id": "at[0001]"
+}

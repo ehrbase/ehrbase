@@ -1,0 +1,529 @@
+<composition archetype_node_id="openEHR-EHR-COMPOSITION.test_all_types.v1" xmlns:v1="http://schemas.openehr.org/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <name>
+        <value>Test all types</value>
+    </name>
+    <!--<archetype_details>-->
+        <!--<archetype_id>-->
+            <!--<value>openEHR-EHR-COMPOSITION.test_all_types.v1</value>-->
+        <!--</archetype_id>-->
+        <!--<template_id>-->
+            <!--<value>test_all_types.en.v1</value>-->
+        <!--</template_id>-->
+        <!--<rm_version>1.0.2</rm_version>-->
+    <!--</archetype_details>-->
+    <language>
+        <terminology_id>
+            <value>ISO_639-1</value>
+        </terminology_id>
+        <code_string>en</code_string>
+    </language>
+    <territory>
+        <terminology_id>
+            <value>ISO_3166-1</value>
+        </terminology_id>
+        <code_string>UY</code_string>
+    </territory>
+    <category>
+        <value>event</value>
+        <defining_code>
+            <terminology_id>
+                <value>openehr</value>
+            </terminology_id>
+            <code_string>433</code_string>
+        </defining_code>
+    </category>
+    <composer xsi:type="PARTY_IDENTIFIED">
+        <external_ref>
+            <id xsi:type="HIER_OBJECT_ID">
+                <value>b7c07d35-fa06-4280-8e65-eabdfbe64fdc</value>
+            </id>
+            <namespace>DEMOGRAPHIC</namespace>
+            <type>PERSON</type>
+        </external_ref>
+        <name>Dr. House</name>
+    </composer>
+    <context>
+        <start_time>
+            <value>20190114T183649,294+0000</value>
+        </start_time>
+        <setting>
+            <value>Hospital D</value>
+            <defining_code>
+                <terminology_id>
+                    <value>openehr</value>
+                </terminology_id>
+                <code_string>229</code_string>
+            </defining_code>
+        </setting>
+    </context>
+    <content archetype_node_id="openEHR-EHR-OBSERVATION.test_all_types.v1" xsi:type="OBSERVATION">
+        <name>
+            <value>Test all types</value>
+        </name>
+        <language>
+            <terminology_id>
+                <value>ISO_639-1</value>
+            </terminology_id>
+            <code_string>en</code_string>
+        </language>
+        <encoding>
+            <terminology_id>
+                <value>IANA_character-sets</value>
+            </terminology_id>
+            <code_string>UTF-8</code_string>
+        </encoding>
+        <subject xsi:type="PARTY_SELF" />
+        <data archetype_node_id="at0001" xsi:type="HISTORY">
+            <name>
+                <value>Event Series</value>
+            </name>
+            <origin xsi:type="DV_DATE_TIME">
+                <value>20190114T183649,326+0000</value>
+            </origin>
+            <events archetype_node_id="at0002" xsi:type="POINT_EVENT">
+                <name>
+                    <value>Cualquier evento</value>
+                </name>
+                <time xsi:type="DV_DATE_TIME">
+                    <value>20190114T183649,332+0000</value>
+                </time>
+                <data archetype_node_id="at0003" xsi:type="ITEM_TREE">
+                    <name>
+                        <value>Arbol</value>
+                    </name>
+                    <items archetype_node_id="at0004" xsi:type="ELEMENT">
+                        <name>
+                            <value>text</value>
+                        </name>
+                        <value xsi:type="DV_TEXT">
+                            <value>At,ffwkm.xsuDu,LNtqXEQJzxNMXTjyKVzQojaNTidAxLLZRbWWoGnfOIMUM.XxakRgJxExjtjBPirOxu,nUnPdIegLQbhNDKNRqGbFuvXrXYuNPXwnELoIsYMKgFEWHnR.XSBuESAamCrjJMssGgI.QOOyzatFlaXbiVaUBxzSdkOscZza,IumnYWoxwekcSAYSJiILhmKEOUWdoElCavaQPNNpGcxHEGASUMSAkFuu jZdWcysffi.QLeVONn</value>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0005" xsi:type="ELEMENT">
+                        <name>
+                            <value>coded text</value>
+                        </name>
+                        <value xsi:type="DV_CODED_TEXT">
+                            <value>cHAWCHf.Kt.RNIAiZ,FVvBUdKAWQkU</value>
+                            <defining_code>
+                                <terminology_id>
+                                    <value>terminology_not_specified_as_constraint_or_referenceSetUri_in_opt</value>
+                                </terminology_id>
+                                <code_string>1008204</code_string>
+                            </defining_code>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0006" xsi:type="ELEMENT">
+                        <name>
+                            <value>coded text terminology</value>
+                        </name>
+                        <value xsi:type="DV_CODED_TEXT">
+                            <value>.HCXbqCyQtseLkDyKS,QLpOdDZxrEJ</value>
+                            <defining_code>
+                                <terminology_id>
+                                    <value>SNOMED-CT</value>
+                                </terminology_id>
+                                <code_string>1004034</code_string>
+                            </defining_code>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0007" xsi:type="ELEMENT">
+                        <name>
+                            <value>quantity</value>
+                        </name>
+                        <value xsi:type="DV_QUANTITY">
+                            <magnitude>636.3397240638733</magnitude>
+                            <units>mg</units>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0008" xsi:type="ELEMENT">
+                        <name>
+                            <value>count</value>
+                        </name>
+                        <value xsi:type="DV_COUNT">
+                            <magnitude>10</magnitude>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0009" xsi:type="ELEMENT">
+                        <name>
+                            <value>date</value>
+                        </name>
+                        <value xsi:type="DV_DATE">
+                            <value>20190114</value>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0010" xsi:type="ELEMENT">
+                        <name>
+                            <value>datetime</value>
+                        </name>
+                        <value xsi:type="DV_DATE_TIME">
+                            <value>20190114T183649,426+0000</value>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0011" xsi:type="ELEMENT">
+                        <name>
+                            <value>datetime any</value>
+                        </name>
+                        <value xsi:type="DV_DATE_TIME">
+                            <value>20190114T183649,427+0000</value>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0012" xsi:type="ELEMENT">
+                        <name>
+                            <value>time</value>
+                        </name>
+                        <value xsi:type="DV_TIME">
+                            <value>183649</value>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0013" xsi:type="ELEMENT">
+                        <name>
+                            <value>ordinal</value>
+                        </name>
+                        <value xsi:type="DV_ORDINAL">
+                            <value>1</value>
+                            <symbol>
+                                <value>NIQAMVFFOQMQOOM</value>
+                                <defining_code>
+                                    <terminology_id>
+                                        <value>local</value>
+                                    </terminology_id>
+                                    <code_string>at0015</code_string>
+                                </defining_code>
+                            </symbol>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0017" xsi:type="ELEMENT">
+                        <name>
+                            <value>boolean</value>
+                        </name>
+                        <value xsi:type="DV_BOOLEAN">
+                            <value>true</value>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0018" xsi:type="ELEMENT">
+                        <name>
+                            <value>duration any</value>
+                        </name>
+                        <value xsi:type="DV_DURATION">
+                            <value>PT30M</value>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0019" xsi:type="ELEMENT">
+                        <name>
+                            <value>multimedia any</value>
+                        </name>
+                        <value xsi:type="DV_MULTIMEDIA">
+                            <uri>
+                                <value>www.iana.org</value>
+                            </uri>
+                            <media_type>
+                                <terminology_id>
+                                    <value>IANA_media-types</value>
+                                </terminology_id>
+                                <code_string>image/jpeg</code_string>
+                            </media_type>
+                            <size>177628</size>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0020" xsi:type="ELEMENT">
+                        <name>
+                            <value>parsable any</value>
+                        </name>
+                        <value xsi:type="DV_PARSABLE">
+                            <value>20170629</value>
+                            <formalism>ISO8601</formalism>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0021" xsi:type="ELEMENT">
+                        <name>
+                            <value>identifier</value>
+                        </name>
+                        <value xsi:type="DV_IDENTIFIER">
+                            <issuer>Hospital de Clinicas</issuer>
+                            <assigner>Hospital de Clinicas</assigner>
+                            <id>55175056</id>
+                            <type>LOCALID</type>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0022" xsi:type="ELEMENT">
+                        <name>
+                            <value>proportion any</value>
+                        </name>
+                        <value xsi:type="DV_PROPORTION">
+                            <numerator>1.5</numerator>
+                            <denominator>1</denominator>
+                            <type>1</type>
+                            <precision>1</precision>
+                        </value>
+                    </items>
+                </data>
+            </events>
+        </data>
+    </content>
+    <content archetype_node_id="openEHR-EHR-EVALUATION.test_all_types.v1" xsi:type="EVALUATION">
+        <name>
+            <value>Test all types</value>
+        </name>
+        <language>
+            <terminology_id>
+                <value>ISO_639-1</value>
+            </terminology_id>
+            <code_string>en</code_string>
+        </language>
+        <encoding>
+            <terminology_id>
+                <value>IANA_character-sets</value>
+            </terminology_id>
+            <code_string>UTF-8</code_string>
+        </encoding>
+        <subject xsi:type="PARTY_SELF" />
+        <data archetype_node_id="at0001" xsi:type="ITEM_TREE">
+            <name>
+                <value>Arbol</value>
+            </name>
+            <items archetype_node_id="at0002" xsi:type="ELEMENT">
+                <name>
+                    <value>uri</value>
+                </name>
+            </items>
+            <items archetype_node_id="at0003" xsi:type="ELEMENT">
+                <name>
+                    <value>interval count</value>
+                </name>
+                <value xsi:type="DV_INTERVAL"><!-- note specific type is not valid here: DV_INERVAL<DV_COUNT> doesn't exists in the XSD -->
+                    <lower xsi:type="DV_COUNT">
+                        <magnitude>123</magnitude>
+                    </lower>
+                    <upper xsi:type="DV_COUNT">
+                        <magnitude>234</magnitude>
+                    </upper>
+                    <lower_unbounded>false</lower_unbounded>
+                    <upper_unbounded>false</upper_unbounded>
+                </value>
+            </items>
+            <items archetype_node_id="at0004" xsi:type="ELEMENT">
+                <name>
+                    <value>interval quantity</value>
+                </name>
+                <value xsi:type="DV_INTERVAL"><!-- note specific type is not valid here: DV_INERVAL<DV_COUNT> doesn't exists in the XSD -->
+                    <lower xsi:type="DV_QUANTITY">
+                        <magnitude>123.123</magnitude>
+                        <units>mm[H20]</units>
+                    </lower>
+                    <upper xsi:type="DV_QUANTITY">
+                        <magnitude>234.234</magnitude>
+                        <units>mm[H20]</units>
+                    </upper>
+                    <lower_unbounded>false</lower_unbounded>
+                    <upper_unbounded>false</upper_unbounded>
+                </value>
+            </items>
+            <items archetype_node_id="at0005" xsi:type="ELEMENT">
+                <name>
+                    <value>interval datetime</value>
+                </name>
+                <value xsi:type="DV_INTERVAL"><!-- note specific type is not valid here: DV_INERVAL<DV_COUNT> doesn't exists in the XSD -->
+                    <lower xsi:type="DV_DATE_TIME">
+                        <value>20190114T183649,426+0000</value>
+                    </lower>
+                    <upper xsi:type="DV_DATE_TIME">
+                        <value>20190114T183649,426+0000</value>
+                    </upper>
+                    <lower_unbounded>false</lower_unbounded>
+                    <upper_unbounded>false</upper_unbounded>
+                </value>
+            </items>
+            <items archetype_node_id="at0009" xsi:type="ELEMENT">
+                <name>
+                    <value>choice</value>
+                </name>
+                <value xsi:type="DV_QUANTITY">
+                    <magnitude>148.01210165023804</magnitude>
+                    <units>mm[H20]</units>
+                </value>
+            </items>
+            <items archetype_node_id="at0006" xsi:type="CLUSTER">
+                <name>
+                    <value>cluster 1</value>
+                </name>
+                <items archetype_node_id="at0007" xsi:type="CLUSTER">
+                    <name>
+                        <value>cluster 2</value>
+                    </name>
+                    <items archetype_node_id="at0008" xsi:type="CLUSTER">
+                        <name>
+                            <value>cluster 3</value>
+                        </name>
+                        <items archetype_node_id="at0010" xsi:type="ELEMENT">
+                            <name>
+                                <value>text 2</value>
+                            </name>
+                            <value xsi:type="DV_TEXT">
+                                <value>FViqRjKtFGXm ,iPOYGPuYNjqqVYifvxzvbOlMnuidJvvdYByUiDUgQIBkyOcJtgZcRKdFmyo .TrsPDcaXtFeqLlnZgqdTxb.,LGavIsdXKcBhTWd,PElsLCymSIGcfRrObkevpucVkThYTAZZxcikhpGVaQ.UbyrkwewgarEn gLmIWGLqFZBFYLcBje.GwiYMBoHEEVymGCkyXUyosuq,CNvWsuUnHdVEjEuxGSEwBDEVgwWrXWOYWUCIhos</value>
+                            </value>
+                        </items>
+                    </items>
+                </items>
+            </items>
+        </data>
+    </content>
+    <content archetype_node_id="openEHR-EHR-SECTION.test_all_types.v1" xsi:type="SECTION">
+        <name>
+            <value>Test all types</value>
+        </name>
+        <items archetype_node_id="at0001" xsi:type="SECTION">
+            <name>
+                <value>section 2</value>
+            </name>
+            <items archetype_node_id="at0002" xsi:type="SECTION">
+                <name>
+                    <value>section 3</value>
+                </name>
+                <items archetype_node_id="openEHR-EHR-INSTRUCTION.test_all_types.v1" xsi:type="INSTRUCTION">
+                    <name>
+                        <value>Test all types</value>
+                    </name>
+                    <language>
+                        <terminology_id>
+                            <value>ISO_639-1</value>
+                        </terminology_id>
+                        <code_string>en</code_string>
+                    </language>
+                    <encoding>
+                        <terminology_id>
+                            <value>IANA_character-sets</value>
+                        </terminology_id>
+                        <code_string>UTF-8</code_string>
+                    </encoding>
+                    <subject xsi:type="PARTY_SELF" />
+                    <narrative>
+                        <value>WAZotVojPPlPDKcOwCqQGlJjRdMC.ujKPgVAmyWABEoOgtrRSznogUWokmqmfgxjZOYmUEAcyvmnfz,KhtTC FrpwevrLJFNiJKzkzOwfOPRFQJjRmQCTW,ewdqvscogOkayvONWrOTPcCFnZsUod CAQ fuhLaBA.pFWdEyzyFgDODbueIlUjIGBdnIDDpMfjzWivfUDSEvTUsncmCgPdHnpONCuNGXUwFTaiSHHHJBZYssxGne.BLIbBQzXhG</value>
+                    </narrative>
+                    <activities archetype_node_id="at0001">
+                        <name>
+                            <value>Current Activity</value>
+                        </name>
+                        <description archetype_node_id="at0002" xsi:type="ITEM_LIST">
+                            <name>
+                                <value>List</value>
+                            </name>
+                            <items archetype_node_id="at0003" xsi:type="ELEMENT">
+                                <name>
+                                    <value>partial date</value>
+                                </name>
+                                <value xsi:type="DV_DATE">
+                                    <value>20190114</value>
+                                </value>
+                            </items>
+                            <items archetype_node_id="at0004" xsi:type="ELEMENT">
+                                <name>
+                                    <value>partial datetime</value>
+                                </name>
+                                <value xsi:type="DV_DATE_TIME">
+                                    <value>20190114T183649,426+0000</value>
+                                </value>
+                            </items>
+                        </description>
+                        <timing>
+                            <value>P1D</value>
+                            <formalism>ISO8601</formalism>
+                        </timing>
+                        <action_archetype_id>openEHR-EHR-ACTION\.test_all_types\.v1</action_archetype_id>
+                    </activities>
+                </items>
+                <items archetype_node_id="openEHR-EHR-ACTION.test_all_types.v1" xsi:type="ACTION">
+                    <name>
+                        <value>Test all types</value>
+                    </name>
+                    <language>
+                        <terminology_id>
+                            <value>ISO_639-1</value>
+                        </terminology_id>
+                        <code_string>en</code_string>
+                    </language>
+                    <encoding>
+                        <terminology_id>
+                            <value>IANA_character-sets</value>
+                        </terminology_id>
+                        <code_string>UTF-8</code_string>
+                    </encoding>
+                    <subject xsi:type="PARTY_SELF" />
+                    <time xsi:type="DV_DATE_TIME">
+                        <value>20190114T183650,154+0000</value>
+                    </time>
+                    <description archetype_node_id="at0001" xsi:type="ITEM_TREE">
+                        <name>
+                            <value>Arbol</value>
+                        </name>
+                        <items archetype_node_id="openEHR-EHR-CLUSTER.test_all_types.v1" xsi:type="CLUSTER">
+                            <name>
+                                <value>Test all types</value>
+                            </name>
+                            <items archetype_node_id="at0001" xsi:type="CLUSTER">
+                                <name>
+                                    <value>cluster 5</value>
+                                </name>
+                                <items archetype_node_id="at0002" xsi:type="CLUSTER">
+                                    <name>
+                                        <value>cluster 6</value>
+                                    </name>
+                                    <items archetype_node_id="at0003" xsi:type="ELEMENT">
+                                        <name>
+                                            <value>boolean 2</value>
+                                        </name>
+                                        <value xsi:type="DV_BOOLEAN">
+                                            <value>true</value>
+                                        </value>
+                                    </items>
+                                </items>
+                            </items>
+                        </items>
+                    </description>
+                    <ism_transition>
+                        <current_state>
+                            <value>planned</value>
+                            <defining_code>
+                                <terminology_id>
+                                    <value>openehr</value>
+                                </terminology_id>
+                                <code_string>526</code_string>
+                            </defining_code>
+                        </current_state>
+                    </ism_transition>
+                </items>
+            </items>
+            <items archetype_node_id="openEHR-EHR-ADMIN_ENTRY.test_all_types.v1" xsi:type="ADMIN_ENTRY">
+                <name>
+                    <value>Test all types</value>
+                </name>
+                <language>
+                    <terminology_id>
+                        <value>ISO_639-1</value>
+                    </terminology_id>
+                    <code_string>en</code_string>
+                </language>
+                <encoding>
+                    <terminology_id>
+                        <value>IANA_character-sets</value>
+                    </terminology_id>
+                    <code_string>UTF-8</code_string>
+                </encoding>
+                <subject xsi:type="PARTY_SELF" />
+                <data archetype_node_id="at0001" xsi:type="ITEM_SINGLE">
+                    <name>
+                        <value>single</value>
+                    </name>
+                    <item archetype_node_id="at0002">
+                        <name>
+                            <value>count 3</value>
+                        </name>
+                        <value xsi:type="DV_COUNT">
+                            <magnitude>123</magnitude>
+                        </value>
+                    </item>
+                </data>
+            </items>
+        </items>
+    </content>
+</composition>

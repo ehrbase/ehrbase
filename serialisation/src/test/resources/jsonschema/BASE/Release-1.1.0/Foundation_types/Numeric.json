@@ -1,0 +1,69 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/Numeric.json",
+    "title": "Numeric",
+    "description": "Abstract notional parent class of numeric types, which are types which have various arithmetic and comparison operators defined.",
+    "$comments": "Defined in Foundation_types IM, abstract",
+    "type": "number",
+    "properties": {
+        "_type": {
+            "enum": [
+                "Integer",
+                "Double",
+                "Real",
+                "Integer64"
+            ]
+        }
+    },
+    "required": [
+        "_type"
+    ],
+    "$abstract": true,
+    "$children": [
+        "all.json#/definitions/Ordered_Numeric"
+    ],
+    "$functions": {
+        "infix *": {
+            "description": "Product by `other'. Actual type of result depends on arithmetic balancing rules.",
+            "parameters": {
+                "other": {
+                    "$ref": "all.json#/definitions/Numeric"
+                }
+            },
+            "required_parameters": [
+                "other"
+            ],
+            "return": {
+                "$ref": "all.json#/definitions/Numeric"
+            }
+        },
+        "infix +": {
+            "description": "Sum with `other' (commutative). Actual type of result depends on arithmetic balancing rules.",
+            "parameters": {
+                "other": {
+                    "$ref": "all.json#/definitions/Numeric"
+                }
+            },
+            "required_parameters": [
+                "other"
+            ],
+            "return": {
+                "$ref": "all.json#/definitions/Numeric"
+            }
+        },
+        "infix -": {
+            "description": "Result of subtracting `other'. Actual type of result depends on arithmetic balancing rules.",
+            "parameters": {
+                "other": {
+                    "$ref": "all.json#/definitions/Numeric"
+                }
+            },
+            "required_parameters": [
+                "other"
+            ],
+            "return": {
+                "$ref": "all.json#/definitions/Numeric"
+            }
+        }
+    }
+}

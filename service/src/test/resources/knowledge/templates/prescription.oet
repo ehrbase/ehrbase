@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<template xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="openEHR/v1/Template">
+  <id>34ef693f-a02b-4e32-a34e-33113b49b324</id>
+  <name>Prescription</name>
+  <description>
+    <lifecycle_state>Initial</lifecycle_state>
+    <details>
+      <purpose />
+      <use />
+      <misuse />
+    </details>
+    <other_details>
+      <item>
+        <key>MetaDataSet:Sample Set </key>
+        <value>Template metadata sample set </value>
+      </item>
+      <item>
+        <key>Acknowledgements</key>
+        <value />
+      </item>
+      <item>
+        <key>Business Process Level</key>
+        <value />
+      </item>
+      <item>
+        <key>Care setting</key>
+        <value />
+      </item>
+      <item>
+        <key>Client group</key>
+        <value />
+      </item>
+      <item>
+        <key>Clinical Record Element</key>
+        <value />
+      </item>
+      <item>
+        <key>Copyright</key>
+        <value />
+      </item>
+      <item>
+        <key>Issues</key>
+        <value />
+      </item>
+      <item>
+        <key>Owner</key>
+        <value />
+      </item>
+      <item>
+        <key>Sign off</key>
+        <value />
+      </item>
+      <item>
+        <key>Speciality</key>
+        <value />
+      </item>
+      <item>
+        <key>User roles</key>
+        <value />
+      </item>
+    </other_details>
+  </description>
+  <definition xsi:type="COMPOSITION" archetype_id="openEHR-EHR-COMPOSITION.prescription.v1" concept_name="Prescription">
+    <Content xsi:type="SECTION" archetype_id="openEHR-EHR-SECTION.medications.v1" concept_name="Medications" path="/content">
+      <Item xsi:type="INSTRUCTION" archetype_id="openEHR-EHR-INSTRUCTION.medication.v1" concept_name="Medication order" path="/items">
+        <activityDescription xsi:type="ITEM_TREE" archetype_id="openEHR-EHR-ITEM_TREE.medication_mod.v1" path="/activities[at0001 and name/value='Medication activity']/description">
+          <Rule path="/items[at0012]" max="0" />
+          <Rule path="/items[at0003]" min="1" default="12">
+            <constraint xsi:type="quantityConstraint">
+              <includedUnits>mU</includedUnits>
+              <unitMagnitude>
+                <unit>mU</unit>
+                <maxMagnitude>125</maxMagnitude>
+                <minMagnitude>12</minMagnitude>
+                <precision>3</precision>
+                <includesMaximum>true</includesMaximum>
+                <includesMinimum>true</includesMinimum>
+              </unitMagnitude>
+            </constraint>
+          </Rule>
+          <Rule path="/items[at0004]" max="0" />
+          <Rule path="/items[at0033]" max="0" />
+          <Rule path="/items[at0008]" max="0" />
+          <Rule path="/items[at0057]" max="0" />
+          <Rule path="/items[at0060]" max="0" />
+          <Rule path="/items[at0050]" max="0" />
+          <Rule path="/items[at0051]" max="0" />
+          <Rule path="/items[at0009]" max="0" />
+          <Rule path="/items[at0010]" max="0" />
+          <Rule path="/items[at0013]" max="0" />
+          <Rule path="/items[at0018]" max="0" />
+          <Rule path="/items[at0023]" max="0" />
+          <Rule path="/items[at0049]" max="0" />
+        </activityDescription>
+      </Item>
+    </Content>
+    <Context />
+  </definition>
+</template>

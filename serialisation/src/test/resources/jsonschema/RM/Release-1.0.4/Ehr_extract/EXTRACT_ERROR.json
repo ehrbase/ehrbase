@@ -1,0 +1,18 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Ehr_extract/EXTRACT_ERROR.json",
+    "title": "EXTRACT_ERROR",
+    "$comments": "Defined in Ehr_extract IM",
+    "type": "object",
+    "properties": {
+        "request_id": {
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Base_types/all.json#/definitions/OBJECT_REF"
+        },
+        "reason": {
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_types/all.json#/definitions/DV_TEXT"
+        }
+    },
+    "required": [
+        "reason"
+    ]
+}

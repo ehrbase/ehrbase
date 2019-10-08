@@ -1,0 +1,8 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Security/ACCESS_CONTROL_SETTINGS.json",
+    "title": "ACCESS_CONTROL_SETTINGS",
+    "description": "Access Control Settings for the EHR and components. Intended to support multiple access control schemes. Currently implementation dependent.",
+    "$comments": "Defined in Security IM, abstract",
+    "$abstract": true
+}

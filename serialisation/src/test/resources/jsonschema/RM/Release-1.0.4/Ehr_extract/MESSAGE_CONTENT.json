@@ -1,0 +1,23 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Ehr_extract/MESSAGE_CONTENT.json",
+    "title": "MESSAGE_CONTENT",
+    "description": "Abstract parent of message payload types.",
+    "$comments": "Defined in Ehr_extract IM, abstract",
+    "properties": {
+        "_type": {
+            "enum": [
+                "SYNC_EXTRACT_REQUEST",
+                "SYNC_EXTRACT"
+            ]
+        }
+    },
+    "required": [
+        "_type"
+    ],
+    "$abstract": true,
+    "$children": [
+        "all.json#/definitions/SYNC_EXTRACT_REQUEST",
+        "all.json#/definitions/SYNC_EXTRACT"
+    ]
+}

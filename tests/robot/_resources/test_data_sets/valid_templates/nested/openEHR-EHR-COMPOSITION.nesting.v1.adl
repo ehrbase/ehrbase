@@ -1,0 +1,56 @@
+archetype (adl_version=1.4)
+	openEHR-EHR-COMPOSITION.nesting.v1
+
+concept
+	[at0000]	-- Nesting
+language
+	original_language = <[ISO_639-1::en]>
+description
+	original_author = <
+		["name"] = <"">
+	>
+	details = <
+		["en"] = <
+			language = <[ISO_639-1::en]>
+			purpose = <"">
+			use = <"">
+			misuse = <"">
+			copyright = <"">
+		>
+	>
+	lifecycle_state = <"0">
+	other_contributors = <>
+	other_details = <
+		["MD5-CAM-1.0.1"] = <"F87F1D41B1203A6F16E879C7262F41F5">
+	>
+
+definition
+	COMPOSITION[at0000] matches {	-- Nesting
+		category matches {
+			DV_CODED_TEXT matches {
+				defining_code matches {[openehr::433]}
+			}
+		}
+		content cardinality matches {0..*; unordered} matches {
+			allow_archetype SECTION[at0001] occurrences matches {0..*} matches {	-- nested
+				include
+					archetype_id/value matches {/openEHR-EHR-SECTION\.nested\.v1/}
+			}
+		}
+	}
+
+ontology
+	term_definitions = <
+		["en"] = <
+			items = <
+				["at0000"] = <
+					text = <"Nesting">
+					description = <"unknown">
+				>
+				["at0001"] = <
+					text = <"nested">
+					description = <"*">
+				>
+			>
+		>
+	>

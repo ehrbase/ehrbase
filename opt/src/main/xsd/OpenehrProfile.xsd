@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- openEHR Release 1.0.2 OpenehrProfile XML schema -->
+<!-- Authored by Ocean Informatics 2008.12.22  -->
+<xs:schema xmlns="http://schemas.openehr.org/v1" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://schemas.openehr.org/v1" elementFormDefault="qualified" version="1.0.2"
+           id="OpenehrProfile.xsd">
+    <xs:include schemaLocation="Archetype.xsd"/>
+    <xs:complexType name="C_CODE_PHRASE">
+        <xs:complexContent>
+            <xs:extension base="C_DOMAIN_TYPE">
+                <xs:sequence>
+                    <xs:element name="assumed_value" type="CODE_PHRASE" minOccurs="0"/>
+                    <xs:element name="terminology_id" type="TERMINOLOGY_ID" minOccurs="0"/>
+                    <xs:element name="code_list" type="xs:string" minOccurs="0"
+                                maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="C_DV_ORDINAL">
+        <xs:complexContent>
+            <xs:extension base="C_DOMAIN_TYPE">
+                <xs:sequence>
+                    <xs:element name="assumed_value" type="DV_ORDINAL" minOccurs="0"/>
+                    <xs:element name="list" type="DV_ORDINAL" minOccurs="0" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    <xs:complexType name="C_DV_QUANTITY">
+        <xs:complexContent>
+            <xs:extension base="C_DOMAIN_TYPE">
+                <xs:sequence>
+                    <xs:element name="assumed_value" type="DV_QUANTITY" minOccurs="0"/>
+                    <xs:element name="property" type="CODE_PHRASE" minOccurs="0"/>
+                    <xs:element name="list" type="C_QUANTITY_ITEM" minOccurs="0"
+                                maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    <xs:complexType name="C_QUANTITY_ITEM">
+        <xs:sequence>
+            <xs:element name="magnitude" type="IntervalOfReal" minOccurs="0"/>
+            <xs:element name="precision" type="IntervalOfInteger" minOccurs="0"/>
+            <xs:element name="units" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="C_DV_STATE">
+        <xs:complexContent>
+            <xs:extension base="C_DOMAIN_TYPE">
+                <xs:sequence>
+                    <xs:element name="assumed_value" type="DV_STATE" minOccurs="0"/>
+                    <xs:element name="value" type="STATE_MACHINE"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="STATE_MACHINE">
+        <xs:sequence>
+            <xs:element name="states" type="STATE" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="STATE" abstract="true">
+        <xs:sequence>
+            <xs:element name="name" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="NON_TERMINAL_STATE">
+        <xs:complexContent>
+            <xs:extension base="STATE">
+                <xs:sequence>
+                    <xs:element name="transitions" type="TRANSITION" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    <xs:complexType name="TERMINAL_STATE">
+        <xs:complexContent>
+            <xs:extension base="STATE"/>
+        </xs:complexContent>
+    </xs:complexType>
+    <xs:complexType name="TRANSITION">
+        <xs:sequence>
+            <xs:element name="event" type="xs:string"/>
+            <xs:element name="action" type="xs:string" minOccurs="0"/>
+            <xs:element name="guard" type="xs:string" minOccurs="0"/>
+            <xs:element name="next_state" type="STATE" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>

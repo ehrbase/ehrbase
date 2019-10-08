@@ -1,0 +1,70 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Common/ATTESTATION.json",
+    "title": "ATTESTATION",
+    "description": "Record an attestation of a party (the committer) to item(s) of record content. An attestation is an explicit signing by one healthcare agent of particular content for various particular purposes, including:\n\n* for authorisation of a controlled substance or procedure (e.g. sectioning of patient under mental health act); \n* witnessing of content by senior clinical professional; \n* indicating acknowledgement of content by intended recipient, e.g. GP who ordered a test result. \n",
+    "$comments": "Defined in Common IM, inherits from AUDIT_DETAILS",
+    "type": "object",
+    "properties": {
+        "system_id": {
+            "description": "Identifier of the logical EHR system where the change was committed. This is almost always owned by the organisation legally responsible for the EHR, and is distinct from any application, or any hosting infrastructure.",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/String"
+        },
+        "time_committed": {
+            "description": "Time of committal of the item. ",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_types/all.json#/definitions/DV_DATE_TIME"
+        },
+        "change_type": {
+            "description": "Type of change. Coded using the openEHR Terminology  audit change type  group.",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_types/all.json#/definitions/DV_CODED_TEXT"
+        },
+        "description": {
+            "description": "Reason for committal. This may be used to qualify the value in the `_change_type_` field. For example, if the change affects only the EHR directory, this field might be used to indicate 'Folder \"episode 2018-02-16\" added' or similar.",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_types/all.json#/definitions/DV_TEXT"
+        },
+        "committer": {
+            "description": "Identity and optional reference into identity management service, of user who committed the item. ",
+            "$ref": "all.json#/definitions/PARTY_PROXY"
+        },
+        "attested_view": {
+            "description": "Optional visual representation of content attested e.g. screen image. ",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_types/all.json#/definitions/DV_MULTIMEDIA"
+        },
+        "proof": {
+            "description": "Proof of attestation. ",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/String"
+        },
+        "items": {
+            "description": "Items attested, expressed as fully qualified runtime paths to the items in question. Although not recommended, these may include fine-grained items which have been attested in some other system. Otherwise it is assumed to be for the entire VERSION with which it is associated. ",
+            "type": "array",
+            "items": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_types/all.json#/definitions/DV_EHR_URI"
+            }
+        },
+        "reason": {
+            "description": "Reason of this attestation. Optionally coded by the openEHR Terminology group  attestation reason ; includes values like  authorisation ,  witness  etc. ",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_types/all.json#/definitions/DV_TEXT"
+        },
+        "is_pending": {
+            "description": "True if this attestation is outstanding; False means it has been completed.",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/Boolean"
+        }
+    },
+    "required": [
+        "system_id",
+        "time_committed",
+        "change_type",
+        "committer",
+        "reason",
+        "is_pending"
+    ],
+    "$inherits": [
+        "all.json#/definitions/AUDIT_DETAILS"
+    ],
+    "$invariants": {
+        "System_id_valid": "not system_id.is_empty",
+        "Change_type_valid": "terminology (Terminology_id_openehr).has_code_for_group_id (Group_id_audit_change_type, change_type.defining_code)",
+        "Items_valid": "items /= Void implies not items.is_empty",
+        "Reason_valid": "(reason.generating_type.is_equal (\u201cDV_CODED_TEXT\u201d) implies terminology (Terminology_id_openehr).has_code_for_group_id (Group_id_attestation_reason, reason.defining_code))"
+    }
+}

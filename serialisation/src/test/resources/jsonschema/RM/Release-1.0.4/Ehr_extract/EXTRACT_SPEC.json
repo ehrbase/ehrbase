@@ -1,0 +1,52 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Ehr_extract/EXTRACT_SPEC.json",
+    "title": "EXTRACT_SPEC",
+    "description": "Specification of an Extract's contents. Subtypes can be used to add details specific to the type of Extract. The specification consists of attributes specifying the directory, and two further groups of attributes in their own classes, namely a version specfication (which versions of information items are to be included) and a manifest (which entities are to be included in the extract).\n\nUse: Used in a request to specify an Extract, as well as to describe what is contained in an Extract.",
+    "$comments": "Defined in Ehr_extract IM",
+    "type": "object",
+    "properties": {
+        "version_spec": {
+            "description": "Specification of which versions of information items to include in the Extract. If Void, the default is latest versions only (which is reasonable for non-versioning systems as well).",
+            "$ref": "all.json#/definitions/EXTRACT_VERSION_SPEC"
+        },
+        "manifest": {
+            "description": "Specification of entities (e.g. records) to include in the Extract.",
+            "$ref": "all.json#/definitions/EXTRACT_MANIFEST"
+        },
+        "extract_type": {
+            "description": "Coded term indicating the type of content required, e.g.\n\n* openehr-ehr\n* openehr-demographic\n* generic-emr\n* other\n\nCoded by openEHR Terminology group \"extract content type\".",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_types/all.json#/definitions/DV_CODED_TEXT"
+        },
+        "include_multimedia": {
+            "description": "Indicates whether inline instances of DV_MULTIMEDIA in the source data are included or not.",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/Boolean"
+        },
+        "priority": {
+            "description": "Requested priority of this request to be handled by server. Priority schemes are likely to be local, and use values agreed by both ends.\n\nTBD: alternative is standard coded terms",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/Integer"
+        },
+        "link_depth": {
+            "description": "Degree of links to follow emanating from content items specified for inclusion. The kind of links to follow is dependent on the type of Extract.\n\nAll items at the target end of followed links at the given depth are also included in the extract; EXTRACT_CONTENT_ITEM.is_primary is used to differentiate.\n- 0 = don't follow;\n- 1 = follow first degree links;\n- 2 = follow 2nd degree links;\n- ....\n- n = follow nth degree links",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/Integer"
+        },
+        "criteria": {
+            "description": "Queries specifying the contents of this Extract.",
+            "type": "array",
+            "items": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_types/all.json#/definitions/DV_PARSABLE"
+            }
+        },
+        "other_details": {
+            "description": "Other specification items. Archetypable.",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_structures/all.json#/definitions/ITEM_STRUCTURE"
+        }
+    },
+    "required": [
+        "manifest",
+        "extract_type",
+        "include_multimedia",
+        "priority",
+        "link_depth"
+    ]
+}

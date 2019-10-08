@@ -1,0 +1,14 @@
+# specifications-ITS-JSON
+
+JSON schemas for use with openEHR systems and tools. See https://www.openehr.org/programs/specification/workingbaseline[working baseline] of current specifications.
+
+### IM Version
+Schema files are generated from directly openEHR latest UML models, implementing https://json-schema.org/specification.html[draft-07 of JSON-Schema specifications].
+
+### Additional JSON-Schema keywords
+A few other keywords are used to support extra openEHR model-info: `$inherits`, `$functions`, `$invariants`.
+These does not have have to be supported by validators, their purpose if more informational.   
+
+### Acknowledgements
+JSON Schema files were initially authored by https://www.code24.nl[Code24]. 
+

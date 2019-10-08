@@ -1,0 +1,7 @@
+VM Settings when performing jUnit test from within an IDE f.e.
+
+-Dtest.db.host=localhost
+-Dtest.db.port=5434
+-Dtest.db.name=ethercis
+-Dtest.db.user=postgres
+-Dtest.db.password=postgres

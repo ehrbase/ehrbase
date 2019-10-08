@@ -1,0 +1,23 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Base_types/INTERNET_ID.json",
+    "title": "INTERNET_ID",
+    "description": "Model of a reverse internet domain, as used to uniquely identify an internet domain. In the form of a dot-separated string in the reverse order of a domain name, specified by http://www.ietf.org/rfc/rfc1034.txt[IETF RFC 1034^]. ",
+    "$comments": "Defined in Base_types IM, inherits from UID",
+    "type": "object",
+    "properties": {
+        "value": {
+            "description": "The value of the id.",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/String"
+        }
+    },
+    "required": [
+        "value"
+    ],
+    "$inherits": [
+        "all.json#/definitions/UID"
+    ],
+    "$invariants": {
+        "Value_valid": "not value.empty"
+    }
+}

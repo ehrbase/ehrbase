@@ -1,0 +1,199 @@
+{
+	"@type": "COMPOSITION",
+	"name": {
+		"@type": "DV_TEXT",
+		"value": "Minimal",
+		"mappings": []
+	},
+	"archetype_node_id": "openEHR-EHR-COMPOSITION.report-result.v1",
+	"uid": {
+		"@type": "OBJECT_VERSION_ID",
+		"value": "a9d09e4e-9bdd-4d23-a549-80201d685db9::local.ethercis.com::1",
+		"root": {
+			"@type": "INTERNET_ID",
+			"value": "::local.ethercis.com::1"
+		},
+		"extension": "local.ethercis.com::1"
+	},
+	"archetype_details": {
+		"@type": "ARCHETYPED",
+		"archetype_id": {
+			"@type": "ARCHETYPE_ID",
+			"domain_concept": "report-result",
+			"rm_originator": "openEHR",
+			"rm_name": "EHR",
+			"rm_entity": "COMPOSITION",
+			"versionId": "1",
+			"value": "openEHR-EHR-COMPOSITION.report-result.v1",
+			"full_id": "openEHR-EHR-COMPOSITION.report-result.v1",
+			"semantic_id": "openEHR-EHR-COMPOSITION.report-result.v1"
+		},
+		"template_id": {
+			"@type": "TEMPLATE_ID",
+			"value": "minimal_observation.en.v1"
+		}
+	},
+	"links": [],
+	"language": {
+		"@type": "CODE_PHRASE",
+		"terminology_id": {
+			"@type": "TERMINOLOGY_ID",
+			"value": "ISO_639-1"
+		},
+		"code_string": "en"
+	},
+	"territory": {
+		"@type": "CODE_PHRASE",
+		"terminology_id": {
+			"@type": "TERMINOLOGY_ID",
+			"value": "ISO_3166-1"
+		},
+		"code_string": "UY"
+	},
+	"category": {
+		"@type": "DV_CODED_TEXT",
+		"value": "Event",
+		"mappings": [],
+		"defining_code": {
+			"@type": "CODE_PHRASE",
+			"terminology_id": {
+				"@type": "TERMINOLOGY_ID",
+				"value": "openEhr"
+			},
+			"code_string": "433"
+		}
+	},
+	"composer": {
+		"@type": "PARTY_IDENTIFIED",
+		"external_ref": {
+			"@type": "PARTY_REF",
+			"namespace": "DEMOGRAPHIC",
+			"type": "PERSON",
+			"id": {
+				"@type": "HIER_OBJECT_ID",
+				"value": "ref",
+				"root": {
+					"@type": "INTERNET_ID",
+					"value": "ref"
+				},
+				"extension": ""
+			}
+		},
+		"name": "Dr. House"
+	},
+	"context": {
+		"@type": "EVENT_CONTEXT",
+		"start_time": {
+			"@type": "DV_DATE_TIME",
+			"other_reference_ranges": [],
+			"value": "1969-12-31T21:00:00-03:00-03:00-0300"
+		},
+		"setting": {
+			"@type": "DV_CODED_TEXT",
+			"value": "primary nursing care",
+			"mappings": [],
+			"defining_code": {
+				"@type": "CODE_PHRASE",
+				"terminology_id": {
+					"@type": "TERMINOLOGY_ID",
+					"value": "openehr"
+				},
+				"code_string": "229"
+			}
+		},
+		"participations": [{
+			"@type": "PARTICIPATION",
+			"function": {
+				"@type": "DV_TEXT",
+				"value": "legal guardian",
+				"mappings": []
+			},
+			"mode": {
+				"@type": "DV_CODED_TEXT",
+				"value": "not specified",
+				"mappings": [],
+				"defining_code": {
+					"@type": "CODE_PHRASE",
+					"terminology_id": {
+						"@type": "TERMINOLOGY_ID",
+						"value": "openehr"
+					},
+					"code_string": "193"
+				}
+			},
+			"performer": {
+				"@type": "PARTY_IDENTIFIED",
+				"name": "Martha Stewart"
+			}
+		}],
+		"path_segments": [{
+			"node_name": "context"
+		}],
+		"path": "/context"
+	},
+	"content": [{
+		"@type": "OBSERVATION",
+		"name": {
+			"@type": "DV_TEXT",
+			"value": "Minimal",
+			"mappings": []
+		},
+		"links": [],
+		"other_participations": [],
+		"data": {
+			"@type": "HISTORY",
+			"name": {
+				"@type": "DV_TEXT",
+				"value": "Event Series",
+				"mappings": []
+			},
+			"archetype_node_id": "at0001",
+			"links": [],
+			"origin": {
+				"@type": "DV_DATE_TIME",
+				"other_reference_ranges": [],
+				"value": "2019-01-28T21:22:19Z00000000"
+			},
+			"events": [{
+				"@type": "POINT_EVENT",
+				"name": {
+					"@type": "DV_TEXT",
+					"value": "Cualquier evento",
+					"mappings": []
+				},
+				"links": [],
+				"time": {
+					"@type": "DV_DATE_TIME",
+					"other_reference_ranges": [],
+					"value": "2019-01-28T21:22:19Z00000000"
+				},
+				"data": {
+					"@type": "ITEM_TREE",
+					"archetype_node_id": "at0003",
+					"links": [],
+					"items": [{
+						"@type": "ELEMENT",
+						"name": {
+							"@type": "DV_TEXT",
+							"value": "text",
+							"mappings": []
+						},
+						"archetype_node_id": "at0004",
+						"links": [],
+						"value": {
+							"@type": "DV_TEXT",
+							"value": "original value",
+							"mappings": []
+						},
+						"path": "/content/data[at0001]/events/data[at0003]/items[at0004]"
+					}],
+					"path": "/content/data[at0001]/events/data[at0003]"
+				},
+				"path": "/content/data[at0001]/events"
+			}],
+			"path": "/content/data[at0001]"
+		},
+		"path": "/content"
+	}],
+	"path": "/"
+}

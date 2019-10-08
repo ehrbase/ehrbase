@@ -1,0 +1,52 @@
+archetype (adl_version=1.4)
+	openEHR-EHR-SECTION.medications.v1
+
+concept
+	[at0000]	-- Medications
+	
+language
+	original_language = <[ISO_639-1::en]>
+
+description
+	original_author = <
+		["name"] = <"Sam Heard">
+		["organisation"] = <"Ocean Informatics">
+		["date"] = <"9/01/2007">
+		["email"] = <"sam.heard@oceaninformatics.biz">
+	>
+	details = <
+		["en"] = <
+			language = <[ISO_639-1::en]>
+			purpose = <"A heading for medications">
+			use = <"Only contains medications by constraint">
+			misuse = <"">
+		>
+	>
+	lifecycle_state = <"AuthorDraft">
+	other_contributors = <>
+
+definition
+	SECTION[at0000] matches {	-- Medications
+		items cardinality matches {0..*; unordered} matches {
+			allow_archetype INSTRUCTION occurrences matches {0..1} matches {
+				include
+					domain_concept matches {/medication\.v1/}
+				exclude
+					domain_concept matches {/.*/}
+			}
+		}
+	}
+
+ontology
+	primary_language = <"en">
+	languages_available = <"en", ...>
+	term_definitions = <
+		["en"] = <
+			items = <
+				["at0000"] = <
+					description = <"A section containing medication orders only">
+					text = <"Medications">
+				>
+			>
+		>
+	>

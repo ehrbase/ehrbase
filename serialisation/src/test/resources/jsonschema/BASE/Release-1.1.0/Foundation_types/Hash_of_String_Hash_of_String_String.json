@@ -1,0 +1,67 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/Hash_of_String_Hash_of_String_String.json",
+    "title": "Hash<String, Hash<String, String>>",
+    "description": "Two-level hash map structure, typically used for two levels of keyed tables, e.g. with outer keys = language (\"en\", \"zh\" etc) and inner keys = some tag or id or path.",
+    "$comments": "Defined in Foundation_types IM, inherits from Hash",
+    "type": "object",
+    "$inherits": [
+        "all.json#/definitions/Hash"
+    ],
+    "$functions": {
+        "has": {
+            "description": "Test for membership of a value.",
+            "parameters": {
+                "v": {
+                    "$ref": "all.json#/definitions/T"
+                }
+            },
+            "required_parameters": [
+                "v"
+            ],
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "count": {
+            "description": "Number of items in container.",
+            "return": {
+                "$ref": "all.json#/definitions/Integer"
+            }
+        },
+        "is_empty": {
+            "description": "True if container is empty.",
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "has_key": {
+            "description": "Test for membership of a key.",
+            "parameters": {
+                "a_key": {
+                    "$ref": "all.json#/definitions/K"
+                }
+            },
+            "required_parameters": [
+                "a_key"
+            ],
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "item": {
+            "description": "Return item for key  a_key'.",
+            "parameters": {
+                "a_key": {
+                    "$ref": "all.json#/definitions/K"
+                }
+            },
+            "required_parameters": [
+                "a_key"
+            ],
+            "return": {
+                "$ref": "all.json#/definitions/V"
+            }
+        }
+    }
+}

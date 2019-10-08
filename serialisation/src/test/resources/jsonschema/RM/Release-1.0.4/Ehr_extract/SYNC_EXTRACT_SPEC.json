@@ -1,0 +1,32 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Ehr_extract/SYNC_EXTRACT_SPEC.json",
+    "title": "SYNC_EXTRACT_SPEC",
+    "description": "Details of specification of Extract, used in a request to specify an Extract, or in a response, to describe what is actually in the Extract.",
+    "$comments": "Defined in Ehr_extract IM",
+    "type": "object",
+    "properties": {
+        "includes_versions": {
+            "description": "True if the Versions from the Contribution are included; False if just the Contribution and its Audit are included.",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/Boolean"
+        },
+        "contribution_list": {
+            "description": "List of Contributions to include / that are included in the Extract.",
+            "type": "array",
+            "items": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Common/all.json#/definitions/CONTRIBUTION"
+            }
+        },
+        "contributions_since": {
+            "description": "Specify Contributions included in Extract by threshold date.",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_types/all.json#/definitions/DV_DATE_TIME"
+        },
+        "all_contributions": {
+            "description": "True if all Contributions in the record are included.",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/Boolean"
+        }
+    },
+    "required": [
+        "includes_versions"
+    ]
+}

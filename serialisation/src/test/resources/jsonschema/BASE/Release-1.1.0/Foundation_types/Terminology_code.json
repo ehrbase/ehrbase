@@ -1,0 +1,30 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/Terminology_code.json",
+    "title": "Terminology_code",
+    "description": "Logically primitive type representing a reference to a terminology concept, in the form of a terminology identifier, optional version, and a code or code string from the terminology.",
+    "$comments": "Defined in Foundation_types IM",
+    "type": "object",
+    "properties": {
+        "terminology_id": {
+            "description": "The archetype environment namespace identifier used to identify a terminology. Typically a value like `\"snomed_ct\"` that is mapped elsewhere to the full URI identifying the terminology.",
+            "$ref": "all.json#/definitions/String"
+        },
+        "terminology_version": {
+            "description": "Optional string value representing terminology version, typically a date or dotted numeric.",
+            "$ref": "all.json#/definitions/String"
+        },
+        "code_string": {
+            "description": "A terminology code or post-coordinated code expression, if supported by the terminology. The code may refer to a single term, a value set consisting of multiple terms, or some other entity representable within the terminology.",
+            "$ref": "all.json#/definitions/String"
+        },
+        "uri": {
+            "description": "The URI reference that may be used as a concrete key into a notional terminology service for queries that can obtain the term text, definition, and other associated elements.",
+            "$ref": "all.json#/definitions/Uri"
+        }
+    },
+    "required": [
+        "terminology_id",
+        "code_string"
+    ]
+}

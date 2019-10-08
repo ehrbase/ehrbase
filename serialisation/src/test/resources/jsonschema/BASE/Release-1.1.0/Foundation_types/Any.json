@@ -1,0 +1,67 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/Any.json",
+    "title": "Any",
+    "description": "Abstract supertype. Usually maps to a type like Any or Object in an object-oriented technology. Defined here to provide value and reference equality semantics.",
+    "$comments": "Defined in Foundation_types IM, abstract",
+    "$abstract": true,
+    "$functions": {
+        "is_equal": {
+            "description": "Value equality.",
+            "parameters": {
+                "other": {
+                    "$ref": "all.json#/definitions/Any"
+                }
+            },
+            "required_parameters": [
+                "other"
+            ],
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "infix =": {
+            "description": "Reference equality.",
+            "parameters": {
+                "other": {
+                    "description": "Reference equality.",
+                    "$ref": "all.json#/definitions/Any"
+                }
+            },
+            "required_parameters": [
+                "other"
+            ],
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "instance_of": {
+            "description": "Create new instance of a type.",
+            "parameters": {
+                "a_type": {
+                    "$ref": "all.json#/definitions/String"
+                }
+            },
+            "required_parameters": [
+                "a_type"
+            ],
+            "return": {
+                "$ref": "all.json#/definitions/Any"
+            }
+        },
+        "type_of": {
+            "description": "Type name of an object as a string. May include generic parameters, as in \"Interval<Time>\".",
+            "parameters": {
+                "an_object": {
+                    "$ref": "all.json#/definitions/Any"
+                }
+            },
+            "required_parameters": [
+                "an_object"
+            ],
+            "return": {
+                "$ref": "all.json#/definitions/String"
+            }
+        }
+    }
+}

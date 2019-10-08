@@ -1,0 +1,8 @@
+{
+    "_type": "EHR_STATUS",
+    "subject": {
+        "_type": "PARTY_SELF"
+    },
+    "is_queryable": true,
+    "is_modifiable": true
+}

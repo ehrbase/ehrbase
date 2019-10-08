@@ -1,0 +1,84 @@
+/*
+ * Copyright (c) 2019 Vitasystems GmbH,
+ * Jake Smolka (Hannover Medical School),
+ * Luis Marco-Ruiz (Hannover Medical School),
+ * Stefan Spiska (Vitasystems GmbH).
+ *
+ * This file is part of project EHRbase
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.ehrbase.service;
+
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
+import org.ehrbase.dao.access.interfaces.I_PartyIdentifiedAccess;
+import org.ehrbase.dao.access.interfaces.I_SystemAccess;
+import org.ehrbase.dao.access.support.ServiceDataAccess;
+import org.springframework.beans.factory.annotation.Value;
+
+import java.util.UUID;
+
+public class BaseService {
+
+
+    public static final String DEMOGRAPHIC = "DEMOGRAPHIC";
+    public static final String PARTY = "PARTY";
+
+    @Value("${system.type}")
+    private String systemType = "POSTGRES";
+    @Value("${spring.datasource.url}")
+    private String datasourceUrl = "url";
+    @Value("${spring.datasource.password}")
+    private String datasourcePass = "luis";
+    @Value("${spring.datasource.username}")
+    private String datasourceUser = "luis";
+
+    private final KnowledgeCacheService knowledgeCacheService;
+
+    private final ConnectionPoolService connectionPoolService;
+
+
+    public BaseService(KnowledgeCacheService knowledgeCacheService, ConnectionPoolService connectionPoolService) {
+        this.knowledgeCacheService = knowledgeCacheService;
+
+        this.connectionPoolService = connectionPoolService;
+    }
+
+    protected I_DomainAccess getDataAccess() {
+        return new ServiceDataAccess(connectionPoolService.getContext(), knowledgeCacheService, knowledgeCacheService);
+    }
+
+    public UUID getSystemUuid() {
+        UUID systemId;
+        try {
+            systemId = I_SystemAccess.retrieveInstanceId(getDataAccess(), systemType);
+            if (systemId == null) {
+                I_SystemAccess localSystems = I_SystemAccess.getInstance(getDataAccess(), "Local systems", systemType);
+                localSystems.commit();
+                systemId = localSystems.getId();
+            }
+        } catch (Exception e) {
+            throw new InternalServerException(e);
+        }
+        return systemId;
+
+    }
+
+    protected UUID getUserUuid() {
+        //@TODO READ from Spring Security
+        return I_PartyIdentifiedAccess.getOrCreatePartyByExternalRef(getDataAccess(), null, "cbf741ff-9480-4792-8894-13fc5f818b6d", DEMOGRAPHIC, "User", PARTY);
+    }
+
+}

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- openEHR Release 1.0.2 Extract  XML schema -->
+<!-- Authored by Ocean Informatics 2008.12.22  -->
+<xs:schema xmlns="http://schemas.openehr.org/v1" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://schemas.openehr.org/v1" elementFormDefault="qualified" version="v1.0.2"
+           id="Extract.xsd">
+    <xs:include schemaLocation="Version.xsd"/>
+    <xs:element name="extract_request" type="EXTRACT_REQUEST"/>
+    <xs:element name="extract" type="EXTRACT"/>
+    <xs:element name="versioned_object" type="X_VERSIONED_OBJECT"/>
+    <xs:complexType name="X_VERSIONED_OBJECT">
+        <xs:sequence>
+            <xs:element name="uid" type="HIER_OBJECT_ID"/>
+            <xs:element name="owner_id" type="OBJECT_REF"/>
+            <xs:element name="time_created" type="DV_DATE_TIME"/>
+            <xs:element name="total_version_count" type="xs:int"/>
+            <xs:element name="extract_version_count" type="xs:int"/>
+            <xs:element name="revision_history" type="REVISION_HISTORY" minOccurs="0"/>
+            <xs:element name="versions" type="ORIGINAL_VERSION" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="EXTRACT">
+        <xs:complexContent>
+            <xs:extension base="LOCATABLE">
+                <xs:sequence>
+                    <xs:element name="request_id" type="OBJECT_REF" minOccurs="0"/>
+                    <xs:element name="time_created" type="DV_DATE_TIME"/>
+                    <xs:element name="system_id" type="HIER_OBJECT_ID"/>
+                    <xs:element name="participations" type="PARTICIPATION" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="sequence_nr" type="xs:long"/>
+                    <!--<xs:element name="demographics" type="X_VERSIONED_OBJECT" minOccurs="0" maxOccurs="unbounded"/>-->
+                    <xs:element name="chapters" type="EXTRACT_CHAPTER" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="specification" type="EXTRACT_SPEC" minOccurs="0"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    <xs:complexType name="EXTRACT_CHAPTER">
+        <xs:complexContent>
+            <xs:extension base="LOCATABLE">
+                <xs:sequence>
+                    <xs:element name="directory" type="EXTRACT_FOLDER" minOccurs="0"/>
+                    <xs:element name="content" type="EXTRACT_CONTENT"/>
+                    <xs:element name="entity_identifier" type="EXTRACT_ENTITY_IDENTIFIER"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    <xs:complexType name="EXTRACT_FOLDER">
+        <xs:complexContent>
+            <xs:extension base="LOCATABLE">
+                <xs:sequence>
+                    <xs:element name="items" type="OBJECT_REF" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="folders" type="EXTRACT_FOLDER" minOccurs="0" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    <xs:complexType name="EXTRACT_CONTENT" abstract="true">
+        <xs:sequence/>
+    </xs:complexType>
+    <xs:complexType name="EXTRACT_ITEM">
+        <xs:sequence>
+            <xs:element name="uid" type="HIER_OBJECT_ID"/>
+            <xs:element name="is_primary" type="xs:boolean"/>
+            <xs:element name="is_changed" type="xs:boolean"/>
+            <xs:element name="is_masked" type="xs:boolean"/>
+            <xs:element name="original_path" type="DV_URI" minOccurs="0"/>
+            <xs:element name="item" type="X_VERSIONED_OBJECT" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="EXTRACT_ENTITY_IDENTIFIER">
+        <xs:sequence>
+            <xs:element name="entity_id" type="HIER_OBJECT_ID" minOccurs="0"/>
+            <xs:element name="subject" type="PARTY_IDENTIFIED" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="EXTRACT_ENTITY_MANIFEST">
+        <xs:sequence>
+            <xs:element name="item_list" type="OBJECT_REF" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="entity_identifier" type="EXTRACT_ENTITY_IDENTIFIER"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="EXTRACT_MANIFEST">
+        <xs:sequence>
+            <xs:element name="entities" type="EXTRACT_ENTITY_MANIFEST" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="EXTRACT_SPEC">
+        <xs:sequence>
+            <xs:element name="extract_type" type="xs:string"/>
+            <xs:element name="includes_multimedia" type="xs:boolean"/>
+            <xs:element name="link_depth" type="xs:int"/>
+            <xs:element name="criteria" type="DV_PARSABLE" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="includes_directory" type="xs:boolean"/>
+            <xs:element name="directory_archetype" type="ARCHETYPE_ID" minOccurs="0"/>
+            <xs:element name="other_details" type="ITEM_STRUCTURE" minOccurs="0"/>
+            <xs:element name="version_spec" type="EXTRACT_VERSION_SPEC" minOccurs="0"/>
+            <xs:element name="manifest" type="EXTRACT_MANIFEST"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="EXTRACT_VERSION_SPEC">
+        <xs:sequence>
+            <xs:element name="include_all_versions" type="xs:boolean"/>
+            <xs:element name="commit_time_interval" type="DV_INTERVAL" minOccurs="0"/>
+            <xs:element name="includes_revision_history" type="xs:boolean"/>
+            <xs:element name="includes_data" type="xs:boolean"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="EXTRACT_REQUEST">
+        <xs:complexContent>
+            <xs:extension base="LOCATABLE">
+                <xs:sequence>
+                    <xs:element name="extract_spec" type="EXTRACT_SPEC"/>
+                    <xs:element name="update_spec" type="EXTRACT_UPDATE_SPEC" minOccurs="0"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    <xs:complexType name="EXTRACT_UPDATE_SPEC">
+        <xs:sequence>
+            <xs:element name="persist_in_server" type="xs:boolean"/>
+            <xs:element name="repeat_period" type="DV_INTERVAL" minOccurs="0"/>
+            <xs:element name="trigger_events" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="send_changes_only" type="xs:boolean"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="EHR_EXTRACT_CONTENT">
+        <xs:complexContent>
+            <xs:extension base="EXTRACT_CONTENT">
+                <xs:sequence>
+                    <xs:element name="ehr_access" type="X_VERSIONED_OBJECT" minOccurs="0"/>
+                    <xs:element name="ehr_status" type="X_VERSIONED_OBJECT" minOccurs="0"/>
+                    <xs:element name="directory" type="X_VERSIONED_OBJECT" minOccurs="0"/>
+                    <xs:element name="compositions" type="X_VERSIONED_OBJECT" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="demographics" type="X_VERSIONED_OBJECT" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="other_items" type="X_VERSIONED_OBJECT" minOccurs="0" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+</xs:schema>

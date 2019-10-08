@@ -1,0 +1,36 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/ehrbase
+    username: ehrbase
+    password: ehrbase
+    validationQuery: /* ping */ SELECT 1
+    maxIdle: 10
+    maxTotal: 50
+    maxWaitMillis: 10000
+    testOnBorrow: true
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    hibernate:
+      ddl-auto:
+
+
+server:
+  contextPath: /ehrbase
+  aql:
+# set to true by default (comment out to enable jsquery)
+    use-jsquery: false
+
+system:
+  type: LOCAL
+
+
+keycloak:
+  bearer-only: true
+  realm: demo
+  resource: myclient
+  use-resource-role-mappings: true
+  auth-server-url: http://localhost:8090/auth

@@ -1,0 +1,20 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Base_types/TEMPLATE_ID.json",
+    "title": "TEMPLATE_ID",
+    "description": "Identifier for templates. Lexical form to be determined.",
+    "$comments": "Defined in Base_types IM, inherits from OBJECT_ID",
+    "type": "object",
+    "properties": {
+        "value": {
+            "description": "The value of the id in the form defined below. ",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/String"
+        }
+    },
+    "required": [
+        "value"
+    ],
+    "$inherits": [
+        "all.json#/definitions/OBJECT_ID"
+    ]
+}

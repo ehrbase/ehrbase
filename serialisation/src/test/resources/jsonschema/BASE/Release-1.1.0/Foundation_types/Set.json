@@ -1,0 +1,50 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/Set.json",
+    "title": "Set",
+    "description": "Unordered container that may not contain duplicates.",
+    "$comments": "Defined in Foundation_types IM, inherits from Container",
+    "type": "array",
+    "properties": {
+        "_type": {
+            "enum": [
+                "Set",
+                "Set<String>"
+            ]
+        }
+    },
+    "$inherits": [
+        "all.json#/definitions/Container"
+    ],
+    "$children": [
+        "all.json#/definitions/Set_of_String"
+    ],
+    "$functions": {
+        "has": {
+            "description": "Test for membership of a value.",
+            "parameters": {
+                "v": {
+                    "$ref": "all.json#/definitions/T"
+                }
+            },
+            "required_parameters": [
+                "v"
+            ],
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "count": {
+            "description": "Number of items in container.",
+            "return": {
+                "$ref": "all.json#/definitions/Integer"
+            }
+        },
+        "is_empty": {
+            "description": "True if container is empty.",
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        }
+    }
+}

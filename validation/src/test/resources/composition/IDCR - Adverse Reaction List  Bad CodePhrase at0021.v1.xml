@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<composition archetype_node_id="openEHR-EHR-COMPOSITION.adverse_reaction_list.v1" xmlns:v1="http://schemas.openehr.org/v1" >
+    <name>
+        <value>Adverse reaction list</value>
+    </name>
+    <archetype_details>
+        <archetype_id>
+            <value>openEHR-EHR-COMPOSITION.adverse_reaction_list.v1</value>
+        </archetype_id>
+        <template_id>
+            <value>IDCR - Adverse Reaction List.v1</value>
+        </template_id>
+        <rm_version>1.0.1</rm_version>
+    </archetype_details>
+    <language>
+        <terminology_id>
+            <value>ISO_639-1</value>
+        </terminology_id>
+        <code_string>en</code_string>
+    </language>
+    <territory>
+        <terminology_id>
+            <value>ISO_3166-1</value>
+        </terminology_id>
+        <code_string>GB</code_string>
+    </territory>
+    <category>
+        <value>event</value>
+        <defining_code>
+            <terminology_id>
+                <value>openehr</value>
+            </terminology_id>
+            <code_string>433</code_string>
+        </defining_code>
+    </category>
+    <composer xsi:type="PARTY_IDENTIFIED" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <name>Dr George Shannon</name>
+    </composer>
+    <context>
+        <start_time>
+            <value>2016-12-20T00:11:02.518+02:00</value>
+        </start_time>
+        <setting>
+            <value>other care</value>
+            <defining_code>
+                <terminology_id>
+                    <value>openehr</value>
+                </terminology_id>
+                <code_string>238</code_string>
+            </defining_code>
+        </setting>
+        <health_care_facility>
+            <external_ref>
+                <id xsi:type="GENERIC_ID" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <value>999999-345</value>
+                    <scheme>2.16.840.1.113883.2.1.4.3</scheme>
+                </id>
+                <namespace>NHS-UK</namespace>
+                <type>PARTY</type>
+            </external_ref>
+            <name>Home</name>
+        </health_care_facility>
+    </context>
+    <content xsi:type="SECTION" archetype_node_id="openEHR-EHR-SECTION.allergies_adverse_reactions_rcp.v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <name>
+            <value>Allergies and adverse reactions</value>
+        </name>
+        <archetype_details>
+            <archetype_id>
+                <value>openEHR-EHR-SECTION.allergies_adverse_reactions_rcp.v1</value>
+            </archetype_id>
+            <rm_version>1.0.1</rm_version>
+        </archetype_details>
+        <items xsi:type="EVALUATION" archetype_node_id="openEHR-EHR-EVALUATION.adverse_reaction_risk.v1">
+            <name>
+                <value>Adverse reaction risk</value>
+            </name>
+            <archetype_details>
+                <archetype_id>
+                    <value>openEHR-EHR-EVALUATION.adverse_reaction_risk.v1</value>
+                </archetype_id>
+                <rm_version>1.0.1</rm_version>
+            </archetype_details>
+            <language>
+                <terminology_id>
+                    <value>ISO_639-1</value>
+                </terminology_id>
+                <code_string>en</code_string>
+            </language>
+            <encoding>
+                <terminology_id>
+                    <value>IANA_character-sets</value>
+                </terminology_id>
+                <code_string>UTF-8</code_string>
+            </encoding>
+            <subject xsi:type="PARTY_SELF"/>
+            <provider xsi:type="PARTY_IDENTIFIED">
+                <external_ref>
+                    <id xsi:type="GENERIC_ID">
+                        <value>http://showcase.1.rippleosi.org/1234567</value>
+                        <scheme>2.16.840.1.113883.2.1.4.3</scheme>
+                    </id>
+                    <namespace>NHS-UK</namespace>
+                    <type>ANY</type>
+                </external_ref>
+                <name>iHEALTHLINK Discharge</name>
+            </provider>
+            <data xsi:type="ITEM_TREE" archetype_node_id="at0001">
+                <name>
+                    <value>Tree</value>
+                </name>
+                <items xsi:type="ELEMENT" archetype_node_id="at0002">
+                    <name>
+                        <value>Causative agent</value>
+                    </name>
+                    <value xsi:type="DV_CODED_TEXT">
+                        <value>allergy to penicillin</value>
+                        <defining_code>
+                            <terminology_id>
+                                <value>SNOMED-CT</value>
+                            </terminology_id>
+                            <code_string>91936005</code_string>
+                        </defining_code>
+                    </value>
+                </items>
+                <items xsi:type="CLUSTER" archetype_node_id="at0009">
+                    <name>
+                        <value>Reaction details</value>
+                    </name>
+                    <items xsi:type="ELEMENT" archetype_node_id="at0011">
+                        <name>
+                            <value>Manifestation</value>
+                        </name>
+                        <value xsi:type="DV_CODED_TEXT">
+                            <value>eruption due to drug</value>
+                            <defining_code>
+                                <terminology_id>
+                                    <value>SNOMED-CT</value>
+                                </terminology_id>
+                                <code_string>28926001</code_string>
+                            </defining_code>
+                        </value>
+                    </items>
+                    <items xsi:type="ELEMENT" archetype_node_id="at0021">
+                        <name>
+                            <value>Whatever</value>
+                        </name>
+                        <value xsi:type="DV_CODED_TEXT">
+                            <value>thingy</value>
+                            <defining_code>
+                                <terminology_id>
+                                    <value>local</value>
+                                </terminology_id>
+                                <code_string>at1234</code_string>
+                            </defining_code>
+                        </value>
+                    </items>
+                    <items xsi:type="ELEMENT" archetype_node_id="at0032">
+                        <name>
+                            <value>Comment</value>
+                        </name>
+                        <value xsi:type="DV_TEXT">
+                            <value>History unclear</value>
+                        </value>
+                    </items>
+                </items>
+            </data>
+        </items>
+    </content>
+</composition>

@@ -1,0 +1,89 @@
+﻿archetype (adl_version=1.4)
+	openEHR-EHR-INSTRUCTION.medication.v1
+
+concept
+	[at0000]	-- Medication order
+language
+	original_language = <[ISO_639-1::en]>
+	translations = <
+		["de"] = <
+			language = <[ISO_639-1::de]>
+			author = <
+				["organisation"] = <"University of Heidelberg, Central Queensland University">
+				["name"] = <"Jasmin Buck, Sebastian Garde">
+			>
+		>
+	>
+description
+	original_author = <
+		["name"] = <"Sam Heard">
+		["organisation"] = <"Ocean Informatics">
+		["email"] = <"sam.heard@oceaninformatics.biz">
+		["date"] = <"21/04/2006">
+	>
+	details = <
+		["de"] = <
+			language = <[ISO_639-1::de]>
+			purpose = <"Zur Dokumentation einer Medikationsverordnung, kann mehr als eine Aktivität enthalten, aber immer mit der selben Struktur">
+			use = <"Zur Dokumentation von Anweisungen bezüglich eines Medikaments">
+			keywords = <"Verschreibung", "Medikationsverordnung", "Verordnung">
+			misuse = <"Nicht zur Dokumentation der Verabreichung, der Gabe usw. benutzen. Für diese Dokumentation openEHR-EHR-ACTION.medication benutzen.">
+			copyright = <"copyright (c) 2008 openEHR Foundation">
+		>
+		["en"] = <
+			language = <[ISO_639-1::en]>
+			purpose = <"For recording a medication order, which may involve more than one activity, but all have the same structure.">
+			use = <"For recording an instruction about medication.">
+			keywords = <"prescribe", "medication order", "order">
+			misuse = <"Do not use for recording administration, dispensing etc. Use openEHR-EHR-ACTION.medication for these recordings.">
+			copyright = <"copyright (c) 2008 openEHR Foundation">
+		>
+	>
+	lifecycle_state = <"AuthorDraft">
+	other_contributors = <"NEHTA (Australia) data groups", ...>
+	other_details = <
+		["MD5-CAM-1.0.1"] = <"924CFA7763035B1B943B52502FA037A5">
+	>
+
+definition
+	INSTRUCTION[at0000] matches {	-- Medication order
+		activities cardinality matches {0..*; unordered} matches {
+			ACTIVITY[at0001] occurrences matches {0..*} matches {	-- Medication activity
+				action_archetype_id matches {/openEHR-EHR-ACTION\.medication\.v1/}
+				description matches {
+					allow_archetype ITEM_TREE matches {
+						include
+							archetype_id/value matches {/openEHR-EHR-ITEM_TREE\.medication\.v1|openEHR-EHR-ITEM_TREE\.medication-formulation\.v1|openEHR-EHR-ITEM_TREE\.medication-vaccine\.v1|openEHR-EHR-ITEM_TREE\.medication_mod(-[a-zA-Z0-9_]+)*\.v1/}
+					}
+				}
+			}
+		}
+	}
+
+ontology
+	term_definitions = <
+		["de"] = <
+			items = <
+				["at0000"] = <
+					text = <"Medikationsverordnung">
+					description = <"Eine von einem Klinikarzt verfasste Verordnung oder Anweisung, die beschreibt welches Medikament wann, für wie lange usw. eingenommen werden soll">
+				>
+				["at0001"] = <
+					text = <"Medikationshandlung">
+					description = <"Informationen über die auszuführende Medikationshandlung">
+				>
+			>
+		>
+		["en"] = <
+			items = <
+				["at0000"] = <
+					text = <"Medication order">
+					description = <"An order or instruction created by a clinician which specifies which medication to take, when, for how long etc.">
+				>
+				["at0001"] = <
+					text = <"Medication activity">
+					description = <"Information about the medication action(s) to be carried out">
+				>
+			>
+		>
+	>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- openEHR Release 1.0.2 Composition  XML schema -->
+<!-- Authored by Ocean Informatics 2008.11.24  -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openehr.org/v1"
+           targetNamespace="http://schemas.openehr.org/v1" elementFormDefault="qualified" version="v1.0.2"
+           id="Composition.xsd">
+    <xs:include schemaLocation="Content.xsd"/>
+    <xs:element name="composition" type="COMPOSITION"/>
+    <xs:complexType name="COMPOSITION">
+        <xs:complexContent>
+            <xs:extension base="LOCATABLE">
+                <xs:sequence>
+                    <xs:element name="language" type="CODE_PHRASE"/>
+                    <xs:element name="territory" type="CODE_PHRASE"/>
+                    <xs:element name="category" type="DV_CODED_TEXT"/>
+                    <xs:element name="composer" type="PARTY_PROXY"/>
+                    <xs:element name="context" type="EVENT_CONTEXT" minOccurs="0"/>
+                    <xs:element name="content" type="CONTENT_ITEM" minOccurs="0"
+                                maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    <xs:complexType name="EVENT_CONTEXT">
+        <xs:sequence>
+            <xs:element name="start_time" type="DV_DATE_TIME"/>
+            <xs:element name="end_time" type="DV_DATE_TIME" minOccurs="0"/>
+            <xs:element name="location" type="xs:string" minOccurs="0"/>
+            <xs:element name="setting" type="DV_CODED_TEXT"/>
+            <xs:element name="other_context" type="ITEM_STRUCTURE" minOccurs="0"/>
+            <xs:element name="health_care_facility" type="PARTY_IDENTIFIED" minOccurs="0"/>
+            <xs:element name="participations" type="PARTICIPATION" minOccurs="0"
+                        maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>

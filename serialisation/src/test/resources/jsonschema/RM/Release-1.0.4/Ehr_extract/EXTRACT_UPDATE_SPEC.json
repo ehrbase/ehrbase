@@ -1,0 +1,38 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Ehr_extract/EXTRACT_UPDATE_SPEC.json",
+    "title": "EXTRACT_UPDATE_SPEC",
+    "description": "Specification of the how the request should be processed by server. The request can be persisted in the server, meaning that a) it can be re-activated by the requesting system simply by indicating Request id, and b) that a changes-only pattern of Extract updates can be set up. To achieve this, the server has to remember what was sent in the previous response.\n\nThe update mode may be event-driven and periodic update or a mixture of both. The candidate items to be sent each time are the result of re-evaluating the content and versioning parts of the specification; what is actually sent is determined by the send_changes_only flag.",
+    "$comments": "Defined in Ehr_extract IM",
+    "type": "object",
+    "properties": {
+        "persist_in_server": {
+            "description": "If True, this Request is persisted in the server until further notice.",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/Boolean"
+        },
+        "repeat_period": {
+            "description": "Period for resending update Extracts in response to original Request.",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_types/all.json#/definitions/DV_DURATION"
+        },
+        "trigger_events": {
+            "description": "Set of Event names that will cause sending of update Extracts. Event types include:   \n\n* any_change - any change in content items matched by content specification, e.g. new versions of persistent compositions. If the content list allows matching of any, or a wide range of archetypes, this event type will match any additions to the record.\n* correction - match error corrections only, including deletions.\n* update - match updates (i.e. new versions) of included content items.\n\nCoded by openEHR Terminology group \"extract update trigger event type\".",
+            "type": "array",
+            "items": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_types/all.json#/definitions/DV_CODED_TEXT"
+            }
+        },
+        "update_method": {
+            "description": "Indicate mode of update. Can be: send only items that are changed (including logical deletions) or new since last send. For persist_in_server Requests only.",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_types/all.json#/definitions/CODE_PHRASE"
+        }
+    },
+    "required": [
+        "persist_in_server",
+        "update_method"
+    ],
+    "$invariants": {
+        "Overall_validity": "repeat_period /= Void or trigger_events /= Void",
+        "Trigger_events_validity": "trigger_events /= Void implies not trigger_events.is_empty",
+        "Send_changes_only_validity": "send_changes_only implies persist_in_server"
+    }
+}

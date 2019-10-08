@@ -1,0 +1,47 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/Cardinality.json",
+    "title": "Cardinality",
+    "description": "Express constraints on the cardinality of container objects which are the values of multiply-valued attributes, including uniqueness and ordering, providing the means to state that a container acts like a logical list, set or bag.",
+    "$comments": "Defined in Foundation_types IM",
+    "type": "object",
+    "properties": {
+        "interval": {
+            "description": "The interval of this cardinality. ",
+            "$ref": "all.json#/definitions/Multiplicity_interval"
+        },
+        "is_ordered": {
+            "description": "True if the members of the container attribute to which this cardinality refers are ordered. ",
+            "$ref": "all.json#/definitions/Boolean"
+        },
+        "is_unique": {
+            "description": "True if the members of the container attribute to which this cardinality refers are unique.",
+            "$ref": "all.json#/definitions/Boolean"
+        }
+    },
+    "required": [
+        "interval",
+        "is_ordered",
+        "is_unique"
+    ],
+    "$functions": {
+        "is_bag": {
+            "description": "True if the semantics of this cardinality represent a bag, i.e. unordered, non-unique membership.",
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "is_list": {
+            "description": "True if the semantics of this cardinality represent a list, i.e. ordered, non-unique membership.",
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "is_set": {
+            "description": "True if the semantics of this cardinality represent a set, i.e. unordered, unique membership.",
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        }
+    }
+}

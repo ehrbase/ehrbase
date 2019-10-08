@@ -1,0 +1,38 @@
+{
+  "datasources": [
+    {
+      "demographics": {
+        "identification": {
+          "schema": "empi",
+          "root": "demographic"
+        },
+        "data_model": [
+          {
+            "table": {
+              "name": "PERSON",
+              "link": {
+                "type": "EHR",
+                "expression": "JOIN EHR ... ON ....",
+                "always_use": false
+              },
+              "fields": [
+                {
+                  "person_name": {
+                    "aql": "/demographic/person/identities/details/name",
+                    "column": "NAME"
+                  }
+                },
+                {
+                  "address": {
+                    "aql": "/demographic/person/address/details/common_address",
+                    "column": "ADDRESS"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

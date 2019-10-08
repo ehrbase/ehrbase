@@ -1,0 +1,262 @@
+{
+  "_type": "COMPOSITION",
+  "name": {
+    "_type": "DV_TEXT",
+    "value": "Laboratory report"
+  },
+  "archetype_node_id": "openEHR-EHR-COMPOSITION.report-mnd.v1",
+  "uid": {
+		"_type": "OBJECT_VERSION_ID",
+		"value": "__THIS_SHOULD_BE_MODIFIED_BY_THE_TEST_::piri.ehrscape.com::1"
+	},
+  "archetype_details": {
+    "_type": "ARCHETYPED",
+    "archetype_id": {
+      "_type": "ARCHETYPE_ID",
+      "value": "openEHR-EHR-COMPOSITION.report-mnd.v1"
+    },
+    "template_id": {
+      "_type": "TEMPLATE_ID",
+      "value": "Laboratory Report"
+    },
+    "rm_version": "1.0.1"
+  },
+  "language": {
+    "_type": "CODE_PHRASE",
+    "terminology_id": {
+      "_type": "TERMINOLOGY_ID",
+      "value": "ISO_639-1"
+    },
+    "code_string": "en"
+  },
+  "territory": {
+    "_type": "CODE_PHRASE",
+    "terminology_id": {
+      "_type": "TERMINOLOGY_ID",
+      "value": "ISO_3166-1"
+    },
+    "code_string": "SI"
+  },
+  "category": {
+    "_type": "DV_CODED_TEXT",
+    "value": "event",
+    "defining_code": {
+      "_type": "CODE_PHRASE",
+      "terminology_id": {
+        "_type": "TERMINOLOGY_ID",
+        "value": "openehr"
+      },
+      "code_string": "433"
+    }
+  },
+  "composer": {
+    "_type": "PARTY_IDENTIFIED",
+    "name": "ehrscape"
+  },
+  "context": {
+    "_type": "EVENT_CONTEXT",
+    "start_time": {
+      "_type": "DV_DATE_TIME",
+      "value": "2014-02-05T12:54:54"
+    },
+    "setting": {
+      "_type": "DV_CODED_TEXT",
+      "value": "other care",
+      "defining_code": {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "openehr"
+        },
+        "code_string": "238"
+      }
+    }
+  },
+  "content": [
+    {
+      "_type": "OBSERVATION",
+      "name": {
+        "_type": "DV_TEXT",
+        "value": "Laboratory test result"
+      },
+      "archetype_details": {
+        "_type": "ARCHETYPED",
+        "archetype_id": {
+          "_type": "ARCHETYPE_ID",
+          "value": "openEHR-EHR-OBSERVATION.lab_test-result.v1"
+        },
+        "rm_version": "1.0.1"
+      },
+      "archetype_node_id": "openEHR-EHR-OBSERVATION.lab_test-result.v1",
+      "language": {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_639-1"
+        },
+        "code_string": "en"
+      },
+      "encoding": {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "IANA_character-sets"
+        },
+        "code_string": "UTF-8"
+      },
+      "subject": {
+        "_type": "PARTY_SELF"
+      },
+      "data": {
+        "_type": "HISTORY",
+        "name": {
+          "_type": "DV_TEXT",
+          "value": "Event Series"
+        },
+        "archetype_node_id": "at0001",
+        "origin": {
+          "_type": "DV_DATE_TIME",
+          "value": "2014-02-05T12:54:54"
+        },
+        "events": [
+          {
+            "_type": "POINT_EVENT",
+            "name": {
+              "_type": "DV_TEXT",
+              "value": "Any event"
+            },
+            "archetype_node_id": "at0002",
+            "time": {
+              "_type": "DV_DATE_TIME",
+              "value": "2014-02-05T12:54:54"
+            },
+            "data": {
+              "_type": "ITEM_TREE",
+              "name": {
+                "_type": "DV_TEXT",
+                "value": "Tree"
+              },
+              "archetype_node_id": "at0003",
+              "items": [
+                {
+                  "_type": "ELEMENT",
+                  "name": {
+                    "_type": "DV_TEXT",
+                    "value": "Test result name"
+                  },
+                  "archetype_node_id": "at0005",
+                  "value": {
+                    "_type": "DV_CODED_TEXT",
+                    "value": "S-Cholesterol",
+                    "defining_code": {
+                      "_type": "CODE_PHRASE",
+                      "terminology_id": {
+                        "_type": "TERMINOLOGY_ID",
+                        "value": "LOINC"
+                      },
+                      "code_string": "2093-3"
+                    }
+                  }
+                },
+                {
+                  "_type": "ELEMENT",
+                  "name": {
+                    "_type": "DV_TEXT",
+                    "value": "Overall test result status"
+                  },
+                  "archetype_node_id": "at0073",
+                  "value": {
+                    "_type": "DV_CODED_TEXT",
+                    "value": "Final",
+                    "defining_code": {
+                      "_type": "CODE_PHRASE",
+                      "terminology_id": {
+                        "_type": "TERMINOLOGY_ID",
+                        "value": "local"
+                      },
+                      "code_string": "at0038"
+                    }
+                  }
+                },
+                {
+                  "_type": "CLUSTER",
+                  "name": {
+                    "_type": "DV_TEXT",
+                    "value": "Result group"
+                  },
+                  "archetype_node_id": "at0095",
+                  "items": [
+                    {
+                      "_type": "CLUSTER",
+                      "name": {
+                        "_type": "DV_CODED_TEXT",
+                        "value": "S-Cholesterol",
+                        "defining_code": {
+                          "_type": "CODE_PHRASE",
+                          "terminology_id": {
+                            "_type": "TERMINOLOGY_ID",
+                            "value": "LOINC"
+                          },
+                          "code_string": "2093-3"
+                        }
+                      },
+                      "archetype_node_id": "at0096",
+                      "items": [
+                        {
+                          "_type": "ELEMENT",
+                          "name": {
+                            "_type": "DV_TEXT",
+                            "value": "Result value"
+                          },
+                          "archetype_node_id": "at0112",
+                          "value": {
+                            "_type": "DV_QUANTITY",
+                            "normal_range": {
+                              "_type": "DV_INTERVAL",
+                              "upper": {
+                                "_type": "DV_QUANTITY",
+                                "magnitude": 200,
+                                "units": "mg/dL",
+                                "precision": 0
+                              },
+                              "lower_included": false,
+                              "upper_included": false,
+                              "lower_unbounded": true,
+                              "upper_unbounded": false
+                            },
+                            "normal_status": {
+                              "_type": "CODE_PHRASE",
+                              "terminology_id": {
+                                "_type": "TERMINOLOGY_ID",
+                                "value": "openehr_normal_statuses"
+                              },
+                              "code_string": "H"
+                            },
+                            "magnitude": 203,
+                            "units": "mg/dL"
+                          }
+                        },
+                        {
+                          "_type": "ELEMENT",
+                          "name": {
+                            "_type": "DV_TEXT",
+                            "value": "Date Time result issued"
+                          },
+                          "archetype_node_id": "at0111",
+                          "value": {
+                            "_type": "DV_DATE_TIME",
+                            "value": "2014-02-05T12:54:54"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

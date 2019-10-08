@@ -1,0 +1,15 @@
+{
+"ctx/composer_name": "Dr Tony Shannon",
+"ctx/health_care_facility|id": "999999-345",
+"ctx/health_care_facility|name": "Ripple View Care Home",
+"ctx/id_namespace": "NHS-UK",
+"ctx/id_scheme": "2.16.840.1.113883.2.1.4.3",
+"ctx/language": "en",
+"ctx/territory": "GB",
+"ctx/time": "2016-01-24T00:11:02.518+02:00",
+"immunisation_summary/immunisation_procedure:0/ism_transition/current_state|code": "532",
+"immunisation_summary/immunisation_procedure:0/immunisation_name": "Hepatitis A",
+"immunisation_summary/immunisation_procedure:0/series_number": 1,
+"immunisation_summary/immunisation_procedure:0/comment": "Minor reaction",
+"immunisation_summary/immunisation_procedure:0/time": "2014-12-20T07:45:20.622Z"
+}

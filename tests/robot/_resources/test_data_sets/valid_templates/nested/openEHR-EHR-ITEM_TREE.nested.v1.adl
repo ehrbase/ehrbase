@@ -1,0 +1,61 @@
+archetype (adl_version=1.4)
+	openEHR-EHR-ITEM_TREE.nested.v1
+
+concept
+	[at0000]	-- Nested
+language
+	original_language = <[ISO_639-1::en]>
+description
+	original_author = <
+		["name"] = <"">
+	>
+	details = <
+		["en"] = <
+			language = <[ISO_639-1::en]>
+			purpose = <"">
+			use = <"">
+			misuse = <"">
+			copyright = <"">
+		>
+	>
+	lifecycle_state = <"0">
+	other_contributors = <>
+	other_details = <
+		["MD5-CAM-1.0.1"] = <"BA46A2DA1D267705BB31871EB70E6B48">
+	>
+
+definition
+	ITEM_TREE[at0000] occurrences matches {0..*} matches {	-- Nested
+		items cardinality matches {0..*; unordered} matches {
+			ELEMENT[at0002] occurrences matches {0..1} matches {	-- ordinal
+				value matches {
+					C_DV_ORDINAL <
+					>
+				}
+			}
+			allow_archetype CLUSTER[at0004] occurrences matches {0..*} matches {	-- nested
+				include
+					archetype_id/value matches {/openEHR-EHR-CLUSTER\.nested\.v1/}
+			}
+		}
+	}
+
+ontology
+	term_definitions = <
+		["en"] = <
+			items = <
+				["at0000"] = <
+					text = <"Nested">
+					description = <"unknown">
+				>
+				["at0002"] = <
+					text = <"ordinal">
+					description = <"*">
+				>
+				["at0004"] = <
+					text = <"nested">
+					description = <"*">
+				>
+			>
+		>
+	>

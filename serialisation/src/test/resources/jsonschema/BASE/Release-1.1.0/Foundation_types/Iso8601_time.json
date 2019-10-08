@@ -1,0 +1,295 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/Iso8601_time.json",
+    "title": "Iso8601_time",
+    "description": "Represents an ISO 8601 time, including partial and extended forms. Value may be:\n\n* `hh:mm:ss[,sss][Z|\u00b1hh[mm]]` (extended, preferred) or\n* `hhmmss[,sss][Z|\u00b1hh[mm]]` (compact)\n* or a partial invariant.\n\nSee `_valid_iso8601_time()_` for validity.\n\nNOTE: A small deviation to the ISO 8601:2004 standard in this class is that the time `24:00:00` is not allowed, for consistency with `Iso8601_date_time`.",
+    "$comments": "Defined in Foundation_types IM, inherits from Iso8601_type",
+    "type": "object",
+    "properties": {
+        "_type": {
+            "enum": [
+                "Iso8601_time",
+                "DV_TIME"
+            ]
+        },
+        "value": {
+            "description": "Representation of all descendants is a single String.",
+            "$ref": "all.json#/definitions/String"
+        }
+    },
+    "required": [
+        "value"
+    ],
+    "$inherits": [
+        "all.json#/definitions/Iso8601_type"
+    ],
+    "$children": [
+        "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_types/all.json#/definitions/DV_TIME"
+    ],
+    "$functions": {
+        "valid_year": {
+            "parameters": {
+                "y": {
+                    "$ref": "all.json#/definitions/Integer"
+                }
+            },
+            "required_parameters": [
+                "y"
+            ],
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "valid_month": {
+            "parameters": {
+                "m": {
+                    "$ref": "all.json#/definitions/Integer"
+                }
+            },
+            "required_parameters": [
+                "m"
+            ],
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "valid_day": {
+            "description": "True if d >= 1 and d <= days_in_month (m, y)",
+            "parameters": {
+                "y": {
+                    "$ref": "all.json#/definitions/Integer"
+                },
+                "m": {
+                    "$ref": "all.json#/definitions/Integer"
+                },
+                "d": {
+                    "$ref": "all.json#/definitions/Integer"
+                }
+            },
+            "required_parameters": [
+                "y",
+                "m",
+                "d"
+            ],
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "valid_hour": {
+            "description": "True if (h >= 0 and h < Hours_in_day) or (h = Hours_in_day and m = 0 and s = 0)",
+            "parameters": {
+                "h": {
+                    "$ref": "all.json#/definitions/Integer"
+                },
+                "m": {
+                    "$ref": "all.json#/definitions/Integer"
+                },
+                "s": {
+                    "$ref": "all.json#/definitions/Integer"
+                }
+            },
+            "required_parameters": [
+                "h",
+                "m",
+                "s"
+            ],
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "valid_minute": {
+            "description": "True if m >= 0 and m < Minutes_in_hour.",
+            "parameters": {
+                "m": {
+                    "$ref": "all.json#/definitions/Integer"
+                }
+            },
+            "required_parameters": [
+                "m"
+            ],
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "valid_second": {
+            "description": "True if s >= 0 and s < Seconds_in_minute .",
+            "parameters": {
+                "s": {
+                    "$ref": "all.json#/definitions/Integer"
+                }
+            },
+            "required_parameters": [
+                "s"
+            ],
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "valid_fractional_second": {
+            "description": "True if fs >= 0.0 and fs < 1.0 .",
+            "parameters": {
+                "fs": {
+                    "$ref": "all.json#/definitions/Double"
+                }
+            },
+            "required_parameters": [
+                "fs"
+            ],
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "valid_iso8601_date": {
+            "description": "String is a valid ISO 8601 date, i.e. takes the complete form:\n\n* `YYYY-MM-DD` (extended, preferred) or one of the partial forms `YYYY-MM` or `YYYY`\n* `YYYYMMDD` (compact) or a partial variant `YYYYMM`.\n\nWhere:\n\n* `YYYY` is the string form of any positive number in the range `0000` - `9999` (zero-filled to four digits)\n* `MM` is `01` - `12` (zero-filled to two digits)\n* `DD` is `01` - `31` (zero-filled to two digits)\n\nThe combinations of `YYYY`, `MM`, `DD` numbers must be correct with respect to the Gregorian calendar.",
+            "parameters": {
+                "s": {
+                    "$ref": "all.json#/definitions/String"
+                }
+            },
+            "required_parameters": [
+                "s"
+            ],
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "valid_iso8601_time": {
+            "description": "String is a valid ISO 8601 date, i.e. takes the form:\n\n* `hh:mm:ss[(,|.)s+][Z|\u00b1hh[:mm]]` (extended)\n* `hhmmss[(,|.)s+][Z|\u00b1hh[mm]]` (compact)\n* or one of the partial forms:\n** `hh:mm` (extended)\n** `hhmm` or `hh` (compact)\n\nwith an additional optional timezone indicator of:\n\n* `Z` or`\u00b1hh[:mm]` (extended)  `\u00b1hh[mm]` (compact)\n\nWhere:\n\n* `hh` is \"00\" - \"23\" (0-filled to two digits)\n* `mm` is \"00\" - \"59\" (0-filled to two digits)\n* `ss` is \"00\" - \"60\" (0-filled to two digits)\n* `[(,|.)s+]` is an optional string consisting of a comma or decimal point followed by numeric string of 1 or more digits, representing a fractional second\n* `Z` is a literal meaning UTC (modern replacement for GMT), i.e. timezone `+0000`\n",
+            "parameters": {
+                "s": {
+                    "$ref": "all.json#/definitions/String"
+                }
+            },
+            "required_parameters": [
+                "s"
+            ],
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "valid_iso8601_date_time": {
+            "description": "String is a valid ISO 8601 date-time, i.e. takes the form:\n\n* `YYYY-MM-DDThh:mm:ss[(,|.)s+][Z|\u00b1hh[:mm]]` (extended)\n* `YYYYMMDDThhmmss[(,|.)s+][Z|\u00b1hh[mm]]` (compact)\n* or one of the partial forms:\n** `YYYY-MM-DDThh:mm` or `YYYY-MM-DDThh` (extended)\n** `YYYYMMDDThhmm` or `YYYYMMDDThh` (compact)",
+            "parameters": {
+                "s": {
+                    "$ref": "all.json#/definitions/String"
+                }
+            },
+            "required_parameters": [
+                "s"
+            ],
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "valid_iso8601_duration": {
+            "description": "String is a valid ISO 8601 duration, i.e. takes the form:\n\n* `P[nnY][nnM][nnW][nnD][T[nnH][nnM][nnS]]`\n\nWhere each nn represents a number of years, months, etc. nnW represents a number of 7-day weeks.\n\nNote: allowing the `W` designator in the same expression as other designators is an exception to the published standard, but necessary in clinical information (typically for representing pregnancy duration).",
+            "parameters": {
+                "s": {
+                    "description": "String is a valid ISO 8601 duration, i.e. takes the form:\n\n* `P[nnY][nnM][nnW][nnD][T[nnH][nnM][nnS]]`\n\nWhere each `nn` represents a number of years, months, etc. `nnW` represents a number of 7- day weeks.\n\nNOTE: allowing the `W` designator in the same expression as other designators is an exception to the published standard, but necessary in clinical information (typically for representing pregnancy duration).",
+                    "$ref": "all.json#/definitions/String"
+                }
+            },
+            "required_parameters": [
+                "s"
+            ],
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "infix <": {
+            "description": "Arithmetic comparison. In conjunction with \u2018=\u2019, enables the definition of the operators \u2018>\u2019, \u2018>=\u2019, \u2018<=\u2019, \u2018<>\u2019. In real type systems, this operator might be defined on another class for comparability.",
+            "parameters": {
+                "other": {
+                    "$ref": "all.json#/definitions/Ordered"
+                }
+            },
+            "required_parameters": [
+                "other"
+            ],
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "is_partial": {
+            "description": "True if this time is partial, i.e. if seconds or more is missing.",
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "is_extended": {
+            "description": "True if this time uses \u2018-\u2019, \u2018:\u2019 separators.",
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "hour": {
+            "description": "Hour in day, in 24-hour time.",
+            "return": {
+                "$ref": "all.json#/definitions/Integer"
+            }
+        },
+        "minute": {
+            "description": "Minute in hour.",
+            "return": {
+                "$ref": "all.json#/definitions/Integer"
+            }
+        },
+        "second": {
+            "description": "Second in minute.",
+            "return": {
+                "$ref": "all.json#/definitions/Integer"
+            }
+        },
+        "fractional_second": {
+            "description": "Fractional seconds.",
+            "return": {
+                "$ref": "all.json#/definitions/Real"
+            }
+        },
+        "timezone": {
+            "description": "Timezone; may be Void.",
+            "return": {
+                "$ref": "all.json#/definitions/Iso8601_timezone"
+            }
+        },
+        "minute_unknown": {
+            "description": "Indicates whether minute is unknown. If so, the time is of the form \u201chh\u201d.",
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "second_unknown": {
+            "description": "Indicates whether second is unknown. If so and month is known, the time is of the form `\"hh:mm\"` or `\"hhmm\"`.",
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "is_decimal_sign_comma": {
+            "description": "True if this time has a decimal part indicated by \u2018,\u2019 (comma) rather than \u2018.\u2019 (period).",
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "has_fractional_second": {
+            "description": "True if the fractional_second part is signficant (i.e. even if = 0.0).",
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "as_string": {
+            "description": "Return string value in extended format.",
+            "return": {
+                "$ref": "all.json#/definitions/String"
+            }
+        }
+    },
+    "$invariants": {
+        "Post": "Result = fs >= 0.0 and fs < 1.0 .",
+        "Hour_valid": "valid_hour(hour, minute, second)",
+        "Minute_valid": "not minute_unknown implies valid_minute (minute)",
+        "Second_valid": "not second_unknown implies valid_second (second)",
+        "Fractional_second_valid": "has_fractional_second implies (not second_unknown and valid_fractional_second (fractional_second))",
+        "Partial_validity": "minute_unknown implies second_unknown",
+        "Pre": "not second_unknown"
+    }
+}

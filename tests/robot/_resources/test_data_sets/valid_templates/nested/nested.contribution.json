@@ -1,0 +1,300 @@
+{
+  "_type": "CONTRIBUTION",
+  "versions": [
+    {
+      "_type": "ORIGINAL_VERSION",
+      "commit_audit": {
+        "_type": "AUDIT_DETAILS",
+        "system_id": "test-system-id",
+        "committer": {
+          "_type": "PARTY_IDENTIFIED",
+          "name": "<optional name of the committer>",
+          "external_ref": {
+            "id": {
+              "_type": "GENERIC_ID",
+              "value": "<OBJECT_ID>",
+              "scheme": "<ID SCHEME NAME>"
+            },
+            "namespace": "demographic",
+            "type": "PERSON"
+          }
+        },
+        "change_type": {
+          "value": "creation",
+          "defining_code": {
+            "terminology_id": {
+              "value": "openehr"
+            },
+            "code_string": "249"
+          }
+        },
+        "description": {
+          "value": "<optional audit description>"
+        }
+      },
+      "data":  {
+       	"_type": "COMPOSITION",
+       	"name": {
+       		"_type": "DV_TEXT",
+       		"value": "Nesting"
+       	},
+       	"archetype_details": {
+       		"_type": "ARCHETYPED",
+       		"archetype_id": {
+       			"_type": "ARCHETYPE_ID",
+       			"value": "openEHR-EHR-COMPOSITION.nesting.v1"
+       		},
+       		"template_id": {
+       			"_type": "TEMPLATE_ID",
+       			"value": "nested.en.v1"
+       		},
+       		"rm_version": "1.0.2"
+       	},
+       	"archetype_node_id": "openEHR-EHR-COMPOSITION.nesting.v1",
+       	"language": {
+       		"_type": "CODE_PHRASE",
+       		"terminology_id": {
+       			"_type": "TERMINOLOGY_ID",
+       			"value": "ISO_639-1"
+       		},
+       		"code_string": "en"
+       	},
+       	"territory": {
+       		"_type": "CODE_PHRASE",
+       		"terminology_id": {
+       			"_type": "TERMINOLOGY_ID",
+       			"value": "ISO_3166-1"
+       		},
+       		"code_string": "UY"
+       	},
+       	"category": {
+       		"_type": "DV_CODED_TEXT",
+       		"value": "event",
+       		"defining_code": {
+       			"_type": "CODE_PHRASE",
+       			"terminology_id": {
+       				"_type": "TERMINOLOGY_ID",
+       				"value": "openehr"
+       			},
+       			"code_string": "433"
+       		}
+       	},
+       	"composer": {
+       		"_type": "PARTY_IDENTIFIED",
+       		"external_ref": {
+       			"_type": "PARTY_REF",
+       			"id": {
+       				"_type": "HIER_OBJECT_ID",
+       				"value": "402cb7bc-6549-4613-b382-ae3e9010d1e9"
+       			},
+       			"namespace": "DEMOGRAPHIC",
+       			"type": "PERSON"
+       		},
+       		"name": "Dr. House"
+       	},
+       	"context": {
+       		"_type": "EVENT_CONTEXT",
+       		"start_time": {
+       			"_type": "DV_DATE_TIME",
+       			"value": "2019-04-29T06:14:57,575+00:00"
+       		},
+       		"setting": {
+       			"_type": "DV_CODED_TEXT",
+       			"value": "Hospital B",
+       			"defining_code": {
+       				"_type": "CODE_PHRASE",
+       				"terminology_id": {
+       					"_type": "TERMINOLOGY_ID",
+       					"value": "openehr"
+       				},
+       				"code_string": "229"
+       			}
+       		}
+       	},
+       	"content": [{
+       		"_type": "SECTION",
+       		"name": {
+       			"_type": "DV_TEXT",
+       			"value": "Nested"
+       		},
+       		"archetype_node_id": "openEHR-EHR-SECTION.nested.v1",
+       		"items": [{
+       			"_type": "INSTRUCTION",
+       			"name": {
+       				"_type": "DV_TEXT",
+       				"value": "Nested"
+       			},
+       			"archetype_node_id": "openEHR-EHR-INSTRUCTION.nested.v1",
+       			"language": {
+       				"_type": "CODE_PHRASE",
+       				"terminology_id": {
+       					"_type": "TERMINOLOGY_ID",
+       					"value": "ISO_639-1"
+       				},
+       				"code_string": "en"
+       			},
+       			"encoding": {
+       				"_type": "CODE_PHRASE",
+       				"terminology_id": {
+       					"_type": "TERMINOLOGY_ID",
+       					"value": "Unicode"
+       				},
+       				"code_string": "UTF-8"
+       			},
+       			"subject": {
+       				"_type": "PARTY_SELF"
+       			},
+       			"narrative": {
+       				"_type": "DV_TEXT",
+       				"value": "JdDGKpONxLiqURryMySvQUSaRuyzVGhjYAsQV,.EPa,AhzJXYjajThsaHXLYyjdVmMTrzDWOtdAGKq.nz.efAhGfcPcytwuWjoFvJcnPqDEsusY,wtaaoJQYSvnRNbwf,rxIyFurUuYzQRTDvuWeJOAfnNtY,VUPDqPFuo.GctzMYICygNauraAblvnootSYruroHzWGMAJIWHBgXHoKnHpXxkRTsyCWSiOb,DasnEhWyXEVfaYgjHCuiJNBGVO"
+       			},
+       			"activities": [{
+       				"_type": "ACTIVITY",
+       				"name": {
+       					"_type": "DV_TEXT",
+       					"value": "Current Activity"
+       				},
+       				"archetype_node_id": "at0001",
+       				"description": {
+       					"_type": "ITEM_TREE",
+       					"name": {
+       						"_type": "DV_TEXT",
+       						"value": "Nested"
+       					},
+       					"archetype_node_id": "openEHR-EHR-ITEM_TREE.nested.v1",
+       					"items": [{
+       						"_type": "ELEMENT",
+       						"name": {
+       							"_type": "DV_TEXT",
+       							"value": "ordinal"
+       						},
+       						"archetype_node_id": "at0002",
+       						"value": {
+       							"_type": "DV_ORDINAL",
+       							"value": 1,
+       							"symbol": {
+       								"_type": "DV_CODED_TEXT",
+       								"value": "MEJOTBJFOZNXKAO",
+       								"defining_code": {
+       									"_type": "CODE_PHRASE",
+       									"terminology_id": {
+       										"_type": "TERMINOLOGY_ID",
+       										"value": "local"
+       									},
+       									"code_string": "at0010"
+       								}
+       							}
+       						}
+       					}, {
+       						"_type": "CLUSTER",
+       						"name": {
+       							"_type": "DV_TEXT",
+       							"value": "Nested"
+       						},
+       						"archetype_node_id": "openEHR-EHR-CLUSTER.nested.v1",
+       						"items": [{
+       							"_type": "ELEMENT",
+       							"name": {
+       								"_type": "DV_TEXT",
+       								"value": "text"
+       							},
+       							"archetype_node_id": "at0001",
+       							"value": {
+       								"_type": "DV_TEXT",
+       								"value": "Bfcb MWMvcXtjnbcCqSHyUQnzxqoClspCUySmRXfzEAddsK,nDPPOIamzjOPdrKrajOrvLPBpjQfFcvdQOgnKbXUJspK,j.hwZLrzZdePlIoooFStLGuqEdMtYTGuIAEcqn iBeCEA,bzdkkBtLJueJJzMrhJusJCAALtbfaEhxsixvZIHX.eqVPmgCkfuBj NwpOCOEP.J,wUVMYxlDUViNpIwiIdus,oNumhmNMeaTZHrUzERAWSLKALIFncz"
+       							}
+       						}, {
+       							"_type": "ELEMENT",
+       							"name": {
+       								"_type": "DV_TEXT",
+       								"value": "date"
+       							},
+       							"archetype_node_id": "at0002",
+       							"value": {
+       								"_type": "DV_DATE_TIME",
+       								"value": "2019-04-29T06:14:57,726+00:00"
+       							}
+       						}, {
+       							"_type": "CLUSTER",
+       							"name": {
+       								"_type": "DV_TEXT",
+       								"value": "Nested2"
+       							},
+       							"archetype_node_id": "openEHR-EHR-CLUSTER.nested2.v1",
+       							"items": [{
+       								"_type": "ELEMENT",
+       								"name": {
+       									"_type": "DV_TEXT",
+       									"value": "boolean"
+       								},
+       								"archetype_node_id": "at0001",
+       								"value": {
+       									"_type": "DV_BOOLEAN",
+       									"value": true
+       								}
+       							}, {
+       								"_type": "ELEMENT",
+       								"name": {
+       									"_type": "DV_TEXT",
+       									"value": "count"
+       								},
+       								"archetype_node_id": "at0002",
+       								"value": {
+       									"_type": "DV_COUNT",
+       									"magnitude": 7
+       								}
+       							}]
+       						}]
+       					}]
+       				},
+       				"timing": {
+       					"_type": "DV_PARSABLE",
+       					"value": "P1D",
+       					"formalism": "ISO8601"
+       				},
+       				"action_archetype_id": "openEHR-EHR-ACTION\\.sample_action\\.v1"
+       			}]
+       		}]
+       	}]
+       },
+      "lifecycle_state": {
+        "value": "complete",
+        "defining_code": {
+          "terminology_id": {
+            "value": "openehr"
+          },
+          "code_string": "532"
+        }
+      }
+    }
+  ],
+  "audit": {
+    "_type": "AUDIT_DETAILS",
+    "system_id": "test-system-id",
+    "committer": {
+      "_type": "PARTY_IDENTIFIED",
+      "name": "<optional name of the committer>",
+      "external_ref": {
+        "id": {
+          "_type": "GENERIC_ID",
+          "value": "<OBJECT_ID>",
+          "scheme": "<ID SCHEME NAME>"
+        },
+        "namespace": "demographic",
+        "type": "PERSON"
+      }
+    },
+    "change_type": {
+      "value": "creation",
+      "defining_code": {
+        "terminology_id": {
+          "value": "openehr"
+        },
+        "code_string": "249"
+      }
+    },
+    "description": {
+      "value": "<optional audit description>"
+    }
+  }
+}

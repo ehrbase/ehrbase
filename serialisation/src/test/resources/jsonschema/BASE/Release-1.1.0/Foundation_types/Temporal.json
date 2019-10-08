@@ -1,0 +1,49 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/Temporal.json",
+    "title": "Temporal",
+    "description": "Abstract ancestor of time-related classes.",
+    "$comments": "Defined in Foundation_types IM, abstract, inherits from Ordered",
+    "type": "object",
+    "properties": {
+        "_type": {
+            "enum": [
+                "Iso8601_date_time",
+                "Iso8601_duration",
+                "Iso8601_time",
+                "Iso8601_timezone",
+                "Iso8601_date",
+                "DV_DATE_TIME",
+                "DV_DURATION",
+                "DV_TIME",
+                "DV_DATE"
+            ]
+        }
+    },
+    "required": [
+        "_type"
+    ],
+    "$abstract": true,
+    "$inherits": [
+        "all.json#/definitions/Ordered"
+    ],
+    "$children": [
+        "all.json#/definitions/Iso8601_type"
+    ],
+    "$functions": {
+        "infix <": {
+            "description": "Arithmetic comparison. In conjunction with \u2018=\u2019, enables the definition of the operators \u2018>\u2019, \u2018>=\u2019, \u2018<=\u2019, \u2018<>\u2019. In real type systems, this operator might be defined on another class for comparability.",
+            "parameters": {
+                "other": {
+                    "$ref": "all.json#/definitions/Ordered"
+                }
+            },
+            "required_parameters": [
+                "other"
+            ],
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        }
+    }
+}

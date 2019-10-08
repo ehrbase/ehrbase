@@ -1,0 +1,55 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_types/DATA_VALUE.json",
+    "title": "DATA_VALUE",
+    "description": "Abstract parent of all `DV_` data value types.",
+    "$comments": "Defined in Data_types IM, abstract",
+    "properties": {
+        "_type": {
+            "enum": [
+                "DV_BOOLEAN",
+                "DV_STATE",
+                "DV_IDENTIFIER",
+                "DV_PARAGRAPH",
+                "DV_TEXT",
+                "DV_INTERVAL",
+                "DV_URI",
+                "DV_MULTIMEDIA",
+                "DV_PARSABLE",
+                "DV_CODED_TEXT",
+                "DV_ORDINAL",
+                "DV_PROPORTION",
+                "DV_QUANTITY",
+                "DV_COUNT",
+                "DV_DURATION",
+                "DV_DATE",
+                "DV_TIME",
+                "DV_DATE_TIME",
+                "DV_INTERVAL<DV_DATE_TIME>",
+                "DV_INTERVAL<DV_DATE>",
+                "DV_INTERVAL<DV_QUANTITY>",
+                "DV_INTERVAL<DV_COUNT>",
+                "DV_INTERVAL<DV_PROPORTION>",
+                "DV_PERIODIC_TIME_SPECIFICATION",
+                "DV_GENERAL_TIME_SPECIFICATION",
+                "DV_EHR_URI"
+            ]
+        }
+    },
+    "required": [
+        "_type"
+    ],
+    "$abstract": true,
+    "$children": [
+        "all.json#/definitions/DV_BOOLEAN",
+        "all.json#/definitions/DV_STATE",
+        "all.json#/definitions/DV_IDENTIFIER",
+        "all.json#/definitions/DV_ENCAPSULATED",
+        "all.json#/definitions/DV_PARAGRAPH",
+        "all.json#/definitions/DV_TEXT",
+        "all.json#/definitions/DV_ORDERED",
+        "all.json#/definitions/DV_INTERVAL",
+        "all.json#/definitions/DV_TIME_SPECIFICATION",
+        "all.json#/definitions/DV_URI"
+    ]
+}

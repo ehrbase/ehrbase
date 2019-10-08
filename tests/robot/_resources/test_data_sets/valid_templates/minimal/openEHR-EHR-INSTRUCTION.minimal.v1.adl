@@ -1,0 +1,71 @@
+archetype (adl_version=1.4)
+	openEHR-EHR-INSTRUCTION.minimal.v1
+
+concept
+	[at0000]	-- Minimal
+language
+	original_language = <[ISO_639-1::en]>
+description
+	original_author = <
+		["name"] = <"">
+	>
+	details = <
+		["en"] = <
+			language = <[ISO_639-1::en]>
+			purpose = <"">
+			use = <"">
+			misuse = <"">
+			copyright = <"">
+		>
+	>
+	lifecycle_state = <"0">
+	other_contributors = <>
+	other_details = <
+		["MD5-CAM-1.0.1"] = <"0875BBE8954E1C99BCB633D5BD75A1A1">
+	>
+
+definition
+	INSTRUCTION[at0000] matches {	-- Minimal
+		activities cardinality matches {0..*; unordered} matches {
+			ACTIVITY[at0001] occurrences matches {0..1} matches {	-- Current Activity
+				action_archetype_id matches {/openEHR-EHR-ACTION\.minimal\.v1/}
+				description matches {
+					ITEM_TREE[at0002] matches {	-- Arbol
+						items cardinality matches {0..*; unordered} matches {
+							ELEMENT[at0003] occurrences matches {0..1} matches {	-- duration
+								value matches {
+									DV_DURATION matches {
+										value matches {PDTH}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+ontology
+	term_definitions = <
+		["en"] = <
+			items = <
+				["at0000"] = <
+					text = <"Minimal">
+					description = <"unknown">
+				>
+				["at0001"] = <
+					text = <"Current Activity">
+					description = <"Current Activity">
+				>
+				["at0002"] = <
+					text = <"Arbol">
+					description = <"@ internal @">
+				>
+				["at0003"] = <
+					text = <"duration">
+					description = <"*">
+				>
+			>
+		>
+	>

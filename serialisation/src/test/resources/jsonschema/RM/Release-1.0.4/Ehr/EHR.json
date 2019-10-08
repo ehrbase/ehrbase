@@ -1,0 +1,62 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Ehr/EHR.json",
+    "title": "EHR",
+    "description": "The EHR object is the root object and access point of an EHR for a subject of care. ",
+    "$comments": "Defined in Ehr IM",
+    "type": "object",
+    "properties": {
+        "system_id": {
+            "description": "The identifier of the logical EHR management system in which this EHR was created. \n",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Base_types/all.json#/definitions/HIER_OBJECT_ID"
+        },
+        "ehr_id": {
+            "description": "The unique identifier of this EHR.\n\nNOTE: is is strongly recommended that a UUID always be used for this field.",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Base_types/all.json#/definitions/HIER_OBJECT_ID"
+        },
+        "contributions": {
+            "description": "List of contributions causing changes to this EHR. Each contribution contains a list of versions, which may include references to any number of `VERSION` instances, i.e. items of type `VERSIONED_COMPOSITION` and `VERSIONED_FOLDER`. ",
+            "type": "array",
+            "items": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Common/all.json#/definitions/CONTRIBUTION"
+            }
+        },
+        "ehr_status": {
+            "description": "Reference to `EHR_STATUS` object for this EHR.",
+            "$ref": "all.json#/definitions/VERSIONED_EHR_STATUS"
+        },
+        "ehr_access": {
+            "description": "Reference to `EHR_ACCESS` object for this EHR.",
+            "$ref": "all.json#/definitions/VERSIONED_EHR_ACCESS"
+        },
+        "compositions": {
+            "description": "Master list of all Versioned Composition references in this EHR.",
+            "type": "array",
+            "items": {
+                "$ref": "all.json#/definitions/VERSIONED_COMPOSITION"
+            }
+        },
+        "directory": {
+            "description": "Optional directory structure for this EHR. ",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Common/all.json#/definitions/VERSIONED_FOLDER"
+        },
+        "time_created": {
+            "description": "Time of creation of the EHR.",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_types/all.json#/definitions/DV_DATE_TIME"
+        }
+    },
+    "required": [
+        "system_id",
+        "ehr_id",
+        "ehr_status",
+        "ehr_access",
+        "time_created"
+    ],
+    "$invariants": {
+        "Contributions_valid": "contributions.for_all (c | c.type.is_equal(\u201cCONTRIBUTION\u201d))",
+        "Ehr_access_valid": "ehr_access.type.is_equal (\u201cVERSIONED_EHR_ACCESS\u201d)",
+        "Ehr_status_valid": "ehr_status.type.is_equal(\u201cVERSIONED_EHR_STATUS\u201d)",
+        "Compositions_valid": "compositions.for_all (c | c.type.is_equal (\u201cVERSIONED_COMPOSITION\u201d))",
+        "Directory_valid": "directory /= Void implies directory.type.is_equal (\u201cVERSIONED_FOLDER\u201d)"
+    }
+}

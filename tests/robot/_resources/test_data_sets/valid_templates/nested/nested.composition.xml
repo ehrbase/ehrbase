@@ -1,0 +1,159 @@
+<composition xmlns="http://schemas.openehr.org/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="COMPOSITION" archetype_node_id="openEHR-EHR-COMPOSITION.nesting.v1">
+ <name>
+   <value>Nesting</value>
+ </name>
+ <archetype_details>
+   <archetype_id>
+     <value>openEHR-EHR-COMPOSITION.nesting.v1</value>
+   </archetype_id>
+   <template_id>
+     <value>nested.en.v1</value>
+   </template_id>
+   <rm_version>1.0.2</rm_version>
+ </archetype_details>
+ <language>
+   <terminology_id>
+     <value>ISO_639-1</value>
+   </terminology_id>
+   <code_string>en</code_string>
+ </language>
+ <territory>
+   <terminology_id>
+     <value>ISO_3166-1</value>
+   </terminology_id>
+   <code_string>UY</code_string>
+ </territory>
+ <category>
+   <value>event</value>
+   <defining_code>
+     <terminology_id>
+       <value>openehr</value>
+     </terminology_id>
+     <code_string>433</code_string>
+   </defining_code>
+ </category>
+ <composer xsi:type="PARTY_IDENTIFIED">
+   <external_ref>
+     <id xsi:type="HIER_OBJECT_ID">
+       <value>402cb7bc-6549-4613-b382-ae3e9010d1e9</value>
+     </id>
+     <namespace>DEMOGRAPHIC</namespace>
+     <type>PERSON</type>
+   </external_ref>
+   <name>Dr. House</name>
+ </composer>
+ <context>
+   <start_time>
+     <value>20190429T061457,575+0000</value>
+   </start_time>
+   <setting>
+     <value>Hospital B</value>
+     <defining_code>
+       <terminology_id>
+         <value>openehr</value>
+       </terminology_id>
+       <code_string>229</code_string>
+     </defining_code>
+   </setting>
+ </context>
+ <content archetype_node_id="openEHR-EHR-SECTION.nested.v1" xsi:type="SECTION">
+   <name>
+     <value>Nested</value>
+   </name>
+   <items archetype_node_id="openEHR-EHR-INSTRUCTION.nested.v1" xsi:type="INSTRUCTION">
+     <name>
+       <value>Nested</value>
+     </name>
+     <language>
+       <terminology_id>
+         <value>ISO_639-1</value>
+       </terminology_id>
+       <code_string>en</code_string>
+     </language>
+     <encoding>
+       <terminology_id>
+         <value>Unicode</value>
+       </terminology_id>
+       <code_string>UTF-8</code_string>
+     </encoding>
+     <subject xsi:type="PARTY_SELF" />
+     <narrative>
+       <value>JdDGKpONxLiqURryMySvQUSaRuyzVGhjYAsQV,.EPa,AhzJXYjajThsaHXLYyjdVmMTrzDWOtdAGKq.nz.efAhGfcPcytwuWjoFvJcnPqDEsusY,wtaaoJQYSvnRNbwf,rxIyFurUuYzQRTDvuWeJOAfnNtY,VUPDqPFuo.GctzMYICygNauraAblvnootSYruroHzWGMAJIWHBgXHoKnHpXxkRTsyCWSiOb,DasnEhWyXEVfaYgjHCuiJNBGVO</value>
+     </narrative>
+     <activities archetype_node_id="at0001">
+       <name>
+         <value>Current Activity</value>
+       </name>
+       <description archetype_node_id="openEHR-EHR-ITEM_TREE.nested.v1" xsi:type="ITEM_TREE">
+         <name>
+           <value>Nested</value>
+         </name>
+         <items archetype_node_id="at0002" xsi:type="ELEMENT">
+           <name>
+             <value>ordinal</value>
+           </name>
+           <value xsi:type="DV_ORDINAL">
+             <value>1</value>
+             <symbol>
+               <value>MEJOTBJFOZNXKAO</value>
+               <defining_code>
+                 <terminology_id>
+                   <value>local</value>
+                 </terminology_id>
+                 <code_string>at0010</code_string>
+               </defining_code>
+             </symbol>
+           </value>
+         </items>
+         <items archetype_node_id="openEHR-EHR-CLUSTER.nested.v1" xsi:type="CLUSTER">
+           <name>
+             <value>Nested</value>
+           </name>
+           <items archetype_node_id="at0001" xsi:type="ELEMENT">
+             <name>
+               <value>text</value>
+             </name>
+             <value xsi:type="DV_TEXT">
+               <value>Bfcb MWMvcXtjnbcCqSHyUQnzxqoClspCUySmRXfzEAddsK,nDPPOIamzjOPdrKrajOrvLPBpjQfFcvdQOgnKbXUJspK,j.hwZLrzZdePlIoooFStLGuqEdMtYTGuIAEcqn iBeCEA,bzdkkBtLJueJJzMrhJusJCAALtbfaEhxsixvZIHX.eqVPmgCkfuBj NwpOCOEP.J,wUVMYxlDUViNpIwiIdus,oNumhmNMeaTZHrUzERAWSLKALIFncz</value>
+             </value>
+           </items>
+           <items archetype_node_id="at0002" xsi:type="ELEMENT">
+             <name>
+               <value>date</value>
+             </name>
+             <value xsi:type="DV_DATE_TIME">
+               <value>20190429T061457,726+0000</value>
+             </value>
+           </items>
+           <items archetype_node_id="openEHR-EHR-CLUSTER.nested2.v1" xsi:type="CLUSTER">
+             <name>
+               <value>Nested2</value>
+             </name>
+             <items archetype_node_id="at0001" xsi:type="ELEMENT">
+               <name>
+                 <value>boolean</value>
+               </name>
+               <value xsi:type="DV_BOOLEAN">
+                 <value>true</value>
+               </value>
+             </items>
+             <items archetype_node_id="at0002" xsi:type="ELEMENT">
+               <name>
+                 <value>count</value>
+               </name>
+               <value xsi:type="DV_COUNT">
+                 <magnitude>7</magnitude>
+               </value>
+             </items>
+           </items>
+         </items>
+       </description>
+       <timing>
+         <value>P1D</value>
+         <formalism>ISO8601</formalism>
+       </timing>
+       <action_archetype_id>openEHR-EHR-ACTION\.sample_action\.v1</action_archetype_id>
+     </activities>
+   </items>
+ </content>
+</composition>

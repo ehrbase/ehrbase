@@ -1,0 +1,12 @@
+ {
+  "_type": "FOLDER",
+  "name": {
+    "_type": "DV_TEXT",
+    "value": "Simple empty folder",
+    "mappings": []
+  },
+  "links": [],
+  "items": [],
+  "folders": [],
+  "path": "/"
+}

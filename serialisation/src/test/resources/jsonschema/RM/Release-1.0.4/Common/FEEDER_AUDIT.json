@@ -1,0 +1,39 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Common/FEEDER_AUDIT.json",
+    "title": "FEEDER_AUDIT",
+    "description": "The `FEEDER_AUDIT` class defines the semantics of an audit trail which is constructed to describe the origin of data that have been transformed into openEHR form and committed to the system. ",
+    "$comments": "Defined in Common IM",
+    "type": "object",
+    "properties": {
+        "originating_system_item_ids": {
+            "description": "Identifiers used for the item in the originating system, e.g. filler and placer ids. ",
+            "type": "array",
+            "items": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_types/all.json#/definitions/DV_IDENTIFIER"
+            }
+        },
+        "feeder_system_item_ids": {
+            "description": "Identifiers used for the item in the feeder system, where the feeder system is distinct from the originating system. ",
+            "type": "array",
+            "items": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_types/all.json#/definitions/DV_IDENTIFIER"
+            }
+        },
+        "original_content": {
+            "description": "Optional inline inclusion of or reference to original content corresponding to the openEHR content at this node. Typically a URI reference to a document or message in a persistent store associated with the EHR. ",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_types/all.json#/definitions/DV_ENCAPSULATED"
+        },
+        "originating_system_audit": {
+            "description": "Any audit information for the information item from the originating system. ",
+            "$ref": "all.json#/definitions/FEEDER_AUDIT_DETAILS"
+        },
+        "feeder_system_audit": {
+            "description": "Any audit information for the information item from the feeder system, if different from the originating system.",
+            "$ref": "all.json#/definitions/FEEDER_AUDIT_DETAILS"
+        }
+    },
+    "required": [
+        "originating_system_audit"
+    ]
+}

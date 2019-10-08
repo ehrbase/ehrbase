@@ -1,0 +1,653 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<composition
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             archetype_node_id="openEHR-EHR-COMPOSITION.encounter.v1">
+    <name>
+        <value>DiADeM Assessment</value>
+    </name>
+    <!--<archetype_details>-->
+    <!--<archetype_id>-->
+    <!--<value>openEHR-EHR-COMPOSITION.encounter.v1</value>-->
+    <!--</archetype_id>-->
+    <!--<template_id>-->
+    <!--<value>DiADeM Assessment.v1</value>-->
+    <!--</template_id>-->
+    <!--<rm_version>1.0.1</rm_version>-->
+    <!--</archetype_details>-->
+    <language>
+        <terminology_id>
+            <value>ISO_639-1</value>
+        </terminology_id>
+        <code_string>en</code_string>
+    </language>
+    <territory>
+        <terminology_id>
+            <value>ISO_3166-1</value>
+        </terminology_id>
+        <code_string>GB</code_string>
+    </territory>
+    <category>
+        <value>event</value>
+        <defining_code>
+            <terminology_id>
+                <value>openehr</value>
+            </terminology_id>
+            <code_string>433</code_string>
+        </defining_code>
+    </category>
+    <composer xsi:type="PARTY_IDENTIFIED">
+        <external_ref>
+            <id xsi:type="HIER_OBJECT_ID">
+                <value>b7c07d35-fa06-4280-8e65-eabdfbe64fdc</value>
+            </id>
+            <namespace>DEMOGRAPHIC</namespace>
+            <type>PERSON</type>
+        </external_ref>
+        <name>Dr. House</name>
+    </composer>
+    <context>
+        <start_time>
+            <value>1900-01-01T00:00:00Z</value>
+        </start_time>
+        <setting>
+            <value>other care</value>
+            <defining_code>
+                <terminology_id>
+                    <value>openehr</value>
+                </terminology_id>
+                <code_string>238</code_string>
+            </defining_code>
+        </setting>
+    </context>
+    <content archetype_node_id="openEHR-EHR-ACTION.informed_consent.v1" xsi:type="ACTION">
+        <name>
+            <value>Consent</value>
+        </name>
+        <!--<archetype_details>-->
+        <!--<archetype_id>-->
+        <!--<value>openEHR-EHR-ACTION.informed_consent.v1</value>-->
+        <!--</archetype_id>-->
+        <!--<rm_version>1.0.1</rm_version>-->
+        <!--</archetype_details>-->
+        <language>
+            <terminology_id>
+                <value>ISO_639-1</value>
+            </terminology_id>
+            <code_string>en</code_string>
+        </language>
+        <encoding>
+            <terminology_id>
+                <value>IANA_character-sets</value>
+            </terminology_id>
+            <code_string>UTF-8</code_string>
+        </encoding>
+        <subject xsi:type="PARTY_SELF"/>
+        <other_participations>
+            <function>
+                <value>Source of consent</value>
+            </function>
+            <performer xsi:type="PARTY_IDENTIFIED">
+                <name>Patient's Care Home staff member</name>
+            </performer>
+            <mode>
+                <value>not specified</value>
+                <defining_code>
+                    <terminology_id>
+                        <value>openehr</value>
+                    </terminology_id>
+                    <code_string>193</code_string>
+                </defining_code>
+            </mode>
+        </other_participations>
+        <time>
+            <value>2017-04-03T15:25:01.431+07:00</value>
+        </time>
+        <description archetype_node_id="at0001" xsi:type="ITEM_TREE">
+            <name>
+                <value>Tree</value>
+            </name>
+            <items archetype_node_id="at0002" xsi:type="ELEMENT">
+                <name>
+                    <value>Assessment</value>
+                </name>
+                <value xsi:type="DV_TEXT">
+                    <value>Consent for DiADeM Assessment</value>
+                </value>
+            </items>
+        </description>
+        <ism_transition>
+            <current_state>
+                <value>active</value>
+                <defining_code>
+                    <terminology_id>
+                        <value>openehr</value>
+                    </terminology_id>
+                    <code_string>245</code_string>
+                </defining_code>
+            </current_state>
+            <careflow_step>
+                <value>Informed Consent Provided</value>
+                <defining_code>
+                    <terminology_id>
+                        <value>local</value>
+                    </terminology_id>
+                    <code_string>at0015</code_string>
+                </defining_code>
+            </careflow_step>
+        </ism_transition>
+    </content>
+    <content archetype_node_id="openEHR-EHR-ADMIN_ENTRY.relevant_contact_rcp.v1" xsi:type="ADMIN_ENTRY">
+        <name>
+            <value>GP</value>
+        </name>
+        <!--<archetype_details>-->
+        <!--<archetype_id>-->
+        <!--<value>openEHR-EHR-ADMIN_ENTRY.relevant_contact_rcp.v1</value>-->
+        <!--</archetype_id>-->
+        <!--<template_id>-->
+        <!--<value>DiADeM Assessment.v1</value>-->
+        <!--</template_id>-->
+        <!--<rm_version>1.0.1</rm_version>-->
+        <!--</archetype_details>-->
+        <language>
+            <terminology_id>
+                <value>ISO_639-1</value>
+            </terminology_id>
+            <code_string>en</code_string>
+        </language>
+        <encoding>
+            <terminology_id>
+                <value>IANA_character-sets</value>
+            </terminology_id>
+            <code_string>UTF-8</code_string>
+        </encoding>
+        <subject xsi:type="PARTY_SELF"/>
+        <data archetype_node_id="at0001" xsi:type="ITEM_TREE">
+            <name>
+                <value>Tree</value>
+            </name>
+            <items archetype_node_id="openEHR-EHR-CLUSTER.individual_person_uk.v1" xsi:type="CLUSTER">
+                <name>
+                    <value>GP Details</value>
+                </name>
+                <!--<archetype_details>-->
+                <!--<archetype_id>-->
+                <!--<value>openEHR-EHR-CLUSTER.individual_person_uk.v1</value>-->
+                <!--</archetype_id>-->
+                <!--<rm_version>1.0.1</rm_version>-->
+                <!--</archetype_details>-->
+                <items archetype_node_id="openEHR-EHR-CLUSTER.person_name.v1" xsi:type="CLUSTER">
+                    <name>
+                        <value>Person name</value>
+                    </name>
+                    <!--<archetype_details>-->
+                    <!--<archetype_id>-->
+                    <!--<value>openEHR-EHR-CLUSTER.person_name.v1</value>-->
+                    <!--</archetype_id>-->
+                    <!--<rm_version>1.0.1</rm_version>-->
+                    <!--</archetype_details>-->
+                    <items archetype_node_id="at0001" xsi:type="ELEMENT">
+                        <name>
+                            <value>GP name</value>
+                        </name>
+                        <value xsi:type="DV_TEXT">
+                            <value>Dr Dread</value>
+                        </value>
+                    </items>
+                </items>
+                <items archetype_node_id="openEHR-EHR-CLUSTER.comms_contact_uk.v1" xsi:type="CLUSTER">
+                    <name>
+                        <value>Comms contact details</value>
+                    </name>
+                    <!--<archetype_details>-->
+                    <!--<archetype_id>-->
+                    <!--<value>openEHR-EHR-CLUSTER.comms_contact_uk.v1</value>-->
+                    <!--</archetype_id>-->
+                    <!--<rm_version>1.0.1</rm_version>-->
+                    <!--</archetype_details>-->
+                    <items archetype_node_id="at0002" xsi:type="ELEMENT">
+                        <name>
+                            <value>GP email</value>
+                        </name>
+                        <value xsi:type="DV_TEXT">
+                            <value>applicationinsight@gmail.com</value>
+                        </value>
+                    </items>
+                </items>
+            </items>
+        </data>
+    </content>
+    <content archetype_node_id="openEHR-EHR-ADMIN_ENTRY.relevant_contact_rcp.v1" xsi:type="ADMIN_ENTRY">
+        <name>
+            <value>Informant</value>
+        </name>
+        <!--<archetype_details>-->
+        <!--<archetype_id>-->
+        <!--<value>openEHR-EHR-ADMIN_ENTRY.relevant_contact_rcp.v1</value>-->
+        <!--</archetype_id>-->
+        <!--<template_id>-->
+        <!--<value>DiADeM Assessment.v1</value>-->
+        <!--</template_id>-->
+        <!--<rm_version>1.0.1</rm_version>-->
+        <!--</archetype_details>-->
+        <language>
+            <terminology_id>
+                <value>ISO_639-1</value>
+            </terminology_id>
+            <code_string>en</code_string>
+        </language>
+        <encoding>
+            <terminology_id>
+                <value>IANA_character-sets</value>
+            </terminology_id>
+            <code_string>UTF-8</code_string>
+        </encoding>
+        <subject xsi:type="PARTY_SELF"/>
+        <data archetype_node_id="at0001" xsi:type="ITEM_TREE">
+            <name>
+                <value>Tree</value>
+            </name>
+            <items archetype_node_id="openEHR-EHR-CLUSTER.individual_person_uk.v1" xsi:type="CLUSTER">
+                <name>
+                    <value>Informant details</value>
+                </name>
+                <!--<archetype_details>-->
+                <!--<archetype_id>-->
+                <!--<value>openEHR-EHR-CLUSTER.individual_person_uk.v1</value>-->
+                <!--</archetype_id>-->
+                <!--<rm_version>1.0.1</rm_version>-->
+                <!--</archetype_details>-->
+                <items archetype_node_id="openEHR-EHR-CLUSTER.person_name.v1" xsi:type="CLUSTER">
+                    <name>
+                        <value>Person name</value>
+                    </name>
+                    <!--<archetype_details>-->
+                    <!--<archetype_id>-->
+                    <!--<value>openEHR-EHR-CLUSTER.person_name.v1</value>-->
+                    <!--</archetype_id>-->
+                    <!--<rm_version>1.0.1</rm_version>-->
+                    <!--</archetype_details>-->
+                    <items archetype_node_id="at0001" xsi:type="ELEMENT">
+                        <name>
+                            <value>Informant name</value>
+                        </name>
+                        <value xsi:type="DV_TEXT">
+                            <value>My Granny</value>
+                        </value>
+                    </items>
+                </items>
+            </items>
+            <items archetype_node_id="at0030" xsi:type="ELEMENT">
+                <name>
+                    <value>Relationship</value>
+                </name>
+                <value xsi:type="DV_TEXT">
+                    <value>Patient's close relative</value>
+                </value>
+            </items>
+        </data>
+    </content>
+    <content archetype_node_id="openEHR-EHR-OBSERVATION.yhscn_diadem_assessment.v0" xsi:type="OBSERVATION">
+        <name>
+            <value>YHSCN - DiADeM assessment</value>
+        </name>
+        <!--<archetype_details>-->
+        <!--<archetype_id>-->
+        <!--<value>openEHR-EHR-OBSERVATION.yhscn_diadem_assessment.v0</value>-->
+        <!--</archetype_id>-->
+        <!--<rm_version>1.0.1</rm_version>-->
+        <!--</archetype_details>-->
+        <language>
+            <terminology_id>
+                <value>ISO_639-1</value>
+            </terminology_id>
+            <code_string>en</code_string>
+        </language>
+        <encoding>
+            <terminology_id>
+                <value>IANA_character-sets</value>
+            </terminology_id>
+            <code_string>UTF-8</code_string>
+        </encoding>
+        <subject xsi:type="PARTY_SELF"/>
+        <data archetype_node_id="at0001">
+            <name>
+                <value>Event Series</value>
+            </name>
+            <origin>
+                <value>2017-03-17T17:31:22.651+07:00</value>
+            </origin>
+            <events archetype_node_id="at0002" xsi:type="POINT_EVENT">
+                <name>
+                    <value>Point in time</value>
+                </name>
+                <time>
+                    <value>2017-03-17T10:31:22.651Z</value>
+                </time>
+                <data archetype_node_id="at0003" xsi:type="ITEM_TREE">
+                    <name>
+                        <value>Tree</value>
+                    </name>
+                    <items archetype_node_id="at0043" xsi:type="ELEMENT">
+                        <name>
+                            <value>Assessment location type</value>
+                        </name>
+                        <value xsi:type="DV_CODED_TEXT">
+                            <value>Nursing Home</value>
+                            <mappings>
+                                <match>=</match>
+                                <target>
+                                    <terminology_id>
+                                        <value>SNOMED-CT</value>
+                                    </terminology_id>
+                                    <code_string>160733006</code_string>
+                                </target>
+                            </mappings>
+                            <mappings>
+                                <match>=</match>
+                                <target>
+                                    <terminology_id>
+                                        <value>READ</value>
+                                    </terminology_id>
+                                    <code_string>13F61</code_string>
+                                </target>
+                            </mappings>
+                            <mappings>
+                                <match>=</match>
+                                <target>
+                                    <terminology_id>
+                                        <value>CTV3</value>
+                                    </terminology_id>
+                                    <code_string>XalmT</code_string>
+                                </target>
+                            </mappings>
+                            <defining_code>
+                                <terminology_id>
+                                    <value>local</value>
+                                </terminology_id>
+                                <code_string>at0044</code_string>
+                            </defining_code>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0004" xsi:type="ELEMENT">
+                        <name>
+                            <value>Functional impairment</value>
+                        </name>
+                        <value xsi:type="DV_CODED_TEXT">
+                            <value>True</value>
+                            <defining_code>
+                                <terminology_id>
+                                    <value>local</value>
+                                </terminology_id>
+                                <code_string>at0006</code_string>
+                            </defining_code>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0038" xsi:type="ELEMENT">
+                        <name>
+                            <value>Cognitive impairment</value>
+                        </name>
+                        <value xsi:type="DV_CODED_TEXT">
+                            <value>True</value>
+                            <defining_code>
+                                <terminology_id>
+                                    <value>local</value>
+                                </terminology_id>
+                                <code_string>at0039</code_string>
+                            </defining_code>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0007" xsi:type="ELEMENT">
+                        <name>
+                            <value>Corroborating history</value>
+                        </name>
+                        <value xsi:type="DV_CODED_TEXT">
+                            <value>True</value>
+                            <defining_code>
+                                <terminology_id>
+                                    <value>local</value>
+                                </terminology_id>
+                                <code_string>at0011</code_string>
+                            </defining_code>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0031" xsi:type="ELEMENT">
+                        <name>
+                            <value>Blood tests available</value>
+                        </name>
+                        <value xsi:type="DV_CODED_TEXT">
+                            <value>Not available at assessment</value>
+                            <defining_code>
+                                <terminology_id>
+                                    <value>local</value>
+                                </terminology_id>
+                                <code_string>at0046</code_string>
+                            </defining_code>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0041" xsi:type="ELEMENT">
+                        <name>
+                            <value>Blood test recommendation</value>
+                        </name>
+                        <value xsi:type="DV_TEXT">
+                            <value>Consider Referral for Blood Test</value>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0008" xsi:type="ELEMENT">
+                        <name>
+                            <value>Investigations</value>
+                        </name>
+                        <value xsi:type="DV_CODED_TEXT">
+                            <value>True</value>
+                            <defining_code>
+                                <terminology_id>
+                                    <value>local</value>
+                                </terminology_id>
+                                <code_string>at0012</code_string>
+                            </defining_code>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0009" xsi:type="ELEMENT">
+                        <name>
+                            <value>Exclusion criteria</value>
+                        </name>
+                        <value xsi:type="DV_CODED_TEXT">
+                            <value>True</value>
+                            <defining_code>
+                                <terminology_id>
+                                    <value>local</value>
+                                </terminology_id>
+                                <code_string>at0014</code_string>
+                            </defining_code>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0022" xsi:type="ELEMENT">
+                        <name>
+                            <value>Interpretation</value>
+                        </name>
+                        <value xsi:type="DV_CODED_TEXT">
+                            <value>Diagnosis of dementia indicated</value>
+                            <defining_code>
+                                <terminology_id>
+                                    <value>local</value>
+                                </terminology_id>
+                                <code_string>at0029</code_string>
+                            </defining_code>
+                        </value>
+                    </items>
+                </data>
+            </events>
+        </data>
+    </content>
+    <content archetype_node_id="openEHR-EHR-OBSERVATION.six_cit_assessment.v0" xsi:type="OBSERVATION">
+        <name>
+            <value>6 CIT Assessment</value>
+        </name>
+        <!--<archetype_details>-->
+        <!--<archetype_id>-->
+        <!--<value>openEHR-EHR-OBSERVATION.six_cit_assessment.v0</value>-->
+        <!--</archetype_id>-->
+        <!--<rm_version>1.0.1</rm_version>-->
+        <!--</archetype_details>-->
+        <language>
+            <terminology_id>
+                <value>ISO_639-1</value>
+            </terminology_id>
+            <code_string>en</code_string>
+        </language>
+        <encoding>
+            <terminology_id>
+                <value>IANA_character-sets</value>
+            </terminology_id>
+            <code_string>UTF-8</code_string>
+        </encoding>
+        <subject xsi:type="PARTY_SELF"/>
+        <data archetype_node_id="at0001">
+            <name>
+                <value>Event Series</value>
+            </name>
+            <origin>
+                <value>2017-03-17T17:31:22.651+07:00</value>
+            </origin>
+            <events archetype_node_id="at0002" xsi:type="POINT_EVENT">
+                <name>
+                    <value>Point in time</value>
+                </name>
+                <time>
+                    <value>2017-03-17T10:31:22.651Z</value>
+                </time>
+                <data archetype_node_id="at0003" xsi:type="ITEM_TREE">
+                    <name>
+                        <value>Tree</value>
+                    </name>
+                    <items archetype_node_id="at0004" xsi:type="ELEMENT">
+                        <name>
+                            <value>What year?</value>
+                        </name>
+                        <value xsi:type="DV_ORDINAL">
+                            <value>4</value>
+                            <symbol>
+                                <value>Incorrect</value>
+                                <defining_code>
+                                    <terminology_id>
+                                        <value>local</value>
+                                    </terminology_id>
+                                    <code_string>at0006</code_string>
+                                </defining_code>
+                            </symbol>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0007" xsi:type="ELEMENT">
+                        <name>
+                            <value>What month?</value>
+                        </name>
+                        <value xsi:type="DV_ORDINAL">
+                            <value>3</value>
+                            <symbol>
+                                <value>Incorrect</value>
+                                <defining_code>
+                                    <terminology_id>
+                                        <value>local</value>
+                                    </terminology_id>
+                                    <code_string>at0009</code_string>
+                                </defining_code>
+                            </symbol>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0010" xsi:type="ELEMENT">
+                        <name>
+                            <value>About what time?</value>
+                        </name>
+                        <value xsi:type="DV_ORDINAL">
+                            <value>3</value>
+                            <symbol>
+                                <value>Incorrect</value>
+                                <defining_code>
+                                    <terminology_id>
+                                        <value>local</value>
+                                    </terminology_id>
+                                    <code_string>at0012</code_string>
+                                </defining_code>
+                            </symbol>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0013" xsi:type="ELEMENT">
+                        <name>
+                            <value>Count backwards</value>
+                        </name>
+                        <value xsi:type="DV_ORDINAL">
+                            <value>4</value>
+                            <symbol>
+                                <value>More than 1 error</value>
+                                <defining_code>
+                                    <terminology_id>
+                                        <value>local</value>
+                                    </terminology_id>
+                                    <code_string>at0016</code_string>
+                                </defining_code>
+                            </symbol>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0017" xsi:type="ELEMENT">
+                        <name>
+                            <value>Months in reverse</value>
+                        </name>
+                        <value xsi:type="DV_ORDINAL">
+                            <value>4</value>
+                            <symbol>
+                                <value>More than 1 error</value>
+                                <defining_code>
+                                    <terminology_id>
+                                        <value>local</value>
+                                    </terminology_id>
+                                    <code_string>at0020</code_string>
+                                </defining_code>
+                            </symbol>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0021" xsi:type="ELEMENT">
+                        <name>
+                            <value>Repeat address phrase</value>
+                        </name>
+                        <value xsi:type="DV_ORDINAL">
+                            <value>10</value>
+                            <symbol>
+                                <value>5 errors</value>
+                                <defining_code>
+                                    <terminology_id>
+                                        <value>local</value>
+                                    </terminology_id>
+                                    <code_string>at0027</code_string>
+                                </defining_code>
+                            </symbol>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0028" xsi:type="ELEMENT">
+                        <name>
+                            <value>Total score</value>
+                        </name>
+                        <value xsi:type="DV_COUNT">
+                            <accuracy>0.0</accuracy>
+                            <magnitude>28</magnitude>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0033" xsi:type="ELEMENT">
+                        <name>
+                            <value>Interpretation</value>
+                        </name>
+                        <value xsi:type="DV_CODED_TEXT">
+                            <value>Cognitive impairment indicated</value>
+                            <defining_code>
+                                <terminology_id>
+                                    <value>local</value>
+                                </terminology_id>
+                                <code_string>at0034</code_string>
+                            </defining_code>
+                        </value>
+                    </items>
+                </data>
+            </events>
+        </data>
+    </content>
+</composition>
+

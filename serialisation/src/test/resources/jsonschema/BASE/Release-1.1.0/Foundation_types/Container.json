@@ -1,0 +1,72 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/Container.json",
+    "title": "Container",
+    "description": "Abstract ancestor of container types whose items are addressable in some way.",
+    "$comments": "Defined in Foundation_types IM, abstract",
+    "type": "array",
+    "properties": {
+        "_type": {
+            "enum": [
+                "Hash",
+                "List",
+                "Set",
+                "Array",
+                "Hash<String, Hash<String, Hash<String, String>>>",
+                "Hash<String, Hash<String, String>>",
+                "Hash<String, String>",
+                "Hash<String, List<String>>",
+                "Hash<String, TRANSLATION_DETAILS>",
+                "Hash<String, RESOURCE_DESCRIPTION_ITEM>",
+                "Hash<String, ARCHETYPE_TERMINOLOGY>",
+                "Hash<String, VALUE_SET>",
+                "Hash<String, Hash<String, ARCHETYPE_TERM>>",
+                "Hash<String, ARCHETYPE_TERM>",
+                "Hash<String, Uri>",
+                "Hash <String, Hash<String, Uri>>",
+                "Hash<String, AOM_PROPERTY_MAPPING>",
+                "Hash<String, AOM_TYPE_MAPPING>",
+                "List<String>",
+                "Set<String>"
+            ]
+        }
+    },
+    "required": [
+        "_type"
+    ],
+    "$abstract": true,
+    "$children": [
+        "all.json#/definitions/Hash",
+        "all.json#/definitions/List",
+        "all.json#/definitions/Set",
+        "all.json#/definitions/Array"
+    ],
+    "$functions": {
+        "has": {
+            "description": "Test for membership of a value.",
+            "parameters": {
+                "v": {
+                    "$ref": "all.json#/definitions/T"
+                }
+            },
+            "required_parameters": [
+                "v"
+            ],
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        },
+        "count": {
+            "description": "Number of items in container.",
+            "return": {
+                "$ref": "all.json#/definitions/Integer"
+            }
+        },
+        "is_empty": {
+            "description": "True if container is empty.",
+            "return": {
+                "$ref": "all.json#/definitions/Boolean"
+            }
+        }
+    }
+}

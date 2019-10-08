@@ -1,0 +1,76 @@
+﻿archetype (adl_version=1.4)
+	openEHR-EHR-SECTION.medication.v1
+
+concept
+	[at0000]	-- Medication
+language
+	original_language = <[ISO_639-1::en]>
+description
+	original_author = <
+		["name"] = <"">
+	>
+	details = <
+		["en"] = <
+			language = <[ISO_639-1::en]>
+			purpose = <"">
+			use = <"">
+			misuse = <"">
+			copyright = <"">
+		>
+	>
+	lifecycle_state = <"0">
+	other_contributors = <>
+	other_details = <
+		["references"] = <"">
+		["MD5-CAM-1.0.1"] = <"C11E87AF93737AA39BDDBEE40628DE3D">
+	>
+
+definition
+	SECTION[at0000] matches {	-- Medication
+		items cardinality matches {0..*; unordered} matches {
+			allow_archetype INSTRUCTION[at0001] occurrences matches {0..*} matches {	-- Medication order
+				include
+					archetype_id/value matches {/openEHR-EHR-INSTRUCTION\.medication(-[a-zA-Z0-9_]+)*\.v1/}
+			}
+			allow_archetype ACTION[at0002] occurrences matches {0..*} matches {	-- Medication action
+				include
+					archetype_id/value matches {/openEHR-EHR-ACTION\.medication(-[a-zA-Z0-9_]+)*\.v1/}
+			}
+		}
+	}
+
+ontology
+	term_definitions = <
+		["en"] = <
+			items = <
+				["at0000"] = <
+					text = <"Medication">
+					description = <"A section containing medication orders and their associated actions.">
+				>
+				["at0001"] = <
+					text = <"Medication order">
+					description = <"*">
+				>
+				["at0002"] = <
+					text = <"Medication action">
+					description = <"Action carestep associated with medication orders.">
+				>
+			>
+		>
+		["sl"] = <
+			items = <
+				["at0000"] = <
+					text = <"*Medication(en)">
+					description = <"*A section containing medication orders and their associated actions.(en)">
+				>
+				["at0001"] = <
+					text = <"*Medication order(en)">
+					description = <"**(en)">
+				>
+				["at0002"] = <
+					text = <"*Medication action(en)">
+					description = <"*Action carestep associated with medication orders.(en)">
+				>
+			>
+		>
+	>

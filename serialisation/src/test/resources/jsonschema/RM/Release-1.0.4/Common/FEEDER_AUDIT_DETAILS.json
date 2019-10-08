@@ -1,0 +1,40 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Common/FEEDER_AUDIT_DETAILS.json",
+    "title": "FEEDER_AUDIT_DETAILS",
+    "description": "Audit details for any system in a feeder system chain. Audit details here means the general notion of who/where/when the information item to which the audit is attached was created. None of the attributes is defined as mandatory, however, in different scenarios, various combinations of attributes will usually be mandatory. This can be controlled by specifying feeder audit details in legacy archetypes. ",
+    "$comments": "Defined in Common IM",
+    "type": "object",
+    "properties": {
+        "system_id": {
+            "description": "Identifier of the system which handled the information item. This is the IT system owned by the organisation legally responsible for handling the data, and at which the data were previously created or passed by an earlier system.\n",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/String"
+        },
+        "location": {
+            "description": "Identifier of the particular site/facility within an organisation which handled the item. For computability, this identifier needs to be e.g. a PKI identifier which can be included in the identifier list of the `PARTY_IDENTIFIED` object. ",
+            "$ref": "all.json#/definitions/PARTY_IDENTIFIED"
+        },
+        "subject": {
+            "description": "Identifiers for subject of the received information item. ",
+            "$ref": "all.json#/definitions/PARTY_PROXY"
+        },
+        "provider": {
+            "description": "Optional provider(s) who created, committed, forwarded or otherwise handled the item. ",
+            "$ref": "all.json#/definitions/PARTY_IDENTIFIED"
+        },
+        "time": {
+            "description": "Time of handling the item. For an originating system, this will be time of creation, for an intermediate feeder system, this will be a time of accession or other time of handling, where available.",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_types/all.json#/definitions/DV_DATE_TIME"
+        },
+        "version_id": {
+            "description": "Any identifier used in the system such as  \"interim\" ,  \"final\" , or numeric versions if available. ",
+            "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/String"
+        }
+    },
+    "required": [
+        "system_id"
+    ],
+    "$invariants": {
+        "System_id_valid": "not system_id.is_empty"
+    }
+}

@@ -1,0 +1,1217 @@
+﻿archetype (adl_version=1.4)
+	openEHR-EHR-ITEM_TREE.medication_mod.v1
+
+concept
+	[at0000]	-- *Medication description(en)
+language
+	original_language = <[ISO_639-1::en]>
+	translations = <
+		["fr"] = <
+			language = <[ISO_639-1::fr]>
+			author = <
+				["name"] = <"?">
+			>
+		>
+	>
+description
+	original_author = <
+		["name"] = <"Sam Heard">
+		["organisation"] = <"Ocean Informatics">
+		["email"] = <"sam.heard@oceaninformatics.com">
+		["date"] = <"12/03/2006">
+	>
+	details = <
+		["en"] = <
+			language = <[ISO_639-1::en]>
+			purpose = <"Specifies the description of the medication as part of an INSTRUCTION or ACTION recording taken with regard to medication. This will usually be in response to a medication order or prescription, but may be self administered or supplied by a pharmacy.">
+			use = <"For use with INSTRUCTION.medication and ACTION.medication to describe the medication">
+			keywords = <"medication", "description">
+			misuse = <"">
+			copyright = <"copyright (c) 2008 openEHR Foundation">
+		>
+		["fr"] = <
+			language = <[ISO_639-1::fr]>
+			purpose = <"*Specifies the description of the medication as part of an INSTRUCTION or ACTION recording taken with regard to medication. This will usually be in response to a medication order or prescription, but may be self administered or supplied by a pharmacy.(en)">
+			use = <"*For use with INSTRUCTION.medication and ACTION.medication to describe the medication(en)">
+			keywords = <"*medication(en)", "*description(en)">
+			misuse = <"*(en)">
+			copyright = <"*copyright (c) 2008 openEHR Foundation(en)">
+		>
+	>
+	lifecycle_state = <"AuthorDraft">
+	other_contributors = <>
+	other_details = <
+		["MD5-CAM-1.0.1"] = <"3D35180ECB1AF274974FC89B67C5D33B">
+	>
+
+definition
+	ITEM_TREE[at0000] occurrences matches {0..*} matches {	-- *Medication description(en)
+		items cardinality matches {2..*; ordered} matches {
+			ELEMENT[at0001] matches {	-- Denomination
+				value matches {
+					DV_TEXT matches {*}
+				}
+			}
+			ELEMENT[at0012] occurrences matches {0..1} matches {	-- *Generic name(en)
+				name matches {
+					DV_CODED_TEXT matches {
+						defining_code matches {[ac0003]}		-- *=Generic name OR Brand name(en)
+					}
+				}
+				value matches {
+					DV_TEXT matches {*}
+				}
+			}
+			ELEMENT[at0003] occurrences matches {0..1} matches {	-- *Strength per dose unit(en)
+				value matches {
+					C_DV_QUANTITY <
+						property = <[openehr::124]>
+						list = <
+							["1"] = <
+								units = <"pg">
+								magnitude = <|>=0.0|>
+							>
+							["2"] = <
+								units = <"µg">
+								magnitude = <|>=0.0|>
+							>
+							["3"] = <
+								units = <"mg">
+								magnitude = <|>=0.0|>
+							>
+							["4"] = <
+								units = <"gm">
+								magnitude = <|>=0.0|>
+							>
+						>
+					>
+					C_DV_QUANTITY <
+						property = <[openehr::385]>
+						list = <
+							["1"] = <
+								units = <"IU">
+								magnitude = <|>=0.0|>
+							>
+							["2"] = <
+								units = <"mIU">
+								magnitude = <|>=0.0|>
+							>
+						>
+					>
+					C_DV_QUANTITY <
+						property = <[openehr::445]>
+						list = <
+							["1"] = <
+								units = <"mU">
+								magnitude = <|1.0..12345.0|>
+							>
+							["2"] = <
+								units = <"U">
+								magnitude = <|>=0.0|>
+							>
+						>
+						assumed_value = <
+							magnitude = <10.0>
+							units = <"mU">
+							precision = <-1>
+						>
+					>
+				}
+			}
+			ELEMENT[at0006] matches {	-- Unite administration
+				value matches {
+					DV_CODED_TEXT matches {
+						defining_code matches {[ac0001]}		-- *any term that 'is a' Dose unit for this form(en)
+					}
+				}
+			}
+			ELEMENT[at0004] occurrences matches {0..1} matches {	-- *Form(en)
+				value matches {
+					DV_CODED_TEXT matches {
+						defining_code matches {[ac0000]}		-- *Any term that 'is_a' form of medication(en)
+					}
+				}
+			}
+			CLUSTER[at0033] occurrences matches {0..1} matches {	-- *Dose(en)
+				items cardinality matches {1; unordered} matches {
+					CLUSTER[at0035] occurrences matches {0..1} matches {	-- *By absolute quantity(en)
+						items cardinality matches {1..*; unordered} matches {
+							ELEMENT[at0036] occurrences matches {1..2} matches {	-- *Quantity by volume(en)
+								value matches {
+									C_DV_QUANTITY <
+										property = <[openehr::129]>
+										list = <
+											["1"] = <
+												units = <"ml">
+												magnitude = <|>=0.0|>
+											>
+											["2"] = <
+												units = <"l">
+												magnitude = <|>=0.0|>
+											>
+										>
+									>
+									DV_INTERVAL<DV_QUANTITY> matches {
+										upper matches {
+											C_DV_QUANTITY <
+												property = <[openehr::129]>
+												list = <
+													["1"] = <
+														units = <"ml">
+														magnitude = <|>=0.0|>
+													>
+													["2"] = <
+														units = <"l">
+														magnitude = <|>=0.0|>
+													>
+												>
+											>
+										}
+										lower matches {
+											C_DV_QUANTITY <
+												property = <[openehr::129]>
+												list = <
+													["1"] = <
+														units = <"ml">
+														magnitude = <|>=0.0|>
+													>
+													["2"] = <
+														units = <"l">
+														magnitude = <|>=0.0|>
+													>
+												>
+											>
+										}
+									}
+								}
+							}
+							ELEMENT[at0037] occurrences matches {0..1} matches {	-- *Quantity by mass(en)
+								value matches {
+									C_DV_QUANTITY <
+										property = <[openehr::124]>
+										list = <
+											["1"] = <
+												units = <"µg">
+												magnitude = <|>=0.0|>
+											>
+											["2"] = <
+												units = <"mg">
+											>
+											["3"] = <
+												units = <"gm">
+											>
+										>
+									>
+									DV_INTERVAL<DV_QUANTITY> matches {
+										upper matches {
+											C_DV_QUANTITY <
+												property = <[openehr::124]>
+												list = <
+													["1"] = <
+														units = <"µg">
+														magnitude = <|>=0.0|>
+													>
+													["2"] = <
+														units = <"mg">
+														magnitude = <|>=0.0|>
+													>
+													["3"] = <
+														units = <"gm">
+														magnitude = <|>=0.0|>
+													>
+												>
+											>
+										}
+										lower matches {
+											C_DV_QUANTITY <
+												property = <[openehr::124]>
+												list = <
+													["1"] = <
+														units = <"µg">
+														magnitude = <|>=0.0|>
+													>
+													["2"] = <
+														units = <"mg">
+														magnitude = <|>=0.0|>
+													>
+													["3"] = <
+														units = <"gm">
+														magnitude = <|>=0.0|>
+													>
+												>
+											>
+										}
+									}
+								}
+							}
+						}
+					}
+					CLUSTER[at0034] occurrences matches {0..1} matches {	-- *By dose units(en)
+						items cardinality matches {1..*; unordered} matches {
+							ELEMENT[at0005] matches {	-- *Number or fraction(en)
+								value matches {
+									DV_COUNT matches {
+										magnitude matches {|>=1|}
+									}
+									DV_INTERVAL<DV_COUNT> matches {
+										upper matches {
+											DV_COUNT matches {
+												magnitude matches {|>=1|}
+											}
+										}
+										lower matches {
+											DV_COUNT matches {
+												magnitude matches {|>=1|}
+											}
+										}
+									}
+									DV_PROPORTION matches {
+										numerator matches {|>=1.0|}
+										denominator matches {|1.0..4.0|}
+										type matches {1, 2, 4}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			ELEMENT[at0007] occurrences matches {0..1} matches {	-- Duree administration
+				value matches {
+					C_DV_QUANTITY <
+						property = <[openehr::128]>
+						list = <
+							["1"] = <
+								units = <"d">
+							>
+							["2"] = <
+								units = <"h">
+							>
+							["3"] = <
+								units = <"min">
+							>
+							["4"] = <
+								units = <"s">
+								magnitude = <|>=0.0|>
+							>
+						>
+					>
+				}
+			}
+			ELEMENT[at0008] occurrences matches {0..1} matches {	-- *Route(en)
+				value matches {
+					DV_CODED_TEXT matches {
+						defining_code matches {[ac0002]}		-- *Any term that 'is_a' route of administration(en)
+					}
+				}
+			}
+			CLUSTER[at0057] occurrences matches {0..1} matches {	-- *Timing(en)
+				items cardinality matches {0..*; unordered} matches {
+					CLUSTER[at0061] occurrences matches {0..1} matches {	-- *Approximate(en)
+						items cardinality matches {0..*; unordered} matches {
+							ELEMENT[at0052] occurrences matches {0..1} matches {	-- *Frequency(en)
+								value matches {
+									DV_CODED_TEXT matches {
+										defining_code matches {
+											[local::
+											at0053, 	-- *Once(en)
+											at0054, 	-- *Twice(en)
+											at0055, 	-- *Three times (en)
+											at0056, 	-- *Four times (en)
+											at0058]	-- *Five times(en)
+										}
+									}
+									DV_CODED_TEXT matches {
+										defining_code matches {[ac0005]}		-- *Frequency(en)
+									}
+								}
+							}
+							ELEMENT[at0059] occurrences matches {0..1} matches {	-- *Unit time(en)
+								value matches {
+									C_DV_QUANTITY <
+										property = <[openehr::128]>
+										list = <
+											["1"] = <
+												units = <"a">
+											>
+											["2"] = <
+												units = <"d">
+											>
+											["3"] = <
+												units = <"h">
+											>
+											["4"] = <
+												units = <"min">
+											>
+											["5"] = <
+												units = <"mo">
+											>
+											["6"] = <
+												units = <"wk">
+											>
+										>
+									>
+								}
+							}
+						}
+					}
+					CLUSTER[at0062] occurrences matches {0..1} matches {	-- *Exact(en)
+						items cardinality matches {0..*; unordered} matches {
+							ELEMENT[at0063] occurrences matches {0..1} matches {	-- *Exact time of administration(en)
+								value matches {
+									DV_DATE_TIME matches {*}
+								}
+							}
+						}
+					}
+					CLUSTER[at0064] occurrences matches {0..1} matches {	-- *Relative(en)
+						items cardinality matches {0..*; unordered} matches {
+							ELEMENT[at0065] occurrences matches {0..1} matches {	-- *Timing(en)
+								value matches {
+									C_DV_QUANTITY <
+										property = <[openehr::128]>
+										list = <
+											["1"] = <
+												units = <"a">
+											>
+											["2"] = <
+												units = <"d">
+											>
+											["3"] = <
+												units = <"h">
+											>
+											["4"] = <
+												units = <"mo">
+											>
+											["5"] = <
+												units = <"s">
+											>
+											["6"] = <
+												units = <"min">
+											>
+											["7"] = <
+												units = <"wk">
+											>
+										>
+									>
+								}
+							}
+							ELEMENT[at0066] occurrences matches {0..1} matches {	-- *Qualifier(en)
+								value matches {
+									DV_CODED_TEXT matches {
+										defining_code matches {
+											[local::
+											at0068, 	-- *before(en)
+											at0069, 	-- *after(en)
+											at0070, 	-- *with(en)
+											at0073]	-- *at(en)
+										}
+									}
+								}
+							}
+							ELEMENT[at0067] occurrences matches {0..1} matches {	-- *Event(en)
+								value matches {
+									DV_TEXT matches {*}
+								}
+							}
+						}
+					}
+				}
+			}
+			ELEMENT[at0060] occurrences matches {0..1} matches {	-- *Instruction qualifiers(en)
+				value matches {
+					DV_TEXT matches {*}
+				}
+			}
+			ELEMENT[at0050] occurrences matches {0..1} matches {	-- *Reason for commencement(en)
+				value matches {
+					DV_TEXT matches {*}
+				}
+			}
+			ELEMENT[at0051] occurrences matches {0..1} matches {	-- *Reason for ceasing(en)
+				value matches {
+					DV_TEXT matches {*}
+				}
+			}
+			ELEMENT[at0009] occurrences matches {0..1} matches {	-- *Is long term(en)
+				value matches {
+					DV_BOOLEAN matches {
+						value matches {True, False}
+					}
+				}
+			}
+			CLUSTER[at0010] occurrences matches {0..1} matches {	-- *Indications(en)
+				items cardinality matches {0..*; unordered} matches {
+					ELEMENT[at0011] occurrences matches {0..*} matches {	-- *Indication(en)
+						value matches {
+							DV_TEXT matches {*}
+							DV_URI matches {*}
+						}
+					}
+				}
+			}
+			CLUSTER[at0013] occurrences matches {0..1} matches {	-- *Safety limits(en)
+				items cardinality matches {1..4; ordered} matches {
+					ELEMENT[at0014] occurrences matches {0..1} matches {	-- *Maximum dose unit frequency(en)
+						value matches {
+							C_DV_QUANTITY <
+								property = <[openehr::382]>
+								list = <
+									["1"] = <
+										units = <"{QUALIFIED REAL/TIME}">
+										magnitude = <|>0.0|>
+									>
+								>
+								assumed_value = <
+									magnitude = <0.0>
+									units = <"{QUALIFIED REAL/TIME}">
+									precision = <-1>
+								>
+							>
+						}
+					}
+					ELEMENT[at0015] occurrences matches {0..1} matches {	-- *Dosage per kg body weight(en)
+						value matches {
+							DV_INTERVAL<DV_QUANTITY> matches {
+								upper matches {
+									C_DV_QUANTITY <
+										property = <[openehr::0]>
+									>
+								}
+								lower matches {
+									C_DV_QUANTITY <
+										property = <[openehr::0]>
+									>
+								}
+							}
+						}
+					}
+					ELEMENT[at0016] occurrences matches {0..1} matches {	-- *Minimum dose interval(en)
+						value matches {
+							C_DV_QUANTITY <
+								property = <[openehr::128]>
+								list = <
+									["1"] = <
+										units = <"min">
+										magnitude = <|>=0.0|>
+									>
+									["2"] = <
+										units = <"h">
+										magnitude = <|>=0.0|>
+									>
+									["3"] = <
+										units = <"d">
+										magnitude = <|>=0.0|>
+									>
+									["4"] = <
+										units = <"wk">
+										magnitude = <|>=0.0|>
+									>
+									["5"] = <
+										units = <"mo">
+										magnitude = <|>=0.0|>
+									>
+								>
+							>
+						}
+					}
+					ELEMENT[at0017] occurrences matches {0..1} matches {	-- *Maximum dose interval(en)
+						value matches {
+							C_DV_QUANTITY <
+								property = <[openehr::128]>
+								list = <
+									["1"] = <
+										units = <"d">
+										magnitude = <|>=0.0|>
+									>
+									["2"] = <
+										units = <"h">
+										magnitude = <|>=0.0|>
+									>
+									["3"] = <
+										units = <"min">
+										magnitude = <|>=0.0|>
+									>
+									["4"] = <
+										units = <"wk">
+										magnitude = <|>=0.0|>
+									>
+									["5"] = <
+										units = <"mo">
+										magnitude = <|>=0.0|>
+									>
+								>
+							>
+						}
+					}
+					ELEMENT[at0002] occurrences matches {0..1} matches {	-- *Administration instructions(en)
+						value matches {
+							DV_TEXT matches {*}
+						}
+					}
+				}
+			}
+			CLUSTER[at0018] occurrences matches {0..1} matches {	-- *Administration information(en)
+				items cardinality matches {0..*; unordered} matches {
+					ELEMENT[at0019] occurrences matches {0..1} matches {	-- *Date (time) of first administration(en)
+						value matches {
+							DV_DATE_TIME matches {*}
+						}
+					}
+					ELEMENT[at0020] occurrences matches {0..1} matches {	-- *Batch number(en)
+						value matches {
+							DV_TEXT matches {*}
+						}
+					}
+					ELEMENT[at0021] occurrences matches {0..1} matches {	-- *Site of administration(en)
+						value matches {
+							DV_CODED_TEXT matches {
+								defining_code matches {[local::]}
+							}
+						}
+					}
+					ELEMENT[at0022] occurrences matches {0..1} matches {	-- *Sequence number(en)
+						value matches {
+							DV_COUNT matches {*}
+						}
+					}
+					ELEMENT[at0032] occurrences matches {0..1} matches {	-- *Date (time) of last administration(en)
+						value matches {
+							DV_DATE_TIME matches {*}
+						}
+					}
+				}
+			}
+			CLUSTER[at0023] occurrences matches {0..1} matches {	-- *Dispensing information(en)
+				items cardinality matches {0..*; unordered} matches {
+					ELEMENT[at0024] occurrences matches {0..1} matches {	-- *Quantity to be dispensed(en)
+						value matches {
+							C_DV_QUANTITY <
+								property = <[openehr::445]>
+							>
+							DV_COUNT matches {
+								magnitude matches {|>0|; 1}
+							}
+							DV_TEXT matches {*}
+						}
+					}
+					ELEMENT[at0025] occurrences matches {0..1} matches {	-- *Number of authorised repeat dispensing(en)
+						value matches {
+							DV_COUNT matches {
+								magnitude matches {|>=0|}
+							}
+						}
+					}
+					ELEMENT[at0026] occurrences matches {0..1} matches {	-- *Dispensed product(en)
+						value matches {
+							DV_TEXT matches {*}
+						}
+					}
+					ELEMENT[at0027] occurrences matches {0..1} matches {	-- *Brand substitution allowed(en)
+						value matches {
+							DV_BOOLEAN matches {
+								value matches {True, False}
+							}
+						}
+					}
+					ELEMENT[at0028] occurrences matches {0..1} matches {	-- *Authority approval number(en)
+						value matches {
+							DV_TEXT matches {*}
+						}
+					}
+					ELEMENT[at0029] occurrences matches {0..1} matches {	-- *Patient counselled on CMI(en)
+						value matches {
+							DV_BOOLEAN matches {
+								value matches {True, False}
+							}
+						}
+					}
+					ELEMENT[at0030] occurrences matches {0..1} matches {	-- *Deferred supply(en)
+						value matches {
+							DV_BOOLEAN matches {
+								value matches {True, False}
+							}
+						}
+					}
+					ELEMENT[at0031] occurrences matches {0..1} matches {	-- *Reason for deferred supply(en)
+						value matches {
+							DV_TEXT matches {*}
+						}
+					}
+				}
+			}
+			CLUSTER[at0049] occurrences matches {0..1} matches {	-- *Admission information(en)
+				items cardinality matches {0..*; unordered} matches {
+					ELEMENT[at0048] occurrences matches {0..1} matches {	-- *Own Medication(en)
+						value matches {
+							DV_BOOLEAN matches {
+								value matches {True, False}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+ontology
+	term_definitions = <
+		["en"] = <
+			items = <
+				["at0000"] = <
+					text = <"Medication description">
+					description = <"The description of a medication for recording as part of an ACTION or INSTRUCTION">
+				>
+				["at0001"] = <
+					text = <"Name of medication">
+					description = <"The name of the intervention - which may be coded">
+				>
+				["at0002"] = <
+					text = <"Administration instructions">
+					description = <"Detailed instructions about how to administer this medication">
+				>
+				["at0003"] = <
+					text = <"Strength per dose unit">
+					description = <"The strength of the medication">
+				>
+				["at0004"] = <
+					text = <"Form">
+					description = <"The form of the medication">
+				>
+				["at0005"] = <
+					text = <"Number or fraction">
+					description = <"The number of dose units to be taken at any time">
+				>
+				["at0006"] = <
+					text = <"Dose unit">
+					description = <"The dose unit that is given for this type of medication">
+				>
+				["at0007"] = <
+					text = <"Dose duration">
+					description = <"The time over which an individual dose is to be administered">
+				>
+				["at0008"] = <
+					text = <"Route">
+					description = <"The route of administration">
+				>
+				["at0009"] = <
+					text = <"Is long term">
+					description = <"Included and set to true if this medication is to be used continuously or repeatedly over a significant period of time.">
+				>
+				["at0010"] = <
+					text = <"Indications">
+					description = <"Indications including related problems and diagnoses, abnormal test results etc">
+				>
+				["at0011"] = <
+					text = <"Indication">
+					description = <"The indication for the intervention">
+				>
+				["at0012"] = <
+					text = <"Generic name">
+					description = <"The generic name of the drug which is an alternative name to the name of medication">
+				>
+				["at0013"] = <
+					text = <"Safety limits">
+					description = <"*">
+				>
+				["at0014"] = <
+					text = <"Maximum dose unit frequency">
+					description = <"The maximum number of dose units to be taken in a particular time">
+				>
+				["at0015"] = <
+					text = <"Dosage per kg body weight">
+					description = <"The dose per kg of body weight">
+				>
+				["at0016"] = <
+					text = <"Minimum dose interval">
+					description = <"The minimum safe interval between doses">
+				>
+				["at0017"] = <
+					text = <"Maximum dose interval">
+					description = <"The maximum safe interval between doses">
+				>
+				["at0018"] = <
+					text = <"Administration information">
+					description = <"Information relating to the administration of the medication order">
+				>
+				["at0019"] = <
+					text = <"Date (time) of first administration">
+					description = <"The date and time (if required) the medication is/was first administered">
+				>
+				["at0020"] = <
+					text = <"Batch number">
+					description = <"Manufacturer's identification number">
+				>
+				["at0021"] = <
+					text = <"Site of administration">
+					description = <"The site of administration e.g. outer thigh if intramuscular, via PEG if patient is nil orally">
+				>
+				["at0022"] = <
+					text = <"Sequence number">
+					description = <"The dose number or sequence">
+				>
+				["at0023"] = <
+					text = <"Dispensing information">
+					description = <"Data relating to dispensing">
+				>
+				["at0024"] = <
+					text = <"Quantity to be dispensed">
+					description = <"The total quantity to be dispensed">
+				>
+				["at0025"] = <
+					text = <"Number of authorised repeat dispensing">
+					description = <"The number of times this quantity of medication may be dispensed before a further prescription is required">
+				>
+				["at0026"] = <
+					text = <"Dispensed product">
+					description = <"The name of the product dispensed">
+				>
+				["at0027"] = <
+					text = <"Brand substitution allowed">
+					description = <"True if an alternative brand may be substituted when dispensing">
+				>
+				["at0028"] = <
+					text = <"Authority approval number">
+					description = <"*">
+				>
+				["at0029"] = <
+					text = <"Patient counselled on CMI">
+					description = <"Dispenser counselled the patient with regard to the Consumer Medicines Information">
+				>
+				["at0030"] = <
+					text = <"Deferred supply">
+					description = <"True if the supply of the medication has been deferred">
+				>
+				["at0031"] = <
+					text = <"Reason for deferred supply">
+					description = <"Information relating to the reason for deferred supply">
+				>
+				["at0032"] = <
+					text = <"Date (time) of last administration">
+					description = <"The date and time (if required) the medication is  to be administered for the last time">
+				>
+				["at0033"] = <
+					text = <"Dose">
+					description = <"The dose to be administered at one time">
+				>
+				["at0034"] = <
+					text = <"By dose units">
+					description = <"Dose as number (or fraction) of the dose units">
+				>
+				["at0035"] = <
+					text = <"By absolute quantity">
+					description = <"Dosage by absolute quantity">
+				>
+				["at0036"] = <
+					text = <"Quantity by volume">
+					description = <"The quantity (or range) to be administered as a single dose">
+				>
+				["at0037"] = <
+					text = <"Quantity by mass">
+					description = <"*">
+				>
+				["at0048"] = <
+					text = <"Own Medication">
+					description = <"On admission to hospital, medication is from subject's own supply.">
+				>
+				["at0049"] = <
+					text = <"Admission information">
+					description = <"*">
+				>
+				["at0050"] = <
+					text = <"Reason for commencement">
+					description = <"Reason for commencement of medication">
+				>
+				["at0051"] = <
+					text = <"Reason for ceasing">
+					description = <"Reason for ceasing of medication">
+				>
+				["at0052"] = <
+					text = <"Frequency">
+					description = <"The frequency of administration">
+				>
+				["at0053"] = <
+					text = <"Once">
+					description = <"Administer once per unit time">
+				>
+				["at0054"] = <
+					text = <"Twice">
+					description = <"Administer twice per unit time">
+				>
+				["at0055"] = <
+					text = <"Three times ">
+					description = <"Administer three times per unit time">
+				>
+				["at0056"] = <
+					text = <"Four times ">
+					description = <"Adminiter four times per unit time">
+				>
+				["at0057"] = <
+					text = <"Timing">
+					description = <"*">
+				>
+				["at0058"] = <
+					text = <"Five times">
+					description = <"Administer five times per unit time">
+				>
+				["at0059"] = <
+					text = <"Unit time">
+					description = <"*">
+				>
+				["at0060"] = <
+					text = <"Instruction qualifiers">
+					description = <"Instruction for administration">
+				>
+				["at0061"] = <
+					text = <"Approximate">
+					description = <"*">
+				>
+				["at0062"] = <
+					text = <"Exact">
+					description = <"*">
+				>
+				["at0063"] = <
+					text = <"Exact time of administration">
+					description = <"*">
+				>
+				["at0064"] = <
+					text = <"Relative">
+					description = <"*">
+				>
+				["at0065"] = <
+					text = <"Timing">
+					description = <"*">
+				>
+				["at0066"] = <
+					text = <"Qualifier">
+					description = <"Qualifier eg before or after meals (event); with food; at bedtime">
+				>
+				["at0067"] = <
+					text = <"Event">
+					description = <"*">
+				>
+				["at0068"] = <
+					text = <"before">
+					description = <"*">
+				>
+				["at0069"] = <
+					text = <"after">
+					description = <"*">
+				>
+				["at0070"] = <
+					text = <"with">
+					description = <"*">
+				>
+				["at0073"] = <
+					text = <"at">
+					description = <"*">
+				>
+			>
+		>
+		["fr"] = <
+			items = <
+				["at0000"] = <
+					text = <"*Medication description(en)">
+					description = <"*The description of a medication for recording as part of an ACTION or INSTRUCTION(en)">
+				>
+				["at0001"] = <
+					text = <"Denomination">
+					description = <"*The name of the intervention - which may be coded(en)">
+				>
+				["at0002"] = <
+					text = <"*Administration instructions(en)">
+					description = <"*Detailed instructions about how to administer this medication(en)">
+				>
+				["at0003"] = <
+					text = <"*Strength per dose unit(en)">
+					description = <"*The strength of the medication(en)">
+				>
+				["at0004"] = <
+					text = <"*Form(en)">
+					description = <"*The form of the medication(en)">
+				>
+				["at0005"] = <
+					text = <"*Number or fraction(en)">
+					description = <"*The number of dose units to be taken at any time(en)">
+				>
+				["at0006"] = <
+					text = <"Unite administration">
+					description = <"*The dose unit that is given for this type of medication(en)">
+				>
+				["at0007"] = <
+					text = <"Duree administration">
+					description = <"*The time over which an individual dose is to be administered(en)">
+				>
+				["at0008"] = <
+					text = <"*Route(en)">
+					description = <"*The route of administration(en)">
+				>
+				["at0009"] = <
+					text = <"*Is long term(en)">
+					description = <"*Included and set to true if this medication is to be used continuously or repeatedly over a significant period of time.(en)">
+				>
+				["at0010"] = <
+					text = <"*Indications(en)">
+					description = <"*Indications including related problems and diagnoses, abnormal test results etc(en)">
+				>
+				["at0011"] = <
+					text = <"*Indication(en)">
+					description = <"*The indication for the intervention(en)">
+				>
+				["at0012"] = <
+					text = <"*Generic name(en)">
+					description = <"*The generic name of the drug which is an alternative name to the name of medication(en)">
+				>
+				["at0013"] = <
+					text = <"*Safety limits(en)">
+					description = <"**(en)">
+				>
+				["at0014"] = <
+					text = <"*Maximum dose unit frequency(en)">
+					description = <"*The maximum number of dose units to be taken in a particular time(en)">
+				>
+				["at0015"] = <
+					text = <"*Dosage per kg body weight(en)">
+					description = <"*The dose per kg of body weight(en)">
+				>
+				["at0016"] = <
+					text = <"*Minimum dose interval(en)">
+					description = <"*The minimum safe interval between doses(en)">
+				>
+				["at0017"] = <
+					text = <"*Maximum dose interval(en)">
+					description = <"*The maximum safe interval between doses(en)">
+				>
+				["at0018"] = <
+					text = <"*Administration information(en)">
+					description = <"*Information relating to the administration of the medication order(en)">
+				>
+				["at0019"] = <
+					text = <"*Date (time) of first administration(en)">
+					description = <"*The date and time (if required) the medication is/was first administered(en)">
+				>
+				["at0020"] = <
+					text = <"*Batch number(en)">
+					description = <"*Manufacturer's identification number(en)">
+				>
+				["at0021"] = <
+					text = <"*Site of administration(en)">
+					description = <"*The site of administration e.g. outer thigh if intramuscular, via PEG if patient is nil orally(en)">
+				>
+				["at0022"] = <
+					text = <"*Sequence number(en)">
+					description = <"*The dose number or sequence(en)">
+				>
+				["at0023"] = <
+					text = <"*Dispensing information(en)">
+					description = <"*Data relating to dispensing(en)">
+				>
+				["at0024"] = <
+					text = <"*Quantity to be dispensed(en)">
+					description = <"*The total quantity to be dispensed(en)">
+				>
+				["at0025"] = <
+					text = <"*Number of authorised repeat dispensing(en)">
+					description = <"*The number of times this quantity of medication may be dispensed before a further prescription is required(en)">
+				>
+				["at0026"] = <
+					text = <"*Dispensed product(en)">
+					description = <"*The name of the product dispensed(en)">
+				>
+				["at0027"] = <
+					text = <"*Brand substitution allowed(en)">
+					description = <"*True if an alternative brand may be substituted when dispensing(en)">
+				>
+				["at0028"] = <
+					text = <"*Authority approval number(en)">
+					description = <"**(en)">
+				>
+				["at0029"] = <
+					text = <"*Patient counselled on CMI(en)">
+					description = <"*Dispenser counselled the patient with regard to the Consumer Medicines Information(en)">
+				>
+				["at0030"] = <
+					text = <"*Deferred supply(en)">
+					description = <"*True if the supply of the medication has been deferred(en)">
+				>
+				["at0031"] = <
+					text = <"*Reason for deferred supply(en)">
+					description = <"*Information relating to the reason for deferred supply(en)">
+				>
+				["at0032"] = <
+					text = <"*Date (time) of last administration(en)">
+					description = <"*The date and time (if required) the medication is  to be administered for the last time(en)">
+				>
+				["at0033"] = <
+					text = <"*Dose(en)">
+					description = <"*The dose to be administered at one time(en)">
+				>
+				["at0034"] = <
+					text = <"*By dose units(en)">
+					description = <"*Dose as number (or fraction) of the dose units(en)">
+				>
+				["at0035"] = <
+					text = <"*By absolute quantity(en)">
+					description = <"*Dosage by absolute quantity(en)">
+				>
+				["at0036"] = <
+					text = <"*Quantity by volume(en)">
+					description = <"*The quantity (or range) to be administered as a single dose(en)">
+				>
+				["at0037"] = <
+					text = <"*Quantity by mass(en)">
+					description = <"**(en)">
+				>
+				["at0048"] = <
+					text = <"*Own Medication(en)">
+					description = <"*On admission to hospital, medication is from subject's own supply.(en)">
+				>
+				["at0049"] = <
+					text = <"*Admission information(en)">
+					description = <"**(en)">
+				>
+				["at0050"] = <
+					text = <"*Reason for commencement(en)">
+					description = <"*Reason for commencement of medication(en)">
+				>
+				["at0051"] = <
+					text = <"*Reason for ceasing(en)">
+					description = <"*Reason for ceasing of medication(en)">
+				>
+				["at0052"] = <
+					text = <"*Frequency(en)">
+					description = <"*The frequency of administration(en)">
+				>
+				["at0053"] = <
+					text = <"*Once(en)">
+					description = <"*Administer once per unit time(en)">
+				>
+				["at0054"] = <
+					text = <"*Twice(en)">
+					description = <"*Administer twice per unit time(en)">
+				>
+				["at0055"] = <
+					text = <"*Three times (en)">
+					description = <"*Administer three times per unit time(en)">
+				>
+				["at0056"] = <
+					text = <"*Four times (en)">
+					description = <"*Adminiter four times per unit time(en)">
+				>
+				["at0057"] = <
+					text = <"*Timing(en)">
+					description = <"**(en)">
+				>
+				["at0058"] = <
+					text = <"*Five times(en)">
+					description = <"*Administer five times per unit time(en)">
+				>
+				["at0059"] = <
+					text = <"*Unit time(en)">
+					description = <"**(en)">
+				>
+				["at0060"] = <
+					text = <"*Instruction qualifiers(en)">
+					description = <"*Instruction for administration(en)">
+				>
+				["at0061"] = <
+					text = <"*Approximate(en)">
+					description = <"**(en)">
+				>
+				["at0062"] = <
+					text = <"*Exact(en)">
+					description = <"**(en)">
+				>
+				["at0063"] = <
+					text = <"*Exact time of administration(en)">
+					description = <"**(en)">
+				>
+				["at0064"] = <
+					text = <"*Relative(en)">
+					description = <"**(en)">
+				>
+				["at0065"] = <
+					text = <"*Timing(en)">
+					description = <"**(en)">
+				>
+				["at0066"] = <
+					text = <"*Qualifier(en)">
+					description = <"*Qualifier eg before or after meals (event); with food; at bedtime(en)">
+				>
+				["at0067"] = <
+					text = <"*Event(en)">
+					description = <"**(en)">
+				>
+				["at0068"] = <
+					text = <"*before(en)">
+					description = <"**(en)">
+				>
+				["at0069"] = <
+					text = <"*after(en)">
+					description = <"**(en)">
+				>
+				["at0070"] = <
+					text = <"*with(en)">
+					description = <"**(en)">
+				>
+				["at0073"] = <
+					text = <"*at(en)">
+					description = <"**(en)">
+				>
+			>
+		>
+	>
+	constraint_definitions = <
+		["en"] = <
+			items = <
+				["ac0000"] = <
+					text = <"Any term that 'is_a' form of medication">
+					description = <"Terms such as tablet, inhaler, liquid....">
+				>
+				["ac0001"] = <
+					text = <"any term that 'is a' Dose unit for this form">
+					description = <"A set of terms that describes the dose units for medication - e.g. tablet, puff, ampule etc - which allow the dose to be expressed as a number.">
+				>
+				["ac0002"] = <
+					text = <"Any term that 'is_a' route of administration">
+					description = <"The route by which the medication is administered">
+				>
+				["ac0003"] = <
+					text = <"=Generic name OR Brand name">
+					description = <"*">
+				>
+				["ac0005"] = <
+					text = <"Frequency">
+					description = <"Subset of frequencies of medication administration
+
+">
+				>
+			>
+		>
+		["fr"] = <
+			items = <
+				["ac0000"] = <
+					text = <"*Any term that 'is_a' form of medication(en)">
+					description = <"*Terms such as tablet, inhaler, liquid....(en)">
+				>
+				["ac0001"] = <
+					text = <"*any term that 'is a' Dose unit for this form(en)">
+					description = <"*A set of terms that describes the dose units for medication - e.g. tablet, puff, ampule etc - which allow the dose to be expressed as a number.(en)">
+				>
+				["ac0002"] = <
+					text = <"*Any term that 'is_a' route of administration(en)">
+					description = <"*The route by which the medication is administered(en)">
+				>
+				["ac0003"] = <
+					text = <"*=Generic name OR Brand name(en)">
+					description = <"**(en)">
+				>
+				["ac0005"] = <
+					text = <"*Frequency(en)">
+					description = <"*Subset of frequencies of medication administration
+
+(en)">
+				>
+			>
+		>
+	>

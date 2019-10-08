@@ -1,0 +1,61 @@
+[
+  {
+    "/name": [
+      {
+        "value": "Reaction details"
+      }
+    ],
+    "/items[at0011]": [
+      {
+        "/name": [
+          {
+            "value": "Manifestation"
+          }
+        ],
+        "/value": {
+          "value": "terrble sneezing"
+        },
+        "/$PATH$": "/content[openEHR-EHR-SECTION.allergies_adverse_reactions_rcp.v1 and name/value='Allergies and adverse reactions']/items[openEHR-EHR-EVALUATION.adverse_reaction_risk.v1 and name/value='Adverse reaction risk']/data[at0001]/items[at0009 and name/value='Reaction details']/items[at0011 and name/value='Manifestation']",
+        "/$CLASS$": "DvText"
+      },
+      {
+        "/name": [
+          {
+            "value": "Manifestation #2"
+          }
+        ],
+        "/value": {
+          "value": "awful conjunctivitis"
+        },
+        "/$PATH$": "/content[openEHR-EHR-SECTION.allergies_adverse_reactions_rcp.v1 and name/value='Allergies and adverse reactions']/items[openEHR-EHR-EVALUATION.adverse_reaction_risk.v1 and name/value='Adverse reaction risk']/data[at0001]/items[at0009 and name/value='Reaction details']/items[at0011 and name/value='Manifestation #2']",
+        "/$CLASS$": "DvText"
+      },
+      {
+        "/name": [
+          {
+            "value": "Manifestation #3"
+          }
+        ],
+        "/value": {
+          "value": "shocking rash"
+        },
+        "/$PATH$": "/content[openEHR-EHR-SECTION.allergies_adverse_reactions_rcp.v1 and name/value='Allergies and adverse reactions']/items[openEHR-EHR-EVALUATION.adverse_reaction_risk.v1 and name/value='Adverse reaction risk']/data[at0001]/items[at0009 and name/value='Reaction details']/items[at0011 and name/value='Manifestation #3']",
+        "/$CLASS$": "DvText"
+      }
+    ],
+    "/items[at0032]": [
+      {
+        "/name": [
+          {
+            "value": "Comment"
+          }
+        ],
+        "/value": {
+          "value": "only in spring and autumn"
+        },
+        "/$PATH$": "/content[openEHR-EHR-SECTION.allergies_adverse_reactions_rcp.v1 and name/value='Allergies and adverse reactions']/items[openEHR-EHR-EVALUATION.adverse_reaction_risk.v1 and name/value='Adverse reaction risk']/data[at0001]/items[at0009 and name/value='Reaction details']/items[at0032 and name/value='Comment']",
+        "/$CLASS$": "DvText"
+      }
+    ]
+  }
+]

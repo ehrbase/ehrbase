@@ -1,0 +1,79 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Support/TERMINOLOGY_ACCESS.json",
+    "title": "TERMINOLOGY_ACCESS",
+    "description": "Defines an object providing proxy access to a terminology. ",
+    "$comments": "Defined in Support IM",
+    "$functions": {
+        "id": {
+            "description": "Identification of this Terminology.",
+            "return": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/String"
+            }
+        },
+        "all_codes": {
+            "description": "Return all codes known in this terminology.",
+            "return": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_types/all.json#/definitions/CODE_PHRASE"
+            }
+        },
+        "codes_for_group_id": {
+            "description": "Return all codes under grouper 'a_group_id' from this terminology.",
+            "parameters": {
+                "a_group_id": {
+                    "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/String"
+                }
+            },
+            "required_parameters": [
+                "a_group_id"
+            ],
+            "return": {
+                "type": "array",
+                "items": {
+                    "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_types/all.json#/definitions/CODE_PHRASE"
+                }
+            }
+        },
+        "codes_for_group_name": {
+            "description": "Return all codes under grouper whose name in 'a_lang' is 'a_name' from this terminology.",
+            "parameters": {
+                "a_lang": {
+                    "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/String"
+                },
+                "a_name": {
+                    "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/String"
+                }
+            },
+            "required_parameters": [
+                "a_lang",
+                "a_name"
+            ],
+            "return": {
+                "type": "array",
+                "items": {
+                    "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM/Release-1.0.4/Data_types/all.json#/definitions/CODE_PHRASE"
+                }
+            }
+        },
+        "has_code_for_group_id": {
+            "description": "True if  a_code' is known in group  group_id' in the openEHR terminology.",
+            "return": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/Boolean"
+            }
+        },
+        "rubric_for_code": {
+            "description": "Return all rubric of code  code' in language  lang'.",
+            "parameters": {
+                "a_code": {
+                    "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/String"
+                }
+            },
+            "required_parameters": [
+                "a_code"
+            ],
+            "return": {
+                "$ref": "https://specifications.openehr.org/releases/ITS-JSON/latest/components/BASE/Release-1.1.0/Foundation_types/all.json#/definitions/String"
+            }
+        }
+    }
+}

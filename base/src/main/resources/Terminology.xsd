@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ Modifications copyright (C) 2019 Vitasystems GmbH and Hannover Medical School
+
+ This file is part of Project EHRbase
+
+ Copyright (c) 2015 Christian Chevalley
+ This file is part of Project Ethercis
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<xs:schema id="Terminology" targetNamespace="http://openehr.org/Terminology.xsd"
+           xmlns="http://openehr.org/Terminology.xsd"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata"
+           elementFormDefault="qualified">
+    <xs:element name="Language">
+        <xs:complexType>
+            <xs:sequence>
+            </xs:sequence>
+            <xs:attribute name="code" type="xs:string"/>
+            <xs:attribute name="Description" type="xs:string"/>
+        </xs:complexType>
+        <xs:key name="LanguageKey1" msdata:PrimaryKey="true">
+            <xs:selector xpath="."/>
+            <xs:field xpath="@code"/>
+        </xs:key>
+    </xs:element>
+    <xs:element name="PrimaryRubric">
+        <xs:complexType>
+            <xs:sequence>
+            </xs:sequence>
+            <xs:attribute name="Id" type="xs:nonNegativeInteger" msdata:AutoIncrementSeed="0"
+                          msdata:AutoIncrementStep="1" msdata:AutoIncrement="true"/>
+            <xs:attribute name="Language" type="xs:string"/>
+        </xs:complexType>
+        <xs:key name="TermKey1" msdata:PrimaryKey="true">
+            <xs:selector xpath="."/>
+            <xs:field xpath="@Id"/>
+        </xs:key>
+    </xs:element>
+    <xs:element name="Concept">
+        <xs:complexType>
+            <xs:sequence/>
+            <xs:attribute name="Language" type="xs:string"/>
+            <xs:attribute name="ConceptID" type="xs:nonNegativeInteger"/>
+            <xs:attribute name="Rubric" type="xs:string"/>
+        </xs:complexType>
+        <xs:key name="TerminologyKey1" msdata:PrimaryKey="true">
+            <xs:selector xpath="."/>
+            <xs:field xpath="@Language"/>
+            <xs:field xpath="@ConceptID"/>
+        </xs:key>
+        <xs:keyref name="LanguageTerminology" refer="LanguageKey1" msdata:ConstraintOnly="true"
+                   msdata:AcceptRejectRule="Cascade" msdata:DeleteRule="Cascade" msdata:UpdateRule="Cascade"
+                   msdata:IsNested="true">
+            <xs:selector xpath="."/>
+            <xs:field xpath="@Language"/>
+        </xs:keyref>
+        <xs:keyref name="TermTerminology" refer="TermKey1" msdata:ConstraintOnly="true"
+                   msdata:AcceptRejectRule="Cascade" msdata:DeleteRule="Cascade" msdata:UpdateRule="Cascade">
+            <xs:selector xpath="."/>
+            <xs:field xpath="@ConceptID"/>
+        </xs:keyref>
+        <xs:key name="TerminologyKey2">
+            <xs:selector xpath="."/>
+            <xs:field xpath="@Language"/>
+        </xs:key>
+        <xs:key name="TerminologyKey3">
+            <xs:selector xpath="."/>
+            <xs:field xpath="@ConceptID"/>
+        </xs:key>
+    </xs:element>
+    <xs:element name="Grouper">
+        <xs:complexType>
+            <xs:sequence>
+            </xs:sequence>
+            <xs:attribute name="id" type="xs:nonNegativeInteger" msdata:AutoIncrement="true"
+                          msdata:AutoIncrementSeed="0" msdata:AutoIncrementStep="1"/>
+            <xs:attribute name="ConceptID" type="xs:nonNegativeInteger"/>
+        </xs:complexType>
+        <xs:key name="GrouperKey1" msdata:PrimaryKey="true">
+            <xs:selector xpath="."/>
+            <xs:field xpath="@id"/>
+        </xs:key>
+        <xs:keyref name="TerminologyGrouper" refer="TerminologyKey3">
+            <xs:selector xpath="."/>
+            <xs:field xpath="@ConceptID"/>
+        </xs:keyref>
+    </xs:element>
+    <xs:element name="GroupedConcept">
+        <xs:complexType>
+            <xs:sequence>
+            </xs:sequence>
+            <xs:attribute name="GrouperID" type="xs:nonNegativeInteger"/>
+            <xs:attribute name="ChildID" type="xs:nonNegativeInteger"/>
+        </xs:complexType>
+        <xs:keyref name="GrouperGrouperTerm" refer="GrouperKey1" msdata:AcceptRejectRule="Cascade"
+                   msdata:DeleteRule="Cascade" msdata:UpdateRule="Cascade">
+            <xs:selector xpath="."/>
+            <xs:field xpath="@GrouperID"/>
+        </xs:keyref>
+        <xs:key name="GrouperTermKey1" msdata:PrimaryKey="true">
+            <xs:selector xpath="."/>
+            <xs:field xpath="@GrouperID"/>
+            <xs:field xpath="@ChildID"/>
+        </xs:key>
+        <xs:keyref name="TermGroup1" refer="TerminologyKey3" msdata:DeleteRule="Cascade">
+            <xs:selector xpath="."/>
+            <xs:field xpath="@ChildID"/>
+        </xs:keyref>
+    </xs:element>
+    <xs:element name="TerminologyIdentifiers">
+        <xs:complexType>
+            <xs:sequence>
+            </xs:sequence>
+            <xs:attribute name="VSAB" type="xs:string" msdata:Caption="Versioned source"/>
+            <xs:attribute name="SourceName" type="xs:string"/>
+            <xs:attribute name="Authority" type="xs:string" msdata:Caption="Authority"/>
+            <xs:attribute name="Hl7Oid" type="xs:string" use="optional"/>
+        </xs:complexType>
+        <xs:key name="TerminologyIdentifiersKey1" msdata:PrimaryKey="true">
+            <xs:selector xpath="."/>
+            <xs:field xpath="@VSAB"/>
+        </xs:key>
+    </xs:element>
+    <xs:element name="MediaType">
+        <xs:complexType>
+            <xs:sequence>
+            </xs:sequence>
+            <xs:attribute name="MIME" type="xs:string"/>
+            <xs:attribute name="Description" type="xs:string"/>
+        </xs:complexType>
+        <xs:key name="MediaTypeKey1" msdata:PrimaryKey="true">
+            <xs:selector xpath="."/>
+            <xs:field xpath="@MIME"/>
+        </xs:key>
+    </xs:element>
+    <xs:element name="Property">
+        <xs:complexType>
+            <xs:sequence>
+            </xs:sequence>
+            <xs:attribute name="ID" type="xs:nonNegativeInteger" msdata:AutoIncrementSeed="0"
+                          msdata:AutoIncrementStep="1"/>
+            <xs:attribute name="ConceptID" type="xs:nonNegativeInteger"/>
+        </xs:complexType>
+        <xs:key name="PropertyKey1">
+            <xs:selector xpath="."/>
+            <xs:field xpath="@ID"/>
+        </xs:key>
+    </xs:element>
+    <xs:element name="Unit">
+        <xs:complexType>
+            <xs:sequence/>
+            <xs:attribute name="ID" type="xs:nonNegativeInteger" msdata:AutoIncrementStep="1"
+                          msdata:AutoIncrementSeed="0"/>
+            <xs:attribute name="Unit" type="xs:string"/>
+        </xs:complexType>
+        <xs:key name="UnitKey1">
+            <xs:selector xpath="."/>
+            <xs:field xpath="@ID"/>
+        </xs:key>
+    </xs:element>
+    <xs:element name="PropertyUnits">
+        <xs:complexType>
+            <xs:sequence/>
+            <xs:attribute name="PropertyID" type="xs:nonNegativeInteger"/>
+            <xs:attribute name="UnitID" type="xs:nonNegativeInteger"/>
+        </xs:complexType>
+        <xs:keyref name="PropertyPropertyUnits" refer="PropertyKey1" msdata:ConstraintOnly="true">
+            <xs:selector xpath="."/>
+            <xs:field xpath="@PropertyID"/>
+        </xs:keyref>
+        <xs:keyref name="UnitPropertyUnits" refer="UnitKey1" msdata:ConstraintOnly="true">
+            <xs:selector xpath="."/>
+            <xs:field xpath="@UnitID"/>
+        </xs:keyref>
+        <xs:key name="PropertyUnitsKey1">
+            <xs:selector xpath="."/>
+            <xs:field xpath="@PropertyID"/>
+            <xs:field xpath="@UnitID"/>
+        </xs:key>
+    </xs:element>
+    <xs:element name="Territory">
+        <xs:complexType>
+            <xs:sequence/>
+            <xs:attribute name="NumericCode" type="xs:string" use="required"/>
+            <xs:attribute name="TwoLetter" type="xs:string"/>
+            <xs:attribute name="ThreeLetter" type="xs:string"/>
+            <xs:attribute name="Text" type="xs:string"/>
+        </xs:complexType>
+        <xs:key name="TerritoryKey1" msdata:PrimaryKey="true">
+            <xs:selector xpath="."/>
+            <xs:field xpath="@NumericCode"/>
+        </xs:key>
+    </xs:element>
+</xs:schema>

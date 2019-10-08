@@ -1,0 +1,105 @@
+﻿archetype (adl_version=1.4)
+	openEHR-EHR-COMPOSITION.prescription.v1
+
+concept
+	[at0000]	-- Prescription
+language
+	original_language = <[ISO_639-1::en]>
+description
+	original_author = <
+		["name"] = <"Sam Heard">
+		["organisation"] = <"Ocean Informatics">
+		["email"] = <"sam.heard@oceaninformatics.com">
+		["date"] = <"23/03/2006">
+	>
+	details = <
+		["en"] = <
+			language = <[ISO_639-1::en]>
+			purpose = <"A composition for transfering medication orders to the pharmacy.">
+			use = <"This composition is only required for transfer of medications to the pharmacy.">
+			keywords = <"medication", "prescribe", "order">
+			misuse = <"Medication orders, as instructions, have a prescribe action that records prescription and communication to the pharmacy. This composition is only required if the medication orders are required to be transmitted within openEHR to the pharmacy.">
+			copyright = <"© openEHR Foundation">
+		>
+	>
+	lifecycle_state = <"AuthorDraft">
+	other_contributors = <>
+	other_details = <
+		["references"] = <"">
+	>
+
+definition
+	COMPOSITION[at0000] matches {	-- Prescription
+		category matches {
+			DV_CODED_TEXT matches {
+				defining_code matches {[openehr::433]}
+			}
+		}
+		context matches {
+			EVENT_CONTEXT matches {
+				other_context matches {
+					ITEM_TREE[at0001] matches {	-- Tree
+						items cardinality matches {0..*; unordered} matches {
+							ELEMENT[at0002] occurrences matches {0..1} matches {	-- Prescription category
+								value matches {
+									DV_CODED_TEXT matches {
+										defining_code matches {
+											[local::
+											at0003, 	-- PBS
+											at0004, 	-- RPBS
+											at0005]	-- Private
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		content cardinality matches {0..*; unordered} matches {
+			allow_archetype SECTION[at0006] matches {
+				include
+					archetype_id/value matches {/openEHR-EHR-SECTION\.medications\.v1/}
+				exclude
+					archetype_id/value matches {/.*/}
+			}
+		}
+	}
+
+
+ontology
+	term_definitions = <
+		["en"] = <
+			items = <
+				["at0000"] = <
+					text = <"Prescription">
+					description = <"Set of medication orders communicated to pharmacy">
+				>
+				["at0001"] = <
+					text = <"Tree">
+					description = <"@ internal @">
+				>
+				["at0002"] = <
+					text = <"Prescription category">
+					description = <"Australian prescription category">
+				>
+				["at0003"] = <
+					text = <"PBS">
+					description = <"Australian pharmaceutical benefits scheme">
+				>
+				["at0004"] = <
+					text = <"RPBS">
+					description = <"Repatriation pharmaceutical benefits scheme (ADF)">
+				>
+				["at0005"] = <
+					text = <"Private">
+					description = <"Entire cost met by patient or agent">
+				>
+				["at0006"] = <
+					text = <"Section: Medications">
+					description = <"*">
+				>
+			>
+		>
+	>
