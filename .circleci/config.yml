@@ -542,11 +542,12 @@ commands:
       - run:
           name: Excecute Sonar analysis
           command: |
+            chmod 744 ~/project/.circleci/*.sh
             ~/sonar-scanner-3.3.0.1492-linux/bin/sonar-scanner \
             -Dsonar.login=$SONARCLOUD_TOKEN \
             -Dsonar.branch.name=$CIRCLE_BRANCH \
-            -Dsonar.branch.target=$(python ~/project/.circleci/get_target_branch.py) \
-            -Dsonar.projectVersion=$(python ~/project/.circleci/verify_and_return_version.py)
+            -Dsonar.branch.target=$(~/project/.circleci/get_target_branch.sh) \
+            -Dsonar.projectVersion=$(~/project/.circleci/verify_and_return_version.sh)
 
 
   run-dependency-check:
