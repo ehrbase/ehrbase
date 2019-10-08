@@ -183,7 +183,7 @@ jobs:
   deploy-snapshot-artifact:
     docker:
       - image: circleci/openjdk:8-jdk
-      - image: ehrbaseorg/ehrbase-database-docker:11.5
+      - image: ehrbaseorg/ehrbase-database-docker
         environment:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -201,7 +201,7 @@ jobs:
   deploy-release-artifact:
     docker:
       - image: circleci/openjdk:8-jdk
-      - image: ehrbase/ehrbase-database-docker:11.5
+      - image: ehrbaseorg/ehrbase-database-docker:11.5
         environment:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -542,11 +542,12 @@ commands:
       - run:
           name: Excecute Sonar analysis
           command: |
+            chmod 744 ~/project/.circleci/*.sh
             ~/sonar-scanner-3.3.0.1492-linux/bin/sonar-scanner \
             -Dsonar.login=$SONARCLOUD_TOKEN \
             -Dsonar.branch.name=$CIRCLE_BRANCH \
-            -Dsonar.branch.target=$(python ~/project/.circleci/get_target_branch.py) \
-            -Dsonar.projectVersion=$(python ~/project/.circleci/verify_and_return_version.py)
+            -Dsonar.branch.target=$(~/project/.circleci/get_target_branch.sh) \
+            -Dsonar.projectVersion=$(~/project/.circleci/verify_and_return_version.sh)
 
 
   run-dependency-check:
@@ -564,8 +565,8 @@ commands:
           name: Run dependency vulnerability analysis
           command: |
             cd ~/project
-            ~/dependency-check/bin/dependency-check.sh --noupdate \
-                --project "EtherCis" --format JSON \
+            ~/dependency-check/bin/dependency-check.sh \
+                --project "EHRBase" --format JSON \
                 -o vulnerability_analysis.json --scan .
       - run:
           name: Convert vulnerability analysis to sonar issues
