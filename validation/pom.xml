@@ -35,9 +35,8 @@
             <artifactId>opt-1.4</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.nedap.healthcare.archie</groupId>
-            <artifactId>archie-all</artifactId>
-            <version>develop-SNAPSHOT</version>
+            <groupId>com.github.openEHR</groupId>
+            <artifactId>archie</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
