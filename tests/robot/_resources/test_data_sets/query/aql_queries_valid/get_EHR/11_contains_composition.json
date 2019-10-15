@@ -1,0 +1,3 @@
+{
+  "q": "SELECT e/ehr_id/value FROM EHR e CONTAINS COMPOSITION c"
+}
