@@ -24,22 +24,6 @@
 
   <repositories>
     <repository>
-      <snapshots/>
-      <id>hip-mvn-snapshots</id>
-      <name>hip-mvn-snapshots</name>
-      <url>https://vitagroup.jfrog.io/vitagroup/hip-mvn-snapshots</url>
-    </repository>
-    <repository>
-      <id>hip-mvn-releases</id>
-      <name>hip-mvn-releases</name>
-      <url>https://vitagroup.jfrog.io/vitagroup/hip-mvn-releases</url>
-    </repository>
-    <repository> <!-- for snapshots of springfox -->
-      <id>jcenter-snapshots</id>
-      <name>jcenter</name>
-      <url>http://oss.jfrog.org/artifactory/oss-snapshot-local/</url>
-    </repository>
-    <repository>
       <id>jitpack.io</id>
       <url>https://jitpack.io</url>
     </repository>
@@ -404,29 +388,6 @@
             <configuration>
               <failOnWarning>false</failOnWarning>
               <outputXML>true</outputXML>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.jfrog.buildinfo</groupId>
-        <artifactId>artifactory-maven-plugin</artifactId>
-        <version>2.6.1</version>
-        <inherited>false</inherited>
-        <executions>
-          <execution>
-            <id>build-info</id>
-            <goals>
-              <goal>publish</goal>
-            </goals>
-            <configuration>
-              <publisher>
-                <contextUrl>https://vitagroup.jfrog.io/vitagroup</contextUrl>
-                <username>{{ARTIFACTORY_USER}}</username>
-                <password>{{ARTIFACTORY_ENCRYPTED_PASSWORD}}</password>
-                <repoKey>hip-mvn-releases</repoKey>
-                <snapshotRepoKey>hip-mvn-snapshots</snapshotRepoKey>
-              </publisher>
             </configuration>
           </execution>
         </executions>
