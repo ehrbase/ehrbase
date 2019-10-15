@@ -96,10 +96,7 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
         }
 
         if (isItemsOnly) {
-            if (parentItemsArchetypeNodeId != null)
-                writer.name(ARCHETYPE_NODE_ID).value(parentItemsArchetypeNodeId);
-
-
+            //CHC 20191003: Removed archetype_node_id writer since it is serviced by closing the array.
             ArrayList items = new Children(map).items();
             writeItemInArray(ITEMS, items, writer, parentItemsArchetypeNodeId, parentItemsType);
         } else if (isMultiEvents) {
@@ -372,12 +369,10 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
                             writer.name(AT_TYPE).value(new SnakeCase(((String) value)).camelToUpperSnake());
                         break;
                     case CompositionSerializer.TAG_PATH:  //this is an element
-                        //identify the key of this node from the path
-//                        String itemKey = new LocatableHelper()
                         String archetypeNodeId2 = new PathAttribute((String) value).archetypeNodeId();
                         if (archetypeNodeId2 != null)
                             writer.name(AT_TYPE).value(ELEMENT);
-                        new ArchetypeNodeId(writer, archetypeNodeId).write();
+                        //CHC 20191003: removed writer for archetype_node_id as it was not applicable here
                         break;
                     case CompositionSerializer.TAG_NAME:
                         writeNameAsValue(writer, value.toString());

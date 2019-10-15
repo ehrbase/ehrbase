@@ -316,7 +316,7 @@ public class WhereBinder {
             ) {
                 Object nextToken = whereClause.get(lcursor + 1); //check operator
                 if (nextToken instanceof String && !nextToken.equals("="))
-                    throw new IllegalArgumentException("name/value for Composition must be an equality");
+                    throw new IllegalArgumentException("name/value for CompositionAttribute must be an equality");
                 nextToken = whereClause.get(lcursor + 2);
                 if (nextToken instanceof String) {
                     token = (String) nextToken;

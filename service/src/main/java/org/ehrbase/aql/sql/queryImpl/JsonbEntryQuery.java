@@ -454,23 +454,8 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
     }
 
     @Override
-    public boolean isEhrIdFiltered() {
-        return false;
-    }
-
-    @Override
-    public boolean isCompositionIdFiltered() {
-        return false;
-    }
-
-    @Override
     public boolean isContainsJqueryPath() {
         return containsJqueryPath;
-    }
-
-    @Override
-    public boolean isUseEntry() {
-        return useEntry;
     }
 
     @Override

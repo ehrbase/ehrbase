@@ -147,25 +147,25 @@ public class SelectBinder extends TemplateMetaData implements I_SelectBinder {
     }
 
 
-    public PathResolver getPathResolver() {
-        return pathResolver;
-    }
-
-    public boolean hasEhrIdExpression() {
-        return compositionAttributeQuery.containsEhrId();
-    }
-
-    public String getEhrIdAlias() {
-        return compositionAttributeQuery.getEhrIdAlias();
-    }
-
-    public boolean isCompositionIdFiltered() {
-        return compositionAttributeQuery.isCompositionIdFiltered();
-    }
-
-    public boolean isEhrIdFiltered() {
-        return compositionAttributeQuery.isEhrIdFiltered();
-    }
+//    public PathResolver getPathResolver() {
+//        return pathResolver;
+//    }
+//
+//    public boolean hasEhrIdExpression() {
+//        return compositionAttributeQuery.containsEhrId();
+//    }
+//
+//    public String getEhrIdAlias() {
+//        return compositionAttributeQuery.getEhrIdAlias();
+//    }
+//
+//    public boolean isCompositionIdFiltered() {
+//        return compositionAttributeQuery.isCompositionIdFiltered();
+//    }
+//
+//    public boolean isEhrIdFiltered() {
+//        return compositionAttributeQuery.isEhrIdFiltered();
+//    }
 
     public boolean containsJQueryPath() {
         return jsonbEntryQuery.isContainsJqueryPath();

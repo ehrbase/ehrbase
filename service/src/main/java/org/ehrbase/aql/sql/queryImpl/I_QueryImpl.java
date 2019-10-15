@@ -47,13 +47,7 @@ public interface I_QueryImpl {
 
     boolean isJsonDataBlock();
 
-    boolean isEhrIdFiltered();
-
-    boolean isCompositionIdFiltered();
-
     boolean isContainsJqueryPath();
-
-    boolean isUseEntry();
 
     String getJsonbItemPath();
 
