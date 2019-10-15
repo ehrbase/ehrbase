@@ -39,9 +39,24 @@ public interface EhrService {
      */
     UUID create(EhrStatus status, UUID ehrId);
 
+    @Deprecated
     Optional<EhrStatusDto> getEhrStatusEhrScape(UUID ehrUuid, CompositionFormat format);
 
+    /**
+     * Gets latest EHR_STATUS of the given EHR.
+     * @param ehrUuid EHR subject
+     * @return Latest EHR_STATUS or empty
+     */
     Optional<EhrStatus> getEhrStatus(UUID ehrUuid);
+
+    /**
+     * Gets particular EHR_STATUS matching the given version Uid.
+     * @param ehrUuid Root EHR
+     * @param versionedObjectUid Given Uid of EHR_STATUS
+     * @param version Given version of EHR_STATUS
+     * @return Matching EHR_STATUS or empty
+     */
+    Optional<EhrStatus> getEhrStatusAtVersion(UUID ehrUuid, UUID versionedObjectUid, int version);
 
     Optional<EhrStatus> updateStatus(UUID ehrId, EhrStatus status);
 
@@ -55,11 +70,19 @@ public interface EhrService {
      */
     boolean doesEhrExist(UUID ehrId);
 
-    String getLatestVersionedId(UUID ehrId);
+    String getLatestVersionUidOfStatus(UUID ehrId);
 
     UUID getSystemUuid();    // from BaseService
 
     LocalDateTime getCreationTime(UUID ehrId);
+
+    /**
+     * FIXME EHR_STATUS: docs
+     * @param compositionId
+     * @param timestamp
+     * @return
+     */
+    Integer getVersionByTimestamp(UUID compositionId, LocalDateTime timestamp);
 
     /**
      * Return True if a EHR with identifier ehrId exists.

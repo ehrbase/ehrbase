@@ -19,6 +19,7 @@
 
 package org.ehrbase.service;
 
+import com.nedap.archie.rm.support.identification.UIDBasedId;
 import org.ehrbase.api.definitions.CompositionFormat;
 import org.ehrbase.api.definitions.StructuredString;
 import org.ehrbase.api.definitions.StructuredStringFormat;
@@ -69,6 +70,7 @@ public class EhrServiceImp extends BaseService implements EhrService {
             status.setModifiable(true);
             status.setQueryable(true);
         }
+        status.setUid(new HierObjectId(UUID.randomUUID().toString()));  // server sets own new UUID in both cases (new or given status)
 
         String subjectId = status.getSubject().getExternalRef().getId().getValue();
         String subjectNamespace = status.getSubject().getExternalRef().getNamespace();
@@ -127,7 +129,6 @@ public class EhrServiceImp extends BaseService implements EhrService {
             if (ehrAccess == null) {
                 return Optional.empty();
             }
-
             return Optional.of(ehrAccess.getStatus());
 
         } catch (Exception e) {
@@ -136,6 +137,19 @@ public class EhrServiceImp extends BaseService implements EhrService {
         }
     }
 
+    @Override // FIXME EHR_STATUS:
+    public Optional<EhrStatus> getEhrStatusAtVersion(UUID ehrUuid, UUID versionedObjectUid, int version) {
+        //pre-step: check for valid ehrId
+        if (hasEhr(ehrUuid).equals(Boolean.FALSE)) {
+            throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrUuid.toString());
+        }
+
+        I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstanceByStatus(getDataAccess(), versionedObjectUid, version);
+        if (ehrAccess == null) {
+            return Optional.empty();
+        }
+        return Optional.of(ehrAccess.getStatus());
+    }
 
     @Override
     public Optional<EhrStatus> updateStatus(UUID ehrId, EhrStatus status) {
@@ -205,17 +219,21 @@ public class EhrServiceImp extends BaseService implements EhrService {
         }
     }
 
+    @Override   // FIXME EHR_STATUS:
+    public Integer getVersionByTimestamp(UUID compositionId, LocalDateTime timestamp) {
+        return 0;
+    }
+
     // TODO build this for wrong requirement - so delete if really not needed at end of /ehr endpoints' implementation
-    public String getLatestVersionedId(UUID ehrId) {
+    // FIXME EHR_STATUS: this is regarding status not EHR itself, right?
+    public String getLatestVersionUidOfStatus(UUID ehrStatusId) {
         try {
-            I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
+            I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrStatusId);
             UUID statusId = ehrAccess.getStatusId();
             Integer version = ehrAccess.getLastVersionNumberOfStatus(getDataAccess(), statusId);
+            String system = ehrAccess.getId().toString();
 
-            // TODO this is the system's UUID but has no more details in DB though, so seems to be it in current state of available information - or is ehr.system.settings the correct URL style entry in DB?!
-            String system = ehrAccess.getSystemId().toString();
-
-            return ehrId.toString() + "::" + system + "::" + version;
+            return ehrStatusId.toString() + "::" + system + "::" + version;
         } catch (Exception e) {
             logger.error(e.getMessage());
             throw new InternalServerException(e);

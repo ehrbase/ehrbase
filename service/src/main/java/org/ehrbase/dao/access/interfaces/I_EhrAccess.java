@@ -108,11 +108,12 @@ public interface I_EhrAccess extends I_SimpleCRUD<I_EhrAccess, UUID> {
      *
      * @param domainAccess SQL access
      * @param status       status UUID
+     * @param version      optional version, will assume latest if null
      * @return UUID of corresponding Ehr or null
      * @throws IllegalArgumentException if retrieving failed for given input
      */
-    static I_EhrAccess retrieveInstanceByStatus(I_DomainAccess domainAccess, UUID status) {
-        return EhrAccess.retrieveInstanceByStatus(domainAccess, status);
+    static I_EhrAccess retrieveInstanceByStatus(I_DomainAccess domainAccess, UUID status, int version) {
+        return EhrAccess.retrieveInstanceByStatus(domainAccess, status, version);
     }
 
     static boolean checkExist(I_DomainAccess domainAccess, UUID partyId) {
@@ -232,16 +233,18 @@ public interface I_EhrAccess extends I_SimpleCRUD<I_EhrAccess, UUID> {
 
     void setOtherDetails(Locatable otherDetails, String templateId);
 
-
     Locatable getOtherDetails();
-
-
-
-    Integer getLastVersionNumberOfStatus(I_DomainAccess domainAccess, UUID ehrStatusId);
 
     EhrRecord getEhrRecord();
 
     void setStatus(EhrStatus status);
 
+    /**
+     * Gets latest EHR_STATUS, which is attached to this EHR instance after retrieving it.
+     * @return Latest EHR_STATUS
+     */
     EhrStatus getStatus();
+
+    // FIXME: EHR_STATUS required?
+    Integer getLastVersionNumberOfStatus(I_DomainAccess domainAccess, UUID ehrStatusId);
 }

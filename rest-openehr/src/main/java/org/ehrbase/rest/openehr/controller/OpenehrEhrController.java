@@ -52,7 +52,6 @@ import java.util.function.Supplier;
 @RequestMapping(path = "/rest/openehr/v1/ehr", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrEhrController extends BaseController {
 
-
     private final EhrService ehrService;
 
     @Autowired
@@ -216,17 +215,6 @@ public class OpenehrEhrController extends BaseController {
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
-    @PutMapping(path = "/{ehr_id}/ehr_status")
-    @ApiOperation(value = "Update status of the specified EHR")
-    @ApiNotes("ehrPutEhrUuidStatus.md")
-    public ResponseEntity<Void> updateStatus(@ApiParam(value = "EHR ID", required = true) @PathVariable("ehr_id") UUID ehrId,
-                                             @ApiParam(value = "EHR status.", required = true) @RequestBody() EhrStatus ehrStatus) {
-
-        Optional<EhrStatus> updateStatus = ehrService.updateStatus(ehrId, ehrStatus);
-        URI url = URI.create(getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId.toString() + "/ehr_status/" + updateStatus.get().getUid().getValue());
-        return ResponseEntity.noContent().header(HttpHeaders.LOCATION, url.toString()).build();
-    }
-
     /**
      * Builder method to prepare appropriate HTTP response. Flexible to either allow minimal or full representation of resource.
      *
@@ -304,5 +292,71 @@ public class OpenehrEhrController extends BaseController {
         }
 
         return Optional.of(new InternalResponse<>(minimalOrRepresentation, respHeaders));
+    }
+
+    // ------------------------ EHR_STATUS sub set ------------------------
+
+    /*@GetMapping(path = "/{ehr_id}/ehr_status", params = {"version_at_time"})
+    @ApiOperation(value = "Retrieves the version of the EHR_STATUS associated with the EHR identified by ehr_id. If version_at_time is supplied, retrieves the version extant at specified time, otherwise retrieves the latest EHR_STATUS version.", response = EhrResponseData.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok - EHR resource is successfully retrieved.",
+                    responseHeaders = {
+                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class),
+                            @ResponseHeader(name = LAST_MODIFIED, description = RESP_LAST_MODIFIED_DESC, response = long.class)
+                    }),
+            @ApiResponse(code = 404, message = "Not Found - EHR with supplied subject parameters does not exist."),
+            @ApiResponse(code = 406, message = "Not Acceptable - Service can not fulfil requested Accept format."),
+            @ApiResponse(code = 415, message = "Unsupported Media Type - Type not supported.")})
+    public ResponseEntity<EhrResponseData> retrieveEhrStatusByTime(@ApiParam(value = "Client should specify expected response format") @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
+                                                                   @ApiParam(value = "Timestamp", required = true) @RequestParam(value = "version_at_time") String versionAtTime) {
+
+        Optional<EhrStatus> ehrStatus = ehrService.getEhrStatus()
+
+        Optional<UUID> ehrIdOpt = ehrService.findBySubject(subjectId, subjectNamespace);
+
+        UUID ehrId = ehrIdOpt.orElseThrow(() -> new ObjectNotFoundException("ehr", "No EHR with supplied subject parameters found"));
+
+        return internalGetEhrProcessing(accept, ehrId);
+    }*/
+
+    @GetMapping(path = "/{ehr_id}/ehr_status/{version_uid}")
+    @ApiOperation(value = "Retrieves a particular version of the EHR_STATUS identified by version_uid and associated with the EHR identified by ehr_id.", response = EhrResponseData.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok - EHR resource is successfully retrieved.",
+                    responseHeaders = {
+                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class),
+                            @ResponseHeader(name = LAST_MODIFIED, description = RESP_LAST_MODIFIED_DESC, response = long.class)
+                    }),
+            @ApiResponse(code = 404, message = "Not Found - EHR with ehr_id does not exist"),
+            @ApiResponse(code = 406, message = "Not Acceptable - Service can not fulfil requested Accept format."),
+            @ApiResponse(code = 415, message = "Unsupported Media Type - Type not supported.")})
+    public ResponseEntity<EhrResponseData> retrieveEhrStatusById(@ApiParam(value = "Client should specify expected response format") @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
+                                                                 @ApiParam(value = "User supplied EHR ID", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
+                                                                 @ApiParam(value = "User supplied version UID of EHR_STATUS", required = true) @PathVariable(value = "version_uid") String version_uid) {
+
+        UUID ehrId = getEhrUuid(ehrIdString);
+
+        if(ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
+            throw new ObjectNotFoundException("ehr", "No EHR with this ID can be found");
+        }
+
+        UUID versionedObjectUid = extractVersionedObjectUidFromVersionUid(version_uid);
+        int version = extractVersionFromVersionUid(version_uid);
+
+        Optional<EhrStatus> ehrStatus = ehrService.getEhrStatusAtVersion(ehrId, versionedObjectUid, version);
+
+        return internalGetEhrProcessing(accept, ehrId);
+    }
+
+
+    @PutMapping(path = "/{ehr_id}/ehr_status")
+    @ApiOperation(value = "Update status of the specified EHR")
+    @ApiNotes("ehrStatusPut.md")
+    public ResponseEntity<Void> updateStatus(@ApiParam(value = "EHR ID", required = true) @PathVariable("ehr_id") UUID ehrId,
+                                             @ApiParam(value = "EHR status.", required = true) @RequestBody() EhrStatus ehrStatus) {
+
+        Optional<EhrStatus> updateStatus = ehrService.updateStatus(ehrId, ehrStatus);
+        URI url = URI.create(getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId.toString() + "/ehr_status/" + updateStatus.get().getUid().getValue());
+        return ResponseEntity.noContent().header(HttpHeaders.LOCATION, url.toString()).build();
     }
 }
