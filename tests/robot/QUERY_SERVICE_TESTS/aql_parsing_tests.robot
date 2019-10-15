@@ -73,7 +73,6 @@ C.3.d_get_all_entries_with_type_from_ehr_with_uid_contains_compositions_with_arc
 C.4.a_get_all_entries_with_archetype_from_ehr_with_uid_contains_compositions_with_archetype_from_all_ehrs   C.4.a_get_all_entries_with_archetype_from_ehr_with_uid_contains_compositions_with_archetype_from_all_ehrs.json
 C.5.a_get_all_entries_with_archetype_from_ehr_with_uid_contains_compositions_with_archetype_from_all_ehrs_condition   C.5.a_get_all_entries_with_archetype_from_ehr_with_uid_contains_compositions_with_archetype_from_all_ehrs_condition.json
 
-
 D.1.a_select_data_values_from_all_ehrs   D.1.a_select_data_values_from_all_ehrs.json
 D.1.b_select_data_values_from_all_ehrs   D.1.b_select_data_values_from_all_ehrs.json
 D.2.a_select_data_values_from_all_ehrs_contains_composition   D.2.a_select_data_values_from_all_ehrs_contains_composition.json
@@ -103,6 +102,15 @@ D.5.b_composition_data_by_archetype_from_ehr   D.5.b_composition_data_by_archety
 D.5.c_composition_data_by_archetype_from_ehr   D.5.c_composition_data_by_archetype_from_ehr.json
 D.5.d_composition_data_by_archetype_from_ehr   D.5.d_composition_data_by_archetype_from_ehr.json
 
+E.1.a_top_get_ehrs                  E.1.a_top_get_ehrs.json
+E.1.b_top_get_compositions          E.1.b_top_get_compositions.json
+E.1.c_top_get_entries               E.1.c_top_get_entries.json
+E.2.a_orderby_get_ehrs              E.2.a_orderby_get_ehrs.json
+E.2.b_orderby_get_compositions      E.2.b_orderby_get_compositions.json
+E.2.c_orderby_get_entries           E.2.c_orderby_get_entries.json
+E.3.a_timewindow_get_ehrs           E.3.a_timewindow_get_ehrs.json
+E.3.b_timewindow_get_compositions   E.3.b_timewindow_get_compositions.json
+E.3.c_timewindow_get_entries        E.3.c_timewindow_get_entries.json
 
 *** Keywords ***
 execute ad-hoc query
