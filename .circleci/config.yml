@@ -119,7 +119,6 @@ jobs:
       - checkout
       - restore-build-artifacts-job-caches
       - setup-database
-      - setup-maven-environment
       - maven-package
       - persist-target-folder
       - save-build-artifacts-job-caches
@@ -145,7 +144,6 @@ jobs:
       - checkout
       - restore-unit-tests-job-caches
       - setup-database
-      - setup-maven-environment
       - maven-test
       - save-unit-tests-job-caches
       # - persist-unit-test-coverage
@@ -194,7 +192,6 @@ jobs:
       - checkout
       - restore-caches
       - verify-version-is-snapshot
-      - setup-maven-environment
       - deploy-maven-artifacts
       - save-caches
 
@@ -212,7 +209,6 @@ jobs:
       - checkout
       - restore-caches
       - verify-version-is-not-snapshot
-      - setup-maven-environment
       - deploy-maven-artifacts
       - save-caches
 
@@ -446,16 +442,6 @@ commands:
 #   88      88      88  88,    ,88    `8b,d8'    "8b,   ,aa  88       88
 #   88      88      88  `"8bbdP"Y8      "8"       `"Ybbd8"'  88       88
 #
-
-  setup-maven-environment:
-    description: Setup access to private Maven repositories and install local dependencies
-    steps:
-      - run:
-          name: Install provided settings.xml
-          command: |
-            mkdir -p ~/.m2
-            cp ~/project/.circleci/settings.xml ~/.m2/
-
 
   maven-package:
     description: Package Maven app
