@@ -18,6 +18,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -36,7 +39,7 @@ public class OpenehrEhrStatusController extends BaseController {
         this.ehrService = Objects.requireNonNull(ehrService);
     }
 
-    /*@GetMapping(params = {"version_at_time"})
+    @GetMapping(params = {"version_at_time"})
     @ApiOperation(value = "Retrieves the version of the EHR_STATUS associated with the EHR identified by ehr_id. If version_at_time is supplied, retrieves the version extant at specified time, otherwise retrieves the latest EHR_STATUS version.", response = EhrStatusResponseData.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok - EHR resource is successfully retrieved.",
@@ -48,16 +51,24 @@ public class OpenehrEhrStatusController extends BaseController {
             @ApiResponse(code = 406, message = "Not Acceptable - Service can not fulfil requested Accept format."),
             @ApiResponse(code = 415, message = "Unsupported Media Type - Type not supported.")})
     public ResponseEntity<EhrStatusResponseData> retrieveEhrStatusByTime(@ApiParam(value = "Client should specify expected response format") @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-                                                                   @ApiParam(value = "Timestamp", required = true) @RequestParam(value = "version_at_time") String versionAtTime) {
+                                                                         @ApiParam(value = "User supplied EHR ID", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
+                                                                         @ApiParam(value = "Timestamp") @RequestParam(value = "version_at_time", required = false) String versionAtTime) {
+        UUID ehrId = getEhrUuid(ehrIdString);
 
-        Optional<EhrStatus> ehrStatus = ehrService.getEhrStatus()
+        // timestamp optional, otherwise latest
+        int version;
+        if (versionAtTime != null && !versionAtTime.isEmpty()) {
+            OffsetDateTime time = OffsetDateTime.parse(versionAtTime);
+            Timestamp timestamp = Timestamp.valueOf(time.toLocalDateTime());
+            version = ehrService.getEhrStatusVersionByTimestamp(ehrId, timestamp);
+        } else {
+            version = Integer.parseInt(ehrService.getLatestVersionUidOfStatus(ehrId).split("::")[2]);
+        }
 
-        Optional<UUID> ehrIdOpt = ehrService.findBySubject(subjectId, subjectNamespace);
+        UUID statusUid = ehrService.getEhrStatusVersionedObjectUidByEhr(ehrId);
 
-        UUID ehrId = ehrIdOpt.orElseThrow(() -> new ObjectNotFoundException("ehr", "No EHR with supplied subject parameters found"));
-
-        return internalGetEhrProcessing(accept, ehrId);
-    }*/
+        return internalGetEhrStatusProcessing(accept, ehrId, statusUid, version);
+    }
 
     @GetMapping(path = "/{version_uid}")
     @ApiOperation(value = "Retrieves a particular version of the EHR_STATUS identified by version_uid and associated with the EHR identified by ehr_id.", response = EhrStatusResponseData.class)

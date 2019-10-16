@@ -19,7 +19,6 @@
 
 package org.ehrbase.service;
 
-import com.nedap.archie.rm.support.identification.UIDBasedId;
 import org.ehrbase.api.definitions.CompositionFormat;
 import org.ehrbase.api.definitions.StructuredString;
 import org.ehrbase.api.definitions.StructuredStringFormat;
@@ -35,13 +34,13 @@ import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.PartyRef;
-import org.ehrbase.dao.access.interfaces.I_SystemAccess;
 import org.ehrbase.serialisation.CanonicalJson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -221,8 +220,9 @@ public class EhrServiceImp extends BaseService implements EhrService {
     }
 
     @Override   // FIXME EHR_STATUS:
-    public Integer getVersionByTimestamp(UUID compositionId, LocalDateTime timestamp) {
-        return 0;
+    public Integer getEhrStatusVersionByTimestamp(UUID ehrUid, Timestamp timestamp) {
+        I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrUid);
+        return ehrAccess.getEhrStatusVersionFromTimeStamp(timestamp);
     }
 
     // FIXME EHR_STATUS: this is regarding status not EHR itself, right?
@@ -241,6 +241,11 @@ public class EhrServiceImp extends BaseService implements EhrService {
             logger.error(e.getMessage());
             throw new InternalServerException(e);
         }
+    }
+
+    public UUID getEhrStatusVersionedObjectUidByEhr(UUID ehrUid) {
+        I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrUid);
+        return ehrAccess.getStatusId();
     }
 
     public Boolean hasEhr(UUID ehrId) {

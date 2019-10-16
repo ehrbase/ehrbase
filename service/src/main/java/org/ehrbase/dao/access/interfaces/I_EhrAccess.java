@@ -28,6 +28,7 @@ import org.ehrbase.jooq.pg.tables.records.EhrRecord;
 import com.nedap.archie.rm.archetyped.Locatable;
 import com.nedap.archie.rm.ehr.EhrStatus;
 
+import java.sql.Timestamp;
 import java.util.Map;
 import java.util.UUID;
 
@@ -245,6 +246,19 @@ public interface I_EhrAccess extends I_SimpleCRUD<I_EhrAccess, UUID> {
      */
     EhrStatus getStatus();
 
-    // FIXME: EHR_STATUS required?
+    /**
+     * FIXME EHR_STATUS: docs
+     * @param domainAccess
+     * @param ehrStatusId
+     * @return
+     */
     Integer getLastVersionNumberOfStatus(I_DomainAccess domainAccess, UUID ehrStatusId);
+
+    /**
+     * FIXME EHR_STATUS: docs
+     * General idea behind the algorithm: 'what version was the top version at moment T?'
+     * @param time
+     * @return
+     */
+    int getEhrStatusVersionFromTimeStamp(Timestamp time);
 }

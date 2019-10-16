@@ -24,6 +24,8 @@ import org.ehrbase.api.exception.DuplicateObjectException;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import org.ehrbase.api.exception.InternalServerException;
 
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -83,11 +85,11 @@ public interface EhrService {
 
     /**
      * FIXME EHR_STATUS: docs
-     * @param compositionId
+     * @param ehrUid
      * @param timestamp
      * @return
      */
-    Integer getVersionByTimestamp(UUID compositionId, LocalDateTime timestamp);
+    Integer getEhrStatusVersionByTimestamp(UUID ehrUid, Timestamp timestamp);
 
     /**
      * Return True if a EHR with identifier ehrId exists.
@@ -96,5 +98,12 @@ public interface EhrService {
      * @return True when existing, false if not
      */
     Boolean hasEhr(UUID ehrId);
+
+    /**
+     * Helper to get (Versioned Object) Uid of EHR_STATUS of given EHR.
+     * @param ehrUid Uid of EHR
+     * @return UUID of corresponding EHR_STATUS
+     */
+    UUID getEhrStatusVersionedObjectUidByEhr(UUID ehrUid);
 
 }

@@ -33,6 +33,7 @@ import org.apache.commons.collections4.map.MultiValueMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
@@ -47,10 +48,7 @@ import org.postgresql.util.PGobject;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.ehrbase.jooq.pg.Tables.*;
 
@@ -248,7 +246,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             // TODO: why does sonarlint says that the expression above is always true? tested it, it can be true and false!?
             // note: here version is > 1 and there has to be at least one history entry
             Result result = domainAccess.getContext().selectFrom(STATUS_HISTORY)
-                    .orderBy(STATUS_HISTORY.SYS_TRANSACTION.asc())
+                    .orderBy(STATUS_HISTORY.SYS_TRANSACTION.asc())  // oldest at top, i.e. [0]
                     .fetch();
 
             if (result.isEmpty())
@@ -721,7 +719,6 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         return status;
     }
 
-    // TODO build this for wrong requirement - so delete if really not needed at end of /ehr endpoints' implementation
     @Override
     public Integer getLastVersionNumberOfStatus(I_DomainAccess domainAccess, UUID ehrStatusId) {
 
@@ -733,8 +730,39 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         return versionCount + 1;
     }
 
-    // TODO build this for wrong requirement - so delete if really not needed at end of /ehr endpoints' implementation
-    public static boolean hasPreviousVersionOfStatus(I_DomainAccess domainAccess, UUID ehrStatusId) {
+    private static boolean hasPreviousVersionOfStatus(I_DomainAccess domainAccess, UUID ehrStatusId) {
         return domainAccess.getContext().fetchExists(STATUS_HISTORY, STATUS_HISTORY.ID.eq(ehrStatusId));
+    }
+
+    @Override
+    public int getEhrStatusVersionFromTimeStamp(Timestamp time) {
+        UUID statusUid = this.getStatusId();
+        // retrieve current version from status tables
+        EhrAccess ehrAccess = new EhrAccess(getDataAccess());
+        ehrAccess.statusRecord = getDataAccess().getContext().fetchOne(STATUS, STATUS.ID.eq(statusUid));
+
+        // retrieve all other versions from status_history and sort by time
+        Result result = getDataAccess().getContext().selectFrom(STATUS_HISTORY)
+                .orderBy(STATUS_HISTORY.SYS_TRANSACTION.asc())  // oldest at top, i.e. [0]
+                .fetch();
+        Collections.reverse(result); // change to latest at top ([0]) for better comparison
+
+        // see 'what version was the top version at moment T?'
+        // first: is time T after current version? then current version is result
+        if (time.after(ehrAccess.statusRecord.getSysTransaction()))
+            return getLastVersionNumberOfStatus(getDataAccess(), statusUid);
+        // second: if not, which one of the historical versions matches?
+        //for (Object historyRecord : result) {
+        for (int i = 0; i < result.size(); i++) {
+            if (result.get(i) instanceof StatusHistoryRecord) {
+                // is time T after this version? then return its version number
+                if (time.after(((StatusHistoryRecord) result.get(i)).getSysTransaction()))
+                    return result.size() - i;   // reverses iterator because order was reversed above and always get non zero
+            } else {
+                throw new InternalServerException("Problem comparing timestamps of EHR_STATUS versions");
+            }
+        }
+
+        throw new ObjectNotFoundException("EHR_STATUS", "Could not find EHR_STATUS version matching given timestamp");
     }
 }
