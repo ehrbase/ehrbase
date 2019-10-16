@@ -70,6 +70,11 @@ public interface EhrService {
      */
     boolean doesEhrExist(UUID ehrId);
 
+    /**
+     * FIXME EHR_STATUS: add docs
+     * @param ehrId
+     * @return
+     */
     String getLatestVersionUidOfStatus(UUID ehrId);
 
     UUID getSystemUuid();    // from BaseService

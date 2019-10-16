@@ -35,6 +35,7 @@ import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.PartyRef;
+import org.ehrbase.dao.access.interfaces.I_SystemAccess;
 import org.ehrbase.serialisation.CanonicalJson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -224,16 +225,18 @@ public class EhrServiceImp extends BaseService implements EhrService {
         return 0;
     }
 
-    // TODO build this for wrong requirement - so delete if really not needed at end of /ehr endpoints' implementation
     // FIXME EHR_STATUS: this is regarding status not EHR itself, right?
     public String getLatestVersionUidOfStatus(UUID ehrStatusId) {
         try {
             I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrStatusId);
             UUID statusId = ehrAccess.getStatusId();
             Integer version = ehrAccess.getLastVersionNumberOfStatus(getDataAccess(), statusId);
-            String system = ehrAccess.getId().toString();
+            // TODO: handling of system ID TBD, see EHR-192
+            //String system = ehrAccess.getSystemId().toString();   // old
+            // I_SystemAccess.retrieveInstance(getDataAccess(), ehrAccess.getSystemId()).getDescription() // should be more like this
+            String system = "local.ehrbase.org"; // so, mocked for now
 
-            return ehrStatusId.toString() + "::" + system + "::" + version;
+            return statusId.toString() + "::" + system + "::" + version;
         } catch (Exception e) {
             logger.error(e.getMessage());
             throw new InternalServerException(e);

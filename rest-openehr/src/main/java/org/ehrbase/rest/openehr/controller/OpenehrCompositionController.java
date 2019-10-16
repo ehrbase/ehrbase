@@ -157,7 +157,7 @@ public class OpenehrCompositionController extends BaseController {
         CompositionFormat compositionFormat = extractCompositionFormat(contentType);
 
         // If the If-Match is not the latest latest existing version, throw error       TODO: handling of system ID TBD, see EHR-192
-        if (!((versionedObjectUid + "::" + "local.ethercis.com" + "::" + compositionService.getLastVersionNumber(extractVersionedObjectUidFromVersionUid(versionedObjectUid.toString()))).equals(ifMatch))) {
+        if (!((versionedObjectUid + "::" + "local.ehrbase.org" + "::" + compositionService.getLastVersionNumber(extractVersionedObjectUidFromVersionUid(versionedObjectUid.toString()))).equals(ifMatch))) {
             throw new PreconditionFailedException("If-Match header does not match latest existing version");
         }
 
