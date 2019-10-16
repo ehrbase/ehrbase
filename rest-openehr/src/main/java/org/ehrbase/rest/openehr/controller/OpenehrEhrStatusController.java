@@ -74,9 +74,9 @@ public class OpenehrEhrStatusController extends BaseController {
     public ResponseEntity<EhrStatusResponseData> retrieveEhrStatusById(@ApiParam(value = "Client should specify expected response format") @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
                                                                        @ApiParam(value = "User supplied EHR ID", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
                                                                        @ApiParam(value = "User supplied version UID of EHR_STATUS", required = true) @PathVariable(value = "version_uid") String versionUid) {
-
         UUID ehrId = getEhrUuid(ehrIdString);
 
+        // check if EHR is valid
         if(ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
             throw new ObjectNotFoundException("ehr", "No EHR with this ID can be found");
         }
@@ -119,9 +119,9 @@ public class OpenehrEhrStatusController extends BaseController {
     public ResponseEntity<EhrStatusResponseData> updateEhrStatus(@ApiParam(value = "Client should specify expected response format") @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
                                                 @ApiParam(value = "{preceding_version_uid}", required = true) @RequestHeader(value = IF_MATCH) String ifMatch,
                                                 @ApiParam(value = REQ_PREFER) @RequestHeader(value = PREFER, required = false) String prefer,
-                                                @ApiParam(value = "EHR ID", required = true) @PathVariable("ehr_id") UUID ehrId,
+                                                @ApiParam(value = "EHR ID", required = true) @PathVariable("ehr_id") String ehrIdString,
                                                 @ApiParam(value = "EHR status.", required = true) @RequestBody() EhrStatus ehrStatus) {
-        // FIXME EHR_STATUS: pipe this through general method with e.g. buildEhrStatusResponseData(() -> null, ehrId, ehrStatusId, version, accept, headerList)
+        UUID ehrId = getEhrUuid(ehrIdString);
 
         // If-Match header check
         String latestVersionUid = ehrService.getLatestVersionUidOfStatus(ehrId);
@@ -142,7 +142,7 @@ public class OpenehrEhrStatusController extends BaseController {
         List<String> headerList = Arrays.asList(CONTENT_TYPE, LOCATION, ETAG, LAST_MODIFIED);   // whatever is required by REST spec
         Optional<InternalResponse<EhrStatusResponseData>> respData;   // variable to overload with more specific object if requested
         if (Optional.ofNullable(prefer).map(i -> i.equals(RETURN_REPRESENTATION)).orElse(false)) {      // null safe way to test prefer header
-            respData = buildEhrStatusResponseData(() -> new EhrStatusResponseData(), ehrId, UUID.fromString(status.getUid().getRoot().getValue()), version, accept, headerList);
+            respData = buildEhrStatusResponseData(EhrStatusResponseData::new, ehrId, UUID.fromString(status.getUid().getRoot().getValue()), version, accept, headerList);
         } else {    // "minimal" is default fallback
             respData = buildEhrStatusResponseData(null, ehrId, UUID.fromString(status.getUid().getRoot().toString()), version, accept, headerList);
         }
