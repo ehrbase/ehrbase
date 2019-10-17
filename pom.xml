@@ -22,20 +22,74 @@
   <artifactId>server</artifactId>
   <version>0.9.0</version>
 
+  <name>${project.groupId}:${project.artifactId}</name>
+  <description>EHRbase is a Free, Libre, Open Source openEHR Clinical Data Repository</description>
+  <url>https://ehrbase.org</url>
+
+  <licenses>
+    <license>
+      <name>The Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <name>Stefan Spiska</name>
+      <email>stefan.spiska@vitasystems.de</email>
+      <organization>vitasystems GmbH</organization>
+      <organizationUrl>https://www.vitagroup.ag/</organizationUrl>
+    </developer>
+    <developer>
+      <name>Axel Siebert</name>
+      <email>axel.siebert@vitasystems.de</email>
+      <organization>vitasystems GmbH</organization>
+      <organizationUrl>https://www.vitagroup.ag/</organizationUrl>
+    </developer>
+    <developer>
+      <name>Wladislaw Wagner</name>
+      <email>wladislaw.wagner@vitasystems.de</email>
+      <organization>vitasystems GmbH</organization>
+      <organizationUrl>https://www.vitagroup.ag/</organizationUrl>
+    </developer>
+    <developer>
+      <name>Luis Marco-Ruiz</name>
+      <email>luis.marco-ruiz@plri.de</email>
+      <organization>Hannover Medical School</organization>
+      <organizationUrl>https://plri.de/</organizationUrl>
+    </developer>
+    <developer>
+      <name>Jake Smolka</name>
+      <email>jake.smolka@plri.de</email>
+      <organization>Hannover Medical School</organization>
+      <organizationUrl>https://plri.de/</organizationUrl>
+    </developer>
+    <developer>
+      <name>Pablo Pazos</name>
+      <email>pablo.pazos@cabolabs.com</email>
+      <organization>Hannover Medical School</organization>
+      <organizationUrl>https://plri.de/</organizationUrl>
+    </developer>
+    <developer>
+      <name>Christian Chevalley</name>
+      <email>christian@adoc.co.th</email>
+      <organization>Hannover Medical School</organization>
+      <organizationUrl>https://plri.de/</organizationUrl>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:git://github.com/ehrbase/ehrbase.git</connection>
+    <developerConnection>scm:git:ssh://github.com:ehrbase/ehrbase.git</developerConnection>
+    <url>https://github.com/ehrbase/ehrbase</url>
+  </scm>
+
   <repositories>
     <repository>
       <id>jitpack.io</id>
       <url>https://jitpack.io</url>
     </repository>
   </repositories>
-
-  <pluginRepositories>
-    <pluginRepository>
-      <id>jcenter</id>
-      <name>jcenter</name>
-      <url>https://jcenter.bintray.com/</url>
-    </pluginRepository>
-  </pluginRepositories>
 
   <properties>
     <commons.io.version>2.6</commons.io.version>
