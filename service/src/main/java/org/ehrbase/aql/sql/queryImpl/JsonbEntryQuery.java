@@ -64,7 +64,7 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
     private final static String JSONBSelector_EHR_OTHER_CONTEXT_OPEN = SELECT_EHR_OTHER_CONTEXT_MACRO + " #>> '{";
     public final static String Jsquery_EHR_OTHER_CONTEXT_OPEN = SELECT_EHR_OTHER_CONTEXT_MACRO + " @@ '";
 
-    public final static String matchNodePredicate = "/(content|protocol|data|description|instruction|items|activities|activity|composition|entry|evaluation|observation|action|at)\\[([(0-9)|(A-Z)|(a-z)|\\-|_|\\.]*)\\]";
+    public final static String matchNodePredicate = "/(content|protocol|data|description|instruction|items|activities|activity|composition|entry|evaluation|observation|action)\\[([(0-9)|(A-Z)|(a-z)|\\-|_|\\.]*)\\]";
 
     //Generic stuff
     private final static String JSONBSelector_CLOSE = "}'";

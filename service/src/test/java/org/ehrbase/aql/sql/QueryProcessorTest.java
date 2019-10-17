@@ -145,21 +145,23 @@ public class QueryProcessorTest {
 
 
         // Select json column  from entry
+        //CCH 191016: EHR-163 removed trailing ',value' as now the query allows canonical json return
         testCases.add(new AqlTestCase(5,
                 "select a/description[at0001]/items[at0002]/value from EHR e " +
                         "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]",
-                "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') as \"FIELD_0\" " +
+                "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value}') as \"FIELD_0\" " +
                         "from \"ehr\".\"entry\" " +
                         "where \"ehr\".\"entry\".\"template_id\" = ?",
                 true));
 
         // order  by clause json column  from entry with alias
+        //CCH 191016: EHR-163 removed trailing ',value' as now the query allows canonical json return
         testCases.add(new AqlTestCase(6,
                 "select a/description[at0001]/items[at0002]/value as description from EHR e " +
                         "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  " +
                         "contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]" +
                         "order by description ASC",
-                "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') as \"description\" " +
+                "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value}') as \"description\" " +
                         "from \"ehr\".\"entry\" " +
                         "where \"ehr\".\"entry\".\"template_id\" = ? " +
                         "order by description asc",
@@ -170,8 +172,8 @@ public class QueryProcessorTest {
                 "select a/description[at0001]/items[at0002]/value from EHR e " +
                         "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  " +
                         "contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]" +
-                        "where a/description[at0001]/items[at0002]/value = 'Hepatitis A'",
-                "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') as \"FIELD_0\" " +
+                        "where a/description[at0001]/items[at0002]/value/value = 'Hepatitis A'",
+                "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value}') as \"FIELD_0\" " +
                         "from \"ehr\".\"entry\" " +
                         "where (\"ehr\".\"entry\".\"template_id\" = ? " +
                         "and (\"ehr\".\"entry\".\"entry\" @@ '\"/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary'']\".\"/content[openEHR-EHR-ACTION.immunisation_procedure.v1]\".#.\"/description[at0001]\".\"/items[at0002]\".#.\"/value\".\"value\"=\"Hepatitis A\" '::jsquery))",
@@ -218,7 +220,7 @@ public class QueryProcessorTest {
                 "select e/ehr_id/value from EHR e " +
                         "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  " +
                         "contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]" +
-                        "where a/description[at0001]/items[at0002]/value matches {'Hepatitis A','Hepatitis B'} ",
+                        "where a/description[at0001]/items[at0002]/value/value matches {'Hepatitis A','Hepatitis B'} ",
                 "select \"ehr_join\".\"id\" as \"ehr_id/value\" " +
                         "from \"ehr\".\"entry\" " +
                         "right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" " +

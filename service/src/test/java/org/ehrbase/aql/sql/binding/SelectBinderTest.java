@@ -72,7 +72,9 @@ public class SelectBinderTest {
             SelectBinder cut = new SelectBinder(context, introspectCache, pathResolver, variableDefinitions, where, "local", entryRoot);
 
             SelectQuery<?> selectQuery = cut.bind("IDCR - Immunisation summary.v0", UUID.randomUUID());
-            assertThat(selectQuery.getSQL()).isEqualTo("select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') as \"FIELD_0\"");
+
+            //CCH 191016: EHR-163 removed trailing ',value' as now the query allows canonical json return
+            assertThat(selectQuery.getSQL()).isEqualTo("select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value}') as \"FIELD_0\"");
         }
 
         // select from EHR
