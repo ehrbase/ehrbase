@@ -50,7 +50,21 @@ ${aql_queries}    ${VALID QUERY DATA SETS}
 #
 # [ HIGH LEVEL KEYWORDS ]
 
-execute ad-hoc query and check result
+execute ad-hoc query and check result (empty DB)
+    [Arguments]     ${aql_payload}
+
+                    execute ad-hoc query    ${aql_payload}
+                    check response: is positive
+
+
+execute ad-hoc query and check result (loaded DB)
+    [Arguments]     ${aql_payload}
+
+                    execute ad-hoc query    ${aql_payload}
+                    check response: is positive
+
+
+execute ad-hoc query (no result comparison)
     [Arguments]     ${aql_payload}
 
                     execute ad-hoc query    ${aql_payload}
@@ -62,8 +76,6 @@ execute ad-hoc query
                         Set Test Variable  ${KEYWORD NAME}  AD-HOC QUERY
 
                         load valid query test-data-set    ${valid_test_data_set}
-
-    TRACE JIRA BUG    NO-JIRA-ID    not-ready    Some payloads fail!
 
                         POST /query/aql    JSON
 
