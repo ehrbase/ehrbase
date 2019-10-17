@@ -65,26 +65,6 @@ workflows:
           post-steps:
             - provide-test-status-report-via-slack
 
-      - deploy-snapshot-artifact:
-          context: org-global
-          requires:
-            - unit-tests
-            - integration-tests
-          filters:
-            branches:
-              only:
-                - /^(release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+)$/
-
-      - deploy-release-artifact:
-          context: org-global
-          requires:
-            - unit-tests
-            - integration-tests
-          filters:
-            branches:
-              only:
-                - /^(master)$/
-
       - sonar-analysis:
           context: org-global
           requires:
@@ -177,44 +157,6 @@ jobs:
       - restore-sonar-analysis-job-caches
       - run-sonar-analysis
       - save-sonar-analysis-job-caches
-
-  deploy-snapshot-artifact:
-    docker:
-      - image: circleci/openjdk:8-jdk
-      - image: ehrbaseorg/ehrbase-database-docker
-        environment:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-    environment:
-      POSTGRES_DB_URL: postgresql://postgres@localhost/postgres
-      ETHERCIS_DB_URL: postgresql://postgres@localhost/ehrbase
-    steps:
-      - checkout
-      - restore-caches
-      - verify-version-is-snapshot
-      - deploy-maven-artifacts
-      - save-caches
-
-  deploy-release-artifact:
-    docker:
-      - image: circleci/openjdk:8-jdk
-      - image: ehrbaseorg/ehrbase-database-docker:11.5
-        environment:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-    environment:
-      POSTGRES_DB_URL: postgresql://postgres@localhost/postgres
-      ETHERCIS_DB_URL: postgresql://postgres@localhost/ehrbase
-    steps:
-      - checkout
-      - restore-caches
-      - verify-version-is-not-snapshot
-      - deploy-maven-artifacts
-      - save-caches
-
-
-
-
 
 commands:
 #     ,ad8888ba,    ,ad8888ba,    88b           d88  88b           d88         db         888b      88  88888888ba,     ad88888ba
@@ -451,58 +393,6 @@ commands:
           command: |
             cd ~/project
             mvn package -DskipTests
-
-
-  deploy-maven-artifacts:
-    description: Deploy Maven artifacts to their respective repositories
-    steps:
-      - run:
-          name: Build and deploy Maven artifacts
-          command: |
-            cd ~/project
-            mvn deploy
-
-
-#                           88
-#                           88
-#                           88
-#   8b,dPPYba,   ,adPPYba,  88   ,adPPYba,  ,adPPYYba,  ,adPPYba,   ,adPPYba,
-#   88P'   "Y8  a8P_____88  88  a8P_____88  ""     `Y8  I8[    ""  a8P_____88
-#   88          8PP"""""""  88  8PP"""""""  ,adPPPPP88   `"Y8ba,   8PP"""""""
-#   88          "8b,   ,aa  88  "8b,   ,aa  88,    ,88  aa    ]8I  "8b,   ,aa
-#   88           `"Ybbd8"'  88   `"Ybbd8"'  `"8bbdP"Y8  `"YbbdP"'   `"Ybbd8"'
-#
-
-  verify-version-is-snapshot:
-    description: Verify current version is a snapshot
-    steps:
-      - run:
-          name: Verify version is snapshot
-          command: |
-            chmod 744 ~/project/.circleci/verify_and_return_version.sh
-            chmod 744 ~/project/.circleci/fail_if_not_snapshot.sh
-            ~/project/.circleci/fail_if_not_snapshot.sh
-      - run:
-          name: Alert developers to non-snapshot version on release branch
-          when: on_fail
-          command: |
-            echo "Warning: non-snapshot version detected, no artifact will be deployed."
-
-
-  verify-version-is-not-snapshot:
-    description: Verify current version is not a snapshot
-    steps:
-      - run:
-          name: Verify version is not snapshot
-          command: |
-            chmod 744 ~/project/.circleci/verify_and_return_version.sh
-            chmod 744 ~/project/.circleci/fail_if_snapshot.sh
-            ~/project/.circleci/fail_if_snapshot.sh
-      - run:
-          name: Alert developers to snapshot version on master branch
-          when: on_fail
-          command: |
-            echo "Warning: snapshot version detected, no artifact will be deployed."
 
 
 #
