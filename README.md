@@ -47,8 +47,7 @@ You can also use this Docker image which is a preconfigured  Postgres database:
 ```
 #### 2. Setup Maven environment
 
- 1. artifactory --> SET ME UP --> hip-mvn-releases --> generate settings --> edit `~/.m2/settings.xml` accordingly
- 2. Edit the database properties in  `./pom.xml` if necessary
+Edit the database properties in  `./pom.xml` if necessary
 
 #### 3. Setup template folder
 Unzip `/.circleci/file_repo_content.zip` (make sure `file_repo` is being put into the project's root folder).

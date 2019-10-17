@@ -1,8 +1,9 @@
-# EtherCIS Integration Tests with Robot Framework
+# EHRBASE Integration Tests with Robot Framework
 
 ## How to run test locally
 
 > PREREQUISITES
+>
 > - Docker, Python 3 with Pip are installed
 > - RF dependencies are installed (`cd tests/`, `pip install -r requirements.txt`)
 > - No DB / no server running!
@@ -14,7 +15,8 @@
 ```bash
 . run_local_tests.sh
 ```
-OR if you want to fine tune something:
+
+OR - Use robot [command line options](http://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#using-command-line-options) to fine tune execution:
 
 ```bash
 robot -d results --noncritical not-ready -L TRACE robot/
@@ -23,13 +25,14 @@ robot -d results --noncritical not-ready -L TRACE robot/
 > NOTE: Never change the target `robot/` !!!
 
 ### Execution of tests under Windows
-TODO: add special instructions if necessary here
 
-### Execution of tests under Mac OS
-TODO: add special instructions if necessary here
+```shell
+robot -d results --noncritical not-ready -L TRACE robot/
+```
 
 
 ## ERRORS and WARNINGS
+
 You will see `[WARN]` and `[ERROR]` in console output and in log.html
 `[ERROR]` --> take a closer look, probably important
 `[WARN]`  --> minor issues like wrong status code
@@ -39,6 +42,7 @@ You will see `[WARN]` and `[ERROR]` in console output and in log.html
 > You will see this warning very often. IGNORE it! It's caused by a RF library.
 
 ## Fine control test execution by including/excluding tags
+
 It is possible to filter the tests to be executed by [using tags](http://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#by-tag-names). Tags are case insensitive.
 
 - `robot -i create_ehr robot/` = `robot --include create_ehr robot/`
@@ -61,6 +65,7 @@ setting.
 
 
 ## Auto-generated test report summary and detailed log
+
 After each test run Robot creates a report.html (summary) and a log.html
 (details) in results folder. The files are overwritten after each run by default.
 If you want to prevent this behavior you can [time-stamp](http://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#timestamping-output-files) the output files.

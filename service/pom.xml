@@ -45,9 +45,8 @@
             <version>0.9.0</version>
         </dependency>
         <dependency>
-            <groupId>com.nedap.healthcare.archie</groupId>
-            <artifactId>archie-all</artifactId>
-            <version>develop-SNAPSHOT</version>
+            <groupId>com.github.openEHR</groupId>
+            <artifactId>archie</artifactId>
         </dependency>
         <dependency>
             <groupId>org.ehrbase.openehr</groupId>
