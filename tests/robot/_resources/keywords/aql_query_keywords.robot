@@ -33,7 +33,8 @@ Resource    composition_keywords.robot
 *** Variables ***
 ${VALID QUERY DATA SETS}     ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/query/aql_queries_valid
 ${INVALID QUERY DATA SETS}   ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/query/aql_queries_invalid
-${QUERY RESULTS}             ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/query/expected_results
+${QUERY RESULTS LOADED DB}   ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/query/expected_results/loaded_db
+${QUERY RESULTS EMPTY DB}    ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/query/expected_results/empty_db
 
 ${aql_queries}    ${VALID QUERY DATA SETS}
 
@@ -51,24 +52,25 @@ ${aql_queries}    ${VALID QUERY DATA SETS}
 # [ HIGH LEVEL KEYWORDS ]
 
 execute ad-hoc query and check result (empty DB)
-    [Arguments]     ${aql_payload}
+    [Arguments]         ${aql_payload}
 
-                    execute ad-hoc query    ${aql_payload}
-                    check response: is positive
+                        execute ad-hoc query    ${aql_payload}
+                        check response: is positive
+                        check response (EMPTY DB): returns correct content for    ${aql_payload}
 
 
 execute ad-hoc query and check result (loaded DB)
-    [Arguments]     ${aql_payload}
+    [Arguments]         ${aql_payload}
 
-                    execute ad-hoc query    ${aql_payload}
-                    check response: is positive
+                        execute ad-hoc query    ${aql_payload}
+                        check response: is positive
 
 
 execute ad-hoc query (no result comparison)
-    [Arguments]     ${aql_payload}
+    [Arguments]         ${aql_payload}
 
-                    execute ad-hoc query    ${aql_payload}
-                    check response: is positive
+                        execute ad-hoc query    ${aql_payload}
+                        check response: is positive
 
 
 execute ad-hoc query
@@ -88,8 +90,31 @@ load valid query test-data-set
                         Set Test Variable   ${test_data}    ${file}
 
 
-load expected results data-set
-    No Operation
+load expected results-data-set (LOADED DB)
+    [Arguments]        ${expected_result_data_set}
+
+    ${file}=            Get File            ${QUERY RESULTS LOADED DB}/${expected_result_data_set}
+
+                        Set Test Variable   ${expected_result}    ${file}
+
+
+load expected results-data-set (EMPTY DB)
+    [Arguments]        ${expected_result_data_set}
+
+    ${file}=            Get File            ${QUERY RESULTS EMPTY DB}/${expected_result_data_set}
+
+                        Set Test Variable   ${expected_result}    ${file}
+
+
+compare
+    [Arguments]         ${response body}  ${expected result}  ${exclude_paths}=None
+    [Documentation]     Checks that "response body" is subset of expected result
+    ...                 Allows to ignore dynamic content like timestamps etc.
+    
+    ${response body}=   Evaluate    json.loads('''${response body}''')   json
+    ${expected res}=    Evaluate    json.loads('''${expected result}''')    json
+
+                        subset of expected  ${response body}  ${expected res}  ${exclude_paths}
 
 
 startup AQL SUT
@@ -157,6 +182,7 @@ POST /query/aql
                         ...                 headers=${headers}
 
                         Set Test Variable   ${response}    ${resp}
+                        Set Test Variable   ${response body}    ${resp.content}
                         Output Debug Info:  POST /query/aql
 
 
@@ -231,6 +257,22 @@ check response: is positive
     Should Be Equal As Strings   ${response.status_code}   200
 
 
+check response (LOADED DB): returns correct content for
+    [Arguments]         ${aql_payload}
+
+                        load expected results-data-set (LOADED DB)    ${aql_payload}
+
+                        compare    ${response body}    ${expected result}
+
+
+check response (EMPTY DB): returns correct content for
+    [Arguments]         ${aql_payload}
+
+                        load expected results-data-set (EMPTY DB)    ${aql_payload}
+
+                        compare    ${response body}    ${expected result}
+
+
 
 
 
@@ -247,7 +289,7 @@ check response: is positive
 # [ HTTP HEADERS ]
 
 prepare query request session
-    [Arguments]     ${format}=JSON    &{extra_headers}
+    [Arguments]         ${format}=JSON    &{extra_headers}
     [Documentation]     Prepares request settings for usage with RequestLibrary
     ...                 :format: JSON (default) / XML
     ...                 :extra_headers: optional - e.g. Prefer=return=representation

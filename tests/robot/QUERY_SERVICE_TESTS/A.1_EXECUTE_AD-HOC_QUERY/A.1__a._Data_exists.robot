@@ -41,7 +41,7 @@ Resource    ${CURDIR}${/}../../_resources/keywords/template_opt1.4_keywords.robo
 # Test Setup  start openehr server
 # Test Teardown  restore clean SUT state
 
-Force Tags    refactor   xxx
+Force Tags    refactor
 
 
 
@@ -52,7 +52,7 @@ ${aql_queries}    ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/query/aq
 
 
 *** Test Cases ***
-Main flow: execute ad-hoc QUERY where data exists
+Main flow: execute ad-hoc QUERY where data exists I
     [Template]         execute ad-hoc query (no result comparison)
 
     # EHRs
@@ -149,3 +149,12 @@ Main flow: execute ad-hoc QUERY where data exists
     D/503_select_data_values_from_compositions_with_given_archetype_in_ehr.json
 
     [Teardown]      TRACE JIRA BUG    NO-JIRA-ID    not-ready    Some AQL QUERIES fail!
+
+
+
+Main flow: execute ad-hoc QUERY where data exists II
+    [Template]          execute ad-hoc query and check result (empty DB)
+    [Tags]              not-ready 
+
+    # EHRs
+    A/100_get_ehrs.json
