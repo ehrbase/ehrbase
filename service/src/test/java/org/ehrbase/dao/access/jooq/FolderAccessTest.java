@@ -177,28 +177,11 @@ public class FolderAccessTest {
         FolderAccess fa1 = new FolderAccess(testDomainAccess);
         FolderAccess fa2 = (FolderAccess) FolderAccess.getNewFolderAccessInstance(fa1, folder, DateTime.now(), UUID.fromString("f6a2af65-fe89-45a4-9456-07c5e17b1634"));
 
-        //System.out.println(fa2.getFolderRecord().getDetails().toString());
-        // '{
-        //       "_type" : "",
-        //       "items" : [ {
-        //       "name" : {
-        //       "_type" : "DV_TEXT",
-        //       "value" : "fol1"
-        //     }
-        //   } ]
-        // }'::jsonb
 
         assertEquals("f8a2af65-fe89-45a4-9456-07c5e17b1634", fa2.getFolderRecord().getId().toString());
         assertEquals("archetype_1", fa2.getFolderRecord().getArchetypeNodeId());
         assertEquals("nameOfFolder", fa2.getFolderRecord().getName());
 
-        // FIXME: Getting Statement not currently supported. Consider enhancing or revising the FolderMockDataProvider
-        // See: https://jira.vitagroup.ag/browse/EHR-449
-        /*
-        //commit and check returned UID is the valid one
-        UUID storedFolderUid = fa2.commit();
-        assertEquals("f8a2af65-fe89-45a4-9456-07c5e17b1634", storedFolderUid.toString());
-        */
 
         String expected = ("'{\n" +
                 "  \"_type\" : \"\",\n" +
@@ -215,6 +198,13 @@ public class FolderAccessTest {
         printWriter.close();
 
         assertEquals(expectedStringWriter.toString(), fa2.getFolderRecord().getDetails().toString());
+
+        // FIXME: Getting Statement not currently supported. Consider enhancing or revising the FolderMockDataProvider
+        // See: https://jira.vitagroup.ag/browse/EHR-449
+
+        //commit and check returned UID is the valid one
+        UUID storedFolderUid = fa2.commit();
+        assertEquals("f8a2af65-fe89-45a4-9456-07c5e17b1634", storedFolderUid.toString());
     }
 
     @Test
@@ -360,14 +350,10 @@ public class FolderAccessTest {
         printWriter.flush();
         printWriter.close();
 
-
-        // FIXME: Getting Statement not currently supported. Consider enhancing or revising the FolderMockDataProvider
-        // See: https://jira.vitagroup.ag/browse/EHR-449
-        /*
         UUID storedFolderUid = fa2.commit();
         //commit should return the top level folderId
         assertEquals("f8a2af65-fe89-45a4-9456-07c5e17b1634", storedFolderUid.toString());
-        */
+
     }
 
     @Test

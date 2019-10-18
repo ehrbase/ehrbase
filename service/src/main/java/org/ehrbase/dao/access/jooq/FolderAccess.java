@@ -215,7 +215,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         this.saveFolderItems(this.contributionAccess.getContributionId(), this.contributionAccess.getContributionId(), new Timestamp(DateTime.now().getMillis()), getContext());
 
         // Save list of sub folders to database with parent <-> child ID relations
-        this.getSubFoldersInsertList().forEach(child -> {
+        this.getSubfoldersList().forEach((child_id, child) -> {
             child.commit();
             FolderHierarchyRecord fhRecord = this.buildFolderHierarchyRecord(
                     this.getFolderRecord().getId(),
