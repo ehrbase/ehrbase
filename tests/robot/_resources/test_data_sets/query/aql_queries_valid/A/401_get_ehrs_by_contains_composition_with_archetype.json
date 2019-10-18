@@ -1,0 +1,3 @@
+{
+  "q": "SELECT e/ehr_id/value as uid FROM EHR e CONTAINS COMPOSITION c WHERE c/archetype_node_id='openEHR-EHR-COMPOSITION.minimal.v1'"
+}
