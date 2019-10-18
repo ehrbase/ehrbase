@@ -1,0 +1,3 @@
+{
+  "q": "select e/ehr_id/value, e/time_created/value, e/system_id/value from EHR e CONTAINS COMPOSITION c WHERE c/archetype_node_id matches {'openEHR-EHR-COMPOSITION.minimal.v1'}"
+}
