@@ -199,9 +199,6 @@ public class FolderAccessTest {
 
         assertEquals(expectedStringWriter.toString(), fa2.getFolderRecord().getDetails().toString());
 
-        // FIXME: Getting Statement not currently supported. Consider enhancing or revising the FolderMockDataProvider
-        // See: https://jira.vitagroup.ag/browse/EHR-449
-
         //commit and check returned UID is the valid one
         UUID storedFolderUid = fa2.commit();
         assertEquals("f8a2af65-fe89-45a4-9456-07c5e17b1634", storedFolderUid.toString());
