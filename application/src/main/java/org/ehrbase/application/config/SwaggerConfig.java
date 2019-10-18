@@ -18,10 +18,15 @@
 
 package org.ehrbase.application.config;
 
+import com.nedap.archie.rm.datastructures.DataStructure;
 import com.nedap.archie.rm.datastructures.ItemStructure;
+import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.ehr.EhrStatus;
+import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.generic.PartySelf;
+import com.nedap.archie.rm.support.identification.ObjectId;
+import com.nedap.archie.rm.support.identification.UIDBasedId;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.ResponseEntity;
@@ -68,7 +73,7 @@ public class SwaggerConfig extends WebMvcConfigurerAdapter {
     public Docket swaggerSpringMvcPluginOpenEhr() {
 
         // Add classes from ReferenceModel to be ignored if causing errors
-        Class[] classesToIgnore = {EhrStatus.class, Folder.class, PartySelf.class, ItemStructure.class};
+        Class[] classesToIgnore = {EhrStatus.class, Folder.class, PartySelf.class, ItemStructure.class, DvText.class};
 
         return new Docket(DocumentationType.SWAGGER_2).groupName("openEHR API")
                 //.host("http://localhost:8080")

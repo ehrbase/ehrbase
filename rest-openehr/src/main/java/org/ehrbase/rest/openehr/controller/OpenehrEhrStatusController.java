@@ -42,17 +42,20 @@ public class OpenehrEhrStatusController extends BaseController {
     @GetMapping(params = {"version_at_time"})
     @ApiOperation(value = "Retrieves the version of the EHR_STATUS associated with the EHR identified by ehr_id. If version_at_time is supplied, retrieves the version extant at specified time, otherwise retrieves the latest EHR_STATUS version.", response = EhrStatusResponseData.class)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok - EHR resource is successfully retrieved.",
+            @ApiResponse(code = 200, message = "Ok - requested EHR_STATUS resource is successfully retrieved.",
                     responseHeaders = {
                             @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class),
-                            @ResponseHeader(name = LAST_MODIFIED, description = RESP_LAST_MODIFIED_DESC, response = long.class)
+                            @ResponseHeader(name = LAST_MODIFIED, description = RESP_LAST_MODIFIED_DESC, response = long.class),
+                            @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class),
+                            @ResponseHeader(name = LOCATION, description = RESP_LOCATION_DESC, response = String.class)
                     }),
-            @ApiResponse(code = 404, message = "Not Found - EHR with supplied subject parameters does not exist."),
-            @ApiResponse(code = 406, message = "Not Acceptable - Service can not fulfil requested Accept format."),
-            @ApiResponse(code = 415, message = "Unsupported Media Type - Type not supported.")})
-    public ResponseEntity<EhrStatusResponseData> retrieveEhrStatusByTime(@ApiParam(value = "Client should specify expected response format") @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-                                                                         @ApiParam(value = "User supplied EHR ID", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
-                                                                         @ApiParam(value = "Timestamp") @RequestParam(value = "version_at_time", required = false) String versionAtTime) {
+            @ApiResponse(code = 400, message = "Bad Request - the request has invalid content such as an invalid version_at_time format."),
+            @ApiResponse(code = 404, message = "Not Found - EHR with ehr_id does not exist or a version of an EHR_STATUS resource does not exist at the specified version_at_time."),
+            @ApiResponse(code = 406, message = "Not Acceptable - Service can not fulfil requested Accept format.")})
+    public ResponseEntity<EhrStatusResponseData> retrieveEhrStatusByTime(
+            @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
+            @ApiParam(value = "User supplied EHR ID", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
+            @ApiParam(value = "Timestamp in the extended ISO8601 format, e.g. 2015-01-20T19:30:22.765+01:00") @RequestParam(value = "version_at_time", required = false) String versionAtTime) {
         UUID ehrId = getEhrUuid(ehrIdString);
 
         // timestamp optional, otherwise latest
@@ -82,9 +85,10 @@ public class OpenehrEhrStatusController extends BaseController {
                     }),
             @ApiResponse(code = 404, message = "Not Found - EHR with ehr_id does not exist or when an EHR_STATUS with version_uid does not exist."),
             @ApiResponse(code = 406, message = "Not Acceptable - Service can not fulfil requested Accept format.")})
-    public ResponseEntity<EhrStatusResponseData> retrieveEhrStatusById(@ApiParam(value = "Client should specify expected response format") @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-                                                                       @ApiParam(value = "User supplied EHR ID", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
-                                                                       @ApiParam(value = "User supplied version UID of EHR_STATUS", required = true) @PathVariable(value = "version_uid") String versionUid) {
+    public ResponseEntity<EhrStatusResponseData> retrieveEhrStatusById(
+            @ApiParam(value = "Client should specify expected response format") @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
+            @ApiParam(value = "User supplied EHR ID", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
+            @ApiParam(value = "User supplied version UID of EHR_STATUS", required = true) @PathVariable(value = "version_uid") String versionUid) {
         UUID ehrId = getEhrUuid(ehrIdString);
 
         // check if EHR is valid
@@ -127,11 +131,13 @@ public class OpenehrEhrStatusController extends BaseController {
             @ApiResponse(code = 404, message = "Not Found - EHR with ehr_id does not exist."),
             @ApiResponse(code = 412, message = "Precondition Failed - If-Match request header doesn’t match the latest version on the service side. Returns also latest version_uid in the Location and ETag headers."),
             @ApiResponse(code = 406, message = "Not Acceptable - Service can not fulfil requested Accept format.")})
-    public ResponseEntity<EhrStatusResponseData> updateEhrStatus(@ApiParam(value = "Client should specify expected response format") @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-                                                @ApiParam(value = "{preceding_version_uid}", required = true) @RequestHeader(value = IF_MATCH) String ifMatch,
-                                                @ApiParam(value = REQ_PREFER) @RequestHeader(value = PREFER, required = false) String prefer,
-                                                @ApiParam(value = "EHR ID", required = true) @PathVariable("ehr_id") String ehrIdString,
-                                                @ApiParam(value = "EHR status.", required = true) @RequestBody() EhrStatus ehrStatus) {
+    public ResponseEntity<EhrStatusResponseData> updateEhrStatus(
+            @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
+            @ApiParam(value = REQ_CONTENT_TYPE_BODY) @RequestHeader(value = HttpHeaders.CONTENT_TYPE, required = false) String contentType,
+            @ApiParam(value = REQ_PREFER) @RequestHeader(value = PREFER, required = false) String prefer,
+            @ApiParam(value = "{preceding_version_uid}", required = true) @RequestHeader(value = IF_MATCH) String ifMatch,
+            @ApiParam(value = "EHR ID", required = true) @PathVariable("ehr_id") String ehrIdString,
+            @ApiParam(value = "EHR status.", required = true) @RequestBody() EhrStatus ehrStatus) {
         UUID ehrId = getEhrUuid(ehrIdString);
 
         // If-Match header check
