@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "_type": "RESULTSET",
+    "_created": "2019-10-17T23:15:26.078Z",
+    "_executed_aql": "SELECT e/ehr_id/value FROM EHR e [ehr_id/value='dd616472-9432-4004-ad85-fd47affb1cc8']"
+  },
+  "q": "SELECT e/ehr_id/value FROM EHR e [ehr_id/value='dd616472-9432-4004-ad85-fd47affb1cc8']",
+  "columns": [
+    {
+      "name": "#0",
+      "path": "/ehr_id/value"
+    }
+  ],
+  "rows": [
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "_type": "RESULTSET",
+    "_created": "2019-10-17T19:35:21.470Z",
+    "_executed_aql": "SELECT e/ehr_id FROM EHR e"
+  },
+  "q": "SELECT e/ehr_id FROM EHR e",
+  "columns": [
+    {
+      "name": "#0",
+      "path": "/ehr_id"
+    }
+  ],
+  "rows": [
+  ]
+}

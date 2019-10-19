@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "_type": "RESULTSET",
+    "_created": "2019-10-17T23:16:53.297Z",
+    "_executed_aql": "select e/ehr_id/value as uid from EHR e WHERE uid = 'dd616472-9432-4004-ad85-fd47affb1cc8'"
+  },
+  "q": "select e/ehr_id/value as uid from EHR e WHERE uid = 'dd616472-9432-4004-ad85-fd47affb1cc8'",
+  "columns": [
+    {
+      "name": "uid",
+      "path": "/ehr_id/value"
+    }
+  ],
+  "rows": [
+  ]
+}
