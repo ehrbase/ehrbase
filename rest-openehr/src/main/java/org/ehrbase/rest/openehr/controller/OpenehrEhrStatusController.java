@@ -140,6 +140,10 @@ public class OpenehrEhrStatusController extends BaseController {
             @ApiParam(value = "EHR status.", required = true) @RequestBody() EhrStatus ehrStatus) {
         UUID ehrId = getEhrUuid(ehrIdString);
 
+        if (!ehrService.hasEhr(ehrId)) {
+            throw new ObjectNotFoundException("EHR", "EHR with this ID not found");
+        }
+
         // If-Match header check
         String latestVersionUid = ehrService.getLatestVersionUidOfStatus(ehrId);
         if (!latestVersionUid.equals(ifMatch))

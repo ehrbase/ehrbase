@@ -236,7 +236,7 @@ public class OpenehrCompositionController extends BaseController {
 
         // prepare header data
         // TODO dynamic system id --> postponed, see EHR-206
-        String latestVersionId = extractVersionedObjectUidFromVersionUid(precedingVersionUid) + "::local.ethercis.com::" + compositionService.getLastVersionNumber(extractVersionedObjectUidFromVersionUid(precedingVersionUid));
+        String latestVersionId = extractVersionedObjectUidFromVersionUid(precedingVersionUid) + "::local.ehrbase.org::" + compositionService.getLastVersionNumber(extractVersionedObjectUidFromVersionUid(precedingVersionUid));
         // TODO change to dynamic linking --> postponed, see EHR-230
         URI uri = URI.create(this.encodePath(getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId.toString() + "/composition/" + latestVersionId));
 
