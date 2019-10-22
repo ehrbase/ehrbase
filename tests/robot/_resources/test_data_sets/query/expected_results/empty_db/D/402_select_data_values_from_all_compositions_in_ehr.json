@@ -1,0 +1,34 @@
+{
+  "meta": {
+    "_type": "RESULTSET",
+    "_created": "2019-10-22T01:14:17.068Z",
+    "_executed_aql": "SELECT c/uid/value, c/name/value, c/archetype_node_id, c/language, c/territory, c/category/value FROM EHR e CONTAINS COMPOSITION c WHERE e/ehr_id/value matches {'dd616472-9432-4004-ad85-fd47affb1cc8'}"
+  },
+  "q": "SELECT c/uid/value, c/name/value, c/archetype_node_id, c/language, c/territory, c/category/value FROM EHR e CONTAINS COMPOSITION c WHERE e/ehr_id/value matches {'dd616472-9432-4004-ad85-fd47affb1cc8'}",
+  "columns": [
+    {
+      "name": "#0",
+      "path": "/uid/value"
+    },
+    {
+      "name": "#1",
+      "path": "/name/value"
+    },
+    {
+      "name": "#2",
+      "path": "/archetype_node_id"
+    },
+    {
+      "name": "#3",
+      "path": "/language"
+    },
+    {
+      "name": "#4",
+      "path": "/territory"
+    },
+    {
+      "name": "#5",
+      "path": "/category/value"
+    }
+  ]
+}
