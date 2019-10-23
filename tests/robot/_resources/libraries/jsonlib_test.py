@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import pytest
-import ast
 from jsonlib import compare_jsons
 from jsonlib import payloads_match_exactly
 from jsonlib import payload_is_superset_of_expected
@@ -10,7 +9,7 @@ from jsonlib import JsonCompareError
 
 
 class Test_JSON_Compare_Lib:
-    """robotframework-json-diff tests."""
+    """robotframework-json-diff library tests."""
 
     # TEST FOR compare_jsons()
     def test_identical_objects(self):
