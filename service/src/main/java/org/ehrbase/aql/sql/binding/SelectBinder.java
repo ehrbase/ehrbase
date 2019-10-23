@@ -21,10 +21,14 @@
 
 package org.ehrbase.aql.sql.binding;
 
+import com.nedap.archie.rm.datavalues.DataValue;
+import com.nedap.archie.rminfo.ArchieRMInfoLookup;
+import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.aql.compiler.Contains;
 import org.ehrbase.aql.compiler.Statements;
 import org.ehrbase.aql.containment.IdentifierMapper;
 import org.ehrbase.aql.definition.I_VariableDefinition;
+import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
 import org.ehrbase.aql.sql.postprocessing.I_RawJsonTransform;
 import org.ehrbase.aql.sql.queryImpl.CompositionAttributeQuery;
@@ -32,6 +36,7 @@ import org.ehrbase.aql.sql.queryImpl.I_QueryImpl;
 import org.ehrbase.aql.sql.queryImpl.JsonbEntryQuery;
 import org.ehrbase.aql.sql.queryImpl.TemplateMetaData;
 import org.ehrbase.service.IntrospectService;
+import org.ehrbase.validation.constraints.util.SnakeToCamel;
 import org.jooq.*;
 
 import java.util.ArrayList;
@@ -117,8 +122,21 @@ public class SelectBinder extends TemplateMetaData implements I_SelectBinder {
                     field = jsonbEntryQuery.makeField(template_id, comp_id, identifier, variableDefinition, true, I_QueryImpl.Clause.SELECT);
                     containsJsonDataBlock = containsJsonDataBlock | jsonbEntryQuery.isJsonDataBlock();
                     if (jsonbEntryQuery.isJsonDataBlock()) {
+                        //TODO: determine if this is to query a datavalue
+                        Class itemClass = ArchieRMInfoLookup.getInstance().getClass(jsonbEntryQuery.getItemType());
+                        if (DataValue.class.isAssignableFrom(itemClass)){
+                            if (StringUtils.endsWith(variableDefinition.getPath(), "/value")) {
+                                I_VariableDefinition variableDefinition1 = variableDefinition.clone();
+                                variableDefinition1.setPath(variableDefinition.getPath().replace("/value", ""));
+                                field = jsonbEntryQuery.makeField(template_id, comp_id, identifier, variableDefinition1, true, I_QueryImpl.Clause.SELECT);
+                                jsonDataBlock.add(new JsonbBlockDef(jsonbEntryQuery.getJsonbItemPath(), field, "value"));
+                            }
+                            else
+                                jsonDataBlock.add(new JsonbBlockDef(jsonbEntryQuery.getJsonbItemPath(), field, null)); //hence support returning ELEMENT
+                        }
+                        else
                         //add this field to the list of column to format as RAW JSON
-                        jsonDataBlock.add(new JsonbBlockDef(jsonbEntryQuery.getJsonbItemPath(), field));
+                            jsonDataBlock.add(new JsonbBlockDef(jsonbEntryQuery.getJsonbItemPath(), field, null));
                     }
 //                    selectFields.add(jsonbEntryQuery.selectField(comp_id, identifier, variableDefinition));
                     break;

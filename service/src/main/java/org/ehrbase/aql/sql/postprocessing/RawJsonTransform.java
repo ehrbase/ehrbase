@@ -69,7 +69,7 @@ public class RawJsonTransform implements I_RawJsonTransform {
 
                             //
                             //   String rawJson = new LightRawJsonEncoder(jsonbOrigin).encodeContentAsString(jsonbBlockDef.getField().getName());
-                            String rawJson = new LightRawJsonEncoder(jsonbOrigin).encodeContentAsString(null);
+                            String rawJson = new LightRawJsonEncoder(jsonbOrigin).encodeContentAsString(jsonbBlockDef.getJsonPathRoot());
                             //debugging
                             if (jsonbOrigin.contains("@class"))
                                 System.out.print("Hum...");

@@ -15,28 +15,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.aql.sql.queryImpl.attribute.eventcontext;
+package org.ehrbase.aql.sql.queryImpl.attribute.partyref;
 
 import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryImpl.attribute.I_RMObjectAttribute;
 import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
+import org.ehrbase.aql.sql.queryImpl.attribute.eventcontext.EventContextAttribute;
 import org.ehrbase.aql.sql.queryImpl.value_field.GenericJsonField;
 import org.jooq.Field;
 import org.jooq.TableField;
-import org.jooq.impl.DSL;
 
+import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
 import static org.ehrbase.jooq.pg.tables.EventContext.EVENT_CONTEXT;
 
-public class EventContextJson extends EventContextAttribute {
+public class PartyRefJson extends PartyRefAttribute {
 
-    public EventContextJson(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
+    public PartyRefJson(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
         super(fieldContext, joinSetup);
     }
 
     @Override
     public Field<?> sqlField() {
         //query the json representation of EVENT_CONTEXT and cast the result as TEXT
-        return new GenericJsonField(fieldContext, joinSetup).jsonField("ehr.js_context", EVENT_CONTEXT.ID);
+        return new GenericJsonField(fieldContext, joinSetup).jsonField("ehr.js_canonical_party_ref",
+                PARTY_IDENTIFIED.PARTY_REF_NAMESPACE,
+                PARTY_IDENTIFIED.PARTY_REF_TYPE,
+                PARTY_IDENTIFIED.PARTY_REF_SCHEME,
+                PARTY_IDENTIFIED.PARTY_REF_VALUE);
     }
 
     @Override

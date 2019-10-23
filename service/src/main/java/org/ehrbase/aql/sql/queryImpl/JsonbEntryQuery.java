@@ -64,7 +64,8 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
     private final static String JSONBSelector_EHR_OTHER_CONTEXT_OPEN = SELECT_EHR_OTHER_CONTEXT_MACRO + " #>> '{";
     public final static String Jsquery_EHR_OTHER_CONTEXT_OPEN = SELECT_EHR_OTHER_CONTEXT_MACRO + " @@ '";
 
-    public final static String matchNodePredicate = "/(content|protocol|data|description|instruction|items|activities|activity|composition|entry|evaluation|observation|action)\\[([(0-9)|(A-Z)|(a-z)|\\-|_|\\.]*)\\]";
+    //CCH 191018 EHR-163 matches trailing '/value'
+    public final static String matchNodePredicate = "(/(content|protocol|data|description|instruction|items|activities|activity|composition|entry|evaluation|observation|action)\\[([(0-9)|(A-Z)|(a-z)|\\-|_|\\.]*)\\])|(/value|/time)";
 
     //Generic stuff
     private final static String JSONBSelector_CLOSE = "}'";
@@ -75,6 +76,7 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
     private static boolean useEntry = false;
 
     private String jsonbItemPath;
+    private String itemType = null;
 
     public static final String TAG_ACTIVITIES = "/activities";
     public static final String TAG_EVENTS = "/events";
@@ -206,6 +208,7 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
 //        String jquery = StringUtils.join(jqueryPath.toArray(new String[] {}));
 
         useEntry = true;
+        //CHC 191018 EHR-163 '/value' for an ELEMENT will return a structure
         if (path_part.equals(PATH_PART.VARIABLE_PATH_PART) && jqueryPath.get(jqueryPath.size() - 1).matches(matchNodePredicate)) {
             jsonDataBlock = true;
         }
@@ -255,6 +258,10 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
         return fieldPathItem;
     }
 
+
+    public String getItemType() {
+        return itemType;
+    }
 
     @Override
     public Field<?> makeField(String templateId, UUID compositionId, String identifier, I_VariableDefinition variableDefinition, boolean withAlias, Clause clause) {
@@ -328,9 +335,9 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
                 throw new IllegalArgumentException("MetaDataCache is not initialized");
             String reducedItemPathArray = new SegmentedPath(referenceItemPathArray).reduce();
             if (reducedItemPathArray != null && !reducedItemPathArray.isEmpty()) {
-                String type = introspectCache.getQueryOptMetaData(templateId).type(reducedItemPathArray);
-                if (type != null) {
-                    String pgType = new PGType(itemPathArray).forRmType(type);
+                itemType = introspectCache.getQueryOptMetaData(templateId).type(reducedItemPathArray);
+                if (itemType != null) {
+                    String pgType = new PGType(itemPathArray).forRmType(itemType);
                     if (pgType != null)
                         itemPath = "(" + itemPath + ")::" + pgType;
                 }
