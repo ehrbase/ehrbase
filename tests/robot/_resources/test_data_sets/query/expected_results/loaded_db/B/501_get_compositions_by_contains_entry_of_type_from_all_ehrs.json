@@ -1,0 +1,17 @@
+{
+  "meta": {
+    "_type": "RESULTSET",
+    "_created": "2019-10-18T18:09:16.928Z",
+    "_executed_aql": "SELECT c FROM EHR e CONTAINS COMPOSITION c CONTAINS EVALUATION"
+  },
+  "q": "SELECT c FROM EHR e CONTAINS COMPOSITION c CONTAINS EVALUATION",
+  "columns": [
+    {
+      "name": "#0",
+      "path": "/"
+    }
+  ],
+  "rows": [
+    "__MODIFY_LIST_COMPOSITIONS_WITH_EVALUATION__"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "meta": {
+    "_type": "RESULTSET",
+    "_created": "2019-10-18T18:05:37.961Z",
+    "_executed_aql": "SELECT c FROM COMPOSITION c CONTAINS SECTION s [openEHR-EHR-SECTION.test_all_types.v1]"
+  },
+  "q": "SELECT c FROM COMPOSITION c CONTAINS SECTION s [openEHR-EHR-SECTION.test_all_types.v1]",
+  "columns": [
+    {
+      "name": "#0",
+      "path": "/"
+    }
+  ],
+  "rows": [
+      "__MODIFY_LIST_COMPOSITIONS_WITH_ARCHETYPE_ID__"
+  ]
+}

@@ -1,13 +1,13 @@
 {
-  "q": "SELECT c FROM COMPOSITION c WHERE c/uid/value='0ada8df6-966b-4728-ba2f-71c3f40acaff'"
+  "q": "SELECT c FROM COMPOSITION c WHERE c/uid/value='__MODIFY_COMPOSITION_UID_1__'"
 }
 {
   "meta": {
     "_type": "RESULTSET",
     "_created": "2019-10-18T18:19:51.833Z",
-    "_executed_aql": "SELECT c FROM COMPOSITION c WHERE c/uid/value='0ada8df6-966b-4728-ba2f-71c3f40acaff'"
+    "_executed_aql": "SELECT c FROM COMPOSITION c WHERE c/uid/value='__MODIFY_COMPOSITION_UID_1__'"
   },
-  "q": "SELECT c FROM COMPOSITION c WHERE c/uid/value='0ada8df6-966b-4728-ba2f-71c3f40acaff'",
+  "q": "SELECT c FROM COMPOSITION c WHERE c/uid/value='__MODIFY_COMPOSITION_UID_1__'",
   "columns": [
     {
       "name": "#0",
