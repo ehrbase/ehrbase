@@ -9,7 +9,7 @@ Resource         ${EXECDIR}${/}..${/}tests${/}robot${/}_resources${/}suite_setti
 
 Test Template    execute ad-hoc query
 
-Force Tags       AQL
+Force Tags       ADHOC-QUERY-OLD    obsolete
 
 *** Test Cases ***
 A.1.a_get_ehrs   A.1.a_get_ehrs.json

@@ -185,7 +185,10 @@ commands:
             command: |
                 cd tests
                 robot -d results --console dotted --noncritical not-ready -L TRACE \
+                      -e libtest \
                       -e obsolete \
+                      -e future \
+                      -e circleci \
                       -e EHRSCAPE \
                       --xunit junit-output.xml --xunitskipnoncritical \
                       -v CODE_COVERAGE:True \

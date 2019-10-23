@@ -119,7 +119,7 @@
 				"archetype_node_id": "at0002",
 				"value": {
 					"_type": "DV_ORDINAL",
-					"value": 1,
+					"value": 2,
 					"symbol": {
 						"_type": "DV_CODED_TEXT",
 						"value": "option 2",
