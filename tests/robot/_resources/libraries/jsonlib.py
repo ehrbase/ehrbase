@@ -17,7 +17,6 @@
 # limitations under the License.
 
 
-
 import json
 
 from robot.api import logger
@@ -38,8 +37,8 @@ def compare_jsons(
     **kwargs
 ):
     """
-    :json_1: valid JSON string
-    :json_1: valid JSON string
+    :json_1: valid JSON string \n
+    :json_2: valid JSON string
 
     # DOCTEST EXAMPLES
     >>> a = '{"1": "one", "2": 2, "3": null}'
@@ -52,20 +51,19 @@ def compare_jsons(
     >>> compare_jsons(a, b, exclude_paths="root['2']")
     {}
 
-    >>> a = '{"1": "one", "2": 2}'
-    >>> b = '{"1": 1, "2": 2}'
-    >>> compare_jsons(a, b, verbose_level=0)
-    {'type_changes': {"root['1']": {'old_type': <class 'str'>, 'new_type': <class 'int'>}}}
-
     >>> a = '{"1": "one"}'
     >>> b = '{"1": "ONE"}'
     >>> compare_jsons(a, b, ignore_string_case=True)
     {}
 
     """
-
-    actual = json.loads(json_1)
-    expected = json.loads(json_2)
+    try:
+        actual = json.loads(json_1)
+        expected = json.loads(json_2)
+    except (JSONDecodeError, TypeError) as error:
+        raise JsonCompareError(
+            "Only VALID JSON strings accepted! ERROR: {}".format(error)
+        )
 
     logger.debug(
         "EXCLUDED PATHS: {}, type: {}".format(exclude_paths, type(exclude_paths))
@@ -80,21 +78,16 @@ def compare_jsons(
     logger.debug("VERBOSE_LEVEL: {}".format(verbose_level))
     logger.debug("KWARGS: {}".format(kwargs))
 
-    try:
-        diff = DeepDiff(
-            actual,
-            expected,
-            exclude_paths=exclude_paths,
-            ignore_order=ignore_order,
-            ignore_string_case=ignore_string_case,
-            ignore_type_subclasses=ignore_type_subclasses,
-            verbose_level=verbose_level,
-            **kwargs
-        )
-    except JSONDecodeError as error:
-        raise JsonCompareError(
-            "Only VALID JSON strings accepted! ERROR: {}".format(error)
-        )
+    diff = DeepDiff(
+        actual,
+        expected,
+        exclude_paths=exclude_paths,
+        ignore_order=ignore_order,
+        ignore_string_case=ignore_string_case,
+        ignore_type_subclasses=ignore_type_subclasses,
+        verbose_level=verbose_level,
+        **kwargs
+    )
 
     changes = [
         "type_changes",
@@ -121,6 +114,7 @@ def compare_jsons(
 def payloads_match_exactly(json_1, json_2, ignore_order=False, **kwargs):
     """
     :json_1: valid JSON string
+    :json_2: valid JSON string
 
     # DOCTEST EXAMPLES
     >>> a = '{"1": "one", "2": [1,2,3]}'
@@ -135,6 +129,10 @@ def payloads_match_exactly(json_1, json_2, ignore_order=False, **kwargs):
     jsonlib.JsonCompareError: Payloads do NOT match! Differences: {'values_changed': {"root['2'][0]": {'new_value': 3, 'old_value': 1}, "root['2'][2]": {'new_value': 1, 'old_value': 3}}}
 
     """
+    if not type(ignore_order) == bool:
+        raise ValueError(
+            "Argument `ignore_order` must eval to boolean. Valid values: ${TRUE} or ${FALSE}"
+        )
 
     diff = compare_jsons(json_1, json_2, ignore_order=ignore_order, **kwargs)
 
@@ -221,11 +219,6 @@ def payload_is_superset_of_expected(payload, expected, **kwargs):
 
 class JsonCompareError(Exception):
     pass
-
-
-
-
-
 
 
 # oooooooooo.        .o.         .oooooo.   oooo    oooo ooooo     ooo ooooooooo.
