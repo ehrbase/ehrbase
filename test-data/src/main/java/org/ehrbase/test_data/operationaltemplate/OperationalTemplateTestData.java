@@ -24,7 +24,8 @@ import java.util.Arrays;
 public enum OperationalTemplateTestData {
 
     IDCR_IMMUNISATION_SUMMARY("IDCR Immunisation summary", "IDCR - Immunisation summary.v0.opt", "IDCR - Immunisation summary.v0"),
-    BLOOD_PRESSURE_SIMPLE("Very simple blood_pressure template", "ehrbase_blood_pressure_simple.de.v0.opt", "ehrbase_blood_pressure_simple.de.v0");
+    BLOOD_PRESSURE_SIMPLE("Very simple blood_pressure template", "ehrbase_blood_pressure_simple.de.v0.opt", "ehrbase_blood_pressure_simple.de.v0"),
+    MULTI_OCCURRENCE("Template with multiple occurrence", "ehrbase_multi_occurrence.de.opt", "ehrbase_multi_occurrence.de.v1");
 
     private final String filename;
     private final String templateId;
