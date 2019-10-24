@@ -38,24 +38,27 @@ def compare_jsons(
 ):
     """
     :json_1: valid JSON string \n
-    :json_2: valid JSON string
+    :json_2: valid JSON string \n
 
     # DOCTEST EXAMPLES
-    >>> a = '{"1": "one", "2": 2, "3": null}'
-    >>> b = '{"1": "one", "2": 2, "3": null}'
-    >>> compare_jsons(a, b)
-    {}
 
-    >>> a = '{"1": "one", "2": 2}'
-    >>> b = '{"1": "one", "2": 22}'
-    >>> compare_jsons(a, b, exclude_paths="root['2']")
-    {}
+        ## TEST_01
+        >>> a = '{"1": "one", "2": 2, "3": null}'
+        >>> b = '{"1": "one", "2": 2, "3": null}'
+        >>> compare_jsons(a, b)
+        {}
 
-    >>> a = '{"1": "one"}'
-    >>> b = '{"1": "ONE"}'
-    >>> compare_jsons(a, b, ignore_string_case=True)
-    {}
+        ## TEST_02
+        >>> a = '{"1": "one", "2": 2}'
+        >>> b = '{"1": "one", "2": 22}'
+        >>> compare_jsons(a, b, exclude_paths="root['2']")
+        {}
 
+        ## TEST_03
+        >>> a = '{"1": "one"}'
+        >>> b = '{"1": "ONE"}'
+        >>> compare_jsons(a, b, ignore_string_case=True)
+        {}
     """
     try:
         actual = json.loads(json_1)
@@ -89,13 +92,14 @@ def compare_jsons(
         **kwargs
     )
 
+    logger.debug("DIFF: {}".format(diff))
+
     changes = [
         "type_changes",
         "values_changed",
         "repetition_change",
         "dictionary_item_added",
         "iterable_item_added",
-        "set_item_removed",
         "dictionary_item_removed",
         "iterable_item_removed",
     ]
@@ -117,17 +121,19 @@ def payloads_match_exactly(json_1, json_2, ignore_order=False, **kwargs):
     :json_2: valid JSON string
 
     # DOCTEST EXAMPLES
-    >>> a = '{"1": "one", "2": [1,2,3]}'
-    >>> b = '{"1": "one", "2": [3,2,1]}'
-    >>> payloads_match_exactly(a, b, ignore_order=True)
-    True
 
-    >>> a = '{"1": "one", "2": [1,2,3]}'
-    >>> b = '{"1": "one", "2": [3,2,1]}'
-    >>> payloads_match_exactly(a, b)
-    Traceback (most recent call last):
-    jsonlib.JsonCompareError: Payloads do NOT match! Differences: {'values_changed': {"root['2'][0]": {'new_value': 3, 'old_value': 1}, "root['2'][2]": {'new_value': 1, 'old_value': 3}}}
+        ## TEST_01
+        >>> a = '{"1": "one", "2": [1,2,3]}'
+        >>> b = '{"1": "one", "2": [3,2,1]}'
+        >>> payloads_match_exactly(a, b, ignore_order=True)
+        True
 
+        ## TEST_02
+        >>> a = '{"1": "one", "2": [1,2,3]}'
+        >>> b = '{"1": "one", "2": [3,2,1]}'
+        >>> payloads_match_exactly(a, b)
+        Traceback (most recent call last):
+        jsonlib.JsonCompareError: Payloads do NOT match! Differences: {'values_changed': {"root['2'][0]": {'new_value': 3, 'old_value': 1}, "root['2'][2]": {'new_value': 1, 'old_value': 3}}}
     """
     if not type(ignore_order) == bool:
         raise ValueError(
@@ -141,6 +147,7 @@ def payloads_match_exactly(json_1, json_2, ignore_order=False, **kwargs):
     logger.debug("type(diff): {}".format(type(diff)))
 
     if diff != {}:
+        logger.error("Payloads don't match!")
         raise JsonCompareError("Payloads do NOT match! Differences: {}".format(diff))
     else:
         return True
@@ -150,7 +157,22 @@ def payload_is_superset_of_expected(payload, expected, **kwargs):
     """
     Checks that given payload is contained in the expected result.
     In other words: payload has at least everything that is expected
-    AND may have even more content beyond the expected.   
+    AND may have even more content beyond the expected.
+
+    # DOCTEST EXAMPLES
+
+        ## TEST_01
+        >>> a = '{"1": "one", "2": [1,2,3], "3": 3}'
+        >>> b = '{"1": "one", "2": [1,2,3]}'
+        >>> payload_is_superset_of_expected(a, b)
+        True
+
+        ## TEST_02
+        >>> a = '{"1": "one", "2": [1]}'
+        >>> b = '{"1": "one", "2": [1,2,3]}'
+        >>> payload_is_superset_of_expected(a, b)
+        Traceback (most recent call last):
+        jsonlib.JsonCompareError: Actual payload dosn't meet expectation!
 
     TODO: create a dictionary with proper names for relevant changes
     # changes that are relevant / test shoul FAIL
@@ -201,20 +223,20 @@ def payload_is_superset_of_expected(payload, expected, **kwargs):
         "iterable_item_added",
     ]
 
-    fail = False
+    
     if diff != {}:
         for change in changes:
             # check if change are relevant or can be ignored
             if change in critical_changes and change in diff:
-                logger.warn("Critical change ({}): {}".format(change, diff[change]))
-                fail = True
+                logger.error("Critical changes detected!")
+                raise JsonCompareError("Actual payload dosn't meet expectation!")
+
             elif change in changes_to_ignore and change in diff:
-                logger.info("Not relevant change ({}): {}".format(change, diff[change]))
+                logger.info("Changes detected, but not relevant.")
+                return True
     else:
         logger.info("NO difference between payloads.")
         return True
-    if fail:
-        raise JsonCompareError("Actual payload dosn't meet expectation!")
 
 
 class JsonCompareError(Exception):
