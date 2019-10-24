@@ -251,3 +251,38 @@ class Test_JSON_Compare_Lib:
             "payload_is_superset_of_expected() takes 2 positional arguments but 3 were given"
             in str(error.value)
         )
+
+    def test_superset_actual_meets_expectation(self):
+        t1 = '{"a": 10, "b": 12, "c": [3, 2, 1]}'
+        t2 = t1
+
+        assert payload_is_superset_of_expected(t1, t2) == True
+
+    def test_superset_critical_change(self):
+        t1 = '{"a": 10, "b": 12, "c": [1]}'
+        t2 = '{"a": 10, "b": 12, "c": [1, 2, 3]}'
+        with pytest.raises(JsonCompareError) as error:
+            payload_is_superset_of_expected(t1, t2)
+
+        assert "Actual payload dosn't meet expectation!" in str(error.value)
+
+    def test_superset_critical_change_ignore_order(self):
+        t1 = '{"a": 10, "b": 12, "c": [3, 2, 1]}'
+        t2 = '{"a": 10, "b": 12, "c": [1, 2, 3]}'
+
+        assert payload_is_superset_of_expected(t1, t2) == True
+
+    def test_superset_critical_change_ignore_order_false(self):
+        t1 = '{"a": 10, "b": 12, "c": [3, 2, 1]}'
+        t2 = '{"a": 10, "b": 12, "c": [1, 2, 3]}'
+
+        with pytest.raises(JsonCompareError) as error:
+            payload_is_superset_of_expected(t1, t2, ignore_order=False)
+
+        assert "Actual payload dosn't meet expectation!" in str(error.value)
+
+    def test_superset_none_critical_change(self):
+        t1 = '{"a": 10, "b": 12, "c": [3, 2, 1]}'
+        t2 = '{"a": 10, "b": 12, "c": [1]}'
+
+        assert payload_is_superset_of_expected(t1, t2) == True

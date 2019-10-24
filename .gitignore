@@ -82,3 +82,8 @@ report.html
 
 # VSCODE Editor
 .vscode/
+
+# Python / pytest
+.coverage
+*.pyc
+.pytest_cache/
