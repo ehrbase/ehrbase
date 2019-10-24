@@ -21,12 +21,6 @@
  */
 package org.ehrbase.dao.access.jooq;
 
-import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
-import org.ehrbase.dao.access.interfaces.I_ContextAccess;
-import org.ehrbase.dao.access.interfaces.I_DomainAccess;
-import org.ehrbase.dao.access.interfaces.I_PartyIdentifiedAccess;
-import org.ehrbase.dao.access.support.DataAccess;
 import com.nedap.archie.rm.composition.EventContext;
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.datatypes.CodePhrase;
@@ -39,10 +33,17 @@ import com.nedap.archie.rm.generic.Participation;
 import com.nedap.archie.rm.generic.PartyIdentified;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.*;
-import org.ehrbase.serialisation.RawJson;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
+import org.ehrbase.dao.access.interfaces.I_ContextAccess;
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
+import org.ehrbase.dao.access.interfaces.I_PartyIdentifiedAccess;
+import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.jooq.pg.tables.records.*;
+import org.ehrbase.serialisation.RawJson;
 import org.jooq.DSLContext;
 import org.jooq.InsertQuery;
 import org.jooq.Result;
@@ -319,7 +320,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         }
 
         //other context
-        if (eventContext.getOtherContext() != null) {
+        if (eventContext.getOtherContext() != null && CollectionUtils.isNotEmpty(eventContext.getOtherContext().getItems())) {
             //set up the JSONB field other_context
             eventContextRecord.setOtherContext(new RawJson().marshal(eventContext.getOtherContext()));
         }
