@@ -20,9 +20,7 @@ public class EhrStatusResponseData {
     private PartySelf subject;
     @JsonProperty(value = "other_details")
     private ItemStructure otherDetails;
-    @JsonProperty(value = "is_modifiable")
     private Boolean isModifiable;
-    @JsonProperty(value = "is_queryable")
     private Boolean isQueryable;
 
     public String getArchetypeNodeId() {
@@ -65,6 +63,7 @@ public class EhrStatusResponseData {
         this.otherDetails = otherDetails;
     }
 
+    @JsonProperty(value = "is_modifiable")
     public Boolean getModifiable() {
         return isModifiable;
     }
@@ -73,6 +72,7 @@ public class EhrStatusResponseData {
         isModifiable = modifiable;
     }
 
+    @JsonProperty(value = "is_queryable")
     public Boolean getQueryable() {
         return isQueryable;
     }
