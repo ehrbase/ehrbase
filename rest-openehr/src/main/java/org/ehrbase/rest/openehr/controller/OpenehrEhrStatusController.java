@@ -1,6 +1,7 @@
 package org.ehrbase.rest.openehr.controller;
 
 import com.nedap.archie.rm.ehr.EhrStatus;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import io.swagger.annotations.*;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
@@ -213,7 +214,7 @@ public class OpenehrEhrStatusController extends BaseController {
             if (ehrStatus.isPresent()) {
                 objByReference.setArchetypeNodeId(ehrStatus.get().getArchetypeNodeId());
                 objByReference.setName(ehrStatus.get().getName());
-                objByReference.setUid(ehrStatus.get().getUid());    // FIXME EHR_STATUS: here(?) +::system::version is formally needed too
+                objByReference.setUid(new ObjectVersionId(ehrStatus.get().getUid().toString() + "::local.ehrbase.org::" + version));
                 objByReference.setSubject(ehrStatus.get().getSubject());
                 objByReference.setOtherDetails(ehrStatus.get().getOtherDetails());
                 objByReference.setModifiable(ehrStatus.get().isModifiable());
