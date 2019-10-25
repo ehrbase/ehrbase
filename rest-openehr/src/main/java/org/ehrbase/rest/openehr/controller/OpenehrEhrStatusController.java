@@ -213,7 +213,7 @@ public class OpenehrEhrStatusController extends BaseController {
             if (ehrStatus.isPresent()) {
                 objByReference.setArchetypeNodeId(ehrStatus.get().getArchetypeNodeId());
                 objByReference.setName(ehrStatus.get().getName());
-                objByReference.setUid(ehrStatus.get().getUid());    // FIXME EHR_STATUS: here(?) ::scheme::version is needed too
+                objByReference.setUid(ehrStatus.get().getUid());    // FIXME EHR_STATUS: here(?) +::system::version is formally needed too
                 objByReference.setSubject(ehrStatus.get().getSubject());
                 objByReference.setOtherDetails(ehrStatus.get().getOtherDetails());
                 objByReference.setModifiable(ehrStatus.get().isModifiable());
@@ -232,14 +232,14 @@ public class OpenehrEhrStatusController extends BaseController {
                     break;
                 case LOCATION:
                     try {
-                        URI url = new URI(getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId + "/ehr_status/" + ehrStatusId + "::XYZ::" + version); // FIXME EHR_STATUS: domain ::XYZ:: problem
+                        URI url = new URI(getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId + "/ehr_status/" + ehrStatusId + "::local.ehrbase.org::" + version);
                         respHeaders.setLocation(url);
                     } catch (Exception e) {
                         throw new InternalServerException(e.getMessage());
                     }
                     break;
                 case ETAG:
-                    respHeaders.setETag("\"" + ehrStatusId + "::XYZ::" + version + "\"");   // FIXME EHR_STATUS: domain ::XYZ:: problem
+                    respHeaders.setETag("\"" + ehrStatusId + "::local.ehrbase.org::" + version + "\"");
                     break;
                 case LAST_MODIFIED:
                     // TODO should be VERSION.commit_audit.time_committed.value which is not implemented yet - mock for now

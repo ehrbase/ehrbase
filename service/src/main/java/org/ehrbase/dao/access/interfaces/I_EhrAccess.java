@@ -247,18 +247,18 @@ public interface I_EhrAccess extends I_SimpleCRUD<I_EhrAccess, UUID> {
     EhrStatus getStatus();
 
     /**
-     * FIXME EHR_STATUS: docs
-     * @param domainAccess
-     * @param ehrStatusId
-     * @return
+     * Get latest version number of EHR_STATUS by versioned object UID.
+     * @param domainAccess access
+     * @param ehrStatusId versioned object UID
+     * @return version number
      */
     Integer getLastVersionNumberOfStatus(I_DomainAccess domainAccess, UUID ehrStatusId);
 
     /**
-     * FIXME EHR_STATUS: docs
+     * Get a specific version number of the associated EHR_STATUS of this EhrAccess by timestamp.
      * General idea behind the algorithm: 'what version was the top version at moment T?'
-     * @param time
-     * @return
+     * @param time Timestamp
+     * @return version number
      */
     int getEhrStatusVersionFromTimeStamp(Timestamp time);
 }

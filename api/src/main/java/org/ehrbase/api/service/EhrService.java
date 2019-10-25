@@ -73,9 +73,9 @@ public interface EhrService {
     boolean doesEhrExist(UUID ehrId);
 
     /**
-     * FIXME EHR_STATUS: add docs
-     * @param ehrId
-     * @return
+     * Get latest version UID of an EHR_STATUS by given associated EHR UID.
+     * @param ehrId EHR ID
+     * @return EHR_STATUS version UID
      */
     String getLatestVersionUidOfStatus(UUID ehrId);
 
@@ -84,10 +84,10 @@ public interface EhrService {
     LocalDateTime getCreationTime(UUID ehrId);
 
     /**
-     * FIXME EHR_STATUS: docs
-     * @param ehrUid
-     * @param timestamp
-     * @return
+     * Get version number of EHR_STATUS associated with given EHR UID at given timestamp.
+     * @param ehrUid EHR UID
+     * @param timestamp Timestamp of point in time
+     * @return version number
      */
     Integer getEhrStatusVersionByTimestamp(UUID ehrUid, Timestamp timestamp);
 

@@ -227,7 +227,6 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         return (UUID) record.getValue(0);
     }
 
-    // FIXME EHR_STATUS: add version capability
     public static I_EhrAccess retrieveInstanceByStatus(I_DomainAccess domainAccess, UUID status, Integer version) {
         if (version < 1)
             throw new IllegalArgumentException("Version number must be > 0");
@@ -572,11 +571,6 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     public Integer delete() {
         throw new InternalServerException("INTERNAL: this delete is not legal");
     }
-
-    // FIXME EHR_STATUS: what was this for? remove?!
-    /*public I_EhrAccess retrieveByStatus(UUID status) {
-        return retrieveInstanceByStatus(this, status);
-    }*/
 
     /**
      * @throws IllegalArgumentException when instance's EHR ID can't be matched to existing one

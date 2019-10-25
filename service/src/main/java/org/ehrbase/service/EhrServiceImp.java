@@ -137,7 +137,7 @@ public class EhrServiceImp extends BaseService implements EhrService {
         }
     }
 
-    @Override // FIXME EHR_STATUS:
+    @Override
     public Optional<EhrStatus> getEhrStatusAtVersion(UUID ehrUuid, UUID versionedObjectUid, int version) {
         //pre-step: check for valid ehrId
         if (hasEhr(ehrUuid).equals(Boolean.FALSE)) {
@@ -219,13 +219,17 @@ public class EhrServiceImp extends BaseService implements EhrService {
         }
     }
 
-    @Override   // FIXME EHR_STATUS:
+    @Override
     public Integer getEhrStatusVersionByTimestamp(UUID ehrUid, Timestamp timestamp) {
         I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrUid);
         return ehrAccess.getEhrStatusVersionFromTimeStamp(timestamp);
     }
 
-    // FIXME EHR_STATUS: this is regarding status not EHR itself, right?
+    /**
+     * Get latest version Uid of an EHR_STATUS by given versioned object UID.
+     * @param ehrStatusId given versioned object UID
+     * @return latest version Uid
+     */
     public String getLatestVersionUidOfStatus(UUID ehrStatusId) {
         try {
             I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrStatusId);
@@ -238,7 +242,6 @@ public class EhrServiceImp extends BaseService implements EhrService {
 
             return statusId.toString() + "::" + system + "::" + version;
         } catch (Exception e) {
-            logger.error(e.getMessage());
             throw new InternalServerException(e);
         }
     }
