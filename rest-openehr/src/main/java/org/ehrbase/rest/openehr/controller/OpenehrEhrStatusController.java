@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.function.Supplier;
@@ -39,7 +38,7 @@ public class OpenehrEhrStatusController extends BaseController {
         this.ehrService = Objects.requireNonNull(ehrService);
     }
 
-    @GetMapping(params = {"version_at_time"})
+    @GetMapping
     @ApiOperation(value = "Retrieves the version of the EHR_STATUS associated with the EHR identified by ehr_id. If version_at_time is supplied, retrieves the version extant at specified time, otherwise retrieves the latest EHR_STATUS version.", response = EhrStatusResponseData.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok - requested EHR_STATUS resource is successfully retrieved.",
@@ -55,13 +54,13 @@ public class OpenehrEhrStatusController extends BaseController {
     public ResponseEntity<EhrStatusResponseData> retrieveEhrStatusByTime(
             @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @ApiParam(value = "User supplied EHR ID", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
-            @ApiParam(value = "Timestamp in the extended ISO8601 format, e.g. 2015-01-20T19:30:22.765+01:00") @RequestParam(value = "version_at_time", required = false) String versionAtTime) {
+            @ApiParam(value = "Timestamp in the extended ISO8601 format, e.g. 2015-01-20T19:30:22.765+01:00") @RequestParam(value = "version_at_time") Optional<String> versionAtTime) {
         UUID ehrId = getEhrUuid(ehrIdString);
 
         // timestamp optional, otherwise latest
         int version;
-        if (versionAtTime != null && !versionAtTime.isEmpty()) {
-            OffsetDateTime time = OffsetDateTime.parse(versionAtTime);
+        if (versionAtTime.isPresent()) {
+            OffsetDateTime time = OffsetDateTime.parse(versionAtTime.get());
             Timestamp timestamp = Timestamp.valueOf(time.toLocalDateTime());
             version = ehrService.getEhrStatusVersionByTimestamp(ehrId, timestamp);
         } else {
