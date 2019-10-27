@@ -25,7 +25,7 @@ Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags    refactor   xxx
+Force Tags    refactor
 
 
 
