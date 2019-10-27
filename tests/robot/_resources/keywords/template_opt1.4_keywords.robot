@@ -169,7 +169,7 @@ verify content of OPT
                         Log Element    ${actual}
                         Log Element    ${expected}
 
-        TRACE JIRA BUG    EHR-336    not-ready
+        # TRACE JIRA BUG    EHR-336    not-ready    TODO: investigate test-side issue
 
                         Elements Should Match    ${actual}    ${expected}
                         ...                      normalize_whitespace=True

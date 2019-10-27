@@ -67,6 +67,8 @@ Establish Preconditions: load valid OPTs into SUT
     minimal_persistent/persistent_minimal_2.opt
     minimal_persistent/persistent_minimal.opt
     nested/nested.opt
+    versioned/Test versioned v1.opt
+    versioned/Test versioned v2.opt
 
 
 All Types
@@ -74,6 +76,8 @@ All Types
     [Template]         retrieve single OPT
 
     all_types/Test_all_types.opt
+
+    [Teardown]  TRACE JIRA BUG    ISSUE-#31    not-ready    TODO: @WLAD investige test-side issue
 
 
 Minimal
@@ -113,14 +117,14 @@ Nested
     nested/nested.opt
 
 
-# Versioned
-#     [Documentation]    ...
-#     [Template]         retrieve single OPT
-#
-#     versioned/Test versioned v1.opt
-#     versioned/Test versioned v2.opt
-#
-#     [Teardown]  TE PENDING (see comments in code) - tag(s): not-ready
+Versioned
+    [Documentation]    ...
+    [Template]         retrieve single OPT
+
+    versioned/Test versioned v1.opt
+    versioned/Test versioned v2.opt
+
+    [Teardown]  TRACE JIRA BUG    ISSUE-#31    not-ready    TODO: @WLAD investige test-side issue
 
 
 
