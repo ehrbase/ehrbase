@@ -35,4 +35,6 @@ Alternative flow 2: delete directory from non-existent EHR
 
     delete DIRECTORY - fake ehr_id (JSON)
 
-    check response: is negative - EHR does not exist
+    # check response: is negative - EHR does not exist
+
+    validate DELETE response - 404 unknown ehr_id

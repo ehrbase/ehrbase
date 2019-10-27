@@ -35,7 +35,8 @@ Alternative flow 1: get directory on EHR with just a root directory
 
     create DIRECTORY (JSON)    empty_directory.json
 
-    get DIRECTORY (JSON)
+    get DIRECTORY at version (JSON)
 
-    check response: is positive - returns structure of directory
-                                  # TODO: implement some data checks
+    # check response: is positive - returns structure of directory
+    
+    validate GET-@version response - 200 retrieved

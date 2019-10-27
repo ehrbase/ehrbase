@@ -33,6 +33,8 @@ Alternative flow 2: create directory on non-existent EHR
 
     create fake EHR
 
-    create DIRECTORY (JSON)    subfolders_in_directory.json
+    create DIRECTORY - fake ehr_id (JSON)    subfolders_in_directory.json
 
-    check response: is negative - EHR does not exist
+    # check response: is negative - EHR does not exist
+
+    validate POST response - 404 unknown ehr_id

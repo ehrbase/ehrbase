@@ -37,4 +37,6 @@ Alternative flow 1: delete directory from EHR with directory
 
     delete DIRECTORY (JSON)
 
-    check response: is positive - confirms deletion
+    # check response: is positive - confirms deletion
+
+    validate DELETE response - 204 deleted

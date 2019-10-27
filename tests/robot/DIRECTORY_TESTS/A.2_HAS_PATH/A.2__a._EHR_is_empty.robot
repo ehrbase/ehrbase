@@ -33,6 +33,8 @@ Main flow: has path on empty EHR
 
     create EHR
 
-    get FOLDER in DIRECTORY at version - fake path (JSON)
+    get FOLDER in DIRECTORY at version - fake version_uid/path (JSON)
 
-    check response: is negative    # TODO: reason ?
+    # check response: is negative - DIRECTORY does not exist
+
+    validate GET-@version response - 404 unknown version_uid

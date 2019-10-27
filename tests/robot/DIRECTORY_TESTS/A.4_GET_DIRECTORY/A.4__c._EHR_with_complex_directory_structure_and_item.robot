@@ -34,9 +34,14 @@ Force Tags    refactor
 Alternative flow 2: get directory on EHR with complex directory structure and items
 
     create EHR
+        
+        TRACE GITHUB ISSUE  43  not-ready
+        ...             message=DISCOVERED ERROR: PGobject cannot be cast to com.nedap.archie.rm
 
     create DIRECTORY (JSON)    subfolders_in_directory_with_details_items.json
 
-    get DIRECTORY (JSON)
+    get DIRECTORY at time (JSON)  time
 
-    check response: is positive - returns structure of directory
+    # check response: is positive - returns structure of directory
+
+    validate GET version@time response - 200 retrieved

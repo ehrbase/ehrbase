@@ -38,6 +38,8 @@ Alternative flow 1: get versioned directory from existent EHR that has two versi
 
     update DIRECTORY (JSON)    subfolders_in_directory.json
 
-    get DIRECTORY (JSON)
+    get DIRECTORY at version (JSON)
 
-    check response: is positive - returns versioned folder with two versions
+    # check response: is positive - returns versioned folder with two versions
+
+    validate GET-@version response - 200 retrieved

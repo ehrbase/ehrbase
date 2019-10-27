@@ -33,6 +33,8 @@ Alternative flow 3: has path on non-existent EHR
 
     create fake EHR
 
-    get FOLDER in DIRECTORY at version - fake path (JSON)
+    get FOLDER in DIRECTORY at version - fake version_uid/path (JSON)
 
-    check response: is negative    # TODO: reason ?
+    # check response: is negative    # TODO: reason ?
+
+    validate GET-@version response - 404 unknown ehr_id

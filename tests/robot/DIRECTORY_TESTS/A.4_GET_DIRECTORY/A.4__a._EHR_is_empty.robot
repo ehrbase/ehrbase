@@ -35,4 +35,6 @@ Main flow: get directory on empty EHR
 
     get DIRECTORY (JSON)
 
-    check response: is negative - DIRECTORY does not exist
+    # check response: is negative - DIRECTORY does not exist
+
+    validate GET-version@time response - 404 unknown folder-version@time

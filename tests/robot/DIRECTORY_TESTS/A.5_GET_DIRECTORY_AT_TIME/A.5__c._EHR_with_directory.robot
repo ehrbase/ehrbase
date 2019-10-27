@@ -37,4 +37,6 @@ Alternative flow 2: get directory at time on EHR with directory
 
     get DIRECTORY at current time (JSON)
 
-    check response: is positive - returns structure of directory
+    # check response: is positive - returns structure of directory
+
+    validate GET-version@time response - 200 retrieved

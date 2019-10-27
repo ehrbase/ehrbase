@@ -35,4 +35,6 @@ Main flow: delete directory on empty EHR
 
     delete DIRECTORY - fake version_uid (JSON)
 
-    check response: is negative - DIRECTORY does not exist
+    # check response: is negative - DIRECTORY does not exist
+
+    validate DELETE response - 412 precondition failed

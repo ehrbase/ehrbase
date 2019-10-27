@@ -33,6 +33,11 @@ Alternative flow 2: has directory on non-existent EHR
 
     create fake EHR
 
+        Log  TO CLARIFY WITH @PPAZOS: use `GET /ehr/ehr_id/directory` OR `GET /ehr/ehr_id/directory/\${version_uid}` here?
+        ...  level=WARN
+
     get DIRECTORY (JSON)
 
-    check response: is negative - EHR does not exist
+    # check response: is negative - EHR does not exist
+
+    validate GET-@version response - 404 unknown ehr_id

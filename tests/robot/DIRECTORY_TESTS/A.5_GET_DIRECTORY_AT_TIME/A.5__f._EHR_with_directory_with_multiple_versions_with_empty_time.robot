@@ -39,7 +39,8 @@ Alternative flow 5: get directory at time on EHR with directory with multiple ve
 
     get DIRECTORY at time (JSON)    ${EMPTY}
 
-    check response: is positive - returns structure of directory
+    # check response: is positive - returns structure of directory
                                   # TODO: make sure to check that it is the
                                   #       current latest directory
                                   # maybe in separate keyword
+    validate GET-version@time response - 200 retrieved

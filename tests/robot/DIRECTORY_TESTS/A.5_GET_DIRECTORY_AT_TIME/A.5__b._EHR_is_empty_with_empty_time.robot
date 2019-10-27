@@ -35,4 +35,6 @@ Alternative flow 1: get directory at time on empty EHR with empty time
 
     get DIRECTORY at time (JSON)    ${EMPTY}
 
-    check response: is negative - DIRECTORY does not exist
+    # check response: is negative - DIRECTORY does not exist
+
+    validate GET-version@time response - 404 unknown folder-version@time

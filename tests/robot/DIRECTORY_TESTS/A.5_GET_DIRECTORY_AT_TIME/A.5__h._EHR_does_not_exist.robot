@@ -35,4 +35,6 @@ Alternative flow 7: get directory at time on non existent EHR
 
     get DIRECTORY at current time (JSON)
 
-    check response: is negative - EHR does not exist
+    # check response: is negative - EHR does not exist
+
+    validate GET-version@time response - 404 unknown ehr_id

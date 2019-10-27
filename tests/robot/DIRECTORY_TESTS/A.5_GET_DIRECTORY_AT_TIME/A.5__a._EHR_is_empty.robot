@@ -35,4 +35,6 @@ Main flow: get directory at time on empty EHR
 
     get DIRECTORY at current time (JSON)
 
-    check response: is negative - DIRECTORY does not exist
+    # check response: is negative - DIRECTORY does not exist
+
+    validate GET-version@time response - 404 unknown folder-version@time
