@@ -918,6 +918,20 @@ validate GET-@version response - 404 unknown path
 # GET2 GET2 GET2 GET2
 #////////////////////
 
+validate GET response - 200 retrieved
+    [Documentation]     CASE: requested directory FOLDER is successfully retrieved.
+    ...                 NOTE: this check is for `GET /ehr/ehr_id/directory` endpoint
+    ...                 without the optional URI parameters `version_at_time` and `path`.
+
+                        Should Be Equal As Strings    ${response.status_code}    200
+
+                        #TODO:  Should Be Equal    ${response.json()['status']}    OK / Retrieved
+
+                        Dictionary Should Contain Key    ${response.json()}    uid
+                        Dictionary Should Contain Key    ${response.json()}    folder
+                        Dictionary Should Contain Item    ${response.json()['folder']}    _type  FOLDER
+
+
 validate GET-version@time response - 200 retrieved
     [Documentation]     CASE: requested directory FOLDER is successfully retrieved.
 
@@ -1184,6 +1198,11 @@ VARIANTS x2 (JSON / XML)
   validate DELETE response - 400 invalid ehr_id
   validate DELETE response - 404 unknown ehr_id
   validate DELETE response - 412 precondition failed
+
+  validate GET response - 200 retrieved
+  validate GET response - 404 unknown ehr_id
+  validate GET response - 404 unknown version_uid
+  validate GET response - 404 unknown path
 
   validate GET @version response - 200 retrieved
   validate GET @version response - 404 unknown ehr_id
