@@ -26,7 +26,7 @@ Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags    refactor
+Force Tags
 
 
 
@@ -41,7 +41,5 @@ Alternative flow 2: get directory on EHR with complex directory structure and it
     create DIRECTORY (JSON)    subfolders_in_directory_with_details_items.json
 
     get DIRECTORY at time (JSON)  time
-
-    # check response: is positive - returns structure of directory
 
     validate GET version@time response - 200 retrieved

@@ -28,7 +28,7 @@ Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags    refactor   xxx
+Force Tags    refactor
 
 
 
@@ -41,13 +41,10 @@ Alternative flow 1: has directory from existent EHR that has two versions of dir
     validate POST response - 201 created
 
     get DIRECTORY at version (JSON)
-        # check response: is positive - returns true
     validate GET-@version response - 200 retrieved
 
     update DIRECTORY (JSON)    subfolders_in_directory_with_details.json
-        # directory_keywords.check response: is positive
     validate PUT response - 200 updated
 
     get DIRECTORY at version (JSON)
-        # check response: is positive - returns true
     validate GET-@version response - 200 retrieved

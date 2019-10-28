@@ -30,7 +30,7 @@ Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags    refactor
+Force Tags
 
 
 
@@ -42,8 +42,6 @@ Alternative flow 1: has path on EHR with just root directory (DS 1)
     create DIRECTORY (JSON)    empty_directory.json
 
     get FOLDER in DIRECTORY at version (JSON)    /
-
-    # check response: is positive    # TODO: implement some data checks
 
     validate GET-@version response - 200 retrieved
 

@@ -41,15 +41,12 @@ Alternative flow 1: get directory at version from existent EHR that has two vers
     validate POST response - 201 created
 
     get DIRECTORY at version (JSON)
-    # check response: is positive - returns structure of directory
     validate GET-@version response - 200 retrieved
     
 
     update DIRECTORY (JSON)    subfolders_in_directory_with_details.json
-    # directory_keywords.check response: is positive
     validate PUT response - 200 updated
 
     get DIRECTORY at version (JSON)
-    # check response: is positive - returns structure of directory
-    #                               # TODO: check that it is the SECOND version
+    # TODO: check that it is the SECOND version
     validate GET-@version response - 200 retrieved

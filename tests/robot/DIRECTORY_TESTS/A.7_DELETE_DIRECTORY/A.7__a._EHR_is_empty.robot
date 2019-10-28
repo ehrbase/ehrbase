@@ -24,7 +24,7 @@ Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags    refactor
+Force Tags
 
 
 
@@ -34,7 +34,5 @@ Main flow: delete directory on empty EHR
     create EHR
 
     delete DIRECTORY - fake version_uid (JSON)
-
-    # check response: is negative - DIRECTORY does not exist
 
     validate DELETE response - 412 precondition failed

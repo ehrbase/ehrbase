@@ -1,5 +1,5 @@
 *** Settings ***
-Metadata    Version    0.1.0
+Metadata    Version    0.2.0
 Metadata    Author    *Pablo Pazos*
 Metadata    Author    *Wladislaw Wagner*
 
