@@ -24,7 +24,7 @@ Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags    refactor
+Force Tags
 
 
 
@@ -35,4 +35,4 @@ Alternative flow 3: get directory at time on EHR with directory with empty time
 
     get DIRECTORY at time (JSON)    ${EMPTY}
 
-    check response: is positive - returns structure of directory
+    validate GET-version@time response - 200 retrieved

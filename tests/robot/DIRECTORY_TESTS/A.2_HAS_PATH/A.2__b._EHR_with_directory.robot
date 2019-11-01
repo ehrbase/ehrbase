@@ -30,7 +30,7 @@ Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags    refactor
+Force Tags
 
 
 
@@ -43,7 +43,7 @@ Alternative flow 1: has path on EHR with just root directory (DS 1)
 
     get FOLDER in DIRECTORY at version (JSON)    /
 
-    check response: is positive    # TODO: implement some data checks
+    validate GET-@version response - 200 retrieved
 
 
 
@@ -57,4 +57,6 @@ Alternative flow 1: has path on EHR with just root directory (DS 2)
 
     get FOLDER in DIRECTORY at version (JSON)    ${path}
 
-    check response: is negative    # TODO: reason ?
+        TRACE GITHUB ISSUE  36  not-ready  DISCOVERED ISSUE: `path` URI parameter is ignored(?)
+
+    validate GET-@version response - 404 unknown path

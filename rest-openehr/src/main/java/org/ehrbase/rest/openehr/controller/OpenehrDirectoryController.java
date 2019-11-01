@@ -112,7 +112,7 @@ public class OpenehrDirectoryController extends BaseController {
         if (!this.ehrService.doesEhrExist(ehrId)) {
             throw new ObjectNotFoundException(
                     "ehr",
-                    "EHR with id " + ehrId + " not found"
+                    "EHR with id " + ehrId + " not found."
             );
         }
         // Insert New folder
