@@ -162,7 +162,6 @@ public class EhrServiceImp extends BaseService implements EhrService {
         try {
             ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
         } catch (Exception e) {
-            logger.error(e.getMessage());
             throw new InternalServerException(e);
         }
         if (ehrAccess == null) {
@@ -174,9 +173,7 @@ public class EhrServiceImp extends BaseService implements EhrService {
 
         try {
             ehrAccess.update(getUserUuid(), getSystemUuid(), null, I_ConceptAccess.ContributionChangeType.MODIFICATION, DESCRIPTION);
-
         } catch (Exception e) {
-            logger.error(e.getMessage());
             throw new InternalServerException(e);
         }
 

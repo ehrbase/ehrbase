@@ -701,7 +701,11 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
 
         status.setModifiable(isModifiable());
         status.setQueryable(isQueryable());
-        status.setOtherDetails((ItemStructure) getOtherDetails());
+        // rebuild otherDetails if available
+        if (statusRecord.getOtherDetails() != null) {
+            String serialized = ((PGobject) statusRecord.getOtherDetails()).getValue();
+            status.setOtherDetails(new RawJson().unmarshal(serialized, ItemStructure.class));
+        }
         status.setUid(new HierObjectId(statusRecord.getId().toString()));
 
         I_PartyIdentifiedAccess party = I_PartyIdentifiedAccess.retrieveInstance(getDataAccess(), getParty());
