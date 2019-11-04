@@ -19,7 +19,7 @@
 
 
 # Run with localy installed RF and libraies
-robot -e libtest -e future -e circleci -e obsolete -d results --noncritical not-ready -e BDD -L TRACE robot/
+robot -i xxx -e libtest -e future -e circleci -e obsolete -d results --noncritical not-ready -e BDD -L TRACE robot/
 
 # NOTE: below stuff not usable with the recent pre/postcondition implementation
 # # Run with Docker | no need to install anything

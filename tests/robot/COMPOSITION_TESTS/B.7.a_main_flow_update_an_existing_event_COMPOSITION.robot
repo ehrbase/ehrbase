@@ -44,3 +44,5 @@ Main flow update an existing event COMPOSITION
 
     update composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.v2.xml
     check content of updated composition (JSON)
+
+    [Teardown]    restart SUT

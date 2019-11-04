@@ -47,6 +47,8 @@ Main flow get existing COMPOSITION latest
     get composition - latest version
     check content of compositions latest version (JSON)
 
+    [Teardown]    restart SUT
+
 
 
     # TODO: check with PABLO what to do with this

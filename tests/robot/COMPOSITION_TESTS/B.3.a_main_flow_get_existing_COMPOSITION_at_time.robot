@@ -43,3 +43,5 @@ Main flow get existing COMPOSITION at time
 
     get versioned composition - version at time    ${time_1}
     check content of compositions version at time (JSON)    time_1
+
+    [Teardown]    restart SUT

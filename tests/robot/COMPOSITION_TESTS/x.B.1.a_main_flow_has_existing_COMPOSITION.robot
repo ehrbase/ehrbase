@@ -43,3 +43,5 @@ Main flow has existing COMPOSITION
 
     get composition by composition_uid    ${version_uid}
     check composition exists
+
+    [Teardown]    restart SUT

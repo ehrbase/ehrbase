@@ -45,3 +45,5 @@ Alternative flow 1 get existing COMPOSITION at time, without given time
 
     get composition - latest version (XML)     # NOTE: this keyword equals to `get composition - verstion at time`  without time parameter
     check content of compositions latest version (XML)
+
+    [Teardown]    restart SUT

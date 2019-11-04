@@ -40,3 +40,5 @@ Main flow has existing COMPOSITION (JSON)
     commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.xml
     get composition by composition_uid    ${version_uid}
     check composition exists
+
+    [Teardown]    restart SUT

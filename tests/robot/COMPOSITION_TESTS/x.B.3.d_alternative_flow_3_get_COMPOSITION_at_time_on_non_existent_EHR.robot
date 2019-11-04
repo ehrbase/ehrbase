@@ -46,3 +46,5 @@ Alternative flow 3 get COMPOSITION at time, on non-existent EHR
 
     get composition - version at time (XML)    ${time_1}
     check composition does not exist (version at time)
+
+    [Teardown]    restart SUT

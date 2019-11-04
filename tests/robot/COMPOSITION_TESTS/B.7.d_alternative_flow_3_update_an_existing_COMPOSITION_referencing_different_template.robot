@@ -51,3 +51,5 @@ Alternative flow 3 update an existing persistent COMPOSITION referencing differe
         TRACE JIRA BUG    EHR-517    not-ready
 
     Should Be Equal As Strings   ${response.status_code}   400
+
+    [Teardown]    restart SUT

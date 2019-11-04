@@ -45,3 +45,5 @@ Main flow get existing VERSIONED COMPOSITION
     composition_keywords.start request session    # Prefer=return\=representation
     get versioned composition by uid    ${versioned_object_uid}
     check content of versioned composition (JSON)
+
+    [Teardown]    restart SUT

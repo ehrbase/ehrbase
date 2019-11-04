@@ -53,7 +53,7 @@ workflows:
               only:
                 - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
 
-      - integration-tests:
+      - integration-tests-1:
           context: org-global
           requires:
             - build-artifacts
@@ -62,8 +62,18 @@ workflows:
             branches:
               only:
                 - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
-          post-steps:
-            - provide-test-status-report-via-slack
+          # post-steps:
+          #   - provide-test-status-report-via-slack
+
+      - integration-tests-2:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              only:
+                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
 
       - sonar-analysis:
           context: org-global
@@ -128,7 +138,26 @@ jobs:
       - save-unit-tests-job-caches
       # - persist-unit-test-coverage
 
-  integration-tests:
+  integration-tests-1:
+    machine:
+      image: ubuntu-1604:201903-01
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    steps:
+      - configure-python-version
+      - checkout
+      - restore-integration-tests-job-caches
+      - setup-jacoco-distribution
+      - attach-target-folder
+      - install-python-requirements:
+          include: "circleci"
+      - run-integration-tests
+      # - collect-integration-coverage
+      - persist-integration-test-coverage
+      - save-integration-tests-job-caches
+
+  integration-tests-2:
     machine:
       image: ubuntu-1604:201903-01
     environment:
@@ -141,8 +170,8 @@ jobs:
       - setup-jacoco-distribution
       - attach-target-folder
       - install-python-requirements
-      - run-integration-tests
-      # - collect-integration-coverage
+      - run-integration-tests:
+          include: "circleci"
       - persist-integration-test-coverage
       - save-integration-tests-job-caches
 
@@ -179,12 +208,17 @@ commands:
 
   run-integration-tests:
     description: Run integration tests
+    parameters:
+      include:
+        type: string
+        default: xxx
     steps:
         - run:
             name: Run integration tests with coverage
             command: |
                 cd tests
                 robot -d results --console dotted --noncritical not-ready -L TRACE \
+                      -i << parameters.include >>
                       -e libtest \
                       -e obsolete \
                       -e future \

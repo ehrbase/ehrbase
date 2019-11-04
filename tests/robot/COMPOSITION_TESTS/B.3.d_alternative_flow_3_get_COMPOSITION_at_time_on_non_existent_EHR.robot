@@ -45,3 +45,5 @@ Alternative flow 3 get COMPOSITION at time, on non-existent EHR
     # Check COMPOSITIOn does not exist using 'version at time' endpoint
     get versioned composition - version at time    ${time_1}
     check composition does not exist (version at time)
+
+    [Teardown]    restart SUT

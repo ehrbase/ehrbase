@@ -45,3 +45,5 @@ Alternative flow 2 get COMPOSITION at time, COMPOSITION doesnt exist
 
     get composition - version at time (XML)    ${time_1}
     check composition does not exist (version at time)
+
+    [Teardown]    restart SUT

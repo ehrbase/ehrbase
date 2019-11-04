@@ -46,3 +46,5 @@ Main flow get existing COMPOSITION latest
 
     get composition - latest version (XML)
     check content of compositions latest version (XML)
+
+    [Teardown]    restart SUT

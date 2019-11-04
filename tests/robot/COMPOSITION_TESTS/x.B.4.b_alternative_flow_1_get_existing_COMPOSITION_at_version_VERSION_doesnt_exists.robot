@@ -45,3 +45,5 @@ Main flow get existing COMPOSITION at version, VERSION doesnt exists
     composition_keywords.start request session    application/xml    application/xml    Prefer=return\=representation
     get composition by composition_uid    ${version_uid}
     check composition does not exist
+
+    [Teardown]    restart SUT

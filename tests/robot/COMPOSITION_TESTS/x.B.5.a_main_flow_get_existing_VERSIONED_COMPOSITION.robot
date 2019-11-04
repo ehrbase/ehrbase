@@ -43,3 +43,5 @@ Main flow get existing VERSIONED COMPOSITION
 
     get versioned composition by uid    ${versioned_object_uid}
     check content of versioned composition (XML)
+
+    [Teardown]    restart SUT
