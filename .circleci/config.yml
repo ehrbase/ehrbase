@@ -152,7 +152,7 @@ jobs:
       - attach-target-folder
       - install-python-requirements
       - run-integration-tests:
-          include: "circleci"
+          include: "COMPOSITION"
       # - collect-integration-coverage
       # - persist-integration-test-coverage
       - save-integration-tests-job-caches

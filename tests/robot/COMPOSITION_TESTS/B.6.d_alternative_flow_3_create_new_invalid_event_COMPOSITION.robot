@@ -44,3 +44,5 @@ Alternative flow 3 create new invalid event COMPOSITION
         TRACE JIRA BUG    EHR-433    not-ready
 
     commit invalid composition (JSON)    nested/nested.composition.extdatetimes.invalid.xml
+
+    [Teardown]    restart SUT
