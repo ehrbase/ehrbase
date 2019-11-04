@@ -35,4 +35,4 @@ Suite Setup  startup SUT
 Test Teardown  restart SUT
 Suite Teardown  shutdown SUT
 
-Force Tags    COMPOSITION   xxx
+Force Tags    COMPOSITION

@@ -43,5 +43,3 @@ Alternative flow 2 delete non existent COMPOSITION
     generate random composition_uid
 
     delete non-existent composition
-
-    [Teardown]    restart SUT

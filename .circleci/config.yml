@@ -152,7 +152,7 @@ jobs:
       - attach-target-folder
       - install-python-requirements
       - run-integration-tests:
-          include: "COMPOSITION"
+          include: "compositionANDjson"
       # - collect-integration-coverage
       # - persist-integration-test-coverage
       - save-integration-tests-job-caches
@@ -171,7 +171,25 @@ jobs:
       - attach-target-folder
       - install-python-requirements
       - run-integration-tests:
-          include: "circleci"
+          include: "compositionANDxml"
+      # - persist-integration-test-coverage
+      - save-integration-tests-job-caches
+
+   integration-tests-3:
+    machine:
+      image: ubuntu-1604:201903-01
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    steps:
+      - configure-python-version
+      - checkout
+      - restore-integration-tests-job-caches
+      - setup-jacoco-distribution
+      - attach-target-folder
+      - install-python-requirements
+      - run-integration-tests:
+          include: "CONTRIBUTION"
       # - persist-integration-test-coverage
       - save-integration-tests-job-caches
 
