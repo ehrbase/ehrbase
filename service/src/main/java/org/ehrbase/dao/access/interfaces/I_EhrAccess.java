@@ -21,6 +21,7 @@
  */
 package org.ehrbase.dao.access.interfaces;
 
+import com.nedap.archie.rm.datastructures.ItemStructure;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.jooq.EhrAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
@@ -232,9 +233,9 @@ public interface I_EhrAccess extends I_SimpleCRUD<I_EhrAccess, UUID> {
 
     void setContributionAccess(I_ContributionAccess contributionAccess);
 
-    void setOtherDetails(Locatable otherDetails, String templateId);
+    void setOtherDetails(ItemStructure otherDetails, String templateId);
 
-    Locatable getOtherDetails();
+    ItemStructure getOtherDetails();
 
     EhrRecord getEhrRecord();
 

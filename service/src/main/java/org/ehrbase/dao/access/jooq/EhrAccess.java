@@ -33,6 +33,7 @@ import org.apache.commons.collections4.map.MultiValueMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.support.DataAccess;
@@ -67,7 +68,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     private boolean isNew = false;
 
     //holds the non serialized archetyped other_details structure
-    private Locatable otherDetails = null;
+    private ItemStructure otherDetails = null;
     private String otherDetailsSerialized = null; //kind of a hack really, used to deal with RAW JSON without a template!
     private String otherDetailsTemplateId;
 
@@ -90,13 +91,13 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             ehrRecord.setId(UUID.randomUUID());
         }
 
-        //retrieveInstanceByNamedSubject an existing status for this party (which should not occur
+        //check if party already has an STATUS (and therefore EHR)
         if (!context.fetch(STATUS, STATUS.PARTY.eq(partyId)).isEmpty()) {
             log.warn("This party is already associated to an EHR");
             throw new IllegalArgumentException("Party:" + partyId + " already associated to an EHR, please retrieveInstanceByNamedSubject the associated EHR for updates instead");
         }
 
-        //storeComposition a new status
+        //init a new status record
         statusRecord = context.newRecord(STATUS);
         statusRecord.setId(UUID.randomUUID());
         statusRecord.setIsModifiable(true);
@@ -312,8 +313,11 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
 
         //rebuild otherDetails
         if (ehrAccess.statusRecord.getOtherDetails() != null) {
-            String serialized = ((PGobject) ehrAccess.statusRecord.getOtherDetails()).getValue();
-            ehrAccess.otherDetails = new RawJson().unmarshal(serialized, ItemStructure.class);
+            ehrAccess.otherDetails = ehrAccess.statusRecord.getOtherDetails();
+
+            // FIXME otherdetails: remove when done
+            /*String serialized = ((PGobject) ehrAccess.statusRecord.getOtherDetails()).getValue();
+            ehrAccess.otherDetails = new RawJson().unmarshal(serialized, ItemStructure.class);*/
         }
 
         ehrAccess.isNew = false;
@@ -437,7 +441,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     }
 
     /**
-     * @throws IllegalArgumentException when EHR couldn't be stored
+     * @throws InvalidApiParameterException when input couldn't be processed, i.e. EHR not stored
      */
     @Override
     public UUID commit(Timestamp transactionTime) {
@@ -447,7 +451,22 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         ehrRecord.store();
 
         if (isNew && statusRecord != null) {
-            //UUID uuid = UUID.randomUUID();
+
+            statusRecord.setEhrId(ehrRecord.getId());
+            if (otherDetails != null) {
+                statusRecord.setOtherDetails(otherDetails);
+            } else if (otherDetailsSerialized != null) {
+                // FIXME otherdetails: this case should not happen
+                throw new InternalServerException("not implemented");
+            }
+            statusRecord.setSysTransaction(transactionTime);
+
+            if (statusRecord.store() == 0) {
+                throw new InvalidApiParameterException("Input EHR couldn't be stored");
+            }
+
+            // FIXME otherdetails: remove when done
+            /* UUID uuid = UUID.randomUUID(); *//*
             InsertQuery<?> insertQuery = context.insertQuery(STATUS);
             insertQuery.addValue(STATUS.ID, statusRecord.getId());
             insertQuery.addValue(STATUS.EHR_ID, ehrRecord.getId());
@@ -465,7 +484,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             Integer result = insertQuery.execute();
 
             if (result == 0)
-                throw new IllegalArgumentException("Could not store Ehr Status");
+                throw new IllegalArgumentException("Could not store Ehr Status");*/
 //            statusRecord.store();
         }
 
@@ -506,7 +525,19 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
 
         if (force || statusRecord.changed()) {
 
-            UpdateQuery<?> updateQuery = context.updateQuery(STATUS);
+            statusRecord.setEhrId(ehrRecord.getId());
+            if (otherDetails != null) {
+                statusRecord.setOtherDetails(otherDetails);
+            } else if (otherDetailsSerialized != null) {
+                // FIXME otherdetails: this case should not happen
+                throw new InternalServerException("not implemented");
+            }
+            statusRecord.setSysTransaction(transactionTime);
+
+            result = statusRecord.update() > 0;
+
+            // FIXME otherdetails: remove when done
+            /*UpdateQuery<?> updateQuery = context.updateQuery(STATUS);
             updateQuery.addValue(STATUS.EHR_ID, ehrRecord.getId());
             updateQuery.addValue(STATUS.IS_QUERYABLE, statusRecord.getIsQueryable());
             updateQuery.addValue(STATUS.IS_MODIFIABLE, statusRecord.getIsModifiable());
@@ -520,7 +551,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             updateQuery.addValue(STATUS.SYS_TRANSACTION, transactionTime);
             updateQuery.addConditions(STATUS.ID.eq(statusRecord.getId()));
 
-            result |= updateQuery.execute() > 0;
+            result |= updateQuery.execute() > 0;*/
         }
 
         if (force || ehrRecord.changed()) {
@@ -663,13 +694,13 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     }
 
     @Override
-    public void setOtherDetails(Locatable otherDetails, String templateId) {
+    public void setOtherDetails(ItemStructure otherDetails, String templateId) {
         this.otherDetails = otherDetails;
         this.otherDetailsTemplateId = Optional.ofNullable(otherDetails).map(Locatable::getArchetypeDetails).map(Archetyped::getTemplateId).map(ObjectId::getValue).orElse(null);
     }
 
     @Override
-    public Locatable getOtherDetails() {
+    public ItemStructure getOtherDetails() {
         return otherDetails;
     }
 
@@ -701,10 +732,13 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
 
         status.setModifiable(isModifiable());
         status.setQueryable(isQueryable());
-        // rebuild otherDetails if available
+        // set otherDetails if available
         if (statusRecord.getOtherDetails() != null) {
-            String serialized = ((PGobject) statusRecord.getOtherDetails()).getValue();
-            status.setOtherDetails(new RawJson().unmarshal(serialized, ItemStructure.class));
+            status.setOtherDetails(statusRecord.getOtherDetails());
+
+            // FIXME otherdetails: remove when done
+            /*String serialized = ((PGobject) statusRecord.getOtherDetails()).getValue();
+            status.setOtherDetails(new RawJson().unmarshal(serialized, ItemStructure.class));*/
         }
         status.setUid(new HierObjectId(statusRecord.getId().toString()));
 
