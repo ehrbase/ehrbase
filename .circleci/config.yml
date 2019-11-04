@@ -185,7 +185,7 @@ jobs:
       # - persist-integration-test-coverage
       - save-integration-tests-job-caches
 
-   integration-tests-3:
+  integration-tests-3:
     machine:
       image: ubuntu-1604:201903-01
     environment:
