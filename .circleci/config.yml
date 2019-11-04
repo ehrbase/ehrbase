@@ -150,9 +150,9 @@ jobs:
       - restore-integration-tests-job-caches
       - setup-jacoco-distribution
       - attach-target-folder
-      - install-python-requirements:
+      - install-python-requirements
+      - run-integration-tests:
           include: "circleci"
-      - run-integration-tests
       # - collect-integration-coverage
       - persist-integration-test-coverage
       - save-integration-tests-job-caches
