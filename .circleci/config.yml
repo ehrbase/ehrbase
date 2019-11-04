@@ -218,7 +218,7 @@ commands:
             command: |
                 cd tests
                 robot -d results --console dotted --noncritical not-ready -L TRACE \
-                      -i << parameters.include >>
+                      -i << parameters.include >> \
                       -e libtest \
                       -e obsolete \
                       -e future \
