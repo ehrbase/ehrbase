@@ -223,7 +223,6 @@ commands:
                       -e obsolete \
                       -e future \
                       -e TODO \
-                      -e circleci \
                       -e EHRSCAPE \
                       --xunit junit-output.xml --xunitskipnoncritical \
                       -v CODE_COVERAGE:True \
