@@ -75,17 +75,17 @@ workflows:
               only:
                 - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
 
-      - sonar-analysis:
-          context: org-global
-          requires:
-            - build-artifacts
-            - unit-tests
-            - integration-tests
-            - dependency-check
-          filters:
-            branches:
-              only:
-                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+      # - sonar-analysis:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
+      #       - unit-tests
+      #       - integration-tests
+      #       - dependency-check
+      #     filters:
+      #       branches:
+      #         only:
+      #           - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
 
 
 
