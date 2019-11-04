@@ -56,3 +56,5 @@ Alternative flow 3 get COMPOSITION at version cover different versions
     # Check COMPO v2 exist and has correct content
     get composition by composition_uid    ${version_uid_v2}
     check content of updated composition (XML)
+
+    [Teardown]    restart SUT

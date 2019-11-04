@@ -43,3 +43,5 @@ Alternative flow 2 update a non-existent COMPOSITION
     generate random composition_uid
 
     update non-existent composition (JSON)    minimal_persistent/persistent_minimal.composition.extdatetime.v2.xml
+
+    [Teardown]    restart SUT

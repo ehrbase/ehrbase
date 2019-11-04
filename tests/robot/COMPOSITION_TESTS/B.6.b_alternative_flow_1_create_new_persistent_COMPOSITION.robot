@@ -40,3 +40,5 @@ Alternative flow 1 create new persistent COMPOSITION
     create EHR
 
     commit composition (JSON)    minimal_persistent/persistent_minimal.composition.extdatetime.xml
+
+    [Teardown]    restart SUT

@@ -154,7 +154,7 @@ jobs:
       - run-integration-tests:
           include: "circleci"
       # - collect-integration-coverage
-      - persist-integration-test-coverage
+      # - persist-integration-test-coverage
       - save-integration-tests-job-caches
 
   integration-tests-2:
@@ -172,7 +172,7 @@ jobs:
       - install-python-requirements
       - run-integration-tests:
           include: "circleci"
-      - persist-integration-test-coverage
+      # - persist-integration-test-coverage
       - save-integration-tests-job-caches
 
   sonar-analysis:
