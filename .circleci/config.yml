@@ -85,6 +85,16 @@ workflows:
               only:
                 - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
 
+      - integration-tests-4:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              only:
+                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+
       # - sonar-analysis:
       #     context: org-global
       #     requires:
@@ -163,6 +173,7 @@ jobs:
       - install-python-requirements
       - run-integration-tests:
           include: "compositionANDjson"
+          no_output_timeout: 45m
       # - collect-integration-coverage
       # - persist-integration-test-coverage
       - save-integration-tests-job-caches
@@ -182,7 +193,7 @@ jobs:
       - install-python-requirements
       - run-integration-tests:
           include: "compositionANDxml"
-      # - persist-integration-test-coverage
+          no_output_timeout: 45m
       - save-integration-tests-job-caches
 
   integration-tests-3:
@@ -200,8 +211,28 @@ jobs:
       - install-python-requirements
       - run-integration-tests:
           include: "CONTRIBUTION"
-      # - persist-integration-test-coverage
+          no_output_timeout: 45m
       - save-integration-tests-job-caches
+
+  integration-tests-4:
+    machine:
+      image: ubuntu-1604:201903-01
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    steps:
+      - configure-python-version
+      - checkout
+      - restore-integration-tests-job-caches
+      - setup-jacoco-distribution
+      - attach-target-folder
+      - install-python-requirements
+      - run-integration-tests:
+          include: "KNOWLEDGE"
+          no_output_timeout: 45m
+      - save-integration-tests-job-caches
+
+
 
   sonar-analysis:
     machine:
