@@ -63,7 +63,7 @@ workflows:
               only:
                 - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
           # post-steps:
-          #   - provide-test-status-report-via-slack
+          #   - provide-test-status-report-via-slack #
 
       - COMPOSITION-tests-2:
           context: org-global
