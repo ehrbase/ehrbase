@@ -240,7 +240,6 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         String filename = filenameOptional.orElseThrow(() -> new InvalidApiParameterException("Invalid template input content")).getValue();
 
         // pre-check: if already existing throw proper exception
-        // TODO: disabled due to conflict with integration test implementation. activating will break many other tests.
         if (retrieveOperationalTemplate(filename).isPresent()) {
             throw new StateConflictException("Operational template with this template ID already exists");
         }
