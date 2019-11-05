@@ -53,7 +53,11 @@ workflows:
               only:
                 - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
 
-      - integration-tests-1:
+
+
+      # INTEGRATION TESTS
+
+      - COMPOSITION-tests-1:
           context: org-global
           requires:
             - build-artifacts
@@ -65,7 +69,7 @@ workflows:
           # post-steps:
           #   - provide-test-status-report-via-slack
 
-      - integration-tests-2:
+      - COMPOSITION-tests-2:
           context: org-global
           requires:
             - build-artifacts
@@ -75,7 +79,7 @@ workflows:
               only:
                 - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
 
-      - integration-tests-3:
+      - COMPOSITION-tests-3:
           context: org-global
           requires:
             - build-artifacts
@@ -85,7 +89,57 @@ workflows:
               only:
                 - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
 
-      - integration-tests-4:
+      - COMPOSITION-tests-4:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              only:
+                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+
+      - CONTRIBUTION-tests:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              only:
+                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+
+      - DIRECTORY-tests:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              only:
+                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+
+      - EHR_SERVICE-tests:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              only:
+                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+
+      - KNOWLEDGE-tests:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              only:
+                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+
+      - QUERY_SERVICE-tests:
           context: org-global
           requires:
             - build-artifacts
@@ -158,7 +212,7 @@ jobs:
       - save-unit-tests-job-caches
       # - persist-unit-test-coverage
 
-  integration-tests-1:
+  COMPOSITION-tests-1:
     machine:
       image: ubuntu-1604:201903-01
     environment:
@@ -172,12 +226,12 @@ jobs:
       - attach-target-folder
       - install-python-requirements
       - run-integration-tests:
-          include: "compositionANDjson"
+          include: "compositionANDjson1"
       # - collect-integration-coverage
       # - persist-integration-test-coverage
       - save-integration-tests-job-caches
 
-  integration-tests-2:
+  COMPOSITION-tests-2:
     machine:
       image: ubuntu-1604:201903-01
     environment:
@@ -191,10 +245,44 @@ jobs:
       - attach-target-folder
       - install-python-requirements
       - run-integration-tests:
-          include: "compositionANDxml"
+          include: "compositionANDjson2"
       - save-integration-tests-job-caches
 
-  integration-tests-3:
+  COMPOSITION-tests-3:
+    machine:
+      image: ubuntu-1604:201903-01
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    steps:
+      - configure-python-version
+      - checkout
+      - restore-integration-tests-job-caches
+      - setup-jacoco-distribution
+      - attach-target-folder
+      - install-python-requirements
+      - run-integration-tests:
+          include: "compositionANDxml1"
+      - save-integration-tests-job-caches
+
+  COMPOSITION-tests-4:
+    machine:
+      image: ubuntu-1604:201903-01
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    steps:
+      - configure-python-version
+      - checkout
+      - restore-integration-tests-job-caches
+      - setup-jacoco-distribution
+      - attach-target-folder
+      - install-python-requirements
+      - run-integration-tests:
+          include: "compositionANDxml2"
+      - save-integration-tests-job-caches
+
+  CONTRIBUTION-tests:
     machine:
       image: ubuntu-1604:201903-01
     environment:
@@ -211,7 +299,41 @@ jobs:
           include: "CONTRIBUTION"
       - save-integration-tests-job-caches
 
-  integration-tests-4:
+  DIRECTORY-tests:
+    machine:
+      image: ubuntu-1604:201903-01
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    steps:
+      - configure-python-version
+      - checkout
+      - restore-integration-tests-job-caches
+      - setup-jacoco-distribution
+      - attach-target-folder
+      - install-python-requirements
+      - run-integration-tests:
+          include: "directory"
+      - save-integration-tests-job-cache
+
+  EHR_SERVICE-tests:
+    machine:
+      image: ubuntu-1604:201903-01
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    steps:
+      - configure-python-version
+      - checkout
+      - restore-integration-tests-job-caches
+      - setup-jacoco-distribution
+      - attach-target-folder
+      - install-python-requirements
+      - run-integration-tests:
+          include: "EHR_SERVICE"
+      - save-integration-tests-job-cache
+
+  KNOWLEDGE-tests:
     machine:
       image: ubuntu-1604:201903-01
     environment:
@@ -226,6 +348,23 @@ jobs:
       - install-python-requirements
       - run-integration-tests:
           include: "KNOWLEDGE"
+      - save-integration-tests-job-caches
+
+  QUERY_SERVICE-tests:
+    machine:
+      image: ubuntu-1604:201903-01
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    steps:
+      - configure-python-version
+      - checkout
+      - restore-integration-tests-job-caches
+      - setup-jacoco-distribution
+      - attach-target-folder
+      - install-python-requirements
+      - run-integration-tests:
+          include: " ADHOC-QUERY"
       - save-integration-tests-job-caches
 
 

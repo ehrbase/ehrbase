@@ -32,7 +32,6 @@ Resource    ${CURDIR}${/}../_resources/keywords/template_opt1.4_keywords.robot
 Resource    ${CURDIR}${/}../_resources/keywords/ehr_keywords.robot
 
 Suite Setup  startup SUT
-Test Teardown  restart SUT
 Suite Teardown  shutdown SUT
 
 Force Tags    COMPOSITION
