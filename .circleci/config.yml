@@ -173,7 +173,6 @@ jobs:
       - install-python-requirements
       - run-integration-tests:
           include: "compositionANDjson"
-          no_output_timeout: 45m
       # - collect-integration-coverage
       # - persist-integration-test-coverage
       - save-integration-tests-job-caches
@@ -193,7 +192,6 @@ jobs:
       - install-python-requirements
       - run-integration-tests:
           include: "compositionANDxml"
-          no_output_timeout: 45m
       - save-integration-tests-job-caches
 
   integration-tests-3:
@@ -211,7 +209,6 @@ jobs:
       - install-python-requirements
       - run-integration-tests:
           include: "CONTRIBUTION"
-          no_output_timeout: 45m
       - save-integration-tests-job-caches
 
   integration-tests-4:
@@ -229,7 +226,6 @@ jobs:
       - install-python-requirements
       - run-integration-tests:
           include: "KNOWLEDGE"
-          no_output_timeout: 45m
       - save-integration-tests-job-caches
 
 
@@ -274,6 +270,7 @@ commands:
     steps:
         - run:
             name: Run integration tests with coverage
+            no_output_timeout: 45m
             command: |
                 cd tests
                 robot -d results --console dotted --noncritical not-ready -L TRACE \
