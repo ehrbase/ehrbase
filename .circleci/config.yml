@@ -53,10 +53,6 @@ workflows:
               only:
                 - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
 
-
-
-      # INTEGRATION TESTS
-
       - COMPOSITION-tests-1:
           context: org-global
           requires:
@@ -331,7 +327,7 @@ jobs:
       - install-python-requirements
       - run-integration-tests:
           include: "EHR_SERVICE"
-      - save-integration-tests-job-cache
+      - save-integration-tests-job-caches
 
   KNOWLEDGE-test:
     machine:
