@@ -35,6 +35,14 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.ehrbase.openehr</groupId>
             <artifactId>api</artifactId>
             <version>0.9.0</version>
@@ -62,10 +70,6 @@
             <groupId>org.ehrbase.openehr</groupId>
             <artifactId>validation</artifactId>
             <version>0.9.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-dbcp2</artifactId>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>

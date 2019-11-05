@@ -43,12 +43,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 
 @Service
+@Transactional
 public class ContributionServiceImp extends BaseService implements ContributionService {
     // the version list in a contribution adds an type tag to each item, so the specific object is distinguishable
     public static final String TYPE_COMPOSITION = "COMPOSITION";
