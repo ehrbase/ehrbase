@@ -99,7 +99,7 @@ workflows:
               only:
                 - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
 
-      - CONTRIBUTION-tests:
+      - CONTRIBUTION-test:
           context: org-global
           requires:
             - build-artifacts
@@ -109,7 +109,7 @@ workflows:
               only:
                 - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
 
-      - DIRECTORY-tests:
+      - DIRECTORY-test:
           context: org-global
           requires:
             - build-artifacts
@@ -119,7 +119,7 @@ workflows:
               only:
                 - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
 
-      - EHRSERVICE-tests:
+      - EHRSERVICE-test:
           context: org-global
           requires:
             - build-artifacts
@@ -129,7 +129,7 @@ workflows:
               only:
                 - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
 
-      - KNOWLEDGE-tests:
+      - KNOWLEDGE-test:
           context: org-global
           requires:
             - build-artifacts
@@ -139,7 +139,7 @@ workflows:
               only:
                 - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
 
-      - QUERYSERVICE-tests:
+      - QUERYSERVICE-test:
           context: org-global
           requires:
             - build-artifacts
@@ -282,7 +282,7 @@ jobs:
           include: "compositionANDxml2"
       - save-integration-tests-job-caches
 
-  CONTRIBUTION-tests:
+  CONTRIBUTION-test:
     machine:
       image: ubuntu-1604:201903-01
     environment:
@@ -299,7 +299,7 @@ jobs:
           include: "CONTRIBUTION"
       - save-integration-tests-job-caches
 
-  DIRECTORY-tests:
+  DIRECTORY-test:
     machine:
       image: ubuntu-1604:201903-01
     environment:
@@ -316,7 +316,7 @@ jobs:
           include: "directory"
       - save-integration-tests-job-caches
 
-  EHRSERVICE-tests:
+  EHRSERVICE-test:
     machine:
       image: ubuntu-1604:201903-01
     environment:
@@ -333,7 +333,7 @@ jobs:
           include: "EHR_SERVICE"
       - save-integration-tests-job-cache
 
-  KNOWLEDGE-tests:
+  KNOWLEDGE-test:
     machine:
       image: ubuntu-1604:201903-01
     environment:
@@ -350,7 +350,7 @@ jobs:
           include: "KNOWLEDGE"
       - save-integration-tests-job-caches
 
-  QUERYSERVICE-tests:
+  QUERYSERVICE-test:
     machine:
       image: ubuntu-1604:201903-01
     environment:
