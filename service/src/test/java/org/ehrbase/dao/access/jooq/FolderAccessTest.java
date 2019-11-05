@@ -212,7 +212,7 @@ public class FolderAccessTest {
                 "}'::jsonb", fa2.getFolderRecord().getDetails().toString());
     }
 
-    @Ignore
+    //@Ignore
     @Test
     //@Ignore
     public void shouldInsertFolderWithSubfolders() throws Exception {

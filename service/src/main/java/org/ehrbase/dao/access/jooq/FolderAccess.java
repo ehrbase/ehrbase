@@ -31,6 +31,7 @@ import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_FolderAccess;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
+import org.ehrbase.dao.access.util.FolderUtils;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.tables.FolderHierarchy;
 import org.ehrbase.jooq.pg.tables.records.FolderHierarchyRecord;
@@ -46,6 +47,7 @@ import org.postgresql.util.PGobject;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static org.ehrbase.jooq.pg.Tables.*;
 import static org.jooq.impl.DSL.*;
@@ -146,11 +148,12 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
             result = folderRecord.update() > 0;
         }
 
-        boolean anySubfolderModified = false;
-        //update subfolders if needed
-        for(UUID subfolderId : this.getSubfoldersList().keySet()){
-            anySubfolderModified = ((FolderAccess)this.getSubfoldersList().get(subfolderId)).update(transactionTime, force, false, oldContribution, newContribution);
-        }
+        boolean anySubfolderModified = this.getSubfoldersList()
+                .values()
+                .stream()
+                .allMatch(subfolder -> (
+                        ((FolderAccess) subfolder).update(transactionTime, force, false, oldContribution, newContribution)
+                ));
 
         return result || anySubfolderModified;
     }
@@ -637,6 +640,43 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         return folderAccess;
     }
 
+    public static I_FolderAccess buildUpdateSubFolderAccess(
+            final I_DomainAccess domainAccess,
+            final Folder folder,
+            final Timestamp timestamp,
+            final UUID ehrId,
+            final I_ContributionAccess contributionAccess
+    ) {
+
+        I_FolderAccess newFolderAccess = buildPlainFolderAccess(
+                domainAccess,
+                folder,
+                new DateTime(timestamp),
+                ehrId,
+                contributionAccess
+        );
+
+        // Update folder data
+        FolderUtils.updateFolder(folder, newFolderAccess);
+
+        if (folder.getFolders() != null && !folder.getFolders().isEmpty()) {
+
+            folder.getFolders().forEach(childFolder ->
+                    newFolderAccess
+                            .getSubfoldersList()
+                            .put(UUID.randomUUID(), buildUpdateSubFolderAccess(
+                                    domainAccess,
+                                    childFolder,
+                                    timestamp,
+                                    ehrId,
+                                    contributionAccess
+                            ))
+            );
+        }
+
+        return newFolderAccess;
+    }
+
     /**
      *
      * @param parentFolder identifier.
@@ -718,7 +758,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         this.contributionAccess = contributionAccess;
     }
 
-    public FolderRecord getFolderRecord() {
+    FolderRecord getFolderRecord() {
         return folderRecord;
     }
 

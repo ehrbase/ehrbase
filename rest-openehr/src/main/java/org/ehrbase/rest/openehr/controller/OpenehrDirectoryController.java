@@ -343,12 +343,86 @@ public class OpenehrDirectoryController extends BaseController {
             @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
             @ApiParam(value = REQ_PREFER) @RequestHeader(value = PREFER, required = false, defaultValue = RETURN_MINIMAL) String prefer,
             @ApiParam(value = "{preceding_version_uid}", required = true) @RequestHeader(value = IF_MATCH) String ifMatch,
-            @ApiParam(value = "EHR identifier from resource path after ehr/", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
-            @ApiParam(value = "Update data for the target FOLDER") @RequestBody String folder
+            @ApiParam(value = "EHR identifier from resource path after ehr/", required = true) @PathVariable(value = "ehr_id") UUID ehrId,
+            @ApiParam(value = "Update data for the target FOLDER") @RequestBody Folder folder,
+            @RequestUrl String requestUrl
     ) {
-        UUID ehrId = getEhrUuid(ehrIdString);
-        // TODO: Implement update folder functionality
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+
+        // Check for existence of EHR record
+        if (!this.ehrService.doesEhrExist(ehrId)) {
+            throw new ObjectNotFoundException(
+                    "ehr",
+                    "EHR with id " + ehrId + " not found"
+            );
+        }
+
+        UUID folderId = UUID.fromString(ifMatch);
+
+        // Update folder and get new version
+        Optional<FolderDto> updated = this.folderService.update(
+                folderId,
+                folder,
+                ehrId
+        );
+
+
+        if (!updated.isPresent()) {
+            throw new InternalServerException(
+                    "Something went wrong. Folder could be persisted but not fetched again."
+            );
+        }
+
+        // Create response data
+        HttpHeaders resHeaders = new HttpHeaders();
+        resHeaders.setLocation(URI.create(requestUrl + "/" + folderId.toString()));
+        resHeaders.setETag("W/\"" + folderId.toString() + "\"");
+        // TODO: Set LastModified header
+
+        // Check for desired response representation format from PREFER header
+        if (prefer.equals(RETURN_REPRESENTATION)){
+
+            // Evaluate target format from accept header
+            StructuredStringFormat resFormat = StructuredStringFormat.JSON;
+            MediaType resContentType = MediaType.APPLICATION_JSON;
+
+            switch (accept) {
+                case MediaType.APPLICATION_JSON_VALUE:
+                    break;
+                case MediaType.APPLICATION_XML_VALUE:
+                    resFormat = StructuredStringFormat.XML;
+                    resContentType = MediaType.APPLICATION_XML;
+                    break;
+                default:
+                    throw new NotAcceptableException(
+                            "Media type " + accept + " not supported."
+                    );
+            }
+
+            DirectoryResponseData resBody = new DirectoryResponseData();
+
+            // Serialize Content
+            resBody.setFolder(
+                    this.folderService.serialize(
+                            updated.get().getFolder(),
+                            resFormat
+                    )
+            );
+            resBody.setUid(updated.get().getUuid());
+
+            resHeaders.setContentType(resContentType);
+
+            return new ResponseEntity<>(
+                    resBody,
+                    resHeaders,
+                    HttpStatus.OK
+            );
+        }
+        // No representation desired
+        return new ResponseEntity<>(
+                null,
+                resHeaders,
+                HttpStatus.NO_CONTENT
+        );
     }
 
     @DeleteMapping(path = "/{ehr_id}/directory")
