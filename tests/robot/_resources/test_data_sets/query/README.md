@@ -16,9 +16,7 @@ Contains expected results for each query, considering the database is empty: the
 
 Those examples were created by using EHRSCAPE as the reference implementation. Some of the queries are not processed correctly by EHRSCAPE and the result doesn't give any context about the errors. The failing queries are:
 
-- A/108
 - A/109
-- B/102
 - B/103
 - B/702
 - B/800
