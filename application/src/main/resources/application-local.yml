@@ -37,6 +37,3 @@ keycloak:
   resource: myclient
   use-resource-role-mappings: true
   auth-server-url: http://localhost:8090/auth
-logging:
-  level:
-    org.springframework.transaction: trace
