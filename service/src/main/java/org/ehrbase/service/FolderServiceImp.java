@@ -33,6 +33,7 @@ import org.ehrbase.dao.access.jooq.FolderAccess;
 import org.ehrbase.serialisation.CanonicalJson;
 import org.ehrbase.serialisation.CanonicalXML;
 import org.joda.time.DateTime;
+import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,9 +58,8 @@ public class FolderServiceImp extends BaseService implements FolderService {
     @Autowired
     FolderServiceImp(
             KnowledgeCacheService knowledgeCacheService,
-            ConnectionPoolService connectionPoolService
-    ) {
-        super(knowledgeCacheService, connectionPoolService);
+            DSLContext context) {
+        super(knowledgeCacheService, context);
     }
     
     /**

@@ -377,7 +377,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         if (compositionRecord.getId() == null)
             return null;
         // conditional handling for persistent composition that do not have a event context
-        EventContextRecord eventContext = context.fetchOne(EVENT_CONTEXT, EVENT_CONTEXT.COMPOSITION_ID.eq(compositionRecord.getId()));
+        EventContextRecord eventContext = getContext().fetchOne(EVENT_CONTEXT, EVENT_CONTEXT.COMPOSITION_ID.eq(compositionRecord.getId()));
         if (eventContext == null) {
             return null;
         }
@@ -449,7 +449,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
      */
     @Override
     public void setCompositionRecord(Result<?> records) {
-        compositionRecord = context.newRecord(compositionRef);
+        compositionRecord = getContext().newRecord(compositionRef);
         try {
             compositionRecord.setId((UUID) records.getValue(0, F_COMPOSITION_ID));
             compositionRecord.setLanguage((String) records.getValue(0, F_LANGUAGE));

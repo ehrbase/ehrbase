@@ -35,11 +35,11 @@ import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
 import org.ehrbase.dao.access.interfaces.I_EhrAccess;
 import org.ehrbase.dao.access.interfaces.I_PartyIdentifiedAccess;
 import org.ehrbase.serialisation.CanonicalJson;
+import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -47,7 +47,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-@Transactional(propagation = Propagation.REQUIRED)
+@Transactional()
 public class EhrServiceImp extends BaseService implements EhrService {
     public static final String MODIFIABLE = "modifiable";
     public static final String QUERYABLE = "queryable";
@@ -57,9 +57,9 @@ public class EhrServiceImp extends BaseService implements EhrService {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    public EhrServiceImp(KnowledgeCacheService knowledgeCacheService, ConnectionPoolService connectionPoolService) {
+    public EhrServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context) {
 
-        super(knowledgeCacheService, connectionPoolService);
+        super(knowledgeCacheService, context);
     }
 
     @Override

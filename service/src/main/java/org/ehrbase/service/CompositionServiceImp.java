@@ -38,11 +38,11 @@ import org.ehrbase.dao.access.interfaces.I_EntryAccess;
 import org.ehrbase.dao.access.jooq.CompoXRefAccess;
 import org.ehrbase.serialisation.CanonicalJson;
 import org.ehrbase.serialisation.CanonicalXML;
+import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
@@ -52,7 +52,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-@Transactional(propagation = Propagation.REQUIRED)
+@Transactional()
 public class CompositionServiceImp extends BaseService implements CompositionService {
 
     public static final String DESCRIPTION = "description";
@@ -62,9 +62,9 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
     private final EhrService ehrService;
 
     @Autowired
-    public CompositionServiceImp(KnowledgeCacheService knowledgeCacheService, ConnectionPoolService connectionPoolService, ValidationService validationService, EhrService ehrService) {
+    public CompositionServiceImp(KnowledgeCacheService knowledgeCacheService, ValidationService validationService, EhrService ehrService, DSLContext context) {
 
-        super(knowledgeCacheService, connectionPoolService);
+        super(knowledgeCacheService, context);
         this.validationService = validationService;
         this.ehrService = ehrService;
     }

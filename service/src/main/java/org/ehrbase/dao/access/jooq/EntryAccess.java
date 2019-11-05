@@ -271,7 +271,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
 
         RawJson rawJson = new RawJson();
         record.setEntry(rawJson.marshal(composition));
-        containmentAccess = new ContainmentAccess(context, record.getId(), record.getArchetypeId(), rawJson.getLtreeMap(), true);
+        containmentAccess = new ContainmentAccess(getContext(), record.getId(), record.getArchetypeId(), rawJson.getLtreeMap(), true);
     }
 
     /**
@@ -286,7 +286,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
      */
     private void setFields(String templateId, Integer sequence, UUID compositionId, Composition composition) {
 
-        entryRecord = context.newRecord(ENTRY);
+        entryRecord = getContext().newRecord(ENTRY);
 
         entryRecord.setTemplateId(templateId);
         entryRecord.setSequence(sequence);
@@ -328,7 +328,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
         //------------- END --------------------
 
         //use jOOQ!
-        Record result = context
+        Record result = getContext()
                 .insertInto(ENTRY, ENTRY.SEQUENCE, ENTRY.COMPOSITION_ID, ENTRY.TEMPLATE_ID, ENTRY.ITEM_TYPE, ENTRY.ARCHETYPE_ID, ENTRY.CATEGORY, ENTRY.ENTRY_, ENTRY.SYS_TRANSACTION)
                 .values(DSL.val(getSequence()),
                         DSL.val(getCompositionId()),
@@ -377,7 +377,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
         //ignore the temporal field since it is maintained by an external trigger!
         entryRecord.changed(ENTRY.SYS_PERIOD, false);
 
-        UpdateQuery<?> updateQuery = context.updateQuery(ENTRY);
+        UpdateQuery<?> updateQuery = getContext().updateQuery(ENTRY);
         updateQuery.addValue(ENTRY.COMPOSITION_ID, getCompositionId());
         updateQuery.addValue(ENTRY.SEQUENCE, DSL.field(DSL.val(getSequence())));
         updateQuery.addValue(ENTRY.TEMPLATE_ID, DSL.field(DSL.val(getTemplateId())));

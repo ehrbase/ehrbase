@@ -30,6 +30,7 @@ import org.ehrbase.dao.access.interfaces.I_EntryAccess;
 import org.ehrbase.dao.access.interfaces.I_StoredQueryAccess;
 import org.ehrbase.dao.access.jooq.AqlQueryHandler;
 import org.ehrbase.dao.access.jooq.StoredQueryAccess;
+import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.exception.DataAccessException;
@@ -57,9 +58,9 @@ public class QueryServiceImp extends BaseService implements QueryService {
     private boolean usePgExtensions; //default
 
     @Autowired
-    public QueryServiceImp(KnowledgeCacheService knowledgeCacheService, ConnectionPoolService connectionPoolService) {
+    public QueryServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context) {
 
-        super(knowledgeCacheService, connectionPoolService);
+        super(knowledgeCacheService, context);
     }
 
     @Override
