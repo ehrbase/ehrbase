@@ -87,7 +87,7 @@ public abstract class DataAccess implements I_DomainAccess {
     @Override
     public String getServerNodeId() {
         if (serverNodeId == null || serverNodeId.length() == 0)
-            return "local.ethercis.com";
+            return "local.ehrbase.org";
         return serverNodeId;
     }
 

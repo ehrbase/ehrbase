@@ -28,6 +28,7 @@ import org.ehrbase.jooq.pg.tables.records.EhrRecord;
 import com.nedap.archie.rm.archetyped.Locatable;
 import com.nedap.archie.rm.ehr.EhrStatus;
 
+import java.sql.Timestamp;
 import java.util.Map;
 import java.util.UUID;
 
@@ -108,11 +109,12 @@ public interface I_EhrAccess extends I_SimpleCRUD<I_EhrAccess, UUID> {
      *
      * @param domainAccess SQL access
      * @param status       status UUID
+     * @param version      optional version, will assume latest if null
      * @return UUID of corresponding Ehr or null
      * @throws IllegalArgumentException if retrieving failed for given input
      */
-    static I_EhrAccess retrieveInstanceByStatus(I_DomainAccess domainAccess, UUID status) {
-        return EhrAccess.retrieveInstanceByStatus(domainAccess, status);
+    static I_EhrAccess retrieveInstanceByStatus(I_DomainAccess domainAccess, UUID status, int version) {
+        return EhrAccess.retrieveInstanceByStatus(domainAccess, status, version);
     }
 
     static boolean checkExist(I_DomainAccess domainAccess, UUID partyId) {
@@ -232,16 +234,31 @@ public interface I_EhrAccess extends I_SimpleCRUD<I_EhrAccess, UUID> {
 
     void setOtherDetails(Locatable otherDetails, String templateId);
 
-
     Locatable getOtherDetails();
-
-
-
-    Integer getLastVersionNumberOfStatus(I_DomainAccess domainAccess, UUID ehrStatusId);
 
     EhrRecord getEhrRecord();
 
     void setStatus(EhrStatus status);
 
+    /**
+     * Gets latest EHR_STATUS, which is attached to this EHR instance after retrieving it.
+     * @return Latest EHR_STATUS
+     */
     EhrStatus getStatus();
+
+    /**
+     * Get latest version number of EHR_STATUS by versioned object UID.
+     * @param domainAccess access
+     * @param ehrStatusId versioned object UID
+     * @return version number
+     */
+    Integer getLastVersionNumberOfStatus(I_DomainAccess domainAccess, UUID ehrStatusId);
+
+    /**
+     * Get a specific version number of the associated EHR_STATUS of this EhrAccess by timestamp.
+     * General idea behind the algorithm: 'what version was the top version at moment T?'
+     * @param time Timestamp
+     * @return version number
+     */
+    int getEhrStatusVersionFromTimeStamp(Timestamp time);
 }
