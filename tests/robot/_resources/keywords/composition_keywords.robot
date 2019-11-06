@@ -392,8 +392,6 @@ get composition by composition_uid
 
     # &{headers}=         Create Dictionary   Content-Type=application/xml   Prefer=return=representation
 
-        TRACE JIRA BUG    EHR-517    not-ready
-
     ${resp}=            Get Request         ${SUT}    /ehr/${ehr_id}/composition/${uid}    headers=${headers}
                         log to console      ${resp.content}
                         Set Test Variable   ${response}    ${resp}

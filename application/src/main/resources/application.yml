@@ -20,7 +20,12 @@ server:
 spring:
   profiles:
     active: local
-
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    type: org.apache.tomcat.jdbc.pool.DataSource
+    tomcat:
+      validationQuery: /* ping */ SELECT 1
+      testOnBorrow: true
 cache:
   config: '/ehcache.xml'
 flyway:

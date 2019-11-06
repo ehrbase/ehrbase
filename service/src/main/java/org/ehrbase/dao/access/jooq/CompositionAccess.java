@@ -263,8 +263,8 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
     /**
      * @throws IllegalArgumentException when no version in compliance with timestamp is available or when calculated version number is not greater 0
-     * @throws InternalServerException on problem with SQL statement or input
-     * @throws ObjectNotFoundException when no composition could be found with given input
+     * @throws InternalServerException  on problem with SQL statement or input
+     * @throws ObjectNotFoundException  when no composition could be found with given input
      */
     public static I_CompositionAccess retrieveInstanceByTimestamp(I_DomainAccess domainAccess, UUID compositionUid, Timestamp timeCommitted) {
 
@@ -377,7 +377,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         if (compositionRecord.getId() == null)
             return null;
         // conditional handling for persistent composition that do not have a event context
-        EventContextRecord eventContext = context.fetchOne(EVENT_CONTEXT, EVENT_CONTEXT.COMPOSITION_ID.eq(compositionRecord.getId()));
+        EventContextRecord eventContext = getContext().fetchOne(EVENT_CONTEXT, EVENT_CONTEXT.COMPOSITION_ID.eq(compositionRecord.getId()));
         if (eventContext == null) {
             return null;
         }
@@ -449,7 +449,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
      */
     @Override
     public void setCompositionRecord(Result<?> records) {
-        compositionRecord = context.newRecord(compositionRef);
+        compositionRecord = getContext().newRecord(compositionRef);
         try {
             compositionRecord.setId((UUID) records.getValue(0, F_COMPOSITION_ID));
             compositionRecord.setLanguage((String) records.getValue(0, F_LANGUAGE));
@@ -489,6 +489,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     /**
      * Commit composition (incl embedded audit).
      * The composition' contribution (incl. its audit) and the composition's own audit are assumed to be prepared correctly before executing this commitment.
+     *
      * @throws IllegalArgumentException when content couldn't be committed or requirements aren't met
      */
     @Override   // root commit
@@ -530,7 +531,6 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
             contextAccess.setCompositionId(compositionRecord.getId());
             contextAccess.commit(transactionTime);
         }
-
         return compositionRecord.getId();
     }
 

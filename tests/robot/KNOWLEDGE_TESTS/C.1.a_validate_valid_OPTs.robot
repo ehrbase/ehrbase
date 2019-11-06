@@ -41,7 +41,7 @@ Resource    ${CURDIR}${/}../_resources/keywords/template_opt1.4_keywords.robot
 Suite Setup  startup OPT SUT
 Suite Teardown  shutdown SUT
 
-Force Tags   OPT14
+Force Tags   OPT14    future
 
 
 

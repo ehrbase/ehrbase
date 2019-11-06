@@ -1,0 +1,3 @@
+{
+  "q": "select e/ehr_id, e/time_created, e/system_id from EHR e"
+}

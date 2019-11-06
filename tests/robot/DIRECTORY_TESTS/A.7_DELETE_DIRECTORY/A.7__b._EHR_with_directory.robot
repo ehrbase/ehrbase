@@ -24,7 +24,7 @@ Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags    refactor
+Force Tags
 
 
 
@@ -37,4 +37,4 @@ Alternative flow 1: delete directory from EHR with directory
 
     delete DIRECTORY (JSON)
 
-    check response: is positive - confirms deletion
+    validate DELETE response - 204 deleted

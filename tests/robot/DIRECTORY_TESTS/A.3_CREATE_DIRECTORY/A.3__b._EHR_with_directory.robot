@@ -25,7 +25,7 @@ Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags    refactor
+Force Tags
 
 
 
@@ -36,8 +36,8 @@ Alternative flow 1: create directory on EHR with directory
 
     create DIRECTORY (JSON)    subfolders_in_directory.json
 
-    check response: is positive
+    validate POST response - 201 created
 
     create DIRECTORY (JSON)    subfolders_in_directory.json
 
-    check response: is negative - DIRECTORY already exists
+    validate POST response - 409 folder already exists

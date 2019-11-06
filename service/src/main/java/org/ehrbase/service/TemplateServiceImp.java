@@ -18,6 +18,7 @@
 
 package org.ehrbase.service;
 
+import org.apache.xmlbeans.XmlOptions;
 import org.ehrbase.api.definitions.CompositionFormat;
 import org.ehrbase.api.definitions.OperationalTemplateFormat;
 import org.ehrbase.api.definitions.StructuredString;
@@ -30,7 +31,7 @@ import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.ehrbase.opt.OptVisitor;
-import org.apache.xmlbeans.XmlOptions;
+import org.jooq.DSLContext;
 import org.openehr.schemas.v1.OBJECTID;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.slf4j.Logger;
@@ -53,8 +54,8 @@ public class TemplateServiceImp extends BaseService implements TemplateService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    public TemplateServiceImp(KnowledgeCacheService knowledgeCacheService, ConnectionPoolService connectionPoolService) {
-        super(knowledgeCacheService, connectionPoolService);
+    public TemplateServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context) {
+        super(knowledgeCacheService, context);
         this.knowledgeCacheService = Objects.requireNonNull(knowledgeCacheService);
     }
 

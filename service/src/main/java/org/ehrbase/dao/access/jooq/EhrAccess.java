@@ -556,7 +556,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         Record record;
 
         try {
-            record = context.selectFrom(EHR_)
+            record = getContext().selectFrom(EHR_)
                     .where(EHR_.ID.eq(getId()))
                     .fetchOne();
         } catch (Exception e) { //possibly not unique for a party: this is not permitted!
@@ -571,7 +571,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
 
         ehrRecord = (EhrRecord) record;
         //retrieveInstanceByNamedSubject the corresponding status
-        statusRecord = context.fetchOne(STATUS, STATUS.EHR_ID.eq(ehrRecord.getId()));
+        statusRecord = getContext().fetchOne(STATUS, STATUS.EHR_ID.eq(ehrRecord.getId()));
         isNew = false;
 
         return getId();
@@ -625,7 +625,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
 
     @Override
     public UUID getStatusId() {
-        return context.fetchOne(STATUS, STATUS.EHR_ID.eq(ehrRecord.getId())).getId();
+        return getContext().fetchOne(STATUS, STATUS.EHR_ID.eq(ehrRecord.getId())).getId();
     }
 
     @Override

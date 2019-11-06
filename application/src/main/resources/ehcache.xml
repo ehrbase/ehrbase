@@ -34,7 +34,6 @@
         </expiry>
         <resources>
             <heap unit="entries">2000</heap>
-            <offheap unit="MB">200</offheap>
         </resources>
     </cache-template>
 </config>

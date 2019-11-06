@@ -1,0 +1,7 @@
+{
+  "q":"X SELECT e/ehr_id/value FROM EHR e",
+  "foo":"expected foo",
+  "name": 1337,
+  "columns":[1],
+  "rows":{}
+}

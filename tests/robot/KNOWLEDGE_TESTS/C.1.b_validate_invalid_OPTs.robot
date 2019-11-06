@@ -42,7 +42,7 @@ Resource    ${CURDIR}${/}../_resources/keywords/template_opt1.4_keywords.robot
 Suite Setup  startup OPT SUT
 Suite Teardown  shutdown SUT
 
-Force Tags   OPT14
+Force Tags   OPT14    future
 
 
 
@@ -55,8 +55,6 @@ Empty File
     empty_file/empty_file.opt
     empty_file/empty_xml.opt
     empty_file/empty_xml_template.opt
-
-    [Teardown]  TRACE JIRA BUG    EHR-331    not-ready
 
 
 Empty Template ID
