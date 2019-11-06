@@ -83,6 +83,8 @@ Empty Template ID
     removed_template_id/minimal_admin_invalid_3.opt
     removed_template_id/minimal_admin_invalid_4.opt
 
+    [Teardown]  TRACE JIRA BUG    EHR-332    not-ready
+
 
 Removed Mandatory Elements
     [Documentation]    Issues with missing elements.
@@ -94,6 +96,8 @@ Removed Mandatory Elements
     removed_mandatory_elements/minimal_action_removed_concept_value.opt
     removed_mandatory_elements/minimal_action_removed_description_and_concept.opt
     removed_mandatory_elements/minimal_action_removed_definition.opt
+
+    [Teardown]  TRACE JIRA BUG    EHR-333    not-ready
 
 
 Multiple Elements With Upper Bound Of 1
@@ -109,6 +113,8 @@ Multiple Elements With Upper Bound Of 1
     multiple_elements/minimal_action_concept_twice_2.opt
     multiple_elements/minimal_action_definition_twice.opt
 
+    [Teardown]  TRACE JIRA BUG    EHR-334    not-ready
+
 
 Alien Tags
     [Documentation]    Issues with unknown tags.
@@ -116,6 +122,8 @@ Alien Tags
 
     # NOTE: added tag <bullfrog>Minimal action</bullfrog>
     alien_tags/minimal_action.opt
+
+    [Teardown]  TRACE JIRA BUG    EHR-335    not-ready
 
 
 
@@ -142,11 +150,10 @@ upload invalid OPT
     get invalid OPT file  ${opt file}
     upload OPT file
 
-        TRACE JIRA BUG    EHR-331 - EHR-335    not-ready
-
     server rejected OPT with status code 400
     server response contains location of errors in OPT
 
 
 server response contains location of errors in OPT
     Log    This feature is not implemented yet.     level=WARN
+    Log    TODO: @WLAD implement response checks 

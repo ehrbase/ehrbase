@@ -42,10 +42,5 @@ Alternative flow 1 update an existing persistent COMPOSITION
     commit composition (JSON)    minimal_persistent/persistent_minimal.composition.extdatetime.xml
     check content of composition (JSON)
 
-
-
-        TRACE JIRA BUG    EHR-432    not-ready
-
-
     update composition (JSON)    minimal_persistent/persistent_minimal.composition.extdatetime.v2.xml
     check content of updated composition (JSON)

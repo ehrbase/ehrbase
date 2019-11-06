@@ -25,6 +25,100 @@ Library    OperatingSystem
 
 
 *** Keywords ***
+# oooo    oooo oooooooooooo oooooo   oooo oooooo   oooooo     oooo   .oooooo.   ooooooooo.   oooooooooo.    .oooooo..o
+# `888   .8P'  `888'     `8  `888.   .8'   `888.    `888.     .8'   d8P'  `Y8b  `888   `Y88. `888'   `Y8b  d8P'    `Y8
+#  888  d8'     888           `888. .8'     `888.   .8888.   .8'   888      888  888   .d88'  888      888 Y88bo.
+#  88888[       888oooo8       `888.8'       `888  .8'`888. .8'    888      888  888ooo88P'   888      888  `"Y8888o.
+#  888`88b.     888    "        `888'         `888.8'  `888.8'     888      888  888`88b.     888      888      `"Y88b
+#  888  `88b.   888       o      888           `888'    `888'      `88b    d88'  888  `88b.   888     d88' oo     .d8P
+# o888o  o888o o888ooooood8     o888o           `8'      `8'        `Y8bood8P'  o888o  o888o o888bood8P'   8""88888P'
+#
+# [ HIGH LEVEL KEYWORDS ]
+
+
+
+#     o8o                                           .o8   o8o   .o88o.  .o88o. 
+#     `"'                                          "888   `"'   888 `"  888 `" 
+#    oooo  .oooo.o  .ooooo.  ooo. .oo.         .oooo888  oooo  o888oo  o888oo  
+#    `888 d88(  "8 d88' `88b `888P"Y88b       d88' `888  `888   888     888    
+#     888 `"Y88b.  888   888  888   888       888   888   888   888     888    
+#     888 o.  )88b 888   888  888   888       888   888   888   888     888    
+#     888 8""888P' `Y8bod8P' o888o o888o      `Y8bod88P" o888o o888o   o888o   
+#     888                                                                      
+# .o. 88P                                                                      
+# `Y888P
+#
+# [ JSHON DIFF / COMPARE]         
+
+compare json-strings
+    [Arguments]         ${actual_json}  ${expected_json}  &{options}
+    [Documentation]     Compares two JSON strings.
+    ...
+    ...                 :actual_json: valid JSON string
+    ...                 :expected_json: valid JSON string
+    ...
+    ...                 :options: with defaults
+    ...                     - ignore_order=True,
+    ...                     - report_repetition=False,
+    ...                     - exclude_paths=None,
+    ...                     - exclude_regex_paths=None,
+    ...                     - ignore_string_type_changes=False,
+    ...                     - ignore_numeric_type_changes=False,
+    ...                     - ignore_type_subclasses=False,
+    ...                     - ignore_string_case=False,
+    ...                     - verbose_level=2
+    ...
+    ...                 Check DeedDiff reference for more details: https://deepdiff.readthedocs.io/en/latest/diff.html
+    
+                        compare jsons    ${actual_json}    ${expected_json}    &{options}
+
+
+compare json-files
+    [Arguments]         ${filepath_1}    ${filepath_2}    &{options}
+    [Documentation]     Compares two JSON files given by filepath.
+    ...
+    ...                 :filepath_: valid path to a JSON test-data-set
+    ...                 :options: same as in `compare json-strings`
+
+    ${actual}=          Get File    ${filepath_1}
+    ${expected}=        Get File    ${filepath_2}
+
+                        compare jsons    ${actual}    ${expected}    &{options}
+
+
+compare json-string with json-file
+    [Arguments]         ${json_string}    ${json_file_by_filepath}    &{options}
+    [Documentation]     Compares a JSON string with a JSON file given by filepath
+    ...
+    ...                 :json_string: valid JSON string
+    ...                 :json_file_by_filepath: valid path to JSON test-data-set
+    ...                 :options: same as in `compare json-strings`
+
+    ${actual}=          Set Variable    ${json_string}
+    ${expected}=        Get File    ${json_file_by_filepath}
+
+                        compare jsons    ${actual}    ${expected}    &{options}
+
+
+compare json-file with json-string
+    [Arguments]         ${json_file_by_filepath}    ${json_string}    &{options}
+    [Documentation]     Compares a JSON file given by filepath with a JSON string.
+    ...
+    ...                 :json_file_by_filepath: valid path to JSON test-data-set
+    ...                 :json_string: valid JSON string
+    ...                 :options: same as in `compare json-strings`
+
+    ${actual}=          Get File    ${json_file_by_filepath}
+    ${expected}=        Set Variable    ${json_string}
+
+                        compare jsons    ${actual}    ${expected}    &{options}
+
+
+
+
+
+
+
 get application version
     ${root}=  Parse Xml    ${POM_FILE}
     ${version}=  Get Element Text   ${root}  version
@@ -251,8 +345,24 @@ TRACE JIRA BUG
     ...             ${message}=Next step fails due to a bug!
     ...             ${loglevel}=ERROR
 
+    Log  DEPRECATION WARNING - @WLAD replace/update this keyword!
+    ...  level=WARN
+
                     Log    ${message} | JIRA: ${JIRA_BUG_ID}   level=${loglevel}
                     Set Tags    bug    ${JIRA_BUG_ID}
+                    Run Keyword If    '${not-ready}'=='not-ready'    Set Tags    not-ready
+
+
+TRACE GITHUB ISSUE
+    [Arguments]     ${GITHUB_ISSUE}
+    ...             ${not-ready}=
+    ...             ${message}=Next step fails due to a bug!
+    ...             ${loglevel}=ERROR
+
+                    Log    ${message} | <a href="https://github.com/ehrbase/project_management/issues/${GITHUB_ISSUE}">Github ISSUE #${GITHUB_ISSUE}</a>
+                    ...    level=${loglevel}    html=True
+
+                    Set Tags    bug    GITHUB ISSUE ${GITHUB_ISSUE}
                     Run Keyword If    '${not-ready}'=='not-ready'    Set Tags    not-ready
 
 

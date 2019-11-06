@@ -27,7 +27,7 @@ Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags    refactor
+Force Tags
 
 
 
@@ -42,7 +42,4 @@ Alternative flow 6: get directory at time on EHR with directory with multiple ve
 
     get DIRECTORY at time (JSON)    ${time_of_first_version}
 
-    check response: is positive - returns structure of directory
-                                  # TODO: make sure to check that it is the
-                                  #       FIRST VERSION of irectory
-                                  # maybe in separate keyword
+    validate GET-version@time response - 200 retrieved

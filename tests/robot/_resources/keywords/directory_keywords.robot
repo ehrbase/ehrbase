@@ -51,6 +51,14 @@ create DIRECTORY (JSON)
 
                         POST /ehr/ehr_id/directory    JSON
 
+                        Log  TO CLARIFY: @AXEL - version_uid format???  level=WARN
+                            # API spec: 8849182c-82ad-4088-a07f-48ead4180515::openEHRSys.example.com::1
+                            # version_uid has also to be part of `Location` and `ETag` in response headers
+
+                        Set Test Variable  ${folder_uid}  ${response.json()['uid']}
+                        Set Test Variable  ${version_uid}  ${response.json()['uid']}  #TODO: + ::openEHRSys.example.com::1
+                        Set Test Variable  ${preceding_version_uid}  ${version_uid}
+
                         capture point in time    of_first_version
 
 
@@ -120,6 +128,10 @@ update DIRECTORY (JSON)
 
                         PUT /ehr/ehr_id/directory    JSON
 
+                        Set Test Variable  ${folder_uid}  ${response.json()['uid']}
+                        Set Test Variable  ${version_uid}  ${response.json()['uid']}  #TODO: + ::openEHRSys.example.com::1
+                        Set Test Variable  ${preceding_version_uid}  ${version_uid}
+
                         capture point in time    of_updated_version
 
 
@@ -182,7 +194,7 @@ delete DIRECTORY - fake ehr_id (JSON)
     [Documentation]     EHR does not exist
                         Set Test Variable  ${KEYWORD NAME}  DELETE DIRECTORY (JSON)
 
-                        generate random version_uid
+                        generate fake version_uid
 
                         DELETE /ehr/ehr_id/directory    JSON
 
@@ -191,7 +203,7 @@ delete DIRECTORY - fake version_uid (JSON)
     [Documentation]     EHR exists but preceding_version_uid does not match
                         Set Test Variable  ${KEYWORD NAME}  DELETE DIRECTORY (JSON)
 
-                        generate random version_uid
+                        generate fake version_uid
 
                         DELETE /ehr/ehr_id/directory    JSON
 
@@ -212,16 +224,24 @@ delete DIRECTORY - fake version_uid (JSON)
   # NOTE: also used for HAS DIRECTORY/FOLDER/PATH cases
 
 get DIRECTORY (JSON)
-    # TODO: CLARIFY - would this be the same as GET VERSIONED DIRECTORY ???
+    [Documentation]     Retrieves the version of the directory FOLDER associated
+    ...                 with the EHR identified by `ehr_id`.
+    ...                 NOTE: this is "Get folder in directory version at time"
+    ...                 **without** URI parameter (which are optional)!
+    ...                 check the API here:
+    ...     https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#directory-directory-get-1
+
                         Set Test Variable  ${KEYWORD NAME}  GET DIRECTORY (JSON)
 
                         GET /ehr/ehr_id/directory    JSON
-
+            
 
 get DIRECTORY at time (JSON)
-    [Arguments]         ${time}
     [Documentation]     :time: valid time in the extended ISO8601 format
     ...                 e.g. 2015-01-20T19:30:22.765+01:00
+
+    [Arguments]         ${time}
+
                         Set Test Variable  ${KEYWORD NAME}  GET DIRECTORY AT TIME (JSON)
 
                         Set Test Variable    ${version_at_time}    ${time}
@@ -252,6 +272,10 @@ get FOLDER in DIRECTORY at time (JSON)
 
 
 get DIRECTORY at version (JSON)
+    [Documentation]     Retrieves a particular version of the directory FOLDER 
+    ...                 identified by `version_uid` and associated with the EHR
+    ...                 identified by `ehr_id`.
+
                         Set Test Variable  ${KEYWORD NAME}  GET DIRECTORY AT VERSION (JSON)
 
                         GET /ehr/ehr_id/directory/version_uid    JSON
@@ -282,8 +306,6 @@ get DIRECTORY - fake ehr_id (JSON)
 
                         GET /ehr/ehr_id/directory    JSON
 
-                        Should Be Equal As Strings   ${response.status_code}   404
-
 
 get DIRECTORY at time - fake ehr_id (JSON)
                         Set Test Variable  ${KEYWORD NAME}  GET DIRECTORY (JSON)
@@ -300,7 +322,7 @@ get FOLDER in DIRECTORY at time - fake ehr_id (JSON)
 get DIRECTORY at version - fake ehr_id (JSON)
                         Set Test Variable  ${KEYWORD NAME}  GET DIRECTORY AT VERSION (JSON)
 
-                        generate random version_uid
+                        generate fake version_uid
 
                         GET /ehr/ehr_id/directory/version_uid    JSON
 
@@ -308,7 +330,7 @@ get DIRECTORY at version - fake ehr_id (JSON)
 get DIRECTORY at version - fake version_uid (JSON)
                         Set Test Variable  ${KEYWORD NAME}  GET DIRECTORY AT VERSION (JSON)
 
-                        generate random version_uid
+                        generate fake version_uid
 
                         GET /ehr/ehr_id/directory/version_uid    JSON
 
@@ -319,12 +341,25 @@ get FOLDER in DIRECTORY at version - fake ehr_id (JSON)
                         GET /ehr/ehr_id/directory/version_uid?path    JSON
 
 
+
 get FOLDER in DIRECTORY at version - fake path (JSON)
                         Set Test Variable  ${KEYWORD NAME}  GET FOLDER AT VERSION (JSON)
 
                         generate random path
 
                         GET /ehr/ehr_id/directory/version_uid?path    JSON
+
+
+
+get FOLDER in DIRECTORY at version - fake version_uid/path (JSON)
+                        Set Test Variable  ${KEYWORD NAME}  GET FOLDER AT VERSION (JSON)
+
+                        generate fake version_uid
+                        
+                        generate random path
+
+                        GET /ehr/ehr_id/directory/version_uid?path    JSON
+
 
 
 # get SUBFOLDER in DIRECTORY at version - fake ehr_id (JSON)
@@ -368,12 +403,10 @@ POST /ehr/ehr_id/directory
     [Arguments]         ${format}
     [Documentation]     Executes HTTP method POST on /ehr/ehr_id/directory endpoint
     ...                 DEPENDENCY: the following variables in test level scope:
-    ...                 `${ehr_id}`, `${test_data}`
+    ...                 `\${ehr_id}`, `\${test_data}`
 
                         prepare directory request session    ${format}
                         ...                 Prefer=return=representation
-
-        TRACE JIRA BUG    NO-JIRA-ID    not-ready    message=endpoint not implemented
 
     ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/directory
                         ...                 data=${test_data}
@@ -388,11 +421,9 @@ POST /ehr/ehr_id/directory (w/o)
     [Documentation]     Executes HTTP method POST on /ehr/ehr_id/directory endpoint
     ...                 WITHOUT (w/o) Prefer=return=representation header
     ...                 DEPENDENCY: the following variables in test level scope:
-    ...                 `${ehr_id}`, `${test_data}`
+    ...                 `\${ehr_id}`, `\${test_data}`
 
                         prepare directory request session    ${format}
-
-        TRACE JIRA BUG    NO-JIRA-ID    not-ready    message=endpoint not implemented
 
     ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/directory
                         ...                 data=${test_data}
@@ -418,18 +449,19 @@ POST /ehr/ehr_id/directory (w/o)
 # [ HTTP PUT ]
 
 PUT /ehr/ehr_id/directory
-    [Arguments]         ${format}
     [Documentation]     Executes HTTP method PUT on /ehr/ehr_id/directory endpoint
     ...                 DEPENDENCY: the following variables in test level scope:
-    ...                 `${ehr_id}`, ${preceding_version_uid}, `${test_data}`
+    ...                 `\${ehr_id}`, \${preceding_version_uid}, `\${test_data}`
+
+    [Arguments]         ${format}
 
                         prepare directory request session    ${format}
                         ...                 Prefer=return=representation
                         ...                 If-Match=${preceding_version_uid}
 
-        TRACE JIRA BUG    NO-JIRA-ID    not-ready    message=endpoint not implemented
+        TRACE GITHUB ISSUE  NO-ISSUE-ID  not-ready  message=endpoint not implemented  loglevel=WARN
 
-    ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/directory
+    ${resp}=            Put Request        ${SUT}   /ehr/${ehr_id}/directory
                         ...                 data=${test_data}
                         ...                 headers=${headers}
 
@@ -437,19 +469,20 @@ PUT /ehr/ehr_id/directory
                         Output Debug Info:  PUT /ehr/ehr_id/directory
 
 
-PUT /ehr/ehr_id/directory (w/o)
-    [Arguments]         ${format}
+PUT /ehr/ehr_id/directory (w/o prefer)
     [Documentation]     Executes HTTP method PUT on /ehr/ehr_id/directory endpoint
     ...                 WITHOUT (w/o) Prefer=return=representation header
     ...                 DEPENDENCY: the following variables in test level scope:
-    ...                 `${ehr_id}`, ${preceding_version_uid}, `${test_data}`
+    ...                 `\${ehr_id}`, ${preceding_version_uid}, `\${test_data}`
+
+    [Arguments]         ${format}
 
                         prepare directory request session    ${format}
                         ...                 If-Match=${preceding_version_uid}
 
-        TRACE JIRA BUG    NO-JIRA-ID    not-ready    message=endpoint not implemented
+        TRACE GITHUB ISSUE  NO-ISSUE-ID  not-ready  message=endpoint not implemented  loglevel=WARN
 
-    ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/directory
+    ${resp}=            Put Request        ${SUT}   /ehr/${ehr_id}/directory
                         ...                 data=${test_data}
                         ...                 headers=${headers}
 
@@ -473,15 +506,16 @@ PUT /ehr/ehr_id/directory (w/o)
 # [ HTTP DELETE ]
 
 DELETE /ehr/ehr_id/directory
-    [Arguments]         ${format}
     [Documentation]     Executes HTTP method DELETE on /ehr/ehr_id/directory endpoint
     ...                 DEPENDENCY: the following variables in test level scope
-    ...                 `${ehr_id}`, `${preceding_version_uid}`
+    ...                 `\${ehr_id}`, `\${preceding_version_uid}`
+
+    [Arguments]         ${format}
 
                         prepare directory request session    ${format}
                         ...             If-Match=${preceding_version_uid}
 
-        TRACE JIRA BUG    NO-JIRA-ID    not-ready    message=endpoint not implemented
+        TRACE GITHUB ISSUE  NO-ISSUE-ID  not-ready  message=endpoint not implemented  loglevel=WARN
 
     ${resp}=            Delete Request      ${SUT}   /ehr/${ehr_id}/directory
                         ...                 headers=${headers}
@@ -506,14 +540,13 @@ DELETE /ehr/ehr_id/directory
 # [ HTTP GET ]
 
 GET /ehr/ehr_id/directory/version_uid
-    [Arguments]         ${format}
     [Documentation]     Executes HTTP method GET on given endpoint
     ...                 DEPENDENCY - variables in test level scope:
-    ...                 `${ehr_id}`, ${version_uid}
+    ...                 `\${ehr_id}`, `\${version_uid}`
+
+    [Arguments]         ${format}
 
                         prepare directory request session    ${format}
-
-        TRACE JIRA BUG    NO-JIRA-ID    not-ready    message=endpoint not implemented
 
     ${resp}=            Get Request         ${SUT}   /ehr/${ehr_id}/directory/${version_uid}
                         ...                 headers=${headers}
@@ -523,14 +556,13 @@ GET /ehr/ehr_id/directory/version_uid
 
 
 GET /ehr/ehr_id/directory/version_uid?path
-    [Arguments]         ${format}
     [Documentation]     Executes HTTP method GET on given endpoint
     ...                 DEPENDENCY - variables in test level scope:
-    ...                 `${ehr_id}`, `${version_uid}`, `${path}`
+    ...                 `\${ehr_id}`, `\${version_uid}`, `\${path}`
+
+    [Arguments]         ${format}
 
                         prepare directory request session    ${format}
-
-        TRACE JIRA BUG    NO-JIRA-ID    not-ready    message=endpoint not implemented
 
     ${resp}=            Get Request         ${SUT}   /ehr/${ehr_id}/directory/${version_uid}?path=${path}
                         ...                 headers=${headers}
@@ -540,14 +572,13 @@ GET /ehr/ehr_id/directory/version_uid?path
 
 
 GET /ehr/ehr_id/directory
-    [Arguments]         ${format}
     [Documentation]     Executes HTTP method GET on given endpoint
     ...                 DEPENDENCY - variable in test level scope:
-    ...                 `${ehr_id}`
+    ...                 `\${ehr_id}`
+
+    [Arguments]         ${format}
 
                         prepare directory request session    ${format}
-
-        TRACE JIRA BUG    NO-JIRA-ID    not-ready    message=endpoint not implemented
 
     ${resp}=            Get Request         ${SUT}   /ehr/ehr_id/directory
                         ...                 headers=${headers}
@@ -555,16 +586,21 @@ GET /ehr/ehr_id/directory
                         Set Test Variable   ${response}    ${resp}
                         Output Debug Info:  GET /ehr/ehr_id/directory
 
+        TRACE GITHUB ISSUE  41  not-ready
+        ...               message=DISCOVERED ERROR: Get folder in directory version at time fails
+
 
 GET /ehr/ehr_id/directory?version_at_time
-    [Arguments]         ${format}
     [Documentation]     Executes HTTP method GET on given endpoint
     ...                 DEPENDENCY - variables in test level scope:
-    ...                 `${ehr_id}`, `${version_at_time}`
+    ...                 `\${ehr_id}`, `\${version_at_time}`
+
+    [Arguments]         ${format}
 
                         prepare directory request session    ${format}
 
-        TRACE JIRA BUG    NO-JIRA-ID    not-ready    message=endpoint not implemented
+        TRACE GITHUB ISSUE  41  not-ready
+        ...               message=DISCOVERED ERROR: Get folder in directory version at time fails
 
     ${resp}=            Get Request         ${SUT}   /ehr/ehr_id/directory?version_at_time=${version_at_time}
                         ...                 headers=${headers}
@@ -574,14 +610,16 @@ GET /ehr/ehr_id/directory?version_at_time
 
 
 GET /ehr/ehr_id/directory?path
-    [Arguments]         ${format}
     [Documentation]     Executes HTTP method GET on given endpoint
     ...                 DEPENDENCY - variables in test level scope:
-    ...                 `${ehr_id}`, `${path}`
+    ...                 `\${ehr_id}`, `\${path}`
+
+    [Arguments]         ${format}
 
                         prepare directory request session    ${format}
 
-        TRACE JIRA BUG    NO-JIRA-ID    not-ready    message=endpoint not implemented
+        TRACE GITHUB ISSUE  41  not-ready
+        ...               message=DISCOVERED ERROR: Get folder in directory version at time fails
 
     ${resp}=            Get Request         ${SUT}   /ehr/ehr_id/directory?paht=${path}
                         ...                 headers=${headers}
@@ -591,14 +629,16 @@ GET /ehr/ehr_id/directory?path
 
 
 GET /ehr/ehr_id/directory?version_at_time&path
-    [Arguments]         ${format}
     [Documentation]     Executes HTTP method GET on given endpoint
     ...                 DEPENDENCY - variables in test level scope:
-    ...                 `${ehr_id}`, `${version_at_time}`, ${path}
+    ...                 `\${ehr_id}`, `\${version_at_time}`, \${path}
+
+    [Arguments]         ${format}
 
                         prepare directory request session    ${format}
 
-        TRACE JIRA BUG    NO-JIRA-ID    not-ready    message=endpoint not implemented
+        TRACE GITHUB ISSUE  41  not-ready
+        ...               message=DISCOVERED ERROR: Get folder in directory version at time fails
 
     ${resp}=            Get Request         ${SUT}   /ehr/ehr_id/directory?version_at_time=${version_at_time}&paht=${path}
                         ...                 headers=${headers}
@@ -620,55 +660,335 @@ GET /ehr/ehr_id/directory?version_at_time&path
 #  888  `88b.   888       o oo     .d8P  888         `88b    d88'  8       `888  oo     .d8P  888       o oo     .d8P
 # o888o  o888o o888ooooood8 8""88888P'  o888o         `Y8bood8P'  o8o        `8  8""88888P'  o888ooooood8 8""88888P'
 #
-# [ POSITIVE RESPONSE CHECKS ]
+# [ RESPONSE VALIDATION ]
 
-check response: is positive
-    Fail    msg=brake it till you make it!
+# POST POST POST POST
+#/////////////////////
 
+validate POST response - 201 created
+    [Documentation]     CASE: new directory was created.
+    ...                 Request was send with `Prefer=return=representation`.
 
-check response: is positive - returns true
-    Fail    msg=brake it till you make it!
+                        Should Be Equal As Strings    ${response.status_code}    201
+                        #TODO:  Should Be Equal       ${response.json()['status']}    OK / Created
 
+                        Dictionary Should Contain Key    ${response.json()}    uid
+                        Dictionary Should Contain Key    ${response.json()}    folder
+                        Dictionary Should Contain Item    ${response.json()['folder']}    _type  FOLDER 
 
-check response: is positve - ehr_id has directory
-    Fail    msg=brake it till you make it!
+                        Dictionary Should Contain Key    ${response.headers}    Location
+                        #TODO: value of Location as per API spec:
+                        #      Location: {baseUrl}/ehr/$ehr_id/directory/version_uid
+                        #      where the last part is version_uid
+                        #      version_uid format: 8849182c-82ad-4088-a07f-48ead4180515::openEHRSys.example.com::1
+                        Dictionary Should Contain Key    ${response.headers}    ETag
 
+        TRACE GITHUB ISSUE  37  not-ready  message=Response header ETag does not match expected value
 
-check response: is positive - returns structure of directory
-    # TODO: may need more variants of this kw (e.g. first/latest version etc.)
-
-    Fail    msg=brake it till you make it!
-
-
-check response: is positive - returns versioned folder with two versions
-    Fail    msg=brake it till you make it!
-
-
-
-# [ NEGATIVE RESPONSE CHECKS ]
-
-check response: is negative
-    Fail    msg=brake it till you make it!
+                        Dictionary Should Contain Item    ${response.headers}    ETag  ${version_uid}
 
 
-check response: is negative - EHR does not exist
-    Fail    msg=brake it till you make it!
+validate POST response (w/o) - 201 created
+    [Documentation]     CASE: new directory was created.
+    ...                 NO `Prefer` header was send thus no content in body!
+
+                        Should Be Equal As Strings    ${response.status_code}    201
+
+                        Log    ${response.json()['status']}
+                        #TODO:  Should Be Equal          ${response.json()['status']}    OK / Created
+                        Dictionary Should Contain Key    ${response.headers}    Location
+                        Dictionary Should Contain Key    ${response.headers}    ETag
+                        # TODO: Dictionary Should Contain Item    ${response.headers}    ETag  ${version_uid}
 
 
-check response: is negative - DIRECTORY already exists
-    Fail    msg=brake it till you make it!
+validate POST response - 400 invalid ehr_id
+    [Documentation]     CASE: invalid `ehr_id`
+
+                        Should Be Equal As Strings    ${response.status_code}    400
+
+                        #TODO:  Should Be Equal    ${response.json()['status']}    Bad Request
+                        #TODO:  Should Be Equal    ${response.json()['error']} ...
+
+                        # NOTE: high risk of false positive!!!
+                        Log  VERIFY 400 is correct here!  level=WARN    #TODO: remove when code/tests matures
 
 
-check response: is negative - DIRECTORY does not exist
-    Fail    msg=brake it till you make it!
+validate POST response - 400 invalid content
+    [Documentation]     CASE: invalid content - e.g. could not be converted to a valid directory FOLDER.
+
+                        Should Be Equal As Strings    ${response.status_code}    400
+
+                        #TODO:  Should Be Equal    ${response.json()['status']}    Bad Request
+                        #TODO:  Should Be Equal    ${response.json()['error']} ...
+
+                        Log  VERIFY 400 is correct here!  level=WARN    #TODO: remove when code/tests matures
 
 
-check response: is negative - VERSIONED DIRECTORY does not exist
-    Fail    msg=brake it till you make it!
+validate POST response - 404 unknown ehr_id
+    [Documentation]     CASE: EHR with `ehr_id` does not exist.
+
+                        Should Be Equal As Strings    ${response.status_code}    404
+
+                        Should Be Equal    ${response.json()['status']}    Not Found
+                        Should Be Equal    ${response.json()['error']}    EHR with id ${ehr_id} not found.
 
 
-check response: is positive - confirms deletion
-    Fail    msg=brake it till you make it!
+validate POST response - 409 folder already exists
+    [Documentation]     CASE: EHR with `ehr_id` already has a directory FOLDER.
+    ...                 NOTE: @PABLO this is not (yet) in the SPEC
+
+        TRACE GITHUB ISSUE  NO-ISSUI-ID  not-ready
+
+                        Should Be Equal As Strings    ${response.status_code}    409
+
+                        #TODO:  Should Be Equal    ${response.json()['status']}    Not Found
+                        #TODO:  Should Be Equal    ${response.json()['error']}    EHR with id ${ehr_id} already has a FOLDER.
+
+
+
+# PUT PUT PUT PUT PUT
+#////////////////////
+
+validate PUT response - 200 updated
+    [Documentation]     CASE: directory successfully updated.
+    ...                 Updated resource is returned if `Prefer` header is set to `return=representation`.
+
+                        Should Be Equal As Strings    ${response.status_code}    200
+
+                        #TODO:  Should Be Equal    ${response.json()['status']}    OK / Updated
+                        #TODO:  Should Be Equal    ${response.json()['message']} ...
+
+
+validate PUT response - 204 updated
+    [Documentation]     CASE: directory was updated AND `Prefer` header is missing
+    ...                 or `Prefer` header is set to `return=minimal`.
+
+                        Should Be Equal As Strings    ${response.status_code}    204
+
+                        #TODO:  Should Be Equal    ${response.json()['status']}    OK / Updated
+                        #TODO:  Should Be Equal    ${response.json()['message']} ...
+
+
+validate PUT response - 400 invalid ehr_id
+    [Documentation]     CASE: invalid `ehr_id`.
+
+                        Should Be Equal As Strings    ${response.status_code}    400
+
+                        #TODO:  Should Be Equal    ${response.json()['status']}    Bad Request
+                        #TODO:  Should Be Equal    ${response.json()['error']} ...
+
+                        # NOTE: high risk of false positive!!!
+                        Log  VERIFY 400 is correct here!  level=WARN    #TODO: remove when code/tests matures
+
+
+validate PUT response - 400 invalid content
+    [Documentation]     CASE:  invalid content - e.g. could not be converted to a valid directory FOLDER.
+                        Should Be Equal As Strings    ${response.status_code}    400
+
+                        #TODO:  Should Be Equal    ${response.json()['status']}    Bad Request
+                        #TODO:  Should Be Equal    ${response.json()['error']} ...
+
+                        # NOTE: high risk of false positive!!!
+                        Log  VERIFY 400 is correct here!  level=WARN    #TODO: remove when code/tests matures
+
+
+validate PUT response - 404 unknown ehr_id
+    [Documentation]     CASE: EHR with `ehr_id` does not exist.
+
+                        Should Be Equal As Strings    ${response.status_code}    404
+
+                        #TODO:  Should Be Equal    ${response.json()['status']}    Not Found
+                        #TODO:  Should Be Equal    ${response.json()['error']} ...
+
+
+validate PUT response - 412 precondition failed
+    [Documentation]     CASE: `If-Match` request header doesn’t match the latest version.
+    ...                 Returns also latest `version_uid` in the `Location` and `ETag` headers.
+
+                        Should Be Equal As Strings    ${response.status_code}    412
+
+                        #TODO:  Should Be Equal    ${response.json()['status']}    Bad Request
+                        #TODO:  Should Be Equal    ${response.json()['error']} ...
+
+                        Dictionary Should Contain Key    ${response.headers}    Location
+                        Dictionary Should Contain Key    ${response.headers}    ETag
+                        #TODO: Dictionary Should Contain Item    ${response.headers}    ETag  ${version_uid}
+
+
+
+# DELETE DELETE DELETE
+#/////////////////////
+
+validate DELETE response - 204 deleted
+    [Documentation]     CASE: directory was deleted.
+
+                        Should Be Equal As Strings    ${response.status_code}    204
+
+                        #TODO:  Should Be Equal    ${response.json()['status']}    Deleted
+                        #TODO:  Should Be Equal    ${response.json()['message']} ...
+
+
+validate DELETE response - 400 invalid ehr_id
+    [Documentation]     CASE: invalid `ehr_id`, headers, etc.
+
+                        Should Be Equal As Strings    ${response.status_code}    400
+
+                        #TODO:  Should Be Equal    ${response.json()['status']}    Bad Request
+                        #TODO:  Should Be Equal    ${response.json()['error']} ...
+
+                        # NOTE: high risk of false positive!!!
+                        Log  VERIFY 400 is correct here!  level=WARN    #TODO: remove when code/tests matures
+
+
+validate DELETE response - 404 unknown ehr_id
+    [Documentation]     CASE: EHR with `ehr_id` does not exist.
+
+                        Should Be Equal As Strings    ${response.status_code}    404
+
+                        #TODO:  Should Be Equal    ${response.json()['status']}    Not Found
+                        #TODO:  Should Be Equal    ${response.json()['error']} ...
+
+
+validate DELETE response - 412 precondition failed
+    [Documentation]     CASE: `If-Match` request header doesn’t match the latest version.
+    ...                 Returns also latest `version_uid` in the `Location` and `ETag` headers.
+
+                        Should Be Equal As Strings    ${response.status_code}    412
+
+                        #TODO:  Should Be Equal    ${response.json()['status']}    Bad Request
+                        #TODO:  Should Be Equal    ${response.json()['error']} ...
+
+
+
+# GET GET GET GET GET
+#////////////////////
+
+validate GET-@version response - 200 retrieved
+    [Documentation]     CASE: requested directory FOLDER is successfully retrieved.
+
+                        Should Be Equal As Strings    ${response.status_code}    200
+
+                        #TODO:  Should Be Equal    ${response.json()['status']}    OK / Retrieved
+
+                        Dictionary Should Contain Key    ${response.json()}    uid
+                        Dictionary Should Contain Key    ${response.json()}    folder
+                        Dictionary Should Contain Item    ${response.json()['folder']}    _type  FOLDER
+
+
+validate GET-@version response - 400 bad request
+    [Documentation]     CASE: invalid `ehr_id`, `version_uid`, `path`, headers, etc.
+
+                        Should Be Equal As Strings    ${response.status_code}    400
+
+                        #TODO:  Should Be Equal    ${response.json()['status']}    Bad Request
+                        #TODO:  Should Be Equal    ${response.json()['error']} ...
+
+                        # NOTE: high risk of false positive!!!
+                        Log  VERIFY 400 is correct here!  level=WARN    #TODO: remove when code/tests matures
+
+
+validate GET-@version response - 404 unknown ehr_id
+    [Documentation]     CASE: EHR with `ehr_id` does not exist.
+
+                        Should Be Equal As Strings    ${response.status_code}    404
+
+                        Should Be Equal    ${response.json()['status']}    Not Found
+                        Should Be Equal    ${response.json()['error']}    EHR with id ${ehr_id} not found.
+
+
+validate GET-@version response - 404 unknown version_uid
+    [Documentation]     CASE: directory with `version_uid` does not exist.
+
+                        Should Be Equal As Strings    ${response.status_code}    404
+
+                        Should Be Equal    ${response.json()['status']}    Not Found
+                        Should Be Equal    ${response.json()['error']}    Folder with id ${folder_uid} could not be found
+
+
+validate GET-@version response - 404 unknown path
+    [Documentation]     CASE: `path` does not exist within the directory.
+
+                        Should Be Equal As Strings    ${response.status_code}    404
+
+                        Should Be Equal               ${response.json()['status']}    Not Found
+                        #TODO: Should Be Equal    ${response.json()['error']}    Path '${path}' could not be found.
+
+
+
+# GET2 GET2 GET2 GET2
+#////////////////////
+
+validate GET response - 200 retrieved
+    [Documentation]     CASE: requested directory FOLDER is successfully retrieved.
+    ...                 NOTE: this check is for `GET /ehr/ehr_id/directory` endpoint
+    ...                 without the optional URI parameters `version_at_time` and `path`.
+
+                        Should Be Equal As Strings    ${response.status_code}    200
+
+                        #TODO:  Should Be Equal    ${response.json()['status']}    OK / Retrieved
+
+                        Dictionary Should Contain Key    ${response.json()}    uid
+                        Dictionary Should Contain Key    ${response.json()}    folder
+                        Dictionary Should Contain Item    ${response.json()['folder']}    _type  FOLDER
+
+
+validate GET-version@time response - 200 retrieved
+    [Documentation]     CASE: requested directory FOLDER is successfully retrieved.
+
+                        Should Be Equal As Strings    ${response.status_code}    200
+
+                        #TODO:  Should Be Equal    ${response.json()['status']}    OK / Retrieved
+
+                        Dictionary Should Contain Key    ${response.json()}    uid
+                        Dictionary Should Contain Key    ${response.json()}    folder
+                        Dictionary Should Contain Item    ${response.json()['folder']}    _type  FOLDER
+
+
+validate GET-version@time response - 204 folder has been deleted
+    [Documentation]     CASE: directory at version_at_time time has been deleted.
+
+                        Should Be Equal As Strings    ${response.status_code}    204
+
+                        #TODO:  Should Be Equal    ${response.json()['status']}    Detled
+
+
+validate GET-version@time response - 400 bad request
+    [Documentation]     CASE: invalid `ehr_id`, `version_at_time`, `path`, headers, etc.
+
+                        Should Be Equal As Strings    ${response.status_code}    400
+
+                        #TODO:  Should Be Equal    ${response.json()['status']}    Bad Request
+                        #TODO:  Should Be Equal    ${response.json()['error']} ...
+
+                        # NOTE: high risk of false positive!!!
+                        Log  VERIFY 400 is correct here!  level=WARN    #TODO: remove when code/tests matures
+
+
+validate GET-version@time response - 404 unknown ehr_id
+    [Documentation]     CASE: EHR with `ehr_id` does not exist.
+
+                        Should Be Equal As Strings    ${response.status_code}    404
+
+                        Should Be Equal    ${response.json()['status']}    Not Found
+                        Should Be Equal    ${response.json()['error']}    EHR with id ${ehr_id} not found.
+
+
+validate GET-version@time response - 404 unknown folder-version@time
+    [Documentation]     CASE: directory does not exists at `version_at_time` time.
+
+                        Should Be Equal As Strings    ${response.status_code}    404
+
+                        #TODO:  Should Be Equal    ${response.json()['status']}    Not Found
+                        #TODO:  Should Be Equal    ${response.json()['error']} ...
+
+
+validate GET-version@time response - 404 unknown path
+    [Documentation]     CASE: `path` does not exist within the directory.
+
+                        Should Be Equal As Strings    ${response.status_code}    404
+
+                        #TODO:  Should Be Equal    ${response.json()['status']}    Not Found
+                        #TODO:  Should Be Equal    ${response.json()['error']} ...
 
 
 
@@ -747,28 +1067,36 @@ generate random path
                         Set Test Variable    ${path}    ${path}
 
 
+generate fake version_uid
+    [Documentation]     Generates a random `folder_uid`, `version_uid` and exposes it
+    ...                 (also as `preceding_version_uid`) to test level scope
+
+    ${uid}=             Evaluate    str(uuid.uuid4())    uuid
+                        Set Test Variable    ${folder_uid}    ${uid}
+                        Set Test Variable    ${version_uid}    ${uid}
+                        Set Test Variable    ${preceding_version_uid}    ${version_uid}
 
 
 
 # [ HELPERS ]
 extract version_uid from response (JSON)
-        Fail    msg=brake it till you make it!
+                        Set Test Variable    ${version_uid}    ${response.json()['uid']}
 
 
 load valid dir test-data-set
     [Arguments]        ${valid_test_data_set}
 
-    ${file}=            Get File            ${VALID DIR DATA SETS}/${valid_test_data_set}
+    ${file}=            Get File    ${VALID DIR DATA SETS}/${valid_test_data_set}
 
-                        Set Test Variable   ${test_data}    ${file}
+                        Set Test Variable    ${test_data}    ${file}
 
 
 load invalid dir test-data-set
     [Arguments]        ${invalid_test_data_set}
 
-    ${file}=            Get File            ${INVALID DIR DATA SETS}/${invalid_test_data_set}
+    ${file}=            Get File    ${INVALID DIR DATA SETS}/${invalid_test_data_set}
 
-                        Set Test Variable   ${test_data}    ${file}
+                        Set Test Variable    ${test_data}    ${file}
 
 
 
@@ -850,6 +1178,42 @@ VARIANTS x2 (JSON / XML)
   has SUBFOLDER in DIRECTORY at version
 
   has SUBFOLDER in DIRECTORY at time
+
+
+  # RESPONSES
+  validate POST response - 201 created
+  validate POST response - 400 invalid ehr_id
+  validate POST response - 400 invalid content
+  validate POST response - 404 unknown ehr_id
+  validate POST response - 409 folder already exists
+
+  validate PUT response - 200 updated
+  validate PUT response - 204 updated
+  validate PUT response - 400 invalid ehr_id
+  validate PUT response - 400 invalid content
+  validate PUT response - 404 unknown ehr_id
+  validate PUT response - 412 precondition failed
+  
+  validate DELETE response - 204 deleted
+  validate DELETE response - 400 invalid ehr_id
+  validate DELETE response - 404 unknown ehr_id
+  validate DELETE response - 412 precondition failed
+
+  validate GET response - 200 retrieved
+  validate GET response - 404 unknown ehr_id
+  validate GET response - 404 unknown version_uid
+  validate GET response - 404 unknown path
+
+  validate GET @version response - 200 retrieved
+  validate GET @version response - 404 unknown ehr_id
+  validate GET @version response - 404 unknown version_uid
+  validate GET @version response - 404 unknown path
+
+  validate GET version@time response - 200 retrieved
+  validate GET version@time response - 204 folder has been deleted
+  validate GET version@time response - 404 unknown ehr_id
+  validate GET version@time response - 404 unknown folder-version@time
+  validate GET version@time response - 404 unknown path
 
 
 # *** keywords ***

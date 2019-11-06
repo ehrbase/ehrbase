@@ -24,7 +24,7 @@ Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags    refactor
+Force Tags
 
 
 
@@ -37,4 +37,4 @@ Alternative flow 1: has directory on existing EHR with directory
 
     get DIRECTORY (JSON)
 
-    check response: is positive    # TODO: implement some data checks
+    validate GET response - 200 retrieved

@@ -33,7 +33,7 @@ Resource    ${CURDIR}${/}../_resources/keywords/template_opt1.4_keywords.robot
 # Test Setup  start openehr server
 # Test Teardown  restore clean SUT state
 
-Force Tags      AQL
+Force Tags      AQL    obsolete
 
 
 
@@ -43,7 +43,6 @@ Establish Preconditions: load valid OPTs into SUT
 
     minimal/minimal_action.opt
     minimal/minimal_observation.opt
-    minimal/minimal_evaluation.opt
     minimal/minimal_evaluation.opt
     minimal/minimal_admin.opt
     minimal/minimal_instruction.opt

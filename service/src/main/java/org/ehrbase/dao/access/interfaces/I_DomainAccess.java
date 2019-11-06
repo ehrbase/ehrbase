@@ -29,7 +29,6 @@ import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 
 import java.sql.Connection;
-import java.util.Map;
 
 /**
  * Helper to hold SQL context and knowledge cache reference
@@ -64,9 +63,6 @@ public interface I_DomainAccess {
     String KEY_SET_MAX_PREPARED_STATEMENTS = "set_max_prepared_statements";
     String KEY_INTROSPECT_CACHE = "introspect";
 
-    static I_DomainAccess getInstance(Map<String, Object> properties) {
-        return new ServiceDataAccess(properties);
-    }
 
     static I_DomainAccess getInstance(DataAccess dataAccess) {
         return new ServiceDataAccess(dataAccess);

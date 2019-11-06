@@ -25,7 +25,7 @@ Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags    refactor
+Force Tags
 
 
 
@@ -36,4 +36,4 @@ Main flow: create directory on empty EHR
 
     create DIRECTORY (JSON)    empty_directory.json
 
-    check response: is positve - ehr_id has directory
+    validate POST response - 201 created

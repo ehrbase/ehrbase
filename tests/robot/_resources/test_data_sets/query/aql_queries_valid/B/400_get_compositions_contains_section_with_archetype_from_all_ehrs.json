@@ -1,0 +1,3 @@
+{
+  "q": "SELECT c FROM COMPOSITION c CONTAINS SECTION s [openEHR-EHR-SECTION.test_all_types.v1]"
+}

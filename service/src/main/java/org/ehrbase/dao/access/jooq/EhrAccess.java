@@ -448,7 +448,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
 
         if (isNew && statusRecord != null) {
             //UUID uuid = UUID.randomUUID();
-            InsertQuery<?> insertQuery = context.insertQuery(STATUS);
+            InsertQuery<?> insertQuery = getContext().insertQuery(STATUS);
             insertQuery.addValue(STATUS.ID, statusRecord.getId());
             insertQuery.addValue(STATUS.EHR_ID, ehrRecord.getId());
             insertQuery.addValue(STATUS.IS_QUERYABLE, statusRecord.getIsQueryable());
@@ -506,7 +506,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
 
         if (force || statusRecord.changed()) {
 
-            UpdateQuery<?> updateQuery = context.updateQuery(STATUS);
+            UpdateQuery<?> updateQuery = getContext().updateQuery(STATUS);
             updateQuery.addValue(STATUS.EHR_ID, ehrRecord.getId());
             updateQuery.addValue(STATUS.IS_QUERYABLE, statusRecord.getIsQueryable());
             updateQuery.addValue(STATUS.IS_MODIFIABLE, statusRecord.getIsModifiable());
@@ -580,7 +580,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         Record record;
 
         try {
-            record = context.selectFrom(EHR_)
+            record = getContext().selectFrom(EHR_)
                     .where(EHR_.ID.eq(getId()))
                     .fetchOne();
         } catch (Exception e) { //possibly not unique for a party: this is not permitted!
@@ -595,7 +595,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
 
         ehrRecord = (EhrRecord) record;
         //retrieveInstanceByNamedSubject the corresponding status
-        statusRecord = context.fetchOne(STATUS, STATUS.EHR_ID.eq(ehrRecord.getId()));
+        statusRecord = getContext().fetchOne(STATUS, STATUS.EHR_ID.eq(ehrRecord.getId()));
         isNew = false;
 
         return getId();
@@ -649,7 +649,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
 
     @Override
     public UUID getStatusId() {
-        return context.fetchOne(STATUS, STATUS.EHR_ID.eq(ehrRecord.getId())).getId();
+        return getContext().fetchOne(STATUS, STATUS.EHR_ID.eq(ehrRecord.getId())).getId();
     }
 
     @Override

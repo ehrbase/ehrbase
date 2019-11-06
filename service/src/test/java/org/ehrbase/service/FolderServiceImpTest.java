@@ -1,11 +1,11 @@
 package org.ehrbase.service;
 
+import com.nedap.archie.rm.directory.Folder;
+import org.apache.commons.io.IOUtils;
 import org.ehrbase.api.definitions.StructuredString;
 import org.ehrbase.api.definitions.StructuredStringFormat;
-import org.ehrbase.test_data.folder.FolderTestDataCanonicalJson;
-import com.nedap.archie.rm.directory.Folder;
 import org.ehrbase.serialisation.CanonicalJson;
-import org.apache.commons.io.IOUtils;
+import org.ehrbase.test_data.folder.FolderTestDataCanonicalJson;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;

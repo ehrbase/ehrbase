@@ -25,8 +25,6 @@ import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.service.IntrospectService;
 import org.jooq.DSLContext;
 
-import java.util.Map;
-
 /**
  * A simple wrapper to encapsulate resource accesses from services
  * ETHERCIS Project ehrservice
@@ -34,9 +32,6 @@ import java.util.Map;
  */
 public class ServiceDataAccess extends DataAccess {
 
-    public ServiceDataAccess(Map<String, Object> properties) {
-        super(properties);
-    }
 
     public ServiceDataAccess(DSLContext context, I_KnowledgeCache knowledgeManager, IntrospectService introspectService) {
         super(context, knowledgeManager, introspectService);
