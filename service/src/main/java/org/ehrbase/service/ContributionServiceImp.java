@@ -39,16 +39,19 @@ import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.jooq.AuditDetailsAccess;
+import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 
 @Service
+@Transactional
 public class ContributionServiceImp extends BaseService implements ContributionService {
     // the version list in a contribution adds an type tag to each item, so the specific object is distinguishable
     public static final String TYPE_COMPOSITION = "COMPOSITION";
@@ -64,8 +67,8 @@ public class ContributionServiceImp extends BaseService implements ContributionS
     }
 
     @Autowired
-    public ContributionServiceImp(KnowledgeCacheService knowledgeCacheService, ConnectionPoolService connectionPoolService, CompositionService compositionService, EhrService ehrService) {
-        super(knowledgeCacheService, connectionPoolService);
+    public ContributionServiceImp(KnowledgeCacheService knowledgeCacheService, CompositionService compositionService, EhrService ehrService, DSLContext context) {
+        super(knowledgeCacheService, context);
         this.compositionService = compositionService;
         this.ehrService = ehrService;
     }
