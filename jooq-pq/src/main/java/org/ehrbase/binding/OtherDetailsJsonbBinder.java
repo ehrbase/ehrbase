@@ -31,7 +31,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Binding <T> = Object (unknown DB type), and <U> = ItemStructure (user type) for "other_details" column (of STATUS table).
+ * Binding <T> = Object (unknown DB type), and <U> = {@link ItemStructure} (user type) for "other_details" column (of STATUS table).
  * See pom.xml of this module for further configuration, like what columns are linked with this binding.
  * Source: https://www.jooq.org/doc/3.12/manual/code-generation/custom-data-type-bindings/
  */
