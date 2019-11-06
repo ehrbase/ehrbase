@@ -50,4 +50,4 @@ Alternative flow 1 delete persistent COMPOSITION
 
     get deleted composition
 
-    [Teardown]    restart SUT
+    # [Teardown]    restart SUT

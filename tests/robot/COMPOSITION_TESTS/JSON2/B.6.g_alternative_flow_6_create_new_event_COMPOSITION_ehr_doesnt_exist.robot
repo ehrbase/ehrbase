@@ -41,4 +41,4 @@ Alternative flow 6 create new event COMPOSITION EHR doesnt exist
 
     commit composition - no referenced EHR    nested/nested.composition.extdatetimes.xml
 
-    [Teardown]    restart SUT
+    # [Teardown]    restart SUT
