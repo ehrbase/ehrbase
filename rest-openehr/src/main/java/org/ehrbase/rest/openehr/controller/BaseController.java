@@ -193,7 +193,8 @@ public abstract class BaseController {
         if (!versionUid.contains("::"))
             return 0; //current version
         // extract the version from string of format "$UUID::$SYSTEM::$VERSION"
-        return Integer.parseInt(versionUid.split("::")[2]);
+        // via making a substring starting at last occurrence of "::" + 2
+        return Integer.valueOf(versionUid.substring(versionUid.lastIndexOf("::") + 2));
     }
 
     /*
