@@ -64,3 +64,5 @@ Alternative flow 4: commit CONTRIBUTIONS versioning event COMPOSITION
     commit CONTRIBUTION - with preceding_version_uid (JSON)    minimal/minimal_admin.contribution.modification.complete.json
 
     check response: is positive - contribution has new version
+
+    [Teardown]    restart SUT

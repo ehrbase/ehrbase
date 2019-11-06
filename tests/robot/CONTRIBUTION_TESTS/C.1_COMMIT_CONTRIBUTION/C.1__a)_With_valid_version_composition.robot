@@ -61,3 +61,5 @@ Main flow: successfully commit CONTRIBUTION with single valid VERSION<COMPOSITIO
     # ??? # check content of committed CONTRIBUTION
             # retrieve EHR by ehr_id
             # check content of retrieved EHR
+
+    [Teardown]    restart SUT

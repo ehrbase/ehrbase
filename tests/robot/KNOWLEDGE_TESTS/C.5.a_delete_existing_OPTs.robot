@@ -23,7 +23,7 @@ Documentation   OPT integration tests
 Resource    ${CURDIR}${/}../_resources/suite_settings.robot
 Resource    ${CURDIR}${/}../_resources/keywords/template_opt1.4_keywords.robot
 
-Force Tags   OPT14    not-implemented
+Force Tags   OPT14    TODO
 
 
 *** Variables ***
