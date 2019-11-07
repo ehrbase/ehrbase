@@ -375,7 +375,7 @@ commands:
             command: |
                 cd tests
                 robot --include << parameters.include-tags >> \
-                      --exclude TODO -e future -e obsolete -e libtest -e EHRSCAPE \
+                      --exclude TODO -e future -e obsolete -e libtest \
                       --console dotted \
                       --loglevel TRACE \
                       --noncritical not-ready \
@@ -408,6 +408,7 @@ commands:
                 # Create Log/Report with ALL DETAILS
                 rebot --outputdir results \
                       --name EHRbase \
+                      --exclude TODO -e future -e obsolete -e libtest \
                       --removekeywords for \
                       --removekeywords wuks \
                       --loglevel TRACE \
@@ -424,6 +425,7 @@ commands:
 
                 # Create JUNIT report from merged results
                 rebot --outputdir results \
+                      --exclude TODO -e future -e obsolete -e libtest \
                       --noncritical not-ready \
                       --xunit junit-output.xml --xunitskipnoncritical \
                       --log NONE \
