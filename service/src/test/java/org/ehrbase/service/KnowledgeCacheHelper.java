@@ -18,8 +18,8 @@
 
 package org.ehrbase.service;
 
-import org.ehrbase.opt.query.TemplateTestData;
 import org.apache.commons.io.IOUtils;
+import org.ehrbase.opt.query.TemplateTestData;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
@@ -34,13 +34,10 @@ public class KnowledgeCacheHelper {
     public static KnowledgeCacheService buildKnowledgeCache(TemporaryFolder folder, CacheRule cacheRule) throws Exception {
 
 
-        File archetypes = folder.newFolder("archetypes");
-        File template = folder.newFolder("template");
         File operationalTemplatesemplates = folder.newFolder("operational_templates");
 
         TemplateFileStorageService templateFileStorageService = new TemplateFileStorageService();
-        templateFileStorageService.setArchetypePath(archetypes.getPath());
-        templateFileStorageService.setTemplatePath(template.getPath());
+
         templateFileStorageService.setOptPath(operationalTemplatesemplates.getPath());
 
         KnowledgeCacheService knowledgeCacheService = new KnowledgeCacheService(templateFileStorageService, cacheRule.cacheManager);

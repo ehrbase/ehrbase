@@ -20,7 +20,6 @@ package org.ehrbase.configuration;
 
 import org.ehrbase.opt.query.I_QueryOptMetaData;
 import org.ehrbase.validation.Validator;
-import openEHR.v1.template.TEMPLATE;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -37,7 +36,6 @@ import java.util.UUID;
 public class CacheConfiguration {
 
     public static final String INTROSPECT_CACHE = "introspectCache";
-    public static final String TEMPLATE_CACHE = "templateCache";
     public static final String OPERATIONAL_TEMPLATE_CACHE = "operationaltemplateCache";
     public static final String VALIDATOR_CACHE = "validatorCache";
     @Value("${cache.config}")
@@ -49,7 +47,6 @@ public class CacheConfiguration {
         CacheManager cacheManager = cachingProvider.getCacheManager(getClass().getResource(configPath).toURI(),
                 getClass().getClassLoader());
         buildCache(INTROSPECT_CACHE, UUID.class, I_QueryOptMetaData.class, cacheManager);
-        buildCache(TEMPLATE_CACHE, String.class, TEMPLATE.class, cacheManager);
         buildCache(OPERATIONAL_TEMPLATE_CACHE, String.class, OPERATIONALTEMPLATE.class, cacheManager);
         buildCache(VALIDATOR_CACHE, UUID.class, Validator.class, cacheManager);
         return cacheManager;
