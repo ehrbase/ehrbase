@@ -60,3 +60,5 @@ Main flow: get existing CONTRIBUTION
     retrieve CONTRIBUTION by contribution_uid (JSON)
 
     check content of retrieved CONTRIBUTION (JSON)
+
+    [Teardown]    restart SUT

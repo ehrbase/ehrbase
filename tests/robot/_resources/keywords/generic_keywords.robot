@@ -37,18 +37,18 @@ Library    OperatingSystem
 
 
 
-#     o8o                                           .o8   o8o   .o88o.  .o88o. 
-#     `"'                                          "888   `"'   888 `"  888 `" 
-#    oooo  .oooo.o  .ooooo.  ooo. .oo.         .oooo888  oooo  o888oo  o888oo  
-#    `888 d88(  "8 d88' `88b `888P"Y88b       d88' `888  `888   888     888    
-#     888 `"Y88b.  888   888  888   888       888   888   888   888     888    
-#     888 o.  )88b 888   888  888   888       888   888   888   888     888    
-#     888 8""888P' `Y8bod8P' o888o o888o      `Y8bod88P" o888o o888o   o888o   
-#     888                                                                      
-# .o. 88P                                                                      
+#     o8o                                           .o8   o8o   .o88o.  .o88o.
+#     `"'                                          "888   `"'   888 `"  888 `"
+#    oooo  .oooo.o  .ooooo.  ooo. .oo.         .oooo888  oooo  o888oo  o888oo
+#    `888 d88(  "8 d88' `88b `888P"Y88b       d88' `888  `888   888     888
+#     888 `"Y88b.  888   888  888   888       888   888   888   888     888
+#     888 o.  )88b 888   888  888   888       888   888   888   888     888
+#     888 8""888P' `Y8bod8P' o888o o888o      `Y8bod88P" o888o o888o   o888o
+#     888
+# .o. 88P
 # `Y888P
 #
-# [ JSHON DIFF / COMPARE]         
+# [ JSHON DIFF / COMPARE]
 
 compare json-strings
     [Arguments]         ${actual_json}  ${expected_json}  &{options}
@@ -69,7 +69,7 @@ compare json-strings
     ...                     - verbose_level=2
     ...
     ...                 Check DeedDiff reference for more details: https://deepdiff.readthedocs.io/en/latest/diff.html
-    
+
                         compare jsons    ${actual_json}    ${expected_json}    &{options}
 
 
@@ -118,6 +118,14 @@ compare json-file with json-string
 
 
 
+restart SUT
+    stop openehr server
+    stop and remove ehrdb
+    empty operational_templates folder
+    # sleep    1
+    start ehrdb
+    start openehr server
+
 
 get application version
     ${root}=  Parse Xml    ${POM_FILE}
@@ -154,6 +162,7 @@ empty operational_templates folder
 
 
 start openehr server
+    get application version
     run keyword if  '${CODE_COVERAGE}' == 'True'   start server process with coverage
     run keyword if  '${CODE_COVERAGE}' == 'False'  start server process without coverage
     Wait For Process  ehrserver  timeout=10  on_timeout=continue
@@ -260,7 +269,7 @@ stop and remove ehrdb
             #      `remove_ehrdb_container` cracefully stops and waits for
             #        container to be removed
 
-    stop ehrdb
+    # stop ehrdb
     remove ehrdb container  # kw from dockerlib.py
 
 

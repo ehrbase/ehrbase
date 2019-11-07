@@ -29,7 +29,8 @@ Documentation   OPT1.4 integration tests
 ...                 No OPTs should be loaded on the system.
 ...
 ...             Postconditions:
-...                 A new OPT with the given template_id is loaded into the server, and there will be only one OPT loaded.
+...                 A new OPT with the given template_id is loaded into the server,
+...                 and there will be only one OPT loaded.
 ...
 ...             Flow:
 ...                 1. For each valid OPT in the data set, invoke the OPT upload service
@@ -132,9 +133,6 @@ upload valid OPT twice with conflict
     upload OPT file
     server accepted OPT
     upload same OPT again
-
-        TRACE JIRA BUG    EHR-337    not-ready
-
     server rejected OPT with status code 409
     # verify: only one OPT with given template_id exists
     # TODO: implement "verify" step when endpoints are available locally

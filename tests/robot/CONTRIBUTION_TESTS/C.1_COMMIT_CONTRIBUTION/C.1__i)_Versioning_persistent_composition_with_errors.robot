@@ -70,3 +70,5 @@ Alternative flow 8: commit CONTRIBUTIONS for versioning a persistent COMPOSITION
     commit CONTRIBUTION - with preceding_version_uid (JSON)    minimal/minimal_admin.contribution.creation_modification.json
 
     check response: is negative indicating wrong change_type
+
+    [Teardown]    restart SUT
