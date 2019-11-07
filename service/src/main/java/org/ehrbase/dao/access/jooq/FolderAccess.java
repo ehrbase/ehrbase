@@ -661,6 +661,9 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
 
         if (folder.getFolders() != null && !folder.getFolders().isEmpty()) {
 
+            // Clear old sub folders list
+            newFolderAccess.getSubfoldersList().clear();
+            // Create new list of sub folders
             folder.getFolders().forEach(childFolder ->
                     newFolderAccess
                             .getSubfoldersList()
