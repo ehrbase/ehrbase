@@ -23,6 +23,7 @@ package org.ehrbase.dao.access.interfaces;
 
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.dao.access.jooq.EhrAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.jooq.pg.tables.records.EhrRecord;
@@ -168,12 +169,13 @@ public interface I_EhrAccess extends I_SimpleCRUD<I_EhrAccess, UUID> {
 
     /**
      * Updates the whole EHR access in the DB, e.g. to update the status. Embeds contribution and audit handling.
-     * @param committerId
-     * @param systemId
-     * @param state
-     * @param contributionChangeType
-     * @param description
-     * @return
+     * @param committerId ID of committer
+     * @param systemId ID of committing system
+     * @param state State of contribution
+     * @param contributionChangeType Change type of contribution
+     * @param description Description field
+     * @return True for success
+     * @throws InvalidApiParameterException when marshalling of EHR_STATUS / OTHER_DETAILS failed
      */
     Boolean update(UUID committerId, UUID systemId, ContributionDef.ContributionState state, I_ConceptAccess.ContributionChangeType contributionChangeType, String description);
 

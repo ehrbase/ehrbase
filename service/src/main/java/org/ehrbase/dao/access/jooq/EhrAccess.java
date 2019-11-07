@@ -40,6 +40,7 @@ import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.tables.records.*;
+import org.ehrbase.serialisation.MarshalException;
 import org.ehrbase.serialisation.RawJson;
 import org.ehrbase.service.BaseService;
 import org.jooq.*;
@@ -480,11 +481,19 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         return uuid;
     }
 
+    /**
+     * {@inheritDoc}
+     * @throws InvalidApiParameterException when marshalling of EHR_STATUS / OTHER_DETAILS failed
+     */
     @Override
     public Boolean update(Timestamp transactionTime) {
         return update(transactionTime, false);
     }
 
+    /**
+     * {@inheritDoc}
+     * @throws InvalidApiParameterException when marshalling of EHR_STATUS / OTHER_DETAILS failed
+     */
     @Override
     public Boolean update(Timestamp transactionTime, boolean force) {
         boolean result = false;
@@ -497,7 +506,11 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             }
             statusRecord.setSysTransaction(transactionTime);
 
-            result = statusRecord.update() > 0;
+            try {
+                result = statusRecord.update() > 0;
+            } catch (RuntimeException e) {
+                throw new InvalidApiParameterException("Couldn't marshall given EHR_STATUS / OTHER_DETAILS, content probably breaks RM rules");
+            }
         }
 
         if (force || ehrRecord.changed()) {
