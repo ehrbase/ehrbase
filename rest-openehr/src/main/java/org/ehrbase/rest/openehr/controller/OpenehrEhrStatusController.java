@@ -29,6 +29,7 @@ import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.rest.openehr.response.EhrStatusResponseData;
 import org.ehrbase.rest.openehr.response.InternalResponse;
+import org.ehrbase.serialisation.MarshalException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -175,7 +176,7 @@ public class OpenehrEhrStatusController extends BaseController {
         String newLatestVersionUid = ehrService.getLatestVersionUidOfStatus(ehrId);
         String[] split = latestVersionUid.split("::");
         if (latestVersionUid.equals(newLatestVersionUid) || split.length != 3)
-            throw new InternalServerException("Update of EHR_STATUS failed");
+            throw new InvalidApiParameterException("Update of EHR_STATUS failed");
         int version = Integer.parseInt(split[split.length-1]) + 1;
 
         List<String> headerList = Arrays.asList(CONTENT_TYPE, LOCATION, ETAG, LAST_MODIFIED);   // whatever is required by REST spec

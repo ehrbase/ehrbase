@@ -60,6 +60,14 @@ public interface EhrService {
      */
     Optional<EhrStatus> getEhrStatusAtVersion(UUID ehrUuid, UUID versionedObjectUid, int version);
 
+    /**
+     * Update the EHR_STATUS linked to the given EHR
+     * @param ehrId ID of linked EHR
+     * @param status input EHR_STATUS
+     * @return {@link Optional<EhrStatus>} containing the updated status on success
+     * @throws org.ehrbase.api.exception.ObjectNotFoundException when given ehrId cannot be found
+     * @throws org.ehrbase.api.exception.InvalidApiParameterException when given status is invalid, e.g. not a valid openEHR RM object
+     */
     Optional<EhrStatus> updateStatus(UUID ehrId, EhrStatus status);
 
     Optional<UUID> findBySubject(String subjectId, String nameSpace);

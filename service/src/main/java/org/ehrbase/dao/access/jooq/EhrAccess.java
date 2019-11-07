@@ -33,17 +33,17 @@ import org.apache.commons.collections4.map.MultiValueMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.tables.records.*;
+import org.ehrbase.serialisation.MarshalException;
 import org.ehrbase.serialisation.RawJson;
 import org.ehrbase.service.BaseService;
 import org.jooq.*;
-import org.jooq.impl.DSL;
-import org.postgresql.util.PGobject;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -66,9 +66,8 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     private StatusRecord statusRecord = null;
     private boolean isNew = false;
 
-    //holds the non serialized archetyped other_details structure
-    private Locatable otherDetails = null;
-    private String otherDetailsSerialized = null; //kind of a hack really, used to deal with RAW JSON without a template!
+    //holds the non serialized ItemStructure other_details structure
+    private ItemStructure otherDetails = null;
     private String otherDetailsTemplateId;
 
     private I_ContributionAccess contributionAccess = null; //locally referenced contribution associated to ehr transactions
@@ -90,13 +89,13 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             ehrRecord.setId(UUID.randomUUID());
         }
 
-        //retrieveInstanceByNamedSubject an existing status for this party (which should not occur
+        //check if party already has an STATUS (and therefore EHR)
         if (!context.fetch(STATUS, STATUS.PARTY.eq(partyId)).isEmpty()) {
             log.warn("This party is already associated to an EHR");
             throw new IllegalArgumentException("Party:" + partyId + " already associated to an EHR, please retrieveInstanceByNamedSubject the associated EHR for updates instead");
         }
 
-        //storeComposition a new status
+        //init a new status record
         statusRecord = context.newRecord(STATUS);
         statusRecord.setId(UUID.randomUUID());
         statusRecord.setIsModifiable(true);
@@ -112,13 +111,11 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             ehrRecord.setSystemId(I_SystemAccess.createOrRetrieveLocalSystem(this));
         }
 
-
         this.isNew = true;
 
         //associate a contribution with this EHR
         contributionAccess = I_ContributionAccess.getInstance(this, ehrRecord.getId());
         contributionAccess.setState(ContributionDef.ContributionState.COMPLETE);
-
     }
 
     /**
@@ -310,10 +307,9 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         //retrieveInstanceByNamedSubject the corresponding status
         ehrAccess.statusRecord = context.fetchOne(STATUS, STATUS.EHR_ID.eq(ehrAccess.ehrRecord.getId()));
 
-        //rebuild otherDetails
+        //set otherDetails if available
         if (ehrAccess.statusRecord.getOtherDetails() != null) {
-            String serialized = ((PGobject) ehrAccess.statusRecord.getOtherDetails()).getValue();
-            ehrAccess.otherDetails = new RawJson().unmarshal(serialized, ItemStructure.class);
+            ehrAccess.otherDetails = ehrAccess.statusRecord.getOtherDetails();
         }
 
         ehrAccess.isNew = false;
@@ -437,36 +433,26 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     }
 
     /**
-     * @throws IllegalArgumentException when EHR couldn't be stored
+     * @throws InvalidApiParameterException when input couldn't be processed, i.e. EHR not stored
      */
     @Override
     public UUID commit(Timestamp transactionTime) {
 
         ehrRecord.setDateCreated(transactionTime);
-//        ehrRecord.setDateCreatedTzid(transactionTime.toLocalDateTime().getZone().getID());
+        ehrRecord.setDateCreatedTzid(ZonedDateTime.now().getZone().getId());    // get zoneId independent of "transactionTime"
         ehrRecord.store();
 
         if (isNew && statusRecord != null) {
-            //UUID uuid = UUID.randomUUID();
-            InsertQuery<?> insertQuery = getContext().insertQuery(STATUS);
-            insertQuery.addValue(STATUS.ID, statusRecord.getId());
-            insertQuery.addValue(STATUS.EHR_ID, ehrRecord.getId());
-            insertQuery.addValue(STATUS.IS_QUERYABLE, statusRecord.getIsQueryable());
-            insertQuery.addValue(STATUS.IS_MODIFIABLE, statusRecord.getIsModifiable());
-            insertQuery.addValue(STATUS.PARTY, statusRecord.getParty());
-//            Field otherDetailsField = DSL.field(STATUS.OTHER_DETAILS+"::jsonb");
+
+            statusRecord.setEhrId(ehrRecord.getId());
             if (otherDetails != null) {
-                insertQuery.addValue(STATUS.OTHER_DETAILS, (Object) DSL.field(DSL.val(serializeOtherDetails()) + JSONB));
-            } else if (otherDetailsSerialized != null)
-                insertQuery.addValue(STATUS.OTHER_DETAILS, (Object) DSL.field(DSL.val(otherDetailsSerialized) + JSONB));
+                statusRecord.setOtherDetails(otherDetails);
+            }
+            statusRecord.setSysTransaction(transactionTime);
 
-            insertQuery.addValue(STATUS.SYS_TRANSACTION, transactionTime);
-
-            Integer result = insertQuery.execute();
-
-            if (result == 0)
-                throw new IllegalArgumentException("Could not store Ehr Status");
-//            statusRecord.store();
+            if (statusRecord.store() == 0) {
+                throw new InvalidApiParameterException("Input EHR couldn't be stored");
+            }
         }
 
         return ehrRecord.getId();
@@ -495,38 +481,41 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         return uuid;
     }
 
+    /**
+     * {@inheritDoc}
+     * @throws InvalidApiParameterException when marshalling of EHR_STATUS / OTHER_DETAILS failed
+     */
     @Override
     public Boolean update(Timestamp transactionTime) {
         return update(transactionTime, false);
     }
 
+    /**
+     * {@inheritDoc}
+     * @throws InvalidApiParameterException when marshalling of EHR_STATUS / OTHER_DETAILS failed
+     */
     @Override
     public Boolean update(Timestamp transactionTime, boolean force) {
         boolean result = false;
 
         if (force || statusRecord.changed()) {
 
-            UpdateQuery<?> updateQuery = getContext().updateQuery(STATUS);
-            updateQuery.addValue(STATUS.EHR_ID, ehrRecord.getId());
-            updateQuery.addValue(STATUS.IS_QUERYABLE, statusRecord.getIsQueryable());
-            updateQuery.addValue(STATUS.IS_MODIFIABLE, statusRecord.getIsModifiable());
-            updateQuery.addValue(STATUS.PARTY, statusRecord.getParty());
-
+            statusRecord.setEhrId(ehrRecord.getId());
             if (otherDetails != null) {
-                updateQuery.addValue(STATUS.OTHER_DETAILS, (Object) DSL.field(DSL.val(serializeOtherDetails()) + JSONB));
-            } else if (otherDetailsSerialized != null)
-                updateQuery.addValue(STATUS.OTHER_DETAILS, (Object) DSL.field(DSL.val(otherDetailsSerialized) + JSONB));
+                statusRecord.setOtherDetails(otherDetails);
+            }
+            statusRecord.setSysTransaction(transactionTime);
 
-            updateQuery.addValue(STATUS.SYS_TRANSACTION, transactionTime);
-            updateQuery.addConditions(STATUS.ID.eq(statusRecord.getId()));
-
-            result |= updateQuery.execute() > 0;
+            try {
+                result = statusRecord.update() > 0;
+            } catch (RuntimeException e) {
+                throw new InvalidApiParameterException("Couldn't marshall given EHR_STATUS / OTHER_DETAILS, content probably breaks RM rules");
+            }
         }
 
         if (force || ehrRecord.changed()) {
-            ZonedDateTime committedTime = ZonedDateTime.now();
-            ehrRecord.setDateCreated(Timestamp.valueOf(committedTime.toLocalDateTime()));
-            ehrRecord.setDateCreatedTzid(committedTime.getZone().getId());
+            ehrRecord.setDateCreated(transactionTime);
+            ehrRecord.setDateCreatedTzid(ZonedDateTime.now().getZone().getId());    // get zoneId independent of "transactionTime"
             result |= ehrRecord.update() > 0;
 
         }
@@ -663,13 +652,13 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     }
 
     @Override
-    public void setOtherDetails(Locatable otherDetails, String templateId) {
+    public void setOtherDetails(ItemStructure otherDetails, String templateId) {
         this.otherDetails = otherDetails;
         this.otherDetailsTemplateId = Optional.ofNullable(otherDetails).map(Locatable::getArchetypeDetails).map(Archetyped::getTemplateId).map(ObjectId::getValue).orElse(null);
     }
 
     @Override
-    public Locatable getOtherDetails() {
+    public ItemStructure getOtherDetails() {
         return otherDetails;
     }
 
@@ -701,7 +690,10 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
 
         status.setModifiable(isModifiable());
         status.setQueryable(isQueryable());
-        status.setOtherDetails((ItemStructure) getOtherDetails());
+        // set otherDetails if available
+        if (statusRecord.getOtherDetails() != null) {
+            status.setOtherDetails(statusRecord.getOtherDetails());
+        }
         status.setUid(new HierObjectId(statusRecord.getId().toString()));
 
         I_PartyIdentifiedAccess party = I_PartyIdentifiedAccess.retrieveInstance(getDataAccess(), getParty());

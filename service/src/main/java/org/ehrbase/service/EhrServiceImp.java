@@ -165,7 +165,6 @@ public class EhrServiceImp extends BaseService implements EhrService {
         try {
             ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
         } catch (Exception e) {
-            logger.error(e.getMessage());
             throw new InternalServerException(e);
         }
         if (ehrAccess == null) {
@@ -175,13 +174,9 @@ public class EhrServiceImp extends BaseService implements EhrService {
             ehrAccess.setStatus(status);
         }
 
-        try {
-            ehrAccess.update(getUserUuid(), getSystemUuid(), null, I_ConceptAccess.ContributionChangeType.MODIFICATION, DESCRIPTION);
-
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            throw new InternalServerException(e);
-        }
+        // execute actual update and check for success
+        if (ehrAccess.update(getUserUuid(), getSystemUuid(), null, I_ConceptAccess.ContributionChangeType.MODIFICATION, DESCRIPTION).equals(false))
+            throw new InternalServerException("Problem updating EHR_STATUS"); //unexpected problem. expected ones are thrown inside of update()
 
         return getEhrStatus(ehrId);
     }
