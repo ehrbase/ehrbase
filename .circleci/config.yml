@@ -230,8 +230,7 @@ jobs:
           image: ubuntu-1604:201903-01
       steps:
         - run-robot-tests:
-              include-tags: "circleci"
-              # include: "compositionANDjson1"
+              include-tags: "compositionANDjson1"
               test-suite-path: "COMPOSITION_TESTS"
               test-suite-name: "COMPOSITION_1"
 
@@ -240,8 +239,7 @@ jobs:
           image: ubuntu-1604:201903-01
       steps:
         - run-robot-tests:
-              include-tags: "circleci"
-              # include: "compositionANDjson2"
+              include-tags: "compositionANDjson2"
               test-suite-path: "COMPOSITION_TESTS"
               test-suite-name: "COMPOSITION_2"
 
@@ -250,8 +248,7 @@ jobs:
           image: ubuntu-1604:201903-01
       steps:
         - run-robot-tests:
-              include-tags: "circleci"
-              # include: "compositionANDxml1"
+              include-tags: "compositionANDxml1"
               test-suite-path: "COMPOSITION_TESTS"
               test-suite-name: "COMPOSITION_3"
 
@@ -260,8 +257,7 @@ jobs:
           image: ubuntu-1604:201903-01
       steps:
         - run-robot-tests:
-              include-tags: "circleci"
-              # include: "compositionANDxml2"
+              include-tags: "compositionANDxml2"
               test-suite-path: "COMPOSITION_TESTS"
               test-suite-name: "COMPOSITION_4"
 
@@ -270,8 +266,7 @@ jobs:
             image: ubuntu-1604:201903-01
       steps:
         - run-robot-tests:
-              include-tags: "circleci"
-              # include: "CONTRIBUTION"
+              include-tags: "CONTRIBUTION"
               test-suite-path: "CONTRIBUTION_TESTS"
               test-suite-name: "CONTRIBUTION"
 
@@ -280,8 +275,7 @@ jobs:
             image: ubuntu-1604:201903-01
       steps:
         - run-robot-tests:
-              include-tags: "circleci"
-              # include: "directory"
+              include-tags: "directory"
               test-suite-path: "DIRECTORY_TESTS"
               test-suite-name: "DIRECTORY"
 
@@ -290,8 +284,7 @@ jobs:
             image: ubuntu-1604:201903-01
       steps:
         - run-robot-tests:
-              include-tags: "circleci"
-              # include: "EHR_SERVICE"
+              include-tags: "EHR_SERVICE"
               test-suite-path: "EHR_SERVICE_TESTS"
               test-suite-name: "EHR_SERVICE"
 
@@ -300,8 +293,7 @@ jobs:
             image: ubuntu-1604:201903-01
       steps:
         - run-robot-tests:
-              include-tags: "circleci"
-              # include: "KNOWLEDGE"
+              include-tags: "KNOWLEDGE"
               test-suite-path: "KNOWLEDGE_TESTS"
               test-suite-name: "KNOWLEDGE"
 
@@ -310,8 +302,7 @@ jobs:
             image: ubuntu-1604:201903-01
       steps:
         - run-robot-tests:
-              include-tags: "circleci"
-              # include: "ADHOC-QUERY"
+              include-tags: "ADHOC-QUERY"
               test-suite-path: "QUERY_SERVICE_TESTS"
               test-suite-name: "ADHOC-QUERY"
 
