@@ -47,7 +47,7 @@ public class LightRawJsonEncoder {
 
     public String encodeContentAsString(String root) {
 
-        Map<String, Object> fromDB = db2map();
+        Map<String, Object> fromDB = db2map(root != null && root.equals("value"));
 
         GsonBuilder gsonRaw = EncodeUtilArchie.getGsonBuilderInstance(I_DvTypeAdapter.AdapterType.DBJSON2RAWJSON);
         String raw;
@@ -61,7 +61,7 @@ public class LightRawJsonEncoder {
 
     public JsonElement encodeContentAsJson(String root){
         GsonBuilder gsonRaw = EncodeUtilArchie.getGsonBuilderInstance(I_DvTypeAdapter.AdapterType.DBJSON2RAWJSON);
-        JsonElement jsonElement = gsonRaw.create().toJsonTree(db2map());
+        JsonElement jsonElement = gsonRaw.create().toJsonTree(db2map(root != null && root.equals("value")));
         if (root != null) {
             //in order to create the canonical form, build the ELEMENT json (hence the type is passed into the embedded value)
             jsonElement = jsonElement.getAsJsonObject().get(root);
@@ -79,10 +79,13 @@ public class LightRawJsonEncoder {
         return converted.replaceFirst(Pattern.quote("{"), new ArchieCompositionProlog(root).toString());
     }
 
-    private Map<String, Object> db2map(){
+    private Map<String, Object> db2map(boolean isValue){
         GsonBuilder gsondb = EncodeUtilArchie.getGsonBuilderInstance();
         if (jsonbOrigin.startsWith("[")) {
-            jsonbOrigin = "{\"items\":"+jsonbOrigin+"}"; //joy of json...
+            if (isValue)
+                jsonbOrigin = jsonbOrigin.trim().substring(1, jsonbOrigin.length() - 1);
+            else
+                jsonbOrigin = "{\"items\":"+jsonbOrigin+"}"; //joy of json... this deals with array with and name/value predicate
         }
 
         Map<String, Object> fromDB = gsondb.create().fromJson(jsonbOrigin, Map.class);
