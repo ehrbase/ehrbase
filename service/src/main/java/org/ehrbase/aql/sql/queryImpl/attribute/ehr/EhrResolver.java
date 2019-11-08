@@ -17,13 +17,16 @@
  */
 package org.ehrbase.aql.sql.queryImpl.attribute.ehr;
 
-import org.ehrbase.aql.sql.queryImpl.attribute.AttributePath;
-import org.ehrbase.aql.sql.queryImpl.attribute.AttributeResolver;
-import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
-import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
+import org.ehrbase.aql.sql.binding.I_JoinBinder;
+import org.ehrbase.aql.sql.queryImpl.attribute.*;
 import org.ehrbase.aql.sql.queryImpl.attribute.ehr.ehrstatus.StatusResolver;
 import org.ehrbase.aql.sql.queryImpl.attribute.system.SystemResolver;
+import org.ehrbase.aql.sql.queryImpl.value_field.GenericJsonField;
+import org.ehrbase.jooq.pg.tables.Ehr;
 import org.jooq.Field;
+
+import static org.ehrbase.jooq.pg.Ehr.EHR;
+import static org.ehrbase.jooq.pg.Tables.EHR_;
 
 public class EhrResolver extends AttributeResolver
 {
@@ -41,6 +44,9 @@ public class EhrResolver extends AttributeResolver
             return new SystemResolver(fieldResolutionContext, joinSetup).sqlField(new AttributePath("system").redux(path));
 
         switch (path){
+            case "ehr_id":
+                joinSetup.setJoinEhr(true);
+                return new GenericJsonField(fieldResolutionContext, joinSetup).jsonField("HIER_OBJECT_ID", "ehr.js_canonical_hier_object_id", I_JoinBinder.ehrRecordTable.field(EHR_.ID));
             case "ehr_id/value":
                 return new EhrIdValue(fieldResolutionContext, joinSetup).forTableField(NULL_FIELD).sqlField();
 

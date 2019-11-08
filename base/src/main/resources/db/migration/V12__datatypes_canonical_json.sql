@@ -22,16 +22,14 @@ $$
 LANGUAGE plpgsql;
 
 
-CREATE OR REPLACE FUNCTION ehr.js_canonical_hier_object_id(TEXT)
+CREATE OR REPLACE FUNCTION ehr.js_canonical_hier_object_id(ehr_id UUID)
   RETURNS JSON AS
 $$
-DECLARE
-  value ALIAS FOR $1;
 BEGIN
   RETURN
     json_build_object(
         '_type', 'HIER_OBJECT_ID',
-        'value', value
+        'value', ehr_id
       );
 END
 $$

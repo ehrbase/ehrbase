@@ -82,8 +82,12 @@ public class CompositionAttributeQuery extends ObjectQuery implements I_QueryImp
         Field retField;
 
         if (columnAlias == null) {
-            if (clause.equals(Clause.SELECT))
-                retField =  new FullCompositionJson(fieldResolutionContext, joinSetup).sqlField();
+            if (clause.equals(Clause.SELECT)) {
+                if (pathResolver.classNameOf(variableDefinition.getIdentifier()).equals("COMPOSITION"))
+                    retField = new FullCompositionJson(fieldResolutionContext, joinSetup).sqlField();
+                else
+                    throw new IllegalArgumentException("Only full composition canonical json is supported at this stage, found class:" + pathResolver.classNameOf(variableDefinition.getIdentifier()));
+            }
             else
                 retField = null;
         } else {
