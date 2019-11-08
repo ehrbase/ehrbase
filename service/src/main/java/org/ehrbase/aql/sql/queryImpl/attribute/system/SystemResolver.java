@@ -30,6 +30,7 @@ public class SystemResolver extends AttributeResolver
     public SystemResolver(FieldResolutionContext fieldResolutionContext, JoinSetup joinSetup) {
         super(fieldResolutionContext, joinSetup);
         joinSetup.setJoinSystem(true);
+        joinSetup.setJoinEhr(true);
     }
 
     public Field<?> sqlField(String path){

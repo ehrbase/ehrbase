@@ -42,8 +42,8 @@ public class EhrResolver extends AttributeResolver
         if (path.startsWith("ehr_status")) {
             return new StatusResolver(fieldResolutionContext, joinSetup).sqlField(new AttributePath("ehr_status").redux(path));
         }
-        else if (path.startsWith("system"))
-            return new SystemResolver(fieldResolutionContext, joinSetup).sqlField(new AttributePath("system").redux(path));
+        else if (path.startsWith("system_id"))
+            return new SystemResolver(fieldResolutionContext, joinSetup).sqlField(new AttributePath("system_id").redux(path));
 
         switch (path){
             case "ehr_id":
@@ -51,7 +51,11 @@ public class EhrResolver extends AttributeResolver
                 return new GenericJsonField(fieldResolutionContext, joinSetup).jsonField("HIER_OBJECT_ID", "ehr.js_canonical_hier_object_id", I_JoinBinder.ehrRecordTable.field(EHR_.ID));
             case "ehr_id/value":
                 return new EhrIdValue(fieldResolutionContext, joinSetup).forTableField(NULL_FIELD).sqlField();
-            case "date_created":
+            case "time_created":
+                joinSetup.setJoinEhr(true);
+                return new GenericJsonField(fieldResolutionContext, joinSetup)
+                        .jsonField("DV_DATE_TIME", "ehr.js_dv_date_time", I_JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED), I_JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED_TZID));
+            case "time_created/value":
                 joinSetup.setJoinEhr(true);
                 return new SimpleAttribute(fieldResolutionContext, joinSetup)
                         .forTableField("TEXT", I_JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED))
