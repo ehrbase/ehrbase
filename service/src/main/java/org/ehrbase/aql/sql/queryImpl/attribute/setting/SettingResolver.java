@@ -20,6 +20,8 @@ package org.ehrbase.aql.sql.queryImpl.attribute.setting;
 import org.ehrbase.aql.sql.queryImpl.attribute.AttributeResolver;
 import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
+import org.ehrbase.aql.sql.queryImpl.attribute.eventcontext.EventContextJson;
+import org.ehrbase.aql.sql.queryImpl.value_field.GenericJsonField;
 import org.jooq.Field;
 
 import static org.ehrbase.jooq.pg.tables.EventContext.EVENT_CONTEXT;
@@ -33,14 +35,19 @@ public class SettingResolver extends AttributeResolver
 
     public Field<?> sqlField(String path){
 
+        if (path.isEmpty())
+            return new EventContextJson(fieldResolutionContext, joinSetup).forJsonPath("setting").sqlField();
+
         switch (path){
             case "value":
-                return new SettingAttribute(fieldResolutionContext, joinSetup).forJsonPath("'{value}'").forTableField(EVENT_CONTEXT.SETTING).sqlField();
+                return new SettingAttribute(fieldResolutionContext, joinSetup).forJsonPath(path).forTableField(EVENT_CONTEXT.SETTING).sqlField();
+            case "defining_code":
+                return new EventContextJson(fieldResolutionContext, joinSetup).forJsonPath("setting/"+path).forTableField(EVENT_CONTEXT.SETTING).sqlField();
             case "defining_code/terminology_id":
             case "defining_code/terminology_id/value":
-                return new SettingAttribute(fieldResolutionContext, joinSetup).forJsonPath("'{defining_code,terminology_id,value}'").forTableField(EVENT_CONTEXT.SETTING).sqlField();
+                return new SettingAttribute(fieldResolutionContext, joinSetup).forJsonPath(path).forTableField(EVENT_CONTEXT.SETTING).sqlField();
             case "defining_code/code_string":
-                return new SettingAttribute(fieldResolutionContext, joinSetup).forJsonPath("'{defining_code,code_string}'").forTableField(EVENT_CONTEXT.SETTING).sqlField();
+                return new SettingAttribute(fieldResolutionContext, joinSetup).forJsonPath(path).forTableField(EVENT_CONTEXT.SETTING).sqlField();
 
 
         }

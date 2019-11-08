@@ -29,10 +29,7 @@ import org.ehrbase.ehr.encode.wrappers.json.I_DvTypeAdapter;
 import org.ehrbase.serialisation.CompositionSerializer;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * GSON adapter for LinkedTreeMap
@@ -104,19 +101,41 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
             ArrayList events = new Children(map).events();
             writeItemInArray(EVENTS, events, writer, parentItemsArchetypeNodeId, parentItemsType);
         } else if (isMultiContent) {
+//            Iterator iterator = map.keySet().iterator();
             String key = map.keySet().iterator().next().toString();
-            ArrayList contents = new Children(map).contents();
-            if (isNodePredicate(key)) {
-                String archetypeNodeId = new PathAttribute(key).archetypeNodeId();
-                contents
-                        .stream()
-                        .filter(o -> List.class.isAssignableFrom(o.getClass()))
-                        .flatMap(o -> ((List) o).stream())
-                        .filter(o -> Map.class.isAssignableFrom(o.getClass()))
-                        .forEach(m -> ((Map) m).put(I_DvTypeAdapter.ARCHETYPE_NODE_ID, archetypeNodeId));
+            while (key != null){
+                if (!key.startsWith(CompositionSerializer.TAG_CONTENT)){
+                    if (map.get(key) instanceof LinkedTreeMap) {
+                        writer.name(key);
+                        writer.beginObject();
+                        writeNode((LinkedTreeMap) map.get(key), writer);
+                        writer.endObject();
+                    }
+                    else
+                        writer.name(key).value((String)map.get(key));
+                    map.remove(key);
+                }
+                else {
+                    Children children = new Children(map);
+                    ArrayList contents = children.contents();
+                    if (isNodePredicate(key)) {
+                        String archetypeNodeId = new PathAttribute(key).archetypeNodeId();
+                        contents
+                                .stream()
+                                .filter(o -> List.class.isAssignableFrom(o.getClass()))
+                                .flatMap(o -> ((List) o).stream())
+                                .filter(o -> Map.class.isAssignableFrom(o.getClass()))
+                                .forEach(m -> ((Map) m).put(I_DvTypeAdapter.ARCHETYPE_NODE_ID, archetypeNodeId));
+                    }
+                    writeContent(contents, writer);
+                    map = children.removeContents();
+                }
+                if (map.size() == 0) {
+                    return;
+                }
+                else
+                    key = map.keySet().iterator().next().toString();
             }
-
-            writeContent(contents, writer);
         } else {
             writeNode(map, writer);
         }

@@ -53,7 +53,9 @@ public interface I_QueryImpl {
 
     enum Clause {SELECT, WHERE, ORDERBY, FROM}
 
-    Field<?> makeField(String templateId, UUID compositionId, String identifier, I_VariableDefinition variableDefinition, boolean withAlias, Clause clause);
+    Field<?> makeField(String templateId, UUID compositionId, String identifier, I_VariableDefinition variableDefinition, Clause clause);
 
     Field<?> whereField(String templateId, UUID compositionId, String identifier, I_VariableDefinition variableDefinition);
+
+    public String getItemType();
 }

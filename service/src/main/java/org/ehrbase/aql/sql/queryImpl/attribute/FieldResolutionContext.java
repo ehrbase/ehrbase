@@ -38,12 +38,14 @@ public class FieldResolutionContext {
     private final PathResolver pathResolver;
     private final IntrospectService introspectCache;
     private final String entry_root;
+    private boolean jsonDatablock = false;
+    private String rmType;
 
-    public FieldResolutionContext(DSLContext context, String serverNodeId, UUID compositionId, String identifier, I_VariableDefinition variableDefinition, boolean withAlias, I_QueryImpl.Clause clause, PathResolver pathResolver, IntrospectService introspectCache, String entry_root) {
+    public FieldResolutionContext(DSLContext context, String serverNodeId, UUID compositionId, String identifier, I_VariableDefinition variableDefinition, I_QueryImpl.Clause clause, PathResolver pathResolver, IntrospectService introspectCache, String entry_root) {
         this.compositionId = compositionId;
         this.identifier = identifier;
         this.variableDefinition = variableDefinition;
-        this.withAlias = withAlias;
+        this.withAlias = clause.equals(I_QueryImpl.Clause.SELECT) && variableDefinition.getPath() != null;
         this.clause = clause;
         this.context = context;
         this.serverNodeId = serverNodeId;
@@ -67,6 +69,14 @@ public class FieldResolutionContext {
 
     public I_VariableDefinition getVariableDefinition() {
         return variableDefinition;
+    }
+
+    public String getRmType() {
+        return rmType;
+    }
+
+    public void setRmType(String rmType) {
+        this.rmType = rmType;
     }
 
     public boolean isWithAlias() {
@@ -95,5 +105,13 @@ public class FieldResolutionContext {
 
     public String getEntry_root() {
         return entry_root;
+    }
+
+    public boolean isJsonDatablock() {
+        return jsonDatablock;
+    }
+
+    public void setJsonDatablock(boolean jsonDatablock) {
+        this.jsonDatablock = jsonDatablock;
     }
 }

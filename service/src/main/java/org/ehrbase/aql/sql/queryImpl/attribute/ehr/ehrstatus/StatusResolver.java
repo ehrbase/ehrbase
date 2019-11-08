@@ -22,7 +22,10 @@ import org.ehrbase.aql.sql.queryImpl.attribute.AttributeResolver;
 import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
 import org.ehrbase.aql.sql.queryImpl.attribute.ehr.ehrstatus.subject.SubjectResolver;
+import org.ehrbase.aql.sql.queryImpl.attribute.eventcontext.SimpleEventContextAttribute;
 import org.jooq.Field;
+
+import static org.ehrbase.jooq.pg.Tables.STATUS;
 
 public class StatusResolver extends AttributeResolver
 {
@@ -33,16 +36,22 @@ public class StatusResolver extends AttributeResolver
 
     public Field<?> sqlField(String path){
 
-        if (path.startsWith("other_details")) {
-            return new EhrStatusOtherDetails(fieldResolutionContext, joinSetup).forTableField(NULL_FIELD).sqlField();
+        try {
+            if (path.startsWith("other_details")) {
+                return new EhrStatusOtherDetails(fieldResolutionContext, joinSetup).forTableField(NULL_FIELD).sqlField();
+            } else if (path.startsWith("subject")) {
+                return new SubjectResolver(fieldResolutionContext, joinSetup).sqlField(new AttributePath("subject").redux(path));
+            } else if (path.isEmpty()) {
+                return new EhrStatusJson(fieldResolutionContext, joinSetup).sqlField();
+            } else if (path.equals("is_queryable")){
+                return new SimpleEventContextAttribute(fieldResolutionContext, joinSetup).forTableField(STATUS.IS_QUERYABLE).sqlField();
+            } else if (path.equals("is_modifiable")){
+                return new SimpleEventContextAttribute(fieldResolutionContext, joinSetup).forTableField(STATUS.IS_MODIFIABLE).sqlField();
+            } else
+                return new EhrStatusJson(fieldResolutionContext, joinSetup).forJsonPath(path).sqlField();
         }
-        else if (path.startsWith("subject")){
-            return new SubjectResolver(fieldResolutionContext, joinSetup).sqlField(new AttributePath("subject").redux(path));
+        catch (IllegalArgumentException e){
+            return new EhrStatusJson(fieldResolutionContext, joinSetup).forJsonPath(path).sqlField();
         }
-        else if (path.isEmpty()){
-            return new EhrStatusJson(fieldResolutionContext, joinSetup).sqlField();
-        }
-        else
-            throw new IllegalArgumentException("Unresolved ehr attribute path:"+path);
     }
 }

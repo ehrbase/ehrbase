@@ -17,17 +17,24 @@
  */
 package org.ehrbase.aql.sql.queryImpl.attribute.composition;
 
+import org.ehrbase.aql.sql.binding.I_JoinBinder;
 import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
+import org.ehrbase.aql.sql.queryImpl.attribute.GenericJsonPath;
 import org.ehrbase.aql.sql.queryImpl.attribute.I_RMObjectAttribute;
 import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
-import org.ehrbase.aql.sql.queryImpl.attribute.eventcontext.EventContextAttribute;
+
 import org.jooq.Field;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 
-import static org.ehrbase.jooq.pg.tables.EventContext.EVENT_CONTEXT;
+import java.util.Optional;
+
+import static org.ehrbase.jooq.pg.Tables.COMPOSITION;
 
 public class FullCompositionJson extends CompositionAttribute {
+
+    protected TableField tableField = COMPOSITION.ID;
+    protected Optional<String> jsonPath = Optional.empty();
 
     public FullCompositionJson(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
         super(fieldContext, joinSetup);
@@ -35,16 +42,37 @@ public class FullCompositionJson extends CompositionAttribute {
 
     @Override
     public Field<?> sqlField() {
+        fieldContext.setJsonDatablock(true);
+        fieldContext.setRmType("COMPOSITION");
+
         //query the json representation of EVENT_CONTEXT and cast the result as TEXT
-        Field jsonContextField = DSL.field("ehr.js_context("+EVENT_CONTEXT.ID+")::text");
-        if (fieldContext.isWithAlias())
-            return aliased(DSL.field(jsonContextField));
+        Field jsonFullComposition;
+
+        if (jsonPath.isPresent()) {
+            jsonFullComposition = DSL.field("ehr.js_composition("+DSL.field(I_JoinBinder.compositionRecordTable.getName()+"."+tableField.getName())+",'"+fieldContext.getServerNodeId()+"')::json #>>"+jsonPath.get());
+        }
         else
-            return DSL.field(jsonContextField);
+            jsonFullComposition = DSL.field("ehr.js_composition("+DSL.field(I_JoinBinder.compositionRecordTable.getName()+"."+tableField.getName())+",'"+fieldContext.getServerNodeId()+"')::text");
+
+        if (fieldContext.isWithAlias())
+            return aliased(DSL.field(jsonFullComposition));
+        else
+            return DSL.field(jsonFullComposition);
     }
 
     @Override
     public I_RMObjectAttribute forTableField(TableField tableField) {
+        this.tableField = tableField;
+        return this;
+    }
+
+    public FullCompositionJson forJsonPath(String jsonPath){
+        if (jsonPath == null || jsonPath.isEmpty()) {
+            this.jsonPath = Optional.empty();
+            return this;
+        }
+        this.jsonPath = Optional.of(new GenericJsonPath(jsonPath).jqueryPath());
         return this;
     }
 }
+

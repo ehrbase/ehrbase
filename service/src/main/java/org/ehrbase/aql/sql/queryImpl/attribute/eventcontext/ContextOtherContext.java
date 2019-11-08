@@ -25,6 +25,8 @@ import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
 import org.jooq.Field;
 import org.jooq.TableField;
 
+import static org.ehrbase.jooq.pg.Tables.EVENT_CONTEXT;
+
 public class ContextOtherContext extends EventContextAttribute {
 
     public ContextOtherContext(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
@@ -33,16 +35,12 @@ public class ContextOtherContext extends EventContextAttribute {
 
     @Override
     public Field<?> sqlField() {
-        String variablePath = fieldContext.getVariableDefinition().getPath().substring("context/other_context".length() + 1);
-        variablePath = variablePath.substring(variablePath.indexOf("]") + 1);
-        String otherContextPath = "/" + fieldContext.getVariableDefinition().getPath().substring(0, fieldContext.getVariableDefinition().getPath().indexOf("]") + 1);
-        Field<?> field = new JsonbEntryQuery(
-                fieldContext.getContext(),
-                fieldContext.getIntrospectCache(),
-                fieldContext.getPathResolver(),
-                fieldContext.getEntry_root())
-                .makeField(JsonbEntryQuery.OTHER_ITEM.OTHER_CONTEXT, null, fieldContext.getVariableDefinition().getAlias(), variablePath, fieldContext.isWithAlias());
-        return field;
+        String variablePath = fieldContext.getVariableDefinition().getPath().substring("context/other_context".length());
+
+
+        if (variablePath.startsWith("/"))
+            variablePath = variablePath.substring(1);
+        return new EventContextJson(fieldContext, joinSetup).forJsonPath("other_context/"+variablePath).forTableField(EVENT_CONTEXT.OTHER_CONTEXT).sqlField();
     }
 
     @Override

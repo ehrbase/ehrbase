@@ -28,6 +28,7 @@ import org.ehrbase.aql.sql.binding.I_JoinBinder;
 import org.ehrbase.aql.sql.queryImpl.attribute.*;
 import org.ehrbase.aql.sql.queryImpl.attribute.composer.ComposerResolver;
 import org.ehrbase.aql.sql.queryImpl.attribute.composition.CompositionResolver;
+import org.ehrbase.aql.sql.queryImpl.attribute.composition.FullCompositionJson;
 import org.ehrbase.aql.sql.queryImpl.attribute.ehr.EhrResolver;
 import org.ehrbase.aql.sql.queryImpl.attribute.eventcontext.EventContextResolver;
 import org.ehrbase.service.IntrospectService;
@@ -54,7 +55,6 @@ public class CompositionAttributeQuery extends ObjectQuery implements I_QueryImp
     //    private MetaData metaData;
     private final IntrospectService introspectCache;
 
-    protected final TableField NULL_FIELD = null;
 
     public CompositionAttributeQuery(DSLContext context, PathResolver pathResolver, String serverNodeId, String entry_root, IntrospectService introspectCache) {
         super(context, pathResolver);
@@ -64,43 +64,49 @@ public class CompositionAttributeQuery extends ObjectQuery implements I_QueryImp
     }
 
     @Override
-    public Field<?> makeField(String templateId, UUID compositionId, String identifier, I_VariableDefinition variableDefinition, boolean withAlias, Clause clause) {
+    public Field<?> makeField(String templateId, UUID compositionId, String identifier, I_VariableDefinition variableDefinition, Clause clause) {
         //resolve composition attributes and/or context
         String columnAlias = variableDefinition.getPath();
+        jsonDataBlock = false;
         FieldResolutionContext fieldResolutionContext =
                 new FieldResolutionContext(context,
                         serverNodeId,
                         compositionId,
                         identifier,
                         variableDefinition,
-                        withAlias,
                         clause,
                         pathResolver,
                         introspectCache,
                         entry_root);
+
+        Field retField;
+
         if (columnAlias == null) {
-            return null;
-        }
-                else {
-            if (pathResolver.classNameOf(variableDefinition.getIdentifier()).equals("EHR")) {
-                return new EhrResolver(fieldResolutionContext, joinSetup).sqlField(columnAlias);
-                }
-            else if (pathResolver.classNameOf(variableDefinition.getIdentifier()).equals("COMPOSITION")) {
-                if (columnAlias.startsWith("composer"))
-                    return new ComposerResolver(fieldResolutionContext, joinSetup).sqlField(new AttributePath("composer").redux(columnAlias));
-                else if (columnAlias.startsWith("context"))
-                    return new EventContextResolver(fieldResolutionContext, joinSetup).sqlField(columnAlias);
-                else //assume composition attribute
-                    return new CompositionResolver(fieldResolutionContext, joinSetup).sqlField(columnAlias);
-        }
+            if (clause.equals(Clause.SELECT))
+                retField =  new FullCompositionJson(fieldResolutionContext, joinSetup).sqlField();
             else
-                throw new IllegalArgumentException("INTERNAL: the following class cannot be resolved for AQL querying:"+(pathResolver.classNameOf(variableDefinition.getIdentifier())));
+                retField = null;
+        } else {
+            if (pathResolver.classNameOf(variableDefinition.getIdentifier()).equals("EHR")) {
+                retField = new EhrResolver(fieldResolutionContext, joinSetup).sqlField(columnAlias);
+            } else if (pathResolver.classNameOf(variableDefinition.getIdentifier()).equals("COMPOSITION")) {
+                if (columnAlias.startsWith("composer"))
+                    retField = new ComposerResolver(fieldResolutionContext, joinSetup).sqlField(new AttributePath("composer").redux(columnAlias));
+                else if (columnAlias.startsWith("context"))
+                    retField = new EventContextResolver(fieldResolutionContext, joinSetup).sqlField(columnAlias);
+                else //assume composition attribute
+                    retField = new CompositionResolver(fieldResolutionContext, joinSetup).sqlField(columnAlias);
+            } else
+                throw new IllegalArgumentException("INTERNAL: the following class cannot be resolved for AQL querying:" + (pathResolver.classNameOf(variableDefinition.getIdentifier())));
         }
+
+        jsonDataBlock = fieldResolutionContext.isJsonDatablock();
+        return retField;
     }
 
     @Override
     public Field<?> whereField(String templateId, UUID compositionId, String identifier, I_VariableDefinition variableDefinition) {
-        return makeField(templateId, compositionId, identifier, variableDefinition, false, Clause.WHERE);
+        return makeField(templateId, compositionId, identifier, variableDefinition, Clause.WHERE);
     }
 
     public boolean isJoinComposition() {
@@ -139,10 +145,6 @@ public class CompositionAttributeQuery extends ObjectQuery implements I_QueryImp
         return joinSetup.isContainsEhrStatus();
     }
 
-    @Override
-    public boolean isJsonDataBlock() {
-        return false;
-    }
 
     @Override
     public boolean isContainsJqueryPath() {

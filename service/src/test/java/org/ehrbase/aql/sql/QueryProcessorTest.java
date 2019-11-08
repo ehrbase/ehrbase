@@ -180,8 +180,7 @@ public class QueryProcessorTest {
         // select full composition
         testCases.add(new AqlTestCase(8,
                 "select c from EHR e contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]",
-                "select \"ehr\".\"entry\".\"entry\" #>> '{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary'']}' as \"FIELD_0\" " +
-                        "from \"ehr\".\"entry\" " +
+                "select ehr.js_composition(composition_join.id, 'local')::text from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" " +
                         "where \"ehr\".\"entry\".\"template_id\" = ?",
                 true));
 
@@ -191,7 +190,7 @@ public class QueryProcessorTest {
                 "select a from EHR e " +
                         "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  " +
                         "contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]",
-                "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{}') as \"FIELD_0\", \"ehr\".\"entry\".\"template_id\" as \"_TEMPLATE_ID\" " +
+                "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{}') as \"FIELD_0\"" +
                         "from \"ehr\".\"entry\" where \"ehr\".\"entry\".\"template_id\" = ?",
                 true));
 

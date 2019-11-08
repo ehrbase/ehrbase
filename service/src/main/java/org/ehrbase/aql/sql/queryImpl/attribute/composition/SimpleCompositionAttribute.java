@@ -25,6 +25,8 @@ import org.jooq.Field;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 
+import static org.ehrbase.jooq.pg.Tables.COMPOSITION;
+
 public class SimpleCompositionAttribute extends CompositionAttribute {
 
     protected TableField tableField;
@@ -35,10 +37,16 @@ public class SimpleCompositionAttribute extends CompositionAttribute {
 
     @Override
     public Field<?> sqlField() {
+        Field actualField = DSL.field(tableField);
+
+        if (tableField.getTable().equals(COMPOSITION)) {
+            actualField = DSL.field(I_JoinBinder.compositionRecordTable.getName()+"."+tableField.getName());
+        }
         if (fieldContext.isWithAlias())
-            return aliased(DSL.field(I_JoinBinder.compositionRecordTable.getName()+"."+tableField.getName()));
+            return aliased(actualField);
         else
-            return DSL.field(I_JoinBinder.compositionRecordTable.getName()+"."+tableField.getName());
+            return actualField;
+
     }
 
     @Override

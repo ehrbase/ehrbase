@@ -18,7 +18,10 @@
 
 package org.ehrbase.service;
 
+import com.google.gson.JsonElement;
 import org.ehrbase.api.definitions.QueryMode;
+import org.ehrbase.api.definitions.StructuredString;
+import org.ehrbase.api.definitions.StructuredStringFormat;
 import org.ehrbase.api.dto.QueryDefinitionResultDto;
 import org.ehrbase.api.dto.QueryResultDto;
 import org.ehrbase.api.exception.GeneralRequestProcessingException;
@@ -99,7 +102,11 @@ public class QueryServiceImp extends BaseService implements QueryService {
         for (Record record : aqlResult.getRecords()) {
             Map<String, Object> fieldMap = new HashMap<>();
             for (Field field : record.fields()) {
-                fieldMap.put(field.getName(), record.getValue(field));
+                if (record.getValue(field) instanceof JsonElement){
+                    fieldMap.put(field.getName(), new StructuredString(((JsonElement) record.getValue(field)).toString(), StructuredStringFormat.JSON));
+                }
+                else
+                    fieldMap.put(field.getName(), record.getValue(field));
             }
 
             resultList.add(fieldMap);
@@ -123,7 +130,7 @@ public class QueryServiceImp extends BaseService implements QueryService {
         } catch (IllegalArgumentException iae){
             throw new IllegalArgumentException(iae.getMessage());
         } catch (Exception e){
-            throw new IllegalArgumentException("Could not retrieve stored query, reason:" + e);
+            throw new IllegalArgumentException("Could not process query, reason:" + e);
         }
     }
 

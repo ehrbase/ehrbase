@@ -21,6 +21,7 @@ package org.ehrbase.aql.sql.queryImpl.attribute.eventcontext;
 import org.ehrbase.aql.sql.queryImpl.attribute.*;
 import org.ehrbase.aql.sql.queryImpl.attribute.eventcontext.facility.FacilityResolver;
 import org.ehrbase.aql.sql.queryImpl.attribute.setting.SettingResolver;
+import org.ehrbase.aql.sql.queryImpl.value_field.GenericJsonField;
 import org.jooq.Field;
 
 import static org.ehrbase.jooq.pg.Tables.EVENT_CONTEXT;
@@ -37,12 +38,25 @@ public class EventContextResolver extends AttributeResolver
             return new ContextOtherContext(fieldResolutionContext, joinSetup).forTableField(NULL_FIELD).sqlField();
         }
 
+
+        if (path.equals("context/health_care_facility")){
+            return new EventContextJson(fieldResolutionContext, joinSetup).forJsonPath("health_care_facility").sqlField();
+        }
+
+        if (path.equals("context/health_care_facility/external_ref")){
+            return new EventContextJson(fieldResolutionContext, joinSetup).forJsonPath("health_care_facility/external_ref").sqlField();
+        }
+
+        if (path.equals("context/health_care_facility/external_ref/id")){
+            return new EventContextJson(fieldResolutionContext, joinSetup).forJsonPath("health_care_facility/external_ref/id").sqlField();
+        }
+
         if (path.startsWith("context/health_care_facility")) {
             return new FacilityResolver(fieldResolutionContext, joinSetup).sqlField(new AttributePath("context/health_care_facility").redux(path));
         }
 
         if (path.startsWith("context/facility")) {
-            return new FacilityResolver(fieldResolutionContext, joinSetup).sqlField(new AttributePath("context/facility").redux(path));
+            return new FacilityResolver(fieldResolutionContext, joinSetup).sqlField(new AttributePath("context/health_care_facility").redux(path));
         }
 
         if (path.startsWith("context/setting")) {
@@ -52,8 +66,12 @@ public class EventContextResolver extends AttributeResolver
         switch (path){
             case "context":
                 return new EventContextJson(fieldResolutionContext, joinSetup).forTableField(NULL_FIELD).sqlField();
+            case "context/start_time":
+                return new EventContextJson(fieldResolutionContext, joinSetup).forJsonPath("start_time").forTableField(EVENT_CONTEXT.START_TIME).sqlField();
             case "context/start_time/value":
                 return new TemporalWithTimeZone(fieldResolutionContext, joinSetup).forTableField(EVENT_CONTEXT.START_TIME).sqlField();
+            case "context/end_time":
+                return new EventContextJson(fieldResolutionContext, joinSetup).forJsonPath("end_time").forTableField(EVENT_CONTEXT.END_TIME).sqlField();
             case "context/end_time/value":
                 return new TemporalWithTimeZone(fieldResolutionContext, joinSetup).forTableField(EVENT_CONTEXT.END_TIME).sqlField();
             case "context/location":

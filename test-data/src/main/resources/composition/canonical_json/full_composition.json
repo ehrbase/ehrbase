@@ -1,0 +1,1617 @@
+{
+  "@class": "COMPOSITION",
+  "content": {
+    "/content[openEHR-EHR-SECTION.adhoc.v1]": [
+      {
+        "/$CLASS$": [
+          "Section"
+        ],
+        "/items[openEHR-EHR-ACTION.procedure.v1]": [
+          {
+            "/name": [
+              {
+                "value": "Procedure"
+              }
+            ],
+            "/time": {
+              "/name": [
+                {
+                  "value": "Procedure"
+                }
+              ],
+              "/value": {
+                "value": "2015-12-02T17:41:56.813Z",
+                "epoch_offset": 1449078116
+              },
+              "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-ACTION.procedure.v1 and name/value='Procedure']/time",
+              "/$CLASS$": "DvDateTime"
+            },
+            "/$CLASS$": "Action",
+            "/protocol[at0053]": {
+              "/$CLASS$": [
+                "ItemTree"
+              ],
+              "/items[at0054]": [
+                {
+                  "/name": [
+                    {
+                      "value": "Requestor order identifier"
+                    }
+                  ],
+                  "/value": {
+                    "value": "Ident. 38"
+                  },
+                  "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-ACTION.procedure.v1 and name/value='Procedure']/protocol[at0053]/items[at0054]",
+                  "/$CLASS$": "DvText"
+                }
+              ],
+              "/items[at0056]": [
+                {
+                  "/name": [
+                    {
+                      "value": "Receiver order identifier"
+                    }
+                  ],
+                  "/value": {
+                    "id": "8fb20ec3-b285-4ab8-acd4-25bcd58cbd24",
+                    "type": "Prescription",
+                    "issuer": "Issuer",
+                    "assigner": "Assigner"
+                  },
+                  "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-ACTION.procedure.v1 and name/value='Procedure']/protocol[at0053]/items[at0056]",
+                  "/$CLASS$": "DvIdentifier"
+                }
+              ],
+              "/items[openEHR-EHR-CLUSTER.person_name.v1]": [
+                {
+                  "/name": [
+                    {
+                      "value": "Person name"
+                    }
+                  ],
+                  "/$CLASS$": [
+                    "Cluster"
+                  ],
+                  "/items[at0001]": [
+                    {
+                      "/name": [
+                        {
+                          "value": "Unstructured name"
+                        }
+                      ],
+                      "/value": {
+                        "value": "Unstructured name 16"
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-ACTION.procedure.v1 and name/value='Procedure']/protocol[at0053]/items[openEHR-EHR-CLUSTER.person_name.v1 and name/value='Person name']/items[at0001]",
+                      "/$CLASS$": "DvText"
+                    }
+                  ],
+                  "/items[at0006]": [
+                    {
+                      "/name": [
+                        {
+                          "value": "Name type"
+                        }
+                      ],
+                      "/value": {
+                        "value": "AKA",
+                        "definingCode": {
+                          "codeString": "at0010",
+                          "terminologyId": {
+                            "name": "local",
+                            "value": "local"
+                          }
+                        }
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-ACTION.procedure.v1 and name/value='Procedure']/protocol[at0053]/items[openEHR-EHR-CLUSTER.person_name.v1 and name/value='Person name']/items[at0006]",
+                      "/$CLASS$": "DvCodedText"
+                    }
+                  ],
+                  "/items[at0022]": [
+                    {
+                      "/name": [
+                        {
+                          "value": "Preferred name"
+                        }
+                      ],
+                      "/value": {
+                        "value": true
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-ACTION.procedure.v1 and name/value='Procedure']/protocol[at0053]/items[openEHR-EHR-CLUSTER.person_name.v1 and name/value='Person name']/items[at0022]",
+                      "/$CLASS$": "DvBoolean"
+                    }
+                  ]
+                }
+              ]
+            },
+            "/description[at0001]": {
+              "/$CLASS$": [
+                "ItemTree"
+              ],
+              "/items[at0002]": [
+                {
+                  "/name": [
+                    {
+                      "value": "Procedure name"
+                    }
+                  ],
+                  "/value": {
+                    "value": "Procedure name 40"
+                  },
+                  "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-ACTION.procedure.v1 and name/value='Procedure']/description[at0001]/items[at0002]",
+                  "/$CLASS$": "DvText"
+                }
+              ],
+              "/items[at0065]": [
+                {
+                  "/name": [
+                    {
+                      "value": "Run-time coded name",
+                      "defining_code": {
+                        "codeString": "70901006",
+                        "terminologyId": {
+                          "name": "SNOMED-CT",
+                          "value": "SNOMED-CT"
+                        }
+                      }
+                    }
+                  ],
+                  "/value": {
+                    "value": "Method 0"
+                  },
+                  "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-ACTION.procedure.v1 and name/value='Procedure']/description[at0001]/items[at0065]",
+                  "/$CLASS$": "DvText"
+                },
+                {
+                  "/name": [
+                    {
+                      "value": "Method #1"
+                    }
+                  ],
+                  "/value": {
+                    "value": "Method #1 94"
+                  },
+                  "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-ACTION.procedure.v1 and name/value='Procedure']/description[at0001]/items[at0065]",
+                  "/$CLASS$": "DvText"
+                }
+              ],
+              "/items[at0066]": [
+                {
+                  "/name": [
+                    {
+                      "value": "Scheduled date/time"
+                    }
+                  ],
+                  "/value": {
+                    "value": "2015-12-02T17:41:56",
+                    "epoch_offset": 1449078116
+                  },
+                  "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-ACTION.procedure.v1 and name/value='Procedure']/description[at0001]/items[at0066]",
+                  "/$CLASS$": "DvDateTime"
+                }
+              ]
+            }
+          }
+        ],
+        "/items[openEHR-EHR-OBSERVATION.demo.v1]": [
+          {
+            "/name": [
+              {
+                "value": "Demonstration"
+              }
+            ],
+            "/$CLASS$": "Observation",
+            "/data[at0001]": {
+              "/name": [
+                {
+                  "value": "Event Series"
+                }
+              ],
+              "/events": {
+                "/events[at0002]": [
+                  {
+                    "/name": [
+                      {
+                        "value": "Any event"
+                      }
+                    ],
+                    "/time": {
+                      "/name": [
+                        {
+                          "value": "Any event"
+                        }
+                      ],
+                      "/value": {
+                        "value": "2015-12-02T17:41:56.809Z",
+                        "epoch_offset": 1449078116
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.demo.v1 and name/value='Demonstration']/data[at0001]/events[at0002 and name/value='Any event']/time",
+                      "/$CLASS$": "DvDateTime"
+                    },
+                    "/$CLASS$": "PointEvent",
+                    "/data[at0003]": {
+                      "/$CLASS$": [
+                        "ItemTree"
+                      ],
+                      "/items[at0004]": [
+                        {
+                          "/name": [
+                            {
+                              "value": "Heading1"
+                            }
+                          ],
+                          "/$CLASS$": [
+                            "Cluster"
+                          ],
+                          "/items[at0005]": [
+                            {
+                              "/name": [
+                                {
+                                  "value": "Free text or coded"
+                                }
+                              ],
+                              "/value": {
+                                "value": "Free text or coded 33"
+                              },
+                              "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.demo.v1 and name/value='Demonstration']/data[at0001]/events[at0002 and name/value='Any event']/data[at0003]/items[at0004 and name/value='Heading1']/items[at0005]",
+                              "/$CLASS$": "DvText"
+                            }
+                          ],
+                          "/items[at0006]": [
+                            {
+                              "/name": [
+                                {
+                                  "value": "Text that uses Internal codes"
+                                }
+                              ],
+                              "/value": {
+                                "value": "Reclining",
+                                "definingCode": {
+                                  "codeString": "at0008",
+                                  "terminologyId": {
+                                    "name": "local",
+                                    "value": "local"
+                                  }
+                                }
+                              },
+                              "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.demo.v1 and name/value='Demonstration']/data[at0001]/events[at0002 and name/value='Any event']/data[at0003]/items[at0004 and name/value='Heading1']/items[at0006]",
+                              "/$CLASS$": "DvCodedText"
+                            }
+                          ],
+                          "/items[at0011]": [
+                            {
+                              "/name": [
+                                {
+                                  "value": "Text that is sourced from an external terminology"
+                                }
+                              ],
+                              "/value": {
+                                "value": "T.38 description",
+                                "definingCode": {
+                                  "codeString": "T.38",
+                                  "terminologyId": {
+                                    "name": "external_terminology",
+                                    "value": "external_terminology"
+                                  }
+                                }
+                              },
+                              "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.demo.v1 and name/value='Demonstration']/data[at0001]/events[at0002 and name/value='Any event']/data[at0003]/items[at0004 and name/value='Heading1']/items[at0011]",
+                              "/$CLASS$": "DvCodedText"
+                            }
+                          ],
+                          "/items[at0012]": [
+                            {
+                              "/name": [
+                                {
+                                  "value": "Quantity"
+                                }
+                              ],
+                              "/value": {
+                                "units": "cm",
+                                "magnitude": 96.63,
+                                "precision": 1,
+                                "otherReferenceRanges": []
+                              },
+                              "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.demo.v1 and name/value='Demonstration']/data[at0001]/events[at0002 and name/value='Any event']/data[at0003]/items[at0004 and name/value='Heading1']/items[at0012]",
+                              "/$CLASS$": "DvQuantity"
+                            }
+                          ],
+                          "/items[at0013]": [
+                            {
+                              "/name": [
+                                {
+                                  "value": "Count"
+                                }
+                              ],
+                              "/value": {
+                                "magnitude": 908,
+                                "otherReferenceRanges": []
+                              },
+                              "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.demo.v1 and name/value='Demonstration']/data[at0001]/events[at0002 and name/value='Any event']/data[at0003]/items[at0004 and name/value='Heading1']/items[at0013]",
+                              "/$CLASS$": "DvCount"
+                            }
+                          ],
+                          "/items[at0014]": [
+                            {
+                              "/name": [
+                                {
+                                  "value": "Date/Time"
+                                }
+                              ],
+                              "/value": {
+                                "value": "2015-12-02T17:41:56",
+                                "epoch_offset": 1449078116
+                              },
+                              "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.demo.v1 and name/value='Demonstration']/data[at0001]/events[at0002 and name/value='Any event']/data[at0003]/items[at0004 and name/value='Heading1']/items[at0014]",
+                              "/$CLASS$": "DvDateTime"
+                            }
+                          ],
+                          "/items[at0015]": [
+                            {
+                              "/name": [
+                                {
+                                  "value": "Ordinal"
+                                }
+                              ],
+                              "/value": {
+                                "value": 1,
+                                "symbol": {
+                                  "value": "Slight pain",
+                                  "definingCode": {
+                                    "codeString": "at0039",
+                                    "terminologyId": {
+                                      "name": "local",
+                                      "value": "local"
+                                    }
+                                  }
+                                },
+                                "otherReferenceRanges": []
+                              },
+                              "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.demo.v1 and name/value='Demonstration']/data[at0001]/events[at0002 and name/value='Any event']/data[at0003]/items[at0004 and name/value='Heading1']/items[at0015]",
+                              "/$CLASS$": "DvOrdinal"
+                            }
+                          ],
+                          "/items[at0021]": [
+                            {
+                              "/name": [
+                                {
+                                  "value": "Duration"
+                                }
+                              ],
+                              "/value": {
+                                "value": "PT11H11M"
+                              },
+                              "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.demo.v1 and name/value='Demonstration']/data[at0001]/events[at0002 and name/value='Any event']/data[at0003]/items[at0004 and name/value='Heading1']/items[at0021]",
+                              "/$CLASS$": "DvDuration"
+                            }
+                          ],
+                          "/items[at0022]": [
+                            {
+                              "/name": [
+                                {
+                                  "value": "Interval of Integer"
+                                }
+                              ],
+                              "/value": {
+                                "interval": {
+                                  "lower": {
+                                    "magnitude": 4,
+                                    "otherReferenceRanges": []
+                                  },
+                                  "upper": {
+                                    "magnitude": 10,
+                                    "otherReferenceRanges": []
+                                  },
+                                  "lowerIncluded": true,
+                                  "upperIncluded": true,
+                                  "lowerUnbounded": false,
+                                  "upperUnbounded": false
+                                }
+                              },
+                              "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.demo.v1 and name/value='Demonstration']/data[at0001]/events[at0002 and name/value='Any event']/data[at0003]/items[at0004 and name/value='Heading1']/items[at0022]",
+                              "/$CLASS$": "DvInterval<DvCount>"
+                            }
+                          ],
+                          "/items[at0023]": [
+                            {
+                              "/name": [
+                                {
+                                  "value": "Interval of Quantity"
+                                }
+                              ],
+                              "/value": {
+                                "interval": {
+                                  "lower": {
+                                    "units": "cm",
+                                    "magnitude": 5.66,
+                                    "otherReferenceRanges": []
+                                  },
+                                  "upper": {
+                                    "units": "cm",
+                                    "magnitude": 62.91,
+                                    "otherReferenceRanges": []
+                                  },
+                                  "lowerIncluded": true,
+                                  "upperIncluded": true,
+                                  "lowerUnbounded": false,
+                                  "upperUnbounded": false
+                                }
+                              },
+                              "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.demo.v1 and name/value='Demonstration']/data[at0001]/events[at0002 and name/value='Any event']/data[at0003]/items[at0004 and name/value='Heading1']/items[at0023]",
+                              "/$CLASS$": "DvInterval<DvQuantity>"
+                            }
+                          ],
+                          "/items[at0024]": [
+                            {
+                              "/name": [
+                                {
+                                  "value": "Interval of Date"
+                                }
+                              ],
+                              "/value": {
+                                "interval": {
+                                  "lower": {
+                                    "value": "2015-12-02T17:41:56",
+                                    "epoch_offset": 1449078116
+                                  },
+                                  "upper": {
+                                    "value": "2015-12-02T17:41:56",
+                                    "epoch_offset": 1449078116
+                                  },
+                                  "lowerIncluded": true,
+                                  "upperIncluded": true,
+                                  "lowerUnbounded": false,
+                                  "upperUnbounded": false
+                                }
+                              },
+                              "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.demo.v1 and name/value='Demonstration']/data[at0001]/events[at0002 and name/value='Any event']/data[at0003]/items[at0004 and name/value='Heading1']/items[at0024]",
+                              "/$CLASS$": "DvInterval<DvDateTime>"
+                            }
+                          ],
+                          "/items[at0026]": [
+                            {
+                              "/name": [
+                                {
+                                  "value": "Multimedia"
+                                }
+                              ],
+                              "/value": {
+                                "uri": {
+                                  "value": "http://med.tube.com/sample"
+                                },
+                                "size": 504903212,
+                                "mediaType": {
+                                  "codeString": "text/xml",
+                                  "terminologyId": {
+                                    "name": "IANA_media-types",
+                                    "value": "IANA_media-types"
+                                  }
+                                },
+                                "alternateText": "alternate text"
+                              },
+                              "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.demo.v1 and name/value='Demonstration']/data[at0001]/events[at0002 and name/value='Any event']/data[at0003]/items[at0004 and name/value='Heading1']/items[at0026]",
+                              "/$CLASS$": "DvMultimedia"
+                            }
+                          ],
+                          "/items[at0027]": [
+                            {
+                              "/name": [
+                                {
+                                  "value": "URI - resource identifier"
+                                }
+                              ],
+                              "/value": {
+                                "value": "http://example.com/path/resource"
+                              },
+                              "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.demo.v1 and name/value='Demonstration']/data[at0001]/events[at0002 and name/value='Any event']/data[at0003]/items[at0004 and name/value='Heading1']/items[at0027]",
+                              "/$CLASS$": "DvURI"
+                            }
+                          ],
+                          "/items[at0028]": [
+                            {
+                              "/name": [
+                                {
+                                  "value": "Proportion"
+                                }
+                              ],
+                              "/value": {
+                                "type": 2,
+                                "numerator": 58.0,
+                                "precision": 0,
+                                "denominator": 100.0,
+                                "otherReferenceRanges": []
+                              },
+                              "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.demo.v1 and name/value='Demonstration']/data[at0001]/events[at0002 and name/value='Any event']/data[at0003]/items[at0004 and name/value='Heading1']/items[at0028]",
+                              "/$CLASS$": "DvProportion"
+                            }
+                          ],
+                          "/items[at0044]": [
+                            {
+                              "/name": [
+                                {
+                                  "value": "Identifier"
+                                }
+                              ],
+                              "/value": {
+                                "id": "0ffc464a-d954-46f0-9f77-05ed6877ccf5",
+                                "type": "Prescription",
+                                "issuer": "Issuer",
+                                "assigner": "Assigner"
+                              },
+                              "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.demo.v1 and name/value='Demonstration']/data[at0001]/events[at0002 and name/value='Any event']/data[at0003]/items[at0004 and name/value='Heading1']/items[at0044]",
+                              "/$CLASS$": "DvIdentifier"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              "/origin": {
+                "/name": [
+                  {
+                    "value": "Event Series"
+                  }
+                ],
+                "/value": {
+                  "value": "2015-12-02T17:41:56.809Z",
+                  "epoch_offset": 1449078116
+                },
+                "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.demo.v1 and name/value='Demonstration']/data[at0001]/origin",
+                "/$CLASS$": "DvDateTime"
+              },
+              "/$CLASS$": "History"
+            }
+          }
+        ],
+        "/items[openEHR-EHR-OBSERVATION.pulse.v1]": [
+          {
+            "/name": [
+              {
+                "value": "Pulse"
+              }
+            ],
+            "/$CLASS$": "Observation",
+            "/data[at0002]": {
+              "/name": [
+                {
+                  "value": "history"
+                }
+              ],
+              "/events": {
+                "/events[at0003]": [
+                  {
+                    "/name": [
+                      {
+                        "value": "First event"
+                      }
+                    ],
+                    "/time": {
+                      "/name": [
+                        {
+                          "value": "First event"
+                        }
+                      ],
+                      "/value": {
+                        "value": "2015-12-02T17:41:56.809Z",
+                        "epoch_offset": 1449078116
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.pulse.v1 and name/value='Pulse']/data[at0002]/events[at0003 and name/value='First event']/time",
+                      "/$CLASS$": "DvDateTime"
+                    },
+                    "/$CLASS$": "PointEvent",
+                    "/data[at0001]": {
+                      "/$CLASS$": [
+                        "ItemTree"
+                      ],
+                      "/items[at0004]": [
+                        {
+                          "/name": [
+                            {
+                              "value": "Pulse Rate",
+                              "defining_code": {
+                                "codeString": "at1026",
+                                "terminologyId": {
+                                  "name": "local",
+                                  "value": "local"
+                                }
+                              }
+                            }
+                          ],
+                          "/value": {
+                            "units": "/min",
+                            "magnitude": 53.0,
+                            "precision": 0,
+                            "otherReferenceRanges": []
+                          },
+                          "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.pulse.v1 and name/value='Pulse']/data[at0002]/events[at0003 and name/value='First event']/data[at0001]/items[at0004]",
+                          "/$CLASS$": "DvQuantity"
+                        }
+                      ],
+                      "/items[at0005]": [
+                        {
+                          "/name": [
+                            {
+                              "value": "Regularity"
+                            }
+                          ],
+                          "/value": {
+                            "value": "Regularly Irregular",
+                            "definingCode": {
+                              "codeString": "at0007",
+                              "terminologyId": {
+                                "name": "local",
+                                "value": "local"
+                              }
+                            }
+                          },
+                          "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.pulse.v1 and name/value='Pulse']/data[at0002]/events[at0003 and name/value='First event']/data[at0001]/items[at0005]",
+                          "/$CLASS$": "DvCodedText"
+                        }
+                      ],
+                      "/items[at1022]": [
+                        {
+                          "/name": [
+                            {
+                              "value": "Clinical Description"
+                            }
+                          ],
+                          "/value": {
+                            "value": "Clinical Description 14"
+                          },
+                          "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.pulse.v1 and name/value='Pulse']/data[at0002]/events[at0003 and name/value='First event']/data[at0001]/items[at1022]",
+                          "/$CLASS$": "DvText"
+                        }
+                      ],
+                      "/items[at1023]": [
+                        {
+                          "/name": [
+                            {
+                              "value": "Clinical Interpretation"
+                            }
+                          ],
+                          "/value": {
+                            "value": "Clinical Interpretation 23"
+                          },
+                          "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.pulse.v1 and name/value='Pulse']/data[at0002]/events[at0003 and name/value='First event']/data[at0001]/items[at1023]",
+                          "/$CLASS$": "DvText"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "/name": [
+                      {
+                        "value": "Second event"
+                      }
+                    ],
+                    "/time": {
+                      "/name": [
+                        {
+                          "value": "Second event"
+                        }
+                      ],
+                      "/value": {
+                        "value": "2015-12-02T17:41:56.809Z",
+                        "epoch_offset": 1449078116
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.pulse.v1 and name/value='Pulse']/data[at0002]/events[at0003 and name/value='Second event']/time",
+                      "/$CLASS$": "DvDateTime"
+                    },
+                    "/$CLASS$": "PointEvent",
+                    "/data[at0001]": {
+                      "/$CLASS$": [
+                        "ItemTree"
+                      ],
+                      "/items[at0004]": [
+                        {
+                          "/name": [
+                            {
+                              "value": "Pulse Rate",
+                              "defining_code": {
+                                "codeString": "at1026",
+                                "terminologyId": {
+                                  "name": "local",
+                                  "value": "local"
+                                }
+                              }
+                            }
+                          ],
+                          "/value": {
+                            "units": "/min",
+                            "magnitude": 3.0,
+                            "precision": 0,
+                            "otherReferenceRanges": []
+                          },
+                          "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.pulse.v1 and name/value='Pulse']/data[at0002]/events[at0003 and name/value='Second event']/data[at0001]/items[at0004]",
+                          "/$CLASS$": "DvQuantity"
+                        }
+                      ],
+                      "/items[at0005]": [
+                        {
+                          "/name": [
+                            {
+                              "value": "Regularity"
+                            }
+                          ],
+                          "/value": {
+                            "value": "Regularly Irregular",
+                            "definingCode": {
+                              "codeString": "at0007",
+                              "terminologyId": {
+                                "name": "local",
+                                "value": "local"
+                              }
+                            }
+                          },
+                          "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.pulse.v1 and name/value='Pulse']/data[at0002]/events[at0003 and name/value='Second event']/data[at0001]/items[at0005]",
+                          "/$CLASS$": "DvCodedText"
+                        }
+                      ],
+                      "/items[at1005]": [
+                        {
+                          "/name": [
+                            {
+                              "value": "Pulse Presence"
+                            }
+                          ],
+                          "/value": {
+                            "value": "Present",
+                            "definingCode": {
+                              "codeString": "at1024",
+                              "terminologyId": {
+                                "name": "local",
+                                "value": "local"
+                              }
+                            }
+                          },
+                          "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.pulse.v1 and name/value='Pulse']/data[at0002]/events[at0003 and name/value='Second event']/data[at0001]/items[at1005]",
+                          "/$CLASS$": "DvCodedText"
+                        }
+                      ],
+                      "/items[at1023]": [
+                        {
+                          "/name": [
+                            {
+                              "value": "Clinical Interpretation"
+                            }
+                          ],
+                          "/value": {
+                            "value": "Clinical Interpretation 34"
+                          },
+                          "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.pulse.v1 and name/value='Pulse']/data[at0002]/events[at0003 and name/value='Second event']/data[at0001]/items[at1023]",
+                          "/$CLASS$": "DvText"
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "/events[at1036]": [
+                  {
+                    "/name": [
+                      {
+                        "value": "Maximum"
+                      }
+                    ],
+                    "/time": {
+                      "/name": [
+                        {
+                          "value": "Maximum"
+                        }
+                      ],
+                      "/value": {
+                        "value": "2015-12-02T17:41:56.809Z",
+                        "epoch_offset": 1449078116
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.pulse.v1 and name/value='Pulse']/data[at0002]/events[at1036 and name/value='Maximum']/time",
+                      "/$CLASS$": "DvDateTime"
+                    },
+                    "/width": {
+                      "/name": [
+                        {
+                          "value": "Maximum"
+                        }
+                      ],
+                      "/value": {
+                        "value": "PT11H11M"
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.pulse.v1 and name/value='Pulse']/data[at0002]/events[at1036 and name/value='Maximum']/width",
+                      "/$CLASS$": "DvDuration"
+                    },
+                    "/$CLASS$": "IntervalEvent",
+                    "/data[at0001]": {
+                      "/$CLASS$": [
+                        "ItemTree"
+                      ],
+                      "/items[at0004]": [
+                        {
+                          "/name": [
+                            {
+                              "value": "Heart Rate",
+                              "defining_code": {
+                                "codeString": "at1027",
+                                "terminologyId": {
+                                  "name": "local",
+                                  "value": "local"
+                                }
+                              }
+                            }
+                          ],
+                          "/value": {
+                            "units": "/min",
+                            "magnitude": 16.0,
+                            "precision": 0,
+                            "otherReferenceRanges": []
+                          },
+                          "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.pulse.v1 and name/value='Pulse']/data[at0002]/events[at1036 and name/value='Maximum']/data[at0001]/items[at0004]",
+                          "/$CLASS$": "DvQuantity"
+                        }
+                      ]
+                    },
+                    "/math_function": {
+                      "/name": [
+                        {
+                          "value": "Maximum"
+                        }
+                      ],
+                      "/value": {
+                        "value": "maximum",
+                        "definingCode": {
+                          "codeString": "144",
+                          "terminologyId": {
+                            "name": "openehr",
+                            "value": "openehr"
+                          }
+                        }
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.pulse.v1 and name/value='Pulse']/data[at0002]/events[at1036 and name/value='Maximum']/math_function",
+                      "/$CLASS$": "DvCodedText"
+                    },
+                    "/state[at0012]": {
+                      "/$CLASS$": [
+                        "ItemTree"
+                      ],
+                      "/items[at0013]": [
+                        {
+                          "/name": [
+                            {
+                              "value": "Position"
+                            }
+                          ],
+                          "/value": {
+                            "value": "Sitting",
+                            "definingCode": {
+                              "codeString": "at1001",
+                              "terminologyId": {
+                                "name": "local",
+                                "value": "local"
+                              }
+                            }
+                          },
+                          "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.pulse.v1 and name/value='Pulse']/data[at0002]/events[at1036 and name/value='Maximum']/state[at0012]/items[at0013]",
+                          "/$CLASS$": "DvCodedText"
+                        }
+                      ],
+                      "/items[at1018]": [
+                        {
+                          "/name": [
+                            {
+                              "value": "Confounding Factors"
+                            }
+                          ],
+                          "/value": {
+                            "value": "Confounding Factors 16"
+                          },
+                          "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.pulse.v1 and name/value='Pulse']/data[at0002]/events[at1036 and name/value='Maximum']/state[at0012]/items[at1018]",
+                          "/$CLASS$": "DvText"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              "/origin": {
+                "/name": [
+                  {
+                    "value": "history"
+                  }
+                ],
+                "/value": {
+                  "value": "2015-12-02T17:41:56.809Z",
+                  "epoch_offset": 1449078116
+                },
+                "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.pulse.v1 and name/value='Pulse']/data[at0002]/origin",
+                "/$CLASS$": "DvDateTime"
+              },
+              "/$CLASS$": "History"
+            },
+            "/protocol[at0010]": {
+              "/$CLASS$": [
+                "ItemTree"
+              ],
+              "/items[at1019]": [
+                {
+                  "/name": [
+                    {
+                      "value": "Method"
+                    }
+                  ],
+                  "/value": {
+                    "value": "Device",
+                    "definingCode": {
+                      "codeString": "at1034",
+                      "terminologyId": {
+                        "name": "local",
+                        "value": "local"
+                      }
+                    }
+                  },
+                  "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.pulse.v1 and name/value='Pulse']/protocol[at0010]/items[at1019]",
+                  "/$CLASS$": "DvCodedText"
+                }
+              ],
+              "/items[at1037]": [
+                {
+                  "/name": [
+                    {
+                      "value": "Findings Location"
+                    }
+                  ],
+                  "/value": {
+                    "value": "Femoral Artery - Left",
+                    "definingCode": {
+                      "codeString": "at1043",
+                      "terminologyId": {
+                        "name": "local",
+                        "value": "local"
+                      }
+                    }
+                  },
+                  "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.pulse.v1 and name/value='Pulse']/protocol[at0010]/items[at1037]",
+                  "/$CLASS$": "DvCodedText"
+                }
+              ],
+              "/items[openEHR-EHR-CLUSTER.device.v1]": [
+                {
+                  "/name": [
+                    {
+                      "value": "Medical Device"
+                    }
+                  ],
+                  "/$CLASS$": [
+                    "Cluster"
+                  ],
+                  "/items[at0001]": [
+                    {
+                      "/name": [
+                        {
+                          "value": "Device name"
+                        }
+                      ],
+                      "/value": {
+                        "value": "Device name 33"
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.pulse.v1 and name/value='Pulse']/protocol[at0010]/items[openEHR-EHR-CLUSTER.device.v1 and name/value='Medical Device']/items[at0001]",
+                      "/$CLASS$": "DvText"
+                    }
+                  ],
+                  "/items[at0004]": [
+                    {
+                      "/name": [
+                        {
+                          "value": "Manufacturer"
+                        }
+                      ],
+                      "/value": {
+                        "value": "Manufacturer 6"
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.pulse.v1 and name/value='Pulse']/protocol[at0010]/items[openEHR-EHR-CLUSTER.device.v1 and name/value='Medical Device']/items[at0004]",
+                      "/$CLASS$": "DvText"
+                    }
+                  ],
+                  "/items[at0005]": [
+                    {
+                      "/name": [
+                        {
+                          "value": "Date of manufacture"
+                        }
+                      ],
+                      "/value": {
+                        "value": "2015-12-02T17:41:56",
+                        "epoch_offset": 1449078116
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.pulse.v1 and name/value='Pulse']/protocol[at0010]/items[openEHR-EHR-CLUSTER.device.v1 and name/value='Medical Device']/items[at0005]",
+                      "/$CLASS$": "DvDateTime"
+                    }
+                  ],
+                  "/items[at0021]": [
+                    {
+                      "/name": [
+                        {
+                          "value": "Unique device identifier (UDI)"
+                        }
+                      ],
+                      "/value": {
+                        "id": "59466e78-d15c-4765-87da-20e56f1413a6",
+                        "type": "Prescription",
+                        "issuer": "Issuer",
+                        "assigner": "Assigner"
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-OBSERVATION.pulse.v1 and name/value='Pulse']/protocol[at0010]/items[openEHR-EHR-CLUSTER.device.v1 and name/value='Medical Device']/items[at0021]",
+                      "/$CLASS$": "DvIdentifier"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "/items[openEHR-EHR-EVALUATION.cpr_decision_uk.v1]": [
+          {
+            "/name": [
+              {
+                "value": "CPR decision"
+              }
+            ],
+            "/$CLASS$": "Evaluation",
+            "/data[at0001]": {
+              "/$CLASS$": [
+                "ItemTree"
+              ],
+              "/items[at0002]": [
+                {
+                  "/name": [
+                    {
+                      "value": "Date of CPR decision"
+                    }
+                  ],
+                  "/value": {
+                    "value": "2015-12-02T17:41:56",
+                    "epoch_offset": 1449078116
+                  },
+                  "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-EVALUATION.cpr_decision_uk.v1 and name/value='CPR decision']/data[at0001]/items[at0002]",
+                  "/$CLASS$": "DvDateTime"
+                }
+              ],
+              "/items[at0003]": [
+                {
+                  "/name": [
+                    {
+                      "value": "CPR decision"
+                    }
+                  ],
+                  "/value": {
+                    "value": "CPR decision status unknown",
+                    "definingCode": {
+                      "codeString": "at0022",
+                      "terminologyId": {
+                        "name": "local",
+                        "value": "local"
+                      }
+                    }
+                  },
+                  "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-EVALUATION.cpr_decision_uk.v1 and name/value='CPR decision']/data[at0001]/items[at0003]",
+                  "/$CLASS$": "DvCodedText"
+                }
+              ]
+            },
+            "/protocol[at0010]": {
+              "/$CLASS$": [
+                "ItemTree"
+              ],
+              "/items[at0009]": [
+                {
+                  "/name": [
+                    {
+                      "value": "Date for review of CPR decision"
+                    }
+                  ],
+                  "/value": {
+                    "value": "2015-12-02T17:41:56",
+                    "epoch_offset": 1449078116
+                  },
+                  "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-EVALUATION.cpr_decision_uk.v1 and name/value='CPR decision']/protocol[at0010]/items[at0009]",
+                  "/$CLASS$": "DvDateTime"
+                }
+              ],
+              "/items[at0014]": [
+                {
+                  "/name": [
+                    {
+                      "value": "Discussion with informal carer"
+                    }
+                  ],
+                  "/value": {
+                    "value": "Resuscitation not discussed with informal carer",
+                    "definingCode": {
+                      "codeString": "at0024",
+                      "terminologyId": {
+                        "name": "local",
+                        "value": "local"
+                      }
+                    }
+                  },
+                  "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-EVALUATION.cpr_decision_uk.v1 and name/value='CPR decision']/protocol[at0010]/items[at0014]",
+                  "/$CLASS$": "DvCodedText"
+                }
+              ]
+            }
+          }
+        ],
+        "/items[openEHR-EHR-INSTRUCTION.request-procedure.v1]": [
+          {
+            "/uid": {
+              "/name": [
+                {
+                  "value": "9a3871f8-8105-44f9-a06c-5626acaf40a3"
+                }
+              ],
+              "/value": {
+                "value": "9a3871f8-8105-44f9-a06c-5626acaf40a3"
+              },
+              "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-INSTRUCTION.request-procedure.v1 and name/value='Procedure request']/uid",
+              "/$CLASS$": "HierObjectId"
+            },
+            "/name": [
+              {
+                "value": "Procedure request"
+              }
+            ],
+            "/$CLASS$": "Instruction",
+            "/narrative": {
+              "/name": [
+                {
+                  "value": "Procedure request"
+                }
+              ],
+              "/value": {
+                "value": "Human readable instruction narrative"
+              },
+              "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-INSTRUCTION.request-procedure.v1 and name/value='Procedure request']/narrative",
+              "/$CLASS$": "DvText"
+            },
+            "/activities": {
+              "/$CLASS$": [
+                "Activity"
+              ],
+              "/activities[at0001]": [
+                {
+                  "/name": [
+                    {
+                      "value": "Request"
+                    }
+                  ],
+                  "/timing": {
+                    "/value": {
+                      "value": "R2/2015-12-02T17:00:00Z/P3M",
+                      "formalism": "timing"
+                    },
+                    "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-INSTRUCTION.request-procedure.v1 and name/value='Procedure request']/activities[at0001 and name/value='Request']/timing",
+                    "/$CLASS$": "DvParsable"
+                  },
+                  "/$CLASS$": "Activity",
+                  "/action_archetype_id": "/.*/",
+                  "/description[at0009]": {
+                    "/$CLASS$": [
+                      "ItemTree"
+                    ],
+                    "/items[at0076]": [
+                      {
+                        "/name": [
+                          {
+                            "value": "Supplementary information to follow"
+                          }
+                        ],
+                        "/value": {
+                          "value": true
+                        },
+                        "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-INSTRUCTION.request-procedure.v1 and name/value='Procedure request']/activities[at0001 and name/value='Request']/description[at0009]/items[at0076]",
+                        "/$CLASS$": "DvBoolean"
+                      }
+                    ],
+                    "/items[at0121]": [
+                      {
+                        "/name": [
+                          {
+                            "value": "Procedure requested"
+                          }
+                        ],
+                        "/value": {
+                          "value": "Procedure requested 79"
+                        },
+                        "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-INSTRUCTION.request-procedure.v1 and name/value='Procedure request']/activities[at0001 and name/value='Request']/description[at0009]/items[at0121]",
+                        "/$CLASS$": "DvText"
+                      }
+                    ],
+                    "/items[at0144]": [
+                      {
+                        "/name": [
+                          {
+                            "value": "Latest date service required"
+                          }
+                        ],
+                        "/value": {
+                          "value": "2015-12-02T17:41:56",
+                          "epoch_offset": 1449078116
+                        },
+                        "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-INSTRUCTION.request-procedure.v1 and name/value='Procedure request']/activities[at0001 and name/value='Request']/description[at0009]/items[at0144]",
+                        "/$CLASS$": "DvDateTime"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "/name": [
+                    {
+                      "value": "Request #3"
+                    }
+                  ],
+                  "/timing": {
+                    "/value": {
+                      "value": "R2/2015-12-02T17:00:00Z/P1M",
+                      "formalism": "timing"
+                    },
+                    "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-INSTRUCTION.request-procedure.v1 and name/value='Procedure request']/activities[at0001 and name/value='Request #3']/timing",
+                    "/$CLASS$": "DvParsable"
+                  },
+                  "/$CLASS$": "Activity",
+                  "/action_archetype_id": "/.*/",
+                  "/description[at0009]": {
+                    "/$CLASS$": [
+                      "ItemTree"
+                    ],
+                    "/items[at0076]": [
+                      {
+                        "/name": [
+                          {
+                            "value": "Supplementary information to follow"
+                          }
+                        ],
+                        "/value": {
+                          "value": true
+                        },
+                        "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-INSTRUCTION.request-procedure.v1 and name/value='Procedure request']/activities[at0001 and name/value='Request #3']/description[at0009]/items[at0076]",
+                        "/$CLASS$": "DvBoolean"
+                      }
+                    ],
+                    "/items[at0121]": [
+                      {
+                        "/name": [
+                          {
+                            "value": "Procedure requested"
+                          }
+                        ],
+                        "/value": {
+                          "value": "Procedure requested 84"
+                        },
+                        "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-INSTRUCTION.request-procedure.v1 and name/value='Procedure request']/activities[at0001 and name/value='Request #3']/description[at0009]/items[at0121]",
+                        "/$CLASS$": "DvText"
+                      }
+                    ],
+                    "/items[at0144]": [
+                      {
+                        "/name": [
+                          {
+                            "value": "Latest date service required"
+                          }
+                        ],
+                        "/value": {
+                          "value": "2015-12-02T17:41:56",
+                          "epoch_offset": 1449078116
+                        },
+                        "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-INSTRUCTION.request-procedure.v1 and name/value='Procedure request']/activities[at0001 and name/value='Request #3']/description[at0009]/items[at0144]",
+                        "/$CLASS$": "DvDateTime"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            "/protocol[at0008]": {
+              "/$CLASS$": [
+                "ItemTree"
+              ],
+              "/items[openEHR-EHR-CLUSTER.distribution.v1]": [
+                {
+                  "/name": [
+                    {
+                      "value": "Distribution"
+                    }
+                  ],
+                  "/$CLASS$": [
+                    "Cluster"
+                  ],
+                  "/items[at0006]": [
+                    {
+                      "/name": [
+                        {
+                          "value": "Date sent"
+                        }
+                      ],
+                      "/value": {
+                        "value": "2015-12-02T17:41:56",
+                        "epoch_offset": 1449078116
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-INSTRUCTION.request-procedure.v1 and name/value='Procedure request']/protocol[at0008]/items[openEHR-EHR-CLUSTER.distribution.v1 and name/value='Distribution']/items[at0006]",
+                      "/$CLASS$": "DvDateTime"
+                    }
+                  ],
+                  "/items[at0008]": [
+                    {
+                      "/name": [
+                        {
+                          "value": "Group category"
+                        }
+                      ],
+                      "/value": {
+                        "value": "Group category 26"
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-INSTRUCTION.request-procedure.v1 and name/value='Procedure request']/protocol[at0008]/items[openEHR-EHR-CLUSTER.distribution.v1 and name/value='Distribution']/items[at0008]",
+                      "/$CLASS$": "DvText"
+                    }
+                  ],
+                  "/items[at0012]": [
+                    {
+                      "/name": [
+                        {
+                          "value": "Urgent"
+                        }
+                      ],
+                      "/value": {
+                        "value": true
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-INSTRUCTION.request-procedure.v1 and name/value='Procedure request']/protocol[at0008]/items[openEHR-EHR-CLUSTER.distribution.v1 and name/value='Distribution']/items[at0012]",
+                      "/$CLASS$": "DvBoolean"
+                    }
+                  ]
+                }
+              ]
+            },
+            "/other_participations": [
+              {
+                "mode": {
+                  "value": "not specified",
+                  "definingCode": {
+                    "codeString": "193",
+                    "terminologyId": {
+                      "name": "openehr",
+                      "value": "openehr"
+                    }
+                  }
+                },
+                "/name": [
+                  {
+                    "value": {
+                      "value": "other participation"
+                    }
+                  }
+                ],
+                "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-INSTRUCTION.request-procedure.v1 and name/value='Procedure request']/other_participations",
+                "/$CLASS$": "Participation",
+                "function": {
+                  "value": "performer"
+                },
+                "performer": {
+                  "name": "Nurse Bailey",
+                  "/$CLASS$": "PartyIdentified"
+                }
+              }
+            ]
+          }
+        ],
+        "/items[openEHR-EHR-ADMIN_ENTRY.inpatient_admission_uk.v1]": [
+          {
+            "/name": [
+              {
+                "value": "Inpatient admission"
+              }
+            ],
+            "/$CLASS$": "AdminEntry",
+            "/data[at0001]": {
+              "/$CLASS$": [
+                "ItemTree"
+              ],
+              "/items[at0002]": [
+                {
+                  "/name": [
+                    {
+                      "value": "Date of admission"
+                    }
+                  ],
+                  "/value": {
+                    "value": "2015-12-02T17:41:56",
+                    "epoch_offset": 1449078116
+                  },
+                  "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-ADMIN_ENTRY.inpatient_admission_uk.v1 and name/value='Inpatient admission']/data[at0001]/items[at0002]",
+                  "/$CLASS$": "DvDateTime"
+                }
+              ],
+              "/items[at0003]": [
+                {
+                  "/name": [
+                    {
+                      "value": "Admission method"
+                    }
+                  ],
+                  "/value": {
+                    "value": "D.80 description",
+                    "definingCode": {
+                      "codeString": "D.80",
+                      "terminologyId": {
+                        "name": "external_terminology",
+                        "value": "external_terminology"
+                      }
+                    }
+                  },
+                  "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-ADMIN_ENTRY.inpatient_admission_uk.v1 and name/value='Inpatient admission']/data[at0001]/items[at0003]",
+                  "/$CLASS$": "DvCodedText"
+                }
+              ],
+              "/items[at0009]": [
+                {
+                  "/name": [
+                    {
+                      "value": "Source of admission"
+                    }
+                  ],
+                  "/value": {
+                    "value": "Source of admission 42"
+                  },
+                  "/$PATH$": "/content[openEHR-EHR-SECTION.adhoc.v1 and name/value='Ad hoc heading']/items[openEHR-EHR-ADMIN_ENTRY.inpatient_admission_uk.v1 and name/value='Inpatient admission']/data[at0001]/items[at0009]",
+                  "/$CLASS$": "DvText"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "context": {
+    "@class": "EVENT_CONTEXT",
+    "setting": {
+      "_type": "DV_CODED_TEXT",
+      "value": "other care",
+      "defining_code": {
+        "_type": "CODE_PHRASE",
+        "code_string": "238",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "openehr"
+        }
+      }
+    },
+    "start_time": {
+      "_type": "DV_DATE_TIME",
+      "value": "1970-01-01T07:00:00Z"
+    },
+    "other_context": {
+      "/$CLASS$": [
+        "ItemTree"
+      ],
+      "/items[openEHR-EHR-CLUSTER.composition_context_detail.v1]": [
+        {
+          "/name": [
+            {
+              "value": "Context detail"
+            }
+          ],
+          "/$CLASS$": [
+            "Cluster"
+          ],
+          "/items[at0001]": [
+            {
+              "/name": [
+                {
+                  "value": "Period of care identifier"
+                }
+              ],
+              "/value": {
+                "value": "Ident. 52"
+              },
+              "/$PATH$": "/items[at0001 and name/value='Tree']/items[openEHR-EHR-CLUSTER.composition_context_detail.v1 and name/value='Context detail']/items[at0001]",
+              "/$CLASS$": "DvText"
+            }
+          ],
+          "/items[at0008]": [
+            {
+              "/name": [
+                {
+                  "value": "Tags"
+                }
+              ],
+              "/value": {
+                "value": "Tags 96"
+              },
+              "/$PATH$": "/items[at0001 and name/value='Tree']/items[openEHR-EHR-CLUSTER.composition_context_detail.v1 and name/value='Context detail']/items[at0008]",
+              "/$CLASS$": "DvText"
+            },
+            {
+              "/name": [
+                {
+                  "value": "Tags #2"
+                }
+              ],
+              "/value": {
+                "value": "Tags 96"
+              },
+              "/$PATH$": "/items[at0001 and name/value='Tree']/items[openEHR-EHR-CLUSTER.composition_context_detail.v1 and name/value='Context detail']/items[at0008]",
+              "/$CLASS$": "DvText"
+            }
+          ],
+          "/items[at0009]": [
+            {
+              "/name": [
+                {
+                  "value": "Attachment"
+                }
+              ],
+              "/value": {
+                "uri": {
+                  "value": "http://med.tube.com/sample"
+                },
+                "size": 504903212,
+                "mediaType": {
+                  "codeString": "video/mp4",
+                  "terminologyId": {
+                    "name": "IANA_media-types",
+                    "value": "IANA_media-types"
+                  }
+                },
+                "alternateText": "alternate text"
+              },
+              "/$PATH$": "/items[at0001 and name/value='Tree']/items[openEHR-EHR-CLUSTER.composition_context_detail.v1 and name/value='Context detail']/items[at0009]",
+              "/$CLASS$": "DvMultimedia"
+            }
+          ]
+        }
+      ]
+    },
+    "health_care_facility": {
+      "name": "Hospital",
+      "_type": "PARTY_IDENTIFIED",
+      "external_ref": {
+        "id": {
+          "_type": "GENERIC_ID",
+          "value": "9091",
+          "scheme": "HOSPITAL-NS"
+        },
+        "_type": "PARTY_REF",
+        "namespace": "HOSPITAL-NS"
+      }
+    }
+  },
+  "category": {
+    "_type": "DV_CODED_TEXT",
+    "value": "Event",
+    "defining_code": {
+      "_type": "CODE_PHRASE",
+      "code_string": "433",
+      "terminology_id": {
+        "_type": "TERMINOLOGY_ID",
+        "value": "openehr"
+      }
+    }
+  },
+  "composer": {
+    "name": "Silvia Blake",
+    "_type": "PARTY_IDENTIFIED"
+  },
+  "language": {
+    "_type": "CODE_PHRASE",
+    "code_string": "en",
+    "terminology_id": {
+      "_type": "TERMINOLOGY_ID",
+      "value": "ISO_639-1"
+    }
+  },
+  "territory": {
+    "_type": "CODE_PHRASE",
+    "code_string": "GB",
+    "terminology_id": {
+      "_type": "TERMINOLOGY_ID",
+      "value": "ISO_3166-1"
+    }
+  }
+}

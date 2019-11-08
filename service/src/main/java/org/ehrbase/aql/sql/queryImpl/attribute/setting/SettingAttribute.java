@@ -18,17 +18,24 @@
 package org.ehrbase.aql.sql.queryImpl.attribute.setting;
 
 import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
+import org.ehrbase.aql.sql.queryImpl.attribute.GenericJsonPath;
 import org.ehrbase.aql.sql.queryImpl.attribute.I_RMObjectAttribute;
 import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
 import org.ehrbase.aql.sql.queryImpl.attribute.eventcontext.EventContextAttribute;
+import org.ehrbase.aql.sql.queryImpl.value_field.GenericJsonField;
 import org.jooq.Field;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 
+import java.util.Optional;
+
+import static org.ehrbase.jooq.pg.tables.EventContext.EVENT_CONTEXT;
+
 public class SettingAttribute extends EventContextAttribute {
 
     protected Field tableField;
-    protected String jsonPath;
+    protected Optional<String> jsonPath = Optional.empty();
+    private boolean isJsonDataBlock = false;
 
     public SettingAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
         super(fieldContext, joinSetup);
@@ -36,7 +43,10 @@ public class SettingAttribute extends EventContextAttribute {
 
     @Override
     public Field<?> sqlField() {
-        Field jsonContextField = DSL.field("ehr.js_context_setting("+tableField+")::json #>>"+jsonPath);
+        if (jsonPath.isPresent() && isJsonDataBlock)
+            return new GenericJsonField(fieldContext, joinSetup).forJsonPath(jsonPath.get()).jsonField("EVENT_CONTEXT","ehr.js_context", EVENT_CONTEXT.ID);
+
+        Field jsonContextField = DSL.field("ehr.js_context_setting("+tableField+")::json #>>"+new GenericJsonPath(jsonPath.get()).jqueryPath());
         if (fieldContext.isWithAlias())
             return aliased(DSL.field(jsonContextField));
         else
@@ -50,7 +60,12 @@ public class SettingAttribute extends EventContextAttribute {
     }
 
     public I_RMObjectAttribute forJsonPath(String jsonPath){
-        this.jsonPath = jsonPath;
+        this.jsonPath = Optional.of(jsonPath);
+        return this;
+    }
+
+    public SettingAttribute setJsonDataBlock(boolean jsonDataBlock) {
+        this.isJsonDataBlock = jsonDataBlock;
         return this;
     }
 }

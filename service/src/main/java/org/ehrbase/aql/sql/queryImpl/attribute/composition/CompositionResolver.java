@@ -36,6 +36,9 @@ public class CompositionResolver extends AttributeResolver
 
     public Field<?> sqlField(String path){
 
+        if (path == null || path.isEmpty())
+            return new FullCompositionJson(fieldResolutionContext, joinSetup).sqlField();
+
         if (path.startsWith("category"))
             return new SettingResolver(fieldResolutionContext, joinSetup).sqlField(new AttributePath("category").redux(path));
 
@@ -56,6 +59,8 @@ public class CompositionResolver extends AttributeResolver
             case "archetype_details/template_id/value":
                 return new SimpleCompositionAttribute(fieldResolutionContext, joinSetup).forTableField(ENTRY.TEMPLATE_ID).sqlField();
         }
-        throw new IllegalArgumentException("Unresolved composition attribute path:"+path);
+        //else assume a partial json path
+
+        return new FullCompositionJson(fieldResolutionContext, joinSetup).forJsonPath(path).sqlField();
     }
 }

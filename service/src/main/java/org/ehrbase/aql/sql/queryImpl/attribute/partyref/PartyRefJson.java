@@ -37,11 +37,11 @@ public class PartyRefJson extends PartyRefAttribute {
     @Override
     public Field<?> sqlField() {
         //query the json representation of EVENT_CONTEXT and cast the result as TEXT
-        return new GenericJsonField(fieldContext, joinSetup).jsonField("ehr.js_canonical_party_ref",
-                PARTY_IDENTIFIED.PARTY_REF_NAMESPACE,
-                PARTY_IDENTIFIED.PARTY_REF_TYPE,
-                PARTY_IDENTIFIED.PARTY_REF_SCHEME,
-                PARTY_IDENTIFIED.PARTY_REF_VALUE);
+        return new GenericJsonField(fieldContext, joinSetup).jsonField("PARTY_REF","ehr.js_canonical_party_ref",
+                joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_NAMESPACE),
+                joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_TYPE),
+                joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_SCHEME),
+                joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_VALUE));
     }
 
     @Override

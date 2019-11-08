@@ -21,13 +21,18 @@ import org.ehrbase.aql.sql.binding.I_JoinBinder;
 import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryImpl.attribute.I_RMObjectAttribute;
 import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
+import org.ehrbase.aql.sql.queryImpl.value_field.GenericJsonField;
 import org.jooq.Field;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 
+import java.util.Optional;
+
 import static org.ehrbase.jooq.pg.Tables.STATUS;
 
 public class EhrStatusJson extends EhrStatusAttribute {
+
+    protected Optional<String> jsonPath = Optional.empty();
 
     public EhrStatusJson(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
         super(fieldContext, joinSetup);
@@ -35,16 +40,32 @@ public class EhrStatusJson extends EhrStatusAttribute {
 
     @Override
     public Field<?> sqlField() {
+        fieldContext.setJsonDatablock(true);
+        fieldContext.setRmType("EHR_STATUS");
         //query the json representation of EVENT_CONTEXT and cast the result as TEXT
-        Field jsonContextField = DSL.field("ehr.js_ehr_status("+ I_JoinBinder.statusRecordTable.field(STATUS.EHR_ID)+")::text");
-        if (fieldContext.isWithAlias())
-            return aliased(DSL.field(jsonContextField));
+        Field jsonEhrStatusField;
+        if (jsonPath.isPresent())
+            jsonEhrStatusField =  new GenericJsonField(fieldContext, joinSetup).forJsonPath(jsonPath.get()).jsonField(null,"ehr.js_ehr_status", I_JoinBinder.statusRecordTable.field(STATUS.EHR_ID));
         else
-            return DSL.field(jsonContextField);
+            jsonEhrStatusField = DSL.field("ehr.js_ehr_status("+ I_JoinBinder.statusRecordTable.field(STATUS.EHR_ID)+")::text");
+
+        if (fieldContext.isWithAlias())
+            return aliased(DSL.field(jsonEhrStatusField));
+        else
+            return DSL.field(jsonEhrStatusField);
     }
 
     @Override
     public I_RMObjectAttribute forTableField(TableField tableField) {
+        return this;
+    }
+
+    public EhrStatusJson forJsonPath(String jsonPath){
+        if (jsonPath == null || jsonPath.isEmpty()) {
+            this.jsonPath = Optional.empty();
+            return this;
+        }
+        this.jsonPath = Optional.of(jsonPath);
         return this;
     }
 }
