@@ -19,9 +19,11 @@ package org.ehrbase.aql.sql.queryImpl.attribute.ehr;
 
 import org.ehrbase.aql.sql.binding.I_JoinBinder;
 import org.ehrbase.aql.sql.queryImpl.attribute.*;
+import org.ehrbase.aql.sql.queryImpl.attribute.composition.SimpleCompositionAttribute;
 import org.ehrbase.aql.sql.queryImpl.attribute.ehr.ehrstatus.StatusResolver;
 import org.ehrbase.aql.sql.queryImpl.attribute.system.SystemResolver;
 import org.ehrbase.aql.sql.queryImpl.value_field.GenericJsonField;
+import org.ehrbase.aql.sql.queryImpl.value_field.SimpleAttribute;
 import org.ehrbase.jooq.pg.tables.Ehr;
 import org.jooq.Field;
 
@@ -49,6 +51,11 @@ public class EhrResolver extends AttributeResolver
                 return new GenericJsonField(fieldResolutionContext, joinSetup).jsonField("HIER_OBJECT_ID", "ehr.js_canonical_hier_object_id", I_JoinBinder.ehrRecordTable.field(EHR_.ID));
             case "ehr_id/value":
                 return new EhrIdValue(fieldResolutionContext, joinSetup).forTableField(NULL_FIELD).sqlField();
+            case "date_created":
+                joinSetup.setJoinEhr(true);
+                return new SimpleAttribute(fieldResolutionContext, joinSetup)
+                        .forTableField("TEXT", I_JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED))
+                        .sqlField();
 
         }
         throw new IllegalArgumentException("Unresolved ehr attribute path:"+path);
