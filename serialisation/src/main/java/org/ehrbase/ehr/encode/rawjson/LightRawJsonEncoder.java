@@ -81,8 +81,8 @@ public class LightRawJsonEncoder {
 
     private Map<String, Object> db2map(){
         GsonBuilder gsondb = EncodeUtilArchie.getGsonBuilderInstance();
-        if (jsonbOrigin.startsWith("[")) { //strip the expression as an array
-            jsonbOrigin = jsonbOrigin.trim().substring(1, jsonbOrigin.length() - 1);
+        if (jsonbOrigin.startsWith("[")) {
+            jsonbOrigin = "{\"items\":"+jsonbOrigin+"}"; //joy of json...
         }
 
         Map<String, Object> fromDB = gsondb.create().fromJson(jsonbOrigin, Map.class);
