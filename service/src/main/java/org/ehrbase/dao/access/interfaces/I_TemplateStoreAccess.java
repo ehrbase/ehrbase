@@ -23,6 +23,7 @@ package org.ehrbase.dao.access.interfaces;
 import org.ehrbase.dao.access.jooq.TemplateStoreAccess;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface I_TemplateStoreAccess extends I_SimpleCRUD<I_TemplateStoreAccess, UUID> {
@@ -31,7 +32,15 @@ public interface I_TemplateStoreAccess extends I_SimpleCRUD<I_TemplateStoreAcces
 
     void setTemplate(OPERATIONALTEMPLATE template);
 
+    static I_TemplateStoreAccess getInstance(I_DomainAccess access, OPERATIONALTEMPLATE operationaltemplate) {
+        return new TemplateStoreAccess(access, operationaltemplate);
+    }
+
     static I_TemplateStoreAccess retrieveInstanceByTemplateId(I_DomainAccess domainAccess, String templateId) {
         return TemplateStoreAccess.retrieveInstanceByTemplateId(domainAccess, templateId);
+    }
+
+    static List<OPERATIONALTEMPLATE> fetchAll(I_DomainAccess domainAccess) {
+        return TemplateStoreAccess.fetchAll(domainAccess);
     }
 }

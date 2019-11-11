@@ -27,6 +27,8 @@ import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_TemplateStoreAccess;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.jooq.pg.tables.records.TemplateStoreRecord;
+import org.jooq.Record1;
+import org.jooq.Result;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
 import javax.xml.namespace.QName;
@@ -35,13 +37,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.ehrbase.jooq.pg.tables.TemplateStore.TEMPLATE_STORE;
 
 public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAccess {
 
+
     private TemplateStoreRecord templateStoreRecord;
+
+    public TemplateStoreAccess(I_DomainAccess domainAccess, OPERATIONALTEMPLATE operationaltemplate) {
+        super(domainAccess);
+        templateStoreRecord = domainAccess.getContext().newRecord(TEMPLATE_STORE);
+        setTemplate(operationaltemplate);
+    }
 
     // internal minimal constructor - needs proper initialization before following usage
     private TemplateStoreAccess(I_DomainAccess domainAccess) {
@@ -111,7 +123,15 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
     @Override
     public OPERATIONALTEMPLATE getTemplate() {
 
-        InputStream inputStream = new ByteArrayInputStream(templateStoreRecord.getContent().getBytes());
+        return Optional.ofNullable(templateStoreRecord)
+                .map(TemplateStoreRecord::getContent)
+                .map(TemplateStoreAccess::buildOperationaltemplate)
+                .orElse(null);
+
+    }
+
+    private static OPERATIONALTEMPLATE buildOperationaltemplate(String content) {
+        InputStream inputStream = new ByteArrayInputStream(content.getBytes());
 
         org.openehr.schemas.v1.TemplateDocument document = null;
         try {
@@ -135,7 +155,16 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
 
     public static I_TemplateStoreAccess retrieveInstanceByTemplateId(I_DomainAccess domainAccess, String templateId) {
         TemplateStoreAccess templateStoreAccess = new TemplateStoreAccess(domainAccess);
-        domainAccess.getContext().fetchOne(TEMPLATE_STORE, TEMPLATE_STORE.TEMPLATE_ID.eq(templateId));
+        templateStoreAccess.templateStoreRecord = domainAccess.getContext().fetchOne(TEMPLATE_STORE, TEMPLATE_STORE.TEMPLATE_ID.eq(templateId));
         return templateStoreAccess;
+    }
+
+    public static List<OPERATIONALTEMPLATE> fetchAll(I_DomainAccess domainAccess) {
+        Result<Record1<String>> records = domainAccess.getContext().select(TEMPLATE_STORE.CONTENT).from(TEMPLATE_STORE).fetch();
+        return records.getValues(0).stream()
+                .map(s -> (String) s)
+                .map(TemplateStoreAccess::buildOperationaltemplate)
+                .collect(Collectors.toList());
+
     }
 }

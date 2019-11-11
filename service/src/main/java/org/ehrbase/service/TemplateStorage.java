@@ -24,11 +24,12 @@ import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface TemplateStorage {
     List<TemplateMetaData> listAllOperationalTemplates();
 
     void storeTemplate(OPERATIONALTEMPLATE template);
 
-    OPERATIONALTEMPLATE readOperationaltemplate(String filename);
+    Optional<OPERATIONALTEMPLATE> readOperationaltemplate(String templateId);
 }

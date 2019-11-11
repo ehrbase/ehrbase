@@ -23,7 +23,6 @@ import org.apache.xmlbeans.XmlOptions;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -43,17 +42,16 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-@Qualifier(value = "TemplateFileStorageService")
 public class TemplateFileStorageService implements TemplateStorage {
 
 
     private Map<String, File> optFileMap = new ConcurrentHashMap<>();
     //processing error (for JMX)
     private Map<String, String> errorMap = new ConcurrentHashMap<>();
-
 
 
     @Value("${templateFileStorageService.storage.path.operationaltemplates}")
@@ -94,7 +92,7 @@ public class TemplateFileStorageService implements TemplateStorage {
             OPERATIONALTEMPLATE operationaltemplate;
 
 
-            operationaltemplate = readOperationaltemplate(filename);
+            operationaltemplate = readOperationaltemplate(filename).orElse(null);
 
 
             if (operationaltemplate == null) {   // null if the file couldn't be fetched from cache or read from file storage
@@ -137,10 +135,10 @@ public class TemplateFileStorageService implements TemplateStorage {
     }
 
     @Override
-    public OPERATIONALTEMPLATE readOperationaltemplate(String filename) {
+    public Optional<OPERATIONALTEMPLATE> readOperationaltemplate(String templateId) {
         OPERATIONALTEMPLATE operationaltemplate = null;
 
-        File file = optFileMap.get(filename);
+        File file = optFileMap.get(templateId);
 
         try (InputStream in = file != null ? new UnicodeInputStream(new FileInputStream(file), true) : null) { // manual reading of OPT file and following parsing into object
             org.openehr.schemas.v1.TemplateDocument document = org.openehr.schemas.v1.TemplateDocument.Factory.parse(in);
@@ -148,11 +146,11 @@ public class TemplateFileStorageService implements TemplateStorage {
             //use the template id instead of the file name as key
 
         } catch (Exception e) {
-            errorMap.put(filename, e.getMessage());
+            errorMap.put(templateId, e.getMessage());
             // log.error("Could not parse operational template:" + filename + " error:" + e);
 //                throw new ServiceManagerException(global, SysErrorCode.INTERNAL_ILLEGALARGUMENT, "Could not parse operational template:"+key+" error:"+e);
         }
-        return operationaltemplate;
+        return Optional.ofNullable(operationaltemplate);
     }
 
 

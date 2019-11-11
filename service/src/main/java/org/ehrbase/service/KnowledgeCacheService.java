@@ -35,9 +35,11 @@ import org.ehrbase.opt.query.MapJson;
 import org.ehrbase.opt.query.QueryOptMetaData;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.openehr.schemas.v1.TEMPLATEID;
+import org.openehr.schemas.v1.TemplateDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PreDestroy;
@@ -93,7 +95,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     private final CacheManager cacheManager;
 
     @Autowired
-    public KnowledgeCacheService(TemplateStorage templateStorage, CacheManager cacheManager) {
+    public KnowledgeCacheService(@Qualifier("templateDBStorageService") TemplateStorage templateStorage, CacheManager cacheManager) {
         this.templateStorage = templateStorage;
         this.cacheManager = cacheManager;
 
@@ -112,9 +114,9 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
         InputStream inputStream = new ByteArrayInputStream(content);
 
-        org.openehr.schemas.v1.TemplateDocument document = null;
+        TemplateDocument document = null;
         try {
-            document = org.openehr.schemas.v1.TemplateDocument.Factory.parse(inputStream);
+            document = TemplateDocument.Factory.parse(inputStream);
         } catch (XmlException | IOException e) {
             throw new InvalidApiParameterException(e.getMessage());
         }
@@ -164,7 +166,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
     @Override
     public Optional<OPERATIONALTEMPLATE> retrieveOperationalTemplate(String key) {
-        log.debug("retrieveOperationalTemplate(" + key + ")");
+        log.debug("retrieveOperationalTemplate({})", key);
         OPERATIONALTEMPLATE template = atOptCache.get(key);
         if (template == null) {     // null if not in cache already, which triggers the following retrieval and putting into cache
             template = getOperationaltemplateFromFileStorage(key);
@@ -274,7 +276,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
      * @return The operational template or null.
      */
     private OPERATIONALTEMPLATE getOperationaltemplateFromFileStorage(String filename) {
-        OPERATIONALTEMPLATE operationaltemplate = templateStorage.readOperationaltemplate(filename);
+        OPERATIONALTEMPLATE operationaltemplate = templateStorage.readOperationaltemplate(filename).orElse(null);
         if (operationaltemplate != null) {
             atOptCache.put(filename, operationaltemplate);      // manual putting into cache (actual opt cache and then id cache)
             idxCache.put(UUID.fromString(operationaltemplate.getUid().getValue()), filename);
