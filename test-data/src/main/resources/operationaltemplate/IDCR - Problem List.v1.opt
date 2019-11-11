@@ -36,9 +36,9 @@
     <value>93c39e9e-86b0-45c7-a1ed-9752d8270011</value>
   </uid>
   <template_id>
-    <value>IDCR Problem List.v1</value>
+    <value>IDCR - Problem List.v1</value>
   </template_id>
-  <concept>IDCR Problem List.v1</concept>
+  <concept>IDCR - Problem List.v1</concept>
   <definition>
     <rm_type_name>COMPOSITION</rm_type_name>
     <occurrences>

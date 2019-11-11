@@ -29,6 +29,7 @@ import com.nedap.archie.rm.support.identification.HierObjectId;
 @JacksonXmlRootElement(localName = "ehr")
 public class EhrResponseData {
 
+
     @JsonProperty(value = "system_id")
     private HierObjectId systemId;
     @JsonProperty(value = "ehr_id")
@@ -69,4 +70,6 @@ public class EhrResponseData {
     public void setTimeCreated(String timeCreated) {
         this.timeCreated = timeCreated;
     }
+
+
 }

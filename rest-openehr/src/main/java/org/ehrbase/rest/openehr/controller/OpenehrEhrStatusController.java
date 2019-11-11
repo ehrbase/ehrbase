@@ -183,7 +183,7 @@ public class OpenehrEhrStatusController extends BaseController {
         if (Optional.ofNullable(prefer).map(i -> i.equals(RETURN_REPRESENTATION)).orElse(false)) {      // null safe way to test prefer header
             respData = buildEhrStatusResponseData(EhrStatusResponseData::new, ehrId, UUID.fromString(status.getUid().getRoot().getValue()), version, accept, headerList);
         } else {    // "minimal" is default fallback
-            respData = buildEhrStatusResponseData(null, ehrId, UUID.fromString(status.getUid().getRoot().toString()), version, accept, headerList);
+            respData = buildEhrStatusResponseData(EhrStatusResponseData::new, ehrId, UUID.fromString(status.getUid().getRoot().getValue()), version, accept, headerList);
         }
 
         return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData()))
