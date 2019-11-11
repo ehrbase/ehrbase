@@ -29,6 +29,10 @@ public class GenericJsonPath {
                 //takes care of array expression (unless the occurrence is specified (TODO)
                 actualPaths.add("0");
             }
+            else if (segment.startsWith("content")){
+                actualPaths.add("content,/"+ segment);
+                actualPaths.add("0"); //as above
+            }
             else if (segment.equals("value") && (i < jqueryPaths.size() - 1) && jqueryPaths.get(i + 1).equals("value")){
                 actualPaths.add("/"+ segment);
             }

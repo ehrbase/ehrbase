@@ -73,6 +73,7 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
     public final static String Jsquery_CLOSE = " '::jsquery";
     private static final String namedItemPrefix = " and name/value='";
     public static final String TAG_COMPOSITION = "/composition";
+    public static final String TAG_CONTENT = "/content";
 
     private static boolean useEntry = false;
 
@@ -259,10 +260,20 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
 
     @Override
     public Field<?> makeField(String templateId, UUID compositionId, String identifier, I_VariableDefinition variableDefinition, Clause clause) {
+
+        boolean isRootContent = false; //that is a query path on a full composition starting from the root content
+
         if (entry_root == null) //case of (invalid) composition with null entry!
             return null;
 
-        String path = pathResolver.pathOf(variableDefinition.getIdentifier());
+        String path;
+        if (variableDefinition.getPath() != null && variableDefinition.getPath().startsWith("content")) {
+            path = "/" + variableDefinition.getPath();
+            isRootContent = true;
+        }
+        else
+            path = pathResolver.pathOf(variableDefinition.getIdentifier());
+
         String alias = clause.equals(Clause.WHERE) ? null : variableDefinition.getAlias();
 
         if (path == null) {
@@ -282,7 +293,7 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
 
         List<String> itemPathArray = new ArrayList<>();
         itemPathArray.add(entry_root.replaceAll("'", "''"));
-        if (!path.startsWith(TAG_COMPOSITION))
+        if (!path.startsWith(TAG_COMPOSITION) && !isRootContent)
             itemPathArray.addAll(jqueryPath(PATH_PART.IDENTIFIER_PATH_PART, path, "0"));
         itemPathArray.addAll(jqueryPath(PATH_PART.VARIABLE_PATH_PART, variableDefinition.getPath(), "0"));
 
