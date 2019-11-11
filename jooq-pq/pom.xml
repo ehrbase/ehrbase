@@ -121,6 +121,7 @@
                                     <types>.*</types>
                                     <!-- TODO tag name was rolled back to older version here, needs to be "includeTypes" with newer jooq version again -->
                                 </forcedType>
+
                             </forcedTypes>
                         </database>
                         <generate>

@@ -21,6 +21,7 @@
 package org.ehrbase.dao.access.interfaces;
 
 import org.ehrbase.dao.access.jooq.TemplateStoreAccess;
+import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
 import java.util.List;
@@ -40,7 +41,7 @@ public interface I_TemplateStoreAccess extends I_SimpleCRUD<I_TemplateStoreAcces
         return TemplateStoreAccess.retrieveInstanceByTemplateId(domainAccess, templateId);
     }
 
-    static List<OPERATIONALTEMPLATE> fetchAll(I_DomainAccess domainAccess) {
+    static List<TemplateMetaData> fetchAll(I_DomainAccess domainAccess) {
         return TemplateStoreAccess.fetchAll(domainAccess);
     }
 }

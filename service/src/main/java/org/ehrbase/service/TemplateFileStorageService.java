@@ -107,17 +107,12 @@ public class TemplateFileStorageService implements TemplateStorage {
             }
 
             Path path = Paths.get(getOptPath() + "/" + filename + ".opt");
-            template.setPath(path);
+
             try {
                 BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
                 ZonedDateTime creationTime = ZonedDateTime.parse(attributes.creationTime().toString()).withZoneSameInstant(zoneId);
-                template.setCreatedOn(creationTime);
+                template.setCreatedOn(creationTime.toOffsetDateTime());
 
-                ZonedDateTime lastAccessTime = ZonedDateTime.parse(attributes.lastAccessTime().toString()).withZoneSameInstant(zoneId);
-                template.setLastAccessTime(lastAccessTime);
-
-                ZonedDateTime lastModifiedTime = ZonedDateTime.parse(attributes.lastModifiedTime().toString()).withZoneSameInstant(zoneId);
-                template.setLastModifiedTime(lastModifiedTime);
 
             } catch (Exception e) {
                 template.addError("disconnected file? tried:" + getOptPath() + "/" + filename + ".opt");

@@ -31,7 +31,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class TemplateDBStorageService implements TemplateStorage {
@@ -45,17 +44,9 @@ public class TemplateDBStorageService implements TemplateStorage {
     @Override
     public List<TemplateMetaData> listAllOperationalTemplates() {
 
-        return I_TemplateStoreAccess.fetchAll(getDataAccess())
-                .stream()
-                .map(this::extractMetaData)
-                .collect(Collectors.toList());
+        return I_TemplateStoreAccess.fetchAll(getDataAccess());
     }
 
-    private TemplateMetaData extractMetaData(OPERATIONALTEMPLATE template) {
-        TemplateMetaData templateMetaData = new TemplateMetaData();
-        templateMetaData.setOperationaltemplate(template);
-        return templateMetaData;
-    }
 
     @Override
     public void storeTemplate(OPERATIONALTEMPLATE template) {

@@ -26,8 +26,9 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_TemplateStoreAccess;
 import org.ehrbase.dao.access.support.DataAccess;
+import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.ehrbase.jooq.pg.tables.records.TemplateStoreRecord;
-import org.jooq.Record1;
+import org.jooq.Record2;
 import org.jooq.Result;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
@@ -37,6 +38,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -159,12 +162,19 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
         return templateStoreAccess;
     }
 
-    public static List<OPERATIONALTEMPLATE> fetchAll(I_DomainAccess domainAccess) {
-        Result<Record1<String>> records = domainAccess.getContext().select(TEMPLATE_STORE.CONTENT).from(TEMPLATE_STORE).fetch();
-        return records.getValues(0).stream()
-                .map(s -> (String) s)
-                .map(TemplateStoreAccess::buildOperationaltemplate)
+    public static List<TemplateMetaData> fetchAll(I_DomainAccess domainAccess) {
+        Result<Record2<String, Timestamp>> records = domainAccess.getContext().select(TEMPLATE_STORE.CONTENT, TEMPLATE_STORE.SYS_TRANSACTION).from(TEMPLATE_STORE).fetch();
+        return records.parallelStream()
+                .map(TemplateStoreAccess::buildMetadata)
                 .collect(Collectors.toList());
 
+    }
+
+    private static TemplateMetaData buildMetadata(Record2<String, Timestamp> r) {
+        TemplateMetaData templateMetaData = new TemplateMetaData();
+        templateMetaData.setOperationaltemplate(TemplateStoreAccess.buildOperationaltemplate(r.component1()));
+        //@TODO read from DB
+        templateMetaData.setCreatedOn(OffsetDateTime.ofInstant(r.component2().toInstant(), ZoneId.systemDefault()));
+        return templateMetaData;
     }
 }
