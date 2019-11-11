@@ -31,7 +31,7 @@ Resource    ${CURDIR}${/}../_resources/keywords/ehr_keywords.robot
 #Suite Setup    startup SUT
 #Suite Teardown    shutdown SUT
 
-Force Tags    has_ehr    PLACEHOLDER
+Force Tags    has_ehr    TODO
 
 
 
