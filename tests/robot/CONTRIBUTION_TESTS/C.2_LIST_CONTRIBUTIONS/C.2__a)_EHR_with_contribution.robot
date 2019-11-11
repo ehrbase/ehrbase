@@ -63,7 +63,10 @@ Main flow: get CONTRIBUTIONS of existing EHR with a just committed CONTRIBUTION
 
     # check response: is positive with list of "1" contribution(s)
 
+    [Teardown]    restart SUT
+
+
 
 *** Keywords ***
 check response: is positive with list of 1 contribution(s)
-    Fail    msg=fake it till you make it!
+    Fail    msg=break it till you make it!

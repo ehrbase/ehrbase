@@ -25,6 +25,7 @@ package org.ehrbase.service;
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
+import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.configuration.CacheConfiguration;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
@@ -131,6 +132,9 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
 
         // pre-check: if already existing throw proper exception
+        if (retrieveOperationalTemplate(templateId).isPresent()) {
+            throw new StateConflictException("Operational template with this template ID already exists");
+        }
 
         if (retrieveOperationalTemplate(templateId).isPresent()) {
             //Disable for now

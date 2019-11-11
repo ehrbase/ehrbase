@@ -77,9 +77,6 @@ All Types
 
     all_types/Test_all_types.opt
 
-    [Teardown]  TRACE JIRA BUG    ISSUE-#31    not-ready    TODO: @WLAD investige test-side issue
-
-
 Minimal
     [Documentation]    ...
     [Template]         retrieve single OPT
@@ -123,8 +120,6 @@ Versioned
 
     versioned/Test versioned v1.opt
     versioned/Test versioned v2.opt
-
-    [Teardown]  TRACE JIRA BUG    ISSUE-#31    not-ready    TODO: @WLAD investige test-side issue
 
 
 

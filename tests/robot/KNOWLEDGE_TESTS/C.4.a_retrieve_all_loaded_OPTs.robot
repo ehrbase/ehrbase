@@ -43,7 +43,7 @@ Resource    ${CURDIR}${/}../_resources/keywords/template_opt1.4_keywords.robot
 Suite Setup  startup OPT SUT
 Suite Teardown  shutdown SUT
 
-Force Tags   OPT14
+Force Tags   OPT14    refactor
 
 
 
@@ -95,6 +95,7 @@ retrieve list of uploaded OPTs
     retrieve OPT list
 
 
+# TODO: @WLAD tidy up this one
 verify server response
     [Documentation]     Multiple verifications of the response are conducted:
     ...                 - response status code is 200
