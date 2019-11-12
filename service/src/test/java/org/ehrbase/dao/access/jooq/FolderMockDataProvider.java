@@ -18,6 +18,9 @@
 
 package org.ehrbase.dao.access.jooq;
 
+import com.nedap.archie.rm.datastructures.Item;
+import com.nedap.archie.rm.datastructures.ItemStructure;
+import com.nedap.archie.rm.datavalues.DvText;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -29,6 +32,8 @@ import org.jooq.tools.jdbc.MockResult;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TimeZone;
 import java.util.UUID;
 
@@ -75,11 +80,43 @@ public class FolderMockDataProvider implements MockDataProvider{
                 DateTime expected
                         = DateTime.parse("2019-06-13 18:10:33.76", dateTimeFormatter);
                 MockResult[] mock2 = new MockResult[1];
-                Result<Record8<UUID, UUID, String, String, Boolean, Object, Timestamp, Object>> result2 = create.newResult(FOLDER.ID, FOLDER.IN_CONTRIBUTION, FOLDER.NAME, FOLDER.ARCHETYPE_NODE_ID, FOLDER.ACTIVE, FOLDER.DETAILS, FOLDER.SYS_TRANSACTION, FOLDER.SYS_PERIOD);
+                Result<Record8<UUID, UUID, String, String, Boolean, ItemStructure, Timestamp, Object>> result2 = create.newResult(FOLDER.ID, FOLDER.IN_CONTRIBUTION, FOLDER.NAME, FOLDER.ARCHETYPE_NODE_ID, FOLDER.ACTIVE, FOLDER.DETAILS, FOLDER.SYS_TRANSACTION, FOLDER.SYS_PERIOD);
 
                 result2.add(create
-                        .newRecord(FOLDER.ID, FOLDER.IN_CONTRIBUTION, FOLDER.NAME, FOLDER.ARCHETYPE_NODE_ID, FOLDER.ACTIVE, FOLDER.DETAILS, FOLDER.SYS_TRANSACTION, FOLDER.SYS_PERIOD)
-                        .values(UUID.fromString("77750555-ec91-4025-838d-09ddb4e999cb"), UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb"), "folder_archetype_name_4","folder_archetype.v1", true, "{\"details\": \"xxx4\"}", new Timestamp(expected.getMillis()), new Timestamp(expected.getMillis())));
+                        .newRecord(
+                                FOLDER.ID,
+                                FOLDER.IN_CONTRIBUTION,
+                                FOLDER.NAME,
+                                FOLDER.ARCHETYPE_NODE_ID,
+                                FOLDER.ACTIVE,
+                                FOLDER.DETAILS,
+                                FOLDER.SYS_TRANSACTION,
+                                FOLDER.SYS_PERIOD
+                        )
+                        .values(
+                                UUID.fromString("77750555-ec91-4025-838d-09ddb4e999cb"),
+                                UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb"),
+                                "folder_archetype_name_4", "folder_archetype.v1",
+                                true,
+                                //"{\"details\": \"xxx4\"}",
+                                new ItemStructure() {
+                                    @Override
+                                    public List getItems() {
+                                        Item item = new Item() {
+                                            @Override
+                                            public DvText getName() {
+                                                return new DvText("xxx4");
+                                            }
+                                        };
+                                        List<Item> items =  new ArrayList<>();
+                                        items.add(item);
+                                        return items;
+                                    }
+                                },
+                                new Timestamp(expected.getMillis()),
+                                new Timestamp(expected.getMillis())
+                        )
+                );
 
                 mock2[0] = new MockResult(1, result2);//no rows returned
                 return mock2;
@@ -90,11 +127,43 @@ public class FolderMockDataProvider implements MockDataProvider{
                 DateTime expected
                         = DateTime.parse("2019-06-13 18:10:33.76", dateTimeFormatter);
                 MockResult[] mock2 = new MockResult[1];
-                Result<Record8<UUID, UUID, String, String, Boolean, Object, Timestamp, Object>> result2 = create.newResult(FOLDER.ID, FOLDER.IN_CONTRIBUTION, FOLDER.NAME, FOLDER.ARCHETYPE_NODE_ID, FOLDER.ACTIVE, FOLDER.DETAILS, FOLDER.SYS_TRANSACTION, FOLDER.SYS_PERIOD);
+                Result<Record8<UUID, UUID, String, String, Boolean, ItemStructure, Timestamp, Object>> result2 = create.newResult(FOLDER.ID, FOLDER.IN_CONTRIBUTION, FOLDER.NAME, FOLDER.ARCHETYPE_NODE_ID, FOLDER.ACTIVE, FOLDER.DETAILS, FOLDER.SYS_TRANSACTION, FOLDER.SYS_PERIOD);
 
                 result2.add(create
-                        .newRecord(FOLDER.ID, FOLDER.IN_CONTRIBUTION, FOLDER.NAME, FOLDER.ARCHETYPE_NODE_ID, FOLDER.ACTIVE, FOLDER.DETAILS, FOLDER.SYS_TRANSACTION, FOLDER.SYS_PERIOD)
-                        .values(UUID.fromString("8701233c-c8fd-47ba-91b5-ef9ff23c259b"), UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb"), "folder_archetype_name_5","folder_archetype.v1", true, "{\"details\": \"xxx5\"}", new Timestamp(expected.getMillis()), /*new Timestamp(expected.getMillis())*/null));
+                        .newRecord(
+                                FOLDER.ID,
+                                FOLDER.IN_CONTRIBUTION,
+                                FOLDER.NAME,
+                                FOLDER.ARCHETYPE_NODE_ID,
+                                FOLDER.ACTIVE,
+                                FOLDER.DETAILS,
+                                FOLDER.SYS_TRANSACTION,
+                                FOLDER.SYS_PERIOD
+                        )
+                        .values(
+                                UUID.fromString("8701233c-c8fd-47ba-91b5-ef9ff23c259b"),
+                                UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb"),
+                                "folder_archetype_name_5","folder_archetype.v1",
+                                true,
+                                //"{\"details\": \"xxx5\"}",
+                                new ItemStructure() {
+                                    @Override
+                                    public List getItems() {
+                                        Item item = new Item() {
+                                            @Override
+                                            public DvText getName() {
+                                                return new DvText("xxx5");
+                                            }
+                                        };
+                                        List<Item> items =  new ArrayList<>();
+                                        items.add(item);
+                                        return items;
+                                    }
+                                },
+                                new Timestamp(expected.getMillis()),
+                                /*new Timestamp(expected.getMillis())*/null
+                        )
+                );
 
                 mock2[0] = new MockResult(1, result2);//no rows returned
                 return mock2;
@@ -150,20 +219,192 @@ public class FolderMockDataProvider implements MockDataProvider{
                             = DateTime.parse("2019-06-13 18:10:33.76", dateTimeFormatter);
                     TimeZone.getTimeZone("UTC");
                     MockResult[] mock2 = new MockResult[1];
-                    Result<Record13<UUID, UUID, UUID, Timestamp, Object, UUID, UUID, String, String, Boolean, Object, Timestamp, Object>> result2 = create.newResult(FOLDER_HIERARCHY.PARENT_FOLDER, FOLDER_HIERARCHY.CHILD_FOLDER, FOLDER_HIERARCHY.IN_CONTRIBUTION, FOLDER_HIERARCHY.SYS_TRANSACTION, FOLDER_HIERARCHY.SYS_PERIOD, FOLDER.ID, FOLDER.IN_CONTRIBUTION, FOLDER.NAME, FOLDER.ARCHETYPE_NODE_ID, FOLDER.ACTIVE, FOLDER.DETAILS, FOLDER.SYS_TRANSACTION, FOLDER.SYS_PERIOD);
+                    Result<Record13<UUID, UUID, UUID, Timestamp, Object, UUID, UUID, String, String, Boolean, ItemStructure, Timestamp, Object>> result2 = create.newResult(FOLDER_HIERARCHY.PARENT_FOLDER, FOLDER_HIERARCHY.CHILD_FOLDER, FOLDER_HIERARCHY.IN_CONTRIBUTION, FOLDER_HIERARCHY.SYS_TRANSACTION, FOLDER_HIERARCHY.SYS_PERIOD, FOLDER.ID, FOLDER.IN_CONTRIBUTION, FOLDER.NAME, FOLDER.ARCHETYPE_NODE_ID, FOLDER.ACTIVE, FOLDER.DETAILS, FOLDER.SYS_TRANSACTION, FOLDER.SYS_PERIOD);
 
                     result2.add(create
-                            .newRecord(FOLDER_HIERARCHY.PARENT_FOLDER, FOLDER_HIERARCHY.CHILD_FOLDER, FOLDER_HIERARCHY.IN_CONTRIBUTION, FOLDER_HIERARCHY.SYS_TRANSACTION, FOLDER_HIERARCHY.SYS_PERIOD, FOLDER.ID, FOLDER.IN_CONTRIBUTION, FOLDER.NAME, FOLDER.ARCHETYPE_NODE_ID, FOLDER.ACTIVE, FOLDER.DETAILS, FOLDER.SYS_TRANSACTION, FOLDER.SYS_PERIOD)
-                            .values(UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb"), UUID.fromString("99550555-ec91-4025-838d-09ddb4e999cb"), UUID.fromString("00550555-ec91-4025-838d-09ddb4e473cb"), new Timestamp(expected.getMillis()), "xxx1", UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb"), UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb"), "folder_archetype_name_1", "folder_archetype.v1", true, "{\"details\": \"xxx1\"}", new Timestamp(expected.getMillis()), "[\"2019-08-09 09:56:52.464799+02\",)"));
+                            .newRecord(
+                                    FOLDER_HIERARCHY.PARENT_FOLDER,
+                                    FOLDER_HIERARCHY.CHILD_FOLDER,
+                                    FOLDER_HIERARCHY.IN_CONTRIBUTION,
+                                    FOLDER_HIERARCHY.SYS_TRANSACTION,
+                                    FOLDER_HIERARCHY.SYS_PERIOD,
+                                    FOLDER.ID,
+                                    FOLDER.IN_CONTRIBUTION,
+                                    FOLDER.NAME,
+                                    FOLDER.ARCHETYPE_NODE_ID,
+                                    FOLDER.ACTIVE,
+                                    FOLDER.DETAILS,
+                                    FOLDER.SYS_TRANSACTION,
+                                    FOLDER.SYS_PERIOD
+                            )
+                            .values(
+                                    UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb"),
+                                    UUID.fromString("99550555-ec91-4025-838d-09ddb4e999cb"),
+                                    UUID.fromString("00550555-ec91-4025-838d-09ddb4e473cb"),
+                                    new Timestamp(expected.getMillis()),
+                                    "xxx1",
+                                    UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb"),
+                                    UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb"),
+                                    "folder_archetype_name_1",
+                                    "folder_archetype.v1",
+                                    true,
+                                    //"{\"details\": \"xxx1\"}",
+                                    new ItemStructure() {
+                                        @Override
+                                        public List getItems() {
+                                            Item item = new Item() {
+                                                @Override
+                                                public DvText getName() {
+                                                    return new DvText("xxx1");
+                                                }
+                                            };
+                                            List<Item> items =  new ArrayList<>();
+                                            items.add(item);
+                                            return items;
+                                        }
+                                    },
+                                    new Timestamp(expected.getMillis()),
+                                    "[\"2019-08-09 09:56:52.464799+02\",)"
+                            )
+                    );
                     result2.add(create
-                            .newRecord(FOLDER_HIERARCHY.PARENT_FOLDER, FOLDER_HIERARCHY.CHILD_FOLDER, FOLDER_HIERARCHY.IN_CONTRIBUTION, FOLDER_HIERARCHY.SYS_TRANSACTION, FOLDER_HIERARCHY.SYS_PERIOD, FOLDER.ID, FOLDER.IN_CONTRIBUTION, FOLDER.NAME, FOLDER.ARCHETYPE_NODE_ID, FOLDER.ACTIVE, FOLDER.DETAILS, FOLDER.SYS_TRANSACTION, FOLDER.SYS_PERIOD)
-                            .values(UUID.fromString("99550555-ec91-4025-838d-09ddb4e999cb"), UUID.fromString("33550555-ec91-4025-838d-09ddb4e999cb"), UUID.fromString("00550555-ec91-4025-838d-09ddb4e473cb"), new Timestamp(expected.getMillis()), "xxx2", UUID.fromString("99550555-ec91-4025-838d-09ddb4e999cb"), UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb"), "folder_archetype_name_2", "folder_archetype.v1", true, "{\"details\": \"xxx2\"}", new Timestamp(expected.getMillis()), "[\"2019-08-09 09:56:52.464799+02\",)"));
+                            .newRecord(
+                                    FOLDER_HIERARCHY.PARENT_FOLDER,
+                                    FOLDER_HIERARCHY.CHILD_FOLDER,
+                                    FOLDER_HIERARCHY.IN_CONTRIBUTION,
+                                    FOLDER_HIERARCHY.SYS_TRANSACTION,
+                                    FOLDER_HIERARCHY.SYS_PERIOD,
+                                    FOLDER.ID,
+                                    FOLDER.IN_CONTRIBUTION,
+                                    FOLDER.NAME,
+                                    FOLDER.ARCHETYPE_NODE_ID,
+                                    FOLDER.ACTIVE,
+                                    FOLDER.DETAILS,
+                                    FOLDER.SYS_TRANSACTION,
+                                    FOLDER.SYS_PERIOD
+                            )
+                            .values(
+                                    UUID.fromString("99550555-ec91-4025-838d-09ddb4e999cb"),
+                                    UUID.fromString("33550555-ec91-4025-838d-09ddb4e999cb"),
+                                    UUID.fromString("00550555-ec91-4025-838d-09ddb4e473cb"),
+                                    new Timestamp(expected.getMillis()),
+                                    "xxx2",
+                                    UUID.fromString("99550555-ec91-4025-838d-09ddb4e999cb"),
+                                    UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb"),
+                                    "folder_archetype_name_2",
+                                    "folder_archetype.v1",
+                                    true,
+                                    // "{\"details\": \"xxx2\"}",
+                                    new ItemStructure() {
+                                        @Override
+                                        public List getItems() {
+                                            Item item = new Item() {
+                                                @Override
+                                                public DvText getName() {
+                                                    return new DvText("xxx2");
+                                                }
+                                            };
+                                            List<Item> items =  new ArrayList<>();
+                                            items.add(item);
+                                            return items;
+                                        }
+                                    },
+                                    new Timestamp(expected.getMillis()),
+                                    "[\"2019-08-09 09:56:52.464799+02\",)"
+                            )
+                    );
                     result2.add(create
-                            .newRecord(FOLDER_HIERARCHY.PARENT_FOLDER, FOLDER_HIERARCHY.CHILD_FOLDER, FOLDER_HIERARCHY.IN_CONTRIBUTION, FOLDER_HIERARCHY.SYS_TRANSACTION, FOLDER_HIERARCHY.SYS_PERIOD, FOLDER.ID, FOLDER.IN_CONTRIBUTION, FOLDER.NAME, FOLDER.ARCHETYPE_NODE_ID, FOLDER.ACTIVE, FOLDER.DETAILS, FOLDER.SYS_TRANSACTION, FOLDER.SYS_PERIOD)
-                            .values(UUID.fromString("33550555-ec91-4025-838d-09ddb4e999cb"), UUID.fromString("77750555-ec91-4025-838d-09ddb4e999cb"), UUID.fromString("00550555-ec91-4025-838d-09ddb4e473cb"), new Timestamp(expected.getMillis()), "xxx3", UUID.fromString("33550555-ec91-4025-838d-09ddb4e999cb"), UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb"), "folder_archetype_name_3", "folder_archetype.v1", true, "{\"details\": \"xxx3\"}", new Timestamp(expected.getMillis()), "[\"2019-08-09 09:56:52.464799+02\",)"));
+                            .newRecord(
+                                    FOLDER_HIERARCHY.PARENT_FOLDER,
+                                    FOLDER_HIERARCHY.CHILD_FOLDER,
+                                    FOLDER_HIERARCHY.IN_CONTRIBUTION,
+                                    FOLDER_HIERARCHY.SYS_TRANSACTION,
+                                    FOLDER_HIERARCHY.SYS_PERIOD,
+                                    FOLDER.ID,
+                                    FOLDER.IN_CONTRIBUTION,
+                                    FOLDER.NAME,
+                                    FOLDER.ARCHETYPE_NODE_ID,
+                                    FOLDER.ACTIVE,
+                                    FOLDER.DETAILS,
+                                    FOLDER.SYS_TRANSACTION,
+                                    FOLDER.SYS_PERIOD
+                            )
+                            .values(
+                                    UUID.fromString("33550555-ec91-4025-838d-09ddb4e999cb"),
+                                    UUID.fromString("77750555-ec91-4025-838d-09ddb4e999cb"),
+                                    UUID.fromString("00550555-ec91-4025-838d-09ddb4e473cb"),
+                                    new Timestamp(expected.getMillis()),
+                                    "xxx3",
+                                    UUID.fromString("33550555-ec91-4025-838d-09ddb4e999cb"),
+                                    UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb"),
+                                    "folder_archetype_name_3",
+                                    "folder_archetype.v1",
+                                    true,
+                                    // "{\"details\": \"xxx3\"}",
+                                    new ItemStructure() {
+                                        @Override
+                                        public List getItems() {
+                                            Item item = new Item() {
+                                                @Override
+                                                public DvText getName() {
+                                                    return new DvText("xxx3");
+                                                }
+                                            };
+                                            List<Item> items =  new ArrayList<>();
+                                            items.add(item);
+                                            return items;
+                                        }
+                                    },
+                                    new Timestamp(expected.getMillis()),
+                                    "[\"2019-08-09 09:56:52.464799+02\",)"
+                            )
+                    );
                     result2.add(create
-                            .newRecord(FOLDER_HIERARCHY.PARENT_FOLDER, FOLDER_HIERARCHY.CHILD_FOLDER, FOLDER_HIERARCHY.IN_CONTRIBUTION, FOLDER_HIERARCHY.SYS_TRANSACTION, FOLDER_HIERARCHY.SYS_PERIOD, FOLDER.ID, FOLDER.IN_CONTRIBUTION, FOLDER.NAME, FOLDER.ARCHETYPE_NODE_ID, FOLDER.ACTIVE, FOLDER.DETAILS, FOLDER.SYS_TRANSACTION, FOLDER.SYS_PERIOD)
-                            .values(UUID.fromString("33550555-ec91-4025-838d-09ddb4e999cb"), UUID.fromString("8701233c-c8fd-47ba-91b5-ef9ff23c259b"), UUID.fromString("00550555-ec91-4025-838d-09ddb4e473cb"), new Timestamp(expected.getMillis()), "xxx3", UUID.fromString("33550555-ec91-4025-838d-09ddb4e999cb"), UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb"), "folder_archetype_name_3", "folder_archetype.v1", true, "{\"details\": \"xxx3\"}", new Timestamp(expected.getMillis()), "[\"2019-08-09 09:56:52.464799+02\",)"));
+                            .newRecord(
+                                    FOLDER_HIERARCHY.PARENT_FOLDER,
+                                    FOLDER_HIERARCHY.CHILD_FOLDER,
+                                    FOLDER_HIERARCHY.IN_CONTRIBUTION,
+                                    FOLDER_HIERARCHY.SYS_TRANSACTION,
+                                    FOLDER_HIERARCHY.SYS_PERIOD,
+                                    FOLDER.ID,
+                                    FOLDER.IN_CONTRIBUTION,
+                                    FOLDER.NAME,
+                                    FOLDER.ARCHETYPE_NODE_ID,
+                                    FOLDER.ACTIVE,
+                                    FOLDER.DETAILS,
+                                    FOLDER.SYS_TRANSACTION,
+                                    FOLDER.SYS_PERIOD
+                            )
+                            .values(
+                                    UUID.fromString("33550555-ec91-4025-838d-09ddb4e999cb"),
+                                    UUID.fromString("8701233c-c8fd-47ba-91b5-ef9ff23c259b"),
+                                    UUID.fromString("00550555-ec91-4025-838d-09ddb4e473cb"),
+                                    new Timestamp(expected.getMillis()),
+                                    "xxx3",
+                                    UUID.fromString("33550555-ec91-4025-838d-09ddb4e999cb"),
+                                    UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb"),
+                                    "folder_archetype_name_3",
+                                    "folder_archetype.v1",
+                                    true,
+                                    // "{\"details\": \"xxx3\"}",
+                                    new ItemStructure() {
+                                        @Override
+                                        public List getItems() {
+                                            Item item = new Item() {
+                                                @Override
+                                                public DvText getName() {
+                                                    return new DvText("xxx3");
+                                                }
+                                            };
+                                            List<Item> items =  new ArrayList<>();
+                                            items.add(item);
+                                            return items;
+                                        }
+                                    },
+                                    new Timestamp(expected.getMillis()),
+                                    "[\"2019-08-09 09:56:52.464799+02\",)"
+                            )
+                    );
 
                     mock2[0] = new MockResult(1, result2);//no rows returned
                     return mock2;
