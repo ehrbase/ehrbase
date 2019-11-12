@@ -136,12 +136,6 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
             throw new StateConflictException("Operational template with this template ID already exists");
         }
 
-        if (retrieveOperationalTemplate(templateId).isPresent()) {
-            //Disable for now
-            //   throw new StateConflictException("Operational template with this template ID already exists");
-            return template.getTemplateId().getValue();
-        }
-
         templateStorage.storeTemplate(template);
 
 
