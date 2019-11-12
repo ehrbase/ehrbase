@@ -6,8 +6,8 @@
 >
 > - Docker, Python 3 with Pip are installed
 > - RF dependencies are installed (`cd tests/`, `pip install -r requirements.txt`)
-> - No DB / no server running!
-> - ports `8080` and `5432` not used by any other application!
+> - **No DB / no server running!**
+> - ports `8080` and `5432` not used by any other application! (`netstat -tulpn`)
 
 
 ## Execution of tests under Linux, Mac and Windows
