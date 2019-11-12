@@ -38,9 +38,9 @@ public class CacheRule extends TestWatcher {
     protected void starting(Description description) {
         CachingProvider cachingProvider = Caching.getCachingProvider();
         cacheManager = cachingProvider.getCacheManager();
-        buildCache(INTROSPECT_CACHE, UUID.class, I_QueryOptMetaData.class, cacheManager);
-        buildCache(OPERATIONAL_TEMPLATE_CACHE, String.class, OPERATIONALTEMPLATE.class, cacheManager);
-        buildCache(VALIDATOR_CACHE, UUID.class, Validator.class, cacheManager);
+        buildCache(INTROSPECT_CACHE, UUID.class, I_QueryOptMetaData.class, cacheManager, true);
+        buildCache(OPERATIONAL_TEMPLATE_CACHE, String.class, OPERATIONALTEMPLATE.class, cacheManager, true);
+        buildCache(VALIDATOR_CACHE, UUID.class, Validator.class, cacheManager, true);
     }
 
     @Override

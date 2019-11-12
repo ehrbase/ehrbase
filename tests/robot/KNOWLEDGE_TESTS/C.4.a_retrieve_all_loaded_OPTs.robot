@@ -138,7 +138,7 @@ verify server response
     # log to console for quick debugging
     Output  response body 0
     Output  $[0]
-    Output  $[0].template_Id
+    Output  $[0].template_id
   #  Output  $[0].uid
     Output  $[0].concept
   #  Output  $[0].createdOn

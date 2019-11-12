@@ -28,6 +28,7 @@ spring:
       testOnBorrow: true
 cache:
   config: '/ehcache.xml'
+  enabled: true
 flyway:
   locations:
     - classpath:db/migration
@@ -47,3 +48,4 @@ logging:
     de.vitasystems: TRACE
     com.ethercis: DEBUG
     org.jooq: INFO
+    net.sf.ehcache: TRACE

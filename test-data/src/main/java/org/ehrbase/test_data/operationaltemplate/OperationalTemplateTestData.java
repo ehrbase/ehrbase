@@ -24,6 +24,7 @@ import java.util.Arrays;
 public enum OperationalTemplateTestData {
 
     IDCR_IMMUNISATION_SUMMARY("IDCR Immunisation summary", "IDCR - Immunisation summary.v0.opt", "IDCR - Immunisation summary.v0"),
+    RIPPLE_CONFORMANCE_TEST("RIPPLE Conformance Test", "RIPPLE-Conformance Test.opt", "RIPPLE - Conformance Test template"),
     IDCR_LABORATORY_TEST("IDCR  Laboratory Test Report", "IDCR - Laboratory Test Report.v0.opt", "IDCR - Laboratory Test Report.v0"),
     IDCR_PROBLEM_LIST("IDCR  Problem List.v1", "IDCR - Problem List.v1.opt", "IDCR - Problem List.v1"),
     BLOOD_PRESSURE_SIMPLE("Very simple blood_pressure template", "ehrbase_blood_pressure_simple.de.v0.opt", "ehrbase_blood_pressure_simple.de.v0"),
