@@ -22,9 +22,19 @@ robot ./robot/
 
 # Windows
 robot .\robot\
+
+
+# QUICK COPY/PASTE EXAMPLES TO RUN ONLY A SPECIFIC TEST-SUITE
+
+robot -i composition    -d results --noncritical not-ready -L TRACE robot/COMPOSITION_TESTS/
+robot -i contribution   -d results --noncritical not-ready -L TRACE robot/CONTRIBUTION_TESTS/
+robot -i directory      -d results --noncritical not-ready -L TRACE robot/DIRECTORY_TESTS/
+robot -i ehr_service    -d results --noncritical not-ready -L TRACE robot/EHR_SERVICE_TESTS/
+robot -i knowledge      -d results --noncritical not-ready -L TRACE robot/KNOWLEDGE_TESTS/
+robot -i aql            -d results --noncritical not-ready -L TRACE robot/QUERY_SERVICE_TESTS/
 ```
 
-The execution of **all** integration tests takes about 30 minutes (on a fast dev machine). To avoid waiting for all results you can specify exactly which test-suite you want to execute. There are six test-suites from which you can choose by passing the proper TAG to `robot` command via the `--include` (or short `-i`) option: 
+Execution of **all** integration tests takes **about 30 minutes** (on a fast dev machine). To avoid waiting for all results you can specify exactly which test-suite or even which subset of it you want to execute. There are six test-suites to choose from by passing proper TAG to `robot` command via the `--include` (or short `-i`) option: 
 
 
 TEST SUITE | SUPER TAG | SUB TAG(s) | EXAMPLE(s)
