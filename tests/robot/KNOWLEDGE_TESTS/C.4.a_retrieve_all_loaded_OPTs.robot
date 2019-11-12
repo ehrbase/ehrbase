@@ -131,9 +131,9 @@ verify server response
   #  String  $[*].templateId
   #  String  $[*].uid
   #  String  $[*].createdOn          # FAILS: cause not OPTs have this property
-    String  $[*].archetypeId        # EHRSCAPE
-    String  $[*].created_timestamp  # EHRSCAPE
-    String  $[*].template_id        # EHRSCAPE
+    String  $[*].archetype_id
+    String  $[*].created_timestamp
+    String  $[*].template_id
 
     # log to console for quick debugging
     Output  response body 0
