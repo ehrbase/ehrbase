@@ -1,4 +1,4 @@
-# EHRBASE Integration Tests with Robot Framework
+# EHRbase Integration Tests with Robot Framework
 
 ## How to run test locally
 
