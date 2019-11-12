@@ -1,3 +1,3 @@
 {
-  "q": "SELECT e/ehr_id/value FROM EHR e ORDERBY e/time_created"
+  "q": "SELECT e/ehr_id/value FROM EHR e ORDER BY e/time_created"
 }

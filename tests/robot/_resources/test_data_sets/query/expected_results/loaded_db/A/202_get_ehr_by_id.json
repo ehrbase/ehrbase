@@ -1,0 +1,19 @@
+{
+  "meta": {
+    "_type": "RESULTSET",
+    "_created": "2019-10-17T23:16:53.297Z",
+    "_executed_aql": "select e/ehr_id/value as uid from EHR e WHERE uid = '__MODIFY_EHR_ID_1__'"
+  },
+  "q": "select e/ehr_id/value as uid from EHR e WHERE uid = '__MODIFY_EHR_ID_1__'",
+  "columns": [
+    {
+      "name": "uid",
+      "path": "/ehr_id/value"
+    }
+  ],
+  "rows": [
+    [
+      "__MODIFY_EHR_ID_1__"
+    ]
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "meta": {
+    "_type": "RESULTSET",
+    "_created": "2019-10-22T01:14:19.672Z",
+    "_executed_aql": "SELECT c/uid, c/name, c/archetype_node_id, c/language, c/territory, c/category FROM EHR e [ehr_id/value='__MODIFY_EHR_ID_1__'] CONTAINS COMPOSITION c"
+  },
+  "q": "SELECT c/uid, c/name, c/archetype_node_id, c/language, c/territory, c/category FROM EHR e [ehr_id/value='__MODIFY_EHR_ID_1__'] CONTAINS COMPOSITION c",
+  "columns": [
+    {
+      "name": "#0",
+      "path": "/uid"
+    },
+    {
+      "name": "#1",
+      "path": "/name"
+    },
+    {
+      "name": "#2",
+      "path": "/archetype_node_id"
+    },
+    {
+      "name": "#3",
+      "path": "/language"
+    },
+    {
+      "name": "#4",
+      "path": "/territory"
+    },
+    {
+      "name": "#5",
+      "path": "/category"
+    }
+  ],
+  "rows": [
+  ]
+}

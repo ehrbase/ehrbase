@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "_type": "RESULTSET",
+    "_created": "2019-10-18T18:05:21.521Z",
+    "_executed_aql": "SELECT c FROM EHR e [ehr_id/value='__MODIFY_EHR_ID_1__'] CONTAINS COMPOSITION c"
+  },
+  "q": "SELECT c FROM EHR e [ehr_id/value='__MODIFY_EHR_ID_1__'] CONTAINS COMPOSITION c",
+  "columns": [
+    {
+      "name": "#0",
+      "path": "/"
+    }
+  ],
+  "rows": [
+  ]
+}

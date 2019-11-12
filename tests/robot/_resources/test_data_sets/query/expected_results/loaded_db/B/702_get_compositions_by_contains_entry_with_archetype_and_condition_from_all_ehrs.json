@@ -1,0 +1,46 @@
+{
+  "meta": {
+    "_type": "RESULTSET",
+    "_created": "2019-10-18T18:12:29.282Z",
+    "_executed_aql": "SELECT c FROM EHR e CONTAINS COMPOSITION c CONTAINS OBSERVATION obs [openEHR-EHR-OBSERVATION.minimal.v1] WHERE obs/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/value = 'first value'"
+  },
+  "q": "SELECT c FROM EHR e CONTAINS COMPOSITION c CONTAINS OBSERVATION obs [openEHR-EHR-OBSERVATION.minimal.v1] WHERE obs/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/value = $value",
+  "columns": [
+    {
+      "name": "#0",
+      "path": "/"
+    }
+  ],
+  "rows": [
+    [
+      "__MODIFY_COMPOSITION_OBSERVATION_1_EHR_1__"
+    ],
+    [
+      "__MODIFY_COMPOSITION_OBSERVATION_1_EHR_2__"
+    ],
+    [
+      "__MODIFY_COMPOSITION_OBSERVATION_1_EHR_3__"
+    ],
+    [
+      "__MODIFY_COMPOSITION_OBSERVATION_1_EHR_4__"
+    ],
+    [
+      "__MODIFY_COMPOSITION_OBSERVATION_1_EHR_5__"
+    ],
+    [
+      "__MODIFY_COMPOSITION_OBSERVATION_1_EHR_6__"
+    ],
+    [
+      "__MODIFY_COMPOSITION_OBSERVATION_1_EHR_7__"
+    ],
+    [
+      "__MODIFY_COMPOSITION_OBSERVATION_1_EHR_8__"
+    ],
+    [
+      "__MODIFY_COMPOSITION_OBSERVATION_1_EHR_9__"
+    ],
+    [
+      "__MODIFY_COMPOSITION_OBSERVATION_1_EHR_10__"
+    ]
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "_type": "RESULTSET",
+    "_created": "2019-10-18T18:02:54.685Z",
+    "_executed_aql": "SELECT e/ehr_id/value as uid FROM EHR e CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS INSTRUCTION inst [openEHR-EHR-INSTRUCTION.minimal.v1]"
+  },
+  "q": "SELECT e/ehr_id/value as uid FROM EHR e CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS INSTRUCTION inst [openEHR-EHR-INSTRUCTION.minimal.v1]",
+  "columns": [
+    {
+      "name": "uid",
+      "path": "/ehr_id/value"
+    }
+  ],
+  "rows": [
+  ]
+}

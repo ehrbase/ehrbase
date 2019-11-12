@@ -1,0 +1,24 @@
+{
+  "meta": {
+    "_type": "RESULTSET",
+    "_created": "2019-10-22T01:13:23.447Z",
+    "_executed_aql": "select e/ehr_id/value, e/time_created/value, e/system_id/value from EHR e CONTAINS COMPOSITION"
+  },
+  "q": "select e/ehr_id/value, e/time_created/value, e/system_id/value from EHR e CONTAINS COMPOSITION",
+  "columns": [
+    {
+      "name": "#0",
+      "path": "/ehr_id/value"
+    },
+    {
+      "name": "#1",
+      "path": "/time_created/value"
+    },
+    {
+      "name": "#2",
+      "path": "/system_id/value"
+    }
+  ],
+  "rows": [
+  ]
+}

@@ -1,0 +1,368 @@
+{
+  "meta": {
+    "_type": "RESULTSET",
+    "_created": "2019-10-19T19:29:55.115Z",
+    "_executed_aql": "SELECT e/ehr_id, e/time_created, e/system_id, e/ehr_status FROM EHR e"
+  },
+  "q": "SELECT e/ehr_id, e/time_created, e/system_id, e/ehr_status FROM EHR e",
+  "columns": [
+    {
+      "name": "#0",
+      "path": "/ehr_id"
+    },
+    {
+      "name": "#1",
+      "path": "/time_created"
+    },
+    {
+      "name": "#2",
+      "path": "/system_id"
+    },
+    {
+      "name": "#3",
+      "path": "/ehr_status"
+    }
+  ],
+  "rows": [
+    [
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_EHR_ID_1__"
+      },
+      {
+        "_type": "DV_DATE_TIME",
+        "value": "__MODIFY_TIME_CREATED_1__"
+      },
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_SYSTEM_ID_1__"
+      },
+      {
+        "_type": "EHR_STATUS",
+        "uid": {
+          "_type": "HIER_OBJECT_ID",
+          "value": "__MODIFY_STATUS_UID_1__"
+        },
+        "subject": {
+          "_type": "PARTY_SELF",
+          "external_ref": {
+            "_type": "PARTY_REF",
+            "id": {
+              "_type": "HIER_OBJECT_ID",
+              "value": "11111111-1111-1111-1111-111111111111"
+            },
+            "namespace": "patients"
+          }
+        },
+        "is_queryable": true,
+        "is_modifiable": true
+      }
+    ],
+    [
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_EHR_ID_2__"
+      },
+      {
+        "_type": "DV_DATE_TIME",
+        "value": "__MODIFY_TIME_CREATED_2__"
+      },
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_SYSTEM_ID_2__"
+      },
+      {
+        "_type": "EHR_STATUS",
+        "uid": {
+          "_type": "HIER_OBJECT_ID",
+          "value": "__MODIFY_STATUS_UID_2__"
+        },
+        "subject": {
+          "_type": "PARTY_SELF",
+          "external_ref": {
+            "_type": "PARTY_REF",
+            "id": {
+              "_type": "HIER_OBJECT_ID",
+              "value": "22222222-2222-2222-2222-222222222222"
+            },
+            "namespace": "patients"
+          }
+        },
+        "is_queryable": true,
+        "is_modifiable": true
+      }
+    ],
+    [
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_EHR_ID_3__"
+      },
+      {
+        "_type": "DV_DATE_TIME",
+        "value": "__MODIFY_TIME_CREATED_3__"
+      },
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_SYSTEM_ID_3__"
+      },
+      {
+        "_type": "EHR_STATUS",
+        "uid": {
+          "_type": "HIER_OBJECT_ID",
+          "value": "__MODIFY_STATUS_UID_3__"
+        },
+        "subject": {
+          "_type": "PARTY_SELF",
+          "external_ref": {
+            "_type": "PARTY_REF",
+            "id": {
+              "_type": "HIER_OBJECT_ID",
+              "value": "33333333-3333-3333-3333-333333333333"
+            },
+            "namespace": "patients"
+          }
+        },
+        "is_queryable": true,
+        "is_modifiable": true
+      }
+    ],
+    [
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_EHR_ID_4__"
+      },
+      {
+        "_type": "DV_DATE_TIME",
+        "value": "__MODIFY_TIME_CREATED_4__"
+      },
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_SYSTEM_ID_4__"
+      },
+      {
+        "_type": "EHR_STATUS",
+        "uid": {
+          "_type": "HIER_OBJECT_ID",
+          "value": "__MODIFY_STATUS_UID_4__"
+        },
+        "subject": {
+          "_type": "PARTY_SELF",
+          "external_ref": {
+            "_type": "PARTY_REF",
+            "id": {
+              "_type": "HIER_OBJECT_ID",
+              "value": "44444444-4444-4444-4444-444444444444"
+            },
+            "namespace": "patients"
+          }
+        },
+        "is_queryable": true,
+        "is_modifiable": true
+      }
+    ],
+    [
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_EHR_ID_5__"
+      },
+      {
+        "_type": "DV_DATE_TIME",
+        "value": "__MODIFY_TIME_CREATED_5__"
+      },
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_SYSTEM_ID_5__"
+      },
+      {
+        "_type": "EHR_STATUS",
+        "uid": {
+          "_type": "HIER_OBJECT_ID",
+          "value": "__MODIFY_STATUS_UID_5__"
+        },
+        "subject": {
+          "_type": "PARTY_SELF",
+          "external_ref": {
+            "_type": "PARTY_REF",
+            "id": {
+              "_type": "HIER_OBJECT_ID",
+              "value": "55555555-5555-5555-5555-555555555555"
+            },
+            "namespace": "patients"
+          }
+        },
+        "is_queryable": true,
+        "is_modifiable": true
+      }
+    ],
+    [
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_EHR_ID_6__"
+      },
+      {
+        "_type": "DV_DATE_TIME",
+        "value": "__MODIFY_TIME_CREATED_6__"
+      },
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_SYSTEM_ID_6__"
+      },
+      {
+        "_type": "EHR_STATUS",
+        "uid": {
+          "_type": "HIER_OBJECT_ID",
+          "value": "__MODIFY_STATUS_UID_6__"
+        },
+        "subject": {
+          "_type": "PARTY_SELF",
+          "external_ref": {
+            "_type": "PARTY_REF",
+            "id": {
+              "_type": "HIER_OBJECT_ID",
+              "value": "66666666-6666-6666-6666-666666666666"
+            },
+            "namespace": "patients"
+          }
+        },
+        "is_queryable": true,
+        "is_modifiable": true
+      }
+    ],
+    [
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_EHR_ID_7__"
+      },
+      {
+        "_type": "DV_DATE_TIME",
+        "value": "__MODIFY_TIME_CREATED_7__"
+      },
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_SYSTEM_ID_7__"
+      },
+      {
+        "_type": "EHR_STATUS",
+        "uid": {
+          "_type": "HIER_OBJECT_ID",
+          "value": "__MODIFY_STATUS_UID_7__"
+        },
+        "subject": {
+          "_type": "PARTY_SELF",
+          "external_ref": {
+            "_type": "PARTY_REF",
+            "id": {
+              "_type": "HIER_OBJECT_ID",
+              "value": "77777777-7777-7777-7777-777777777777"
+            },
+            "namespace": "patients"
+          }
+        },
+        "is_queryable": true,
+        "is_modifiable": true
+      }
+    ],
+    [
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_EHR_ID_8__"
+      },
+      {
+        "_type": "DV_DATE_TIME",
+        "value": "__MODIFY_TIME_CREATED_8__"
+      },
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_SYSTEM_ID_8__"
+      },
+      {
+        "_type": "EHR_STATUS",
+        "uid": {
+          "_type": "HIER_OBJECT_ID",
+          "value": "__MODIFY_STATUS_UID_8__"
+        },
+        "subject": {
+          "_type": "PARTY_SELF",
+          "external_ref": {
+            "_type": "PARTY_REF",
+            "id": {
+              "_type": "HIER_OBJECT_ID",
+              "value": "88888888-8888-8888-8888-888888888888"
+            },
+            "namespace": "patients"
+          }
+        },
+        "is_queryable": true,
+        "is_modifiable": true
+      }
+    ],
+    [
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_EHR_ID_9__"
+      },
+      {
+        "_type": "DV_DATE_TIME",
+        "value": "__MODIFY_TIME_CREATED_9__"
+      },
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_SYSTEM_ID_9__"
+      },
+      {
+        "_type": "EHR_STATUS",
+        "uid": {
+          "_type": "HIER_OBJECT_ID",
+          "value": "__MODIFY_STATUS_UID_9__"
+        },
+        "subject": {
+          "_type": "PARTY_SELF",
+          "external_ref": {
+            "_type": "PARTY_REF",
+            "id": {
+              "_type": "HIER_OBJECT_ID",
+              "value": "99999999-9999-9999-9999-999999999999"
+            },
+            "namespace": "patients"
+          }
+        },
+        "is_queryable": true,
+        "is_modifiable": true
+      }
+    ],
+    [
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_EHR_ID_10__"
+      },
+      {
+        "_type": "DV_DATE_TIME",
+        "value": "__MODIFY_TIME_CREATED_10__"
+      },
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_SYSTEM_ID_10__"
+      },
+      {
+        "_type": "EHR_STATUS",
+        "uid": {
+          "_type": "HIER_OBJECT_ID",
+          "value": "__MODIFY_STATUS_UID_10__"
+        },
+        "subject": {
+          "_type": "PARTY_SELF",
+          "external_ref": {
+            "_type": "PARTY_REF",
+            "id": {
+              "_type": "HIER_OBJECT_ID",
+              "value": "10101010-1010-1010-1010-101010101010"
+            },
+            "namespace": "patients"
+          }
+        },
+        "is_queryable": true,
+        "is_modifiable": true
+      }
+    ]
+  ]
+}
