@@ -31,7 +31,6 @@ import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_FolderAccess;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
-import org.ehrbase.dao.access.util.FolderUtils;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.tables.FolderHierarchy;
 import org.ehrbase.jooq.pg.tables.records.FolderHierarchyRecord;
@@ -47,7 +46,6 @@ import org.postgresql.util.PGobject;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
-import java.util.stream.Stream;
 
 import static org.ehrbase.jooq.pg.Tables.*;
 import static org.jooq.impl.DSL.*;
@@ -140,7 +138,6 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
 
             folderRecord.setSysPeriod(PGObjectParser.parseSysPeriod(folderRecord.getSysPeriod()));
             folderRecord.setDetails(PGObjectParser.parseDetails(folderRecord.getDetails()));
-
 
             /*update items*/
             this.saveFolderItems(oldContribution, newContribution, transactionTime, context);
@@ -656,13 +653,8 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
                 contributionAccess
         );
 
-        // Update folder data
-        FolderUtils.updateFolder(folder, newFolderAccess);
-
         if (folder.getFolders() != null && !folder.getFolders().isEmpty()) {
 
-            // Clear old sub folders list
-            newFolderAccess.getSubfoldersList().clear();
             // Create new list of sub folders
             folder.getFolders().forEach(childFolder ->
                     newFolderAccess

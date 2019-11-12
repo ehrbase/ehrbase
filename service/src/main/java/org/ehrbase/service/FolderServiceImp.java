@@ -26,7 +26,6 @@ import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.service.FolderService;
 import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
 import org.ehrbase.dao.access.interfaces.I_FolderAccess;
-import org.ehrbase.dao.access.interfaces.I_SimpleCRUD;
 import org.ehrbase.dao.access.jooq.FolderAccess;
 import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.directory.Folder;
@@ -42,7 +41,6 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 
@@ -138,8 +136,6 @@ public class FolderServiceImp extends BaseService implements FolderService {
 
         // Set update data
         FolderUtils.updateFolder(update, folderAccess);
-
-
 
         // Create FolderAccess instances for sub folders if there are any
         if (update.getFolders() != null && !update.getFolders().isEmpty()) {
