@@ -413,9 +413,9 @@ commands:
                       --removekeywords wuks \
                       --loglevel TRACE \
                       --noncritical not-ready \
-                      --output ehrbase-test-output.xml \
-                      --log ehrbase-test-log.html \
-                      --report ehrbase-test-report.html \
+                      --output EHRbase-output.xml \
+                      --log EHRbase-log.html \
+                      --report EHRbase-report.html \
                       results/*/*.xml
       - run:
             name: GENERATE TEST SUMMARY

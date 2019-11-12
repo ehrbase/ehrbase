@@ -90,7 +90,7 @@ You will see `[WARN]` and `[ERROR]` in console output and in log.html
 
 After each test run Robot creates a report.html (summary) and a log.html
 (details) in results folder. The files are overwritten after each run by default.
-If you want to prevent this behavior you can [time-stamp](http://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#timestamping-output-files) the output files.
+If you want to keep history of your test runs you can [time-stamp](http://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#timestamping-output-files) the output files.
 
 
 
