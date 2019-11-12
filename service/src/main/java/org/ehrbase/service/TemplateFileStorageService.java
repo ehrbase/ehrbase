@@ -23,8 +23,6 @@ import org.apache.xmlbeans.XmlOptions;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.xml.namespace.QName;
@@ -45,7 +43,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Service
+
 public class TemplateFileStorageService implements TemplateStorage {
 
 
@@ -54,7 +52,6 @@ public class TemplateFileStorageService implements TemplateStorage {
     private Map<String, String> errorMap = new ConcurrentHashMap<>();
 
 
-    @Value("${templateFileStorageService.storage.path.operationaltemplates}")
     private String optPath;
 
 
