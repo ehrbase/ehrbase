@@ -57,7 +57,7 @@ public class FullCompositionJson extends CompositionAttribute {
         if (fieldContext.isWithAlias())
             return aliased(DSL.field(jsonFullComposition));
         else
-            return DSL.field(jsonFullComposition);
+            return DSL.field(jsonFullComposition).as(fieldContext.getIdentifier());
     }
 
     @Override

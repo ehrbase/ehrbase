@@ -106,7 +106,7 @@ public class SelectBinder extends TemplateMetaData implements I_SelectBinder {
                 case "COMPOSITION":
                     if (variableDefinition.getPath() != null && variableDefinition.getPath().startsWith("content")) {
                         field = jsonbEntryQuery.makeField(template_id, comp_id, identifier, variableDefinition, I_QueryImpl.Clause.SELECT);
-                        handleJsonDataBlock(jsonbEntryQuery, field, null, null);
+                        handleJsonDataBlock(jsonbEntryQuery, field, null, variableDefinition.getPath());
                     } else {
                         field = compositionAttributeQuery.makeField(template_id, comp_id, identifier, variableDefinition, I_QueryImpl.Clause.SELECT);
                         handleJsonDataBlock(compositionAttributeQuery, field, null, variableDefinition.getPath());

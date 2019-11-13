@@ -32,10 +32,7 @@ public class GenericJsonField extends RMObjectAttribute {
         else
             jsonContextField = DSL.field(plpgsqlFunction+"("+StringUtils.join(tableFields, ",")+")::text");
 
-        if (fieldContext.isWithAlias())
-            return aliased(DSL.field(jsonContextField));
-        else
-            return DSL.field(jsonContextField);
+        return as(DSL.field(jsonContextField));
     }
 
     public Field jsonField(String rmType, String plpgsqlFunction, Field... fields){
@@ -48,10 +45,9 @@ public class GenericJsonField extends RMObjectAttribute {
         else
             jsonContextField = DSL.field(plpgsqlFunction+"("+StringUtils.join(fields, ",")+")::text");
 
-        if (fieldContext.isWithAlias())
-            return aliased(DSL.field(jsonContextField));
-        else
-            return DSL.field(jsonContextField);
+
+        return as(DSL.field(jsonContextField));
+
     }
 
     @Override

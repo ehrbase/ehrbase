@@ -69,7 +69,7 @@ public class AqlQueryHandler extends DataAccess {
         //add the variable from statements
         Map<String, String> variables = new HashMap();
         for (I_VariableDefinition variableDefinition: statements.getVariables()) {
-            variables.put(variableDefinition.getAlias(), variableDefinition.getPath());
+            variables.put(variableDefinition.getAlias(), "/"+variableDefinition.getPath());
         }
         aqlResult.setVariables(variables);
         return aqlResult;

@@ -36,10 +36,7 @@ public class SystemAttribute extends RMObjectAttribute {
 
     @Override
     public Field<?> sqlField() {
-        if (fieldContext.isWithAlias())
-            return aliased(DSL.field(I_JoinBinder.systemRecordTable.getName()+"."+tableField.getName()));
-        else
-            return DSL.field(I_JoinBinder.systemRecordTable.getName()+"."+tableField.getName());
+        return as(DSL.field(I_JoinBinder.systemRecordTable.getName()+"."+tableField.getName()));
     }
 
     @Override

@@ -84,9 +84,6 @@ public class CompositionUidValue extends CompositionAttribute {
     }
 
     private Field<?> rawUid() {
-        if (fieldContext.isWithAlias())
-            return aliased(DSL.field(I_JoinBinder.compositionRecordTable.field("id", UUID.class)));
-        else
-            return DSL.field(I_JoinBinder.compositionRecordTable.field("id", UUID.class));
+        return as(DSL.field(I_JoinBinder.compositionRecordTable.field("id", UUID.class)));
     }
 }

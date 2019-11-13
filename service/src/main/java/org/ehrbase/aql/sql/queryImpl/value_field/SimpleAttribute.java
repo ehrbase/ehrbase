@@ -48,10 +48,7 @@ public class SimpleAttribute extends CompositionAttribute {
         else
             actualField = DSL.field(tableField);
 
-        if (fieldContext.isWithAlias())
-            return aliased(actualField);
-        else
-            return actualField;
+        return as(actualField);
 
     }
 

@@ -18,6 +18,8 @@
 package org.ehrbase.aql.sql.queryImpl.attribute;
 
 import org.ehrbase.aql.sql.binding.I_JoinBinder;
+import org.ehrbase.aql.sql.queryImpl.DefaultColumnId;
+import org.ehrbase.aql.sql.queryImpl.I_QueryImpl;
 import org.ehrbase.aql.sql.queryImpl.attribute.composition.CompositionIdFieldSetup;
 import org.ehrbase.aql.sql.queryImpl.attribute.ehr.EhrSetup;
 import org.jooq.Field;
@@ -37,14 +39,32 @@ public abstract class RMObjectAttribute implements I_RMObjectAttribute, I_JoinBi
         this.joinSetup = joinSetup;
     }
 
+    protected Field<?> as(Field field){
+        if (fieldContext.isWithAlias())
+            return aliased(field);
+        else {
+            if (!fieldContext.getClause().equals(I_QueryImpl.Clause.WHERE))
+                return defaultAliased(field);
+            else
+                return field;
+        }
+    }
+
     protected Field<?> aliased(Field field){
         return field.as(effectiveAlias());
     }
 
     protected String effectiveAlias(){
         return (fieldContext.getVariableDefinition().getAlias() == null || !fieldContext.getVariableDefinition().getAlias().isEmpty())
-                ? fieldContext.getColumnAlias()
-                : fieldContext.getVariableDefinition().getAlias();
+                ? "/"+fieldContext.getColumnAlias()
+                : "/"+fieldContext.getVariableDefinition().getAlias();
+    }
+
+    protected Field<?> defaultAliased(Field field){
+        if (fieldContext.getClause().equals(I_QueryImpl.Clause.WHERE))
+            return field;
+        else
+            return field.as(new DefaultColumnId().value(fieldContext.getVariableDefinition()));
     }
 
 }

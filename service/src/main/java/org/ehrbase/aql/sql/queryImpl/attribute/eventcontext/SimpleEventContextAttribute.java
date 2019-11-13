@@ -37,10 +37,7 @@ public class SimpleEventContextAttribute extends EventContextAttribute {
 
     @Override
     public Field<?> sqlField() {
-        if (fieldContext.isWithAlias())
-            return aliased(DSL.field(tableField));
-        else
-            return DSL.field(tableField);
+        return as(DSL.field(tableField));
     }
 
     @Override

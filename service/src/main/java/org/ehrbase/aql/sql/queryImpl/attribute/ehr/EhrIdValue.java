@@ -43,20 +43,20 @@ public class EhrIdValue extends EhrAttribute {
                 Field<?> select = aliased(DSL.field("{0}", I_JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
                 return select;
             } else
-                return DSL.field(I_JoinBinder.ehrRecordTable.field(I_JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
+                return defaultAliased(DSL.field(I_JoinBinder.ehrRecordTable.field(I_JoinBinder.ehrRecordTable.field(EHR_.ID.getName()))));
         } else if (!joinSetup.isContainsEhrStatus()) {
             joinSetup.setJoinEhr(true);
             if (fieldContext.isWithAlias()) {
                 Field<?> select = aliased(DSL.field("{0}", I_JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
                 return select;
             } else
-                return DSL.field(I_JoinBinder.ehrRecordTable.field(EHR_.ID.getName()));
+                return defaultAliased(DSL.field(I_JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
         } else {
             if (fieldContext.isWithAlias()) {
                 Field<?> select = aliased(DSL.field("{0}", I_JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
                 return select;
             } else
-                return DSL.field(I_JoinBinder.ehrRecordTable.field(EHR_.ID.getName()));
+                return defaultAliased(DSL.field(I_JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
         }
     }
 

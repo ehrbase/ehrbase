@@ -47,7 +47,7 @@ public class CompositionName extends CompositionAttribute {
             if (fieldContext.getClause().equals(I_QueryImpl.Clause.WHERE)) {
                 trimName = "(SELECT " + trimName + ")";
             }
-            return DSL.field(trimName);
+            return defaultAliased(DSL.field(trimName));
         }
     }
 

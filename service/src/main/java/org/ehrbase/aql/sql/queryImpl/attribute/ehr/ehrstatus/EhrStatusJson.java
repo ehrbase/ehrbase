@@ -49,10 +49,8 @@ public class EhrStatusJson extends EhrStatusAttribute {
         else
             jsonEhrStatusField = DSL.field("ehr.js_ehr_status("+ I_JoinBinder.statusRecordTable.field(STATUS.EHR_ID)+")::text");
 
-        if (fieldContext.isWithAlias())
-            return aliased(DSL.field(jsonEhrStatusField));
-        else
-            return DSL.field(jsonEhrStatusField);
+
+        return as(DSL.field(jsonEhrStatusField));
     }
 
     @Override

@@ -364,7 +364,7 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
             if (alias != null && StringUtils.isNotEmpty(alias))
                 fieldPathItem = DSL.field(itemPath, String.class).as(alias);
             else {
-                String tempAlias = "FIELD_" + getSerial();
+                String tempAlias = new DefaultColumnId().value(variableDefinition);
                 fieldPathItem = DSL.field(itemPath, String.class).as(tempAlias);
             }
         } else

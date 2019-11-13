@@ -42,10 +42,9 @@ public class SimpleCompositionAttribute extends CompositionAttribute {
         if (tableField.getTable().equals(COMPOSITION)) {
             actualField = DSL.field(I_JoinBinder.compositionRecordTable.getName()+"."+tableField.getName());
         }
-        if (fieldContext.isWithAlias())
-            return aliased(actualField);
-        else
-            return actualField;
+
+        return as(actualField);
+
 
     }
 

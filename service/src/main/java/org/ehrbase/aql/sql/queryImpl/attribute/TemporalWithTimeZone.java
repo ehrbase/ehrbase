@@ -33,10 +33,7 @@ public class TemporalWithTimeZone extends SimpleEventContextAttribute {
     }
 
     public Field<?> sqlField() {
-        if (fieldContext.isWithAlias()) {
-            return aliased(DSL.field(prettyDateTime(tableField, timeZoneField) + "||" + tzNoZulu(timeZoneField)));
-        } else
-            return DSL.field(prettyDateTime(tableField, timeZoneField) + "||" + tzNoZulu(timeZoneField));
+        return as(DSL.field(prettyDateTime(tableField, timeZoneField) + "||" + tzNoZulu(timeZoneField)));
     }
 
     public TemporalWithTimeZone useTimeZone(TableField tableField){
