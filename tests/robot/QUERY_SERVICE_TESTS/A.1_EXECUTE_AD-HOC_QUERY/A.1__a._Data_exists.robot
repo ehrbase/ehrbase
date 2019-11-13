@@ -159,7 +159,7 @@ Check DB is empty
 
 
 Load SUT with Test-Data
-    [Tags]
+    [Tags]              xxx
     [Template]          create EHR records on the server
     ${ehr data sets}/ehr_status_01.json
     ${ehr data sets}/ehr_status_02.json
