@@ -53,6 +53,7 @@ ${aql_queries}    ${VALID QUERY DATA SETS}
 
 execute ad-hoc query and check result (empty DB)
     [Arguments]         ${aql_payload}
+    [Documentation]     empty DB
 
                         execute ad-hoc query    ${aql_payload}
                         check response: is positive
@@ -61,9 +62,11 @@ execute ad-hoc query and check result (empty DB)
 
 execute ad-hoc query and check result (loaded DB)
     [Arguments]         ${aql_payload}
+    [Documentation]     loaded DB
 
                         execute ad-hoc query    ${aql_payload}
-                        check response: is positive
+                        # check response: is positive
+                        # check response (LOADED DB): returns correct content for  ${aql_payload}
 
 
 execute ad-hoc query (no result comparison)
@@ -78,6 +81,7 @@ execute ad-hoc query
                         Set Test Variable  ${KEYWORD NAME}  AD-HOC QUERY
 
                         load valid query test-data-set    ${valid_test_data_set}
+                        Expect Response Body    ${QUERY RESULTS LOADED DB}/${valid_test_data_set}-schema.json
 
                         POST /query/aql    JSON
 
@@ -85,7 +89,7 @@ execute ad-hoc query
 load valid query test-data-set
     [Arguments]        ${valid_test_data_set}
 
-    ${file}=            Get File            ${VALID QUERY DATA SETS}/${valid_test_data_set}
+    ${file}=            Get File            ${VALID QUERY DATA SETS}/${valid_test_data_set}.json
 
                         Set Test Variable   ${test_data}    ${file}
 
@@ -93,7 +97,7 @@ load valid query test-data-set
 load expected results-data-set (LOADED DB)
     [Arguments]        ${expected_result_data_set}
 
-    ${file}=            Get File            ${QUERY RESULTS LOADED DB}/${expected_result_data_set}
+    ${file}=            Get File            ${QUERY RESULTS LOADED DB}/${expected_result_data_set}.json
 
                         Set Test Variable   ${expected_result}    ${file}
 
@@ -110,7 +114,7 @@ compare
     [Arguments]         ${response body}  ${expected result}  ${exclude_paths}=None
     [Documentation]     Checks that "response body" is subset of expected result
     ...                 Allows to ignore dynamic content like timestamps etc.
-    
+
     ${response body}=   Evaluate    json.loads('''${response body}''')   json
     ${expected res}=    Evaluate    json.loads('''${expected result}''')    json
 
@@ -177,13 +181,19 @@ POST /query/aql
 
                         prepare query request session    ${format}
 
-    ${resp}=            Post Request        ${SUT}   /query/aql
-                        ...                 data=${test_data}
-                        ...                 headers=${headers}
+    &{resp}=            REST.POST  /query/aql  body=${test_data}  headers=${headers}
+    &{body}=            Output  response body
+    #                     Set Test Variable   ${response}    ${resp}
+    #                     Set Test Variable   ${response body}    ${body}
+                        # Output Schema
 
-                        Set Test Variable   ${response}    ${resp}
-                        Set Test Variable   ${response body}    ${resp.content}
-                        Output Debug Info:  POST /query/aql
+    # ${resp}=            Post Request        ${SUT}   /query/aql
+    #                     ...                 data=${test_data}
+    #                     ...                 headers=${headers}
+
+    #                     Set Test Variable   ${response}    ${resp}
+    #                     Set Test Variable   ${response body}    ${resp.content}
+    #                     Output Debug Info:  POST /query/aql
 
 
 POST /query/{qualified_query_name}/{version}
@@ -262,7 +272,7 @@ check response (LOADED DB): returns correct content for
 
                         load expected results-data-set (LOADED DB)    ${aql_payload}
 
-                        compare    ${response body}    ${expected result}
+                        compare json-strings  ${response body}  ${expected result}  exclude_paths=root['meta']
 
 
 check response (EMPTY DB): returns correct content for
@@ -270,7 +280,8 @@ check response (EMPTY DB): returns correct content for
 
                         load expected results-data-set (EMPTY DB)    ${aql_payload}
 
-                        compare    ${response body}    ${expected result}
+    &{diff}=            compare json-strings  ${response body}  ${expected result}  exclude_paths=root['meta']
+                        Should Be Empty  ${diff}  msg=DIFF DETECTED! MUZZAFUKKA!
 
 
 

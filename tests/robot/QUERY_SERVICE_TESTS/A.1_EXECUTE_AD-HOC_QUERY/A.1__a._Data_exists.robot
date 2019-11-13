@@ -46,7 +46,8 @@ Force Tags    refactor
 
 
 *** Variables ***
-${aql_queries}    ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/query/aql_queries/
+${ehr data sets}    ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/data_load/ehrs/
+${compo data sets}    ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/data_load/compositions/
 
 
 
@@ -151,10 +152,48 @@ Main flow: execute ad-hoc QUERY where data exists I
     [Teardown]      TRACE JIRA BUG    NO-JIRA-ID    not-ready    Some AQL QUERIES fail!
 
 
+Check DB is empty
+    [Tags]              xxx
+    retrieve OPT list
+    OPT list is empty
 
-Main flow: execute ad-hoc QUERY where data exists II
+
+Load SUT with Test-Data
+    [Tags]
+    [Template]          create EHR records on the server
+    ${ehr data sets}/ehr_status_01.json
+    ${ehr data sets}/ehr_status_02.json
+    ${ehr data sets}/ehr_status_03.json
+    ${ehr data sets}/ehr_status_04.json
+    ${ehr data sets}/ehr_status_05.json
+    ${ehr data sets}/ehr_status_06.json
+    ${ehr data sets}/ehr_status_07.json
+    ${ehr data sets}/ehr_status_08.json
+    ${ehr data sets}/ehr_status_09.json
+    ${ehr data sets}/ehr_status_10.json
+
+
+
+Main flow: execute ad-hoc QUERY where data exists
+    [Template]          execute ad-hoc query and check result (loaded DB)
+    [Tags]              not-ready   xxx
+
+    # EHRs
+    A/100_get_ehrs
+
+
+Alternative flow: execute ad-hoc QUERY where DB is empty
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              not-ready 
+    [Tags]              not-ready
 
     # EHRs
     A/100_get_ehrs.json
+
+
+
+*** Keywords ***
+create EHR records on the server
+    [Arguments]         ${payload}
+                        create new EHR with ehr_status  ${payload}
+                        Integer    response status    201
+                        # extract ehr_id from response (JSON)
