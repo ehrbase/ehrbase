@@ -25,5 +25,9 @@ public class FolderUtils {
         if (update.getArchetypeNodeId() != null) {
             target.setFolderNArchetypeNodeId(update.getArchetypeNodeId());
         }
+        if (update.getItems() != null) {
+            target.getItems().clear();
+            target.getItems().addAll(update.getItems());
+        }
     }
 }
