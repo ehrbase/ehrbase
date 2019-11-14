@@ -27,6 +27,7 @@ import com.nedap.archie.rm.generic.PartyIdentified;
 import com.nedap.archie.rm.generic.PartyProxy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.dao.access.interfaces.*;
@@ -67,8 +68,8 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     /**
      * @throws IllegalArgumentException when seeking language code, territory code or composer ID failed
      */
-    public CompositionAccess(DSLContext context, I_KnowledgeCache knowledgeManager, IntrospectService introspectCache, Composition composition, UUID ehrId) {
-        super(context, knowledgeManager, introspectCache);
+    public CompositionAccess(DSLContext context, I_KnowledgeCache knowledgeManager, IntrospectService introspectCache, ServerConfig serverConfig, Composition composition, UUID ehrId) {
+        super(context, knowledgeManager, introspectCache, serverConfig);
 
         this.composition = composition;
 
@@ -93,7 +94,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         contributionAccess.setState(ContributionDef.ContributionState.COMPLETE);
 
         // associate composition's own audit with this composition access instance
-        auditDetailsAccess = I_AuditDetailsAccess.getInstance(context);
+        auditDetailsAccess = I_AuditDetailsAccess.getInstance(getDataAccess());
 
     }
 
@@ -112,7 +113,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         contributionAccess.setState(ContributionDef.ContributionState.COMPLETE);
 
         // associate composition's own audit with this composition access instance
-        auditDetailsAccess = I_AuditDetailsAccess.getInstance(this.getContext());
+        auditDetailsAccess = I_AuditDetailsAccess.getInstance(this.getDataAccess());
     }
 
     public CompositionAccess(I_DomainAccess domainAccess) {
@@ -173,7 +174,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
             I_ContributionAccess contributionAccess = I_ContributionAccess.retrieveVersionedInstance(domainAccess, compositionHistoryAccess.getContributionVersionId(), compositionHistoryAccess.getSysTransaction());
             compositionHistoryAccess.setContributionAccess(contributionAccess);
 
-            I_AuditDetailsAccess auditDetailsAccess = new AuditDetailsAccess(domainAccess.getContext()).retrieveInstance(domainAccess.getContext(), compositionHistoryAccess.getAuditDetailsId());
+            I_AuditDetailsAccess auditDetailsAccess = new AuditDetailsAccess(domainAccess.getDataAccess()).retrieveInstance(domainAccess.getDataAccess(), compositionHistoryAccess.getAuditDetailsId());
             compositionHistoryAccess.setAuditDetailsAccess(auditDetailsAccess);
 
             //retrieve versioned context
@@ -220,7 +221,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         I_ContributionAccess contributionAccess = I_ContributionAccess.retrieveInstance(domainAccess, compositionAccess.getContributionVersionId());
         compositionAccess.setContributionAccess(contributionAccess);
         // retrieve corresponding audit
-        I_AuditDetailsAccess auditAccess = new AuditDetailsAccess(domainAccess.getContext()).retrieveInstance(domainAccess.getContext(), compositionAccess.getAuditDetailsId());
+        I_AuditDetailsAccess auditAccess = new AuditDetailsAccess(domainAccess.getDataAccess()).retrieveInstance(domainAccess.getDataAccess(), compositionAccess.getAuditDetailsId());
         compositionAccess.setAuditDetailsAccess(auditAccess);
 
         return compositionAccess;

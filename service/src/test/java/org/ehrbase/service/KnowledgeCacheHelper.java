@@ -18,6 +18,7 @@
 
 package org.ehrbase.service;
 
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.opt.query.TemplateTestData;
 import org.apache.commons.io.IOUtils;
 import org.junit.rules.TemporaryFolder;
@@ -48,5 +49,28 @@ public class KnowledgeCacheHelper {
         return knowledgeCacheService;
     }
 
+    public static ServerConfig buildServerConfig() {
+        return new ServerConfig() {
+            @Override
+            public int getPort() {
+                return 0;
+            }
+
+            @Override
+            public void setPort(int port) {
+
+            }
+
+            @Override
+            public String getNodename() {
+                return "local.ehrbase.org";
+            }
+
+            @Override
+            public void setNodename(String nodename) {
+
+            }
+        };
+    }
 
 }

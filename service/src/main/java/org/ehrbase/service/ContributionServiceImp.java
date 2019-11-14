@@ -30,6 +30,7 @@ import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import com.nedap.archie.rm.support.identification.TerminologyId;
 import org.ehrbase.api.definitions.CompositionFormat;
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.dto.CompositionDto;
 import org.ehrbase.api.dto.ContributionDto;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -67,8 +68,8 @@ public class ContributionServiceImp extends BaseService implements ContributionS
     }
 
     @Autowired
-    public ContributionServiceImp(KnowledgeCacheService knowledgeCacheService, CompositionService compositionService, EhrService ehrService, DSLContext context) {
-        super(knowledgeCacheService, context);
+    public ContributionServiceImp(KnowledgeCacheService knowledgeCacheService, CompositionService compositionService, EhrService ehrService, DSLContext context, ServerConfig serverConfig) {
+        super(knowledgeCacheService, context, serverConfig);
         this.compositionService = compositionService;
         this.ehrService = ehrService;
     }
@@ -243,7 +244,7 @@ public class ContributionServiceImp extends BaseService implements ContributionS
     private AuditDetails retrieveAuditDetails(UUID contributionId){
         UUID auditId = I_ContributionAccess.retrieveInstance(this.getDataAccess(), contributionId).getHasAuditDetails();
 
-        I_AuditDetailsAccess auditDetailsAccess = new AuditDetailsAccess(this.getDataAccess().getContext()).retrieveInstance(this.getDataAccess().getContext(), auditId);
+        I_AuditDetailsAccess auditDetailsAccess = new AuditDetailsAccess(this.getDataAccess()).retrieveInstance(this.getDataAccess(), auditId);
 
         String systemId = auditDetailsAccess.getSystemId().toString();
         PartyProxy committer = I_PartyIdentifiedAccess.retrievePartyIdentified(this.getDataAccess(), auditDetailsAccess.getCommitter());

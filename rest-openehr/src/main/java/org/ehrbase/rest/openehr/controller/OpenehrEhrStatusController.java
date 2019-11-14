@@ -29,7 +29,6 @@ import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.rest.openehr.response.EhrStatusResponseData;
 import org.ehrbase.rest.openehr.response.InternalResponse;
-import org.ehrbase.serialisation.MarshalException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -233,7 +232,7 @@ public class OpenehrEhrStatusController extends BaseController {
             if (ehrStatus.isPresent()) {
                 objByReference.setArchetypeNodeId(ehrStatus.get().getArchetypeNodeId());
                 objByReference.setName(ehrStatus.get().getName());
-                objByReference.setUid(new ObjectVersionId(ehrStatus.get().getUid().toString() + "::local.ehrbase.org::" + version));
+                objByReference.setUid(new ObjectVersionId(ehrStatus.get().getUid().toString() + "::" + ehrService.getServerConfig().getNodename() + "::" + version));
                 objByReference.setSubject(ehrStatus.get().getSubject());
                 objByReference.setOtherDetails(ehrStatus.get().getOtherDetails());
                 objByReference.setModifiable(ehrStatus.get().isModifiable());
@@ -252,14 +251,14 @@ public class OpenehrEhrStatusController extends BaseController {
                     break;
                 case LOCATION:
                     try {
-                        URI url = new URI(getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId + "/ehr_status/" + ehrStatusId + "::local.ehrbase.org::" + version);
+                        URI url = new URI(getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId + "/ehr_status/" + ehrStatusId + "::" + ehrService.getServerConfig().getNodename() + "::" + version);
                         respHeaders.setLocation(url);
                     } catch (Exception e) {
                         throw new InternalServerException(e.getMessage());
                     }
                     break;
                 case ETAG:
-                    respHeaders.setETag("\"" + ehrStatusId + "::local.ehrbase.org::" + version + "\"");
+                    respHeaders.setETag("\"" + ehrStatusId + "::" + ehrService.getServerConfig().getNodename() + "::" + version + "\"");
                     break;
                 case LAST_MODIFIED:
                     // TODO should be VERSION.commit_audit.time_committed.value which is not implemented yet - mock for now

@@ -19,6 +19,7 @@
 package org.ehrbase.api.service;
 
 import org.ehrbase.api.definitions.CompositionFormat;
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.dto.EhrStatusDto;
 import org.ehrbase.api.exception.DuplicateObjectException;
 import com.nedap.archie.rm.ehr.EhrStatus;
@@ -88,6 +89,8 @@ public interface EhrService {
     String getLatestVersionUidOfStatus(UUID ehrId);
 
     UUID getSystemUuid();    // from BaseService
+
+    ServerConfig getServerConfig(); // from BaseService
 
     LocalDateTime getCreationTime(UUID ehrId);
 

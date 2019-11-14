@@ -19,6 +19,7 @@
 package org.ehrbase.service;
 
 import org.ehrbase.api.definitions.QueryMode;
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.dto.QueryDefinitionResultDto;
 import org.ehrbase.api.dto.QueryResultDto;
 import org.ehrbase.api.exception.GeneralRequestProcessingException;
@@ -58,9 +59,9 @@ public class QueryServiceImp extends BaseService implements QueryService {
     private boolean usePgExtensions; //default
 
     @Autowired
-    public QueryServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context) {
+    public QueryServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig) {
 
-        super(knowledgeCacheService, context);
+        super(knowledgeCacheService, context, serverConfig);
     }
 
     @Override

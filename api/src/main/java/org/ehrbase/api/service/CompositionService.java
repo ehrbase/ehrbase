@@ -19,6 +19,7 @@
 package org.ehrbase.api.service;
 
 import org.ehrbase.api.definitions.CompositionFormat;
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.definitions.StructuredString;
 import org.ehrbase.api.dto.CompositionDto;
 import org.ehrbase.api.exception.InternalServerException;
@@ -172,4 +173,6 @@ public interface CompositionService {
     Integer getVersionByTimestamp(UUID compositionId, LocalDateTime timestamp);
 
     UUID getSystemUuid();    // from BaseService
+
+    ServerConfig getServerConfig(); // from BaseService
 }

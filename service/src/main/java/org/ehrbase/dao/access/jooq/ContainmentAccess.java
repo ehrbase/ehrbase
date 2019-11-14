@@ -28,7 +28,6 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_ContainmentAccess;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.ehr.encode.ItemStack;
-import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 
 import java.sql.Timestamp;
@@ -50,8 +49,8 @@ public class ContainmentAccess extends DataAccess implements I_ContainmentAccess
 
     private Map<String, String> ltree;
 
-    public ContainmentAccess(DSLContext context, UUID entryId, String archetypeId, Map<String, String> ltreeMap, boolean debug) {
-        super(context, null, null);
+    public ContainmentAccess(DataAccess dataAccess, UUID entryId, String archetypeId, Map<String, String> ltreeMap, boolean debug) {
+        super(dataAccess.getContext(), null, null, dataAccess.getServerConfig());
         ltree = new HashMap<>();
         this.entryId = entryId;
 
