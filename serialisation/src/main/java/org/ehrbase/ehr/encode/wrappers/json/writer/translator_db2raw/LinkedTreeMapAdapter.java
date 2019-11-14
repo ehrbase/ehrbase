@@ -24,6 +24,9 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import com.nedap.archie.rm.datavalues.encapsulated.DvMultimedia;
+import com.nedap.archie.rminfo.ArchieRMInfoLookup;
+import com.nedap.archie.rminfo.RMTypeInfo;
 import org.ehrbase.ehr.encode.wrappers.SnakeCase;
 import org.ehrbase.ehr.encode.wrappers.json.I_DvTypeAdapter;
 import org.ehrbase.serialisation.CompositionSerializer;
@@ -304,6 +307,14 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
             String jsonKey = new RawJsonKey(key).toRawJson();
             final String archetypeNodeId = new NodeId(key).predicate();
 
+            //required to deal with DV_MULTIMEDIA embedded document in data
+            if (value instanceof ArrayList && key.equals("data") && map.get("_type").equals(ArchieRMInfoLookup.getInstance().getTypeInfo(DvMultimedia.class).getRmName())){
+                //prepare a store for the value
+                Double[] dataStore = new Double[((ArrayList) value).size()];
+                value = ((ArrayList) value).toArray(dataStore);
+
+            }
+
             if (value instanceof ArrayList) {
                 if (key.equals(CompositionSerializer.TAG_NAME)) {
 //                            writeNameAsValue(writer, (ArrayList) value);
@@ -394,6 +405,13 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
                 writer.name(new SnakeCase(key).camelToSnake()).value((Number) value);
             } else if (value instanceof Boolean) {
                 writer.name(new SnakeCase(key).camelToSnake()).value((Boolean) value);
+            } else if (value instanceof Double[]) {
+                writer.name(new SnakeCase(key).camelToSnake());
+                writer.beginArray();
+                for (Double pix: (Double[])value){
+                    writer.value(pix.byteValue());
+                }
+                writer.endArray();
             } else
                 throw new IllegalArgumentException("Could not handle value type for key:" + key + ", value:" + value);
         }
