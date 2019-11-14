@@ -16,7 +16,7 @@
 
 server:
   port: 8080
-  nodename: 'local.test.org'
+  # nodename: 'local.test.org'
 
 spring:
   profiles:
