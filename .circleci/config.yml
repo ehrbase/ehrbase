@@ -413,9 +413,9 @@ commands:
                       --removekeywords wuks \
                       --loglevel TRACE \
                       --noncritical not-ready \
-                      --output ehrbase-test-output.xml \
-                      --log ehrbase-test-log.html \
-                      --report ehrbase-test-report.html \
+                      --output EHRbase-output.xml \
+                      --log EHRbase-log.html \
+                      --report EHRbase-report.html \
                       results/*/*.xml
       - run:
             name: GENERATE TEST SUMMARY
@@ -430,7 +430,7 @@ commands:
                       --xunit junit-output.xml --xunitskipnoncritical \
                       --log NONE \
                       --report NONE \
-                      results/ehrbase-test-output.xml
+                      results/EHRbase-output.xml
       - persist-tests-folder
       - store_test_results:
             path: ~/project/tests/results/
