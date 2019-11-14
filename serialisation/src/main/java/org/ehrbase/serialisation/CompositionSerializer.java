@@ -1079,7 +1079,7 @@ public class CompositionSerializer {
             return null;
         }
 
-        if (item instanceof Element) {
+        if (item instanceof Element && !new Elements((Element)item).isVoid()) {
             itemStack.pushStacks(tag + "[" + item.getArchetypeNodeId() + "]", null);
             retmap = setElementAttributesMap((Element) item);
             itemStack.popStacks();
