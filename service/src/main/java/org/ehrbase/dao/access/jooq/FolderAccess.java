@@ -140,7 +140,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
             folderRecord.setDetails(PGObjectParser.parseDetails(folderRecord.getDetails()));
 
             /*update items*/
-            this.saveFolderItems(oldContribution, newContribution, transactionTime, context);
+            this.saveFolderItems(oldContribution, newContribution, transactionTime, getContext());
             /*update */
             result = folderRecord.update() > 0;
         }

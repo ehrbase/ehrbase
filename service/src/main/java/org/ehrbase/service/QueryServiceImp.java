@@ -30,6 +30,7 @@ import org.ehrbase.dao.access.interfaces.I_EntryAccess;
 import org.ehrbase.dao.access.interfaces.I_StoredQueryAccess;
 import org.ehrbase.dao.access.jooq.AqlQueryHandler;
 import org.ehrbase.dao.access.jooq.StoredQueryAccess;
+import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.exception.DataAccessException;
@@ -38,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -48,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@Transactional
 public class QueryServiceImp extends BaseService implements QueryService {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -55,9 +58,9 @@ public class QueryServiceImp extends BaseService implements QueryService {
     private boolean usePgExtensions; //default
 
     @Autowired
-    public QueryServiceImp(KnowledgeCacheService knowledgeCacheService, ConnectionPoolService connectionPoolService) {
+    public QueryServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context) {
 
-        super(knowledgeCacheService, connectionPoolService);
+        super(knowledgeCacheService, context);
     }
 
     @Override

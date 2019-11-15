@@ -64,3 +64,5 @@ Alternative flow 7: commit CONTRIBUTIONS for versioning, but second commit conta
     commit CONTRIBUTION - with preceding_version_uid (JSON)    minimal/minimal_admin.contribution.modification.incomplete.json
 
     check response: is negative indicating errors in committed data
+
+    [Teardown]    restart SUT

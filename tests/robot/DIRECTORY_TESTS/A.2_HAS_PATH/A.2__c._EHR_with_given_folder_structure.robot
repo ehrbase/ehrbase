@@ -35,7 +35,7 @@ Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags    refactor    todo-data-driven
+Force Tags    todo-data-driven
 
 
 
@@ -48,7 +48,7 @@ Alternative flow 2: has path on EHR with given folder structure (DS 1)
 
     get FOLDER in DIRECTORY at version (JSON)    /
 
-    check response: is positive
+    validate GET-@version response - 200 retrieved
 
 
 
@@ -60,7 +60,7 @@ Alternative flow 2: has path on EHR with given folder structure (DS 2)
 
     get FOLDER in DIRECTORY at version (JSON)    /emergency
 
-    check response: is positive
+    validate GET-@version response - 200 retrieved
 
 
 
@@ -72,7 +72,7 @@ Alternative flow 2: has path on EHR with given folder structure (DS 3)
 
     get FOLDER in DIRECTORY at version (JSON)    /emergency/episode-x
 
-    check response: is positive
+    validate GET-@version response - 200 retrieved
 
 
 
@@ -84,7 +84,7 @@ Alternative flow 2: has path on EHR with given folder structure (DS 4)
 
     get FOLDER in DIRECTORY at version (JSON)    /emergency/episode-x/summary-compo-x
 
-    check response: is positive
+    validate GET-@version response - 200 retrieved
 
 
 
@@ -96,7 +96,7 @@ Alternative flow 2: has path on EHR with given folder structure (DS 5)
 
     get FOLDER in DIRECTORY at version (JSON)    /emergency/episode-y
 
-    check response: is positive
+    validate GET-@version response - 200 retrieved
 
 
 
@@ -108,7 +108,7 @@ Alternative flow 2: has path on EHR with given folder structure (DS 6)
 
     get FOLDER in DIRECTORY at version (JSON)    /emergency/episode-y/summary-compo-y
 
-    check response: is positive
+    validate GET-@version response - 200 retrieved
 
 
 
@@ -120,7 +120,7 @@ Alternative flow 2: has path on EHR with given folder structure (DS 7)
 
     get FOLDER in DIRECTORY at version (JSON)    /hospitalization
 
-    check response: is positive
+    validate GET-@version response - 200 retrieved
 
 
 
@@ -132,7 +132,7 @@ Alternative flow 2: has path on EHR with given folder structure (DS 8)
 
     get FOLDER in DIRECTORY at version (JSON)    /hospitalization/summary-compo-z
 
-    check response: is positive
+    validate GET-@version response - 200 retrieved
 
 
 
@@ -146,4 +146,6 @@ Alternative flow 2: has path on EHR with given folder structure (DS 9)
 
     get FOLDER in DIRECTORY at version (JSON)    ${path}
 
-    check response: is negative
+        TRACE GITHUB ISSUE  36  not-ready  DISCOVERED ISSUE: `path` URI parameter is ignored(?)
+
+    validate GET-@version response - 404 unknown path

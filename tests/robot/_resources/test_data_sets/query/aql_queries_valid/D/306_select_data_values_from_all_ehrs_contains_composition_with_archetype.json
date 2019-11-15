@@ -1,0 +1,6 @@
+{
+  "q": "select e/ehr_id/value, e/time_created/value, e/system_id/value from EHR e CONTAINS COMPOSITION c [$archetype_id]",
+  "query_parameters": {
+    "archetype_id": "openEHR-EHR-COMPOSITION.minimal.v1"
+  }
+}

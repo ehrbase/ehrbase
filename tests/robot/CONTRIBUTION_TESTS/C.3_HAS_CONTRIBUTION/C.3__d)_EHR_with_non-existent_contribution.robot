@@ -60,3 +60,5 @@ Alternative flow 3: has CONTRIBUTION, EHR with CONTRIBUTIONS, but CONTRIBUTION d
     retrieve CONTRIBUTION by fake contri_uid (JSON)
 
     check response: is negative indicating non-existent contribution_uid
+
+    [Teardown]    restart SUT

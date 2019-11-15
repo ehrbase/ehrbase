@@ -178,6 +178,25 @@ public abstract class BaseController {
         return new ResponseEntity<>(error, status);
     }
 
+    /**
+     * Extracts the UUID base from a versioned UID. Or, if
+     * @param versionUid
+     * @return
+     */
+    protected UUID extractVersionedObjectUidFromVersionUid(String versionUid) {
+        if (!versionUid.contains("::"))
+            return UUID.fromString(versionUid);
+        return UUID.fromString(versionUid.substring(0, versionUid.indexOf("::")));
+    }
+
+    protected int extractVersionFromVersionUid(String versionUid) {
+        if (!versionUid.contains("::"))
+            return 0; //current version
+        // extract the version from string of format "$UUID::$SYSTEM::$VERSION"
+        // via making a substring starting at last occurrence of "::" + 2
+        return Integer.valueOf(versionUid.substring(versionUid.lastIndexOf("::") + 2));
+    }
+
     /*
     EXCEPTION HANDLING GENERAL BEHAVIOR DEFINITION
      */

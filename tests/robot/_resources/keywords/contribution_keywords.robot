@@ -395,6 +395,7 @@ Output Debug Info:
                         Log To Console      \n${line}\n${KEYWORD NAME}\n${line}\n
                         Log To Console      request headers: \n${response.request.headers} \n
                         Log To Console      request body: \n${response.request.body} \n
+                        Log To Console      response status code: \n${response.status_code} \n
                         Log To Console      response headers: \n${response.headers} \n
                         Log To Console      response body: \n${response.content} \n
 

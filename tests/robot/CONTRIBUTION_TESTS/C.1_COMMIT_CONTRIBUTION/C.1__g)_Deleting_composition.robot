@@ -72,3 +72,5 @@ Alternative flow 6: commit CONTRIBUTIONS deleting a COMPOSITION
     check response: is positive - contribution has new version
 
     check change_type of new version is    deleted
+
+    [Teardown]    restart SUT

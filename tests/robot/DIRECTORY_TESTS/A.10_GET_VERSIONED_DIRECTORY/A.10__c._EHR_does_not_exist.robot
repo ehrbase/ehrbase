@@ -5,7 +5,7 @@ Documentation    Alternative flow 2: get versioned directory from non existent E
 ...         None
 ...
 ...     Flow:
-...         1. Invoke the has directory service for a random ehr_id
+...         1. Invoke the GET directory service for a random ehr_id
 ...         2. The service should return an error related with the non existence of the EHR
 ...
 ...     Postconditions:
@@ -24,7 +24,7 @@ Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags    refactor
+Force Tags
 
 
 
@@ -33,6 +33,6 @@ Alternative flow 2: get versioned directory from non-existent EHR
 
     create fake EHR
 
-    get DIRECTORY - fake ehr_id (JSON)
+    get DIRECTORY at version - fake ehr_id (JSON)
 
-    check response: is negative - EHR does not exist
+    validate GET-@version response - 404 unknown ehr_id

@@ -18,6 +18,8 @@
 
 package org.ehrbase.service;
 
+import com.nedap.archie.rm.datavalues.DvText;
+import com.nedap.archie.rm.directory.Folder;
 import org.ehrbase.api.definitions.StructuredString;
 import org.ehrbase.api.definitions.StructuredStringFormat;
 import org.ehrbase.api.dto.FolderDto;
@@ -27,16 +29,16 @@ import org.ehrbase.api.service.FolderService;
 import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
 import org.ehrbase.dao.access.interfaces.I_FolderAccess;
 import org.ehrbase.dao.access.jooq.FolderAccess;
-import com.nedap.archie.rm.datavalues.DvText;
-import com.nedap.archie.rm.directory.Folder;
 import org.ehrbase.dao.access.util.FolderUtils;
 import org.ehrbase.serialisation.CanonicalJson;
 import org.ehrbase.serialisation.CanonicalXML;
 import org.joda.time.DateTime;
+import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -45,6 +47,7 @@ import java.util.*;
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 
 @Service
+@Transactional
 public class FolderServiceImp extends BaseService implements FolderService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -53,9 +56,8 @@ public class FolderServiceImp extends BaseService implements FolderService {
     @Autowired
     FolderServiceImp(
             KnowledgeCacheService knowledgeCacheService,
-            ConnectionPoolService connectionPoolService
-    ) {
-        super(knowledgeCacheService, connectionPoolService);
+            DSLContext context) {
+        super(knowledgeCacheService, context);
     }
     
     /**
@@ -159,7 +161,7 @@ public class FolderServiceImp extends BaseService implements FolderService {
 
         }
 
-        
+
         if (folderAccess.update(timestamp)) {
 
             I_FolderAccess updatedFolder = FolderAccess.retrieveInstanceForExistingFolder(

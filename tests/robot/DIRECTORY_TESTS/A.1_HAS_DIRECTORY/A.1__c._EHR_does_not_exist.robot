@@ -24,7 +24,7 @@ Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags    refactor
+Force Tags
 
 
 
@@ -33,6 +33,6 @@ Alternative flow 2: has directory on non-existent EHR
 
     create fake EHR
 
-    get DIRECTORY (JSON)
+    get DIRECTORY at version - fake ehr_id (JSON)
 
-    check response: is negative - EHR does not exist
+    validate GET-@version response - 404 unknown ehr_id

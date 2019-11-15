@@ -59,3 +59,5 @@ Alternative flow 1: commit CONTRIBUTION with errors in VERSION<COMPOSITION>
     commit invalid CONTRIBUTION (JSON)    invalid_contributions/multiple_valid_and_invalid_compos.json
 
     check response: is negative indicating errors in committed data
+
+    [Teardown]    restart SUT
