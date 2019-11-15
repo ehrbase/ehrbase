@@ -72,7 +72,9 @@ public class SelectBinderTest {
             SelectBinder cut = new SelectBinder(context, introspectCache, pathResolver, variableDefinitions, where, "local", entryRoot);
 
             SelectQuery<?> selectQuery = cut.bind("IDCR - Immunisation summary.v0", UUID.randomUUID());
-            assertThat(selectQuery.getSQL()).isEqualTo("select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') as \"FIELD_0\"");
+
+            //CCH 191016: EHR-163 removed trailing ',value' as now the query allows canonical json return
+            assertThat(selectQuery.getSQL()).isEqualTo("select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value}') as \"/description[at0001]/items[at0002]/value\"");
         }
 
         // select from EHR
@@ -88,7 +90,7 @@ public class SelectBinderTest {
             SelectBinder cut = new SelectBinder(context, introspectCache, pathResolver, variableDefinitions, where, "local", entryRoot);
 
             SelectQuery<?> selectQuery = cut.bind("IDCR - Immunisation summary.v0", UUID.randomUUID());
-            assertThat(selectQuery.getSQL()).isEqualTo("select \"ehr_join\".\"id\" as \"ehr_id/value\"");
+            assertThat(selectQuery.getSQL()).isEqualTo("select \"ehr_join\".\"id\" as \"/ehr_id/value\"");
         }
 
         // select from Composition
@@ -105,7 +107,7 @@ public class SelectBinderTest {
             SelectBinder cut = new SelectBinder(context, introspectCache, pathResolver, variableDefinitions, where, "local", entryRoot);
 
             SelectQuery<?> selectQuery = cut.bind("IDCR - Immunisation summary.v0", UUID.randomUUID());
-            assertThat(selectQuery.getSQL()).isEqualTo("select \"composer_ref\".\"name\" as \"composer/name\", \"ehr\".\"entry\".\"entry\" #>> '{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}' as \"FIELD_1\"");
+            assertThat(selectQuery.getSQL()).isEqualTo("select \"composer_ref\".\"name\" as \"/composer/name\", \"ehr\".\"entry\".\"entry\" #>> '{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}' as \"/content[openEHR-EHR-ACTION.immunisation_procedure.v1]\"");
         }
     }
 

@@ -94,7 +94,8 @@ public class WhereBinderTest {
             CompositionAttributeQuery compositionAttributeQuery = new CompositionAttributeQuery(context, pathResolver, "local", "entry_root", introspectCache);
 
             //represents where a/composer/name =  'Tony Stark' and  d/description[at0001]/items[at0002]/value = 'Hepatitis A'
-            List where = Arrays.asList(I_VariableDefinitionHelper.build("composer/name", null, "a", false, false, false), "=", "'Tony Stark'", "and", I_VariableDefinitionHelper.build("description[at0001]/items[at0002]/value", null, "d", false, false, false), "=", "'Hepatitis A'");
+            //CCH 191016: EHR-163 required trailing '/value' as now the query allows canonical json return
+            List where = Arrays.asList(I_VariableDefinitionHelper.build("composer/name", null, "a", false, false, false), "=", "'Tony Stark'", "and", I_VariableDefinitionHelper.build("description[at0001]/items[at0002]/value/value", null, "d", false, false, false), "=", "'Hepatitis A'");
 
             WhereBinder cut = new WhereBinder(jsonbEntryQuery, compositionAttributeQuery, where, identifierMapper);
 

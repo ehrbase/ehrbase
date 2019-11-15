@@ -85,7 +85,7 @@ public class Children {
                 contents++;
             }
         }
-        return contents > 0;
+        return contents > 1;
     }
 
     public int contentCount() {
@@ -176,5 +176,17 @@ public class Children {
         }
 
         return contents;
+    }
+
+    public LinkedTreeMap removeContents(){
+        String key = linkedTreeMap.keySet().iterator().next();
+        while (key != null){
+            if (key.startsWith(CompositionSerializer.TAG_CONTENT))
+                linkedTreeMap.remove(key);
+            if (linkedTreeMap.keySet().size() == 0)
+                break;
+            key = linkedTreeMap.keySet().iterator().next();
+        }
+        return linkedTreeMap;
     }
 }
