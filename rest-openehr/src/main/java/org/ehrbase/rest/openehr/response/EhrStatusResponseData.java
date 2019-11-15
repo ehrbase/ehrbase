@@ -28,6 +28,9 @@ import com.nedap.archie.rm.support.identification.UIDBasedId;
 @JacksonXmlRootElement(localName = "ehr_status")
 public class EhrStatusResponseData {
 
+    @JsonProperty(value = "_type")
+    private final String type = "EHR_STATUS";
+
     @JsonProperty(value = "archetype_node_id")
     private String archetypeNodeId;
     @JsonProperty
@@ -97,5 +100,9 @@ public class EhrStatusResponseData {
 
     public void setQueryable(Boolean queryable) {
         isQueryable = queryable;
+    }
+
+    public String getType() {
+        return type;
     }
 }

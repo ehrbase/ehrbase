@@ -28,18 +28,12 @@ spring:
       testOnBorrow: true
 cache:
   config: '/ehcache.xml'
+  enabled: true
 flyway:
   locations:
     - classpath:db/migration
     - classpath:org.ehrbase.db.migration
   schemas: ehr
-
-templateFileStorageService:
-  storage:
-    path:
-      archetypes: 'file_repo/knowledge/archetypes'
-      templates: 'file_repo/knowledge/templates'
-      operationaltemplates: 'file_repo/knowledge/operational_templates'
 
 logging:
   level:
@@ -47,3 +41,4 @@ logging:
     de.vitasystems: TRACE
     com.ethercis: DEBUG
     org.jooq: INFO
+    net.sf.ehcache: TRACE
