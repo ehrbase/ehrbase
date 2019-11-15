@@ -1,0 +1,120 @@
+# COMPOSITION SERVICE TESTS
+
+folders:
+
+  B.1_HAS_COMPOSITION:
+    files:
+
+      - B.1__a_Composition_Exists.robot
+      - B.1__b_Composition_does_not_exist.robot
+      - B.1__c_EHR_does_not_exist.robot
+
+
+  B.2_GET_COMPOSITION_LATEST:
+    files:
+
+      - B.2__a_Composition_Exists.robot
+      - B.2__b_Composition_does_not_exist.robot
+      - B.2__c_EHR_does_not_exist.robot
+
+
+  B.3_GET_COMPOSITION_AT_TIME:
+    files:
+
+      - B.3__a_Composition_Exists.robot
+      - B.3__b_Composition_Exists_Time_Missing.robot
+      - B.3__c_Composition_does_not_exist.robot
+      - B.3__d_EHR_does_not_exist.robot
+      - B.3__e_Composition_Exists_Different_Times.robot
+
+
+  B.4_GET_COMPOSITION_AT_VERSION:
+    files:
+
+      - B.4__a_Composition_Exists.robot
+      - B.4__b_Composition_does_not_exist.robot
+      - B.4__c_EHR_does_not_exist.robot
+      - B.4__d_Composition_Exists_Different_Versions.robot
+
+
+  B.5_GET_VERSIONED_COMPOSITION:
+    files:
+
+      - B.5__a_Versioned_Composition_Exists.robot
+      - B.5__b_Versioned_Composition_does_not_exist.robot
+      - B.5__c_EHR_does_not_exist.robot
+
+
+  B.6_CREATE_COMPOSITION:
+    files:
+
+      - B.6__a_Event_Composition.robot
+      - B.6__b_Persistent_Composition.robot
+      - B.6__c_Persistent_Composition_twice_for_same_archetype.robot
+      - B.6__d_Invalid_Event_Composition.robot
+      - B.6__e_Invalid_Persistent_Composition.robot
+      - B.6__f_Event_Composition_OPT_does_not_exist.robot
+      - B.6__g_Event_Composition_EHR_does_not_exist.robot
+
+
+  B.7_UPDATE_COMPOSITION:
+    files:
+
+      - B.7__a_Event_Composition.robot
+      - B.7__b_Persistent_Composition.robot
+      - B.7__c_Composition_does_not_exist.robot
+      - B.7__d_Composition_Exists_Invalid_Template_Reference.robot
+
+
+  B.8_DELETE_COMPOSITION:
+    files:
+      
+      - B.8__a_Event_Composition.robot
+      - B.8__b_Persistent_Composition.robot
+      - B.8__c_Composition_does_not_exist.robot
+
+
+placeholder: |
+    # Copyright (c) 2019 Wladislaw Wagner (Vitasystems GmbH), Pablo Pazos (Hannover Medical School).
+    #
+    # This file is part of Project EHRbase
+    #
+    # Licensed under the Apache License, Version 2.0 (the "License");
+    # you may not use this file except in compliance with the License.
+    # You may obtain a copy of the License at
+    #
+    # http://www.apache.org/licenses/LICENSE-2.0
+    #
+    # Unless required by applicable law or agreed to in writing, software
+    # distributed under the License is distributed on an "AS IS" BASIS,
+    # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    # See the License for the specific language governing permissions and
+    # limitations under the License.
+
+
+
+    *** Settings ***
+    Documentation   COMPOSITION SERVICE Integration Tests
+    ...
+
+
+
+    Resource    ${CURDIR}${/}../../_resources/suite_settings.robot
+    Resource    ${CURDIR}${/}../../_resources/keywords/generic_keywords.robot
+    Resource    ${CURDIR}${/}../../_resources/keywords/aql_query_keywords.robot
+    Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
+    Resource    ${CURDIR}${/}../../_resources/keywords/contribution_keywords.robot
+    Resource    ${CURDIR}${/}../../_resources/keywords/composition_keywords.robot
+    Resource    ${CURDIR}${/}../../_resources/keywords/template_opt1.4_keywords.robot
+
+
+    # Test Setup
+    # Test Teardown
+
+    Force Tags    refactor    TODO
+
+
+
+    *** Test Cases ***
+    TODO: implement me!
+        THIS IS JUST A PLACEHOLDER!
