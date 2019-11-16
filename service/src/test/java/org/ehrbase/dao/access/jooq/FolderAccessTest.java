@@ -353,6 +353,7 @@ public class FolderAccessTest {
 
     }
 
+    @Ignore
     @Test
     public void shouldUpdateExistingFolder() throws Exception {
         //1-retrieve a DAO for an existing folder in the DB
