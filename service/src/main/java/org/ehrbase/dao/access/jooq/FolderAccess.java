@@ -114,9 +114,8 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         this.getFolderRecord().setInContribution(this.contributionAccess.getId());
         new_contribution=folderRecord.getInContribution();
 
-        //delete so folder can be overriden
+        //delete so folder can be overwritten
         this.delete(folderRecord.getId());
-        System.out.println("Just attempted to delete: "+folderRecord.getId());
 
         return this.update(transactionTime, true, true, null,old_contribution, new_contribution);
     }
@@ -128,22 +127,10 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         DSLContext dslContext =  getContext();
         dslContext.attach(this.folderRecord);
 
-        //        if (force || folderRecord.changed()) {
-        //            //we assume the folder has been amended locally
-        //
-        //            if (!folderRecord.changed()) {
-        //                folderRecord.changed(true);
-        //                //jOOQ limited support of TSTZRANGE, exclude sys_period from updateFolder!
-        //                folderRecord.changed(FOLDER.SYS_PERIOD, false);
-        //            }
-
-
         folderRecord.setInContribution(newContribution);
 
         /*update items*/
         this.saveFolderItems(oldContribution, newContribution, transactionTime, getContext());
-        /*update */
-        //result = folderRecord.update() > 0;
 
         /*copy into new instance and attach to DB context*/
         FolderRecord updatedFolderrecord = new FolderRecord();
@@ -163,12 +150,6 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
 
         /*attach to context DB*/
         dslContext.attach(updatedFolderrecord);
-        /*delete old instance*/
-        //System.out.println("about to execute delete from: "+folderRecord.getId());
-        //dslContext.deleteFrom(FOLDER).where(FOLDER.ID.equals(folderRecord.getId())).execute();
-        //System.out.println("after to execute delete from: "+folderRecord.getId());
-
-        //  folderRecord.delete();
 
         /*store new instance*/
         result = updatedFolderrecord.store() > 0;
@@ -183,8 +164,6 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
             dslContext.attach(updatedFhR);
             updatedFhR.store();
         }
-
-        //}
 
         boolean anySubfolderModified = this.getSubfoldersList()
                 .values()
@@ -567,8 +546,6 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
 
                 .where(field(name("object_ref_id"), FOLDER_ITEMS.OBJECT_REF_ID.getType()).eq(OBJECT_REF.ID)
                         .and(field(name("item_in_contribution"), FOLDER_ITEMS.IN_CONTRIBUTION.getType()).eq(OBJECT_REF.IN_CONTRIBUTION))).fetch();
-
-        System.out.println(retrievedRecords);
 
 
         List<ObjectRef> result = new ArrayList<>();
