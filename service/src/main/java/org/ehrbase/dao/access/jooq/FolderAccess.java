@@ -155,11 +155,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         return result || anySubfolderModified;
     }
 
-    private int saveFolderItems(final UUID old_contribution, final UUID new_contribution, final Timestamp transactionTime, DSLContext context){
-
-        if(this.getItems().isEmpty()){
-            return 0;//no items to update
-        }
+    private void saveFolderItems(final UUID old_contribution, final UUID new_contribution, final Timestamp transactionTime, DSLContext context){
 
         //delete folder items fot the corresponding folder and contribution, the current items will override the previous one for this folder_id and conmtribution_id, those from other folder or contribution wont be affected.
         context.deleteFrom(FOLDER_ITEMS).where(FOLDER_ITEMS.FOLDER_ID.eq(this.getFolderId())).and(FOLDER_ITEMS.IN_CONTRIBUTION.eq(old_contribution)).execute();
@@ -176,7 +172,6 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
             context.attach(fir);
             fir.store();
         }
-        return 1;
     }
 
     @Override
@@ -215,7 +210,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         this.saveFolderItems(this.contributionAccess.getContributionId(), this.contributionAccess.getContributionId(), new Timestamp(DateTime.now().getMillis()), getContext());
 
         // Save list of sub folders to database with parent <-> child ID relations
-        this.getSubFoldersInsertList().forEach(child -> {
+        this.getSubfoldersList().forEach((child_id, child) -> {
             child.commit();
             FolderHierarchyRecord fhRecord = this.buildFolderHierarchyRecord(
                     this.getFolderRecord().getId(),
