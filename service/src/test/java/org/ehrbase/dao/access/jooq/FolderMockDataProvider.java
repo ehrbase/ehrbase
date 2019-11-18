@@ -253,17 +253,12 @@ public class FolderMockDataProvider implements MockDataProvider{
 
             if(sql2.toUpperCase().startsWith(("INSERT INTO \"EHR\".\"FOLDER\" (\"ID\", \"IN_CONTRIBUTION\", \"NAME\", \"ARCHETYPE_NODE_ID\", \"ACTIVE\", \"DETAILS\", \"SYS_TRANSACTION\") VALUES (?, ?, ?, ?, ?, '{\n" +
                     "  \"_TYPE\" : \"\",\n" +
-                    "  \"LINKS\" : [ ],\n" +
                     "  \"ITEMS\" : [ {\n" +
                     "    \"NAME\" : {\n" +
                     "      \"_TYPE\" : \"DV_TEXT\",\n" +
-                    "      \"VALUE\" : \"FOL2\",\n" +
-                    "      \"MAPPINGS\" : [ ]\n" +
-                    "    },\n" +
-                    "    \"LINKS\" : [ ],\n" +
-                    "    \"PATH\" : \"/\"\n" +
-                    "  } ],\n" +
-                    "  \"PATH\" : \"/DETAILS\"\n" +
+                    "      \"VALUE\" : \"FOL2\"\n" +
+                    "    }\n" +
+                    "  } ]\n" +
                     "}'::JSONB, CAST(? AS TIMESTAMP)) RETURNING \"EHR\".\"FOLDER\".\"ID\""))){
 
                     if(((UUID)ctx.bindings()[0]).compareTo(UUID.fromString("f0a2af65-fe89-45a4-9456-07c5e17b1634"))==0) {
@@ -276,17 +271,12 @@ public class FolderMockDataProvider implements MockDataProvider{
                     }
             }else if(sql2.toUpperCase().startsWith(("INSERT INTO \"EHR\".\"FOLDER\" (\"ID\", \"IN_CONTRIBUTION\", \"NAME\", \"ARCHETYPE_NODE_ID\", \"ACTIVE\", \"DETAILS\", \"SYS_TRANSACTION\") VALUES (?, ?, ?, ?, ?, '{\n" +
                     "  \"_TYPE\" : \"\",\n" +
-                    "  \"LINKS\" : [ ],\n" +
                     "  \"ITEMS\" : [ {\n" +
                     "    \"NAME\" : {\n" +
                     "      \"_TYPE\" : \"DV_TEXT\",\n" +
-                    "      \"VALUE\" : \"FOL1\",\n" +
-                    "      \"MAPPINGS\" : [ ]\n" +
-                    "    },\n" +
-                    "    \"LINKS\" : [ ],\n" +
-                    "    \"PATH\" : \"/\"\n" +
-                    "  } ],\n" +
-                    "  \"PATH\" : \"/DETAILS\"\n" +
+                    "      \"VALUE\" : \"FOL1\"\n" +
+                    "    }\n" +
+                    "  } ]\n" +
                     "}'::JSONB, CAST(? AS TIMESTAMP)) RETURNING \"EHR\".\"FOLDER\".\"ID\""))){
 
                     if(((UUID)ctx.bindings()[0]).compareTo(UUID.fromString("f8a2af65-fe89-45a4-9456-07c5e17b1634"))==0) {
@@ -299,12 +289,7 @@ public class FolderMockDataProvider implements MockDataProvider{
                     }
             }else if(sql2.toUpperCase().startsWith(("INSERT INTO \"EHR\".\"FOLDER\" (\"ID\", \"IN_CONTRIBUTION\", \"NAME\", \"ARCHETYPE_NODE_ID\", \"ACTIVE\", \"DETAILS\", \"SYS_TRANSACTION\") VALUES (?, ?, ?, ?, ?, '{\n" +
                     "  \"_TYPE\" : \"\",\n" +
-                    "  \"LINKS\" : [ ],\n" +
-                    "  \"ITEMS\" : [ {\n" +
-                    "    \"LINKS\" : [ ],\n" +
-                    "    \"PATH\" : \"/\"\n" +
-                    "  } ],\n" +
-                    "  \"PATH\" : \"/FOLDERS[ARCHETYPE_3]/DETAILS\"\n" +
+                    "  \"ITEMS\" : [ { } ]\n" +
                     "}'::JSONB, CAST(? AS TIMESTAMP)) RETURNING \"EHR\".\"FOLDER\".\"ID\""))){
 
                 if(((UUID)ctx.bindings()[0]).compareTo(UUID.fromString("f4a2af65-fe89-45a4-9456-07c5e17b1634"))==0) {

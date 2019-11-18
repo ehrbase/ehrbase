@@ -111,45 +111,65 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         this.contributionAccess.setEhrId(ehrId);
 
         this.contributionAccess.commit(transactionTime, null, null, ContributionDataType.folder, ContributionDef.ContributionState.COMPLETE, I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
-
-
         this.getFolderRecord().setInContribution(this.contributionAccess.getId());
         new_contribution=folderRecord.getInContribution();
 
-        return this.update(transactionTime, true, true,old_contribution, new_contribution);
+        //delete so folder can be overwritten
+        this.delete(folderRecord.getId());
+
+        return this.update(transactionTime, true, true, null,old_contribution, new_contribution);
     }
 
-    private Boolean update(final Timestamp transactionTime, final boolean force, final boolean topFolder, UUID oldContribution, UUID newContribution){
-
+    private Boolean update(final Timestamp transactionTime, final boolean force, final boolean topFolder, UUID parentFolder,UUID oldContribution, UUID newContribution){
 
         boolean result = false;
 
         DSLContext dslContext =  getContext();
         dslContext.attach(this.folderRecord);
 
-        if (force || folderRecord.changed()) {
-            //we assume the folder has been amended locally
+        folderRecord.setInContribution(newContribution);
 
-            if (!folderRecord.changed()) {
-                folderRecord.changed(true);
-                //jOOQ limited support of TSTZRANGE, exclude sys_period from updateFolder!
-                folderRecord.changed(FOLDER.SYS_PERIOD, false);
-            }
+        /*update items*/
+        this.saveFolderItems(oldContribution, newContribution, transactionTime, getContext());
 
-            folderRecord.setSysPeriod(PGObjectParser.parseSysPeriod(folderRecord.getSysPeriod()));
-            folderRecord.setDetails(PGObjectParser.parseDetails(folderRecord.getDetails()));
+        /*copy into new instance and attach to DB context*/
+        FolderRecord updatedFolderrecord = new FolderRecord();
+        UUID updatedRecordId =  folderRecord.getId();
+        if(folderRecord.getId()==null) {
+            updatedRecordId=UUID.randomUUID();
+        }
+        updatedFolderrecord.setId(updatedRecordId);
+        updatedFolderrecord.setInContribution(newContribution);
+        updatedFolderrecord.setName(this.getFolderName());
+        updatedFolderrecord.setArchetypeNodeId(this.getFolderArchetypeNodeId());
+        updatedFolderrecord.setActive(this.isFolderActive());
+        updatedFolderrecord.setDetails(PGObjectParser.parseDetails(folderRecord.getDetails()));
+        updatedFolderrecord.setSysTransaction(transactionTime);
+        updatedFolderrecord.setSysPeriod(PGObjectParser.parseSysPeriod(folderRecord.getSysPeriod()));
 
-            /*update items*/
-            this.saveFolderItems(oldContribution, newContribution, transactionTime, getContext());
-            /*update */
-            result = folderRecord.update() > 0;
+
+        /*attach to context DB*/
+        dslContext.attach(updatedFolderrecord);
+
+        /*store new instance*/
+        result = updatedFolderrecord.store() > 0;
+        //Folder hierarchy structure
+        if(parentFolder!=null) {
+            FolderHierarchyRecord updatedFhR = new FolderHierarchyRecord();
+            updatedFhR.setParentFolder(parentFolder);
+            updatedFhR.setChildFolder(updatedRecordId);
+            updatedFhR.setInContribution(newContribution);
+            updatedFhR.setSysTransaction(transactionTime);
+            updatedFhR.setSysPeriod(PGObjectParser.parseSysPeriod(folderRecord.getSysPeriod()));
+            dslContext.attach(updatedFhR);
+            updatedFhR.store();
         }
 
         boolean anySubfolderModified = this.getSubfoldersList()
                 .values()
                 .stream()
                 .allMatch(subfolder -> (
-                        ((FolderAccess) subfolder).update(transactionTime, force, false, oldContribution, newContribution)
+                        ((FolderAccess) subfolder).update(transactionTime, force, false, folderRecord.getId(), oldContribution, newContribution)
                 ));
 
         return result || anySubfolderModified;
@@ -348,7 +368,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
                                 (select().from(sf_table).
                                         innerJoin("subfolders").on(sf_table.field("parent_folder", FOLDER_HIERARCHY.PARENT_FOLDER.getType()).
                                         eq(subfolderChildFolder))))
-        ).select()
+                ).select()
                         .from(table(name("subfolders")))
                         .fetch()
                         .getValues(field(name("child_folder")))
@@ -518,16 +538,14 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
      */
     private static List<ObjectRef> retrieveItemsByFolderAndContributionId(UUID folderId, UUID in_contribution, I_DomainAccess domainAccess){
         Result<Record> retrievedRecords = domainAccess.getContext().with("folderItemsSelect").as(
-                            select(FOLDER_ITEMS.OBJECT_REF_ID.as("object_ref_id"), FOLDER_ITEMS.IN_CONTRIBUTION.as("item_in_contribution"))
-                                .from(FOLDER_ITEMS)
-                                .where(FOLDER_ITEMS.FOLDER_ID.eq(folderId)))
+                select(FOLDER_ITEMS.OBJECT_REF_ID.as("object_ref_id"), FOLDER_ITEMS.IN_CONTRIBUTION.as("item_in_contribution"))
+                        .from(FOLDER_ITEMS)
+                        .where(FOLDER_ITEMS.FOLDER_ID.eq(folderId)))
                 .select()
                 .from(OBJECT_REF, table(name("folderItemsSelect")))
 
                 .where(field(name("object_ref_id"), FOLDER_ITEMS.OBJECT_REF_ID.getType()).eq(OBJECT_REF.ID)
-                             .and(field(name("item_in_contribution"), FOLDER_ITEMS.IN_CONTRIBUTION.getType()).eq(OBJECT_REF.IN_CONTRIBUTION))).fetch();
-
-        System.out.println(retrievedRecords);
+                        .and(field(name("item_in_contribution"), FOLDER_ITEMS.IN_CONTRIBUTION.getType()).eq(OBJECT_REF.IN_CONTRIBUTION))).fetch();
 
 
         List<ObjectRef> result = new ArrayList<>();
@@ -758,7 +776,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
     }
 
     public void setSubfoldersList(final Map<UUID, I_FolderAccess> subfolders) {
-         this.subfoldersList=subfolders;
+        this.subfoldersList=subfolders;
 
     }
 
@@ -788,7 +806,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
 
     public void setFolderId(UUID folderId){
 
-         this.folderRecord.setId(folderId);
+        this.folderRecord.setId(folderId);
     }
 
     public UUID getInContribution(){
