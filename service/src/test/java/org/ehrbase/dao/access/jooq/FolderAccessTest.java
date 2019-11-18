@@ -368,7 +368,22 @@ public class FolderAccessTest {
         fa2.setFolderName("modifiedName");
         fa2.setFolderNArchetypeNodeId("modifiedArchetypeNodeId");
         fa2.setIsFolderActive(false);
-        fa2.setFolderDetails(DSL.field(DSL.val("{\"s\": \"modifiedValue\"}") + "::jsonb"));
+        ItemStructure is = new ItemStructure() {
+            @Override
+            public List getItems() {
+                Item item = new Item() {
+                    @Override
+                    public DvText getName() {
+                        return new DvText("modifiedValue");
+                    }
+                };
+                List<Item> items =  new ArrayList<>();
+                items.add(item);
+                return items;
+            }
+        };
+        //fa2.setFolderDetails(DSL.field(DSL.val("{\"s\": \"modifiedValue\"}") + "::jsonb"));
+        fa2.setFolderDetails(is);
         fa2.setFolderSysTransaction(new Timestamp(DateTime.now().getMillis()));
         fa2.setFolderSysPeriod(DSL.field(DSL.val("[\"2019-07-26 11:28:11.631959+02\",)") + "::tstzrange"));
 

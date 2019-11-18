@@ -110,9 +110,9 @@ public interface I_FolderAccess extends I_SimpleCRUD<I_EntryAccess, UUID> {
 
     void setIsFolderActive(boolean folderActive);
 
-    Object getFolderDetails();
+    ItemStructure getFolderDetails();
 
-    void setFolderDetails(Object folderDetails);
+    void setFolderDetails(ItemStructure folderDetails);
 
     void setFolderSysTransaction(Timestamp folderSysTransaction);
 
