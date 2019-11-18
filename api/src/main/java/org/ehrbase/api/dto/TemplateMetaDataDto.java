@@ -19,23 +19,21 @@
 package org.ehrbase.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.time.ZonedDateTime;
-import java.util.List;
+import java.time.OffsetDateTime;
 
 public class TemplateMetaDataDto {
 
+    @JsonProperty("template_id")
     private String templateId;
-    private String uid;
+    @JsonProperty("archetype_id")
+    private String archetypeId;
+
     private String concept;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
-    private ZonedDateTime createdOn;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
-    private ZonedDateTime lastAccessTime;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
-    private ZonedDateTime lastModifiedTime;
-    private List<String> errorList;
-    private String path;
+    @JsonProperty("created_timestamp")
+    private OffsetDateTime createdOn;
 
     public String getTemplateId() {
         return templateId;
@@ -45,12 +43,12 @@ public class TemplateMetaDataDto {
         this.templateId = templateId;
     }
 
-    public String getUid() {
-        return uid;
+    public String getArchetypeId() {
+        return archetypeId;
     }
 
-    public void setUid(String uid) {
-        this.uid = uid;
+    public void setArchetypeId(String archetypeId) {
+        this.archetypeId = archetypeId;
     }
 
     public String getConcept() {
@@ -61,43 +59,11 @@ public class TemplateMetaDataDto {
         this.concept = concept;
     }
 
-    public ZonedDateTime getCreatedOn() {
+    public OffsetDateTime getCreatedOn() {
         return createdOn;
     }
 
-    public void setCreatedOn(ZonedDateTime createdOn) {
+    public void setCreatedOn(OffsetDateTime createdOn) {
         this.createdOn = createdOn;
-    }
-
-    public ZonedDateTime getLastAccessTime() {
-        return lastAccessTime;
-    }
-
-    public void setLastAccessTime(ZonedDateTime lastAccessTime) {
-        this.lastAccessTime = lastAccessTime;
-    }
-
-    public ZonedDateTime getLastModifiedTime() {
-        return lastModifiedTime;
-    }
-
-    public void setLastModifiedTime(ZonedDateTime lastModifiedTime) {
-        this.lastModifiedTime = lastModifiedTime;
-    }
-
-    public List<String> getErrorList() {
-        return errorList;
-    }
-
-    public void setErrorList(List<String> errorList) {
-        this.errorList = errorList;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
     }
 }

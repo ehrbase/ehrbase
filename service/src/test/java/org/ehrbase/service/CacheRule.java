@@ -20,7 +20,6 @@ package org.ehrbase.service;
 
 import org.ehrbase.opt.query.I_QueryOptMetaData;
 import org.ehrbase.validation.Validator;
-import openEHR.v1.template.TEMPLATE;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
@@ -39,10 +38,9 @@ public class CacheRule extends TestWatcher {
     protected void starting(Description description) {
         CachingProvider cachingProvider = Caching.getCachingProvider();
         cacheManager = cachingProvider.getCacheManager();
-        buildCache(INTROSPECT_CACHE, UUID.class, I_QueryOptMetaData.class, cacheManager);
-        buildCache(TEMPLATE_CACHE, String.class, TEMPLATE.class, cacheManager);
-        buildCache(OPERATIONAL_TEMPLATE_CACHE, String.class, OPERATIONALTEMPLATE.class, cacheManager);
-        buildCache(VALIDATOR_CACHE, UUID.class, Validator.class, cacheManager);
+        buildCache(INTROSPECT_CACHE, UUID.class, I_QueryOptMetaData.class, cacheManager, true);
+        buildCache(OPERATIONAL_TEMPLATE_CACHE, String.class, OPERATIONALTEMPLATE.class, cacheManager, true);
+        buildCache(VALIDATOR_CACHE, UUID.class, Validator.class, cacheManager, true);
     }
 
     @Override

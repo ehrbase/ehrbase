@@ -81,7 +81,7 @@ public class WhereBinder {
                 field = compositionAttributeQuery.whereField(templateId, comp_id, identifier, variableDefinition);
             } else { //should be removed (?)
                 //TODO: identify a method to avoid using Set Returning Function (jsonb_array_element) in WHERE (unsupported in PG10+) while still filtering values in a set
-                field = jsonbEntryQuery.makeField(templateId, comp_id, identifier, variableDefinition, false, I_QueryImpl.Clause.WHERE);
+                field = jsonbEntryQuery.makeField(templateId, comp_id, identifier, variableDefinition, I_QueryImpl.Clause.WHERE);
             }
             if (field == null)
                 return null;
@@ -316,7 +316,7 @@ public class WhereBinder {
             ) {
                 Object nextToken = whereClause.get(lcursor + 1); //check operator
                 if (nextToken instanceof String && !nextToken.equals("="))
-                    throw new IllegalArgumentException("name/value for Composition must be an equality");
+                    throw new IllegalArgumentException("name/value for CompositionAttribute must be an equality");
                 nextToken = whereClause.get(lcursor + 2);
                 if (nextToken instanceof String) {
                     token = (String) nextToken;

@@ -62,11 +62,11 @@ public class QueryResponseData {
 
                 if (queryResultDto.getVariables().containsKey(columnId)) {
                     fieldMap.put("name", columnId);
-                    fieldMap.put("path", "/"+queryResultDto.getVariables().get(columnId));
+                    fieldMap.put("path", queryResultDto.getVariables().get(columnId));
                 }
                 else {
                     fieldMap.put("name", "#"+count);
-                    fieldMap.put("path", "/"+columnId);
+                    fieldMap.put("path", columnId);
                 }
                 count++;
                 columns.add(fieldMap);

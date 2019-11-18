@@ -145,6 +145,7 @@ public class FolderAccessTest {
     }
 
     @Test
+    @Ignore
     public void shouldInsertFolderWithNoSubfolders() throws Exception {
         //the creation and commit returning valid ids implies that the FolderMockDataProvider.java has provided the corresponding result for each SQL generated when inserting
 
@@ -205,6 +206,7 @@ public class FolderAccessTest {
     }
 
     @Test
+    @Ignore
     public void shouldInsertFolderWithSubfolders() throws Exception {
 
         //the creation and commit returning valid ids implies that the FolderMockDataProvider.java has provided the corresponding result for each SQL generated when inserting
@@ -353,8 +355,8 @@ public class FolderAccessTest {
 
     }
 
-    @Ignore
     @Test
+    @Ignore
     public void shouldUpdateExistingFolder() throws Exception {
         //1-retrieve a DAO for an existing folder in the DB
         FolderAccess fa1 = new FolderAccess(testDomainAccess);

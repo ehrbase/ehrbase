@@ -21,6 +21,7 @@
 
 package org.ehrbase.aql.sql.postprocessing;
 
+import com.google.gson.JsonElement;
 import org.ehrbase.aql.sql.QuerySteps;
 import org.ehrbase.aql.sql.binding.JsonbBlockDef;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
@@ -48,35 +49,30 @@ public class RawJsonTransform implements I_RawJsonTransform {
 
     public static void toRawJson(Result<Record> result, Collection<QuerySteps> querySteps, I_KnowledgeCache knowledgeCache) {
 
-
-
         for (QuerySteps queryStep : querySteps) {
             if (queryStep.jsonColumnsSize() > 0) {
                 for (int cursor = 0; cursor < result.size(); cursor++) {
                     Record record = result.get(cursor);
-                    String templateIdNow = record.getValue(TEMPLATE_ID, String.class);
-                    if (!templateIdNow.equals(queryStep.getTemplateId()))
-                        continue;
+                    List<JsonbBlockDef> deleteList = new ArrayList<>();
                     for (JsonbBlockDef jsonbBlockDef : queryStep.getJsonColumns()) {
                         String jsonbOrigin = (String) record.getValue(jsonbBlockDef.getField());
                         if (jsonbOrigin == null)
                             continue;
-                        String templateId = (String) record.getValue(TEMPLATE_ID);
-                        String itemPath = jsonbBlockDef.getPath();
                         //apply the transformation
                         try {
-//                            jsonbOrigin = "{\""+jsonbBlockDef.getField().getName()+"\":"+jsonbOrigin+"}";
-
-                            //
-                            //   String rawJson = new LightRawJsonEncoder(jsonbOrigin).encodeContentAsString(jsonbBlockDef.getField().getName());
-                            String rawJson = new LightRawJsonEncoder(jsonbOrigin).encodeContentAsString(null);
+                            JsonElement jsonElement = new LightRawJsonEncoder(jsonbOrigin).encodeContentAsJson(jsonbBlockDef.getJsonPathRoot());
                             //debugging
                             if (jsonbOrigin.contains("@class"))
                                 System.out.print("Hum...");
-                            record.setValue(jsonbBlockDef.getField(), rawJson);
+                            record.setValue(jsonbBlockDef.getField(), jsonElement);
                         } catch (Exception e) {
-                            throw new IllegalArgumentException("Could not encode raw json for template Id:" + templateId);
+                            //assumes this is not a json element
+                            record.setValue(jsonbBlockDef.getField(), jsonbOrigin);
+                            deleteList.add(jsonbBlockDef);
                         }
+                    }
+                    for (JsonbBlockDef deleteBlock: deleteList){
+                        queryStep.getJsonColumns().remove(deleteBlock);
                     }
                 }
             }
