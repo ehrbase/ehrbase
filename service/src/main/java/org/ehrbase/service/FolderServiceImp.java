@@ -139,11 +139,12 @@ public class FolderServiceImp extends BaseService implements FolderService {
         // Set update data
         FolderUtils.updateFolder(update, folderAccess);
 
+        // Clear sub folder list
+        folderAccess.getSubfoldersList().clear();
+
         // Create FolderAccess instances for sub folders if there are any
         if (update.getFolders() != null && !update.getFolders().isEmpty()) {
 
-            // Clear sub folder list
-            folderAccess.getSubfoldersList().clear();
             // Create new sub folders list
             update
                     .getFolders()
@@ -158,9 +159,7 @@ public class FolderServiceImp extends BaseService implements FolderService {
                                         ((FolderAccess)folderAccess).getContributionAccess()
                                 ))
             );
-
         }
-
 
         if (folderAccess.update(timestamp)) {
 
