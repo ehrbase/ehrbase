@@ -18,9 +18,114 @@
 
 
 
-# Run with localy installed RF and libraies
-robot -e future -e circleci -e obsolete -d results --noncritical not-ready -e BDD -L TRACE robot/
+# Set desired loglevel: NONE, INFO, DEBUG, TRACE (most details)
+export LOG_LEVEL=TRACE
 
+
+# # UNCOMMENT NEXT LINE & COMMENT-OUT ALL OTHERS BELOW TO RUN ONLY 'XXX' TESTS
+# robot --include XXX --outputdir results -L $LOG_LEVEL robot/
+
+
+
+# RUN CONTRIBUTION SERVICE TESTS
+robot -i CONTRIBUTION -e circleci -e EHRSCAPE -e obsolete -e libtest \
+      --outputdir results/test-suites/CONTRIBUTION_SERVICE \
+      --noncritical not-ready \
+      --flattenkeywords for \
+      --flattenkeywords foritem \
+      --flattenkeywords name:_resources.* \
+      --loglevel $LOG_LEVEL \
+      --name CONTRI \
+      robot/CONTRIBUTION_TESTS/
+
+# RUN COMPOSITION SERVICE TESTS
+robot -i COMPOSITION -e circleci -e EHRSCAPE -e obsolete -e libtest \
+      --outputdir results/test-suites/COMPOSITION_SERVICE \
+      --noncritical not-ready \
+      --flattenkeywords for \
+      --flattenkeywords foritem \
+      --flattenkeywords name:_resources.* \
+      --loglevel $LOG_LEVEL \
+      --name COMPO \
+      robot/COMPOSITION_TESTS/
+
+# RUN DIRECTORY SERVICE TESTS
+robot -i directory -e circleci -e EHRSCAPE -e obsolete -e libtest \
+      --outputdir results/test-suites/DIRECTORY_SERVICE \
+      --noncritical not-ready \
+      --flattenkeywords for \
+      --flattenkeywords foritem \
+      --flattenkeywords name:_resources.* \
+      --loglevel $LOG_LEVEL \
+      --name DIR \
+      robot/DIRECTORY_TESTS/
+
+# RUN EHR SERVICE TESTS
+robot -i EHR_SERVICE -e circleci -e EHRSCAPE -e obsolete -e libtest \
+      --outputdir results/test-suites/EHR_SERVICE \
+      --noncritical not-ready \
+      --flattenkeywords for \
+      --flattenkeywords foritem \
+      --flattenkeywords name:_resources.* \
+      --loglevel $LOG_LEVEL \
+      --name EHR \
+      robot/EHR_SERVICE_TESTS/
+
+# RUN KNOWLEDGE SERVICE TESTS
+robot -i KNOWLEDGE -e circleci -e EHRSCAPE -e obsolete -e libtest \
+      --outputdir results/test-suites/KNOWLEDGE_SERVICE \
+      --noncritical not-ready \
+      --flattenkeywords for \
+      --flattenkeywords foritem \
+      --flattenkeywords name:_resources.* \
+      --loglevel $LOG_LEVEL \
+      --name KNOWLEDGE \
+      robot/KNOWLEDGE_TESTS/
+
+# RUN QUERY SERVICE TESTS
+robot -i AQL -e circleci -e EHRSCAPE -e obsolete -e libtest \
+      --outputdir results/test-suites/QUERY_SERVICE \
+      --noncritical not-ready \
+      --flattenkeywords for \
+      --flattenkeywords foritem \
+      --flattenkeywords name:_resources.* \
+      --loglevel $LOG_LEVEL \
+      --name AQL \
+      robot/QUERY_SERVICE_TESTS/
+
+
+
+# POST PROCESS & MERGE OUTPUTS
+
+# Create Log/Report with ALL DETAILS
+rebot --outputdir results \
+      --name EHRbase \
+      --exclude TODO -e future -e obsolete -e libtest \
+      --removekeywords for \
+      --removekeywords wuks \
+      --loglevel TRACE \
+      --noncritical not-ready \
+      --timestampoutputs \
+      --output EHRbase-output.xml \
+      --log EHRbase-log.html \
+      --report EHRbase-report.html \
+      results/test-suites/*/*.xml
+
+
+
+
+
+
+
+#   ██████╗  █████╗  ██████╗██╗  ██╗██╗   ██╗██████╗
+#   ██╔══██╗██╔══██╗██╔════╝██║ ██╔╝██║   ██║██╔══██╗
+#   ██████╔╝███████║██║     █████╔╝ ██║   ██║██████╔╝
+#   ██╔══██╗██╔══██║██║     ██╔═██╗ ██║   ██║██╔═══╝
+#   ██████╔╝██║  ██║╚██████╗██║  ██╗╚██████╔╝██║
+#   ╚═════╝ ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝ ╚═════╝ ╚═╝
+#
+#   [ BACKUP ]
+#
 # NOTE: below stuff not usable with the recent pre/postcondition implementation
 # # Run with Docker | no need to install anything
 # docker run --rm -it --env HOST_UID=$(id -u) --env HOST_GID=$(id -g) --network host \

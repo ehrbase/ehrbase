@@ -83,7 +83,7 @@ generate random composition_uid
     ${uid}=             Evaluate    str(uuid.uuid4())    uuid
                         Set Test Variable   ${composition_uid}    ${uid}    # TODO: remove
                         Set Test Variable   ${versioned_object_uid}    ${uid}
-                        Set Test Variable   ${version_uid}    ${uid}::local.ethercis.com::1    # TODO: get `local.ethercis.com` from a variable
+                        Set Test Variable   ${version_uid}    ${uid}::local.ehrbase.org::1    # TODO: get `local.ehrbase.org` from a variable
                         Set Test Variable   ${preceding_version_uid}    ${version_uid}
 
 
@@ -92,7 +92,7 @@ generate random version_uid
     ...                 also as `preceding_version_uid` to test level scope
 
     ${uid}=             Evaluate    str(uuid.uuid4())    uuid
-                        Set Test Variable   ${version_uid}    ${uid}::local.ethercis.com::1
+                        Set Test Variable   ${version_uid}    ${uid}::local.ehrbase.org::1
                         Set Test Variable   ${preceding_version_uid}    ${version_uid}
 
 
@@ -185,7 +185,7 @@ commit composition (JSON)
                         Set Test Variable   ${version_uid_v1}    ${version_uid}                  # different namesfor full uid
                         Set Test Variable   ${preceding_version_uid}    ${version_uid}          # for usage in other steps
 
-    ${short_uid}=       Remove String       ${version_uid}    ::local.ethercis.com::1
+    ${short_uid}=       Remove String       ${version_uid}    ::local.ehrbase.org::1
                         Set Test Variable   ${compo_uid_v1}    ${short_uid}                      # TODO: rmv
                         Set Test Variable   ${versioned_object_uid}    ${short_uid}
 
@@ -223,7 +223,7 @@ commit composition (XML)
                         Set Test Variable   ${version_uid_v1}    ${version_uid}                  # different namesfor full uid
                         Set Test Variable   ${preceding_version_uid}    ${version_uid}          # for usage in other steps
 
-    ${short_uid}=       Remove String       ${version_uid}    ::local.ethercis.com::1
+    ${short_uid}=       Remove String       ${version_uid}    ::local.ehrbase.org::1
                         Set Test Variable   ${compo_uid_v1}    ${short_uid}                 # TODO; rmv
                         Set Test Variable   ${versioned_object_uid}    ${short_uid}
 
@@ -275,7 +275,7 @@ update composition (JSON)
                         Set Test Variable   ${composition_uid_v2}    ${resp.json()['uid']['value']}    # TODO: remove
                         Set Test Variable   ${version_uid_v2}    ${resp.json()['uid']['value']}
 
-    ${short_uid}=       Remove String       ${version_uid_v2}    ::local.ethercis.com::1
+    ${short_uid}=       Remove String       ${version_uid_v2}    ::local.ehrbase.org::1
                         Set Test Variable   ${versioned_object_uid_v2}    ${short_uid}
 
                         Set Test Variable   ${response}    ${resp}
@@ -326,7 +326,7 @@ update composition (XML)
                         Set Test Variable   ${composition_uid_v2}     ${long_uid.text}    # TODO: remove
                         Set Test Variable   ${version_uid_v2}     ${long_uid.text}
 
-    ${short_uid}=       Remove String       ${version_uid_v2}    ::local.ethercis.com::1
+    ${short_uid}=       Remove String       ${version_uid_v2}    ::local.ehrbase.org::1
                         Set Test Variable   ${versioned_object_uid_v2}    ${short_uid}
 
                         Set Test Variable   ${response}    ${resp}
@@ -391,8 +391,6 @@ get composition by composition_uid
     # because the response from the create compo has this endpoint in the Location header
 
     # &{headers}=         Create Dictionary   Content-Type=application/xml   Prefer=return=representation
-
-        TRACE JIRA BUG    EHR-517    not-ready
 
     ${resp}=            Get Request         ${SUT}    /ehr/${ehr_id}/composition/${uid}    headers=${headers}
                         log to console      ${resp.content}

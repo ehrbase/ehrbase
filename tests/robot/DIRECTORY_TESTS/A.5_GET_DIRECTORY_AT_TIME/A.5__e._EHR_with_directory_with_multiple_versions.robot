@@ -24,7 +24,7 @@ Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags    refactor
+Force Tags
 
 
 
@@ -38,8 +38,5 @@ Alternative flow 4: get directory at time on EHR with directory with multiple ve
     update DIRECTORY (JSON)    subfolders_in_directory_with_details_items.json
 
     get DIRECTORY at current time (JSON)
-
-    check response: is positive - returns structure of directory
-                                  # TODO: make sure to check that it is the
-                                  #       current latest directory
-                                  # maybe in separate keyword
+    
+    validate GET-version@time response - 200 retrieved

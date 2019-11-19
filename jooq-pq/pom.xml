@@ -36,6 +36,16 @@
         </dependency>
 
         <dependency>
+            <groupId>org.ehrbase.openehr</groupId>
+            <artifactId>serialisation</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>jooq</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jooq</groupId>
             <artifactId>jooq-codegen-maven</artifactId>
         </dependency>
@@ -82,6 +92,37 @@
                                 all available schemata. See the manual's next section to learn how to generate
                                 several schemata -->
                             <inputSchema>ehr</inputSchema>
+                            <forcedTypes>
+                                <forcedType>
+                                    <!-- Specify the Java type of your custom type. This corresponds to the Binding's <U> type. -->
+                                    <userType>com.nedap.archie.rm.datastructures.ItemStructure</userType>
+
+                                    <!-- Associate that custom type with your binding. -->
+                                    <binding>org.ehrbase.binding.OtherDetailsJsonbBinder</binding>
+
+                                    <!-- Add a Java regular expression matching fully-qualified columns. Use the pipe to separate several expressions.
+
+                                         If provided, both "includeExpressions" and "includeTypes" must match. -->
+                                    <expression>^(other_)?details$</expression>
+                                    <!-- TODO tag name was rolled back to older version here, needs to be "includeExpressions" with newer jooq version again -->
+
+                                    <!-- Add a Java regular expression matching data types to be forced to
+                                         have this type.
+
+                                         Data types may be reported by your database as:
+                                         - NUMBER              regexp suggestion: NUMBER
+                                         - NUMBER(5)           regexp suggestion: NUMBER\(5\)
+                                         - NUMBER(5, 2)        regexp suggestion: NUMBER\(5,\s*2\)
+                                         - any other form
+
+                                         It is thus recommended to use defensive regexes for types.
+
+                                         If provided, both "includeExpressions" and "includeTypes" must match. -->
+                                    <types>.*</types>
+                                    <!-- TODO tag name was rolled back to older version here, needs to be "includeTypes" with newer jooq version again -->
+                                </forcedType>
+
+                            </forcedTypes>
                         </database>
                         <generate>
                             <!-- Generation flags: See advanced configuration properties -->

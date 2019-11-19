@@ -80,4 +80,14 @@ public class VariableDefinition implements I_VariableDefinition {
     public List<FuncParameter> getFuncParameters() {
         return null;
     }
+
+    @Override
+    public I_VariableDefinition clone(){
+        return new VariableDefinition(this.path, this.alias, this.identifier, this.isDistinct);
+    }
+
+    @Override
+    public void setPath(String path){
+        this.path = path;
+    }
 }

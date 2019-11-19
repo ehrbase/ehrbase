@@ -53,7 +53,7 @@ workflows:
               only:
                 - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
 
-      - integration-tests:
+      - COMPOSITION-tests-1:
           context: org-global
           requires:
             - build-artifacts
@@ -62,40 +62,117 @@ workflows:
             branches:
               only:
                 - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
-          post-steps:
-            - provide-test-status-report-via-slack
+          # post-steps:
+          #   - provide-test-status-report-via-slack #
 
-      - deploy-snapshot-artifact:
-          context: org-global
-          requires:
-            - unit-tests
-            - integration-tests
-          filters:
-            branches:
-              only:
-                - /^(release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+)$/
-
-      - deploy-release-artifact:
-          context: org-global
-          requires:
-            - unit-tests
-            - integration-tests
-          filters:
-            branches:
-              only:
-                - /^(master)$/
-
-      - sonar-analysis:
+      - COMPOSITION-tests-2:
           context: org-global
           requires:
             - build-artifacts
             - unit-tests
-            - integration-tests
-            - dependency-check
           filters:
             branches:
               only:
                 - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+
+      - COMPOSITION-tests-3:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              only:
+                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+
+      - COMPOSITION-tests-4:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              only:
+                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+
+      - CONTRIBUTION-test:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              only:
+                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+
+      - DIRECTORY-test:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              only:
+                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+
+      - EHRSERVICE-test:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              only:
+                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+
+      - KNOWLEDGE-test:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              only:
+                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+
+      - QUERYSERVICE-test:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              only:
+                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+
+      - ROBOT-REPORT:
+          context: org-global
+          requires:
+            - COMPOSITION-tests-1
+            - COMPOSITION-tests-2
+            - COMPOSITION-tests-3
+            - COMPOSITION-tests-4
+            - CONTRIBUTION-test
+            - DIRECTORY-test
+            - EHRSERVICE-test
+            - KNOWLEDGE-test
+            - QUERYSERVICE-test
+          filters:
+            branches:
+              only:
+                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+
+      # - sonar-analysis:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
+      #       - unit-tests
+      #       - integration-tests
+      #       - dependency-check
+      #     filters:
+      #       branches:
+      #         only:
+      #           - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
 
 
 
@@ -119,7 +196,6 @@ jobs:
       - checkout
       - restore-build-artifacts-job-caches
       - setup-database
-      - setup-maven-environment
       - maven-package
       - persist-target-folder
       - save-build-artifacts-job-caches
@@ -145,28 +221,100 @@ jobs:
       - checkout
       - restore-unit-tests-job-caches
       - setup-database
-      - setup-maven-environment
       - maven-test
       - save-unit-tests-job-caches
       # - persist-unit-test-coverage
 
-  integration-tests:
-    machine:
-      image: ubuntu-1604:201903-01
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    steps:
-      - configure-python-version
-      - checkout
-      - restore-integration-tests-job-caches
-      - setup-jacoco-distribution
-      - attach-target-folder
-      - install-python-requirements
-      - run-integration-tests
-      # - collect-integration-coverage
-      - persist-integration-test-coverage
-      - save-integration-tests-job-caches
+  COMPOSITION-tests-1:
+      machine:
+          image: ubuntu-1604:201903-01
+      steps:
+        - run-robot-tests:
+              include-tags: "compositionANDjson1"
+              test-suite-path: "COMPOSITION_TESTS"
+              test-suite-name: "COMPOSITION_1"
+
+  COMPOSITION-tests-2:
+      machine:
+          image: ubuntu-1604:201903-01
+      steps:
+        - run-robot-tests:
+              include-tags: "compositionANDjson2"
+              test-suite-path: "COMPOSITION_TESTS"
+              test-suite-name: "COMPOSITION_2"
+
+  COMPOSITION-tests-3:
+      machine:
+          image: ubuntu-1604:201903-01
+      steps:
+        - run-robot-tests:
+              include-tags: "compositionANDxml1"
+              test-suite-path: "COMPOSITION_TESTS"
+              test-suite-name: "COMPOSITION_3"
+
+  COMPOSITION-tests-4:
+      machine:
+          image: ubuntu-1604:201903-01
+      steps:
+        - run-robot-tests:
+              include-tags: "compositionANDxml2"
+              test-suite-path: "COMPOSITION_TESTS"
+              test-suite-name: "COMPOSITION_4"
+
+  CONTRIBUTION-test:
+      machine:
+            image: ubuntu-1604:201903-01
+      steps:
+        - run-robot-tests:
+              include-tags: "CONTRIBUTION"
+              test-suite-path: "CONTRIBUTION_TESTS"
+              test-suite-name: "CONTRIBUTION"
+
+  DIRECTORY-test:
+      machine:
+            image: ubuntu-1604:201903-01
+      steps:
+        - run-robot-tests:
+              include-tags: "directory"
+              test-suite-path: "DIRECTORY_TESTS"
+              test-suite-name: "DIRECTORY"
+
+  EHRSERVICE-test:
+      machine:
+            image: ubuntu-1604:201903-01
+      steps:
+        - run-robot-tests:
+              include-tags: "EHR_SERVICE"
+              test-suite-path: "EHR_SERVICE_TESTS"
+              test-suite-name: "EHR_SERVICE"
+
+  KNOWLEDGE-test:
+      machine:
+            image: ubuntu-1604:201903-01
+      steps:
+        - run-robot-tests:
+              include-tags: "KNOWLEDGE"
+              test-suite-path: "KNOWLEDGE_TESTS"
+              test-suite-name: "KNOWLEDGE"
+
+  QUERYSERVICE-test:
+      machine:
+            image: ubuntu-1604:201903-01
+      steps:
+        - run-robot-tests:
+              include-tags: "ADHOC-QUERY"
+              test-suite-path: "QUERY_SERVICE_TESTS"
+              test-suite-name: "ADHOC-QUERY"
+
+  ROBOT-REPORT:
+      machine:
+        image: ubuntu-1604:201903-01
+      steps:
+          - configure-python-version
+          - checkout
+          - restore-integration-tests-job-caches
+          - attach-tests-folder
+          - merge-robot-outputs
 
   sonar-analysis:
     machine:
@@ -179,42 +327,6 @@ jobs:
       - restore-sonar-analysis-job-caches
       - run-sonar-analysis
       - save-sonar-analysis-job-caches
-
-  deploy-snapshot-artifact:
-    docker:
-      - image: circleci/openjdk:8-jdk
-      - image: ehrbaseorg/ehrbase-database-docker
-        environment:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-    environment:
-      POSTGRES_DB_URL: postgresql://postgres@localhost/postgres
-      ETHERCIS_DB_URL: postgresql://postgres@localhost/ehrbase
-    steps:
-      - checkout
-      - restore-caches
-      - verify-version-is-snapshot
-      - setup-maven-environment
-      - deploy-maven-artifacts
-      - save-caches
-
-  deploy-release-artifact:
-    docker:
-      - image: circleci/openjdk:8-jdk
-      - image: ehrbaseorg/ehrbase-database-docker:11.5
-        environment:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-    environment:
-      POSTGRES_DB_URL: postgresql://postgres@localhost/postgres
-      ETHERCIS_DB_URL: postgresql://postgres@localhost/ehrbase
-    steps:
-      - checkout
-      - restore-caches
-      - verify-version-is-not-snapshot
-      - setup-maven-environment
-      - deploy-maven-artifacts
-      - save-caches
 
 
 
@@ -239,83 +351,93 @@ commands:
 #   88           `"YbbdP"'   8Y"Ybbd8"'    `"YbbdP"'    "Y888          "Y888  `"Ybbd8"'  `"YbbdP"'    "Y888  `"YbbdP"'
 #
 
-  run-integration-tests:
-    description: Run integration tests
-    steps:
+  run-robot-tests:
+      description: Run integration tests written in Robot Framework
+      parameters:
+          include-tags:
+              description: Which tests to inclue by TAGs (Robot syntax applies!)
+              type: string
+          test-suite-path:
+              description: Target test-suite given by it's folder name e.g. COMPOSITION_TESTS
+              type: string
+          test-suite-name:
+              description: Titel of generated Robot Log/Report.html
+              type: string
+      steps:
+        - configure-python-version
+        - checkout
+        - restore-integration-tests-job-caches
+        - attach-target-folder
+        - install-python-requirements
         - run:
-            name: Run integration tests with coverage
+            name: EXECUTE ROBOT COMMAND
+            no_output_timeout: 30m
             command: |
                 cd tests
-                robot -d results --console dotted --noncritical not-ready -L TRACE \
-                      -e obsolete \
-                      -e EHRSCAPE \
-                      --xunit junit-output.xml --xunitskipnoncritical \
-                      -v CODE_COVERAGE:True \
-                      -v JACOCO_LIB_PATH:/home/circleci/jacoco-0.8.2/lib \
-                      -v COVERAGE_DIR:/home/circleci/project/application/target robot/
-
-
-  set-slack-build-status:
-    description: Set status env at the end of a job based on success or failure.
-    steps:
-        - run:
-            name: Slack - Setting Failure Condition
-            when: on_fail
-            command: |
-                echo 'export SLACK_BUILD_STATUS="FAIL"' >> $BASH_ENV
-        - run:
-            when: on_success
-            name: Slack - Setting Success Condition
-            command: |
-              echo 'export SLACK_BUILD_STATUS="PASS"' >> $BASH_ENV
-
-
-  provide-test-status-report-via-slack:
-    description: Generates an integration test status report and sends it to our Slack channel
-    steps:
-        - set-slack-build-status
-        - run:
-            name: Download and install Chrome and Chromedriver
-            when: always
-            command: |
-                mkdir -p ~/downloads/chrome
-                cd ~/downloads/chrome
-                sudo killall -9 apt-get || true && \
-                sudo apt-get update && \
-                sudo apt-get install -f lsb-release libappindicator3-1
-                [ -e google-chrome.deb ] || curl -L -o google-chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-                sudo dpkg --configure -a
-                sudo dpkg -i google-chrome.deb
-                sudo sed -i 's|HERE/chrome"|HERE/chrome" --no-sandbox|g' /opt/google/chrome/google-chrome
-                rm google-chrome.deb
-                CHROME_VERSION=$(google-chrome --version | sed -r 's/[^0-9]+([0-9]+\.[0-9]+\.[0-9]+).*/\1/g')
-                CHROMEDRIVER_VERSION=$(curl -s https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION)
-                [ -e chromedriver_linux64.zip ] || wget https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip
-                unzip chromedriver_linux64.zip
-                sudo mv chromedriver /usr/local/bin/chromedriver
-                sudo chown root:root /usr/local/bin/chromedriver
-                sudo chmod +x /usr/local/bin/chromedriver
-        - run:
-            name: Check Browser Versions
-            when: always
-            command: |
-                which chromedriver
-                chromedriver --version
-                google-chrome --version
-        - run:
-            name: Generate and Send  Test Report To Slack Channel
-            when: always
-            command: |
-                cd tests
-                cp robot/_resources/status_report.robot  results/status_report.robot
-                cp robot/_resources/slack-message.json  results/slack-message.json
-                cp robot/_resources/logo.jpg results/logo.jpg
-                cd results
-                robot -d trash --output NONE --log NONE --noncritical chill status_report.robot
+                robot --include << parameters.include-tags >> \
+                      --exclude TODO -e future -e obsolete -e libtest \
+                      --console dotted \
+                      --loglevel TRACE \
+                      --noncritical not-ready \
+                      --flattenkeywords for \
+                      --flattenkeywords foritem \
+                      --flattenkeywords name:_resources.* \
+                      --outputdir results/<< parameters.test-suite-name >> \
+                      --name << parameters.test-suite-name >> \
+                      robot/<< parameters.test-suite-path >>/
+        - save-integration-tests-job-caches
+        - persist-tests-folder
         - store_test_results:
-            path: ~/project/tests/results/
+              path: ~/project/tests/results/
         - store_artifacts:
+              path: ~/project/tests/results/
+
+
+  merge-robot-outputs:
+    description: Merge Robot Results from Parallel Tests
+    steps:
+      - run:
+            command: |
+                pip install robotframework
+      - run:
+            name: POST PROCESS & MERGE TEST RESULTS
+            when: always
+            command: |
+                cd tests
+
+                # Create Log/Report with ALL DETAILS
+                rebot --outputdir results \
+                      --name EHRbase \
+                      --exclude TODO -e future -e obsolete -e libtest \
+                      --removekeywords for \
+                      --removekeywords wuks \
+                      --loglevel TRACE \
+                      --noncritical not-ready \
+                      --output EHRbase-output.xml \
+                      --log EHRbase-log.html \
+                      --report EHRbase-report.html \
+                      results/*/*.xml
+      - run:
+            name: GENERATE TEST SUMMARY
+            when: always
+            command: |
+                cd tests
+
+                # Create JUNIT report from merged results
+                rebot --outputdir results \
+                      --exclude TODO -e future -e obsolete -e libtest \
+                      --noncritical not-ready \
+                      --xunit junit-output.xml --xunitskipnoncritical \
+                      --log NONE \
+                      --report NONE \
+                      results/EHRbase-output.xml
+      - persist-tests-folder
+      - store_test_results:
             path: ~/project/tests/results/
+      - store_artifacts:
+            path: ~/project/tests/results/
+
+
 
 
 
@@ -447,16 +569,6 @@ commands:
 #   88      88      88  `"8bbdP"Y8      "8"       `"Ybbd8"'  88       88
 #
 
-  setup-maven-environment:
-    description: Setup access to private Maven repositories and install local dependencies
-    steps:
-      - run:
-          name: Install provided settings.xml
-          command: |
-            mkdir -p ~/.m2
-            cp ~/project/.circleci/settings.xml ~/.m2/
-
-
   maven-package:
     description: Package Maven app
     steps:
@@ -465,58 +577,6 @@ commands:
           command: |
             cd ~/project
             mvn package -DskipTests
-
-
-  deploy-maven-artifacts:
-    description: Deploy Maven artifacts to their respective repositories
-    steps:
-      - run:
-          name: Build and deploy Maven artifacts
-          command: |
-            cd ~/project
-            mvn deploy
-
-
-#                           88
-#                           88
-#                           88
-#   8b,dPPYba,   ,adPPYba,  88   ,adPPYba,  ,adPPYYba,  ,adPPYba,   ,adPPYba,
-#   88P'   "Y8  a8P_____88  88  a8P_____88  ""     `Y8  I8[    ""  a8P_____88
-#   88          8PP"""""""  88  8PP"""""""  ,adPPPPP88   `"Y8ba,   8PP"""""""
-#   88          "8b,   ,aa  88  "8b,   ,aa  88,    ,88  aa    ]8I  "8b,   ,aa
-#   88           `"Ybbd8"'  88   `"Ybbd8"'  `"8bbdP"Y8  `"YbbdP"'   `"Ybbd8"'
-#
-
-  verify-version-is-snapshot:
-    description: Verify current version is a snapshot
-    steps:
-      - run:
-          name: Verify version is snapshot
-          command: |
-            chmod 744 ~/project/.circleci/verify_and_return_version.sh
-            chmod 744 ~/project/.circleci/fail_if_not_snapshot.sh
-            ~/project/.circleci/fail_if_not_snapshot.sh
-      - run:
-          name: Alert developers to non-snapshot version on release branch
-          when: on_fail
-          command: |
-            echo "Warning: non-snapshot version detected, no artifact will be deployed."
-
-
-  verify-version-is-not-snapshot:
-    description: Verify current version is not a snapshot
-    steps:
-      - run:
-          name: Verify version is not snapshot
-          command: |
-            chmod 744 ~/project/.circleci/verify_and_return_version.sh
-            chmod 744 ~/project/.circleci/fail_if_snapshot.sh
-            ~/project/.circleci/fail_if_snapshot.sh
-      - run:
-          name: Alert developers to snapshot version on master branch
-          when: on_fail
-          command: |
-            echo "Warning: snapshot version detected, no artifact will be deployed."
 
 
 #
@@ -592,10 +652,14 @@ commands:
   persist-tests-folder:
     description: Persist Robot tests folder to workspace
     steps:
+      - run:
+            when: always
+            command: |
+                echo "persist test results"
       - persist_to_workspace:
-          root: /home/circleci
-          paths:
-            - project/tests
+            root: /home/circleci
+            paths:
+              - project/tests/results
 
   attach-tests-folder:
     description: Attach Robot tests folder back to workspace
@@ -651,6 +715,9 @@ commands:
   save-integration-tests-job-caches:
     description: Save all caches in interation tests job
     steps:
+        - run:
+            when: always
+            command: echo "save integration test cache"
         - save_cache:
             key: job-integration-tests-v1-download-0.8.2
             paths:
@@ -826,3 +893,110 @@ commands:
   #   steps:
   #     - restore_cache:
   #         key: google-chrome-incl-webdriver-
+
+
+  # COMPOSITION-tests-1:
+  #     machine:
+  #       image: ubuntu-1604:201903-01
+  #     environment:
+  #       POSTGRES_USER: postgres
+  #       POSTGRES_PASSWORD: postgres
+  #     steps:
+  #       - configure-python-version
+  #       - checkout
+  #       - restore-integration-tests-job-caches
+  #       - setup-jacoco-distribution
+  #       - attach-target-folder
+  #       - install-python-requirements
+  #       - run-integration-tests:
+  #           include: "compositionANDjson1"
+  #       - save-integration-tests-job-caches
+
+
+  # run-integration-tests:
+  #   description: Run integration tests
+  #   parameters:
+  #     include:
+  #       type: string
+  #       default: xxx
+  #   steps:
+  #       - run:
+  #           name: Run integration tests with coverage
+  #           no_output_timeout: 45m
+  #           command: |
+  #               cd tests
+  #               robot -d results --console dotted --noncritical not-ready -L TRACE \
+  #                     -i << parameters.include >> \
+  #                     -e libtest \
+  #                     -e obsolete \
+  #                     -e future \
+  #                     -e TODO \
+  #                     -e circleci \
+  #                     -e EHRSCAPE \
+  #                     --xunit junit-output.xml --xunitskipnoncritical \
+  #                     -v CODE_COVERAGE:True \
+  #                     -v JACOCO_LIB_PATH:/home/circleci/jacoco-0.8.2/lib \
+  #                     -v COVERAGE_DIR:/home/circleci/project/application/target robot/
+
+
+  # set-slack-build-status:
+  #   description: Set status env at the end of a job based on success or failure.
+  #   steps:
+  #       - run:
+  #           name: Slack - Setting Failure Condition
+  #           when: on_fail
+  #           command: |
+  #               echo 'export SLACK_BUILD_STATUS="FAIL"' >> $BASH_ENV
+  #       - run:
+  #           when: on_success
+  #           name: Slack - Setting Success Condition
+  #           command: |
+  #             echo 'export SLACK_BUILD_STATUS="PASS"' >> $BASH_ENV
+
+
+  # provide-test-status-report-via-slack:
+  #   description: Generates an integration test status report and sends it to our Slack channel
+  #   steps:
+  #       - set-slack-build-status
+  #       - run:
+  #           name: Download and install Chrome and Chromedriver
+  #           when: always
+  #           command: |
+  #               mkdir -p ~/downloads/chrome
+  #               cd ~/downloads/chrome
+  #               sudo killall -9 apt-get || true && \
+  #               sudo apt-get update && \
+  #               sudo apt-get install -f lsb-release libappindicator3-1
+  #               [ -e google-chrome.deb ] || curl -L -o google-chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+  #               sudo dpkg --configure -a
+  #               sudo dpkg -i google-chrome.deb
+  #               sudo sed -i 's|HERE/chrome"|HERE/chrome" --no-sandbox|g' /opt/google/chrome/google-chrome
+  #               rm google-chrome.deb
+  #               CHROME_VERSION=$(google-chrome --version | sed -r 's/[^0-9]+([0-9]+\.[0-9]+\.[0-9]+).*/\1/g')
+  #               CHROMEDRIVER_VERSION=$(curl -s https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION)
+  #               [ -e chromedriver_linux64.zip ] || wget https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip
+  #               unzip chromedriver_linux64.zip
+  #               sudo mv chromedriver /usr/local/bin/chromedriver
+  #               sudo chown root:root /usr/local/bin/chromedriver
+  #               sudo chmod +x /usr/local/bin/chromedriver
+  #       - run:
+  #           name: Check Browser Versions
+  #           when: always
+  #           command: |
+  #               which chromedriver
+  #               chromedriver --version
+  #               google-chrome --version
+  #       - run:
+  #           name: Generate and Send  Test Report To Slack Channel
+  #           when: always
+  #           command: |
+  #               cd tests
+  #               cp robot/_resources/status_report.robot  results/status_report.robot
+  #               cp robot/_resources/slack-message.json  results/slack-message.json
+  #               cp robot/_resources/logo.jpg results/logo.jpg
+  #               cd results
+  #               robot -d trash --output NONE --log NONE --noncritical chill status_report.robot
+  #       - store_test_results:
+  #           path: ~/project/tests/results/
+  #       - store_artifacts:
+  #           path: ~/project/tests/results/

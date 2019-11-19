@@ -26,6 +26,7 @@ import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_PartyIdentifiedAccess;
 import org.ehrbase.dao.access.interfaces.I_SystemAccess;
 import org.ehrbase.dao.access.support.ServiceDataAccess;
+import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.UUID;
@@ -47,17 +48,17 @@ public class BaseService {
 
     private final KnowledgeCacheService knowledgeCacheService;
 
-    private final ConnectionPoolService connectionPoolService;
+
+    private final DSLContext context;
 
 
-    public BaseService(KnowledgeCacheService knowledgeCacheService, ConnectionPoolService connectionPoolService) {
+    public BaseService(KnowledgeCacheService knowledgeCacheService, DSLContext context) {
         this.knowledgeCacheService = knowledgeCacheService;
-
-        this.connectionPoolService = connectionPoolService;
+        this.context = context;
     }
 
     protected I_DomainAccess getDataAccess() {
-        return new ServiceDataAccess(connectionPoolService.getContext(), knowledgeCacheService, knowledgeCacheService);
+        return new ServiceDataAccess(context, knowledgeCacheService, knowledgeCacheService);
     }
 
     public UUID getSystemUuid() {

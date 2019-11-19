@@ -21,12 +21,6 @@
  */
 package org.ehrbase.dao.access.jooq;
 
-import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.dao.access.interfaces.I_DomainAccess;
-import org.ehrbase.dao.access.interfaces.I_PartyIdentifiedAccess;
-import org.ehrbase.dao.access.support.DataAccess;
-import org.ehrbase.jooq.pg.tables.records.IdentifierRecord;
-import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
 import com.nedap.archie.rm.datavalues.DvIdentifier;
 import com.nedap.archie.rm.generic.PartyIdentified;
 import com.nedap.archie.rm.support.identification.GenericId;
@@ -35,6 +29,12 @@ import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.PartyRef;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
+import org.ehrbase.dao.access.interfaces.I_PartyIdentifiedAccess;
+import org.ehrbase.dao.access.support.DataAccess;
+import org.ehrbase.jooq.pg.tables.records.IdentifierRecord;
+import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
 import org.jooq.DSLContext;
 import org.jooq.Result;
 
@@ -311,7 +311,7 @@ public class PartyIdentifiedAccess extends DataAccess implements I_PartyIdentifi
         if (identifiers != null) {
             for (IdentifierRecord identifierRecord : identifiers.values()) {
                 identifierRecord.setParty(partyIdentifiedRecord.getId());
-                context.insertInto(IDENTIFIER, IDENTIFIER.PARTY, IDENTIFIER.ID_VALUE, IDENTIFIER.ISSUER, IDENTIFIER.ASSIGNER, IDENTIFIER.TYPE_NAME)
+                getContext().insertInto(IDENTIFIER, IDENTIFIER.PARTY, IDENTIFIER.ID_VALUE, IDENTIFIER.ISSUER, IDENTIFIER.ASSIGNER, IDENTIFIER.TYPE_NAME)
                         .values(identifierRecord.getParty(), identifierRecord.getIdValue(), identifierRecord.getIssuer(), identifierRecord.getAssigner(), identifierRecord.getTypeName())
                         .execute();
                 log.debug("Create identifier for party:" + identifierRecord.getParty());
@@ -340,16 +340,16 @@ public class PartyIdentifiedAccess extends DataAccess implements I_PartyIdentifi
         }
 
         for (IdentifierRecord identifierRecord : identifiers.values()) {
-            if (context.fetchExists(IDENTIFIER, IDENTIFIER.ID_VALUE.eq(identifierRecord.getIdValue()).and(IDENTIFIER.ISSUER.eq(identifierRecord.getIssuer())))) {
+            if (getContext().fetchExists(IDENTIFIER, IDENTIFIER.ID_VALUE.eq(identifierRecord.getIdValue()).and(IDENTIFIER.ISSUER.eq(identifierRecord.getIssuer())))) {
                 //updateComposition this record
-                count += context.update(IDENTIFIER)
+                count += getContext().update(IDENTIFIER)
                         .set(IDENTIFIER.ID_VALUE, identifierRecord.getIdValue())
                         .set(IDENTIFIER.ASSIGNER, identifierRecord.getAssigner())
                         .set(IDENTIFIER.ISSUER, identifierRecord.getIssuer())
                         .where(IDENTIFIER.ID_VALUE.eq(identifierRecord.getIdValue()).and(IDENTIFIER.ISSUER.eq(identifierRecord.getIssuer())))
                         .execute();
             } else //add it
-                count += context.insertInto(IDENTIFIER, IDENTIFIER.PARTY, IDENTIFIER.ID_VALUE, IDENTIFIER.ISSUER, IDENTIFIER.ASSIGNER, IDENTIFIER.TYPE_NAME)
+                count += getContext().insertInto(IDENTIFIER, IDENTIFIER.PARTY, IDENTIFIER.ID_VALUE, IDENTIFIER.ISSUER, IDENTIFIER.ASSIGNER, IDENTIFIER.TYPE_NAME)
                         .values(partyIdentifiedRecord.getId(), identifierRecord.getIdValue(), identifierRecord.getIssuer(), identifierRecord.getAssigner(), identifierRecord.getTypeName())
                         .execute();
         }
@@ -391,7 +391,7 @@ public class PartyIdentifiedAccess extends DataAccess implements I_PartyIdentifi
         //delete corresponding identifiers
         if (identifiers != null) {
             for (IdentifierRecord identifierRecord : identifiers.values()) {
-                count += context.delete(IDENTIFIER).where(IDENTIFIER.PARTY.eq(partyIdentifiedRecord.getId())).execute();
+                count += getContext().delete(IDENTIFIER).where(IDENTIFIER.PARTY.eq(partyIdentifiedRecord.getId())).execute();
             }
         }
         count += partyIdentifiedRecord.delete();
@@ -401,7 +401,7 @@ public class PartyIdentifiedAccess extends DataAccess implements I_PartyIdentifi
     @Override
     public Integer addIdentifier(String value, String issuer, String assigner, String type) {
 
-        IdentifierRecord identifierRecord = context.newRecord(IDENTIFIER);
+        IdentifierRecord identifierRecord = getContext().newRecord(IDENTIFIER);
         identifierRecord.setIdValue(value);
         identifierRecord.setIssuer(issuer);
         identifierRecord.setAssigner(assigner);
@@ -421,7 +421,7 @@ public class PartyIdentifiedAccess extends DataAccess implements I_PartyIdentifi
         String key = makeMapKey(idCode, issuer);
         identifiers.remove(key);
 
-        return context.delete(IDENTIFIER).where(IDENTIFIER.PARTY.eq(partyIdentifiedRecord.getId())
+        return getContext().delete(IDENTIFIER).where(IDENTIFIER.PARTY.eq(partyIdentifiedRecord.getId())
                 .and(IDENTIFIER.ID_VALUE.eq(idCode))
                 .and(IDENTIFIER.ISSUER.eq(issuer))).execute();
     }

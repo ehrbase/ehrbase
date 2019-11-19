@@ -64,4 +64,4 @@ Alternative flow 1: get CONTRIBUTIONS of existing EHR with no CONTRIBUTIONS
 
 *** Keywords ***
 check response: is positive with list of 0 contribution(s)
-    Fail    msg=fake it till you make it!
+    Fail    msg=break it till you make it!

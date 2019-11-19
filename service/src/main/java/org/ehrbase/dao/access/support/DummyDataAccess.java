@@ -24,8 +24,6 @@ import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.service.IntrospectService;
 import org.jooq.DSLContext;
 
-import java.util.Map;
-
 /**
  * Created by Christian Chevalley on 4/25/2015.
  */
@@ -36,9 +34,6 @@ public class DummyDataAccess extends DataAccess {
 //        this.connection = connectionHandler.getConnection();
     }
 
-    public DummyDataAccess(Map<String, Object> map) throws Exception {
-        super(map);
-    }
 
     @Override
     public DataAccess getDataAccess() {

@@ -22,20 +22,85 @@
   <artifactId>server</artifactId>
   <version>0.9.0</version>
 
+  <name>${project.groupId}:${project.artifactId}</name>
+  <description>EHRbase is a Free, Libre, Open Source openEHR Clinical Data Repository</description>
+  <url>https://ehrbase.org</url>
+
+  <licenses>
+    <license>
+      <name>The Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+    <repository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+  </distributionManagement>
+
+  <developers>
+    <developer>
+      <name>Stefan Spiska</name>
+      <email>stefan.spiska@vitasystems.de</email>
+      <organization>vitasystems GmbH</organization>
+      <organizationUrl>https://www.vitagroup.ag/</organizationUrl>
+    </developer>
+    <developer>
+      <name>Axel Siebert</name>
+      <email>axel.siebert@vitasystems.de</email>
+      <organization>vitasystems GmbH</organization>
+      <organizationUrl>https://www.vitagroup.ag/</organizationUrl>
+    </developer>
+    <developer>
+      <name>Wladislaw Wagner</name>
+      <email>wladislaw.wagner@vitasystems.de</email>
+      <organization>vitasystems GmbH</organization>
+      <organizationUrl>https://www.vitagroup.ag/</organizationUrl>
+    </developer>
+    <developer>
+      <name>Luis Marco-Ruiz</name>
+      <email>luis.marco-ruiz@plri.de</email>
+      <organization>Hannover Medical School</organization>
+      <organizationUrl>https://plri.de/</organizationUrl>
+    </developer>
+    <developer>
+      <name>Jake Smolka</name>
+      <email>jake.smolka@plri.de</email>
+      <organization>Hannover Medical School</organization>
+      <organizationUrl>https://plri.de/</organizationUrl>
+    </developer>
+    <developer>
+      <name>Pablo Pazos</name>
+      <email>pablo.pazos@cabolabs.com</email>
+      <organization>Hannover Medical School</organization>
+      <organizationUrl>https://plri.de/</organizationUrl>
+    </developer>
+    <developer>
+      <name>Christian Chevalley</name>
+      <email>christian@adoc.co.th</email>
+      <organization>Hannover Medical School</organization>
+      <organizationUrl>https://plri.de/</organizationUrl>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:git://github.com/ehrbase/ehrbase.git</connection>
+    <developerConnection>scm:git:ssh://github.com:ehrbase/ehrbase.git</developerConnection>
+    <url>https://github.com/ehrbase/ehrbase</url>
+  </scm>
+
   <repositories>
     <repository>
       <id>jitpack.io</id>
       <url>https://jitpack.io</url>
     </repository>
   </repositories>
-
-  <pluginRepositories>
-    <pluginRepository>
-      <id>jcenter</id>
-      <name>jcenter</name>
-      <url>https://jcenter.bintray.com/</url>
-    </pluginRepository>
-  </pluginRepositories>
 
   <properties>
     <commons.io.version>2.6</commons.io.version>
@@ -392,6 +457,64 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <additionalJOption>-Xdoclint:none</additionalJOption>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <version>1.5</version>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+            <configuration>
+              <gpgArguments>
+                <arg>--pinentry-mode</arg>
+                <arg>loopback</arg>
+              </gpgArguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>nexus-staging-maven-plugin</artifactId>
+        <version>1.6.7</version>
+        <extensions>true</extensions>
+        <configuration>
+          <serverId>ossrh</serverId>
+          <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+          <autoReleaseAfterClose>false</autoReleaseAfterClose>
+        </configuration>
+      </plugin>
     </plugins>
 
     <pluginManagement>
@@ -521,18 +644,18 @@
                   </systemPropertyVariables>
               </configuration>
           </plugin>
-        <plugin>
-          <groupId>com.spotify</groupId>
-          <artifactId>dockerfile-maven-plugin</artifactId>
-          <version>1.4.9</version>
-          <configuration>
-            <repository>vitagroup-hip-docker-releases.jfrog.io/vitasystems/${project.artifactId}</repository>
-            <tag>${project.version}</tag>
-            <buildArgs>
-              <JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
-            </buildArgs>
-          </configuration>
-        </plugin>
+        <!--<plugin>-->
+          <!--<groupId>com.spotify</groupId>-->
+          <!--<artifactId>dockerfile-maven-plugin</artifactId>-->
+          <!--<version>1.4.9</version>-->
+          <!--<configuration>-->
+            <!--<repository>vitagroup-hip-docker-releases.jfrog.io/vitasystems/${project.artifactId}</repository>-->
+            <!--<tag>${project.version}</tag>-->
+            <!--<buildArgs>-->
+              <!--<JAR_FILE>${project.build.finalName}.jar</JAR_FILE>-->
+            <!--</buildArgs>-->
+          <!--</configuration>-->
+        <!--</plugin>-->
       </plugins>
     </pluginManagement>
   </build>

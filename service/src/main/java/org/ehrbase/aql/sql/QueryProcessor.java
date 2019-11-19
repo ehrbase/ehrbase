@@ -27,7 +27,6 @@ import org.ehrbase.aql.compiler.Statements;
 import org.ehrbase.aql.compiler.TopAttributes;
 import org.ehrbase.aql.definition.Variables;
 import org.ehrbase.aql.sql.binding.*;
-import org.ehrbase.aql.sql.postprocessing.I_RawJsonTransform;
 import org.ehrbase.aql.sql.postprocessing.RawJsonTransform;
 import org.ehrbase.aql.sql.queryImpl.ContainsSet;
 import org.ehrbase.aql.sql.queryImpl.TemplateMetaData;
@@ -111,7 +110,7 @@ public class QueryProcessor extends TemplateMetaData {
         //if any jsonb data field transform them into raw json
         if (aqlSelectQuery.isOutputWithJson() && knowledgeCache != null) {
             RawJsonTransform.toRawJson(result, aqlSelectQuery.getQuerySteps(), knowledgeCache);
-            result = RawJsonTransform.deleteNamedColumn(result, I_RawJsonTransform.TEMPLATE_ID);
+//            result = RawJsonTransform.deleteNamedColumn(result, I_RawJsonTransform.TEMPLATE_ID);
         }
 
         List<List<String>> explainList = buildExplain(aqlSelectQuery.getSelectQuery());
@@ -184,7 +183,7 @@ public class QueryProcessor extends TemplateMetaData {
             unionSetQuery = new SuperQuery(context, statements.getVariables(), unionSetQuery).select();
         }
 
-        return new AqlSelectQuery(unionSetQuery, cacheQuery.values(), cacheQuery.values().stream().anyMatch(QuerySteps::isContainsJQueryPath));
+        return new AqlSelectQuery(unionSetQuery, cacheQuery.values(), cacheQuery.values().stream().anyMatch(QuerySteps::isContainsJson));
     }
 
     private QuerySteps buildQuerySteps(UUID compId, String templateId, String entryRoot) {

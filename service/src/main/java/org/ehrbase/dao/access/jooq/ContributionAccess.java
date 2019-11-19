@@ -362,7 +362,7 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
             return;
 
         for (UUID uuid : removed) {
-            context.delete(COMPOSITION).where(COMPOSITION.ID.eq(uuid));
+            getContext().delete(COMPOSITION).where(COMPOSITION.ID.eq(uuid));
             log.debug("Deleted composition:" + uuid);
         }
     }

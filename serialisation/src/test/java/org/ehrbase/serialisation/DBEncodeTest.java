@@ -18,11 +18,15 @@
 
 package org.ehrbase.serialisation;
 
+import com.google.gson.JsonElement;
 import org.ehrbase.test_data.composition.CompositionTestDataCanonicalXML;
 import com.nedap.archie.rm.composition.Composition;
 import org.ehrbase.ehr.encode.rawjson.LightRawJsonEncoder;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.nio.file.Files;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -77,5 +81,32 @@ public class DBEncodeTest {
 
             assertNotNull(interpreted);
         }
+    }
+
+    @Test
+    public void testDBDecodeFullComposition() throws Exception {
+
+        String db_encoded = IOUtils.resourceToString("/composition/canonical_json/full_composition.json", UTF_8);
+        assertNotNull(db_encoded);
+
+        JsonElement converted = new LightRawJsonEncoder(db_encoded).encodeContentAsJson(null);
+
+        //see if this can be interpreted by Archie
+        Object object = new CanonicalJson().unmarshal(converted.toString(), Composition.class);
+
+        assertTrue(object instanceof Composition);
+
+        String interpreted = new CanonicalXML().marshal((Composition) object);
+
+        assertNotNull(interpreted);
+    }
+
+    @Test
+    public void unmarshal_from_js_composition() throws IOException {
+        String marshal = IOUtils.resourceToString("/composition/canonical_json/rawdb_composition.json", UTF_8);
+        JsonElement converted = new LightRawJsonEncoder(marshal).encodeContentAsJson(null);
+        Object object = new CanonicalJson().unmarshal(converted.toString(), Composition.class);
+
+        assertTrue(object instanceof Composition);
     }
 }

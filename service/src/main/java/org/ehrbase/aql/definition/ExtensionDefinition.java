@@ -76,4 +76,14 @@ public class ExtensionDefinition implements I_VariableDefinition {
     public List<FuncParameter> getFuncParameters() {
         return null;
     }
+
+    @Override
+    public I_VariableDefinition clone() {
+        return new ExtensionDefinition(this.context, this.parsableExpression, this.alias);
+    }
+
+    @Override
+    public void setPath(String path) {
+
+    }
 }

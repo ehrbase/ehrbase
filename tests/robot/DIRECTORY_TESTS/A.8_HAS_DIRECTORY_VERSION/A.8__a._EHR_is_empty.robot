@@ -36,4 +36,4 @@ Main flow: has directory from existent and empty EHR
 
     get DIRECTORY at version - fake version_uid (JSON)
 
-    check response: is negative - DIRECTORY does not exist
+    validate GET-@version response - 404 unknown version_uid

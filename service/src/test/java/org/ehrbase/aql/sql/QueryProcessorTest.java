@@ -101,7 +101,7 @@ public class QueryProcessorTest {
         //   Select expectedSql column  from ehr
         testCases.add(new AqlTestCase(1,
                 "select e/ehr_id/value from EHR e",
-                "select \"ehr_join\".\"id\" as \"ehr_id/value\" " +
+                "select \"ehr_join\".\"id\" as \"/ehr_id/value\" " +
                         "from \"ehr\".\"entry\" " +
                         "right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" " +
                         "right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\"",
@@ -113,7 +113,7 @@ public class QueryProcessorTest {
         testCases.add(new AqlTestCase(2,
                 "select e/ehr_id/value from EHR e " +
                         "where e/ehr_id/value = '30580007' ",
-                "select \"ehr_join\".\"id\" as \"ehr_id/value\" " +
+                "select \"ehr_join\".\"id\" as \"/ehr_id/value\" " +
                         "from \"ehr\".\"entry\" " +
                         "right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" " +
                         "right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\"" +
@@ -125,7 +125,7 @@ public class QueryProcessorTest {
         testCases.add(new AqlTestCase(3,
                 "select c/composer/name from EHR e " +
                         "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]",
-                "select \"composer_ref\".\"name\" as \"composer/name\" " +
+                "select \"composer_ref\".\"name\" as \"/composer/name\" " +
                         "from \"ehr\".\"entry\" " +
                         "right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" " +
                         "join \"ehr\".\"party_identified\" as \"composer_ref\" on \"composition_join\".\"composer\" = \"composer_ref\".\"id\" where \"ehr\".\"entry\".\"template_id\" = ?",
@@ -136,7 +136,7 @@ public class QueryProcessorTest {
                 "select c/composer/name from EHR e " +
                         "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1] " +
                         "order by c/context/start_time/value DESC",
-                "select \"composer_ref\".\"name\" as \"composer/name\" " +
+                "select \"composer_ref\".\"name\" as \"/composer/name\" " +
                         "from \"ehr\".\"entry\" " +
                         "right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" " +
                         "join \"ehr\".\"party_identified\" as \"composer_ref\" on \"composition_join\".\"composer\" = \"composer_ref\".\"id\" " +
@@ -146,16 +146,16 @@ public class QueryProcessorTest {
 
         // Select json column  from entry
         testCases.add(new AqlTestCase(5,
-                "select a/description[at0001]/items[at0002]/value from EHR e " +
+                "select a/description[at0001]/items[at0002]/value/value from EHR e " +
                         "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]",
-                "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') as \"FIELD_0\" " +
+                "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') as \"/description[at0001]/items[at0002]/value/value\" " +
                         "from \"ehr\".\"entry\" " +
                         "where \"ehr\".\"entry\".\"template_id\" = ?",
                 true));
 
         // order  by clause json column  from entry with alias
         testCases.add(new AqlTestCase(6,
-                "select a/description[at0001]/items[at0002]/value as description from EHR e " +
+                "select a/description[at0001]/items[at0002]/value/value as description from EHR e " +
                         "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  " +
                         "contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]" +
                         "order by description ASC",
@@ -167,11 +167,11 @@ public class QueryProcessorTest {
 
         // where  clause json column  from entry
         testCases.add(new AqlTestCase(7,
-                "select a/description[at0001]/items[at0002]/value from EHR e " +
+                "select a/description[at0001]/items[at0002]/value/value from EHR e " +
                         "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  " +
                         "contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]" +
-                        "where a/description[at0001]/items[at0002]/value = 'Hepatitis A'",
-                "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') as \"FIELD_0\" " +
+                        "where a/description[at0001]/items[at0002]/value/value = 'Hepatitis A'",
+                "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') as \"/description[at0001]/items[at0002]/value/value\" " +
                         "from \"ehr\".\"entry\" " +
                         "where (\"ehr\".\"entry\".\"template_id\" = ? " +
                         "and (\"ehr\".\"entry\".\"entry\" @@ '\"/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary'']\".\"/content[openEHR-EHR-ACTION.immunisation_procedure.v1]\".#.\"/description[at0001]\".\"/items[at0002]\".#.\"/value\".\"value\"=\"Hepatitis A\" '::jsquery))",
@@ -180,8 +180,7 @@ public class QueryProcessorTest {
         // select full composition
         testCases.add(new AqlTestCase(8,
                 "select c from EHR e contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]",
-                "select \"ehr\".\"entry\".\"entry\" #>> '{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary'']}' as \"FIELD_0\" " +
-                        "from \"ehr\".\"entry\" " +
+                "select ehr.js_composition(composition_join.id, 'local')::text as \"c\" from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" " +
                         "where \"ehr\".\"entry\".\"template_id\" = ?",
                 true));
 
@@ -191,35 +190,35 @@ public class QueryProcessorTest {
                 "select a from EHR e " +
                         "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  " +
                         "contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]",
-                "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{}') as \"FIELD_0\", \"ehr\".\"entry\".\"template_id\" as \"_TEMPLATE_ID\" " +
+                "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{}') as \"a\"" +
                         "from \"ehr\".\"entry\" where \"ehr\".\"entry\".\"template_id\" = ?",
                 true));
 
         // select Limit and Offset
         testCases.add(new AqlTestCase(10,
                 "select e/ehr_id/value from EHR e LIMIT 10 OFFSET 5",
-                "select \"ehr_join\".\"id\" as \"ehr_id/value\" " +
+                "select \"ehr_join\".\"id\" as \"/ehr_id/value\" " +
                         "from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" " +
                         "right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\" " +
                         "limit ? offset ?",
                 false));
 
         // select TOP
-        testCases.add(new AqlTestCase(10,
+        testCases.add(new AqlTestCase(11,
                 "select TOP 5 e/ehr_id/value from EHR e ",
-                "select \"ehr_join\".\"id\" as \"ehr_id/value\" " +
+                "select \"ehr_join\".\"id\" as \"/ehr_id/value\" " +
                         "from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" " +
                         "right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\" " +
                         "limit ?",
                 false));
 
         // where clausal json column from entry  with matches
-        testCases.add(new AqlTestCase(11,
+        testCases.add(new AqlTestCase(12,
                 "select e/ehr_id/value from EHR e " +
                         "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  " +
                         "contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]" +
-                        "where a/description[at0001]/items[at0002]/value matches {'Hepatitis A','Hepatitis B'} ",
-                "select \"ehr_join\".\"id\" as \"ehr_id/value\" " +
+                        "where a/description[at0001]/items[at0002]/value/value matches {'Hepatitis A','Hepatitis B'} ",
+                "select \"ehr_join\".\"id\" as \"/ehr_id/value\" " +
                         "from \"ehr\".\"entry\" " +
                         "right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" " +
                         "right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\" " +
@@ -228,7 +227,7 @@ public class QueryProcessorTest {
                 true));
 
         // select with function
-        testCases.add(new AqlTestCase(12,
+        testCases.add(new AqlTestCase(13,
                 "select  max (d/description[at0001]/items[at0004]/value/magnitude) as max_magnitude from EHR e  contains COMPOSITION  contains ACTION d[openEHR-EHR-ACTION.immunisation_procedure.v1]",
                 "select max(\"max_magnitude\") as \"max_magnitude\" " +
                         "from (select ((jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0004],0,/value,magnitude}'))::numeric as \"max_magnitude\" " +
@@ -238,7 +237,7 @@ public class QueryProcessorTest {
                 true));
 
         // Select  from unknown  composition
-        testCases.add(new AqlTestCase(13,
+        testCases.add(new AqlTestCase(14,
                 "select c/composer/name from EHR e " +
                         "contains COMPOSITION c[openEHR-EHR-COMPOSITION.unknown.v1]",
                 //Do to the way the query is build it is not possible to build sql if the AQL contains only compositions which have no instances in the DB. Thus we must manual handle this case.
