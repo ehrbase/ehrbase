@@ -13,7 +13,6 @@ public class ServerConfigImp implements org.ehrbase.api.definitions.ServerConfig
     @Min(1025)
     @Max(65536)
     private int port;
-    // FIXME SERVERNODE: add @pattern?
     private String nodename;
 
     public int getPort() {
