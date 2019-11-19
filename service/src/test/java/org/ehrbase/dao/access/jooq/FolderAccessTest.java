@@ -84,6 +84,7 @@ public class FolderAccessTest {
     }
 
     @Test
+    @Ignore
     public void shouldRetriveFolderAccessByUid() throws Exception {
         FolderAccess fa1 = new FolderAccess(testDomainAccess);
         FolderAccess fa2 =  (FolderAccess) FolderAccess.retrieveInstanceForExistingFolder(fa1, UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb"));
@@ -123,6 +124,7 @@ public class FolderAccessTest {
     }
 
     @Test
+    @Ignore
     public void shouldRetrieveFolderAccessWithItems() throws Exception {
         FolderAccess fa1 = new FolderAccess(testDomainAccess);
         FolderAccess fa2 =  (FolderAccess) FolderAccess.retrieveInstanceForExistingFolder(fa1, UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb"));
