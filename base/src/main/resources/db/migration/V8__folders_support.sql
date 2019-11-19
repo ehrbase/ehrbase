@@ -70,7 +70,12 @@ CREATE TABLE ehr.folder_hierarchy
     CONSTRAINT folder_hierarchy_in_contribution_fk FOREIGN KEY (in_contribution)
         REFERENCES ehr.contribution (id) MATCH SIMPLE
         ON UPDATE NO ACTION
+        ON DELETE CASCADE,
+    CONSTRAINT folder_hierarchy_parent_fk FOREIGN KEY (parent_folder)
+        REFERENCES ehr.folder (id) MATCH SIMPLE
+        ON UPDATE CASCADE
         ON DELETE CASCADE
+        DEFERRABLE
 )
 WITH (
     OIDS = FALSE
@@ -84,6 +89,13 @@ TABLESPACE pg_default;
 CREATE INDEX folder_hierarchy_in_contribution_idx
     ON ehr.folder_hierarchy USING btree
     (in_contribution)
+    TABLESPACE pg_default;
+
+-- DROP INDEX ehr.fki_folder_hierarchy_parent_fk;
+
+CREATE INDEX fki_folder_hierarchy_parent_fk
+    ON ehr.folder_hierarchy USING btree
+    (parent_folder)
     TABLESPACE pg_default;
 
 -- Table: ehr.folder_hierarchy_history

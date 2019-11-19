@@ -24,16 +24,12 @@ package org.ehrbase.ehr.knowledge;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.StateConflictException;
-import openEHR.v1.template.TEMPLATE;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.regex.Pattern;
 
 public interface I_KnowledgeCache {
 
@@ -52,27 +48,6 @@ public interface I_KnowledgeCache {
     List<TemplateMetaData> listAllOperationalTemplates() throws IOException;
 
 
-    /**
-     * return a map of identifier and File for a defined search pattern.
-     * Includes and excludes are regular expression used to refine searches
-     *
-     * @param includes a regexp for files to include in search, null if all files must be added
-     * @param excludes a regexp for files to exclude from search, null if all files must be opted out
-     * @return a Map of files corresponding to the specified filters
-     */
-    Map<String, File> retrieveFileMap(Pattern includes, Pattern excludes);
-
-
-
-    /**
-     * retrieve a template associated to a key
-     *
-     * @param key a template name
-     * @return a TEMPLATE document instance or null
-     * @throws Exception
-     * @see openEHR.v1.template.TEMPLATE
-     */
-    TEMPLATE retrieveOpenehrTemplate(String key);
 
     /**
      * retrieve an operational template document instance
@@ -93,18 +68,6 @@ public interface I_KnowledgeCache {
      */
     Optional<OPERATIONALTEMPLATE> retrieveOperationalTemplate(UUID uuid);
 
-    /**
-     * retrieve a <b>cached</b> template document instance using its unique Id
-     *
-     * @param uuid the name of the operational template
-     * @return a TEMPLATE document instance or null
-     * @throws Exception
-     * @see openEHR.v1.template.TEMPLATE
-     */
-    TEMPLATE retrieveTemplate(UUID uuid);
-
-
-    String settings();
 
 
 }

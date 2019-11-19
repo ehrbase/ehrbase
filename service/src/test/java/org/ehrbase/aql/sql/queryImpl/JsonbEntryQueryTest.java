@@ -55,9 +55,11 @@ public class JsonbEntryQueryTest {
         String entryRoot = "/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value='Immunisation summary']";
         JsonbEntryQuery cut = new JsonbEntryQuery(context, introspectCache, pathResolver, entryRoot);
 
-        Field<?> actual = cut.makeField("IDCR - Immunisation summary.v0", UUID.randomUUID(), "d", I_VariableDefinitionHelper.build("description[at0001]/items[at0002]/value", null, "d", false, false, false), false, I_QueryImpl.Clause.SELECT);
+        //CCH 191016: EHR-163 required trailing '/value' as now the query allows canonical json return
+        Field<?> actual = cut.makeField("IDCR - Immunisation summary.v0", UUID.randomUUID(), "d", I_VariableDefinitionHelper.build("description[at0001]/items[at0002]/value/value", "test", "d", false, false, false), I_QueryImpl.Clause.SELECT);
 
-        assertThat(actual.toString()).isEqualTo("(jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}')");
+//        assertThat(actual.toString()).isEqualTo("(jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}')");
+        assertThat(actual.toString()).isEqualTo("\"test\"");
     }
 
 }

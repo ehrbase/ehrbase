@@ -47,19 +47,15 @@ public interface I_QueryImpl {
 
     boolean isJsonDataBlock();
 
-    boolean isEhrIdFiltered();
-
-    boolean isCompositionIdFiltered();
-
     boolean isContainsJqueryPath();
-
-    boolean isUseEntry();
 
     String getJsonbItemPath();
 
     enum Clause {SELECT, WHERE, ORDERBY, FROM}
 
-    Field<?> makeField(String templateId, UUID compositionId, String identifier, I_VariableDefinition variableDefinition, boolean withAlias, Clause clause);
+    Field<?> makeField(String templateId, UUID compositionId, String identifier, I_VariableDefinition variableDefinition, Clause clause);
 
     Field<?> whereField(String templateId, UUID compositionId, String identifier, I_VariableDefinition variableDefinition);
+
+    public String getItemType();
 }

@@ -20,18 +20,16 @@ package org.ehrbase.ehr.knowledge;
 
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
-import java.nio.file.Path;
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 public class TemplateMetaData {
     private OPERATIONALTEMPLATE operationaltemplate;
-    private ZonedDateTime createdOn;
-    private ZonedDateTime lastAccessTime;
-    private ZonedDateTime lastModifiedTime;
+    private OffsetDateTime createdOn;
+
     private List<String> errorList;
-    private Path path;
+
 
     public OPERATIONALTEMPLATE getOperationaltemplate() {
         return operationaltemplate;
@@ -41,29 +39,14 @@ public class TemplateMetaData {
         this.operationaltemplate = operationaltemplate;
     }
 
-    public ZonedDateTime getCreatedOn() {
+    public OffsetDateTime getCreatedOn() {
         return createdOn;
     }
 
-    public void setCreatedOn(ZonedDateTime createdOn) {
+    public void setCreatedOn(OffsetDateTime createdOn) {
         this.createdOn = createdOn;
     }
 
-    public ZonedDateTime getLastAccessTime() {
-        return lastAccessTime;
-    }
-
-    public void setLastAccessTime(ZonedDateTime lastAccessTime) {
-        this.lastAccessTime = lastAccessTime;
-    }
-
-    public ZonedDateTime getLastModifiedTime() {
-        return lastModifiedTime;
-    }
-
-    public void setLastModifiedTime(ZonedDateTime lastModifiedTime) {
-        this.lastModifiedTime = lastModifiedTime;
-    }
 
     public List<String> getErrorList() {
         if (this.errorList == null) {
@@ -79,11 +62,5 @@ public class TemplateMetaData {
         this.errorList.add(error);
     }
 
-    public Path getPath() {
-        return path;
-    }
 
-    public void setPath(Path path) {
-        this.path = path;
-    }
 }

@@ -29,10 +29,12 @@ import org.jooq.Field;
 public class JsonbBlockDef {
     private String path;
     private Field field;
+    private String jsonPathRoot; //if set, use this root to extract the actual json struct from the result (f.e. /value in an Element)
 
-    public JsonbBlockDef(String path, Field field) {
+    public JsonbBlockDef(String path, Field field, String jsonPathRoot) {
         this.path = path;
         this.field = field;
+        this.jsonPathRoot = jsonPathRoot;
     }
 
     public String getPath() {
@@ -41,5 +43,9 @@ public class JsonbBlockDef {
 
     public Field getField() {
         return field;
+    }
+
+    public String getJsonPathRoot() {
+        return jsonPathRoot;
     }
 }

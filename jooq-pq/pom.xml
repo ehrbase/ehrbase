@@ -103,7 +103,7 @@
                                     <!-- Add a Java regular expression matching fully-qualified columns. Use the pipe to separate several expressions.
 
                                          If provided, both "includeExpressions" and "includeTypes" must match. -->
-                                    <expression>.*other_details.*</expression>
+                                    <expression>^(other_)?details$</expression>
                                     <!-- TODO tag name was rolled back to older version here, needs to be "includeExpressions" with newer jooq version again -->
 
                                     <!-- Add a Java regular expression matching data types to be forced to
@@ -121,6 +121,7 @@
                                     <types>.*</types>
                                     <!-- TODO tag name was rolled back to older version here, needs to be "includeTypes" with newer jooq version again -->
                                 </forcedType>
+
                             </forcedTypes>
                         </database>
                         <generate>

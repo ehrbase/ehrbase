@@ -1,0 +1,769 @@
+{
+  "uid": {
+    "_type": "OBJECT_VERSION_ID",
+    "value": "77dfa5f6-1ada-47e1-acd8-1e50c95ae8f7::local.ethercis.com::1"
+  },
+  "name": {
+    "_type": "DV_TEXT",
+    "value": "Test all types"
+  },
+  "_type": "COMPOSITION",
+  "content": {
+    "/content[openEHR-EHR-SECTION.test_all_types.v1]": [
+      {
+        "/$CLASS$": [
+          "Section"
+        ],
+        "/items[at0001]": [
+          {
+            "/$CLASS$": [
+              "Section"
+            ],
+            "/items[at0002]": [
+              {
+                "/$CLASS$": [
+                  "Section"
+                ],
+                "/items[openEHR-EHR-ACTION.test_all_types.v1]": [
+                  {
+                    "/name": [
+                      {
+                        "value": "Test all types"
+                      }
+                    ],
+                    "/time": {
+                      "/name": [
+                        {
+                          "value": "Test all types"
+                        }
+                      ],
+                      "/value": {
+                        "value": "2019-01-28T21:22:50.154Z",
+                        "epoch_offset": 1548710570
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-SECTION.test_all_types.v1 and name/value='Test all types']/items[at0001 and name/value='section 2']/items[at0002 and name/value='section 3']/items[openEHR-EHR-ACTION.test_all_types.v1 and name/value='Test all types']/time",
+                      "/$CLASS$": "DvDateTime"
+                    },
+                    "/$CLASS$": "Action",
+                    "/description[at0001]": {
+                      "/$CLASS$": [
+                        "ItemTree"
+                      ],
+                      "/items[openEHR-EHR-CLUSTER.test_all_types.v1]": [
+                        {
+                          "/name": [
+                            {
+                              "value": "Test all types"
+                            }
+                          ],
+                          "/$CLASS$": [
+                            "Cluster"
+                          ],
+                          "/items[at0001]": [
+                            {
+                              "/name": [
+                                {
+                                  "value": "cluster 5"
+                                }
+                              ],
+                              "/$CLASS$": [
+                                "Cluster",
+                                "Cluster"
+                              ],
+                              "/items[at0002]": [
+                                {
+                                  "/name": [
+                                    {
+                                      "value": "cluster 6"
+                                    }
+                                  ],
+                                  "/$CLASS$": [
+                                    "Cluster",
+                                    "Cluster"
+                                  ],
+                                  "/items[at0003]": [
+                                    {
+                                      "/name": [
+                                        {
+                                          "value": "boolean 2"
+                                        }
+                                      ],
+                                      "/value": {
+                                        "value": true
+                                      },
+                                      "/$PATH$": "/content[openEHR-EHR-SECTION.test_all_types.v1 and name/value='Test all types']/items[at0001 and name/value='section 2']/items[at0002 and name/value='section 3']/items[openEHR-EHR-ACTION.test_all_types.v1 and name/value='Test all types']/description[at0001]/items[openEHR-EHR-CLUSTER.test_all_types.v1 and name/value='Test all types']/items[at0001 and name/value='cluster 5']/items[at0002 and name/value='cluster 6']/items[at0003]",
+                                      "/$CLASS$": "DvBoolean"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "/items[openEHR-EHR-INSTRUCTION.test_all_types.v1]": [
+                  {
+                    "/name": [
+                      {
+                        "value": "Test all types"
+                      }
+                    ],
+                    "/$CLASS$": "Instruction",
+                    "/narrative": {
+                      "/name": [
+                        {
+                          "value": "Test all types"
+                        }
+                      ],
+                      "/value": {
+                        "value": "WAZotVojPPlPDKcOwCqQGlJjRdMC.ujKPgVAmyWABEoOgtrRSznogUWokmqmfgxjZOYmUEAcyvmnfz,KhtTC FrpwevrLJFNiJKzkzOwfOPRFQJjRmQCTW,ewdqvscogOkayvONWrOTPcCFnZsUod CAQ fuhLaBA.pFWdEyzyFgDODbueIlUjIGBdnIDDpMfjzWivfUDSEvTUsncmCgPdHnpONCuNGXUwFTaiSHHHJBZYssxGne.BLIbBQzXhG"
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-SECTION.test_all_types.v1 and name/value='Test all types']/items[at0001 and name/value='section 2']/items[at0002 and name/value='section 3']/items[openEHR-EHR-INSTRUCTION.test_all_types.v1 and name/value='Test all types']/narrative",
+                      "/$CLASS$": "DvText"
+                    },
+                    "/activities": {
+                      "/$CLASS$": [
+                        "Activity"
+                      ],
+                      "/activities[at0001]": [
+                        {
+                          "/name": [
+                            {
+                              "value": "Current Activity"
+                            }
+                          ],
+                          "/timing": {
+                            "/value": {
+                              "value": "P1D",
+                              "formalism": "ISO8601"
+                            },
+                            "/$PATH$": "/content[openEHR-EHR-SECTION.test_all_types.v1 and name/value='Test all types']/items[at0001 and name/value='section 2']/items[at0002 and name/value='section 3']/items[openEHR-EHR-INSTRUCTION.test_all_types.v1 and name/value='Test all types']/activities[at0001 and name/value='Current Activity']/timing",
+                            "/$CLASS$": "DvParsable"
+                          },
+                          "/$CLASS$": "Activity",
+                          "/action_archetype_id": "openEHR-EHR-ACTION\\.test_all_types\\.v1",
+                          "/description[at0002]": {
+                            "/$CLASS$": [
+                              "ItemList"
+                            ],
+                            "/items[at0003]": [
+                              {
+                                "/name": [
+                                  {
+                                    "value": "partial date"
+                                  }
+                                ],
+                                "/value": {
+                                  "value": "2019-01-14",
+                                  "epoch_offset": 17910
+                                },
+                                "/$PATH$": "/content[openEHR-EHR-SECTION.test_all_types.v1 and name/value='Test all types']/items[at0001 and name/value='section 2']/items[at0002 and name/value='section 3']/items[openEHR-EHR-INSTRUCTION.test_all_types.v1 and name/value='Test all types']/activities[at0001 and name/value='Current Activity']/description[at0002]/items[at0003]",
+                                "/$CLASS$": "DvDate"
+                              }
+                            ],
+                            "/items[at0004]": [
+                              {
+                                "/name": [
+                                  {
+                                    "value": "partial datetime"
+                                  }
+                                ],
+                                "/value": {
+                                  "value": "2019-01-28T21:22:49.426Z",
+                                  "epoch_offset": 1548710569
+                                },
+                                "/$PATH$": "/content[openEHR-EHR-SECTION.test_all_types.v1 and name/value='Test all types']/items[at0001 and name/value='section 2']/items[at0002 and name/value='section 3']/items[openEHR-EHR-INSTRUCTION.test_all_types.v1 and name/value='Test all types']/activities[at0001 and name/value='Current Activity']/description[at0002]/items[at0004]",
+                                "/$CLASS$": "DvDateTime"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ],
+            "/items[openEHR-EHR-ADMIN_ENTRY.test_all_types.v1]": [
+              {
+                "/name": [
+                  {
+                    "value": "Test all types"
+                  }
+                ],
+                "/$CLASS$": "AdminEntry",
+                "/data[at0001]": {
+                  "/$CLASS$": "ItemSingle",
+                  "/items[at0001 and name/value='single']": {
+                    "/name": [
+                      {
+                        "value": "count 3"
+                      }
+                    ],
+                    "/value": {
+                      "magnitude": 123,
+                      "otherReferenceRanges": []
+                    },
+                    "/$PATH$": "/content[openEHR-EHR-SECTION.test_all_types.v1 and name/value='Test all types']/items[at0001 and name/value='section 2']/items[openEHR-EHR-ADMIN_ENTRY.test_all_types.v1 and name/value='Test all types']/data[at0001]/items[at0002]",
+                    "/$CLASS$": "DvCount"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "/content[openEHR-EHR-EVALUATION.test_all_types.v1]": [
+      {
+        "/name": [
+          {
+            "value": "Test all types"
+          }
+        ],
+        "/$CLASS$": "Evaluation",
+        "/data[at0001]": {
+          "/$CLASS$": [
+            "ItemTree"
+          ],
+          "/items[at0003]": [
+            {
+              "/name": [
+                {
+                  "value": "interval count"
+                }
+              ],
+              "/value": {
+                "interval": {
+                  "lower": {
+                    "magnitude": 123,
+                    "otherReferenceRanges": []
+                  },
+                  "upper": {
+                    "magnitude": 234,
+                    "otherReferenceRanges": []
+                  },
+                  "lowerIncluded": true,
+                  "upperIncluded": true,
+                  "lowerUnbounded": false,
+                  "upperUnbounded": false
+                }
+              },
+              "/$PATH$": "/content[openEHR-EHR-EVALUATION.test_all_types.v1 and name/value='Test all types']/data[at0001]/items[at0003]",
+              "/$CLASS$": "DvInterval<DvCount>"
+            }
+          ],
+          "/items[at0004]": [
+            {
+              "/name": [
+                {
+                  "value": "interval quantity"
+                }
+              ],
+              "/value": {
+                "interval": {
+                  "lower": {
+                    "units": "mm[H20]",
+                    "magnitude": 123.123,
+                    "otherReferenceRanges": []
+                  },
+                  "upper": {
+                    "units": "mm[H20]",
+                    "magnitude": 234.234,
+                    "otherReferenceRanges": []
+                  },
+                  "lowerIncluded": true,
+                  "upperIncluded": true,
+                  "lowerUnbounded": false,
+                  "upperUnbounded": false
+                }
+              },
+              "/$PATH$": "/content[openEHR-EHR-EVALUATION.test_all_types.v1 and name/value='Test all types']/data[at0001]/items[at0004]",
+              "/$CLASS$": "DvInterval<DvQuantity>"
+            }
+          ],
+          "/items[at0005]": [
+            {
+              "/name": [
+                {
+                  "value": "interval datetime"
+                }
+              ],
+              "/value": {
+                "interval": {
+                  "lower": {
+                    "value": "2019-01-28T21:22:49.426Z",
+                    "epoch_offset": 1548710569
+                  },
+                  "upper": {
+                    "value": "2019-01-28T21:22:49.426Z",
+                    "epoch_offset": 1548710569
+                  },
+                  "lowerIncluded": true,
+                  "upperIncluded": true,
+                  "lowerUnbounded": false,
+                  "upperUnbounded": false
+                }
+              },
+              "/$PATH$": "/content[openEHR-EHR-EVALUATION.test_all_types.v1 and name/value='Test all types']/data[at0001]/items[at0005]",
+              "/$CLASS$": "DvInterval<DvDateTime>"
+            }
+          ],
+          "/items[at0006]": [
+            {
+              "/name": [
+                {
+                  "value": "cluster 1"
+                }
+              ],
+              "/$CLASS$": [
+                "Cluster"
+              ],
+              "/items[at0007]": [
+                {
+                  "/name": [
+                    {
+                      "value": "cluster 2"
+                    }
+                  ],
+                  "/$CLASS$": [
+                    "Cluster",
+                    "Cluster"
+                  ],
+                  "/items[at0008]": [
+                    {
+                      "/name": [
+                        {
+                          "value": "cluster 3"
+                        }
+                      ],
+                      "/$CLASS$": [
+                        "Cluster",
+                        "Cluster"
+                      ],
+                      "/items[at0010]": [
+                        {
+                          "/name": [
+                            {
+                              "value": "text 2"
+                            }
+                          ],
+                          "/value": {
+                            "value": "FViqRjKtFGXm ,iPOYGPuYNjqqVYifvxzvbOlMnuidJvvdYByUiDUgQIBkyOcJtgZcRKdFmyo .TrsPDcaXtFeqLlnZgqdTxb.,LGavIsdXKcBhTWd,PElsLCymSIGcfRrObkevpucVkThYTAZZxcikhpGVaQ.UbyrkwewgarEn gLmIWGLqFZBFYLcBje.GwiYMBoHEEVymGCkyXUyosuq,CNvWsuUnHdVEjEuxGSEwBDEVgwWrXWOYWUCIhos"
+                          },
+                          "/$PATH$": "/content[openEHR-EHR-EVALUATION.test_all_types.v1 and name/value='Test all types']/data[at0001]/items[at0006 and name/value='cluster 1']/items[at0007 and name/value='cluster 2']/items[at0008 and name/value='cluster 3']/items[at0010]",
+                          "/$CLASS$": "DvText"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "/items[at0009]": [
+            {
+              "/name": [
+                {
+                  "value": "choice"
+                }
+              ],
+              "/value": {
+                "units": "mm[H20]",
+                "magnitude": 148.01210165023804,
+                "otherReferenceRanges": []
+              },
+              "/$PATH$": "/content[openEHR-EHR-EVALUATION.test_all_types.v1 and name/value='Test all types']/data[at0001]/items[at0009]",
+              "/$CLASS$": "DvQuantity"
+            }
+          ]
+        }
+      }
+    ],
+    "/content[openEHR-EHR-OBSERVATION.test_all_types.v1]": [
+      {
+        "/name": [
+          {
+            "value": "Test all types"
+          }
+        ],
+        "/$CLASS$": "Observation",
+        "/data[at0001]": {
+          "/name": [
+            {
+              "value": "Event Series"
+            }
+          ],
+          "/events": {
+            "/events[at0002]": [
+              {
+                "/name": [
+                  {
+                    "value": "Cualquier evento"
+                  }
+                ],
+                "/time": {
+                  "/name": [
+                    {
+                      "value": "Cualquier evento"
+                    }
+                  ],
+                  "/value": {
+                    "value": "2019-01-28T21:22:49.332Z",
+                    "epoch_offset": 1548710569
+                  },
+                  "/$PATH$": "/content[openEHR-EHR-OBSERVATION.test_all_types.v1 and name/value='Test all types']/data[at0001]/events[at0002 and name/value='Cualquier evento']/time",
+                  "/$CLASS$": "DvDateTime"
+                },
+                "/$CLASS$": "PointEvent",
+                "/data[at0003]": {
+                  "/$CLASS$": [
+                    "ItemTree"
+                  ],
+                  "/items[at0004]": [
+                    {
+                      "/name": [
+                        {
+                          "value": "text"
+                        }
+                      ],
+                      "/value": {
+                        "value": "At,ffwkm.xsuDu,LNtqXEQJzxNMXTjyKVzQojaNTidAxLLZRbWWoGnfOIMUM.XxakRgJxExjtjBPirOxu,nUnPdIegLQbhNDKNRqGbFuvXrXYuNPXwnELoIsYMKgFEWHnR.XSBuESAamCrjJMssGgI.QOOyzatFlaXbiVaUBxzSdkOscZza,IumnYWoxwekcSAYSJiILhmKEOUWdoElCavaQPNNpGcxHEGASUMSAkFuu jZdWcysffi.QLeVONn"
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-OBSERVATION.test_all_types.v1 and name/value='Test all types']/data[at0001]/events[at0002 and name/value='Cualquier evento']/data[at0003]/items[at0004]",
+                      "/$CLASS$": "DvText"
+                    }
+                  ],
+                  "/items[at0005]": [
+                    {
+                      "/name": [
+                        {
+                          "value": "coded text"
+                        }
+                      ],
+                      "/value": {
+                        "value": "cHAWCHf.Kt.RNIAiZ,FVvBUdKAWQkU",
+                        "definingCode": {
+                          "codeString": "1008204",
+                          "terminologyId": {
+                            "name": "local",
+                            "value": "local"
+                          }
+                        }
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-OBSERVATION.test_all_types.v1 and name/value='Test all types']/data[at0001]/events[at0002 and name/value='Cualquier evento']/data[at0003]/items[at0005]",
+                      "/$CLASS$": "DvCodedText"
+                    }
+                  ],
+                  "/items[at0006]": [
+                    {
+                      "/name": [
+                        {
+                          "value": "coded text terminology"
+                        }
+                      ],
+                      "/value": {
+                        "value": ".HCXbqCyQtseLkDyKS,QLpOdDZxrEJ",
+                        "definingCode": {
+                          "codeString": "1004034",
+                          "terminologyId": {
+                            "name": "SNOMED-CT",
+                            "value": "SNOMED-CT"
+                          }
+                        }
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-OBSERVATION.test_all_types.v1 and name/value='Test all types']/data[at0001]/events[at0002 and name/value='Cualquier evento']/data[at0003]/items[at0006]",
+                      "/$CLASS$": "DvCodedText"
+                    }
+                  ],
+                  "/items[at0007]": [
+                    {
+                      "/name": [
+                        {
+                          "value": "quantity"
+                        }
+                      ],
+                      "/value": {
+                        "units": "mg",
+                        "magnitude": 636.3397240638733,
+                        "otherReferenceRanges": []
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-OBSERVATION.test_all_types.v1 and name/value='Test all types']/data[at0001]/events[at0002 and name/value='Cualquier evento']/data[at0003]/items[at0007]",
+                      "/$CLASS$": "DvQuantity"
+                    }
+                  ],
+                  "/items[at0008]": [
+                    {
+                      "/name": [
+                        {
+                          "value": "count"
+                        }
+                      ],
+                      "/value": {
+                        "magnitude": 10,
+                        "otherReferenceRanges": []
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-OBSERVATION.test_all_types.v1 and name/value='Test all types']/data[at0001]/events[at0002 and name/value='Cualquier evento']/data[at0003]/items[at0008]",
+                      "/$CLASS$": "DvCount"
+                    }
+                  ],
+                  "/items[at0009]": [
+                    {
+                      "/name": [
+                        {
+                          "value": "date"
+                        }
+                      ],
+                      "/value": {
+                        "value": "2019-01-14",
+                        "epoch_offset": 17910
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-OBSERVATION.test_all_types.v1 and name/value='Test all types']/data[at0001]/events[at0002 and name/value='Cualquier evento']/data[at0003]/items[at0009]",
+                      "/$CLASS$": "DvDate"
+                    }
+                  ],
+                  "/items[at0010]": [
+                    {
+                      "/name": [
+                        {
+                          "value": "datetime"
+                        }
+                      ],
+                      "/value": {
+                        "value": "2019-01-28T21:22:49.426Z",
+                        "epoch_offset": 1548710569
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-OBSERVATION.test_all_types.v1 and name/value='Test all types']/data[at0001]/events[at0002 and name/value='Cualquier evento']/data[at0003]/items[at0010]",
+                      "/$CLASS$": "DvDateTime"
+                    }
+                  ],
+                  "/items[at0011]": [
+                    {
+                      "/name": [
+                        {
+                          "value": "datetime any"
+                        }
+                      ],
+                      "/value": {
+                        "value": "2019-01-28T21:22:49.427Z",
+                        "epoch_offset": 1548710569
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-OBSERVATION.test_all_types.v1 and name/value='Test all types']/data[at0001]/events[at0002 and name/value='Cualquier evento']/data[at0003]/items[at0011]",
+                      "/$CLASS$": "DvDateTime"
+                    }
+                  ],
+                  "/items[at0012]": [
+                    {
+                      "/name": [
+                        {
+                          "value": "time"
+                        }
+                      ],
+                      "/value": {
+                        "value": "18:36:49",
+                        "epoch_offset": "18:36:49"
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-OBSERVATION.test_all_types.v1 and name/value='Test all types']/data[at0001]/events[at0002 and name/value='Cualquier evento']/data[at0003]/items[at0012]",
+                      "/$CLASS$": "DvTime"
+                    }
+                  ],
+                  "/items[at0013]": [
+                    {
+                      "/name": [
+                        {
+                          "value": "ordinal"
+                        }
+                      ],
+                      "/value": {
+                        "value": 0,
+                        "symbol": {
+                          "value": "ord1",
+                          "definingCode": {
+                            "codeString": "at0014",
+                            "terminologyId": {
+                              "name": "local",
+                              "value": "local"
+                            }
+                          }
+                        },
+                        "otherReferenceRanges": []
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-OBSERVATION.test_all_types.v1 and name/value='Test all types']/data[at0001]/events[at0002 and name/value='Cualquier evento']/data[at0003]/items[at0013]",
+                      "/$CLASS$": "DvOrdinal"
+                    }
+                  ],
+                  "/items[at0017]": [
+                    {
+                      "/name": [
+                        {
+                          "value": "boolean"
+                        }
+                      ],
+                      "/value": {
+                        "value": true
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-OBSERVATION.test_all_types.v1 and name/value='Test all types']/data[at0001]/events[at0002 and name/value='Cualquier evento']/data[at0003]/items[at0017]",
+                      "/$CLASS$": "DvBoolean"
+                    }
+                  ],
+                  "/items[at0018]": [
+                    {
+                      "/name": [
+                        {
+                          "value": "duration any"
+                        }
+                      ],
+                      "/value": {
+                        "value": "PT30M"
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-OBSERVATION.test_all_types.v1 and name/value='Test all types']/data[at0001]/events[at0002 and name/value='Cualquier evento']/data[at0003]/items[at0018]",
+                      "/$CLASS$": "DvDuration"
+                    }
+                  ],
+                  "/items[at0020]": [
+                    {
+                      "/name": [
+                        {
+                          "value": "parsable any"
+                        }
+                      ],
+                      "/value": {
+                        "value": "20170629",
+                        "formalism": "ISO8601"
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-OBSERVATION.test_all_types.v1 and name/value='Test all types']/data[at0001]/events[at0002 and name/value='Cualquier evento']/data[at0003]/items[at0020]",
+                      "/$CLASS$": "DvParsable"
+                    }
+                  ],
+                  "/items[at0021]": [
+                    {
+                      "/name": [
+                        {
+                          "value": "identifier"
+                        }
+                      ],
+                      "/value": {
+                        "id": "55175056",
+                        "type": "LOCALID",
+                        "issuer": "Hospital de Clinicas",
+                        "assigner": "Hospital de Clinicas"
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-OBSERVATION.test_all_types.v1 and name/value='Test all types']/data[at0001]/events[at0002 and name/value='Cualquier evento']/data[at0003]/items[at0021]",
+                      "/$CLASS$": "DvIdentifier"
+                    }
+                  ],
+                  "/items[at0022]": [
+                    {
+                      "/name": [
+                        {
+                          "value": "proportion any"
+                        }
+                      ],
+                      "/value": {
+                        "type": 1,
+                        "numerator": 1.5,
+                        "precision": 0,
+                        "denominator": 1.0,
+                        "otherReferenceRanges": []
+                      },
+                      "/$PATH$": "/content[openEHR-EHR-OBSERVATION.test_all_types.v1 and name/value='Test all types']/data[at0001]/events[at0002 and name/value='Cualquier evento']/data[at0003]/items[at0022]",
+                      "/$CLASS$": "DvProportion"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "/origin": {
+            "/name": [
+              {
+                "value": "Event Series"
+              }
+            ],
+            "/value": {
+              "value": "2019-01-28T21:22:49.326Z",
+              "epoch_offset": 1548710569
+            },
+            "/$PATH$": "/content[openEHR-EHR-OBSERVATION.test_all_types.v1 and name/value='Test all types']/data[at0001]/origin",
+            "/$CLASS$": "DvDateTime"
+          },
+          "/$CLASS$": "History"
+        }
+      }
+    ]
+  },
+  "context": {
+    "_time": "EVENT_CONTEXT",
+    "setting": {
+      "_type": "DV_CODED_TEXT",
+      "value": "primary nursing care",
+      "defining_code": {
+        "_type": "CODE_PHRASE",
+        "code_string": "229",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "openehr"
+        }
+      }
+    },
+    "start_time": {
+      "_type": "DV_DATE_TIME",
+      "value": "1970-01-01T07:00:00Z"
+    }
+  },
+  "category": {
+    "_type": "DV_CODED_TEXT",
+    "value": "Event",
+    "defining_code": {
+      "_type": "CODE_PHRASE",
+      "code_string": "433",
+      "terminology_id": {
+        "_type": "TERMINOLOGY_ID",
+        "value": "openehr"
+      }
+    }
+  },
+  "composer": {
+    "name": "Dr. House",
+    "_type": "PARTY_IDENTIFIED",
+    "external_ref": {
+      "id": {
+        "_type": "GENERIC_ID"
+      },
+      "_type": "PARTY_REF",
+      "namespace": "DEMOGRAPHIC"
+    }
+  },
+  "language": {
+    "_type": "CODE_PHRASE",
+    "code_string": "en",
+    "terminology_id": {
+      "_type": "TERMINOLOGY_ID",
+      "value": "ISO_639-1"
+    }
+  },
+  "territory": {
+    "_type": "CODE_PHRASE",
+    "code_string": "UY",
+    "terminology_id": {
+      "_type": "TERMINOLOGY_ID",
+      "value": "ISO_3166-1"
+    }
+  },
+  "archetype_details": {
+    "_type": "ARCHETYPED",
+    "rm_version": "1.0.2",
+    "template_id": {
+      "_type": "TEMPLATE_ID",
+      "value": "test_all_types.en.v1"
+    },
+    "archetype_id": {
+      "_type": "ARCHETYPE_ID",
+      "value": "openEHR-EHR-COMPOSITION.test_all_types.v1"
+    }
+  },
+  "archetype_node_id": "openEHR-EHR-COMPOSITION.test_all_types.v1"
+}

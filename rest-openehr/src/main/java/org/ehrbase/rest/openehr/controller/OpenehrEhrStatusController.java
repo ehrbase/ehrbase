@@ -73,13 +73,13 @@ public class OpenehrEhrStatusController extends BaseController {
     public ResponseEntity<EhrStatusResponseData> retrieveEhrStatusByTime(
             @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @ApiParam(value = "User supplied EHR ID", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
-            @ApiParam(value = "Timestamp in the extended ISO8601 format, e.g. 2015-01-20T19:30:22.765+01:00") @RequestParam(value = "version_at_time") Optional<String> versionAtTime) {
+            @ApiParam(value = "Timestamp in the extended ISO8601 format, e.g. 2015-01-20T19:30:22.765+01:00") @RequestParam(value = "version_at_time", required = false) String versionAtTime) {
         UUID ehrId = getEhrUuid(ehrIdString);
 
         // timestamp optional, otherwise latest
         int version;
-        if (versionAtTime.isPresent()) {
-            OffsetDateTime time = OffsetDateTime.parse(versionAtTime.get());
+        if (versionAtTime != null) {
+            OffsetDateTime time = OffsetDateTime.parse(versionAtTime);
             Timestamp timestamp = Timestamp.valueOf(time.toLocalDateTime());
             version = ehrService.getEhrStatusVersionByTimestamp(ehrId, timestamp);
         } else {
@@ -183,7 +183,7 @@ public class OpenehrEhrStatusController extends BaseController {
         if (Optional.ofNullable(prefer).map(i -> i.equals(RETURN_REPRESENTATION)).orElse(false)) {      // null safe way to test prefer header
             respData = buildEhrStatusResponseData(EhrStatusResponseData::new, ehrId, UUID.fromString(status.getUid().getRoot().getValue()), version, accept, headerList);
         } else {    // "minimal" is default fallback
-            respData = buildEhrStatusResponseData(null, ehrId, UUID.fromString(status.getUid().getRoot().toString()), version, accept, headerList);
+            respData = buildEhrStatusResponseData(EhrStatusResponseData::new, ehrId, UUID.fromString(status.getUid().getRoot().getValue()), version, accept, headerList);
         }
 
         return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData()))

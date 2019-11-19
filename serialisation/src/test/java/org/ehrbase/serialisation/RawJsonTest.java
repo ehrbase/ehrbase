@@ -27,6 +27,8 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -102,4 +104,24 @@ public class RawJsonTest {
         assertThat(actual).isNotNull();
         assertThat(composition.getName().getValue()).isEqualTo("DiADeM Assessment");
     }
+
+    @Test
+    public void unmarshal2() throws IOException {
+
+        String value = IOUtils.toString(CompositionTestDataCanonicalXML.ALL_TYPES_FIXED.getStream(), UTF_8);
+
+        CanonicalXML canonicalXML = new CanonicalXML();
+
+        Composition composition = canonicalXML.unmarshal(value, Composition.class);
+
+        RawJson cut = new RawJson();
+
+        String marshal = cut.marshal(composition);
+
+        Composition actual = cut.unmarshal(marshal, Composition.class);
+
+        assertThat(actual).isNotNull();
+        assertThat(composition.getName().getValue()).isEqualTo("Test all types");
+    }
+
 }

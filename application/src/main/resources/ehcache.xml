@@ -22,7 +22,6 @@
     <service>
         <jsr107:defaults>
             <jsr107:cache name="introspectCache" template="heap-cache"/>
-            <jsr107:cache name="templateCache" template="heap-cache"/>
             <jsr107:cache name="operationaltemplateCache" template="heap-cache"/>
             <jsr107:cache name="validatorCache" template="heap-cache"/>
         </jsr107:defaults>
@@ -33,7 +32,7 @@
             <none/>
         </expiry>
         <resources>
-            <heap unit="entries">2000</heap>
+            <heap unit="entries">100</heap>
         </resources>
     </cache-template>
 </config>

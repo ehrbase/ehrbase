@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Stefan Spiska (Vitasystems GmbH) and Hannover Medical School.
+ * Copyright (c) 2019 Stefan Spiska (Vitasystems GmbH) and Jake Smolka (Hannover Medical School).
  *
  * This file is part of project EHRbase
  *
@@ -35,13 +35,10 @@ public class KnowledgeCacheHelper {
     public static KnowledgeCacheService buildKnowledgeCache(TemporaryFolder folder, CacheRule cacheRule) throws Exception {
 
 
-        File archetypes = folder.newFolder("archetypes");
-        File template = folder.newFolder("template");
         File operationalTemplatesemplates = folder.newFolder("operational_templates");
 
         TemplateFileStorageService templateFileStorageService = new TemplateFileStorageService();
-        templateFileStorageService.setArchetypePath(archetypes.getPath());
-        templateFileStorageService.setTemplatePath(template.getPath());
+
         templateFileStorageService.setOptPath(operationalTemplatesemplates.getPath());
 
         KnowledgeCacheService knowledgeCacheService = new KnowledgeCacheService(templateFileStorageService, cacheRule.cacheManager);

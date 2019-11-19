@@ -20,7 +20,6 @@ package org.ehrbase.configuration;
 
 import org.ehrbase.opt.query.I_QueryOptMetaData;
 import org.ehrbase.validation.Validator;
-import openEHR.v1.template.TEMPLATE;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -29,6 +28,8 @@ import org.springframework.context.annotation.Configuration;
 import javax.cache.CacheManager;
 import javax.cache.Caching;
 import javax.cache.configuration.MutableConfiguration;
+import javax.cache.expiry.CreatedExpiryPolicy;
+import javax.cache.expiry.Duration;
 import javax.cache.spi.CachingProvider;
 import java.net.URISyntaxException;
 import java.util.UUID;
@@ -37,30 +38,40 @@ import java.util.UUID;
 public class CacheConfiguration {
 
     public static final String INTROSPECT_CACHE = "introspectCache";
-    public static final String TEMPLATE_CACHE = "templateCache";
     public static final String OPERATIONAL_TEMPLATE_CACHE = "operationaltemplateCache";
     public static final String VALIDATOR_CACHE = "validatorCache";
     @Value("${cache.config}")
     private String configPath;
+    @Value("${cache.enabled}")
+    private boolean enabled;
+
 
     @Bean
     public CacheManager cacheManagerCustomizer() throws URISyntaxException {
         CachingProvider cachingProvider = Caching.getCachingProvider();
-        CacheManager cacheManager = cachingProvider.getCacheManager(getClass().getResource(configPath).toURI(),
-                getClass().getClassLoader());
-        buildCache(INTROSPECT_CACHE, UUID.class, I_QueryOptMetaData.class, cacheManager);
-        buildCache(TEMPLATE_CACHE, String.class, TEMPLATE.class, cacheManager);
-        buildCache(OPERATIONAL_TEMPLATE_CACHE, String.class, OPERATIONALTEMPLATE.class, cacheManager);
-        buildCache(VALIDATOR_CACHE, UUID.class, Validator.class, cacheManager);
+        final CacheManager cacheManager;
+        if (enabled) {
+            cacheManager = cachingProvider.getCacheManager(getClass().getResource(configPath).toURI(),
+                    getClass().getClassLoader());
+        } else {
+            cacheManager = cachingProvider.getCacheManager();
+        }
+        buildCache(INTROSPECT_CACHE, UUID.class, I_QueryOptMetaData.class, cacheManager, enabled);
+        buildCache(OPERATIONAL_TEMPLATE_CACHE, String.class, OPERATIONALTEMPLATE.class, cacheManager, enabled);
+        buildCache(VALIDATOR_CACHE, UUID.class, Validator.class, cacheManager, enabled);
         return cacheManager;
     }
 
 
-    public static <K, V> void buildCache(String cacheName, Class<K> keyClass, Class<V> valueClass, CacheManager cacheManager) {
+    public static <K, V> void buildCache(String cacheName, Class<K> keyClass, Class<V> valueClass, CacheManager cacheManager, boolean enabled) {
         MutableConfiguration<K, V> config
                 = new MutableConfiguration<>();
         config.setTypes(keyClass, valueClass);
         config.setStoreByValue(false);
+        //disable Cache
+        if (!enabled) {
+            config.setExpiryPolicyFactory(CreatedExpiryPolicy.factoryOf(Duration.ZERO));
+        }
         cacheManager.createCache(cacheName, config);
     }
 }

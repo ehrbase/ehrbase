@@ -18,19 +18,17 @@
 
 package org.ehrbase.service;
 
+import com.nedap.archie.rm.composition.Composition;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.validation.Validator;
-import com.nedap.archie.rm.composition.Composition;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.cache.Cache;
 import javax.cache.CacheManager;
-
 import java.util.Optional;
 import java.util.UUID;
-
 
 import static org.ehrbase.configuration.CacheConfiguration.VALIDATOR_CACHE;
 
@@ -71,7 +69,6 @@ public class ValidationServiceImp implements ValidationService {
     @Override
     public void check(String templateID, Composition composition)  throws Exception {
         Optional<OPERATIONALTEMPLATE> operationaltemplate = knowledgeCache.retrieveOperationalTemplate(templateID);
-
         if (!operationaltemplate.isPresent())
             throw new IllegalArgumentException("Not found template id:" + templateID);
 

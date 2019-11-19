@@ -33,6 +33,17 @@
     </license>
   </licenses>
 
+  <distributionManagement>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+    <repository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+  </distributionManagement>
+
   <developers>
     <developer>
       <name>Stefan Spiska</name>
@@ -493,6 +504,17 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>nexus-staging-maven-plugin</artifactId>
+        <version>1.6.7</version>
+        <extensions>true</extensions>
+        <configuration>
+          <serverId>ossrh</serverId>
+          <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+          <autoReleaseAfterClose>false</autoReleaseAfterClose>
+        </configuration>
+      </plugin>
     </plugins>
 
     <pluginManagement>
@@ -622,18 +644,18 @@
                   </systemPropertyVariables>
               </configuration>
           </plugin>
-        <plugin>
-          <groupId>com.spotify</groupId>
-          <artifactId>dockerfile-maven-plugin</artifactId>
-          <version>1.4.9</version>
-          <configuration>
-            <repository>vitagroup-hip-docker-releases.jfrog.io/vitasystems/${project.artifactId}</repository>
-            <tag>${project.version}</tag>
-            <buildArgs>
-              <JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
-            </buildArgs>
-          </configuration>
-        </plugin>
+        <!--<plugin>-->
+          <!--<groupId>com.spotify</groupId>-->
+          <!--<artifactId>dockerfile-maven-plugin</artifactId>-->
+          <!--<version>1.4.9</version>-->
+          <!--<configuration>-->
+            <!--<repository>vitagroup-hip-docker-releases.jfrog.io/vitasystems/${project.artifactId}</repository>-->
+            <!--<tag>${project.version}</tag>-->
+            <!--<buildArgs>-->
+              <!--<JAR_FILE>${project.build.finalName}.jar</JAR_FILE>-->
+            <!--</buildArgs>-->
+          <!--</configuration>-->
+        <!--</plugin>-->
       </plugins>
     </pluginManagement>
   </build>
