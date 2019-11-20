@@ -1,0 +1,24 @@
+{
+  "meta": {
+    "_type": "RESULTSET",
+    "_created": "2019-10-19T18:51:02.700Z",
+    "_executed_aql": "select e/ehr_id, e/time_created, e/system_id from EHR e CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1]"
+  },
+  "q": "select e/ehr_id, e/time_created, e/system_id from EHR e CONTAINS COMPOSITION c [$archetype_id]",
+  "columns": [
+    {
+      "name": "#0",
+      "path": "/ehr_id"
+    },
+    {
+      "name": "#1",
+      "path": "/time_created"
+    },
+    {
+      "name": "#2",
+      "path": "/system_id"
+    }
+  ],
+  "rows": [
+  ]
+}

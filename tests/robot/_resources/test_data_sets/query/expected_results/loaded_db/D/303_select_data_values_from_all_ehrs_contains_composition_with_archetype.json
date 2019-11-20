@@ -1,0 +1,164 @@
+{
+  "meta": {
+    "_type": "RESULTSET",
+    "_created": "2019-10-22T01:13:47.847Z",
+    "_executed_aql": "select e/ehr_id, e/time_created, e/system_id from EHR e CONTAINS COMPOSITION c WHERE c/archetype_node_id='openEHR-EHR-COMPOSITION.minimal.v1'"
+  },
+  "q": "select e/ehr_id, e/time_created, e/system_id from EHR e CONTAINS COMPOSITION c WHERE c/archetype_node_id='openEHR-EHR-COMPOSITION.minimal.v1'",
+  "columns": [
+    {
+      "name": "#0",
+      "path": "/ehr_id"
+    },
+    {
+      "name": "#1",
+      "path": "/time_created"
+    },
+    {
+      "name": "#2",
+      "path": "/system_id"
+    }
+  ],
+  "rows": [
+    [
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_EHR_ID_1__"
+      },
+      {
+        "_type": "DV_DATE_TIME",
+        "value": "__MODIFY_TIME_CREATED_1__"
+      },
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_SYSTEM_ID_1__"
+      }
+    ],
+    [
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_EHR_ID_2__"
+      },
+      {
+        "_type": "DV_DATE_TIME",
+        "value": "__MODIFY_TIME_CREATED_2__"
+      },
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_SYSTEM_ID_2__"
+      }
+    ],
+    [
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_EHR_ID_3__"
+      },
+      {
+        "_type": "DV_DATE_TIME",
+        "value": "__MODIFY_TIME_CREATED_3__"
+      },
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_SYSTEM_ID_3__"
+      }
+    ],
+    [
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_EHR_ID_4__"
+      },
+      {
+        "_type": "DV_DATE_TIME",
+        "value": "__MODIFY_TIME_CREATED_4__"
+      },
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_SYSTEM_ID_4__"
+      }
+    ],
+    [
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_EHR_ID_5__"
+      },
+      {
+        "_type": "DV_DATE_TIME",
+        "value": "__MODIFY_TIME_CREATED_5__"
+      },
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_SYSTEM_ID_5__"
+      }
+    ],
+    [
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_EHR_ID_6__"
+      },
+      {
+        "_type": "DV_DATE_TIME",
+        "value": "__MODIFY_TIME_CREATED_6__"
+      },
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_SYSTEM_ID_6__"
+      }
+    ],
+    [
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_EHR_ID_7__"
+      },
+      {
+        "_type": "DV_DATE_TIME",
+        "value": "__MODIFY_TIME_CREATED_7__"
+      },
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_SYSTEM_ID_7__"
+      }
+    ],
+    [
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_EHR_ID_8__"
+      },
+      {
+        "_type": "DV_DATE_TIME",
+        "value": "__MODIFY_TIME_CREATED_8__"
+      },
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_SYSTEM_ID_8__"
+      }
+    ],
+    [
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_EHR_ID_9__"
+      },
+      {
+        "_type": "DV_DATE_TIME",
+        "value": "__MODIFY_TIME_CREATED_9__"
+      },
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_SYSTEM_ID_9__"
+      }
+    ],
+    [
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_EHR_ID_10__"
+      },
+      {
+        "_type": "DV_DATE_TIME",
+        "value": "__MODIFY_TIME_CREATED_10__"
+      },
+      {
+        "_type": "HIER_OBJECT_ID",
+        "value": "__MODIFY_SYSTEM_ID_10__"
+      }
+    ]
+  ]
+}

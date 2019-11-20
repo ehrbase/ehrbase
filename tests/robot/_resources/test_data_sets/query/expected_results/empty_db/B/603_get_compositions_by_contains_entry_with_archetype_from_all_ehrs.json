@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "_type": "RESULTSET",
+    "_created": "2019-10-18T18:09:39.472Z",
+    "_executed_aql": "SELECT c FROM EHR e CONTAINS COMPOSITION c CONTAINS ACTION action [openEHR-EHR-ACTION.minimal.v1]"
+  },
+  "q": "SELECT c FROM EHR e CONTAINS COMPOSITION c CONTAINS ACTION action [openEHR-EHR-ACTION.minimal.v1]",
+  "columns": [
+    {
+      "name": "#0",
+      "path": "/"
+    }
+  ],
+  "rows": [
+  ]
+}

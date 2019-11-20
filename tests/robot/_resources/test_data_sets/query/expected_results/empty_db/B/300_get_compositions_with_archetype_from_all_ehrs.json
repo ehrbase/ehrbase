@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "_type": "RESULTSET",
+    "_created": "2019-10-18T18:05:28.110Z",
+    "_executed_aql": "SELECT c FROM COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1]"
+  },
+  "q": "SELECT c FROM COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1]",
+  "columns": [
+    {
+      "name": "#0",
+      "path": "/"
+    }
+  ],
+  "rows": [
+  ]
+}

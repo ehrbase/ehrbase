@@ -1,0 +1,19 @@
+{
+  "meta": {
+    "_type": "RESULTSET",
+    "_created": "2019-10-19T18:50:48.302Z",
+    "_executed_aql": "SELECT entry FROM EHR e [ehr_id/value='__MODIFY_EHR_ID_1__'] CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS ENTRY entry [openEHR-EHR-OBSERVATION.minimal.v1] WHERE entry/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/value = 'first value'"
+  },
+  "q": "SELECT entry FROM EHR e [ehr_id/value='__MODIFY_EHR_ID_1__'] CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS ENTRY entry [openEHR-EHR-OBSERVATION.minimal.v1] WHERE entry/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/value = 'first value'",
+  "columns": [
+    {
+      "name": "#0",
+      "path": "/"
+    }
+  ],
+  "rows": [
+    [
+      "__MODIFY_OBSERVATION_1__"
+    ]
+  ]
+}

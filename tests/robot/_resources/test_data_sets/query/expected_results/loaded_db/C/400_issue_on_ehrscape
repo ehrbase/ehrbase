@@ -1,0 +1,12 @@
+found a strange behavior on EHRSCAPE, this query returns compositions for one EHR,
+and I can see some contain an observation openEHR-EHR-OBSERVATION.minimal.v1
+
+SELECT e/ehr_id, c FROM EHR e [ehr_id/value='EHR_ID_1'] CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1]
+
+But on this one I can't get the EHR_ID_1 in the result:
+
+SELECT e/ehr_id/value, c/uid FROM EHR e CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS OBSERVATION obs [openEHR-EHR-OBSERVATION.minimal.v1]
+
+So for the query 400 EHRSCAPE is returning an empty result.
+
+If I commit data and try to get the EHR with SELECT e/ehr_id/value FROM EHR e CONTAINS COMPOSTION c [arch] CONTAINS OBSERVATION, the EHR that I just commit the data to, doesn't appear on the results.

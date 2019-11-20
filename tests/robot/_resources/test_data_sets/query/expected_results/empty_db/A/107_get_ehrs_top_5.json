@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "_type": "RESULTSET",
+    "_created": "2019-10-29T00:14:57.613Z",
+    "_executed_aql": "SELECT TOP 5 e/ehr_id/value FROM EHR e"
+  },
+  "q": "SELECT TOP 5 e/ehr_id/value FROM EHR e",
+  "columns": [
+    {
+      "name": "#0",
+      "path": "/ehr_id/value"
+    }
+  ],
+  "rows": [
+  ]
+}
