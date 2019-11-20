@@ -44,6 +44,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +58,6 @@ import static org.junit.Assert.*;
 /***
  *@Created by Luis Marco-Ruiz on Jun 13, 2019
  */
-@Ignore
 public class FolderAccessTest {
     protected I_DomainAccess testDomainAccess;
     protected DSLContext context;
@@ -82,8 +83,8 @@ public class FolderAccessTest {
         return DSL.using(connection, SQLDialect.POSTGRES_9_5);
     }
 
-    @Ignore
     @Test
+    @Ignore
     public void shouldRetriveFolderAccessByUid() throws Exception {
         FolderAccess fa1 = new FolderAccess(testDomainAccess);
         FolderAccess fa2 =  (FolderAccess) FolderAccess.retrieveInstanceForExistingFolder(fa1, UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb"));
@@ -122,8 +123,8 @@ public class FolderAccessTest {
         assertNotNull(fa2.getSubfoldersList().get(UUID.fromString("99550555-ec91-4025-838d-09ddb4e999cb")).getSubfoldersList().get(UUID.fromString("33550555-ec91-4025-838d-09ddb4e999cb")).getSubfoldersList().get(UUID.fromString("8701233c-c8fd-47ba-91b5-ef9ff23c259b")));
     }
 
-    @Ignore
     @Test
+    @Ignore
     public void shouldRetrieveFolderAccessWithItems() throws Exception {
         FolderAccess fa1 = new FolderAccess(testDomainAccess);
         FolderAccess fa2 =  (FolderAccess) FolderAccess.retrieveInstanceForExistingFolder(fa1, UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb"));
@@ -146,6 +147,7 @@ public class FolderAccessTest {
     }
 
     @Test
+    @Ignore
     public void shouldInsertFolderWithNoSubfolders() throws Exception {
         //the creation and commit returning valid ids implies that the FolderMockDataProvider.java has provided the corresponding result for each SQL generated when inserting
 
@@ -178,30 +180,13 @@ public class FolderAccessTest {
         FolderAccess fa1 = new FolderAccess(testDomainAccess);
         FolderAccess fa2 = (FolderAccess) FolderAccess.getNewFolderAccessInstance(fa1, folder, DateTime.now(), UUID.fromString("f6a2af65-fe89-45a4-9456-07c5e17b1634"));
 
-        //System.out.println(fa2.getFolderRecord().getDetails().toString());
-        // '{
-        //       "_type" : "",
-        //       "items" : [ {
-        //       "name" : {
-        //       "_type" : "DV_TEXT",
-        //       "value" : "fol1"
-        //     }
-        //   } ]
-        // }'::jsonb
 
         assertEquals("f8a2af65-fe89-45a4-9456-07c5e17b1634", fa2.getFolderRecord().getId().toString());
         assertEquals("archetype_1", fa2.getFolderRecord().getArchetypeNodeId());
         assertEquals("nameOfFolder", fa2.getFolderRecord().getName());
 
-        // FIXME: Getting Statement not currently supported. Consider enhancing or revising the FolderMockDataProvider
-        // See: https://jira.vitagroup.ag/browse/EHR-449
-        /*
-        //commit and check returned UID is the valid one
-        UUID storedFolderUid = fa2.commit();
-        assertEquals("f8a2af65-fe89-45a4-9456-07c5e17b1634", storedFolderUid.toString());
-        */
 
-        assertEquals("'{\n" +
+        String expected = ("'{\n" +
                 "  \"_type\" : \"\",\n" +
                 "  \"items\" : [ {\n" +
                 "    \"name\" : {\n" +
@@ -209,12 +194,21 @@ public class FolderAccessTest {
                 "      \"value\" : \"fol1\"\n" +
                 "    }\n" +
                 "  } ]\n" +
-                "}'::jsonb", fa2.getFolderRecord().getDetails().toString());
+                "}'::jsonb").replaceAll("\\n|\\r\\n", System.getProperty("line.separator"));//avoids problems amond different platforms due to different representations of line change.
+        StringWriter expectedStringWriter = new StringWriter();
+        PrintWriter printWriter = new PrintWriter(expectedStringWriter);
+        printWriter.print(expected);//avoids problems amond different platforms due to different representations of line change.
+        printWriter.close();
+
+        assertEquals(expectedStringWriter.toString(), fa2.getFolderRecord().getDetails().toString());
+
+        //commit and check returned UID is the valid one
+        UUID storedFolderUid = fa2.commit();
+        assertEquals("f8a2af65-fe89-45a4-9456-07c5e17b1634", storedFolderUid.toString());
     }
 
-    @Ignore
     @Test
-    //@Ignore
+    @Ignore
     public void shouldInsertFolderWithSubfolders() throws Exception {
 
         //the creation and commit returning valid ids implies that the FolderMockDataProvider.java has provided the corresponding result for each SQL generated when inserting
@@ -308,7 +302,7 @@ public class FolderAccessTest {
         assertEquals("f8a2af65-fe89-45a4-9456-07c5e17b1634", fa2.getFolderRecord().getId().toString());
         assertEquals("archetype_1", fa2.getFolderRecord().getArchetypeNodeId());
         assertEquals("nameOfFolder1", fa2.getFolderRecord().getName());
-        assertEquals("'{\n" +
+        String expected = ("'{\n" +
                 "  \"_type\" : \"\",\n" +
                 "  \"items\" : [ {\n" +
                 "    \"name\" : {\n" +
@@ -316,13 +310,17 @@ public class FolderAccessTest {
                 "      \"value\" : \"fol1\"\n" +
                 "    }\n" +
                 "  } ]\n" +
-                "}'::jsonb", fa2.getFolderRecord().getDetails().toString());
-
+                "}'::jsonb").replaceAll("\\n|\\r\\n", System.getProperty("line.separator"));;//avoids problems amond different platforms due to different representations of line change.
+        StringWriter expectedStringWriter = new StringWriter();
+        PrintWriter printWriter = new PrintWriter(expectedStringWriter);
+        printWriter.print(expected);//avoids problems amond different platforms due to different representations of line change.
+        printWriter.close();
+        assertEquals(expectedStringWriter.toString(), fa2.getFolderRecord().getDetails().toString());
 
         assertEquals("f0a2af65-fe89-45a4-9456-07c5e17b1634", ((FolderAccess)fa2.getSubfoldersList().get(UUID.fromString("f0a2af65-fe89-45a4-9456-07c5e17b1634"))).getFolderRecord().getId().toString());
         assertEquals("archetype_2", ((FolderAccess)fa2.getSubfoldersList().get(UUID.fromString("f0a2af65-fe89-45a4-9456-07c5e17b1634"))).getFolderRecord().getArchetypeNodeId());
         assertEquals("nameOfFolder2", ((FolderAccess)fa2.getSubfoldersList().get(UUID.fromString("f0a2af65-fe89-45a4-9456-07c5e17b1634"))).getFolderRecord().getName());
-        assertEquals("'{\n" +
+        String expected2 = ("'{\n" +
                 "  \"_type\" : \"\",\n" +
                 "  \"items\" : [ {\n" +
                 "    \"name\" : {\n" +
@@ -330,28 +328,37 @@ public class FolderAccessTest {
                 "      \"value\" : \"fol2\"\n" +
                 "    }\n" +
                 "  } ]\n" +
-                "}'::jsonb", ((FolderAccess)fa2.getSubfoldersList().get(UUID.fromString("f0a2af65-fe89-45a4-9456-07c5e17b1634"))).getFolderRecord().getDetails().toString());
+                "}'::jsonb").replaceAll("\\n|\\r\\n", System.getProperty("line.separator"));//avoids problems amond different platforms due to different representations of line change.
+        expectedStringWriter = new StringWriter();
+        printWriter = new PrintWriter(expectedStringWriter);//avoids problems amond different platforms due to different representations of line change.
+        printWriter.print(expected2);
+        printWriter.close();
+        assertEquals(expectedStringWriter.toString(), ((FolderAccess)fa2.getSubfoldersList().get(UUID.fromString("f0a2af65-fe89-45a4-9456-07c5e17b1634"))).getFolderRecord().getDetails().toString());
+
 
         assertEquals("f4a2af65-fe89-45a4-9456-07c5e17b1634", ((FolderAccess)((FolderAccess)fa2.getSubfoldersList().get(UUID.fromString("f0a2af65-fe89-45a4-9456-07c5e17b1634"))).getSubfoldersList().get(UUID.fromString("f4a2af65-fe89-45a4-9456-07c5e17b1634"))).getFolderRecord().getId().toString());
         assertEquals("archetype_3", ((FolderAccess)((FolderAccess)fa2.getSubfoldersList().get(UUID.fromString("f0a2af65-fe89-45a4-9456-07c5e17b1634"))).getSubfoldersList().get(UUID.fromString("f4a2af65-fe89-45a4-9456-07c5e17b1634"))).getFolderRecord().getArchetypeNodeId());
         assertEquals("nameOfFolder3", ((FolderAccess)((FolderAccess)fa2.getSubfoldersList().get(UUID.fromString("f0a2af65-fe89-45a4-9456-07c5e17b1634"))).getSubfoldersList().get(UUID.fromString("f4a2af65-fe89-45a4-9456-07c5e17b1634"))).getFolderRecord().getName());
-        assertEquals("'{\n" +
+        String expected3 = ("'{\n" +
                 "  \"_type\" : \"\",\n" +
                 "  \"items\" : [ { } ]\n" +
-                "}'::jsonb", ((FolderAccess)((FolderAccess)fa2.getSubfoldersList().get(UUID.fromString("f0a2af65-fe89-45a4-9456-07c5e17b1634"))).getSubfoldersList().get(UUID.fromString("f4a2af65-fe89-45a4-9456-07c5e17b1634"))).getFolderRecord().getDetails().toString());
+                "}'::jsonb").replaceAll("\\n|\\r\\n", System.getProperty("line.separator"));//avoids problems amond different platforms due to different representations of line change.
+        expectedStringWriter = new StringWriter();
+        printWriter = new PrintWriter(expectedStringWriter);
+        printWriter.print(expected3);//avoids problems amond different platforms due to different representations of line change.
+        assertEquals(expectedStringWriter.toString(), ((FolderAccess)((FolderAccess)fa2.getSubfoldersList().get(UUID.fromString("f0a2af65-fe89-45a4-9456-07c5e17b1634"))).getSubfoldersList().get(UUID.fromString("f4a2af65-fe89-45a4-9456-07c5e17b1634"))).getFolderRecord().getDetails().toString());
+        expectedStringWriter.flush();
+        printWriter.flush();
+        printWriter.close();
 
-
-        // FIXME: Getting Statement not currently supported. Consider enhancing or revising the FolderMockDataProvider
-        // See: https://jira.vitagroup.ag/browse/EHR-449
-        /*
         UUID storedFolderUid = fa2.commit();
         //commit should return the top level folderId
         assertEquals("f8a2af65-fe89-45a4-9456-07c5e17b1634", storedFolderUid.toString());
-        */
+
     }
 
-    @Ignore
     @Test
+    @Ignore
     public void shouldUpdateExistingFolder() throws Exception {
         //1-retrieve a DAO for an existing folder in the DB
         FolderAccess fa1 = new FolderAccess(testDomainAccess);
@@ -363,7 +370,22 @@ public class FolderAccessTest {
         fa2.setFolderName("modifiedName");
         fa2.setFolderNArchetypeNodeId("modifiedArchetypeNodeId");
         fa2.setIsFolderActive(false);
-        fa2.setFolderDetails(DSL.field(DSL.val("{\"s\": \"modifiedValue\"}") + "::jsonb"));
+        ItemStructure is = new ItemStructure() {
+            @Override
+            public List getItems() {
+                Item item = new Item() {
+                    @Override
+                    public DvText getName() {
+                        return new DvText("modifiedValue");
+                    }
+                };
+                List<Item> items =  new ArrayList<>();
+                items.add(item);
+                return items;
+            }
+        };
+        //fa2.setFolderDetails(DSL.field(DSL.val("{\"s\": \"modifiedValue\"}") + "::jsonb"));
+        fa2.setFolderDetails(is);
         fa2.setFolderSysTransaction(new Timestamp(DateTime.now().getMillis()));
         fa2.setFolderSysPeriod(DSL.field(DSL.val("[\"2019-07-26 11:28:11.631959+02\",)") + "::tstzrange"));
 
@@ -387,7 +409,6 @@ public class FolderAccessTest {
         //assertEquals(true, updated);// could not manage to mock the result "Affected row(s)          : 1" from updates" for the UPDATEE statement. The mock data provider returns 0 irrespectively of weather the record is modified in the DB or not. As a consequence this always is false in the mocked version.
     }
 
-    @Ignore
     @Test
     public void shouldDeleteExistingFolder(){
         I_FolderAccess fa1 = new FolderAccess(testDomainAccess);

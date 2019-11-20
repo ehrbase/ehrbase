@@ -137,7 +137,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
             }
 
             folderRecord.setSysPeriod(PGObjectParser.parseSysPeriod(folderRecord.getSysPeriod()));
-            folderRecord.setDetails(PGObjectParser.parseDetails(folderRecord.getDetails()));
+            //folderRecord.setDetails(PGObjectParser.parseDetails(folderRecord.getDetails()));
 
 
             /*update items*/
@@ -155,11 +155,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         return result || anySubfolderModified;
     }
 
-    private int saveFolderItems(final UUID old_contribution, final UUID new_contribution, final Timestamp transactionTime, DSLContext context){
-
-        if(this.getItems().isEmpty()){
-            return 0;//no items to update
-        }
+    private void saveFolderItems(final UUID old_contribution, final UUID new_contribution, final Timestamp transactionTime, DSLContext context){
 
         //delete folder items fot the corresponding folder and contribution, the current items will override the previous one for this folder_id and conmtribution_id, those from other folder or contribution wont be affected.
         context.deleteFrom(FOLDER_ITEMS).where(FOLDER_ITEMS.FOLDER_ID.eq(this.getFolderId())).and(FOLDER_ITEMS.IN_CONTRIBUTION.eq(old_contribution)).execute();
@@ -176,7 +172,6 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
             context.attach(fir);
             fir.store();
         }
-        return 1;
     }
 
     @Override
@@ -215,7 +210,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         this.saveFolderItems(this.contributionAccess.getContributionId(), this.contributionAccess.getContributionId(), new Timestamp(DateTime.now().getMillis()), getContext());
 
         // Save list of sub folders to database with parent <-> child ID relations
-        this.getSubFoldersInsertList().forEach(child -> {
+        this.getSubfoldersList().forEach((child_id, child) -> {
             child.commit();
             FolderHierarchyRecord fhRecord = this.buildFolderHierarchyRecord(
                     this.getFolderRecord().getId(),
@@ -395,7 +390,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
      */
     private static FolderAccess buildFolderAccessFromGenericRecord(final Record record_, final I_DomainAccess domainAccess){
 
-        Record13<UUID, UUID, UUID, Timestamp, Object, UUID, UUID, String, String, Boolean, Object, Timestamp, Timestamp> record = (Record13<UUID, UUID, UUID, Timestamp, Object, UUID, UUID, String, String, Boolean, Object, Timestamp, Timestamp>)record_;
+        Record13<UUID, UUID, UUID, Timestamp, Object, UUID, UUID, String, String, Boolean, ItemStructure, Timestamp, Timestamp> record = (Record13<UUID, UUID, UUID, Timestamp, Object, UUID, UUID, String, String, Boolean, ItemStructure, Timestamp, Timestamp>)record_;
         FolderAccess folderAccess = new FolderAccess(domainAccess);
         folderAccess.folderRecord = new FolderRecord();
         folderAccess.folderRecord.setId(record.value1());
@@ -496,10 +491,10 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         }
         //pstmt.setObject(11, jsonObject);
 
-        if (folder.getDetails() != null) {
+        /* if (folder.getDetails() != null) {
             String detailsSerialized = new CanonicalJson().marshal(folder.getDetails());
             folderAccessInstance.getFolderRecord().setDetails(PGObjectParser.parseDetails(detailsSerialized));
-        }
+        } */
 
         if(!folder.getItems().isEmpty()){
             folderAccessInstance.getItems().addAll(folder.getItems());
@@ -796,12 +791,12 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         this.folderRecord.setActive(folderActive);
     }
 
-    public Object getFolderDetails(){
+    public ItemStructure getFolderDetails(){
 
         return this.folderRecord.getDetails();
     }
 
-    public void setFolderDetails(Object folderDetails){
+    public void setFolderDetails(ItemStructure folderDetails){
 
         this.folderRecord.setDetails(folderDetails);
     }

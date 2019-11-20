@@ -22,11 +22,15 @@
 package org.ehrbase.ehr.encode.rawjson;
 
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.internal.LinkedTreeMap;
 import org.ehrbase.ehr.encode.EncodeUtilArchie;
 import org.ehrbase.ehr.encode.wrappers.json.I_DvTypeAdapter;
 import org.ehrbase.ehr.encode.wrappers.json.writer.translator_db2raw.ArchieCompositionProlog;
 import org.ehrbase.ehr.encode.wrappers.json.writer.translator_db2raw.CompositionRoot;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -42,12 +46,8 @@ public class LightRawJsonEncoder {
     }
 
     public String encodeContentAsString(String root) {
-//        Type listType = new TypeToken<ArrayList<ArrayList<Object>>>(){}.getType();
-        GsonBuilder gsondb = EncodeUtilArchie.getGsonBuilderInstance();
-        if (jsonbOrigin.startsWith("[")) { //strip the expression as an array
-            jsonbOrigin = jsonbOrigin.trim().substring(1, jsonbOrigin.length() - 1);
-        }
-        Map<String, Object> fromDB = gsondb.create().fromJson(jsonbOrigin, Map.class);
+
+        Map<String, Object> fromDB = db2map(root != null && root.equals("value"));
 
         GsonBuilder gsonRaw = EncodeUtilArchie.getGsonBuilderInstance(I_DvTypeAdapter.AdapterType.DBJSON2RAWJSON);
         String raw;
@@ -59,6 +59,17 @@ public class LightRawJsonEncoder {
         return raw;
     }
 
+    public JsonElement encodeContentAsJson(String root){
+        GsonBuilder gsonRaw = EncodeUtilArchie.getGsonBuilderInstance(I_DvTypeAdapter.AdapterType.DBJSON2RAWJSON);
+        JsonElement jsonElement = gsonRaw.create().toJsonTree(db2map(root != null && root.equals("value")));
+        if (root != null) {
+            //in order to create the canonical form, build the ELEMENT json (hence the type is passed into the embedded value)
+            jsonElement = jsonElement.getAsJsonObject().get(root);
+        }
+
+        return jsonElement;
+    }
+
     public String encodeCompositionAsString() {
         //get the composition root key
         String root = new CompositionRoot(jsonbOrigin).toString();
@@ -68,5 +79,29 @@ public class LightRawJsonEncoder {
         return converted.replaceFirst(Pattern.quote("{"), new ArchieCompositionProlog(root).toString());
     }
 
+    private Map<String, Object> db2map(boolean isValue){
+        GsonBuilder gsondb = EncodeUtilArchie.getGsonBuilderInstance();
+        if (jsonbOrigin.startsWith("[")) {
+            if (isValue)
+                jsonbOrigin = jsonbOrigin.trim().substring(1, jsonbOrigin.length() - 1);
+            else
+                jsonbOrigin = "{\"items\":"+jsonbOrigin+"}"; //joy of json... this deals with array with and name/value predicate
+        }
+
+        Map<String, Object> fromDB = gsondb.create().fromJson(jsonbOrigin, Map.class);
+
+        if (fromDB.containsKey("content")){
+            //push contents upward
+            for (Object contentItem: ((LinkedTreeMap)fromDB.get("content")).entrySet()){
+                if (contentItem instanceof Map.Entry) {
+                    fromDB.put(((Map.Entry) contentItem).getKey().toString(), ((Map.Entry) contentItem).getValue());
+                }
+            }
+
+        }
+
+        fromDB.remove("content");
+        return fromDB;
+    }
 
 }

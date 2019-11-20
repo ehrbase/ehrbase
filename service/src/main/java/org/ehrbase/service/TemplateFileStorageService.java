@@ -18,17 +18,14 @@
 
 package org.ehrbase.service;
 
-import org.ehrbase.ehr.knowledge.KnowledgeType;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.velocity.io.UnicodeInputStream;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
+import org.apache.xmlbeans.XmlOptions;
+import org.ehrbase.ehr.knowledge.TemplateMetaData;
+import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import javax.xml.namespace.QName;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -37,64 +34,43 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Pattern;
-
-@Service
-public class TemplateFileStorageService {
 
 
-    private Map<String, File> archetypeFileMap = new ConcurrentHashMap<>();
-    private Map<String, File> templatesFileMap = new ConcurrentHashMap<>();
+public class TemplateFileStorageService implements TemplateStorage {
+
+
     private Map<String, File> optFileMap = new ConcurrentHashMap<>();
+    //processing error (for JMX)
+    private Map<String, String> errorMap = new ConcurrentHashMap<>();
 
 
-    @Value("${templateFileStorageService.storage.path.archetypes}")
-    private String archetypePath;
-    @Value("${templateFileStorageService.storage.path.templates}")
-    private String templatePath;
-    @Value("${templateFileStorageService.storage.path.operationaltemplates}")
     private String optPath;
 
-
-    private String backupPath = "";
 
     @Autowired
     public TemplateFileStorageService() {
     }
 
-    public TemplateFileStorageService(String archetypePath, String templatePath, String optPath) {
-        this.archetypePath = archetypePath;
-        this.templatePath = templatePath;
+    public TemplateFileStorageService(String optPath) {
+
         this.optPath = optPath;
     }
 
     @PostConstruct
     public void init() {
-        addKnowledgeSourcePath(getArchetypePath(), KnowledgeType.ARCHETYPE);
-        addKnowledgeSourcePath(getTemplatePath(), KnowledgeType.TEMPLATE);
-        addKnowledgeSourcePath(getOptPath(), KnowledgeType.OPT);
+        addKnowledgeSourcePath(getOptPath());
     }
 
 
-    String getArchetypePath() {
-        return archetypePath;
-    }
-
-    void setArchetypePath(String archetypePath) {
-        this.archetypePath = archetypePath;
-    }
-
-    String getTemplatePath() {
-        return templatePath;
-    }
-
-    void setTemplatePath(String templatePath) {
-        this.templatePath = templatePath;
-    }
-
-    String getOptPath() {
+    public String getOptPath() {
         return optPath;
     }
 
@@ -103,106 +79,75 @@ public class TemplateFileStorageService {
     }
 
 
-    public Set<String> getAllOperationalTemplates() {
-        return optFileMap.keySet();
-    }
+    @Override
+    public List<TemplateMetaData> listAllOperationalTemplates() {
+        ZoneId zoneId = ZoneId.systemDefault();
+        List<TemplateMetaData> templateMetaDataList = new ArrayList<>();
+        for (String filename : optFileMap.keySet()) {
 
-    /**
-     * retrieve the file for an archetype
-     *
-     * @param key the name of the archetype
-     * @return a file handler or null
-     */
-    private File retrieveArchetypeFile(String key) {
-        return archetypeFileMap.get(key);
-    }
-
-    /**
-     * retrieve the file for a template
-     *
-     * @param key template name
-     * @return a file handler or null
-     */
-    private File retrieveTemplateFile(String key) {
-        return templatesFileMap.get(key);
-    }
-
-    /**
-     * retrieve a file associated to an operational template
-     *
-     * @param key an OPT ID
-     * @return a file handler or null
-     */
-    private File retrieveOPTFile(String key) {
-        return optFileMap.get(key);
-    }
-
-    /**
-     * retrieve a file associated to a knowledge type
-     *
-     * @param key a resource id
-     * @return a file handler or null
-     */
-    public File retrieveFile(String key, KnowledgeType what) {
-
-        switch (what) {
-            case ARCHETYPE:
-                return retrieveArchetypeFile(key);
-            case TEMPLATE:
-                return retrieveTemplateFile(key);
-            case OPT:
-                return retrieveOPTFile(key);
-        }
-        return null;
-    }
+            TemplateMetaData template = new TemplateMetaData();
+            OPERATIONALTEMPLATE operationaltemplate;
 
 
-    public Map<String, File> retrieveFileMap(Pattern includes, Pattern excludes) {
-        Map<String, File> mf = new LinkedHashMap<>();
-        if (includes != null) {
-            for (Map.Entry<String, File> s : archetypeFileMap.entrySet()) {
-                if (includes.matcher(s.getKey()).find()) {
-                    mf.put(s.getKey(), s.getValue());
+            operationaltemplate = readOperationaltemplate(filename).orElse(null);
+
+
+            if (operationaltemplate == null) {   // null if the file couldn't be fetched from cache or read from file storage
+
+                template.addError("Reported error for file:" + filename + ", error:" + errorMap.get(filename));
+
+            } else {
+                template.setOperationaltemplate(operationaltemplate);
+                if (operationaltemplate.getTemplateId() == null) {
+                    template.addError("Could not get template id for template in file:" + filename);
                 }
             }
-        } else {
-            mf.putAll(archetypeFileMap);
-        }
 
-        if (excludes != null) {
-            List<String> removeList = new ArrayList<>();
-            for (String s : mf.keySet()) {
-                if (excludes.matcher(s).find()) {
-                    removeList.add(s);
-                }
+            Path path = Paths.get(getOptPath() + "/" + filename + ".opt");
+
+            try {
+                BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
+                ZonedDateTime creationTime = ZonedDateTime.parse(attributes.creationTime().toString()).withZoneSameInstant(zoneId);
+                template.setCreatedOn(creationTime.toOffsetDateTime());
+
+
+            } catch (Exception e) {
+                template.addError("disconnected file? tried:" + getOptPath() + "/" + filename + ".opt");
             }
-            for (String s : removeList) {
-                mf.remove(s);
-            }
+            templateMetaDataList.add(template);
         }
-        return mf;
+        return templateMetaDataList;
     }
 
-
-    public InputStream getStream(String key, KnowledgeType what) throws IOException {
-        File file = retrieveFile(key, what);
-        return file != null ? new UnicodeInputStream(new FileInputStream(file), true) : null;
+    @Override
+    public void storeTemplate(OPERATIONALTEMPLATE template) {
+        XmlOptions opts = new XmlOptions();
+        opts.setSaveSyntheticDocumentElement(new QName("http://schemas.openehr.org/v1", "template"));
+        saveTemplateFile(template.getTemplateId().getValue(), template.xmlText(opts).getBytes());
     }
 
-    boolean addKnowledgeSourcePath(String path, KnowledgeType what) {
-        switch (what) {
-            case ARCHETYPE:
-                return addKnowledgeSourcePath(path, archetypeFileMap, what.getExtension());
-            case TEMPLATE:
-                return addKnowledgeSourcePath(path, templatesFileMap, what.getExtension());
-            case OPT:
-                return addKnowledgeSourcePath(path, optFileMap, what.getExtension());
+    @Override
+    public Optional<OPERATIONALTEMPLATE> readOperationaltemplate(String templateId) {
+        OPERATIONALTEMPLATE operationaltemplate = null;
+
+        File file = optFileMap.get(templateId);
+
+        try (InputStream in = file != null ? new UnicodeInputStream(new FileInputStream(file), true) : null) { // manual reading of OPT file and following parsing into object
+            org.openehr.schemas.v1.TemplateDocument document = org.openehr.schemas.v1.TemplateDocument.Factory.parse(in);
+            operationaltemplate = document.getTemplate();
+            //use the template id instead of the file name as key
+
+        } catch (Exception e) {
+            errorMap.put(templateId, e.getMessage());
+            // log.error("Could not parse operational template:" + filename + " error:" + e);
+//                throw new ServiceManagerException(global, SysErrorCode.INTERNAL_ILLEGALARGUMENT, "Could not parse operational template:"+key+" error:"+e);
         }
-
-        return false;
+        return Optional.ofNullable(operationaltemplate);
     }
 
-    private boolean addKnowledgeSourcePath(String path, Map<String, File> resource, String extension) {
+
+    boolean addKnowledgeSourcePath(String path) {
+
         if (path == null) return false;
 
         path = path.trim();
@@ -225,27 +170,21 @@ public class TemplateFileStorageService {
                     continue;
 
                 if (f.isFile()) {
-                    String key = f.getName().replaceAll("([^\\\\\\/]+)\\." + extension, "$1");
-                    resource.put(key, f);
+                    String key = f.getName().replaceAll("([^\\\\\\/]+)\\." + "opt", "$1");
+                    optFileMap.put(key, f);
                 } else if (f.isDirectory()) {
                     tr.add(f);
                 }
             }
         }
         return true;
+
     }
 
-    public synchronized void saveTemplateFile(String filename, byte[] content) throws IOException {
+    private synchronized void saveTemplateFile(String filename, byte[] content) {
         //copy the content to filename in OPT path
         Path path = Paths.get(getOptPath(), filename + ".opt");
 
-        //check if this template already exists
-        //create a backup
-        if (path.toFile().exists() && StringUtils.isNotBlank(backupPath)) {
-            DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyyMMddHHmmssSSS");
-            Path backupRepository = Paths.get(backupPath + "/" + filename + "_" + formatter.print(DateTime.now()) + ".opt.bak");
-            Files.copy(path, backupRepository);
-        }
 
         try {
             Files.write(path, content, StandardOpenOption.CREATE);
@@ -257,11 +196,5 @@ public class TemplateFileStorageService {
         optFileMap.put(filename, path.toFile());
     }
 
-    public void setBackupPath(String backupPath) {
-        this.backupPath = backupPath;
-    }
 
-    public String getBackupPath() {
-        return backupPath;
-    }
 }

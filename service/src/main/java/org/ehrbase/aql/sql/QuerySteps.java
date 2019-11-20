@@ -77,4 +77,8 @@ public class QuerySteps {
     public boolean isContainsJQueryPath() {
         return containsJQueryPath;
     }
+
+    public boolean isContainsJson(){
+        return jsonColumnsSize() > 0 || isContainsJQueryPath();
+    }
 }

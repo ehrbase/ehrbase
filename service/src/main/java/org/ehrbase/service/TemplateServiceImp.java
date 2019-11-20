@@ -32,6 +32,7 @@ import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.ehrbase.opt.OptVisitor;
 import org.jooq.DSLContext;
+import org.openehr.schemas.v1.CARCHETYPEROOT;
 import org.openehr.schemas.v1.OBJECTID;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.slf4j.Logger;
@@ -71,13 +72,11 @@ public class TemplateServiceImp extends BaseService implements TemplateService {
     private TemplateMetaDataDto mapToDto(TemplateMetaData data) {
         TemplateMetaDataDto dto = new TemplateMetaDataDto();
         dto.setCreatedOn(data.getCreatedOn());
-        dto.setLastModifiedTime(data.getLastModifiedTime());
-        dto.setLastAccessTime(data.getLastAccessTime());
-        dto.setPath(data.getPath().toAbsolutePath().toString());
-        dto.setErrorList(data.getErrorList());
+
         Optional<OPERATIONALTEMPLATE> operationaltemplate = Optional.ofNullable(data.getOperationaltemplate());
         dto.setTemplateId(operationaltemplate.map(OPERATIONALTEMPLATE::getTemplateId).map(OBJECTID::getValue).orElse(null));
-        dto.setUid(operationaltemplate.map(OPERATIONALTEMPLATE::getUid).map(OBJECTID::getValue).orElse(null));
+        dto.setArchetypeId(operationaltemplate.map(OPERATIONALTEMPLATE::getDefinition).map(CARCHETYPEROOT::getArchetypeId).map(OBJECTID::getValue).orElse(null));
+
         dto.setConcept(operationaltemplate.map(OPERATIONALTEMPLATE::getConcept).orElse(null));
         return dto;
     }
