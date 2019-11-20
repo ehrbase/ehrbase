@@ -19,7 +19,6 @@
 package org.ehrbase.api.service;
 
 import org.ehrbase.api.definitions.CompositionFormat;
-import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.definitions.StructuredString;
 import org.ehrbase.api.dto.CompositionDto;
 import org.ehrbase.api.exception.InternalServerException;
@@ -30,7 +29,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface CompositionService {
+public interface CompositionService extends BaseService {
     /**
      * @param compositionId The {@link UUID} of the composition to be returned.
      * @param version       The version to returned. If null return the latest
@@ -171,8 +170,4 @@ public interface CompositionService {
      * @return Version closest in time before given timestamp, or `null` in case of
      */
     Integer getVersionByTimestamp(UUID compositionId, LocalDateTime timestamp);
-
-    UUID getSystemUuid();    // from BaseService
-
-    ServerConfig getServerConfig(); // from BaseService
 }

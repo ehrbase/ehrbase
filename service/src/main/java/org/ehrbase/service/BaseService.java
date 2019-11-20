@@ -47,9 +47,7 @@ public class BaseService {
     @Value("${spring.datasource.username}")
     private String datasourceUser = "luis";
 
-    @Autowired
-    ServerConfig serverConfig;
-
+    private final ServerConfig serverConfig;
     private final KnowledgeCacheService knowledgeCacheService;
     private final DSLContext context;
 

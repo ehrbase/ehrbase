@@ -28,7 +28,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface FolderService {
+public interface FolderService extends BaseService {
 
     /**
      * Creates a new folder entry at the database from content. The provided
