@@ -66,6 +66,13 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     private Composition composition;
 
     /**
+     * Basic constructor for composition.
+     * @param context DB context object of current server context
+     * @param knowledgeManager Knowledge cache object of current server context
+     * @param introspectCache Introspect cache object of current server context
+     * @param serverConfig Server config object of current server context
+     * @param composition Object representation of given new composition
+     * @param ehrId Given ID of EHR this composition will be created for
      * @throws IllegalArgumentException when seeking language code, territory code or composer ID failed
      */
     public CompositionAccess(DSLContext context, I_KnowledgeCache knowledgeManager, IntrospectService introspectCache, ServerConfig serverConfig, Composition composition, UUID ehrId) {
@@ -79,6 +86,43 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         UUID composerId = seekComposerId(composition.getComposer());
 
         compositionRecord = context.newRecord(COMPOSITION);
+        compositionRecord.setId(UUID.randomUUID());
+
+        compositionRecord.setTerritory(seekTerritoryCode(territoryCode));
+
+        compositionRecord.setLanguage(seekLanguageCode(languageCode));
+        compositionRecord.setActive(true);
+//        compositionRecord.setContext(eventContextId);     // TODO: is context handled somewhere else (so remove here)? or is this a TODO?
+        compositionRecord.setComposer(composerId);
+        compositionRecord.setEhrId(ehrId);
+
+        //associate a contribution with this composition
+        contributionAccess = I_ContributionAccess.getInstance(this, compositionRecord.getEhrId());
+        contributionAccess.setState(ContributionDef.ContributionState.COMPLETE);
+
+        // associate composition's own audit with this composition access instance
+        auditDetailsAccess = I_AuditDetailsAccess.getInstance(getDataAccess());
+
+    }
+
+    /**
+     * Constructor with convenient {@link I_DomainAccess} parameter, for better readability.
+     * @param domainAccess Current domain access object
+     * @param composition Object representation of given new composition
+     * @param ehrId Given ID of EHR this composition will be created for
+     * @throws IllegalArgumentException when seeking language code, territory code or composer ID failed
+     */
+    public CompositionAccess(I_DomainAccess domainAccess, Composition composition, UUID ehrId) {
+        super(domainAccess.getContext(), domainAccess.getKnowledgeManager(), domainAccess.getIntrospectService(), domainAccess.getServerConfig());
+
+        this.composition = composition;
+
+        String territoryCode = composition.getTerritory().getCodeString();
+        String languageCode = composition.getLanguage().getCodeString();
+
+        UUID composerId = seekComposerId(composition.getComposer());
+
+        compositionRecord = domainAccess.getContext().newRecord(COMPOSITION);
         compositionRecord.setId(UUID.randomUUID());
 
         compositionRecord.setTerritory(seekTerritoryCode(territoryCode));

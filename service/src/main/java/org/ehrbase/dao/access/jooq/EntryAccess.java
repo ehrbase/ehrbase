@@ -71,8 +71,32 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
 
     private Composition composition;
 
+    /**
+     * Basic constructor for entry.
+     * @param context DB context object of current server context
+     * @param knowledge Knowledge cache object of current server context
+     * @param introspectCache Introspect cache object of current server context
+     * @param serverConfig Server config object of current server context
+     * @param templateId Template ID of this entry
+     * @param sequence Sequence number of this entry
+     * @param compositionId Linked composition ID
+     * @param composition Object representation of linked composition
+     */
     public EntryAccess(DSLContext context, I_KnowledgeCache knowledge, IntrospectService introspectCache, ServerConfig serverConfig, String templateId, Integer sequence, UUID compositionId, Composition composition) {
         super(context, knowledge, introspectCache, serverConfig);
+        setFields(templateId, sequence, compositionId, composition);
+    }
+
+    /**
+     * Constructor with convenient {@link I_DomainAccess} parameter, for better readability.
+     * @param domainAccess Current domain access object
+     * @param templateId Template ID of this entry
+     * @param sequence Sequence number of this entry
+     * @param compositionId Linked composition ID
+     * @param composition Object representation of linked composition
+     */
+    public EntryAccess(I_DomainAccess domainAccess, String templateId, Integer sequence, UUID compositionId, Composition composition) {
+        super(domainAccess.getContext(), domainAccess.getKnowledgeManager(), domainAccess.getIntrospectService(), domainAccess.getServerConfig());
         setFields(templateId, sequence, compositionId, composition);
     }
 

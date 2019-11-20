@@ -1,5 +1,6 @@
 package org.ehrbase.application.config;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
@@ -24,7 +25,7 @@ public class ServerConfigImp implements org.ehrbase.api.definitions.ServerConfig
     }
 
     public String getNodename() {
-        if (nodename == null || nodename.length() == 0)
+        if (StringUtils.isBlank(nodename))
             return "local.ehrbase.org";
         return nodename;
     }
