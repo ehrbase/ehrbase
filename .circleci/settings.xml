@@ -8,17 +8,4 @@
       <password>${env.OSSRH_PASSWORD}</password>
     </server>
   </servers>
-  <profiles>
-    <profile>
-      <id>ossrh</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <properties>
-        <gpg.keyname>FAB0BE712374BFC3D26DA5B43A7041C227272DD8</gpg.keyname>
-        <gpg.executable>gpg2</gpg.executable>
-        <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
-      </properties>
-    </profile>
-  </profiles>
 </settings>
