@@ -143,7 +143,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         updatedFolderrecord.setName(this.getFolderName());
         updatedFolderrecord.setArchetypeNodeId(this.getFolderArchetypeNodeId());
         updatedFolderrecord.setActive(this.isFolderActive());
-        updatedFolderrecord.setDetails(PGObjectParser.parseDetails(folderRecord.getDetails()));
+        updatedFolderrecord.setDetails(folderRecord.getDetails());
         updatedFolderrecord.setSysTransaction(transactionTime);
         updatedFolderrecord.setSysPeriod(PGObjectParser.parseSysPeriod(folderRecord.getSysPeriod()));
 
@@ -433,18 +433,26 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
      * @return FolderAccess instance corresponding to the org.ehrbase.jooq.pg.tables.records.FolderRecord provided.
      */
     private static FolderAccess buildFolderAccessFromFolderRecord(final FolderRecord record_, final I_DomainAccess domainAccess){
-
+        // FIXME FOLDER_DETAILS: so does this methods really need to set the access or records vars? both now for testing
         FolderRecord record = record_;
         FolderAccess folderAccess = new FolderAccess(domainAccess);
         folderAccess.folderRecord = new FolderRecord();
         folderAccess.folderRecord.setId(record.getId());
+        folderAccess.setFolderId(record.getId());
         folderAccess.folderRecord.setInContribution(record.getInContribution());
+        folderAccess.setInContribution(record.getInContribution());
         folderAccess.folderRecord.setName(record.getName());
+        folderAccess.setFolderName(record.getName());
         folderAccess.folderRecord.setArchetypeNodeId(record.getArchetypeNodeId());
+        folderAccess.setFolderNArchetypeNodeId(record.getArchetypeNodeId());
         folderAccess.folderRecord.setActive(record.getActive());
+        folderAccess.setIsFolderActive(record.getActive());
         folderAccess.folderRecord.setDetails(record.getDetails());
+        folderAccess.setDetails(record.getDetails());
         folderAccess.folderRecord.setSysTransaction(record.getSysTransaction());
+        folderAccess.setFolderSysTransaction(record.getSysTransaction());
         folderAccess.folderRecord.setSysPeriod(record.getSysPeriod());
+        folderAccess.setFolderSysPeriod(record.getSysPeriod());
         folderAccess.getItems().addAll(FolderAccess.retrieveItemsByFolderAndContributionId(record.getId(), record.getInContribution(), domainAccess));
         return folderAccess;
     }
@@ -511,10 +519,9 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         }
         //pstmt.setObject(11, jsonObject);
 
-        /* if (folder.getDetails() != null) {
-            String detailsSerialized = new CanonicalJson().marshal(folder.getDetails());
-            folderAccessInstance.getFolderRecord().setDetails(PGObjectParser.parseDetails(detailsSerialized));
-        } */
+        if (folder.getDetails() != null) {
+            folderAccessInstance.getFolderRecord().setDetails(folder.getDetails());
+        }
 
         if(!folder.getItems().isEmpty()){
             folderAccessInstance.getItems().addAll(folder.getItems());

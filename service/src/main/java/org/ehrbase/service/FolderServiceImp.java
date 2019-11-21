@@ -266,7 +266,7 @@ public class FolderServiceImp extends BaseService implements FolderService {
     private Folder createFolderObject(I_FolderAccess folderAccess) {
 
         Folder result = new Folder();
-        result.setDetails(folderAccess.getDetails());
+        result.setDetails(folderAccess.getDetails());   // FIXME FOLDER_DETAILS: also see here
         result.setArchetypeNodeId(folderAccess.getFolderArchetypeNodeId());
         result.setName(new DvText(folderAccess.getFolderName()));
 
@@ -274,7 +274,7 @@ public class FolderServiceImp extends BaseService implements FolderService {
         if (!folderAccess.getSubfoldersList().isEmpty()) {
 
             folderAccess.getSubfoldersList().forEach((uuid, subfolderAccess) ->
-                result.addFolder(createFolderObject(subfolderAccess))
+                    result.addFolder(createFolderObject(subfolderAccess))
             );
 
         } else {
