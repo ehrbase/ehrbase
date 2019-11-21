@@ -33,9 +33,11 @@ import com.nedap.archie.rm.generic.Participation;
 import com.nedap.archie.rm.generic.PartyIdentified;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.*;
+import org.apache.catalina.Server;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
 import org.ehrbase.dao.access.interfaces.I_ContextAccess;
@@ -78,8 +80,8 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
     private PreparedStatement updateStatement;
     private List<ParticipationRecord> participations = new ArrayList<>();
 
-    public ContextAccess(DSLContext context, EventContext eventContext) {
-        super(context, null, null);
+    public ContextAccess(DSLContext context, ServerConfig serverConfig, EventContext eventContext) {
+        super(context, null, null, serverConfig);
         eventContextRecord = context.newRecord(EVENT_CONTEXT);
         setRecordFields(UUID.randomUUID(), eventContext);
     }

@@ -62,7 +62,7 @@ public class AqlQueryHandler extends DataAccess {
         Contains contains = new Contains(aqlExpression.getParseTree()).process();
         Statements statements = new Statements(aqlExpression.getParseTree(), contains.getIdentifierMapper()).process() ;
 
-        QueryProcessor queryProcessor = new QueryProcessor(getContext(), this.getKnowledgeManager(), this.getIntrospectService(), contains, statements, getServerNodeId(), usePgExtensions);
+        QueryProcessor queryProcessor = new QueryProcessor(getContext(), this.getKnowledgeManager(), this.getIntrospectService(), contains, statements, getDataAccess().getServerConfig().getNodename(), usePgExtensions);
 
         AqlResult aqlResult =  queryProcessor.execute();
 

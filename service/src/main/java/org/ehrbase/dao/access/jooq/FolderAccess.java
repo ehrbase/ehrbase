@@ -410,7 +410,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
      */
     private static FolderAccess buildFolderAccessFromGenericRecord(final Record record_, final I_DomainAccess domainAccess){
 
-        Record13<UUID, UUID, UUID, Timestamp, Object, UUID, UUID, String, String, Boolean, Object, Timestamp, Timestamp> record = (Record13<UUID, UUID, UUID, Timestamp, Object, UUID, UUID, String, String, Boolean, Object, Timestamp, Timestamp>)record_;
+        Record13<UUID, UUID, UUID, Timestamp, Object, UUID, UUID, String, String, Boolean, ItemStructure, Timestamp, Timestamp> record = (Record13<UUID, UUID, UUID, Timestamp, Object, UUID, UUID, String, String, Boolean, ItemStructure, Timestamp, Timestamp>)record_;
         FolderAccess folderAccess = new FolderAccess(domainAccess);
         folderAccess.folderRecord = new FolderRecord();
         folderAccess.folderRecord.setId(record.value1());
@@ -511,10 +511,10 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         }
         //pstmt.setObject(11, jsonObject);
 
-        if (folder.getDetails() != null) {
+        /* if (folder.getDetails() != null) {
             String detailsSerialized = new CanonicalJson().marshal(folder.getDetails());
             folderAccessInstance.getFolderRecord().setDetails(PGObjectParser.parseDetails(detailsSerialized));
-        }
+        } */
 
         if(!folder.getItems().isEmpty()){
             folderAccessInstance.getItems().addAll(folder.getItems());
@@ -844,12 +844,12 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         this.folderRecord.setActive(folderActive);
     }
 
-    public Object getFolderDetails(){
+    public ItemStructure getFolderDetails(){
 
         return this.folderRecord.getDetails();
     }
 
-    public void setFolderDetails(Object folderDetails){
+    public void setFolderDetails(ItemStructure folderDetails){
 
         this.folderRecord.setDetails(folderDetails);
     }

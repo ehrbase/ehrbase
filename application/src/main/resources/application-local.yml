@@ -23,9 +23,11 @@ spring:
       max-active: 50
       max-wait: 10000
 
-
 server:
   contextPath: /ehrbase
+  port: 8080
+  # Optional custom server nodename
+  # nodename: 'local.test.org'
 
 system:
   type: LOCAL

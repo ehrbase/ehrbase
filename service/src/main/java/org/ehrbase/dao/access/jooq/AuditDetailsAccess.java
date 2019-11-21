@@ -21,10 +21,10 @@ package org.ehrbase.dao.access.jooq;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_AuditDetailsAccess;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.tables.records.AuditDetailsRecord;
-import org.jooq.DSLContext;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -37,14 +37,14 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
 
     private AuditDetailsRecord auditDetailsRecord;
 
-    public AuditDetailsAccess(DSLContext context) {
-        super(context, null, null);
-        this.auditDetailsRecord = context.newRecord(AUDIT_DETAILS);
+    public AuditDetailsAccess(I_DomainAccess dataAccess) {
+        super(dataAccess.getContext(), null, null, dataAccess.getServerConfig());
+        this.auditDetailsRecord = dataAccess.getContext().newRecord(AUDIT_DETAILS);
     }
 
-    public AuditDetailsAccess(DSLContext context, UUID systemId, UUID committer, ContributionChangeType changeType, String description) {
-        super(context, null, null);
-        this.auditDetailsRecord = context.newRecord(AUDIT_DETAILS);
+    public AuditDetailsAccess(I_DomainAccess dataAccess, UUID systemId, UUID committer, ContributionChangeType changeType, String description) {
+        super(dataAccess.getContext(), null, null, dataAccess.getServerConfig());
+        this.auditDetailsRecord = dataAccess.getContext().newRecord(AUDIT_DETAILS);
         auditDetailsRecord.setSystemId(systemId);
         auditDetailsRecord.setCommitter(committer);
         auditDetailsRecord.setChangeType(changeType);
@@ -52,11 +52,11 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
     }
 
     @Override
-    public I_AuditDetailsAccess retrieveInstance(DSLContext context, UUID auditId) {
-        AuditDetailsAccess auditDetailsAccess = new AuditDetailsAccess(context);
+    public I_AuditDetailsAccess retrieveInstance(I_DomainAccess dataAccess, UUID auditId) {
+        AuditDetailsAccess auditDetailsAccess = new AuditDetailsAccess(dataAccess);
 
         try {
-            auditDetailsAccess.auditDetailsRecord = context.fetchOne(AUDIT_DETAILS, AUDIT_DETAILS.ID.eq(auditId));
+            auditDetailsAccess.auditDetailsRecord = dataAccess.getContext().fetchOne(AUDIT_DETAILS, AUDIT_DETAILS.ID.eq(auditId));
         } catch (Exception e) {
             throw new InternalServerException("fetching audit_details failed", e);
         }

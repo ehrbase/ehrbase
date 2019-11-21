@@ -156,8 +156,8 @@ public class OpenehrCompositionController extends BaseController {
 
         CompositionFormat compositionFormat = extractCompositionFormat(contentType);
 
-        // If the If-Match is not the latest latest existing version, throw error       TODO: handling of system ID TBD, see EHR-192
-        if (!((versionedObjectUid + "::" + "local.ehrbase.org" + "::" + compositionService.getLastVersionNumber(extractVersionedObjectUidFromVersionUid(versionedObjectUid.toString()))).equals(ifMatch))) {
+        // If the If-Match is not the latest latest existing version, throw error
+        if (!((versionedObjectUid + "::" + compositionService.getServerConfig().getNodename() + "::" + compositionService.getLastVersionNumber(extractVersionedObjectUidFromVersionUid(versionedObjectUid.toString()))).equals(ifMatch))) {
             throw new PreconditionFailedException("If-Match header does not match latest existing version");
         }
 
@@ -235,8 +235,7 @@ public class OpenehrCompositionController extends BaseController {
         }*/
 
         // prepare header data
-        // TODO dynamic system id --> postponed, see EHR-206
-        String latestVersionId = extractVersionedObjectUidFromVersionUid(precedingVersionUid) + "::local.ehrbase.org::" + compositionService.getLastVersionNumber(extractVersionedObjectUidFromVersionUid(precedingVersionUid));
+        String latestVersionId = extractVersionedObjectUidFromVersionUid(precedingVersionUid) + "::" + compositionService.getServerConfig().getNodename() + "::" + compositionService.getLastVersionNumber(extractVersionedObjectUidFromVersionUid(precedingVersionUid));
         // TODO change to dynamic linking --> postponed, see EHR-230
         URI uri = URI.create(this.encodePath(getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId.toString() + "/composition/" + latestVersionId));
 
@@ -503,7 +502,7 @@ public class OpenehrCompositionController extends BaseController {
                     respHeaders.setLocation(uri);
                     break;
                 case ETAG:
-                    respHeaders.setETag("\"" + compositionId + "::" + compositionService.getLastVersionNumber(compositionId) + "\"");  // TODO - see EHR-206
+                    respHeaders.setETag("\"" + compositionId + "::" + compositionService.getServerConfig().getNodename() + "::" + compositionService.getLastVersionNumber(compositionId) + "\"");
                     break;
                 case LAST_MODIFIED:
                     // TODO should be VERSION.commit_audit.time_committed.value which is not implemented yet - mock for now

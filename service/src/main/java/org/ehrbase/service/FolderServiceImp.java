@@ -20,6 +20,7 @@ package org.ehrbase.service;
 
 import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.directory.Folder;
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.definitions.StructuredString;
 import org.ehrbase.api.definitions.StructuredStringFormat;
 import org.ehrbase.api.dto.FolderDto;
@@ -56,8 +57,9 @@ public class FolderServiceImp extends BaseService implements FolderService {
     @Autowired
     FolderServiceImp(
             KnowledgeCacheService knowledgeCacheService,
-            DSLContext context) {
-        super(knowledgeCacheService, context);
+            DSLContext context,
+            ServerConfig serverConfig) {
+        super(knowledgeCacheService, context, serverConfig);
     }
     
     /**

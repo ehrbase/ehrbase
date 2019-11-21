@@ -11,6 +11,9 @@ spring:
 
 server:
   contextPath: /ehrbase
+  port: 8080
+  # Optional custom server nodename
+  # nodename: 'local.test.org'
   aql:
 # set to true by default (comment out to enable jsquery)
     use-jsquery: false

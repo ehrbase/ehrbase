@@ -18,6 +18,7 @@
 
 package org.ehrbase.service;
 
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
 import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,8 +34,8 @@ public class TerminologieService extends BaseService {
     private static TerminologieService instance;
 
     @Autowired
-    public TerminologieService(KnowledgeCacheService knowledgeCacheService, DSLContext context) {
-        super(knowledgeCacheService, context);
+    public TerminologieService(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig) {
+        super(knowledgeCacheService, context, serverConfig);
     }
 
     public static TerminologieService getInstance() {
