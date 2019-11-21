@@ -18,7 +18,6 @@
 
 package org.ehrbase.rest.openehr.controller;
 
-import org.ehrbase.api.definitions.StructuredString;
 import org.ehrbase.api.definitions.StructuredStringFormat;
 import org.ehrbase.api.dto.FolderDto;
 import org.ehrbase.api.exception.InternalServerException;
@@ -139,15 +138,14 @@ public class OpenehrDirectoryController extends BaseController {
         // Check for desired response representation format from PREFER header
         if (prefer.equals(RETURN_REPRESENTATION)){
 
+            FolderDto folderDto = newFolder.get();
             // Evaluate target format from accept header
-            StructuredStringFormat resFormat = StructuredStringFormat.JSON;
             MediaType resContentType = MediaType.APPLICATION_JSON;
 
             switch (accept) {
                 case MediaType.APPLICATION_JSON_VALUE:
                     break;
                 case MediaType.APPLICATION_XML_VALUE:
-                    resFormat = StructuredStringFormat.XML;
                     resContentType = MediaType.APPLICATION_XML;
                     break;
                 default:
@@ -156,16 +154,7 @@ public class OpenehrDirectoryController extends BaseController {
                     );
             }
 
-            DirectoryResponseData resBody = new DirectoryResponseData();
-
-            // Serialize Content
-            resBody.setFolder(
-                    this.folderService.serialize(
-                            newFolder.get().getFolder(),
-                            resFormat
-                    )
-            );
-            resBody.setUid(newFolder.get().getUuid());
+            DirectoryResponseData resBody = buildResponse(folderDto);
 
             resHeaders.setContentType(resContentType);
 
@@ -214,12 +203,10 @@ public class OpenehrDirectoryController extends BaseController {
     ) {
 
         // Get response data format for deserialization; defaults to JSON
-        StructuredStringFormat responseFormat = StructuredStringFormat.JSON;
         MediaType responseContentType = MediaType.APPLICATION_JSON;
 
         switch (accept) {
             case MediaType.APPLICATION_XML_VALUE:
-                responseFormat = StructuredStringFormat.XML;
                 responseContentType = MediaType.APPLICATION_XML;
                 break;
             case MediaType.APPLICATION_JSON_VALUE:
@@ -237,24 +224,20 @@ public class OpenehrDirectoryController extends BaseController {
         }
 
         // Get the folder entry from database
-        Optional<FolderDto> folderDto = folderService.retrieve(versionUid, 1);
-        if (!folderDto.isPresent()) {
+        Optional<FolderDto> foundFolder = folderService.retrieve(versionUid, 1);
+        if (!foundFolder.isPresent()) {
             throw new ObjectNotFoundException("folder", "The FOLDER with id " + versionUid + " does not exist.");
         }
 
-        // Serialize into target format
-        StructuredString serializedFolder = folderService.serialize(folderDto.get().getFolder(), responseFormat);
+        FolderDto folderDto = foundFolder.get();
 
         // Create response data
         HttpHeaders headers = new HttpHeaders();
-
         headers.setContentType(responseContentType);
 
-        DirectoryResponseData responseData = new DirectoryResponseData();
-        responseData.setUid(versionUid.toString());
-        responseData.setFolder(serializedFolder);
+        DirectoryResponseData resBody = buildResponse(folderDto);
 
-        return new ResponseEntity<>(responseData, headers, HttpStatus.OK);
+        return new ResponseEntity<>(resBody, headers, HttpStatus.OK);
 
     }
 
@@ -359,14 +342,14 @@ public class OpenehrDirectoryController extends BaseController {
         UUID folderId = UUID.fromString(ifMatch);
 
         // Update folder and get new version
-        Optional<FolderDto> updated = this.folderService.update(
+        Optional<FolderDto> updatedFolder = this.folderService.update(
                 folderId,
                 folder,
                 ehrId
         );
 
 
-        if (!updated.isPresent()) {
+        if (!updatedFolder.isPresent()) {
             throw new InternalServerException(
                     "Something went wrong. Folder could be persisted but not fetched again."
             );
@@ -380,6 +363,8 @@ public class OpenehrDirectoryController extends BaseController {
 
         // Check for desired response representation format from PREFER header
         if (prefer.equals(RETURN_REPRESENTATION)){
+
+            FolderDto folderDto = updatedFolder.get();
 
             // Evaluate target format from accept header
             StructuredStringFormat resFormat = StructuredStringFormat.JSON;
@@ -398,16 +383,7 @@ public class OpenehrDirectoryController extends BaseController {
                     );
             }
 
-            DirectoryResponseData resBody = new DirectoryResponseData();
-
-            // Serialize Content
-            resBody.setFolder(
-                    this.folderService.serialize(
-                            updated.get().getFolder(),
-                            resFormat
-                    )
-            );
-            resBody.setUid(updated.get().getUuid());
+            DirectoryResponseData resBody = buildResponse(folderDto);
 
             resHeaders.setContentType(resContentType);
 
@@ -466,6 +442,16 @@ public class OpenehrDirectoryController extends BaseController {
         UUID ehrId = getEhrUuid(ehrIdString);
         // TODO: Implement delete FOLDER fuctionality
         return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    }
+
+    private DirectoryResponseData buildResponse(FolderDto folderDto) {
+        DirectoryResponseData resBody = new DirectoryResponseData();
+        resBody.setDetails(folderDto.getDetails());
+        resBody.setFolders(folderDto.getFolders());
+        resBody.setItems(folderDto.getItems());
+        resBody.setName(folderDto.getName());
+        resBody.setUid(folderDto.getUid());
+        return resBody;
     }
 
 }

@@ -31,19 +31,18 @@ import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_FolderAccess;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
+import org.ehrbase.dao.access.util.FolderUtils;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.tables.FolderHierarchy;
 import org.ehrbase.jooq.pg.tables.records.FolderHierarchyRecord;
 import org.ehrbase.jooq.pg.tables.records.FolderItemsRecord;
 import org.ehrbase.jooq.pg.tables.records.FolderRecord;
 import org.ehrbase.jooq.pg.tables.records.ObjectRefRecord;
-import org.ehrbase.serialisation.CanonicalJson;
 import org.joda.time.DateTime;
 import org.jooq.*;
 import org.jooq.impl.DSL;
 import org.postgresql.util.PGobject;
 
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -57,10 +56,9 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
 
     private static final Logger log = LogManager.getLogger(FolderAccess.class);
 
-    private  ItemStructure details;
-    private   List<ObjectRef> items = new ArrayList<>();
-    private Map<UUID, I_FolderAccess> subfoldersList = new TreeMap<UUID, I_FolderAccess>();
-    private List<I_FolderAccess> subFoldersInsertList = new ArrayList<>();
+    private ItemStructure details;
+    private List<ObjectRef> items = new ArrayList<>();
+    private Map<UUID, I_FolderAccess> subfoldersList = new TreeMap<>();
     private I_ContributionAccess contributionAccess;
     private UUID ehrId;
     private FolderRecord folderRecord;
@@ -410,17 +408,25 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
      */
     private static FolderAccess buildFolderAccessFromGenericRecord(final Record record_, final I_DomainAccess domainAccess){
 
-        Record13<UUID, UUID, UUID, Timestamp, Object, UUID, UUID, String, String, Boolean, ItemStructure, Timestamp, Timestamp> record = (Record13<UUID, UUID, UUID, Timestamp, Object, UUID, UUID, String, String, Boolean, ItemStructure, Timestamp, Timestamp>)record_;
+        Record13<UUID, UUID, UUID, Timestamp, Object, UUID, UUID, String, String, Boolean, PGobject, Timestamp, Timestamp> record = (Record13<UUID, UUID, UUID, Timestamp, Object, UUID, UUID, String, String, Boolean, PGobject, Timestamp, Timestamp>)record_;
         FolderAccess folderAccess = new FolderAccess(domainAccess);
         folderAccess.folderRecord = new FolderRecord();
         folderAccess.folderRecord.setId(record.value1());
+        folderAccess.setFolderId(record.value1());
         folderAccess.folderRecord.setInContribution(record.value7());
+        folderAccess.setInContribution(record.value7());
         folderAccess.folderRecord.setName(record.value8());
+        folderAccess.setFolderName(record.value8());
         folderAccess.folderRecord.setArchetypeNodeId(record.value9());
+        folderAccess.setFolderNArchetypeNodeId(record.value9());
         folderAccess.folderRecord.setActive(record.value10());
-        folderAccess.folderRecord.setDetails(record.value11());
+        folderAccess.setIsFolderActive(record.value10());
+        folderAccess.folderRecord.setDetails(FolderUtils.parseFromPGobject(record.value11()));
+        folderAccess.setFolderDetails(FolderUtils.parseFromPGobject(record.value11()));
         folderAccess.folderRecord.setSysTransaction(record.value12());
+        folderAccess.setFolderSysTransaction(record.value12());
         folderAccess.folderRecord.setSysPeriod(record.value13());
+        folderAccess.setFolderSysPeriod(record.value13());
         folderAccess.getItems().addAll(FolderAccess.retrieveItemsByFolderAndContributionId(record.value1(), record.value7(), domainAccess));
 
         return folderAccess;
@@ -469,8 +475,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
             //if the FOLDER items were returned in the recursive query use them and avoid a DB transaction
             if(record.getValue("parent_folder").equals(id)){
 
-                FolderAccess fa = buildFolderAccessFromGenericRecord(record, domainAccess);
-                return fa;
+                return buildFolderAccessFromGenericRecord(record, domainAccess);
             }
         }
 
@@ -484,9 +489,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         }
 
 
-        FolderAccess fa = buildFolderAccessFromFolderRecord(folderSelectedRecord, domainAccess);
-        return fa;
-
+        return buildFolderAccessFromFolderRecord(folderSelectedRecord, domainAccess);
     }
 
     /**
@@ -510,20 +513,11 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         folderAccessInstance.getFolderRecord().setArchetypeNodeId(folder.getArchetypeNodeId());
         folderAccessInstance.getFolderRecord().setActive(true);
 
-        PGobject jsonObject = new PGobject();
-        jsonObject.setType("json");
-        try {
-            jsonObject.setValue("{\"s\": \"s\"}");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        //pstmt.setObject(11, jsonObject);
-
         if (folder.getDetails() != null) {
             folderAccessInstance.getFolderRecord().setDetails(folder.getDetails());
         }
 
-        if(!folder.getItems().isEmpty()){
+        if(folder.getItems() != null && !folder.getItems().isEmpty()){
             folderAccessInstance.getItems().addAll(folder.getItems());
         }
 
@@ -640,7 +634,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
                 contributionAccess
         );
 
-        if (folder.getFolders() != null) {
+        if (folder.getFolders() != null && !folder.getFolders().isEmpty()) {
             // Iterate over sub folders and create FolderAccess for each sub folder
             folder.getFolders().forEach(child -> {
                 // Call recursive creation of folderAccess for children without uid
@@ -651,7 +645,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
                         ehrId,
                         contributionAccess
                 );
-                folderAccess.getSubFoldersInsertList().add(childFolderAccess);
+                folderAccess.getSubfoldersList().put(UUID.randomUUID(), childFolderAccess);
             });
         }
         return folderAccess;
@@ -773,7 +767,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         this.contributionAccess = contributionAccess;
     }
 
-    FolderRecord getFolderRecord() {
+    public FolderRecord getFolderRecord() {
         return folderRecord;
     }
 
@@ -789,12 +783,9 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
     public  void setDetails(final ItemStructure details){
         this.details = details;}
 
-    public List<I_FolderAccess> getSubFoldersInsertList() {
-        return this.subFoldersInsertList;
-    }
-
-    public  ItemStructure getDetails(){
-        return this.details;
+    @Override
+    public ItemStructure getDetails() {
+        return null;
     }
 
     public  List<ObjectRef> getItems(){

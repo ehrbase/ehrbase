@@ -1,7 +1,10 @@
 package org.ehrbase.dao.access.util;
 
+import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.directory.Folder;
 import org.ehrbase.dao.access.interfaces.I_FolderAccess;
+import org.ehrbase.serialisation.RawJson;
+import org.postgresql.util.PGobject;
 
 public class FolderUtils {
 
@@ -20,7 +23,7 @@ public class FolderUtils {
             target.setFolderName(update.getNameAsString());
         }
         if (update.getDetails() != null) {
-            target.setDetails(update.getDetails());
+            target.setFolderDetails(update.getDetails());
         }
         if (update.getArchetypeNodeId() != null) {
             target.setFolderNArchetypeNodeId(update.getArchetypeNodeId());
@@ -29,5 +32,13 @@ public class FolderUtils {
             target.getItems().clear();
             target.getItems().addAll(update.getItems());
         }
+    }
+
+    public static ItemStructure parseFromPGobject(PGobject databaseObject) {
+        if (databaseObject == null) {
+            return null;
+        }
+        String value = databaseObject.getValue();
+        return new RawJson().unmarshal(value, ItemStructure.class);
     }
 }

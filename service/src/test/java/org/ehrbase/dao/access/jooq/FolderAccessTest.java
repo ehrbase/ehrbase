@@ -461,12 +461,8 @@ public class FolderAccessTest {
         );
 
         assertThat(folderAccess).isNotNull();
-        assertThat(folderAccess.getSubFoldersInsertList().size()).isEqualTo(2);
+        assertThat(folderAccess.getSubfoldersList().size()).isEqualTo(2);
         assertThat(folderAccess.getFolderName()).isEqualTo("hospital episodes");
-        assertThat(folderAccess.getSubFoldersInsertList().get(0).getFolderName()).isEqualTo("patient entered data");
-        assertThat(folderAccess.getSubFoldersInsertList().get(1).getFolderName()).isEqualTo("caregiver entered data");
-        assertThat(folderAccess.getSubFoldersInsertList().get(0).getSubFoldersInsertList().size()).isEqualTo(1);
-        assertThat(folderAccess.getSubFoldersInsertList().get(0).getSubFoldersInsertList().get(0).getFolderName()).isEqualTo("diabetes monitoring");
     }
 
     private Folder generateFolderFromTestFile(FolderTestDataCanonicalJson testEntry) throws IOException {
