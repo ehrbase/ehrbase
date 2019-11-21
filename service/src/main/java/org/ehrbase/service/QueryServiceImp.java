@@ -20,6 +20,7 @@ package org.ehrbase.service;
 
 import com.google.gson.JsonElement;
 import org.ehrbase.api.definitions.QueryMode;
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.definitions.StructuredString;
 import org.ehrbase.api.definitions.StructuredStringFormat;
 import org.ehrbase.api.dto.QueryDefinitionResultDto;
@@ -61,9 +62,9 @@ public class QueryServiceImp extends BaseService implements QueryService {
     private boolean usePgExtensions; //default
 
     @Autowired
-    public QueryServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context) {
+    public QueryServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig) {
 
-        super(knowledgeCacheService, context);
+        super(knowledgeCacheService, context, serverConfig);
     }
 
     @Override

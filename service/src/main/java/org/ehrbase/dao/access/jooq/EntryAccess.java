@@ -33,6 +33,7 @@ import com.nedap.archie.rm.support.identification.TerminologyId;
 import com.nedap.archie.rm.support.identification.UIDBasedId;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.query.AsyncSqlQuery;
@@ -70,8 +71,32 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
 
     private Composition composition;
 
-    public EntryAccess(DSLContext context, I_KnowledgeCache knowledge, IntrospectService introspectCache, String templateId, Integer sequence, UUID compositionId, Composition composition) {
-        super(context, knowledge, introspectCache);
+    /**
+     * Basic constructor for entry.
+     * @param context DB context object of current server context
+     * @param knowledge Knowledge cache object of current server context
+     * @param introspectCache Introspect cache object of current server context
+     * @param serverConfig Server config object of current server context
+     * @param templateId Template ID of this entry
+     * @param sequence Sequence number of this entry
+     * @param compositionId Linked composition ID
+     * @param composition Object representation of linked composition
+     */
+    public EntryAccess(DSLContext context, I_KnowledgeCache knowledge, IntrospectService introspectCache, ServerConfig serverConfig, String templateId, Integer sequence, UUID compositionId, Composition composition) {
+        super(context, knowledge, introspectCache, serverConfig);
+        setFields(templateId, sequence, compositionId, composition);
+    }
+
+    /**
+     * Constructor with convenient {@link I_DomainAccess} parameter, for better readability.
+     * @param domainAccess Current domain access object
+     * @param templateId Template ID of this entry
+     * @param sequence Sequence number of this entry
+     * @param compositionId Linked composition ID
+     * @param composition Object representation of linked composition
+     */
+    public EntryAccess(I_DomainAccess domainAccess, String templateId, Integer sequence, UUID compositionId, Composition composition) {
+        super(domainAccess.getContext(), domainAccess.getKnowledgeManager(), domainAccess.getIntrospectService(), domainAccess.getServerConfig());
         setFields(templateId, sequence, compositionId, composition);
     }
 
@@ -113,7 +138,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
                 //set the record UID in the composition with matching version number
                 Integer version = I_CompositionAccess.getLastVersionNumber(domainAccess, compositionAccess.getId());
                 values.put(SystemValue.UID,
-                        new ObjectVersionId(compositionAccess.getId().toString() + "::" + domainAccess.getServerNodeId() + "::" + version));
+                        new ObjectVersionId(compositionAccess.getId().toString() + "::" + domainAccess.getServerConfig().getNodename() + "::" + version));
 
                 entryAccess.entryRecord = record;
                 String value = ((PGobject) record.getEntry()).getValue();
@@ -176,7 +201,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
             for (EntryHistoryRecord record : entryHistoryRecords) {
                 //set the record UID in the composition
                 UUID compositionId = compositionHistoryAccess.getId();
-                values.put(SystemValue.UID, new ObjectVersionId(compositionId.toString() + "::" + domainAccess.getServerNodeId() + "::" + version));
+                values.put(SystemValue.UID, new ObjectVersionId(compositionId.toString() + "::" + domainAccess.getServerConfig().getNodename() + "::" + version));
 
 //                EntryAccess entry = new EntryAccess();
                 entryAccess.entryRecord = domainAccess.getContext().newRecord(ENTRY);
@@ -271,7 +296,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
 
         RawJson rawJson = new RawJson();
         record.setEntry(rawJson.marshal(composition));
-        containmentAccess = new ContainmentAccess(getContext(), record.getId(), record.getArchetypeId(), rawJson.getLtreeMap(), true);
+        containmentAccess = new ContainmentAccess(getDataAccess(), record.getId(), record.getArchetypeId(), rawJson.getLtreeMap(), true);
     }
 
     /**

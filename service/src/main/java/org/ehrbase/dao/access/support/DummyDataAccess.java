@@ -20,6 +20,7 @@
  */
 package org.ehrbase.dao.access.support;
 
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.service.IntrospectService;
 import org.jooq.DSLContext;
@@ -29,8 +30,8 @@ import org.jooq.DSLContext;
  */
 public class DummyDataAccess extends DataAccess {
 
-    public DummyDataAccess(DSLContext context, I_KnowledgeCache knowledge, IntrospectService introspectCache) {
-        super(context, knowledge, introspectCache);
+    public DummyDataAccess(DSLContext context, I_KnowledgeCache knowledge, IntrospectService introspectCache, ServerConfig serverConfig) {
+        super(context, knowledge, introspectCache, serverConfig);
 //        this.connection = connectionHandler.getConnection();
     }
 

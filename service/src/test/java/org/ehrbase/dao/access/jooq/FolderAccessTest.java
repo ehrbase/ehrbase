@@ -18,11 +18,13 @@
 
 package org.ehrbase.dao.access.jooq;
 
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_FolderAccess;
 import org.ehrbase.dao.access.support.DummyDataAccess;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
+import org.ehrbase.service.KnowledgeCacheHelper;
 import org.ehrbase.test_data.folder.FolderTestDataCanonicalJson;
 import com.nedap.archie.rm.datastructures.Item;
 import com.nedap.archie.rm.datastructures.ItemStructure;
@@ -69,7 +71,7 @@ public class FolderAccessTest {
         context = getMockingContext();
 
         try {
-            testDomainAccess = new DummyDataAccess(context, null, null);
+            testDomainAccess = new DummyDataAccess(context, null, null, KnowledgeCacheHelper.buildServerConfig());
         } catch (Exception e) {
             e.printStackTrace();
         }

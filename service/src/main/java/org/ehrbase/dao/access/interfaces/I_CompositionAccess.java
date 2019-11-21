@@ -123,7 +123,7 @@ public interface I_CompositionAccess extends I_SimpleCRUD<I_CompositionAccess, U
      * @throws IllegalArgumentException when retrieval failed because of wrong input
      */
     static I_CompositionAccess getNewInstance(I_DomainAccess domain, Composition composition, UUID ehrId) {
-        return new CompositionAccess(domain.getContext(), domain.getKnowledgeManager(), domain.getIntrospectService(), composition, ehrId);
+        return new CompositionAccess(domain.getContext(), domain.getKnowledgeManager(), domain.getIntrospectService(), domain.getServerConfig(), composition, ehrId);
     }
 
     /**
