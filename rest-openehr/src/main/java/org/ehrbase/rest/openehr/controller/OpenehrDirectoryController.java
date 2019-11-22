@@ -135,7 +135,7 @@ public class OpenehrDirectoryController extends BaseController {
                                           newFolder.get()
                                                    .getUid()
                                                    .toString()));
-        resHeaders.setETag("W/\"" +
+        resHeaders.setETag("\"" +
                            newFolder.get()
                                     .getUid()
                                     .toString() +
@@ -244,6 +244,7 @@ public class OpenehrDirectoryController extends BaseController {
         // Create response data
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(responseContentType);
+        headers.setETag("\"" + folderDto.getUid().toString() + "\"");
 
         DirectoryResponseData resBody = buildResponse(folderDto);
 
@@ -373,7 +374,7 @@ public class OpenehrDirectoryController extends BaseController {
                                           updatedFolder.get()
                                                        .getUid()
                                                        .toString()));
-        resHeaders.setETag("/\"" +
+        resHeaders.setETag("\"" +
                            updatedFolder.get()
                                         .getUid()
                                         .toString() +
@@ -463,6 +464,8 @@ public class OpenehrDirectoryController extends BaseController {
     }
 
     private DirectoryResponseData buildResponse(FolderDto folderDto) {
+
+
         DirectoryResponseData resBody = new DirectoryResponseData();
         resBody.setDetails(folderDto.getDetails());
         resBody.setFolders(folderDto.getFolders());

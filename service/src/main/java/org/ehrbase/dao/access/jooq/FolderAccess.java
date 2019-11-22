@@ -56,7 +56,9 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
 
     private static final Logger log = LogManager.getLogger(FolderAccess.class);
 
+    // TODO: Check how to remove this unused details for confusion prevention
     private ItemStructure details;
+
     private List<ObjectRef> items = new ArrayList<>();
     private Map<UUID, I_FolderAccess> subfoldersList = new TreeMap<>();
     private I_ContributionAccess contributionAccess;
@@ -110,55 +112,62 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
 
         this.contributionAccess.commit(transactionTime, null, null, ContributionDataType.folder, ContributionDef.ContributionState.COMPLETE, I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
         this.getFolderRecord().setInContribution(this.contributionAccess.getId());
-        new_contribution=folderRecord.getInContribution();
+        new_contribution = folderRecord.getInContribution();
 
-        //delete so folder can be overwritten
+        // Delete so folder can be overwritten
+        // This will also delete items since cascading the delete to the items table as well as
+        // all FolderHierarchy entires
         this.delete(folderRecord.getId());
 
-        return this.update(transactionTime, true, true, null,old_contribution, new_contribution);
+        return this.update(transactionTime, true, true, null, old_contribution, new_contribution);
     }
 
-    private Boolean update(final Timestamp transactionTime, final boolean force, final boolean topFolder, UUID parentFolder,UUID oldContribution, UUID newContribution){
+    private Boolean update(final Timestamp transactionTime,
+                           final boolean force,
+                           boolean rootFolder,
+                           UUID parentFolder,
+                           UUID oldContribution,
+                           UUID newContribution) {
 
         boolean result = false;
 
-        DSLContext dslContext =  getContext();
+        DSLContext dslContext = getContext();
         dslContext.attach(this.folderRecord);
 
-        folderRecord.setInContribution(newContribution);
+        // Set new Contribution for MODIFY
+        this.setInContribution(newContribution);
 
-        /*copy into new instance and attach to DB context*/
-        FolderRecord updatedFolderrecord = new FolderRecord();
-        UUID updatedRecordId =  folderRecord.getId();
-        if(folderRecord.getId()==null) {
-            updatedRecordId=UUID.randomUUID();
-        }
-        //updatedFolderrecord.setId(updatedRecordId);
-        updatedFolderrecord.setInContribution(newContribution);
-        updatedFolderrecord.setName(this.getFolderName());
-        updatedFolderrecord.setArchetypeNodeId(this.getFolderArchetypeNodeId());
-        updatedFolderrecord.setActive(this.isFolderActive());
-        updatedFolderrecord.setDetails(folderRecord.getDetails());
-        updatedFolderrecord.setSysTransaction(transactionTime);
-        updatedFolderrecord.setSysPeriod(PGObjectParser.parseSysPeriod(folderRecord.getSysPeriod()));
+        // Copy into new instance and attach to DB context.
+        // The new instance is required to store the new record with a new ID
+        FolderRecord updatedFolderRecord = new FolderRecord();
+        updatedFolderRecord.setInContribution(newContribution);
+        updatedFolderRecord.setName(this.getFolderName());
+        updatedFolderRecord.setArchetypeNodeId(this.getFolderArchetypeNodeId());
+        updatedFolderRecord.setActive(this.isFolderActive());
+        updatedFolderRecord.setDetails(this.getFolderDetails());
+        updatedFolderRecord.setSysTransaction(transactionTime);
+        updatedFolderRecord.setSysPeriod(PGObjectParser.parseSysPeriod(this.getFolderSysPeriod()));
 
-        /*attach to context DB*/
-        dslContext.attach(updatedFolderrecord);
+        // attach to context DB
+        dslContext.attach(updatedFolderRecord);
 
-        /*store new instance*/
-        result = updatedFolderrecord.store() > 0;
-
+        // Save new Folder entry to the database
+        result = updatedFolderRecord.store() > 0;
         // Get new folder id for folder items and hierarchy
-        UUID updatedFolderId = updatedFolderrecord.getId();
+        UUID updatedFolderId = updatedFolderRecord.getId();
 
-        /*update items*/
-        this.saveFolderItems(updatedFolderId, oldContribution, newContribution, transactionTime, getContext());
+        // Update items -> Save new list of all items in this folder
+        this.saveFolderItems(updatedFolderId,
+                             oldContribution,
+                             newContribution,
+                             transactionTime,
+                             getContext());
 
-        //Folder hierarchy structure
-        if (!topFolder) {
+        // Create FolderHierarchy entries if this instance is a sub folder
+        if (!rootFolder) {
             FolderHierarchyRecord updatedFhR = new FolderHierarchyRecord();
             updatedFhR.setParentFolder(parentFolder);
-            updatedFhR.setChildFolder(updatedRecordId);
+            updatedFhR.setChildFolder(updatedFolderId);
             updatedFhR.setInContribution(newContribution);
             updatedFhR.setSysTransaction(transactionTime);
             updatedFhR.setSysPeriod(PGObjectParser.parseSysPeriod(folderRecord.getSysPeriod()));
@@ -166,21 +175,26 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
             updatedFhR.store();
         }
 
-        boolean anySubfolderModified = this.getSubfoldersList()
-                .values()
-                .stream()
-                .allMatch(subfolder -> (
-                        ((FolderAccess) subfolder).update(transactionTime, force, false, updatedFolderId, oldContribution, newContribution)
-                ));
+        boolean anySubfolderModified = this.getSubfoldersList() // Map of sub folders with UUID
+                                           .values() // Get all I_FolderAccess entries
+                                           .stream() // Iterate over the I_FolderAccess entries
+                                           .anyMatch(subfolder -> ( // Update each entry and return if there has been at least one entry updated
+                                                   ((FolderAccess) subfolder).update(transactionTime,
+                                                                                     force,
+                                                                                     false,
+                                                                                     updatedFolderId,
+                                                                                     oldContribution,
+                                                                                     newContribution)
+                                           ));
 
-        this.folderRecord = updatedFolderrecord;
+        // Finally overwrite original FolderRecord on this FolderAccess instance to have the
+        // new data available at service layer. Thus we do not need to re-fetch the updated folder
+        // tree from DB
+        this.folderRecord = updatedFolderRecord;
         return result || anySubfolderModified;
     }
 
     private void saveFolderItems(final UUID folderId, final UUID old_contribution, final UUID new_contribution, final Timestamp transactionTime, DSLContext context){
-
-        //delete folder items fot the corresponding folder and contribution, the current items will override the previous one for this folder_id and conmtribution_id, those from other folder or contribution wont be affected.
-        context.deleteFrom(FOLDER_ITEMS).where(FOLDER_ITEMS.FOLDER_ID.eq(this.getFolderId())).and(FOLDER_ITEMS.IN_CONTRIBUTION.eq(old_contribution)).execute();
 
         for(ObjectRef or : this.getItems()){
 
@@ -514,6 +528,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         folderAccessInstance.setFolderNArchetypeNodeId(folder.getArchetypeNodeId());
         folderAccessInstance.setIsFolderActive(true);
 
+        // TODO: Are these guards required?
         if (folder.getDetails() != null) {
             folderAccessInstance.setFolderDetails(folder.getDetails());
         }
@@ -849,14 +864,6 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
                 sysPeriodVal = sysPeriodToParse.toString().replaceAll("::tstzrange", "").replaceAll("'", "");
             }
             return DSL.field(DSL.val(sysPeriodVal) + "::tstzrange");
-        }
-
-        public static Field<Object> parseDetails(Object detailsToParse){
-            String  detailsVal = "{\"s\":\"no details set\"}";//sample default value
-            if(detailsToParse!=null){
-                detailsVal = detailsToParse.toString().replaceAll("::jsonb", "").replaceAll("'", "");
-            }
-            return DSL.field(DSL.val(detailsVal) + "::jsonb");
         }
     }
 
