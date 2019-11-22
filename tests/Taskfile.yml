@@ -61,4 +61,5 @@ tasks:
     desc: RUN TESTS
     cmds:
       # adjust this part to the needs of your current test session
-      - robot -i empty_dbORloaded_db -d results -L TRACE robot/QUERY_SERVICE_TESTS
+      - robot -e future -i xxx -d results -L TRACE --noncritical not-ready robot/CONTRIBUTION_TESTS
+      # - robot -t "*commit CONTRIBUTIONS versioning persistent COMPOSITION" -d results -L TRACE robot/CONTRIBUTION_TESTS
