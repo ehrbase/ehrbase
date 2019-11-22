@@ -116,12 +116,9 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
         Map<SystemValue, Object> values = new HashMap<>();
         values.put(SystemValue.COMPOSER, I_PartyIdentifiedAccess.retrievePartyIdentified(domainAccess, compositionAccess.getComposerId()));
 
-        // conditional handling for persistent compositions that do not have a context
-        I_ContextAccess contextAccess = null;   // stays null if persistent
-        if (Optional.ofNullable(compositionAccess.getContextId()).isPresent()) {
-            contextAccess = I_ContextAccess.retrieveInstance(domainAccess, compositionAccess.getContextId());
-            values.put(SystemValue.CONTEXT, contextAccess.mapRmEventContext());
-        }
+        // optional handling for persistent compositions that do not have a context
+        Optional<I_ContextAccess> opContextAccess = compositionAccess.getContextId().map(id -> I_ContextAccess.retrieveInstance(domainAccess, id));
+        opContextAccess.ifPresent(context -> values.put(SystemValue.CONTEXT, context.mapRmEventContext()));
 
         values.put(SystemValue.LANGUAGE, new CodePhrase(new TerminologyId("ISO_639-1"), compositionAccess.getLanguageCode()));
         String territory2letters = domainAccess.getContext().fetchOne(TERRITORY, TERRITORY.CODE.eq(compositionAccess.getTerritoryCode())).getTwoletter();
@@ -144,8 +141,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
                 String value = ((PGobject) record.getEntry()).getValue();
                 entryAccess.composition = new RawJson().unmarshal(value, Composition.class);
 
-                // continuing conditional handling for persistent compositions
-                Optional<I_ContextAccess> opContextAccess = Optional.ofNullable(contextAccess);
+                // continuing optional handling for persistent compositions
                 opContextAccess.map(I_ContextAccess::mapRmEventContext).ifPresent(ec -> values.put(SystemValue.CONTEXT, ec));
 
                 setCompositionAttributes(entryAccess.composition, values);
@@ -183,8 +179,8 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
 
         EventContext context = I_ContextAccess.retrieveHistoricalEventContext(domainAccess, compositionHistoryAccess.getId(), compositionHistoryAccess.getSysTransaction());
         if (context == null) {//unchanged context use the current one!
-            I_ContextAccess contextAccess = I_ContextAccess.retrieveInstance(domainAccess, compositionHistoryAccess.getContextId());
-            context = contextAccess.mapRmEventContext();
+            // also optional handling of context, because persistent compositions don't have a context
+            compositionHistoryAccess.getContextId().ifPresent(uuid -> I_ContextAccess.retrieveInstance(domainAccess, uuid).mapRmEventContext());
         }
         values.put(SystemValue.CONTEXT, context);
 
