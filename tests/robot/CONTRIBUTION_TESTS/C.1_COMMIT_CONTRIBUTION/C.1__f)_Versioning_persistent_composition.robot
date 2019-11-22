@@ -59,18 +59,12 @@ Force Tags    refactor
 Alternative flow 5: commit CONTRIBUTIONS versioning persistent COMPOSITION
 
     upload OPT    minimal_persistent/persistent_minimal.opt
-
     create EHR
-
     commit CONTRIBUTION (JSON)    minimal_persistent/minimal_persistent.contribution.json
-
     check response: is positive - returns version id
-
     commit CONTRIBUTION - with preceding_version_uid (JSON)    minimal_persistent/minimal_persistent.contribution.json
 
-    # postconditon checks
-    check response: is positive - contribution has new version
+        TRACE GITHUB ISSUE  74  not-ready
 
-    check EHR: has two identical compositions
-        # retrieve EHR by ehr_id
-        # check content of retrieved EHR (JSON)
+    check response: is positive - contribution has new version
+    check response: is positive with list of 2 contribution(s)

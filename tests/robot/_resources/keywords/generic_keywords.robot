@@ -130,7 +130,6 @@ restart SUT
     stop openehr server
     stop and remove ehrdb
     empty operational_templates folder
-    # sleep    1
     start ehrdb
     start openehr server
 

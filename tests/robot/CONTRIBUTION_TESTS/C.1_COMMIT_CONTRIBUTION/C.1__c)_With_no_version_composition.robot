@@ -53,6 +53,8 @@ Alternative flow 2: commit invalid CONTRIBUTION (no VERSION<COMPOSITION>)
 
     create EHR
 
-    commit invalid CONTRIBUTION (JSON)    invalid_contributions/no_versions.json
+       TRACE GITHUB ISSUE  67  not-ready
+
+    commit invalid CONTRIBUTION (JSON)    no_versions.json
 
     check response: is negative indicating empty versions list
