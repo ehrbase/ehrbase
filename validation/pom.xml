@@ -33,6 +33,7 @@
         <dependency>
             <groupId>org.ehrbase.openehr</groupId>
             <artifactId>opt-1.4</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.github.openEHR</groupId>

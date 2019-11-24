@@ -157,6 +157,7 @@
         <dependency>
             <groupId>org.ehrbase.openehr</groupId>
             <artifactId>test-data</artifactId>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

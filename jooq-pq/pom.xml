@@ -33,11 +33,13 @@
         <dependency>
             <groupId>org.ehrbase.openehr</groupId>
             <artifactId>base</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.ehrbase.openehr</groupId>
             <artifactId>serialisation</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>

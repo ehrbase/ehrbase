@@ -40,6 +40,7 @@
         <dependency>
             <groupId>org.ehrbase.openehr</groupId>
             <artifactId>api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <!-- Dependency to application is workaround only to allow expression of markdown code examples in swagger-ui -->
         <dependency>

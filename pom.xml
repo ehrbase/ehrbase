@@ -151,57 +151,6 @@
 
   <dependencyManagement>
     <dependencies>
-      <!-- modules -->
-      <dependency>
-        <groupId>org.ehrbase.openehr</groupId>
-        <artifactId>base</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.ehrbase.openehr</groupId>
-        <artifactId>service</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.ehrbase.openehr</groupId>
-        <artifactId>rest-ehr-scape</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.ehrbase.openehr</groupId>
-        <artifactId>rest-openehr</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.ehrbase.openehr</groupId>
-        <artifactId>application</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.ehrbase.openehr</groupId>
-        <artifactId>api</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.ehrbase.openehr</groupId>
-        <artifactId>jooq-pg</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.ehrbase.openehr</groupId>
-        <artifactId>serialisation</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.ehrbase.openehr</groupId>
-        <artifactId>test-data</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.ehrbase.openehr</groupId>
-        <artifactId>opt-1.4</artifactId>
-        <version>${project.version}</version>
-      </dependency>
       <!-- external -->
       <dependency>
         <groupId>org.keycloak.bom</groupId>
@@ -635,14 +584,14 @@
       <properties>
         <gpg.keyname>FAB0BE712374BFC3D26DA5B43A7041C227272DD8</gpg.keyname>
         <gpg.executable>gpg2</gpg.executable>
-        <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
+        <gpg.passphrase>bla</gpg.passphrase>
       </properties>
       <build>
         <plugins>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
-            <version>1.5</version>
+            <version>1.6</version>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
@@ -662,7 +611,7 @@
           <plugin>
             <groupId>org.sonatype.plugins</groupId>
             <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>1.6.7</version>
+            <version>1.6.5</version>
             <extensions>true</extensions>
             <configuration>
               <serverId>ossrh</serverId>
