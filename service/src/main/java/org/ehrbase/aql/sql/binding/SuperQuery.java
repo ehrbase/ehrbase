@@ -54,9 +54,9 @@ public class SuperQuery {
 
         for (I_VariableDefinition variableDefinition : variableDefinitions) {
             if (variableDefinition.getAlias() == null || variableDefinition.getAlias().isEmpty())
-                fields.add(DSL.fieldByName(variableDefinition.getPath()));
+                fields.add(DSL.fieldByName("/" + variableDefinition.getPath()));
             else
-                fields.add(DSL.fieldByName(variableDefinition.getAlias()));
+                fields.add(DSL.fieldByName("/" + variableDefinition.getAlias()));
         }
 
         return fields;
