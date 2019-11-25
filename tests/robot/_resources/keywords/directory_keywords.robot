@@ -55,8 +55,8 @@ create DIRECTORY (JSON)
                             # API spec: 8849182c-82ad-4088-a07f-48ead4180515::openEHRSys.example.com::1
                             # version_uid has also to be part of `Location` and `ETag` in response headers
 
-                        Set Test Variable  ${folder_uid}  ${response.json()['uid']}
-                        Set Test Variable  ${version_uid}  ${response.json()['uid']}  #TODO: + ::openEHRSys.example.com::1
+                        Set Test Variable  ${folder_uid}  ${response.json()['uid']['value']}
+                        Set Test Variable  ${version_uid}  ${response.json()['uid']['value']}  #TODO: + ::openEHRSys.example.com::1
                         Set Test Variable  ${preceding_version_uid}  ${version_uid}
 
                         capture point in time    of_first_version
@@ -676,7 +676,7 @@ validate POST response - 201 created
 
                         Dictionary Should Contain Key    ${response.json()}    uid
                         Dictionary Should Contain Key    ${response.json()}    folders
-                        Dictionary Should Contain Item    ${response.json()['folder']}    _type  FOLDER 
+                        # Dictionary Should Contain Item    ${response.json()['folders']}    _type  FOLDER 
 
                         Dictionary Should Contain Key    ${response.headers}    Location
                         #TODO: value of Location as per API spec:
@@ -873,8 +873,8 @@ validate GET-@version response - 200 retrieved
                         #TODO:  Should Be Equal    ${response.json()['status']}    OK / Retrieved
 
                         Dictionary Should Contain Key    ${response.json()}    uid
-                        Dictionary Should Contain Key    ${response.json()}    folder
-                        Dictionary Should Contain Item    ${response.json()['folder']}    _type  FOLDER
+                        Dictionary Should Contain Key    ${response.json()}    folders
+                        # Dictionary Should Contain Item    ${response.json()['folder']}    _type  FOLDER
 
 
 validate GET-@version response - 400 bad request
@@ -930,8 +930,8 @@ validate GET response - 200 retrieved
                         #TODO:  Should Be Equal    ${response.json()['status']}    OK / Retrieved
 
                         Dictionary Should Contain Key    ${response.json()}    uid
-                        Dictionary Should Contain Key    ${response.json()}    folder
-                        Dictionary Should Contain Item    ${response.json()['folder']}    _type  FOLDER
+                        Dictionary Should Contain Key    ${response.json()}    folders
+                        # Dictionary Should Contain Item    ${response.json()['folder']}    _type  FOLDER
 
 
 validate GET-version@time response - 200 retrieved
@@ -942,8 +942,8 @@ validate GET-version@time response - 200 retrieved
                         #TODO:  Should Be Equal    ${response.json()['status']}    OK / Retrieved
 
                         Dictionary Should Contain Key    ${response.json()}    uid
-                        Dictionary Should Contain Key    ${response.json()}    folder
-                        Dictionary Should Contain Item    ${response.json()['folder']}    _type  FOLDER
+                        Dictionary Should Contain Key    ${response.json()}    folders
+                        # Dictionary Should Contain Item    ${response.json()['folder']}    _type  FOLDER
 
 
 validate GET-version@time response - 204 folder has been deleted
