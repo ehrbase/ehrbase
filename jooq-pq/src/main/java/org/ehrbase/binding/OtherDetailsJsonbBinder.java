@@ -45,13 +45,15 @@ public class OtherDetailsJsonbBinder implements Binding<Object, ItemStructure> {
             public ItemStructure from(Object databaseObject) {
                 // null is valid "other_details" column's value
                 return Optional.ofNullable(databaseObject)
-                        .map(i -> new RawJson().unmarshal((String) i, ItemStructure.class))
-                        .orElse(null);
+                               .map(i -> new RawJson().unmarshal((String) i, ItemStructure.class))
+                               .orElse(null);
             }
 
             @Override
             public Object to(ItemStructure userObject) {
-                return new RawJson().marshal(userObject);
+                return Optional.ofNullable(userObject)
+                               .map(i -> new RawJson().marshal(i))
+                               .orElse(null);
             }
 
             @Override

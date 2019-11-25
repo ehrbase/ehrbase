@@ -18,9 +18,15 @@
 
 package org.ehrbase.rest.openehr.response;
 
-import org.ehrbase.api.definitions.StructuredString;
+import com.nedap.archie.rm.datastructures.ItemStructure;
+import com.nedap.archie.rm.datavalues.DvText;
+import com.nedap.archie.rm.directory.Folder;
+import com.nedap.archie.rm.support.identification.ObjectRef;
+import com.nedap.archie.rm.support.identification.UIDBasedId;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+
+import java.util.List;
 
 /**
  * Directory response data class. Will be used each time a response format other
@@ -29,16 +35,54 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 @JacksonXmlRootElement
 public class DirectoryResponseData {
 
-    // TODO: Replace basic types with RM types. Currently causing startup problems due to complex nested structures with swagger-ui
-
     @JsonProperty(value = "uid")
-    private String uid;
-    @JsonProperty(value = "folder")
-    private StructuredString folder;
+    private UIDBasedId uid;
+    @JsonProperty(value = "folders")
+    private List<Folder> folders;
+    @JsonProperty(value = "items")
+    private List<ObjectRef> items;
+    @JsonProperty(value = "details")
+    private ItemStructure details;
+    @JsonProperty( value = "name")
+    private DvText name;
 
-    public String getUid() { return this.uid; }
-    public void setUid(String uid) { this.uid = uid; }
+    public UIDBasedId getUid() {
+        return uid;
+    }
 
-    public StructuredString getFolder() { return this.folder; }
-    public void setFolder(StructuredString folder ) { this.folder = folder; }
+    public void setUid(UIDBasedId uid) {
+        this.uid = uid;
+    }
+
+    public List<Folder> getFolders() {
+        return folders;
+    }
+
+    public void setFolders(List<Folder> folder) {
+        this.folders = folder;
+    }
+
+    public List<ObjectRef> getItems() {
+        return items;
+    }
+
+    public void setItems(List<ObjectRef> items) {
+        this.items = items;
+    }
+
+    public ItemStructure getDetails() {
+        return details;
+    }
+
+    public void setDetails(ItemStructure details) {
+        this.details = details;
+    }
+
+    public DvText getName() {
+        return name;
+    }
+
+    public void setName(DvText name) {
+        this.name = name;
+    }
 }
