@@ -438,7 +438,7 @@ get composition - latest version
     # &{headers}=         Create Dictionary     Prefer=return=representation
 
         ####### TODO: @WLAD/PABLO - remove when fixed!!!!! #####################
-        TRACE JIRA BUG  EHR-363    not-ready
+        TRACE GITHUB ISSUE  17  not-ready
         ########################################################################
 
     ${resp}=            Get Request           ${SUT}   /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version    headers=${headers}
@@ -457,7 +457,7 @@ get composition - latest version (XML)
     # &{headers}=         Create Dictionary     Prefer=return=representation  Accept=application/xml
 
         ####### TODO: @WLAD/PABLO - remove when fixed!!!!! #####################
-        TRACE JIRA BUG  EHR-363    not-ready
+        TRACE GITHUB ISSUE  17  not-ready
         ########################################################################
 
     ${resp}=            Get Request           ${SUT}   /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version   headers=${headers}
@@ -515,7 +515,7 @@ get versioned composition - version at time
     &{params}=          Create Dictionary     version_at_time=${time_x}
 
         ####### TODO: @WLAD/PABLO - remove when fixed!!!!! #####################
-        TRACE JIRA BUG  EHR-363    not-ready
+        TRACE GITHUB ISSUE  17  not-ready
         ########################################################################
 
     ${resp}=            Get Request           ${SUT}   /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version
@@ -538,7 +538,7 @@ get composition - version at time (XML)
     &{headers}=         Create Dictionary     Accept=application/xml
 
         ####### TODO: @WLAD/PABLO - remove when fixed!!!!! #####################
-        TRACE JIRA BUG  EHR-363    not-ready
+        TRACE GITHUB ISSUE  17  not-ready
         ########################################################################
 
     ${resp}=            Get Request           ${SUT}   /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version
