@@ -1,0 +1,33 @@
+{
+  "_type": "CONTRIBUTION",
+  "versions": [],
+  "audit": {
+    "_type": "AUDIT_DETAILS",
+    "system_id": "test-system-id",
+    "committer": {
+      "_type": "PARTY_IDENTIFIED",
+      "name": "<optional name of the committer>",
+      "external_ref": {
+        "id": {
+          "_type": "GENERIC_ID",
+          "value": "<OBJECT_ID>",
+          "scheme": "<ID SCHEME NAME>"
+        },
+        "namespace": "demographic",
+        "type": "PERSON"
+      }
+    },
+    "change_type": {
+      "value": "creation",
+      "defining_code": {
+        "terminology_id": {
+          "value": "openehr"
+        },
+        "code_string": "249"
+      }
+    },
+    "description": {
+      "value": "<optional audit description>"
+    }
+  }
+}

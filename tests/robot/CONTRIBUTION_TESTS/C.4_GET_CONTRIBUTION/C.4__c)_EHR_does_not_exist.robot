@@ -52,9 +52,6 @@ Force Tags
 Alternative flow 2 get CONTRIBUTION on a non existent EHR
 
     create fake EHR
-
     create fake CONTRIBUTION
-
     retrieve CONTRIBUTION by fake ehr_id & contri_uid (JSON)
-
-    check response: is negative indicating non-existent contribution_uid
+    check response: is negative indicating non-existent ehr_id

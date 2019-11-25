@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "_type": "RESULTSET",
+    "_created": "2019-10-18T18:09:26.912Z",
+    "_executed_aql": "SELECT c FROM EHR e CONTAINS COMPOSITION c CONTAINS ACTION"
+  },
+  "q": "SELECT c FROM EHR e CONTAINS COMPOSITION c CONTAINS ACTION",
+  "columns": [
+    {
+      "name": "#0",
+      "path": "/"
+    }
+  ],
+  "rows": [
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "meta": {
+    "_type": "RESULTSET",
+    "_created": "2019-10-22T01:15:49.608Z",
+    "_executed_aql": "SELECT c/uid/value, o/name/value, o/data[at0001]/origin/value, o/data[at0001]/events[at0002]/time/value, o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/value FROM EHR e [ehr_id/value='__MODIFY_EHR_ID_1__'] CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS OBSERVATION o [openEHR-EHR-OBSERVATION.minimal.v1]"
+  },
+  "q": "SELECT c/uid/value, o/name/value, o/data[at0001]/origin/value, o/data[at0001]/events[at0002]/time/value, o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/value FROM EHR e [ehr_id/value='__MODIFY_EHR_ID_1__'] CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS OBSERVATION o [openEHR-EHR-OBSERVATION.minimal.v1]",
+  "columns": [
+    {
+      "name": "#0",
+      "path": "/uid/value"
+    },
+    {
+      "name": "#1",
+      "path": "/name/value"
+    },
+    {
+      "name": "#2",
+      "path": "/data[at0001]/origin/value"
+    },
+    {
+      "name": "#3",
+      "path": "/data[at0001]/events[at0002]/time/value"
+    },
+    {
+      "name": "#4",
+      "path": "/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/value"
+    }
+  ],
+  "rows": [
+  ]
+}

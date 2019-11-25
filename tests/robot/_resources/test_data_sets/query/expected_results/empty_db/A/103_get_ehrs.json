@@ -1,0 +1,24 @@
+{
+  "meta": {
+    "_type": "RESULTSET",
+    "_created": "2019-10-19T19:26:30.612Z",
+    "_executed_aql": "SELECT e/ehr_id/value as uid, e/time_created/value as time, e/system_id/value as system FROM EHR e"
+  },
+  "q": "SELECT e/ehr_id/value as uid, e/time_created/value as time, e/system_id/value as system FROM EHR e",
+  "columns": [
+    {
+      "name": "uid",
+      "path": "/ehr_id/value"
+    },
+    {
+      "name": "time",
+      "path": "/time_created/value"
+    },
+    {
+      "name": "system",
+      "path": "/system_id/value"
+    }
+  ],
+  "rows": [
+  ]
+}
