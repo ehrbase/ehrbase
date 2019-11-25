@@ -47,7 +47,7 @@ public interface I_ContextAccess extends I_SimpleCRUD<I_ContextAccess, UUID> {
      * @see EventContext
      */
     static I_ContextAccess getInstance(I_DomainAccess domain, EventContext eventContext) {
-        return new ContextAccess(domain.getContext(), eventContext);
+        return new ContextAccess(domain.getContext(), domain.getServerConfig(), eventContext);
     }
 
     /**

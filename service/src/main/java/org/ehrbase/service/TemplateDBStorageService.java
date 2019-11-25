@@ -20,6 +20,7 @@
 
 package org.ehrbase.service;
 
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_TemplateStoreAccess;
 import org.ehrbase.dao.access.support.ServiceDataAccess;
@@ -35,10 +36,12 @@ import java.util.Optional;
 @Service
 public class TemplateDBStorageService implements TemplateStorage {
     private final DSLContext context;
+    private final ServerConfig serverConfig;
 
     @Autowired
-    public TemplateDBStorageService(DSLContext context) {
+    public TemplateDBStorageService(DSLContext context, ServerConfig serverConfig) {
         this.context = context;
+        this.serverConfig = serverConfig;
     }
 
     @Override
@@ -60,6 +63,6 @@ public class TemplateDBStorageService implements TemplateStorage {
     }
 
     protected I_DomainAccess getDataAccess() {
-        return new ServiceDataAccess(context, null, null);
+        return new ServiceDataAccess(context, null, null, this.serverConfig);
     }
 }

@@ -29,7 +29,7 @@ import java.util.UUID;
  * Interface for contribution service roughly based on openEHR SM "I_EHR_CONTRIBUTION Interface",
  * see: https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_contribution_interface
  */
-public interface ContributionService {
+public interface ContributionService extends BaseService {
 
     /**
      * Return the Contribution with given id in given EHR.

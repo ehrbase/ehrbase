@@ -153,7 +153,7 @@ public class OpenehrContributionController extends BaseController {
                     respHeaders.setLocation(uri);
                     break;
                 case ETAG:
-                    respHeaders.setETag("\"" + contributionId + "\"");  // TODO - see EHR-206
+                    respHeaders.setETag("\"" + contributionId + "\"");
                     break;
                 case LAST_MODIFIED:
                     // TODO should be VERSION.commit_audit.time_committed.value which is not implemented yet - mock for now
