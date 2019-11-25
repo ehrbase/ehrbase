@@ -18,7 +18,6 @@
 
 package org.ehrbase.dao.access.jooq;
 
-import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_FolderAccess;
@@ -429,7 +428,7 @@ public class FolderAccessTest {
         I_ContributionAccess contributionAccess =
                 I_ContributionAccess.getInstance(testDomainAccess, ehrId);
 
-        I_FolderAccess folderAccess = FolderAccess.buildFolderAccessForInsert(
+        I_FolderAccess folderAccess = FolderAccess.buildNewFolderAccessHierarchy(
                 testDomainAccess,
                 folder,
                 DateTime.now(),
@@ -452,7 +451,7 @@ public class FolderAccessTest {
         I_ContributionAccess contributionAccess =
                 I_ContributionAccess.getInstance(testDomainAccess, ehrId);
 
-        I_FolderAccess folderAccess= FolderAccess.buildFolderAccessForInsert(
+        I_FolderAccess folderAccess= FolderAccess.buildNewFolderAccessHierarchy(
                 testDomainAccess,
                 folder,
                 DateTime.now(),

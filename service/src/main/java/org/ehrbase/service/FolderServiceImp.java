@@ -78,11 +78,11 @@ public class FolderServiceImp extends BaseService implements FolderService {
                 ehrId);
 
         // Get first FolderAccess instance
-        I_FolderAccess folderAccess = FolderAccess.buildFolderAccessForInsert(getDataAccess(),
-                                                                              content,
-                                                                              currentTimeStamp,
-                                                                              ehrId,
-                                                                              contributionAccess);
+        I_FolderAccess folderAccess = FolderAccess.buildNewFolderAccessHierarchy(getDataAccess(),
+                                                                                 content,
+                                                                                 currentTimeStamp,
+                                                                                 ehrId,
+                                                                                 contributionAccess);
         return folderAccess.commit(new Timestamp(currentTimeStamp.getMillis()));
     }
 
@@ -114,7 +114,8 @@ public class FolderServiceImp extends BaseService implements FolderService {
         } catch (ObjectNotFoundException e) {
             logger.debug(formatter.format(
                     "Folder entry not found for timestamp: %s",
-                    timestamp.format(ISO_DATE_TIME)).toString());
+                    timestamp.format(ISO_DATE_TIME))
+                                  .toString());
             return Optional.empty();
         }
     }
@@ -126,25 +127,31 @@ public class FolderServiceImp extends BaseService implements FolderService {
     public Optional<FolderDto> update(
             UUID folderId, Folder update, UUID ehrId) {
 
-        Timestamp timestamp = new Timestamp(DateTime.now().getMillis());
-        I_FolderAccess folderAccess = FolderAccess.retrieveInstanceForExistingFolder(getDataAccess(),
-                                                                                     folderId);
+        DateTime timestamp = DateTime.now();
 
-        // Set update data
+        // Get existing root folder
+        I_FolderAccess
+                folderAccess
+                = FolderAccess.retrieveInstanceForExistingFolder(getDataAccess(), folderId);
+
+        // Set update data on root folder
         FolderUtils.updateFolder(update, folderAccess);
 
         // Clear sub folder list
-        folderAccess.getSubfoldersList().clear();
+        folderAccess.getSubfoldersList()
+                    .clear();
 
         // Create FolderAccess instances for sub folders if there are any
-        if (update.getFolders() != null && !update.getFolders().isEmpty()) {
+        if (update.getFolders() != null &&
+            !update.getFolders()
+                   .isEmpty()) {
 
             // Create new sub folders list
             update.getFolders()
                   .forEach(childFolder -> folderAccess.getSubfoldersList()
                                                       .put(
                                                               UUID.randomUUID(),
-                                                              FolderAccess.buildUpdateSubFolderAccess(
+                                                              FolderAccess.buildNewFolderAccessHierarchy(
                                                                       getDataAccess(),
                                                                       childFolder,
                                                                       timestamp,
@@ -152,13 +159,11 @@ public class FolderServiceImp extends BaseService implements FolderService {
                                                                       ((FolderAccess) folderAccess).getContributionAccess())));
         }
 
-        if (folderAccess.update(timestamp)) {
+        // Send update to access layer which updates the hierarchy recursive
+        if (folderAccess.update(new Timestamp(timestamp.getMillis()))) {
 
-            I_FolderAccess updatedFolder = FolderAccess.retrieveInstanceForExistingFolder(getDataAccess(),
-                                                                                          folderId);
-            return createDto(updatedFolder);
-        }
-        else {
+            return createDto(folderAccess);
+        } else {
 
             return Optional.empty();
         }
@@ -226,7 +231,6 @@ public class FolderServiceImp extends BaseService implements FolderService {
      * returns an empty {@link Optional}.
      *
      * @param folderAccess - The {@link I_FolderAccess} containing the data
-     *
      * @return {@link Optional<FolderDto>}
      */
     private Optional<FolderDto> createDto(I_FolderAccess folderAccess) {
@@ -247,7 +251,6 @@ public class FolderServiceImp extends BaseService implements FolderService {
      * structure.
      *
      * @param folderAccess - Folder dao containing the target folder record
-     *
      * @return Folder object
      */
     private Folder createFolderObject(I_FolderAccess folderAccess) {
@@ -257,10 +260,12 @@ public class FolderServiceImp extends BaseService implements FolderService {
         result.setArchetypeNodeId(folderAccess.getFolderArchetypeNodeId());
         result.setNameAsString(folderAccess.getFolderName());
         result.setItems(folderAccess.getItems());
-        result.setUid(new ObjectVersionId(folderAccess.getFolderId().toString()));
+        result.setUid(new ObjectVersionId(folderAccess.getFolderId()
+                                                      .toString()));
 
         // Handle subfolder list recursively
-        if (!folderAccess.getSubfoldersList().isEmpty()) {
+        if (!folderAccess.getSubfoldersList()
+                         .isEmpty()) {
 
             result.setFolders(folderAccess.getSubfoldersList()
                                           .values()
@@ -268,8 +273,7 @@ public class FolderServiceImp extends BaseService implements FolderService {
                                           .map(this::createFolderObject)
                                           .collect(Collectors.toList()));
 
-        }
-        else {
+        } else {
             result.setFolders(null);
         }
 

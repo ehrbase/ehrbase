@@ -416,17 +416,17 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     }
 
     @Override
-    public UUID getContextId() {
+    public Optional<UUID> getContextId() {
         if (compositionRecord == null)
-            return null;
+            return Optional.empty();
         if (compositionRecord.getId() == null)
-            return null;
+            return Optional.empty();
         // conditional handling for persistent composition that do not have a event context
         EventContextRecord eventContext = getContext().fetchOne(EVENT_CONTEXT, EVENT_CONTEXT.COMPOSITION_ID.eq(compositionRecord.getId()));
         if (eventContext == null) {
-            return null;
+            return Optional.empty();
         }
-        return eventContext.getId();
+        return Optional.of(eventContext.getId());
     }
 
     @Override
@@ -643,11 +643,8 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
             }
         }
 
-        if (force && getContextId() != null) { //updateComposition event context accordingly, if composition is not persistent (i.e. has no context)
-            //retrieve context and force update
-            I_ContextAccess contextAccess = I_ContextAccess.retrieveInstance(this, getContextId());
-            contextAccess.update(transactionTime, true);
-        }
+        //updateComposition event context accordingly, if composition is not persistent (i.e. has a context)
+        getContextId().ifPresent(id -> I_ContextAccess.retrieveInstance(this, id).update(transactionTime, force));
 
         return result;
     }
