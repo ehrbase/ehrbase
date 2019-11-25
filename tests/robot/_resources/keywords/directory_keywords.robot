@@ -548,6 +548,8 @@ GET /ehr/ehr_id/directory/version_uid
 
                         prepare directory request session    ${format}
 
+        TRACE GITHUB ISSUE  81  not-ready
+
     ${resp}=            Get Request         ${SUT}   /ehr/${ehr_id}/directory/${version_uid}
                         ...                 headers=${headers}
 
@@ -673,7 +675,7 @@ validate POST response - 201 created
                         #TODO:  Should Be Equal       ${response.json()['status']}    OK / Created
 
                         Dictionary Should Contain Key    ${response.json()}    uid
-                        Dictionary Should Contain Key    ${response.json()}    folder
+                        Dictionary Should Contain Key    ${response.json()}    folders
                         Dictionary Should Contain Item    ${response.json()['folder']}    _type  FOLDER 
 
                         Dictionary Should Contain Key    ${response.headers}    Location
