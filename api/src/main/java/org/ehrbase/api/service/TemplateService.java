@@ -25,9 +25,8 @@ import org.ehrbase.api.dto.TemplateMetaDataDto;
 import org.ehrbase.api.dto.WebTemplate;
 
 import java.util.List;
-import java.util.UUID;
 
-public interface TemplateService {
+public interface TemplateService extends BaseService {
     List<TemplateMetaDataDto> getAllTemplates();
 
     StructuredString buildExample(String templateId, CompositionFormat format);
@@ -44,6 +43,4 @@ public interface TemplateService {
     String findOperationalTemplate(String templateId, OperationalTemplateFormat format) throws RuntimeException;
 
     String create(String content);
-
-    UUID getSystemUuid();    // from BaseService
 }

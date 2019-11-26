@@ -1,9 +1,11 @@
 package org.ehrbase.dao.access.jooq;
 
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_StoredQueryAccess;
 import org.ehrbase.dao.access.support.DummyDataAccess;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
+import org.ehrbase.service.KnowledgeCacheHelper;
 import org.joda.time.format.DateTimeFormat;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
@@ -29,7 +31,7 @@ public class StoredQueryAccessTest {
         context = getMockingContext();
 
         try {
-            testDomainAccess = new DummyDataAccess(context, null, null);
+            testDomainAccess = new DummyDataAccess(context, null, null, KnowledgeCacheHelper.buildServerConfig());
         } catch (Exception e) {
             e.printStackTrace();
         }

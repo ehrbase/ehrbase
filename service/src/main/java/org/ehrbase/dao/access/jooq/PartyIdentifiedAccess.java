@@ -27,8 +27,10 @@ import com.nedap.archie.rm.support.identification.GenericId;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.PartyRef;
+import org.apache.catalina.Server;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_PartyIdentifiedAccess;
@@ -54,8 +56,8 @@ public class PartyIdentifiedAccess extends DataAccess implements I_PartyIdentifi
     private PartyIdentifiedRecord partyIdentifiedRecord;
     private Map<String, IdentifierRecord> identifiers;
 
-    public PartyIdentifiedAccess(DSLContext context, String partyName) {
-        super(context, null, null);
+    public PartyIdentifiedAccess(DSLContext context, ServerConfig serverConfig, String partyName) {
+        super(context, null, null, serverConfig);
         partyIdentifiedRecord = context.newRecord(PARTY_IDENTIFIED);
         partyIdentifiedRecord.setName(partyName);
     }
@@ -63,8 +65,8 @@ public class PartyIdentifiedAccess extends DataAccess implements I_PartyIdentifi
     /**
      * Internal constructor to get empty access
      */
-    private PartyIdentifiedAccess(DSLContext context) {
-        super(context, null, null);
+    private PartyIdentifiedAccess(DSLContext context, ServerConfig serverConfig) {
+        super(context, null, null, serverConfig);
     }
 
     public static I_PartyIdentifiedAccess retrieveInstance(I_DomainAccess domainAccess, UUID id) {
@@ -74,7 +76,7 @@ public class PartyIdentifiedAccess extends DataAccess implements I_PartyIdentifi
         if (record == null)
             return null;
 
-        PartyIdentifiedAccess partyIdentifiedAccess = new PartyIdentifiedAccess(context);
+        PartyIdentifiedAccess partyIdentifiedAccess = new PartyIdentifiedAccess(context, domainAccess.getServerConfig());
         partyIdentifiedAccess.partyIdentifiedRecord = record;
 
         Result<IdentifierRecord> identifierRecords = context.fetch(IDENTIFIER, IDENTIFIER.PARTY.eq(partyIdentifiedAccess.partyIdentifiedRecord.getId()));

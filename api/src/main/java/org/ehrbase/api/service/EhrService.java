@@ -24,13 +24,12 @@ import org.ehrbase.api.exception.DuplicateObjectException;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import org.ehrbase.api.exception.InternalServerException;
 
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface EhrService {
+public interface EhrService extends BaseService {
     /**
      * Creates new EHR instance, with default settings and values when no status or ID is supplied.
      * @param status Optional, sets custom status
@@ -86,8 +85,6 @@ public interface EhrService {
      * @return EHR_STATUS version UID
      */
     String getLatestVersionUidOfStatus(UUID ehrId);
-
-    UUID getSystemUuid();    // from BaseService
 
     LocalDateTime getCreationTime(UUID ehrId);
 

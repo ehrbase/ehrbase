@@ -35,6 +35,7 @@ import org.jooq.exception.DataAccessException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.ehrbase.jooq.pg.Tables.*;
@@ -123,7 +124,7 @@ public interface I_CompositionAccess extends I_SimpleCRUD<I_CompositionAccess, U
      * @throws IllegalArgumentException when retrieval failed because of wrong input
      */
     static I_CompositionAccess getNewInstance(I_DomainAccess domain, Composition composition, UUID ehrId) {
-        return new CompositionAccess(domain.getContext(), domain.getKnowledgeManager(), domain.getIntrospectService(), composition, ehrId);
+        return new CompositionAccess(domain.getContext(), domain.getKnowledgeManager(), domain.getIntrospectService(), domain.getServerConfig(), composition, ehrId);
     }
 
     /**
@@ -326,9 +327,9 @@ public interface I_CompositionAccess extends I_SimpleCRUD<I_CompositionAccess, U
     /**
      * get the event context id
      *
-     * @return {@link UUID}
+     * @return Optional with ID if it exists, otherwise empty Optional
      */
-    UUID getContextId();
+    Optional<UUID> getContextId();
 
     /**
      * get the contribution version id

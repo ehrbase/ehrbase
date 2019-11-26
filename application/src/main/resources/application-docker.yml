@@ -26,6 +26,9 @@ spring:
 
 server:
   contextPath: /ehrbase
+  port: 8080
+  # Optional custom server nodename
+  # nodename: 'local.test.org'
 
 system:
   type: ${SYSTEM_NAME}

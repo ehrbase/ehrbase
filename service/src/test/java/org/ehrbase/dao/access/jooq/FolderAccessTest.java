@@ -23,6 +23,7 @@ import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_FolderAccess;
 import org.ehrbase.dao.access.support.DummyDataAccess;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
+import org.ehrbase.service.KnowledgeCacheHelper;
 import org.ehrbase.test_data.folder.FolderTestDataCanonicalJson;
 import com.nedap.archie.rm.datastructures.Item;
 import com.nedap.archie.rm.datastructures.ItemStructure;
@@ -69,7 +70,7 @@ public class FolderAccessTest {
         context = getMockingContext();
 
         try {
-            testDomainAccess = new DummyDataAccess(context, null, null);
+            testDomainAccess = new DummyDataAccess(context, null, null, KnowledgeCacheHelper.buildServerConfig());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -427,7 +428,7 @@ public class FolderAccessTest {
         I_ContributionAccess contributionAccess =
                 I_ContributionAccess.getInstance(testDomainAccess, ehrId);
 
-        I_FolderAccess folderAccess = FolderAccess.buildFolderAccessForInsert(
+        I_FolderAccess folderAccess = FolderAccess.buildNewFolderAccessHierarchy(
                 testDomainAccess,
                 folder,
                 DateTime.now(),
@@ -450,7 +451,7 @@ public class FolderAccessTest {
         I_ContributionAccess contributionAccess =
                 I_ContributionAccess.getInstance(testDomainAccess, ehrId);
 
-        I_FolderAccess folderAccess= FolderAccess.buildFolderAccessForInsert(
+        I_FolderAccess folderAccess= FolderAccess.buildNewFolderAccessHierarchy(
                 testDomainAccess,
                 folder,
                 DateTime.now(),
@@ -459,12 +460,8 @@ public class FolderAccessTest {
         );
 
         assertThat(folderAccess).isNotNull();
-        assertThat(folderAccess.getSubFoldersInsertList().size()).isEqualTo(2);
+        assertThat(folderAccess.getSubfoldersList().size()).isEqualTo(2);
         assertThat(folderAccess.getFolderName()).isEqualTo("hospital episodes");
-        assertThat(folderAccess.getSubFoldersInsertList().get(0).getFolderName()).isEqualTo("patient entered data");
-        assertThat(folderAccess.getSubFoldersInsertList().get(1).getFolderName()).isEqualTo("caregiver entered data");
-        assertThat(folderAccess.getSubFoldersInsertList().get(0).getSubFoldersInsertList().size()).isEqualTo(1);
-        assertThat(folderAccess.getSubFoldersInsertList().get(0).getSubFoldersInsertList().get(0).getFolderName()).isEqualTo("diabetes monitoring");
     }
 
     private Folder generateFolderFromTestFile(FolderTestDataCanonicalJson testEntry) throws IOException {

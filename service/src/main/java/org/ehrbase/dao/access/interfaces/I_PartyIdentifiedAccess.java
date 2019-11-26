@@ -47,7 +47,7 @@ public interface I_PartyIdentifiedAccess extends I_SimpleCRUD<I_PartyIdentifiedA
      * @return an new access layer instance
      */
     static I_PartyIdentifiedAccess getInstance(I_DomainAccess domain, String partyName) {
-        return new PartyIdentifiedAccess(domain.getContext(), partyName);
+        return new PartyIdentifiedAccess(domain.getContext(), domain.getServerConfig(), partyName);
     }
 
 

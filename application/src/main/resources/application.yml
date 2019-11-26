@@ -14,9 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-server:
-  port: 8080
-
 spring:
   profiles:
     active: local
