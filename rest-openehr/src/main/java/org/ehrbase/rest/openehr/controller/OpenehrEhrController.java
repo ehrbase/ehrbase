@@ -26,7 +26,6 @@ import org.ehrbase.api.service.EhrService;
 import org.ehrbase.rest.openehr.controller.OperationNotesResourcesReaderOpenehr.ApiNotes;
 import org.ehrbase.rest.openehr.response.EhrResponseData;
 import org.ehrbase.rest.openehr.response.EhrResponseDataRepresentation;
-import org.ehrbase.rest.openehr.response.EhrStatusResponseData;
 import org.ehrbase.rest.openehr.response.InternalResponse;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.support.identification.HierObjectId;
