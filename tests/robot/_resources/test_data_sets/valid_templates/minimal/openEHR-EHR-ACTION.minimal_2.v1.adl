@@ -1,0 +1,65 @@
+archetype (adl_version=1.4)
+	openEHR-EHR-ACTION.minimal_2.v1
+
+concept
+	[at0000]	-- Minimal 2
+language
+	original_language = <[ISO_639-1::es]>
+description
+	original_author = <
+		["name"] = <"">
+	>
+	details = <
+		["es"] = <
+			language = <[ISO_639-1::es]>
+			purpose = <"">
+			use = <"">
+			misuse = <"">
+			copyright = <"">
+		>
+	>
+	lifecycle_state = <"0">
+	other_contributors = <>
+	other_details = <
+		["MD5-CAM-1.0.1"] = <"32429DCE4602B060448866679D6C7613">
+	>
+
+definition
+	ACTION[at0000] matches {	-- Minimal 2
+		description matches {
+			ITEM_TREE[at0001] matches {	-- Arbol
+				items cardinality matches {0..*; unordered} matches {
+					ELEMENT[at0002] occurrences matches {0..1} matches {	-- Proportion
+						value matches {
+							DV_PROPORTION matches {
+								numerator matches {|>=0.0|}
+								denominator matches {|>0.0|}
+								is_integral matches {False}
+								type matches {3, 4}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+ontology
+	term_definitions = <
+		["es"] = <
+			items = <
+				["at0000"] = <
+					text = <"Minimal 2">
+					description = <"unknown">
+				>
+				["at0001"] = <
+					text = <"Arbol">
+					description = <"@ internal @">
+				>
+				["at0002"] = <
+					text = <"Proportion">
+					description = <"*">
+				>
+			>
+		>
+	>

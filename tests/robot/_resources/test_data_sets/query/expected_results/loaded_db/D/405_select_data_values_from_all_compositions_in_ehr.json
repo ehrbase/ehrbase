@@ -1,0 +1,621 @@
+{
+  "meta": {
+    "_type": "RESULTSET",
+    "_created": "2019-10-22T01:14:23.902Z",
+    "_executed_aql": "SELECT c/uid, c/name, c/archetype_node_id, c/language, c/territory, c/category FROM EHR e CONTAINS COMPOSITION c WHERE e/ehr_id/value matches {'__MODIFY_EHR_ID_1__'}"
+  },
+  "q": "SELECT c/uid, c/name, c/archetype_node_id, c/language, c/territory, c/category FROM EHR e CONTAINS COMPOSITION c WHERE e/ehr_id/value matches {'__MODIFY_EHR_ID_1__'}",
+  "columns": [
+    {
+      "name": "#0",
+      "path": "/uid"
+    },
+    {
+      "name": "#1",
+      "path": "/name"
+    },
+    {
+      "name": "#2",
+      "path": "/archetype_node_id"
+    },
+    {
+      "name": "#3",
+      "path": "/language"
+    },
+    {
+      "name": "#4",
+      "path": "/territory"
+    },
+    {
+      "name": "#5",
+      "path": "/category"
+    }
+  ],
+  "rows": [
+    [
+      {
+        "_type": "OBJECT_VERSION_ID",
+        "value": "__MODIFY_COMPOSITION_UID_1__"
+      },
+      {
+        "_type": "DV_TEXT",
+        "value": "Minimal"
+      },
+      "openEHR-EHR-COMPOSITION.minimal.v1",
+      {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_639-1"
+        },
+        "code_string": "en"
+      },
+      {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_3166-1"
+        },
+        "code_string": "UY"
+      },
+      {
+        "_type": "DV_CODED_TEXT",
+        "value": "event",
+        "defining_code": {
+          "_type": "CODE_PHRASE",
+          "terminology_id": {
+            "_type": "TERMINOLOGY_ID",
+            "value": "openehr"
+          },
+          "code_string": "433"
+        }
+      }
+    ],
+    [
+      {
+        "_type": "OBJECT_VERSION_ID",
+        "value": "__MODIFY_COMPOSITION_UID_2__"
+      },
+      {
+        "_type": "DV_TEXT",
+        "value": "Minimal"
+      },
+      "openEHR-EHR-COMPOSITION.minimal.v1",
+      {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_639-1"
+        },
+        "code_string": "en"
+      },
+      {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_3166-1"
+        },
+        "code_string": "UY"
+      },
+      {
+        "_type": "DV_CODED_TEXT",
+        "value": "event",
+        "defining_code": {
+          "_type": "CODE_PHRASE",
+          "terminology_id": {
+            "_type": "TERMINOLOGY_ID",
+            "value": "openehr"
+          },
+          "code_string": "433"
+        }
+      }
+    ],
+    [
+      {
+        "_type": "OBJECT_VERSION_ID",
+        "value": "__MODIFY_COMPOSITION_UID_3__"
+      },
+      {
+        "_type": "DV_TEXT",
+        "value": "Minimal"
+      },
+      "openEHR-EHR-COMPOSITION.minimal.v1",
+      {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_639-1"
+        },
+        "code_string": "en"
+      },
+      {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_3166-1"
+        },
+        "code_string": "UY"
+      },
+      {
+        "_type": "DV_CODED_TEXT",
+        "value": "event",
+        "defining_code": {
+          "_type": "CODE_PHRASE",
+          "terminology_id": {
+            "_type": "TERMINOLOGY_ID",
+            "value": "openehr"
+          },
+          "code_string": "433"
+        }
+      }
+    ],
+    [
+      {
+        "_type": "OBJECT_VERSION_ID",
+        "value": "__MODIFY_COMPOSITION_UID_4__"
+      },
+      {
+        "_type": "DV_TEXT",
+        "value": "Minimal"
+      },
+      "openEHR-EHR-COMPOSITION.minimal.v1",
+      {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_639-1"
+        },
+        "code_string": "en"
+      },
+      {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_3166-1"
+        },
+        "code_string": "UY"
+      },
+      {
+        "_type": "DV_CODED_TEXT",
+        "value": "event",
+        "defining_code": {
+          "_type": "CODE_PHRASE",
+          "terminology_id": {
+            "_type": "TERMINOLOGY_ID",
+            "value": "openehr"
+          },
+          "code_string": "433"
+        }
+      }
+    ],
+    [
+      {
+        "_type": "OBJECT_VERSION_ID",
+        "value": "__MODIFY_COMPOSITION_UID_5__"
+      },
+      {
+        "_type": "DV_TEXT",
+        "value": "Minimal"
+      },
+      "openEHR-EHR-COMPOSITION.minimal.v1",
+      {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_639-1"
+        },
+        "code_string": "en"
+      },
+      {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_3166-1"
+        },
+        "code_string": "UY"
+      },
+      {
+        "_type": "DV_CODED_TEXT",
+        "value": "event",
+        "defining_code": {
+          "_type": "CODE_PHRASE",
+          "terminology_id": {
+            "_type": "TERMINOLOGY_ID",
+            "value": "openehr"
+          },
+          "code_string": "433"
+        }
+      }
+    ],
+    [
+      {
+        "_type": "OBJECT_VERSION_ID",
+        "value": "__MODIFY_COMPOSITION_UID_6__"
+      },
+      {
+        "_type": "DV_TEXT",
+        "value": "Minimal"
+      },
+      "openEHR-EHR-COMPOSITION.minimal.v1",
+      {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_639-1"
+        },
+        "code_string": "en"
+      },
+      {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_3166-1"
+        },
+        "code_string": "UY"
+      },
+      {
+        "_type": "DV_CODED_TEXT",
+        "value": "event",
+        "defining_code": {
+          "_type": "CODE_PHRASE",
+          "terminology_id": {
+            "_type": "TERMINOLOGY_ID",
+            "value": "openehr"
+          },
+          "code_string": "433"
+        }
+      }
+    ],
+    [
+      {
+        "_type": "OBJECT_VERSION_ID",
+        "value": "__MODIFY_COMPOSITION_UID_7__"
+      },
+      {
+        "_type": "DV_TEXT",
+        "value": "Minimal"
+      },
+      "openEHR-EHR-COMPOSITION.minimal.v1",
+      {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_639-1"
+        },
+        "code_string": "en"
+      },
+      {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_3166-1"
+        },
+        "code_string": "UY"
+      },
+      {
+        "_type": "DV_CODED_TEXT",
+        "value": "event",
+        "defining_code": {
+          "_type": "CODE_PHRASE",
+          "terminology_id": {
+            "_type": "TERMINOLOGY_ID",
+            "value": "openehr"
+          },
+          "code_string": "433"
+        }
+      }
+    ],
+    [
+      {
+        "_type": "OBJECT_VERSION_ID",
+        "value": "__MODIFY_COMPOSITION_UID_8__"
+      },
+      {
+        "_type": "DV_TEXT",
+        "value": "Minimal"
+      },
+      "openEHR-EHR-COMPOSITION.minimal.v1",
+      {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_639-1"
+        },
+        "code_string": "en"
+      },
+      {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_3166-1"
+        },
+        "code_string": "UY"
+      },
+      {
+        "_type": "DV_CODED_TEXT",
+        "value": "event",
+        "defining_code": {
+          "_type": "CODE_PHRASE",
+          "terminology_id": {
+            "_type": "TERMINOLOGY_ID",
+            "value": "openehr"
+          },
+          "code_string": "433"
+        }
+      }
+    ],
+    [
+      {
+        "_type": "OBJECT_VERSION_ID",
+        "value": "__MODIFY_COMPOSITION_UID_9__"
+      },
+      {
+        "_type": "DV_TEXT",
+        "value": "Minimal"
+      },
+      "openEHR-EHR-COMPOSITION.minimal.v1",
+      {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_639-1"
+        },
+        "code_string": "en"
+      },
+      {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_3166-1"
+        },
+        "code_string": "UY"
+      },
+      {
+        "_type": "DV_CODED_TEXT",
+        "value": "event",
+        "defining_code": {
+          "_type": "CODE_PHRASE",
+          "terminology_id": {
+            "_type": "TERMINOLOGY_ID",
+            "value": "openehr"
+          },
+          "code_string": "433"
+        }
+      }
+    ],
+    [
+      {
+        "_type": "OBJECT_VERSION_ID",
+        "value": "__MODIFY_COMPOSITION_UID_10__"
+      },
+      {
+        "_type": "DV_TEXT",
+        "value": "Minimal"
+      },
+      "openEHR-EHR-COMPOSITION.minimal.v1",
+      {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_639-1"
+        },
+        "code_string": "en"
+      },
+      {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_3166-1"
+        },
+        "code_string": "UY"
+      },
+      {
+        "_type": "DV_CODED_TEXT",
+        "value": "event",
+        "defining_code": {
+          "_type": "CODE_PHRASE",
+          "terminology_id": {
+            "_type": "TERMINOLOGY_ID",
+            "value": "openehr"
+          },
+          "code_string": "433"
+        }
+      }
+    ],
+    [
+      {
+        "_type": "OBJECT_VERSION_ID",
+        "value": "__MODIFY_COMPOSITION_UID_11__"
+      },
+      {
+        "_type": "DV_TEXT",
+        "value": "Minimal"
+      },
+      "openEHR-EHR-COMPOSITION.minimal.v1",
+      {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_639-1"
+        },
+        "code_string": "en"
+      },
+      {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_3166-1"
+        },
+        "code_string": "UY"
+      },
+      {
+        "_type": "DV_CODED_TEXT",
+        "value": "event",
+        "defining_code": {
+          "_type": "CODE_PHRASE",
+          "terminology_id": {
+            "_type": "TERMINOLOGY_ID",
+            "value": "openehr"
+          },
+          "code_string": "433"
+        }
+      }
+    ],
+    [
+      {
+        "_type": "OBJECT_VERSION_ID",
+        "value": "__MODIFY_COMPOSITION_UID_12__"
+      },
+      {
+        "_type": "DV_TEXT",
+        "value": "Minimal"
+      },
+      "openEHR-EHR-COMPOSITION.minimal.v1",
+      {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_639-1"
+        },
+        "code_string": "en"
+      },
+      {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_3166-1"
+        },
+        "code_string": "UY"
+      },
+      {
+        "_type": "DV_CODED_TEXT",
+        "value": "event",
+        "defining_code": {
+          "_type": "CODE_PHRASE",
+          "terminology_id": {
+            "_type": "TERMINOLOGY_ID",
+            "value": "openehr"
+          },
+          "code_string": "433"
+        }
+      }
+    ],
+    [
+      {
+        "_type": "OBJECT_VERSION_ID",
+        "value": "__MODIFY_COMPOSITION_UID_13__"
+      },
+      {
+        "_type": "DV_TEXT",
+        "value": "Minimal"
+      },
+      "openEHR-EHR-COMPOSITION.minimal.v1",
+      {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_639-1"
+        },
+        "code_string": "en"
+      },
+      {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_3166-1"
+        },
+        "code_string": "UY"
+      },
+      {
+        "_type": "DV_CODED_TEXT",
+        "value": "event",
+        "defining_code": {
+          "_type": "CODE_PHRASE",
+          "terminology_id": {
+            "_type": "TERMINOLOGY_ID",
+            "value": "openehr"
+          },
+          "code_string": "433"
+        }
+      }
+    ],
+    [
+      {
+        "_type": "OBJECT_VERSION_ID",
+        "value": "__MODIFY_COMPOSITION_UID_14__"
+      },
+      {
+        "_type": "DV_TEXT",
+        "value": "Minimal"
+      },
+      "openEHR-EHR-COMPOSITION.minimal.v1",
+      {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_639-1"
+        },
+        "code_string": "en"
+      },
+      {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_3166-1"
+        },
+        "code_string": "UY"
+      },
+      {
+        "_type": "DV_CODED_TEXT",
+        "value": "event",
+        "defining_code": {
+          "_type": "CODE_PHRASE",
+          "terminology_id": {
+            "_type": "TERMINOLOGY_ID",
+            "value": "openehr"
+          },
+          "code_string": "433"
+        }
+      }
+    ],
+    [
+      {
+        "_type": "OBJECT_VERSION_ID",
+        "value": "__MODIFY_COMPOSITION_UID_15__"
+      },
+      {
+        "_type": "DV_TEXT",
+        "value": "Minimal"
+      },
+      "openEHR-EHR-COMPOSITION.minimal.v1",
+      {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_639-1"
+        },
+        "code_string": "en"
+      },
+      {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_3166-1"
+        },
+        "code_string": "UY"
+      },
+      {
+        "_type": "DV_CODED_TEXT",
+        "value": "event",
+        "defining_code": {
+          "_type": "CODE_PHRASE",
+          "terminology_id": {
+            "_type": "TERMINOLOGY_ID",
+            "value": "openehr"
+          },
+          "code_string": "433"
+        }
+      }
+    ]
+  ]
+}

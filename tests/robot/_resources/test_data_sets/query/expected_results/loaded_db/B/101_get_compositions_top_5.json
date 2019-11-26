@@ -1,0 +1,31 @@
+{
+  "meta": {
+    "_type": "RESULTSET",
+    "_created": "2019-10-18T18:04:11.803Z",
+    "_executed_aql": "SELECT TOP 5 c FROM COMPOSITION c"
+  },
+  "q": "SELECT TOP 5 c FROM COMPOSITION c",
+  "columns": [
+    {
+      "name": "#0",
+      "path": "/"
+    }
+  ],
+  "rows": [
+    [
+      "__MODIFY_COMPOSITION_1_FROM_EHR_1__"
+    ],
+    [
+      "__MODIFY_COMPOSITION_2_FROM_EHR_1__"
+    ],
+    [
+      "__MODIFY_COMPOSITION_3_FROM_EHR_1__"
+    ],
+    [
+      "__MODIFY_COMPOSITION_4_FROM_EHR_1__"
+    ],
+    [
+      "__MODIFY_COMPOSITION_5_FROM_EHR_1__"
+    ]
+  ]
+}

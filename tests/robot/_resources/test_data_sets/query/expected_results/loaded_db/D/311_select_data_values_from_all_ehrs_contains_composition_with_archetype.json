@@ -1,0 +1,74 @@
+{
+  "meta": {
+    "_type": "RESULTSET",
+    "_created": "2019-10-19T18:51:02.700Z",
+    "_executed_aql": "select e/ehr_id, e/time_created, e/system_id from EHR e CONTAINS COMPOSITION c WHERE c/archetype_node_id='openEHR-EHR-COMPOSITION.minimal.v1'",
+  },
+  "q": "select e/ehr_id, e/time_created, e/system_id from EHR e CONTAINS COMPOSITION c WHERE c/archetype_node_id='$archetype_id'",
+  "columns": [
+    {
+      "name": "#0",
+      "path": "/ehr_id"
+    },
+    {
+      "name": "#1",
+      "path": "/time_created"
+    },
+    {
+      "name": "#2",
+      "path": "/system_id"
+    }
+  ],
+  "rows": [
+    [
+      "__MODIFY_EHR_ID_1__",
+      "__MODIFY_TIME_CREATED_1__",
+      "__MODIFY_SYSTEM_ID_1__"
+    ],
+    [
+      "__MODIFY_EHR_ID_2__",
+      "__MODIFY_TIME_CREATED_2__",
+      "__MODIFY_SYSTEM_ID_2__"
+    ],
+    [
+      "__MODIFY_EHR_ID_3__",
+      "__MODIFY_TIME_CREATED_3__",
+      "__MODIFY_SYSTEM_ID_3__"
+    ],
+    [
+      "__MODIFY_EHR_ID_4__",
+      "__MODIFY_TIME_CREATED_4__",
+      "__MODIFY_SYSTEM_ID_4__"
+    ],
+    [
+      "__MODIFY_EHR_ID_5__",
+      "__MODIFY_TIME_CREATED_5__",
+      "__MODIFY_SYSTEM_ID_5__"
+    ],
+    [
+      "__MODIFY_EHR_ID_6__",
+      "__MODIFY_TIME_CREATED_6__",
+      "__MODIFY_SYSTEM_ID_6__"
+    ],
+    [
+      "__MODIFY_EHR_ID_7__",
+      "__MODIFY_TIME_CREATED_7__",
+      "__MODIFY_SYSTEM_ID_7__"
+    ],
+    [
+      "__MODIFY_EHR_ID_8__",
+      "__MODIFY_TIME_CREATED_8__",
+      "__MODIFY_SYSTEM_ID_8__"
+    ],
+    [
+      "__MODIFY_EHR_ID_9__",
+      "__MODIFY_TIME_CREATED_9__",
+      "__MODIFY_SYSTEM_ID_9__"
+    ],
+    [
+      "__MODIFY_EHR_ID_10__",
+      "__MODIFY_TIME_CREATED_10__",
+      "__MODIFY_SYSTEM_ID_10__"
+    ]
+  ]
+}

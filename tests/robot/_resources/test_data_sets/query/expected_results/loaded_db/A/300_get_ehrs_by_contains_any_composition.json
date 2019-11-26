@@ -1,0 +1,46 @@
+{
+  "meta": {
+    "_type": "RESULTSET",
+    "_created": "2019-10-17T23:27:23.785Z",
+    "_executed_aql": "SELECT e/ehr_id/value FROM EHR e CONTAINS COMPOSITION c"
+  },
+  "q": "SELECT e/ehr_id/value FROM EHR e CONTAINS COMPOSITION c",
+  "columns": [
+    {
+      "name": "#0",
+      "path": "/ehr_id/value"
+    }
+  ],
+  "rows": [
+    [
+      "__MODIFY_EHR_ID_1__"
+    ],
+    [
+      "__MODIFY_EHR_ID_2__"
+    ],
+    [
+      "__MODIFY_EHR_ID_3__"
+    ],
+    [
+      "__MODIFY_EHR_ID_4__"
+    ],
+    [
+      "__MODIFY_EHR_ID_5__"
+    ],
+    [
+      "__MODIFY_EHR_ID_6__"
+    ],
+    [
+      "__MODIFY_EHR_ID_7__"
+    ],
+    [
+      "__MODIFY_EHR_ID_8__"
+    ],
+    [
+      "__MODIFY_EHR_ID_9__"
+    ],
+    [
+      "__MODIFY_EHR_ID_10__"
+    ]
+  ]
+}

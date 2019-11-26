@@ -1,0 +1,60 @@
+{
+  "meta": {
+    "_type": "RESULTSET",
+    "_created": "2019-10-19T18:51:02.700Z",
+    "_executed_aql": "SELECT c/uid/value, o/name/value, o/data[at0001]/origin/value, o/data[at0001]/events[at0002]/time/value, o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/value FROM EHR e [ehr_id/value=__MODIFY_EHR_ID_1__] CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS OBSERVATION o [openEHR-EHR-OBSERVATION.minimal.v1]",
+  },
+  "q": "SELECT c/uid/value, o/name/value, o/data[at0001]/origin/value, o/data[at0001]/events[at0002]/time/value, o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/value FROM EHR e [ehr_id/value=$ehr_id] CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS OBSERVATION o [openEHR-EHR-OBSERVATION.minimal.v1]",
+  "columns": [
+    {
+      "name": "#0",
+      "path": "/uid/value"
+    },
+    {
+      "name": "#1",
+      "path": "/name/value"
+    },
+    {
+      "name": "#2",
+      "path": "/data[at0001]/origin/value"
+    },
+    {
+      "name": "#3",
+      "path": "/data[at0001]/events[at0002]/time/value"
+    },
+    {
+      "name": "#4",
+      "path": "/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/value"
+    }
+  ],
+  "rows": [
+    [
+      "__MODIFY_COMPOSITION_UID_1_VALUE__",
+      "__MODIFY_OBSERVATION_1_NAME_VALUE__",
+      "__MODIFY_OBSERVATION_1_DATA_ORIGIN_VALUE__",
+      "__MODIFY_OBSERVATION_1_DATA_EVENT_1_TIME_VALUE__",
+      "__MODIFY_OBSERVATION_1_VALUE_VALUE__"
+    ],
+    [
+      "__MODIFY_COMPOSITION_UID_2_VALUE__",
+      "__MODIFY_OBSERVATION_2_NAME_VALUE__",
+      "__MODIFY_OBSERVATION_2_DATA_ORIGIN_VALUE__",
+      "__MODIFY_OBSERVATION_2_DATA_EVENT_1_TIME_VALUE__",
+      "__MODIFY_OBSERVATION_2_VALUE_VALUE__"
+    ],
+    [
+      "__MODIFY_COMPOSITION_UID_3_VALUE__",
+      "__MODIFY_OBSERVATION_3_NAME_VALUE__",
+      "__MODIFY_OBSERVATION_3_DATA_ORIGIN_VALUE__",
+      "__MODIFY_OBSERVATION_3_DATA_EVENT_1_TIME_VALUE__",
+      "__MODIFY_OBSERVATION_3_VALUE_VALUE__"
+    ],
+    [
+      "__MODIFY_COMPOSITION_UID_4_VALUE__",
+      "__MODIFY_OBSERVATION_4_NAME_VALUE__",
+      "__MODIFY_OBSERVATION_4_DATA_ORIGIN_VALUE__",
+      "__MODIFY_OBSERVATION_4_DATA_EVENT_1_TIME_VALUE__",
+      "__MODIFY_OBSERVATION_4_VALUE_VALUE__"
+    ]
+  ]
+}
