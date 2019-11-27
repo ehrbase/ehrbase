@@ -55,9 +55,9 @@ public abstract class RMObjectAttribute implements I_RMObjectAttribute, I_JoinBi
     }
 
     protected String effectiveAlias(){
-        return (fieldContext.getVariableDefinition().getAlias() == null || !fieldContext.getVariableDefinition().getAlias().isEmpty())
+        return (fieldContext.getVariableDefinition().getAlias() == null)
                 ? "/"+fieldContext.getColumnAlias()
-                : "/"+fieldContext.getVariableDefinition().getAlias();
+                : fieldContext.getVariableDefinition().getAlias();
     }
 
     protected Field<?> defaultAliased(Field field){
