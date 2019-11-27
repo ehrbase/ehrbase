@@ -205,9 +205,12 @@ public class OpenehrDirectoryController extends BaseController {
     public ResponseEntity<DirectoryResponseData> getFolder(
             @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
             @ApiParam(value = "EHR identifier from resource path after ehr/", required = true) @PathVariable(value = "ehr_id") UUID ehrId,
-            @ApiParam(value = "DIRECTORY identifier from resource path after directory/", required = true) @PathVariable(value = "version_uid") UUID versionUid,
+            @ApiParam(value = "DIRECTORY identifier from resource path after directory/", required = true) @PathVariable(value = "version_uid") String versionUid,
             @ApiParam(value = "Path parameter to specify a subfolder at directory") @RequestParam(value = "path", required = false) String path
                                                           ) {
+
+        // Tries to create an UUID from versionUid and throws an IllegalArgumentException for 400 error
+        UUID versionUUID = UUID.fromString(versionUid);
 
         // Get response data format for deserialization; defaults to JSON
         MediaType responseContentType = MediaType.APPLICATION_JSON;
@@ -231,11 +234,11 @@ public class OpenehrDirectoryController extends BaseController {
         }
 
         // Get the folder entry from database
-        Optional<FolderDto> foundFolder = folderService.retrieve(versionUid, 1);
+        Optional<FolderDto> foundFolder = folderService.retrieve(versionUUID, 1);
         if (!foundFolder.isPresent()) {
             throw new ObjectNotFoundException("folder",
                                               "The FOLDER with id " +
-                                              versionUid +
+                                              versionUUID.toString() +
                                               " does not exist.");
         }
 
