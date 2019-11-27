@@ -53,6 +53,7 @@ ${aql_queries}    ${VALID QUERY DATA SETS}
 
 execute ad-hoc query and check result (empty DB)
     [Arguments]         ${aql_payload}
+    [Documentation]     EMPTY DB
 
                         execute ad-hoc query    ${aql_payload}
                         check response: is positive
@@ -60,10 +61,12 @@ execute ad-hoc query and check result (empty DB)
 
 
 execute ad-hoc query and check result (loaded DB)
-    [Arguments]         ${aql_payload}
+    [Arguments]         ${aql_payload}    ${expected}
+    [Documentation]     LOADED DB
 
                         execute ad-hoc query    ${aql_payload}
                         check response: is positive
+                        check response (LOADED DB): returns correct content  ${expected}
 
 
 execute ad-hoc query (no result comparison)
@@ -76,9 +79,7 @@ execute ad-hoc query (no result comparison)
 execute ad-hoc query
     [Arguments]         ${valid_test_data_set}
                         Set Test Variable  ${KEYWORD NAME}  AD-HOC QUERY
-
                         load valid query test-data-set    ${valid_test_data_set}
-
                         POST /query/aql    JSON
 
 
@@ -106,15 +107,9 @@ load expected results-data-set (EMPTY DB)
                         Set Test Variable   ${expected_result}    ${file}
 
 
-compare
-    [Arguments]         ${response body}  ${expected result}  ${exclude_paths}=None
-    [Documentation]     Checks that "response body" is subset of expected result
-    ...                 Allows to ignore dynamic content like timestamps etc.
-    
-    ${response body}=   Evaluate    json.loads('''${response body}''')   json
-    ${expected res}=    Evaluate    json.loads('''${expected result}''')    json
-
-                        subset of expected  ${response body}  ${expected res}  ${exclude_paths}
+# load expected result schema
+#     [Arguments]         ${expected_result}
+#                         Expect Response Body    ${QUERY RESULTS LOADED DB}/${expected_result}-schema.json
 
 
 startup AQL SUT
@@ -176,14 +171,19 @@ POST /query/aql
     ...                 `${test_data}`
 
                         prepare query request session    ${format}
-
     ${resp}=            Post Request        ${SUT}   /query/aql
                         ...                 data=${test_data}
                         ...                 headers=${headers}
-
                         Set Test Variable   ${response}    ${resp}
                         Set Test Variable   ${response body}    ${resp.content}
                         Output Debug Info:  POST /query/aql
+    
+    # UNCOMMENT NEXT BLOCK FOR DEBUGGING (BETTER OUTPUT IN CONSOLE)
+    # TODO: rm/comment when test stable
+    &{resp}=            REST.POST  /query/aql  body=${test_data}  headers=${headers}
+                        Log To Console  \n//////////// ACTUAL //////////////////////////////
+    ${body}=            Output  response body
+                        Integer    response status    200
 
 
 POST /query/{qualified_query_name}/{version}
@@ -257,20 +257,39 @@ check response: is positive
     Should Be Equal As Strings   ${response.status_code}   200
 
 
-check response (LOADED DB): returns correct content for
-    [Arguments]         ${aql_payload}
+check response (LOADED DB): returns correct content
+    [Arguments]         ${path_to_expected}
 
-                        load expected results-data-set (LOADED DB)    ${aql_payload}
+                        load expected results-data-set (LOADED DB)    ${path_to_expected}
 
-                        compare    ${response body}    ${expected result}
+    &{diff}=            compare json-strings  ${response body}  ${expected result}
+    ...                 report_repetition=True
+    ...                 exclude_paths=root['meta']
+                        Should Be Empty  ${diff}  msg=DIFF DETECTED!
+
+
+# check response (LOADED DB): returns correct filtered content for
+#     [Arguments]         ${aql_payload}
+#                         load expected results-data-set (LOADED DB)    ${aql_payload}
+#     &{diff}=            compare json-strings  ${response body}  ${expected result}  exclude_paths=root['meta']
+
+
+# check response (LOADED DB): returns correct ordered content for
+#     [Arguments]         ${aql_payload}
+#                         load expected results-data-set (LOADED DB)    ${aql_payload}
+#     &{diff}=            compare json-strings  ${response body}  ${expected result}  exclude_paths=root['meta']
 
 
 check response (EMPTY DB): returns correct content for
     [Arguments]         ${aql_payload}
 
                         load expected results-data-set (EMPTY DB)    ${aql_payload}
+                        
+                        Log To Console  \n/////////// EXPECTED //////////////////////////////
+                        Output    ${expected result}
 
-                        compare    ${response body}    ${expected result}
+    &{diff}=            compare json-strings  ${response body}  ${expected result}  exclude_paths=root['meta']
+                        Should Be Empty  ${diff}  msg=DIFF DETECTED!
 
 
 
