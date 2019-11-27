@@ -1,0 +1,91 @@
+package org.ehrbase.validation.terminology;
+
+import com.nedap.archie.rm.RMObject;
+import com.nedap.archie.rm.datavalues.quantity.DvOrdered;
+
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.util.HashMap;
+import java.util.Map;
+
+public class ItemValidator {
+
+    private Map<String, ValidationHandler> validationRegistryList;
+
+    private static final String VALIDATOR_PACKAGE = "org.ehrbase.validation.terminology.validator";
+
+    public ItemValidator() {
+        validationRegistryList = new HashMap<>();
+   }
+
+   public ItemValidator add(Class rmObjectClazz) throws NoSuchMethodException, IllegalAccessException, ClassNotFoundException {
+       Class validationHandlerClass = Class.forName(VALIDATOR_PACKAGE+"."+rmObjectClazz.getSimpleName());
+       MethodHandle methodHandle = MethodHandles.lookup().findStatic(validationHandlerClass, "check", MethodType.methodType(void.class, new Class[]{Object.class, String.class, rmObjectClazz}));
+
+       validationRegistryList.put(rmObjectClazz.getCanonicalName(), new ValidationHandler(rmObjectClazz, methodHandle));
+
+       return this;
+   }
+
+   public boolean isValidatedRmObjectType(RMObject rmObject){
+        if (!validationRegistryList.containsKey(rmObject.getClass().getCanonicalName())) {
+            try {
+                if (rmObject.getClass().equals(rmObject.getClass().asSubclass(DvOrdered.class))) {
+                    return true;
+                }
+            }
+            catch (Exception e){
+                return false;
+            }
+        }
+        return true;
+   }
+
+    public boolean isValidatedRmObjectType(Class aRmObjectClass){
+        if (!validationRegistryList.containsKey(aRmObjectClass.getCanonicalName())){
+            try {
+                if (aRmObjectClass.equals(aRmObjectClass.asSubclass(DvOrdered.class))) {
+                    return true;
+                }
+            }
+            catch (Exception e){
+                return false;
+            }
+        }
+        return true;
+    }
+
+   public ValidationHandler matchValidator(RMObject rmObject){
+        String rmClassName = rmObject.getClass().getCanonicalName();
+
+        return validationRegistryList.get(rmClassName);
+   }
+
+    public ValidationHandler matchValidator(Class rmClass){
+
+        return validationRegistryList.get(rmClass.getCanonicalName());
+    }
+
+   public void validate(Object container, String fieldName, RMObject rmObject) throws Throwable {
+        if (rmObject == null)
+            return;
+
+        ValidationHandler validationHandler = matchValidator(rmObject);
+
+        if (validationHandler == null){
+            //check if this rmObject class is a subclass of DvOrdered
+            try {
+                if (rmObject.getClass().equals(rmObject.getClass().asSubclass(DvOrdered.class))) {
+                    validationHandler = matchValidator(DvOrdered.class);
+                }
+            }
+            catch (Exception e){
+                return;
+            }
+        }
+        //invoke validation
+       MethodHandle methodHandle = validationHandler.check();
+       methodHandle.invoke(container, fieldName, rmObject);
+   }
+}
