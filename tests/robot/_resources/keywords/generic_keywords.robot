@@ -127,11 +127,12 @@ compare json-file with json-string
 
 
 restart SUT
-    stop openehr server
-    stop and remove ehrdb
-    empty operational_templates folder
-    start ehrdb
-    start openehr server
+    # stop openehr server
+    # stop and remove ehrdb
+    # empty operational_templates folder
+    # start ehrdb
+    # start openehr server
+    Delete All Templates
 
 
 get application version
@@ -180,13 +181,16 @@ start openehr server
 
 
 start server process without coverage
-    ${result}=  Start Process  java  -jar  ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
-    ...                              alias=ehrserver  cwd=${PROJECT_ROOT}  stdout=stdout.txt
+    ${result}=          Start Process  java  -jar  ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
+                        ...                  --cache.enabled\=false    alias=ehrserver 
+                        ...                    cwd=${PROJECT_ROOT}    stdout=stdout.txt    stderr=stderr.txt
 
 
 start server process with coverage
-    ${result}=  Start Process  java  -javaagent:${JACOCO_LIB_PATH}/jacocoagent.jar\=output\=tcpserver,address\=127.0.0.1  -jar  ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
-    ...                              alias=ehrserver  cwd=${PROJECT_ROOT}  stdout=stdout.txt  stderr=stderr.txt
+    ${result}=          Start Process  java  -javaagent:${JACOCO_LIB_PATH}/jacocoagent.jar\=output\=tcpserver,address\=127.0.0.1
+                        ...                  -jar    ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
+                        ...                  --cache.enabled\=false    alias=ehrserver
+                        ...                    cwd=${PROJECT_ROOT}    stdout=stdout.txt    stderr=stderr.txt
 
 
 wait until openehr server is ready
