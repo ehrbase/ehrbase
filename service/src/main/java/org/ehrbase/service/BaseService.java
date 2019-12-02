@@ -22,13 +22,11 @@
 package org.ehrbase.service;
 
 import org.ehrbase.api.definitions.ServerConfig;
-import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_PartyIdentifiedAccess;
 import org.ehrbase.dao.access.interfaces.I_SystemAccess;
 import org.ehrbase.dao.access.support.ServiceDataAccess;
 import org.jooq.DSLContext;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.UUID;
@@ -62,19 +60,7 @@ public class BaseService {
     }
 
     public UUID getSystemUuid() {
-        UUID systemId;
-        try {
-            systemId = I_SystemAccess.retrieveInstanceId(getDataAccess(), systemType);
-            if (systemId == null) {
-                I_SystemAccess localSystems = I_SystemAccess.getInstance(getDataAccess(), "Local systems", systemType);
-                localSystems.commit();
-                systemId = localSystems.getId();
-            }
-        } catch (Exception e) {
-            throw new InternalServerException(e);
-        }
-        return systemId;
-
+        return I_SystemAccess.createOrRetrieveLocalSystem(getDataAccess());
     }
 
     protected UUID getUserUuid() {
