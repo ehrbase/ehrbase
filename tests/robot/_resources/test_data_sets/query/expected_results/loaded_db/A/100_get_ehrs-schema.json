@@ -1,0 +1,96 @@
+
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "q": {
+            "type": "string",
+            "default": "SELECT e/ehr_id/value FROM EHR e"
+        },
+        "name": {
+            "type": "null",
+            "default": null
+        },
+        "columns": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "name",
+                    "path"
+                ]
+            },
+            "default": [
+                {
+                    "path": "/ehr_id/value",
+                    "name": "#0"
+                }
+            ]
+        },
+        "rows": {
+            "type": "array",
+            "items": {
+                "type": "array",
+                "items": {
+                    "type": "string",
+                    "enum": [
+                        "64a66a3f-129e-46f8-a9dc-89af6f891379",
+                        "9e676ec4-4b39-4bb4-9f0e-4737ea3fb920",
+                        "6d46df39-e936-4f85-911d-9783b214be31",
+                        "9504d456-7761-4bf2-8f06-7df442ebf3f8",
+                        "d7513189-35a9-47af-8eb4-4e2dca3d6243",
+                        "d5a7e3e7-7040-4fb8-acc2-36c654801de0",
+                        "e332afbd-27d8-44d6-8b59-1d27a54f51da",
+                        "f0a65472-595b-4936-9fb4-5c2ec5db1352",
+                        "3905344d-b325-43e0-aef4-a227039db329",
+                        "11758321-c836-4822-b885-b433d8338c6c"
+                    ]
+                }
+            },
+            "default": [
+                [
+                    "123asdfasdfasdfa asdf asdfasdfasdfas"
+                ],
+                [
+                    "9e676ec4-4b39-4bb4-9f0e-4737ea3fb920"
+                ],
+                [
+                    "6d46df39-e936-4f85-911d-9783b214be31"
+                ],
+                [
+                    "9504d456-7761-4bf2-8f06-7df442ebf3f8"
+                ],
+                [
+                    "d7513189-35a9-47af-8eb4-4e2dca3d6243"
+                ],
+                [
+                    "d5a7e3e7-7040-4fb8-acc2-36c654801de0"
+                ],
+                [
+                    "e332afbd-27d8-44d6-8b59-1d27a54f51da"
+                ],
+                [
+                    "f0a65472-595b-4936-9fb4-5c2ec5db1352"
+                ],
+                [
+                    "3905344d-b325-43e0-aef4-a227039db329"
+                ],
+                [
+                    "11758321-c836-4822-b885-b433d8338c6c"
+                ]
+            ]
+        }
+    },
+    "required": [
+        "columns",
+        "rows"
+    ]
+}

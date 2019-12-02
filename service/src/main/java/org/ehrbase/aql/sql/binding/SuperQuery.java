@@ -25,6 +25,7 @@ package org.ehrbase.aql.sql.binding;
 import org.ehrbase.aql.definition.FuncParameter;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.Variables;
+import org.ehrbase.aql.sql.queryImpl.DefaultColumnId;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.SelectQuery;
@@ -54,7 +55,7 @@ public class SuperQuery {
 
         for (I_VariableDefinition variableDefinition : variableDefinitions) {
             if (variableDefinition.getAlias() == null || variableDefinition.getAlias().isEmpty())
-                fields.add(DSL.fieldByName(variableDefinition.getPath()));
+                fields.add(DSL.fieldByName(new DefaultColumnId().value(variableDefinition))); //CR #50
             else
                 fields.add(DSL.fieldByName(variableDefinition.getAlias()));
         }

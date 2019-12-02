@@ -34,6 +34,7 @@ import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.dto.CompositionDto;
 import org.ehrbase.api.dto.ContributionDto;
 import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.service.CompositionService;
@@ -121,6 +122,9 @@ public class ContributionServiceImp extends BaseService implements ContributionS
         // commits with all default values
         UUID contributionId = contributionAccess.commit(null, null, null, null, null, null, null);
         List<Version> versions = ContributionServiceHelper.getVersions(content, format);
+
+        if (versions.isEmpty())
+            throw new InvalidApiParameterException("Invalid Contribution, must have at least one Version object.");
 
         // go through those RM objects and execute the action of it (as listed in its audit) and connect it to new contribution
         for (Version version : versions) {
