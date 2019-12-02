@@ -33,6 +33,7 @@ import org.ehrbase.api.definitions.CompositionFormat;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.dto.CompositionDto;
 import org.ehrbase.api.dto.ContributionDto;
+import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
@@ -76,11 +77,33 @@ public class ContributionServiceImp extends BaseService implements ContributionS
     }
 
     @Override
-    public Optional<ContributionDto> getContribution(UUID ehrId, UUID contributionId) {
+    public boolean hasContribution(UUID ehrId, UUID contributionId) {
         //pre-step: check for valid ehrId
         if (ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
         }
+
+        I_ContributionAccess contributionAccess;
+        // doesn't exist on error
+        try {
+            contributionAccess = I_ContributionAccess.retrieveInstance(this.getDataAccess(), contributionId);
+        } catch (InternalServerException e) {
+            return false;
+        }
+
+        // doesn't exist on empty result, too
+        if (contributionAccess == null)
+            return false;
+        
+        // with both pre-checks about only checking of contribution is part of EHR is left
+        return contributionAccess.getEhrId().equals(ehrId);
+    }
+
+    @Override
+    public Optional<ContributionDto> getContribution(UUID ehrId, UUID contributionId) {
+        //pre-step: check for valid ehr and contribution ID
+        if (!hasContribution(ehrId, contributionId))
+            throw new ObjectNotFoundException("contribution", "Contribution with given ID does not exist");
 
         ContributionDto contribution = new ContributionDto(contributionId, retrieveUuidsOfContributionObjects(contributionId), retrieveAuditDetails(contributionId));
 
