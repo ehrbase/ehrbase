@@ -83,6 +83,12 @@ cd tests
  2. Browse to Swagger UI --> http://localhost:8080/ehrbase/swagger-ui.html
 
 
+## Docker
+
+To create a Docker image
+
+`docker build -f application/Dockerfile --build-arg JAR_FILE=application-*.jar -t my-org/ehrbase:latest .`
+
 ## Built With
 
 * [Maven](https://maven.apache.org/) - Dependency Management
