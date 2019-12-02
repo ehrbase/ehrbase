@@ -57,6 +57,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -257,9 +258,9 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
     private void setRecordFields(UUID id, EventContext eventContext) {
         //@TODO get from eventContext
         eventContextRecord.setStartTimeTzid(ZoneId.systemDefault().getId());
-        eventContextRecord.setStartTime(new Timestamp(eventContext.getStartTime().getValue().get(ChronoField.MILLI_OF_SECOND)));
+        eventContextRecord.setStartTime(toTimestamp(eventContext.getStartTime()));
         if (eventContext.getEndTime() != null) {
-            eventContextRecord.setEndTime(new Timestamp(eventContext.getEndTime().getValue().get(ChronoField.MILLI_OF_SECOND)));
+            eventContextRecord.setEndTime(toTimestamp(eventContext.getEndTime()));
             eventContextRecord.setEndTimeTzid(ZoneId.systemDefault().getId());
         }
         eventContextRecord.setId(id != null ? id : UUID.randomUUID());
@@ -323,6 +324,13 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
             //set up the JSONB field other_context
             eventContextRecord.setOtherContext(new RawJson().marshal(eventContext.getOtherContext()));
         }
+    }
+
+    private Timestamp toTimestamp(DvDateTime dateTime) {
+        TemporalAccessor accessor = dateTime.getValue();
+        long millis = accessor.getLong(ChronoField.INSTANT_SECONDS) * 1000 + accessor.getLong(ChronoField.MILLI_OF_SECOND);
+
+        return new Timestamp(millis);
     }
 
     /**
