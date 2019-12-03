@@ -67,7 +67,7 @@ Alternative flow 8: commit CONTRIBUTIONS for versioning a persistent COMPOSITION
 
     check response: is positive - returns version id
 
-    commit CONTRIBUTION - with preceding_version_uid (JSON)    minimal/minimal_admin.contribution.creation_modification.json
+    commit invalid CONTRIBUTION - with preceding_version_uid (JSON)    minimal/minimal_admin.contribution.creation_modification.json
 
         TRACE GITHUB ISSUE  72  not-ready
 
