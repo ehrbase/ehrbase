@@ -208,6 +208,13 @@ create new EHR for subject_id (JSON)
                         create new EHR with ehr_status    ${json_ehr}
 
 
+create new EHR with other_details for subject_id (JSON)
+    [Arguments]         ${subject_id}
+    ${json_ehr}=        Load JSON From File   ${FIXTURES}/ehr/ehr_status_1_api_spec_with_other_details.json
+    ${json_ehr}=        Update Value To Json  ${json_ehr}   $.subject.external_ref.id.value   ${subject_id}                                                                                       # alternative syntax
+                        create new EHR with ehr_status    ${json_ehr}
+
+
 create new EHR with subject_id (JSON)
 
                         generate random subject_id
