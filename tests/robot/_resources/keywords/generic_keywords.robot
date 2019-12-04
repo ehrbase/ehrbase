@@ -261,27 +261,22 @@ start ehrdb
     wait until ehrdb is ready
 
 
-stop ehrdb
-    [Documentation]     Stops DB container by using a keyword `stop ehrdb container`
-    ...                 from custom library: dockerlib.py
+# stop ehrdb
+#     [Documentation]     Stops DB container by using a keyword `stop ehrdb container`
+#     ...                 from custom library: dockerlib.py
 
-    ${logs}  ${status}  stop ehrdb container
-    Log      ${logs}
-    Log      ${status}
-    wait until ehrdb is stopped
-    Should Be Equal As Integers  ${status}[StatusCode]  0
+#     ${logs}  ${status}  stop ehrdb container
+#     Log      ${logs}
+#     Log      ${status}
+#     wait until ehrdb is stopped
+#     Should Be Equal As Integers  ${status}[StatusCode]  0
 
 
 stop and remove ehrdb
+    [Documentation]     Stos DB container gracefully and waits for it to be removed
+    ...                 Uses KW from custom library: dockerlib.py
 
-    Log     DEPRECATION WARNING - @WLAD replace/update this keyword!
-    ...     level=WARN
-            # NOTE: remove `stop ehrdb` from this keyword!
-            #      `remove_ehrdb_container` cracefully stops and waits for
-            #        container to be removed
-
-    # stop ehrdb
-    remove ehrdb container  # kw from dockerlib.py
+                        Remove EhrDB Container
 
 
 restart ehrdb
