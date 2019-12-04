@@ -1,0 +1,6 @@
+{
+  "q": "SELECT c/uid, o/name, o/data[at0001]/origin, o/data[at0001]/events[at0002]/time, o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value FROM EHR e [ehr_id/value=$ehr_id] CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS OBSERVATION o [openEHR-EHR-OBSERVATION.minimal.v1]",
+  "query_parameters": {
+    "ehr_id": "__MODIFY_EHR_ID_1__"
+  }
+}
