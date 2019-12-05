@@ -34,4 +34,4 @@ Resource    ${CURDIR}${/}../_resources/keywords/ehr_keywords.robot
 # Suite Setup  startup SUT
 # Suite Teardown  shutdown SUT
 
-Force Tags    COMPOSITION
+Force Tags    COMPOSITION    not-ready
