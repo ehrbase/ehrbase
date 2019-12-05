@@ -3,6 +3,8 @@ package org.ehrbase.validation.terminology;
 import com.nedap.archie.rm.RMObject;
 import com.nedap.archie.rm.archetyped.Pathable;
 import org.apache.commons.lang3.StringUtils;
+import org.ehrbase.terminology.openehr.TerminologyInterface;
+import org.ehrbase.terminology.openehr.implementation.AttributeCodesetMapping;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -12,12 +14,18 @@ import java.lang.reflect.Field;
 public class Pathables {
 
     private ItemValidator itemValidator;
+    private TerminologyInterface terminologyInterface;
+    private AttributeCodesetMapping codesetMapping;
+    private String language;
 
-    public Pathables(ItemValidator itemValidator) {
+    public Pathables(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, ItemValidator itemValidator, String language) {
+        this.terminologyInterface = terminologyInterface;
         this.itemValidator = itemValidator;
+        this.codesetMapping = codesetMapping;
+        this.language = language;
     }
 
-    public void traverse(Pathable pathable, String... excludes) throws Throwable {
+    public void traverse(Pathable pathable, String... excludes) throws Exception {
 
         for (Field field: pathable.getClass().getDeclaredFields()){
             try {
@@ -29,23 +37,18 @@ public class Pathables {
                     Object object = objectForField(pathable, field);
 
                     if (object != null && object instanceof Pathable) {
-                        new Pathables(itemValidator).traverse((Pathable) object, excludes);
+                        new Pathables(terminologyInterface, codesetMapping, itemValidator, language).traverse((Pathable) object, excludes);
                     }
                     else
                         if (object != null)
                             throw new IllegalArgumentException("Internal: couldn't handle object retrieved using getter");
                 }
             }
-            catch (Exception e){
+            catch (ClassCastException e){
                 //check if object is handled for validation
                 if (itemValidator.isValidatedRmObjectType(field.getType())){
-                    try {
-                        RMObject object = objectForField(pathable, field);
-                        itemValidator.validate(pathable, field.getName(), object);
-                    }
-                    catch (Throwable throwable){
-                        throw new IllegalArgumentException("Could not resolve object for field:"+field.toGenericString()+", exception:"+e.getMessage());
-                    }
+                    RMObject object = objectForField(pathable, field);
+                    itemValidator.validate(terminologyInterface, codesetMapping, field.getName(), object, language);
                 }
             } //continue
         }
@@ -61,14 +64,19 @@ public class Pathables {
         return false;
     }
 
-    private RMObject objectForField(Pathable pathable, Field field) throws Throwable {
+    private RMObject objectForField(Pathable pathable, Field field) throws Exception {
         String getterName = "get"+ StringUtils.capitalize(field.getName());
         MethodHandle methodHandle = MethodHandles.lookup().findVirtual(pathable.getClass(), getterName, MethodType.methodType(field.getType()));
-        Object object = methodHandle.invoke(pathable);
-        if (object != null && !(object instanceof RMObject))
-            throw new IllegalArgumentException("Internal: object is not of class RMObject:"+object.toString());
+        try {
+            Object object = methodHandle.invoke(pathable);
+            if (object != null && !(object instanceof RMObject))
+                throw new IllegalArgumentException("Internal: object is not of class RMObject:" + object.toString());
 
-        return (RMObject)object;
+            return (RMObject) object;
+        }
+        catch (Throwable throwable){
+            throw new InternalError("Internal:"+throwable.getMessage());
+        }
     }
 
 }

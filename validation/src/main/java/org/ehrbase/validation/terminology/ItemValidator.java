@@ -1,7 +1,26 @@
+/*
+ * Copyright (c) 2019 Vitasystems GmbH and Christian Chevalley (Hannover Medical School).
+ *
+ * This file is part of project EHRbase
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.ehrbase.validation.terminology;
 
 import com.nedap.archie.rm.RMObject;
 import com.nedap.archie.rm.datavalues.quantity.DvOrdered;
+import org.ehrbase.terminology.openehr.TerminologyInterface;
+import org.ehrbase.terminology.openehr.implementation.AttributeCodesetMapping;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -21,7 +40,8 @@ public class ItemValidator {
 
    public ItemValidator add(Class rmObjectClazz) throws NoSuchMethodException, IllegalAccessException, ClassNotFoundException {
        Class validationHandlerClass = Class.forName(VALIDATOR_PACKAGE+"."+rmObjectClazz.getSimpleName());
-       MethodHandle methodHandle = MethodHandles.lookup().findStatic(validationHandlerClass, "check", MethodType.methodType(void.class, new Class[]{Object.class, String.class, rmObjectClazz}));
+       MethodHandle methodHandle = MethodHandles.lookup().findStatic(validationHandlerClass, "check",
+               MethodType.methodType(void.class, new Class[]{TerminologyInterface.class, AttributeCodesetMapping.class, String.class, rmObjectClazz, String.class}));
 
        validationRegistryList.put(rmObjectClazz.getCanonicalName(), new ValidationHandler(rmObjectClazz, methodHandle));
 
@@ -67,7 +87,7 @@ public class ItemValidator {
         return validationRegistryList.get(rmClass.getCanonicalName());
     }
 
-   public void validate(Object container, String fieldName, RMObject rmObject) throws Throwable {
+   public void validate(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String fieldName, RMObject rmObject, String language) throws Exception {
         if (rmObject == null)
             return;
 
@@ -86,6 +106,14 @@ public class ItemValidator {
         }
         //invoke validation
        MethodHandle methodHandle = validationHandler.check();
-       methodHandle.invoke(container, fieldName, rmObject);
+       try {
+           methodHandle.invoke(terminologyInterface, codesetMapping, fieldName, rmObject, language);
+       } catch (Throwable throwable){
+           if (throwable instanceof IllegalArgumentException)
+               throw new IllegalArgumentException(throwable.getMessage());
+           else
+                throw new InternalError(throwable.getMessage());
+       }
+
    }
 }

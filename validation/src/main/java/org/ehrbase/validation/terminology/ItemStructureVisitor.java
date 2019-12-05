@@ -9,12 +9,15 @@ import com.nedap.archie.rm.datastructures.*;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.datavalues.TermMapping;
-import com.nedap.archie.rm.datavalues.encapsulated.DvMultimedia;
 import com.nedap.archie.rm.datavalues.quantity.DvOrdered;
 import com.nedap.archie.rm.demographic.PartyRelationship;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.Participation;
 import com.nedap.archie.rm.integration.GenericEntry;
+import org.ehrbase.terminology.openehr.TerminologyInterface;
+import org.ehrbase.terminology.openehr.TerminologyService;
+import org.ehrbase.terminology.openehr.implementation.AttributeCodesetMapping;
+import org.ehrbase.terminology.openehr.implementation.LocalizedTerminologies;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,8 +33,14 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
     protected static Logger log = LoggerFactory.getLogger(ItemStructureVisitor.class);
     private int elementOccurrences = 0; //for statistics and testing
     private ItemValidator itemValidator = new ItemValidator();
+    private LocalizedTerminologies localizedTerminologies;
+    private AttributeCodesetMapping codesetMapping;
+    private String itemStructureLanguage = "en"; //if a composition, the language can be found in the structure
 
-    public ItemStructureVisitor() throws NoSuchMethodException, IllegalAccessException, ClassNotFoundException {
+    public ItemStructureVisitor(LocalizedTerminologies localizedTerminologies) throws NoSuchMethodException, IllegalAccessException, ClassNotFoundException {
+        this.localizedTerminologies = localizedTerminologies;
+        this.codesetMapping = localizedTerminologies.codesetMapping();
+
         itemValidator
                 .add(Composition.class)
                 .add(DvCodedText.class)
@@ -48,6 +57,10 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
 
     }
 
+    public ItemStructureVisitor(TerminologyService terminologyService) throws NoSuchMethodException, IllegalAccessException, ClassNotFoundException {
+        this(terminologyService.localizedTerminologies());
+    }
+
     /**
      * main entry method, validate a composition.
      * @param composition
@@ -55,14 +68,15 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
      * @throws Exception
      */
     @Override
-    public void validate(Composition composition) throws Throwable {
+    public void validate(Composition composition) throws Exception {
         if (composition == null || composition.getContent() == null || composition.getContent().isEmpty())
             return;
 
+        itemStructureLanguage = composition.getLanguage().getCodeString();
 
-        itemValidator.validate(null, "composition", composition);
+        itemValidator.validate(localizedTerminologies.locale(itemStructureLanguage), codesetMapping, "composition", composition, itemStructureLanguage);
 
-        new Pathables(itemValidator).traverse(composition, "content");
+        new Pathables(localizedTerminologies.locale(itemStructureLanguage), codesetMapping, itemValidator, itemStructureLanguage).traverse(composition, "content");
 
         for (ContentItem item : composition.getContent()) {
             traverse(item);
@@ -70,12 +84,12 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
     }
 
     @Override
-    public void validate(ItemStructure itemStructure) throws Throwable {
+    public void validate(ItemStructure itemStructure) throws Exception {
             traverse(itemStructure);
     }
 
     @Override
-    public void validate(Locatable locatable) throws Throwable {
+    public void validate(Locatable locatable) throws Exception {
 
         if (locatable instanceof Item)
             traverse((Item) locatable);
@@ -94,7 +108,7 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
      * @return
      * @throws Exception
      */
-    private void validate(Entry entry) throws Throwable {
+    private void validate(Entry entry) throws Exception {
         traverse(entry);
     }
 
@@ -104,7 +118,7 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
      * @return
      * @throws Exception
      */
-    private void validate(Evaluation entry) throws Throwable {
+    private void validate(Evaluation entry) throws Exception {
         if (entry == null || entry.getData() == null)
             return;
 
@@ -117,7 +131,7 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
      * @return
      * @throws Exception
      */
-    private void validate(Observation entry) throws Throwable {
+    private void validate(Observation entry) throws Exception {
         if (entry == null || entry.getData() == null)
             return;
 
@@ -130,7 +144,7 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
      * @return
      * @throws Exception
      */
-    private void validate(Instruction entry) throws Throwable {
+    private void validate(Instruction entry) throws Exception {
         if (entry == null || entry.getActivities() == null)
             return;
 
@@ -143,7 +157,7 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
      * @return
      * @throws Exception
      */
-    private void validate(Action entry) throws Throwable {
+    private void validate(Action entry) throws Exception {
         if (entry == null || entry.getDescription() == null)
             return;
 
@@ -156,7 +170,7 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
      * @return
      * @throws Exception
      */
-    private void validate(Activity entry) throws Throwable {
+    private void validate(Activity entry) throws Exception {
         if (entry == null || entry.getDescription() == null)
             return;
 
@@ -173,7 +187,7 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
      * @param item
      * @throws Exception
      */
-    private void traverse(ContentItem item) throws Throwable {
+    private void traverse(ContentItem item) throws Exception {
 
         Map<String, Object> retmap = null;
 
@@ -186,7 +200,7 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
         if (item instanceof Observation) {
             Observation observation = (Observation) item;
 
-            new Pathables(itemValidator).traverse(observation, "protocol", "data", "state");
+            new Pathables(localizedTerminologies.locale(itemStructureLanguage), codesetMapping, itemValidator, itemStructureLanguage).traverse(observation, "protocol", "data", "state");
 
             if (observation.getProtocol() != null)
                 traverse(observation.getProtocol());
@@ -200,7 +214,7 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
         } else if (item instanceof Evaluation) {
             Evaluation evaluation = (Evaluation) item;
 
-            new Pathables(itemValidator).traverse(evaluation, "protocol", "data");
+            new Pathables(localizedTerminologies.locale(itemStructureLanguage), codesetMapping, itemValidator, itemStructureLanguage).traverse(evaluation, "protocol", "data");
 
             if (evaluation.getProtocol() != null)
                 traverse(evaluation.getProtocol());
@@ -211,7 +225,7 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
         } else if (item instanceof Instruction) {
             Instruction instruction = (Instruction) item;
 
-            new Pathables(itemValidator).traverse(instruction, "protocol", "activities");
+            new Pathables(localizedTerminologies.locale(itemStructureLanguage), codesetMapping, itemValidator, itemStructureLanguage).traverse(instruction, "protocol", "activities");
 
             if (instruction.getProtocol() != null)
                 traverse(instruction.getProtocol());
@@ -225,7 +239,7 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
         } else if (item instanceof Action) {
             Action action = (Action) item;
 
-            new Pathables(itemValidator).traverse(action, "protocol", "description");
+            new Pathables(localizedTerminologies.locale(itemStructureLanguage), codesetMapping, itemValidator, itemStructureLanguage).traverse(action, "protocol", "description");
 
             if (action.getProtocol() != null)
                 traverse(action.getProtocol());
@@ -242,7 +256,7 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
         } else if (item instanceof AdminEntry) {
             AdminEntry adminEntry = (AdminEntry) item;
 
-            new Pathables(itemValidator).traverse(adminEntry, "data");
+            new Pathables(localizedTerminologies.locale(itemStructureLanguage), codesetMapping, itemValidator, itemStructureLanguage).traverse(adminEntry, "data");
 
             if (adminEntry.getData() != null)
                 traverse(adminEntry.getData());
@@ -250,7 +264,7 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
         } else if (item instanceof GenericEntry) {
             GenericEntry genericEntry = (GenericEntry)item;
 
-            new Pathables(itemValidator).traverse(genericEntry, "data");
+            new Pathables(localizedTerminologies.locale(itemStructureLanguage), codesetMapping, itemValidator, itemStructureLanguage).traverse(genericEntry, "data");
 
             traverse(genericEntry.getData());
 
@@ -259,7 +273,7 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
         }
     }
 
-    private void traverse(Activity activity) throws Throwable {
+    private void traverse(Activity activity) throws Exception {
         if (activity == null)
             return;
 
@@ -275,7 +289,7 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
      * @param item
      * @throws Exception
      */
-    private void traverse(History<?> item) throws Throwable {
+    private void traverse(History<?> item) throws Exception {
         if (item == null){
             return;
         }
@@ -292,7 +306,7 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
 
             for (Event<?> event : item.getEvents()) {
 
-                itemValidator.validate(history, "event", event);
+                itemValidator.validate(localizedTerminologies.locale(itemStructureLanguage), codesetMapping, "event", event, itemStructureLanguage);
 
                 if (event.getData() != null)
                     traverse(event.getData());
@@ -308,7 +322,7 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
      * @param item
      * @throws Exception
      */
-    private void traverse(ItemStructure item) throws Throwable {
+    private void traverse(ItemStructure item) throws Exception {
 
         log.debug("traverse itemstructure:"+item);
 
@@ -351,16 +365,20 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
         }
     }
 
-    protected void validateElement(Element element) throws Throwable {
+    protected void validateElement(Element element) throws Exception {
         log.debug("should validate this element:"+element);
         elementOccurrences += 1;
 
         if (element.getNullFlavour() != null && itemValidator.isValidatedRmObjectType(element.getNullFlavour())){
-            itemValidator.validate(element, element.getName().getValue(), element.getNullFlavour());
+            itemValidator.validate(localizedTerminologies.locale(itemStructureLanguage), codesetMapping, null, element.getNullFlavour(), itemStructureLanguage);
         }
 
         if (element.getValue() != null && itemValidator.isValidatedRmObjectType(element.getValue())){
-            itemValidator.validate(element, element.getName().getValue(), element.getValue());
+            itemValidator.validate(localizedTerminologies.locale(itemStructureLanguage), codesetMapping, null, element.getValue(), itemStructureLanguage);
+        }
+
+        if (element.getName() != null && element.getName() instanceof DvCodedText){
+            itemValidator.validate(localizedTerminologies.locale(itemStructureLanguage), codesetMapping, null, (DvCodedText)element.getName(), itemStructureLanguage);
         }
     }
 
@@ -369,7 +387,7 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
      * @param item
      * @throws Exception
      */
-    private void traverse(Item item) throws Throwable {
+    private void traverse(Item item) throws Exception {
         log.debug("traverse item:"+item);
 
         if (item == null){

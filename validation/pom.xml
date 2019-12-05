@@ -65,5 +65,10 @@
             <artifactId>serialisation</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.ehrbase.openehr</groupId>
+            <artifactId>terminology</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

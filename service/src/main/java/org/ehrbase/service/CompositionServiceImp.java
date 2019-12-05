@@ -31,6 +31,7 @@ import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
+import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.dao.access.interfaces.I_CompoXrefAccess;
 import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess;

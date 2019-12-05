@@ -16,12 +16,10 @@
  * limitations under the License.
  */
 
-package org.ehrbase.service;
+package org.ehrbase.api.service;
 
-import org.ehrbase.validation.Validator;
 import com.nedap.archie.rm.composition.Composition;
 
-import javax.cache.Cache;
 import java.util.UUID;
 
 /**
@@ -33,11 +31,6 @@ import java.util.UUID;
  * The validation constraints are maintained into a standard java cache. The service uses KnowledgeCache
  * to retrieve operational templates.
  *
- * @see Composition
- * @see Validator
- * @see Cache
- * @see KnowledgeCacheService
- *
  */
 public interface ValidationService {
     /**
@@ -46,7 +39,7 @@ public interface ValidationService {
      * @param composition the RM composition
      * @throws Exception if the validation fails or the template cannot be resolved
      */
-    void check(UUID templateUUID, Composition composition) throws Exception;
+    void check(UUID templateUUID, Composition composition) throws Throwable;
 
     /**
      * check a composition based on the operation template constraints
