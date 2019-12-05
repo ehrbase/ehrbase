@@ -146,6 +146,7 @@
     <module>test-data</module>
     <module>opt</module>
     <module>validation</module>
+    <module>terminology</module>
   </modules>
 
 

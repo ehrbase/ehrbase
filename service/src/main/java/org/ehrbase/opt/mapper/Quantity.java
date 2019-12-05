@@ -24,7 +24,7 @@ package org.ehrbase.opt.mapper;
 
 import org.ehrbase.opt.TermDefinition;
 import org.ehrbase.opt.ValuePoint;
-import org.ehrbase.service.TerminologieService;
+import org.ehrbase.service.TerminologyServiceImp;
 import org.openehr.schemas.v1.CDVQUANTITY;
 import org.openehr.schemas.v1.CQUANTITYITEM;
 
@@ -84,7 +84,7 @@ public class Quantity {
             propertyMap.put(Constants.CODE, code);
             propertyMap.put(Constants.TERMINOLOGY, terminology);
             if (terminology.equals("openehr"))
-                propertyMap.put(Constants.LABEL, TerminologieService.getInstance().getLabelForCode(code));
+                propertyMap.put(Constants.LABEL, TerminologyServiceImp.getInstance().getLabelForCode(code, "en"));
 
             retmap.put(Constants.TERM_BINDING, propertyMap);
         }
