@@ -28,11 +28,13 @@ public class ArrayClosure {
     JsonWriter writer;
     String parentItemsArchetypeNodeId = null;
     String parentItemsType = null;
+    String parentItemsName = null;
 
-    public ArrayClosure(JsonWriter writer, String parentItemsArchetypeNodeId, String parentItemsType) {
+    public ArrayClosure(JsonWriter writer, String parentItemsArchetypeNodeId, String parentItemsType, String parentItemsName) {
         this.writer = writer;
         this.parentItemsArchetypeNodeId = parentItemsArchetypeNodeId;
         this.parentItemsType = parentItemsType;
+        this.parentItemsName = parentItemsName;
     }
 
     /**
@@ -41,8 +43,11 @@ public class ArrayClosure {
     public void close() throws IOException {
         if (parentItemsArchetypeNodeId != null)
             writer.name(I_DvTypeAdapter.ARCHETYPE_NODE_ID).value(parentItemsArchetypeNodeId);
-        if (parentItemsType != null)
+        if (parentItemsType != null) {
             writer.name(I_DvTypeAdapter.AT_CLASS).value(parentItemsType);
+            if(parentItemsType.equals("CLUSTER"))
+                writer.name(I_DvTypeAdapter.NAME).beginObject().name(I_DvTypeAdapter.VALUE).value(parentItemsName).endObject();
+        }
     }
 
     public void start() throws IOException {
