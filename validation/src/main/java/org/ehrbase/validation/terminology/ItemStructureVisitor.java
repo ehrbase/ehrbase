@@ -9,7 +9,9 @@ import com.nedap.archie.rm.datastructures.*;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.datavalues.TermMapping;
+import com.nedap.archie.rm.datavalues.encapsulated.DvMultimedia;
 import com.nedap.archie.rm.datavalues.quantity.DvOrdered;
+import com.nedap.archie.rm.datavalues.quantity.DvOrdinal;
 import com.nedap.archie.rm.demographic.PartyRelationship;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.Participation;
@@ -53,7 +55,9 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
                 .add(OriginalVersion.class)
                 .add(Participation.class)
                 .add(PartyRelationship.class)
-                .add(TermMapping.class);
+                .add(TermMapping.class)
+                .add(DvMultimedia.class)
+                .add(DvOrdinal.class);
 
     }
 

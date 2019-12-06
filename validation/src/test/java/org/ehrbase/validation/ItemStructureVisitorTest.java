@@ -18,12 +18,18 @@
 
 package org.ehrbase.validation;
 
+import com.nedap.archie.rm.archetyped.Locatable;
 import com.nedap.archie.rm.composition.Composition;
+import com.nedap.archie.rm.datastructures.Element;
+import com.nedap.archie.rm.datastructures.Item;
 import com.nedap.archie.rm.datastructures.ItemTree;
+import com.nedap.archie.rm.datatypes.CodePhrase;
+import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.PartyRef;
+import com.nedap.archie.rm.support.identification.TerminologyId;
 import com.nedap.archie.xml.JAXBUtil;
 import org.apache.commons.io.IOUtils;
 import org.ehrbase.serialisation.CanonicalJson;
@@ -95,5 +101,12 @@ public class ItemStructureVisitorTest {
         assertEquals(3, itemStructureVisitor.getElementOccurrences());
 
     }
+
+//    @Test
+//    public void anyValidationTest() throws Throwable {
+//        DvCodedText dvCodedText = new DvCodedText("zzz", new CodePhrase(new TerminologyId("openehr"), "222"));
+//        Element element = new Element("element", new DvText("element"), dvCodedText);
+//        itemStructureVisitor.validate(element);
+//    }
 
 }

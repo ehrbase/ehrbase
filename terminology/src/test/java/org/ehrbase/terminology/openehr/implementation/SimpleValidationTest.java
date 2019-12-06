@@ -21,6 +21,7 @@ import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.support.identification.TerminologyId;
 import org.ehrbase.terminology.openehr.TerminologyInterface;
+import org.ehrbase.terminology.openehr.TerminologyService;
 import org.junit.Test;
 
 import static junit.framework.TestCase.assertEquals;
@@ -54,6 +55,5 @@ public class SimpleValidationTest {
             default:
                 throw new IllegalArgumentException("undefined container type");
         }
-
     }
 }
