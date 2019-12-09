@@ -24,7 +24,6 @@ package org.ehrbase.dao.access.jooq;
 import com.nedap.archie.rm.archetyped.Archetyped;
 import com.nedap.archie.rm.archetyped.Locatable;
 import com.nedap.archie.rm.datastructures.ItemStructure;
-import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.HierObjectId;
@@ -34,6 +33,7 @@ import org.apache.commons.collections4.map.MultiValueMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.definitions.ServerConfig;
+import org.ehrbase.api.dto.EhrStatusDto;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -242,7 +242,8 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         if (versions > version && !version.equals(versions)) { // or get the particular requested version
             // TODO: why does sonarlint says that the expression above is always true? tested it, it can be true and false!?
             // note: here version is > 1 and there has to be at least one history entry
-            Result result = domainAccess.getContext().selectFrom(STATUS_HISTORY)
+            Result<StatusHistoryRecord> result = domainAccess.getContext().selectFrom(STATUS_HISTORY)
+                    // FIXME VERSIONED_OBJECT_POC: bug? should here be "where ehrId = given ehrId"?
                     .orderBy(STATUS_HISTORY.SYS_TRANSACTION.asc())  // oldest at top, i.e. [0]
                     .fetch();
 
@@ -250,7 +251,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
                 throw new InternalServerException("Error retrieving EHR_STATUS"); // should never be reached
 
             // result set of history table is always version+1, because the latest is in non-history table
-            StatusHistoryRecord statusHistoryRecord = (StatusHistoryRecord) result.get(version-1);
+            StatusHistoryRecord statusHistoryRecord = result.get(version-1);
             // FIXME EHR_STATUS: manually converting types. dirty, formally break jooq-style, right? the record would considered to be updated when calling methods like .store()
             ehrAccess.statusRecord.setIsQueryable(statusHistoryRecord.getIsQueryable());
             ehrAccess.statusRecord.setIsModifiable(statusHistoryRecord.getIsModifiable());
@@ -754,9 +755,26 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     }
 
     // FIXME VERSIONED_OBJECT_POC: get time from oldest item from either normal or history table
-    // public DvDateTime getInitialTimeOfVersionedEhrStatus()
+    @Override
+    public Timestamp getInitialTimeOfVersionedEhrStatus() {
+        Result<StatusHistoryRecord> result = getDataAccess().getContext().selectFrom(STATUS_HISTORY)
+                .where(STATUS_HISTORY.EHR_ID.eq(ehrRecord.getId())) // ehrId from this EhrAccess instance
+                .orderBy(STATUS_HISTORY.SYS_TRANSACTION.asc())  // oldest at top, i.e. [0]
+                .fetch();
+
+        if (!result.isEmpty()) {
+            StatusHistoryRecord statusHistoryRecord = result.get(0); // get oldest
+            return statusHistoryRecord.getSysTransaction();
+        }
+
+        // if haven't returned above use time from latest version (already available in EhrAccess instance)
+        return statusRecord.getSysTransaction();
+    }
 
     // FIXME VERSIONED_OBJECT_POC: revision history: List of 1..* RevisionHistoryItems
     // RevisionHistoryItem: 1 OBJECT_VERSION_ID + 1..* AUDIT_DETAILS (when more than 1 audit per version?)
     // So: get latest from normal table and all available from *history. make a list RevisionHistoryItem, each with one ID and linked audit
+    public Integer getNumberOfEhrStatusVersions() {
+        return getDataAccess().getContext().fetchCount(STATUS_HISTORY, STATUS_HISTORY.EHR_ID.eq(statusRecord.getEhrId())) + 1;
+    }
 }

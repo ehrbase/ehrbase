@@ -19,6 +19,7 @@
 package org.ehrbase.api.service;
 
 import com.nedap.archie.rm.ehr.VersionedEhrStatus;
+import com.nedap.archie.rm.generic.RevisionHistory;
 import org.ehrbase.api.definitions.CompositionFormat;
 import org.ehrbase.api.dto.EhrStatusDto;
 import org.ehrbase.api.exception.DuplicateObjectException;
@@ -114,5 +115,7 @@ public interface EhrService extends BaseService {
 
     // FIXME VERSIONED_OBJECT_POC: docs!
     VersionedEhrStatus getVersionedEhrStatus(UUID ehrUid);
+
+    RevisionHistory getRevisionHistoryOfVersionedEhrStatus(UUID ehrUid);
 
 }

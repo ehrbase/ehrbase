@@ -264,4 +264,16 @@ public interface I_EhrAccess extends I_SimpleCRUD<I_EhrAccess, UUID> {
      * @return version number
      */
     int getEhrStatusVersionFromTimeStamp(Timestamp time);
+
+    /**
+     * Get initial time (or time of oldest record) of the status object linked to the EHR of this EhrAccess instance.
+     * @return time as {@link Timestamp}
+     */
+    Timestamp getInitialTimeOfVersionedEhrStatus();
+
+    /**
+     * Get number of available versions of EhrStatus' linked to this EhrAccess instance.
+     * @return Number of versions
+     */
+    Integer getNumberOfEhrStatusVersions();
 }

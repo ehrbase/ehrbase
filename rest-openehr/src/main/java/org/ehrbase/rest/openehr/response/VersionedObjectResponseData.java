@@ -5,10 +5,11 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import com.nedap.archie.rm.changecontrol.VersionedObject;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
-import org.apache.commons.lang3.StringUtils;
+
+import java.time.format.DateTimeFormatter;
 
 @JacksonXmlRootElement(localName = "ehr_status")
-public class VersionedObjectResponse<T> {
+public class VersionedObjectResponseData<T> {
 
     @JsonProperty(value = "_type")
     private String type;
@@ -19,12 +20,12 @@ public class VersionedObjectResponse<T> {
     @JsonProperty(value = "time_created")
     private String timeCreated;
 
-    public VersionedObjectResponse(VersionedObject<T> versionedObject) {
+    public VersionedObjectResponseData(VersionedObject<T> versionedObject) {
         setType(versionedObject.getClass().toString()); // FIXME VERSIONED_OBJECT_POC: is of type ""class com.nedap.archie.rm.ehr.VersionedEhrStatus" needs to be "VERSIONED_EHR_STATUS" -> create helper method
         setUid(versionedObject.getUid());
         setOwnerId(versionedObject.getOwnerId());
-        //setTimeCreated(versionedObject.getTimeCreated().toString());  // FIXME VERSIONED_OBJECT_POC: this line needs to be active in the end, when valid instance is guaranteed
-        setTimeCreated("");
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
+        setTimeCreated(formatter.format(versionedObject.getTimeCreated().getValue()));  // FIXME VERSIONED_OBJECT_POC: Not really valid ISO format like in the REST spec. needs time zone stuff
     }
 
     public String getType() {

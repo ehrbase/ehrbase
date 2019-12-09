@@ -22,11 +22,14 @@ package org.ehrbase.service;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.ehr.VersionedEhrStatus;
+import com.nedap.archie.rm.generic.AuditDetails;
 import com.nedap.archie.rm.generic.PartySelf;
+import com.nedap.archie.rm.generic.RevisionHistory;
+import com.nedap.archie.rm.generic.RevisionHistoryItem;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import com.nedap.archie.rm.support.identification.PartyRef;
-import com.nedap.archie.rm.support.identification.UID;
 import org.ehrbase.api.definitions.CompositionFormat;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.definitions.StructuredString;
@@ -49,6 +52,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -272,11 +277,45 @@ public class EhrServiceImp extends BaseService implements EhrService {
         if (ehrStatus.isPresent()) {
             versionedEhrStatus.setUid(new HierObjectId(ehrStatus.get().getUid().toString()));
             versionedEhrStatus.setOwnerId(new ObjectRef<>(new HierObjectId(ehrUid.toString()), "local", "EHR"));
-            //versionedEhrStatus.setTimeCreated(.....);
-            // FIXME VERSIONED_OBJECT_POC: time here has to be the initial time of the whole versioned object!
+            I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrUid);
+            versionedEhrStatus.setTimeCreated(new DvDateTime(ehrAccess.getInitialTimeOfVersionedEhrStatus().toLocalDateTime()));
 
         }
 
         return versionedEhrStatus;
+    }
+
+    @Override
+    public RevisionHistory getRevisionHistoryOfVersionedEhrStatus(UUID ehrUid) {
+        I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrUid);
+
+        // get number of versions
+        int versions = ehrAccess.getNumberOfEhrStatusVersions();
+        // fetch each version
+        UUID versionedObjectUid = getEhrStatusVersionedObjectUidByEhr(ehrUid);
+        RevisionHistory revisionHistory = new RevisionHistory();
+        for (int i = 1; i <= versions; i++) {
+            Optional<EhrStatus> ehrStatus = getEhrStatusAtVersion(ehrUid, versionedObjectUid, i);
+
+            // FIXME VERSIONED_OBJECT_POC: create RevisionHistoryItem for each version and append it to RevisionHistory
+            if (ehrStatus.isPresent())
+                revisionHistory.addItem(revisionHistoryItemfromEhrStatus(ehrStatus.get(), i));
+        }
+
+        if (revisionHistory.getItems().isEmpty()) {
+            throw new InternalServerException("Problem creating RevisionHistory"); // never should be empty; not valid
+        }
+        return revisionHistory;
+    }
+
+    private RevisionHistoryItem revisionHistoryItemfromEhrStatus(EhrStatus ehrStatus, int version) {
+
+        ObjectVersionId objectVersionId = new ObjectVersionId(ehrStatus.getUid().getRoot().getValue() + "::" + getServerConfig().getNodename() + "::" + version);
+
+        // Note: is List but only has more than one item when there are contributions regarding this object of change type attestation
+        List<AuditDetails> auditDetails = new ArrayList<>();
+        // FIXME VERSIONED_OBJECT_POC: retrieving the audits is a bit of work as contribution service needs new methods
+
+        return new RevisionHistoryItem(objectVersionId, auditDetails);
     }
 }
