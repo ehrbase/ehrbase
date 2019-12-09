@@ -19,10 +19,14 @@
 
 package org.ehrbase.service;
 
+import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.EhrStatus;
+import com.nedap.archie.rm.ehr.VersionedEhrStatus;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.HierObjectId;
+import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.PartyRef;
+import com.nedap.archie.rm.support.identification.UID;
 import org.ehrbase.api.definitions.CompositionFormat;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.definitions.StructuredString;
@@ -254,5 +258,25 @@ public class EhrServiceImp extends BaseService implements EhrService {
             return false;
         }
         return ehrAccess != null;   // true if != null; false if == null
+    }
+
+    @Override
+    public VersionedEhrStatus getVersionedEhrStatus(UUID ehrUid) {
+
+        // FIXME VERSIONED_OBJECT_POC: Pre_has_ehr: has_ehr (an_ehr_id)
+        // FIXME VERSIONED_OBJECT_POC: Pre_has_ehr_status_version: has_ehr_status_version (an_ehr_id, a_version_uid)
+
+        Optional<EhrStatus> ehrStatus = getEhrStatus(ehrUid);
+
+        VersionedEhrStatus versionedEhrStatus = new VersionedEhrStatus();
+        if (ehrStatus.isPresent()) {
+            versionedEhrStatus.setUid(new HierObjectId(ehrStatus.get().getUid().toString()));
+            versionedEhrStatus.setOwnerId(new ObjectRef<>(new HierObjectId(ehrUid.toString()), "local", "EHR"));
+            //versionedEhrStatus.setTimeCreated(.....);
+            // FIXME VERSIONED_OBJECT_POC: time here has to be the initial time of the whole versioned object!
+
+        }
+
+        return versionedEhrStatus;
     }
 }

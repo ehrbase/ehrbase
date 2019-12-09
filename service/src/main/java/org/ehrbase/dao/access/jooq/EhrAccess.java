@@ -24,6 +24,7 @@ package org.ehrbase.dao.access.jooq;
 import com.nedap.archie.rm.archetyped.Archetyped;
 import com.nedap.archie.rm.archetyped.Locatable;
 import com.nedap.archie.rm.datastructures.ItemStructure;
+import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.HierObjectId;
@@ -751,4 +752,11 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
 
         throw new ObjectNotFoundException("EHR_STATUS", "Could not find EHR_STATUS version matching given timestamp");
     }
+
+    // FIXME VERSIONED_OBJECT_POC: get time from oldest item from either normal or history table
+    // public DvDateTime getInitialTimeOfVersionedEhrStatus()
+
+    // FIXME VERSIONED_OBJECT_POC: revision history: List of 1..* RevisionHistoryItems
+    // RevisionHistoryItem: 1 OBJECT_VERSION_ID + 1..* AUDIT_DETAILS (when more than 1 audit per version?)
+    // So: get latest from normal table and all available from *history. make a list RevisionHistoryItem, each with one ID and linked audit
 }
