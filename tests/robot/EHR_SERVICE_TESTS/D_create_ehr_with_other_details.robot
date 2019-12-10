@@ -47,7 +47,7 @@ Create EHR with other_details (JSON)
 
     generate random subject_id
 
-    ${json_ehr_status}=        Load JSON From File   ${FIXTURES}/ehr/ehr_status_1_api_spec_with_other_details.json
+    ${json_ehr_status}=        Load JSON From File   ${VALID EHR DATA SETS}/000_ehr_status_with_other_details.json
     ${json_ehr_status}=        Update Value To Json  ${json_ehr_status}   $.subject.external_ref.id.value   ${subject_id}                                                                                       # alternative syntax
                         #create new EHR with ehr_status    ${json_ehr}
 
@@ -65,15 +65,15 @@ Create EHR with other_details (JSON)
                         Log To Console        ${json_ehr_status}
                         Log To Console        ${resp.json()['ehr_status']}
 
-                        Set Test Variable   ${ehr_status_json}    ${resp.json()['ehr_status']}
+                        Set Test Variable   ${actual_ehr_status}    ${resp.json()['ehr_status']}
                         # Set Test Variable   ${response body}    ${resp.content}
 
                         Should Be Equal As Strings 	${resp.status_code} 	201
 
     # this converts dict to json string, without strings the compare jsons keyword doesn't work
-    ${ehr_status_json_string}=    evaluate    json.dumps(${ehr_status_json})    json
+    ${actual_ehr_status}=    evaluate    json.dumps(${actual_ehr_status})    json
     ${json_ehr_status_string}=    evaluate    json.dumps(${json_ehr_status})    json
-    &{diff}=            compare jsons    ${ehr_status_json_string}    ${json_ehr_status_string}
+    &{diff}=            compare jsons    ${actual_ehr_status}    ${json_ehr_status_string}
 
                         Log To Console    ${diff}
 

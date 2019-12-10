@@ -25,6 +25,11 @@ Library         Collections
 
 
 
+*** Variables ***
+${VALID EHR DATA SETS}       ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/ehr/valid
+${INVALID EHR DATA SETS}     ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/ehr/invalid
+
+
 *** Keywords ***
 # 1) High Level Keywords
 
