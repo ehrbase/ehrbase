@@ -50,7 +50,7 @@ Force Tags    refactor    loaded_db
 ${ehr data sets}    ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/query/data_load/ehrs/
 ${compo data sets}    ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/query/data_load/compositions/
 
-Remove Files    ${QUERY RESULTS LOADED DB}/*/*.tmp.json
+
 
 *** Test Cases ***
 # Check DB is empty
