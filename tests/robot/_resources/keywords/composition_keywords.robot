@@ -72,7 +72,7 @@ start request session
                         Create Session      ${SUT}    ${${SUT}.URL}
                         ...                 auth=${${SUT}.CREDENTIALS}    debug=2    verify=True
 
-                        Set Test Variable   ${headers}    ${headers}
+                        Set Suite Variable   ${headers}    ${headers}
 
 
 # TODO: rename to `generate random versioned_object_uid`

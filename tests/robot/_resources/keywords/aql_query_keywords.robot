@@ -260,6 +260,9 @@ check response (LOADED DB): returns correct content
 
                         load expected results-data-set (LOADED DB)    ${path_to_expected}
 
+                        Log To Console  \n/////////// EXPECTED //////////////////////////////
+                        Output    ${expected result}
+
     &{diff}=            compare json-strings  ${response body}  ${expected result}
     ...                 report_repetition=True
     ...                 exclude_paths=root['meta']
