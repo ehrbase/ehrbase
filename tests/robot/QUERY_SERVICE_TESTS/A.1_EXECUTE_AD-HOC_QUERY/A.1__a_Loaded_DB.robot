@@ -40,7 +40,7 @@ Resource    ${CURDIR}${/}../../_resources/keywords/template_opt1.4_keywords.robo
 Suite Setup    Establish Preconditions
 # Test Setup  Establish Preconditions
 # Test Teardown  restore clean SUT state
-Suite Teardown    Clean DB
+Suite Teardown    Run Keywords    Clean DB    Delete Temp Result Sets
 
 Force Tags    refactor    loaded_db
 
@@ -50,7 +50,7 @@ Force Tags    refactor    loaded_db
 ${ehr data sets}    ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/query/data_load/ehrs/
 ${compo data sets}    ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/query/data_load/compositions/
 
-
+Remove Files    ${QUERY RESULTS LOADED DB}/*/*.tmp.json
 
 *** Test Cases ***
 # Check DB is empty
@@ -172,16 +172,15 @@ ${compo data sets}    ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/quer
     B/803_query.tmp.json    B/803.tmp.json
 
 
-# DELETE TEMP RESULT SETS
-#     Remove Files    ${QUERY RESULTS LOADED DB}/*/*.tmp.json
-
-
-
-
 
 
 
 *** Keywords ***
+Delete Temp Result Sets
+    Remove Files    ${QUERY RESULTS LOADED DB}/*/*.tmp.json
+    Remove Files    ${VALID QUERY DATA SETS}//*/*.tmp.json
+
+
 Establish Preconditions
 
     Preconditions (PART 1) - Upload Required OPTs
@@ -203,7 +202,6 @@ Preconditions (PART 2) - Load Result-Blueprints
     [Documentation]     Loads expected-result-blueprints and creates local copies for temporary use.
     ...                 Temporary copies are not git versioned. They are overwritten between test runs
     ...                 automatically and can be ignored or removed after test.
-    ...                 TODO: add a step to delete temp compies
 
     ${elist}=           Create List   @{EMPTY}
 
@@ -382,7 +380,7 @@ Preconditions (PART 3) - Populate SUT with Test-Data and Prepare Expected Result
     [Documentation]     Creates EHR records each containing 15 COMPOSITIONs
     
     Populate SUT with Test-Data and Prepare Expected Result    1    ${ehr data sets}/ehr_status_01.json
-    # Populate SUT with Test-Data and Prepare Expected Result    2    ${ehr data sets}/ehr_status_02.json
+    Populate SUT with Test-Data and Prepare Expected Result    2    ${ehr data sets}/ehr_status_02.json
     # Populate SUT with Test-Data and Prepare Expected Result    3    ${ehr data sets}/ehr_status_03.json
     # Populate SUT with Test-Data and Prepare Expected Result    4    ${ehr data sets}/ehr_status_04.json
     # Populate SUT with Test-Data and Prepare Expected Result    5    ${ehr data sets}/ehr_status_05.json
@@ -402,27 +400,27 @@ Populate SUT with Test-Data and Prepare Expected Result
     Create EHR Record On The Server    ${ehr_index}    ${ehr_status_object}
 
     Commit Compo    1    ${ehr_index}    ${compo data sets}/minimal_admin_1.composition.json
-    # Commit Compo    2    ${ehr_index}    ${compo data sets}/minimal_admin_2.composition.json
-    # Commit Compo    3    ${ehr_index}    ${compo data sets}/minimal_admin_3.composition.json
+    Commit Compo    2    ${ehr_index}    ${compo data sets}/minimal_admin_2.composition.json
+    Commit Compo    3    ${ehr_index}    ${compo data sets}/minimal_admin_3.composition.json
 
-    # Commit Compo    4    ${ehr_index}    ${compo data sets}/minimal_evaluation_1.composition.json
-    # Commit Compo    5    ${ehr_index}    ${compo data sets}/minimal_evaluation_2.composition.json
-    # Commit Compo    6    ${ehr_index}    ${compo data sets}/minimal_evaluation_3.composition.json
-    # Commit Compo    7    ${ehr_index}    ${compo data sets}/minimal_evaluation_4.composition.json
+    Commit Compo    4    ${ehr_index}    ${compo data sets}/minimal_evaluation_1.composition.json
+    Commit Compo    5    ${ehr_index}    ${compo data sets}/minimal_evaluation_2.composition.json
+    Commit Compo    6    ${ehr_index}    ${compo data sets}/minimal_evaluation_3.composition.json
+    Commit Compo    7    ${ehr_index}    ${compo data sets}/minimal_evaluation_4.composition.json
 
-    # # # FAILS - TODO: report issue
-    # # Commit Compo    8    ${ehr_index}    ${compo data sets}/all_types.composition.json
+    # # FAILS - TODO: report issue
+    # Commit Compo    8    ${ehr_index}    ${compo data sets}/all_types.composition.json
 
-    # # # FAILS - GITHUB #61
-    # # Commit Compo    9    ${ehr_index}    ${compo data sets}/minimal_instruction_1.composition.json
-    # # Commit Compo   10    ${ehr_index}    ${compo data sets}/minimal_instruction_2.composition.json
-    # # Commit Compo   11    ${ehr_index}    ${compo data sets}/minimal_instruction_3.composition.json
-    # # Commit Compo   12    ${ehr_index}    ${compo data sets}/minimal_instruction_4.composition.json
+    # # FAILS - GITHUB #61
+    # Commit Compo    9    ${ehr_index}    ${compo data sets}/minimal_instruction_1.composition.json
+    # Commit Compo   10    ${ehr_index}    ${compo data sets}/minimal_instruction_2.composition.json
+    # Commit Compo   11    ${ehr_index}    ${compo data sets}/minimal_instruction_3.composition.json
+    # Commit Compo   12    ${ehr_index}    ${compo data sets}/minimal_instruction_4.composition.json
 
-    # Commit Compo   13    ${ehr_index}    ${compo data sets}/minimal_observation_1.composition.json
-    # Commit Compo   14    ${ehr_index}    ${compo data sets}/minimal_observation_2.composition.json
-    # Commit Compo   15    ${ehr_index}    ${compo data sets}/minimal_observation_3.composition.json
-    # Commit Compo   16    ${ehr_index}    ${compo data sets}/minimal_observation_4.composition.json
+    Commit Compo   13    ${ehr_index}    ${compo data sets}/minimal_observation_1.composition.json
+    Commit Compo   14    ${ehr_index}    ${compo data sets}/minimal_observation_2.composition.json
+    Commit Compo   15    ${ehr_index}    ${compo data sets}/minimal_observation_3.composition.json
+    Commit Compo   16    ${ehr_index}    ${compo data sets}/minimal_observation_4.composition.json
 
 
 Create EHR Record On The Server
@@ -442,66 +440,66 @@ Create EHR Record On The Server
     #                                                                                        #
     ##########################################################################################
 
-    # ${A/100}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/100.tmp.json
-    # ${A/100}=           Add Object To Json    ${A/100}    $.rows    ${ehr_id_value}
-    #                     Output    ${A/100}    ${QUERY RESULTS LOADED DB}/A/100.tmp.json
+    ${A/100}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/100.tmp.json
+    ${A/100}=           Add Object To Json    ${A/100}    $.rows    ${ehr_id_value}
+                        Output    ${A/100}    ${QUERY RESULTS LOADED DB}/A/100.tmp.json
 
-    # ${A/101}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/101.tmp.json
-    # ${temp}=            Create List  ${ehr_id_value}[0]  ${time_created}[0]  ${system_id}[0]
-    # ${A/101}=           Add Object To Json    ${A/101}    $.rows    ${temp}
-    #                     Output    ${A/101}    ${QUERY RESULTS LOADED DB}/A/101.tmp.json
+    ${A/101}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/101.tmp.json
+    ${temp}=            Create List  ${ehr_id_value}[0]  ${time_created}[0]  ${system_id}[0]
+    ${A/101}=           Add Object To Json    ${A/101}    $.rows    ${temp}
+                        Output    ${A/101}    ${QUERY RESULTS LOADED DB}/A/101.tmp.json
     
-    # ${A/102}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/102.tmp.json
-    # ${A/102}=           Add Object To Json    ${A/102}    $.rows    ${ehr_id_value}
-    #                     Output    ${A/102}    ${QUERY RESULTS LOADED DB}/A/102.tmp.json
+    ${A/102}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/102.tmp.json
+    ${A/102}=           Add Object To Json    ${A/102}    $.rows    ${ehr_id_value}
+                        Output    ${A/102}    ${QUERY RESULTS LOADED DB}/A/102.tmp.json
 
-    # ${A/300}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/300.tmp.json
-    # ${A/300}=           Add Object To Json    ${A/300}    $.rows    ${ehr_id_value}
-    #                     Output    ${A/300}    ${QUERY RESULTS LOADED DB}/A/300.tmp.json
+    ${A/300}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/300.tmp.json
+    ${A/300}=           Add Object To Json    ${A/300}    $.rows    ${ehr_id_value}
+                        Output    ${A/300}    ${QUERY RESULTS LOADED DB}/A/300.tmp.json
     
-    # ${A/400}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/400.tmp.json
-    # ${A/400}=           Add Object To Json    ${A/400}    $.rows    ${ehr_id_value}
-    #                     Output    ${A/400}    ${QUERY RESULTS LOADED DB}/A/400.tmp.json
+    ${A/400}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/400.tmp.json
+    ${A/400}=           Add Object To Json    ${A/400}    $.rows    ${ehr_id_value}
+                        Output    ${A/400}    ${QUERY RESULTS LOADED DB}/A/400.tmp.json
 
-    # ${A/401}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/401.tmp.json
-    # ${A/401}=           Add Object To Json    ${A/401}    $.rows    ${ehr_id_value}
-    #                     Output    ${A/401}    ${QUERY RESULTS LOADED DB}/A/401.tmp.json
+    ${A/401}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/401.tmp.json
+    ${A/401}=           Add Object To Json    ${A/401}    $.rows    ${ehr_id_value}
+                        Output    ${A/401}    ${QUERY RESULTS LOADED DB}/A/401.tmp.json
     
-    # ${A/402}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/402.tmp.json
-    # ${A/402}=           Add Object To Json    ${A/402}    $.rows    ${ehr_id_value}
-    #                     Output    ${A/402}    ${QUERY RESULTS LOADED DB}/A/402.tmp.json
+    ${A/402}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/402.tmp.json
+    ${A/402}=           Add Object To Json    ${A/402}    $.rows    ${ehr_id_value}
+                        Output    ${A/402}    ${QUERY RESULTS LOADED DB}/A/402.tmp.json
     
-    # ${A/500}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/500.tmp.json
-    # ${A/500}=           Add Object To Json    ${A/500}    $.rows    ${ehr_id_value}
-    #                     Output    ${A/500}    ${QUERY RESULTS LOADED DB}/A/500.tmp.json
+    ${A/500}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/500.tmp.json
+    ${A/500}=           Add Object To Json    ${A/500}    $.rows    ${ehr_id_value}
+                        Output    ${A/500}    ${QUERY RESULTS LOADED DB}/A/500.tmp.json
     
-    # ${A/501}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/501.tmp.json
-    # ${A/501}=           Add Object To Json    ${A/501}    $.rows    ${ehr_id_value}
-    #                     Output    ${A/501}    ${QUERY RESULTS LOADED DB}/A/501.tmp.json
+    ${A/501}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/501.tmp.json
+    ${A/501}=           Add Object To Json    ${A/501}    $.rows    ${ehr_id_value}
+                        Output    ${A/501}    ${QUERY RESULTS LOADED DB}/A/501.tmp.json
     
-    # ${A/502}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/502.tmp.json
-    # ${A/502}=           Add Object To Json    ${A/502}    $.rows    ${ehr_id_value}
-    #                     Output    ${A/502}    ${QUERY RESULTS LOADED DB}/A/502.tmp.json
+    ${A/502}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/502.tmp.json
+    ${A/502}=           Add Object To Json    ${A/502}    $.rows    ${ehr_id_value}
+                        Output    ${A/502}    ${QUERY RESULTS LOADED DB}/A/502.tmp.json
 
-    # ${A/503}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/503.tmp.json
-    # ${A/503}=           Add Object To Json    ${A/503}    $.rows    ${ehr_id_value}
-    #                     Output    ${A/503}    ${QUERY RESULTS LOADED DB}/A/503.tmp.json
+    ${A/503}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/503.tmp.json
+    ${A/503}=           Add Object To Json    ${A/503}    $.rows    ${ehr_id_value}
+                        Output    ${A/503}    ${QUERY RESULTS LOADED DB}/A/503.tmp.json
 
-    # ${A/600}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/600.tmp.json
-    # ${A/600}=           Add Object To Json    ${A/600}    $.rows    ${ehr_id_value}
-    #                     Output    ${A/600}    ${QUERY RESULTS LOADED DB}/A/600.tmp.json
+    ${A/600}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/600.tmp.json
+    ${A/600}=           Add Object To Json    ${A/600}    $.rows    ${ehr_id_value}
+                        Output    ${A/600}    ${QUERY RESULTS LOADED DB}/A/600.tmp.json
 
-    # ${A/601}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/601.tmp.json
-    # ${A/601}=           Add Object To Json    ${A/601}    $.rows    ${ehr_id_value}
-    #                     Output    ${A/601}    ${QUERY RESULTS LOADED DB}/A/601.tmp.json
+    ${A/601}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/601.tmp.json
+    ${A/601}=           Add Object To Json    ${A/601}    $.rows    ${ehr_id_value}
+                        Output    ${A/601}    ${QUERY RESULTS LOADED DB}/A/601.tmp.json
     
-    # ${A/602}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/602.tmp.json
-    # ${A/602}=           Add Object To Json    ${A/602}    $.rows    ${ehr_id_value}
-    #                     Output    ${A/602}    ${QUERY RESULTS LOADED DB}/A/602.tmp.json
+    ${A/602}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/602.tmp.json
+    ${A/602}=           Add Object To Json    ${A/602}    $.rows    ${ehr_id_value}
+                        Output    ${A/602}    ${QUERY RESULTS LOADED DB}/A/602.tmp.json
     
-    # ${A/603}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/603.tmp.json
-    # ${A/603}=           Add Object To Json    ${A/603}    $.rows    ${ehr_id_value}
-    #                     Output    ${A/603}    ${QUERY RESULTS LOADED DB}/A/603.tmp.json
+    ${A/603}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/603.tmp.json
+    ${A/603}=           Add Object To Json    ${A/603}    $.rows    ${ehr_id_value}
+                        Output    ${A/603}    ${QUERY RESULTS LOADED DB}/A/603.tmp.json
 
 
 
@@ -523,8 +521,7 @@ Commit Compo
                         Set Suite Variable    ${archtype_id}    ${response.body.archetype_details.archetype_id.value}
                         Set Suite Variable    ${content_type}    ${response.body.content[0]._type}
     
-    # TODO: CLARIFY WITH @PABLO IF THIS IS THE CORRECT ITEM
-    ${archtype_id_of_content}    Set Variable    ${response.body.content[0].archetype_node_id}
+    ${archtype_id_of_content}=    Set Variable    ${response.body.content[0].archetype_node_id}
 
     ###########################################################################################
     #                                                                                         #
@@ -772,7 +769,7 @@ B/803
 # *** Test Cases ***
 # Main Flow: Execute Ad-Hoc Queries (Loaded DB)
 #     [Template]         execute ad-hoc query (no result comparison)
-#     [Tags]             TODO
+#     [Tags]
 
 #     No Operation     
 

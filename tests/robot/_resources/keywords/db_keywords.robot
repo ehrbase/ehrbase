@@ -41,6 +41,7 @@ Connect With DB
 
 
 Clean DB
+    [Documentation]         Deletes rows in tables which were used by test.
     Connect With DB
 
     # Set Auto Commit
