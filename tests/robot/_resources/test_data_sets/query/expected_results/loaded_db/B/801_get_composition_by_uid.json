@@ -4,7 +4,7 @@
     "_created": "2019-10-18T18:12:29.282Z",
     "_executed_aql": "SELECT c FROM COMPOSITION c [uid/value='__MODIFY_COMPOSITION_UID_1__']"
   },
-  "q": "SELECT c FROM COMPOSITION c [uid/value='__MODIFY_COMPOSITION_UID_1__']",
+  "q": "SELECT c FROM COMPOSITION c [uid/value=$uid]",
   "columns": [
     {
       "name": "#0",
