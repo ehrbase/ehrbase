@@ -50,6 +50,6 @@ Main flow create new event COMPOSITION
 
         TRACE JIRA BUG  EHR-445  not-ready
 
-                      Should Be Equal    ${setting}        Hospital B
+                      Should Be Equal    ${setting}        primary nursing care
 
     [Teardown]    restart SUT
