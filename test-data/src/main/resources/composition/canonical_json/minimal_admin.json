@@ -70,7 +70,7 @@
 		},
 		"setting": {
 			"_type": "DV_CODED_TEXT",
-			"value": "Hospital D",
+			"value": "primary nursing care",
 			"defining_code": {
 				"_type": "CODE_PHRASE",
 				"terminology_id": {
