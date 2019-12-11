@@ -55,6 +55,6 @@ Main flow create new event COMPOSITION
                         Element Text Should Be    ${xcomposer}    Dr. House
 
     ${xsetting}=        Get Element    ${xresp}    context/setting/value
-                        Element Text Should Be    ${xsetting}    Hospital B
+                        Element Text Should Be    ${xsetting}    primary nursing care
 
     [Teardown]    restart SUT
