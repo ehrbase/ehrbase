@@ -25,12 +25,16 @@ Documentation    KNOWLEDGE TEST SUITE
 ...             https://docs.google.com/document/d/1wdklJROuC2UQQK6x1cjPkF1l9Na2spfEIBjRbNVK-Q0
 ...             https://vitasystemsgmbh.atlassian.net/wiki/spaces/ETHERCIS/pages/520912897/Knowledge+Test+Suite
 ...
-...             integration tests
-...             opt = operational template
+...             OPT = operational template
 ...
 ...             Precondtions for (manual) exectuion:
-...               1. file_repo/knowledge/operational_templates folder is empty
 ...               2. DB container started
 ...               3. openehr-server started
-...
+
+Resource    ${CURDIR}${/}../_resources/suite_settings.robot
+Resource    ${CURDIR}${/}../_resources/keywords/generic_keywords.robot
+
+Suite Setup  startup SUT
+Suite Teardown  shutdown SUT
+
 Force Tags    KNOWLEDGE  DEFINITION

@@ -85,8 +85,8 @@ Apache License, Version 2.0 (see https://www.apache.org/licenses/LICENSE-2.0):
 - Dockerfile Maven (https://github.com/spotify/dockerfile-maven)
 - RobotFramework (https://robotframework.org)
 - Selenium (https://www.seleniumhq.org/)
-- Json Diff (https://github.com/zgrossbart/jdd)
 - RestInstance (https://github.com/asyrjasalo/RESTinstance)
+- Robotframework-Database-Library (http://franz-see.github.io/Robotframework-Database-Library/)
 
 BSD License:
 - ANTLR 4 (http://www.antlr.org), The BSD License (see below)
@@ -110,6 +110,7 @@ Others:
 - Bouncy Castle (http://www.bouncycastle.org), Bouncy Castle Licence (see below)
 - Reflections (http://github.com/ronmamo/reflections), Do What the Fuck You Want to Public License (see http://www.wtfpl.net/)
 - JsQuery – json query language with GIN indexing support (https://github.com/postgrespro/jsquery), PostgreSQL License (see below)
+- psycopg2 - Python-PostgreSQL Database Adapter (https://github.com/psycopg/psycopg2), GNU Lesser General Public License
 	
 
 ----
@@ -563,5 +564,39 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+----
+
+psycopg2 License: 
+
+GNU Lesser General Public License
+
+Copyright (c) 2010—2019 — Daniele Varrazzo
+
+psycopg2 is free software: you can redistribute it and/or modify it
+under the terms of the GNU Lesser General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+psycopg2 is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
+License for more details.
+
+In addition, as a special exception, the copyright holders give
+permission to link this program with the OpenSSL library (or with
+modified versions of OpenSSL that use the same license as OpenSSL),
+and distribute linked combinations including the two.
+
+You must obey the GNU Lesser General Public License in all respects for
+all of the code used other than OpenSSL. If you modify file(s) with this
+exception, you may extend this exception to your version of the file(s),
+but you are not obligated to do so. If you do not wish to do so, delete
+this exception statement from your version. If you delete this exception
+statement from all source files in the program, then also delete it here.
+
+You should have received a copy of the GNU Lesser General Public License
+along with psycopg2 (see the doc/ directory.)
+If not, see <https://www.gnu.org/licenses/>.
 
 ----

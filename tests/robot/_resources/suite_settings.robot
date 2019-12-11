@@ -33,6 +33,7 @@ Library    DateTime
 Library    ${CURDIR}${/}../_resources/libraries/dockerlib.py
 Library    ${CURDIR}${/}../_resources/libraries/jsonlib.py
 Resource   ${CURDIR}${/}../_resources/keywords/generic_keywords.robot
+Resource   ${CURDIR}${/}../_resources/keywords/db_keywords.robot
 
 
 

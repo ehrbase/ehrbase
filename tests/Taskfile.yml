@@ -40,6 +40,14 @@ tasks:
         #- grep -m 1 "Started EhrBase in" <(tail -f log)   # FAIL!
         # https://github.com/go-task/task/issues/270
   
+  starteb-nocache:
+      desc: START EHRBASE SERVER WITHOUT CACHE
+      cmds:
+        - echo ... staring EHRbase server ...
+        - java -jar ../application/target/application-0.9.0.jar --cache.enabled=false > log &
+        - sleep 20
+        - echo ... EHRbase server started.
+  
   stopeb:
     desc: KILL EHRBASE SERVER
     cmds:
@@ -61,5 +69,6 @@ tasks:
     desc: RUN TESTS
     cmds:
       # adjust this part to the needs of your current test session
-      - robot -e future -i xxx -d results -L TRACE --noncritical not-ready robot/CONTRIBUTION_TESTS
+      - robot -e future -e circleci -e TODO -e obsolete -d results -L TRACE --noncritical not-ready robot/QUERY_SERVICE_TESTS
+      # example of "execute single test by it's test-case name" (wildcards accepted):
       # - robot -t "*commit CONTRIBUTIONS versioning persistent COMPOSITION" -d results -L TRACE robot/CONTRIBUTION_TESTS
