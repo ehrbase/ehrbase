@@ -83,7 +83,7 @@
         <value>20190128T213437,385+0000</value>
       </start_time>
       <setting>
-        <value>Clinic X</value>
+        <value>primary nursing care</value>
         <defining_code>
           <terminology_id>
             <value>openehr</value>
