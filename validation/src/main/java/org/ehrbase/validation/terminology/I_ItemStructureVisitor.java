@@ -23,9 +23,9 @@ import com.nedap.archie.rm.datastructures.ItemStructure;
 
 public interface I_ItemStructureVisitor {
 
-    void validate(Composition composition) throws Throwable;
+    void validate(Composition composition) throws IllegalArgumentException, InternalError;
 
-    void validate(ItemStructure itemStructure) throws Throwable;
+    void validate(ItemStructure itemStructure) throws IllegalArgumentException, InternalError;
 
-    void validate(Locatable locatable) throws Throwable;
+    void validate(Locatable locatable) throws IllegalArgumentException, InternalError;
 }

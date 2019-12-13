@@ -22,6 +22,10 @@ import org.ehrbase.terminology.openehr.implementation.AttributeCodesetMapping;
 
 public class Composition extends TerminologyCheck{
 
+    public Composition() {
+        this.RM_CLASS = com.nedap.archie.rm.composition.Composition.class;
+    }
+
     public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.composition.Composition composition) throws Exception {
         check(terminologyInterface, codesetMapping, context, composition, "en");
     }

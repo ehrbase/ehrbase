@@ -22,6 +22,10 @@ import org.ehrbase.terminology.openehr.implementation.AttributeCodesetMapping;
 
 public class TermMapping extends TerminologyCheck{
 
+    public TermMapping() {
+        this.RM_CLASS = com.nedap.archie.rm.datavalues.TermMapping.class;
+    }
+
     public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datavalues.TermMapping termMapping, String language) throws Exception {
         if (termMapping.getPurpose() != null)
             validate(terminologyInterface, codesetMapping, "purpose", termMapping.getPurpose().getDefiningCode(), language);

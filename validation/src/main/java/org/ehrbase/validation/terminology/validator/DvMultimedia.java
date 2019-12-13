@@ -22,6 +22,10 @@ import org.ehrbase.terminology.openehr.implementation.AttributeCodesetMapping;
 
 public class DvMultimedia extends TerminologyCheck{
 
+    public DvMultimedia() {
+        this.RM_CLASS = com.nedap.archie.rm.datavalues.encapsulated.DvMultimedia.class;
+    }
+
     public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datavalues.encapsulated.DvMultimedia dvMultimedia) throws Exception {
        check(terminologyInterface, codesetMapping, context, dvMultimedia, "en");
     }

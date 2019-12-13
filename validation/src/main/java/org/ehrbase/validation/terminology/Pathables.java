@@ -25,7 +25,7 @@ public class Pathables {
         this.language = language;
     }
 
-    public void traverse(Pathable pathable, String... excludes) throws Exception {
+    public void traverse(Pathable pathable, String... excludes) throws IllegalArgumentException, InternalError {
 
         for (Field field: pathable.getClass().getDeclaredFields()){
             try {
@@ -64,9 +64,15 @@ public class Pathables {
         return false;
     }
 
-    private RMObject objectForField(Pathable pathable, Field field) throws Exception {
+    private RMObject objectForField(Pathable pathable, Field field) throws IllegalArgumentException, InternalError {
         String getterName = "get"+ StringUtils.capitalize(field.getName());
-        MethodHandle methodHandle = MethodHandles.lookup().findVirtual(pathable.getClass(), getterName, MethodType.methodType(field.getType()));
+        MethodHandle methodHandle;
+        try {
+            methodHandle = MethodHandles.lookup().findVirtual(pathable.getClass(), getterName, MethodType.methodType(field.getType()));
+        }
+        catch (NoSuchMethodException | IllegalAccessException e){
+            throw new InternalError("Internal error:"+e.getMessage());
+        }
         try {
             Object object = methodHandle.invoke(pathable);
             if (object != null && !(object instanceof RMObject))

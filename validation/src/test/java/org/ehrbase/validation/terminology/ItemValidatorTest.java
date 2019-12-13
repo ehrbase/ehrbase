@@ -35,7 +35,7 @@ public class ItemValidatorTest {
         ItemValidator itemValidator = new ItemValidator();
 
         itemValidator
-                .add(DvCodedText.class);
+                .add(new org.ehrbase.validation.terminology.validator.DvCodedText());
 
         DvCodedText dvCodedText = new DvCodedText("secondary allied health care", new CodePhrase(new TerminologyId("openehr"), "234"));
 

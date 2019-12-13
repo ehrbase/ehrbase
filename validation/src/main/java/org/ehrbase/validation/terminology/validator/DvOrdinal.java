@@ -22,6 +22,10 @@ import org.ehrbase.terminology.openehr.implementation.AttributeCodesetMapping;
 
 public class DvOrdinal extends TerminologyCheck{
 
+    public DvOrdinal() {
+        this.RM_CLASS = com.nedap.archie.rm.datavalues.quantity.DvOrdinal.class;
+    }
+
     public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datavalues.quantity.DvOrdinal dvOrdinal, String language) throws Exception {
         if (dvOrdinal.getSymbol() != null)
             validate(terminologyInterface, codesetMapping, "symbol", dvOrdinal.getSymbol(), language);

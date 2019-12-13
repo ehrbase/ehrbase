@@ -44,20 +44,20 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
         this.codesetMapping = localizedTerminologies.codesetMapping();
 
         itemValidator
-                .add(Composition.class)
-                .add(DvCodedText.class)
-                .add(DvText.class)
-                .add(IsmTransition.class)
-                .add(DvOrdered.class)
-                .add(EventContext.class)
-                .add(IntervalEvent.class)
-                .add(IsmTransition.class)
-                .add(OriginalVersion.class)
-                .add(Participation.class)
-                .add(PartyRelationship.class)
-                .add(TermMapping.class)
-                .add(DvMultimedia.class)
-                .add(DvOrdinal.class);
+                .add(new org.ehrbase.validation.terminology.validator.Composition())
+                .add(new org.ehrbase.validation.terminology.validator.DvCodedText())
+                .add(new org.ehrbase.validation.terminology.validator.DvText())
+                .add(new org.ehrbase.validation.terminology.validator.IsmTransition())
+                .add(new org.ehrbase.validation.terminology.validator.DvOrdered())
+                .add(new org.ehrbase.validation.terminology.validator.EventContext())
+                .add(new org.ehrbase.validation.terminology.validator.IntervalEvent())
+                .add(new org.ehrbase.validation.terminology.validator.IsmTransition())
+                .add(new org.ehrbase.validation.terminology.validator.OriginalVersion())
+                .add(new org.ehrbase.validation.terminology.validator.Participation())
+                .add(new org.ehrbase.validation.terminology.validator.PartyRelationship())
+                .add(new org.ehrbase.validation.terminology.validator.TermMapping())
+                .add(new org.ehrbase.validation.terminology.validator.DvMultimedia())
+                .add(new org.ehrbase.validation.terminology.validator.DvOrdinal());
 
     }
 
@@ -69,10 +69,10 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
      * main entry method, validate a composition.
      * @param composition
      * @return
-     * @throws Exception
+     * @throws IllegalArgumentException, InternalError
      */
     @Override
-    public void validate(Composition composition) throws Exception {
+    public void validate(Composition composition) throws IllegalArgumentException, InternalError {
         if (composition == null || composition.getContent() == null || composition.getContent().isEmpty())
             return;
 
@@ -88,12 +88,12 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
     }
 
     @Override
-    public void validate(ItemStructure itemStructure) throws Exception {
+    public void validate(ItemStructure itemStructure) throws IllegalArgumentException, InternalError {
             traverse(itemStructure);
     }
 
     @Override
-    public void validate(Locatable locatable) throws Exception {
+    public void validate(Locatable locatable) throws IllegalArgumentException, InternalError {
 
         if (locatable instanceof Item)
             traverse((Item) locatable);
@@ -110,9 +110,9 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
      * main entry method, validate an arbitrary entry (evaluation, observation, instruction, action)
      * @param entry
      * @return
-     * @throws Exception
+     * @throws IllegalArgumentException, InternalError
      */
-    private void validate(Entry entry) throws Exception {
+    private void validate(Entry entry) throws IllegalArgumentException, InternalError {
         traverse(entry);
     }
 
@@ -120,9 +120,9 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
      * convenience method for processing an Evaluation
      * @param entry
      * @return
-     * @throws Exception
+     * @throws IllegalArgumentException, InternalError
      */
-    private void validate(Evaluation entry) throws Exception {
+    private void validate(Evaluation entry) throws IllegalArgumentException, InternalError {
         if (entry == null || entry.getData() == null)
             return;
 
@@ -133,9 +133,9 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
      * convenience method for processing an Observation
      * @param entry
      * @return
-     * @throws Exception
+     * @throws IllegalArgumentException, InternalError
      */
-    private void validate(Observation entry) throws Exception {
+    private void validate(Observation entry) throws IllegalArgumentException, InternalError {
         if (entry == null || entry.getData() == null)
             return;
 
@@ -146,9 +146,9 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
      * convenience method for processing an Instruction
      * @param entry
      * @return
-     * @throws Exception
+     * @throws IllegalArgumentException, InternalError
      */
-    private void validate(Instruction entry) throws Exception {
+    private void validate(Instruction entry) throws IllegalArgumentException, InternalError {
         if (entry == null || entry.getActivities() == null)
             return;
 
@@ -159,9 +159,9 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
      * convenience method for processing an Instruction
      * @param entry
      * @return
-     * @throws Exception
+     * @throws IllegalArgumentException, InternalError
      */
-    private void validate(Action entry) throws Exception {
+    private void validate(Action entry) throws IllegalArgumentException, InternalError {
         if (entry == null || entry.getDescription() == null)
             return;
 
@@ -172,9 +172,9 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
      * convenience method for processing an Activity
      * @param entry
      * @return
-     * @throws Exception
+     * @throws IllegalArgumentException, InternalError
      */
-    private void validate(Activity entry) throws Exception {
+    private void validate(Activity entry) throws IllegalArgumentException, InternalError {
         if (entry == null || entry.getDescription() == null)
             return;
 
@@ -189,9 +189,9 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
     /**
      * domain level: Observation, evaluation, instruction, action. section, admin etc.
      * @param item
-     * @throws Exception
+     * @throws IllegalArgumentException, InternalError
      */
-    private void traverse(ContentItem item) throws Exception {
+    private void traverse(ContentItem item) throws IllegalArgumentException, InternalError {
 
         Map<String, Object> retmap = null;
 
@@ -277,7 +277,7 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
         }
     }
 
-    private void traverse(Activity activity) throws Exception {
+    private void traverse(Activity activity) throws IllegalArgumentException, InternalError {
         if (activity == null)
             return;
 
@@ -291,9 +291,9 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
     /**
      * History level in composition
      * @param item
-     * @throws Exception
+     * @throws IllegalArgumentException, InternalError
      */
-    private void traverse(History<?> item) throws Exception {
+    private void traverse(History<?> item) throws IllegalArgumentException, InternalError {
         if (item == null){
             return;
         }
@@ -324,9 +324,9 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
     /**
      * ItemStructure: single, tree or table
      * @param item
-     * @throws Exception
+     * @throws IllegalArgumentException, InternalError
      */
-    private void traverse(ItemStructure item) throws Exception {
+    private void traverse(ItemStructure item) throws IllegalArgumentException, InternalError {
 
         log.debug("traverse itemstructure:"+item);
 
@@ -369,7 +369,7 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
         }
     }
 
-    protected void validateElement(Element element) throws Exception {
+    protected void validateElement(Element element) throws IllegalArgumentException, InternalError {
         log.debug("should validate this element:"+element);
         elementOccurrences += 1;
 
@@ -389,9 +389,9 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
     /**
      * Element level, normally cannot go deeper...
      * @param item
-     * @throws Exception
+     * @throws IllegalArgumentException, InternalError
      */
-    private void traverse(Item item) throws Exception {
+    private void traverse(Item item) throws IllegalArgumentException, InternalError {
         log.debug("traverse item:"+item);
 
         if (item == null){

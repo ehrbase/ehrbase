@@ -21,6 +21,7 @@ import com.nedap.archie.rm.RMObject;
 import com.nedap.archie.rm.datavalues.quantity.DvOrdered;
 import org.ehrbase.terminology.openehr.TerminologyInterface;
 import org.ehrbase.terminology.openehr.implementation.AttributeCodesetMapping;
+import org.ehrbase.validation.terminology.validator.I_TerminologyCheck;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -32,18 +33,19 @@ public class ItemValidator {
 
     private Map<String, ValidationHandler> validationRegistryList;
 
-    private static final String VALIDATOR_PACKAGE = "org.ehrbase.validation.terminology.validator";
-
     public ItemValidator() {
         validationRegistryList = new HashMap<>();
    }
 
-   public ItemValidator add(Class rmObjectClazz) throws NoSuchMethodException, IllegalAccessException, ClassNotFoundException {
-       Class validationHandlerClass = Class.forName(VALIDATOR_PACKAGE+"."+rmObjectClazz.getSimpleName());
-       MethodHandle methodHandle = MethodHandles.lookup().findStatic(validationHandlerClass, "check",
-               MethodType.methodType(void.class, new Class[]{TerminologyInterface.class, AttributeCodesetMapping.class, String.class, rmObjectClazz, String.class}));
+   public ItemValidator add(I_TerminologyCheck validator) throws NoSuchMethodException, IllegalAccessException, InternalError {
+      Class rmClass = validator.rmClass();
+      if (rmClass == null){
+          throw new InternalError("Internal error:"+validator.getClass()+" does not define a matching RM class! (hint: RM_CLASS must be defined in validator class)");
+      }
+       MethodHandle methodHandle = MethodHandles.lookup().findStatic(validator.getClass(), "check",
+               MethodType.methodType(void.class, new Class[]{TerminologyInterface.class, AttributeCodesetMapping.class, String.class, rmClass, String.class}));
 
-       validationRegistryList.put(rmObjectClazz.getCanonicalName(), new ValidationHandler(rmObjectClazz, methodHandle));
+       validationRegistryList.put(rmClass.getCanonicalName(), new ValidationHandler(rmClass, methodHandle));
 
        return this;
    }
@@ -87,7 +89,7 @@ public class ItemValidator {
         return validationRegistryList.get(rmClass.getCanonicalName());
     }
 
-   public void validate(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String fieldName, RMObject rmObject, String language) throws Exception {
+   public void validate(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String fieldName, RMObject rmObject, String language) throws IllegalArgumentException, InternalError {
         if (rmObject == null)
             return;
 

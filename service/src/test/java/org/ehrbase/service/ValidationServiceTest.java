@@ -22,6 +22,7 @@ import com.nedap.archie.rm.composition.Composition;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.serialisation.CanonicalXML;
 import org.apache.commons.io.IOUtils;
+import org.ehrbase.test_data.operationaltemplate.OperationalTemplateTestData;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -45,7 +46,7 @@ public class ValidationServiceTest {
     public void testCheckComposition(){
         try {
             KnowledgeCacheService knowledgeCacheService = KnowledgeCacheServiceTest.buildKnowledgeCache(testFolder, cacheRule);
-            knowledgeCacheService.addOperationalTemplate(IOUtils.toByteArray(Files.newInputStream(Paths.get("./src/test/resources/knowledge/RIPPLE-ConformanceTest.opt"))));
+            knowledgeCacheService.addOperationalTemplate(IOUtils.toByteArray(OperationalTemplateTestData.RIPPLE_CONFORMANCE_TEST.getStream()));
             TerminologyServiceImp terminologyService = new TerminologyServiceImp();
             ValidationService validationService = new ValidationServiceImp(cacheRule.cacheManager, knowledgeCacheService, terminologyService);
 

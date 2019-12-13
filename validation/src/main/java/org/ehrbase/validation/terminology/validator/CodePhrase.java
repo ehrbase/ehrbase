@@ -22,6 +22,11 @@ import org.ehrbase.terminology.openehr.implementation.AttributeCodesetMapping;
 
 public class CodePhrase extends TerminologyCheck {
 
+    public CodePhrase() {
+        this.RM_CLASS = com.nedap.archie.rm.datatypes.CodePhrase.class;
+    }
+
+
     public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datatypes.CodePhrase codePhrase) throws Exception {
         check(terminologyInterface, codesetMapping, context, codePhrase, "en");
     }

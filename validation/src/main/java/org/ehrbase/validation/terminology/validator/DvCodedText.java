@@ -22,6 +22,10 @@ import org.ehrbase.terminology.openehr.implementation.AttributeCodesetMapping;
 
 public class DvCodedText extends TerminologyCheck {
 
+    public DvCodedText() {
+        this.RM_CLASS = com.nedap.archie.rm.datavalues.DvCodedText.class;
+    }
+
     public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datavalues.DvCodedText dvCodedText) throws Exception {
         check(terminologyInterface, codesetMapping, context, dvCodedText, "en");
     }

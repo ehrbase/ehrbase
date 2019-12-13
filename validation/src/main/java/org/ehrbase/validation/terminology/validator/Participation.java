@@ -22,6 +22,10 @@ import org.ehrbase.terminology.openehr.implementation.AttributeCodesetMapping;
 
 public class Participation extends TerminologyCheck {
 
+    public Participation() {
+        this.RM_CLASS = com.nedap.archie.rm.generic.Participation.class;
+    }
+
     public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.generic.Participation participation, String language) throws Exception {
         if (participation.getMode() != null)
             validate(terminologyInterface, codesetMapping, "mode", participation.getMode().getDefiningCode(), language);

@@ -22,6 +22,10 @@ import org.ehrbase.terminology.openehr.implementation.AttributeCodesetMapping;
 
 public class DvOrdered extends TerminologyCheck{
 
+    public DvOrdered() {
+        this.RM_CLASS = com.nedap.archie.rm.datavalues.quantity.DvOrdered.class;
+    }
+
     public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datavalues.quantity.DvOrdered dvOrdered, String language) throws Exception {
         if (dvOrdered.getNormalStatus() != null)
             validate(terminologyInterface, codesetMapping, "normal_status", dvOrdered.getNormalStatus(), language);

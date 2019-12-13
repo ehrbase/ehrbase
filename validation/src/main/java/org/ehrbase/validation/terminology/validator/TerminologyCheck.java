@@ -23,7 +23,9 @@ import org.ehrbase.terminology.openehr.TerminologyInterface;
 import org.ehrbase.terminology.openehr.implementation.AttributeCodesetMapping;
 import org.ehrbase.terminology.openehr.implementation.ContainerType;
 
-public class TerminologyCheck {
+public class TerminologyCheck implements I_TerminologyCheck {
+
+    protected Class RM_CLASS;
 
     public static void validate(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, CodePhrase codePhrase, String language) {
         //if terminology id == 'local' (e.g. defined at Template level) skip the validation
@@ -79,6 +81,10 @@ public class TerminologyCheck {
     }
     public static void validate(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, DvCodedText dvCodedText) throws Exception {
         validate(terminologyInterface, codesetMapping, context, dvCodedText, "en");
+    }
+
+    public Class rmClass(){
+        return RM_CLASS;
     }
 
 }
