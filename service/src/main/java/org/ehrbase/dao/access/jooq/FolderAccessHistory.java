@@ -1043,14 +1043,13 @@ where allFolderRows.sys_transaction = (select max (sys_transaction) from ((
         return (UUID) result.getValues("in_contribution", UUID.class).get(0);
     }
 
-    public void buildUnionOfFolderHierarchiesTable(){
-
-        UUID folderUid=UUID.fromString("27faecce-a6cb-4ab0-aae0-a0722ad4bb24"/*"0e5f3019-b527-4173-8f13-d224ac952280"*/);
-        Timestamp timestamp = Timestamp.valueOf("2019-11-27 16:07:33.54");
-        //UUID rootContributionUid = calculateContributionUidFromTimestamp(folderUid, timestamp);
-
-        //System.out.println("the contrib id returned for "+folderUid+" es : "+rootContributionUid);
-        /****/
+    /**
+     * Retrieves a table with all the information to rebuild the directory related to the folders that have at least one child. If the folderUid provider corresponds to a leave folder then the result will be empty.
+     * @param folderUid The top folder UID of the directory or subdirectory that will be retrieved as a table.
+     * @param timestamp The timestamp which used to determine which version to retrieve. The method will use the closest version available before or equal to the timestamp provided.
+     * @return A table with all the information related to the hierarchy joint to the information of each of the folders that have some child.
+     */
+    private Result<Record> buildUnionOfFolderHierarchiesTable(UUID folderUid, Timestamp timestamp){
 
         Table<?> united_hierarchies_table1 = table(
                 select()
@@ -1096,12 +1095,15 @@ where allFolderRows.sys_transaction = (select max (sys_transaction) from ((
                         fhf_timestamp1.field("parent_folder", FOLDER.ID.getType()))
                 .asTable();
 
-        /**/
-
-
-        System.out.println("RESULT OF THE UNIFIED TABLE (fhf_timestamp_version2): \n"+/*context.select().from(united_hierarchies_tableFileted).fetch()*/getContext().select().from(fhf_timestamp_version2/*fhf_timestamp1*/).fetch());
-
         /*make the unified table with only the rows that correspond to the latest transactions*/
+/*        Table<?>  filteredHierarchicalTable = select().
+                from(united_hierarchies_tableFileted, fhf_timestamp_version2).
+                where(
+                        united_hierarchies_tableFileted.field("parent_folder", FOLDER.ID.getType()).
+                                eq(fhf_timestamp_version2.field("parent_folder_id", FOLDER.ID.getType())).
+                                and(united_hierarchies_tableFileted.field("sys_transaction", FOLDER.SYS_TRANSACTION.getType()).
+                                        eq(fhf_timestamp_version2.field("latest_sys_transaction", FOLDER.SYS_TRANSACTION.getType()))))
+                .asTable();*/
         Table<?>  filteredHierarchicalTable = select().
                 from(united_hierarchies_tableFileted, fhf_timestamp_version2).
                 where(
@@ -1110,16 +1112,7 @@ where allFolderRows.sys_transaction = (select max (sys_transaction) from ((
                                 and(united_hierarchies_tableFileted.field("sys_transaction", FOLDER.SYS_TRANSACTION.getType()).
                                         eq(fhf_timestamp_version2.field("latest_sys_transaction", FOLDER.SYS_TRANSACTION.getType()))))
                 .asTable();
-
-
-        System.out.println("----------RESULT OF THE FINAL UNIFIED TABLE: --------------\n"+/*context.select().from(united_hierarchies_tableFileted).fetch()*/getContext().select().from(filteredHierarchicalTable).fetch());
-
-
-
-        /***UP TO HERE IT WORKS****//************************/
-
-
-        /*execute recursive query to retrive the necesary rows to re-build the directory tree*/
+        System.out.println("ALL FOLDER ROWS filteredHierarchicalTable .....\n"+this.getContext().select().from(filteredHierarchicalTable).fetch());
 
         Field<UUID> subfolderParentFolderRef = field(name("subfolders", "parent_folder"), UUID.class);
 
@@ -1127,27 +1120,15 @@ where allFolderRows.sys_transaction = (select max (sys_transaction) from ((
                 select(FOLDER.ID, FOLDER.IN_CONTRIBUTION, FOLDER.NAME, FOLDER.ARCHETYPE_NODE_ID, FOLDER.ACTIVE, FOLDER.DETAILS, FOLDER.SYS_TRANSACTION, FOLDER.SYS_PERIOD).
                 from(FOLDER, filteredHierarchicalTable).where(FOLDER.ID.eq(filteredHierarchicalTable.field("parent_folder", UUID.class)).and(FOLDER.IN_CONTRIBUTION.eq(filteredHierarchicalTable.field("in_contribution", UUID.class)))).asTable();
 
-
-        System.out.println("----------RESULT OF allFolderRowsFolderTable  TABLE: --------------\n"+getContext().select().from(allFolderRowsFolderTable).fetch());
-
-
-       /* Table<?> allFolderRows1_latest = this.context.
-                select().
-                from(allFolderRows1, fhf_timestamp_version2)
-                .where(allFolderRows1.field("id", UUID.class).eq(fhf_timestamp_version2.field("parent_folder_id", UUID.class)).and(
-                        allFolderRows1.field("sys_transaction", UUID.class).eq(fhf_timestamp_version2.field("latest_sys_transaction", UUID.class)
-                )))
-                .asTable("allFolderRows1_latest");*/
-
         Table<?> allFolderRowsFolderHistoryTable = this.getContext().
                 select(FOLDER_HISTORY.ID, FOLDER_HISTORY.IN_CONTRIBUTION, FOLDER_HISTORY.NAME, FOLDER_HISTORY.ARCHETYPE_NODE_ID, FOLDER_HISTORY.ACTIVE, FOLDER_HISTORY.DETAILS, FOLDER_HISTORY.SYS_TRANSACTION, FOLDER_HISTORY.SYS_PERIOD).
-                from(FOLDER_HISTORY, filteredHierarchicalTable).where(FOLDER_HISTORY.ID.eq(filteredHierarchicalTable.field("parent_folder", UUID.class)).and(FOLDER_HISTORY.SYS_TRANSACTION.eq(filteredHierarchicalTable.field("latest_sys_transaction", Timestamp.class)))).asTable();
+                from(FOLDER_HISTORY, filteredHierarchicalTable).
+                where(FOLDER_HISTORY.ID.
+                        eq(filteredHierarchicalTable.field("parent_folder", UUID.class)).
+                        and(FOLDER_HISTORY.IN_CONTRIBUTION.
+                                eq(filteredHierarchicalTable.field("in_contribution", UUID.class)))).asTable();
 
-
-
-
-        System.out.println("----------RESULT OF allFolderRowsFolderHistoryTable  TABLE: --------------\n"+getContext().select().from(allFolderRowsFolderHistoryTable).fetch());
-
+        System.out.println("ALL FOLDER ROWS allFolderRowsFolderHistoryTable .....\n"+this.getContext().select().from(allFolderRowsFolderHistoryTable).fetch());
 
         Table<?> allFolderRowsUnifiedAndFilteredInitial = this.getContext().
                 select(allFolderRowsFolderTable.field("id", UUID.class), allFolderRowsFolderTable.field("in_contribution", UUID.class).as("in_contribution_folder_info"), allFolderRowsFolderTable.field("name", FOLDER.NAME.getType()),allFolderRowsFolderTable.field("archetype_node_id", FOLDER.ARCHETYPE_NODE_ID.getType()), allFolderRowsFolderTable.field("active",FOLDER.ACTIVE.getType()), allFolderRowsFolderTable.field("details", FOLDER.DETAILS.getType()), allFolderRowsFolderTable.field("sys_transaction", FOLDER.SYS_TRANSACTION.getType()).as("sys_transaction_folder"), allFolderRowsFolderTable.field("sys_period", FOLDER.SYS_PERIOD.getType()).as("sys_period_folder")).
@@ -1156,34 +1137,18 @@ where allFolderRows.sys_transaction = (select max (sys_transaction) from ((
                         select(allFolderRowsFolderHistoryTable.field("id", UUID.class), allFolderRowsFolderHistoryTable.field("in_contribution", UUID.class).as("in_contribution_folder_info"), allFolderRowsFolderHistoryTable.field("name", FOLDER.NAME.getType()),allFolderRowsFolderHistoryTable.field("archetype_node_id", FOLDER.ARCHETYPE_NODE_ID.getType()), allFolderRowsFolderHistoryTable.field("active",FOLDER.ACTIVE.getType()), allFolderRowsFolderHistoryTable.field("details", FOLDER.DETAILS.getType()), allFolderRowsFolderHistoryTable.field("sys_transaction", FOLDER.SYS_TRANSACTION.getType()).as("sys_transaction_folder"), allFolderRowsFolderHistoryTable.field("sys_period", FOLDER.SYS_PERIOD.getType()).as("sys_period_folder")).
                                 from(allFolderRowsFolderHistoryTable)).asTable();
 
-        System.out.println("----------RESULT OF allFolderRowsUNIFIEDAndFilteredInitial  TABLE: --------------\n"+getContext().select().from(allFolderRowsUnifiedAndFilteredInitial).fetch());
-
-
-        Table<?> allFolderRowsUnifiedAndFilteredIterative = this.getContext().select().
+        Table<?> allFolderRowsUnifiedAndFilteredIterative = this.getContext().
+                select(allFolderRowsFolderTable.field("id", UUID.class), allFolderRowsFolderTable.field("in_contribution", UUID.class).as("in_contribution_folder_info"), allFolderRowsFolderTable.field("name", FOLDER.NAME.getType()),allFolderRowsFolderTable.field("archetype_node_id", FOLDER.ARCHETYPE_NODE_ID.getType()), allFolderRowsFolderTable.field("active",FOLDER.ACTIVE.getType()), allFolderRowsFolderTable.field("details", FOLDER.DETAILS.getType()), allFolderRowsFolderTable.field("sys_transaction", FOLDER.SYS_TRANSACTION.getType()).as("sys_transaction_folder"), allFolderRowsFolderTable.field("sys_period", FOLDER.SYS_PERIOD.getType()).as("sys_period_folder")).
                 from(allFolderRowsFolderTable).
                 union(
-                        select().
+                        select(allFolderRowsFolderHistoryTable.field("id", UUID.class), allFolderRowsFolderHistoryTable.field("in_contribution", UUID.class).as("in_contribution_folder_info"), allFolderRowsFolderHistoryTable.field("name", FOLDER.NAME.getType()),allFolderRowsFolderHistoryTable.field("archetype_node_id", FOLDER.ARCHETYPE_NODE_ID.getType()), allFolderRowsFolderHistoryTable.field("active",FOLDER.ACTIVE.getType()), allFolderRowsFolderHistoryTable.field("details", FOLDER.DETAILS.getType()), allFolderRowsFolderHistoryTable.field("sys_transaction", FOLDER.SYS_TRANSACTION.getType()).as("sys_transaction_folder"), allFolderRowsFolderHistoryTable.field("sys_period", FOLDER.SYS_PERIOD.getType()).as("sys_period_folder")).
                                 from(allFolderRowsFolderHistoryTable)).asTable();
 
-      /*  Table<?> allFolderRows2_latest = this.context.
-                select().
-                from(allFolderRows2, fhf_timestamp_version2)
-                .where(allFolderRows2.field("id", UUID.class).eq(fhf_timestamp_version2.field("parent_folder_id", UUID.class)).and(
-                        allFolderRows2.field("sys_transaction", UUID.class).eq(fhf_timestamp_version2.field("latest_sys_transaction", UUID.class)
-                        )))
-                .asTable("allFolderRows2_latest");
-*/
+        System.out.println("ALL FOLDER ROWS iterative .....\n"+this.getContext().select().from(allFolderRowsUnifiedAndFilteredIterative).fetch());
+
 
         Field<UUID> subfolderChildFolder = field("subfolders.{0}", FOLDER_HIERARCHY.CHILD_FOLDER.getDataType(), FOLDER_HIERARCHY.CHILD_FOLDER.getUnqualifiedName());
         Field<Timestamp> subfolderSysTran = field("\"subfolders\".\"sys_transaction\"", FOLDER_HIERARCHY.SYS_TRANSACTION.getDataType(), FOLDER_HIERARCHY.SYS_TRANSACTION.getUnqualifiedName());
-
-
-        /*Define initial table for first iteration in the recursive query*/
-       /* Table<?> initial_table = table(
-                select()
-                        .from(filteredHierarchicalTable)
-                        .where(
-                                filteredHierarchicalTable.field("parent_folder", UUID.class).eq(folderUid))).asTable("initial_table");*/
 
         Table<?> initial_table2 =
                 (select()
@@ -1195,26 +1160,10 @@ where allFolderRows.sys_transaction = (select max (sys_transaction) from ((
                         .where(
                                 filteredHierarchicalTable.field("parent_folder", UUID.class).eq(folderUid))).asTable();
 
-        System.out.println("----------RESULT OF filteredHierarchicalTable  TABLE: --------------\n"+getContext().select().from(filteredHierarchicalTable).fetch());
-
-
-        System.out.println("----------RESULT OF allFolderRows1_latest  TABLE: --------------\n"+getContext().select().from(allFolderRowsUnifiedAndFilteredInitial).fetch());
-
-
-
-
-        System.out.println("----------RESULT OF THE INITIAL  TABLE: --------------\n"+getContext().select().from(initial_table2).fetch());
 
         Result<Record> folderSelectedRecordSub = this.getContext().withRecursive("subfolders").as(
                 select().
                         from(initial_table2).
-                        leftJoin(allFolderRowsUnifiedAndFilteredInitial).on(
-                        initial_table2.field("parent_folder", FOLDER_HIERARCHY.PARENT_FOLDER.getType()).
-                                eq(
-                                        allFolderRowsUnifiedAndFilteredInitial.field("id", FOLDER.ID.getType()))
-                /*.and(
-                        allFolderRows1.field("sys_transaction", FOLDER.SYS_TRANSACTION.getType()).eq(initial_table.field("sys_transaction", FOLDER.SYS_TRANSACTION.getType()))
-                )*/).
                         union(
                                 (select().from(filteredHierarchicalTable).
                                         innerJoin("subfolders").
@@ -1224,19 +1173,14 @@ where allFolderRows.sys_transaction = (select max (sys_transaction) from ((
                                         )).
                                         leftJoin(allFolderRowsUnifiedAndFilteredIterative).
                                         on(
-                                                allFolderRowsUnifiedAndFilteredIterative.field("id", FOLDER.ID.getType()).eq(subfolderChildFolder)/*.
-                                                        and(
-                                                allFolderRows3.field("sys_transaction_alias", Timestamp.class).
-                                                        eq(
-                                                                subfolderSysTran
-                                                        )
-                                        )*/))
+                                                allFolderRowsUnifiedAndFilteredIterative.field("id", FOLDER.ID.getType()).eq(subfolderChildFolder)))
         ).select().from(table(name("subfolders"))).fetch();
 
-        System.out.println("end method ....."+folderSelectedRecordSub/*context.select().from(allFolderRows3).fetch()*/);
+        System.out.println("end method ....."+folderSelectedRecordSub);
 
-
+        return folderSelectedRecordSub;
     }
+
     public UUID calculateContributionUidFromTimestamp(UUID folderUid, Timestamp timestamp){
 
 
