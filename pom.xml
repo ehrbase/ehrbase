@@ -646,7 +646,7 @@
       <properties>
         <gpg.keyname>FAB0BE712374BFC3D26DA5B43A7041C227272DD8</gpg.keyname>
         <gpg.executable>gpg2</gpg.executable>
-        <!--<gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>-->
+        <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
       </properties>
       <build>
         <plugins>
