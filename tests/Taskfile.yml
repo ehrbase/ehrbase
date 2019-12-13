@@ -69,7 +69,11 @@ tasks:
     desc: RUN TESTS
     cmds:
       # adjust this part to the needs of your current test session
+<<<<<<< HEAD
       - robot -i loaded_db -e future -e circleci -e TODO -e obsolete -d results -L TRACE --noncritical not-ready robot/QUERY_SERVICE_TESTS
+=======
+      - robot -e future -e circleci -e TODO -e obsolete -d results -L TRACE --noncritical not-ready robot/COMPOSITION_TESTS
+>>>>>>> develop
       # example of "execute single test by it's test-case name" (wildcards accepted):
       # - robot -t "*commit CONTRIBUTIONS versioning persistent COMPOSITION" -d results -L TRACE robot/CONTRIBUTION_TESTS
       # --console dotted
