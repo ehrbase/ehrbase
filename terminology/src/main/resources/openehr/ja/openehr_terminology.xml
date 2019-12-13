@@ -1,0 +1,324 @@
+<terminology name="openehr" language="en">	
+	<codeset issuer="openehr" openehr_id="compression algorithms" external_id="openehr_compression_algorithms">
+		<code value="圧縮"/>
+		<code value="展開"/>
+		<code value="gzip"/>
+		<code value="zlib"/>
+		<code value="その他"/>
+	</codeset>
+	<codeset issuer="openehr" openehr_id="integrity check algorithms" external_id="openehr_integrity_check_algorithms">
+		<code value="SHA-1"/>
+		<code value="SHA-256"/>
+	</codeset>	
+	<codeset issuer="openehr" openehr_id="normal statuses" external_id="openehr_normal_statuses">
+		<code value="HHH"/>
+		<code value="HH"/>
+		<code value="H"/>
+		<code value="N"/>
+		<code value="L"/>
+		<code value="LL"/> 
+		<code value="LLL"/>
+	</codeset>
+	<group name="認証理由">
+		<concept id="240" rubric="署名"/>
+		<concept id="648" rubric="証言"/>
+	</group>
+	<group name="監査変更種別">
+		<concept id="249" rubric="作成"/>
+		<concept id="250" rubric="訂正"/>
+		<concept id="251" rubric="変更"/>
+		<concept id="252" rubric="統合"/>
+		<concept id="523" rubric="削除"/>
+		<concept id="666" rubric="認証"/>
+		<concept id="253" rubric="不明"/>
+	</group>
+	<group name="コンポジションカテゴリ">
+		<concept id="431" rubric="永続"/>
+		<concept id="433" rubric="イベント"/>
+		<concept id="435" rubric="*episodic(en)"/>
+	</group>
+	<!--
+	<group name="MultiMedia">
+		<concept id="387" rubric="audio/DVI4" />
+		<concept id="388" rubric="audio/G722" />
+		<concept id="389" rubric="audio/G723" />
+		<concept id="390" rubric="audio/G726-16" />
+		<concept id="391" rubric="audio/G726-24" />
+		<concept id="392" rubric="audio/G726-32" />
+		<concept id="393" rubric="audio/G726-40" />
+		<concept id="394" rubric="audio/G728" />
+		<concept id="395" rubric="audio/L8" />
+		<concept id="396" rubric="audio/L16" />
+		<concept id="397" rubric="audio/LPC" />
+		<concept id="398" rubric="audio/G729" />
+		<concept id="399" rubric="audio/G729D" />
+		<concept id="400" rubric="audio/G729E" />
+		<concept id="401" rubric="video/BT656" />
+		<concept id="402" rubric="video/CelB" />
+		<concept id="403" rubric="video/JPEG" />
+		<concept id="404" rubric="video/H261" />
+		<concept id="405" rubric="video/H263" />
+		<concept id="406" rubric="video/H263-1998" />
+		<concept id="407" rubric="video/H263-2000" />
+		<concept id="408" rubric="video/MPV" />
+		<concept id="409" rubric="audio/mpeg" />
+		<concept id="410" rubric="audio/mpeg4-generic" />
+		<concept id="411" rubric="audio/L20" />
+		<concept id="412" rubric="audio/L24" />
+		<concept id="413" rubric="audio/telephone-event" />
+		<concept id="414" rubric="video/quicktime" />
+		<concept id="415" rubric="text/calendar" />
+		<concept id="416" rubric="text/directory" />
+		<concept id="417" rubric="text/html" />
+		<concept id="418" rubric="text/plain" />
+		<concept id="419" rubric="text/rtf" />
+		<concept id="420" rubric="text/sgml" />
+		<concept id="421" rubric="text/tab-separated-values" />
+		<concept id="422" rubric="text/uri-list" />
+		<concept id="423" rubric="text/xml" />
+		<concept id="424" rubric="text/xml-external-parsed-entity" />
+		<concept id="425" rubric="image/cgm" />
+		<concept id="426" rubric="image/gif" />
+		<concept id="427" rubric="image/png" />
+		<concept id="428" rubric="image/tiff" />
+		<concept id="429" rubric="image/jpeg" />
+		<concept id="517" rubric="application/msword" />
+		<concept id="518" rubric="application/pdf" />
+		<concept id="519" rubric="application/rtf" />
+		<concept id="637" rubric="application/dicom" />
+		<concept id="682" rubric="application/vnd.oasis.opendocument.text" />
+		<concept id="683" rubric="application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+	</group>
+	-->
+	<group name="プロパティ">
+		<concept id="339" rubric="加速度"/>
+		<concept id="342" rubric="角加速度"/>
+		<concept id="381" rubric="量 (Eq)"/>
+		<concept id="384" rubric="量 (mole)"/>
+		<concept id="497" rubric="平面角"/>
+		<concept id="500" rubric="立体角"/>
+		<concept id="335" rubric="面積"/>
+		<concept id="119" rubric="濃度"/>
+		<concept id="350" rubric="密度"/>
+		<concept id="362" rubric="拡散係数"/>
+		<concept id="501" rubric="電気容量"/>
+		<concept id="498" rubric="電荷"/>
+		<concept id="502" rubric="電気伝導度"/>
+		<concept id="334" rubric="電流"/>
+		<concept id="377" rubric="電界強度"/>
+		<concept id="655" rubric="電位時間"/>
+		<concept id="121" rubric="エネルギー"/>
+		<concept id="366" rubric="エネルギー密度"/>
+		<concept id="508" rubric="エネルギー量"/>
+		<concept id="365" rubric="面積あたりエネルギー"/>
+		<concept id="364" rubric="線エネルギー"/>
+		<concept id="347" rubric="質量流量"/>
+		<concept id="352" rubric="質量/力流量"/>
+		<concept id="351" rubric="質量/体積流量"/>
+		<concept id="126" rubric="体積流量"/>
+		<concept id="348" rubric="質量流束"/>
+		<concept id="355" rubric="力"/>
+		<concept id="358" rubric="質量あたりの力"/>
+		<concept id="357" rubric="体積力"/>
+		<concept id="382" rubric="頻度"/>
+		<concept id="586" rubric="糸球体濾過量"/>
+		<concept id="373" rubric="熱伝導係数"/>
+		<concept id="505" rubric="照度"/>
+		<concept id="379" rubric="インダクタンス"/>
+		<concept id="122" rubric="長さ"/>
+		<concept id="499" rubric="光強度"/>
+		<concept id="123" rubric="音圧"/>
+		<concept id="504" rubric="光束"/>
+		<concept id="378" rubric="磁束"/>
+		<concept id="503" rubric="磁束密度"/>
+		<concept id="124" rubric="質量"/>
+		<concept id="385" rubric="質量 (IU)"/>
+		<concept id="445" rubric="質量 (Units)"/>
+		<concept id="349" rubric="面積あたり質量"/>
+		<concept id="344" rubric="断面二次モーメント"/>
+		<concept id="345" rubric="質量慣性モーメント"/>
+		<concept id="340" rubric="モーメント"/>
+		<concept id="346" rubric="流量モーメント"/>
+		<concept id="343" rubric="角モーメント"/>
+		<concept id="363" rubric="電力"/>
+		<concept id="369" rubric="電力密度"/>
+		<concept id="368" rubric="電力束"/>
+		<concept id="367" rubric="線形電力"/>
+		<concept id="125" rubric="圧力"/>
+		<concept id="507" rubric="比率"/>
+		<concept id="380" rubric="制限付き実数"/>
+		<concept id="506" rubric="放射能"/>
+		<concept id="375" rubric="抵抗"/>
+		<concept id="370" rubric="比エネルギー"/>
+		<concept id="371" rubric="比熱、気体定数"/>
+		<concept id="337" rubric="比表面"/>
+		<concept id="336" rubric="比容Specific volume"/>
+		<concept id="354" rubric="比重Specific weight"/>
+		<concept id="356" rubric="表面張力Surface tension"/>
+		<concept id="127" rubric="温度"/>
+		<concept id="372" rubric="熱伝導度"/>
+		<concept id="128" rubric="時間"/>
+		<concept id="359" rubric="トルク"/>
+		<concept id="338" rubric="速度"/>
+		<concept id="341" rubric="角速度"/>
+		<concept id="360" rubric="速度（動的）"/>
+		<concept id="361" rubric="速度（運動）"/>
+		<concept id="374" rubric="電圧"/>
+		<concept id="129" rubric="容積"/>
+		<concept id="130" rubric="仕事量"/>
+		<concept id="685" rubric="屈折力"/>
+	</group>
+	<group name="version lifecycle state">
+		<concept id="532" rubric="完了"/>
+		<concept id="553" rubric="未完"/>
+		<concept id="523" rubric="削除済み"/>
+	</group>
+	<group name="participation function">
+		<concept id="253" rubric="未知"/>
+	</group>
+	<group name="null flavours">
+		<concept id="271" rubric="不明"/>
+		<concept id="253" rubric="未知"/>
+		<concept id="272" rubric="隠蔽された"/>
+		<concept id="273" rubric="該当なし"/>
+	</group>
+	<group name="participation mode">
+		<concept id="193" rubric="指定なし"/>
+		<concept id="216" rubric="対面コミュニケーション"/>
+		<concept id="223" rubric="通訳された対面コミュニケーション"/>
+		<concept id="217" rubric="身振り(対面での)"/>
+		<concept id="195" rubric="生のオーディオビジュアル; ビデオカンファレンス; テレビ電話"/>
+		<concept id="198" rubric="ビデオカンファレンス"/>
+		<concept id="197" rubric="テレビ電話"/>
+		<concept id="218" rubric="テレビを通じた身振り"/>
+		<concept id="224" rubric="通訳されたビデオコミュニケーション"/>
+		<concept id="194" rubric="非同期のオーディオビジュアル; 録画されたビデオ"/>
+		<concept id="196" rubric="録画されたビデオ"/>
+		<concept id="202" rubric="生の音声; 電話; インターネット電話; 電話会議"/>
+		<concept id="204" rubric="電話"/>
+		<concept id="203" rubric="電話会議"/>
+		<concept id="205" rubric="インターネット電話"/>
+		<concept id="222" rubric="通訳された音声"/>
+		<concept id="199" rubric="非同期の音声; 口述; ボイスメール"/>
+		<concept id="200" rubric="口述"/>
+		<concept id="201" rubric="ボイスメール"/>
+		<concept id="212" rubric="生の文字通信; インターネットチャット SMSチャット; 相互に書き込めるノート"/>
+		<concept id="213" rubric="インターネットチャット"/>
+		<concept id="214" rubric="SMSチャット"/>
+		<concept id="215" rubric="相互に書き込めるノート"/>
+		<concept id="206" rubric="非同期の文字通信; email; fax; 手紙; 手書きのノート; SMSメッセージ"/>
+		<concept id="211" rubric="手書きのノート"/>
+		<concept id="210" rubric="印刷された（タイプされた）手紙"/>
+		<concept id="207" rubric="email"/>
+		<concept id="208" rubric="FAX/telefax"/>
+		<concept id="221" rubric="翻訳された文書"/>
+		<concept id="209" rubric="SMSメッセージ"/>
+		<concept id="219" rubric="出席"/>
+		<concept id="220" rubric="遠隔での参加"/>
+	</group>
+	<group name="instruction states">
+		<concept id="524" rubric="最初"/>
+		<concept id="526" rubric="予定されている"/>
+		<concept id="527" rubric="延期された"/>
+		<concept id="528" rubric="キャンセルされた"/>
+		<concept id="529" rubric="計画された"/>
+		<concept id="245" rubric="実施中"/>
+		<concept id="530" rubric="一時停止中"/>
+		<concept id="531" rubric="中断された"/>
+		<concept id="532" rubric="完了"/>
+		<concept id="533" rubric="期限切れ"/>
+	</group>
+	<group name="instruction transitions">
+		<concept id="535" rubric="新しく始める"/>
+		<concept id="536" rubric="ステップを計画する"/>
+		<concept id="537" rubric="延期する"/>
+		<concept id="538" rubric="元に戻す"/>
+		<concept id="166" rubric="キャンセルする"/>
+		<concept id="542" rubric="延期されたステップ"/>
+		<concept id="539" rubric="計画する"/>
+		<concept id="534" rubric="*scheduled step(en)"/>	
+		<concept id="540" rubric="開始する"/>
+		<concept id="541" rubric="実施する"/>
+		<concept id="543" rubric="実行中のステップ"/>
+		<concept id="544" rubric="中断する"/>
+		<concept id="545" rubric="中断されたステップ"/>
+		<concept id="546" rubric="再開する"/>
+		<concept id="547" rubric="中断する"/>
+		<concept id="548" rubric="完了する"/>
+		<concept id="549" rubric="時間切れ"/>
+		<concept id="550" rubric="中断を知らせる"/>
+		<concept id="551" rubric="完了を知らせる"/>
+		<concept id="552" rubric="キャンセルを知らせる"/>
+	</group>
+	<group name="subject relationship">
+		<concept id="0" rubric="自己"/>
+		<concept id="3" rubric="胎児"/>
+		<concept id="10" rubric="母"/>
+		<concept id="9" rubric="父"/>
+		<concept id="6" rubric="ドナー"/>
+		<concept id="253" rubric="未知"/>
+		<concept id="261" rubric="養女"/>
+		<concept id="260" rubric="養子"/>
+		<concept id="259" rubric="養父"/>
+		<concept id="258" rubric="養母"/>
+		<concept id="256" rubric="生物学上の父"/>
+		<concept id="255" rubric="生物学上の母"/>
+		<concept id="23" rubric="兄弟"/>
+		<concept id="28" rubric="子"/>
+		<concept id="265" rubric="同居者"/>
+		<concept id="257" rubric="従兄弟"/>
+		<concept id="29" rubric="娘"/>
+		<concept id="264" rubric="保護者"/>
+		<concept id="39" rubric="母方の叔母"/>
+		<concept id="8" rubric="母方"/>
+		<concept id="7" rubric="母型の"/>
+		<concept id="38" rubric="母型の叔父"/>
+		<concept id="189" rubric="新生児"/>
+		<concept id="254" rubric="親"/>
+		<concept id="22" rubric="配偶者"/>
+		<concept id="41" rubric="父方の叔母"/>
+		<concept id="36" rubric="父方の祖母"/>
+		<concept id="37" rubric="父方の祖-"/>
+		<concept id="40" rubric="父方の叔父"/>
+		<concept id="27" rubric="同胞"/>
+		<concept id="24" rubric="姉妹"/>
+		<concept id="31" rubric="息子"/>
+		<concept id="263" rubric="義父"/>
+		<concept id="262" rubric="義母"/>
+		<concept id="25" rubric="義理あるいは異父母兄弟"/>
+		<concept id="26" rubric="義理あるいは異父母姉妹"/>
+	</group>
+	<group name="term mapping purpose">
+		<concept id="669" rubric="公衆衛生"/>
+		<concept id="670" rubric="償還"/>
+		<concept id="671" rubric="研究"/>
+	</group>
+	<group name="event math function">
+		<concept id="145" rubric="最小"/>
+		<concept id="144" rubric="最大"/>
+		<concept id="267" rubric="最頻値"/>
+		<concept id="268" rubric="中央値"/>
+		<concept id="146" rubric="平均値"/>
+		<concept id="147" rubric="変化"/>
+		<concept id="148" rubric="合計値"/>
+		<concept id="149" rubric="偏差"/>
+		<concept id="521" rubric="減少"/>
+		<concept id="522" rubric="増加"/>
+		<concept id="640" rubric="実際の"/>
+	</group>
+	<group name="setting">
+		<concept id="225" rubric="居宅"/>
+		<concept id="227" rubric="救急治療"/>
+		<concept id="228" rubric="プライマリー医療"/>
+		<concept id="229" rubric="プライマリー看護"/>
+		<concept id="230" rubric="プライマリーで共同した"/>
+		<concept id="231" rubric="助産師によるケア"/>
+		<concept id="232" rubric="二次医療"/>
+		<concept id="233" rubric="二次看護"/>
+		<concept id="234" rubric="二次で共同した "/>
+		<concept id="235" rubric="代替医療 "/>
+		<concept id="236" rubric="歯科治療"/>
+		<concept id="237" rubric="在宅介護"/>
+		<concept id="238" rubric="その他のケア"/>
+	</group>
+</terminology>
