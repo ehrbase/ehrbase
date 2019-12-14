@@ -41,11 +41,6 @@ Main flow create new event COMPOSITION
 
     commit composition (XML)    nested/nested.composition.extdatetimes.xml
 
-
-
-        TRACE JIRA BUG    EHR-445    not-ready
-
-
     # Check result data
     ${xresp}=           Parse Xml          ${response.text}
     ${xtemplate_id}=    Get Element        ${xresp}      archetype_details/template_id/value

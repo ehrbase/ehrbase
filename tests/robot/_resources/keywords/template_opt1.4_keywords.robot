@@ -71,27 +71,10 @@ extract template_id from OPT file
                         # Log To Console      ${template_id}
 
 
-start request session
-    Create Session      ${SUT}    ${${SUT}.URL}
-    ...                 auth=${${SUT}.CREDENTIALS}    debug=2    verify=True
-    &{headers}=         Create Dictionary    Content-Type=application/xml
-                        ...                  Prefer=return=representation
-                        Set Suite Variable    ${headers}    ${headers}
-
-
-start request session (XML)
-    Create Session      ${SUT}    ${${SUT}.URL}
-    ...                 auth=${${SUT}.CREDENTIALS}    debug=2    verify=True
-    &{headers}=         Create Dictionary    Content-Type=application/xml
-                        ...                  Prefer=return=representation
-                        ...                  Accept=application/xml
-                        Set Suite Variable    ${headers}    ${headers}
-
-
 upload valid OPT
     [Arguments]           ${opt file}
 
-    start request session
+    prepare new request session    XML
     get valid OPT file    ${opt file}
     upload OPT file
     server accepted OPT
@@ -114,7 +97,7 @@ retrieve versioned OPT
     Log               NOT APPLICABLE FOR ADL 1.4    level=WARN
     Pass Execution    NOT APPLICABLE FOR ADL 1.4    not-ready
 
-    start request session
+    prepare new request session    XML
     get valid OPT file                  ${opt file}
     extract template_id from OPT file
     retrieve OPT by template_id         ${template_id}
@@ -241,6 +224,22 @@ upload valid template (XML)
 # o888bood8P'  o88o     o8888o  `Y8bood8P'  o888o  o888o    `YbodP'    o888o
 #
 # [ BACKUP ]
+
+# start request session
+#     Create Session      ${SUT}    ${${SUT}.URL}
+#     ...                 auth=${${SUT}.CREDENTIALS}    debug=2    verify=True
+#     &{headers}=         Create Dictionary    Content-Type=application/xml
+#                         ...                  Prefer=return=representation
+#                         Set Suite Variable    ${headers}    ${headers}
+
+
+# start request session (XML)
+#     Create Session      ${SUT}    ${${SUT}.URL}
+#     ...                 auth=${${SUT}.CREDENTIALS}    debug=2    verify=True
+#     &{headers}=         Create Dictionary    Content-Type=application/xml
+#                         ...                  Prefer=return=representation
+#                         ...                  Accept=application/xml
+#                         Set Suite Variable    ${headers}    ${headers}
 
 # retrieve list of uploaded OPTs (request lib example)
 #     [Documentation]    List all available operational templates on the system.

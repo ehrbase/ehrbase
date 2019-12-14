@@ -395,7 +395,7 @@ Populate SUT with Test-Data and Prepare Expected Result
     [Arguments]         ${ehr_index}    ${ehr_status_object}
     Log To Console  \nEHR RECORD ${ehr_index} ////////////////////////////////////
 
-    Composition_keywords.Start Request Session    Prefer=return=representation
+    prepare new request session    Prefer=return=representation
 
     Create EHR Record On The Server    ${ehr_index}    ${ehr_status_object}
 

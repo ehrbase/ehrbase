@@ -147,7 +147,8 @@ Alien Tags
 validate invalid OPT
     [Arguments]             ${opt file}
 
-    start request session
+    prepare new request session    XML
+    ...                            Prefer=return=representation
     get invalid OPT file    ${opt file}
     upload OPT file
     server's response indicates that OPT is invalid

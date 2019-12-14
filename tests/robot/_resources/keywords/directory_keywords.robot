@@ -549,8 +549,6 @@ GET /ehr/ehr_id/directory/version_uid
 
                         prepare new request session    ${format}
 
-        TRACE GITHUB ISSUE  81  not-ready
-
     ${resp}=            Get Request         ${SUT}   /ehr/${ehr_id}/directory/${version_uid}
                         ...                 headers=${headers}
 
@@ -1009,44 +1007,11 @@ validate GET-version@time response - 404 unknown path
 #
 # [ HTTP HEADERS ]
 
-# start new request session
-#     [Arguments]     ${format}=JSON    &{extra_headers}
-#     [Documentation]     Prepares request settings for usage with RequestLibrary
-#     ...                 :format: JSON (default) / XML
-#     ...                 :extra_headers: optional - e.g. Prefer=return=representation
-#     ...                                            e.g. If-Match={ehrstatus_uid}
-#
-#                         # case: JSON
-#                         Run Keyword If      $format=='JSON'    set request headers
-#                         ...                 content=application/json
-#                         ...                 accept=application/json
-#                         ...                 &{extra_headers}
-#
-#                         # case: XML
-#                         Run Keyword If      $format=='XML'    set request headers
-#                         ...                 content=application/xml
-#                         ...                 accept=application/xml
-#                         ...                 &{extra_headers}
-#
-#
-# set request headers
-#     [Arguments]         ${content}=application/json  ${accept}=application/json  &{extra_headers}
-#     [Documentation]     Sets the headers of a request
-#     ...                 :content: application/json (default) / application/xml
-#     ...                 :accept: application/json (default) / application/xml
-#     ...                 :extra_headers: optional
+# NOTE: All request header settings are handled from generic_keywords.robot resource file.
 
-#                         Log Many            ${content}  ${accept}  ${extra_headers}
-
-#     &{headers}=         Create Dictionary   Content-Type=${content}
-#                         ...                 Accept=${accept}
-
-#                         Run Keyword If      ${extra_headers}    Set To Dictionary    ${headers}    &{extra_headers}
-
-#                         Create Session      ${SUT}    ${${SUT}.URL}    debug=2
-#                         ...                 auth=${${SUT}.CREDENTIALS}    verify=True
-
-#                         Set Test Variable   ${headers}    ${headers}
+Available keywords:
+    generic_keywords.prepare new request session
+    generic_keywords.set request headers
 
 
 
@@ -1220,3 +1185,35 @@ VARIANTS x2 (JSON / XML)
 
 
 # *** keywords ***
+# start new request session
+#     [Arguments]     ${format}=JSON    &{extra_headers}
+#     [Documentation]     Prepares request settings for usage with RequestLibrary
+#     ...                 :format: JSON (default) / XML
+#     ...                 :extra_headers: optional - e.g. Prefer=return=representation
+#     ...                                            e.g. If-Match={ehrstatus_uid}
+#
+#                         # case: JSON
+#                         Run Keyword If      $format=='JSON'    set request headers
+#                         ...                 content=application/json
+#                         ...                 accept=application/json
+#                         ...                 &{extra_headers}
+#
+#                         # case: XML
+#                         Run Keyword If      $format=='XML'    set request headers
+#                         ...                 content=application/xml
+#                         ...                 accept=application/xml
+#                         ...                 &{extra_headers}
+
+# set request headers
+#     [Arguments]         ${content}=application/json  ${accept}=application/json  &{extra_headers}
+#     [Documentation]     Sets the headers of a request
+#     ...                 :content: application/json (default) / application/xml
+#     ...                 :accept: application/json (default) / application/xml
+#     ...                 :extra_headers: optional
+#                         Log Many            ${content}  ${accept}  ${extra_headers}
+#     &{headers}=         Create Dictionary   Content-Type=${content}
+#                         ...                 Accept=${accept}
+#                         Run Keyword If      ${extra_headers}    Set To Dictionary    ${headers}    &{extra_headers}
+#                         Create Session      ${SUT}    ${${SUT}.URL}    debug=2
+#                         ...                 auth=${${SUT}.CREDENTIALS}    verify=True
+#                         Set Test Variable   ${headers}    ${headers}

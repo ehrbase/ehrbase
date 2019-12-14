@@ -39,7 +39,7 @@ Force Tags    get_ehr
 *** Test Cases ***
 Get non-existing EHR by subject_id
 
-    start request session    JSON
+    prepare new request session    JSON
 
     create fake EHR
 

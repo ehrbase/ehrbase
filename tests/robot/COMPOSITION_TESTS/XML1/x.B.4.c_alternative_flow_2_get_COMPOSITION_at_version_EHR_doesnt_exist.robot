@@ -39,6 +39,6 @@ Alternative flow 2 get COMPOSITION at version EHR doesnt exist
     generate random ehr_id
     generate random composition_uid
 
-    composition_keywords.start request session  application/xml  application/xml  Prefer=return\=representation
+    prepare new request session  XML  Prefer=return=representation
     get composition by composition_uid    ${version_uid}
     check composition does not exist

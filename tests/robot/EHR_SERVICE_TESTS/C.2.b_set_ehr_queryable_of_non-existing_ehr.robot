@@ -49,19 +49,8 @@ Force Tags    ehr_status
 *** Test Cases ***
 Set EHR queryable of non existing EHR
 
-    ehr_keywords.start request session    JSON
+    prepare new request session    JSON
 
     create fake EHR
 
     update ehr_status of fake EHR (with body)
-
-
-
-
-
-
-*** Keywords ***
-# verify response (XML)
-#     ${xml}=             Parse Xml    ${response.body}
-#     ${is_queryable}=    Get Element Text    ${xml}    xpath=is_queryable
-#                         Set Test Variable   ${is_queryable}     ${is_queryable}

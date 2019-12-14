@@ -43,6 +43,6 @@ Alternative flow 2 get COMPOSITION at version EHR doesnt exist
     generate random composition_uid
 
     # Check COMPOSITION does not exist
-    composition_keywords.start request session
+    prepare new request session
     get composition by composition_uid    ${version_uid}
     check composition does not exist

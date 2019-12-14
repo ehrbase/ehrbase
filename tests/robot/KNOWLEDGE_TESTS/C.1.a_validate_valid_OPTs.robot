@@ -127,7 +127,8 @@ Removed Optional Elements
 validate valid OPT
     [Arguments]            ${opt file}
 
-    start request session
+    prepare new request session    XML
+    ...                            Prefer=return=representation
     get valid OPT file     ${opt file}
     upload OPT file
     server's response indicates that OPT is valid

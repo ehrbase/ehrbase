@@ -119,7 +119,8 @@ Versioned
 upload valid OPT
     [Arguments]       ${opt file}
 
-    start request session
+    prepare new request session    XML
+    ...                            Prefer=return=representation
     get valid OPT file      ${opt file}
     extract template_id from OPT file
     upload OPT file

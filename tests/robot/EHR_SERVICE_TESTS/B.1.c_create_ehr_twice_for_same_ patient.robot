@@ -41,7 +41,7 @@ Force Tags    create_ehr
 *** Test Cases ***
 Create Same EHR Twice For The Same Patient (JSON)
 
-    start request session    JSON
+    prepare new request session    JSON
 
     generate random subject_id
     create new EHR for subject_id (JSON)    ${subject_id}
