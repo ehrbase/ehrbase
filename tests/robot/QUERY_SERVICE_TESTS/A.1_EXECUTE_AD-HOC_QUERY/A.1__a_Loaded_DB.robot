@@ -17,7 +17,7 @@
 
 
 *** Settings ***
-Documentation   Main flow: execute ad-hoc QUERY where data exists
+Documentation   Main flow (MF): execute ad-hoc QUERY where data exists
 ...
 ...     Preconditions:
 ...         Required data exists for each case.
@@ -58,7 +58,7 @@ ${compo data sets}    ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/quer
 #                     retrieve OPT list
 #                     OPT list is empty
 
-001 Main Flow: Execute Ad-Hoc Query - Get EHRs
+MF-001 Execute Ad-Hoc Query - Get EHRs
     [Template]          execute ad-hoc query and check result (loaded DB)
     [Tags]              not-ready
 
@@ -72,7 +72,7 @@ ${compo data sets}    ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/quer
     # A/105_get_ehrs               A/105.tmp.json
     # A/106_get_ehrs               A/106.tmp.json
 
-# 002 Main Flow: Execute Ad-Hoc Query - Get EHR By ID
+# MF-002 Execute Ad-Hoc Query - Get EHR By ID
 #     [Template]          execute ad-hoc query and check result (loaded DB)
 #     [Tags]              not-ready
 
@@ -83,7 +83,7 @@ ${compo data sets}    ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/quer
 #     # A/202_get_ehr_by_id
 #     # A/203_get_ehr_by_id
 
-003 Main Flow: Execute Ad-Hoc Query - Get EHRs Which Have Compositions
+MF-003 Execute Ad-Hoc Query - Get EHRs Which Have Compositions
     [Template]          execute ad-hoc query and check result (loaded DB)
     [Tags]              not-ready
 
@@ -105,7 +105,7 @@ ${compo data sets}    ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/quer
     # A/603_get_ehrs_by_contains_composition_contains_entry_with_archetype.json  A/603.tmp.json
 
 
-# 004 Main Flow: Execute Ad-Hoc Query - Get EHRs (filtered: top 5)
+# MF-004 Execute Ad-Hoc Query - Get EHRs (filtered: top 5)
 #     [Template]          execute ad-hoc query and check result (loaded DB)
 #     [Tags]              not-ready
 
@@ -119,21 +119,21 @@ ${compo data sets}    ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/quer
 
 
 
-005 Main Flow: Execute Ad-Hoc Query - Get Compositions From All EHRs
+MF-005 Execute Ad-Hoc Query - Get Compositions From All EHRs
     [Template]          execute ad-hoc query and check result (loaded DB)
     [Tags]              not-ready
 
     B/100_get_compositions_from_all_ehrs.json    B/100.tmp.json
 
 
-006 Main Flow: Execute Ad-Hoc Query - Get Compositions From EHR By ID
+MF-006 Execute Ad-Hoc Query - Get Compositions From EHR By ID
     [Template]          execute ad-hoc query and check result (loaded DB)
     [Tags]              not-ready
 
     B/200_query.tmp.json    B/200.tmp.json
 
 
-007 Main Flow: Execute Ad-Hoc Query - Get Composition(s)
+MF-007 Execute Ad-Hoc Query - Get Composition(s)
     [Template]          execute ad-hoc query and check result (loaded DB)
     [Tags]              not-ready
     
@@ -154,7 +154,7 @@ ${compo data sets}    ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/quer
     # B/603_get_compositions_by_contains_entry_with_archetype_from_all_ehrs.json    B/603.tmp.json
 
 
-# 008 Main Flow: Execute Ad-Hoc Query - Get Compositions (filtered: i.e. top 5)
+# MF-008 Execute Ad-Hoc Query - Get Compositions (filtered: i.e. top 5)
 #     [Template]          execute ad-hoc query and check result (loaded DB)
 #     [Tags]              not-ready
 
@@ -162,7 +162,7 @@ ${compo data sets}    ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/quer
 #     B/102_get_compositions_orderby_name.json    B/102.tmp.json
 #     B/103_get_compositions_within_timewindow.json    B/103.tmp.json
 
-009 Main Flow: Execute Ad-Hoc Query - Get Compositions By UID
+MF-009 Execute Ad-Hoc Query - Get Compositions By UID
     [Template]          execute ad-hoc query and check result (loaded DB)
     [Tags]              not-ready
 

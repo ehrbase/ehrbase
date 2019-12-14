@@ -17,7 +17,7 @@
 
 
 *** Settings ***
-Documentation   Alternative flow: execute ad-hoc QUERY where DB is EMPTY
+Documentation   Alternative flow (AF): execute ad-hoc QUERY where DB is EMPTY
 ...
 ...     Preconditions:
 ...         DB IS EMPTY.
@@ -103,7 +103,7 @@ Bug Case 04 - Failing Ad-Hoc Queries - Get Data
     [Teardown]          TRACE GITHUB ISSUE  83  not-ready
 
 
-Alternative Flow: Execute Ad-Hoc Query - Get EHR(s)
+AF-01 Execute Ad-Hoc Query - Get EHR(s)
     [Template]          execute ad-hoc query and check result (empty DB)
     [Tags]              not-ready
 
@@ -137,7 +137,7 @@ Alternative Flow: Execute Ad-Hoc Query - Get EHR(s)
     # A/203_get_ehr_by_id_empty_db.json
 
 
-Alternative Flow: Execute Ad-Hoc Query - Get Composition(s)
+AF-02 Execute Ad-Hoc Query - Get Composition(s)
     [Template]          execute ad-hoc query and check result (empty DB)
     [Tags]              not-ready
 
@@ -167,7 +167,7 @@ Alternative Flow: Execute Ad-Hoc Query - Get Composition(s)
     # B/801_get_composition_by_uid_empty_db.json
 
 
-Alternative Flow: Execute Ad-Hoc Query - Get Entrie(s)
+AF-03 Execute Ad-Hoc Query - Get Entrie(s)
     [Template]          execute ad-hoc query and check result (empty DB)
     [Tags]              not-ready
     
@@ -186,7 +186,7 @@ Alternative Flow: Execute Ad-Hoc Query - Get Entrie(s)
     # C/103_get_entries_empty_db.json
 
 
-Alternative Flow: Execute Ad-Hoc Query - Get Data
+AF-04 Execute Ad-Hoc Query - Get Data
     [Template]          execute ad-hoc query and check result (empty DB)
     [Tags]              not-ready
     

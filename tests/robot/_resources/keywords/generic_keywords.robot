@@ -273,7 +273,7 @@ set request headers
                         Create Session      ${SUT}    ${${SUT}.URL}    debug=2
                         ...                 auth=${${SUT}.CREDENTIALS}    verify=True
 
-                        Set Test Variable   ${headers}    ${headers}
+                        Set Suite Variable   ${headers}    ${headers}
 
 
 
