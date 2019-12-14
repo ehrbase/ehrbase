@@ -75,9 +75,9 @@ tasks:
         desc: RUN SPECIFIED TESTS
         cmds:
           # adjust this part to the needs of your current test session
-          - robot -e future -e circleci -e TODO -e obsolete -d results -L TRACE --noncritical not-ready robot/COMPOSITION_TESTS
+          # - robot -e future -e circleci -e TODO -e obsolete -d results -L TRACE --noncritical not-ready robot/COMPOSITION_TESTS
           # example of "execute single test by it's test-case name" (wildcards accepted):
-          # - robot -t "*commit CONTRIBUTIONS versioning persistent COMPOSITION" -d results -L TRACE robot/CONTRIBUTION_TESTS
+          - robot -t "*create directory on empty EHR" -d results -L TRACE robot/DIRECTORY_TESTS
           - spd-say "Robot is ready! Check the results!"
 
     test_all:
@@ -86,9 +86,9 @@ tasks:
           - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output compo.xml --name COMPO robot/COMPOSITION_TESTS
           - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output contri.xml --name CONTRI robot/CONTRIBUTION_TESTS
           - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output folder.xml --name FOLDER robot/DIRECTORY_TESTS
-          # - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output ehr.xml --name EHR robot/EHR_SERVICE_TESTS
-          # - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output knowledge.xml --name KNOWLEDGE robot/KNOWLEDGE_TESTS
-          # - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output query.xml --name QUERY robot/QUERY_SERVICE_TESTS
+          - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output ehr.xml --name EHR robot/EHR_SERVICE_TESTS
+          - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output knowledge.xml --name KNOWLEDGE robot/KNOWLEDGE_TESTS
+          - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output query.xml --name QUERY robot/QUERY_SERVICE_TESTS
 
           # consolidate results
           - rebot -e future -e circleci -e TODO -e obsolete -e libtest -d results -L TRACE --noncritical not-ready --name EHRbase results/xml/*.xml
