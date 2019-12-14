@@ -39,6 +39,63 @@ Connect With DB
                         Connect To Database    psycopg2    ${DBName}    ${DBUser}    ${DBPass}
                         ...                                ${DBHost}    ${DBPort}
 
+
+Clean DB
+    [Documentation]         Deletes rows in tables which were used by test.
+    Connect With DB
+
+    # Set Auto Commit
+    # Execute SQL String    DROP DATABASE ehrbase;
+    # Execute SQL Script    ${EXECDIR}${/}dbclean.sql
+
+
+    # Delete All Templates
+    # Delete All EHR Records
+
+    # Delete All Rows From Table    ehr.attestation
+    # Delete All Rows From Table    ehr.attested_view
+    # Delete All Rows From Table    ehr.contribution
+    # Delete All Rows From Table    ehr.audit_details
+    Delete All Rows From Table    ehr.composition
+    # Delete All Rows From Table    ehr.folder
+    # Delete All Rows From Table    ehr.folder_hierarchy
+    # Delete All Rows From Table    ehr.object_ref
+    # Delete All Rows From Table    ehr.folder_items
+    # Delete All Rows From Table    ehr.composition_history
+    # Delete All Rows From Table    ehr.contribution_history
+    # Delete All Rows From Table    ehr.event_context
+    # Delete All Rows From Table    ehr.entry
+    # Delete All Rows From Table    ehr.compo_xref
+    # Delete All Rows From Table    ehr.participation
+    # Delete All Rows From Table    ehr.concept
+    Delete All Rows From Table    ehr.ehr
+    Delete All Rows From Table    ehr.status
+    # Delete All Rows From Table    ehr.party_identified
+    # Delete All Rows From Table    ehr.identifier
+    # Delete All Rows From Table    ehr.audit_details_history
+    # Delete All Rows From Table    ehr.containment
+    # Delete All Rows From Table    ehr.entry_history
+    # Delete All Rows From Table    ehr.event_context_history
+    # Delete All Rows From Table    ehr.folder_hierarchy_history
+    # Delete All Rows From Table    ehr.folder_history
+    # Delete All Rows From Table    ehr.folder_items_history
+    # Delete All Rows From Table    ehr.object_ref_history
+    # Delete All Rows From Table    ehr.participation_history
+    Delete All Rows From Table    ehr.status_history
+    Delete All Rows From Table    ehr.template_store
+
+    # # Delete All Rows From Table    ehr.access
+    # # Delete All Rows From Table    ehr.heading
+    # # Delete All Rows From Table    ehr.language
+    # # Delete All Rows From Table    ehr.schema_version
+    # # Delete All Rows From Table    ehr.session_log
+    # # Delete All Rows From Table    ehr.stored_query
+    # # Delete All Rows From Table    ehr.terminology_provider
+    # # Delete All Rows From Table    ehr.territory
+
+    [Teardown]          Disconnect From Database
+
+
 Delete All Templates
     [Documentation]     Deletes all templates from ehr.template_store table.
     ...                 Is meant to be used with EHRbase server started with disabled Cache
@@ -46,6 +103,17 @@ Delete All Templates
 
                         Connect With DB
                         Delete All Rows From Table    ehr.template_store
+
+    [Teardown]          Disconnect From Database
+
+
+Delete All EHR Records
+    [Documentation]     Deletes all EHR records from ehr.ehr table.
+    ...                 Is meant to be used with EHRbase server started with disabled Cache
+    ...                 e.g. `java -jar ehrbase-server.jar --cache.enabled=false`
+
+                        Connect With DB
+                        Delete All Rows From Table    ehr.ehr
 
     [Teardown]          Disconnect From Database
 

@@ -35,10 +35,10 @@ Force Tags    XML
 *** Test Cases ***
 Alternative flow 2 get VERSIONED COMPOSITION EHR doesnt exist
 
-    # Create fake EHR
+    # comment: Create fake EHR
     generate random ehr_id
 
-    # Create fake COMPOSITION
+    # comment: Create fake COMPOSITION
     generate random composition_uid
 
     composition_keywords.start request session    application/xml   application/xml

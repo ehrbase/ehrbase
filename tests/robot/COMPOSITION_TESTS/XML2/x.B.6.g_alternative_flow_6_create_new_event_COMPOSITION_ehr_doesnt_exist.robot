@@ -35,7 +35,7 @@ Force Tags    XML
 *** Test Cases ***
 Alternative flow 6 create new event COMPOSITION EHR doesnt exist
 
-    upload OPT    nested/nested.opt    XML
+    upload OPT    nested/nested.opt
 
     create fake EHR
 

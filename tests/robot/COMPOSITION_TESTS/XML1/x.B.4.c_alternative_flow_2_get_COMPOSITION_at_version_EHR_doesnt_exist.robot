@@ -35,10 +35,7 @@ Force Tags    XML
 *** Test Cases ***
 Alternative flow 2 get COMPOSITION at version EHR doesnt exist
 
-    # upload OPT
-    # not needed because we don't do a commit
-
-    # Create fake EHR and COMPOSITION
+    # comment: Create fake EHR and COMPOSITION
     generate random ehr_id
     generate random composition_uid
 

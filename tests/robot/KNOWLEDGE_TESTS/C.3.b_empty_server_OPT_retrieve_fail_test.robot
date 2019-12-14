@@ -61,7 +61,7 @@ retrieve OPT by random templade_id
     generate random templade_id
     retrieve OPT by template_id         ${template_id}
     verify server response
-    [Teardown]                          clean up test variables
+    [Teardown]                          Clean Up Suite Variables
 
 
 retrieve OPT by template_id

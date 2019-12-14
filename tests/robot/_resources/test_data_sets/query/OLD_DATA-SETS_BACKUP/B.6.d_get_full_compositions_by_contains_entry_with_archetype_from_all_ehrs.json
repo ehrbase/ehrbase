@@ -1,3 +1,0 @@
-{
-  "q": "SELECT c FROM EHR e CONTAINS COMPOSITION c CONTAINS ACTION action [openEHR-EHR-ACTION.minimal.v1]"
-}

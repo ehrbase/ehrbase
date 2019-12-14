@@ -182,7 +182,7 @@ create new EHR with ehr_status
     &{resp}=            REST.POST    ${baseurl}/ehr    ${ehr_status_object}
                         # Integer      response status    201  200
 
-                        Set Test Variable    ${response}    ${resp}
+                        Set Suite Variable    ${response}    ${resp}
 
                         Output Debug Info To Console  # NOTE: won't work with content-type=XML
 
@@ -460,7 +460,7 @@ extract ehr_id from response (JSON)
 
                         Log To Console    \n\tDEBUG OUTPUT - EHR_ID: \n\t${ehr_id}[0]
 
-                        Set Test Variable    ${ehr_id}     ${ehr_id}[0]
+                        Set Suite Variable    ${ehr_id}     ${ehr_id}[0]
                         # Set Test Variable    ${ehr_id}     ${response.body.ehr_id.value}    # same as above
 
 

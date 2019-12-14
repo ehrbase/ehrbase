@@ -35,7 +35,7 @@ Force Tags    XML
 *** Test Cases ***
 Alternative flow 3 get COMPOSITION at version cover different versions
 
-    upload OPT    minimal_persistent/persistent_minimal.opt    XML
+    upload OPT    minimal_persistent/persistent_minimal.opt
 
     create EHR    XML
 
@@ -45,12 +45,7 @@ Alternative flow 3 get COMPOSITION at version cover different versions
     check composition update succeeded
 
     # Check COMPO v1 exist and has correct content
-    # composition_keywords.start request session    application/xml    application/xml
-
     get composition by composition_uid    ${version_uid_v1}
-
-        TRACE JIRA BUG  NO-JIRA-ID  not-ready  unreported bug: <Map><error/><status>Internal Server Error</status></Map>
-
     check content of composition (XML)
 
     # Check COMPO v2 exist and has correct content

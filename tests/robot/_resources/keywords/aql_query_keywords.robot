@@ -176,14 +176,12 @@ POST /query/aql
                         ...                 headers=${headers}
                         Set Test Variable   ${response}    ${resp}
                         Set Test Variable   ${response body}    ${resp.content}
-                        Output Debug Info:  POST /query/aql
+                        # Output Debug Info:  POST /query/aql
     
     # UNCOMMENT NEXT BLOCK FOR DEBUGGING (BETTER OUTPUT IN CONSOLE)
     # TODO: rm/comment when test stable
-    &{resp}=            REST.POST  /query/aql  body=${test_data}  headers=${headers}
                         Log To Console  \n//////////// ACTUAL //////////////////////////////
-    ${body}=            Output  response body
-                        Integer    response status    200
+                        Output    ${response.json()}
 
 
 POST /query/{qualified_query_name}/{version}
@@ -261,6 +259,9 @@ check response (LOADED DB): returns correct content
     [Arguments]         ${path_to_expected}
 
                         load expected results-data-set (LOADED DB)    ${path_to_expected}
+
+                        Log To Console  \n/////////// EXPECTED //////////////////////////////
+                        Output    ${expected result}
 
     &{diff}=            compare json-strings  ${response body}  ${expected result}
     ...                 report_repetition=True

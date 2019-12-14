@@ -76,7 +76,7 @@ Retrieve OPT List From Server
 
     retrieve list of uploaded OPTs
     verify server response
-    clean up test variables
+    Clean Up Suite Variables
 
 
 
@@ -88,7 +88,7 @@ upload valid OPT
     get valid OPT file    ${opt file}
     upload OPT file
     server accepted OPT
-    [Teardown]            clean up test variables
+    [Teardown]            Clean Up Suite Variables
 
 
 retrieve list of uploaded OPTs

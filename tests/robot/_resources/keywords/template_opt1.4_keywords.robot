@@ -37,8 +37,8 @@ get valid OPT file
 
     ${file}=            Get File             ${VALID DATA SETS}/${opt file}
     ${xml}=             Parse Xml            ${file}
-                        Set Test Variable    ${file}    ${file}
-                        Set Test Variable    ${expected}    ${xml}
+                        Set Suite Variable    ${file}    ${file}
+                        Set Suite Variable    ${expected}    ${xml}
                         Log Element          ${expected}
 
 
@@ -50,14 +50,14 @@ get invalid OPT file
 
                         # handle empty file and empty XML
                         Run Keyword And Return If    """${file}"""=='${EMPTY}'
-                        ...                          Set Test Variable  ${file}  ${file}
+                        ...                          Set Suite Variable  ${file}  ${file}
 
                         Run Keyword And Return If    """${file}"""=="""<?xml version="1.0" encoding="utf-8"?>\n"""
-                        ...                          Set Test Variable  ${file}  ${file}
+                        ...                          Set Suite Variable  ${file}  ${file}
 
     ${xml}=             Parse Xml            ${file}
-                        Set Test Variable    ${file}    ${file}
-                        Set Test Variable    ${expected}    ${xml}
+                        Set Suite Variable    ${file}    ${file}
+                        Set Suite Variable    ${expected}    ${xml}
                         Log Element          ${expected}
 
 
@@ -67,7 +67,7 @@ extract template_id from OPT file
 
     ${template_id}=     Get Element Text     ${expected}   xpath=template_id
     ...                 normalize_whitespace=True
-                        Set Test Variable    ${template_id}    ${template_id}
+                        Set Suite Variable    ${template_id}    ${template_id}
                         # Log To Console      ${template_id}
 
 
@@ -76,7 +76,7 @@ start request session
     ...                 auth=${${SUT}.CREDENTIALS}    debug=2    verify=True
     &{headers}=         Create Dictionary    Content-Type=application/xml
                         ...                  Prefer=return=representation
-                        Set Test Variable    ${headers}    ${headers}
+                        Set Suite Variable    ${headers}    ${headers}
 
 
 start request session (XML)
@@ -85,7 +85,7 @@ start request session (XML)
     &{headers}=         Create Dictionary    Content-Type=application/xml
                         ...                  Prefer=return=representation
                         ...                  Accept=application/xml
-                        Set Test Variable    ${headers}    ${headers}
+                        Set Suite Variable    ${headers}    ${headers}
 
 
 upload valid OPT
@@ -95,7 +95,7 @@ upload valid OPT
     get valid OPT file    ${opt file}
     upload OPT file
     server accepted OPT
-    [Teardown]            clean up test variables
+    [Teardown]            Clean Up Suite Variables
 
 
 upload OPT file
@@ -104,7 +104,7 @@ upload OPT file
 
     ${resp}=            Post Request         ${SUT}    /definition/template/adl1.4
                         ...                  data=${file}    headers=${headers}
-                        Set Test Variable    ${response}    ${resp}
+                        Set Suite Variable    ${response}    ${resp}
                         # Log To Console      ${resp.content}
 
 
@@ -119,7 +119,7 @@ retrieve versioned OPT
     extract template_id from OPT file
     retrieve OPT by template_id         ${template_id}
     verify server response
-    [Teardown]                          clean up test variables
+    [Teardown]                          Clean Up Suite Variables
 
 
 server accepted OPT
@@ -150,7 +150,7 @@ retrieve OPT by template_id
                         # Log    ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   200
     ${xml}=             Parse Xml            ${resp.text}
-                        Set Test Variable    ${actual}    ${xml}
+                        Set Suite Variable    ${actual}    ${xml}
 
 
 verify content of OPT
@@ -166,15 +166,25 @@ generate random templade_id
     ...                 into Test Case Scope.
 
     ${template_id}=     Generate Random String    16    [NUMBERS]abcdef
-                        Set Test Variable    ${template_id}    ${template_id}
+                        Set Suite Variable    ${template_id}    ${template_id}
 
 
-clean up test variables
+Clean Up Test Variables
     [Documentation]     Cleans up test variables to avoid impacts between tests.
 
                         Set Test Variable    ${file}           None
                         Set Test Variable    ${expected}       None
                         Set Test Variable    ${template_id}    None
+    &{vars in memory}=  Get Variables
+                        Log Many             &{vars in memory}
+
+
+Clean Up Suite Variables
+    [Documentation]     Cleans up test variables to avoid impacts between tests.
+
+                        Set Suite Variable    ${file}           None
+                        Set Suite Variable    ${expected}       None
+                        Set Suite Variable    ${template_id}    None
     &{vars in memory}=  Get Variables
                         Log Many             &{vars in memory}
 

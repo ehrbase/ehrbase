@@ -49,7 +49,7 @@ ${INVALID DATA SETS}   ${PROJECT_ROOT}${/}tests${/}robot${/}_resources${/}test_d
 
 
 
-
+# TODO: mit "prepare new request session" ersetzen !!! @WLAD
 start request session
     [Arguments]         ${content}=application/json  ${accept}=application/json  &{others}
     [Documentation]     Prepares request settings for RESTistance & RequestLib
@@ -72,7 +72,7 @@ start request session
                         Create Session      ${SUT}    ${${SUT}.URL}
                         ...                 auth=${${SUT}.CREDENTIALS}    debug=2    verify=True
 
-                        Set Test Variable   ${headers}    ${headers}
+                        Set Suite Variable   ${headers}    ${headers}
 
 
 # TODO: rename to `generate random versioned_object_uid`
@@ -645,31 +645,38 @@ delete non-existent composition
 
 
 upload OPT
-    [Arguments]     ${opt_file}   ${accept-header}=JSON
+    [Arguments]     ${opt_file}
 
     # setting proper Accept=application/xxx header
-    Run Keyword If    '${accept-header}'=='JSON'   template_opt1.4_keywords.start request session
-    Run Keyword If    '${accept-header}'=='XML'    start request session (XML)
+    # Run Keyword If    '${accept-header}'=='JSON'   template_opt1.4_keywords.start request session
+    
+                        prepare new request session    XML
+                        ...                          Prefer=return=representation
+    
+    # Run Keyword If    '${accept-header}'=='XML'    start request session (XML)
 
-    get valid OPT file    ${opt_file}
-    upload OPT file
-    server accepted OPT
+                        get valid OPT file    ${opt_file}
+                        upload OPT file
+                        server accepted OPT
 
 
 create EHR
-    [Arguments]     ${accept-header}=JSON
+    [Arguments]         ${accept-header}=JSON
 
-    Run Keyword If  '${accept-header}'=='JSON'
-    ...             Run Keywords    ehr_keywords.start request session    JSON
-    ...             AND             create new EHR
-    ...             AND             extract ehr_id from response (JSON)
-    ...             AND             extract ehrstatus_uid (JSON)
+    Run Keyword If      '${accept-header}'=='JSON'
+    ...                 Run Keywords    prepare new request session   JSON
+    ...                                 Prefer=return=representation
+    ...                 AND             create new EHR
+    ...                 AND             extract ehr_id from response (JSON)
+    ...                 AND             extract ehrstatus_uid (JSON)
 
-    Run Keyword If  '${accept-header}'=='XML'
-    ...             Run Keywords    ehr_keywords.start request session    XML
-    ...             AND             create new EHR (XML)
-    ...             AND             extract ehr_id from response (XML)
-    ...             AND             extract ehrstatus_uid (XML)
+    Run Keyword If      '${accept-header}'=='XML'
+    ...                 Run Keywords    prepare new request session    XML
+    ...                                 content=application/xml
+    ...                                 accept=application/xml    Prefer=return=representation
+    ...                 AND             create new EHR (XML)
+    ...                 AND             extract ehr_id from response (XML)
+    ...                 AND             extract ehrstatus_uid (XML)
 
 
 capture time before first commit

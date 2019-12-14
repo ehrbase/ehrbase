@@ -94,7 +94,7 @@ check response: is positive - contribution has new version
                         Set Test Variable    ${version_id}    ${body['versions'][0]['id']['value']}
                         Set Test Variable    ${change_type}    ${body['audit']['change_type']['value']}
 
-                        Should Contain  ${version_id}  ::2       
+                        Should Contain  ${version_id}  ::2
                         Output    ${body}
 
 
@@ -187,9 +187,6 @@ check content of retrieved CONTRIBUTION (JSON)
 retrieve CONTRIBUTION by fake contri_uid (JSON)
                         Set Test Variable  ${KEYWORD NAME}  GET CONTRI BY FAKE CONTRI_UID
                         generate random contribution_uid
-
-            TRACE GITHUB ISSUE  68  not-ready  message=Next step fails due to a bug.
-
                         GET /ehr/ehr_id/contribution/contribution_uid    JSON
 
 
@@ -217,19 +214,19 @@ retrieve CONTRIBUTION(S) by fake ehr_id (JSON)
 check response: is negative indicating non-existent ehr_id
                         Should Be Equal As Strings    ${response.status_code}    404
                         Set Test Variable    ${body}    ${response.json()}
-                        Should Be Equal As Strings  ${body['error']}  No EHR found with given ID: ${ehr_id}  
+                        Should Be Equal As Strings  ${body['error']}  No EHR found with given ID: ${ehr_id}
 
 
 check response: is negative indicating non-existent contribution_uid
                         Should Be Equal As Strings    ${response.status_code}    404
                         Set Test Variable    ${body}    ${response.json()}
-                        Should Be Equal As Strings  ${body['error']}  No Contribution found with given uid: ${contribution_uid}
+                        Should Be Equal As Strings  ${body['error']}  Contribution with given ID does not exist
 
 
 check response: is negative indicating non-existent contribution_uid on ehr_id
                         Should Be Equal As Strings    ${response.status_code}    404
                         Set Test Variable    ${body}    ${response.json()}
-                        Should Be Equal As Strings  ${body['error']}  TODO: tbd
+                        Should Be Equal As Strings  ${body['error']}  Contribution with given ID does not exist
 
 
 check response: is positive with list of ${x} contribution(s)
@@ -404,7 +401,7 @@ Output Debug Info:
                         Log To Console      \tresponse status code: \n\t${response.status_code} \n
                         Log To Console      \tresponse headers: \n\t${response.headers} \n
                         # Log To Console      \tresponse body: \n\t${response.content} \n
-                        
+
     ${resti_response}=  Set Variable  ${response.json()}
                         Output    ${resti_response}
 
