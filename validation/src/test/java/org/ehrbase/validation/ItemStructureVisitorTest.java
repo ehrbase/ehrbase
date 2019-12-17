@@ -48,6 +48,7 @@ import java.io.FileInputStream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertTrue;
 
 public class ItemStructureVisitorTest {
 
@@ -80,12 +81,25 @@ public class ItemStructureVisitorTest {
         Composition composition = (Composition) unmarshaller.unmarshal(new FileInputStream(new File("./src/test/resources/composition/RIPPLE-ConformanceTest.xml")));
 
         itemStructureVisitor.validate(composition);
-        assertEquals(57, itemStructureVisitor.getElementOccurrences()); //4 elements are in the context/other_context structure
+        assertEquals(61, itemStructureVisitor.getElementOccurrences()); //4 elements are in the context/other_context structure
 
         itemStructureVisitor.validate(composition.getContext().getOtherContext());
-        assertEquals(61, itemStructureVisitor.getElementOccurrences());
+        assertEquals(65, itemStructureVisitor.getElementOccurrences());
 
     }
+    @Test
+    public void elementVisitorTest3() throws Throwable {
+        Unmarshaller unmarshaller = JAXBUtil.createRMContext().createUnmarshaller();
+        Composition composition = (Composition) unmarshaller.unmarshal(new FileInputStream(new File("./src/test/resources/composition/RIPPLE-ConformanceTest_invalid_other_context_mm_type.xml")));
+
+        try {
+            itemStructureVisitor.validate(composition);
+        } catch (IllegalArgumentException e){
+            assertTrue(e.getMessage().contains("supplied code string [video/mp4] is not found in codeset:media types"));
+        }
+
+    }
+
 
     @Test
     public void ehrVisitorTest() throws Throwable {

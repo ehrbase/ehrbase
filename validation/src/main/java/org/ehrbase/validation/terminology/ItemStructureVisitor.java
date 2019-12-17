@@ -85,6 +85,9 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
         for (ContentItem item : composition.getContent()) {
             traverse(item);
         }
+
+        if (composition.getContext() != null && composition.getContext().getOtherContext() != null)
+            validate(composition.getContext().getOtherContext());
     }
 
     @Override
