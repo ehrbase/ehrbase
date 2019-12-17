@@ -2,7 +2,7 @@ version: '2'
 # HOW TO USE ME
 #   - installation: https://taskfile.dev/#/installation
 #   - usage:        https://taskfile.dev/#/usage
-#   - code:         https://github.com/go-task/task           
+#   - code:         https://github.com/go-task/task
 
 tasks:
   default:
@@ -23,7 +23,7 @@ tasks:
     cmds:
       - task: startdb
       - task: starteb-nocache
-  
+
   stop:
     desc: STOP SUT
     cmds:
@@ -39,7 +39,7 @@ tasks:
         - echo ... EHRbase server started.
         #- grep -m 1 "Started EhrBase in" <(tail -f log)   # FAIL!
         # https://github.com/go-task/task/issues/270
-  
+
   starteb-nocache:
       desc: START EHRBASE SERVER WITHOUT CACHE
       cmds:
@@ -47,7 +47,7 @@ tasks:
         - java -jar ../application/target/application-0.9.0.jar --cache.enabled=false > log &
         - sleep 20
         - echo ... EHRbase server started.
-  
+
   stopeb:
     desc: KILL EHRBASE SERVER
     cmds:
@@ -64,16 +64,12 @@ tasks:
     cmds:
       - docker container rm -f ehrdb
       - echo ... DB server stopped.
-  
+
   test:
     desc: RUN TESTS
     cmds:
       # adjust this part to the needs of your current test session
-<<<<<<< HEAD
       - robot -i loaded_db -e future -e circleci -e TODO -e obsolete -d results -L TRACE --noncritical not-ready robot/QUERY_SERVICE_TESTS
-=======
-      - robot -e future -e circleci -e TODO -e obsolete -d results -L TRACE --noncritical not-ready robot/COMPOSITION_TESTS
->>>>>>> develop
       # example of "execute single test by it's test-case name" (wildcards accepted):
       # - robot -t "*commit CONTRIBUTIONS versioning persistent COMPOSITION" -d results -L TRACE robot/CONTRIBUTION_TESTS
       # --console dotted
