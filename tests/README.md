@@ -13,7 +13,7 @@
 ## Execution of tests under Linux, Mac and Windows
 In general tests are executed by calling the **`robot`** command pointing it to the folder wich contains the tests, i.e.:
 ```
-# this will run all test-cases from robot/ folder 
+# this will run all test-cases from robot/ folder
 # when you call it from inside project_root/tests/
 
 # Linux & Mac OS
@@ -34,7 +34,7 @@ robot -i knowledge      -d results --noncritical not-ready -L TRACE robot/KNOWLE
 robot -i aql            -d results --noncritical not-ready -L TRACE robot/QUERY_SERVICE_TESTS/
 ```
 
-Execution of **all** integration tests takes **about 30 minutes** (on a fast dev machine). To avoid waiting for all results you can specify exactly which test-suite or even which subset of it you want to execute. There are six test-suites to choose from by passing proper TAG to `robot` command via the `--include` (or short `-i`) option: 
+Execution of **all** integration tests takes **about 30 minutes** (on a fast dev machine). To avoid waiting for all results you can specify exactly which test-suite or even which subset of it you want to execute. There are six test-suites to choose from by passing proper TAG to `robot` command via the `--include` (or short `-i`) option:
 
 
 TEST SUITE | SUPER TAG | SUB TAG(s) | EXAMPLE(s)
@@ -54,7 +54,7 @@ robot -i ehr_serviceANDget_ehr -e future robot/EHR_SERVICE_TESTS/
 ```
 [Using TAGs to include/exclude tests] from execution is very well documented in [Robot Framework's User Guide].
 
-There is also a prepared [shell script] which you can use to run **all** available tests at once. You can also use it as a reference to see which [command line options] are available to the `robot` command. Check examples below to see how to execute that script on your OS: 
+There is also a prepared [shell script] which you can use to run **all** available tests at once. You can also use it as a reference to see which [command line options] are available to the `robot` command. Check examples below to see how to execute that script on your OS:
 
 ```bash
 # Linux
@@ -117,3 +117,5 @@ If you want to keep history of your test runs you can [time-stamp](http://robotf
 [command line options]: http://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#using-command-line-options
 
 [Using TAGs to include/exclude tests]: http://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#by-tag-names
+
+this is just to test the ci
