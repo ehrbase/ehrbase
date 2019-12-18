@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Stefan Spiska (Vitasystems GmbH) and Hannover Medical School.
+ * Copyright (c) 2019 Stefan Spiska (Vitasystems GmbH) and Jake Smolka (Hannover Medical School).
  *
  * This file is part of project EHRbase
  *
@@ -18,8 +18,9 @@
 
 package org.ehrbase.service;
 
-import org.apache.commons.io.IOUtils;
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.opt.query.TemplateTestData;
+import org.apache.commons.io.IOUtils;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
@@ -45,5 +46,28 @@ public class KnowledgeCacheHelper {
         return knowledgeCacheService;
     }
 
+    public static ServerConfig buildServerConfig() {
+        return new ServerConfig() {
+            @Override
+            public int getPort() {
+                return 0;
+            }
+
+            @Override
+            public void setPort(int port) {
+
+            }
+
+            @Override
+            public String getNodename() {
+                return "local.ehrbase.org";
+            }
+
+            @Override
+            public void setNodename(String nodename) {
+
+            }
+        };
+    }
 
 }

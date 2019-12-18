@@ -21,6 +21,7 @@
  */
 package org.ehrbase.dao.access.support;
 
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.service.IntrospectService;
@@ -28,7 +29,6 @@ import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 
 import java.sql.Connection;
-
 
 /**
  * Created by Christian Chevalley on 4/21/2015.
@@ -39,24 +39,21 @@ public abstract class DataAccess implements I_DomainAccess {
     private final I_KnowledgeCache knowledgeManager;
     private final IntrospectService introspectService;
 
-    private static String serverNodeId = System.getProperty("server.node.name");
+    private final ServerConfig serverConfig;
 
-
-
-    public DataAccess(DSLContext context, I_KnowledgeCache knowledgeManager, IntrospectService introspectService) {
+    public DataAccess(DSLContext context, I_KnowledgeCache knowledgeManager, IntrospectService introspectService, ServerConfig serverConfig) {
         this.context = context;
         this.knowledgeManager = knowledgeManager;
         this.introspectService = introspectService;
+        this.serverConfig = serverConfig;
     }
 
     public DataAccess(I_DomainAccess domainAccess) {
         this.context = domainAccess.getContext();
         this.knowledgeManager = domainAccess.getKnowledgeManager();
         this.introspectService = domainAccess.getIntrospectService();
-
+        this.serverConfig = domainAccess.getServerConfig();
     }
-
-
 
     @Override
     public SQLDialect getDialect() {
@@ -66,6 +63,12 @@ public abstract class DataAccess implements I_DomainAccess {
     @Override
     public Connection getConnection() {
         return context.configuration().connectionProvider().acquire();
+    }
+
+
+    @Override
+    public void releaseConnection(Connection connection) {
+        context.configuration().connectionProvider().release(connection);
     }
 
     @Override
@@ -83,12 +86,9 @@ public abstract class DataAccess implements I_DomainAccess {
         return introspectService;
     }
 
-
     @Override
-    public String getServerNodeId() {
-        if (serverNodeId == null || serverNodeId.length() == 0)
-            return "local.ehrbase.org";
-        return serverNodeId;
+    public ServerConfig getServerConfig() {
+        return this.serverConfig;
     }
 
 }

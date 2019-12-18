@@ -27,6 +27,7 @@ import com.nedap.archie.rm.generic.PartyIdentified;
 import com.nedap.archie.rm.generic.PartyProxy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.dao.access.interfaces.*;
@@ -65,10 +66,17 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     private Composition composition;
 
     /**
+     * Basic constructor for composition.
+     * @param context DB context object of current server context
+     * @param knowledgeManager Knowledge cache object of current server context
+     * @param introspectCache Introspect cache object of current server context
+     * @param serverConfig Server config object of current server context
+     * @param composition Object representation of given new composition
+     * @param ehrId Given ID of EHR this composition will be created for
      * @throws IllegalArgumentException when seeking language code, territory code or composer ID failed
      */
-    public CompositionAccess(DSLContext context, I_KnowledgeCache knowledgeManager, IntrospectService introspectCache, Composition composition, UUID ehrId) {
-        super(context, knowledgeManager, introspectCache);
+    public CompositionAccess(DSLContext context, I_KnowledgeCache knowledgeManager, IntrospectService introspectCache, ServerConfig serverConfig, Composition composition, UUID ehrId) {
+        super(context, knowledgeManager, introspectCache, serverConfig);
 
         this.composition = composition;
 
@@ -93,7 +101,44 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         contributionAccess.setState(ContributionDef.ContributionState.COMPLETE);
 
         // associate composition's own audit with this composition access instance
-        auditDetailsAccess = I_AuditDetailsAccess.getInstance(context);
+        auditDetailsAccess = I_AuditDetailsAccess.getInstance(getDataAccess());
+
+    }
+
+    /**
+     * Constructor with convenient {@link I_DomainAccess} parameter, for better readability.
+     * @param domainAccess Current domain access object
+     * @param composition Object representation of given new composition
+     * @param ehrId Given ID of EHR this composition will be created for
+     * @throws IllegalArgumentException when seeking language code, territory code or composer ID failed
+     */
+    public CompositionAccess(I_DomainAccess domainAccess, Composition composition, UUID ehrId) {
+        super(domainAccess.getContext(), domainAccess.getKnowledgeManager(), domainAccess.getIntrospectService(), domainAccess.getServerConfig());
+
+        this.composition = composition;
+
+        String territoryCode = composition.getTerritory().getCodeString();
+        String languageCode = composition.getLanguage().getCodeString();
+
+        UUID composerId = seekComposerId(composition.getComposer());
+
+        compositionRecord = domainAccess.getContext().newRecord(COMPOSITION);
+        compositionRecord.setId(UUID.randomUUID());
+
+        compositionRecord.setTerritory(seekTerritoryCode(territoryCode));
+
+        compositionRecord.setLanguage(seekLanguageCode(languageCode));
+        compositionRecord.setActive(true);
+//        compositionRecord.setContext(eventContextId);     // TODO: is context handled somewhere else (so remove here)? or is this a TODO?
+        compositionRecord.setComposer(composerId);
+        compositionRecord.setEhrId(ehrId);
+
+        //associate a contribution with this composition
+        contributionAccess = I_ContributionAccess.getInstance(this, compositionRecord.getEhrId());
+        contributionAccess.setState(ContributionDef.ContributionState.COMPLETE);
+
+        // associate composition's own audit with this composition access instance
+        auditDetailsAccess = I_AuditDetailsAccess.getInstance(getDataAccess());
 
     }
 
@@ -112,7 +157,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         contributionAccess.setState(ContributionDef.ContributionState.COMPLETE);
 
         // associate composition's own audit with this composition access instance
-        auditDetailsAccess = I_AuditDetailsAccess.getInstance(this.getContext());
+        auditDetailsAccess = I_AuditDetailsAccess.getInstance(this.getDataAccess());
     }
 
     public CompositionAccess(I_DomainAccess domainAccess) {
@@ -173,7 +218,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
             I_ContributionAccess contributionAccess = I_ContributionAccess.retrieveVersionedInstance(domainAccess, compositionHistoryAccess.getContributionVersionId(), compositionHistoryAccess.getSysTransaction());
             compositionHistoryAccess.setContributionAccess(contributionAccess);
 
-            I_AuditDetailsAccess auditDetailsAccess = new AuditDetailsAccess(domainAccess.getContext()).retrieveInstance(domainAccess.getContext(), compositionHistoryAccess.getAuditDetailsId());
+            I_AuditDetailsAccess auditDetailsAccess = new AuditDetailsAccess(domainAccess.getDataAccess()).retrieveInstance(domainAccess.getDataAccess(), compositionHistoryAccess.getAuditDetailsId());
             compositionHistoryAccess.setAuditDetailsAccess(auditDetailsAccess);
 
             //retrieve versioned context
@@ -187,7 +232,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
         }
 
-//        connection.close();
+        domainAccess.releaseConnection(connection);
 
         return compositionHistoryAccess;
     }
@@ -220,7 +265,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         I_ContributionAccess contributionAccess = I_ContributionAccess.retrieveInstance(domainAccess, compositionAccess.getContributionVersionId());
         compositionAccess.setContributionAccess(contributionAccess);
         // retrieve corresponding audit
-        I_AuditDetailsAccess auditAccess = new AuditDetailsAccess(domainAccess.getContext()).retrieveInstance(domainAccess.getContext(), compositionAccess.getAuditDetailsId());
+        I_AuditDetailsAccess auditAccess = new AuditDetailsAccess(domainAccess.getDataAccess()).retrieveInstance(domainAccess.getDataAccess(), compositionAccess.getAuditDetailsId());
         compositionAccess.setAuditDetailsAccess(auditAccess);
 
         return compositionAccess;
@@ -371,17 +416,17 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     }
 
     @Override
-    public UUID getContextId() {
+    public Optional<UUID> getContextId() {
         if (compositionRecord == null)
-            return null;
+            return Optional.empty();
         if (compositionRecord.getId() == null)
-            return null;
+            return Optional.empty();
         // conditional handling for persistent composition that do not have a event context
         EventContextRecord eventContext = getContext().fetchOne(EVENT_CONTEXT, EVENT_CONTEXT.COMPOSITION_ID.eq(compositionRecord.getId()));
         if (eventContext == null) {
-            return null;
+            return Optional.empty();
         }
-        return eventContext.getId();
+        return Optional.of(eventContext.getId());
     }
 
     @Override
@@ -598,11 +643,8 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
             }
         }
 
-        if (force && getContextId() != null) { //updateComposition event context accordingly, if composition is not persistent (i.e. has no context)
-            //retrieve context and force update
-            I_ContextAccess contextAccess = I_ContextAccess.retrieveInstance(this, getContextId());
-            contextAccess.update(transactionTime, true);
-        }
+        //updateComposition event context accordingly, if composition is not persistent (i.e. has a context)
+        getContextId().ifPresent(id -> I_ContextAccess.retrieveInstance(this, id).update(transactionTime, force));
 
         return result;
     }

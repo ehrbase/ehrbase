@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "_type": "RESULTSET",
+    "_created": "2019-10-17T19:35:13.372Z",
+    "_executed_aql": "SELECT e/ehr_id/value FROM EHR e TIMEWINDOW PT12H/2019-10-24"
+  },
+  "q": "SELECT e/ehr_id/value FROM EHR e TIMEWINDOW PT12H/2019-10-24",
+  "columns": [
+    {
+      "name": "#0",
+      "path": "/ehr_id/value"
+    }
+  ],
+  "rows": [
+  ]
+}

@@ -28,7 +28,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface FolderService {
+public interface FolderService extends BaseService {
 
     /**
      * Creates a new folder entry at the database from content. The provided
@@ -78,10 +78,10 @@ public interface FolderService {
      *
      * @param folderId - Id of the target folder
      * @param update - Update content from request body
-     * @param format - Source format of the update data
+     * @param ehrId - EHR id for contribution creation
      * @return Updated folder entry
      */
-    Optional<FolderDto> update(UUID folderId, String update, String format);
+    Optional<FolderDto> update(UUID folderId, Folder update, UUID ehrId);
 
     /**
      * Marks a given folder as deleted and moves it into the history table. The

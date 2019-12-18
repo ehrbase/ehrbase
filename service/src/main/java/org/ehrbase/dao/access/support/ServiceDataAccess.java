@@ -21,6 +21,8 @@
  */
 package org.ehrbase.dao.access.support;
 
+import org.ehrbase.api.definitions.ServerConfig;
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.service.IntrospectService;
 import org.jooq.DSLContext;
@@ -33,11 +35,11 @@ import org.jooq.DSLContext;
 public class ServiceDataAccess extends DataAccess {
 
 
-    public ServiceDataAccess(DSLContext context, I_KnowledgeCache knowledgeManager, IntrospectService introspectService) {
-        super(context, knowledgeManager, introspectService);
+    public ServiceDataAccess(DSLContext context, I_KnowledgeCache knowledgeManager, IntrospectService introspectService, ServerConfig serverConfig) {
+        super(context, knowledgeManager, introspectService, serverConfig);
     }
 
-    public ServiceDataAccess(DataAccess dataAccess) {
+    public ServiceDataAccess(I_DomainAccess dataAccess) {
         super(dataAccess);
     }
 

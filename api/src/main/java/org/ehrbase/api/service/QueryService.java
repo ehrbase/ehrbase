@@ -24,9 +24,8 @@ import org.ehrbase.api.dto.QueryResultDto;
 
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
-public interface QueryService {
+public interface QueryService extends BaseService {
     /**
      * simple query where the full json expression contains both query (key = 'q') and optional
      * parameters (key = 'query-parameters')
@@ -38,8 +37,6 @@ public interface QueryService {
     QueryResultDto query(String queryString, QueryMode queryMode, boolean explain);
 
     QueryResultDto query(String queryString, Map<String, Object> parameters, QueryMode queryMode, boolean explain);
-
-    UUID getSystemUuid();    // from BaseService
 
     //=== DEFINITION: manage stored queries
     List<QueryDefinitionResultDto> retrieveStoredQueries(String fullyQualifiedName);

@@ -21,7 +21,7 @@
 
 package org.ehrbase.service;
 
-import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_PartyIdentifiedAccess;
 import org.ehrbase.dao.access.interfaces.I_SystemAccess;
@@ -32,7 +32,6 @@ import org.springframework.beans.factory.annotation.Value;
 import java.util.UUID;
 
 public class BaseService {
-
 
     public static final String DEMOGRAPHIC = "DEMOGRAPHIC";
     public static final String PARTY = "PARTY";
@@ -46,40 +45,31 @@ public class BaseService {
     @Value("${spring.datasource.username}")
     private String datasourceUser = "luis";
 
+    private final ServerConfig serverConfig;
     private final KnowledgeCacheService knowledgeCacheService;
-
-
     private final DSLContext context;
 
-
-    public BaseService(KnowledgeCacheService knowledgeCacheService, DSLContext context) {
+    public BaseService(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig) {
         this.knowledgeCacheService = knowledgeCacheService;
         this.context = context;
+        this.serverConfig = serverConfig;
     }
 
     protected I_DomainAccess getDataAccess() {
-        return new ServiceDataAccess(context, knowledgeCacheService, knowledgeCacheService);
+        return new ServiceDataAccess(context, knowledgeCacheService, knowledgeCacheService, this.serverConfig);
     }
 
     public UUID getSystemUuid() {
-        UUID systemId;
-        try {
-            systemId = I_SystemAccess.retrieveInstanceId(getDataAccess(), systemType);
-            if (systemId == null) {
-                I_SystemAccess localSystems = I_SystemAccess.getInstance(getDataAccess(), "Local systems", systemType);
-                localSystems.commit();
-                systemId = localSystems.getId();
-            }
-        } catch (Exception e) {
-            throw new InternalServerException(e);
-        }
-        return systemId;
-
+        return I_SystemAccess.createOrRetrieveLocalSystem(getDataAccess());
     }
 
     protected UUID getUserUuid() {
         //@TODO READ from Spring Security
         return I_PartyIdentifiedAccess.getOrCreatePartyByExternalRef(getDataAccess(), null, "cbf741ff-9480-4792-8894-13fc5f818b6d", DEMOGRAPHIC, "User", PARTY);
+    }
+
+    public ServerConfig getServerConfig() {
+        return this.serverConfig;
     }
 
 }

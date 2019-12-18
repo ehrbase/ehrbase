@@ -24,6 +24,7 @@ import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.PartyRef;
 import org.ehrbase.api.definitions.CompositionFormat;
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.definitions.StructuredString;
 import org.ehrbase.api.definitions.StructuredStringFormat;
 import org.ehrbase.api.dto.EhrStatusDto;
@@ -58,9 +59,9 @@ public class EhrServiceImp extends BaseService implements EhrService {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    public EhrServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context) {
+    public EhrServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig) {
 
-        super(knowledgeCacheService, context);
+        super(knowledgeCacheService, context, serverConfig);
     }
 
     @Override
@@ -233,12 +234,8 @@ public class EhrServiceImp extends BaseService implements EhrService {
             I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrStatusId);
             UUID statusId = ehrAccess.getStatusId();
             Integer version = ehrAccess.getLastVersionNumberOfStatus(getDataAccess(), statusId);
-            // TODO: handling of system ID TBD, see EHR-192
-            //String system = ehrAccess.getSystemId().toString();   // old
-            // I_SystemAccess.retrieveInstance(getDataAccess(), ehrAccess.getSystemId()).getDescription() // should be more like this
-            String system = "local.ehrbase.org"; // so, mocked for now
 
-            return statusId.toString() + "::" + system + "::" + version;
+            return statusId.toString() + "::" + getServerConfig().getNodename() + "::" + version;
         } catch (Exception e) {
             throw new InternalServerException(e);
         }

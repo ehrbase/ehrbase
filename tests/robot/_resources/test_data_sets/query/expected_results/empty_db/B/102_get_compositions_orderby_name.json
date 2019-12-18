@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "_type": "RESULTSET",
+    "_created": "2019-10-18T18:04:11.803Z",
+    "_executed_aql": "SELECT c FROM COMPOSITION c ORDER BY c/name/value"
+  },
+  "q": "SELECT c FROM COMPOSITION c ORDER BY c/name/value",
+  "columns": [
+    {
+      "name": "#0",
+      "path": "/"
+    }
+  ],
+  "rows": [
+  ]
+}

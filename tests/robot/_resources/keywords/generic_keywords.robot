@@ -52,9 +52,9 @@ Library    OperatingSystem
 
 compare json-strings
     [Arguments]         ${actual_json}  ${expected_json}  &{options}
-    [Documentation]     Compares two JSON strings.
+    [Documentation]     Compares two JSON strings.\\n
     ...
-    ...                 :actual_json: valid JSON string
+    ...                 :actual_json: valid JSON string\\n
     ...                 :expected_json: valid JSON string
     ...
     ...                 :options: with defaults
@@ -70,20 +70,24 @@ compare json-strings
     ...
     ...                 Check DeedDiff reference for more details: https://deepdiff.readthedocs.io/en/latest/diff.html
 
-                        compare jsons    ${actual_json}    ${expected_json}    &{options}
+    &{diff}=            compare jsons    ${actual_json}    ${expected_json}    &{options}
+
+    [Return]            ${diff}
 
 
 compare json-files
     [Arguments]         ${filepath_1}    ${filepath_2}    &{options}
     [Documentation]     Compares two JSON files given by filepath.
     ...
-    ...                 :filepath_: valid path to a JSON test-data-set
+    ...                 :filepath_: valid path to a JSON test-data-set\n
     ...                 :options: same as in `compare json-strings`
 
     ${actual}=          Get File    ${filepath_1}
     ${expected}=        Get File    ${filepath_2}
 
-                        compare jsons    ${actual}    ${expected}    &{options}
+    &{diff}=            compare jsons    ${actual}    ${expected}    &{options}
+
+    [Return]            ${diff}
 
 
 compare json-string with json-file
@@ -97,7 +101,9 @@ compare json-string with json-file
     ${actual}=          Set Variable    ${json_string}
     ${expected}=        Get File    ${json_file_by_filepath}
 
-                        compare jsons    ${actual}    ${expected}    &{options}
+    &{diff}=            compare jsons    ${actual}    ${expected}    &{options}
+
+    [Return]            ${diff}
 
 
 compare json-file with json-string
@@ -111,7 +117,9 @@ compare json-file with json-string
     ${actual}=          Get File    ${json_file_by_filepath}
     ${expected}=        Set Variable    ${json_string}
 
-                        compare jsons    ${actual}    ${expected}    &{options}
+    &{diff}=            compare jsons    ${actual}    ${expected}    &{options}
+
+    [Return]            ${diff}
 
 
 
@@ -119,12 +127,12 @@ compare json-file with json-string
 
 
 restart SUT
-    stop openehr server
-    stop and remove ehrdb
-    empty operational_templates folder
-    # sleep    1
-    start ehrdb
-    start openehr server
+    # stop openehr server
+    # stop and remove ehrdb
+    # empty operational_templates folder
+    # start ehrdb
+    # start openehr server
+    Delete All Templates
 
 
 get application version
@@ -173,13 +181,16 @@ start openehr server
 
 
 start server process without coverage
-    ${result}=  Start Process  java  -jar  ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
-    ...                              alias=ehrserver  cwd=${PROJECT_ROOT}  stdout=stdout.txt
+    ${result}=          Start Process  java  -jar  ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
+                        ...                  --cache.enabled\=false    alias=ehrserver 
+                        ...                    cwd=${PROJECT_ROOT}    stdout=stdout.txt    stderr=stderr.txt
 
 
 start server process with coverage
-    ${result}=  Start Process  java  -javaagent:${JACOCO_LIB_PATH}/jacocoagent.jar\=output\=tcpserver,address\=127.0.0.1  -jar  ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
-    ...                              alias=ehrserver  cwd=${PROJECT_ROOT}  stdout=stdout.txt  stderr=stderr.txt
+    ${result}=          Start Process  java  -javaagent:${JACOCO_LIB_PATH}/jacocoagent.jar\=output\=tcpserver,address\=127.0.0.1
+                        ...                  -jar    ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
+                        ...                  --cache.enabled\=false    alias=ehrserver
+                        ...                    cwd=${PROJECT_ROOT}    stdout=stdout.txt    stderr=stderr.txt
 
 
 wait until openehr server is ready

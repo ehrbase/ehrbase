@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "_type": "RESULTSET",
+    "_created": "2019-10-18T18:04:11.803Z",
+    "_executed_aql": "SELECT TOP 5 c FROM COMPOSITION c"
+  },
+  "q": "SELECT TOP 5 c FROM COMPOSITION c",
+  "columns": [
+    {
+      "name": "#0",
+      "path": "/"
+    }
+  ],
+  "rows": [
+  ]
+}

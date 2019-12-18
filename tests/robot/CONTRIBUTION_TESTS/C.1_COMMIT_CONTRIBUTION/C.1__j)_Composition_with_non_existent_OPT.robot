@@ -54,7 +54,8 @@ Alternative flow 9. commit CONTRIBUTION with COMPOSITION referencing a non exist
 
       create EHR
 
-      commit invalid CONTRIBUTION (JSON)    invalid_contributions/ref_to_non_existent_OPT.json
-                                            # TODO: @PABLO this is just a copy of `multiple_valid_and_invalid_compos.json` with value of template_id changed.
-                                            #       please verify/edit this test-data-set if necessary
+            TRACE GITHUB ISSUE  51  not-ready  message=Next step fails due to a bug.
+
+      commit invalid CONTRIBUTION (JSON)    ref_to_non_existent_OPT.json
+
       check response: is negative indicating non-existent OPT

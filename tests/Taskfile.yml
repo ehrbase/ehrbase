@@ -1,0 +1,74 @@
+version: '2'
+# HOW TO USE ME
+#   - installation: https://taskfile.dev/#/installation
+#   - usage:        https://taskfile.dev/#/usage
+#   - code:         https://github.com/go-task/task           
+
+tasks:
+  default:
+    desc: RESTART SUT
+    cmds:
+      - task: restart
+
+  restart:
+    desc: RESTART SUT
+    cmds:
+      - echo restarting EHRbase testlab ...
+      - task: stop
+      - task: start
+      - echo EHRbase testlab restarted.
+
+  start:
+    desc: START SUT
+    cmds:
+      - task: startdb
+      - task: starteb
+  
+  stop:
+    desc: STOP SUT
+    cmds:
+      - task: stopeb
+      - task: stopdb
+
+  starteb:
+      desc: START EHRBASE SERVER
+      cmds:
+        - echo ... staring EHRbase server ...
+        - java -jar ../application/target/application-0.9.0.jar > log &
+        - sleep 20
+        - echo ... EHRbase server started.
+        #- grep -m 1 "Started EhrBase in" <(tail -f log)   # FAIL!
+        # https://github.com/go-task/task/issues/270
+  
+  starteb-nocache:
+      desc: START EHRBASE SERVER WITHOUT CACHE
+      cmds:
+        - echo ... staring EHRbase server ...
+        - java -jar ../application/target/application-0.9.0.jar --cache.enabled=false > log &
+        - sleep 20
+        - echo ... EHRbase server started.
+  
+  stopeb:
+    desc: KILL EHRBASE SERVER
+    cmds:
+      - kill -9 $(jps | grep application-0.9.0.jar | awk '{print $1}')
+      - echo ... EHRbase server stopped.
+
+  startdb:
+    desc: START POSTGRES DB DOCKER CONTAINER
+    cmds:
+      - docker run --name ehrdb -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -d -p 5432:5432 ehrbaseorg/ehrbase-database-docker:11.5
+
+  stopdb:
+    desc: KILL POSTGRES DB DOCKER CONTAINER
+    cmds:
+      - docker container rm -f ehrdb
+      - echo ... DB server stopped.
+  
+  test:
+    desc: RUN TESTS
+    cmds:
+      # adjust this part to the needs of your current test session
+      - robot -e future -e circleci -e TODO -e obsolete -d results -L TRACE --noncritical not-ready robot/COMPOSITION_TESTS
+      # example of "execute single test by it's test-case name" (wildcards accepted):
+      # - robot -t "*commit CONTRIBUTIONS versioning persistent COMPOSITION" -d results -L TRACE robot/CONTRIBUTION_TESTS

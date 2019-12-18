@@ -32,6 +32,7 @@ import com.nedap.archie.rm.support.identification.PartyRef;
 import org.apache.commons.collections4.map.MultiValueMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -40,7 +41,6 @@ import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.tables.records.*;
-import org.ehrbase.serialisation.MarshalException;
 import org.ehrbase.serialisation.RawJson;
 import org.ehrbase.service.BaseService;
 import org.jooq.*;
@@ -79,8 +79,8 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     /**
      * @throws InternalServerException if creating or retrieving system failed
      */
-    public EhrAccess(DSLContext context, UUID partyId, UUID systemId, UUID directoryId, UUID accessId, UUID ehrId) {
-        super(context, null, null);
+    public EhrAccess(DSLContext context, ServerConfig serverConfig, UUID partyId, UUID systemId, UUID directoryId, UUID accessId, UUID ehrId) {
+        super(context, null, null, serverConfig);
 
         this.ehrRecord = context.newRecord(EHR_);
         if (ehrId != null) {    // checking for and executing case of custom ehr ID

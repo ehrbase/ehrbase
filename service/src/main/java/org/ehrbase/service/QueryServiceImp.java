@@ -20,6 +20,7 @@ package org.ehrbase.service;
 
 import com.google.gson.JsonElement;
 import org.ehrbase.api.definitions.QueryMode;
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.definitions.StructuredString;
 import org.ehrbase.api.definitions.StructuredStringFormat;
 import org.ehrbase.api.dto.QueryDefinitionResultDto;
@@ -48,7 +49,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -61,9 +62,9 @@ public class QueryServiceImp extends BaseService implements QueryService {
     private boolean usePgExtensions; //default
 
     @Autowired
-    public QueryServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context) {
+    public QueryServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig) {
 
-        super(knowledgeCacheService, context);
+        super(knowledgeCacheService, context, serverConfig);
     }
 
     @Override
@@ -103,7 +104,7 @@ public class QueryServiceImp extends BaseService implements QueryService {
 
         List<Map<String, Object>> resultList = new ArrayList<>();
         for (Record record : aqlResult.getRecords()) {
-            Map<String, Object> fieldMap = new HashMap<>();
+            Map<String, Object> fieldMap = new LinkedHashMap<>();
             for (Field field : record.fields()) {
                 if (record.getValue(field) instanceof JsonElement){
                     fieldMap.put(field.getName(), new StructuredString(((JsonElement) record.getValue(field)).toString(), StructuredStringFormat.JSON));

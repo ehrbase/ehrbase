@@ -33,9 +33,11 @@ import com.nedap.archie.rm.generic.Participation;
 import com.nedap.archie.rm.generic.PartyIdentified;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.*;
+import org.apache.catalina.Server;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
 import org.ehrbase.dao.access.interfaces.I_ContextAccess;
@@ -58,6 +60,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -78,8 +81,8 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
     private PreparedStatement updateStatement;
     private List<ParticipationRecord> participations = new ArrayList<>();
 
-    public ContextAccess(DSLContext context, EventContext eventContext) {
-        super(context, null, null);
+    public ContextAccess(DSLContext context, ServerConfig serverConfig, EventContext eventContext) {
+        super(context, null, null, serverConfig);
         eventContextRecord = context.newRecord(EVENT_CONTEXT);
         setRecordFields(UUID.randomUUID(), eventContext);
     }
@@ -257,9 +260,9 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
     private void setRecordFields(UUID id, EventContext eventContext) {
         //@TODO get from eventContext
         eventContextRecord.setStartTimeTzid(ZoneId.systemDefault().getId());
-        eventContextRecord.setStartTime(new Timestamp(eventContext.getStartTime().getValue().get(ChronoField.MILLI_OF_SECOND)));
+        eventContextRecord.setStartTime(toTimestamp(eventContext.getStartTime()));
         if (eventContext.getEndTime() != null) {
-            eventContextRecord.setEndTime(new Timestamp(eventContext.getEndTime().getValue().get(ChronoField.MILLI_OF_SECOND)));
+            eventContextRecord.setEndTime(toTimestamp(eventContext.getEndTime()));
             eventContextRecord.setEndTimeTzid(ZoneId.systemDefault().getId());
         }
         eventContextRecord.setId(id != null ? id : UUID.randomUUID());
@@ -323,6 +326,13 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
             //set up the JSONB field other_context
             eventContextRecord.setOtherContext(new RawJson().marshal(eventContext.getOtherContext()));
         }
+    }
+
+    private Timestamp toTimestamp(DvDateTime dateTime) {
+        TemporalAccessor accessor = dateTime.getValue();
+        long millis = accessor.getLong(ChronoField.INSTANT_SECONDS) * 1000 + accessor.getLong(ChronoField.MILLI_OF_SECOND);
+
+        return new Timestamp(millis);
     }
 
     /**

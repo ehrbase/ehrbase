@@ -22,7 +22,9 @@
 package org.ehrbase.service;
 
 import com.nedap.archie.rm.composition.Composition;
+import org.apache.catalina.Server;
 import org.ehrbase.api.definitions.CompositionFormat;
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.definitions.StructuredString;
 import org.ehrbase.api.definitions.StructuredStringFormat;
 import org.ehrbase.api.dto.CompositionDto;
@@ -31,6 +33,7 @@ import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
+import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.dao.access.interfaces.I_CompoXrefAccess;
 import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
@@ -62,9 +65,9 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
     private final EhrService ehrService;
 
     @Autowired
-    public CompositionServiceImp(KnowledgeCacheService knowledgeCacheService, ValidationService validationService, EhrService ehrService, DSLContext context) {
+    public CompositionServiceImp(KnowledgeCacheService knowledgeCacheService, ValidationService validationService, EhrService ehrService, DSLContext context, ServerConfig serverConfig) {
 
-        super(knowledgeCacheService, context);
+        super(knowledgeCacheService, context, serverConfig);
         this.validationService = validationService;
         this.ehrService = ehrService;
     }
