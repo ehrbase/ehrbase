@@ -1,6 +1,6 @@
 {
   "q": "SELECT c FROM COMPOSITION c [uid/value=$uid]",
   "query_parameters": {
-    "uid": "__MODIFY_COMPOSITION_UID_1__"
+    "$uid": "4cd7ed03-f199-4692-9320-c270b6ea2b93"
   }
 }
