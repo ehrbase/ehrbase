@@ -306,7 +306,7 @@ Populate SUT with Test-Data and Prepare Expected Results
     [Arguments]         ${index}    ${ehr_status_object}
                         Log To Console  \nEHR RECORD ${index} ////////////////////////////////////
 
-                        composition_keywords.start request session    Prefer=return=representation
+                        prepare new request session    Prefer=return=representation
                         create EHR record on the server    ${index}    ${ehr_status_object}
 
                         commit COMPO    ${compo data sets}/minimal_admin_1.composition.json

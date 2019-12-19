@@ -41,6 +41,6 @@ Alternative flow 1: has COMPOSITION, COMPOSITION does not exist (JSON)
     generate random composition_uid
 
     # Check COMPOSITION does not exist
-    composition_keywords.start request session
+    prepare new request session
     get composition by composition_uid    ${version_uid}
     check composition does not exist

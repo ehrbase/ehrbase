@@ -182,7 +182,7 @@ start openehr server
 
 start server process without coverage
     ${result}=          Start Process  java  -jar  ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
-                        ...                  --cache.enabled\=false    alias=ehrserver 
+                        ...                  --cache.enabled\=false    alias=ehrserver
                         ...                    cwd=${PROJECT_ROOT}    stdout=stdout.txt    stderr=stderr.txt
 
 
@@ -229,6 +229,53 @@ abort test execution if this test fails
                     ...             Fatal Error  Aborted Execution - Preconditions not met!
 
 
+prepare new request session
+    [Arguments]         ${format}=JSON    &{extra_headers}
+    [Documentation]     Prepares request settings for RESTistance AND RequestsLibrary
+    ...                 :format: JSON (default) / XML
+    ...                 :extra_headers: optional - e.g. Prefer=return=representation
+    ...                                            e.g. If-Match={ehrstatus_uid}
+                        Log Many            ${format}  ${extra_headers}
+
+                        # case: JSON
+                        Run Keyword If      $format=='JSON'    set request headers
+                        ...                 content=application/json
+                        ...                 accept=application/json
+                        ...                 &{extra_headers}
+                        # case: XML
+                        Run Keyword If      $format=='XML'    set request headers
+                        ...                 content=application/xml
+                        ...                 accept=application/xml
+                        ...                 &{extra_headers}
+
+                        # case: mixed cases like JSON/XML or XML/JSON can be added here!
+
+set request headers
+    [Arguments]         ${content}=application/json  ${accept}=application/json  &{extra_headers}
+    [Documentation]     Sets the headers of a request
+    ...                 :content: application/json (default) / application/xml
+    ...                 :accept: application/json (default) / application/xml
+    ...                 :extra_headers: optional - e.g. Prefer=return=representation
+    ...                                            e.g. If-Match={ehrstatus_uid}
+                        Log Many            ${content}  ${accept}  ${extra_headers}
+
+    &{headers}=         Create Dictionary   Content-Type=${content}
+                        ...                 Accept=${accept}
+
+                        Run Keyword If      ${extra_headers}    Set To Dictionary
+                        ...                 ${headers}    &{extra_headers}
+
+    # library: RESTinstance
+    &{headers}=         Set Headers         ${headers}
+                        Set Headers         ${authorization}
+    
+    # library: RequestLibrary
+                        Create Session      ${SUT}    ${${SUT}.URL}    debug=2
+                        ...                 auth=${${SUT}.CREDENTIALS}    verify=True
+
+                        Set Suite Variable   ${headers}    ${headers}
+
+
 startup SUT
     get application version
     unzip file_repo_content.zip
@@ -259,17 +306,6 @@ dump test coverage
 start ehrdb
     run postgresql container
     wait until ehrdb is ready
-
-
-# stop ehrdb
-#     [Documentation]     Stops DB container by using a keyword `stop ehrdb container`
-#     ...                 from custom library: dockerlib.py
-
-#     ${logs}  ${status}  stop ehrdb container
-#     Log      ${logs}
-#     Log      ${status}
-#     wait until ehrdb is stopped
-#     Should Be Equal As Integers  ${status}[StatusCode]  0
 
 
 stop and remove ehrdb

@@ -50,7 +50,7 @@ Force Tags    ehr_status
 *** Test Cases ***
 Set EHR modifiable of an existing EHR
 
-    ehr_keywords.start request session    JSON
+    prepare new request session    JSON
 
     create new EHR
 

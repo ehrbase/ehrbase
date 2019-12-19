@@ -55,7 +55,7 @@ Force Tags    ehr_status
 *** Test Cases ***
 Get Status Of Existing EHR (JSON)
 
-    ehr_keywords.start request session     JSON
+    prepare new request session    JSON
 
     create new EHR
 
@@ -66,7 +66,7 @@ Get Status Of Existing EHR (JSON)
 
 Get Status Of Existing EHR (XML)
 
-    ehr_keywords.start request session     XML
+    prepare new request session    XML
 
     create new EHR (XML)
 
@@ -82,10 +82,12 @@ Get Status Of Existing EHR (XML)
 verify response (JSON)
                         Integer     response status         200
 
-                        String    response body ehr_id value                    ${ehr_id}
-                        String    response body system_id value                 ${system_id}
-                        String    response body ehr_status subject external_ref id value    ${subject_Id}
-                        Object    response body ehr_status                      ${ehr_status}
+                        String    response body uid value    ${ehrstatus_uid}::local.ehrbase.org::1
+                        String    response body subject external_ref id value    ${subject_Id}
+                        
+        TRACE GITHUB ISSUE  NO-ID-YET  not-ready
+
+                        Object    response body    ${ehr_status}
 
 
 verify response (XML)

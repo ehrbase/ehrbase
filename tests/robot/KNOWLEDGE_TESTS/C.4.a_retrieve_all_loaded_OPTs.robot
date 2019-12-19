@@ -84,7 +84,8 @@ Retrieve OPT List From Server
 upload valid OPT
     [Arguments]           ${opt file}
 
-    start request session
+    prepare new request session    XML
+    ...                            Prefer=return=representation
     get valid OPT file    ${opt file}
     upload OPT file
     server accepted OPT
