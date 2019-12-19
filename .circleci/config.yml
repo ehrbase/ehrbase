@@ -28,14 +28,153 @@ version: 2.1
 
 
 workflows:
-  git-flow:
+
+  build-and-test:
+    jobs:
+      - build-artifacts:
+          context: org-global
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
+
+
+      - unit-tests:
+          context: org-global
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
+
+      - COMPOSITION-tests-1:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
+          # post-steps:
+          #   - provide-test-status-report-via-slack #
+
+      - COMPOSITION-tests-2:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
+
+      - COMPOSITION-tests-3:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
+
+      - COMPOSITION-tests-4:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
+
+      - CONTRIBUTION-test:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
+
+      - DIRECTORY-test:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
+
+      - EHRSERVICE-test:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
+
+      - KNOWLEDGE-test:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
+
+      - QUERYSERVICE-test:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
+
+      - ROBOT-REPORT:
+          context: org-global
+          requires:
+            - COMPOSITION-tests-1
+            - COMPOSITION-tests-2
+            - COMPOSITION-tests-3
+            - COMPOSITION-tests-4
+            - CONTRIBUTION-test
+            - DIRECTORY-test
+            - EHRSERVICE-test
+            - KNOWLEDGE-test
+            - QUERYSERVICE-test
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
+
+  release:
     jobs:
       - build-artifacts:
           context: org-global
           filters:
             branches:
               only:
-                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+                - /^(release\/v\d+\.\d+\.\d+|master)$/
 
       - dependency-check:
           context: org-global
@@ -44,14 +183,14 @@ workflows:
           filters:
             branches:
               only:
-                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+                - /^(release\/v\d+\.\d+\.\d+|master)$/
 
       - unit-tests:
           context: org-global
           filters:
             branches:
               only:
-                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+                - /^(release\/v\d+\.\d+\.\d+|master)$/
 
       - COMPOSITION-tests-1:
           context: org-global
@@ -61,7 +200,7 @@ workflows:
           filters:
             branches:
               only:
-                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+                - /^(release\/v\d+\.\d+\.\d+|master)$/
           # post-steps:
           #   - provide-test-status-report-via-slack #
 
@@ -73,7 +212,7 @@ workflows:
           filters:
             branches:
               only:
-                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+                - /^(release\/v\d+\.\d+\.\d+|master)$/
 
       - COMPOSITION-tests-3:
           context: org-global
@@ -83,7 +222,7 @@ workflows:
           filters:
             branches:
               only:
-                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+                - /^(release\/v\d+\.\d+\.\d+|master)$/
 
       - COMPOSITION-tests-4:
           context: org-global
@@ -93,7 +232,7 @@ workflows:
           filters:
             branches:
               only:
-                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+                - /^(release\/v\d+\.\d+\.\d+|master)$/
 
       - CONTRIBUTION-test:
           context: org-global
@@ -103,7 +242,7 @@ workflows:
           filters:
             branches:
               only:
-                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+                - /^(release\/v\d+\.\d+\.\d+|master)$/
 
       - DIRECTORY-test:
           context: org-global
@@ -113,7 +252,7 @@ workflows:
           filters:
             branches:
               only:
-                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+                - /^(release\/v\d+\.\d+\.\d+|master)$/
 
       - EHRSERVICE-test:
           context: org-global
@@ -123,7 +262,7 @@ workflows:
           filters:
             branches:
               only:
-                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+                - /^(release\/v\d+\.\d+\.\d+|master)$/
 
       - KNOWLEDGE-test:
           context: org-global
@@ -133,7 +272,7 @@ workflows:
           filters:
             branches:
               only:
-                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+                - /^(release\/v\d+\.\d+\.\d+|master)$/
 
       - QUERYSERVICE-test:
           context: org-global
@@ -143,7 +282,7 @@ workflows:
           filters:
             branches:
               only:
-                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+                - /^(release\/v\d+\.\d+\.\d+|master)$/
 
       - ROBOT-REPORT:
           context: org-global
@@ -160,7 +299,7 @@ workflows:
           filters:
             branches:
               only:
-                - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+                - /^(release\/v\d+\.\d+\.\d+|master)$/
 
       # - sonar-analysis:
       #     context: org-global
@@ -172,7 +311,7 @@ workflows:
       #     filters:
       #       branches:
       #         only:
-      #           - /^(feature\/.*|develop|release\/v\d+\.\d+\.\d+|hotfix\/v\d+\.\d+\.\d+|master)$/
+      #           - /^(release\/v\d+\.\d+\.\d+|master)$/
 
 
 

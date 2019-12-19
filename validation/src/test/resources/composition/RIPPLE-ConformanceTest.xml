@@ -103,7 +103,7 @@
                                 <terminology_id>
                                     <value>IANA_media-types</value>
                                 </terminology_id>
-                                <code_string>video/mp4</code_string>
+                                <code_string>video/H263</code_string>
                             </media_type>
                             <size>504903212</size>
                         </value>

@@ -65,6 +65,12 @@ public abstract class DataAccess implements I_DomainAccess {
         return context.configuration().connectionProvider().acquire();
     }
 
+
+    @Override
+    public void releaseConnection(Connection connection) {
+        context.configuration().connectionProvider().release(connection);
+    }
+
     @Override
     public DSLContext getContext() {
         return context;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2019 Vitasystems GmbH and Christian Chevalley (Hannover Medical School).
  *
  * This file is part of project EHRbase
  *
@@ -19,16 +19,20 @@
 package org.ehrbase.service;
 
 import com.nedap.archie.rm.composition.Composition;
-import org.apache.commons.io.IOUtils;
+import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.serialisation.CanonicalXML;
+import org.apache.commons.io.IOUtils;
 import org.ehrbase.test_data.operationaltemplate.OperationalTemplateTestData;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.UUID;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.fail;
 
 public class ValidationServiceTest {
 
@@ -39,21 +43,26 @@ public class ValidationServiceTest {
     public CacheRule cacheRule = new CacheRule();
 
     @Test
-    public void testCheckComposition() throws Exception {
+    public void testCheckComposition(){
+        try {
+            KnowledgeCacheService knowledgeCacheService = KnowledgeCacheServiceTest.buildKnowledgeCache(testFolder, cacheRule);
+            knowledgeCacheService.addOperationalTemplate(IOUtils.toByteArray(OperationalTemplateTestData.RIPPLE_CONFORMANCE_TEST.getStream()));
+            TerminologyServiceImp terminologyService = new TerminologyServiceImp();
+            ValidationService validationService = new ValidationServiceImp(cacheRule.cacheManager, knowledgeCacheService, terminologyService);
 
-        KnowledgeCacheService knowledgeCacheService = KnowledgeCacheServiceTest.buildKnowledgeCache(testFolder, cacheRule);
-        knowledgeCacheService.addOperationalTemplate(IOUtils.toByteArray(OperationalTemplateTestData.RIPPLE_CONFORMANCE_TEST.getStream()));
-        ValidationService validationService = new ValidationServiceImp(cacheRule.cacheManager, knowledgeCacheService);
+            //set composition
+            Composition composition = new CanonicalXML().unmarshal(IOUtils.toString(Files.newInputStream(Paths.get("./src/test/resources/samples/RIPPLE-ConformanceTest.xml")), UTF_8),Composition.class);
 
-        //set composition
-        Composition composition = new CanonicalXML().unmarshal(IOUtils.toString(this.getClass().getResourceAsStream("/samples/RIPPLE-ConformanceTest.xml"), UTF_8), Composition.class);
+            //check validation using templateId
+            validationService.check("RIPPLE - Conformance Test template", composition);
 
-        //check validation using templateId
-        validationService.check(OperationalTemplateTestData.RIPPLE_CONFORMANCE_TEST.getTemplateId(), composition);
+            //check validation using template UUID
+            validationService.check(UUID.fromString("27441ebc-6d0e-4c12-a681-bbdd3c80fbe6"), composition);
 
-        //check validation using template UUID
-        validationService.check(UUID.fromString("27441ebc-6d0e-4c12-a681-bbdd3c80fbe6"), composition);
-
+        } catch (Throwable e){
+            fail(e.getMessage());
+        }
 
     }
+
 }
