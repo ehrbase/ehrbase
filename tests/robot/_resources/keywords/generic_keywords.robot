@@ -276,81 +276,6 @@ set request headers
                         Set Suite Variable   ${headers}    ${headers}
 
 
-
-
-# start new request session
-#     [Arguments]         ${content}=application/json  ${accept}=application/json
-#     ...                 &{extra_headers}
-#     [Documentation]     Prepares request settings for RESTistance & RequestLib
-#     ...                 :content: application/json (default) / application/xml
-#     ...                 :accept: application/json (default) / application/xml
-#     ...                 :extra_headers: optional - i.e. Prefer=return=representation
-#     ...                                            i.e. If-Match={ehrstatus_uid}
-
-#                         Log Many            ${content}  ${accept}  ${extra_headers}
-
-#     # comment: for RESTinstance
-#     &{headers}=         Create Dictionary   Content-Type=${content}
-#                         ...                 Accept=${accept}
-
-#                         Run Keyword If      ${extra_headers}    Set To Dictionary
-#                         ...                 ${headers}    &{extra_headers}
-
-#                         Set Headers         ${authorization}
-#                         Set Headers         ${headers}
-
-#     # comment: for RequestLibrary
-#                         Create Session      ${SUT}    ${${SUT}.URL}
-#                         ...                 auth=${${SUT}.CREDENTIALS}    debug=2    verify=True
-
-#                                             Set Suite Variable    ${headers}    ${headers}
-
-
-# start old request session
-#     [Arguments]         ${format}=JSON    &{extra_headers}
-#     [Documentation]     Prepares request settings for usage with RequestLibrary
-#     ...                 :format: JSON (default) / XML
-#     ...                 :extra_headers: optional - i.e. Prefer=return=representation
-#     ...                                            i.e. If-Match={ehrstatus_uid}
-
-#                         # case: JSON
-#                         Run Keyword If      $format=='JSON'    set request headers
-#                         ...                 content=application/json
-#                         ...                 accept=application/json
-#                         ...                 &{extra_headers}
-
-#                         # case: XML
-#                         Run Keyword If      $format=='XML'    set request headers
-#                         ...                 content=application/xml
-#                         ...                 accept=application/xml
-#                         ...                 &{extra_headers}
-
-
-# set request headers
-#     [Arguments]         ${content}=application/json  ${accept}=application/json  &{extra_headers}
-#     [Documentation]     Sets the headers of a request
-#     ...                 :content: application/json (default) / application/xml
-#     ...                 :accept: application/json (default) / application/xml
-#     ...                 :extra_headers: optional - i.e. Prefer=return=representation
-#     ...                                            i.e. If-Match={ehrstatus_uid}
-
-#                         Log Many            ${content}  ${accept}  ${extra_headers}
-
-#     &{headers}=         Create Dictionary   Content-Type=${content}
-#                         ...                 Accept=${accept}
-
-#                         Run Keyword If      ${extra_headers}    Set To Dictionary    ${headers}    &{extra_headers}
-
-#                         Create Session      ${SUT}    ${${SUT}.URL}
-#                         ...                 auth=${${SUT}.CREDENTIALS}    debug=2    verify=True
-
-#                         Set Test Variable   ${headers}    ${headers}
-
-#                         # comment: this makes kw work with RESTInstace lib
-#                         Set Headers          ${authorization}
-#                         Set Headers          ${headers}
-
-
 startup SUT
     get application version
     unzip file_repo_content.zip
@@ -381,17 +306,6 @@ dump test coverage
 start ehrdb
     run postgresql container
     wait until ehrdb is ready
-
-
-# stop ehrdb
-#     [Documentation]     Stops DB container by using a keyword `stop ehrdb container`
-#     ...                 from custom library: dockerlib.py
-
-#     ${logs}  ${status}  stop ehrdb container
-#     Log      ${logs}
-#     Log      ${status}
-#     wait until ehrdb is stopped
-#     Should Be Equal As Integers  ${status}[StatusCode]  0
 
 
 stop and remove ehrdb
