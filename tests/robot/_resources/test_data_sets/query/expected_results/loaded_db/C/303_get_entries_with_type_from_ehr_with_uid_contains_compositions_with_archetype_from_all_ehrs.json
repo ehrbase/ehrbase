@@ -13,13 +13,13 @@
   ],
   "rows": [
     {
-      "_MODIFY_ACTION_1_COMPOSITION_EHR_1_"
+      "__MODIFY__": "__ACTION_1_COMPOSITION_EHR_1__"
     },
     {
-      "_MODIFY_ACTION_2_COMPOSITION_EHR_1_"
+      "__MODIFY__": "__ACTION_2_COMPOSITION_EHR_1__"
     },
     {
-      "_MODIFY_ACTION_3_COMPOSITION_EHR_1_"
+      "__MODIFY__": "__ACTION_3_COMPOSITION_EHR_1__"
     }
   ]
 }

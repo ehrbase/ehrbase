@@ -170,7 +170,7 @@ AF-02 Execute Ad-Hoc Query - Get Composition(s)
 AF-03 Execute Ad-Hoc Query - Get Entrie(s)
     [Template]          execute ad-hoc query and check result (empty DB)
     [Tags]              not-ready
-    
+
     C/100_get_entries_empty_db.json
     C/101_get_entries_empty_db.json
     C/200_get_entries_empty_db.json
@@ -189,7 +189,7 @@ AF-03 Execute Ad-Hoc Query - Get Entrie(s)
 AF-04 Execute Ad-Hoc Query - Get Data
     [Template]          execute ad-hoc query and check result (empty DB)
     [Tags]              not-ready
-    
+
     D/100_select_data_values_from_all_ehrs.json
     D/200_select_data_values_from_all_ehrs_contains_composition.json
     D/201_select_data_values_from_all_ehrs_contains_composition.json
