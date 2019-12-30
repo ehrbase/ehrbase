@@ -129,16 +129,16 @@ Get Information About DB Table
 
     [Arguments]         ${table_name}
 
-    @{output} =         Description    SELECT * FROM ${table_name}
+    @{output}=          Description    SELECT * FROM ${table_name}
                         Log Many    @${output}
 
 
 Count Rows In DB Table
-    [Documentation]     Provides infos about amout of rows in given table.
+    [Documentation]     Provides infos about amount of rows in given table.
     [Arguments]         ${table_name}
 
-    ${rowCount}	=       Row Count    SELECT * FROM ${table_name}
-                        Log    ${rowCount}
+    ${rowCount}=        Row Count    SELECT * FROM ${table_name}
+    [Return]            ${rowCount}
 
 # check https://github.com/franz-see/Robotframework-Database-Library/blob/master/test/PostgreSQL_DB_Tests.robot
 # for more examples

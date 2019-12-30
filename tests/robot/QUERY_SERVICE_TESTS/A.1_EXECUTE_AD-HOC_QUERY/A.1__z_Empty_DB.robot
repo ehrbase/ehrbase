@@ -228,14 +228,11 @@ Establish Preconditions for Scenario: EMPTY DB
     Check DB is empty
 
 Check DB is empty
-    retrieve OPT list
-    OPT list is empty
-    retrieve EHR list
-    check: EHR list is empty
+    [Documentation]     Connects with DB and checks that row count of given
+    ...                 tables is equal to 0 (zero).
+    ...                 NOTE: add more tables to check - when needed
 
-retrieve EHR list
-    execute ad-hoc query    A/100_get_ehrs.json
-    Should Be Equal As Strings   ${response.status_code}   200
-
-check: EHR list is empty
-    Length Should Be    ${response.json()['rows']}    0
+                        Connect With DB
+    ${ehr_records}=     Count Rows In DB Table    ehr.ehr
+                        Should Be Equal As Integers    ${ehr_records}    ${0}
+    [Teardown]          Disconnect From Database
