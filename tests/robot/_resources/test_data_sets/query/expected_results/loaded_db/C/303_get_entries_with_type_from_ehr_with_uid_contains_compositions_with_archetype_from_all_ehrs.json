@@ -12,14 +12,14 @@
     }
   ],
   "rows": [
-    {
-      "__MODIFY__": "__ACTION_1_COMPOSITION_EHR_1__"
-    },
-    {
-      "__MODIFY__": "__ACTION_2_COMPOSITION_EHR_1__"
-    },
-    {
-      "__MODIFY__": "__ACTION_3_COMPOSITION_EHR_1__"
-    }
+    [
+      "_MODIFY_EHR_ID_1_ACTION_1_"
+    ],
+    [
+      "_MODIFY_EHR_ID_1_ACTION_2_"
+    ],
+    [
+      "_MODIFY_EHR_ID_1_ACTION_3_"
+    ]
   ]
 }
