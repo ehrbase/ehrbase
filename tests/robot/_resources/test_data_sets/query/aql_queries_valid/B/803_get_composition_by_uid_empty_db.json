@@ -1,6 +1,6 @@
 {
   "q": "SELECT c FROM COMPOSITION c WHERE c/uid/value=$uid",
   "query_parameters": {
-    "uid": "4cd7ed03-f199-4692-9320-c270b6ea2b93"
+    "uid": "73ed44af-778a-4b8c-aa0d-5b46342d84ec::local.ehrbase.org::1"
   }
 }
