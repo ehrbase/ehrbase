@@ -170,7 +170,7 @@ AF-02 Execute Ad-Hoc Query - Get Composition(s)
 AF-03 Execute Ad-Hoc Query - Get Entrie(s)
     [Template]          execute ad-hoc query and check result (empty DB)
     [Tags]              not-ready
-    
+
     C/100_get_entries_empty_db.json
     C/101_get_entries_empty_db.json
     C/200_get_entries_empty_db.json
@@ -189,7 +189,7 @@ AF-03 Execute Ad-Hoc Query - Get Entrie(s)
 AF-04 Execute Ad-Hoc Query - Get Data
     [Template]          execute ad-hoc query and check result (empty DB)
     [Tags]              not-ready
-    
+
     D/100_select_data_values_from_all_ehrs.json
     D/200_select_data_values_from_all_ehrs_contains_composition.json
     D/201_select_data_values_from_all_ehrs_contains_composition.json
@@ -228,14 +228,11 @@ Establish Preconditions for Scenario: EMPTY DB
     Check DB is empty
 
 Check DB is empty
-    retrieve OPT list
-    OPT list is empty
-    retrieve EHR list
-    check: EHR list is empty
+    [Documentation]     Connects with DB and checks that row count of given
+    ...                 tables is equal to 0 (zero).
+    ...                 NOTE: add more tables to check - when needed
 
-retrieve EHR list
-    execute ad-hoc query    A/100_get_ehrs.json
-    Should Be Equal As Strings   ${response.status_code}   200
-
-check: EHR list is empty
-    Length Should Be    ${response.json()['rows']}    0
+                        Connect With DB
+    ${ehr_records}=     Count Rows In DB Table    ehr.ehr
+                        Should Be Equal As Integers    ${ehr_records}    ${0}
+    [Teardown]          Disconnect From Database
