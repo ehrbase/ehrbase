@@ -1,0 +1,2161 @@
+<composition xmlns="http://schemas.openehr.org/v1"
+    archetype_node_id="openEHR-EHR-COMPOSITION.encounter.v1"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://schemas.openehr.org/v1 https://specifications.openehr.org/releases/1.0.2/its/XML-schema/Composition.xsd" xsi:type="COMPOSITION">
+    <name>
+        <value>Registro de Atendimento Clínico</value>
+    </name>
+    <archetype_details>
+        <archetype_id>
+            <value>openEHR-EHR-COMPOSITION.encounter.v1</value>
+        </archetype_id>
+        <template_id>
+            <value>Registro de Atendimento Clínico v1.0</value>
+        </template_id>
+        <rm_version>1.0.2</rm_version>
+    </archetype_details>
+    <language>
+        <terminology_id>
+            <value>ISO_639-1</value>
+        </terminology_id>
+        <code_string>pt</code_string>
+    </language>
+    <territory>
+        <terminology_id>
+            <value>ISO_3166-1</value>
+        </terminology_id>
+        <code_string>BR</code_string>
+    </territory>
+    <category>
+        <value>event</value>
+        <defining_code>
+            <terminology_id>
+                <value>openehr</value>
+            </terminology_id>
+            <code_string>433</code_string>
+        </defining_code>
+    </category>
+    <composer xsi:type="PARTY_IDENTIFIED">
+        <identifiers>
+            <issuer>2.16.840.1.113883.13.236</issuer>
+            <assigner>2.16.840.1.113883.13.236</assigner>
+            <id>2345667891234</id>
+            <type>CPF</type>
+        </identifiers>
+    </composer>
+    <context>
+        <start_time>
+            <value>2019-09-03T17:45:27.680Z</value>
+        </start_time>
+        <setting>
+            <value>secondary medical care</value>
+            <defining_code>
+                <terminology_id>
+                    <value>openehr</value>
+                </terminology_id>
+                <code_string>232</code_string>
+            </defining_code>
+        </setting>
+    </context>
+    <content archetype_node_id="openEHR-EHR-SECTION.adhoc.v1" xsi:type="SECTION">
+        <name>
+            <value>Caracterização do atendimento</value>
+        </name>
+        <archetype_details>
+            <archetype_id>
+                <value>openEHR-EHR-SECTION.adhoc.v1</value>
+            </archetype_id>
+            <template_id>
+                <value>Registro de Atendimento Clínico v1.0</value>
+            </template_id>
+            <rm_version>1.0.2</rm_version>
+        </archetype_details>
+        <items
+            archetype_node_id="openEHR-EHR-ADMIN_ENTRY.admission-ms_br.v02" xsi:type="ADMIN_ENTRY">
+            <name>
+                <value>Admissão do paciente</value>
+            </name>
+            <archetype_details>
+                <archetype_id>
+                    <value>openEHR-EHR-ADMIN_ENTRY.admission-ms_br.v02</value>
+                </archetype_id>
+                <template_id>
+                    <value>Registro de Atendimento Clínico v1.0</value>
+                </template_id>
+                <rm_version>1.0.2</rm_version>
+            </archetype_details>
+            <language>
+                <terminology_id>
+                    <value>ISO_639-1</value>
+                </terminology_id>
+                <code_string>pt</code_string>
+            </language>
+            <encoding>
+                <terminology_id>
+                    <value>IANA_character-sets</value>
+                </terminology_id>
+                <code_string>UTF-8</code_string>
+            </encoding>
+            <subject xsi:type="PARTY_SELF"/>
+            <data archetype_node_id="at0001" xsi:type="ITEM_TREE">
+                <name>
+                    <value>ITEM_TREE</value>
+                </name>
+                <items archetype_node_id="at0.135" xsi:type="ELEMENT">
+                    <name>
+                        <value>Modalidade assistencial</value>
+                    </name>
+                    <value xsi:type="DV_CODED_TEXT">
+                        <value>Atenção básica</value>
+                        <defining_code>
+                            <terminology_id>
+                                <value>local</value>
+                            </terminology_id>
+                            <code_string>at0.136</code_string>
+                        </defining_code>
+                    </value>
+                </items>
+                <items archetype_node_id="at0.176" xsi:type="ELEMENT">
+                    <name>
+                        <value>Procedência</value>
+                    </name>
+                    <value xsi:type="DV_TEXT">
+                        <value>SAMU</value>
+                    </value>
+                </items>
+                <items archetype_node_id="at0073" xsi:type="CLUSTER">
+                    <name>
+                        <value>Localização atribuída ao paciente</value>
+                    </name>
+                    <items archetype_node_id="at0074.1" xsi:type="ELEMENT">
+                        <name>
+                            <value>Local de atendimento</value>
+                        </name>
+                        <value xsi:type="DV_CODED_TEXT">
+                            <value>Unidade móvel</value>
+                            <defining_code>
+                                <terminology_id>
+                                    <value>local</value>
+                                </terminology_id>
+                                <code_string>at0.149</code_string>
+                            </defining_code>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0104" xsi:type="CLUSTER">
+                        <name>
+                            <value>Instituição</value>
+                        </name>
+                        <items archetype_node_id="at0.158" xsi:type="ELEMENT">
+                            <name>
+                                <value>Estabelecimento de saúde</value>
+                            </name>
+                            <value xsi:type="DV_TEXT">
+                                <value>UBS Bom Retiro</value>
+                            </value>
+                        </items>
+                    </items>
+                </items>
+                <items archetype_node_id="at0121" xsi:type="CLUSTER">
+                    <name>
+                        <value>Profissionais do atendimento</value>
+                    </name>
+                    <items archetype_node_id="at0.184" xsi:type="ELEMENT">
+                        <name>
+                            <value>Nome do profissional</value>
+                        </name>
+                        <value xsi:type="DV_TEXT">
+                            <value>MARLI DOS SANTOS NEVES DAS NEVES</value>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0099.1" xsi:type="ELEMENT">
+                        <name>
+                            <value>CPF do profissional</value>
+                        </name>
+                        <value xsi:type="DV_TEXT">
+                            <value>20301136976</value>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0.165" xsi:type="ELEMENT">
+                        <name>
+                            <value>CNS</value>
+                        </name>
+                        <value xsi:type="DV_TEXT">
+                            <value>203011369760008</value>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0.166" xsi:type="ELEMENT">
+                        <name>
+                            <value>Ocupação do profissional</value>
+                        </name>
+                        <value xsi:type="DV_CODED_TEXT">
+                            <value>Médico de família e comunidade</value>
+                            <defining_code>
+                                <terminology_id>
+                                    <value>CBO_2002.v1.0.0</value>
+                                </terminology_id>
+                                <code_string>225130</code_string>
+                            </defining_code>
+                        </value>
+                    </items>
+                    <items
+                        archetype_node_id="openEHR-EHR-CLUSTER.individual_professional-ms_br.v1" xsi:type="CLUSTER">
+                        <name>
+                            <value>Dados demográficos individuais do profissional</value>
+                        </name>
+                        <archetype_details>
+                            <archetype_id>
+                                <value>openEHR-EHR-CLUSTER.individual_professional-ms_br.v1</value>
+                            </archetype_id>
+                            <template_id>
+                                <value>Registro de Atendimento Clínico v1.0</value>
+                            </template_id>
+                            <rm_version>1.0.2</rm_version>
+                        </archetype_details>
+                        <items archetype_node_id="at0.20" xsi:type="CLUSTER">
+                            <name>
+                                <value>Conselho de classe</value>
+                            </name>
+                            <items archetype_node_id="at0.21" xsi:type="ELEMENT">
+                                <name>
+                                    <value>Tipo de conselho</value>
+                                </name>
+                                <value xsi:type="DV_CODED_TEXT">
+                                    <value>CRBM</value>
+                                    <defining_code>
+                                    <terminology_id>
+                                    <value>local</value>
+                                    </terminology_id>
+                                    <code_string>at0.24</code_string>
+                                    </defining_code>
+                                </value>
+                            </items>
+                            <items archetype_node_id="at0.22" xsi:type="ELEMENT">
+                                <name>
+                                    <value>UF</value>
+                                </name>
+                                <value xsi:type="DV_TEXT">
+                                    <value>DF</value>
+                                </value>
+                            </items>
+                            <items archetype_node_id="at0.23" xsi:type="ELEMENT">
+                                <name>
+                                    <value>Número do registro</value>
+                                </name>
+                                <value xsi:type="DV_TEXT">
+                                    <value>123456</value>
+                                </value>
+                            </items>
+                        </items>
+                    </items>
+                </items>
+                <items archetype_node_id="at0.183" xsi:type="ELEMENT">
+                    <name>
+                        <value>Retorno</value>
+                    </name>
+                    <value xsi:type="DV_BOOLEAN">
+                        <value>true</value>
+                    </value>
+                </items>
+                <items archetype_node_id="at0071" xsi:type="ELEMENT">
+                    <name>
+                        <value>Data e hora do atendimento</value>
+                    </name>
+                    <value xsi:type="DV_DATE_TIME">
+                        <value>2018-01-01T00:00:00Z</value>
+                    </value>
+                </items>
+            </data>
+        </items>
+    </content>
+    <content archetype_node_id="openEHR-EHR-SECTION.problem_list.v1" xsi:type="SECTION">
+        <name>
+            <value>Motivo do atendimento</value>
+        </name>
+        <archetype_details>
+            <archetype_id>
+                <value>openEHR-EHR-SECTION.problem_list.v1</value>
+            </archetype_id>
+            <template_id>
+                <value>Registro de Atendimento Clínico v1.0</value>
+            </template_id>
+            <rm_version>1.0.2</rm_version>
+        </archetype_details>
+        <items
+            archetype_node_id="openEHR-EHR-EVALUATION.reason_for_encounter.v1" xsi:type="EVALUATION">
+            <name>
+                <value>Motivo para o encontro</value>
+            </name>
+            <archetype_details>
+                <archetype_id>
+                    <value>openEHR-EHR-EVALUATION.reason_for_encounter.v1</value>
+                </archetype_id>
+                <template_id>
+                    <value>Registro de Atendimento Clínico v1.0</value>
+                </template_id>
+                <rm_version>1.0.2</rm_version>
+            </archetype_details>
+            <language>
+                <terminology_id>
+                    <value>ISO_639-1</value>
+                </terminology_id>
+                <code_string>pt</code_string>
+            </language>
+            <encoding>
+                <terminology_id>
+                    <value>IANA_character-sets</value>
+                </terminology_id>
+                <code_string>UTF-8</code_string>
+            </encoding>
+            <subject xsi:type="PARTY_SELF"/>
+            <data archetype_node_id="at0001" xsi:type="ITEM_TREE">
+                <name>
+                    <value>ITEM_TREE</value>
+                </name>
+                <items archetype_node_id="at0004" xsi:type="ELEMENT">
+                    <name>
+                        <value>Motivo do atendimento</value>
+                    </name>
+                    <value xsi:type="DV_CODED_TEXT">
+                        <value>Hipertensão sem complicações</value>
+                        <defining_code>
+                            <terminology_id>
+                                <value>CIAP-2_2005.v1.0.0</value>
+                            </terminology_id>
+                            <code_string>K86</code_string>
+                        </defining_code>
+                    </value>
+                </items>
+            </data>
+        </items>
+        <items
+            archetype_node_id="openEHR-EHR-EVALUATION.container.v0" xsi:type="EVALUATION">
+            <name>
+                <value>Recipiente</value>
+            </name>
+            <archetype_details>
+                <archetype_id>
+                    <value>openEHR-EHR-EVALUATION.container.v0</value>
+                </archetype_id>
+                <template_id>
+                    <value>Registro de Atendimento Clínico v1.0</value>
+                </template_id>
+                <rm_version>1.0.2</rm_version>
+            </archetype_details>
+            <language>
+                <terminology_id>
+                    <value>ISO_639-1</value>
+                </terminology_id>
+                <code_string>pt</code_string>
+            </language>
+            <encoding>
+                <terminology_id>
+                    <value>IANA_character-sets</value>
+                </terminology_id>
+                <code_string>UTF-8</code_string>
+            </encoding>
+            <subject xsi:type="PARTY_SELF"/>
+            <data archetype_node_id="at0001" xsi:type="ITEM_TREE">
+                <name>
+                    <value>ITEM_TREE</value>
+                </name>
+                <items
+                    archetype_node_id="openEHR-EHR-CLUSTER.free_text.v0" xsi:type="CLUSTER">
+                    <name>
+                        <value>Texto livre</value>
+                    </name>
+                    <archetype_details>
+                        <archetype_id>
+                            <value>openEHR-EHR-CLUSTER.free_text.v0</value>
+                        </archetype_id>
+                        <template_id>
+                            <value>Registro de Atendimento Clínico v1.0</value>
+                        </template_id>
+                        <rm_version>1.0.2</rm_version>
+                    </archetype_details>
+                    <items archetype_node_id="at0001" xsi:type="ELEMENT">
+                        <name>
+                            <value>Declaração subjetiva do paciente para o atendimento</value>
+                        </name>
+                        <value xsi:type="DV_TEXT">
+                            <value>Acompanhamento da pressão e diabetes.</value>
+                        </value>
+                    </items>
+                </items>
+            </data>
+        </items>
+    </content>
+    <content archetype_node_id="openEHR-EHR-SECTION.adhoc.v1" xsi:type="SECTION">
+        <name>
+            <value>Observações</value>
+        </name>
+        <archetype_details>
+            <archetype_id>
+                <value>openEHR-EHR-SECTION.adhoc.v1</value>
+            </archetype_id>
+            <template_id>
+                <value>Registro de Atendimento Clínico v1.0</value>
+            </template_id>
+            <rm_version>1.0.2</rm_version>
+        </archetype_details>
+        <items archetype_node_id="openEHR-EHR-SECTION.vital_signs.v0" xsi:type="SECTION">
+            <name>
+                <value>Sinais vitais</value>
+            </name>
+            <archetype_details>
+                <archetype_id>
+                    <value>openEHR-EHR-SECTION.vital_signs.v0</value>
+                </archetype_id>
+                <template_id>
+                    <value>Registro de Atendimento Clínico v1.0</value>
+                </template_id>
+                <rm_version>1.0.2</rm_version>
+            </archetype_details>
+            <items
+                archetype_node_id="openEHR-EHR-OBSERVATION.blood_pressure.v2" xsi:type="OBSERVATION">
+                <name>
+                    <value>Pressão Arterial</value>
+                </name>
+                <archetype_details>
+                    <archetype_id>
+                        <value>openEHR-EHR-OBSERVATION.blood_pressure.v2</value>
+                    </archetype_id>
+                    <template_id>
+                        <value>Registro de Atendimento Clínico v1.0</value>
+                    </template_id>
+                    <rm_version>1.0.2</rm_version>
+                </archetype_details>
+                <language>
+                    <terminology_id>
+                        <value>ISO_639-1</value>
+                    </terminology_id>
+                    <code_string>pt</code_string>
+                </language>
+                <encoding>
+                    <terminology_id>
+                        <value>IANA_character-sets</value>
+                    </terminology_id>
+                    <code_string>UTF-8</code_string>
+                </encoding>
+                <subject xsi:type="PARTY_SELF"/>
+                <protocol archetype_node_id="at0011" xsi:type="ITEM_TREE">
+                    <name>
+                        <value>ITEM_TREE</value>
+                    </name>
+                    <items archetype_node_id="at0014" xsi:type="ELEMENT">
+                        <name>
+                            <value>Local da aferição</value>
+                        </name>
+                        <value xsi:type="DV_CODED_TEXT">
+                            <value>Braço direito</value>
+                            <defining_code>
+                                <terminology_id>
+                                    <value>local</value>
+                                </terminology_id>
+                                <code_string>at0025</code_string>
+                            </defining_code>
+                        </value>
+                    </items>
+                </protocol>
+                <data archetype_node_id="at0001" xsi:type="HISTORY">
+                    <name>
+                        <value>HISTORY</value>
+                    </name>
+                    <origin>
+                        <value>2019-10-25T14:51:40.506</value>
+                    </origin>
+                    <events archetype_node_id="at0006" xsi:type="POINT_EVENT">
+                        <name>
+                            <value>ANY_EVENT</value>
+                        </name>
+                        <time>
+                            <value>2018-01-01T00:00:00Z</value>
+                        </time>
+                        <data archetype_node_id="at0003" xsi:type="ITEM_TREE">
+                            <name>
+                                <value>ITEM_TREE</value>
+                            </name>
+                            <items archetype_node_id="at0004" xsi:type="ELEMENT">
+                                <name>
+                                    <value>Sistólica</value>
+                                </name>
+                                <value xsi:type="DV_QUANTITY">
+                                    <magnitude>144</magnitude>
+                                    <units>mm[Hg]</units>
+                                    <precision>0</precision>
+                                </value>
+                            </items>
+                            <items archetype_node_id="at0005" xsi:type="ELEMENT">
+                                <name>
+                                    <value>Diastólica</value>
+                                </name>
+                                <value xsi:type="DV_QUANTITY">
+                                    <magnitude>128</magnitude>
+                                    <units>mm[Hg]</units>
+                                    <precision>0</precision>
+                                </value>
+                            </items>
+                        </data>
+                        <state archetype_node_id="at0007" xsi:type="ITEM_TREE">
+                            <name>
+                                <value>ITEM_TREE</value>
+                            </name>
+                            <items archetype_node_id="at0008" xsi:type="ELEMENT">
+                                <name>
+                                    <value>Posição do indivíduo na aferição</value>
+                                </name>
+                                <value xsi:type="DV_CODED_TEXT">
+                                    <value>Em pé</value>
+                                    <defining_code>
+                                    <terminology_id>
+                                    <value>local</value>
+                                    </terminology_id>
+                                    <code_string>at1000</code_string>
+                                    </defining_code>
+                                </value>
+                            </items>
+                        </state>
+                    </events>
+                </data>
+            </items>
+            <items
+                archetype_node_id="openEHR-EHR-OBSERVATION.pulse.v1" xsi:type="OBSERVATION">
+                <name>
+                    <value>Pulso/Batimento Cardíaco</value>
+                </name>
+                <archetype_details>
+                    <archetype_id>
+                        <value>openEHR-EHR-OBSERVATION.pulse.v1</value>
+                    </archetype_id>
+                    <template_id>
+                        <value>Registro de Atendimento Clínico v1.0</value>
+                    </template_id>
+                    <rm_version>1.0.2</rm_version>
+                </archetype_details>
+                <language>
+                    <terminology_id>
+                        <value>ISO_639-1</value>
+                    </terminology_id>
+                    <code_string>pt</code_string>
+                </language>
+                <encoding>
+                    <terminology_id>
+                        <value>IANA_character-sets</value>
+                    </terminology_id>
+                    <code_string>UTF-8</code_string>
+                </encoding>
+                <subject xsi:type="PARTY_SELF"/>
+                <data archetype_node_id="at0002" xsi:type="HISTORY">
+                    <name>
+                        <value>HISTORY</value>
+                    </name>
+                    <origin>
+                        <value>2019-10-25T14:51:40.520</value>
+                    </origin>
+                    <events archetype_node_id="at0003" xsi:type="POINT_EVENT">
+                        <name>
+                            <value>ANY_EVENT</value>
+                        </name>
+                        <time>
+                            <value>2018-01-01T00:00:00Z</value>
+                        </time>
+                        <data archetype_node_id="at0001" xsi:type="ITEM_TREE">
+                            <name>
+                                <value>ITEM_TREE</value>
+                            </name>
+                            <items archetype_node_id="at0004" xsi:type="ELEMENT">
+                                <name>
+                                    <value>Frequência cardíaca</value>
+                                </name>
+                                <value xsi:type="DV_QUANTITY">
+                                    <magnitude>160</magnitude>
+                                    <units>/min</units>
+                                    <precision>0</precision>
+                                </value>
+                            </items>
+                        </data>
+                    </events>
+                </data>
+            </items>
+            <items
+                archetype_node_id="openEHR-EHR-OBSERVATION.respiration.v1" xsi:type="OBSERVATION">
+                <name>
+                    <value>Respirações</value>
+                </name>
+                <archetype_details>
+                    <archetype_id>
+                        <value>openEHR-EHR-OBSERVATION.respiration.v1</value>
+                    </archetype_id>
+                    <template_id>
+                        <value>Registro de Atendimento Clínico v1.0</value>
+                    </template_id>
+                    <rm_version>1.0.2</rm_version>
+                </archetype_details>
+                <language>
+                    <terminology_id>
+                        <value>ISO_639-1</value>
+                    </terminology_id>
+                    <code_string>pt</code_string>
+                </language>
+                <encoding>
+                    <terminology_id>
+                        <value>IANA_character-sets</value>
+                    </terminology_id>
+                    <code_string>UTF-8</code_string>
+                </encoding>
+                <subject xsi:type="PARTY_SELF"/>
+                <data archetype_node_id="at0001" xsi:type="HISTORY">
+                    <name>
+                        <value>HISTORY</value>
+                    </name>
+                    <origin>
+                        <value>2019-10-25T14:51:40.537</value>
+                    </origin>
+                    <events archetype_node_id="at0002" xsi:type="POINT_EVENT">
+                        <name>
+                            <value>ANY_EVENT</value>
+                        </name>
+                        <time>
+                            <value>2018-01-01T00:00:00Z</value>
+                        </time>
+                        <data archetype_node_id="at0003" xsi:type="ITEM_TREE">
+                            <name>
+                                <value>ITEM_TREE</value>
+                            </name>
+                            <items archetype_node_id="at0004" xsi:type="ELEMENT">
+                                <name>
+                                    <value>Frequência respiratória</value>
+                                </name>
+                                <value xsi:type="DV_QUANTITY">
+                                    <magnitude>30</magnitude>
+                                    <units>/min</units>
+                                    <precision>0</precision>
+                                </value>
+                            </items>
+                        </data>
+                    </events>
+                </data>
+            </items>
+            <items
+                archetype_node_id="openEHR-EHR-OBSERVATION.body_temperature.v2" xsi:type="OBSERVATION">
+                <name>
+                    <value>Temperatura Corporal</value>
+                </name>
+                <archetype_details>
+                    <archetype_id>
+                        <value>openEHR-EHR-OBSERVATION.body_temperature.v2</value>
+                    </archetype_id>
+                    <template_id>
+                        <value>Registro de Atendimento Clínico v1.0</value>
+                    </template_id>
+                    <rm_version>1.0.2</rm_version>
+                </archetype_details>
+                <language>
+                    <terminology_id>
+                        <value>ISO_639-1</value>
+                    </terminology_id>
+                    <code_string>pt</code_string>
+                </language>
+                <encoding>
+                    <terminology_id>
+                        <value>IANA_character-sets</value>
+                    </terminology_id>
+                    <code_string>UTF-8</code_string>
+                </encoding>
+                <subject xsi:type="PARTY_SELF"/>
+                <data archetype_node_id="at0002" xsi:type="HISTORY">
+                    <name>
+                        <value>HISTORY</value>
+                    </name>
+                    <origin>
+                        <value>2019-10-25T14:51:40.574</value>
+                    </origin>
+                    <events archetype_node_id="at0003" xsi:type="POINT_EVENT">
+                        <name>
+                            <value>ANY_EVENT</value>
+                        </name>
+                        <time>
+                            <value>2018-01-01T00:00:00Z</value>
+                        </time>
+                        <data archetype_node_id="at0001" xsi:type="ITEM_TREE">
+                            <name>
+                                <value>ITEM_TREE</value>
+                            </name>
+                            <items archetype_node_id="at0004" xsi:type="ELEMENT">
+                                <name>
+                                    <value>Temperatura</value>
+                                </name>
+                                <value xsi:type="DV_QUANTITY">
+                                    <magnitude>37.1</magnitude>
+                                    <units>Cel</units>
+                                    <precision>1</precision>
+                                </value>
+                            </items>
+                        </data>
+                    </events>
+                </data>
+            </items>
+            <items
+                archetype_node_id="openEHR-EHR-OBSERVATION.pulse_oximetry.v1" xsi:type="OBSERVATION">
+                <name>
+                    <value>Oximetria de pulso</value>
+                </name>
+                <archetype_details>
+                    <archetype_id>
+                        <value>openEHR-EHR-OBSERVATION.pulse_oximetry.v1</value>
+                    </archetype_id>
+                    <template_id>
+                        <value>Registro de Atendimento Clínico v1.0</value>
+                    </template_id>
+                    <rm_version>1.0.2</rm_version>
+                </archetype_details>
+                <language>
+                    <terminology_id>
+                        <value>ISO_639-1</value>
+                    </terminology_id>
+                    <code_string>pt</code_string>
+                </language>
+                <encoding>
+                    <terminology_id>
+                        <value>IANA_character-sets</value>
+                    </terminology_id>
+                    <code_string>UTF-8</code_string>
+                </encoding>
+                <subject xsi:type="PARTY_SELF"/>
+                <data archetype_node_id="at0001" xsi:type="HISTORY">
+                    <name>
+                        <value>HISTORY</value>
+                    </name>
+                    <origin>
+                        <value>2019-10-25T14:51:40.580</value>
+                    </origin>
+                    <events archetype_node_id="at0002" xsi:type="POINT_EVENT">
+                        <name>
+                            <value>ANY_EVENT</value>
+                        </name>
+                        <time>
+                            <value>2018-01-01T00:00:00Z</value>
+                        </time>
+                        <data archetype_node_id="at0003" xsi:type="ITEM_TREE">
+                            <name>
+                                <value>ITEM_TREE</value>
+                            </name>
+                            <items archetype_node_id="at0006" xsi:type="ELEMENT">
+                                <name>
+                                    <value>Saturação O2</value>
+                                </name>
+                                <value xsi:type="DV_PROPORTION">
+                                    <numerator>90</numerator>
+                                    <denominator>100</denominator>
+                                    <type>2</type>
+                                </value>
+                            </items>
+                        </data>
+                    </events>
+                </data>
+            </items>
+        </items>
+        <items archetype_node_id="openEHR-EHR-SECTION.adhoc.v1" xsi:type="SECTION">
+            <name>
+                <value>Medições</value>
+            </name>
+            <archetype_details>
+                <archetype_id>
+                    <value>openEHR-EHR-SECTION.adhoc.v1</value>
+                </archetype_id>
+                <template_id>
+                    <value>Registro de Atendimento Clínico v1.0</value>
+                </template_id>
+                <rm_version>1.0.2</rm_version>
+            </archetype_details>
+            <items
+                archetype_node_id="openEHR-EHR-OBSERVATION.body_weight.v2" xsi:type="OBSERVATION">
+                <name>
+                    <value>Peso corporal</value>
+                </name>
+                <archetype_details>
+                    <archetype_id>
+                        <value>openEHR-EHR-OBSERVATION.body_weight.v2</value>
+                    </archetype_id>
+                    <template_id>
+                        <value>Registro de Atendimento Clínico v1.0</value>
+                    </template_id>
+                    <rm_version>1.0.2</rm_version>
+                </archetype_details>
+                <language>
+                    <terminology_id>
+                        <value>ISO_639-1</value>
+                    </terminology_id>
+                    <code_string>pt</code_string>
+                </language>
+                <encoding>
+                    <terminology_id>
+                        <value>IANA_character-sets</value>
+                    </terminology_id>
+                    <code_string>UTF-8</code_string>
+                </encoding>
+                <subject xsi:type="PARTY_SELF"/>
+                <data archetype_node_id="at0002" xsi:type="HISTORY">
+                    <name>
+                        <value>HISTORY</value>
+                    </name>
+                    <origin>
+                        <value>2019-10-25T14:51:40.589</value>
+                    </origin>
+                    <events archetype_node_id="at0003" xsi:type="POINT_EVENT">
+                        <name>
+                            <value>ANY_EVENT</value>
+                        </name>
+                        <time>
+                            <value>2018-01-01T00:00:00Z</value>
+                        </time>
+                        <data archetype_node_id="at0001" xsi:type="ITEM_TREE">
+                            <name>
+                                <value>ITEM_TREE</value>
+                            </name>
+                            <items archetype_node_id="at0004" xsi:type="ELEMENT">
+                                <name>
+                                    <value>Peso</value>
+                                </name>
+                                <value xsi:type="DV_QUANTITY">
+                                    <magnitude>72.0</magnitude>
+                                    <units>kg</units>
+                                </value>
+                            </items>
+                        </data>
+                    </events>
+                </data>
+            </items>
+            <items
+                archetype_node_id="openEHR-EHR-OBSERVATION.height.v2" xsi:type="OBSERVATION">
+                <name>
+                    <value>Altura / comprimento</value>
+                </name>
+                <archetype_details>
+                    <archetype_id>
+                        <value>openEHR-EHR-OBSERVATION.height.v2</value>
+                    </archetype_id>
+                    <template_id>
+                        <value>Registro de Atendimento Clínico v1.0</value>
+                    </template_id>
+                    <rm_version>1.0.2</rm_version>
+                </archetype_details>
+                <language>
+                    <terminology_id>
+                        <value>ISO_639-1</value>
+                    </terminology_id>
+                    <code_string>pt</code_string>
+                </language>
+                <encoding>
+                    <terminology_id>
+                        <value>IANA_character-sets</value>
+                    </terminology_id>
+                    <code_string>UTF-8</code_string>
+                </encoding>
+                <subject xsi:type="PARTY_SELF"/>
+                <data archetype_node_id="at0001" xsi:type="HISTORY">
+                    <name>
+                        <value>HISTORY</value>
+                    </name>
+                    <origin>
+                        <value>2019-10-25T14:51:40.602</value>
+                    </origin>
+                    <events archetype_node_id="at0002" xsi:type="POINT_EVENT">
+                        <name>
+                            <value>ANY_EVENT</value>
+                        </name>
+                        <time>
+                            <value>2018-01-01T00:00:00Z</value>
+                        </time>
+                        <data archetype_node_id="at0003" xsi:type="ITEM_TREE">
+                            <name>
+                                <value>ITEM_TREE</value>
+                            </name>
+                            <items archetype_node_id="at0004" xsi:type="ELEMENT">
+                                <name>
+                                    <value>Altura</value>
+                                </name>
+                                <value xsi:type="DV_QUANTITY">
+                                    <magnitude>178</magnitude>
+                                    <units>cm</units>
+                                </value>
+                            </items>
+                        </data>
+                    </events>
+                </data>
+            </items>
+            <items
+                archetype_node_id="openEHR-EHR-OBSERVATION.body_mass_index.v2" xsi:type="OBSERVATION">
+                <name>
+                    <value>Índice de massa corporal</value>
+                </name>
+                <archetype_details>
+                    <archetype_id>
+                        <value>openEHR-EHR-OBSERVATION.body_mass_index.v2</value>
+                    </archetype_id>
+                    <template_id>
+                        <value>Registro de Atendimento Clínico v1.0</value>
+                    </template_id>
+                    <rm_version>1.0.2</rm_version>
+                </archetype_details>
+                <language>
+                    <terminology_id>
+                        <value>ISO_639-1</value>
+                    </terminology_id>
+                    <code_string>pt</code_string>
+                </language>
+                <encoding>
+                    <terminology_id>
+                        <value>IANA_character-sets</value>
+                    </terminology_id>
+                    <code_string>UTF-8</code_string>
+                </encoding>
+                <subject xsi:type="PARTY_SELF"/>
+                <data archetype_node_id="at0001" xsi:type="HISTORY">
+                    <name>
+                        <value>HISTORY</value>
+                    </name>
+                    <origin>
+                        <value>2019-10-25T14:51:40.616</value>
+                    </origin>
+                    <events archetype_node_id="at0002" xsi:type="POINT_EVENT">
+                        <name>
+                            <value>ANY_EVENT</value>
+                        </name>
+                        <time>
+                            <value>2018-01-01T00:00:00Z</value>
+                        </time>
+                        <data archetype_node_id="at0003" xsi:type="ITEM_TREE">
+                            <name>
+                                <value>ITEM_TREE</value>
+                            </name>
+                            <items archetype_node_id="at0004" xsi:type="ELEMENT">
+                                <name>
+                                    <value>Índice de massa corporal</value>
+                                </name>
+                                <value xsi:type="DV_QUANTITY">
+                                    <magnitude>25.8</magnitude>
+                                    <units>kg/m2</units>
+                                    <precision>1</precision>
+                                </value>
+                            </items>
+                        </data>
+                    </events>
+                </data>
+            </items>
+            <items
+                archetype_node_id="openEHR-EHR-OBSERVATION.head_circumference.v1" xsi:type="OBSERVATION">
+                <name>
+                    <value>Circunferência cefálica</value>
+                </name>
+                <archetype_details>
+                    <archetype_id>
+                        <value>openEHR-EHR-OBSERVATION.head_circumference.v1</value>
+                    </archetype_id>
+                    <template_id>
+                        <value>Registro de Atendimento Clínico v1.0</value>
+                    </template_id>
+                    <rm_version>1.0.2</rm_version>
+                </archetype_details>
+                <language>
+                    <terminology_id>
+                        <value>ISO_639-1</value>
+                    </terminology_id>
+                    <code_string>pt</code_string>
+                </language>
+                <encoding>
+                    <terminology_id>
+                        <value>IANA_character-sets</value>
+                    </terminology_id>
+                    <code_string>UTF-8</code_string>
+                </encoding>
+                <subject xsi:type="PARTY_SELF"/>
+                <data archetype_node_id="at0001" xsi:type="HISTORY">
+                    <name>
+                        <value>HISTORY</value>
+                    </name>
+                    <origin>
+                        <value>2019-10-25T14:51:40.621</value>
+                    </origin>
+                    <events archetype_node_id="at0010" xsi:type="POINT_EVENT">
+                        <name>
+                            <value>ANY_EVENT</value>
+                        </name>
+                        <time>
+                            <value>2018-01-01T00:00:00Z</value>
+                        </time>
+                        <data archetype_node_id="at0003" xsi:type="ITEM_TREE">
+                            <name>
+                                <value>ITEM_TREE</value>
+                            </name>
+                            <items archetype_node_id="at0004" xsi:type="ELEMENT">
+                                <name>
+                                    <value>Perímetro cefálico </value>
+                                </name>
+                                <value xsi:type="DV_QUANTITY">
+                                    <magnitude>78</magnitude>
+                                    <units>cm</units>
+                                </value>
+                            </items>
+                        </data>
+                    </events>
+                </data>
+            </items>
+            <items
+                archetype_node_id="openEHR-EHR-OBSERVATION.waist_circumference.v1" xsi:type="OBSERVATION">
+                <name>
+                    <value>Circunferência da cintura</value>
+                </name>
+                <archetype_details>
+                    <archetype_id>
+                        <value>openEHR-EHR-OBSERVATION.waist_circumference.v1</value>
+                    </archetype_id>
+                    <template_id>
+                        <value>Registro de Atendimento Clínico v1.0</value>
+                    </template_id>
+                    <rm_version>1.0.2</rm_version>
+                </archetype_details>
+                <language>
+                    <terminology_id>
+                        <value>ISO_639-1</value>
+                    </terminology_id>
+                    <code_string>pt</code_string>
+                </language>
+                <encoding>
+                    <terminology_id>
+                        <value>IANA_character-sets</value>
+                    </terminology_id>
+                    <code_string>UTF-8</code_string>
+                </encoding>
+                <subject xsi:type="PARTY_SELF"/>
+                <data archetype_node_id="at0001" xsi:type="HISTORY">
+                    <name>
+                        <value>HISTORY</value>
+                    </name>
+                    <origin>
+                        <value>2019-10-25T14:51:40.633</value>
+                    </origin>
+                    <events archetype_node_id="at0010" xsi:type="POINT_EVENT">
+                        <name>
+                            <value>ANY_EVENT</value>
+                        </name>
+                        <time>
+                            <value>2018-01-01T00:00:00Z</value>
+                        </time>
+                        <data archetype_node_id="at0003" xsi:type="ITEM_TREE">
+                            <name>
+                                <value>ITEM_TREE</value>
+                            </name>
+                            <items archetype_node_id="at0004" xsi:type="ELEMENT">
+                                <name>
+                                    <value>Circunferência da cintura</value>
+                                </name>
+                                <value xsi:type="DV_QUANTITY">
+                                    <magnitude>122</magnitude>
+                                    <units>cm</units>
+                                </value>
+                            </items>
+                        </data>
+                    </events>
+                </data>
+            </items>
+        </items>
+        <items archetype_node_id="openEHR-EHR-SECTION.adhoc.v1" xsi:type="SECTION">
+            <name>
+                <value>Informações adicionais</value>
+            </name>
+            <archetype_details>
+                <archetype_id>
+                    <value>openEHR-EHR-SECTION.adhoc.v1</value>
+                </archetype_id>
+                <template_id>
+                    <value>Registro de Atendimento Clínico v1.0</value>
+                </template_id>
+                <rm_version>1.0.2</rm_version>
+            </archetype_details>
+            <items
+                archetype_node_id="openEHR-EHR-OBSERVATION.menstrual_cycle.v0" xsi:type="OBSERVATION">
+                <name>
+                    <value>Ciclo menstrual</value>
+                </name>
+                <archetype_details>
+                    <archetype_id>
+                        <value>openEHR-EHR-OBSERVATION.menstrual_cycle.v0</value>
+                    </archetype_id>
+                    <template_id>
+                        <value>Registro de Atendimento Clínico v1.0</value>
+                    </template_id>
+                    <rm_version>1.0.2</rm_version>
+                </archetype_details>
+                <language>
+                    <terminology_id>
+                        <value>ISO_639-1</value>
+                    </terminology_id>
+                    <code_string>pt</code_string>
+                </language>
+                <encoding>
+                    <terminology_id>
+                        <value>IANA_character-sets</value>
+                    </terminology_id>
+                    <code_string>UTF-8</code_string>
+                </encoding>
+                <subject xsi:type="PARTY_SELF"/>
+                <data archetype_node_id="at0001" xsi:type="HISTORY">
+                    <name>
+                        <value>HISTORY</value>
+                    </name>
+                    <origin>
+                        <value>2019-10-25T14:51:40.640</value>
+                    </origin>
+                    <events archetype_node_id="at0002" xsi:type="POINT_EVENT">
+                        <name>
+                            <value>ANY_EVENT</value>
+                        </name>
+                        <time>
+                            <value>2018-01-01T00:00:00Z</value>
+                        </time>
+                        <data archetype_node_id="at0003" xsi:type="ITEM_TREE">
+                            <name>
+                                <value>ITEM_TREE</value>
+                            </name>
+                            <items
+                                archetype_node_id="openEHR-EHR-ELEMENT.last_normal_menstrual_period.v1" xsi:type="ELEMENT">
+                                <name>
+                                    <value>DUM (Data da Última Menstruação)</value>
+                                </name>
+                                <archetype_details>
+                                    <archetype_id>
+                                    <value>openEHR-EHR-ELEMENT.last_normal_menstrual_period.v1</value>
+                                    </archetype_id>
+                                    <template_id>
+                                    <value>Registro de Atendimento Clínico v1.0</value>
+                                    </template_id>
+                                    <rm_version>1.0.2</rm_version>
+                                </archetype_details>
+                                <value xsi:type="DV_DATE_TIME">
+                                    <value>2018-01-01T00:00:00Z</value>
+                                </value>
+                            </items>
+                        </data>
+                    </events>
+                </data>
+            </items>
+            <items
+                archetype_node_id="openEHR-EHR-OBSERVATION.gestation.v1" xsi:type="OBSERVATION">
+                <name>
+                    <value>Gestação</value>
+                </name>
+                <archetype_details>
+                    <archetype_id>
+                        <value>openEHR-EHR-OBSERVATION.gestation.v1</value>
+                    </archetype_id>
+                    <template_id>
+                        <value>Registro de Atendimento Clínico v1.0</value>
+                    </template_id>
+                    <rm_version>1.0.2</rm_version>
+                </archetype_details>
+                <language>
+                    <terminology_id>
+                        <value>ISO_639-1</value>
+                    </terminology_id>
+                    <code_string>pt</code_string>
+                </language>
+                <encoding>
+                    <terminology_id>
+                        <value>IANA_character-sets</value>
+                    </terminology_id>
+                    <code_string>UTF-8</code_string>
+                </encoding>
+                <subject xsi:type="PARTY_SELF"/>
+                <data archetype_node_id="at0001" xsi:type="HISTORY">
+                    <name>
+                        <value>HISTORY</value>
+                    </name>
+                    <origin>
+                        <value>2019-10-25T14:51:40.649</value>
+                    </origin>
+                    <events archetype_node_id="at0002" xsi:type="POINT_EVENT">
+                        <name>
+                            <value>ANY_EVENT</value>
+                        </name>
+                        <time>
+                            <value>2018-01-01T00:00:00Z</value>
+                        </time>
+                        <data archetype_node_id="at0003" xsi:type="ITEM_TREE">
+                            <name>
+                                <value>ITEM_TREE</value>
+                            </name>
+                            <items archetype_node_id="at0004" xsi:type="ELEMENT">
+                                <name>
+                                    <value>Idade gestacional</value>
+                                </name>
+                                <value xsi:type="DV_DURATION">
+                                    <value>P8W3D</value>
+                                </value>
+                            </items>
+                        </data>
+                    </events>
+                </data>
+            </items>
+            <items
+                archetype_node_id="openEHR-EHR-EVALUATION.obstetric_summary.v0" xsi:type="EVALUATION">
+                <name>
+                    <value>Sumário obstétrico</value>
+                </name>
+                <archetype_details>
+                    <archetype_id>
+                        <value>openEHR-EHR-EVALUATION.obstetric_summary.v0</value>
+                    </archetype_id>
+                    <template_id>
+                        <value>Registro de Atendimento Clínico v1.0</value>
+                    </template_id>
+                    <rm_version>1.0.2</rm_version>
+                </archetype_details>
+                <language>
+                    <terminology_id>
+                        <value>ISO_639-1</value>
+                    </terminology_id>
+                    <code_string>pt</code_string>
+                </language>
+                <encoding>
+                    <terminology_id>
+                        <value>IANA_character-sets</value>
+                    </terminology_id>
+                    <code_string>UTF-8</code_string>
+                </encoding>
+                <subject xsi:type="PARTY_SELF"/>
+                <data archetype_node_id="at0001" xsi:type="ITEM_TREE">
+                    <name>
+                        <value>ITEM_TREE</value>
+                    </name>
+                    <items archetype_node_id="at0002" xsi:type="ELEMENT">
+                        <name>
+                            <value>Quantidade de gestas prévias</value>
+                        </name>
+                        <value xsi:type="DV_COUNT">
+                            <magnitude>0</magnitude>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0003" xsi:type="ELEMENT">
+                        <name>
+                            <value>Quantidade de partos</value>
+                        </name>
+                        <value xsi:type="DV_COUNT">
+                            <magnitude>0</magnitude>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0017" xsi:type="ELEMENT">
+                        <name>
+                            <value>Quantidade de abortos</value>
+                        </name>
+                        <value xsi:type="DV_COUNT">
+                            <magnitude>0</magnitude>
+                        </value>
+                    </items>
+                </data>
+            </items>
+            <items
+                archetype_node_id="openEHR-EHR-EVALUATION.container.v0" xsi:type="EVALUATION">
+                <name>
+                    <value>Recipiente</value>
+                </name>
+                <archetype_details>
+                    <archetype_id>
+                        <value>openEHR-EHR-EVALUATION.container.v0</value>
+                    </archetype_id>
+                    <template_id>
+                        <value>Registro de Atendimento Clínico v1.0</value>
+                    </template_id>
+                    <rm_version>1.0.2</rm_version>
+                </archetype_details>
+                <language>
+                    <terminology_id>
+                        <value>ISO_639-1</value>
+                    </terminology_id>
+                    <code_string>pt</code_string>
+                </language>
+                <encoding>
+                    <terminology_id>
+                        <value>IANA_character-sets</value>
+                    </terminology_id>
+                    <code_string>UTF-8</code_string>
+                </encoding>
+                <subject xsi:type="PARTY_SELF"/>
+                <data archetype_node_id="at0001" xsi:type="ITEM_TREE">
+                    <name>
+                        <value>ITEM_TREE</value>
+                    </name>
+                    <items
+                        archetype_node_id="openEHR-EHR-CLUSTER.free_text.v0" xsi:type="CLUSTER">
+                        <name>
+                            <value>Texto livre</value>
+                        </name>
+                        <archetype_details>
+                            <archetype_id>
+                                <value>openEHR-EHR-CLUSTER.free_text.v0</value>
+                            </archetype_id>
+                            <template_id>
+                                <value>Registro de Atendimento Clínico v1.0</value>
+                            </template_id>
+                            <rm_version>1.0.2</rm_version>
+                        </archetype_details>
+                        <items archetype_node_id="at0001" xsi:type="ELEMENT">
+                            <name>
+                                <value>Tipo de aleitamento materno para crianças até 2 anos</value>
+                            </name>
+                            <value xsi:type="DV_TEXT">
+                                <value>Aleitamento materno exclusiv0</value>
+                            </value>
+                        </items>
+                    </items>
+                </data>
+            </items>
+            <items archetype_node_id="openEHR-EHR-SECTION.adhoc.v1" xsi:type="SECTION">
+                <name>
+                    <value>Exposição a substâncias: uso de álcool, tabaco e outras substâncias nos últimos 3 meses</value>
+                </name>
+                <archetype_details>
+                    <archetype_id>
+                        <value>openEHR-EHR-SECTION.adhoc.v1</value>
+                    </archetype_id>
+                    <template_id>
+                        <value>Registro de Atendimento Clínico v1.0</value>
+                    </template_id>
+                    <rm_version>1.0.2</rm_version>
+                </archetype_details>
+                <items
+                    archetype_node_id="openEHR-EHR-OBSERVATION.alcohol_intake-haoc.v01" xsi:type="OBSERVATION">
+                    <name>
+                        <value>Consumo de álcool</value>
+                    </name>
+                    <archetype_details>
+                        <archetype_id>
+                            <value>openEHR-EHR-OBSERVATION.alcohol_intake-haoc.v01</value>
+                        </archetype_id>
+                        <template_id>
+                            <value>Registro de Atendimento Clínico v1.0</value>
+                        </template_id>
+                        <rm_version>1.0.2</rm_version>
+                    </archetype_details>
+                    <language>
+                        <terminology_id>
+                            <value>ISO_639-1</value>
+                        </terminology_id>
+                        <code_string>pt</code_string>
+                    </language>
+                    <encoding>
+                        <terminology_id>
+                            <value>IANA_character-sets</value>
+                        </terminology_id>
+                        <code_string>UTF-8</code_string>
+                    </encoding>
+                    <subject xsi:type="PARTY_SELF"/>
+                    <data archetype_node_id="at0001" xsi:type="HISTORY">
+                        <name>
+                            <value>HISTORY</value>
+                        </name>
+                        <origin>
+                            <value>2019-10-25T14:51:40.664</value>
+                        </origin>
+                        <events archetype_node_id="at0002" xsi:type="POINT_EVENT">
+                            <name>
+                                <value>ANY_EVENT</value>
+                            </name>
+                            <time>
+                                <value>2018-01-01T00:00:00Z</value>
+                            </time>
+                            <data archetype_node_id="at0003" xsi:type="ITEM_TREE">
+                                <name>
+                                    <value>ITEM_TREE</value>
+                                </name>
+                                <items archetype_node_id="at0021" xsi:type="ELEMENT">
+                                    <name>
+                                    <value>Comentário</value>
+                                    </name>
+                                    <value xsi:type="DV_TEXT">
+                                    <value>Cerveja, 6 copos dia</value>
+                                    </value>
+                                </items>
+                                <items archetype_node_id="at0.39" xsi:type="ELEMENT">
+                                    <name>
+                                    <value>Uso de álcool?</value>
+                                    </name>
+                                    <value xsi:type="DV_BOOLEAN">
+                                    <value>true</value>
+                                    </value>
+                                </items>
+                            </data>
+                        </events>
+                    </data>
+                </items>
+                <items
+                    archetype_node_id="openEHR-EHR-OBSERVATION.tobacco_use.v1" xsi:type="OBSERVATION">
+                    <name>
+                        <value>Uso de tabaco</value>
+                    </name>
+                    <archetype_details>
+                        <archetype_id>
+                            <value>openEHR-EHR-OBSERVATION.tobacco_use.v1</value>
+                        </archetype_id>
+                        <template_id>
+                            <value>Registro de Atendimento Clínico v1.0</value>
+                        </template_id>
+                        <rm_version>1.0.2</rm_version>
+                    </archetype_details>
+                    <language>
+                        <terminology_id>
+                            <value>ISO_639-1</value>
+                        </terminology_id>
+                        <code_string>pt</code_string>
+                    </language>
+                    <encoding>
+                        <terminology_id>
+                            <value>IANA_character-sets</value>
+                        </terminology_id>
+                        <code_string>UTF-8</code_string>
+                    </encoding>
+                    <subject xsi:type="PARTY_SELF"/>
+                    <data archetype_node_id="at0001" xsi:type="HISTORY">
+                        <name>
+                            <value>HISTORY</value>
+                        </name>
+                        <origin>
+                            <value>2019-10-25T14:51:40.802</value>
+                        </origin>
+                        <events archetype_node_id="at0002" xsi:type="POINT_EVENT">
+                            <name>
+                                <value>ANY_EVENT</value>
+                            </name>
+                            <time>
+                                <value>2018-01-01T00:00:00Z</value>
+                            </time>
+                            <data archetype_node_id="at0003" xsi:type="ITEM_TREE">
+                                <name>
+                                    <value>ITEM_TREE</value>
+                                </name>
+                                <items archetype_node_id="at0004" xsi:type="ELEMENT">
+                                    <name>
+                                    <value>Uso de tabaco?</value>
+                                    </name>
+                                    <value xsi:type="DV_BOOLEAN">
+                                    <value>true</value>
+                                    </value>
+                                </items>
+                                <items archetype_node_id="at0021" xsi:type="ELEMENT">
+                                    <name>
+                                    <value>Comentário</value>
+                                    </name>
+                                    <value xsi:type="DV_TEXT">
+                                    <value>Dois maços por dia</value>
+                                    </value>
+                                </items>
+                            </data>
+                        </events>
+                    </data>
+                </items>
+                <items
+                    archetype_node_id="openEHR-EHR-SECTION.adhoc.v1" xsi:type="SECTION">
+                    <name>
+                        <value>Outras substâncias psicoativas</value>
+                    </name>
+                    <archetype_details>
+                        <archetype_id>
+                            <value>openEHR-EHR-SECTION.adhoc.v1</value>
+                        </archetype_id>
+                        <template_id>
+                            <value>Registro de Atendimento Clínico v1.0</value>
+                        </template_id>
+                        <rm_version>1.0.2</rm_version>
+                    </archetype_details>
+                    <items
+                        archetype_node_id="openEHR-EHR-OBSERVATION.substance_use-ms_br.v01" xsi:type="OBSERVATION">
+                        <name>
+                            <value>Substância em uso</value>
+                        </name>
+                        <archetype_details>
+                            <archetype_id>
+                                <value>openEHR-EHR-OBSERVATION.substance_use-ms_br.v01</value>
+                            </archetype_id>
+                            <template_id>
+                                <value>Registro de Atendimento Clínico v1.0</value>
+                            </template_id>
+                            <rm_version>1.0.2</rm_version>
+                        </archetype_details>
+                        <language>
+                            <terminology_id>
+                                <value>ISO_639-1</value>
+                            </terminology_id>
+                            <code_string>pt</code_string>
+                        </language>
+                        <encoding>
+                            <terminology_id>
+                                <value>IANA_character-sets</value>
+                            </terminology_id>
+                            <code_string>UTF-8</code_string>
+                        </encoding>
+                        <subject xsi:type="PARTY_SELF"/>
+                        <data archetype_node_id="at0001" xsi:type="HISTORY">
+                            <name>
+                                <value>HISTORY</value>
+                            </name>
+                            <origin>
+                                <value>2019-10-25T14:51:40.811</value>
+                            </origin>
+                            <events archetype_node_id="at0002" xsi:type="POINT_EVENT">
+                                <name>
+                                    <value>ANY_EVENT</value>
+                                </name>
+                                <time>
+                                    <value>2018-01-01T00:00:00Z</value>
+                                </time>
+                                <data archetype_node_id="at0003" xsi:type="ITEM_TREE">
+                                    <name>
+                                    <value>ITEM_TREE</value>
+                                    </name>
+                                    <items archetype_node_id="at0.24" xsi:type="ELEMENT">
+                                    <name>
+                                    <value>Categoria da substância psicoativa</value>
+                                    </name>
+                                    <value xsi:type="DV_CODED_TEXT">
+                                    <value>Opiáceos</value>
+                                    <defining_code>
+                                    <terminology_id>
+                                    <value>local</value>
+                                    </terminology_id>
+                                    <code_string>at0.25</code_string>
+                                    </defining_code>
+                                    </value>
+                                    </items>
+                                    <items archetype_node_id="at0004" xsi:type="ELEMENT">
+                                    <name>
+                                    <value>Nome da substância psicoativa</value>
+                                    </name>
+                                    <value xsi:type="DV_TEXT">
+                                    <value>Heroína</value>
+                                    </value>
+                                    </items>
+                                    <items archetype_node_id="at0010" xsi:type="CLUSTER">
+                                    <name>
+                                    <value>Detalhes do consumo</value>
+                                    </name>
+                                    <items
+                                    archetype_node_id="at0005" xsi:type="ELEMENT">
+                                    <name>
+                                    <value>Frequência</value>
+                                    </name>
+                                    <value xsi:type="DV_CODED_TEXT">
+                                    <value>Uso semanal</value>
+                                    <defining_code>
+                                    <terminology_id>
+                                    <value>local</value>
+                                    </terminology_id>
+                                    <code_string>at0020</code_string>
+                                    </defining_code>
+                                    </value>
+                                    </items>
+                                    </items>
+                                </data>
+                            </events>
+                        </data>
+                    </items>
+                </items>
+            </items>
+        </items>
+    </content>
+    <content archetype_node_id="openEHR-EHR-SECTION.problem_list.v1" xsi:type="SECTION">
+        <name>
+            <value>Diagnósticos avaliados</value>
+        </name>
+        <archetype_details>
+            <archetype_id>
+                <value>openEHR-EHR-SECTION.problem_list.v1</value>
+            </archetype_id>
+            <template_id>
+                <value>Registro de Atendimento Clínico v1.0</value>
+            </template_id>
+            <rm_version>1.0.2</rm_version>
+        </archetype_details>
+        <items
+            archetype_node_id="openEHR-EHR-EVALUATION.problem_diagnosis-ms_br.v1" xsi:type="EVALUATION">
+            <name>
+                <value>Problema Diagnóstico</value>
+            </name>
+            <archetype_details>
+                <archetype_id>
+                    <value>openEHR-EHR-EVALUATION.problem_diagnosis-ms_br.v1</value>
+                </archetype_id>
+                <template_id>
+                    <value>Registro de Atendimento Clínico v1.0</value>
+                </template_id>
+                <rm_version>1.0.2</rm_version>
+            </archetype_details>
+            <language>
+                <terminology_id>
+                    <value>ISO_639-1</value>
+                </terminology_id>
+                <code_string>pt</code_string>
+            </language>
+            <encoding>
+                <terminology_id>
+                    <value>IANA_character-sets</value>
+                </terminology_id>
+                <code_string>UTF-8</code_string>
+            </encoding>
+            <subject xsi:type="PARTY_SELF"/>
+            <data archetype_node_id="at0001" xsi:type="ITEM_TREE">
+                <name>
+                    <value>ITEM_TREE</value>
+                </name>
+                <items archetype_node_id="at0002.1" xsi:type="ELEMENT">
+                    <name>
+                        <value>Diagnóstico</value>
+                    </name>
+                    <value xsi:type="DV_CODED_TEXT">
+                        <value>Hipertensão secundária</value>
+                        <defining_code>
+                            <terminology_id>
+                                <value>CID-10_1998.v1.0.0</value>
+                            </terminology_id>
+                            <code_string>I15</code_string>
+                        </defining_code>
+                    </value>
+                </items>
+                <items
+                    archetype_node_id="openEHR-EHR-CLUSTER.problem_qualifier-haoc.v1" xsi:type="CLUSTER">
+                    <name>
+                        <value>Qualificador do problema/diagnóstico</value>
+                    </name>
+                    <archetype_details>
+                        <archetype_id>
+                            <value>openEHR-EHR-CLUSTER.problem_qualifier-haoc.v1</value>
+                        </archetype_id>
+                        <template_id>
+                            <value>Registro de Atendimento Clínico v1.0</value>
+                        </template_id>
+                        <rm_version>1.0.2</rm_version>
+                    </archetype_details>
+                    <items archetype_node_id="at0083" xsi:type="ELEMENT">
+                        <name>
+                            <value>Estado de resolução do diagnóstico</value>
+                        </name>
+                        <value xsi:type="DV_CODED_TEXT">
+                            <value>Não resolvendo</value>
+                            <defining_code>
+                                <terminology_id>
+                                    <value>local</value>
+                                </terminology_id>
+                                <code_string>at0086</code_string>
+                            </defining_code>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0063" xsi:type="ELEMENT">
+                        <name>
+                            <value>Categoria do diagnóstico</value>
+                        </name>
+                        <value xsi:type="DV_CODED_TEXT">
+                            <value>Diagnóstico principal</value>
+                            <defining_code>
+                                <terminology_id>
+                                    <value>local</value>
+                                </terminology_id>
+                                <code_string>at0064</code_string>
+                            </defining_code>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0073.1" xsi:type="ELEMENT">
+                        <name>
+                            <value>Indicador de presença na admissão</value>
+                        </name>
+                        <value xsi:type="DV_CODED_TEXT">
+                            <value>Sim</value>
+                            <defining_code>
+                                <terminology_id>
+                                    <value>local</value>
+                                </terminology_id>
+                                <code_string>at0.98</code_string>
+                            </defining_code>
+                        </value>
+                    </items>
+                </items>
+            </data>
+        </items>
+    </content>
+    <content archetype_node_id="openEHR-EHR-SECTION.adverse_list.v1" xsi:type="SECTION">
+        <name>
+            <value>Alergias e/ou reações adversas no atendimento</value>
+        </name>
+        <archetype_details>
+            <archetype_id>
+                <value>openEHR-EHR-SECTION.adverse_list.v1</value>
+            </archetype_id>
+            <template_id>
+                <value>Registro de Atendimento Clínico v1.0</value>
+            </template_id>
+            <rm_version>1.0.2</rm_version>
+        </archetype_details>
+        <items
+            archetype_node_id="openEHR-EHR-EVALUATION.adverse_reaction_risk-ms_br.v1" xsi:type="EVALUATION">
+            <name>
+                <value>Risco de reação adversa</value>
+            </name>
+            <archetype_details>
+                <archetype_id>
+                    <value>openEHR-EHR-EVALUATION.adverse_reaction_risk-ms_br.v1</value>
+                </archetype_id>
+                <template_id>
+                    <value>Registro de Atendimento Clínico v1.0</value>
+                </template_id>
+                <rm_version>1.0.2</rm_version>
+            </archetype_details>
+            <language>
+                <terminology_id>
+                    <value>ISO_639-1</value>
+                </terminology_id>
+                <code_string>pt</code_string>
+            </language>
+            <encoding>
+                <terminology_id>
+                    <value>IANA_character-sets</value>
+                </terminology_id>
+                <code_string>UTF-8</code_string>
+            </encoding>
+            <subject xsi:type="PARTY_SELF"/>
+            <data archetype_node_id="at0001" xsi:type="ITEM_TREE">
+                <name>
+                    <value>ITEM_TREE</value>
+                </name>
+                <items archetype_node_id="at0002" xsi:type="ELEMENT">
+                    <name>
+                        <value>Agente/substância específica</value>
+                    </name>
+                    <value xsi:type="DV_TEXT">
+                        <value>Lactose</value>
+                    </value>
+                </items>
+                <items archetype_node_id="at0063" xsi:type="ELEMENT">
+                    <name>
+                        <value>Grau de certeza</value>
+                    </name>
+                    <value xsi:type="DV_CODED_TEXT">
+                        <value>Suspeita</value>
+                        <defining_code>
+                            <terminology_id>
+                                <value>local</value>
+                            </terminology_id>
+                            <code_string>at0127</code_string>
+                        </defining_code>
+                    </value>
+                </items>
+                <items archetype_node_id="at0101" xsi:type="ELEMENT">
+                    <name>
+                        <value>Criticidade</value>
+                    </name>
+                    <value xsi:type="DV_CODED_TEXT">
+                        <value>Baixo</value>
+                        <defining_code>
+                            <terminology_id>
+                                <value>local</value>
+                            </terminology_id>
+                            <code_string>at0102</code_string>
+                        </defining_code>
+                    </value>
+                </items>
+                <items archetype_node_id="at0120" xsi:type="ELEMENT">
+                    <name>
+                        <value>Categoria do agente causador da alergia ou reação adversa</value>
+                    </name>
+                    <value xsi:type="DV_TEXT">
+                        <value>Alimento</value>
+                    </value>
+                </items>
+                <items archetype_node_id="at0117" xsi:type="ELEMENT">
+                    <name>
+                        <value>Data da instalação da reação adversa</value>
+                    </name>
+                    <value xsi:type="DV_DATE_TIME">
+                        <value>2018-01-01T00:00:00Z</value>
+                    </value>
+                </items>
+                <items archetype_node_id="at0006" xsi:type="ELEMENT">
+                    <name>
+                        <value>Evolução da alergia/reação adversa</value>
+                    </name>
+                    <value xsi:type="DV_TEXT">
+                        <value>Pele avermelhada</value>
+                    </value>
+                </items>
+            </data>
+        </items>
+    </content>
+    <content archetype_node_id="openEHR-EHR-SECTION.problem_list.v1" xsi:type="SECTION">
+        <name>
+            <value>Procedimento(s) realizado(s)</value>
+        </name>
+        <archetype_details>
+            <archetype_id>
+                <value>openEHR-EHR-SECTION.problem_list.v1</value>
+            </archetype_id>
+            <template_id>
+                <value>Registro de Atendimento Clínico v1.0</value>
+            </template_id>
+            <rm_version>1.0.2</rm_version>
+        </archetype_details>
+        <items
+            archetype_node_id="openEHR-EHR-ACTION.procedure-HAOC.v1" xsi:type="ACTION">
+            <name>
+                <value>Procedimento</value>
+            </name>
+            <archetype_details>
+                <archetype_id>
+                    <value>openEHR-EHR-ACTION.procedure-HAOC.v1</value>
+                </archetype_id>
+                <template_id>
+                    <value>Registro de Atendimento Clínico v1.0</value>
+                </template_id>
+                <rm_version>1.0.2</rm_version>
+            </archetype_details>
+            <language>
+                <terminology_id>
+                    <value>ISO_639-1</value>
+                </terminology_id>
+                <code_string>pt</code_string>
+            </language>
+            <encoding>
+                <terminology_id>
+                    <value>IANA_character-sets</value>
+                </terminology_id>
+                <code_string>UTF-8</code_string>
+            </encoding>
+            <subject xsi:type="PARTY_SELF"/>
+            <time>
+                <value>2018-01-01T00:00:00Z</value>
+            </time>
+            <description archetype_node_id="at0001" xsi:type="ITEM_TREE">
+                <name>
+                    <value>ITEM_TREE</value>
+                </name>
+                <items archetype_node_id="at0002.1" xsi:type="ELEMENT">
+                    <name>
+                        <value>Procedimento(s) realizado(s)</value>
+                    </name>
+                    <value xsi:type="DV_CODED_TEXT">
+                        <value>ELETROCARDIOGRAMA</value>
+                        <defining_code>
+                            <terminology_id>
+                                <value>SIGTAP_201712.v1.0.0</value>
+                            </terminology_id>
+                            <code_string>02.11.02.003-6</code_string>
+                        </defining_code>
+                    </value>
+                </items>
+                <items archetype_node_id="at0.74" xsi:type="ELEMENT">
+                    <name>
+                        <value>Categoria do procedimento</value>
+                    </name>
+                    <value xsi:type="DV_TEXT">
+                        <value>SADT</value>
+                    </value>
+                </items>
+                <items archetype_node_id="at0048" xsi:type="ELEMENT">
+                    <name>
+                        <value>Resultado ou observações do procedimento</value>
+                    </name>
+                    <value xsi:type="DV_TEXT">
+                        <value>Frequência cardíaca entre 80 e 100 batimentos por minuto. Onda P presente, indicando ritmo sinusal. A onda P normal.</value>
+                    </value>
+                </items>
+                <items archetype_node_id="at0060" xsi:type="ELEMENT">
+                    <name>
+                        <value>Data da realização</value>
+                    </name>
+                    <value xsi:type="DV_DATE_TIME">
+                        <value>2018-01-01T00:00:00Z</value>
+                    </value>
+                </items>
+                <items archetype_node_id="at0.70" xsi:type="ELEMENT">
+                    <name>
+                        <value>Estado do procedimento</value>
+                    </name>
+                    <value xsi:type="DV_CODED_TEXT">
+                        <value>Concluído</value>
+                        <defining_code>
+                            <terminology_id>
+                                <value>local</value>
+                            </terminology_id>
+                            <code_string>at0.71</code_string>
+                        </defining_code>
+                    </value>
+                </items>
+            </description>
+            <ism_transition>
+                <current_state>
+                    <value>completed</value>
+                    <defining_code>
+                        <terminology_id>
+                            <value>openehr</value>
+                        </terminology_id>
+                        <code_string>532</code_string>
+                    </defining_code>
+                </current_state>
+            </ism_transition>
+        </items>
+    </content>
+    <content
+        archetype_node_id="openEHR-EHR-SECTION.medication_order_list.v1" xsi:type="SECTION">
+        <name>
+            <value>Receita no atendimento</value>
+        </name>
+        <archetype_details>
+            <archetype_id>
+                <value>openEHR-EHR-SECTION.medication_order_list.v1</value>
+            </archetype_id>
+            <template_id>
+                <value>Registro de Atendimento Clínico v1.0</value>
+            </template_id>
+            <rm_version>1.0.2</rm_version>
+        </archetype_details>
+        <items
+            archetype_node_id="openEHR-EHR-EVALUATION.container.v0" xsi:type="EVALUATION">
+            <name>
+                <value>Recipiente</value>
+            </name>
+            <archetype_details>
+                <archetype_id>
+                    <value>openEHR-EHR-EVALUATION.container.v0</value>
+                </archetype_id>
+                <template_id>
+                    <value>Registro de Atendimento Clínico v1.0</value>
+                </template_id>
+                <rm_version>1.0.2</rm_version>
+            </archetype_details>
+            <language>
+                <terminology_id>
+                    <value>ISO_639-1</value>
+                </terminology_id>
+                <code_string>pt</code_string>
+            </language>
+            <encoding>
+                <terminology_id>
+                    <value>IANA_character-sets</value>
+                </terminology_id>
+                <code_string>UTF-8</code_string>
+            </encoding>
+            <subject xsi:type="PARTY_SELF"/>
+            <data archetype_node_id="at0001" xsi:type="ITEM_TREE">
+                <name>
+                    <value>ITEM_TREE</value>
+                </name>
+                <items
+                    archetype_node_id="openEHR-EHR-CLUSTER.free_text.v0" xsi:type="CLUSTER">
+                    <name>
+                        <value>Texto livre</value>
+                    </name>
+                    <archetype_details>
+                        <archetype_id>
+                            <value>openEHR-EHR-CLUSTER.free_text.v0</value>
+                        </archetype_id>
+                        <template_id>
+                            <value>Registro de Atendimento Clínico v1.0</value>
+                        </template_id>
+                        <rm_version>1.0.2</rm_version>
+                    </archetype_details>
+                    <items archetype_node_id="at0001" xsi:type="ELEMENT">
+                        <name>
+                            <value>Medicamentos prescritos no atendimento (não estruturado)</value>
+                        </name>
+                        <value xsi:type="DV_TEXT">
+                            <value>1) Captopril 25mg comprimidos, 1cp, oral, 12/12hs, por 30 dias; 2)Glibenclamida 5mg comprimidos, 1cp, oral, 12/12hs, por 30 dias; 3) Sinvastatina 20 mg comprimidos, 1cp, oral, 1x dia, por 30 dias.</value>
+                        </value>
+                    </items>
+                </items>
+            </data>
+        </items>
+    </content>
+    <content archetype_node_id="openEHR-EHR-SECTION.adhoc.v1" xsi:type="SECTION">
+        <name>
+            <value>Plano de cuidados, instruções e recomendações</value>
+        </name>
+        <archetype_details>
+            <archetype_id>
+                <value>openEHR-EHR-SECTION.adhoc.v1</value>
+            </archetype_id>
+            <template_id>
+                <value>Registro de Atendimento Clínico v1.0</value>
+            </template_id>
+            <rm_version>1.0.2</rm_version>
+        </archetype_details>
+        <items
+            archetype_node_id="openEHR-EHR-INSTRUCTION.care_plan_request-haoc.v0" xsi:type="INSTRUCTION">
+            <name>
+                <value>Plano de cuidados</value>
+            </name>
+            <archetype_details>
+                <archetype_id>
+                    <value>openEHR-EHR-INSTRUCTION.care_plan_request-haoc.v0</value>
+                </archetype_id>
+                <template_id>
+                    <value>Registro de Atendimento Clínico v1.0</value>
+                </template_id>
+                <rm_version>1.0.2</rm_version>
+            </archetype_details>
+            <language>
+                <terminology_id>
+                    <value>ISO_639-1</value>
+                </terminology_id>
+                <code_string>pt</code_string>
+            </language>
+            <encoding>
+                <terminology_id>
+                    <value>IANA_character-sets</value>
+                </terminology_id>
+                <code_string>UTF-8</code_string>
+            </encoding>
+            <subject xsi:type="PARTY_SELF"/>
+            <narrative>
+                <value/>
+            </narrative>
+            <activities archetype_node_id="at0001" xsi:type="ACTIVITY">
+                <name>
+                    <value>Atividade</value>
+                </name>
+                <description archetype_node_id="at0004" xsi:type="ITEM_TREE">
+                    <name>
+                        <value>ITEM_TREE</value>
+                    </name>
+                    <items archetype_node_id="at0007" xsi:type="ELEMENT">
+                        <name>
+                            <value>Descrição do plano de cuidados, instruções e recomendações</value>
+                        </name>
+                        <value xsi:type="DV_TEXT">
+                            <value>1) Orientação sobre dieta hipossódica e hipocalórica; 2) Caminhada diária; 3) Orientação sobre os cuidados com curativo da ferida cirírgica.</value>
+                        </value>
+                    </items>
+                </description>
+                <timing>
+                    <value>2018-01-01T00:00:00Z</value>
+                    <formalism>ISO 8601</formalism>
+                </timing>
+                <action_archetype_id>openEHR-EHR-ACTION.care_plan.v1</action_archetype_id>
+            </activities>
+        </items>
+    </content>
+    <content archetype_node_id="openEHR-EHR-SECTION.adhoc.v1" xsi:type="SECTION">
+        <name>
+            <value>Dados do desfecho</value>
+        </name>
+        <archetype_details>
+            <archetype_id>
+                <value>openEHR-EHR-SECTION.adhoc.v1</value>
+            </archetype_id>
+            <template_id>
+                <value>Registro de Atendimento Clínico v1.0</value>
+            </template_id>
+            <rm_version>1.0.2</rm_version>
+        </archetype_details>
+        <items
+            archetype_node_id="openEHR-EHR-ADMIN_ENTRY.desfecho_alta-ms_br.v1" xsi:type="ADMIN_ENTRY">
+            <name>
+                <value>Desfecho / alta do contato assistencial</value>
+            </name>
+            <archetype_details>
+                <archetype_id>
+                    <value>openEHR-EHR-ADMIN_ENTRY.desfecho_alta-ms_br.v1</value>
+                </archetype_id>
+                <template_id>
+                    <value>Registro de Atendimento Clínico v1.0</value>
+                </template_id>
+                <rm_version>1.0.2</rm_version>
+            </archetype_details>
+            <language>
+                <terminology_id>
+                    <value>ISO_639-1</value>
+                </terminology_id>
+                <code_string>pt</code_string>
+            </language>
+            <encoding>
+                <terminology_id>
+                    <value>IANA_character-sets</value>
+                </terminology_id>
+                <code_string>UTF-8</code_string>
+            </encoding>
+            <subject xsi:type="PARTY_SELF"/>
+            <data archetype_node_id="at0001" xsi:type="ITEM_TREE">
+                <name>
+                    <value>ITEM_TREE</value>
+                </name>
+                <items archetype_node_id="at0034" xsi:type="CLUSTER">
+                    <name>
+                        <value>Encaminhamentos</value>
+                    </name>
+                    <items archetype_node_id="at0037" xsi:type="ELEMENT">
+                        <name>
+                            <value>Encaminhamento para especialidade (estruturado)</value>
+                        </name>
+                        <value xsi:type="DV_CODED_TEXT">
+                            <value>Médico de família e comunidade</value>
+                            <defining_code>
+                                <terminology_id>
+                                    <value>CBO_2002.v1.0.0</value>
+                                </terminology_id>
+                                <code_string>225130</code_string>
+                            </defining_code>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0062" xsi:type="ELEMENT">
+                        <name>
+                            <value>Justificativa</value>
+                        </name>
+                        <value xsi:type="DV_TEXT">
+                            <value>Necessidade de acompanhamento</value>
+                        </value>
+                    </items>
+                    <items archetype_node_id="at0068" xsi:type="CLUSTER">
+                        <name>
+                            <value>Exame ou procedimento</value>
+                        </name>
+                        <items archetype_node_id="at0063" xsi:type="ELEMENT">
+                            <name>
+                                <value>Encaminhamento para exames e procedimentos</value>
+                            </name>
+                            <value xsi:type="DV_CODED_TEXT">
+                                <value>Perícia médica</value>
+                                <defining_code>
+                                    <terminology_id>
+                                    <value>TUSS_201907</value>
+                                    </terminology_id>
+                                    <code_string>10106103</code_string>
+                                </defining_code>
+                            </value>
+                        </items>
+                        <items archetype_node_id="at0064" xsi:type="ELEMENT">
+                            <name>
+                                <value>Lateralidade</value>
+                            </name>
+                            <value xsi:type="DV_CODED_TEXT">
+                                <value>Direito</value>
+                                <defining_code>
+                                    <terminology_id>
+                                    <value>local</value>
+                                    </terminology_id>
+                                    <code_string>at0065</code_string>
+                                </defining_code>
+                            </value>
+                        </items>
+                    </items>
+                </items>
+                <items archetype_node_id="at0033" xsi:type="CLUSTER">
+                    <name>
+                        <value>Informações adicionais/complementares</value>
+                    </name>
+                    <items archetype_node_id="at0019" xsi:type="ELEMENT">
+                        <name>
+                            <value>Descrição das informações</value>
+                        </name>
+                        <value xsi:type="DV_TEXT">
+                            <value>N/A</value>
+                        </value>
+                    </items>
+                </items>
+            </data>
+        </items>
+    </content>
+</composition>
