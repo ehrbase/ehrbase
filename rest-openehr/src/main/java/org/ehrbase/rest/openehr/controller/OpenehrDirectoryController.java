@@ -30,6 +30,7 @@ import org.ehrbase.rest.openehr.response.DirectoryResponseData;
 import org.ehrbase.rest.openehr.response.ErrorResponseData;
 import com.nedap.archie.rm.directory.Folder;
 import io.swagger.annotations.*;
+import org.ehrbase.rest.openehr.util.VersionUidHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -135,11 +136,11 @@ public class OpenehrDirectoryController extends BaseController {
                                           newFolder.get()
                                                    .getUid()
                                                    .toString()));
-        resHeaders.setETag("\"" +
-                           newFolder.get()
-                                    .getUid()
-                                    .toString() +
-                           "\"");
+        resHeaders.setETag(
+                newFolder.get()
+                         .getUid()
+                         .toString()
+                          );
         // TODO: Set LastModified header
 
         // Check for desired response representation format from PREFER header
@@ -247,7 +248,8 @@ public class OpenehrDirectoryController extends BaseController {
         // Create response data
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(responseContentType);
-        headers.setETag("\"" + folderDto.getUid().toString() + "\"");
+        headers.setETag(folderDto.getUid()
+                                 .toString());
 
         DirectoryResponseData resBody = buildResponse(folderDto);
 
@@ -377,11 +379,11 @@ public class OpenehrDirectoryController extends BaseController {
                                           updatedFolder.get()
                                                        .getUid()
                                                        .toString()));
-        resHeaders.setETag("\"" +
-                           updatedFolder.get()
-                                        .getUid()
-                                        .toString() +
-                           "\"");
+        resHeaders.setETag(
+                updatedFolder.get()
+                             .getUid()
+                             .toString()
+                          );
         // TODO: Set LastModified header
 
         // Check for desired response representation format from PREFER header
@@ -461,13 +463,18 @@ public class OpenehrDirectoryController extends BaseController {
             @ApiParam(value = "EHR identifier from resource path after ehr/", required = true) @PathVariable(value = "ehr_id") String ehrIdString
                                       ) {
         UUID ehrId = getEhrUuid(ehrIdString);
-        // TODO: Implement delete FOLDER fuctionality
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
+
+        if (!this.ehrService.doesEhrExist(ehrId)) {
+            throw new ObjectNotFoundException("EHR with id " + ehrIdString + " not found",
+                                              "FOLDER");
+        }
+
+        this.folderService.delete(VersionUidHelper.extractUUID(ifMatch));
+        return ResponseEntity.status(HttpStatus.NO_CONTENT)
                              .build();
     }
 
     private DirectoryResponseData buildResponse(FolderDto folderDto) {
-
 
         DirectoryResponseData resBody = new DirectoryResponseData();
         resBody.setDetails(folderDto.getDetails());
@@ -477,5 +484,4 @@ public class OpenehrDirectoryController extends BaseController {
         resBody.setUid(folderDto.getUid());
         return resBody;
     }
-
 }

@@ -24,6 +24,7 @@ import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.definitions.StructuredString;
 import org.ehrbase.api.definitions.StructuredStringFormat;
 import org.ehrbase.api.dto.FolderDto;
+import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.service.FolderService;
@@ -175,8 +176,13 @@ public class FolderServiceImp extends BaseService implements FolderService {
     @Override
     public LocalDateTime delete(UUID folderId) {
 
-        // TODO implement logic
-        return LocalDateTime.now();
+        I_FolderAccess folderAccess = I_FolderAccess.retrieveInstanceForExistingFolder(getDataAccess(), folderId);
+
+        if (folderAccess.delete() > 1){
+            return LocalDateTime.now();
+        } else {
+            throw new InternalServerException("Folder " + folderId + " could not be deleted");
+        }
     }
 
     /**
