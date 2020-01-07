@@ -25,6 +25,11 @@ Library         Collections
 
 
 
+*** Variables ***
+${VALID EHR DATA SETS}       ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/ehr/valid
+${INVALID EHR DATA SETS}     ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/ehr/invalid
+
+
 *** Keywords ***
 # 1) High Level Keywords
 
@@ -172,6 +177,13 @@ create new EHR for subject_id (JSON)
     # same as the line above / # alternative syntax
     # ${json_ehr}=        Update Value To Json  ${json_ehr}   $['subject']['external_ref']['id']['value']   ${subject_id}
 
+                        create new EHR with ehr_status    ${json_ehr}
+
+
+create new EHR with other_details for subject_id (JSON)
+    [Arguments]         ${subject_id}
+    ${json_ehr}=        Load JSON From File   ${FIXTURES}/ehr/ehr_status_1_api_spec_with_other_details.json
+    ${json_ehr}=        Update Value To Json  ${json_ehr}   $.subject.external_ref.id.value   ${subject_id}                                                                                       # alternative syntax
                         create new EHR with ehr_status    ${json_ehr}
 
 
