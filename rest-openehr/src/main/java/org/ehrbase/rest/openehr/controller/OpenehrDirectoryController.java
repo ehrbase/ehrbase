@@ -136,11 +136,7 @@ public class OpenehrDirectoryController extends BaseController {
                                           newFolder.get()
                                                    .getUid()
                                                    .toString()));
-        resHeaders.setETag(
-                newFolder.get()
-                         .getUid()
-                         .toString()
-                          );
+        resHeaders.setETag("\"" + newFolder.get().getUid().toString() + "\"");
         // TODO: Set LastModified header
 
         // Check for desired response representation format from PREFER header
@@ -248,8 +244,7 @@ public class OpenehrDirectoryController extends BaseController {
         // Create response data
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(responseContentType);
-        headers.setETag(folderDto.getUid()
-                                 .toString());
+        headers.setETag("\"" + folderDto.getUid().toString() + "\"");
 
         DirectoryResponseData resBody = buildResponse(folderDto);
 
@@ -379,11 +374,7 @@ public class OpenehrDirectoryController extends BaseController {
                                           updatedFolder.get()
                                                        .getUid()
                                                        .toString()));
-        resHeaders.setETag(
-                updatedFolder.get()
-                             .getUid()
-                             .toString()
-                          );
+        resHeaders.setETag("\"" + updatedFolder.get().getUid().toString() + "\"");
         // TODO: Set LastModified header
 
         // Check for desired response representation format from PREFER header

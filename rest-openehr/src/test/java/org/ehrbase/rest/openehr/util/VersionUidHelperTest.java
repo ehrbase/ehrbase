@@ -6,7 +6,7 @@ import org.junit.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-class VersionUidHelperTest {
+public class VersionUidHelperTest {
 
     static final String validVersionUid = "1234abcd-5678-ef12-ab34-cd56ef78ab90::test.ehrbase.org::10";
 

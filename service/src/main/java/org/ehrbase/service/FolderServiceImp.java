@@ -178,7 +178,7 @@ public class FolderServiceImp extends BaseService implements FolderService {
 
         I_FolderAccess folderAccess = I_FolderAccess.retrieveInstanceForExistingFolder(getDataAccess(), folderId);
 
-        if (folderAccess.delete() > 1){
+        if (folderAccess.delete() > 0){
             return LocalDateTime.now();
         } else {
             throw new InternalServerException("Folder " + folderId + " could not be deleted");
