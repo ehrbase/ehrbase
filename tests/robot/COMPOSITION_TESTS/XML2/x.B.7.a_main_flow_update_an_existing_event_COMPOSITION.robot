@@ -35,7 +35,7 @@ Force Tags    XML
 *** Test Cases ***
 Main flow update an existing event COMPOSITION
 
-    upload OPT    minimal/minimal_observation.opt   XML
+    upload OPT    minimal/minimal_observation.opt
 
     create EHR    XML
 

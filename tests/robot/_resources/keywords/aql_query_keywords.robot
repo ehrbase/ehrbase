@@ -170,20 +170,18 @@ POST /query/aql
     ...                 DEPENDENCY: following variables have to be in test-level scope:
     ...                 `${test_data}`
 
-                        prepare query request session    ${format}
+                        prepare new request session    ${format}
     ${resp}=            Post Request        ${SUT}   /query/aql
                         ...                 data=${test_data}
                         ...                 headers=${headers}
                         Set Test Variable   ${response}    ${resp}
                         Set Test Variable   ${response body}    ${resp.content}
-                        Output Debug Info:  POST /query/aql
+                        # Output Debug Info:  POST /query/aql
     
     # UNCOMMENT NEXT BLOCK FOR DEBUGGING (BETTER OUTPUT IN CONSOLE)
     # TODO: rm/comment when test stable
-    &{resp}=            REST.POST  /query/aql  body=${test_data}  headers=${headers}
                         Log To Console  \n//////////// ACTUAL //////////////////////////////
-    ${body}=            Output  response body
-                        Integer    response status    200
+                        Output    ${response.json()}
 
 
 POST /query/{qualified_query_name}/{version}
@@ -262,6 +260,9 @@ check response (LOADED DB): returns correct content
 
                         load expected results-data-set (LOADED DB)    ${path_to_expected}
 
+                        Log To Console  \n/////////// EXPECTED //////////////////////////////
+                        Output    ${expected result}
+
     &{diff}=            compare json-strings  ${response body}  ${expected result}
     ...                 report_repetition=True
     ...                 exclude_paths=root['meta']
@@ -307,41 +308,80 @@ check response (EMPTY DB): returns correct content for
 #
 # [ HTTP HEADERS ]
 
-prepare query request session
-    [Arguments]         ${format}=JSON    &{extra_headers}
-    [Documentation]     Prepares request settings for usage with RequestLibrary
-    ...                 :format: JSON (default) / XML
-    ...                 :extra_headers: optional - e.g. Prefer=return=representation
-    ...                                            e.g. If-Match={ehrstatus_uid}
+# NOTE: All request header settings are handled from generic_keywords.robot resource file.
 
-                        # case: JSON
-                        Run Keyword If      $format=='JSON'    set request headers
-                        ...                 content=application/json
-                        ...                 accept=application/json
-                        ...                 &{extra_headers}
-
-                        # case: XML
-                        Run Keyword If      $format=='XML'    set request headers
-                        ...                 content=application/xml
-                        ...                 accept=application/xml
-                        ...                 &{extra_headers}
+Available keywords:
+    generic_keywords.prepare new request session
+    generic_keywords.set request headers
 
 
-set request headers
-    [Arguments]         ${content}=application/json  ${accept}=application/json  &{extra_headers}
-    [Documentation]     Sets the headers of a request
-    ...                 :content: application/json (default) / application/xml
-    ...                 :accept: application/json (default) / application/xml
-    ...                 :extra_headers: optional
 
-                        Log Many            ${content}  ${accept}  ${extra_headers}
 
-    &{headers}=         Create Dictionary   Content-Type=${content}
-                        ...                 Accept=${accept}
 
-                        Run Keyword If      ${extra_headers}    Set To Dictionary    ${headers}    &{extra_headers}
 
-                        Create Session      ${SUT}    ${${SUT}.URL}
-                        ...                 auth=${${SUT}.CREDENTIALS}    debug=2    verify=True
 
-                        Set Test Variable   ${headers}    ${headers}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# oooooooooo.        .o.         .oooooo.   oooo    oooo ooooo     ooo ooooooooo.
+# `888'   `Y8b      .888.       d8P'  `Y8b  `888   .8P'  `888'     `8' `888   `Y88.
+#  888     888     .8"888.     888           888  d8'     888       8   888   .d88'
+#  888oooo888'    .8' `888.    888           88888[       888       8   888ooo88P'
+#  888    `88b   .88ooo8888.   888           888`88b.     888       8   888
+#  888    .88P  .8'     `888.  `88b    ooo   888  `88b.   `88.    .8'   888
+# o888bood8P'  o88o     o8888o  `Y8bood8P'  o888o  o888o    `YbodP'    o888o
+#
+# [ BACKUP ]
+
+# *** Keywords ***
+# prepare query request session
+#     [Arguments]         ${format}=JSON    &{extra_headers}
+#     [Documentation]     Prepares request settings for usage with RequestLibrary
+#     ...                 :format: JSON (default) / XML
+#     ...                 :extra_headers: optional - e.g. Prefer=return=representation
+#     ...                                            e.g. If-Match={ehrstatus_uid}
+
+#                         # case: JSON
+#                         Run Keyword If      $format=='JSON'    set request headers
+#                         ...                 content=application/json
+#                         ...                 accept=application/json
+#                         ...                 &{extra_headers}
+
+#                         # case: XML
+#                         Run Keyword If      $format=='XML'    set request headers
+#                         ...                 content=application/xml
+#                         ...                 accept=application/xml
+#                         ...                 &{extra_headers}
+
+
+# set request headers
+#     [Arguments]         ${content}=application/json  ${accept}=application/json  &{extra_headers}
+#     [Documentation]     Sets the headers of a request
+#     ...                 :content: application/json (default) / application/xml
+#     ...                 :accept: application/json (default) / application/xml
+#     ...                 :extra_headers: optional
+
+#                         Log Many            ${content}  ${accept}  ${extra_headers}
+
+#     &{headers}=         Create Dictionary   Content-Type=${content}
+#                         ...                 Accept=${accept}
+
+#                         Run Keyword If      ${extra_headers}    Set To Dictionary    ${headers}    &{extra_headers}
+
+#                         Create Session      ${SUT}    ${${SUT}.URL}
+#                         ...                 auth=${${SUT}.CREDENTIALS}    debug=2    verify=True
+
+#                         Set Test Variable   ${headers}    ${headers}

@@ -19,7 +19,7 @@ TRUNCATE ehr.folder_items_history;
 TRUNCATE ehr.object_ref_history;
 TRUNCATE ehr.participation_history;
 TRUNCATE ehr.status_history;
-TRUNCATE ehr.template, ehr.template_heading_xref;
-TRUNCATE ehr.template_meta;
+TRUNCATE ehr.template_store;
+TRUNCATE ehr.stored_query;
 
 END_OF_SCRIPT

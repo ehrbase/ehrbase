@@ -35,11 +35,11 @@ Force Tags    XML
 *** Test Cases ***
 Alternative flow 6 create new event COMPOSITION EHR doesnt exist
 
-    upload OPT    nested/nested.opt    XML
+    upload OPT    nested/nested.opt
 
     create fake EHR
 
-    composition_keywords.start request session    application/xml    application/xml    Prefer=return\=representation
+    prepare new request session    XML    Prefer=return=representation
     commit composition - no referenced EHR    nested/nested.composition.extdatetimes.xml
 
-        # [Teardown]    restart SUT
+    # [Teardown]    restart SUT

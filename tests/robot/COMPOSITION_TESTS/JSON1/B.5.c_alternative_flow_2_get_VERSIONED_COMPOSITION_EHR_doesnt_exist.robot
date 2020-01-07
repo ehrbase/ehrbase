@@ -42,6 +42,6 @@ Alternative flow 2 get VERSIONED COMPOSITION EHR doesnt exist
     generate random composition_uid
 
     # Check COMPOSITION does not exist
-    composition_keywords.start request session
+    prepare new request session
     get versioned composition by uid    ${versioned_object_uid}
     check versioned composition does not exist

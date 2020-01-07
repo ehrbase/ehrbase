@@ -35,7 +35,7 @@ Force Tags    XML
 *** Test Cases ***
 Main flow get existing COMPOSITION at version
 
-    upload OPT      minimal/minimal_observation.opt    XML
+    upload OPT      minimal/minimal_observation.opt
 
     create EHR    XML
 

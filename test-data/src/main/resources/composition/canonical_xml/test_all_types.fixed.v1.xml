@@ -48,7 +48,7 @@
             <value>20190114T183649,294+0000</value>
         </start_time>
         <setting>
-            <value>Hospital D</value>
+            <value>primary nursing care</value>
             <defining_code>
                 <terminology_id>
                     <value>openehr</value>

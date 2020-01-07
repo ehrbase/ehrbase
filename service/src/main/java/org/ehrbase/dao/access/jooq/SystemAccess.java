@@ -21,24 +21,20 @@
  */
 package org.ehrbase.dao.access.jooq;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_SystemAccess;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.jooq.pg.tables.records.SystemRecord;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.Record1;
 import org.jooq.Result;
 
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.sql.Timestamp;
-import java.util.Enumeration;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -48,6 +44,7 @@ import static org.ehrbase.jooq.pg.Tables.SYSTEM;
  * Created by Christian Chevalley on 4/20/2015.
  */
 public class SystemAccess extends DataAccess implements I_SystemAccess {
+
 
     private static final Logger log = LogManager.getLogger(SystemAccess.class);
     private SystemRecord systemRecord;
@@ -65,59 +62,12 @@ public class SystemAccess extends DataAccess implements I_SystemAccess {
         systemRecord.setSettings(settings);
     }
 
-    /**
-     * retrieveInstanceByNamedSubject the MAC address on a Windows 7 machine...
-     * TODO: Is this technically up to date and necessary? (original comment: "make it OS dependent")
-     *
-     * @return TODO: ?
-     * @throws SocketException when network interface access failed
-     * @throws InternalServerException when failed to obtain MAC
-     */
-    private static String generateHashIdentifier() throws SocketException {
-        Enumeration<NetworkInterface> networkInterfaces
-                = NetworkInterface.getNetworkInterfaces();
-        while (networkInterfaces.hasMoreElements()) {
-            NetworkInterface networkInterface = networkInterfaces.nextElement();
-            if (networkInterface == null
-                    || networkInterface.isLoopback()
-                    || networkInterface.isVirtual()) {
-                continue;
-            }
-            byte[] mac = networkInterface.getHardwareAddress();
-            if (mac == null || mac.length == 0)
-                continue;
-
-            StringBuilder sb = new StringBuilder();
-            int zeroFieldCount = 0;
-            for (int i = 0; i < mac.length; i++) {
-                if (mac[i] == 0)
-                    zeroFieldCount++;
-                sb.append(String.format("%02X%s", mac[i],
-                        (i < mac.length - 1) ? "-" : ""));
-            }
-
-            if (zeroFieldCount > 4)
-                continue;
-
-            return sb.toString();
-        }
-
-        throw new InternalServerException("Failed to obtain MAC");
-    }
 
 
     public static UUID createOrRetrieveLocalSystem(I_DomainAccess domainAccess) {
         DSLContext context1 = domainAccess.getContext();
-        String hostname;
-        String macAddress;
-        try {
-            hostname = java.net.InetAddress.getLocalHost().getCanonicalHostName();
-            macAddress = generateHashIdentifier();  //it's not the MAC address...
-        } catch (UnknownHostException | SocketException e) {
-            throw new InternalServerException("Couldn't create or retrieve local system UUID", e);
-        }
 
-        String settings = macAddress + "|" + hostname;
+        String settings = domainAccess.getServerConfig().getNodename();
 
         //try to retrieveInstanceByNamedSubject the corresponding entry in the system table
         Result<Record1<UUID>> uuids = context1.select(SYSTEM.ID).from(SYSTEM).where(SYSTEM.SETTINGS.equal(settings)).fetch();

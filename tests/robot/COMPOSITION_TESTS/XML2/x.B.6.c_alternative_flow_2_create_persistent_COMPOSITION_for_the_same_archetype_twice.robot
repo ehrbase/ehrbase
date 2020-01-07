@@ -35,7 +35,7 @@ Force Tags    XML
 *** Test Cases ***
 Alternative flow 2 create persistent COMPOSITION for the same archetype twice
 
-    upload OPT    minimal_persistent/persistent_minimal.opt    XML
+    upload OPT    minimal_persistent/persistent_minimal.opt
 
     create EHR    XML
 

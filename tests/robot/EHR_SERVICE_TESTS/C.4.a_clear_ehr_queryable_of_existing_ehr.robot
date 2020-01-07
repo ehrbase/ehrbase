@@ -39,17 +39,10 @@ Force Tags    put_ehr_status
 *** Test Cases ***
 Clear EHR queryable of existing EHR
 
-    start request session    JSON
+    prepare new request session    JSON
 
     create new EHR
 
     update EHR: set ehr_status is_queryable    ${FALSE}
 
     check response of 'update EHR' (JSON)
-
-
-
-# *** Keywords ***
-# verify content of updated EHR
-#     retrieve EHR by ehr_id
-#     check content of retrieved EHR (JSON)

@@ -53,7 +53,7 @@ Create Same EHR Twice (JSON)
 
     [Documentation]     Uses PUT method on /ehr/{{ehr_id}} endpoint to create new EHR.
 
-    start request session       JSON
+    prepare new request session    JSON
     generate random ehr_id
     create new EHR by ID        ${ehr_id}
     create new EHR by ID        ${ehr_id}
@@ -65,7 +65,7 @@ Create Same EHR Twice (XML)
 
     [Documentation]     Uses PUT method on /ehr/{{ehr_id}} endpoint to create new EHR.
 
-    start request session       XML
+    prepare new request session    XML
     generate random ehr_id
     create new EHR by ID        ${ehr_id}
     create new EHR by ID        ${ehr_id}
