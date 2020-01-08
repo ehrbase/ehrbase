@@ -98,6 +98,12 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
         if (isItemsOnly) {
             //CHC 20191003: Removed archetype_node_id writer since it is serviced by closing the array.
             ArrayList items = new Children(map).items();
+            if (map.containsKey(CompositionSerializer.TAG_NAME)){
+                if (map.get(CompositionSerializer.TAG_NAME) instanceof ArrayList)
+                    writeNameAsValue(writer, (ArrayList)map.get(CompositionSerializer.TAG_NAME));
+                else if (map.get(CompositionSerializer.TAG_NAME) instanceof String)
+                    writeNameAsValue(writer, (String)map.get(CompositionSerializer.TAG_NAME));
+            }
             writeItemInArray(ITEMS, items, writer, parentItemsArchetypeNodeId, parentItemsType);
         } else if (isMultiEvents) {
             //assumed sorted (LinkedTreeMap preserve input order)
