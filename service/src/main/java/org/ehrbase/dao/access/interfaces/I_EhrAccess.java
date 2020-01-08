@@ -235,6 +235,10 @@ public interface I_EhrAccess extends I_SimpleCRUD<I_EhrAccess, UUID> {
 
     void setContributionAccess(I_ContributionAccess contributionAccess);
 
+    I_StatusAccess getStatusAccess();
+
+    void setStatusAccess(I_StatusAccess statusAccess);
+
     void setOtherDetails(ItemStructure otherDetails, String templateId);
 
     ItemStructure getOtherDetails();

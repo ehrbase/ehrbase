@@ -20,8 +20,11 @@
  */
 package org.ehrbase.dao.access.interfaces;
 
+import com.nedap.archie.rm.datastructures.ItemStructure;
 import org.ehrbase.dao.access.jooq.StatusAccess;
+import org.ehrbase.jooq.pg.tables.records.StatusRecord;
 
+import java.sql.Timestamp;
 import java.util.UUID;
 
 /**
@@ -32,14 +35,36 @@ import java.util.UUID;
 public interface I_StatusAccess extends I_SimpleCRUD<I_StatusAccess, UUID> {
 
     /**
+     * retrieve a status by given status ID
+     *
+     * @param domainAccess  SQL access
+     * @param statusId      Id of an status to retrieve
+     * @return UUID or null
+     */
+    static I_StatusAccess retrieveInstance(I_DomainAccess domainAccess, UUID statusId) {
+        return StatusAccess.retrieveInstance(domainAccess, statusId);
+    }
+
+    /**
      * retrieve a status by an identified party id
      *
      * @param domainAccess    SQL access
      * @param partyIdentified Id of an identified party
-     * @return UUID
+     * @return UUID or null
      */
-    static I_StatusAccess retrieveInstance(I_DomainAccess domainAccess, UUID partyIdentified) {
-        return StatusAccess.retrieveInstance(domainAccess, partyIdentified);
+    static I_StatusAccess retrieveInstanceByParty(I_DomainAccess domainAccess, UUID partyIdentified) {
+        return StatusAccess.retrieveInstanceByParty(domainAccess, partyIdentified);
+    }
+
+    /**
+     * retrieve a status by given EHR ID
+     *
+     * @param domainAccess  SQL access
+     * @param ehrId         Id of associated EHR
+     * @return UUID or null
+     */
+    static I_StatusAccess retrieveInstanceByEhrId(I_DomainAccess domainAccess, UUID ehrId) {
+        return StatusAccess.retrieveInstanceByEhrId(domainAccess, ehrId);
     }
 
     /**
@@ -49,11 +74,39 @@ public interface I_StatusAccess extends I_SimpleCRUD<I_StatusAccess, UUID> {
      *
      * @param domainAccess SQL access
      * @param partyName    a subject name
-     * @return UUID
+     * @return UUID or null
      */
     static I_StatusAccess retrieveInstanceByNamedSubject(I_DomainAccess domainAccess, String partyName) {
         return StatusAccess.retrieveInstanceByNamedSubject(domainAccess, partyName);
     }
 
+    /**
+     * FIXME VERSIONED_OBJECT_POC: docs!
+     * @param transactionTime
+     * @param ehrId
+     * @param otherDetails
+     * @return
+     */
+    UUID commit(Timestamp transactionTime, UUID ehrId, ItemStructure otherDetails);
+
+    /**
+     * FIXME VERSIONED_OBJECT_POC: docs!
+     * @param otherDetails
+     * @param transactionTime
+     * @param force
+     * @return
+     */
+    Boolean update(ItemStructure otherDetails, Timestamp transactionTime, boolean force);
+
     UUID getId();
+
+    void setStatusRecord(StatusRecord record);
+
+    StatusRecord getStatusRecord();
+
+    void setAuditDetailsAccess(I_AuditDetailsAccess auditDetailsAccess);
+
+    I_AuditDetailsAccess getAuditDetailsAccess();
+
+    UUID getAuditDetailsId();
 }

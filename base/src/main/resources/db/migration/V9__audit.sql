@@ -56,4 +56,11 @@ ALTER TABLE ehr.composition
 ALTER TABLE ehr.composition_history
     ADD COLUMN has_audit UUID references ehr.audit_details(id) ON DELETE CASCADE; -- has this audit_details instance
 
+-- add audit capabilities to (ehr_)status table
+ALTER TABLE ehr.status
+    ADD COLUMN has_audit UUID references ehr.audit_details(id) ON DELETE CASCADE; -- has this audit_details instance
+
+ALTER TABLE ehr.status_history
+    ADD COLUMN has_audit UUID references ehr.audit_details(id) ON DELETE CASCADE; -- has this audit_details instance
+
 -- TODO include other object types like folders
