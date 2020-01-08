@@ -1111,13 +1111,13 @@ C/101
 C/102
                         # updates the query
     ${query}=           Load JSON From File    ${VALID QUERY DATA SETS}/C/102_query.tmp.json
-                        Update Value To Json   ${query}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c CONTAINS ENTRY entry ORDER BY entry/name/value
+                        Update Value To Json   ${query}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c CONTAINS ENTRY entry ORDER BY entry/name/value ASC
                         Output    ${query}    ${VALID QUERY DATA SETS}/C/102_query.tmp.json
 
                         # updates expected result set
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/C/102.tmp.json
-                        Update Value To Json   ${expected}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c CONTAINS ENTRY entry ORDER BY entry/name/value
-                        Update Value To Json   ${expected}    $.meta._executed_aql    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c CONTAINS ENTRY entry ORDER BY entry/name/value
+                        Update Value To Json   ${expected}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c CONTAINS ENTRY entry ORDER BY entry/name/value ASC
+                        Update Value To Json   ${expected}    $.meta._executed_aql    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c CONTAINS ENTRY entry ORDER BY entry/name/value ASC
                         Add Object To Json     ${expected}    $.rows    ${response.body.content}
                         Output    ${expected}     ${QUERY RESULTS LOADED DB}/C/102.tmp.json
 
