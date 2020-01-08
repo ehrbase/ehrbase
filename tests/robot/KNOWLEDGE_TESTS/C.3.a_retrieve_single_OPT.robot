@@ -141,22 +141,24 @@ Versioned
 upload valid OPT
     [Arguments]           ${opt file}
 
-    start request session
+    prepare new request session    XML
+    ...                            Prefer=return=representation
     get valid OPT file    ${opt file}
     upload OPT file
     server accepted OPT
-    [Teardown]            clean up test variables
+    [Teardown]            Clean Up Suite Variables
 
 
 retrieve single OPT
     [Arguments]                         ${opt file}
 
-    start request session
+    prepare new request session    XML
+    ...                            Prefer=return=representation
     get valid OPT file                  ${opt file}
     extract template_id from OPT file
     retrieve OPT by template_id         ${template_id}
     verify content of OPT
-    [Teardown]                          clean up test variables
+    [Teardown]                          Clean Up Suite Variables
 
 
 

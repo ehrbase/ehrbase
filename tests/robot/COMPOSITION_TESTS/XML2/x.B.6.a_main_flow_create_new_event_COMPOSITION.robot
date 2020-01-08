@@ -35,16 +35,11 @@ Force Tags    XML   refactor
 *** Test Cases ***
 Main flow create new event COMPOSITION
 
-    upload OPT    nested/nested.opt    XML
+    upload OPT    nested/nested.opt
 
     create EHR    XML
 
     commit composition (XML)    nested/nested.composition.extdatetimes.xml
-
-
-
-        TRACE JIRA BUG    EHR-445    not-ready
-
 
     # Check result data
     ${xresp}=           Parse Xml          ${response.text}

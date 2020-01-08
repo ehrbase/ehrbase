@@ -35,12 +35,12 @@ Force Tags    XML
 *** Test Cases ***
 Alternative flow 2: has COMPOSITION on non-existent EHR (XML)
 
-      # create fake EHR
+      # comment: create fake EHR
       generate random ehr_id
 
-      # commit fake COMPOSITION
+      # comment: commit fake COMPOSITION
       generate random composition_uid
 
-      composition_keywords.start request session    accept=application/xml
+      prepare new request session    XML
       get composition by composition_uid    ${version_uid}
       check composition does not exist

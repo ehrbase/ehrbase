@@ -1,3 +1,5 @@
+# @WLAD: IS DUPLICATE OF A/101 - DO NOT IMPLEMENT IT!
+
 {
   "q": "select e/ehr_id/value, e/time_created/value, e/system_id/value from EHR e"
 }
