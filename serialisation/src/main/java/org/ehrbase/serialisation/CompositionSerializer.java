@@ -419,7 +419,8 @@ public class CompositionSerializer {
         if (composition.getContent() != null && !composition.getContent().isEmpty()) {
             for (ContentItem item : composition.getContent()) {
                 Map contentMap = traverse(item, TAG_CONTENT);
-                contentMap.put(TAG_NAME, mapName(item.getName()));
+                if (!contentMap.containsKey(TAG_NAME))
+                    contentMap.put(TAG_NAME, mapName(item.getName())); //this fixes the issue with SECTION name
                 putObject(null, item, ltree, getNodeTag(TAG_CONTENT, item, ltree), contentMap);
             }
         }
