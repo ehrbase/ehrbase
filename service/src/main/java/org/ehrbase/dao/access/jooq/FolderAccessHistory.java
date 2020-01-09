@@ -564,28 +564,61 @@ public class FolderAccessHistory extends DataAccess implements I_FolderAccess, C
      * @return
      */
     private static List<ObjectRef> retrieveItemsByFolderAndContributionId(UUID folderId, UUID in_contribution, I_DomainAccess domainAccess){
-        Result<Record> retrievedRecords = domainAccess.getContext().with("folderItemsSelect").as(
-                select(FOLDER_ITEMS.OBJECT_REF_ID.as("object_ref_id"), FOLDER_ITEMS.IN_CONTRIBUTION.as("item_in_contribution"))
-                        .from(FOLDER_ITEMS)
-                        .where(FOLDER_ITEMS.FOLDER_ID.eq(folderId)))
-                .select()
-                .from(OBJECT_REF, table(name("folderItemsSelect")))
 
-                .where(field(name("object_ref_id"), FOLDER_ITEMS.OBJECT_REF_ID.getType()).eq(OBJECT_REF.ID)
-                        .and(field(name("item_in_contribution"), FOLDER_ITEMS.IN_CONTRIBUTION.getType()).eq(OBJECT_REF.IN_CONTRIBUTION))).fetch();
+        Table<?> table_items_and_objref = table(
+                select(FOLDER_ITEMS.FOLDER_ID, FOLDER_ITEMS.OBJECT_REF_ID.as("item_object_ref_id"), FOLDER_ITEMS.IN_CONTRIBUTION.as("item_in_contribution"), FOLDER_ITEMS.SYS_TRANSACTION, FOLDER_ITEMS.SYS_PERIOD, OBJECT_REF.ID_NAMESPACE, OBJECT_REF.TYPE, OBJECT_REF.ID.as("obj_ref_id"),  OBJECT_REF.IN_CONTRIBUTION.as("obj_ref_in_cont"), OBJECT_REF.SYS_TRANSACTION.as("objRefSysTran"), OBJECT_REF.SYS_PERIOD.as("oref_sysperiod"))
+                        .from(FOLDER_ITEMS).leftJoin(OBJECT_REF).
+                        on(
+                                FOLDER_ITEMS.FOLDER_ID.eq(folderId).
+                                        and(FOLDER_ITEMS.IN_CONTRIBUTION.eq(in_contribution).
+                                                and(OBJECT_REF.ID.eq(FOLDER_ITEMS.OBJECT_REF_ID).
+                                                        and(OBJECT_REF.IN_CONTRIBUTION.eq(FOLDER_ITEMS.IN_CONTRIBUTION))))).where(FOLDER_ITEMS.FOLDER_ID.eq(folderId).and(FOLDER_ITEMS.IN_CONTRIBUTION.eq(in_contribution)))
+        );
+
+
+        System.out.println("TABLE ITEMS AND OBJ. REF");
+        System.out.println(domainAccess.getContext().select().from(table_items_and_objref).fetch());
+
+
+        Table<?> table_items_and_objref_hist = table(
+                select(FOLDER_ITEMS_HISTORY.FOLDER_ID, FOLDER_ITEMS_HISTORY.OBJECT_REF_ID.as("item_object_ref_id"), FOLDER_ITEMS_HISTORY.IN_CONTRIBUTION.as("item_in_contribution"), FOLDER_ITEMS_HISTORY.SYS_TRANSACTION, FOLDER_ITEMS_HISTORY.SYS_PERIOD, OBJECT_REF_HISTORY.ID_NAMESPACE, OBJECT_REF_HISTORY.TYPE, OBJECT_REF_HISTORY.ID.as("obj_ref_id"),  OBJECT_REF_HISTORY.IN_CONTRIBUTION.as("obj_ref_in_cont"), OBJECT_REF_HISTORY.SYS_TRANSACTION.as("objRefSysTran"), OBJECT_REF_HISTORY.SYS_PERIOD.as("oref_sysperiod"))
+                        .from(FOLDER_ITEMS_HISTORY).leftJoin(OBJECT_REF_HISTORY).
+                        on(
+                                FOLDER_ITEMS_HISTORY.FOLDER_ID.eq(folderId).
+                                        and(FOLDER_ITEMS_HISTORY.IN_CONTRIBUTION.eq(in_contribution).
+                                                and(OBJECT_REF_HISTORY.ID.eq(FOLDER_ITEMS_HISTORY.OBJECT_REF_ID).
+                                                        and(OBJECT_REF_HISTORY.IN_CONTRIBUTION.eq(FOLDER_ITEMS_HISTORY.IN_CONTRIBUTION))))).where(FOLDER_ITEMS_HISTORY.FOLDER_ID.eq(folderId).and(FOLDER_ITEMS_HISTORY.IN_CONTRIBUTION.eq(in_contribution)))
+        );
+
+        System.out.println("TABLE ITEMS AND OBJ. REF- HISTORY");
+        System.out.println(domainAccess.getContext().select().from(table_items_and_objref_hist).fetch());
+
+
+        Table<?> table_all_items_and_objref = table(
+                select()
+                        .from(table_items_and_objref).
+                        union(
+                                select().from(table_items_and_objref_hist)
+                        )
+        );
+
+        System.out.println("TABLE ITEMS AND OBJ. REF- ALL");
+        System.out.println(domainAccess.getContext().select().from(table_all_items_and_objref).fetch());
+
+        Result<Record> retrievedRecords = domainAccess.getContext().select().from(table_all_items_and_objref).fetch();
 
 
         List<ObjectRef> result = new ArrayList<>();
         for(Record recordRecord : retrievedRecords){
-            Record8<String, String, UUID, UUID, Timestamp, Object, UUID, UUID>  recordParam =  (Record8<String, String, UUID, UUID, Timestamp, Object, UUID, UUID>) recordRecord;
+            Record11<UUID, UUID, UUID, Timestamp, Timestamp, String, String, UUID, UUID, Timestamp, Timestamp>  recordParam =  (Record11<UUID, UUID, UUID, Timestamp, Timestamp, String, String, UUID, UUID, Timestamp, Timestamp>) recordRecord;
             ObjectRefRecord objectRef = new ObjectRefRecord();
-            objectRef.setIdNamespace(recordParam.value1());
-            objectRef.setType(recordParam.value2());
-            objectRef.setId(recordParam.value3());
-            objectRef.setInContribution(recordParam.value4());
-            objectRef.setSysTransaction(recordParam.value5());
-            objectRef.setSysPeriod(recordParam.value6());
-            objectRef.setId(recordParam.value7());
+            objectRef.setIdNamespace(recordParam.value6());
+            objectRef.setType(recordParam.value7());
+            objectRef.setId(recordParam.value8());
+            objectRef.setInContribution(recordParam.value9());
+            objectRef.setSysTransaction(recordParam.value10());
+            objectRef.setSysPeriod(recordParam.value11());
+            objectRef.setId(recordParam.value8());
             result.add(parseObjectRefRecordIntoObjectRef(objectRef, domainAccess));
         }
         return result;
@@ -632,6 +665,7 @@ public class FolderAccessHistory extends DataAccess implements I_FolderAccess, C
             parent.getSubfoldersList().put(((FolderAccessHistory)folderAccess).getFolderRecord().getId(), folderAccess);
         }
         for(Folder child : current.getFolders()){
+            buildFolderAccessTreeRecursively(domainAccess, child, (FolderAccessHistory) folderAccess, dateTime, ehrId, ((FolderAccessHistory) folderAccess).getContributionAccess());
             buildFolderAccessTreeRecursively(domainAccess, child, (FolderAccessHistory) folderAccess, dateTime, ehrId, ((FolderAccessHistory) folderAccess).getContributionAccess());
         }
         return folderAccess;
@@ -942,87 +976,6 @@ public class FolderAccessHistory extends DataAccess implements I_FolderAccess, C
         return null;//retrieveCompositionVersion(domainAccess, folderUid, version);
     }*/
 
-
-    /**
-     * Retrieve instance of {@link I_FolderAccess} with the information needed retrieve the folder and its sub-folders.
-     * @param domainAccess providing the information about the DB connection.
-     * @param folderId {@link UUID} of the {@link  Folder} to be fetched from the DB.
-     * @return the {@link I_FolderAccess} that provides DB access to the {@link  Folder} that corresponds to the provided folderId param.
-     * @throws Exception
-     */
-    /*public static I_FolderAccess retrieveInstanceForExistingFolder(I_DomainAccess domainAccess, UUID folderId, Timestamp timestamp){
-
-        *//***1-retrieve CTE as a table that contains all the rows that allow to infer each parent-child relationship***//*
-        FolderHierarchy sf =  FOLDER_HIERARCHY.as("sf");
-
-        Table<?> sf_table = table(
-                select()
-                        .from(FOLDER_HIERARCHY));
-
-        Table<?> folder_table = table(
-                select()
-                        .from(FOLDER)).as("t_folder1");
-        Table<?> folder_table2 = table(
-                select()
-                        .from(FOLDER)).as("t_folder2");
-
-        Table<?> initial_table = table(
-                select()
-                        .from(FOLDER_HIERARCHY)
-                        .where(
-                                FOLDER_HIERARCHY.PARENT_FOLDER.eq(folderId)));
-
-        Field<UUID> subfolderChildFolder = field("subfolders.{0}", FOLDER_HIERARCHY.CHILD_FOLDER.getDataType(), FOLDER_HIERARCHY.CHILD_FOLDER.getUnqualifiedName());
-        Field<UUID> subfolderParentFolderRef = field(name("subfolders", "parent_folder"), UUID.class);
-        Result<Record> folderSelectedRecordSub = domainAccess.getContext().withRecursive("subfolders").as(
-                select().
-                        from(initial_table).
-                        leftJoin(folder_table).on(initial_table.field("parent_folder", FOLDER_HIERARCHY.PARENT_FOLDER.getType()).eq(
-                        folder_table.field("id", FOLDER.ID.getType()))).
-                        union(
-                                (select().from(sf_table).
-                                        innerJoin("subfolders").on(sf_table.field("parent_folder", FOLDER_HIERARCHY.PARENT_FOLDER.getType()).
-                                        eq(subfolderChildFolder))).leftJoin(folder_table2).on(
-                                        folder_table2.field("id", FOLDER.ID.getType()).eq(subfolderChildFolder)))
-        ).select().from(table(name("subfolders"))).fetch();
-
-        *//**2-Reconstruct hierarchical structure from DB result**//*
-        Map<UUID, Map<UUID, I_FolderAccess>> fHierarchyMap = new TreeMap<UUID, Map<UUID, I_FolderAccess>>();
-        for(Record record : folderSelectedRecordSub){
-
-            //1-create a folder access for the record if needed
-            if(!fHierarchyMap.containsKey((UUID) record.getValue("parent_folder"))){
-                fHierarchyMap.put((UUID) record.getValue("parent_folder"), new TreeMap<>());
-            }
-            fHierarchyMap.get(record.getValue("parent_folder")).put((UUID) record.getValue("child_folder"), buildFolderAccessFromFolderId((UUID)record.getValue("child_folder"), domainAccess, folderSelectedRecordSub));
-        }
-
-        *//**3-populate result and return**//*
-        return FolderAccessHistory.buildFolderAccessHierarchy(fHierarchyMap, folderId, null, folderSelectedRecordSub, domainAccess);
-    }*/
-
-
-    /*select allFolderRows.in_contribution
-from (
-	select *
-	from ehr.folder f
-	where f.id='0e5f3019-b527-4173-8f13-d224ac952280'
-	union
-	select * from ehr.folder_history fh
-	where fh.id='0e5f3019-b527-4173-8f13-d224ac952280'
-	) allFolderRows
-where allFolderRows.sys_transaction = (select max (sys_transaction) from ((
-	select *
-	from ehr.folder f
-	where f.id='0e5f3019-b527-4173-8f13-d224ac952280'
-	and f.sys_transaction <= '2019-11-27 16:06:45.303'
-	union
-	select * from ehr.folder_history fh
-	where fh.id='0e5f3019-b527-4173-8f13-d224ac952280'
-	and fh.sys_transaction <= '2019-11-27 16:06:45.303'
-	)) sss);*/
-
-
     private UUID getContributionUidFromTimestamp(UUID folderUid, Timestamp timestamp){
         Table<?> filterByMaxTimeAndFolderId = this.getContext().
                 select().from(FOLDER)
@@ -1144,6 +1097,7 @@ where allFolderRows.sys_transaction = (select max (sys_transaction) from ((
                                 from(allFolderRowsFolderHistoryTable)).asTable();
 
 
+
         Field<UUID> subfolderChildFolder = field("subfolders.{0}", FOLDER_HIERARCHY.CHILD_FOLDER.getDataType(), FOLDER_HIERARCHY.CHILD_FOLDER.getUnqualifiedName());
         Field<Timestamp> subfolderSysTran = field("\"subfolders\".\"sys_transaction\"", FOLDER_HIERARCHY.SYS_TRANSACTION.getDataType(), FOLDER_HIERARCHY.SYS_TRANSACTION.getUnqualifiedName());
 
@@ -1157,6 +1111,9 @@ where allFolderRows.sys_transaction = (select max (sys_transaction) from ((
                         .where(
                                 filteredHierarchicalTable.field("parent_folder", UUID.class).eq(folderUid))).asTable();
 
+
+        System.out.println("INITIAL TABLE-------");
+        System.out.println(domainAccess.getContext().execute(select().from(initial_table2)));
 
         Result<Record> folderSelectedRecordSub = domainAccess.getContext().withRecursive("subfolders").as(
                 select().
