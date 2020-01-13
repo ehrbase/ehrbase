@@ -45,12 +45,12 @@
         <dependency>
             <groupId>org.ehrbase.openehr</groupId>
             <artifactId>api</artifactId>
-            <version>release/v0.10.0</version>
+            <version>0.10.0</version>
         </dependency>
         <dependency>
             <groupId>org.ehrbase.openehr</groupId>
             <artifactId>serialisation</artifactId>
-            <version>release/v0.10.0</version>
+            <version>0.10.0</version>
         </dependency>
         <dependency>
             <groupId>com.github.openEHR</groupId>
@@ -59,17 +59,17 @@
         <dependency>
             <groupId>org.ehrbase.openehr</groupId>
             <artifactId>opt-1.4</artifactId>
-            <version>release/v0.10.0</version>
+            <version>0.10.0</version>
         </dependency>
         <dependency>
             <groupId>org.ehrbase.openehr</groupId>
             <artifactId>jooq-pg</artifactId>
-            <version>release/v0.10.0</version>
+            <version>0.10.0</version>
         </dependency>
         <dependency>
             <groupId>org.ehrbase.openehr</groupId>
             <artifactId>validation</artifactId>
-            <version>release/v0.10.0</version>
+            <version>0.10.0</version>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
