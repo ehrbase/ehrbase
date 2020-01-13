@@ -42,9 +42,9 @@ public class ItemStack {
     private Logger log = LoggerFactory.getLogger(this.getClass());
 
     //contains the ADL path to an element
-    private Stack<String> pathStack = new Stack<String>();
+    private Stack<String> pathStack = new Stack<>();
     //contains the named path to an element (used to bind Flat JSON)
-    private Stack<String> namedStack = new Stack<String>();
+    private Stack<String> namedStack = new Stack<>();
 
 
     //used to resolve and index containments
@@ -52,7 +52,7 @@ public class ItemStack {
         private String label;
         private String fullPath; //full path
 
-        public ContainmentStruct(String archetype, String path) {
+        ContainmentStruct(String archetype, String path) {
             this.label = archetype;
             this.fullPath = path;
         }
@@ -61,21 +61,18 @@ public class ItemStack {
             return label;
         }
 
-        public String getFullPath() {
+        String getFullPath() {
             return fullPath;
         }
     }
 
-    private Stack<ContainmentStruct> containmentStack = new Stack<ContainmentStruct>();
+    private Stack<ContainmentStruct> containmentStack = new Stack<>();
 
     private Map<String, String> ltreeMap = new TreeMap<>();
 
     public Map<String, String> getLtreeMap() {
         return ltreeMap;
     }
-
-    private int floorPathStack = 0;
-    private int floorNamedStack = 0;
 
     //replace all dots by underscore and keep only the archetype name part
     public static String normalizeLabel(String path) {
@@ -86,7 +83,9 @@ public class ItemStack {
 
         //replace all dots by underscores since it is used as delimiter in a dotted labels expression for ltree
         //only A-Za-z0-9_ are allowed to express a label
-        label = label.replaceAll("\\.", "_").replaceAll("\\-", "_");
+        label = label.replaceAll("\\.", "_").replaceAll("-", "_");
+        if (label.endsWith("]"))
+            label = label.substring(0, label.indexOf("]"));
         return label;
     }
 
@@ -104,9 +103,7 @@ public class ItemStack {
         //get the last element on stack
         ContainmentStruct containmentStruct = containmentStack.lastElement();
 //        System.out.println(containmentStruct.getLabel() + "-->" + containmentStruct.getFullPath());
-        if (ltreeMap.containsKey(containmentStruct.getLabel())) {
-            //log.warn("CONTAINMENT: ltree map already contain key:"+containmentStruct.getLabel());
-        } else
+        if (!ltreeMap.containsKey(containmentStruct.getLabel()))
             ltreeMap.put(containmentStruct.getLabel(), containmentStruct.getFullPath());
     }
 
@@ -153,56 +150,34 @@ public class ItemStack {
         popStack(namedStack);
     }
 
-    private void pushStack(Stack stack, String s) {
-//        log.debug("-- PUSH PATH:" + s);
+    private void pushStack(Stack<String> stack, String s) {
         stack.push(s);
-        floorPathStack++;
-//		log.debug("FLOOR:"+floorPathStack+"->"+s);
     }
 
-    private String popStack(Stack stack) {
+    private String popStack(Stack<String> stack) {
         if (!stack.empty()) {
-            String path = (String) stack.pop();
-            floorPathStack--;
-            return path;
-//			log.debug("FLOOR:"+floorPathStack);
+            return stack.pop();
         }
         return null;
     }
 
-//    private void pushNamedStack(String s){
-//        log.debug("-- PUSH NAMED:" + s);
-//        namedStack.push(s);
-//        floorNamedStack++;
-////		log.debug("FLOOR:"+floorNamedStack+"->"+s);
-//    }
-//
-//    private void popNamedStack(){
-//        log.debug("-- POP  NAMED:"+ (namedStack.isEmpty() ? "*empty*":namedStack.lastElement()));
-//        if (!namedStack.empty()){
-//            namedStack.pop();
-//            floorNamedStack--;
-////			log.debug("FLOOR:"+floorPathStack);
-//        }
-//    }
-
-    public String stackDump(Stack stack) {
-        StringBuffer b = new StringBuffer();
+    private String stackDump(Stack stack) {
+        StringBuilder b = new StringBuilder();
         for (Object s : stack.toArray()) b.append((String) s);
         return b.toString();
     }
 
     public String namedStackDump() {
-        StringBuffer b = new StringBuffer();
-        for (Object s : namedStack.toArray()) b.append(s + "/");
+        StringBuilder b = new StringBuilder();
+        for (Object s : namedStack.toArray()) b.append(s).append("/");
         return b.toString();
     }
 
     public String expandedStackDump() {
-        StringBuffer b = new StringBuffer();
+        StringBuilder b = new StringBuilder();
         int i = 0;
         for (Object s : namedStack.toArray()) {
-            b.append(s + "{{" + pathStack.get(i++) + "}}/");
+            b.append(s).append("{{").append(pathStack.get(i++)).append("}}/");
         }
         return b.toString();
 
