@@ -21,10 +21,7 @@
 
 package org.ehrbase.aql.sql.binding;
 
-import org.ehrbase.jooq.pg.tables.records.CompositionRecord;
-import org.ehrbase.jooq.pg.tables.records.EhrRecord;
-import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
-import org.ehrbase.jooq.pg.tables.records.StatusRecord;
+import org.ehrbase.jooq.pg.tables.records.*;
 import org.jooq.Table;
 
 import static org.ehrbase.jooq.pg.Tables.*;
@@ -34,10 +31,12 @@ import static org.ehrbase.jooq.pg.Tables.*;
  */
 public interface I_JoinBinder {
     String COMPOSITION_JOIN = "composition_join";
+    String SYSTEM_JOIN = "system_join";
     String STATUS_JOIN = "status_join";
     String EHR_JOIN = "ehr_join";
 
     Table<CompositionRecord> compositionRecordTable = COMPOSITION.as(COMPOSITION_JOIN);
+    Table<SystemRecord> systemRecordTable = SYSTEM.as(SYSTEM_JOIN);
     Table<StatusRecord> statusRecordTable = STATUS.as(STATUS_JOIN);
     Table<EhrRecord> ehrRecordTable = EHR_.as(EHR_JOIN);
     Table<PartyIdentifiedRecord> composerRef = PARTY_IDENTIFIED.as("composer_ref");

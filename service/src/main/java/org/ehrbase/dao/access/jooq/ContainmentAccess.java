@@ -22,13 +22,12 @@
 
 package org.ehrbase.dao.access.jooq;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_ContainmentAccess;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.ehr.encode.ItemStack;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 
 import java.sql.Timestamp;
@@ -50,8 +49,8 @@ public class ContainmentAccess extends DataAccess implements I_ContainmentAccess
 
     private Map<String, String> ltree;
 
-    public ContainmentAccess(DSLContext context, UUID entryId, String archetypeId, Map<String, String> ltreeMap, boolean debug) {
-        super(context, null, null);
+    public ContainmentAccess(DataAccess dataAccess, UUID entryId, String archetypeId, Map<String, String> ltreeMap, boolean debug) {
+        super(dataAccess.getContext(), null, null, dataAccess.getServerConfig());
         ltree = new HashMap<>();
         this.entryId = entryId;
 
@@ -129,13 +128,13 @@ public class ContainmentAccess extends DataAccess implements I_ContainmentAccess
             throw new IllegalArgumentException("Containment label tree is not initialized, aborting");
         }
         //if entries exists already for this entry delete them
-        if (context.fetchExists(CONTAINMENT, CONTAINMENT.COMP_ID.eq(compositionId))) {
-            context.delete(CONTAINMENT).where(CONTAINMENT.COMP_ID.eq(compositionId)).execute();
+        if (getContext().fetchExists(CONTAINMENT, CONTAINMENT.COMP_ID.eq(compositionId))) {
+            getContext().delete(CONTAINMENT).where(CONTAINMENT.COMP_ID.eq(compositionId)).execute();
         }
 
         //insert the new containment for this composition
         for (Map.Entry entry : ltree.entrySet()) {
-            context.insertInto(CONTAINMENT, CONTAINMENT.COMP_ID, CONTAINMENT.LABEL, CONTAINMENT.PATH)
+            getContext().insertInto(CONTAINMENT, CONTAINMENT.COMP_ID, CONTAINMENT.LABEL, CONTAINMENT.PATH)
                     .values(DSL.val(compositionId), DSL.field(DSL.val(entry.getKey().toString()) + "::ltree"), DSL.val(entry.getValue().toString()))
                     .execute();
         }

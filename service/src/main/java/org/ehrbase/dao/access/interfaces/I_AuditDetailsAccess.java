@@ -21,7 +21,6 @@ package org.ehrbase.dao.access.interfaces;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.jooq.AuditDetailsAccess;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
-import org.jooq.DSLContext;
 
 import java.sql.Timestamp;
 import java.util.UUID;
@@ -31,17 +30,17 @@ public interface I_AuditDetailsAccess extends I_SimpleCRUD<I_AuditDetailsAccess,
     /**
      * get a new minimal AuditDetails access layer instance
      *
-     * @param context      SQL access context
+     * @param dataAccess      general data access
      * @return new access instance
      */
-    static I_AuditDetailsAccess getInstance(DSLContext context) {
-        return new AuditDetailsAccess(context);
+    static I_AuditDetailsAccess getInstance(I_DomainAccess dataAccess) {
+        return new AuditDetailsAccess(dataAccess);
     }
 
     /**
      * get a new AuditDetails access layer instance
      *
-     * @param context        SQL access context
+     * @param dataAccess    general data access
      * @param systemId      system on which this is initiated
      * @param committer     committer ID (Party Identified)
      * @param changeType    audit change type, indicating creation, modification and so on
@@ -49,18 +48,18 @@ public interface I_AuditDetailsAccess extends I_SimpleCRUD<I_AuditDetailsAccess,
      * @return new access instance
      * @throws InternalServerException if creating or retrieving system failed
      */
-    static I_AuditDetailsAccess getInstance(DSLContext context, UUID systemId, UUID committer, ContributionChangeType changeType, String description) {
-        return new AuditDetailsAccess(context, systemId, committer, changeType, description);
+    static I_AuditDetailsAccess getInstance(I_DomainAccess dataAccess, UUID systemId, UUID committer, ContributionChangeType changeType, String description) {
+        return new AuditDetailsAccess(dataAccess, systemId, committer, changeType, description);
     }
 
     /**
      * Retrieve a specfic audit instance via UUID
-     * @param context DB context
+     * @param dataAccess    general data access
      * @param auditId ID of audit to retrieve
      * @return access to instance
      * @throws InternalServerException when retrieval failed
      */
-    I_AuditDetailsAccess retrieveInstance(DSLContext context, UUID auditId);
+    I_AuditDetailsAccess retrieveInstance(I_DomainAccess dataAccess, UUID auditId);
 
     /**
      * Convenience commit, that sets values on an empty/minimal {@link AuditDetailsAccess} before committing. Assumes creation as change type.

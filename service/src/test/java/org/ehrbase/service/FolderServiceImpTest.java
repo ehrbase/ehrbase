@@ -1,11 +1,12 @@
 package org.ehrbase.service;
 
+import com.nedap.archie.rm.directory.Folder;
+import org.apache.commons.io.IOUtils;
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.definitions.StructuredString;
 import org.ehrbase.api.definitions.StructuredStringFormat;
-import org.ehrbase.test_data.folder.FolderTestDataCanonicalJson;
-import com.nedap.archie.rm.directory.Folder;
 import org.ehrbase.serialisation.CanonicalJson;
-import org.apache.commons.io.IOUtils;
+import org.ehrbase.test_data.folder.FolderTestDataCanonicalJson;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -32,7 +33,7 @@ public class FolderServiceImpTest {
     public void setUp() throws Exception {
         KnowledgeCacheService knowledgeCache = KnowledgeCacheHelper
                 .buildKnowledgeCache(testFolder, cacheRule);
-        this.folderService = new FolderServiceImp(knowledgeCache, null);
+        this.folderService = new FolderServiceImp(knowledgeCache, null, KnowledgeCacheHelper.buildServerConfig());
     }
 
     @Ignore("the tested example contains the empty attributes serialized but the serialization does not print them. Decide about behaviour. " +

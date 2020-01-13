@@ -55,8 +55,12 @@ Alternative flow 3: has CONTRIBUTION, EHR with CONTRIBUTIONS, but CONTRIBUTION d
 
     create EHR
 
+        TRACE GITHUB ISSUE  61  not-ready  message=Next step fails due to a bug.
+
     commit CONTRIBUTION (JSON)    minimal/minimal_instruction.contribution.json
 
     retrieve CONTRIBUTION by fake contri_uid (JSON)
 
     check response: is negative indicating non-existent contribution_uid
+
+    [Teardown]    restart SUT

@@ -54,13 +54,13 @@ Force Tags    refactor
 Alternative flow 4: commit CONTRIBUTIONS versioning event COMPOSITION
 
     upload OPT    minimal/minimal_admin.opt
-
     create EHR
-
     commit CONTRIBUTION (JSON)    minimal/minimal_admin.contribution.json
-
     check response: is positive - returns version id
-
     commit CONTRIBUTION - with preceding_version_uid (JSON)    minimal/minimal_admin.contribution.modification.complete.json
+    
+        TRACE GITHUB ISSUE  74  not-ready
 
     check response: is positive - contribution has new version
+
+    [Teardown]    restart SUT

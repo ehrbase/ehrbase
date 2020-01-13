@@ -21,17 +21,19 @@
 
 package org.ehrbase.aql.sql.binding;
 
+import com.nedap.archie.rm.datavalues.DataValue;
+import com.nedap.archie.rminfo.ArchieRMInfoLookup;
+import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.aql.compiler.Contains;
 import org.ehrbase.aql.compiler.Statements;
 import org.ehrbase.aql.containment.IdentifierMapper;
 import org.ehrbase.aql.definition.I_VariableDefinition;
+import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
 import org.ehrbase.aql.sql.postprocessing.I_RawJsonTransform;
-import org.ehrbase.aql.sql.queryImpl.CompositionAttributeQuery;
-import org.ehrbase.aql.sql.queryImpl.I_QueryImpl;
-import org.ehrbase.aql.sql.queryImpl.JsonbEntryQuery;
-import org.ehrbase.aql.sql.queryImpl.TemplateMetaData;
+import org.ehrbase.aql.sql.queryImpl.*;
 import org.ehrbase.service.IntrospectService;
+import org.ehrbase.validation.constraints.util.SnakeToCamel;
 import org.jooq.*;
 
 import java.util.ArrayList;
@@ -102,25 +104,41 @@ public class SelectBinder extends TemplateMetaData implements I_SelectBinder {
             SelectQuery<?> subSelect = context.selectQuery();
             switch (className) {
                 case "COMPOSITION":
-                    if (variableDefinition.getPath() == null || variableDefinition.getPath().startsWith("content")) {
-                        field = jsonbEntryQuery.makeField(template_id, comp_id, identifier, variableDefinition, true, I_QueryImpl.Clause.SELECT);
-
+                    if (variableDefinition.getPath() != null && variableDefinition.getPath().startsWith("content")) {
+                        field = jsonbEntryQuery.makeField(template_id, comp_id, identifier, variableDefinition, I_QueryImpl.Clause.SELECT);
+                        handleJsonDataBlock(jsonbEntryQuery, field, null, variableDefinition.getPath());
                     } else {
-                        field = compositionAttributeQuery.makeField(template_id, comp_id, identifier, variableDefinition, true, I_QueryImpl.Clause.SELECT);
+                        field = compositionAttributeQuery.makeField(template_id, comp_id, identifier, variableDefinition, I_QueryImpl.Clause.SELECT);
+                        handleJsonDataBlock(compositionAttributeQuery, field, null, variableDefinition.getPath());
                     }
                     break;
                 case "EHR":
-                    field = compositionAttributeQuery.makeField(template_id, comp_id, identifier, variableDefinition, true, I_QueryImpl.Clause.SELECT);
-//                    selectFields.add(compositionAttributeQuery.selectField(comp_id, identifier, variableDefinition));
+                    field = compositionAttributeQuery.makeField(template_id, comp_id, identifier, variableDefinition, I_QueryImpl.Clause.SELECT);
+                    handleJsonDataBlock(compositionAttributeQuery, field, null, variableDefinition.getPath());
                     break;
                 default:
-                    field = jsonbEntryQuery.makeField(template_id, comp_id, identifier, variableDefinition, true, I_QueryImpl.Clause.SELECT);
+                    field = jsonbEntryQuery.makeField(template_id, comp_id, identifier, variableDefinition, I_QueryImpl.Clause.SELECT);
                     containsJsonDataBlock = containsJsonDataBlock | jsonbEntryQuery.isJsonDataBlock();
-                    if (jsonbEntryQuery.isJsonDataBlock()) {
-                        //add this field to the list of column to format as RAW JSON
-                        jsonDataBlock.add(new JsonbBlockDef(jsonbEntryQuery.getJsonbItemPath(), field));
+                    if (jsonbEntryQuery.isJsonDataBlock() ) {
+
+                        if (jsonbEntryQuery.getItemType() != null){
+                            Class itemClass = ArchieRMInfoLookup.getInstance().getClass(jsonbEntryQuery.getItemType());
+                            if (DataValue.class.isAssignableFrom(itemClass)) {
+                                VariableAqlPath variableAqlPath = new VariableAqlPath(variableDefinition.getPath());
+                                if (variableAqlPath.getSuffix().equals("value")) { //assumes this is a data value within an ELEMENT
+                                    I_VariableDefinition variableDefinition1 = variableDefinition.clone();
+                                    variableDefinition1.setPath(variableAqlPath.getInfix());
+                                    field = jsonbEntryQuery.makeField(template_id, comp_id, identifier, variableDefinition1, I_QueryImpl.Clause.SELECT);
+                                    handleJsonDataBlock(jsonbEntryQuery, field, variableAqlPath.getSuffix(), null);
+                                } else
+                                    handleJsonDataBlock(jsonbEntryQuery, field, null, null);
+                            } else
+                                //add this field to the list of column to format as RAW JSON
+                                handleJsonDataBlock(jsonbEntryQuery, field, null, null);
+                        }
+                        else
+                            handleJsonDataBlock(jsonbEntryQuery, field, null, null);
                     }
-//                    selectFields.add(jsonbEntryQuery.selectField(comp_id, identifier, variableDefinition));
                     break;
             }
 //            field = DSL.field(field);
@@ -132,14 +150,20 @@ public class SelectBinder extends TemplateMetaData implements I_SelectBinder {
         }
 
 
-        if (containsJsonDataBlock) {
-            //add a template column for transformation
-            selectQuery.addSelect(ENTRY.TEMPLATE_ID.as(I_RawJsonTransform.TEMPLATE_ID));
-        }
+//        if (containsJsonDataBlock) {
+//            //add a template column for transformation
+//            selectQuery.addSelect(ENTRY.TEMPLATE_ID.as(I_RawJsonTransform.TEMPLATE_ID));
+//        }
 
 
         return selectQuery;
     }
+
+    private void handleJsonDataBlock(I_QueryImpl queryImpl, Field field, String rootJsonKey, String optionalPath){
+        if (queryImpl.isJsonDataBlock())
+            jsonDataBlock.add(new JsonbBlockDef(optionalPath == null ? queryImpl.getJsonbItemPath() : optionalPath, field, rootJsonKey));
+    }
+
 
     public Condition getWhereConditions(String templateId, UUID comp_id) {
 
@@ -147,25 +171,25 @@ public class SelectBinder extends TemplateMetaData implements I_SelectBinder {
     }
 
 
-    public PathResolver getPathResolver() {
-        return pathResolver;
-    }
-
-    public boolean hasEhrIdExpression() {
-        return compositionAttributeQuery.containsEhrId();
-    }
-
-    public String getEhrIdAlias() {
-        return compositionAttributeQuery.getEhrIdAlias();
-    }
-
-    public boolean isCompositionIdFiltered() {
-        return compositionAttributeQuery.isCompositionIdFiltered();
-    }
-
-    public boolean isEhrIdFiltered() {
-        return compositionAttributeQuery.isEhrIdFiltered();
-    }
+//    public PathResolver getPathResolver() {
+//        return pathResolver;
+//    }
+//
+//    public boolean hasEhrIdExpression() {
+//        return compositionAttributeQuery.containsEhrId();
+//    }
+//
+//    public String getEhrIdAlias() {
+//        return compositionAttributeQuery.getEhrIdAlias();
+//    }
+//
+//    public boolean isCompositionIdFiltered() {
+//        return compositionAttributeQuery.isCompositionIdFiltered();
+//    }
+//
+//    public boolean isEhrIdFiltered() {
+//        return compositionAttributeQuery.isEhrIdFiltered();
+//    }
 
     public boolean containsJQueryPath() {
         return jsonbEntryQuery.isContainsJqueryPath();

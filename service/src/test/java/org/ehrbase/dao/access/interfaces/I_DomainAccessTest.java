@@ -31,7 +31,7 @@ public class I_DomainAccessTest {
     public static I_DomainAccess buildDomainAccess(DSLContext context, TemporaryFolder temporaryFolder, CacheRule cacheRule) throws Exception {
         IntrospectService introspectCache = KnowledgeCacheHelper.buildKnowledgeCache(temporaryFolder, cacheRule);
         I_KnowledgeCache knowledge = introspectCache.getKnowledge();
-        return new DataAccess(context, knowledge, introspectCache) {
+        return new DataAccess(context, knowledge, introspectCache, KnowledgeCacheHelper.buildServerConfig()) {
             @Override
             public DataAccess getDataAccess() {
                 return this;

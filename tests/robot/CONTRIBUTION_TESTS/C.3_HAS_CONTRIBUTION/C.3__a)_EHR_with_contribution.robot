@@ -52,11 +52,9 @@ Force Tags    refactor
 Main flow: check has CONTRIBUTION with existing CONTRIBUTION
 
     upload OPT    minimal/minimal_evaluation.opt
-
     create EHR
-                                  # TODO: @PABLO which data-set?
     commit CONTRIBUTION (JSON)    minimal/minimal_evaluation.contribution.json
-
     retrieve CONTRIBUTION by contribution_uid (JSON)
-
     check response: is positive - contribution_uid exists
+
+    [Teardown]    restart SUT

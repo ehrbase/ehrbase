@@ -18,7 +18,11 @@
 
 package org.ehrbase.service;
 
+import com.google.gson.JsonElement;
 import org.ehrbase.api.definitions.QueryMode;
+import org.ehrbase.api.definitions.ServerConfig;
+import org.ehrbase.api.definitions.StructuredString;
+import org.ehrbase.api.definitions.StructuredStringFormat;
 import org.ehrbase.api.dto.QueryDefinitionResultDto;
 import org.ehrbase.api.dto.QueryResultDto;
 import org.ehrbase.api.exception.GeneralRequestProcessingException;
@@ -30,6 +34,7 @@ import org.ehrbase.dao.access.interfaces.I_EntryAccess;
 import org.ehrbase.dao.access.interfaces.I_StoredQueryAccess;
 import org.ehrbase.dao.access.jooq.AqlQueryHandler;
 import org.ehrbase.dao.access.jooq.StoredQueryAccess;
+import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.exception.DataAccessException;
@@ -38,16 +43,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 @Service
+@Transactional
 public class QueryServiceImp extends BaseService implements QueryService {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -55,9 +62,9 @@ public class QueryServiceImp extends BaseService implements QueryService {
     private boolean usePgExtensions; //default
 
     @Autowired
-    public QueryServiceImp(KnowledgeCacheService knowledgeCacheService, ConnectionPoolService connectionPoolService) {
+    public QueryServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig) {
 
-        super(knowledgeCacheService, connectionPoolService);
+        super(knowledgeCacheService, context, serverConfig);
     }
 
     @Override
@@ -97,9 +104,13 @@ public class QueryServiceImp extends BaseService implements QueryService {
 
         List<Map<String, Object>> resultList = new ArrayList<>();
         for (Record record : aqlResult.getRecords()) {
-            Map<String, Object> fieldMap = new HashMap<>();
+            Map<String, Object> fieldMap = new LinkedHashMap<>();
             for (Field field : record.fields()) {
-                fieldMap.put(field.getName(), record.getValue(field));
+                if (record.getValue(field) instanceof JsonElement){
+                    fieldMap.put(field.getName(), new StructuredString(((JsonElement) record.getValue(field)).toString(), StructuredStringFormat.JSON));
+                }
+                else
+                    fieldMap.put(field.getName(), record.getValue(field));
             }
 
             resultList.add(fieldMap);
@@ -123,7 +134,7 @@ public class QueryServiceImp extends BaseService implements QueryService {
         } catch (IllegalArgumentException iae){
             throw new IllegalArgumentException(iae.getMessage());
         } catch (Exception e){
-            throw new IllegalArgumentException("Could not retrieve stored query, reason:" + e);
+            throw new IllegalArgumentException("Could not process query, reason:" + e);
         }
     }
 

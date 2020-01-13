@@ -49,7 +49,7 @@ public interface I_EntryAccess extends I_SimpleCRUD<I_EntryAccess, UUID> {
      * @see Composition
      */
     static I_EntryAccess getNewInstance(I_DomainAccess domain, String templateId, Integer sequence, UUID compositionId, Composition composition) {
-        return new EntryAccess(domain.getContext(), domain.getKnowledgeManager(), domain.getIntrospectService(), templateId, sequence, compositionId, composition);
+        return new EntryAccess(domain, templateId, sequence, compositionId, composition);
     }
 
     /**

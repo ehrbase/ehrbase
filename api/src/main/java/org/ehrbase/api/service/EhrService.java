@@ -24,11 +24,12 @@ import org.ehrbase.api.exception.DuplicateObjectException;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import org.ehrbase.api.exception.InternalServerException;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface EhrService {
+public interface EhrService extends BaseService {
     /**
      * Creates new EHR instance, with default settings and values when no status or ID is supplied.
      * @param status Optional, sets custom status
@@ -39,10 +40,33 @@ public interface EhrService {
      */
     UUID create(EhrStatus status, UUID ehrId);
 
+    @Deprecated
     Optional<EhrStatusDto> getEhrStatusEhrScape(UUID ehrUuid, CompositionFormat format);
 
+    /**
+     * Gets latest EHR_STATUS of the given EHR.
+     * @param ehrUuid EHR subject
+     * @return Latest EHR_STATUS or empty
+     */
     Optional<EhrStatus> getEhrStatus(UUID ehrUuid);
 
+    /**
+     * Gets particular EHR_STATUS matching the given version Uid.
+     * @param ehrUuid Root EHR
+     * @param versionedObjectUid Given Uid of EHR_STATUS
+     * @param version Given version of EHR_STATUS
+     * @return Matching EHR_STATUS or empty
+     */
+    Optional<EhrStatus> getEhrStatusAtVersion(UUID ehrUuid, UUID versionedObjectUid, int version);
+
+    /**
+     * Update the EHR_STATUS linked to the given EHR
+     * @param ehrId ID of linked EHR
+     * @param status input EHR_STATUS
+     * @return {@link Optional<EhrStatus>} containing the updated status on success
+     * @throws org.ehrbase.api.exception.ObjectNotFoundException when given ehrId cannot be found
+     * @throws org.ehrbase.api.exception.InvalidApiParameterException when given status is invalid, e.g. not a valid openEHR RM object
+     */
     Optional<EhrStatus> updateStatus(UUID ehrId, EhrStatus status);
 
     Optional<UUID> findBySubject(String subjectId, String nameSpace);
@@ -55,11 +79,22 @@ public interface EhrService {
      */
     boolean doesEhrExist(UUID ehrId);
 
-    String getLatestVersionedId(UUID ehrId);
-
-    UUID getSystemUuid();    // from BaseService
+    /**
+     * Get latest version UID of an EHR_STATUS by given associated EHR UID.
+     * @param ehrId EHR ID
+     * @return EHR_STATUS version UID
+     */
+    String getLatestVersionUidOfStatus(UUID ehrId);
 
     LocalDateTime getCreationTime(UUID ehrId);
+
+    /**
+     * Get version number of EHR_STATUS associated with given EHR UID at given timestamp.
+     * @param ehrUid EHR UID
+     * @param timestamp Timestamp of point in time
+     * @return version number
+     */
+    Integer getEhrStatusVersionByTimestamp(UUID ehrUid, Timestamp timestamp);
 
     /**
      * Return True if a EHR with identifier ehrId exists.
@@ -68,5 +103,12 @@ public interface EhrService {
      * @return True when existing, false if not
      */
     Boolean hasEhr(UUID ehrId);
+
+    /**
+     * Helper to get (Versioned Object) Uid of EHR_STATUS of given EHR.
+     * @param ehrUid Uid of EHR
+     * @return UUID of corresponding EHR_STATUS
+     */
+    UUID getEhrStatusVersionedObjectUidByEhr(UUID ehrUid);
 
 }

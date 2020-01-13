@@ -21,7 +21,10 @@
 
 package org.ehrbase.service;
 
+import com.nedap.archie.rm.composition.Composition;
+import org.apache.catalina.Server;
 import org.ehrbase.api.definitions.CompositionFormat;
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.definitions.StructuredString;
 import org.ehrbase.api.definitions.StructuredStringFormat;
 import org.ehrbase.api.dto.CompositionDto;
@@ -30,18 +33,20 @@ import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
+import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.dao.access.interfaces.I_CompoXrefAccess;
 import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
 import org.ehrbase.dao.access.interfaces.I_EntryAccess;
 import org.ehrbase.dao.access.jooq.CompoXRefAccess;
-import com.nedap.archie.rm.composition.Composition;
 import org.ehrbase.serialisation.CanonicalJson;
 import org.ehrbase.serialisation.CanonicalXML;
+import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -50,6 +55,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@Transactional()
 public class CompositionServiceImp extends BaseService implements CompositionService {
 
     public static final String DESCRIPTION = "description";
@@ -59,9 +65,9 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
     private final EhrService ehrService;
 
     @Autowired
-    public CompositionServiceImp(KnowledgeCacheService knowledgeCacheService, ConnectionPoolService connectionPoolService, ValidationService validationService, EhrService ehrService) {
+    public CompositionServiceImp(KnowledgeCacheService knowledgeCacheService, ValidationService validationService, EhrService ehrService, DSLContext context, ServerConfig serverConfig) {
 
-        super(knowledgeCacheService, connectionPoolService);
+        super(knowledgeCacheService, context, serverConfig);
         this.validationService = validationService;
         this.ehrService = ehrService;
     }
@@ -70,11 +76,11 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
     public Optional<CompositionDto> retrieve(UUID compositionId, Integer version) throws InternalServerException {
 
         final I_CompositionAccess compositionAccess;
-            if (version != null) {
-                compositionAccess = I_CompositionAccess.retrieveCompositionVersion(getDataAccess(), compositionId, version);
-            } else {    // default to latest version
-                compositionAccess = I_CompositionAccess.retrieveCompositionVersion(getDataAccess(), compositionId, getLastVersionNumber(compositionId));
-            }
+        if (version != null) {
+            compositionAccess = I_CompositionAccess.retrieveCompositionVersion(getDataAccess(), compositionId, version);
+        } else {    // default to latest version
+            compositionAccess = I_CompositionAccess.retrieveCompositionVersion(getDataAccess(), compositionId, getLastVersionNumber(compositionId));
+        }
         return getCompositionDto(compositionAccess);
     }
 
@@ -150,8 +156,9 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
 
     /**
      * Creation of a new composition. With optional custom contribution, or one will be created.
-     * @param ehrId ID of EHR
-     * @param composition RMObject instance of the given Composition to be created
+     *
+     * @param ehrId          ID of EHR
+     * @param composition    RMObject instance of the given Composition to be created
      * @param contributionId NULL if is not needed, or ID of given custom contribution
      * @return ID of created composition
      * @throws InternalServerException when creation failed
@@ -160,7 +167,7 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
         //pre-step: validate
         try {
             validationService.check(composition.getArchetypeDetails().getTemplateId().getValue(), composition);
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new InternalServerException(e);
         }
 
@@ -224,8 +231,9 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
 
     /**
      * Update of an existing composition. With optional custom contribution, or existing one will be updated.
-     * @param compositionId ID of existing composition
-     * @param composition RMObject instance of the given Composition which represents the new version
+     *
+     * @param compositionId  ID of existing composition
+     * @param composition    RMObject instance of the given Composition which represents the new version
      * @param contributionId NULL if is not needed, or ID of given custom contribution
      * @return Version UID pointing to updated composition
      */
@@ -246,7 +254,7 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
             compositionAccess.setContent(contentList);
             if (contributionId != null) {   // if custom contribution should be set
                 compositionAccess.setContributionId(contributionId);
-                result = compositionAccess.updateWithCustomContribution(getUserUuid(), getSystemUuid(),I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
+                result = compositionAccess.updateWithCustomContribution(getUserUuid(), getSystemUuid(), I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
             } else {    // else existing one will be updated
                 result = compositionAccess.update(getUserUuid(), getSystemUuid(), null, I_ConceptAccess.ContributionChangeType.MODIFICATION, DESCRIPTION);
             }
@@ -275,7 +283,8 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
 
     /**
      * Deletion of an existing composition. With optional custom contribution, or existing one will be updated.
-     * @param compositionId ID of existing composition
+     *
+     * @param compositionId  ID of existing composition
      * @param contributionId NULL if is not needed, or ID of given custom contribution
      * @return Time of deletion, if successful
      */

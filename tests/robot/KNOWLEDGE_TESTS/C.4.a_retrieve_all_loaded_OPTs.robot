@@ -40,10 +40,10 @@ Documentation   OPT1.4 integration tests
 Resource    ${CURDIR}${/}../_resources/suite_settings.robot
 Resource    ${CURDIR}${/}../_resources/keywords/template_opt1.4_keywords.robot
 
-Suite Setup  startup OPT SUT
-Suite Teardown  shutdown SUT
+# Suite Setup  startup OPT SUT
+Suite Teardown  Delete All Templates
 
-Force Tags   OPT14
+Force Tags   OPT14    refactor
 
 
 
@@ -76,7 +76,7 @@ Retrieve OPT List From Server
 
     retrieve list of uploaded OPTs
     verify server response
-    clean up test variables
+    Clean Up Suite Variables
 
 
 
@@ -84,17 +84,19 @@ Retrieve OPT List From Server
 upload valid OPT
     [Arguments]           ${opt file}
 
-    start request session
+    prepare new request session    XML
+    ...                            Prefer=return=representation
     get valid OPT file    ${opt file}
     upload OPT file
     server accepted OPT
-    [Teardown]            clean up test variables
+    [Teardown]            Clean Up Suite Variables
 
 
 retrieve list of uploaded OPTs
     retrieve OPT list
 
 
+# TODO: @WLAD tidy up this one
 verify server response
     [Documentation]     Multiple verifications of the response are conducted:
     ...                 - response status code is 200
@@ -118,7 +120,7 @@ verify server response
 
     # this checks entries in the list @ index 0
     Object  response body 0
-    ...     required=["concept", "templateId", "createdOn", "uid"]
+    ...     required=["concept", "template_id","archetype_id", "created_timestamp"]
     #...     additionalProperties=false	# must not have other properties
     Object  $[0]               # same as line above
 
@@ -126,25 +128,25 @@ verify server response
     String  response body 0 concept
     String  $[*].concept      # same as "String  response body * concept" ???
     String  $[0].concept      # same as "String  response body 0 concept"
-    String  $[0].createdOn
-    String  $[*].templateId
-    String  $[*].uid
-    # String  $[*].createdOn          # FAILS: cause not OPTs have this property
-    # String  $[*].archetypeId        # EHRSCAPE
-    # String  $[*].created_timestamp  # EHRSCAPE
-    # String  $[*].template_id        # EHRSCAPE
+   # String  $[0].createdOn
+  #  String  $[*].templateId
+  #  String  $[*].uid
+  #  String  $[*].createdOn          # FAILS: cause not OPTs have this property
+    String  $[*].archetype_id
+    String  $[*].created_timestamp
+    String  $[*].template_id
 
     # log to console for quick debugging
     Output  response body 0
     Output  $[0]
-    Output  $[0].templateId
-    Output  $[0].uid
+    Output  $[0].template_id
+  #  Output  $[0].uid
     Output  $[0].concept
-    Output  $[0].createdOn
-    Output  $[0].lastAccessTime
-    Output  $[0].lastModifiedTime
-    Output  $[0].errorList
-    Output  $[0].path
+  #  Output  $[0].createdOn
+  #  Output  $[0].lastAccessTime
+  #  Output  $[0].lastModifiedTime
+  #  Output  $[0].errorList
+  #  Output  $[0].path
     # Output  $[*].templateId
     # Output  $[*].concept
     # Output  $[*]
@@ -154,7 +156,7 @@ verify server response
 
     # this checks all entries in the list
     Object  $[*]
-    ...     required=["concept", "templateId", "createdOn", "uid"]
+    ...     required=["concept", "template_id","archetype_id", "created_timestamp"]
     # ...     additionalProperties=false	# must not have other properties
 
     # # this checks all entries in the list   # awaiting clarification about syntax

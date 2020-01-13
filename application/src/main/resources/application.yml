@@ -14,27 +14,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-server:
-  port: 8080
-
 spring:
   profiles:
     active: local
-
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    type: org.apache.tomcat.jdbc.pool.DataSource
+    tomcat:
+      validationQuery: /* ping */ SELECT 1
+      testOnBorrow: true
 cache:
   config: '/ehcache.xml'
+  enabled: true
 flyway:
   locations:
     - classpath:db/migration
     - classpath:org.ehrbase.db.migration
   schemas: ehr
-
-templateFileStorageService:
-  storage:
-    path:
-      archetypes: 'file_repo/knowledge/archetypes'
-      templates: 'file_repo/knowledge/templates'
-      operationaltemplates: 'file_repo/knowledge/operational_templates'
 
 logging:
   level:
@@ -42,3 +38,4 @@ logging:
     de.vitasystems: TRACE
     com.ethercis: DEBUG
     org.jooq: INFO
+    net.sf.ehcache: TRACE

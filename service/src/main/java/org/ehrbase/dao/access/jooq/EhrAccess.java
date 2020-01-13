@@ -32,31 +32,23 @@ import com.nedap.archie.rm.support.identification.PartyRef;
 import org.apache.commons.collections4.map.MultiValueMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.InvalidApiParameterException;
+import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
-import org.ehrbase.jooq.pg.tables.records.ContributionRecord;
-import org.ehrbase.jooq.pg.tables.records.EhrRecord;
-import org.ehrbase.jooq.pg.tables.records.IdentifierRecord;
-import org.ehrbase.jooq.pg.tables.records.StatusRecord;
+import org.ehrbase.jooq.pg.tables.records.*;
 import org.ehrbase.serialisation.RawJson;
 import org.ehrbase.service.BaseService;
-import org.jooq.DSLContext;
-import org.jooq.InsertQuery;
-import org.jooq.Record;
-import org.jooq.UpdateQuery;
-import org.jooq.impl.DSL;
-import org.postgresql.util.PGobject;
+import org.jooq.*;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.ehrbase.jooq.pg.Tables.*;
 
@@ -74,21 +66,21 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     private StatusRecord statusRecord = null;
     private boolean isNew = false;
 
-    //holds the non serialized archetyped other_details structure
-    private Locatable otherDetails = null;
-    private String otherDetailsSerialized = null; //kind of a hack really, used to deal with RAW JSON without a template!
+    //holds the non serialized ItemStructure other_details structure
+    private ItemStructure otherDetails = null;
     private String otherDetailsTemplateId;
 
     private I_ContributionAccess contributionAccess = null; //locally referenced contribution associated to ehr transactions
 
     //set this variable to change the identification  mode in status
+    public enum PARTY_MODE {IDENTIFIER, EXTERNAL_REF}
     private PARTY_MODE party_identifier = PARTY_MODE.EXTERNAL_REF;
 
     /**
      * @throws InternalServerException if creating or retrieving system failed
      */
-    public EhrAccess(DSLContext context, UUID partyId, UUID systemId, UUID directoryId, UUID accessId, UUID ehrId) {
-        super(context, null, null);
+    public EhrAccess(DSLContext context, ServerConfig serverConfig, UUID partyId, UUID systemId, UUID directoryId, UUID accessId, UUID ehrId) {
+        super(context, null, null, serverConfig);
 
         this.ehrRecord = context.newRecord(EHR_);
         if (ehrId != null) {    // checking for and executing case of custom ehr ID
@@ -97,13 +89,13 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             ehrRecord.setId(UUID.randomUUID());
         }
 
-        //retrieveInstanceByNamedSubject an existing status for this party (which should not occur
+        //check if party already has an STATUS (and therefore EHR)
         if (!context.fetch(STATUS, STATUS.PARTY.eq(partyId)).isEmpty()) {
             log.warn("This party is already associated to an EHR");
             throw new IllegalArgumentException("Party:" + partyId + " already associated to an EHR, please retrieveInstanceByNamedSubject the associated EHR for updates instead");
         }
 
-        //storeComposition a new status
+        //init a new status record
         statusRecord = context.newRecord(STATUS);
         statusRecord.setId(UUID.randomUUID());
         statusRecord.setIsModifiable(true);
@@ -119,13 +111,11 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             ehrRecord.setSystemId(I_SystemAccess.createOrRetrieveLocalSystem(this));
         }
 
-
         this.isNew = true;
 
         //associate a contribution with this EHR
         contributionAccess = I_ContributionAccess.getInstance(this, ehrRecord.getId());
         contributionAccess.setState(ContributionDef.ContributionState.COMPLETE);
-
     }
 
     /**
@@ -234,15 +224,40 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         return (UUID) record.getValue(0);
     }
 
-    /**
-     * @throws IllegalArgumentException if retrieving failed for given input
-     */
-    public static I_EhrAccess retrieveInstanceByStatus(I_DomainAccess domainAccess, UUID status) {
-        EhrAccess ehrAccess = new EhrAccess(domainAccess);
+    public static I_EhrAccess retrieveInstanceByStatus(I_DomainAccess domainAccess, UUID status, Integer version) {
+        if (version < 1)
+            throw new IllegalArgumentException("Version number must be > 0");
 
+        EhrAccess ehrAccess = new EhrAccess(domainAccess);
         Record record;
 
+        // necessary anyway, but if no version is provided assume latest version (otherwise this one will be overwritten with wanted one)
         ehrAccess.statusRecord = domainAccess.getContext().fetchOne(STATUS, STATUS.ID.eq(status));
+
+        // first step of retrieving a particular version is to query for the amount of versions, which depends on the latest one above
+        Integer versions = domainAccess.getContext().fetchCount(STATUS_HISTORY, STATUS_HISTORY.EHR_ID.eq(ehrAccess.statusRecord.getEhrId())) + 1;
+        // check if input version number fits into existing amount of versions, but is not the same (same equals latest version)
+        // when either there is only one version or the requested one is the latest, continue with record already set
+        if (versions > version && !version.equals(versions)) { // or get the particular requested version
+            // TODO: why does sonarlint says that the expression above is always true? tested it, it can be true and false!?
+            // note: here version is > 1 and there has to be at least one history entry
+            Result result = domainAccess.getContext().selectFrom(STATUS_HISTORY)
+                    .orderBy(STATUS_HISTORY.SYS_TRANSACTION.asc())  // oldest at top, i.e. [0]
+                    .fetch();
+
+            if (result.isEmpty())
+                throw new InternalServerException("Error retrieving EHR_STATUS"); // should never be reached
+
+            // result set of history table is always version+1, because the latest is in non-history table
+            StatusHistoryRecord statusHistoryRecord = (StatusHistoryRecord) result.get(version-1);
+            // FIXME EHR_STATUS: manually converting types. dirty, formally break jooq-style, right? the record would considered to be updated when calling methods like .store()
+            ehrAccess.statusRecord.setIsQueryable(statusHistoryRecord.getIsQueryable());
+            ehrAccess.statusRecord.setIsModifiable(statusHistoryRecord.getIsModifiable());
+            ehrAccess.statusRecord.setParty(statusHistoryRecord.getParty());
+            ehrAccess.statusRecord.setOtherDetails(statusHistoryRecord.getOtherDetails());
+            ehrAccess.statusRecord.setSysTransaction(statusHistoryRecord.getSysTransaction());
+            ehrAccess.statusRecord.setSysPeriod(statusHistoryRecord.getSysPeriod());
+        }
 
         try {
             record = domainAccess.getContext().selectFrom(EHR_)
@@ -292,10 +307,9 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         //retrieveInstanceByNamedSubject the corresponding status
         ehrAccess.statusRecord = context.fetchOne(STATUS, STATUS.EHR_ID.eq(ehrAccess.ehrRecord.getId()));
 
-        //rebuild otherDetails
+        //set otherDetails if available
         if (ehrAccess.statusRecord.getOtherDetails() != null) {
-            String serialized = ((PGobject) ehrAccess.statusRecord.getOtherDetails()).getValue();
-            ehrAccess.otherDetails = new RawJson().unmarshal(serialized, ItemStructure.class);
+            ehrAccess.otherDetails = ehrAccess.statusRecord.getOtherDetails();
         }
 
         ehrAccess.isNew = false;
@@ -382,11 +396,6 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         return ehrAccess.getStatusRecord().getParty();
     }
 
-    // TODO build this for wrong requirement - so delete if really not needed at end of /ehr endpoints' implementation
-    public static boolean hasPreviousVersionOfStatus(I_DomainAccess domainAccess, UUID ehrStatusId) {
-        return domainAccess.getContext().fetchExists(STATUS_HISTORY, STATUS_HISTORY.ID.eq(ehrStatusId));
-    }
-
     @Override
     public DataAccess getDataAccess() {
         return this;
@@ -424,36 +433,26 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     }
 
     /**
-     * @throws IllegalArgumentException when EHR couldn't be stored
+     * @throws InvalidApiParameterException when input couldn't be processed, i.e. EHR not stored
      */
     @Override
     public UUID commit(Timestamp transactionTime) {
 
         ehrRecord.setDateCreated(transactionTime);
-//        ehrRecord.setDateCreatedTzid(transactionTime.toLocalDateTime().getZone().getID());
+        ehrRecord.setDateCreatedTzid(ZonedDateTime.now().getZone().getId());    // get zoneId independent of "transactionTime"
         ehrRecord.store();
 
         if (isNew && statusRecord != null) {
-            UUID uuid = UUID.randomUUID();
-            InsertQuery<?> insertQuery = context.insertQuery(STATUS);
-            insertQuery.addValue(STATUS.ID, uuid);
-            insertQuery.addValue(STATUS.EHR_ID, ehrRecord.getId());
-            insertQuery.addValue(STATUS.IS_QUERYABLE, statusRecord.getIsQueryable());
-            insertQuery.addValue(STATUS.IS_MODIFIABLE, statusRecord.getIsModifiable());
-            insertQuery.addValue(STATUS.PARTY, statusRecord.getParty());
-//            Field otherDetailsField = DSL.field(STATUS.OTHER_DETAILS+"::jsonb");
+
+            statusRecord.setEhrId(ehrRecord.getId());
             if (otherDetails != null) {
-                insertQuery.addValue(STATUS.OTHER_DETAILS, (Object) DSL.field(DSL.val(serializeOtherDetails()) + JSONB));
-            } else if (otherDetailsSerialized != null)
-                insertQuery.addValue(STATUS.OTHER_DETAILS, (Object) DSL.field(DSL.val(otherDetailsSerialized) + JSONB));
+                statusRecord.setOtherDetails(otherDetails);
+            }
+            statusRecord.setSysTransaction(transactionTime);
 
-            insertQuery.addValue(STATUS.SYS_TRANSACTION, transactionTime);
-
-            Integer result = insertQuery.execute();
-
-            if (result == 0)
-                throw new IllegalArgumentException("Could not store Ehr Status");
-//            statusRecord.store();
+            if (statusRecord.store() == 0) {
+                throw new InvalidApiParameterException("Input EHR couldn't be stored");
+            }
         }
 
         return ehrRecord.getId();
@@ -482,38 +481,41 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         return uuid;
     }
 
+    /**
+     * {@inheritDoc}
+     * @throws InvalidApiParameterException when marshalling of EHR_STATUS / OTHER_DETAILS failed
+     */
     @Override
     public Boolean update(Timestamp transactionTime) {
         return update(transactionTime, false);
     }
 
+    /**
+     * {@inheritDoc}
+     * @throws InvalidApiParameterException when marshalling of EHR_STATUS / OTHER_DETAILS failed
+     */
     @Override
     public Boolean update(Timestamp transactionTime, boolean force) {
         boolean result = false;
 
         if (force || statusRecord.changed()) {
 
-            UpdateQuery<?> updateQuery = context.updateQuery(STATUS);
-            updateQuery.addValue(STATUS.EHR_ID, ehrRecord.getId());
-            updateQuery.addValue(STATUS.IS_QUERYABLE, statusRecord.getIsQueryable());
-            updateQuery.addValue(STATUS.IS_MODIFIABLE, statusRecord.getIsModifiable());
-            updateQuery.addValue(STATUS.PARTY, statusRecord.getParty());
-
+            statusRecord.setEhrId(ehrRecord.getId());
             if (otherDetails != null) {
-                updateQuery.addValue(STATUS.OTHER_DETAILS, (Object) DSL.field(DSL.val(serializeOtherDetails()) + JSONB));
-            } else if (otherDetailsSerialized != null)
-                updateQuery.addValue(STATUS.OTHER_DETAILS, (Object) DSL.field(DSL.val(otherDetailsSerialized) + JSONB));
+                statusRecord.setOtherDetails(otherDetails);
+            }
+            statusRecord.setSysTransaction(transactionTime);
 
-            updateQuery.addValue(STATUS.SYS_TRANSACTION, transactionTime);
-            updateQuery.addConditions(STATUS.ID.eq(statusRecord.getId()));
-
-            result |= updateQuery.execute() > 0;
+            try {
+                result = statusRecord.update() > 0;
+            } catch (RuntimeException e) {
+                throw new InvalidApiParameterException("Couldn't marshall given EHR_STATUS / OTHER_DETAILS, content probably breaks RM rules");
+            }
         }
 
         if (force || ehrRecord.changed()) {
-            ZonedDateTime committedTime = ZonedDateTime.now();
-            ehrRecord.setDateCreated(Timestamp.valueOf(committedTime.toLocalDateTime()));
-            ehrRecord.setDateCreatedTzid(committedTime.getZone().getId());
+            ehrRecord.setDateCreated(transactionTime);
+            ehrRecord.setDateCreatedTzid(ZonedDateTime.now().getZone().getId());    // get zoneId independent of "transactionTime"
             result |= ehrRecord.update() > 0;
 
         }
@@ -559,10 +561,6 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         throw new InternalServerException("INTERNAL: this delete is not legal");
     }
 
-    public I_EhrAccess retrieveByStatus(UUID status) {
-        return retrieveInstanceByStatus(this, status);
-    }
-
     /**
      * @throws IllegalArgumentException when instance's EHR ID can't be matched to existing one
      */
@@ -571,7 +569,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         Record record;
 
         try {
-            record = context.selectFrom(EHR_)
+            record = getContext().selectFrom(EHR_)
                     .where(EHR_.ID.eq(getId()))
                     .fetchOne();
         } catch (Exception e) { //possibly not unique for a party: this is not permitted!
@@ -586,7 +584,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
 
         ehrRecord = (EhrRecord) record;
         //retrieveInstanceByNamedSubject the corresponding status
-        statusRecord = context.fetchOne(STATUS, STATUS.EHR_ID.eq(ehrRecord.getId()));
+        statusRecord = getContext().fetchOne(STATUS, STATUS.EHR_ID.eq(ehrRecord.getId()));
         isNew = false;
 
         return getId();
@@ -640,7 +638,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
 
     @Override
     public UUID getStatusId() {
-        return context.fetchOne(STATUS, STATUS.EHR_ID.eq(ehrRecord.getId())).getId();
+        return getContext().fetchOne(STATUS, STATUS.EHR_ID.eq(ehrRecord.getId())).getId();
     }
 
     @Override
@@ -654,14 +652,13 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     }
 
     @Override
-    public void setOtherDetails(Locatable otherDetails, String templateId) {
+    public void setOtherDetails(ItemStructure otherDetails, String templateId) {
         this.otherDetails = otherDetails;
         this.otherDetailsTemplateId = Optional.ofNullable(otherDetails).map(Locatable::getArchetypeDetails).map(Archetyped::getTemplateId).map(ObjectId::getValue).orElse(null);
     }
 
-
     @Override
-    public Locatable getOtherDetails() {
+    public ItemStructure getOtherDetails() {
         return otherDetails;
     }
 
@@ -673,19 +670,6 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     @Override
     public void setContributionAccess(I_ContributionAccess contributionAccess) {
         this.contributionAccess = contributionAccess;
-    }
-
-
-    // TODO build this for wrong requirement - so delete if really not needed at end of /ehr endpoints' implementation
-    @Override
-    public Integer getLastVersionNumberOfStatus(I_DomainAccess domainAccess, UUID ehrStatusId) {
-
-        if (!hasPreviousVersionOfStatus(domainAccess, ehrStatusId))
-            return 1;
-
-        int versionCount = domainAccess.getContext().fetchCount(STATUS_HISTORY, STATUS_HISTORY.ID.eq(ehrStatusId));
-
-        return versionCount + 1;
     }
 
     @Override
@@ -706,7 +690,10 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
 
         status.setModifiable(isModifiable());
         status.setQueryable(isQueryable());
-        status.setOtherDetails((ItemStructure) getOtherDetails());
+        // set otherDetails if available
+        if (statusRecord.getOtherDetails() != null) {
+            status.setOtherDetails(statusRecord.getOtherDetails());
+        }
         status.setUid(new HierObjectId(statusRecord.getId().toString()));
 
         I_PartyIdentifiedAccess party = I_PartyIdentifiedAccess.retrieveInstance(getDataAccess(), getParty());
@@ -718,5 +705,50 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         return status;
     }
 
-    public enum PARTY_MODE {IDENTIFIER, EXTERNAL_REF}
+    @Override
+    public Integer getLastVersionNumberOfStatus(I_DomainAccess domainAccess, UUID ehrStatusId) {
+
+        if (!hasPreviousVersionOfStatus(domainAccess, ehrStatusId))
+            return 1;
+
+        int versionCount = domainAccess.getContext().fetchCount(STATUS_HISTORY, STATUS_HISTORY.ID.eq(ehrStatusId));
+
+        return versionCount + 1;
+    }
+
+    private static boolean hasPreviousVersionOfStatus(I_DomainAccess domainAccess, UUID ehrStatusId) {
+        return domainAccess.getContext().fetchExists(STATUS_HISTORY, STATUS_HISTORY.ID.eq(ehrStatusId));
+    }
+
+    @Override
+    public int getEhrStatusVersionFromTimeStamp(Timestamp time) {
+        UUID statusUid = this.getStatusId();
+        // retrieve current version from status tables
+        EhrAccess ehrAccess = new EhrAccess(getDataAccess());
+        ehrAccess.statusRecord = getDataAccess().getContext().fetchOne(STATUS, STATUS.ID.eq(statusUid));
+
+        // retrieve all other versions from status_history and sort by time
+        Result result = getDataAccess().getContext().selectFrom(STATUS_HISTORY)
+                .orderBy(STATUS_HISTORY.SYS_TRANSACTION.asc())  // oldest at top, i.e. [0]
+                .fetch();
+        Collections.reverse(result); // change to latest at top ([0]) for better comparison
+
+        // see 'what version was the top version at moment T?'
+        // first: is time T after current version? then current version is result
+        if (time.after(ehrAccess.statusRecord.getSysTransaction()))
+            return getLastVersionNumberOfStatus(getDataAccess(), statusUid);
+        // second: if not, which one of the historical versions matches?
+        //for (Object historyRecord : result) {
+        for (int i = 0; i < result.size(); i++) {
+            if (result.get(i) instanceof StatusHistoryRecord) {
+                // is time T after this version? then return its version number
+                if (time.after(((StatusHistoryRecord) result.get(i)).getSysTransaction()))
+                    return result.size() - i;   // reverses iterator because order was reversed above and always get non zero
+            } else {
+                throw new InternalServerException("Problem comparing timestamps of EHR_STATUS versions");
+            }
+        }
+
+        throw new ObjectNotFoundException("EHR_STATUS", "Could not find EHR_STATUS version matching given timestamp");
+    }
 }

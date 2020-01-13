@@ -52,7 +52,6 @@ import java.util.function.Supplier;
 @RequestMapping(path = "/rest/openehr/v1/ehr", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrEhrController extends BaseController {
 
-
     private final EhrService ehrService;
 
     @Autowired
@@ -214,17 +213,6 @@ public class OpenehrEhrController extends BaseController {
 
         return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData()))
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
-    }
-
-    @PutMapping(path = "/{ehr_id}/ehr_status")
-    @ApiOperation(value = "Update status of the specified EHR")
-    @ApiNotes("ehrPutEhrUuidStatus.md")
-    public ResponseEntity<Void> updateStatus(@ApiParam(value = "EHR ID", required = true) @PathVariable("ehr_id") UUID ehrId,
-                                             @ApiParam(value = "EHR status.", required = true) @RequestBody() EhrStatus ehrStatus) {
-
-        Optional<EhrStatus> updateStatus = ehrService.updateStatus(ehrId, ehrStatus);
-        URI url = URI.create(getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId.toString() + "/ehr_status/" + updateStatus.get().getUid().getValue());
-        return ResponseEntity.noContent().header(HttpHeaders.LOCATION, url.toString()).build();
     }
 
     /**

@@ -46,9 +46,6 @@ public interface I_FolderAccess extends I_SimpleCRUD<I_EntryAccess, UUID> {
      */
     Map<UUID, I_FolderAccess>  getSubfoldersList();
 
-    List<I_FolderAccess> getSubFoldersInsertList();
-
-
     /**
      * Set the details stored as a part of the given {@link  com.nedap.archie.rm.directory.Folder}
      * @param details
@@ -110,9 +107,9 @@ public interface I_FolderAccess extends I_SimpleCRUD<I_EntryAccess, UUID> {
 
     void setIsFolderActive(boolean folderActive);
 
-    Object getFolderDetails();
+    ItemStructure getFolderDetails();
 
-    void setFolderDetails(Object folderDetails);
+    void setFolderDetails(ItemStructure folderDetails);
 
     void setFolderSysTransaction(Timestamp folderSysTransaction);
 

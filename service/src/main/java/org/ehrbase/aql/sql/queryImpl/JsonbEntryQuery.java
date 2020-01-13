@@ -64,13 +64,16 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
     private final static String JSONBSelector_EHR_OTHER_CONTEXT_OPEN = SELECT_EHR_OTHER_CONTEXT_MACRO + " #>> '{";
     public final static String Jsquery_EHR_OTHER_CONTEXT_OPEN = SELECT_EHR_OTHER_CONTEXT_MACRO + " @@ '";
 
-    public final static String matchNodePredicate = "/(content|protocol|data|description|instruction|items|activities|activity|composition|entry|evaluation|observation|action|at)\\[([(0-9)|(A-Z)|(a-z)|\\-|_|\\.]*)\\]";
+    //CCH 191018 EHR-163 matches trailing '/value'
+    // '/name,0' is to matches path relative to the name array
+    public final static String matchNodePredicate = "(/(content|events|protocol|data|description|instruction|items|activities|activity|composition|entry|evaluation|observation|action)\\[([(0-9)|(A-Z)|(a-z)|\\-|_|\\.]*)\\])|(/value|/time|/name,0)";
 
     //Generic stuff
     private final static String JSONBSelector_CLOSE = "}'";
     public final static String Jsquery_CLOSE = " '::jsquery";
     private static final String namedItemPrefix = " and name/value='";
     public static final String TAG_COMPOSITION = "/composition";
+    public static final String TAG_CONTENT = "/content";
 
     private static boolean useEntry = false;
 
@@ -87,9 +90,8 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
     };
 
     private boolean containsJqueryPath = false; //true if at leas one AQL path is contained in expression
-    private boolean jsonDataBlock = false;
     private boolean ignoreUnresolvedIntrospect = false;
-    private static boolean isNodeNameValuePredicated = false;
+
     private static String ENV_IGNORE_UNRESOLVED_INTROSPECT = "aql.ignoreUnresolvedIntrospect";
 
     private String entry_root;
@@ -160,7 +162,6 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
             else if (path_part.equals(PATH_PART.VARIABLE_PATH_PART)) {
 
                 if (nodePredicate.hasPredicate()) {
-                    isNodeNameValuePredicated = true;
                     //do the formatting to allow name/value node predicate processing
                     jqueryPath = new NodeNameValuePredicate(nodePredicate).path(jqueryPath, nodeId);
                 } else {
@@ -206,6 +207,7 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
 //        String jquery = StringUtils.join(jqueryPath.toArray(new String[] {}));
 
         useEntry = true;
+        //CHC 191018 EHR-163 '/value' for an ELEMENT will return a structure
         if (path_part.equals(PATH_PART.VARIABLE_PATH_PART) && jqueryPath.get(jqueryPath.size() - 1).matches(matchNodePredicate)) {
             jsonDataBlock = true;
         }
@@ -257,11 +259,23 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
 
 
     @Override
-    public Field<?> makeField(String templateId, UUID compositionId, String identifier, I_VariableDefinition variableDefinition, boolean withAlias, Clause clause) {
+    public Field<?> makeField(String templateId, UUID compositionId, String identifier, I_VariableDefinition variableDefinition, Clause clause) {
+
+        boolean isRootContent = false; //that is a query path on a full composition starting from the root content
+
         if (entry_root == null) //case of (invalid) composition with null entry!
             return null;
 
-        String path = pathResolver.pathOf(variableDefinition.getIdentifier());
+        String path;
+        if (variableDefinition.getPath() != null && variableDefinition.getPath().startsWith("content")) {
+            path = "/" + variableDefinition.getPath();
+            isRootContent = true;
+        }
+        else
+            path = pathResolver.pathOf(variableDefinition.getIdentifier());
+
+        String alias = clause.equals(Clause.WHERE) ? null : variableDefinition.getAlias();
+
         if (path == null) {
             //return a null field
             String cast = "";
@@ -270,17 +284,16 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
             if (variableDefinition.getPath().endsWith("magnitude"))
                 cast = "::numeric";
 
-            if (withAlias)
+            if (alias != null)
                 return DSL.field(DSL.val((String) null) + cast).as(variableDefinition.getAlias());
             else
                 return DSL.field(DSL.val((String) null) + cast);
 //            throw new IllegalArgumentException("Could not resolve path for identifier:" + variableDefinition.getIdentifier());
         }
-        String alias = variableDefinition.getAlias();
 
         List<String> itemPathArray = new ArrayList<>();
         itemPathArray.add(entry_root.replaceAll("'", "''"));
-        if (!path.startsWith(TAG_COMPOSITION))
+        if (!path.startsWith(TAG_COMPOSITION) && !isRootContent)
             itemPathArray.addAll(jqueryPath(PATH_PART.IDENTIFIER_PATH_PART, path, "0"));
         itemPathArray.addAll(jqueryPath(PATH_PART.VARIABLE_PATH_PART, variableDefinition.getPath(), "0"));
 
@@ -328,9 +341,9 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
                 throw new IllegalArgumentException("MetaDataCache is not initialized");
             String reducedItemPathArray = new SegmentedPath(referenceItemPathArray).reduce();
             if (reducedItemPathArray != null && !reducedItemPathArray.isEmpty()) {
-                String type = introspectCache.getQueryOptMetaData(templateId).type(reducedItemPathArray);
-                if (type != null) {
-                    String pgType = new PGType(itemPathArray).forRmType(type);
+                itemType = introspectCache.getQueryOptMetaData(templateId).type(reducedItemPathArray);
+                if (itemType != null) {
+                    String pgType = new PGType(itemPathArray).forRmType(itemType);
                     if (pgType != null)
                         itemPath = "(" + itemPath + ")::" + pgType;
                 }
@@ -347,11 +360,11 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
 
 
         Field<?> fieldPathItem = null;
-        if (withAlias) {
-            if (StringUtils.isNotEmpty(alias))
+        if (clause.equals(Clause.SELECT)) {
+            if (alias != null && StringUtils.isNotEmpty(alias))
                 fieldPathItem = DSL.field(itemPath, String.class).as(alias);
             else {
-                String tempAlias = "FIELD_" + getSerial();
+                String tempAlias = new DefaultColumnId().value(variableDefinition);
                 fieldPathItem = DSL.field(itemPath, String.class).as(tempAlias);
             }
         } else
@@ -454,29 +467,10 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
     }
 
     @Override
-    public boolean isEhrIdFiltered() {
-        return false;
-    }
-
-    @Override
-    public boolean isCompositionIdFiltered() {
-        return false;
-    }
-
-    @Override
     public boolean isContainsJqueryPath() {
         return containsJqueryPath;
     }
 
-    @Override
-    public boolean isUseEntry() {
-        return useEntry;
-    }
-
-    @Override
-    public boolean isJsonDataBlock() {
-        return jsonDataBlock;
-    }
 
     @Override
     public String getJsonbItemPath() {

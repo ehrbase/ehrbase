@@ -156,8 +156,8 @@ public class OpenehrCompositionController extends BaseController {
 
         CompositionFormat compositionFormat = extractCompositionFormat(contentType);
 
-        // If the If-Match is not the latest latest existing version, throw error       TODO: handling of system ID TBD, see EHR-192
-        if (!((versionedObjectUid + "::" + "local.ethercis.com" + "::" + compositionService.getLastVersionNumber(getCompositionUid(versionedObjectUid.toString()))).equals(ifMatch))) {
+        // If the If-Match is not the latest latest existing version, throw error
+        if (!((versionedObjectUid + "::" + compositionService.getServerConfig().getNodename() + "::" + compositionService.getLastVersionNumber(extractVersionedObjectUidFromVersionUid(versionedObjectUid.toString()))).equals(ifMatch))) {
             throw new PreconditionFailedException("If-Match header does not match latest existing version");
         }
 
@@ -166,7 +166,7 @@ public class OpenehrCompositionController extends BaseController {
         inputUuid.ifPresent(id -> {
             // TODO currently the this part of the spec is implemented as "the request body's composition version_uid must be compatible to the given versioned_object_uid"
             // TODO it is further unclear what exactly the REST spec's "match" means, see: https://github.com/openEHR/specifications-ITS-REST/issues/83
-            if (!versionedObjectUid.equals(getCompositionUid(id))) {
+            if (!versionedObjectUid.equals(extractVersionedObjectUidFromVersionUid(id))) {
                 throw new PreconditionFailedException("UUID from input must match given versioned_object_uid in request URL");
             }
         });
@@ -182,9 +182,9 @@ public class OpenehrCompositionController extends BaseController {
 
             if (prefer.equals(RETURN_REPRESENTATION)) {
                 // both options extract needed info from versionUid
-                respData = buildCompositionResponseData(getCompositionUid(compositionVersionUid), getCompositionVersion(compositionVersionUid), accept, uri, headerList, () -> new CompositionResponseData(null, null));
+                respData = buildCompositionResponseData(extractVersionedObjectUidFromVersionUid(compositionVersionUid), extractVersionFromVersionUid(compositionVersionUid), accept, uri, headerList, () -> new CompositionResponseData(null, null));
             } else {    // "minimal" is default fallback
-                respData = buildCompositionResponseData(getCompositionUid(compositionVersionUid), getCompositionVersion(compositionVersionUid), accept, uri, headerList,  () -> null);
+                respData = buildCompositionResponseData(extractVersionedObjectUidFromVersionUid(compositionVersionUid), extractVersionFromVersionUid(compositionVersionUid), accept, uri, headerList,  () -> null);
             }
         } catch (ObjectNotFoundException e) { // composition not found
             return ResponseEntity.notFound().build();
@@ -225,7 +225,7 @@ public class OpenehrCompositionController extends BaseController {
         HttpHeaders headers = new HttpHeaders();
 
         // check if this composition in given preceding version is available
-        compositionService.retrieve(getCompositionUid(precedingVersionUid), 1).orElseThrow(
+        compositionService.retrieve(extractVersionedObjectUidFromVersionUid(precedingVersionUid), 1).orElseThrow(
                 () -> new ObjectNotFoundException("composition", "No EHR with the supplied ehr_id or no COMPOSITION with the supplied preceding_version_uid.")
         ); // TODO check for ehr + composition match as well - wow to to that? should be part of deletion, according to openEHR platform spec --> postponed, see EHR-265
 
@@ -235,13 +235,12 @@ public class OpenehrCompositionController extends BaseController {
         }*/
 
         // prepare header data
-        // TODO dynamic system id --> postponed, see EHR-206
-        String latestVersionId = getCompositionUid(precedingVersionUid) + "::local.ethercis.com::" + compositionService.getLastVersionNumber(getCompositionUid(precedingVersionUid));
+        String latestVersionId = extractVersionedObjectUidFromVersionUid(precedingVersionUid) + "::" + compositionService.getServerConfig().getNodename() + "::" + compositionService.getLastVersionNumber(extractVersionedObjectUidFromVersionUid(precedingVersionUid));
         // TODO change to dynamic linking --> postponed, see EHR-230
         URI uri = URI.create(this.encodePath(getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId.toString() + "/composition/" + latestVersionId));
 
         // If precedingVersionUid parameter doesn't match latest version
-        if (!compositionService.getLastVersionNumber(getCompositionUid(precedingVersionUid)).equals(getCompositionVersion(precedingVersionUid))) {
+        if (!compositionService.getLastVersionNumber(extractVersionedObjectUidFromVersionUid(precedingVersionUid)).equals(extractVersionFromVersionUid(precedingVersionUid))) {
             // 409 is returned when supplied preceding_version_uid doesn’t match the latest version. Returns latest version in the Location and ETag headers.
             headers.setLocation(uri);
             headers.setETag("\"" + latestVersionId + "\"");
@@ -250,7 +249,7 @@ public class OpenehrCompositionController extends BaseController {
         }
 
         try { // the actual deleting
-            LocalDateTime time = compositionService.delete(getCompositionUid(precedingVersionUid));
+            LocalDateTime time = compositionService.delete(extractVersionedObjectUidFromVersionUid(precedingVersionUid));
 
             // TODO last modified
             headers.setLocation(uri);
@@ -320,12 +319,12 @@ public class OpenehrCompositionController extends BaseController {
 
         // Note: Since this method can be called by another mapping as "almost overloaded" function some parameters might be semantically named wrong in that case. E.g. versionedObjectUid can contain a versionUid.
         // Note: versionUid should be of format "uuid::domain::version", versionObjectUid of format "uuid"
-        UUID compositionUid = getCompositionUid(versionedObjectUid);  // extracts UUID from long or short notation
+        UUID compositionUid = extractVersionedObjectUidFromVersionUid(versionedObjectUid);  // extracts UUID from long or short notation
 
         int version = 0;    // fallback 0 means latest version
-        if (getCompositionVersion(versionedObjectUid) != 0) {
+        if (extractVersionFromVersionUid(versionedObjectUid) != 0) {
             // the given ID contains a version, therefore this is case GET {version_uid}
-            version = getCompositionVersion(versionedObjectUid);
+            version = extractVersionFromVersionUid(versionedObjectUid);
         } else {
             // case GET {versioned_object_uid}{?version_at_time}
             if (versionAtTime != null) {
@@ -503,7 +502,7 @@ public class OpenehrCompositionController extends BaseController {
                     respHeaders.setLocation(uri);
                     break;
                 case ETAG:
-                    respHeaders.setETag("\"" + compositionId + "::" + compositionService.getLastVersionNumber(compositionId) + "\"");  // TODO - see EHR-206
+                    respHeaders.setETag("\"" + compositionId + "::" + compositionService.getServerConfig().getNodename() + "::" + compositionService.getLastVersionNumber(compositionId) + "\"");
                     break;
                 case LAST_MODIFIED:
                     // TODO should be VERSION.commit_audit.time_committed.value which is not implemented yet - mock for now
@@ -554,15 +553,4 @@ public class OpenehrCompositionController extends BaseController {
         return Optional.of(new InternalResponse<>(minimalOrRepresentation, respHeaders));
     }
 
-    private UUID getCompositionUid(String fullcompositionUid) {
-        if (!fullcompositionUid.contains("::"))
-            return UUID.fromString(fullcompositionUid);
-        return UUID.fromString(fullcompositionUid.substring(0, fullcompositionUid.indexOf("::")));
-    }
-
-    private int getCompositionVersion(String fullcompositionUid) {
-        if (!fullcompositionUid.contains("::"))
-            return 0; //current version
-        return Integer.valueOf(fullcompositionUid.substring(fullcompositionUid.lastIndexOf("::") + 2));
-    }
 }

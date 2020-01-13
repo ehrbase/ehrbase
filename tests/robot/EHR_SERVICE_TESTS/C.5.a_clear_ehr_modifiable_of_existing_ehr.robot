@@ -38,19 +38,10 @@ Force Tags    put_ehr_status
 *** Test Cases ***
 Clear EHR modifiable of existing EHR
 
-    start request session    JSON
+    prepare new request session    JSON
 
     create new EHR
 
     update EHR: set ehr-status modifiable    ${FALSE}
 
     check response of 'update EHR' (JSON)
-
-    # verify content of updated EHR
-
-
-
-# *** Keywords ***
-# verify content of updated EHR
-#     retrieve EHR by ehr_id
-#     check content of retrieved EHR (JSON)

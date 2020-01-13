@@ -1,0 +1,325 @@
+<terminology name="openehr" language="en">
+	<codeset issuer="openehr" openehr_id="compression algorithms" external_id="openehr_compression_algorithms">
+		<code value="compress"/>
+		<code value="deflate"/>
+		<code value="gzip"/>
+		<code value="zlib"/>
+		<code value="other"/>
+	</codeset>
+	<codeset issuer="openehr" openehr_id="integrity check algorithms" external_id="openehr_integrity_check_algorithms">
+		<code value="SHA-1"/>
+		<code value="SHA-256"/>
+	</codeset>
+	<codeset issuer="openehr" openehr_id="normal statuses" external_id="openehr_normal_statuses">
+		<code value="HHH"/>
+		<code value="HH"/>
+		<code value="H"/>
+		<code value="N"/>
+		<code value="L"/>
+		<code value="LL"/>
+		<code value="LLL"/>
+	</codeset>
+	<group name="attestation reason">
+		<concept id="240" rubric="signed"/>
+		<concept id="648" rubric="witnessed"/>
+	</group>
+	<group name="audit change type">
+		<concept id="249" rubric="creation"/>
+		<concept id="250" rubric="amendment"/>
+		<concept id="251" rubric="modification"/>
+		<concept id="252" rubric="synthesis"/>
+		<concept id="523" rubric="deleted"/>
+		<concept id="666" rubric="attestation"/>
+		<concept id="253" rubric="unknown"/>
+	</group>
+	<group name="composition category">
+		<concept id="431" rubric="persistent"/>
+		<concept id="435" rubric="episodic"/>
+		<concept id="433" rubric="event"/>
+	</group>
+	<!--
+	<group name="MultiMedia">
+		<concept id="387" rubric="audio/DVI4" />
+		<concept id="388" rubric="audio/G722" />
+		<concept id="389" rubric="audio/G723" />
+		<concept id="390" rubric="audio/G726-16" />
+		<concept id="391" rubric="audio/G726-24" />
+		<concept id="392" rubric="audio/G726-32" />
+		<concept id="393" rubric="audio/G726-40" />
+		<concept id="394" rubric="audio/G728" />
+		<concept id="395" rubric="audio/L8" />
+		<concept id="396" rubric="audio/L16" />
+		<concept id="397" rubric="audio/LPC" />
+		<concept id="398" rubric="audio/G729" />
+		<concept id="399" rubric="audio/G729D" />
+		<concept id="400" rubric="audio/G729E" />
+		<concept id="401" rubric="video/BT656" />
+		<concept id="402" rubric="video/CelB" />
+		<concept id="403" rubric="video/JPEG" />
+		<concept id="404" rubric="video/H261" />
+		<concept id="405" rubric="video/H263" />
+		<concept id="406" rubric="video/H263-1998" />
+		<concept id="407" rubric="video/H263-2000" />
+		<concept id="408" rubric="video/MPV" />
+		<concept id="409" rubric="audio/mpeg" />
+		<concept id="410" rubric="audio/mpeg4-generic" />
+		<concept id="411" rubric="audio/L20" />
+		<concept id="412" rubric="audio/L24" />
+		<concept id="413" rubric="audio/telephone-event" />
+		<concept id="414" rubric="video/quicktime" />
+		<concept id="415" rubric="text/calendar" />
+		<concept id="416" rubric="text/directory" />
+		<concept id="417" rubric="text/html" />
+		<concept id="418" rubric="text/plain" />
+		<concept id="419" rubric="text/rtf" />
+		<concept id="420" rubric="text/sgml" />
+		<concept id="421" rubric="text/tab-separated-values" />
+		<concept id="422" rubric="text/uri-list" />
+		<concept id="423" rubric="text/xml" />
+		<concept id="424" rubric="text/xml-external-parsed-entity" />
+		<concept id="425" rubric="image/cgm" />
+		<concept id="426" rubric="image/gif" />
+		<concept id="427" rubric="image/png" />
+		<concept id="428" rubric="image/tiff" />
+		<concept id="429" rubric="image/jpeg" />
+		<concept id="517" rubric="application/msword" />
+		<concept id="518" rubric="application/pdf" />
+		<concept id="519" rubric="application/rtf" />
+		<concept id="637" rubric="application/dicom" />
+		<concept id="682" rubric="application/vnd.oasis.opendocument.text" />
+		<concept id="683" rubric="application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+	</group>
+	-->
+	<group name="property">
+		<concept id="339" rubric="Acceleration"/>
+		<concept id="342" rubric="Acceleration, angular"/>
+		<concept id="381" rubric="Amount (Eq)"/>
+		<concept id="384" rubric="Amount (mole)"/>
+		<concept id="497" rubric="Angle, plane"/>
+		<concept id="500" rubric="Angle, solid"/>
+		<concept id="335" rubric="Area"/>
+		<concept id="119" rubric="Concentration"/>
+		<concept id="350" rubric="Density"/>
+		<concept id="362" rubric="Diffusion coefficient"/>
+		<concept id="501" rubric="Electrical capacitance"/>
+		<concept id="498" rubric="Electrical charge"/>
+		<concept id="502" rubric="Electrical conductance"/>
+		<concept id="334" rubric="Electrical current"/>
+		<concept id="377" rubric="Electrical field strength"/>
+		<concept id="655" rubric="Electrical potential time"/>
+		<concept id="121" rubric="Energy"/>
+		<concept id="366" rubric="Energy density"/>
+		<concept id="508" rubric="Energy dose"/>
+		<concept id="365" rubric="Energy per area"/>
+		<concept id="364" rubric="Energy, linear"/>
+		<concept id="347" rubric="Flow rate, mass"/>
+		<concept id="352" rubric="Flow rate, mass/force"/>
+		<concept id="351" rubric="Flow rate, mass/volume"/>
+		<concept id="126" rubric="Flow rate, volume"/>
+		<concept id="348" rubric="Flux, mass"/>
+		<concept id="355" rubric="Force"/>
+		<concept id="358" rubric="Force per mass"/>
+		<concept id="357" rubric="Force, body"/>
+		<concept id="382" rubric="Frequency"/>
+		<concept id="586" rubric="Glomerular filtration rate"/>
+		<concept id="373" rubric="Heat transfer coefficient"/>
+		<concept id="505" rubric="Illuminance"/>
+		<concept id="379" rubric="Inductance"/>
+		<concept id="122" rubric="Length"/>
+		<concept id="499" rubric="Light intensity"/>
+		<concept id="123" rubric="Loudness"/>
+		<concept id="504" rubric="Luminous flux"/>
+		<concept id="378" rubric="Magnetic flux"/>
+		<concept id="503" rubric="Magnetic flux density"/>
+		<concept id="124" rubric="Mass"/>
+		<concept id="385" rubric="Mass (IU)"/>
+		<concept id="445" rubric="Mass (Units)"/>
+		<concept id="349" rubric="Mass per area"/>
+		<concept id="344" rubric="Moment inertia, area"/>
+		<concept id="345" rubric="Moment inertia, mass"/>
+		<concept id="340" rubric="Momentum"/>
+		<concept id="346" rubric="Momentum, flow rate"/>
+		<concept id="343" rubric="Momentum, angular"/>
+		<concept id="363" rubric="Power"/>
+		<concept id="369" rubric="Power density"/>
+		<concept id="368" rubric="Power flux"/>
+		<concept id="367" rubric="Power, linear"/>
+		<concept id="125" rubric="Pressure"/>
+		<concept id="507" rubric="Proportion"/>
+		<concept id="380" rubric="Qualified real"/>
+		<concept id="506" rubric="Radioactivity"/>
+		<concept id="375" rubric="Resistance"/>
+		<concept id="370" rubric="Specific energy"/>
+		<concept id="371" rubric="Specific heat, gas constant"/>
+		<concept id="337" rubric="Specific surface"/>
+		<concept id="336" rubric="Specific volume"/>
+		<concept id="354" rubric="Specific weight"/>
+		<concept id="356" rubric="Surface tension"/>
+		<concept id="127" rubric="Temperature"/>
+		<concept id="372" rubric="Thermal conductivity"/>
+		<concept id="128" rubric="Time"/>
+		<concept id="359" rubric="Torque"/>
+		<concept id="338" rubric="Velocity"/>
+		<concept id="341" rubric="Velocity, angular"/>
+		<concept id="360" rubric="Velocity, dynamic"/>
+		<concept id="361" rubric="Velocity, kinematic"/>
+		<concept id="374" rubric="Voltage, electrical"/>
+		<concept id="129" rubric="Volume"/>
+		<concept id="130" rubric="Work"/>
+		<concept id="685" rubric="Refractive power"/>
+	</group>
+	<group name="version lifecycle state">
+		<concept id="532" rubric="complete"/>
+		<concept id="553" rubric="incomplete"/>
+		<concept id="523" rubric="deleted"/>
+	</group>
+	<group name="participation function">
+		<concept id="253" rubric="unknown"/>
+	</group>
+	<group name="null flavours">
+		<concept id="271" rubric="no information"/>
+		<concept id="253" rubric="unknown"/>
+		<concept id="272" rubric="masked"/>
+		<concept id="273" rubric="not applicable"/>
+	</group>
+	<group name="participation mode">
+		<concept id="193" rubric="not specified"/>
+		<concept id="216" rubric="face-to-face communication"/>
+		<concept id="223" rubric="interpreted face-to-face communication"/>
+		<concept id="217" rubric="signing (face-to-face)"/>
+		<concept id="195" rubric="live audiovisual; videoconference; videophone"/>
+		<concept id="198" rubric="videoconferencing"/>
+		<concept id="197" rubric="videophone"/>
+		<concept id="218" rubric="signing over video"/>
+		<concept id="224" rubric="interpreted video communication"/>
+		<concept id="194" rubric="asynchronous audiovisual; recorded video"/>
+		<concept id="196" rubric="recorded video"/>
+		<concept id="202" rubric="live audio-only; telephone; internet phone; teleconference"/>
+		<concept id="204" rubric="telephone"/>
+		<concept id="203" rubric="teleconference"/>
+		<concept id="205" rubric="internet telephone"/>
+		<concept id="222" rubric="interpreted audio-only"/>
+		<concept id="199" rubric="asynchronous audio-only; dictated; voice mail"/>
+		<concept id="200" rubric="dictated"/>
+		<concept id="201" rubric="voice-mail"/>
+		<concept id="212" rubric="live text-only; internet chat; SMS chat; interactive written note"/>
+		<concept id="213" rubric="internet chat"/>
+		<concept id="214" rubric="SMS chat"/>
+		<concept id="215" rubric="interactive written note"/>
+		<concept id="206" rubric="asynchronous text; email; fax; letter; handwritten note; SMS message"/>
+		<concept id="211" rubric="handwritten note"/>
+		<concept id="210" rubric="printed/typed letter"/>
+		<concept id="207" rubric="email"/>
+		<concept id="208" rubric="facsimile/telefax"/>
+		<concept id="221" rubric="translated text"/>
+		<concept id="209" rubric="SMS message"/>
+		<concept id="219" rubric="physically present"/>
+		<concept id="220" rubric="physically remote"/>
+	</group>
+	<group name="instruction states">
+		<concept id="524" rubric="initial"/>
+		<concept id="526" rubric="planned"/>
+		<concept id="527" rubric="postponed"/>
+		<concept id="528" rubric="cancelled"/>
+		<concept id="529" rubric="scheduled"/>
+		<concept id="245" rubric="active"/>
+		<concept id="530" rubric="suspended"/>
+		<concept id="531" rubric="aborted"/>
+		<concept id="532" rubric="completed"/>
+		<concept id="533" rubric="expired"/>
+	</group>
+	<group name="instruction transitions">
+		<concept id="535" rubric="initiate"/>
+		<concept id="536" rubric="plan step"/>
+		<concept id="537" rubric="postpone"/>
+		<concept id="538" rubric="restore"/>
+		<concept id="166" rubric="cancel"/>
+		<concept id="542" rubric="postponed step"/>
+		<concept id="539" rubric="schedule"/>
+		<concept id="534" rubric="scheduled step"/>
+		<concept id="540" rubric="start"/>
+		<concept id="541" rubric="do"/>
+		<concept id="543" rubric="active step"/>
+		<concept id="544" rubric="suspend"/>
+		<concept id="545" rubric="suspended step"/>
+		<concept id="546" rubric="resume"/>
+		<concept id="547" rubric="abort"/>
+		<concept id="548" rubric="finish"/>
+		<concept id="549" rubric="time out"/>
+		<concept id="550" rubric="notify aborted"/>
+		<concept id="551" rubric="notify completed"/>
+		<concept id="552" rubric="notify cancelled"/>
+	</group>
+	<group name="subject relationship">
+		<concept id="0" rubric="self"/>
+		<concept id="3" rubric="foetus"/>
+		<concept id="10" rubric="mother"/>
+		<concept id="9" rubric="father"/>
+		<concept id="6" rubric="donor"/>
+		<concept id="253" rubric="unknown"/>
+		<concept id="261" rubric="adopted daughter"/>
+		<concept id="260" rubric="adopted son"/>
+		<concept id="259" rubric="adoptive father"/>
+		<concept id="258" rubric="adoptive mother"/>
+		<concept id="256" rubric="biological father"/>
+		<concept id="255" rubric="biological mother"/>
+		<concept id="23" rubric="brother"/>
+		<concept id="28" rubric="child"/>
+		<concept id="265" rubric="cohabitee"/>
+		<concept id="257" rubric="cousin"/>
+		<concept id="29" rubric="daughter"/>
+		<concept id="264" rubric="guardian"/>
+		<concept id="39" rubric="maternal aunt"/>
+		<concept id="8" rubric="maternal grandfather"/>
+		<concept id="7" rubric="maternal grandmother"/>
+		<concept id="38" rubric="maternal uncle"/>
+		<concept id="189" rubric="neonate"/>
+		<concept id="254" rubric="parent"/>
+		<concept id="22" rubric="partner/spouse"/>
+		<concept id="41" rubric="paternal aunt"/>
+		<concept id="36" rubric="paternal grandfather"/>
+		<concept id="37" rubric="paternal grandmother"/>
+		<concept id="40" rubric="paternal uncle"/>
+		<concept id="27" rubric="sibling"/>
+		<concept id="24" rubric="sister"/>
+		<concept id="31" rubric="son"/>
+		<concept id="263" rubric="step father"/>
+		<concept id="262" rubric="step mother"/>
+		<concept id="25" rubric="step or half brother"/>
+		<concept id="26" rubric="step or half sister"/>
+	</group>
+	<group name="term mapping purpose">
+		<concept id="669" rubric="public health"/>
+		<concept id="670" rubric="reimbursement"/>
+		<concept id="671" rubric="research study"/>
+	</group>
+	<group name="event math function">
+		<concept id="145" rubric="minimum"/>
+		<concept id="144" rubric="maximum"/>
+		<concept id="267" rubric="mode"/>
+		<concept id="268" rubric="median"/>
+		<concept id="146" rubric="mean"/>
+		<concept id="147" rubric="change"/>
+		<concept id="148" rubric="total"/>
+		<concept id="149" rubric="variation"/>
+		<concept id="521" rubric="decrease"/>
+		<concept id="522" rubric="increase"/>
+		<concept id="640" rubric="actual"/>
+	</group>
+	<group name="setting">
+		<concept id="225" rubric="home"/>
+		<concept id="227" rubric="emergency care"/>
+		<concept id="228" rubric="primary medical care"/>
+		<concept id="229" rubric="primary nursing care"/>
+		<concept id="230" rubric="primary allied health care"/>
+		<concept id="231" rubric="midwifery care"/>
+		<concept id="232" rubric="secondary medical care"/>
+		<concept id="233" rubric="secondary nursing care"/>
+		<concept id="234" rubric="secondary allied health care"/>
+		<concept id="235" rubric="complementary health care"/>
+		<concept id="236" rubric="dental care"/>
+		<concept id="237" rubric="nursing home care"/>
+		<concept id="238" rubric="other care"/>
+	</group>
+</terminology>
+

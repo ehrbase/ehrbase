@@ -71,6 +71,16 @@ public class I_VariableDefinitionHelper {
             public List<FuncParameter> getFuncParameters() {
                 return null;
             }
+
+            @Override
+            public I_VariableDefinition clone() {
+                return I_VariableDefinitionHelper.build(path, alias, identifier, distinct, function, extension);
+            }
+
+            @Override
+            public void setPath(String path) {
+
+            }
         };
     }
 

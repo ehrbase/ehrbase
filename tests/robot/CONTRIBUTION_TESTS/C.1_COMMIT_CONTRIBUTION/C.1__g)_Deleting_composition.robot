@@ -60,15 +60,14 @@ Force Tags    refactor
 Alternative flow 6: commit CONTRIBUTIONS deleting a COMPOSITION
 
     upload OPT    minimal/minimal_admin.opt
-
     create EHR
-
     commit CONTRIBUTION (JSON)    minimal/minimal_admin.contribution.json
-
     check response: is positive - returns version id
-
     commit CONTRIBUTION - with preceding_version_uid (JSON)    minimal/minimal_admin.contribution.deleted.deleted.json
+    
+        TRACE GITHUB ISSUE  70  not-ready 
 
     check response: is positive - contribution has new version
-
     check change_type of new version is    deleted
+
+    [Teardown]    restart SUT

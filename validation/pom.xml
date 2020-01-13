@@ -22,14 +22,19 @@
     <parent>
         <artifactId>server</artifactId>
         <groupId>org.ehrbase.openehr</groupId>
-        <version>0.9.0</version>
+        <version>0.10.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>validation</artifactId>
 
+
     <dependencies>
+        <dependency>
+            <groupId>org.ehrbase.openehr</groupId>
+            <artifactId>terminology</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.ehrbase.openehr</groupId>
             <artifactId>opt-1.4</artifactId>
@@ -43,6 +48,10 @@
             <artifactId>log4j-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>javax.cache</groupId>
+            <artifactId>cache-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
         </dependency>
@@ -52,8 +61,14 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>javax.cache</groupId>
-            <artifactId>cache-api</artifactId>
+            <groupId>org.ehrbase.openehr</groupId>
+            <artifactId>test-data</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.ehrbase.openehr</groupId>
+            <artifactId>serialisation</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

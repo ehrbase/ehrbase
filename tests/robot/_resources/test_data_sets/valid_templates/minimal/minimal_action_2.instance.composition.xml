@@ -1,0 +1,96 @@
+<composition xmlns="http://schemas.openehr.org/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" archetype_node_id="openEHR-EHR-COMPOSITION.minimal.v1">
+  <name>
+    <value>Minimal</value>
+  </name>
+  <archetype_details>
+    <archetype_id>
+      <value>openEHR-EHR-COMPOSITION.minimal.v1</value>
+    </archetype_id>
+    <template_id>
+      <value>Minimal action 2</value>
+    </template_id>
+    <rm_version>1.0.2</rm_version>
+  </archetype_details>
+  <language>
+    <terminology_id>
+      <value>ISO_639-1</value>
+    </terminology_id>
+    <code_string>es</code_string>
+  </language>
+  <territory>
+    <terminology_id>
+      <value>ISO_3166-1</value>
+    </terminology_id>
+    <code_string>UY</code_string>
+  </territory>
+  <category>
+    <value>evento</value>
+    <defining_code>
+      <terminology_id>
+        <value>openehr</value>
+      </terminology_id>
+      <code_string>433</code_string>
+    </defining_code>
+  </category>
+  <composer xsi:type="PARTY_IDENTIFIED">
+    <external_ref>
+      <id xsi:type="HIER_OBJECT_ID">
+        <value>ee34a513-3d0c-4250-898e-d119260eb323</value>
+      </id>
+      <namespace>DEMOGRAPHIC</namespace>
+      <type>PERSON</type>
+    </external_ref>
+    <name>Dr. House</name>
+  </composer>
+  <context>
+    <start_time>
+      <value>20191120T202140,940+0000</value>
+    </start_time>
+    <setting>
+      <value>primary nursing care</value>
+      <defining_code>
+        <terminology_id>
+          <value>openehr</value>
+        </terminology_id>
+        <code_string>229</code_string>
+      </defining_code>
+    </setting>
+  </context>
+  <content archetype_node_id="openEHR-EHR-ACTION.minimal_2.v1" xsi:type="ACTION">
+    <name>
+      <value>Minimal 2</value>
+    </name>
+    <language>
+      <terminology_id>
+        <value>ISO_639-1</value>
+      </terminology_id>
+      <code_string>es</code_string>
+    </language>
+    <encoding>
+      <terminology_id>
+        <value>Unicode</value>
+      </terminology_id>
+      <code_string>UTF-8</code_string>
+    </encoding>
+    <subject xsi:type="PARTY_SELF" />
+    <time xsi:type="DV_DATE_TIME">
+      <value>20191120T202140,976+0000</value>
+    </time>
+    <description archetype_node_id="at0001" xsi:type="ITEM_TREE">
+      <name>
+        <value>Arbol</value>
+      </name>
+      <items archetype_node_id="at0002" xsi:type="ELEMENT">
+        <name>
+          <value>Proportion</value>
+        </name>
+        <value xsi:type="DV_PROPORTION">
+          <numerator>1.5</numerator>
+          <denominator>1</denominator>
+          <type>1</type>
+          <precision>0</precision>
+        </value>
+      </items>
+    </description>
+  </content>
+</composition>

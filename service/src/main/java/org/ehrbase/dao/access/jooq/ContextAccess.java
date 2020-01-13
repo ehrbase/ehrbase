@@ -21,12 +21,6 @@
  */
 package org.ehrbase.dao.access.jooq;
 
-import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
-import org.ehrbase.dao.access.interfaces.I_ContextAccess;
-import org.ehrbase.dao.access.interfaces.I_DomainAccess;
-import org.ehrbase.dao.access.interfaces.I_PartyIdentifiedAccess;
-import org.ehrbase.dao.access.support.DataAccess;
 import com.nedap.archie.rm.composition.EventContext;
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.datatypes.CodePhrase;
@@ -39,10 +33,19 @@ import com.nedap.archie.rm.generic.Participation;
 import com.nedap.archie.rm.generic.PartyIdentified;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.*;
-import org.ehrbase.serialisation.RawJson;
+import org.apache.catalina.Server;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.ehrbase.api.definitions.ServerConfig;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
+import org.ehrbase.dao.access.interfaces.I_ContextAccess;
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
+import org.ehrbase.dao.access.interfaces.I_PartyIdentifiedAccess;
+import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.jooq.pg.tables.records.*;
+import org.ehrbase.serialisation.RawJson;
 import org.jooq.DSLContext;
 import org.jooq.InsertQuery;
 import org.jooq.Result;
@@ -57,6 +60,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -77,9 +81,8 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
     private PreparedStatement updateStatement;
     private List<ParticipationRecord> participations = new ArrayList<>();
 
-    public ContextAccess(DSLContext context, EventContext eventContext) {
-        super(context, null, null);
-        this.context = context;
+    public ContextAccess(DSLContext context, ServerConfig serverConfig, EventContext eventContext) {
+        super(context, null, null, serverConfig);
         eventContextRecord = context.newRecord(EVENT_CONTEXT);
         setRecordFields(UUID.randomUUID(), eventContext);
     }
@@ -257,9 +260,9 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
     private void setRecordFields(UUID id, EventContext eventContext) {
         //@TODO get from eventContext
         eventContextRecord.setStartTimeTzid(ZoneId.systemDefault().getId());
-        eventContextRecord.setStartTime(new Timestamp(eventContext.getStartTime().getValue().get(ChronoField.MILLI_OF_SECOND)));
+        eventContextRecord.setStartTime(toTimestamp(eventContext.getStartTime()));
         if (eventContext.getEndTime() != null) {
-            eventContextRecord.setEndTime(new Timestamp(eventContext.getEndTime().getValue().get(ChronoField.MILLI_OF_SECOND)));
+            eventContextRecord.setEndTime(toTimestamp(eventContext.getEndTime()));
             eventContextRecord.setEndTimeTzid(ZoneId.systemDefault().getId());
         }
         eventContextRecord.setId(id != null ? id : UUID.randomUUID());
@@ -288,7 +291,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
 
         if (eventContext.getParticipations() != null) {
             for (Participation participation : eventContext.getParticipations()) {
-                ParticipationRecord participationRecord = context.newRecord(PARTICIPATION);
+                ParticipationRecord participationRecord = getContext().newRecord(PARTICIPATION);
                 participationRecord.setEventContext(eventContextRecord.getId());
                 participationRecord.setFunction(participation.getFunction().getValue());
                 participationRecord.setMode(participation.getMode().toString());
@@ -319,10 +322,17 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         }
 
         //other context
-        if (eventContext.getOtherContext() != null) {
+        if (eventContext.getOtherContext() != null && CollectionUtils.isNotEmpty(eventContext.getOtherContext().getItems())) {
             //set up the JSONB field other_context
             eventContextRecord.setOtherContext(new RawJson().marshal(eventContext.getOtherContext()));
         }
+    }
+
+    private Timestamp toTimestamp(DvDateTime dateTime) {
+        TemporalAccessor accessor = dateTime.getValue();
+        long millis = accessor.getLong(ChronoField.INSTANT_SECONDS) * 1000 + accessor.getLong(ChronoField.MILLI_OF_SECOND);
+
+        return new Timestamp(millis);
     }
 
     /**
@@ -333,7 +343,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
     public UUID commit(Timestamp transactionTime) {
         eventContextRecord.setSysTransaction(transactionTime);
 //        UUID uuid = UUID.randomUUID();
-        InsertQuery<?> insertQuery = context.insertQuery(EVENT_CONTEXT);
+        InsertQuery<?> insertQuery = getContext().insertQuery(EVENT_CONTEXT);
         insertQuery.addValue(EVENT_CONTEXT.ID, eventContextRecord.getId());
         insertQuery.addValue(EVENT_CONTEXT.COMPOSITION_ID, eventContextRecord.getCompositionId());
         insertQuery.addValue(EVENT_CONTEXT.START_TIME, eventContextRecord.getStartTime());
@@ -409,7 +419,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
 //        eventContextRecord.changed(EVENT_CONTEXT.OTHER_CONTEXT, false);
         eventContextRecord.setSysTransaction(transactionTime);
 
-        UpdateQuery<?> updateQuery = context.updateQuery(EVENT_CONTEXT);
+        UpdateQuery<?> updateQuery = getContext().updateQuery(EVENT_CONTEXT);
 
         updateQuery.addValue(EVENT_CONTEXT.COMPOSITION_ID, eventContextRecord.getCompositionId());
         updateQuery.addValue(EVENT_CONTEXT.START_TIME, eventContextRecord.getStartTime());
@@ -479,7 +489,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         int count = 0;
         //delete any cross reference participants if any
         //delete the participation record
-        count += context.delete(PARTICIPATION).where(PARTICIPATION.EVENT_CONTEXT.eq(eventContextRecord.getId())).execute();
+        count += getContext().delete(PARTICIPATION).where(PARTICIPATION.EVENT_CONTEXT.eq(eventContextRecord.getId())).execute();
 
         count += eventContextRecord.delete();
         return count;
@@ -492,14 +502,14 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
     public EventContext mapRmEventContext() {
 
         //get the facility entry
-        PartyIdentifiedRecord partyIdentifiedRecord = context.fetchOne(PARTY_IDENTIFIED, PARTY_IDENTIFIED.ID.eq(eventContextRecord.getFacility()));
+        PartyIdentifiedRecord partyIdentifiedRecord = getContext().fetchOne(PARTY_IDENTIFIED, PARTY_IDENTIFIED.ID.eq(eventContextRecord.getFacility()));
         //facility identifiers
         PartyIdentified healthCareFacility = null;
 
         if (partyIdentifiedRecord != null) {
             List<DvIdentifier> identifiers = new ArrayList<>();
 
-            context.fetch(IDENTIFIER, IDENTIFIER.PARTY.eq(partyIdentifiedRecord.getId())).forEach(record -> {
+            getContext().fetch(IDENTIFIER, IDENTIFIER.PARTY.eq(partyIdentifiedRecord.getId())).forEach(record -> {
                 DvIdentifier dvIdentifier = new DvIdentifier();
                 dvIdentifier.setIssuer(record.getIssuer());
                 dvIdentifier.setAssigner(record.getAssigner());
@@ -514,7 +524,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
 
         List<Participation> participationList = new ArrayList<>();
         //get the participations
-        context.fetch(PARTICIPATION, PARTICIPATION.EVENT_CONTEXT.eq(eventContextRecord.getId())).forEach(record -> {
+        getContext().fetch(PARTICIPATION, PARTICIPATION.EVENT_CONTEXT.eq(eventContextRecord.getId())).forEach(record -> {
             //retrieve performer
             PartyProxy performer = I_PartyIdentifiedAccess.retrievePartyIdentified(this, record.getPerformer());
 
@@ -542,7 +552,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         //retrieve the setting
         UUID settingUuid = eventContextRecord.getSetting();
 
-        ConceptRecord conceptRecord = context.fetchOne(CONCEPT, CONCEPT.ID.eq(settingUuid).and(CONCEPT.LANGUAGE.eq("en")));
+        ConceptRecord conceptRecord = getContext().fetchOne(CONCEPT, CONCEPT.ID.eq(settingUuid).and(CONCEPT.LANGUAGE.eq("en")));
 
         if (conceptRecord != null) {
             concept = new DvCodedText(conceptRecord.getDescription(), new CodePhrase(OPENEHR_TERMINOLOGY_ID, conceptRecord.getConceptid().toString()));

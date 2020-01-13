@@ -23,6 +23,7 @@ package org.ehrbase.dao.access.jooq;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.support.DataAccess;
@@ -53,16 +54,41 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
     private Map<UUID, I_CompositionAccess> compositions = new HashMap<>();
     private I_AuditDetailsAccess auditDetails; // audit associated with this contribution
 
-    public ContributionAccess(DSLContext context, I_KnowledgeCache knowledgeManager, IntrospectService introspectCache, UUID ehrId) {
+    /**
+     * Basic constructor for contribution.
+     * @param context DB context object of current server context
+     * @param knowledgeManager Knowledge cache object of current server context
+     * @param introspectCache Introspect cache object of current server context
+     * @param serverConfig Server config object of current server context
+     * @param ehrId Given ID of EHR this contribution will be created for
+     */
+    public ContributionAccess(DSLContext context, I_KnowledgeCache knowledgeManager, IntrospectService introspectCache, ServerConfig serverConfig, UUID ehrId) {
 
-        super(context, knowledgeManager, introspectCache);
+        super(context, knowledgeManager, introspectCache, serverConfig);
 
         this.contributionRecord = context.newRecord(CONTRIBUTION);
 
         contributionRecord.setEhrId(ehrId);
 
         // create and attach new minimal audit instance to this contribution
-        this.auditDetails = I_AuditDetailsAccess.getInstance(context);
+        this.auditDetails = I_AuditDetailsAccess.getInstance(this.getDataAccess());
+    }
+
+    /**
+     * Constructor with convenient {@link I_DomainAccess} parameter, for better readability.
+     * @param domainAccess Current domain access object
+     * @param ehrId Given ID of EHR this contribution will be created for
+     */
+    public ContributionAccess(I_DomainAccess domainAccess, UUID ehrId) {
+
+        super(domainAccess.getContext(), domainAccess.getKnowledgeManager(), domainAccess.getIntrospectService(), domainAccess.getServerConfig());
+
+        this.contributionRecord = domainAccess.getContext().newRecord(CONTRIBUTION);
+
+        contributionRecord.setEhrId(ehrId);
+
+        // create and attach new minimal audit instance to this contribution
+        this.auditDetails = I_AuditDetailsAccess.getInstance(this.getDataAccess());
     }
 
     // internal minimal constructor - needs proper initialization before following usage
@@ -90,7 +116,7 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
                 .retrieveCompositionsInContributionVersion(domainAccess, contributionAccess.contributionRecord.getId(), 0);
 
         // also retrieve attached audit
-        contributionAccess.auditDetails = new AuditDetailsAccess(domainAccess.getContext()).retrieveInstance(domainAccess.getContext(), contributionAccess.getHasAuditDetails());
+        contributionAccess.auditDetails = new AuditDetailsAccess(domainAccess.getDataAccess()).retrieveInstance(domainAccess.getDataAccess(), contributionAccess.getHasAuditDetails());
 
         return contributionAccess;
 
@@ -174,7 +200,7 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
     @Override
     public UUID commit(Timestamp transactionTime, UUID committerId, UUID systemId, ContributionDataType contributionType, ContributionDef.ContributionState state, I_ConceptAccess.ContributionChangeType contributionChangeType, String description) {
         // create new audit_details instance for this contribution
-        this.auditDetails = I_AuditDetailsAccess.getInstance(this.getContext());
+        this.auditDetails = I_AuditDetailsAccess.getInstance(this.getDataAccess());
 
         if (transactionTime == null) {
             transactionTime = Timestamp.valueOf(LocalDateTime.now());
@@ -255,7 +281,7 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
             setState(state);
 
         // embedded audit handling
-        I_AuditDetailsAccess auditDetailsAccess = new AuditDetailsAccess(this.getContext()).retrieveInstance(this.getContext(), getHasAuditDetails());
+        I_AuditDetailsAccess auditDetailsAccess = new AuditDetailsAccess(this.getDataAccess()).retrieveInstance(this.getDataAccess(), getHasAuditDetails());
         if (committerId != null)
             auditDetailsAccess.setCommitter(committerId);
         if (systemId != null)
@@ -362,7 +388,7 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
             return;
 
         for (UUID uuid : removed) {
-            context.delete(COMPOSITION).where(COMPOSITION.ID.eq(uuid));
+            getContext().delete(COMPOSITION).where(COMPOSITION.ID.eq(uuid));
             log.debug("Deleted composition:" + uuid);
         }
     }

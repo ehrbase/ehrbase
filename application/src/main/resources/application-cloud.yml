@@ -1,25 +1,19 @@
 spring:
   datasource:
-    driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/ehrbase
     username: ehrbase
     password: ehrbase
-    validationQuery: /* ping */ SELECT 1
-    maxIdle: 10
-    maxTotal: 50
-    maxWaitMillis: 10000
-    testOnBorrow: true
-  jpa:
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-    hibernate:
-      ddl-auto:
+    tomcat:
+      maxIdle: 10
+      max-active: 50
+      max-wait: 10000
 
 
 server:
   contextPath: /ehrbase
+  port: 8080
+  # Optional custom server nodename
+  # nodename: 'local.test.org'
   aql:
 # set to true by default (comment out to enable jsquery)
     use-jsquery: false

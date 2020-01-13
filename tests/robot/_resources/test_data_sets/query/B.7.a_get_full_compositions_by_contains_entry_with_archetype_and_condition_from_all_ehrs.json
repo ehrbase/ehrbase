@@ -1,3 +1,0 @@
-{
-  "q": "SELECT c FROM EHR e CONTAINS COMPOSITION c CONTAINS OBSERVATION obs [openEHR-EHR-OBSERVATION.minimal.v1] WHERE o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/value = 'text 67'"
-}

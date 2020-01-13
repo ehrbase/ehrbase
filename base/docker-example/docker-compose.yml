@@ -3,11 +3,11 @@ version: "3.3"
 services:
 
   ethercis:
-    image: vitagroup-hip-docker-releases.jfrog.io/vitasystems/application:0.4.0
+    image: vitagroup-hip-docker-releases.jfrog.io/vitasystems/application:0.9.0
     depends_on:
       - postgres
     environment:
-      DB_URL: "jdbc:postgresql://postgres:5432/ethercis"
+      DB_URL: "jdbc:postgresql://postgres:5432/ehrbase"
       DB_USER: postgres
       DB_PASS: postgres
       SYSTEM_NAME: local
@@ -18,7 +18,7 @@ services:
       - 8080:8080
 
   postgres:
-    image: rippleosi/ethercis-database-docker
+    image: ehrbaseorg/ehrbase-database-docker:11.5
 
 
 

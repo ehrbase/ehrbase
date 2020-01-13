@@ -19,7 +19,12 @@
 
 package org.ehrbase.service;
 
+import com.nedap.archie.rm.ehr.EhrStatus;
+import com.nedap.archie.rm.generic.PartySelf;
+import com.nedap.archie.rm.support.identification.HierObjectId;
+import com.nedap.archie.rm.support.identification.PartyRef;
 import org.ehrbase.api.definitions.CompositionFormat;
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.definitions.StructuredString;
 import org.ehrbase.api.definitions.StructuredStringFormat;
 import org.ehrbase.api.dto.EhrStatusDto;
@@ -30,21 +35,21 @@ import org.ehrbase.api.service.EhrService;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
 import org.ehrbase.dao.access.interfaces.I_EhrAccess;
 import org.ehrbase.dao.access.interfaces.I_PartyIdentifiedAccess;
-import com.nedap.archie.rm.ehr.EhrStatus;
-import com.nedap.archie.rm.generic.PartySelf;
-import com.nedap.archie.rm.support.identification.HierObjectId;
-import com.nedap.archie.rm.support.identification.PartyRef;
 import org.ehrbase.serialisation.CanonicalJson;
+import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@Transactional()
 public class EhrServiceImp extends BaseService implements EhrService {
     public static final String MODIFIABLE = "modifiable";
     public static final String QUERYABLE = "queryable";
@@ -54,9 +59,9 @@ public class EhrServiceImp extends BaseService implements EhrService {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    public EhrServiceImp(KnowledgeCacheService knowledgeCacheService, ConnectionPoolService connectionPoolService) {
+    public EhrServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig) {
 
-        super(knowledgeCacheService, connectionPoolService);
+        super(knowledgeCacheService, context, serverConfig);
     }
 
     @Override
@@ -69,6 +74,7 @@ public class EhrServiceImp extends BaseService implements EhrService {
             status.setModifiable(true);
             status.setQueryable(true);
         }
+        status.setUid(new HierObjectId(UUID.randomUUID().toString()));  // server sets own new UUID in both cases (new or given status)
 
         String subjectId = status.getSubject().getExternalRef().getId().getValue();
         String subjectNamespace = status.getSubject().getExternalRef().getNamespace();
@@ -127,7 +133,6 @@ public class EhrServiceImp extends BaseService implements EhrService {
             if (ehrAccess == null) {
                 return Optional.empty();
             }
-
             return Optional.of(ehrAccess.getStatus());
 
         } catch (Exception e) {
@@ -136,6 +141,19 @@ public class EhrServiceImp extends BaseService implements EhrService {
         }
     }
 
+    @Override
+    public Optional<EhrStatus> getEhrStatusAtVersion(UUID ehrUuid, UUID versionedObjectUid, int version) {
+        //pre-step: check for valid ehrId
+        if (hasEhr(ehrUuid).equals(Boolean.FALSE)) {
+            throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrUuid.toString());
+        }
+
+        I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstanceByStatus(getDataAccess(), versionedObjectUid, version);
+        if (ehrAccess == null) {
+            return Optional.empty();
+        }
+        return Optional.of(ehrAccess.getStatus());
+    }
 
     @Override
     public Optional<EhrStatus> updateStatus(UUID ehrId, EhrStatus status) {
@@ -148,7 +166,6 @@ public class EhrServiceImp extends BaseService implements EhrService {
         try {
             ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
         } catch (Exception e) {
-            logger.error(e.getMessage());
             throw new InternalServerException(e);
         }
         if (ehrAccess == null) {
@@ -158,13 +175,9 @@ public class EhrServiceImp extends BaseService implements EhrService {
             ehrAccess.setStatus(status);
         }
 
-        try {
-            ehrAccess.update(getUserUuid(), getSystemUuid(), null, I_ConceptAccess.ContributionChangeType.MODIFICATION, DESCRIPTION);
-
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            throw new InternalServerException(e);
-        }
+        // execute actual update and check for success
+        if (ehrAccess.update(getUserUuid(), getSystemUuid(), null, I_ConceptAccess.ContributionChangeType.MODIFICATION, DESCRIPTION).equals(false))
+            throw new InternalServerException("Problem updating EHR_STATUS"); //unexpected problem. expected ones are thrown inside of update()
 
         return getEhrStatus(ehrId);
     }
@@ -205,21 +218,32 @@ public class EhrServiceImp extends BaseService implements EhrService {
         }
     }
 
-    // TODO build this for wrong requirement - so delete if really not needed at end of /ehr endpoints' implementation
-    public String getLatestVersionedId(UUID ehrId) {
+    @Override
+    public Integer getEhrStatusVersionByTimestamp(UUID ehrUid, Timestamp timestamp) {
+        I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrUid);
+        return ehrAccess.getEhrStatusVersionFromTimeStamp(timestamp);
+    }
+
+    /**
+     * Get latest version Uid of an EHR_STATUS by given versioned object UID.
+     * @param ehrStatusId given versioned object UID
+     * @return latest version Uid
+     */
+    public String getLatestVersionUidOfStatus(UUID ehrStatusId) {
         try {
-            I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
+            I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrStatusId);
             UUID statusId = ehrAccess.getStatusId();
             Integer version = ehrAccess.getLastVersionNumberOfStatus(getDataAccess(), statusId);
 
-            // TODO this is the system's UUID but has no more details in DB though, so seems to be it in current state of available information - or is ehr.system.settings the correct URL style entry in DB?!
-            String system = ehrAccess.getSystemId().toString();
-
-            return ehrId.toString() + "::" + system + "::" + version;
+            return statusId.toString() + "::" + getServerConfig().getNodename() + "::" + version;
         } catch (Exception e) {
-            logger.error(e.getMessage());
             throw new InternalServerException(e);
         }
+    }
+
+    public UUID getEhrStatusVersionedObjectUidByEhr(UUID ehrUid) {
+        I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrUid);
+        return ehrAccess.getStatusId();
     }
 
     public Boolean hasEhr(UUID ehrId) {

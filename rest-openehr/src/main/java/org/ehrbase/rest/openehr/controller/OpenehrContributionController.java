@@ -121,7 +121,7 @@ public class OpenehrContributionController extends BaseController {
                                              @ApiParam(value = "", required = true) @PathVariable(value = "contribution_uid") String contributionUidString) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
-        UUID contributionUid = getCompositionVersionedObjectUidString(contributionUidString);
+        UUID contributionUid = getContributionVersionedObjectUidString(contributionUidString);
 
         URI uri = URI.create(this.encodePath(getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId.toString() + "/contribution/" + contributionUid.toString()));
 
@@ -153,7 +153,7 @@ public class OpenehrContributionController extends BaseController {
                     respHeaders.setLocation(uri);
                     break;
                 case ETAG:
-                    respHeaders.setETag("\"" + contributionId + "\"");  // TODO - see EHR-206
+                    respHeaders.setETag("\"" + contributionId + "\"");
                     break;
                 case LAST_MODIFIED:
                     // TODO should be VERSION.commit_audit.time_committed.value which is not implemented yet - mock for now

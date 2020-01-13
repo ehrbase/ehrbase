@@ -40,8 +40,8 @@ Documentation   OPT1.4 integration tests
 Resource    ${CURDIR}${/}../_resources/suite_settings.robot
 Resource    ${CURDIR}${/}../_resources/keywords/template_opt1.4_keywords.robot
 
-Suite Setup  startup OPT SUT
-Suite Teardown  shutdown SUT
+# Suite Setup  startup OPT SUT
+Suite Teardown  Delete All Templates
 
 Force Tags   OPT14
 
@@ -67,6 +67,8 @@ Establish Preconditions: load valid OPTs into SUT
     minimal_persistent/persistent_minimal_2.opt
     minimal_persistent/persistent_minimal.opt
     nested/nested.opt
+    versioned/Test versioned v1.opt
+    versioned/Test versioned v2.opt
 
 
 All Types
@@ -74,7 +76,6 @@ All Types
     [Template]         retrieve single OPT
 
     all_types/Test_all_types.opt
-
 
 Minimal
     [Documentation]    ...
@@ -113,14 +114,12 @@ Nested
     nested/nested.opt
 
 
-# Versioned
-#     [Documentation]    ...
-#     [Template]         retrieve single OPT
-#
-#     versioned/Test versioned v1.opt
-#     versioned/Test versioned v2.opt
-#
-#     [Teardown]  TE PENDING (see comments in code) - tag(s): not-ready
+Versioned
+    [Documentation]    ...
+    [Template]         retrieve single OPT
+
+    versioned/Test versioned v1.opt
+    versioned/Test versioned v2.opt
 
 
 
@@ -142,22 +141,24 @@ Nested
 upload valid OPT
     [Arguments]           ${opt file}
 
-    start request session
+    prepare new request session    XML
+    ...                            Prefer=return=representation
     get valid OPT file    ${opt file}
     upload OPT file
     server accepted OPT
-    [Teardown]            clean up test variables
+    [Teardown]            Clean Up Suite Variables
 
 
 retrieve single OPT
     [Arguments]                         ${opt file}
 
-    start request session
+    prepare new request session    XML
+    ...                            Prefer=return=representation
     get valid OPT file                  ${opt file}
     extract template_id from OPT file
     retrieve OPT by template_id         ${template_id}
     verify content of OPT
-    [Teardown]                          clean up test variables
+    [Teardown]                          Clean Up Suite Variables
 
 
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2019 Vitasystems GmbH and Christian Chevalley (Hannover Medical School).
  *
  * This file is part of project EHRbase
  *
@@ -18,9 +18,12 @@
 
 package org.ehrbase.service;
 
+import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
+import org.ehrbase.terminology.openehr.TerminologyService;
 import org.ehrbase.validation.Validator;
 import com.nedap.archie.rm.composition.Composition;
+import org.ehrbase.validation.terminology.ItemStructureVisitor;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,11 +42,13 @@ public class ValidationServiceImp implements ValidationService {
 
     private Cache<UUID, Validator> validatorCache;
     private final I_KnowledgeCache knowledgeCache;
+    private final TerminologyService terminologyService;
 
     @Autowired
-    public ValidationServiceImp(CacheManager cacheManager, I_KnowledgeCache knowledgeCache) {
+    public ValidationServiceImp(CacheManager cacheManager, I_KnowledgeCache knowledgeCache, TerminologyService terminologyService) {
         this.validatorCache = cacheManager.getCache(VALIDATOR_CACHE, UUID.class, Validator.class);
         this.knowledgeCache = knowledgeCache;
+        this.terminologyService = terminologyService;
     }
 
 
@@ -65,6 +70,11 @@ public class ValidationServiceImp implements ValidationService {
 
         //perform the validation
         validator.check(composition);
+
+        //check codephrases against terminologies
+        ItemStructureVisitor itemStructureVisitor = new ItemStructureVisitor(terminologyService);
+        itemStructureVisitor.validate(composition);
+
     }
 
 
@@ -74,6 +84,8 @@ public class ValidationServiceImp implements ValidationService {
 
         if (!operationaltemplate.isPresent())
             throw new IllegalArgumentException("Not found template id:" + templateID);
+
+
 
         check(UUID.fromString(operationaltemplate.get().getUid().getValue()), composition);
     }

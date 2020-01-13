@@ -108,13 +108,9 @@ public class EntryAttributeMapper {
             floor = 3;
         } else if (fields.get(0).equals(NAME)) {
             fields.add(1, "0"); //name is now formatted as /name -> array of values! Required to deal with cluster items
-//            if (fields.get(1).equals(VALUE)){
-//                fields.remove(1);
-//            } else if (fields.get(1).equals(DEFINING_CODE)){
-//                fields.remove(0);
-//            }
         } else if (fields.get(0).equals(VALUE) && fields.size() == 1) {
-            fields.add(1, VALUE);
+            //CCH 191016: removed 'shortcut' for values to allow canonical json structure return
+            //fields.add(1, VALUE);
         } else { //this deals with the "/value,value"
             Integer match = firstOccurence(0, fields, VALUE);
 //            Integer match = fields.stream().filter(m -> m.equals("value"));

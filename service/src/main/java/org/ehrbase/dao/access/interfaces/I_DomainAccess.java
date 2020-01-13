@@ -21,6 +21,7 @@
  */
 package org.ehrbase.dao.access.interfaces;
 
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.support.ServiceDataAccess;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
@@ -29,7 +30,6 @@ import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 
 import java.sql.Connection;
-import java.util.Map;
 
 /**
  * Helper to hold SQL context and knowledge cache reference
@@ -64,11 +64,8 @@ public interface I_DomainAccess {
     String KEY_SET_MAX_PREPARED_STATEMENTS = "set_max_prepared_statements";
     String KEY_INTROSPECT_CACHE = "introspect";
 
-    static I_DomainAccess getInstance(Map<String, Object> properties) {
-        return new ServiceDataAccess(properties);
-    }
 
-    static I_DomainAccess getInstance(DataAccess dataAccess) {
+    static I_DomainAccess getInstance(I_DomainAccess dataAccess) {
         return new ServiceDataAccess(dataAccess);
     }
 
@@ -89,6 +86,11 @@ public interface I_DomainAccess {
     Connection getConnection();
 
     /**
+     * have JOOQ release the DB connection
+     */
+    void releaseConnection(Connection connection);
+
+    /**
      * get the jOOQ DSL context to perform DB queries
      *
      * @return DSLContext
@@ -106,7 +108,7 @@ public interface I_DomainAccess {
 
     IntrospectService getIntrospectService();
 
-    String getServerNodeId();
+    ServerConfig getServerConfig();
 
     DataAccess getDataAccess();
 }

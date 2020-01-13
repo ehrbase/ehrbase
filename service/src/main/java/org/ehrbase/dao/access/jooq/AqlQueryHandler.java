@@ -62,14 +62,14 @@ public class AqlQueryHandler extends DataAccess {
         Contains contains = new Contains(aqlExpression.getParseTree()).process();
         Statements statements = new Statements(aqlExpression.getParseTree(), contains.getIdentifierMapper()).process() ;
 
-        QueryProcessor queryProcessor = new QueryProcessor(getContext(), this.getKnowledgeManager(), this.getIntrospectService(), contains, statements, getServerNodeId(), usePgExtensions);
+        QueryProcessor queryProcessor = new QueryProcessor(getContext(), this.getKnowledgeManager(), this.getIntrospectService(), contains, statements, getDataAccess().getServerConfig().getNodename(), usePgExtensions);
 
         AqlResult aqlResult =  queryProcessor.execute();
 
         //add the variable from statements
         Map<String, String> variables = new HashMap();
         for (I_VariableDefinition variableDefinition: statements.getVariables()) {
-            variables.put(variableDefinition.getAlias(), variableDefinition.getPath());
+            variables.put(variableDefinition.getAlias(), "/"+variableDefinition.getPath());
         }
         aqlResult.setVariables(variables);
         return aqlResult;

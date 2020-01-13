@@ -29,7 +29,15 @@ import java.util.UUID;
  * Interface for contribution service roughly based on openEHR SM "I_EHR_CONTRIBUTION Interface",
  * see: https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_contribution_interface
  */
-public interface ContributionService {
+public interface ContributionService extends BaseService {
+
+    /**
+     * Check if given contribution exists and is part of given EHR.
+     * @param ehrId ID of EHR
+     * @param contributionId ID of contribution
+     * @return True if exists and part of EHR, false if not
+     */
+    boolean hasContribution(UUID ehrId, UUID contributionId);
 
     /**
      * Return the Contribution with given id in given EHR.

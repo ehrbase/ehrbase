@@ -1,0 +1,3 @@
+{
+  "q": "SELECT entry FROM EHR e [ehr_id/value='__MODIFY_EHR_ID_1__'] CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS EVALUATION entry"
+}

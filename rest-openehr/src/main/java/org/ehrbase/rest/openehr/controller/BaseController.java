@@ -126,6 +126,17 @@ public abstract class BaseController {
         return extractUUIDFromStringWithError(compositionVersionedObjectUidString, "composition", "Composition not found, in fact, only UUID-type versionedObjectUids are supported");
     }
 
+    /**
+     * Helper to allow string UUID input from controllers, which throws an ObjectNotFound exception when no UUID representation
+     * can be created. This case is equal to no matching object.
+     * @param compositionVersionedObjectUidString Input String representation
+     * @throws ObjectNotFoundException when no UUID can't be created from input
+     * @return UUID representation
+     */
+    protected UUID getContributionVersionedObjectUidString(String compositionVersionedObjectUidString) {
+        return extractUUIDFromStringWithError(compositionVersionedObjectUidString, "contribution", "Contribution not found, in fact, only UUID-type versionedObjectUids are supported");
+    }
+
     // Internal abstraction layer helper, so calling methods above can invoke with meaningful error messages depending on context.
     private UUID extractUUIDFromStringWithError(String uuidString, String type, String error) {
         UUID uuid = null;
@@ -176,6 +187,25 @@ public abstract class BaseController {
         error.put("error", message);
         error.put("status", status.getReasonPhrase());
         return new ResponseEntity<>(error, status);
+    }
+
+    /**
+     * Extracts the UUID base from a versioned UID. Or, if
+     * @param versionUid
+     * @return
+     */
+    protected UUID extractVersionedObjectUidFromVersionUid(String versionUid) {
+        if (!versionUid.contains("::"))
+            return UUID.fromString(versionUid);
+        return UUID.fromString(versionUid.substring(0, versionUid.indexOf("::")));
+    }
+
+    protected int extractVersionFromVersionUid(String versionUid) {
+        if (!versionUid.contains("::"))
+            return 0; //current version
+        // extract the version from string of format "$UUID::$SYSTEM::$VERSION"
+        // via making a substring starting at last occurrence of "::" + 2
+        return Integer.valueOf(versionUid.substring(versionUid.lastIndexOf("::") + 2));
     }
 
     /*

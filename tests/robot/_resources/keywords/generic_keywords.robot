@@ -25,6 +25,116 @@ Library    OperatingSystem
 
 
 *** Keywords ***
+# oooo    oooo oooooooooooo oooooo   oooo oooooo   oooooo     oooo   .oooooo.   ooooooooo.   oooooooooo.    .oooooo..o
+# `888   .8P'  `888'     `8  `888.   .8'   `888.    `888.     .8'   d8P'  `Y8b  `888   `Y88. `888'   `Y8b  d8P'    `Y8
+#  888  d8'     888           `888. .8'     `888.   .8888.   .8'   888      888  888   .d88'  888      888 Y88bo.
+#  88888[       888oooo8       `888.8'       `888  .8'`888. .8'    888      888  888ooo88P'   888      888  `"Y8888o.
+#  888`88b.     888    "        `888'         `888.8'  `888.8'     888      888  888`88b.     888      888      `"Y88b
+#  888  `88b.   888       o      888           `888'    `888'      `88b    d88'  888  `88b.   888     d88' oo     .d8P
+# o888o  o888o o888ooooood8     o888o           `8'      `8'        `Y8bood8P'  o888o  o888o o888bood8P'   8""88888P'
+#
+# [ HIGH LEVEL KEYWORDS ]
+
+
+
+#     o8o                                           .o8   o8o   .o88o.  .o88o.
+#     `"'                                          "888   `"'   888 `"  888 `"
+#    oooo  .oooo.o  .ooooo.  ooo. .oo.         .oooo888  oooo  o888oo  o888oo
+#    `888 d88(  "8 d88' `88b `888P"Y88b       d88' `888  `888   888     888
+#     888 `"Y88b.  888   888  888   888       888   888   888   888     888
+#     888 o.  )88b 888   888  888   888       888   888   888   888     888
+#     888 8""888P' `Y8bod8P' o888o o888o      `Y8bod88P" o888o o888o   o888o
+#     888
+# .o. 88P
+# `Y888P
+#
+# [ JSHON DIFF / COMPARE]
+
+compare json-strings
+    [Arguments]         ${actual_json}  ${expected_json}  &{options}
+    [Documentation]     Compares two JSON strings.\\n
+    ...
+    ...                 :actual_json: valid JSON string\\n
+    ...                 :expected_json: valid JSON string
+    ...
+    ...                 :options: with defaults
+    ...                     - ignore_order=True,
+    ...                     - report_repetition=False,
+    ...                     - exclude_paths=None,
+    ...                     - exclude_regex_paths=None,
+    ...                     - ignore_string_type_changes=False,
+    ...                     - ignore_numeric_type_changes=False,
+    ...                     - ignore_type_subclasses=False,
+    ...                     - ignore_string_case=False,
+    ...                     - verbose_level=2
+    ...
+    ...                 Check DeedDiff reference for more details: https://deepdiff.readthedocs.io/en/latest/diff.html
+
+    &{diff}=            compare jsons    ${actual_json}    ${expected_json}    &{options}
+
+    [Return]            ${diff}
+
+
+compare json-files
+    [Arguments]         ${filepath_1}    ${filepath_2}    &{options}
+    [Documentation]     Compares two JSON files given by filepath.
+    ...
+    ...                 :filepath_: valid path to a JSON test-data-set\n
+    ...                 :options: same as in `compare json-strings`
+
+    ${actual}=          Get File    ${filepath_1}
+    ${expected}=        Get File    ${filepath_2}
+
+    &{diff}=            compare jsons    ${actual}    ${expected}    &{options}
+
+    [Return]            ${diff}
+
+
+compare json-string with json-file
+    [Arguments]         ${json_string}    ${json_file_by_filepath}    &{options}
+    [Documentation]     Compares a JSON string with a JSON file given by filepath
+    ...
+    ...                 :json_string: valid JSON string
+    ...                 :json_file_by_filepath: valid path to JSON test-data-set
+    ...                 :options: same as in `compare json-strings`
+
+    ${actual}=          Set Variable    ${json_string}
+    ${expected}=        Get File    ${json_file_by_filepath}
+
+    &{diff}=            compare jsons    ${actual}    ${expected}    &{options}
+
+    [Return]            ${diff}
+
+
+compare json-file with json-string
+    [Arguments]         ${json_file_by_filepath}    ${json_string}    &{options}
+    [Documentation]     Compares a JSON file given by filepath with a JSON string.
+    ...
+    ...                 :json_file_by_filepath: valid path to JSON test-data-set
+    ...                 :json_string: valid JSON string
+    ...                 :options: same as in `compare json-strings`
+
+    ${actual}=          Get File    ${json_file_by_filepath}
+    ${expected}=        Set Variable    ${json_string}
+
+    &{diff}=            compare jsons    ${actual}    ${expected}    &{options}
+
+    [Return]            ${diff}
+
+
+
+
+
+
+restart SUT
+    # stop openehr server
+    # stop and remove ehrdb
+    # empty operational_templates folder
+    # start ehrdb
+    # start openehr server
+    Delete All Templates
+
+
 get application version
     ${root}=  Parse Xml    ${POM_FILE}
     ${version}=  Get Element Text   ${root}  version
@@ -60,6 +170,7 @@ empty operational_templates folder
 
 
 start openehr server
+    get application version
     run keyword if  '${CODE_COVERAGE}' == 'True'   start server process with coverage
     run keyword if  '${CODE_COVERAGE}' == 'False'  start server process without coverage
     Wait For Process  ehrserver  timeout=10  on_timeout=continue
@@ -70,13 +181,16 @@ start openehr server
 
 
 start server process without coverage
-    ${result}=  Start Process  java  -jar  ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
-    ...                              alias=ehrserver  cwd=${PROJECT_ROOT}  stdout=stdout.txt
+    ${result}=          Start Process  java  -jar  ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
+                        ...                  --cache.enabled\=false    alias=ehrserver
+                        ...                    cwd=${PROJECT_ROOT}    stdout=stdout.txt    stderr=stderr.txt
 
 
 start server process with coverage
-    ${result}=  Start Process  java  -javaagent:${JACOCO_LIB_PATH}/jacocoagent.jar\=output\=tcpserver,address\=127.0.0.1  -jar  ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
-    ...                              alias=ehrserver  cwd=${PROJECT_ROOT}  stdout=stdout.txt  stderr=stderr.txt
+    ${result}=          Start Process  java  -javaagent:${JACOCO_LIB_PATH}/jacocoagent.jar\=output\=tcpserver,address\=127.0.0.1
+                        ...                  -jar    ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
+                        ...                  --cache.enabled\=false    alias=ehrserver
+                        ...                    cwd=${PROJECT_ROOT}    stdout=stdout.txt    stderr=stderr.txt
 
 
 wait until openehr server is ready
@@ -115,6 +229,53 @@ abort test execution if this test fails
                     ...             Fatal Error  Aborted Execution - Preconditions not met!
 
 
+prepare new request session
+    [Arguments]         ${format}=JSON    &{extra_headers}
+    [Documentation]     Prepares request settings for RESTistance AND RequestsLibrary
+    ...                 :format: JSON (default) / XML
+    ...                 :extra_headers: optional - e.g. Prefer=return=representation
+    ...                                            e.g. If-Match={ehrstatus_uid}
+                        Log Many            ${format}  ${extra_headers}
+
+                        # case: JSON
+                        Run Keyword If      $format=='JSON'    set request headers
+                        ...                 content=application/json
+                        ...                 accept=application/json
+                        ...                 &{extra_headers}
+                        # case: XML
+                        Run Keyword If      $format=='XML'    set request headers
+                        ...                 content=application/xml
+                        ...                 accept=application/xml
+                        ...                 &{extra_headers}
+
+                        # case: mixed cases like JSON/XML or XML/JSON can be added here!
+
+set request headers
+    [Arguments]         ${content}=application/json  ${accept}=application/json  &{extra_headers}
+    [Documentation]     Sets the headers of a request
+    ...                 :content: application/json (default) / application/xml
+    ...                 :accept: application/json (default) / application/xml
+    ...                 :extra_headers: optional - e.g. Prefer=return=representation
+    ...                                            e.g. If-Match={ehrstatus_uid}
+                        Log Many            ${content}  ${accept}  ${extra_headers}
+
+    &{headers}=         Create Dictionary   Content-Type=${content}
+                        ...                 Accept=${accept}
+
+                        Run Keyword If      ${extra_headers}    Set To Dictionary
+                        ...                 ${headers}    &{extra_headers}
+
+    # library: RESTinstance
+    &{headers}=         Set Headers         ${headers}
+                        Set Headers         ${authorization}
+    
+    # library: RequestLibrary
+                        Create Session      ${SUT}    ${${SUT}.URL}    debug=2
+                        ...                 auth=${${SUT}.CREDENTIALS}    verify=True
+
+                        Set Suite Variable   ${headers}    ${headers}
+
+
 startup SUT
     get application version
     unzip file_repo_content.zip
@@ -147,27 +308,11 @@ start ehrdb
     wait until ehrdb is ready
 
 
-stop ehrdb
-    [Documentation]     Stops DB container by using a keyword `stop ehrdb container`
-    ...                 from custom library: dockerlib.py
-
-    ${logs}  ${status}  stop ehrdb container
-    Log      ${logs}
-    Log      ${status}
-    wait until ehrdb is stopped
-    Should Be Equal As Integers  ${status}[StatusCode]  0
-
-
 stop and remove ehrdb
+    [Documentation]     Stos DB container gracefully and waits for it to be removed
+    ...                 Uses KW from custom library: dockerlib.py
 
-    Log     DEPRECATION WARNING - @WLAD replace/update this keyword!
-    ...     level=WARN
-            # NOTE: remove `stop ehrdb` from this keyword!
-            #      `remove_ehrdb_container` cracefully stops and waits for
-            #        container to be removed
-
-    stop ehrdb
-    remove ehrdb container  # kw from dockerlib.py
+                        Remove EhrDB Container
 
 
 restart ehrdb
@@ -251,8 +396,24 @@ TRACE JIRA BUG
     ...             ${message}=Next step fails due to a bug!
     ...             ${loglevel}=ERROR
 
+    Log  DEPRECATION WARNING - @WLAD replace/update this keyword!
+    ...  level=WARN
+
                     Log    ${message} | JIRA: ${JIRA_BUG_ID}   level=${loglevel}
                     Set Tags    bug    ${JIRA_BUG_ID}
+                    Run Keyword If    '${not-ready}'=='not-ready'    Set Tags    not-ready
+
+
+TRACE GITHUB ISSUE
+    [Arguments]     ${GITHUB_ISSUE}
+    ...             ${not-ready}=
+    ...             ${message}=Next step fails due to a bug!
+    ...             ${loglevel}=ERROR
+
+                    Log    ${message} | <a href="https://github.com/ehrbase/project_management/issues/${GITHUB_ISSUE}">Github ISSUE #${GITHUB_ISSUE}</a>
+                    ...    level=${loglevel}    html=True
+
+                    Set Tags    bug    GITHUB ISSUE ${GITHUB_ISSUE}
                     Run Keyword If    '${not-ready}'=='not-ready'    Set Tags    not-ready
 
 

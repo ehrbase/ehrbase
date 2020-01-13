@@ -44,7 +44,7 @@ Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags    refactor
+Force Tags    refactor   future
 
 
 
@@ -56,12 +56,3 @@ Alternative flow 1: get CONTRIBUTIONS of existing EHR with no CONTRIBUTIONS
     retrieve CONTRIBUTION(S) by ehr_id (JSON)
 
     check response: is positive with list of 0 contribution(s)
-
-    # check response: is positive with list of "0" contribution(s)
-
-
-
-
-*** Keywords ***
-check response: is positive with list of 0 contribution(s)
-    Fail    msg=fake it till you make it!

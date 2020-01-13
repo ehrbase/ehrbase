@@ -21,11 +21,11 @@
  */
 package org.ehrbase.dao.access.support;
 
+import org.ehrbase.api.definitions.ServerConfig;
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.service.IntrospectService;
 import org.jooq.DSLContext;
-
-import java.util.Map;
 
 /**
  * A simple wrapper to encapsulate resource accesses from services
@@ -34,15 +34,12 @@ import java.util.Map;
  */
 public class ServiceDataAccess extends DataAccess {
 
-    public ServiceDataAccess(Map<String, Object> properties) {
-        super(properties);
+
+    public ServiceDataAccess(DSLContext context, I_KnowledgeCache knowledgeManager, IntrospectService introspectService, ServerConfig serverConfig) {
+        super(context, knowledgeManager, introspectService, serverConfig);
     }
 
-    public ServiceDataAccess(DSLContext context, I_KnowledgeCache knowledgeManager, IntrospectService introspectService) {
-        super(context, knowledgeManager, introspectService);
-    }
-
-    public ServiceDataAccess(DataAccess dataAccess) {
+    public ServiceDataAccess(I_DomainAccess dataAccess) {
         super(dataAccess);
     }
 

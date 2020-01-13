@@ -52,18 +52,9 @@ Force Tags    refactor
 Main flow: get CONTRIBUTIONS of existing EHR with a just committed CONTRIBUTION
 
     upload OPT    minimal/minimal_evaluation.opt
-
     create EHR
-
     commit CONTRIBUTION (JSON)    minimal/minimal_evaluation.contribution.json
-
-    retrieve CONTRIBUTION(S) by ehr_id (JSON)
-
+    retrieve CONTRIBUTION by contribution_uid (JSON)
     check response: is positive with list of 1 contribution(s)
 
-    # check response: is positive with list of "1" contribution(s)
-
-
-*** Keywords ***
-check response: is positive with list of 1 contribution(s)
-    Fail    msg=fake it till you make it!
+    [Teardown]    restart SUT

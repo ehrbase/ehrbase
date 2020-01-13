@@ -25,9 +25,11 @@ Documentation   Contribution Integration Tests
 ...         An EHR with known ehr_id exists, and OPTs should be loaded for each valid case.
 ...
 ...     Flow:
-...         1. Invoke commit CONTRIBUTION service with an existing ehr_id and the valid data sets, that reference existing OPTs in the system.
+...         1. Invoke commit CONTRIBUTION service with an existing ehr_id and valid data sets,
+...            that reference existing OPTs in the system.
 ...         2. The result should be positive and retrieve the id of the CONTRIBUTION just created
-...         3. Verify the existing CONTRIBUTION uids and the amount of existing CONTRIBUTIONS for the EHR
+...         3. Verify the existing CONTRIBUTION uids and the amount of existing CONTRIBUTIONS
+...            for the EHR
 ...
 ...     Postconditions:
 ...         The EHR with ehr_id will have a new CONTRIBUTION.
@@ -53,11 +55,9 @@ Force Tags    refactor
 Main flow: successfully commit CONTRIBUTION with single valid VERSION<COMPOSITION>
 
     upload OPT    minimal/minimal_evaluation.opt
-
     create EHR
-
     commit CONTRIBUTION (JSON)  minimal/minimal_evaluation.contribution.json
+    check response: is positive - returns version id
+    check content of committed CONTRIBUTION
 
-    # ??? # check content of committed CONTRIBUTION
-            # retrieve EHR by ehr_id
-            # check content of retrieved EHR
+    [Teardown]    restart SUT

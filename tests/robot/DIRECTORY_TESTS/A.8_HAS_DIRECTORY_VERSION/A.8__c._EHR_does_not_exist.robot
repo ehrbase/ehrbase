@@ -35,4 +35,4 @@ Alternative flow 2: has directory from non existent EHR
 
     get DIRECTORY at version - fake ehr_id (JSON)
 
-    check response: is negative - EHR does not exist
+    validate GET-@version response - 404 unknown ehr_id

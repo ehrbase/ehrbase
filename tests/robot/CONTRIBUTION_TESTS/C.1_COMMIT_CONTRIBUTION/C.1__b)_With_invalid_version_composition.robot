@@ -56,6 +56,10 @@ Alternative flow 1: commit CONTRIBUTION with errors in VERSION<COMPOSITION>
 
     create EHR
 
-    commit invalid CONTRIBUTION (JSON)    invalid_contributions/multiple_valid_and_invalid_compos.json
+        TRACE GITHUB ISSUE  61  not-ready  message=Next step fails due to a bug.
+
+    commit invalid CONTRIBUTION (JSON)    multiple_valid_and_invalid_compos.json
 
     check response: is negative indicating errors in committed data
+
+    [Teardown]    restart SUT

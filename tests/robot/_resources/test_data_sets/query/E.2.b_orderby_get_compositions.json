@@ -1,3 +1,0 @@
-{
-  "q": "SELECT c FROM COMPOSITION c ORDERBY c/name/value"
-}

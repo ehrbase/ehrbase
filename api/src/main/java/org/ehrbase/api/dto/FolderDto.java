@@ -18,47 +18,47 @@
 
 package org.ehrbase.api.dto;
 
+import com.nedap.archie.rm.datastructures.ItemStructure;
+import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectRef;
+import com.nedap.archie.rm.support.identification.UIDBasedId;
 
 import java.util.List;
 
 public class FolderDto {
 
-    private final Folder folder;
+    private final UIDBasedId uid;
     private final List<Folder> folders;
     private final List<ObjectRef> items;
-    private final String name;
-    private final String uuid;
+    private final DvText name;
+    private final ItemStructure details;
 
-
-    public FolderDto(
-            Folder folder,
-            List<Folder> folders,
-            List<ObjectRef> items,
-            String name,
-            String uuid
-    ) {
-        this.folder = folder;
-        this.folders = folders;
-        this.items = items;
-        this.name = name;
-        this.uuid = uuid;
-    }
-
-    public Folder getFolder() {
-        return folder;
+    public FolderDto(Folder folder) {
+        this.uid = folder.getUid();
+        this.folders = folder.getFolders();
+        this.items = folder.getItems();
+        this.name = folder.getName();
+        this.details = folder.getDetails();
     }
 
     public List<Folder> getFolders() {
         return folders;
     }
 
-    public List<ObjectRef> getItems() { return items; }
+    public List<ObjectRef> getItems() {
+        return items;
+    }
 
-    public String getName() { return name; }
+    public DvText getName() {
+        return name;
+    }
 
-    public String getUuid() {
-        return uuid;
+    public UIDBasedId getUid() {
+        return uid;
+    }
+
+    public ItemStructure getDetails() {
+        return details;
     }
 }

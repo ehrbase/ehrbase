@@ -42,7 +42,7 @@ import java.util.Optional;
 
 @Api(tags = "Query")
 @RestController
-@RequestMapping(path = "/rest/openehr/v1/query", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@RequestMapping(path = "/rest/openehr/v1/query", produces = MediaType.APPLICATION_JSON_VALUE)
 public class OpenehrQueryController extends BaseController {
 
     final static Logger log = LoggerFactory.getLogger(OpenehrQueryController.class);
@@ -162,8 +162,7 @@ public class OpenehrQueryController extends BaseController {
         return (Double.valueOf(value.toString())).intValue();
     }
 
-    @RequestMapping(value = {"/{qualified_query_name}/{version}{?offset,fetch,query_parameter}", "/{qualified_query_name}{?offset,fetch,query_parameter}"}, method = RequestMethod.GET)
-    //
+    @GetMapping(value = {"/{qualified_query_name}/{version}{?offset,fetch,query_parameter}", "/{qualified_query_name}{?offset,fetch,query_parameter}"})
     @ApiOperation(value = "Execute stored AQL query", response = QueryResponseData.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Success.",
@@ -206,7 +205,7 @@ public class OpenehrQueryController extends BaseController {
 
     }
 
-    @RequestMapping(value = {"/{qualified_query_name}/{version}", "/{qualified_query_name}"}, method = RequestMethod.POST)
+    @PostMapping(value = {"/{qualified_query_name}/{version}", "/{qualified_query_name}"})
     @ApiOperation(value = "Execute stored AQL query", response = QueryDefinitionResponseData.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Success.",

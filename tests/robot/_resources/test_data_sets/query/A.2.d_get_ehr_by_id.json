@@ -1,3 +1,0 @@
-{
-  "q": "SELECT e/ehr_id/value as uid FROM EHR e WHERE uid matches {'dd616472-9432-4004-ad85-fd47affb1cc8'}"
-}

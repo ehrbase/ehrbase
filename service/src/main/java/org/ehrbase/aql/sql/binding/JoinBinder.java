@@ -46,6 +46,7 @@ public class JoinBinder implements I_JoinBinder {
     private boolean facilityJoined = false;
     private boolean composerJoined = false;
     private boolean ehrJoined = false;
+    private boolean systemJoined = false;
 
     SelectQuery<?> selectQuery;
 
@@ -84,6 +85,9 @@ public class JoinBinder implements I_JoinBinder {
         if (compositionAttributeQuery.isJoinEhr()) {
             joinEhr(selectQuery, compositionAttributeQuery);
         }
+        if (compositionAttributeQuery.isJoinSystem()) {
+            joinSystem(selectQuery, compositionAttributeQuery);
+        }
         if (compositionAttributeQuery.isJoinEhrStatus() || compositionAttributeQuery.containsEhrStatus()) {
             joinEhrStatus(selectQuery, compositionAttributeQuery);
         }
@@ -96,6 +100,13 @@ public class JoinBinder implements I_JoinBinder {
             return;
         selectQuery.addJoin(compositionRecordTable, JoinType.RIGHT_OUTER_JOIN, DSL.field(compositionRecordTable.field(COMPOSITION.ID)).eq(ENTRY.COMPOSITION_ID));
         compositionJoined = true;
+    }
+
+    private void joinSystem(SelectQuery<?> selectQuery, CompositionAttributeQuery compositionAttributeQuery) {
+        if (systemJoined)
+            return;
+        selectQuery.addJoin(systemRecordTable, JoinType.RIGHT_OUTER_JOIN, DSL.field(systemRecordTable.field(SYSTEM.ID)).eq(DSL.field(ehrRecordTable.field(EHR_.SYSTEM_ID.getName(), UUID.class))));
+        systemJoined = true;
     }
 
     private void joinEhrStatus(SelectQuery<?> selectQuery, CompositionAttributeQuery compositionAttributeQuery) {
@@ -118,7 +129,7 @@ public class JoinBinder implements I_JoinBinder {
     private void joinSubject(SelectQuery<?> selectQuery, CompositionAttributeQuery compositionAttributeQuery) {
         if (subjectJoin) return;
         joinEhrStatus(selectQuery, compositionAttributeQuery);
-        Table<PartyIdentifiedRecord> subjectTable = compositionAttributeQuery.getSubjectRef();
+        Table<PartyIdentifiedRecord> subjectTable = subjectRef;
         selectQuery.addJoin(subjectTable,
                 DSL.field(subjectTable.field(PARTY_IDENTIFIED.ID.getName(), UUID.class))
                         .eq(DSL.field(statusRecordTable.field(STATUS.PARTY.getName(), UUID.class))));
@@ -134,7 +145,7 @@ public class JoinBinder implements I_JoinBinder {
     private void joinContextFacility(SelectQuery<?> selectQuery, CompositionAttributeQuery compositionAttributeQuery) {
         if (facilityJoined) return;
         joinEventContext(selectQuery, compositionAttributeQuery);
-        Table<PartyIdentifiedRecord> facilityTable = compositionAttributeQuery.getFacilityRef();
+        Table<PartyIdentifiedRecord> facilityTable = facilityRef;
         selectQuery.addJoin(facilityTable,
                 EVENT_CONTEXT.FACILITY
                         .eq(DSL.field(facilityTable.field(PARTY_IDENTIFIED.ID.getName(), UUID.class))));
@@ -144,7 +155,7 @@ public class JoinBinder implements I_JoinBinder {
     private void joinComposer(SelectQuery<?> selectQuery, CompositionAttributeQuery compositionAttributeQuery) {
         if (composerJoined) return;
         joinComposition(selectQuery, compositionAttributeQuery);
-        Table<PartyIdentifiedRecord> composerTable = compositionAttributeQuery.getComposerRef();
+        Table<PartyIdentifiedRecord> composerTable = composerRef;
         selectQuery.addJoin(composerTable,
                 DSL.field(compositionRecordTable.field(COMPOSITION.COMPOSER.getName(), UUID.class))
                         .eq(DSL.field(composerTable.field(PARTY_IDENTIFIED.ID.getName(), UUID.class))));

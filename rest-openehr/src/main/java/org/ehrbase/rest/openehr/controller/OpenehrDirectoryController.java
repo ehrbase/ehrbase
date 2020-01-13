@@ -18,8 +18,6 @@
 
 package org.ehrbase.rest.openehr.controller;
 
-import org.ehrbase.api.definitions.StructuredString;
-import org.ehrbase.api.definitions.StructuredStringFormat;
 import org.ehrbase.api.dto.FolderDto;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.NotAcceptableException;
@@ -56,45 +54,45 @@ public class OpenehrDirectoryController extends BaseController {
     private final EhrService ehrService;
 
     @Autowired
-    public OpenehrDirectoryController(FolderService folderService, EhrService ehrService){
+    public OpenehrDirectoryController(FolderService folderService, EhrService ehrService) {
         this.folderService = Objects.requireNonNull(folderService);
         this.ehrService = Objects.requireNonNull(ehrService);
     }
 
-    @PostMapping(value = "/{ehr_id}/directory", consumes = { "application/xml", "application/json" })
+    @PostMapping(value = "/{ehr_id}/directory", consumes = {"application/xml", "application/json"})
     @ApiOperation("Create a new directory folder associated with the EHR identified by ehr_id.")
     @ApiNotes("directoryPost.md")
     @ApiResponses(value = {
-        @ApiResponse(
-                code = 201,
-                response = DirectoryResponseData.class,
-                message = "Created successfully - new FOLDER created was created. Content body is only returned when Prefer header has return=representation, otherwise only headers are returned.",
-                responseHeaders = {
-                        @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class),
-                        @ResponseHeader(name = LOCATION, description = RESP_LOCATION_DESC, response = URI.class),
-                        @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class),
-                        @ResponseHeader(name = LAST_MODIFIED, description = RESP_LAST_MODIFIED_DESC, response = long.class)
-                }
-        ),
-        @ApiResponse(
-                code = 204,
-                message = "No Content - New FOLDER was created but not full representation requested. Details in response headers.",
-                responseHeaders = {
-                        @ResponseHeader(name = LOCATION, description = RESP_LOCATION_DESC, response = URI.class),
-                        @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class),
-                        @ResponseHeader(name = LAST_MODIFIED, description = RESP_LAST_MODIFIED_DESC, response = long.class)
-                }
-        ),
-        @ApiResponse(
-                code = 400,
-                message = "Bad Request - New FOLDER could not be created due to a malformed request data. Request must be modified to match the expected formats.",
-                response = ErrorResponseData.class
-        ),
-        @ApiResponse(
-                code = 404,
-                message = "Not Found - New FOLDER could not be created due to the EHR identified by the ehr_id could not be found.",
-                response = ErrorResponseData.class
-        )
+            @ApiResponse(
+                    code = 201,
+                    response = DirectoryResponseData.class,
+                    message = "Created successfully - new FOLDER created was created. Content body is only returned when Prefer header has return=representation, otherwise only headers are returned.",
+                    responseHeaders = {
+                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class),
+                            @ResponseHeader(name = LOCATION, description = RESP_LOCATION_DESC, response = URI.class),
+                            @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class),
+                            @ResponseHeader(name = LAST_MODIFIED, description = RESP_LAST_MODIFIED_DESC, response = long.class)
+                    }
+            ),
+            @ApiResponse(
+                    code = 204,
+                    message = "No Content - New FOLDER was created but not full representation requested. Details in response headers.",
+                    responseHeaders = {
+                            @ResponseHeader(name = LOCATION, description = RESP_LOCATION_DESC, response = URI.class),
+                            @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class),
+                            @ResponseHeader(name = LAST_MODIFIED, description = RESP_LAST_MODIFIED_DESC, response = long.class)
+                    }
+            ),
+            @ApiResponse(
+                    code = 400,
+                    message = "Bad Request - New FOLDER could not be created due to a malformed request data. Request must be modified to match the expected formats.",
+                    response = ErrorResponseData.class
+            ),
+            @ApiResponse(
+                    code = 404,
+                    message = "Not Found - New FOLDER could not be created due to the EHR identified by the ehr_id could not be found.",
+                    response = ErrorResponseData.class
+            )
     })
     @ResponseStatus(value = HttpStatus.CREATED)
     public ResponseEntity createFolder(
@@ -106,20 +104,20 @@ public class OpenehrDirectoryController extends BaseController {
             @ApiParam(value = "EHR identifier from resource path after ehr/", required = true) @PathVariable(value = "ehr_id") UUID ehrId,
             @ApiParam(value = "The FOLDER to create.", required = true) @RequestBody Folder folder,
             @RequestUrl String requestUrl
-    ) {
+                                      ) {
 
         // Check for existence of EHR record
         if (!this.ehrService.doesEhrExist(ehrId)) {
             throw new ObjectNotFoundException(
                     "ehr",
-                    "EHR with id " + ehrId + " not found"
+                    "EHR with id " + ehrId + " not found."
             );
         }
         // Insert New folder
         UUID folderId = this.folderService.create(
                 ehrId,
                 folder
-        );
+                                                 );
 
         // Fetch inserted folder for response data
         Optional<FolderDto> newFolder = this.folderService.retrieve(folderId, 0);
@@ -132,22 +130,29 @@ public class OpenehrDirectoryController extends BaseController {
 
         // Create response data
         HttpHeaders resHeaders = new HttpHeaders();
-        resHeaders.setLocation(URI.create(requestUrl + "/" + folderId.toString()));
-        resHeaders.setETag("W/\"" + folderId.toString() + "\"");
+        resHeaders.setLocation(URI.create(requestUrl +
+                                          "/" +
+                                          newFolder.get()
+                                                   .getUid()
+                                                   .toString()));
+        resHeaders.setETag("\"" +
+                           newFolder.get()
+                                    .getUid()
+                                    .toString() +
+                           "\"");
         // TODO: Set LastModified header
 
         // Check for desired response representation format from PREFER header
-        if (prefer.equals(RETURN_REPRESENTATION)){
+        if (prefer.equals(RETURN_REPRESENTATION)) {
 
+            FolderDto folderDto = newFolder.get();
             // Evaluate target format from accept header
-            StructuredStringFormat resFormat = StructuredStringFormat.JSON;
             MediaType resContentType = MediaType.APPLICATION_JSON;
 
             switch (accept) {
                 case MediaType.APPLICATION_JSON_VALUE:
                     break;
                 case MediaType.APPLICATION_XML_VALUE:
-                    resFormat = StructuredStringFormat.XML;
                     resContentType = MediaType.APPLICATION_XML;
                     break;
                 default:
@@ -156,16 +161,7 @@ public class OpenehrDirectoryController extends BaseController {
                     );
             }
 
-            DirectoryResponseData resBody = new DirectoryResponseData();
-
-            // Serialize Content
-            resBody.setFolder(
-                    this.folderService.serialize(
-                            newFolder.get().getFolder(),
-                            resFormat
-                    )
-            );
-            resBody.setUid(newFolder.get().getUuid());
+            DirectoryResponseData resBody = buildResponse(folderDto);
 
             resHeaders.setContentType(resContentType);
 
@@ -209,17 +205,18 @@ public class OpenehrDirectoryController extends BaseController {
     public ResponseEntity<DirectoryResponseData> getFolder(
             @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
             @ApiParam(value = "EHR identifier from resource path after ehr/", required = true) @PathVariable(value = "ehr_id") UUID ehrId,
-            @ApiParam(value = "DIRECTORY identifier from resource path after directory/", required = true) @PathVariable(value = "version_uid") UUID versionUid,
+            @ApiParam(value = "DIRECTORY identifier from resource path after directory/", required = true) @PathVariable(value = "version_uid") String versionUid,
             @ApiParam(value = "Path parameter to specify a subfolder at directory") @RequestParam(value = "path", required = false) String path
-    ) {
+                                                          ) {
+
+        // Tries to create an UUID from versionUid and throws an IllegalArgumentException for 400 error
+        UUID versionUUID = UUID.fromString(versionUid);
 
         // Get response data format for deserialization; defaults to JSON
-        StructuredStringFormat responseFormat = StructuredStringFormat.JSON;
         MediaType responseContentType = MediaType.APPLICATION_JSON;
 
         switch (accept) {
             case MediaType.APPLICATION_XML_VALUE:
-                responseFormat = StructuredStringFormat.XML;
                 responseContentType = MediaType.APPLICATION_XML;
                 break;
             case MediaType.APPLICATION_JSON_VALUE:
@@ -237,24 +234,24 @@ public class OpenehrDirectoryController extends BaseController {
         }
 
         // Get the folder entry from database
-        Optional<FolderDto> folderDto = folderService.retrieve(versionUid, 1);
-        if (!folderDto.isPresent()) {
-            throw new ObjectNotFoundException("folder", "The FOLDER with id " + versionUid + " does not exist.");
+        Optional<FolderDto> foundFolder = folderService.retrieve(versionUUID, 1);
+        if (!foundFolder.isPresent()) {
+            throw new ObjectNotFoundException("folder",
+                                              "The FOLDER with id " +
+                                              versionUUID.toString() +
+                                              " does not exist.");
         }
 
-        // Serialize into target format
-        StructuredString serializedFolder = folderService.serialize(folderDto.get().getFolder(), responseFormat);
+        FolderDto folderDto = foundFolder.get();
 
         // Create response data
         HttpHeaders headers = new HttpHeaders();
-
         headers.setContentType(responseContentType);
+        headers.setETag("\"" + folderDto.getUid().toString() + "\"");
 
-        DirectoryResponseData responseData = new DirectoryResponseData();
-        responseData.setUid(versionUid.toString());
-        responseData.setFolder(serializedFolder);
+        DirectoryResponseData resBody = buildResponse(folderDto);
 
-        return new ResponseEntity<>(responseData, headers, HttpStatus.OK);
+        return new ResponseEntity<>(resBody, headers, HttpStatus.OK);
 
     }
 
@@ -286,10 +283,11 @@ public class OpenehrDirectoryController extends BaseController {
             @ApiParam(value = "EHR identifier from resource path after ehr/", required = true) @PathVariable(value = "ehr_id") UUID ehrId,
             @ApiParam(value = "Timestamp in extended ISO8601 format to identify version of folder.") @RequestParam(value = "version_at_time", required = false) String versionAtTime,
             @ApiParam(value = "Path parameter to specify a subfolder at directory") @RequestParam(value = "path", required = false) String path
-    ) {
-       // UUID ehrId = getEhrUuid(ehrIdString);
+                                                ) {
+        // UUID ehrId = getEhrUuid(ehrIdString);
         // TODO: Implement get folder by version at time functionality
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
+                             .build();
     }
 
     @PutMapping(path = "/{ehr_id}/directory")
@@ -343,12 +341,85 @@ public class OpenehrDirectoryController extends BaseController {
             @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
             @ApiParam(value = REQ_PREFER) @RequestHeader(value = PREFER, required = false, defaultValue = RETURN_MINIMAL) String prefer,
             @ApiParam(value = "{preceding_version_uid}", required = true) @RequestHeader(value = IF_MATCH) String ifMatch,
-            @ApiParam(value = "EHR identifier from resource path after ehr/", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
-            @ApiParam(value = "Update data for the target FOLDER") @RequestBody String folder
-    ) {
-        UUID ehrId = getEhrUuid(ehrIdString);
-        // TODO: Implement update folder functionality
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+            @ApiParam(value = "EHR identifier from resource path after ehr/", required = true) @PathVariable(value = "ehr_id") UUID ehrId,
+            @ApiParam(value = "Update data for the target FOLDER") @RequestBody Folder folder,
+            @RequestUrl String requestUrl
+                                      ) {
+
+        // Check for existence of EHR record
+        if (!this.ehrService.doesEhrExist(ehrId)) {
+            throw new ObjectNotFoundException(
+                    "ehr",
+                    "EHR with id " + ehrId + " not found"
+            );
+        }
+
+        UUID folderId = UUID.fromString(ifMatch);
+
+        // Update folder and get new version
+        Optional<FolderDto> updatedFolder = this.folderService.update(
+                folderId,
+                folder,
+                ehrId
+                                                                     );
+
+
+        if (!updatedFolder.isPresent()) {
+            throw new InternalServerException(
+                    "Something went wrong. Folder could be persisted but not fetched again."
+            );
+        }
+
+        // Create response data
+        HttpHeaders resHeaders = new HttpHeaders();
+        resHeaders.setLocation(URI.create(requestUrl +
+                                          "/" +
+                                          updatedFolder.get()
+                                                       .getUid()
+                                                       .toString()));
+        resHeaders.setETag("\"" +
+                           updatedFolder.get()
+                                        .getUid()
+                                        .toString() +
+                           "\"");
+        // TODO: Set LastModified header
+
+        // Check for desired response representation format from PREFER header
+        if (prefer.equals(RETURN_REPRESENTATION)) {
+
+            FolderDto folderDto = updatedFolder.get();
+
+            // Evaluate target format from accept header
+            MediaType resContentType = MediaType.APPLICATION_JSON;
+
+            switch (accept) {
+                case MediaType.APPLICATION_JSON_VALUE:
+                    break;
+                case MediaType.APPLICATION_XML_VALUE:
+                    resContentType = MediaType.APPLICATION_XML;
+                    break;
+                default:
+                    throw new NotAcceptableException(
+                            "Media type " + accept + " not supported."
+                    );
+            }
+
+            DirectoryResponseData resBody = buildResponse(folderDto);
+
+            resHeaders.setContentType(resContentType);
+
+            return new ResponseEntity<>(
+                    resBody,
+                    resHeaders,
+                    HttpStatus.OK
+            );
+        }
+        // No representation desired
+        return new ResponseEntity<>(
+                null,
+                resHeaders,
+                HttpStatus.NO_CONTENT
+        );
     }
 
     @DeleteMapping(path = "/{ehr_id}/directory")
@@ -388,10 +459,23 @@ public class OpenehrDirectoryController extends BaseController {
             @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
             @ApiParam(value = "{preceding_version_uid}", required = true) @RequestHeader(value = IF_MATCH) String ifMatch,
             @ApiParam(value = "EHR identifier from resource path after ehr/", required = true) @PathVariable(value = "ehr_id") String ehrIdString
-    ) {
+                                      ) {
         UUID ehrId = getEhrUuid(ehrIdString);
         // TODO: Implement delete FOLDER fuctionality
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
+                             .build();
+    }
+
+    private DirectoryResponseData buildResponse(FolderDto folderDto) {
+
+
+        DirectoryResponseData resBody = new DirectoryResponseData();
+        resBody.setDetails(folderDto.getDetails());
+        resBody.setFolders(folderDto.getFolders());
+        resBody.setItems(folderDto.getItems());
+        resBody.setName(folderDto.getName());
+        resBody.setUid(folderDto.getUid());
+        return resBody;
     }
 
 }

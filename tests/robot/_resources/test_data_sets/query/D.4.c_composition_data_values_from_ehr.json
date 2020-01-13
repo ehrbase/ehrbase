@@ -1,3 +1,0 @@
-{
-  "q": "SELECT c/uid/value, c/name/value, c/archetype_node_id, c/language, c/territory, c/category/value FROM EHR e CONTAINS COMPOSITION c WHERE e/ehr_id/value matches {'dd616472-9432-4004-ad85-fd47affb1cc8'}"
-}

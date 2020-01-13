@@ -49,13 +49,10 @@ You can also use this Docker image which is a preconfigured  Postgres database:
 
 Edit the database properties in  `./pom.xml` if necessary
 
-#### 3. Setup template folder
-Unzip `/.circleci/file_repo_content.zip` (make sure `file_repo` is being put into the project's root folder).
-
-#### 4. Build EHRbase
+#### 3. Build EHRbase
 Run `mvn package`
 
-#### 5. Run EHRbase
+#### 4. Run EHRbase
 
 Replace the * with the current version, e.g. `application/target/application-0.8.0.jar`
 

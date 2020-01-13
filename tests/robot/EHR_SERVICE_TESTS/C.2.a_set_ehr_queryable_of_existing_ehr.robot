@@ -50,28 +50,10 @@ Force Tags    ehr_status
 *** Test Cases ***
 Set EHR queryable of an existing EHR
 
-    ehr_keywords.start request session    JSON
+    prepare new request session    JSON
 
     create new EHR
 
     update EHR: set ehr_status is_queryable    ${TRUE}
 
     check response of 'update EHR' (JSON)
-
-
-# # NOTE: fully working example! Keep it as reference!!!!
-# Set EHR queryable of an existing EHR (EHRSCAPE)
-#     ehr_keywords.start request session    JSON
-#     create new EHR
-#     extract ehr_id from response (JSON EHRSCAPE)
-#     extract ehr_status from response (JSON EHRSCAPE)
-#     extract ehrstatus_uid (JSON EHRSCAPE)
-#
-#     modify ehr_status is_queryable to ${TRUE}
-#
-#     set ehr_status of EHR
-#     get ehr_status of EHR
-#
-#     Output
-#
-#     verify response (JSON)

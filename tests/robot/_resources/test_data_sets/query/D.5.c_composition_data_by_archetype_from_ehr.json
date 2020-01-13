@@ -1,6 +1,0 @@
-{
-  "q": "SELECT c/uid/value, o/name/value, o/data[at0001]/origin/value, o/data[at0001]/events[at0002]/time/value, o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/value FROM EHR e [ehr_id/value=$ehr_id] CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS OBSERVATION o [openEHR-EHR-OBSERVATION.minimal.v1]",
-  "query_parameters": {
-    "ehr_id": "dd616472-9432-4004-ad85-fd47affb1cc8"
-  }
-}

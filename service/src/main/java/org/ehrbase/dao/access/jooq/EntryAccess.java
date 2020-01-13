@@ -33,6 +33,7 @@ import com.nedap.archie.rm.support.identification.TerminologyId;
 import com.nedap.archie.rm.support.identification.UIDBasedId;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.query.AsyncSqlQuery;
@@ -70,8 +71,32 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
 
     private Composition composition;
 
-    public EntryAccess(DSLContext context, I_KnowledgeCache knowledge, IntrospectService introspectCache, String templateId, Integer sequence, UUID compositionId, Composition composition) {
-        super(context, knowledge, introspectCache);
+    /**
+     * Basic constructor for entry.
+     * @param context DB context object of current server context
+     * @param knowledge Knowledge cache object of current server context
+     * @param introspectCache Introspect cache object of current server context
+     * @param serverConfig Server config object of current server context
+     * @param templateId Template ID of this entry
+     * @param sequence Sequence number of this entry
+     * @param compositionId Linked composition ID
+     * @param composition Object representation of linked composition
+     */
+    public EntryAccess(DSLContext context, I_KnowledgeCache knowledge, IntrospectService introspectCache, ServerConfig serverConfig, String templateId, Integer sequence, UUID compositionId, Composition composition) {
+        super(context, knowledge, introspectCache, serverConfig);
+        setFields(templateId, sequence, compositionId, composition);
+    }
+
+    /**
+     * Constructor with convenient {@link I_DomainAccess} parameter, for better readability.
+     * @param domainAccess Current domain access object
+     * @param templateId Template ID of this entry
+     * @param sequence Sequence number of this entry
+     * @param compositionId Linked composition ID
+     * @param composition Object representation of linked composition
+     */
+    public EntryAccess(I_DomainAccess domainAccess, String templateId, Integer sequence, UUID compositionId, Composition composition) {
+        super(domainAccess.getContext(), domainAccess.getKnowledgeManager(), domainAccess.getIntrospectService(), domainAccess.getServerConfig());
         setFields(templateId, sequence, compositionId, composition);
     }
 
@@ -91,12 +116,9 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
         Map<SystemValue, Object> values = new HashMap<>();
         values.put(SystemValue.COMPOSER, I_PartyIdentifiedAccess.retrievePartyIdentified(domainAccess, compositionAccess.getComposerId()));
 
-        // conditional handling for persistent compositions that do not have a context
-        I_ContextAccess contextAccess = null;   // stays null if persistent
-        if (Optional.ofNullable(compositionAccess.getContextId()).isPresent()) {
-            contextAccess = I_ContextAccess.retrieveInstance(domainAccess, compositionAccess.getContextId());
-            values.put(SystemValue.CONTEXT, contextAccess.mapRmEventContext());
-        }
+        // optional handling for persistent compositions that do not have a context
+        Optional<I_ContextAccess> opContextAccess = compositionAccess.getContextId().map(id -> I_ContextAccess.retrieveInstance(domainAccess, id));
+        opContextAccess.ifPresent(context -> values.put(SystemValue.CONTEXT, context.mapRmEventContext()));
 
         values.put(SystemValue.LANGUAGE, new CodePhrase(new TerminologyId("ISO_639-1"), compositionAccess.getLanguageCode()));
         String territory2letters = domainAccess.getContext().fetchOne(TERRITORY, TERRITORY.CODE.eq(compositionAccess.getTerritoryCode())).getTwoletter();
@@ -113,14 +135,13 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
                 //set the record UID in the composition with matching version number
                 Integer version = I_CompositionAccess.getLastVersionNumber(domainAccess, compositionAccess.getId());
                 values.put(SystemValue.UID,
-                        new ObjectVersionId(compositionAccess.getId().toString() + "::" + domainAccess.getServerNodeId() + "::" + version));
+                        new ObjectVersionId(compositionAccess.getId().toString() + "::" + domainAccess.getServerConfig().getNodename() + "::" + version));
 
                 entryAccess.entryRecord = record;
                 String value = ((PGobject) record.getEntry()).getValue();
                 entryAccess.composition = new RawJson().unmarshal(value, Composition.class);
 
-                // continuing conditional handling for persistent compositions
-                Optional<I_ContextAccess> opContextAccess = Optional.ofNullable(contextAccess);
+                // continuing optional handling for persistent compositions
                 opContextAccess.map(I_ContextAccess::mapRmEventContext).ifPresent(ec -> values.put(SystemValue.CONTEXT, ec));
 
                 setCompositionAttributes(entryAccess.composition, values);
@@ -158,8 +179,8 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
 
         EventContext context = I_ContextAccess.retrieveHistoricalEventContext(domainAccess, compositionHistoryAccess.getId(), compositionHistoryAccess.getSysTransaction());
         if (context == null) {//unchanged context use the current one!
-            I_ContextAccess contextAccess = I_ContextAccess.retrieveInstance(domainAccess, compositionHistoryAccess.getContextId());
-            context = contextAccess.mapRmEventContext();
+            // also optional handling of context, because persistent compositions don't have a context
+            compositionHistoryAccess.getContextId().ifPresent(uuid -> I_ContextAccess.retrieveInstance(domainAccess, uuid).mapRmEventContext());
         }
         values.put(SystemValue.CONTEXT, context);
 
@@ -176,7 +197,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
             for (EntryHistoryRecord record : entryHistoryRecords) {
                 //set the record UID in the composition
                 UUID compositionId = compositionHistoryAccess.getId();
-                values.put(SystemValue.UID, new ObjectVersionId(compositionId.toString() + "::" + domainAccess.getServerNodeId() + "::" + version));
+                values.put(SystemValue.UID, new ObjectVersionId(compositionId.toString() + "::" + domainAccess.getServerConfig().getNodename() + "::" + version));
 
 //                EntryAccess entry = new EntryAccess();
                 entryAccess.entryRecord = domainAccess.getContext().newRecord(ENTRY);
@@ -271,7 +292,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
 
         RawJson rawJson = new RawJson();
         record.setEntry(rawJson.marshal(composition));
-        containmentAccess = new ContainmentAccess(context, record.getId(), record.getArchetypeId(), rawJson.getLtreeMap(), true);
+        containmentAccess = new ContainmentAccess(getDataAccess(), record.getId(), record.getArchetypeId(), rawJson.getLtreeMap(), true);
     }
 
     /**
@@ -286,7 +307,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
      */
     private void setFields(String templateId, Integer sequence, UUID compositionId, Composition composition) {
 
-        entryRecord = context.newRecord(ENTRY);
+        entryRecord = getContext().newRecord(ENTRY);
 
         entryRecord.setTemplateId(templateId);
         entryRecord.setSequence(sequence);
@@ -328,7 +349,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
         //------------- END --------------------
 
         //use jOOQ!
-        Record result = context
+        Record result = getContext()
                 .insertInto(ENTRY, ENTRY.SEQUENCE, ENTRY.COMPOSITION_ID, ENTRY.TEMPLATE_ID, ENTRY.ITEM_TYPE, ENTRY.ARCHETYPE_ID, ENTRY.CATEGORY, ENTRY.ENTRY_, ENTRY.SYS_TRANSACTION)
                 .values(DSL.val(getSequence()),
                         DSL.val(getCompositionId()),
@@ -377,7 +398,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
         //ignore the temporal field since it is maintained by an external trigger!
         entryRecord.changed(ENTRY.SYS_PERIOD, false);
 
-        UpdateQuery<?> updateQuery = context.updateQuery(ENTRY);
+        UpdateQuery<?> updateQuery = getContext().updateQuery(ENTRY);
         updateQuery.addValue(ENTRY.COMPOSITION_ID, getCompositionId());
         updateQuery.addValue(ENTRY.SEQUENCE, DSL.field(DSL.val(getSequence())));
         updateQuery.addValue(ENTRY.TEMPLATE_ID, DSL.field(DSL.val(getTemplateId())));
