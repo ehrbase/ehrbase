@@ -79,7 +79,7 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
     public UUID commit(Timestamp transactionTime) {
         auditDetailsRecord.setTimeCommitted(transactionTime);
         auditDetailsRecord.setTimeCommittedTzid(ZonedDateTime.now().getZone().getId()); // extracting only TZ, ignoring now() itself
-        int result = auditDetailsRecord.store();
+        int result = auditDetailsRecord.store();    // FIXME VERSIONED_OBJECT_POC: store() shouldn't be allowed, only explicit insert(), so there will be no unwanted update()
         if (result == 1) {
             return auditDetailsRecord.getId();
         } else {
@@ -117,7 +117,8 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
         boolean result = false;
 
         if (force || auditDetailsRecord.changed()) {
-            result = auditDetailsRecord.store() == 1;   // store() returns 1 if stored, 0 if not
+            auditDetailsRecord.setId(UUID.randomUUID()); // force to create new entry from old values
+            result = auditDetailsRecord.insert() == 1;
         }
 
         return result;
@@ -155,6 +156,11 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
     @Override
     public Integer delete() {
         return auditDetailsRecord.delete();
+    }
+
+    @Override
+    public UUID getId() {
+        return auditDetailsRecord.getId();
     }
 
     @Override

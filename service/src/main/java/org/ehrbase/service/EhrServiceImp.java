@@ -42,6 +42,7 @@ import org.ehrbase.api.service.EhrService;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
 import org.ehrbase.dao.access.interfaces.I_EhrAccess;
 import org.ehrbase.dao.access.interfaces.I_PartyIdentifiedAccess;
+import org.ehrbase.dao.access.interfaces.I_StatusAccess;
 import org.ehrbase.serialisation.CanonicalJson;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
@@ -157,7 +158,7 @@ public class EhrServiceImp extends BaseService implements EhrService {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrUuid.toString());
         }
 
-        I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstanceByStatus(getDataAccess(), versionedObjectUid, version);
+        I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstanceByStatus(getDataAccess(), ehrUuid, versionedObjectUid, version);
         if (ehrAccess == null) {
             return Optional.empty();
         }
@@ -310,11 +311,14 @@ public class EhrServiceImp extends BaseService implements EhrService {
 
     private RevisionHistoryItem revisionHistoryItemfromEhrStatus(EhrStatus ehrStatus, int version) {
 
-        ObjectVersionId objectVersionId = new ObjectVersionId(ehrStatus.getUid().getRoot().getValue() + "::" + getServerConfig().getNodename() + "::" + version);
+        String statusId = ehrStatus.getUid().getRoot().getValue();
+        ObjectVersionId objectVersionId = new ObjectVersionId( statusId + "::" + getServerConfig().getNodename() + "::" + version);
 
         // Note: is List but only has more than one item when there are contributions regarding this object of change type attestation
         List<AuditDetails> auditDetails = new ArrayList<>();
-        // FIXME VERSIONED_OBJECT_POC: retrieving the audits is a bit of work as contribution service needs new methods
+        // FIXME VERSIONED_OBJECT_POC: retrieving the audits
+        I_StatusAccess statusAccess = I_StatusAccess.retrieveInstance(getDataAccess(), UUID.fromString(statusId));
+        //statusAccess.getAuditDetailsAccess().
 
         return new RevisionHistoryItem(objectVersionId, auditDetails);
     }

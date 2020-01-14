@@ -81,6 +81,8 @@ public interface I_AuditDetailsAccess extends I_SimpleCRUD<I_AuditDetailsAccess,
      */
     Boolean update(UUID systemId, UUID committer, I_ConceptAccess.ContributionChangeType changeType, String description);
 
+    UUID getId();
+
     void setSystemId(UUID systemId);
     UUID getSystemId();
 

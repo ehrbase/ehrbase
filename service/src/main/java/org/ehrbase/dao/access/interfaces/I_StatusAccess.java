@@ -81,20 +81,29 @@ public interface I_StatusAccess extends I_SimpleCRUD<I_StatusAccess, UUID> {
     }
 
     /**
-     * FIXME VERSIONED_OBJECT_POC: docs!
-     * @param transactionTime
-     * @param ehrId
-     * @param otherDetails
-     * @return
+     * Commit this status instance.
+     * @param transactionTime Time of transaction
+     * @param ehrId Associated EHR
+     * @param otherDetails Object representation of otherDetails
+     * @return ID of DB entry if successful
      */
     UUID commit(Timestamp transactionTime, UUID ehrId, ItemStructure otherDetails);
 
     /**
-     * FIXME VERSIONED_OBJECT_POC: docs!
-     * @param otherDetails
-     * @param transactionTime
-     * @param force
-     * @return
+     * commit this instance, which has contribution already set with setContributionId(...) beforehand
+     * @param transactionTime Time of transaction
+     * @param ehrId Associated EHR
+     * @param otherDetails Object representation of otherDetails
+     * @return ID of DB entry if successful
+     */
+    UUID commitWithCustomContribution(Timestamp transactionTime, UUID ehrId, ItemStructure otherDetails);
+
+    /**
+     * Update this status instance.
+     * @param otherDetails Object representation of otherDetails
+     * @param transactionTime Time of transaction
+     * @param force Option to force
+     * @return True if successful
      */
     Boolean update(ItemStructure otherDetails, Timestamp transactionTime, boolean force);
 
@@ -106,7 +115,21 @@ public interface I_StatusAccess extends I_SimpleCRUD<I_StatusAccess, UUID> {
 
     void setAuditDetailsAccess(I_AuditDetailsAccess auditDetailsAccess);
 
+    void setContributionAccess(I_ContributionAccess contributionAccess);
+
     I_AuditDetailsAccess getAuditDetailsAccess();
 
     UUID getAuditDetailsId();
+
+    void setContributionId(UUID contribution);
+
+    UUID getContributionId();
+
+    /**
+     * Helper that sets values in Status' direct audit and Status' implicit contribution audit
+     * @param systemId ID of committing system
+     * @param committerId ID of committer
+     * @param description Optional description
+     */
+    void setAuditAndContributionAuditValues(UUID systemId, UUID committerId, String description);
 }

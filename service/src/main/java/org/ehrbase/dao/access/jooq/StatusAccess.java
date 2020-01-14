@@ -24,11 +24,9 @@ package org.ehrbase.dao.access.jooq;
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
-import org.ehrbase.dao.access.interfaces.I_AuditDetailsAccess;
-import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
-import org.ehrbase.dao.access.interfaces.I_DomainAccess;
-import org.ehrbase.dao.access.interfaces.I_StatusAccess;
+import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.support.DataAccess;
+import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.jooq.pg.tables.records.StatusRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -49,12 +47,17 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
     private static final Logger log = LogManager.getLogger(StatusAccess.class);
 
     private StatusRecord statusRecord;
-    private I_AuditDetailsAccess auditDetailsAccess;  // audit associated with this status
+    private I_ContributionAccess contributionAccess; // locally referenced contribution associated to this status
+    private I_AuditDetailsAccess auditDetailsAccess; // audit associated with this status
 
-    public StatusAccess(I_DomainAccess domainAccess) {
+    public StatusAccess(I_DomainAccess domainAccess, UUID ehrId) {
         super(domainAccess);
 
         statusRecord = getContext().newRecord(STATUS);
+
+        //associate a contribution with this composition
+        contributionAccess = I_ContributionAccess.getInstance(this, ehrId);
+        contributionAccess.setState(ContributionDef.ContributionState.COMPLETE);
 
         // associate status' own audit with this status access instance
         auditDetailsAccess = I_AuditDetailsAccess.getInstance(getDataAccess());
@@ -63,19 +66,10 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
     public static I_StatusAccess retrieveInstance(I_DomainAccess domainAccess, UUID statusId) {
         StatusRecord record = domainAccess.getContext().fetchOne(STATUS, STATUS.ID.eq(statusId));
 
-        // FIXME VERSIONED_OBJECT_POC: externalize to private method
-        if (record == null) {
+        if (record == null)
             return null;
-        }
 
-        StatusAccess statusAccess = new StatusAccess(domainAccess);
-        statusAccess.setStatusRecord(record);
-
-        // retrieve corresponding audit
-        I_AuditDetailsAccess auditAccess = new AuditDetailsAccess(domainAccess.getDataAccess()).retrieveInstance(domainAccess.getDataAccess(), statusAccess.getAuditDetailsId());
-        statusAccess.setAuditDetailsAccess(auditAccess);
-
-        return statusAccess;
+        return createStatusAccessForRetrieval(domainAccess, record);
     }
 
     public static I_StatusAccess retrieveInstanceByNamedSubject(I_DomainAccess domainAccess, String partyName) {
@@ -90,29 +84,10 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
                         )
         );
 
-        // FIXME VERSIONED_OBJECT_POC: delete when done
-        /*Record record = context.select(STATUS.ID).from(STATUS)
-                .where(STATUS.PARTY.eq
-                        (context.select(PARTY_IDENTIFIED.ID)
-                                .from(PARTY_IDENTIFIED)
-                                .where(PARTY_IDENTIFIED.NAME.eq(partyName))
-                        )
-                )
-                .fetchOne();*/
-
-        if (record == null) {
-            log.warn("Could not retrieveInstanceByNamedSubject status for party:" + partyName);
+        if (record == null)
             return null;
-        }
 
-        StatusAccess statusAccess = new StatusAccess(domainAccess);
-        statusAccess.setStatusRecord(record);
-
-        // retrieve corresponding audit
-        I_AuditDetailsAccess auditAccess = new AuditDetailsAccess(domainAccess.getDataAccess()).retrieveInstance(domainAccess.getDataAccess(), statusAccess.getAuditDetailsId());
-        statusAccess.setAuditDetailsAccess(auditAccess);
-
-        return statusAccess;
+        return createStatusAccessForRetrieval(domainAccess, record);
     }
 
     public static I_StatusAccess retrieveInstanceByParty(I_DomainAccess domainAccess, UUID partyIdentified) {
@@ -127,44 +102,39 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
                         )
                 );
 
-        // FIXME VERSIONED_OBJECT_POC: delete when done
-        /*Record record = context.select(STATUS.ID).from(STATUS)
-                .where(STATUS.PARTY.eq
-                        (context.select(PARTY_IDENTIFIED.ID)
-                                .from(PARTY_IDENTIFIED)
-                                .where(PARTY_IDENTIFIED.ID.eq(partyIdentified))
-                        )
-                )
-                .fetchOne();*/
-
-        if (record == null) {
-            log.warn("Could not retrieveInstanceByNamedSubject Instance status for party:" + partyIdentified);
+        if (record == null)
             return null;
-        }
-        StatusAccess statusAccess = new StatusAccess(domainAccess);
-        statusAccess.setStatusRecord(record);
 
-        // retrieve corresponding audit
-        I_AuditDetailsAccess auditAccess = new AuditDetailsAccess(domainAccess.getDataAccess()).retrieveInstance(domainAccess.getDataAccess(), statusAccess.getAuditDetailsId());
-        statusAccess.setAuditDetailsAccess(auditAccess);
-
-        return statusAccess;
+        return createStatusAccessForRetrieval(domainAccess, record);
 
     }
 
     public static I_StatusAccess retrieveInstanceByEhrId(I_DomainAccess domainAccess, UUID ehrId) {
         StatusRecord record = domainAccess.getContext().fetchOne(STATUS, STATUS.EHR_ID.eq(ehrId));
 
-        if (record == null) {
+        if (record == null)
             return null;
-        }
 
-        StatusAccess statusAccess = new StatusAccess(domainAccess);
+        return createStatusAccessForRetrieval(domainAccess, record);
+    }
+
+    /**
+     * Helper to create a new {@link StatusAccess} instance from a queried record, to return to service layer.
+     * @param domainAccess General access
+     * @param record Queried {@link StatusRecord} which contains ID of linked EHR, audit and contribution
+     * @return
+     */
+    private static I_StatusAccess createStatusAccessForRetrieval(I_DomainAccess domainAccess, StatusRecord record) {
+        StatusAccess statusAccess = new StatusAccess(domainAccess, record.getEhrId());
         statusAccess.setStatusRecord(record);
 
         // retrieve corresponding audit
         I_AuditDetailsAccess auditAccess = new AuditDetailsAccess(domainAccess.getDataAccess()).retrieveInstance(domainAccess.getDataAccess(), statusAccess.getAuditDetailsId());
         statusAccess.setAuditDetailsAccess(auditAccess);
+
+        // retrieve corresponding contribution
+        I_ContributionAccess retContributionAccess = I_ContributionAccess.retrieveInstance(domainAccess, record.getInContribution());
+        statusAccess.setContributionAccess(retContributionAccess);
 
         return statusAccess;
     }
@@ -196,8 +166,25 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
 
     @Override
     public UUID commit(Timestamp transactionTime, UUID ehrId, ItemStructure otherDetails) {
-        getAuditDetailsAccess().setChangeType(I_ConceptAccess.fetchContributionChangeType(this, I_ConceptAccess.ContributionChangeType.CREATION));
-        UUID auditId = getAuditDetailsAccess().commit();
+        contributionAccess.setAuditDetailsChangeType(I_ConceptAccess.fetchContributionChangeType(this, I_ConceptAccess.ContributionChangeType.CREATION));
+        if (contributionAccess.getAuditsCommitter() == null || contributionAccess.getAuditsSystemId() == null)
+            throw new InternalServerException("Illegal to commit the contribution's AuditDetailsAccess without setting mandatory fields.");
+        UUID contributionId = this.contributionAccess.commit();
+        setContributionId(contributionId);
+
+        return internalCommit(transactionTime, ehrId, otherDetails);
+    }
+
+    @Override
+    public UUID commitWithCustomContribution(Timestamp transactionTime, UUID ehrId, ItemStructure otherDetails) {
+        return internalCommit(transactionTime, ehrId, otherDetails);
+    }
+
+    private UUID internalCommit(Timestamp transactionTime, UUID ehrId, ItemStructure otherDetails) {
+        auditDetailsAccess.setChangeType(I_ConceptAccess.fetchContributionChangeType(this, I_ConceptAccess.ContributionChangeType.CREATION));
+        if (auditDetailsAccess.getChangeType() == null || auditDetailsAccess.getSystemId() == null || auditDetailsAccess.getCommitter() == null)
+            throw new InternalServerException("Illegal to commit AuditDetailsAccess without setting mandatory fields.");
+        UUID auditId = auditDetailsAccess.commit();
         statusRecord.setHasAudit(auditId);
 
         statusRecord.setEhrId(ehrId);
@@ -217,31 +204,11 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
 
     @Override
     public Boolean update(Timestamp transactionTime) {
-        // FIXME VERSIONED_OBJECT_POC: delete when done!?
-        /*if (statusRecord.changed()) {
-            statusRecord.changed(STATUS.SYS_PERIOD, false);
-            statusRecord.setSysTransaction(transactionTime);
-            return statusRecord.update() > 0;
-        }
-
-        return false;*/
-
         return update(null, transactionTime, false);
     }
 
     @Override
     public Boolean update(Timestamp transactionTime, boolean force) {
-        // FIXME VERSIONED_OBJECT_POC: delete when done!?
-        /*return update(transactionTime);
-
-        if (force || statusRecord.changed()) {
-            *//*statusRecord.changed(STATUS.SYS_PERIOD, false);
-            statusRecord.setSysTransaction(transactionTime);
-            return statusRecord.update() > 0;*//*
-        }
-
-        return false;*/
-
         return update(null, transactionTime, force);
     }
 
@@ -253,12 +220,12 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
     @Override   // root update()
     public Boolean update(ItemStructure otherDetails, Timestamp transactionTime, boolean force) {
         if (force || statusRecord.changed()) {
-            // FIXME VERSIONED_OBJECT_POC: that's not right.. this creates a new audit in DB, where the three null attributes are really empty, not what they have been before the update
+            // update both contribution (incl its audit) and the status' own audit
+            contributionAccess.update(transactionTime, null, null, null, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
+            statusRecord.setInContribution(contributionAccess.getId()); // new contribution ID
             auditDetailsAccess.update(null, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
+            statusRecord.setHasAudit(auditDetailsAccess.getId()); // new audit ID
 
-            /*if (ehrId != null) {
-                statusRecord.setEhrId(ehrId);
-            }*/
             if (otherDetails != null) {
                 statusRecord.setOtherDetails(otherDetails);
             }
@@ -309,6 +276,11 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
     }
 
     @Override
+    public void setContributionAccess(I_ContributionAccess contributionAccess) {
+        this.contributionAccess = contributionAccess;
+    }
+
+    @Override
     public I_AuditDetailsAccess getAuditDetailsAccess() {
         return this.auditDetailsAccess;
     }
@@ -316,5 +288,29 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
     @Override
     public UUID getAuditDetailsId() {
         return statusRecord.getHasAudit();
+    }
+
+    @Override
+    public void setContributionId(UUID contribution) {
+        this.statusRecord.setInContribution(contribution);
+    }
+
+    @Override
+    public UUID getContributionId() {
+        return this.statusRecord.getInContribution();
+    }
+
+    @Override
+    public void setAuditAndContributionAuditValues(UUID systemId, UUID committerId, String description) {
+        if (systemId != null)
+            this.auditDetailsAccess.setSystemId(systemId);
+
+        if (committerId != null)
+            this.auditDetailsAccess.setCommitter(committerId);
+
+        if (description != null)
+            this.auditDetailsAccess.setDescription(description);
+
+        this.contributionAccess.setAuditDetailsValues(committerId, systemId, description);
     }
 }
