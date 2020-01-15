@@ -26,27 +26,18 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
 import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_FolderAccess;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.dao.access.util.FolderUtils;
-import org.ehrbase.jooq.pg.enums.ContributionDataType;
-import org.ehrbase.jooq.pg.tables.FolderHierarchy;
-import org.ehrbase.jooq.pg.tables.records.FolderHierarchyRecord;
-import org.ehrbase.jooq.pg.tables.records.FolderItemsRecord;
 import org.ehrbase.jooq.pg.tables.records.FolderRecord;
 import org.ehrbase.jooq.pg.tables.records.ObjectRefRecord;
-import org.joda.time.DateTime;
 import org.jooq.*;
-import org.jooq.impl.DSL;
 import org.postgresql.util.PGobject;
-
 import java.sql.Timestamp;
 import java.util.*;
-
 import static org.ehrbase.jooq.pg.Tables.*;
 import static org.jooq.impl.DSL.*;
 
@@ -94,338 +85,39 @@ public class FolderAccessHistory extends DataAccess implements I_FolderAccess, C
 
     @Override
     public Boolean update(Timestamp transactionTime) {
-        return this.update(transactionTime, true);
+        return null;
     }
+
 
     @Override
-    public Boolean update(final Timestamp transactionTime, final boolean force){
-        /*create new contribution*/
-        UUID old_contribution = this.folderRecord.getInContribution();
-        UUID new_contribution = this.folderRecord.getInContribution();
-
-        UUID ehrId =this.contributionAccess.getEhrId();
-        /*save the EHR id from old_contribution since it will be the same as this is an update operation*/
-        if(this.contributionAccess.getEhrId() == null){
-            final Record1<UUID>  result1= getContext().select(CONTRIBUTION.EHR_ID).from(CONTRIBUTION).where(CONTRIBUTION.ID.eq(old_contribution)).fetch().get(0);
-            ehrId = result1.value1();
-        }
-        this.contributionAccess.setEhrId(ehrId);
-
-        this.contributionAccess.commit(transactionTime, null, null, ContributionDataType.folder, ContributionDef.ContributionState.COMPLETE, I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
-        this.getFolderRecord().setInContribution(this.contributionAccess.getId());
-        new_contribution = folderRecord.getInContribution();
-
-        // Delete so folder can be overwritten
-        // This will also delete items since cascading the delete to the items table as well as
-        // all FolderHierarchy entires
-        this.delete(folderRecord.getId());
-
-        return this.update(transactionTime, true, true, null, old_contribution, new_contribution);
-    }
-
-    private Boolean update(final Timestamp transactionTime,
-                           final boolean force,
-                           boolean rootFolder,
-                           UUID parentFolder,
-                           UUID oldContribution,
-                           UUID newContribution) {
-
-        boolean result = false;
-
-        DSLContext dslContext = getContext();
-        dslContext.attach(this.folderRecord);
-
-        // Set new Contribution for MODIFY
-        this.setInContribution(newContribution);
-
-        // Copy into new instance and attach to DB context.
-        // The new instance is required to store the new record with a new ID
-        FolderRecord updatedFolderRecord = new FolderRecord();
-        updatedFolderRecord.setInContribution(newContribution);
-        updatedFolderRecord.setName(this.getFolderName());
-        updatedFolderRecord.setArchetypeNodeId(this.getFolderArchetypeNodeId());
-        updatedFolderRecord.setActive(this.isFolderActive());
-        updatedFolderRecord.setDetails(this.getFolderDetails());
-        updatedFolderRecord.setSysTransaction(transactionTime);
-        updatedFolderRecord.setSysPeriod(PGObjectParser.parseSysPeriod(this.getFolderSysPeriod()));
-
-        // attach to context DB
-        dslContext.attach(updatedFolderRecord);
-
-        // Save new Folder entry to the database
-        result = updatedFolderRecord.store() > 0;
-        // Get new folder id for folder items and hierarchy
-        UUID updatedFolderId = updatedFolderRecord.getId();
-
-        // Update items -> Save new list of all items in this folder
-        this.saveFolderItems(updatedFolderId,
-                             oldContribution,
-                             newContribution,
-                             transactionTime,
-                             getContext());
-
-        // Create FolderHierarchy entries if this instance is a sub folder
-        if (!rootFolder) {
-            FolderHierarchyRecord updatedFhR = new FolderHierarchyRecord();
-            updatedFhR.setParentFolder(parentFolder);
-            updatedFhR.setChildFolder(updatedFolderId);
-            updatedFhR.setInContribution(newContribution);
-            updatedFhR.setSysTransaction(transactionTime);
-            updatedFhR.setSysPeriod(PGObjectParser.parseSysPeriod(folderRecord.getSysPeriod()));
-            dslContext.attach(updatedFhR);
-            updatedFhR.store();
-        }
-
-        boolean anySubfolderModified = this.getSubfoldersList() // Map of sub folders with UUID
-                                           .values() // Get all I_FolderAccess entries
-                                           .stream() // Iterate over the I_FolderAccess entries
-                                           .anyMatch(subfolder -> ( // Update each entry and return if there has been at least one entry updated
-                                                   ((FolderAccessHistory) subfolder).update(transactionTime,
-                                                                                     force,
-                                                                                     false,
-                                                                                     updatedFolderId,
-                                                                                     oldContribution,
-                                                                                     newContribution)
-                                           ));
-
-        // Finally overwrite original FolderRecord on this FolderAccess instance to have the
-        // new data available at service layer. Thus we do not need to re-fetch the updated folder
-        // tree from DB
-        this.folderRecord = updatedFolderRecord;
-        return result || anySubfolderModified;
-    }
-
-    private void saveFolderItems(final UUID folderId, final UUID old_contribution, final UUID new_contribution, final Timestamp transactionTime, DSLContext context){
-
-        for(ObjectRef or : this.getItems()){
-
-            //insert in object_ref
-            ObjectRefRecord orr = new ObjectRefRecord(or.getNamespace(), or.getType(),UUID.fromString( or.getId().getValue()), new_contribution, transactionTime, PGObjectParser.parseSysPeriod(folderRecord.getSysPeriod()));
-            context.attach(orr);
-            orr.store();
-
-            //insert in folder_item
-            FolderItemsRecord fir = new FolderItemsRecord(folderId, UUID.fromString(or.getId().getValue()), new_contribution, transactionTime, PGObjectParser.parseSysPeriod(folderRecord.getSysPeriod()));
-            context.attach(fir);
-            fir.store();
-        }
+    public Boolean update(Timestamp transactionTime, boolean force) {
+        return null;
     }
 
     @Override
     public Boolean update() {
-        return  this.update(new Timestamp(DateTime.now().getMillis()), true);
+        return null;
     }
 
     @Override
     public Boolean update(Boolean force){
-        return  this.update(new Timestamp(DateTime.now().getMillis()), force);
+        return null;
     }
 
     @Override
-    public Integer delete(){
-        return this.delete(this.getFolderId());
-    }
+    public Integer delete(){ return null; }
 
     @Override
     public UUID commit(Timestamp transactionTime){
-        // Create Contribution entry for all folders
-        this.contributionAccess.commit(
-                transactionTime,
-                null,
-                null,
-                ContributionDataType.folder,
-                ContributionDef.ContributionState.COMPLETE,
-                I_ConceptAccess.ContributionChangeType.CREATION,
-                null
-        );
-        this.getFolderRecord().setInContribution(this.contributionAccess.getId());
-
-        // Save the folder record to database
-        this.getFolderRecord().store();
-
-        //Save folder items
-        this.saveFolderItems(this.getFolderRecord().getId(), this.contributionAccess.getContributionId(), this.contributionAccess.getContributionId(), new Timestamp(DateTime.now().getMillis()), getContext());
-
-        // Save list of sub folders to database with parent <-> child ID relations
-        this.getSubfoldersList().forEach((child_id, child) -> {
-            child.commit();
-            FolderHierarchyRecord fhRecord = this.buildFolderHierarchyRecord(
-                    this.getFolderRecord().getId(),
-                    ((FolderAccessHistory)child).getFolderRecord().getId(),
-                    this.contributionAccess.getId(),
-                    new Timestamp(DateTime.now().getMillis()),
-                    null
-            );
-            fhRecord.store();
-        });
-        return this.getFolderRecord().getId();
+        return null;
     }
 
     @Override
     public UUID commit(){
-        Timestamp timestamp = new Timestamp(DateTime.now().getMillis());
-        return this.commit(timestamp);
-    }
-
-   /* *//**
-     * Retrieve instance of {@link I_FolderAccess} with the information needed retrieve the folder and its sub-folders.
-     * @param domainAccess providing the information about the DB connection.
-     * @param folderId {@link UUID} of the {@link  Folder} to be fetched from the DB.
-     * @return the {@link I_FolderAccess} that provides DB access to the {@link  Folder} that corresponds to the provided folderId param.
-     * @throws Exception
-     *//*
-    public static I_FolderAccess retrieveInstanceForExistingFolder(I_DomainAccess domainAccess, UUID folderId){
-
-        *//***1-retrieve CTE as a table that contains all the rows that allow to infer each parent-child relationship***//*
-        FolderHierarchy sf =  FOLDER_HIERARCHY.as("sf");
-
-        Table<?> sf_table = table(
-                select()
-                        .from(FOLDER_HIERARCHY));
-
-        Table<?> folder_table = table(
-                select()
-                        .from(FOLDER)).as("t_folder1");
-        Table<?> folder_table2 = table(
-                select()
-                        .from(FOLDER)).as("t_folder2");
-
-        Table<?> initial_table = table(
-                select()
-                        .from(FOLDER_HIERARCHY)
-                        .where(
-                                FOLDER_HIERARCHY.PARENT_FOLDER.eq(folderId)));
-
-        Field<UUID> subfolderChildFolder = field("subfolders.{0}", FOLDER_HIERARCHY.CHILD_FOLDER.getDataType(), FOLDER_HIERARCHY.CHILD_FOLDER.getUnqualifiedName());
-        Field<UUID> subfolderParentFolderRef = field(name("subfolders", "parent_folder"), UUID.class);
-        Result<Record> folderSelectedRecordSub = domainAccess.getContext().withRecursive("subfolders").as(
-                select().
-                        from(initial_table).
-                        leftJoin(folder_table).on(initial_table.field("parent_folder", FOLDER_HIERARCHY.PARENT_FOLDER.getType()).eq(
-                        folder_table.field("id", FOLDER.ID.getType()))).
-                        union(
-                                (select().from(sf_table).
-                                        innerJoin("subfolders").on(sf_table.field("parent_folder", FOLDER_HIERARCHY.PARENT_FOLDER.getType()).
-                                        eq(subfolderChildFolder))).leftJoin(folder_table2).on(
-                                        folder_table2.field("id", FOLDER.ID.getType()).eq(subfolderChildFolder)))
-        ).select().from(table(name("subfolders"))).fetch();
-
-        *//**2-Reconstruct hierarchical structure from DB result**//*
-        Map<UUID, Map<UUID, I_FolderAccess>> fHierarchyMap = new TreeMap<UUID, Map<UUID, I_FolderAccess>>();
-        for(Record record : folderSelectedRecordSub){
-
-            //1-create a folder access for the record if needed
-            if(!fHierarchyMap.containsKey((UUID) record.getValue("parent_folder"))){
-                fHierarchyMap.put((UUID) record.getValue("parent_folder"), new TreeMap<>());
-            }
-            fHierarchyMap.get(record.getValue("parent_folder")).put((UUID) record.getValue("child_folder"), buildFolderAccessFromFolderId((UUID)record.getValue("child_folder"), domainAccess, folderSelectedRecordSub));
-        }
-
-        *//**3-populate result and return**//*
-        return FolderAccessHistory.buildFolderAccessHierarchy(fHierarchyMap, folderId, null, folderSelectedRecordSub, domainAccess);
-    }*/
-
-    /**
-     * Builds the {@link I_FolderAccess} for persisting the {@link  Folder} provided as param.
-     * @param domainAccess providing the information about the DB connection.
-     * @param folder to define the {@link I_FolderAccess} that allows its DB access.
-     * @param dateTime that will be set as transaction date when the {@link  Folder} is persisted
-     * @param ehrId of the {@link com.nedap.archie.rm.ehr.Ehr} that references the {@link  Folder} provided as param.
-     * @return {@link I_FolderAccess} with the information to persist the provided {@link  Folder}
-     */
-    public static I_FolderAccess getNewFolderAccessInstance(final  I_DomainAccess domainAccess, final  Folder folder, final  DateTime dateTime, final  UUID ehrId){
-        return buildFolderAccessTreeRecursively(domainAccess, folder, null, dateTime, ehrId, null);
-    }
-
-    /**
-     * Deletes the FOLDER identified with the Folder.id provided and all its subfolders recursively.
-     * @param folderId of the {@link  Folder} to delete.
-     * @return number of the total {@link  Folder} deleted recursively.
-     */
-    private Integer delete(final UUID folderId){
-
-        if(folderId==null){
-            throw new IllegalArgumentException("The folder UID provided for performing a delete operation cannot be null.");
-        }
-
-        /**SQL code for the recursive call generated inside the delete that retrieves children iteratively.
-         * WITH RECURSIVE subfolders AS (
-         * 		SELECT parent_folder, child_folder, in_contribution, sys_transaction
-         * 		FROM ehr.folder_hierarchy
-         * 		WHERE parent_folder = '00550555-ec91-4025-838d-09ddb4e999cb'
-         * 	UNION
-         * 		SELECT sf.parent_folder, sf.child_folder, sf.in_contribution, sf.sys_transaction
-         * 		FROM ehr.folder_hierarchy sf
-         * 		INNER JOIN subfolders s ON sf.parent_folder=s.child_folder
-         * ) SELECT * FROM subfolders
-         */
-        int result;
-
-        Table<?> sf_table = table(
-                select()
-                        .from(FOLDER_HIERARCHY));
-
-        Table<?> initial_table = table(
-                select()
-                        .from(FOLDER_HIERARCHY)
-                        .where(
-                                FOLDER_HIERARCHY.PARENT_FOLDER.eq(folderId)));
-
-        Field<UUID> subfolderChildFolder = field("subfolders.{0}", FOLDER_HIERARCHY.CHILD_FOLDER.getDataType(), FOLDER_HIERARCHY.CHILD_FOLDER.getUnqualifiedName());
-
-        result = this.getContext().delete(FOLDER).where(FOLDER.ID.in(this.getContext().withRecursive("subfolders").as(
-                select().
-                        from(initial_table).
-                        union(
-                                (select().from(sf_table).
-                                        innerJoin("subfolders").on(sf_table.field("parent_folder", FOLDER_HIERARCHY.PARENT_FOLDER.getType()).
-                                        eq(subfolderChildFolder))))
-                ).select()
-                        .from(table(name("subfolders")))
-                        .fetch()
-                        .getValues(field(name("child_folder")))
-        ))
-                .or(FOLDER.ID.eq(folderId))
-                .execute();
-
-        return result;
+        return null;
     }
 
 
-    /**
-     * Create a new FolderAccess that contains the full hierarchy of its corresponding {@link I_FolderAccess} children that represents the subfolders.
-     * @param fHierarchyMap {@link Map} containing as key the UUID of each Folder, and as value an internal Map. For the internal Map the key is the the UUID of a child {@link  Folder}, and the value is the {@link I_FolderAccess} for enabling DB access to this child.
-     * @param currentFolder {@link UUID} of the current {@link  Folder} to treat in the current recursive call of the method.
-     * @param parentFa the parent {@link I_FolderAccess} that corresponds to the parent  {@link  Folder} of the {@link  Folder} identified as current.
-     * @param folderSelectedRecordSub {@link Result} containing the Records that represent the rows to retrieve from the DB corresponding to the children hierarchy.
-     * @param domainAccess containing the information of the DB connection.
-     * @return I_FolderAccess populated with its appropriate subfolders as FolderAccess objects.
-     * @throws Exception
-     */
-/*    private static I_FolderAccess buildFolderAccessHierarchy(final Map<UUID, Map<UUID, I_FolderAccess>> fHierarchyMap, final UUID currentFolder, final I_FolderAccess parentFa, final Result<Record> folderSelectedRecordSub, final I_DomainAccess domainAccess){
-        if ((parentFa != null) && (parentFa.getSubfoldersList().keySet().contains(currentFolder))){
-            return parentFa.getSubfoldersList().get(currentFolder);
-        }
-        I_FolderAccess folderAccess = buildFolderAccessFromFolderId(currentFolder, domainAccess, folderSelectedRecordSub);
-        if (parentFa != null) {
-            parentFa.getSubfoldersList().put(currentFolder, folderAccess);
-        }
-        if (fHierarchyMap.get(currentFolder) != null) {//if not leave node call children
-
-            for (UUID newChild : fHierarchyMap.get(currentFolder).keySet()) {
-                buildFolderAccessHierarchy(fHierarchyMap, newChild, folderAccess, folderSelectedRecordSub, domainAccess);
-            }
-        }
-        return folderAccess;
-    }*/
-
-    /**
-     * Create a new {@link FolderAccessHistory} from a {@link Record} DB record
-     *
-     * @param record_      record containing all the information to build one folder-subfolder relationship.
-     * @param domainAccess containing the DB connection information.
-     * @return FolderAccess instance
-     */
     private static FolderAccessHistory buildFolderAccessFromGenericRecord(final Record record_,
                                                                           final I_DomainAccess domainAccess) {
 
@@ -523,40 +215,6 @@ public class FolderAccessHistory extends DataAccess implements I_FolderAccess, C
     }
 
     /**
-     * Builds the FolderAccess with the collection of subfolders empty.
-     * @param domainAccess providing the information about the DB connection.
-     * @param folder to define a corresponding {@link I_FolderAccess} for allowing its persistence.
-     * @param dateTime that will be set as transaction date when the {@link  Folder} is persisted
-     * @param ehrId of the {@link com.nedap.archie.rm.ehr.Ehr} that references this {@link  Folder}
-     * @return {@link I_FolderAccess} with the information to persist the provided {@link  Folder}
-     */
-    public static I_FolderAccess buildPlainFolderAccess(final  I_DomainAccess domainAccess, final Folder folder, final  DateTime dateTime, final  UUID ehrId, final I_ContributionAccess contributionAccess){
-
-        FolderAccessHistory folderAccessInstance = new FolderAccessHistory(domainAccess, ehrId, contributionAccess);
-        folderAccessInstance.setEhrId(ehrId);
-        // In case of creation we have no folderId since it will be created from DB
-        if (folder.getUid() != null) {
-            folderAccessInstance.setFolderId(UUID.fromString(folder.getUid().getValue()));
-        }
-        folderAccessInstance.setInContribution(folderAccessInstance.getContributionAccess().getId());
-        folderAccessInstance.setFolderName(folder.getName().getValue());
-        folderAccessInstance.setFolderNArchetypeNodeId(folder.getArchetypeNodeId());
-        folderAccessInstance.setIsFolderActive(true);
-
-        // TODO: Are these guards required?
-        if (folder.getDetails() != null) {
-            folderAccessInstance.setFolderDetails(folder.getDetails());
-        }
-
-        if(folder.getItems() != null && !folder.getItems().isEmpty()){
-            folderAccessInstance.getItems().addAll(folder.getItems());
-        }
-
-        folderAccessInstance.setFolderSysTransaction(new Timestamp(DateTime.now().getMillis()));
-        return folderAccessInstance;
-    }
-
-    /**
      * Retrieves a list containing the items as ObjectRefs of the folder corresponding to the id provided.
      * @param folderId of the FOLDER that the items correspond to.
      * @param in_contribution contribution that establishes the reference between a FOLDER and its item.
@@ -575,11 +233,6 @@ public class FolderAccessHistory extends DataAccess implements I_FolderAccess, C
                                                         and(OBJECT_REF.IN_CONTRIBUTION.eq(FOLDER_ITEMS.IN_CONTRIBUTION))))).where(FOLDER_ITEMS.FOLDER_ID.eq(folderId).and(FOLDER_ITEMS.IN_CONTRIBUTION.eq(in_contribution)))
         );
 
-
-        System.out.println("TABLE ITEMS AND OBJ. REF");
-        System.out.println(domainAccess.getContext().select().from(table_items_and_objref).fetch());
-
-
         Table<?> table_items_and_objref_hist = table(
                 select(FOLDER_ITEMS_HISTORY.FOLDER_ID, FOLDER_ITEMS_HISTORY.OBJECT_REF_ID.as("item_object_ref_id"), FOLDER_ITEMS_HISTORY.IN_CONTRIBUTION.as("item_in_contribution"), FOLDER_ITEMS_HISTORY.SYS_TRANSACTION, FOLDER_ITEMS_HISTORY.SYS_PERIOD, OBJECT_REF_HISTORY.ID_NAMESPACE, OBJECT_REF_HISTORY.TYPE, OBJECT_REF_HISTORY.ID.as("obj_ref_id"),  OBJECT_REF_HISTORY.IN_CONTRIBUTION.as("obj_ref_in_cont"), OBJECT_REF_HISTORY.SYS_TRANSACTION.as("objRefSysTran"), OBJECT_REF_HISTORY.SYS_PERIOD.as("oref_sysperiod"))
                         .from(FOLDER_ITEMS_HISTORY).leftJoin(OBJECT_REF_HISTORY).
@@ -590,10 +243,6 @@ public class FolderAccessHistory extends DataAccess implements I_FolderAccess, C
                                                         and(OBJECT_REF_HISTORY.IN_CONTRIBUTION.eq(FOLDER_ITEMS_HISTORY.IN_CONTRIBUTION))))).where(FOLDER_ITEMS_HISTORY.FOLDER_ID.eq(folderId).and(FOLDER_ITEMS_HISTORY.IN_CONTRIBUTION.eq(in_contribution)))
         );
 
-        System.out.println("TABLE ITEMS AND OBJ. REF- HISTORY");
-        System.out.println(domainAccess.getContext().select().from(table_items_and_objref_hist).fetch());
-
-
         Table<?> table_all_items_and_objref = table(
                 select()
                         .from(table_items_and_objref).
@@ -601,9 +250,6 @@ public class FolderAccessHistory extends DataAccess implements I_FolderAccess, C
                                 select().from(table_items_and_objref_hist)
                         )
         );
-
-        System.out.println("TABLE ITEMS AND OBJ. REF- ALL");
-        System.out.println(domainAccess.getContext().select().from(table_all_items_and_objref).fetch());
 
         Result<Record> retrievedRecords = domainAccess.getContext().select().from(table_all_items_and_objref).fetch();
 
@@ -637,100 +283,6 @@ public class FolderAccessHistory extends DataAccess implements I_FolderAccess, C
         result.setType(objectRefRecord.getType());
         result.setNamespace(objectRefRecord.getIdNamespace());
         return result;
-    }
-
-
-    /**
-     * Recursive method for populating the hierarchy of {@link I_FolderAccess}  for a given {@link  Folder}.
-     * @param domainAccess providing the information about the DB connection.
-     * @param current {@link  Folder} explored in the current iteration.
-     * @param parent folder of the {@link  Folder} procided as the current parameter.
-     * @param dateTime of the transaction that will be stored inthe DB.
-     * @param ehrId of the {@link com.nedap.archie.rm.ehr.Ehr} referencing the current {@link  Folder}.
-     * @param contributionAccess that corresponds to the contribution that the {@link  Folder} refers to.
-     * @return {@link I_FolderAccess} with the complete hierarchy of sub-folders represented as {@link I_FolderAccess}.
-     * @throws Exception
-     */
-    private static I_FolderAccess buildFolderAccessTreeRecursively(final  I_DomainAccess domainAccess, final Folder current, final FolderAccessHistory parent, final  DateTime dateTime, final  UUID ehrId, final I_ContributionAccess contributionAccess) {
-        I_FolderAccess folderAccess = null;
-
-        //if the parent already contains the FolderAccess for the specified folder return the corresponding FolderAccess
-        if((parent!= null) && (parent.getSubfoldersList().containsKey(UUID.fromString(current.getUid().getValue())))){
-            return parent.getSubfoldersList().get(current.getUid());
-        }
-        //create the corresponding FolderAccess for the current folder
-        folderAccess = FolderAccessHistory.buildPlainFolderAccess(domainAccess, current, DateTime.now(), ehrId, contributionAccess);
-        //add to parent subfolder list
-        if(parent!= null){
-            parent.getSubfoldersList().put(((FolderAccessHistory)folderAccess).getFolderRecord().getId(), folderAccess);
-        }
-        for(Folder child : current.getFolders()){
-            buildFolderAccessTreeRecursively(domainAccess, child, (FolderAccessHistory) folderAccess, dateTime, ehrId, ((FolderAccessHistory) folderAccess).getContributionAccess());
-            buildFolderAccessTreeRecursively(domainAccess, child, (FolderAccessHistory) folderAccess, dateTime, ehrId, ((FolderAccessHistory) folderAccess).getContributionAccess());
-        }
-        return folderAccess;
-    }
-
-    /**
-     * Builds a folderAccess hierarchy recursively by iterating over all sub folders of given folder
-     * instance. This works for all folders, i.e. from root for an insert as well for a sub folder
-     * hierarchy for update.
-     *
-     * @param domainAccess       - DB connection context
-     * @param folder             - Folder to create access for
-     * @param timeStamp          - Current time for transaction audit
-     * @param ehrId              - Corresponding EHR
-     * @param contributionAccess - Contribution instance for creation of all folders
-     * @return FolderAccess instance for folder
-     */
-    public static I_FolderAccess buildNewFolderAccessHierarchy(final I_DomainAccess domainAccess,
-                                                               final Folder folder,
-                                                               final DateTime timeStamp,
-                                                               final UUID ehrId,
-                                                               final I_ContributionAccess contributionAccess) {
-        // Create access for the current folder
-        I_FolderAccess folderAccess = buildPlainFolderAccess(domainAccess,
-                                                             folder,
-                                                             timeStamp,
-                                                             ehrId,
-                                                             contributionAccess);
-
-        if (folder.getFolders() != null &&
-            !folder.getFolders()
-                   .isEmpty()) {
-            // Iterate over sub folders and create FolderAccess for each sub folder
-            folder.getFolders()
-                  .forEach(child -> {
-                      // Call recursive creation of folderAccess for children without uid
-                      I_FolderAccess childFolderAccess = buildNewFolderAccessHierarchy(domainAccess,
-                                                                                       child,
-                                                                                       timeStamp,
-                                                                                       ehrId,
-                                                                                       contributionAccess);
-                      folderAccess.getSubfoldersList()
-                                  .put(UUID.randomUUID(), childFolderAccess);
-                  });
-        }
-        return folderAccess;
-    }
-
-    /**
-     *
-     * @param parentFolder identifier.
-     * @param childFolder identifier to define the {@link FolderHierarchyRecord} from.
-     * @param inContribution contribution that the {@link  Folder} refers to.
-     * @param sysTransaction date of the transaction.
-     * @param sysPeriod period of validity of the entity persisted.
-     * @return the {@link FolderHierarchyRecord} for persisting the folder identified by the childFolder param.
-     */
-    private  final FolderHierarchyRecord buildFolderHierarchyRecord(final UUID parentFolder, final UUID childFolder, final UUID inContribution, final Timestamp sysTransaction, final Timestamp sysPeriod){
-        FolderHierarchyRecord fhRecord = getContext().newRecord(FolderHierarchy.FOLDER_HIERARCHY);
-        fhRecord.setParentFolder(parentFolder);
-        fhRecord.setChildFolder(childFolder);
-        fhRecord.setInContribution(inContribution);
-        fhRecord.setSysTransaction(sysTransaction);
-        //fhRecord.setSysPeriod(sysPeriod); sys period can be left to null so the system sets it for the temporal tables.
-        return fhRecord;
     }
 
     /**
@@ -903,19 +455,6 @@ public class FolderAccessHistory extends DataAccess implements I_FolderAccess, C
         return o.getFolderRecord().getId().compareTo(this.folderRecord.getId());
     }
 
-    /**
-     * Utility class to parse joow PGObjects that are not automatically managed by jooq.
-     */
-    private static class PGObjectParser{
-        public static Field<Object> parseSysPeriod(Object sysPeriodToParse){
-            String sysPeriodVal ="[\"0001-01-01 15:12:15.841936+00\",)";//sample default value with non-sense date.
-            if(sysPeriodToParse!=null){
-                sysPeriodVal = sysPeriodToParse.toString().replaceAll("::tstzrange", "").replaceAll("'", "");
-            }
-            return DSL.field(DSL.val(sysPeriodVal) + "::tstzrange");
-        }
-    }
-
     private class ObjectRefId extends ObjectId{
         public ObjectRefId(final String value) {
             super(value);
@@ -923,7 +462,6 @@ public class FolderAccessHistory extends DataAccess implements I_FolderAccess, C
     }
 
 
-    /***********************GET BY TIME*******************/
     /**
      * @throws IllegalArgumentException when no version in compliance with timestamp is available
      * @throws InternalServerException  on problem with SQL statement or input
@@ -957,52 +495,6 @@ public class FolderAccessHistory extends DataAccess implements I_FolderAccess, C
             throw new IllegalArgumentException("There are no versions available prior to date " + timeCommitted + " for the the FOLDER with id: " + vFolderUid);
         }
         return versionComHist;
-    }
-
-
-    /**
-     * @throws IllegalArgumentException when no version in compliance with timestamp is available or when calculated version number is not greater 0
-     * @throws InternalServerException  on problem with SQL statement or input
-     * @throws ObjectNotFoundException  when no folder could be found with given input
-     */
-/*    public static I_FolderAccess retrieveInstanceByTimestamp(I_DomainAccess domainAccess, UUID folderUid, Timestamp timeCommitted) {
-
-        int version = getVersionFromTimeStamp(domainAccess, folderUid, timeCommitted);
-
-        if (getLastVersionNumber(domainAccess, folderUid) == version) { //current version
-            return retrieveInstanceForExistingFolder(domainAccess, folderUid);
-        }
-
-        return null;//retrieveCompositionVersion(domainAccess, folderUid, version);
-    }*/
-
-    private UUID getContributionUidFromTimestamp(UUID folderUid, Timestamp timestamp){
-        Table<?> filterByMaxTimeAndFolderId = this.getContext().
-                select().from(FOLDER)
-                .where(FOLDER.ID.eq(folderUid)
-                        .and(FOLDER.SYS_TRANSACTION.lessOrEqual(timestamp)))
-                .union(
-                        select().from(FOLDER_HISTORY)
-                                .where(FOLDER_HISTORY.ID.eq(folderUid).and(FOLDER_HISTORY.SYS_TRANSACTION.lessOrEqual(timestamp))))
-                .asTable("contributionTransactionTime");
-
-        Result relativeMaxSysTransaction = this.getContext().
-                select(max(filterByMaxTimeAndFolderId.field("sys_transaction"))).
-                from(filterByMaxTimeAndFolderId).fetch();
-
-        Table<?> allFolderRows = this.getContext().
-                select().
-                from(FOLDER).
-                where(FOLDER.ID.eq(folderUid)).
-                union(select().from(FOLDER_HISTORY).
-                        where(FOLDER_HISTORY.ID.eq(folderUid))).asTable("allFolderRows");
-
-        Result result = this.getContext()
-                .select()
-                .from(allFolderRows)
-                .where(allFolderRows.field("sys_transaction",Timestamp.class).eq((Timestamp) relativeMaxSysTransaction.getValues("max", Timestamp.class).get(0))).fetch();//maybe embed expression for relativeMaxSysTransaction
-
-        return (UUID) result.getValues("in_contribution", UUID.class).get(0);
     }
 
     /**
@@ -1112,9 +604,6 @@ public class FolderAccessHistory extends DataAccess implements I_FolderAccess, C
                                 filteredHierarchicalTable.field("parent_folder", UUID.class).eq(folderUid))).asTable();
 
 
-        System.out.println("INITIAL TABLE-------");
-        System.out.println(domainAccess.getContext().execute(select().from(initial_table2)));
-
         Result<Record> folderSelectedRecordSub = domainAccess.getContext().withRecursive("subfolders").as(
                 select().
                         from(initial_table2).
@@ -1175,38 +664,4 @@ public class FolderAccessHistory extends DataAccess implements I_FolderAccess, C
         }
         return folderAccess;
     }
-
-    public UUID calculateContributionUidFromTimestamp(UUID folderUid, Timestamp timestamp){
-
-
-
-        Table<?> filterByMaxTimeAndFolderId = this.getContext().
-                select().from(FOLDER)
-                .where(FOLDER.ID.eq(folderUid)
-                        .and(FOLDER.SYS_TRANSACTION.lessOrEqual(timestamp)))
-                .union(
-                        select().from(FOLDER_HISTORY)
-                                .where(FOLDER_HISTORY.ID.eq(folderUid).and(FOLDER_HISTORY.SYS_TRANSACTION.lessOrEqual(timestamp))))
-                .asTable("contributionTransactionTime");
-
-        Result relativeMaxSysTransaction = this.getContext().
-                select(max(filterByMaxTimeAndFolderId.field("sys_transaction"))).
-                from(filterByMaxTimeAndFolderId).fetch();
-
-        Table<?> allFolderRows = this.getContext().
-                select().
-                from(FOLDER).
-                where(FOLDER.ID.eq(folderUid)).
-                union(select().from(FOLDER_HISTORY).
-                        where(FOLDER_HISTORY.ID.eq(folderUid))).asTable("allFolderRows");
-
-        Result result = this.getContext()
-                .select()
-                .from(allFolderRows)
-                .where(allFolderRows.field("sys_transaction",Timestamp.class).eq(/*Timestamp.valueOf("2019-11-27 16:05:33.54")*/ (Timestamp) relativeMaxSysTransaction.getValues("max", Timestamp.class).get(0))).fetch();//maybe embed expression for relativeMaxSysTransaction
-
-        return (UUID) result.getValues("in_contribution", UUID.class).get(0);
-
-    }
-
 }
