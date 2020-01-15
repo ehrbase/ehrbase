@@ -25,6 +25,11 @@ Library         Collections
 
 
 
+*** Variables ***
+${VALID EHR DATA SETS}       ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/ehr/valid
+${INVALID EHR DATA SETS}     ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/ehr/invalid
+
+
 *** Keywords ***
 # 1) High Level Keywords
 
@@ -83,44 +88,9 @@ check response of 'update EHR' (JSON)
 
 
 
-start request session
-    [Arguments]         ${content_type}
-    [Documentation]     Prepares settings for RESTInstace HTTP request.
-
-    Run Keyword If      "${content_type}"=="XML"   set content-type to XML
-    Run Keyword If      "${content_type}"=="JSON"  set content-type to JSON
-    Set Headers          ${authorization}
-    Set Headers          ${headers}
-
-
-set content-type to XML
-    [Documentation]     Set headers accept and content-type to XML.
-    ...                 DEPENDENCY: `start request session`
-
-    &{headers}=         Create Dictionary    Content-Type=application/xml
-                        ...                  Accept=application/xml
-                        ...                  Prefer=return=representation
-                        Set Test Variable    ${headers}    ${headers}
-
-
-set content-type to JSON
-    [Documentation]     Set headers accept and content-type to JSON.
-    ...                 DEPENDENCY: `start request session`
-
-    &{headers}=         Create Dictionary    Content-Type=application/json
-                        ...                  Accept=application/json
-                        ...                  Prefer=return=representation
-                        Set Test Variable    ${headers}    ${headers}
-
-                        # NOTE: EHRSCAPE fails to create EHR with `POST /ehr`
-                        #       when Content-Type=application/json is set
-                        #       But this is default header of RESTInstance lib!
-                        #       Do this "Content-Type=      " to unset it!      # BE AWARE!!
-
-
 create new EHR
     [Documentation]     Creates new EHR record with a server-generated ehr_id.
-    ...                 DEPENDENCY: `start request session`
+    ...                 DEPENDENCY: `prepare new request session`
 
     &{resp}=            REST.POST    ${baseurl}/ehr
                         Integer      response status    201
@@ -138,7 +108,7 @@ create new EHR
 
 create new EHR (XML)
     [Documentation]     Creates new EHR record with a server-generated ehr_id.
-    ...                 DEPENDENCY: `start request session`
+    ...                 DEPENDENCY: `prepare new request session`
 
     &{resp}=            REST.POST    ${baseurl}/ehr
                         Should Be Equal As Strings    ${resp.status}    201
@@ -176,13 +146,13 @@ create EHR XML
 create new EHR with ehr_status
     [Arguments]         ${ehr_status_object}
     [Documentation]     Creates new EHR record with a server-generated ehr_id.
-    ...                 DEPENDENCY: `start request session`
+    ...                 DEPENDENCY: `prepare new request session`
     ...                 :ehr_status_object: ehr_status_as_json_string_or_file
 
     &{resp}=            REST.POST    ${baseurl}/ehr    ${ehr_status_object}
                         # Integer      response status    201  200
 
-                        Set Test Variable    ${response}    ${resp}
+                        Set Suite Variable    ${response}    ${resp}
 
                         Output Debug Info To Console  # NOTE: won't work with content-type=XML
 
@@ -190,7 +160,7 @@ create new EHR with ehr_status
 create new EHR by ID
     [Arguments]         ${ehr_id}
     [Documentation]     Create a new EHR with the specified EHR identifier.
-    ...                 DEPENDENCY: `start request session`
+    ...                 DEPENDENCY: `prepare new request session`
 
     &{resp}=            REST.PUT    ${baseurl}/ehr/${ehr_id}
 
@@ -203,8 +173,17 @@ create new EHR for subject_id (JSON)
     [Arguments]         ${subject_id}
     ${json_ehr}=        Load JSON From File   ${FIXTURES}/ehr/ehr_status_1_api_spec.json
     ${json_ehr}=        Update Value To Json  ${json_ehr}   $.subject.external_ref.id.value   ${subject_id}
-    # ${json_ehr}=        Update Value To Json  ${json_ehr}   $['subject']['external_ref']['id']['value']   ${subject_id}    # same as above
-                                                                                                                             # alternative syntax
+
+    # same as the line above / # alternative syntax
+    # ${json_ehr}=        Update Value To Json  ${json_ehr}   $['subject']['external_ref']['id']['value']   ${subject_id}
+
+                        create new EHR with ehr_status    ${json_ehr}
+
+
+create new EHR with other_details for subject_id (JSON)
+    [Arguments]         ${subject_id}
+    ${json_ehr}=        Load JSON From File   ${FIXTURES}/ehr/ehr_status_1_api_spec_with_other_details.json
+    ${json_ehr}=        Update Value To Json  ${json_ehr}   $.subject.external_ref.id.value   ${subject_id}                                                                                       # alternative syntax
                         create new EHR with ehr_status    ${json_ehr}
 
 
@@ -214,7 +193,7 @@ create new EHR with subject_id (JSON)
 
     ${json_ehr}=        Load JSON From File   ${FIXTURES}/ehr/ehr_status_1_api_spec.json
     ${json_ehr}=        Update Value To Json  ${json_ehr}   $.subject.external_ref.id.value   ${subject_id}
-                                                                                                                             # alternative syntax
+
                         create new EHR with ehr_status    ${json_ehr}
 
                         extract ehr_id from response (JSON)
@@ -251,7 +230,7 @@ check content of created EHR (JSON)
 
 retrieve EHR by ehr_id
     [Documentation]     Retrieves EHR with specified ehr_id.
-    ...                 DEPENDENCY: `start request session` and keywords that
+    ...                 DEPENDENCY: `prepare new request session` and keywords that
     ...                             create and expose an `ehr_id` e.g.
     ...                             - `create new EHR`
 
@@ -264,7 +243,7 @@ retrieve EHR by ehr_id
 
 retrieve EHR by subject_id
     [Documentation]     Retrieves EHR with specified subject_id and namespace.
-    ...                 DEPENDENCY: `start request session` and keywords that
+    ...                 DEPENDENCY: `prepare new request session` and keywords that
     ...                             create and expose an `subject_id` e.g.
     ...                             - `create new EHR`
     ...                             - `generate random subject_id`
@@ -327,14 +306,10 @@ retrieve non-existing EHR by subject_id
 
 get ehr_status of EHR
     [Documentation]     Gets status of EHR with given ehr_id.
-    ...                 DEPENDENCY: `start request session` and keywords that
+    ...                 DEPENDENCY: `prepare new request session` and keywords that
     ...                             create and expose an `ehr_id` e.g.
     ...                             - `create new EHR`
     ...                             - `generate random ehr_id`
-
-
-        TRACE JIRA BUG    NO-JIRA-ID    not-ready    message=GET /ehr/ehr_id/ehr_status... endpoints not implemented
-
 
     &{resp}=            REST.GET    ${baseurl}/ehr/${ehr_id}/ehr_status
                         ...         headers={"Content-Type": "application/json"}
@@ -347,7 +322,7 @@ get ehr_status of EHR
 # get ehr_status of EHR with version at time
 #     [Arguments]         ${version_at_time}
 #     [Documentation]     Gets status of EHR with given `ehr_id` and `version at time`.
-#     ...                 DEPENDENCY: `start request session` and keywords that
+#     ...                 DEPENDENCY: `prepare new request session` and keywords that
 #     ...                             create and expose an `ehr_id` e.g.
 #     ...                             - `create new EHR`
 #     ...                             - `generate random ehr_id`
@@ -360,13 +335,13 @@ get ehr_status of EHR
 
 get ehr_status of fake EHR
     [Documentation]     Gets status of EHR with given ehr_id.
-    ...                 DEPENDENCY: `start request session` and keywords that
+    ...                 DEPENDENCY: `prepare new request session` and keywords that
     ...                             create and expose an `ehr_id` e.g.
     ...                             - `create new EHR`
     ...                             - `generate random ehr_id`
 
 
-        TRACE JIRA BUG    NO-JIRA-ID    not-ready    message=GET /ehr/ehr_id/ehr_status... endpoints not implemented
+        TRACE GITHUB ISSUE  96  not-ready
 
 
     &{resp}=            REST.GET    ${baseurl}/ehr/${ehr_id}/ehr_status
@@ -376,16 +351,13 @@ get ehr_status of fake EHR
 
                         Output Debug Info To Console
 
-                        Integer   response status    404
-                        # TODO: # Checks response to indicate an non-existing EHR.
-
-        Fail    msg=FALSE POSITIVE! Check comments in code!
-        #     # NOTE: I make it fail cause endpoint is not implemented in EHRBASE
+                        Integer    response status    404
+                        String    response body error    EHR with this ID not found
 
 
 set ehr_status of EHR
     [Documentation]     Sets status of EHR with given `ehr_id`.
-    ...                 DEPENDENCY: `start request session` and keywords that
+    ...                 DEPENDENCY: `prepare new request session` and keywords that
     ...                             create and expose an `ehr_status` as JSON
     ...                             object e.g. `extract ehr_status from response (JSON)`
 
@@ -422,14 +394,8 @@ update ehr_status of fake EHR (w/o body)
                     Set Test Variable    ${response}    ${resp}
 
                     Output Debug Info To Console
-
                     Integer    response status    404
-
-                    #  TODO: Result should include an error related to "EHR with ehr_id doesn't exists
-
-        TRACE JIRA BUG    EHR-437    not-ready    message=FALSE POSITIVE!
-        Fail    not-implemented
-        # NOTE: I make it fail cause endpoint is not implemented in EHRBASE
+                    String    response body error    EHR with this ID not found
 
 
 update ehr_status of fake EHR (with body)
@@ -444,12 +410,7 @@ update ehr_status of fake EHR (with body)
 
                         Output Debug Info To Console
                         Integer    response status    404
-
-                        # TODO:  Result should include an error related to "EHR with ehr_id doesn't exists
-
-        TRACE JIRA BUG    EHR-437    not-ready    message=FALSE POSITIVE!
-        Fail    not-implemented
-        # NOTE: I make it fail cause endpoint is not implemented in EHRBASE
+                        String    response body error    EHR with this ID not found
 
 
 extract ehr_id from response (JSON)
@@ -460,7 +421,7 @@ extract ehr_id from response (JSON)
 
                         Log To Console    \n\tDEBUG OUTPUT - EHR_ID: \n\t${ehr_id}[0]
 
-                        Set Test Variable    ${ehr_id}     ${ehr_id}[0]
+                        Set Suite Variable    ${ehr_id}     ${ehr_id}[0]
                         # Set Test Variable    ${ehr_id}     ${response.body.ehr_id.value}    # same as above
 
 
@@ -648,6 +609,35 @@ Output Debug Info To Console
 # o888bood8P'  o88o     o8888o  `Y8bood8P'  o888o  o888o    `YbodP'    o888o
 #
 # [ BACKUP ]
+
+# start request session
+#     [Arguments]         ${content_type}
+#     [Documentation]     Prepares settings for RESTInstace HTTP request.
+#     Run Keyword If      "${content_type}"=="XML"   set content-type to XML
+#     Run Keyword If      "${content_type}"=="JSON"  set content-type to JSON
+#     Set Headers          ${authorization}
+#     Set Headers          ${headers}
+
+# set content-type to XML
+#     [Documentation]     Set headers accept and content-type to XML.
+#     ...                 DEPENDENCY: `start request session`
+#     &{headers}=         Create Dictionary    Content-Type=application/xml
+#                         ...                  Accept=application/xml
+#                         ...                  Prefer=return=representation
+#                         Set Test Variable    ${headers}    ${headers}
+
+# set content-type to JSON
+#     [Documentation]     Set headers accept and content-type to JSON.
+#     ...                 DEPENDENCY: `start request session`
+#     &{headers}=         Create Dictionary    Content-Type=application/json
+#                         ...                  Accept=application/json
+#                         ...                  Prefer=return=representation
+#                         Set Test Variable    ${headers}    ${headers}
+#                         # NOTE: EHRSCAPE fails to create EHR with `POST /ehr`
+#                         #       when Content-Type=application/json is set
+#                         #       But this is default header of RESTInstance lib!
+#                         #       Do this "Content-Type=      " to unset it!      # BE AWARE!!
+
 
 # create ehr without query params
 #     [Arguments]  ${body}=None

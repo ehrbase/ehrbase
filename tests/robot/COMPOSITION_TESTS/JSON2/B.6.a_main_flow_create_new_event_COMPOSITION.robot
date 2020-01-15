@@ -47,9 +47,6 @@ Main flow create new event COMPOSITION
                       Set Test Variable  ${composer}       ${response.json()['composer']['name']}
                       Should Be Equal    ${composer}       Dr. House
                       Set Test Variable  ${setting}        ${response.json()['context']['setting']['value']}
-
-        TRACE JIRA BUG  EHR-445  not-ready
-
-                      Should Be Equal    ${setting}        Hospital B
+                      Should Be Equal    ${setting}        primary nursing care
 
     [Teardown]    restart SUT

@@ -35,7 +35,7 @@ Force Tags    XML
 *** Test Cases ***
 Alternative flow 3 get COMPOSITION at time, on non-existent EHR
 
-    upload OPT    minimal/minimal_observation.opt    XML
+    upload OPT    minimal/minimal_observation.opt
 
     # Create fake EHR
     generate random ehr_id

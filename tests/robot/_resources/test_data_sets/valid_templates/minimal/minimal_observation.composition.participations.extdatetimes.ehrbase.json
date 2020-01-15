@@ -86,7 +86,7 @@
 		"start_time": {
 			"@type": "DV_DATE_TIME",
 			"other_reference_ranges": [],
-			"value": "1969-12-31T21:00:00-03:00-03:00-0300"
+			"value": "1969-12-31T21:00:00-03:00"
 		},
 		"setting": {
 			"@type": "DV_CODED_TEXT",
@@ -152,7 +152,7 @@
 			"origin": {
 				"@type": "DV_DATE_TIME",
 				"other_reference_ranges": [],
-				"value": "2019-01-28T21:22:19Z00000000"
+				"value": "2019-01-28T21:22:19Z"
 			},
 			"events": [{
 				"@type": "POINT_EVENT",
@@ -165,7 +165,7 @@
 				"time": {
 					"@type": "DV_DATE_TIME",
 					"other_reference_ranges": [],
-					"value": "2019-01-28T21:22:19Z00000000"
+					"value": "2019-01-28T21:22:19Z"
 				},
 				"data": {
 					"@type": "ITEM_TREE",

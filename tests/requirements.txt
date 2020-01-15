@@ -1,11 +1,14 @@
 robotframework == 3.1.2
 
 robotframework-jsonlibrary == 0.3.1
-git+https://github.com/adiralashiva8/robotframework-metrics@v3.1.4
 robotframework-requests == 0.4.7
 robotframework-seleniumlibrary == 3.3.1
+robotframework-databaselibrary == 1.2.4
 RESTinstance == 1.0.0
+
 docker == 4.0.2
-jsondiff == 1.1.2
 deepdiff == 4.0.6
+psycopg2-binary == 2.8.4
+
 # pyjwt
+# git+https://github.com/adiralashiva8/robotframework-metrics@v3.1.4

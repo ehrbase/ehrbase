@@ -1,0 +1,325 @@
+<terminology name="openehr" language="pt">	
+	<codeset issuer="openehr" openehr_id="compression algorithms" external_id="openehr_compression_algorithms">
+		<code value="compress"/>
+		<code value="deflate"/>
+		<code value="gzip"/>
+		<code value="zlib"/>
+		<code value="other"/>
+	</codeset>
+	<codeset issuer="openehr" openehr_id="integrity check algorithms" external_id="openehr_integrity_check_algorithms">
+		<code value="SHA-1"/>
+		<code value="SHA-256"/>
+	</codeset>	
+	<codeset issuer="openehr" openehr_id="normal statuses" external_id="openehr_normal_statuses">
+		<code value="HHH"/>
+		<code value="HH"/>
+		<code value="H"/>
+		<code value="N"/>
+		<code value="L"/>
+		<code value="LL"/> 
+		<code value="LLL"/>
+	</codeset>
+	<group name="razão de atestação">
+		<concept id="240" rubric="assinou"/>
+		<concept id="648" rubric="testemunhou"/>
+	</group>
+	<group name="tipo de auditoria de modificação">
+		<concept id="249" rubric="criação"/>
+		<concept id="250" rubric="emenda"/>
+		<concept id="251" rubric="modificação"/>
+		<concept id="252" rubric="síntese"/>
+		<concept id="523" rubric="remoção"/>
+		<concept id="666" rubric="atestação"/>
+		<concept id="253" rubric="desconhecido"/>
+	</group>
+	<group name="categoria de composição">
+		<concept id="431" rubric="persistente"/>
+		<concept id="433" rubric="evento"/>
+		<concept id="435" rubric="*episodic(en)"/>
+
+	</group>
+	<!--
+	<group name="multimídia">
+		<concept id="387" rubric="audio/DVI4" />
+		<concept id="388" rubric="audio/G722" />
+		<concept id="389" rubric="audio/G723" />
+		<concept id="390" rubric="audio/G726-16" />
+		<concept id="391" rubric="audio/G726-24" />
+		<concept id="392" rubric="audio/G726-32" />
+		<concept id="393" rubric="audio/G726-40" />
+		<concept id="394" rubric="audio/G728" />
+		<concept id="395" rubric="audio/L8" />
+		<concept id="396" rubric="audio/L16" />
+		<concept id="397" rubric="audio/LPC" />
+		<concept id="398" rubric="audio/G729" />
+		<concept id="399" rubric="audio/G729D" />
+		<concept id="400" rubric="audio/G729E" />
+		<concept id="401" rubric="video/BT656" />
+		<concept id="402" rubric="video/CelB" />
+		<concept id="403" rubric="video/JPEG" />
+		<concept id="404" rubric="video/H261" />
+		<concept id="405" rubric="video/H263" />
+		<concept id="406" rubric="video/H263-1998" />
+		<concept id="407" rubric="video/H263-2000" />
+		<concept id="408" rubric="video/MPV" />
+		<concept id="409" rubric="audio/mpeg" />
+		<concept id="410" rubric="audio/mpeg4-generic" />
+		<concept id="411" rubric="audio/L20" />
+		<concept id="412" rubric="audio/L24" />
+		<concept id="413" rubric="audio/telephone-event" />
+		<concept id="414" rubric="video/quicktime" />
+		<concept id="415" rubric="text/calendar" />
+		<concept id="416" rubric="text/directory" />
+		<concept id="417" rubric="text/html" />
+		<concept id="418" rubric="text/plain" />
+		<concept id="419" rubric="text/rtf" />
+		<concept id="420" rubric="text/sgml" />
+		<concept id="421" rubric="text/tab-separated-values" />
+		<concept id="422" rubric="text/uri-list" />
+		<concept id="423" rubric="text/xml" />
+		<concept id="424" rubric="text/xml-external-parsed-entity" />
+		<concept id="425" rubric="image/cgm" />
+		<concept id="426" rubric="image/gif" />
+		<concept id="427" rubric="image/png" />
+		<concept id="428" rubric="image/tiff" />
+		<concept id="429" rubric="image/jpeg" />
+		<concept id="517" rubric="application/msword" />
+		<concept id="518" rubric="application/pdf" />
+		<concept id="519" rubric="application/rtf" />
+		<concept id="637" rubric="application/dicom" />
+		<concept id="682" rubric="application/vnd.oasis.opendocument.text" />
+		<concept id="683" rubric="application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+	</group>
+	-->
+	<group name="propriedade">
+		<concept id="339" rubric="aceleração"/>
+		<concept id="342" rubric="aceleração, angular"/>
+		<concept id="381" rubric="quantidade (Eq)"/>
+		<concept id="384" rubric="quantidade (mol)"/>
+		<concept id="497" rubric="ângulo, plano"/>
+		<concept id="500" rubric="ângulo, sólido"/>
+		<concept id="335" rubric="área"/>
+		<concept id="119" rubric="concentração"/>
+		<concept id="350" rubric="densidade"/>
+		<concept id="362" rubric="coeficiente de difusão"/>
+		<concept id="501" rubric="capacitância elétrica"/>
+		<concept id="498" rubric="carga elétrica"/>
+		<concept id="502" rubric="condutância elétrica"/>
+		<concept id="334" rubric="corrente elétrica"/>
+		<concept id="377" rubric="força de campo elétrico"/>
+		<concept id="655" rubric="tempo de potencial elétrico"/>
+		<concept id="121" rubric="energia"/>
+		<concept id="366" rubric="densidade de energia"/>
+		<concept id="508" rubric="dose de energia"/>
+		<concept id="365" rubric="energia por área"/>
+		<concept id="364" rubric="energia, linear"/>
+		<concept id="347" rubric="taxa de fluxo, massa"/>
+		<concept id="352" rubric="taxa de fluxo, massa/força"/>
+		<concept id="351" rubric="taxa de flxuo, massa/volume"/>
+		<concept id="126" rubric="taxa de flxuo, volume"/>
+		<concept id="348" rubric="fluxo, massa"/>
+		<concept id="355" rubric="força"/>
+		<concept id="358" rubric="força por massa"/>
+		<concept id="357" rubric="força, corpo"/>
+		<concept id="382" rubric="frequência"/>
+		<concept id="586" rubric="taxa de filtração glomerular"/>
+		<concept id="373" rubric="coeficiente de transferência de calor"/>
+		<concept id="505" rubric="iluminância"/>
+		<concept id="379" rubric="indutância"/>
+		<concept id="122" rubric="comprimento"/>
+		<concept id="499" rubric="intensidade luminosa"/>
+		<concept id="123" rubric="intensidade sonora"/>
+		<concept id="504" rubric="fluxo luminoso"/>
+		<concept id="378" rubric="fluxo magnético"/>
+		<concept id="503" rubric="densidade de fluxo magnético"/>
+		<concept id="124" rubric="massa"/>
+		<concept id="385" rubric="massa (UI)"/>
+		<concept id="445" rubric="massa (unidades)"/>
+		<concept id="349" rubric="massa por área"/>
+		<concept id="344" rubric="momento de inércia, área"/>
+		<concept id="345" rubric="momento de inércia, massa"/>
+		<concept id="340" rubric="momento"/>
+		<concept id="346" rubric="momento, taxa de fluxo"/>
+		<concept id="343" rubric="momento, angular"/>
+		<concept id="363" rubric="potência"/>
+		<concept id="369" rubric="densidade de potência"/>
+		<concept id="368" rubric="fluxo de potência"/>
+		<concept id="367" rubric="potência, linear"/>
+		<concept id="125" rubric="pressão"/>
+		<concept id="507" rubric="proporção"/>
+		<concept id="380" rubric="real qualificado"/>
+		<concept id="506" rubric="radioatividade"/>
+		<concept id="375" rubric="resistência"/>
+		<concept id="370" rubric="energia específica"/>
+		<concept id="371" rubric="calor específico, gás constante"/>
+		<concept id="337" rubric="superfície específica"/>
+		<concept id="336" rubric="volume específico"/>
+		<concept id="354" rubric="peso específico"/>
+		<concept id="356" rubric="tensão superficial"/>
+		<concept id="127" rubric="temperatura"/>
+		<concept id="372" rubric="condutividade térmica"/>
+		<concept id="128" rubric="tempo"/>
+		<concept id="359" rubric="torque"/>
+		<concept id="338" rubric="velocidade"/>
+		<concept id="341" rubric="velocidade angular"/>
+		<concept id="360" rubric="velocidade, dinâmica"/>
+		<concept id="361" rubric="veocidade, cinemática"/>
+		<concept id="374" rubric="voltagem, elétrica"/>
+		<concept id="129" rubric="volume"/>
+		<concept id="130" rubric="trabalho"/>
+		<concept id="685" rubric="potência dióptrica"/>
+	</group>
+	<group name="estado de ciclo de vida de versão">
+		<concept id="532" rubric="completo"/>
+		<concept id="553" rubric="incompleto"/>
+		<concept id="523" rubric="removido"/>
+	</group>
+	<group name="função de participação">
+		<concept id="253" rubric="desconhecido"/>
+	</group>
+	<group name="null flavours">
+		<concept id="271" rubric="sem informação"/>
+		<concept id="253" rubric="desconhecido"/>
+		<concept id="272" rubric="mascarado"/>
+		<concept id="273" rubric="não aplicável"/>
+	</group>
+	<group name="modo de participação">
+		<concept id="193" rubric="não especificado"/>
+		<concept id="216" rubric="comunicação cara-a-cara"/>
+		<concept id="223" rubric="comuicação interpretada cara-a-cara"/>
+		<concept id="217" rubric="assinatura (cara-a-cara)"/>
+		<concept id="195" rubric="audiovisual ao vivo; videoconferência; videofone"/>
+		<concept id="198" rubric="videoconferência"/>
+		<concept id="197" rubric="videofone"/>
+		<concept id="218" rubric="assinatura via vídeo"/>
+		<concept id="224" rubric="comunicação interpretada via vídeo"/>
+		<concept id="194" rubric="audiovisual assíncrono; vídeo gravado"/>
+		<concept id="196" rubric="vídeo gravado"/>
+		<concept id="202" rubric="áudio a ovivo; telefone; telefone via internet; teleconferência"/>
+		<concept id="204" rubric="telefone"/>
+		<concept id="203" rubric="teleconferência"/>
+		<concept id="205" rubric="telefone via internet"/>
+		<concept id="222" rubric="áudio interpretado"/>
+		<concept id="199" rubric="áudio assíncrono; ditado; correio de voz"/>
+		<concept id="200" rubric="ditado"/>
+		<concept id="201" rubric="correio de voz"/>
+		<concept id="212" rubric="texto ao vivo; chat via internet; chat via SMS; nota escrita interativa"/>
+		<concept id="213" rubric="chat via internet"/>
+		<concept id="214" rubric="chat via SMS"/>
+		<concept id="215" rubric="nota escrita interativa"/>
+		<concept id="206" rubric="texto assíncrono; email; fax; carta; nota manuscrita; mensagem SMS"/>
+		<concept id="211" rubric="nota manuscrita"/>
+		<concept id="210" rubric="carta impressa/datilografada"/>
+		<concept id="207" rubric="email"/>
+		<concept id="208" rubric="fax/telefax"/>
+		<concept id="221" rubric="texto traduzido"/>
+		<concept id="209" rubric="mensagem SMS"/>
+		<concept id="219" rubric="fisicamente presente"/>
+		<concept id="220" rubric="fisicamente remoto"/>
+	</group>
+	<group name="estados de instrução">
+		<concept id="524" rubric="inicial"/>
+		<concept id="526" rubric="planejado"/>
+		<concept id="527" rubric="adiado"/>
+		<concept id="528" rubric="cancelado"/>
+		<concept id="529" rubric="agendado"/>
+		<concept id="245" rubric="ativo"/>
+		<concept id="530" rubric="suspenso"/>
+		<concept id="531" rubric="abortado"/>
+		<concept id="532" rubric="concluído"/>
+		<concept id="533" rubric="expirado"/>
+	</group>
+	<group name="transições de instrução">
+		<concept id="535" rubric="iniciar"/>
+		<concept id="536" rubric="planejar etapa"/>
+		<concept id="537" rubric="adiar"/>
+		<concept id="538" rubric="restaurar"/>
+		<concept id="166" rubric="cancelar"/>
+		<concept id="542" rubric="etapa adiada"/>
+		<concept id="539" rubric="agendar"/>
+		<concept id="534" rubric="*scheduled step(en)"/>	
+		<concept id="540" rubric="começar"/>
+		<concept id="541" rubric="executar"/>
+		<concept id="543" rubric="etapa ativa"/>
+		<concept id="544" rubric="suspender"/>
+		<concept id="545" rubric="etapa suspensa"/>
+		<concept id="546" rubric="resumir"/>
+		<concept id="547" rubric="abortar"/>
+		<concept id="548" rubric="concluir"/>
+		<concept id="549" rubric="tempo esgotado"/>
+		<concept id="550" rubric="notificar aborto"/>
+		<concept id="551" rubric="notificar conclusão"/>
+		<concept id="552" rubric="notificar cancelamento"/>
+	</group>
+	<group name="relacionamento de sujeito">
+		<concept id="0" rubric="próprio"/>
+		<concept id="3" rubric="feto"/>
+		<concept id="10" rubric="mãe"/>
+		<concept id="9" rubric="pai"/>
+		<concept id="6" rubric="doador"/>
+		<concept id="253" rubric="desconhecido"/>
+		<concept id="261" rubric="filha adotiva"/>
+		<concept id="260" rubric="filho adotivo"/>
+		<concept id="259" rubric="pãe adotivo"/>
+		<concept id="258" rubric="mãe adotiva"/>
+		<concept id="256" rubric="pai biológico"/>
+		<concept id="255" rubric="mãe biológica"/>
+		<concept id="23" rubric="irmão"/>
+		<concept id="28" rubric="criança"/>
+		<concept id="265" rubric="coabitante"/>
+		<concept id="257" rubric="primo/prima"/>
+		<concept id="29" rubric="filha"/>
+		<concept id="264" rubric="guardião/guardiã"/>
+		<concept id="39" rubric="tia materna"/>
+		<concept id="8" rubric="avô materno"/>
+		<concept id="7" rubric="avó materna"/>
+		<concept id="38" rubric="tio materno"/>
+		<concept id="189" rubric="recém-nascido"/>
+		<concept id="254" rubric="pai/mãe"/>
+		<concept id="22" rubric="companheiro/cônjuge"/>
+		<concept id="41" rubric="tia paterna"/>
+		<concept id="36" rubric="avô paterno"/>
+		<concept id="37" rubric="avó paterna"/>
+		<concept id="40" rubric="tio paterno"/>
+		<concept id="27" rubric="irmão/irmã"/>
+		<concept id="24" rubric="irmã"/>
+		<concept id="31" rubric="filho"/>
+		<concept id="263" rubric="padrasto"/>
+		<concept id="262" rubric="madrasta"/>
+		<concept id="25" rubric="meio-irmão"/>
+		<concept id="26" rubric="meia-irmã"/>
+	</group>
+	<group name="propósito de mapeamento de termo">
+		<concept id="669" rubric="saúde pública"/>
+		<concept id="670" rubric="reembolso"/>
+		<concept id="671" rubric="pesquisa"/>
+	</group>
+	<group name="função matemática de evento">
+		<concept id="145" rubric="mínimo"/>
+		<concept id="144" rubric="máximo"/>
+		<concept id="267" rubric="moda"/>
+		<concept id="268" rubric="mediana"/>
+		<concept id="146" rubric="média"/>
+		<concept id="147" rubric="alteração"/>
+		<concept id="148" rubric="total"/>
+		<concept id="149" rubric="variação"/>
+		<concept id="521" rubric="descréscimo"/>
+		<concept id="522" rubric="acréscimo"/>
+		<concept id="640" rubric="real"/>
+	</group>
+	<group name="configuração">
+		<concept id="225" rubric="domiciliar"/>
+		<concept id="227" rubric="cuidado emergencial"/>
+		<concept id="228" rubric="medicina primária"/>
+		<concept id="229" rubric="enfermagem primária"/>
+		<concept id="230" rubric="atenção primária"/>
+		<concept id="231" rubric="cuidado obstétrico"/>
+		<concept id="232" rubric="medicina especializada"/>
+		<concept id="233" rubric="enfermagem especializada"/>
+		<concept id="234" rubric="atenção especializada"/>
+		<concept id="235" rubric="cuidado complementar"/>
+		<concept id="236" rubric="cuidado odontológico"/>
+		<concept id="237" rubric="enfermagem domiciliar"/>
+		<concept id="238" rubric="outro cuidado"/>
+	</group>
+</terminology>

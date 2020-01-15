@@ -55,7 +55,7 @@ EHRBASE:    endpoint not implemented yet, resulting in a false positive.
 *** Test Cases ***
 Get status of a non existing EHR
 
-    ehr_keywords.start request session    JSON
+    prepare new request session    JSON
 
     create fake EHR
 

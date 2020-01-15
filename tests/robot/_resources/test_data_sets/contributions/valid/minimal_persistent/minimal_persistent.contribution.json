@@ -1,0 +1,207 @@
+{
+  "_type": "CONTRIBUTION",
+  "versions": [
+    {
+      "_type": "ORIGINAL_VERSION",
+      "commit_audit": {
+        "_type": "AUDIT_DETAILS",
+        "system_id": "test-system-id",
+        "committer": {
+          "_type": "PARTY_IDENTIFIED",
+          "name": "<optional name of the committer>",
+          "external_ref": {
+            "id": {
+              "_type": "GENERIC_ID",
+              "value": "<OBJECT_ID>",
+              "scheme": "<ID SCHEME NAME>"
+            },
+            "namespace": "demographic",
+            "type": "PERSON"
+          }
+        },
+        "change_type": {
+          "value": "creation",
+          "defining_code": {
+            "terminology_id": {
+              "value": "openehr"
+            },
+            "code_string": "249"
+          }
+        },
+        "description": {
+          "value": "<optional audit description>"
+        }
+      },
+      "data": {
+      	"_type": "COMPOSITION",
+      	"name": {
+      		"_type": "DV_TEXT",
+      		"value": "Persistent minimal"
+      	},
+      	"archetype_details": {
+      		"_type": "ARCHETYPED",
+      		"archetype_id": {
+      			"_type": "ARCHETYPE_ID",
+      			"value": "openEHR-EHR-COMPOSITION.persistent_minimal.v1"
+      		},
+      		"template_id": {
+      			"_type": "TEMPLATE_ID",
+      			"value": "persistent_minimal.en.v1"
+      		},
+      		"rm_version": "1.0.2"
+      	},
+      	"archetype_node_id": "openEHR-EHR-COMPOSITION.persistent_minimal.v1",
+      	"language": {
+      		"_type": "CODE_PHRASE",
+      		"terminology_id": {
+      			"_type": "TERMINOLOGY_ID",
+      			"value": "ISO_639-1"
+      		},
+      		"code_string": "en"
+      	},
+      	"territory": {
+      		"_type": "CODE_PHRASE",
+      		"terminology_id": {
+      			"_type": "TERMINOLOGY_ID",
+      			"value": "ISO_3166-1"
+      		},
+      		"code_string": "UY"
+      	},
+      	"category": {
+      		"_type": "DV_CODED_TEXT",
+      		"value": "persistent",
+      		"defining_code": {
+      			"_type": "CODE_PHRASE",
+      			"terminology_id": {
+      				"_type": "TERMINOLOGY_ID",
+      				"value": "openehr"
+      			},
+      			"code_string": "431"
+      		}
+      	},
+      	"composer": {
+      		"_type": "PARTY_IDENTIFIED",
+      		"external_ref": {
+      			"_type": "PARTY_REF",
+      			"id": {
+      				"_type": "HIER_OBJECT_ID",
+      				"value": "a3dce0d4-fa51-4ff2-9cce-93dd60437842"
+      			},
+      			"namespace": "DEMOGRAPHIC",
+      			"type": "PERSON"
+      		},
+      		"name": "Dr. Yamamoto"
+      	},
+      	"content": [{
+      		"_type": "OBSERVATION",
+      		"name": {
+      			"_type": "DV_TEXT",
+      			"value": "Minimal"
+      		},
+      		"archetype_node_id": "openEHR-EHR-OBSERVATION.minimal.v1",
+      		"language": {
+      			"_type": "CODE_PHRASE",
+      			"terminology_id": {
+      				"_type": "TERMINOLOGY_ID",
+      				"value": "ISO_639-1"
+      			},
+      			"code_string": "en"
+      		},
+      		"encoding": {
+      			"_type": "CODE_PHRASE",
+      			"terminology_id": {
+      				"_type": "TERMINOLOGY_ID",
+      				"value": "Unicode"
+      			},
+      			"code_string": "UTF-8"
+      		},
+      		"subject": {
+      			"_type": "PARTY_SELF"
+      		},
+      		"data": {
+      			"_type": "HISTORY",
+      			"name": {
+      				"_type": "DV_TEXT",
+      				"value": "Event Series"
+      			},
+      			"archetype_node_id": "at0001",
+      			"origin": {
+      				"_type": "DV_DATE_TIME",
+      				"value": "2019-04-16T21:08:11,380+0000"
+      			},
+      			"events": [{
+      				"_type": "POINT_EVENT",
+      				"name": {
+      					"_type": "DV_TEXT",
+      					"value": "Cualquier evento"
+      				},
+      				"archetype_node_id": "at0002",
+      				"time": {
+      					"_type": "DV_DATE_TIME",
+      					"value": "2019-04-16T21:08:11,384+0000"
+      				},
+      				"data": {
+      					"_type": "ITEM_TREE",
+      					"name": {
+      						"_type": "DV_TEXT",
+      						"value": "Arbol"
+      					},
+      					"archetype_node_id": "at0003",
+      					"items": [{
+      						"_type": "ELEMENT",
+      						"name": {
+      							"_type": "DV_TEXT",
+      							"value": "text"
+      						},
+      						"archetype_node_id": "at0004",
+      						"value": {
+      							"_type": "DV_TEXT",
+      							"value": "original value"
+      						}
+      					}]
+      				}
+      			}]
+      		}
+      	}]
+      },
+      "lifecycle_state": {
+        "value": "complete",
+        "defining_code": {
+          "terminology_id": {
+            "value": "openehr"
+          },
+          "code_string": "532"
+        }
+      }
+    }
+  ],
+  "audit": {
+    "_type": "AUDIT_DETAILS",
+    "system_id": "test-system-id",
+    "committer": {
+      "_type": "PARTY_IDENTIFIED",
+      "name": "<optional name of the committer>",
+      "external_ref": {
+        "id": {
+          "_type": "GENERIC_ID",
+          "value": "<OBJECT_ID>",
+          "scheme": "<ID SCHEME NAME>"
+        },
+        "namespace": "demographic",
+        "type": "PERSON"
+      }
+    },
+    "change_type": {
+      "value": "creation",
+      "defining_code": {
+        "terminology_id": {
+          "value": "openehr"
+        },
+        "code_string": "249"
+      }
+    },
+    "description": {
+      "value": "<optional audit description>"
+    }
+  }
+}

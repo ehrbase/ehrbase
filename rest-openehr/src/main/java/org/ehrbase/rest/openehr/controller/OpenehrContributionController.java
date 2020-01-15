@@ -121,7 +121,7 @@ public class OpenehrContributionController extends BaseController {
                                              @ApiParam(value = "", required = true) @PathVariable(value = "contribution_uid") String contributionUidString) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
-        UUID contributionUid = getCompositionVersionedObjectUidString(contributionUidString);
+        UUID contributionUid = getContributionVersionedObjectUidString(contributionUidString);
 
         URI uri = URI.create(this.encodePath(getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId.toString() + "/contribution/" + contributionUid.toString()));
 

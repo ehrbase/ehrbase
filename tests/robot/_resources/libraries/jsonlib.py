@@ -31,6 +31,7 @@ def compare_jsons(
     json_2,
     exclude_paths=None,
     ignore_order=True,
+    report_repetition=False,
     ignore_string_case=False,
     ignore_type_subclasses=False,
     verbose_level=2,
@@ -60,6 +61,10 @@ def compare_jsons(
         >>> compare_jsons(a, b, ignore_string_case=True)
         {}
     """
+
+    logger.debug("json_1 type: {}".format(type(json_1)))
+    logger.debug("json_2 type: {}".format(type(json_2)))
+
     try:
         actual = json.loads(json_1)
         expected = json.loads(json_2)
@@ -67,7 +72,9 @@ def compare_jsons(
         raise JsonCompareError(
             "Only VALID JSON strings accepted! ERROR: {}".format(error)
         )
-
+    
+    logger.debug("actual type: {}".format(type(actual)))
+    logger.debug("expected type: {}".format(type(expected)))
     logger.debug(
         "EXCLUDED PATHS: {}, type: {}".format(exclude_paths, type(exclude_paths))
     )
@@ -86,6 +93,7 @@ def compare_jsons(
         expected,
         exclude_paths=exclude_paths,
         ignore_order=ignore_order,
+        report_repetition=report_repetition,
         ignore_string_case=ignore_string_case,
         ignore_type_subclasses=ignore_type_subclasses,
         verbose_level=verbose_level,

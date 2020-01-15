@@ -35,11 +35,11 @@ Force Tags    XML
 *** Test Cases ***
 Alternative flow 4 create new invalid persistent COMPOSITION
 
-    upload OPT    minimal_persistent/persistent_minimal.opt    XML
+    upload OPT    minimal_persistent/persistent_minimal.opt
 
     create EHR    XML
 
-    # Commit invalid COMPOSITION
+    # comment: Commit invalid COMPOSITION
 
 
 

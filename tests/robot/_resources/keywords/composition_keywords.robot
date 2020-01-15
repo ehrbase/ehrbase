@@ -49,32 +49,6 @@ ${INVALID DATA SETS}   ${PROJECT_ROOT}${/}tests${/}robot${/}_resources${/}test_d
 
 
 
-
-start request session
-    [Arguments]         ${content}=application/json  ${accept}=application/json  &{others}
-    [Documentation]     Prepares request settings for RESTistance & RequestLib
-    ...                 :content: application/json (default) / application/xml
-    ...                 :accept: application/json (default) / application/xml
-    ...                 :others: optional e.g. If-Match={ehrstatus_uid}
-
-                        Log Many            ${content}  ${accept}  ${others}
-
-    # for RESTinstance
-    &{headers}=         Create Dictionary   Content-Type=${content}
-                        ...                 Accept=${accept}
-
-                        Run Keyword If      ${others}    Set To Dictionary    ${headers}    &{others}
-
-                        Set Headers         ${authorization}
-                        Set Headers         ${headers}
-
-    # for RequestLibrary
-                        Create Session      ${SUT}    ${${SUT}.URL}
-                        ...                 auth=${${SUT}.CREDENTIALS}    debug=2    verify=True
-
-                        Set Test Variable   ${headers}    ${headers}
-
-
 # TODO: rename to `generate random versioned_object_uid`
 generate random composition_uid
     [Documentation]     Generates a random UUIDv4 spec conform `versioned_object_uid`,
@@ -135,28 +109,28 @@ commit invalid composition (XML)
 commit composition - no referenced OPT
     [Arguments]         ${opt_file}
     [Documentation]     Creates a new COMPOSITION with missing referenced OPT
-    ...                 DEPENDENCY: `create EHR`, `start request session` with proper args!!!
+    ...                 DEPENDENCY: `create EHR`, `prepare new request session` with proper args!!!
     ...                 ENDPOINT: POST /ehr/${ehr_id}/composition
 
                         get valid OPT file  ${opt_file}
 
-        TRACE JIRA BUG    EHR-434    not-ready
+        TRACE GITHUB ISSUE  51  not-ready  message=discovered bug
 
     ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
                         # log to console      ${resp.content}
-                        Should Be Equal As Strings   ${resp.status_code}   400
+                        Should Be Equal As Strings   ${resp.status_code}   422
 
 
 commit composition - no referenced EHR
     [Arguments]         ${opt_file}
     [Documentation]     Creates a new COMPOSITION with missing referenced EHR
-    ...                 DEPENDENCY: `create EHR`, `start request session` with proper args!!!
+    ...                 DEPENDENCY: `create EHR`, `prepare new request session` with proper args!!!
     ...                             e.g. content-type must be application/xml
     ...                 ENDPOINT: POST /ehr/${ehr_id}/composition
 
                         get valid OPT file  ${opt_file}
 
-                        composition_keywords.start request session    application/xml    Prefer=return\=representation
+                        prepare new request session    XML    Prefer=return=representation
 
     ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
                         log to console      ${resp.content}
@@ -383,8 +357,8 @@ update non-existent composition (XML)
 get composition by composition_uid
     [Arguments]         ${uid}
     [Documentation]     :uid: version_uid
-    ...                 DEPENDENCY: `start request session` with proper Headers
-    ...                     e.g. Content-Type=application/xml  Accept=application/xml  Prefer=return\=representation
+    ...                 DEPENDENCY: `prepare new request session` with proper Headers
+    ...                     e.g. Content-Type=application/xml  Accept=application/xml  Prefer=return=representation
     ...                     and `commit composition (JSON/XML)` keywords
 
     # the uid param in the doc is verioned_object.uid but is really the version.uid,
@@ -400,7 +374,7 @@ get composition by composition_uid
 get versioned composition by uid
     [Arguments]         ${uid}
     [Documentation]     :uid: versioned_object_uid
-    ...                 DEPENDENCY: `start request session`
+    ...                 DEPENDENCY: `prepare new request session`
     ...                     and `commit composition (JSON/XML)` keywords
     ...
     ...                 ENDPOINT: /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}
@@ -431,14 +405,14 @@ check content of versioned composition (XML)
 
 get composition - latest version
 
-                        composition_keywords.start request session    Prefer=return\=representation
+                        prepare new request session    Prefer=return=representation
     # The way to return the latest version is using the versioned_composition with
     # the versioned_object_uid and without the version_at_time param.
 
     # &{headers}=         Create Dictionary     Prefer=return=representation
 
         ####### TODO: @WLAD/PABLO - remove when fixed!!!!! #####################
-        TRACE JIRA BUG  EHR-363    not-ready
+        TRACE GITHUB ISSUE  17  not-ready
         ########################################################################
 
     ${resp}=            Get Request           ${SUT}   /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version    headers=${headers}
@@ -449,7 +423,7 @@ get composition - latest version
 get composition - latest version (XML)
     [Documentation]     ENDPOINT: /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version
 
-                        composition_keywords.start request session    application/xml    application/xml    Prefer=return\=representation
+                        prepare new request session    XML    Prefer=return=representation
 
     # The way to return the latest version is using the versioned_composition with
     # the versioned_object_uid and without the version_at_time param.
@@ -457,7 +431,7 @@ get composition - latest version (XML)
     # &{headers}=         Create Dictionary     Prefer=return=representation  Accept=application/xml
 
         ####### TODO: @WLAD/PABLO - remove when fixed!!!!! #####################
-        TRACE JIRA BUG  EHR-363    not-ready
+        TRACE GITHUB ISSUE  17  not-ready
         ########################################################################
 
     ${resp}=            Get Request           ${SUT}   /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version   headers=${headers}
@@ -515,7 +489,7 @@ get versioned composition - version at time
     &{params}=          Create Dictionary     version_at_time=${time_x}
 
         ####### TODO: @WLAD/PABLO - remove when fixed!!!!! #####################
-        TRACE JIRA BUG  EHR-363    not-ready
+        TRACE GITHUB ISSUE  17  not-ready
         ########################################################################
 
     ${resp}=            Get Request           ${SUT}   /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version
@@ -538,7 +512,7 @@ get composition - version at time (XML)
     &{headers}=         Create Dictionary     Accept=application/xml
 
         ####### TODO: @WLAD/PABLO - remove when fixed!!!!! #####################
-        TRACE JIRA BUG  EHR-363    not-ready
+        TRACE GITHUB ISSUE  17  not-ready
         ########################################################################
 
     ${resp}=            Get Request           ${SUT}   /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version
@@ -636,40 +610,48 @@ get deleted composition
 
 
 delete non-existent composition
-    [Documentation]     DEPENDENCY `start request session`, `generate random composition_uid`
+    [Documentation]     DEPENDENCY `prepare new request session`, `generate random composition_uid`
 
-                        composition_keywords.start request session
+                        prepare new request session
     ${resp}=            Delete Request        ${SUT}   /ehr/${ehr_id}/composition/${preceding_version_uid}
                         log to console    ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   404
 
 
 upload OPT
-    [Arguments]     ${opt_file}   ${accept-header}=JSON
+    [Arguments]     ${opt_file}
 
+    # TODO: rm comments
     # setting proper Accept=application/xxx header
-    Run Keyword If    '${accept-header}'=='JSON'   template_opt1.4_keywords.start request session
-    Run Keyword If    '${accept-header}'=='XML'    start request session (XML)
+    # Run Keyword If    '${accept-header}'=='JSON'   template_opt1.4_keywords.start request session
+    
+                        prepare new request session    XML
+                        ...                          Prefer=return=representation
+    
+    # Run Keyword If    '${accept-header}'=='XML'    start request session (XML)
 
-    get valid OPT file    ${opt_file}
-    upload OPT file
-    server accepted OPT
+                        get valid OPT file    ${opt_file}
+                        upload OPT file
+                        server accepted OPT
 
 
 create EHR
-    [Arguments]     ${accept-header}=JSON
+    [Arguments]         ${accept-header}=JSON
 
-    Run Keyword If  '${accept-header}'=='JSON'
-    ...             Run Keywords    ehr_keywords.start request session    JSON
-    ...             AND             create new EHR
-    ...             AND             extract ehr_id from response (JSON)
-    ...             AND             extract ehrstatus_uid (JSON)
+    Run Keyword If      '${accept-header}'=='JSON'
+    ...                 Run Keywords    prepare new request session   JSON
+    ...                                 Prefer=return=representation
+    ...                 AND             create new EHR
+    ...                 AND             extract ehr_id from response (JSON)
+    ...                 AND             extract ehrstatus_uid (JSON)
 
-    Run Keyword If  '${accept-header}'=='XML'
-    ...             Run Keywords    ehr_keywords.start request session    XML
-    ...             AND             create new EHR (XML)
-    ...             AND             extract ehr_id from response (XML)
-    ...             AND             extract ehrstatus_uid (XML)
+    Run Keyword If      '${accept-header}'=='XML'
+    ...                 Run Keywords    prepare new request session    XML
+    ...                                 content=application/xml
+    ...                                 accept=application/xml    Prefer=return=representation
+    ...                 AND             create new EHR (XML)
+    ...                 AND             extract ehr_id from response (XML)
+    ...                 AND             extract ehrstatus_uid (XML)
 
 
 capture time before first commit

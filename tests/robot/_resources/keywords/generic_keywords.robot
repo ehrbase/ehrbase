@@ -52,9 +52,9 @@ Library    OperatingSystem
 
 compare json-strings
     [Arguments]         ${actual_json}  ${expected_json}  &{options}
-    [Documentation]     Compares two JSON strings.
+    [Documentation]     Compares two JSON strings.\\n
     ...
-    ...                 :actual_json: valid JSON string
+    ...                 :actual_json: valid JSON string\\n
     ...                 :expected_json: valid JSON string
     ...
     ...                 :options: with defaults
@@ -70,20 +70,24 @@ compare json-strings
     ...
     ...                 Check DeedDiff reference for more details: https://deepdiff.readthedocs.io/en/latest/diff.html
 
-                        compare jsons    ${actual_json}    ${expected_json}    &{options}
+    &{diff}=            compare jsons    ${actual_json}    ${expected_json}    &{options}
+
+    [Return]            ${diff}
 
 
 compare json-files
     [Arguments]         ${filepath_1}    ${filepath_2}    &{options}
     [Documentation]     Compares two JSON files given by filepath.
     ...
-    ...                 :filepath_: valid path to a JSON test-data-set
+    ...                 :filepath_: valid path to a JSON test-data-set\n
     ...                 :options: same as in `compare json-strings`
 
     ${actual}=          Get File    ${filepath_1}
     ${expected}=        Get File    ${filepath_2}
 
-                        compare jsons    ${actual}    ${expected}    &{options}
+    &{diff}=            compare jsons    ${actual}    ${expected}    &{options}
+
+    [Return]            ${diff}
 
 
 compare json-string with json-file
@@ -97,7 +101,9 @@ compare json-string with json-file
     ${actual}=          Set Variable    ${json_string}
     ${expected}=        Get File    ${json_file_by_filepath}
 
-                        compare jsons    ${actual}    ${expected}    &{options}
+    &{diff}=            compare jsons    ${actual}    ${expected}    &{options}
+
+    [Return]            ${diff}
 
 
 compare json-file with json-string
@@ -111,7 +117,9 @@ compare json-file with json-string
     ${actual}=          Get File    ${json_file_by_filepath}
     ${expected}=        Set Variable    ${json_string}
 
-                        compare jsons    ${actual}    ${expected}    &{options}
+    &{diff}=            compare jsons    ${actual}    ${expected}    &{options}
+
+    [Return]            ${diff}
 
 
 
@@ -119,12 +127,12 @@ compare json-file with json-string
 
 
 restart SUT
-    stop openehr server
-    stop and remove ehrdb
-    empty operational_templates folder
-    # sleep    1
-    start ehrdb
-    start openehr server
+    # stop openehr server
+    # stop and remove ehrdb
+    # empty operational_templates folder
+    # start ehrdb
+    # start openehr server
+    Delete All Templates
 
 
 get application version
@@ -173,13 +181,16 @@ start openehr server
 
 
 start server process without coverage
-    ${result}=  Start Process  java  -jar  ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
-    ...                              alias=ehrserver  cwd=${PROJECT_ROOT}  stdout=stdout.txt
+    ${result}=          Start Process  java  -jar  ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
+                        ...                  --cache.enabled\=false    alias=ehrserver
+                        ...                    cwd=${PROJECT_ROOT}    stdout=stdout.txt    stderr=stderr.txt
 
 
 start server process with coverage
-    ${result}=  Start Process  java  -javaagent:${JACOCO_LIB_PATH}/jacocoagent.jar\=output\=tcpserver,address\=127.0.0.1  -jar  ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
-    ...                              alias=ehrserver  cwd=${PROJECT_ROOT}  stdout=stdout.txt  stderr=stderr.txt
+    ${result}=          Start Process  java  -javaagent:${JACOCO_LIB_PATH}/jacocoagent.jar\=output\=tcpserver,address\=127.0.0.1
+                        ...                  -jar    ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
+                        ...                  --cache.enabled\=false    alias=ehrserver
+                        ...                    cwd=${PROJECT_ROOT}    stdout=stdout.txt    stderr=stderr.txt
 
 
 wait until openehr server is ready
@@ -218,6 +229,53 @@ abort test execution if this test fails
                     ...             Fatal Error  Aborted Execution - Preconditions not met!
 
 
+prepare new request session
+    [Arguments]         ${format}=JSON    &{extra_headers}
+    [Documentation]     Prepares request settings for RESTistance AND RequestsLibrary
+    ...                 :format: JSON (default) / XML
+    ...                 :extra_headers: optional - e.g. Prefer=return=representation
+    ...                                            e.g. If-Match={ehrstatus_uid}
+                        Log Many            ${format}  ${extra_headers}
+
+                        # case: JSON
+                        Run Keyword If      $format=='JSON'    set request headers
+                        ...                 content=application/json
+                        ...                 accept=application/json
+                        ...                 &{extra_headers}
+                        # case: XML
+                        Run Keyword If      $format=='XML'    set request headers
+                        ...                 content=application/xml
+                        ...                 accept=application/xml
+                        ...                 &{extra_headers}
+
+                        # case: mixed cases like JSON/XML or XML/JSON can be added here!
+
+set request headers
+    [Arguments]         ${content}=application/json  ${accept}=application/json  &{extra_headers}
+    [Documentation]     Sets the headers of a request
+    ...                 :content: application/json (default) / application/xml
+    ...                 :accept: application/json (default) / application/xml
+    ...                 :extra_headers: optional - e.g. Prefer=return=representation
+    ...                                            e.g. If-Match={ehrstatus_uid}
+                        Log Many            ${content}  ${accept}  ${extra_headers}
+
+    &{headers}=         Create Dictionary   Content-Type=${content}
+                        ...                 Accept=${accept}
+
+                        Run Keyword If      ${extra_headers}    Set To Dictionary
+                        ...                 ${headers}    &{extra_headers}
+
+    # library: RESTinstance
+    &{headers}=         Set Headers         ${headers}
+                        Set Headers         ${authorization}
+    
+    # library: RequestLibrary
+                        Create Session      ${SUT}    ${${SUT}.URL}    debug=2
+                        ...                 auth=${${SUT}.CREDENTIALS}    verify=True
+
+                        Set Suite Variable   ${headers}    ${headers}
+
+
 startup SUT
     get application version
     unzip file_repo_content.zip
@@ -250,27 +308,11 @@ start ehrdb
     wait until ehrdb is ready
 
 
-stop ehrdb
-    [Documentation]     Stops DB container by using a keyword `stop ehrdb container`
-    ...                 from custom library: dockerlib.py
-
-    ${logs}  ${status}  stop ehrdb container
-    Log      ${logs}
-    Log      ${status}
-    wait until ehrdb is stopped
-    Should Be Equal As Integers  ${status}[StatusCode]  0
-
-
 stop and remove ehrdb
+    [Documentation]     Stos DB container gracefully and waits for it to be removed
+    ...                 Uses KW from custom library: dockerlib.py
 
-    Log     DEPRECATION WARNING - @WLAD replace/update this keyword!
-    ...     level=WARN
-            # NOTE: remove `stop ehrdb` from this keyword!
-            #      `remove_ehrdb_container` cracefully stops and waits for
-            #        container to be removed
-
-    # stop ehrdb
-    remove ehrdb container  # kw from dockerlib.py
+                        Remove EhrDB Container
 
 
 restart ehrdb

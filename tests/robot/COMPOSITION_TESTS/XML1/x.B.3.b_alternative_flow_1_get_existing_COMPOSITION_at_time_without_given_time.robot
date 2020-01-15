@@ -35,7 +35,7 @@ Force Tags    XML
 *** Test Cases ***
 Alternative flow 1 get existing COMPOSITION at time, without given time
 
-    upload OPT    minimal/minimal_observation.opt    XML
+    upload OPT    minimal/minimal_observation.opt
 
     create EHR    XML
 

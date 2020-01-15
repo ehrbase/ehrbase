@@ -30,8 +30,23 @@ Resource    composition_keywords.robot
 
 
 *** Variables ***
-${VALID CONTRI DATA SETS}     ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/valid_templates
-${INVALID CONTRI DATA SETS}   ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/invalid_templates
+${VALID CONTRI DATA SETS}     ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/contributions/valid
+${INVALID CONTRI DATA SETS}   ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/contributions/invalid
+${VALID COMPO DATA SETS}     ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/compositions/valid
+
+
+*** Comments ***
+TOC | Table Of Contents
+
+1)  Hight Level Keywords
+
+    Commit CONTRIBUTION
+        commit CONTRIBUTION (JSON)
+        commit CONTRIBUTION - with preceding_version_uid (JSON)
+
+    Commit Invalid CONRIBUTION
+
+    TODO: finish TOC
 
 
 
@@ -40,22 +55,25 @@ ${INVALID CONTRI DATA SETS}   ${PROJECT_ROOT}/tests/robot/_resources/test_data_s
 commit CONTRIBUTION (JSON)
     [Arguments]         ${valid_test_data_set}
                         Set Test Variable  ${KEYWORD NAME}  COMMIT CONTRIBUTION 1 (JSON)
-
                         load valid test-data-set    ${valid_test_data_set}
-
                         POST /ehr/ehr_id/contribution    JSON
-
-                        Should Be Equal As Strings   ${response.status_code}   201
-                        Set Test Variable   ${contribution_uid}    ${resp.json()['uid']['value']}
-                        Log To Console      ${contribution_uid}
+                        Set Test Variable    ${body}    ${response.json()}
+                        Set Test Variable    ${contribution_uid}    ${body['uid']['value']}
+                        Set Test Variable    ${versions}    ${body['versions']}
 
 
 check response: is positive - returns version id
-        Fail    msg=brake it till you make it!
+                        Should Be Equal As Strings    ${response.status_code}    201
+                        Set Test Variable    ${body}    ${response.json()}
+                        Set Test Variable    ${contribution_uid}    ${body['uid']['value']}
+                        Set Test Variable    ${versions}    ${body['versions']}
+                        Set Test Variable    ${version_id}    ${body['versions'][0]['id']['value']}
+                        Set Test Variable    ${change_type}    ${body['audit']['change_type']['value']}
 
 
 check content of committed CONTRIBUTION
-                        retrieve EHR by ehr_id
+                        retrieve CONTRIBUTION by contribution_uid (JSON)
+                        Length Should Be    ${versions}    1
 
 
 # TODO: better name --> `commit another CONTRIBUTION` ???
@@ -64,23 +82,26 @@ check content of committed CONTRIBUTION
 commit CONTRIBUTION - with preceding_version_uid (JSON)
     [Arguments]         ${test_data_set}
                         Set Test Variable  ${KEYWORD NAME}  COMMIT CONTRIBUTION 2 (JSON)
-
-                        load valid test-data-set    ${test_data_set}
-
-                        inject preceding_version_uid into test-data-set
-
+                        inject preceding_version_uid into valid test-data-set    ${test_data_set}
                         POST /ehr/ehr_id/contribution    JSON
 
 
 check response: is positive - contribution has new version
-        Fail    msg=brake it till you make it!
+                        Should Be Equal As Strings    ${response.status_code}    201
+                        Set Test Variable    ${body}    ${response.json()}
+                        Set Test Variable    ${contribution_uid}    ${body['uid']['value']}
+                        Set Test Variable    ${versions}    ${body['versions']}
+                        Set Test Variable    ${version_id}    ${body['versions'][0]['id']['value']}
+                        Set Test Variable    ${change_type}    ${body['audit']['change_type']['value']}
+
+                        Should Contain  ${version_id}  ::2
+                        Output    ${body}
 
 
 check change_type of new version is
-    [Arguments]         ${change_type}
+    [Arguments]         ${type}
     [Documentation]     :change_type: creation, amendment, modification, deleted
-
-        Fail    msg=brake it till you make it!
+                        Should Be Equal As Strings    ${change_type}    ${type}
 
 
 
@@ -88,18 +109,14 @@ check change_type of new version is
 commit invalid CONTRIBUTION (JSON)
     [Arguments]         ${test_data_set}
                         Set Test Variable  ${KEYWORD NAME}  COMMIT CONTRIBUTION 3 (JSON)
-
-                        # TODO: chage that to `load invalid test-data-set` after test-data was mv to proper folder
-                        load valid test-data-set    ${test_data_set}
-
+                        load invalid test-data-set    ${test_data_set}
                         POST /ehr/ehr_id/contribution    JSON
 
 # commit CONTRIBUTION - no version compo (JSON)
 #     [Arguments]         ${test_data_set}
 #                         Set Test Variable  ${KEYWORD NAME}  COMMIT CONTRIBUTION 3 (JSON)
 #
-#                         # TODO: chage that to `load invalid test-data-set` after test-data was mv to proper folder
-#                         load valid test-data-set    ${test_data_set}
+#                         load invalid test-data-set    ${test_data_set}
 #
 #                         POST /ehr/ehr_id/contribution    JSON
 #
@@ -107,8 +124,7 @@ commit invalid CONTRIBUTION (JSON)
 #     [Arguments]         ${test_data_set}
 #                         Set Test Variable  ${KEYWORD NAME}  COMMIT CONTRIBUTION 5 (JSON)
 #
-#                         # TODO: chage that to `load invalid test-data-set` after test-data was mv to proper folder
-#                         load valid test-data-set    ${test_data_set}
+#                         load invalid test-data-set    ${test_data_set}
 #
 #                         POST /ehr/ehr_id/contribution    JSON
 #
@@ -116,86 +132,76 @@ commit invalid CONTRIBUTION (JSON)
 
 
 # VARIATIONS OF RESULTS FROM INVALID CONTRIBUTIONS
-# TODO: check if some of them can be consolidated
 check response: is negative indicating errors in committed data
-                          Should Be Equal As Strings   ${response.status_code}   400
-        Fail    msg=brake it till you make it!
+                        Should Be Equal As Strings   ${response.status_code}   400
+                        # TODO: keep failing to avoid false positive, rm when has checks.
+                        Fail    msg=brake it till you make it!
 
 
 check response: is negative indicating empty versions list
-                          Should Be Equal As Strings   ${response.status_code}   400
-        Fail    msg=brake it till you make it!
-
-
-check response: is negative indicating invalid version_composition
-        Fail    msg=brake it till you make it!
+                        Should Be Equal As Strings   ${response.status_code}   400
+                        Set Test Variable    ${body}    ${response.json()}
+                        Set Test Variable    ${versions}    ${body['versions']}
+                        Length Should Be    ${versions}    0
 
 
 check response: is negative indicating wrong change_type
-                          Should Be Equal As Strings   ${response.status_code}   400
-        Fail    msg=brake it till you make it!
+                        Should Be Equal As Strings   ${response.status_code}   400
+                        Set Test Variable    ${body}    ${response.json()}
+
+                        # TODO: keep failing to avoid false positive
+                        #       add checks when available.
+                        Fail    msg=brake it till you make it!
 
 
 check response: is negative indicating non-existent OPT
-                          Should Be Equal As Strings   ${response.status_code}   400
-        Fail    msg=brake it till you make it!
+                        Should Be Equal As Strings   ${response.status_code}   422
+                        # TODO: Add checks from response body
 
 
 commit COMTRIBUTION(S) (JSON)
                         Set Test Variable  ${KEYWORD NAME}  COMMIT COMTRIBUTION(S) (JSON)
 
-        TRACE JIRA BUG    NO-JIRA-ID    not-ready    message=endpoint not implemented
-        # TODO: does that mean committing multiple CONTRIS ???
-
+            TRACE GITHUB ISSUE  NO-ISSUE-ID  not-ready
 
 # check response: commit COMTRIBUTION(S) (JSON)
 #                         Should Be Equal As Strings   ${response.status_code}   201
 
 
-
 retrieve CONTRIBUTION by contribution_uid (JSON)
     [Documentation]     DEPENDENCY ${ehr_id} & ${contribution_uid} in test scope
                         Set Test Variable  ${KEYWORD NAME}  GET CONTRI BY CONTRI_UID
-
                         GET /ehr/ehr_id/contribution/contribution_uid    JSON
 
 
 check response: is positive - contribution_uid exists
                         Should Be Equal As Strings    ${response.status_code}    200
-        Fail    msg=brake it till you make it!
+                        Set Test Variable    ${body}    ${response.json()}
+                        Set Test Variable    ${contribution_uid}    ${body['uid']['value']}
 
 
 check content of retrieved CONTRIBUTION (JSON)
                         check response: is positive - contribution_uid exists
-        # TODO: implement data checks
-        Fail    msg=brake it till you make it!
-
 
 
 retrieve CONTRIBUTION by fake contri_uid (JSON)
                         Set Test Variable  ${KEYWORD NAME}  GET CONTRI BY FAKE CONTRI_UID
-
                         generate random contribution_uid
-
                         GET /ehr/ehr_id/contribution/contribution_uid    JSON
-
 
 
 retrieve CONTRIBUTION by fake ehr_id & contri_uid (JSON)
+    [Documentation]     Both query params (ehr_id and contribution_uid) are random.
                         Set Test Variable  ${KEYWORD NAME}  GET CONTRI BY FAKE U/IDs
-
                         generate random ehr_id
                         generate random contribution_uid
-
                         GET /ehr/ehr_id/contribution/contribution_uid    JSON
-
 
 
 retrieve CONTRIBUTION(S) by ehr_id (JSON)
                         Set Test Variable  ${KEYWORD NAME}  GET CONTRI(S) BY EHR_ID
-
                         GET /ehr/ehr_id/contributions    JSON
-
+                        # NOTE: no such endpoint (anymore)???
 
 
 retrieve CONTRIBUTION(S) by fake ehr_id (JSON)
@@ -205,28 +211,28 @@ retrieve CONTRIBUTION(S) by fake ehr_id (JSON)
                         GET /ehr/ehr_id/contributions    JSON
 
 
-
 check response: is negative indicating non-existent ehr_id
                         Should Be Equal As Strings    ${response.status_code}    404
-        Fail    msg=fake it till you make it!
-
+                        Set Test Variable    ${body}    ${response.json()}
+                        Should Be Equal As Strings  ${body['error']}  No EHR found with given ID: ${ehr_id}
 
 
 check response: is negative indicating non-existent contribution_uid
                         Should Be Equal As Strings    ${response.status_code}    404
-        Fail    msg=fake it till you make it!
-
+                        Set Test Variable    ${body}    ${response.json()}
+                        Should Be Equal As Strings  ${body['error']}  Contribution with given ID does not exist
 
 
 check response: is negative indicating non-existent contribution_uid on ehr_id
                         Should Be Equal As Strings    ${response.status_code}    404
-        Fail    msg=fake it till you make it!
-
+                        Set Test Variable    ${body}    ${response.json()}
+                        Should Be Equal As Strings  ${body['error']}  Contribution with given ID does not exist
 
 
 check response: is positive with list of ${x} contribution(s)
-                        Should Be Equal As Strings    ${response.status_code}    200
-        Fail    msg=fake it till you make it!
+                        Length Should Be    ${versions}    ${x}
+
+
 
 
 
@@ -242,16 +248,12 @@ POST /ehr/ehr_id/contribution
     ...                 to test level scope e.g. `load valid test-data-set`
 
                         # JSON format: defaults apply
-                        Run Keyword If      $format=='JSON'    prepare request session
+                        Run Keyword If      $format=='JSON'    prepare new request session
                         ...                 Prefer=return=representation
 
                         # XML format: overriding defaults
-                        Run Keyword If      $format=='XML'    prepare request session
-                        ...                 content=application/xml
-                        ...                 accept=application/xml
-                        ...                 Prefer=return=representation
-
-        TRACE JIRA BUG    NO-JIRA-ID    not-ready    message=endpoint not implemented
+                        Run Keyword If      $format=='XML'    prepare new request session
+                        ...                 XML    Prefer=return=representation
 
     ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/contribution
                         ...                 data=${test_data}
@@ -277,15 +279,11 @@ GET /ehr/ehr_id/contribution/contribution_uid
     [Arguments]         ${format}
     [Documentation]     DEPENDENCY ${ehr_id} & ${contribution_uid} in test scope
 
-                        Run Keyword If      $format=='JSON'    prepare request session
+                        Run Keyword If      $format=='JSON'    prepare new request session
                         ...                 Prefer=return=representation
 
-                        Run Keyword If      $format=='XML'    prepare request session
-                        ...                 content=application/xml
-                        ...                 accept=application/xml
-                        ...                 Prefer=return=representation
-
-            TRACE JIRA BUG    NO-JIRA-ID    not-ready    message=endpoint not implemented
+                        Run Keyword If      $format=='XML'    prepare new request session
+                        ...                 XML    Prefer=return=representation
 
     ${resp}=            Get Request         ${SUT}   /ehr/${ehr_id}/contribution/${contribution_uid}
                         ...                 headers=${headers}
@@ -294,21 +292,16 @@ GET /ehr/ehr_id/contribution/contribution_uid
                         Output Debug Info:    GET /ehr/ehr_id/contribution/contribution_uid
 
 
-
 GET /ehr/ehr_id/contributions
     [Arguments]         ${format}
     [Documentation]     DEPENDENCY ${ehr_id} in test scope
 
-                        Run Keyword If      $format=='JSON'    prepare request session
+                        Run Keyword If      $format=='JSON'    prepare new request session
                         ...                 Prefer=return=representation
 
-                        Run Keyword If      $format=='XML'    prepare request session
-                        ...                 content=application/xml
-                        ...                 accept=application/xml
-                        ...                 Prefer=return=representation
-
-            TRACE JIRA BUG    NO-JIRA-ID    not-ready    message=endpoint not implemented
-
+                        Run Keyword If      $format=='XML'    prepare new request session
+                        ...                 XML    Prefer=return=representation
+                        # NOTE: edpoint does not exist (any more)???
     ${resp}=            Get Request         ${SUT}   /ehr/${ehr_id}/contributions
                         ...                 headers=${headers}
 
@@ -320,25 +313,12 @@ GET /ehr/ehr_id/contributions
 
 
 # 3) HTTP Headers
-prepare request session
-    [Arguments]         ${content}=application/json  ${accept}=application/json  &{others}
-    [Documentation]     Prepares request settings for RequestLib
-    ...                 :content: application/json (default) / application/xml
-    ...                 :accept: application/json (default) / application/xml
-    ...                 :others: optional e.g. If-Match={ehrstatus_uid}
-    ...                                   e.g. Prefer=return=representation
 
-                        Log Many            ${content}  ${accept}  ${others}
+# NOTE: All request header settings are handled from generic_keywords.robot resource file.
 
-    &{headers}=         Create Dictionary   Content-Type=${content}
-                        ...                 Accept=${accept}
-
-                        Run Keyword If      ${others}    Set To Dictionary    ${headers}    &{others}
-
-                        Create Session      ${SUT}    ${${SUT}.URL}
-                        ...                 auth=${${SUT}.CREDENTIALS}    debug=2    verify=True
-
-                        Set Test Variable   ${headers}    ${headers}
+Available keywords:
+    generic_keywords.prepare new request session
+    generic_keywords.set request headers
 
 
 
@@ -381,10 +361,14 @@ load invalid test-data-set
                         Set Test Variable    ${test_data}    ${file}
 
 
-inject preceding_version_uid into test-data-set
-        Fail    msg=brake it till you make it!
-
-                        Set Test Variable    ${test_data}    ${file}
+inject preceding_version_uid into valid test-data-set
+    [Arguments]         ${valid_test_data_set}
+    ${test_data}=       Load JSON from File    ${VALID CONTRI DATA SETS}/${valid_test_data_set}
+    ${test_data}=       Update Value To Json  ${test_data}  $..versions..preceding_version_uid.value
+                        ...                   ${version_id}::piri.ehrscape.com::1
+                                                        # TODO: rm hardcoded value "piri..."
+                        Set Test Variable    ${test_data}    ${test_data}
+                        Output    ${test_data}
 
 
 Output Debug Info:
@@ -393,11 +377,14 @@ Output Debug Info:
                         ${l}=               Evaluate    len('${KEYWORD NAME}')
                         ${line}=               Evaluate    ${l} * '-'
                         Log To Console      \n${line}\n${KEYWORD NAME}\n${line}\n
-                        Log To Console      request headers: \n${response.request.headers} \n
-                        Log To Console      request body: \n${response.request.body} \n
-                        Log To Console      response status code: \n${response.status_code} \n
-                        Log To Console      response headers: \n${response.headers} \n
-                        Log To Console      response body: \n${response.content} \n
+                        # Log To Console      \trequest headers: \n\t${response.request.headers} \n
+                        # Log To Console      \trequest body: \n\t${response.request.body} \n
+                        Log To Console      \tresponse status code: \n\t${response.status_code} \n
+                        Log To Console      \tresponse headers: \n\t${response.headers} \n
+                        # Log To Console      \tresponse body: \n\t${response.content} \n
+
+    ${resti_response}=  Set Variable  ${response.json()}
+                        Output    ${resti_response}
 
 
 
@@ -416,7 +403,10 @@ Output Debug Info:
 #
 # # VARIANTS
 #
-# # commit valid CONTRIBUTION
+# # commit valid CONTRIBUTION (POST)
+#       201 - created
+#       400 - validation error
+#       404 - ehr_id does not exist
 #
 # # commit valid CONTRIBUTION modification
 #     - versioning
@@ -431,3 +421,23 @@ Output Debug Info:
 # # commit invalid CONTRIBUTION modification
 #     - incomplete modification
 #     - incorrect modification (e.g. wrong change_type)
+
+
+
+
+
+# *** Keywords ***
+# prepare request session
+#     [Arguments]         ${content}=application/json  ${accept}=application/json  &{others}
+#     [Documentation]     Prepares request settings for RequestLib
+#     ...                 :content: application/json (default) / application/xml
+#     ...                 :accept: application/json (default) / application/xml
+#     ...                 :others: optional e.g. If-Match={ehrstatus_uid}
+#     ...                                   e.g. Prefer=return=representation
+#                         Log Many            ${content}  ${accept}  ${others}
+#     &{headers}=         Create Dictionary   Content-Type=${content}
+#                         ...                 Accept=${accept}
+#                         Run Keyword If      ${others}    Set To Dictionary    ${headers}    &{others}
+#                         Create Session      ${SUT}    ${${SUT}.URL}
+#                         ...                 auth=${${SUT}.CREDENTIALS}    debug=2    verify=True
+#                         Set Test Variable   ${headers}    ${headers}

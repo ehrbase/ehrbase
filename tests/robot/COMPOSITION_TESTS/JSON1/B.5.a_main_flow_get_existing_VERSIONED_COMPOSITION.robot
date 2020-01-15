@@ -42,7 +42,7 @@ Main flow get existing VERSIONED COMPOSITION
     commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.xml
 
     # Check COMPOSITION exists (by versioned_object_uid)
-    composition_keywords.start request session    # Prefer=return\=representation
+    prepare new request session    # Prefer=return\=representation
     get versioned composition by uid    ${versioned_object_uid}
     check content of versioned composition (JSON)
 
