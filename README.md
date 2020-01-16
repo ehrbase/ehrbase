@@ -3,8 +3,8 @@
 EHRbase is an [openEHR](openehr.org) Clinical Data Repository, providing a standard-based backend for interoperable clinical applications. It implements the latest version of the openEHR Reference Model (RM 1.0.4) and version 1.4 of the Archetype Definition Language (ADL). Applications can use the capabilities of EHRbase through the latest version of the [openEHR REST API](https://specifications.openehr.org/releases/ITS-REST/latest/) and model-based queries using the [Archetype Query Language](https://specifications.openehr.org/releases/QUERY/latest/AQL.html).
 
 ## Release Notes
-##### 2019, October 10
-This initial release is an alpha version. This means that most endpoints of the official openEHR REST API are implemented. DIRECTORY and EHR_STATUS will become available within a few couple of weeks. There are known issues and we are heavily working to get to beta status. Please see [EHRbase Documentation](https://docs.ehrbase.org/en/latest/) for further details. For now, we encourage the use of EHRbase for the purpose of development of openEHR applications and to make trial implementations of changes applicable to the openEHR Specification. Deployment in production with real patient data is not recommended yet.
+##### 2020, January 10
+This release brings EHRbase from a pre-alpha to an alpha version. Besides numerous bug fixes, EHRbase provides new endpoints based on the openEHR REST API to handle FOLDERS and the EHR_STATUS objects. This version also introduces Spring Transactions, improved handling of the system ID and AQL queries with partial paths finally return data in canonical json format (including full compositions). The conformance tests have been enhanced by adding AQL tests. Please see [EHRbase Documentation](https://ehrbase.readthedocs.io/en/latest/01_release_notes/0100.html) for further details. We still encourage the use of EHRbase for the purpose of development of openEHR applications and to make trial implementations of changes applicable to the openEHR Specification. However, a deployment in production with real patient data is not recommended yet.
 
 ## Getting Started
 
@@ -16,7 +16,7 @@ You will need Java JDK/JRE 8 (preferably openJDK: e.g. from https://adoptopenjdk
 
 You will need a Postgres Database (Docker image or local installation). We recommend the Docker image to get started quickly.
 
-When installing locally, the Postgres Database (at least Version 10.4) needs the flowing extensions:
+When installing locally, the Postgres Database (at least Version 10.4) needs the following extensions:
  * [temporal tables](https://github.com/arkhipov/temporal_tables) 
     ```bash
      git clone https://github.com/arkhipov/temporal_tables.git
@@ -37,7 +37,7 @@ When installing locally, the Postgres Database (at least Version 10.4) needs the
 
 #### 1. Setup database
 
-> NOTE: Building EHRbase requires a proper and running DB for the following steps.
+> NOTE: Building EHRbase requires a properly set up and running DB for the following steps.
 
 Run `./db-setup/createdb.sql` as `postgres` User.
 
@@ -54,7 +54,7 @@ Run `mvn package`
 
 #### 4. Run EHRbase
 
-Replace the * with the current version, e.g. `application/target/application-0.8.0.jar`
+Replace the * with the current version, e.g. `application/target/application-0.9.0.jar`
 
 `java -jar application/target/application-*.jar`
 
@@ -94,6 +94,6 @@ EHRbase uses the Apache License, Version 2.0 (https://www.apache.org/licenses/LI
 EHRbase contains code and derived code from EtherCIS (ethercis.org) which has been developed by Christian Chevalley (ADOC Software Development Co.,Ltd).
 Dr. Tony Shannon and Phil Berret of the [Ripple Foundation CIC Ltd, UK](https://ripple.foundation/) and Dr. Ian McNicoll (FreshEHR Ltd.) greatly contributed to EtherCIS. 
 
-EHRbase heavily relies on the openEHR Reference Model implementation ([Archie](https://github.com/openEHR/archie)) made by Nedap. Many thanks to Pieter Bos and his team for this marvellous piece of software!
+EHRbase heavily relies on the openEHR Reference Model implementation ([Archie](https://github.com/openEHR/archie)) made by Nedap. Many thanks to Pieter Bos and his team for their work!
 
 EHRbase is jointly developed by [Vitasystems GmbH](https://www.vitagroup.ag/de_DE/Ueber-uns/vitasystems) and [Peter L. Reichertz Institute for Medical Informatics of TU Braunschweig and Hannover Medical School](plri.de) 
