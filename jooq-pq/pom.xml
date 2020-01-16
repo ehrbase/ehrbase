@@ -21,7 +21,7 @@
     <parent>
         <artifactId>server</artifactId>
         <groupId>org.ehrbase.openehr</groupId>
-        <version>0.9.0</version>
+        <version>0.10.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
