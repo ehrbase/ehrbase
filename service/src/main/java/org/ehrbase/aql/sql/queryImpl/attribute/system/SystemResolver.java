@@ -44,7 +44,7 @@ public class SystemResolver extends AttributeResolver
 
         switch (path){
             case "value":
-                return new SystemAttribute(fieldResolutionContext, joinSetup).forTableField(SYSTEM.SETTINGS).sqlField();
+                return new GenericJsonField(fieldResolutionContext, joinSetup).forJsonPath("value").jsonField("HIER_OBJECT_ID", "ehr.js_canonical_hier_object_id", I_JoinBinder.ehrRecordTable.field(EHR_.SYSTEM_ID));
             case "description":
                 return new SystemAttribute(fieldResolutionContext, joinSetup).forTableField(SYSTEM.DESCRIPTION).sqlField();
         }
