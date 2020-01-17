@@ -71,7 +71,7 @@ public class QueryProcessorTest {
             return query;
         }
 
-        public String getExpectedSql() {
+        String getExpectedSql() {
             return expectedSql;
         }
 
@@ -79,7 +79,7 @@ public class QueryProcessorTest {
             return id;
         }
 
-        public boolean isOutputWithJson() {
+        boolean isOutputWithJson() {
             return outputWithJson;
         }
     }
@@ -92,19 +92,21 @@ public class QueryProcessorTest {
     /**
      * Builds the {@link AqlTestCase}
      *
-     * @return
+     * @return List of {@link AqlTestCase}
      */
-    public static List<AqlTestCase> buildAqlTestCase() {
+    private static List<AqlTestCase> buildAqlTestCase() {
 
         List<AqlTestCase> testCases = new ArrayList<>();
 
         //   Select expectedSql column  from ehr
         testCases.add(new AqlTestCase(1,
                 "select e/ehr_id/value from EHR e",
-                "select \"ehr_join\".\"id\" as \"/ehr_id/value\" " +
+                "select distinct on (\"/ehr_id/value\") \"\".\"/ehr_id/value\" from (" +
+                        "select \"ehr_join\".\"id\" as \"/ehr_id/value\" " +
                         "from \"ehr\".\"entry\" " +
                         "right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" " +
-                        "right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\"",
+                        "right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\"" +
+                        ") as \"\"",
                 false
         ));
 
@@ -113,11 +115,13 @@ public class QueryProcessorTest {
         testCases.add(new AqlTestCase(2,
                 "select e/ehr_id/value from EHR e " +
                         "where e/ehr_id/value = '30580007' ",
-                "select \"ehr_join\".\"id\" as \"/ehr_id/value\" " +
+                "select distinct on (\"/ehr_id/value\") \"\".\"/ehr_id/value\" from (" +
+                        "select \"ehr_join\".\"id\" as \"/ehr_id/value\" " +
                         "from \"ehr\".\"entry\" " +
                         "right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" " +
                         "right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\"" +
-                        "where (\"ehr_join\".\"id\"='30580007')",
+                        "where (\"ehr_join\".\"id\"='30580007')" +
+                        ") as \"\"",
                 false));
 
 
@@ -197,19 +201,23 @@ public class QueryProcessorTest {
         // select Limit and Offset
         testCases.add(new AqlTestCase(10,
                 "select e/ehr_id/value from EHR e LIMIT 10 OFFSET 5",
-                "select \"ehr_join\".\"id\" as \"/ehr_id/value\" " +
+                "select distinct on (\"/ehr_id/value\") \"\".\"/ehr_id/value\" from (" +
+                        "select \"ehr_join\".\"id\" as \"/ehr_id/value\" " +
                         "from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" " +
                         "right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\" " +
-                        "limit ? offset ?",
+                        "limit ? offset ?" +
+                        ") as \"\"",
                 false));
 
         // select TOP
         testCases.add(new AqlTestCase(11,
                 "select TOP 5 e/ehr_id/value from EHR e ",
-                "select \"ehr_join\".\"id\" as \"/ehr_id/value\" " +
+                "select distinct on (\"/ehr_id/value\") \"\".\"/ehr_id/value\" from (" +
+                        "select \"ehr_join\".\"id\" as \"/ehr_id/value\" " +
                         "from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" " +
                         "right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\" " +
-                        "limit ?",
+                        "limit ?" +
+                        ") as \"\"",
                 false));
 
         // where clausal json column from entry  with matches
@@ -218,12 +226,14 @@ public class QueryProcessorTest {
                         "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  " +
                         "contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]" +
                         "where a/description[at0001]/items[at0002]/value/value matches {'Hepatitis A','Hepatitis B'} ",
-                "select \"ehr_join\".\"id\" as \"/ehr_id/value\" " +
+                "select distinct on (\"/ehr_id/value\") \"\".\"/ehr_id/value\" from (" +
+                        "select \"ehr_join\".\"id\" as \"/ehr_id/value\" " +
                         "from \"ehr\".\"entry\" " +
                         "right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" " +
                         "right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\" " +
                         "where (\"ehr\".\"entry\".\"template_id\" = ? " +
-                        "and (\"ehr\".\"entry\".\"entry\" @@ '\"/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary'']\".\"/content[openEHR-EHR-ACTION.immunisation_procedure.v1]\".#.\"/description[at0001]\".\"/items[at0002]\".#.\"/value\".\"value\" IN (\"Hepatitis A\",\"Hepatitis B\") '::jsquery))",
+                        "and (\"ehr\".\"entry\".\"entry\" @@ '\"/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary'']\".\"/content[openEHR-EHR-ACTION.immunisation_procedure.v1]\".#.\"/description[at0001]\".\"/items[at0002]\".#.\"/value\".\"value\" IN (\"Hepatitis A\",\"Hepatitis B\") '::jsquery))" +
+                        ") as \"\"",
                 true));
 
         // select with function
@@ -256,16 +266,15 @@ public class QueryProcessorTest {
 //        return queryParser;
 //    }
 
-
+    /** mocks the sql query such that there simulate a table  ehr.containment as
+     *   comp_id    |   label                                                                               |   path
+     *   ?          | openEHR_EHR_COMPOSITION_health_summary_v1                                             |  /composition[openEHR-EHR-COMPOSITION.health_summary.v1]
+     *   ?          | openEHR_EHR_COMPOSITION_health_summary_v1.openEHR_EHR_ACTION_immunisation_procedure_v1| /content[openEHR-EHR-ACTION.immunisation_procedure.v1 and name/value='Immunisation procedure']
+     */
     @Test
     public void testBuildAqlSelectQuery() throws Exception {
         IntrospectService introspectCache = KnowledgeCacheHelper.buildKnowledgeCache(testFolder, cacheRule);
 
-        /** mocks the sql query such that there simulate a table  ehr.containment as
-         *   comp_id    |   label                                                                               |   path
-         *   ?          | openEHR_EHR_COMPOSITION_health_summary_v1                                             |  /composition[openEHR-EHR-COMPOSITION.health_summary.v1]
-         *   ?          | openEHR_EHR_COMPOSITION_health_summary_v1.openEHR_EHR_ACTION_immunisation_procedure_v1| /content[openEHR-EHR-ACTION.immunisation_procedure.v1 and name/value='Immunisation procedure']
-         */
         DSLContext context = DSLContextHelper.buildContext(ctx -> {
             DSLContext create = DSLContextHelper.buildContext();
             MockResult[] mock = new MockResult[1];

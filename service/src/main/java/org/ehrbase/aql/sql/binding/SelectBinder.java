@@ -32,6 +32,7 @@ import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
 import org.ehrbase.aql.sql.postprocessing.I_RawJsonTransform;
 import org.ehrbase.aql.sql.queryImpl.*;
+import org.ehrbase.aql.sql.queryImpl.attribute.ehr.EhrResolver;
 import org.ehrbase.service.IntrospectService;
 import org.ehrbase.validation.constraints.util.SnakeToCamel;
 import org.jooq.*;
@@ -59,7 +60,7 @@ public class SelectBinder extends TemplateMetaData implements I_SelectBinder {
     private boolean isWholeComposition = false;
     private boolean usePgExtensions = true;
 
-    public SelectBinder(DSLContext context, IntrospectService introspectCache, PathResolver pathResolver, List<I_VariableDefinition> definitions, List whereClause, String serverNodeId, String entry_root) {
+    SelectBinder(DSLContext context, IntrospectService introspectCache, PathResolver pathResolver, List<I_VariableDefinition> definitions, List whereClause, String serverNodeId, String entry_root) {
         super(introspectCache);
         this.context = context;
         this.pathResolver = pathResolver;
@@ -70,7 +71,7 @@ public class SelectBinder extends TemplateMetaData implements I_SelectBinder {
         this.whereBinder = new WhereBinder(jsonbEntryQuery, compositionAttributeQuery, whereClause, pathResolver.getMapper());
     }
 
-    public SelectBinder(DSLContext context, IntrospectService introspectCache, IdentifierMapper mapper, List<I_VariableDefinition> definitions, List whereClause, String serverNodeId, String entry_root) {
+    private SelectBinder(DSLContext context, IntrospectService introspectCache, IdentifierMapper mapper, List<I_VariableDefinition> definitions, List whereClause, String serverNodeId, String entry_root) {
         this(context, introspectCache, new PathResolver(context, mapper), definitions, whereClause, serverNodeId, entry_root);
     }
 
@@ -113,6 +114,9 @@ public class SelectBinder extends TemplateMetaData implements I_SelectBinder {
                     }
                     break;
                 case "EHR":
+                    if (EhrResolver.isEhrAttribute(variableDefinition.getPath()))
+                        variableDefinition.setDistinct(true);
+
                     field = compositionAttributeQuery.makeField(template_id, comp_id, identifier, variableDefinition, I_QueryImpl.Clause.SELECT);
                     handleJsonDataBlock(compositionAttributeQuery, field, null, variableDefinition.getPath());
                     break;
