@@ -23,12 +23,15 @@ package org.ehrbase.dao.access.jooq;
 
 import com.nedap.archie.rm.archetyped.Archetyped;
 import com.nedap.archie.rm.archetyped.Locatable;
+import com.nedap.archie.rm.changecontrol.OriginalVersion;
+import com.nedap.archie.rm.changecontrol.Version;
 import com.nedap.archie.rm.datastructures.ItemStructure;
+import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.ehr.EhrStatus;
+import com.nedap.archie.rm.generic.Attestation;
+import com.nedap.archie.rm.generic.AuditDetails;
 import com.nedap.archie.rm.generic.PartySelf;
-import com.nedap.archie.rm.support.identification.HierObjectId;
-import com.nedap.archie.rm.support.identification.ObjectId;
-import com.nedap.archie.rm.support.identification.PartyRef;
+import com.nedap.archie.rm.support.identification.*;
 import org.apache.commons.collections4.map.MultiValueMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -49,6 +52,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.UUID;
 
 import static org.ehrbase.jooq.pg.Tables.*;
 
@@ -63,7 +67,6 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     public static final String COULD_NOT_RETRIEVE_EHR_FOR_ID = "Could not retrieve EHR for id:";
     public static final String COULD_NOT_RETRIEVE_EHR_FOR_PARTY = "Could not retrieve EHR for party:";
     private EhrRecord ehrRecord;
-    //private StatusRecord statusRecord = null; // FIXME VERSIONED_OBJECT_POC: delete when done!?
     private boolean isNew = false;
 
     //holds the non serialized ItemStructure other_details structure
@@ -72,8 +75,6 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
 
     private I_ContributionAccess contributionAccess = null; //locally referenced contribution associated to ehr transactions
 
-    // FIXME VERSIONED_OBJECT_POC: temp disabled; trying another way of accessing it through the StatusAccess instance
-    //private I_AuditDetailsAccess auditDetailsAccess;  // audit associated with EHR_STATUS, which is associated with this EHR and integrated in this access
     private I_StatusAccess statusAccess; // associated EHR_STATUS. Each EHR has 1 EHR_STATUS
 
     //set this variable to change the identification  mode in status
@@ -95,7 +96,6 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
 
         //check if party already has an STATUS (and therefore EHR)
         if (I_StatusAccess.retrieveInstanceByParty(this.getDataAccess(), partyId) != null) {
-        //if (!context.fetch(STATUS, STATUS.PARTY.eq(partyId)).isEmpty()) { // FIXME VERSIONED_OBJECT_POC: delete when done
             log.warn("This party is already associated to an EHR");
             throw new IllegalArgumentException("Party:" + partyId + " already associated to an EHR, please retrieveInstanceByNamedSubject the associated EHR for updates instead");
         }
@@ -713,7 +713,6 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         PartySelf partySelf = new PartySelf(new PartyRef(new HierObjectId(party.getPartyRefValue()), party.getPartyRefNamespace(), null));
         status.setSubject(partySelf);
 
-
         return status;
     }
 
@@ -763,7 +762,6 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         throw new ObjectNotFoundException("EHR_STATUS", "Could not find EHR_STATUS version matching given timestamp");
     }
 
-    // FIXME VERSIONED_OBJECT_POC: get time from oldest item from either normal or history table
     @Override
     public Timestamp getInitialTimeOfVersionedEhrStatus() {
         Result<StatusHistoryRecord> result = getDataAccess().getContext().selectFrom(STATUS_HISTORY)
@@ -780,9 +778,6 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         return getStatusAccess().getStatusRecord().getSysTransaction();
     }
 
-    // FIXME VERSIONED_OBJECT_POC: revision history: List of 1..* RevisionHistoryItems
-    // RevisionHistoryItem: 1 OBJECT_VERSION_ID + 1..* AUDIT_DETAILS (when more than 1 audit per version?)
-    // So: get latest from normal table and all available from *history. make a list RevisionHistoryItem, each with one ID and linked audit
     public Integer getNumberOfEhrStatusVersions() {
         return getDataAccess().getContext().fetchCount(STATUS_HISTORY, STATUS_HISTORY.EHR_ID.eq(getStatusAccess().getStatusRecord().getEhrId())) + 1;
     }

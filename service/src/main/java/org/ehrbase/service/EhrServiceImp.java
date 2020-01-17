@@ -19,17 +19,17 @@
 
 package org.ehrbase.service;
 
+import com.nedap.archie.rm.changecontrol.OriginalVersion;
+import com.nedap.archie.rm.changecontrol.Version;
+import com.nedap.archie.rm.datatypes.CodePhrase;
+import com.nedap.archie.rm.datavalues.DvCodedText;
+import com.nedap.archie.rm.datavalues.DvText;
+import com.nedap.archie.rm.datavalues.quantity.datetime.DvDate;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.ehr.VersionedEhrStatus;
-import com.nedap.archie.rm.generic.AuditDetails;
-import com.nedap.archie.rm.generic.PartySelf;
-import com.nedap.archie.rm.generic.RevisionHistory;
-import com.nedap.archie.rm.generic.RevisionHistoryItem;
-import com.nedap.archie.rm.support.identification.HierObjectId;
-import com.nedap.archie.rm.support.identification.ObjectRef;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import com.nedap.archie.rm.support.identification.PartyRef;
+import com.nedap.archie.rm.generic.*;
+import com.nedap.archie.rm.support.identification.*;
 import org.ehrbase.api.definitions.CompositionFormat;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.definitions.StructuredString;
@@ -39,10 +39,8 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.EhrService;
-import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
-import org.ehrbase.dao.access.interfaces.I_EhrAccess;
-import org.ehrbase.dao.access.interfaces.I_PartyIdentifiedAccess;
-import org.ehrbase.dao.access.interfaces.I_StatusAccess;
+import org.ehrbase.dao.access.interfaces.*;
+import org.ehrbase.dao.access.jooq.AttestationAccess;
 import org.ehrbase.serialisation.CanonicalJson;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
@@ -152,7 +150,7 @@ public class EhrServiceImp extends BaseService implements EhrService {
     }
 
     @Override
-    public Optional<EhrStatus> getEhrStatusAtVersion(UUID ehrUuid, UUID versionedObjectUid, int version) {
+    public Optional<OriginalVersion<EhrStatus>> getEhrStatusAtVersion(UUID ehrUuid, UUID versionedObjectUid, int version) {
         //pre-step: check for valid ehrId
         if (hasEhr(ehrUuid).equals(Boolean.FALSE)) {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrUuid.toString());
@@ -162,7 +160,24 @@ public class EhrServiceImp extends BaseService implements EhrService {
         if (ehrAccess == null) {
             return Optional.empty();
         }
-        return Optional.of(ehrAccess.getStatus());
+
+        ObjectVersionId versionId = new ObjectVersionId(versionedObjectUid + "::" + getServerConfig().getNodename() + "::" + version);
+        DvCodedText lifecycleState = new DvCodedText("TODO", new CodePhrase("TODO"));   // FIXME VERSIONED_OBJECT_POC: needs meaningful values
+        AuditDetails commitAudit = ehrAccess.getStatusAccess().getAuditDetailsAccess().getAsAuditDetails();
+        ObjectRef<HierObjectId> contribution = new ObjectRef<>(new HierObjectId(ehrAccess.getStatusAccess().getStatusRecord().getInContribution().toString()), "openehr", "contribution");
+        List<UUID> attestationIdList = I_AttestationAccess.retrieveListOfAttestationsByRef(getDataAccess(), ehrAccess.getStatusAccess().getStatusRecord().getAttestationRef());
+        List<Attestation> attestations = null;  // as default, gets content if available in the following lines
+        if (!attestationIdList.isEmpty()) {
+            attestations = new ArrayList<>();
+            for (UUID id : attestationIdList) {
+                I_AttestationAccess a = new AttestationAccess(getDataAccess()).retrieveInstance(id);
+                attestations.add(a.getAsAttestation());
+            }
+        }
+        OriginalVersion<EhrStatus> versionStatus = new OriginalVersion<>(versionId, null, ehrAccess.getStatus(),
+                lifecycleState, commitAudit, contribution, null, null, attestations);
+
+        return Optional.of(versionStatus);
     }
 
     @Override
@@ -296,11 +311,11 @@ public class EhrServiceImp extends BaseService implements EhrService {
         UUID versionedObjectUid = getEhrStatusVersionedObjectUidByEhr(ehrUid);
         RevisionHistory revisionHistory = new RevisionHistory();
         for (int i = 1; i <= versions; i++) {
-            Optional<EhrStatus> ehrStatus = getEhrStatusAtVersion(ehrUid, versionedObjectUid, i);
+            Optional<OriginalVersion<EhrStatus>> ehrStatus = getEhrStatusAtVersion(ehrUid, versionedObjectUid, i);
 
-            // FIXME VERSIONED_OBJECT_POC: create RevisionHistoryItem for each version and append it to RevisionHistory
+            // create RevisionHistoryItem for each version and append it to RevisionHistory
             if (ehrStatus.isPresent())
-                revisionHistory.addItem(revisionHistoryItemfromEhrStatus(ehrStatus.get(), i));
+                revisionHistory.addItem(revisionHistoryItemfromEhrStatus(ehrUid, ehrStatus.get(), i));
         }
 
         if (revisionHistory.getItems().isEmpty()) {
@@ -309,17 +324,35 @@ public class EhrServiceImp extends BaseService implements EhrService {
         return revisionHistory;
     }
 
-    private RevisionHistoryItem revisionHistoryItemfromEhrStatus(EhrStatus ehrStatus, int version) {
+    private RevisionHistoryItem revisionHistoryItemfromEhrStatus(UUID ehrId, OriginalVersion<EhrStatus> ehrStatus, int version) {
 
-        String statusId = ehrStatus.getUid().getRoot().getValue();
+        String statusId = ehrStatus.getUid().getValue().split("::")[0];
         ObjectVersionId objectVersionId = new ObjectVersionId( statusId + "::" + getServerConfig().getNodename() + "::" + version);
 
         // Note: is List but only has more than one item when there are contributions regarding this object of change type attestation
-        List<AuditDetails> auditDetails = new ArrayList<>();
-        // FIXME VERSIONED_OBJECT_POC: retrieving the audits
+        List<AuditDetails> auditDetailsList = new ArrayList<>();
+        // retrieving the audits
         I_StatusAccess statusAccess = I_StatusAccess.retrieveInstance(getDataAccess(), UUID.fromString(statusId));
-        //statusAccess.getAuditDetailsAccess().
+        I_AuditDetailsAccess commitAuditAccess = statusAccess.getAuditDetailsAccess();
 
-        return new RevisionHistoryItem(objectVersionId, auditDetails);
+        String systemId = commitAuditAccess.getSystemId().toString();
+        PartyProxy committer = I_PartyIdentifiedAccess.retrievePartyIdentified(getDataAccess(), commitAuditAccess.getCommitter());
+        DvDateTime timeCommitted = new DvDateTime(commitAuditAccess.getTimeCommitted().toLocalDateTime());
+        DvCodedText changeType = new DvCodedText(commitAuditAccess.getChangeType().getLiteral(), new CodePhrase(new TerminologyId("openehr"), "String"));
+        DvText description = new DvText(commitAuditAccess.getDescription());
+
+        AuditDetails commitAudit = new AuditDetails(systemId, committer, timeCommitted, changeType, description);
+
+        auditDetailsList.add(commitAudit);
+
+        // add retrieval of attestations, if there are any
+        if (ehrStatus.getAttestations() != null) {
+            for (Attestation a : ehrStatus.getAttestations()) {
+                AuditDetails newAudit = new AuditDetails(a.getSystemId(), a.getCommitter(), a.getTimeCommitted(), a.getChangeType(), a.getDescription());
+                auditDetailsList.add(newAudit);
+            }
+        }
+
+        return new RevisionHistoryItem(objectVersionId, auditDetailsList);
     }
 }

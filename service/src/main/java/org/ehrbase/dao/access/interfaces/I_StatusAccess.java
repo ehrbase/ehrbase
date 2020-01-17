@@ -20,7 +20,9 @@
  */
 package org.ehrbase.dao.access.interfaces;
 
+import com.nedap.archie.rm.changecontrol.Version;
 import com.nedap.archie.rm.datastructures.ItemStructure;
+import com.nedap.archie.rm.ehr.EhrStatus;
 import org.ehrbase.dao.access.jooq.StatusAccess;
 import org.ehrbase.jooq.pg.tables.records.StatusRecord;
 

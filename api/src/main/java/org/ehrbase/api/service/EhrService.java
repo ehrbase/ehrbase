@@ -18,6 +18,8 @@
 
 package org.ehrbase.api.service;
 
+import com.nedap.archie.rm.changecontrol.OriginalVersion;
+import com.nedap.archie.rm.changecontrol.Version;
 import com.nedap.archie.rm.ehr.VersionedEhrStatus;
 import com.nedap.archie.rm.generic.RevisionHistory;
 import org.ehrbase.api.definitions.CompositionFormat;
@@ -59,7 +61,7 @@ public interface EhrService extends BaseService {
      * @param version Given version of EHR_STATUS
      * @return Matching EHR_STATUS or empty
      */
-    Optional<EhrStatus> getEhrStatusAtVersion(UUID ehrUuid, UUID versionedObjectUid, int version);
+    Optional<OriginalVersion<EhrStatus>> getEhrStatusAtVersion(UUID ehrUuid, UUID versionedObjectUid, int version);
 
     /**
      * Update the EHR_STATUS linked to the given EHR
@@ -113,9 +115,18 @@ public interface EhrService extends BaseService {
      */
     UUID getEhrStatusVersionedObjectUidByEhr(UUID ehrUid);
 
-    // FIXME VERSIONED_OBJECT_POC: docs!
+    /**
+     * Gets version container EhrStatus associated with given EHR.
+     * @param ehrUid Given EHR ID
+     * @return Version container object
+     */
     VersionedEhrStatus getVersionedEhrStatus(UUID ehrUid);
 
+    /**
+     * Gets revision history of EhrStatus associated with given EHR.
+     * @param ehrUid Given EHR ID
+     * @return Revision history object
+     */
     RevisionHistory getRevisionHistoryOfVersionedEhrStatus(UUID ehrUid);
 
 }
