@@ -141,7 +141,7 @@ MF-108 Execute Ad-Hoc Query - Get EHRs (ordered by: time-created)
 
     A/108_get_ehrs_orderby_time-created.json    A/108.tmp.json
 
-    [Teardown]          TRACE GITHUB ISSUE  GITHUB 105  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  118  not-ready
 
 
 MF-109 Execute Ad-Hoc Query - Get EHRs (filtered: timewindow)
@@ -1355,13 +1355,13 @@ C/102
     Return From Keyword If    not (${compo_index}==1)    NOTHING TO DO HERE!
                         # updates the query
     ${query}=           Load JSON From File    ${VALID QUERY DATA SETS}/C/102_query.tmp.json
-                        Update Value To Json   ${query}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c CONTAINS ENTRY entry ORDER BY entry/name/value
+                        Update Value To Json   ${query}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c CONTAINS ENTRY entry ORDER BY entry/name/value ASC
                         Output    ${query}    ${VALID QUERY DATA SETS}/C/102_query.tmp.json
 
                         # updates expected result set
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/C/102.tmp.json
-                        Update Value To Json   ${expected}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c CONTAINS ENTRY entry ORDER BY entry/name/value
-                        Update Value To Json   ${expected}    $.meta._executed_aql    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c CONTAINS ENTRY entry ORDER BY entry/name/value
+                        Update Value To Json   ${expected}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c CONTAINS ENTRY entry ORDER BY entry/name/value ASC
+                        Update Value To Json   ${expected}    $.meta._executed_aql    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c CONTAINS ENTRY entry ORDER BY entry/name/value ASC
                         Add Object To Json     ${expected}    $.rows    ${response.body.content}
                         Output    ${expected}     ${QUERY RESULTS LOADED DB}/C/102.tmp.json
 
