@@ -141,7 +141,7 @@ MF-108 Execute Ad-Hoc Query - Get EHRs (ordered by: time-created)
 
     A/108_get_ehrs_orderby_time-created.json    A/108.tmp.json
 
-    [Teardown]          TRACE GITHUB ISSUE  GITHUB 105  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  118  not-ready
 
 
 MF-109 Execute Ad-Hoc Query - Get EHRs (filtered: timewindow)
