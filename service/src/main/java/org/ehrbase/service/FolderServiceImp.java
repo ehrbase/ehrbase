@@ -181,7 +181,9 @@ public class FolderServiceImp extends BaseService implements FolderService {
         if (folderAccess.delete() > 0){
             return LocalDateTime.now();
         } else {
-            throw new InternalServerException("Folder " + folderId + " could not be deleted");
+            // Not found and bad argument exceptions are handled before thus this case can only occur on unknown errors
+            // On the server side
+            throw new InternalServerException("Error during deletion of folder " + folderId);
         }
     }
 
