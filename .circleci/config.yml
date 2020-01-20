@@ -436,12 +436,21 @@ jobs:
               test-suite-path: "KNOWLEDGE_TESTS"
               test-suite-name: "KNOWLEDGE"
 
-  QUERYSERVICE-test:
+  QUERYSERVICE-test-1:
       machine:
             image: ubuntu-1604:201903-01
       steps:
         - run-robot-tests:
-              include-tags: "ADHOC-QUERY"
+              include-tags: "ADHOC-QUERYANDempty_db"
+              test-suite-path: "QUERY_SERVICE_TESTS"
+              test-suite-name: "ADHOC-QUERY"
+  
+    QUERYSERVICE-test-2:
+      machine:
+            image: ubuntu-1604:201903-01
+      steps:
+        - run-robot-tests:
+              include-tags: "ADHOC-QUERYAND_loaded_db"
               test-suite-path: "QUERY_SERVICE_TESTS"
               test-suite-name: "ADHOC-QUERY"
 
