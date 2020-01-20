@@ -22,7 +22,7 @@
     <parent>
         <artifactId>server</artifactId>
         <groupId>org.ehrbase.openehr</groupId>
-        <version>0.9.0</version>
+        <version>0.10.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -45,12 +45,12 @@
         <dependency>
             <groupId>org.ehrbase.openehr</groupId>
             <artifactId>api</artifactId>
-            <version>0.9.0</version>
+            <version>0.10.0</version>
         </dependency>
         <dependency>
             <groupId>org.ehrbase.openehr</groupId>
             <artifactId>serialisation</artifactId>
-            <version>0.9.0</version>
+            <version>0.10.0</version>
         </dependency>
         <dependency>
             <groupId>com.github.openEHR</groupId>
@@ -59,17 +59,17 @@
         <dependency>
             <groupId>org.ehrbase.openehr</groupId>
             <artifactId>opt-1.4</artifactId>
-            <version>0.9.0</version>
+            <version>0.10.0</version>
         </dependency>
         <dependency>
             <groupId>org.ehrbase.openehr</groupId>
             <artifactId>jooq-pg</artifactId>
-            <version>0.9.0</version>
+            <version>0.10.0</version>
         </dependency>
         <dependency>
             <groupId>org.ehrbase.openehr</groupId>
             <artifactId>validation</artifactId>
-            <version>0.9.0</version>
+            <version>0.10.0</version>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
