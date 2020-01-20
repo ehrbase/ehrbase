@@ -140,7 +140,6 @@ public class SimpleTerminologyAccess implements TerminologyAccess {
 		if(map == null) {
 			//default to English
 			map = codeRubrics.get("en");
-			return map.get(code);
 		}
 		return map.get(code);
 	}
