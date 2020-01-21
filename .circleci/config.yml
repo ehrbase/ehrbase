@@ -138,7 +138,18 @@ workflows:
                 - release
                 - master
 
-      - QUERYSERVICE-test:
+      - QUERYSERVICE-test-1:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
+
+      - QUERYSERVICE-test-2:
           context: org-global
           requires:
             - build-artifacts
@@ -160,7 +171,8 @@ workflows:
             - DIRECTORY-test
             - EHRSERVICE-test
             - KNOWLEDGE-test
-            - QUERYSERVICE-test
+            - QUERYSERVICE-test-1
+            - QUERYSERVICE-test-2
           filters:
             branches:
               ignore:
@@ -274,7 +286,17 @@ workflows:
               only:
                 - /^(release\/v\d+\.\d+\.\d+|master)$/
 
-      - QUERYSERVICE-test:
+      - QUERYSERVICE-test-1:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              only:
+                - /^(release\/v\d+\.\d+\.\d+|master)$/
+
+      - QUERYSERVICE-test-2:
           context: org-global
           requires:
             - build-artifacts
@@ -295,7 +317,8 @@ workflows:
             - DIRECTORY-test
             - EHRSERVICE-test
             - KNOWLEDGE-test
-            - QUERYSERVICE-test
+            - QUERYSERVICE-test-1
+            - QUERYSERVICE-test-2
           filters:
             branches:
               only:
