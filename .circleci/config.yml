@@ -464,7 +464,7 @@ jobs:
             image: ubuntu-1604:201903-01
       steps:
         - run-robot-tests:
-              include-tags: "ADHOC-QUERYANDempty_db"
+              include-tags: "adhoc-queryANDempty_db"
               test-suite-path: "QUERY_SERVICE_TESTS"
               test-suite-name: "ADHOC-QUERY"
   
@@ -473,7 +473,7 @@ jobs:
           image: ubuntu-1604:201903-01
     steps:
       - run-robot-tests:
-            include-tags: "ADHOC-QUERYAND_loaded_db"
+            include-tags: "adhoc-queryANDloaded_db"
             test-suite-path: "QUERY_SERVICE_TESTS"
             test-suite-name: "ADHOC-QUERY"
 
