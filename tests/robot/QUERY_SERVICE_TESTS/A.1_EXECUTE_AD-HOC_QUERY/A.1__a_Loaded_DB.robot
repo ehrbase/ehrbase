@@ -161,7 +161,7 @@ MF-007 Execute Ad-Hoc Query - Get Compositions From All EHRs
     B/200_query.tmp.json    B/200.tmp.json
     B/300_get_compositions_with_archetype_from_all_ehrs.json    B/300.tmp.json
 
-    [Teardown]          TRACE GITHUB ISSUE  GITHUB 108  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  GITHUB NO-ID  not-ready  diff in AQL resp
 
 
 MF-009 Execute Ad-Hoc Query - Get Composition(s)
