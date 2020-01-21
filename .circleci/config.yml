@@ -466,7 +466,7 @@ jobs:
         - run-robot-tests:
               include-tags: "adhoc-queryANDempty_db"
               test-suite-path: "QUERY_SERVICE_TESTS"
-              test-suite-name: "ADHOC-QUERY"
+              test-suite-name: "ADHOC-QUERY-1"
   
   QUERYSERVICE-test-2:
     machine:
@@ -475,7 +475,7 @@ jobs:
       - run-robot-tests:
             include-tags: "adhoc-queryANDloaded_db"
             test-suite-path: "QUERY_SERVICE_TESTS"
-            test-suite-name: "ADHOC-QUERY"
+            test-suite-name: "ADHOC-QUERY-2"
 
   ROBOT-REPORT:
       machine:
