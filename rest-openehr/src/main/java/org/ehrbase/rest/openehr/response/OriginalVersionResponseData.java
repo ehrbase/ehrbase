@@ -41,36 +41,36 @@ public class OriginalVersionResponseData<T> {
     @JsonProperty(value = "uid")
     private ObjectVersionId versionId;
     // contribution, signature and commit_audit could be extracted to "VERSION" super class
-    //private Contribution contribution;
+    private Contribution contribution;
     private String signature;   // optional
-    /*@JsonProperty(value = "commit_audit")
-    private AuditDetails auditDetails;*/
+    @JsonProperty(value = "commit_audit")
+    private AuditDetails auditDetails;
     @JsonProperty(value = "preceding_version_uid")
     private ObjectVersionId precedingVersionUid;   // optional
     @JsonProperty(value = "other_input_version_uids")
     private List<ObjectVersionId> otherInputVersionUids; // optional
     @JsonProperty(value = "lifecycle_state")
     private DvCodedText lifecycleState;
-    //private List<Attestation> attestations;     // optional
+    private List<Attestation> attestations;     // optional
     private T data;
 
     public OriginalVersionResponseData(OriginalVersion<T> originalVersion, ContributionDto contributionDto) {
         setType("ORIGINAL_VERSION");
         setVersionId(originalVersion.getUid());
 
-        /*HierObjectId contributionId = new HierObjectId(contributionDto.getUuid().toString());
+        HierObjectId contributionId = new HierObjectId(contributionDto.getUuid().toString());
         List<ObjectRef> versions = new ArrayList<>();
         contributionDto.getObjectReferences().forEach((k, v) -> versions.add(
                 new ObjectRef<>(new HierObjectId(v), "local", k)));
         Contribution contribution = new Contribution(contributionId, versions, contributionDto.getAuditDetails());
-        setContribution(contribution);*/
+        setContribution(contribution);
 
         setSignature(originalVersion.getSignature());
-        //setAuditDetails(originalVersion.getCommitAudit());
+        setAuditDetails(originalVersion.getCommitAudit());
         setPrecedingVersionUid(originalVersion.getPrecedingVersionUid());
         setOtherInputVersionUids(originalVersion.getOtherInputVersionUids());
         setLifecycleState(originalVersion.getLifecycleState());
-        //setAttestations(originalVersion.getAttestations());
+        setAttestations(originalVersion.getAttestations());
         setData(originalVersion.getData());
     }
 
@@ -90,13 +90,13 @@ public class OriginalVersionResponseData<T> {
         this.versionId = versionId;
     }
 
-    /*public Contribution getContribution() {
+    public Contribution getContribution() {
         return contribution;
     }
 
     public void setContribution(Contribution contribution) {
         this.contribution = contribution;
-    }*/
+    }
 
     public String getSignature() {
         return signature;
@@ -106,13 +106,13 @@ public class OriginalVersionResponseData<T> {
         this.signature = signature;
     }
 
-    /*public AuditDetails getAuditDetails() {
+    public AuditDetails getAuditDetails() {
         return auditDetails;
     }
 
     public void setAuditDetails(AuditDetails auditDetails) {
         this.auditDetails = auditDetails;
-    }*/
+    }
 
     public ObjectVersionId getPrecedingVersionUid() {
         return precedingVersionUid;
@@ -138,13 +138,13 @@ public class OriginalVersionResponseData<T> {
         this.lifecycleState = lifecycleState;
     }
 
-    /*public List<Attestation> getAttestations() {
+    public List<Attestation> getAttestations() {
         return attestations;
     }
 
     public void setAttestations(List<Attestation> attestations) {
         this.attestations = attestations;
-    }*/
+    }
 
     public T getData() {
         return data;

@@ -20,6 +20,7 @@ package org.ehrbase.rest.openehr.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import com.google.common.base.CaseFormat;
 import com.nedap.archie.rm.changecontrol.VersionedObject;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
@@ -39,11 +40,14 @@ public class VersionedObjectResponseData<T> {
     private String timeCreated;
 
     public VersionedObjectResponseData(VersionedObject<T> versionedObject) {
-        setType(versionedObject.getClass().toString()); // FIXME VERSIONED_OBJECT_POC: is of type ""class com.nedap.archie.rm.ehr.VersionedEhrStatus" needs to be "VERSIONED_EHR_STATUS" -> create helper method
+        // take the complete name with package and removes the package part to get plain class name
+        String className = versionedObject.getClass().getName().replace(versionedObject.getClass().getPackage().getName() + ".", "");
+        // format to upper underscore
+        setType(CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, className));
         setUid(versionedObject.getUid());
         setOwnerId(versionedObject.getOwnerId());
         DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
-        setTimeCreated(formatter.format(versionedObject.getTimeCreated().getValue()));  // FIXME VERSIONED_OBJECT_POC: Not really valid ISO format like in the REST spec. needs time zone stuff
+        setTimeCreated(formatter.format(versionedObject.getTimeCreated().getValue()));
     }
 
     public String getType() {

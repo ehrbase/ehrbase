@@ -20,11 +20,9 @@
 package org.ehrbase.service;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
-import com.nedap.archie.rm.changecontrol.Version;
 import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.DvText;
-import com.nedap.archie.rm.datavalues.quantity.datetime.DvDate;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.ehr.VersionedEhrStatus;
@@ -51,6 +49,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -294,8 +293,8 @@ public class EhrServiceImp extends BaseService implements EhrService {
             versionedEhrStatus.setUid(new HierObjectId(ehrStatus.get().getUid().toString()));
             versionedEhrStatus.setOwnerId(new ObjectRef<>(new HierObjectId(ehrUid.toString()), "local", "EHR"));
             I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrUid);
-            versionedEhrStatus.setTimeCreated(new DvDateTime(ehrAccess.getInitialTimeOfVersionedEhrStatus().toLocalDateTime()));
-
+            versionedEhrStatus.setTimeCreated(new DvDateTime(OffsetDateTime.of(ehrAccess.getInitialTimeOfVersionedEhrStatus().toLocalDateTime(),
+                    OffsetDateTime.now().getOffset())));
         }
 
         return versionedEhrStatus;
