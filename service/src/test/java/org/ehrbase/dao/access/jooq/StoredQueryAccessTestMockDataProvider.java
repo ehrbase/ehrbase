@@ -10,14 +10,14 @@ import org.jooq.tools.jdbc.MockResult;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
-import static org.ehrbase.jooq.pg.Tables.*;
+import static org.ehrbase.jooq.pg.Tables.STORED_QUERY;
 
 public class StoredQueryAccessTestMockDataProvider implements MockDataProvider {
 
     @Override
     public MockResult[] execute(MockExecuteContext ctx) throws SQLException {
 
-        DSLContext create = DSL.using(SQLDialect.POSTGRES_9_5);
+        DSLContext create = DSL.using(SQLDialect.POSTGRES);
         MockResult[] mock = new MockResult[1];
         String sql2 = ctx.sql();
 

@@ -21,9 +21,10 @@
  */
 package org.ehrbase.dao.access.interfaces;
 
+import com.nedap.archie.rm.composition.Composition;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.jooq.EntryAccess;
-import com.nedap.archie.rm.composition.Composition;
+import org.jooq.JSONB;
 
 import java.util.List;
 import java.util.Map;
@@ -123,7 +124,7 @@ public interface I_EntryAccess extends I_SimpleCRUD<I_EntryAccess, UUID> {
      *
      * @return JSON representation of entry values
      */
-    String getEntryJson();
+    JSONB getEntryJson();
 
     /**
      * get the entry category record id<br>

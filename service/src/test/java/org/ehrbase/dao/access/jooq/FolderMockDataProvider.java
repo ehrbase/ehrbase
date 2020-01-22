@@ -38,7 +38,6 @@ import java.util.TimeZone;
 import java.util.UUID;
 
 import static org.ehrbase.jooq.pg.Tables.*;
-import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
 
 /***
  *@Created by Luis Marco-Ruiz on Jun 13, 2019
@@ -51,7 +50,7 @@ public class FolderMockDataProvider implements MockDataProvider{
     @Override
     public MockResult[] execute(MockExecuteContext ctx) throws SQLException {
 
-        DSLContext create = DSL.using(SQLDialect.POSTGRES_9_5);
+        DSLContext create = DSL.using(SQLDialect.POSTGRES);
         MockResult[] mock = new MockResult[1];
         String sql2 = ctx.sql();
 
