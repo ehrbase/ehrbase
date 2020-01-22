@@ -60,7 +60,21 @@
     <build>
         <plugins>
             <plugin>
-
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <configuration>
+                    <locations>classpath:db/migration</locations>
+                    <url>jdbc:postgresql://${database.host}:${database.port}/${database.name}</url>
+                    <driver>org.postgresql.Driver</driver>
+                    <user>${database.user}</user>
+                    <password>${database.pass}</password>
+                    <defaultSchema>ehr</defaultSchema>
+                    <schemas>
+                        <schema>ehr</schema>
+                    </schemas>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.jooq</groupId>
                 <artifactId>jooq-codegen-maven</artifactId>
                 <configuration>

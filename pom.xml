@@ -566,30 +566,11 @@
           <groupId>org.flywaydb</groupId>
           <artifactId>flyway-maven-plugin</artifactId>
           <version>${flyway.version}</version>
-          <configuration>
-            <locations>
-              <location>filesystem:src/main/resources/db/migration</location>
-              <location>classpath:org/ehrbase/db/migration</location>
-            </locations>
-            <url>jdbc:postgresql://${database.host}:${database.port}/${database.name}</url>
-            <driver>org.postgresql.Driver</driver>
-            <user>${database.user}</user>
-            <password>${database.pass}</password>
-            <defaultSchema>ehr</defaultSchema>
-            <schemas>
-              <schema>ehr</schema>
-            </schemas>
-          </configuration>
           <dependencies>
             <dependency>
               <groupId>org.postgresql</groupId>
               <artifactId>postgresql</artifactId>
               <version>${postgressql.version}</version>
-            </dependency>
-            <dependency>
-              <groupId>org.ehrbase.openehr</groupId>
-              <artifactId>V3__terminology</artifactId>
-              <version>2.0</version>
             </dependency>
           </dependencies>
           <executions>

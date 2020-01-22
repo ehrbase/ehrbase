@@ -21,9 +21,6 @@ spring:
     driver-class-name: org.postgresql.Driver
 
   flyway:
-    locations:
-      - classpath:db/migration
-      - classpath:org.ehrbase.db.migration
     schemas: ehr
 
 cache:
