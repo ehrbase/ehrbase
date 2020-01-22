@@ -76,6 +76,9 @@ public class OpenehrEhrStatusController extends BaseController {
             @ApiParam(value = "Timestamp in the extended ISO8601 format, e.g. 2015-01-20T19:30:22.765+01:00") @RequestParam(value = "version_at_time", required = false) String versionAtTime) {
         UUID ehrId = getEhrUuid(ehrIdString);
 
+        if (ehrService.hasEhr(ehrId).equals(Boolean.FALSE))
+            throw new ObjectNotFoundException("EHR", "No EHR with id " + ehrId + " found");
+
         // timestamp optional, otherwise latest
         int version;
         if (versionAtTime != null) {
@@ -110,9 +113,8 @@ public class OpenehrEhrStatusController extends BaseController {
         UUID ehrId = getEhrUuid(ehrIdString);
 
         // check if EHR is valid
-        if(ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
-            throw new ObjectNotFoundException("ehr", "No EHR with this ID can be found");
-        }
+        if (ehrService.hasEhr(ehrId).equals(Boolean.FALSE))
+            throw new ObjectNotFoundException("EHR", "No EHR with id " + ehrId + " found");
 
         UUID versionedObjectUid = extractVersionedObjectUidFromVersionUid(versionUid);
         int version = extractVersionFromVersionUid(versionUid);
@@ -158,9 +160,8 @@ public class OpenehrEhrStatusController extends BaseController {
             @ApiParam(value = "EHR status.", required = true) @RequestBody() EhrStatus ehrStatus) {
         UUID ehrId = getEhrUuid(ehrIdString);
 
-        if (!ehrService.hasEhr(ehrId)) {
-            throw new ObjectNotFoundException("EHR", "EHR with this ID not found");
-        }
+        if (ehrService.hasEhr(ehrId).equals(Boolean.FALSE))
+            throw new ObjectNotFoundException("EHR", "No EHR with id " + ehrId + " found");
 
         // If-Match header check
         String latestVersionUid = ehrService.getLatestVersionUidOfStatus(ehrId);
