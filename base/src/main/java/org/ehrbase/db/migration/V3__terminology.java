@@ -18,7 +18,8 @@
 
 package org.ehrbase.db.migration;
 
-import org.flywaydb.core.api.migration.jdbc.JdbcMigration;
+import org.flywaydb.core.api.migration.BaseJavaMigration;
+import org.flywaydb.core.api.migration.Context;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -36,10 +37,10 @@ import java.sql.SQLException;
  * <p>
  * This replaces the org.ehrbase.dao.access.support.TerminologySetter class
  */
-public class V3__terminology implements JdbcMigration {
+public class V3__terminology extends BaseJavaMigration {
 
     @Override
-    public void migrate(final Connection connection) throws Exception {
+    public void migrate(Context context) throws Exception {
         try (InputStream resourceAsStream = getClass().getClassLoader()
                 .getResourceAsStream("terminology.xml")) {
 
@@ -47,9 +48,9 @@ public class V3__terminology implements JdbcMigration {
             final DocumentBuilder documentBuilder = factory.newDocumentBuilder();
             final Document document = documentBuilder.parse(resourceAsStream);
 
-            setTerritory(connection, document);
-            setLanguage(connection, document);
-            setConcept(connection, document);
+            setTerritory(context.getConnection(), document);
+            setLanguage(context.getConnection(), document);
+            setConcept(context.getConnection(), document);
         }
     }
 
