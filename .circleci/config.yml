@@ -512,6 +512,7 @@ commands:
         - restore-integration-tests-job-caches
         - attach-target-folder
         - install-python-requirements
+        - install-java-11
         - run:
             name: EXECUTE ROBOT COMMAND
             no_output_timeout: 30m
