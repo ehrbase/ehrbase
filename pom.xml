@@ -294,7 +294,7 @@
 -->
         <groupId>com.github.openEHR</groupId>
         <artifactId>archie</artifactId>
-        <version>9d65960</version>
+        <version>738152e</version>
       </dependency>
       <dependency>
         <groupId>com.cedarsoftware</groupId>

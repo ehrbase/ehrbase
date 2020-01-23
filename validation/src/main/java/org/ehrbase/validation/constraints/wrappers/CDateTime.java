@@ -50,7 +50,7 @@ public class CDateTime extends CConstraint implements I_CTypeValidate {
             ValidationException.raise(path, "INTERNAL: Time validation expects a java-date-time argument", "DATE_TIME_01");
 
         CDATETIME cdatetime = (CDATETIME) cprimitive;
-        String dvDateStr = DateTimeFormatters.ISO_8601_DATE_TIME_WITH_OPTIONAL_MICROS.format((Temporal) aValue);
+        String dvDateStr = DateTimeFormatters.ISO_8601_DATE_TIME.format((Temporal) aValue);
 
         new DateTimeSyntax(path, dvDateStr, cdatetime.isSetPattern() ? cdatetime.getPattern() : null).validate();
 
