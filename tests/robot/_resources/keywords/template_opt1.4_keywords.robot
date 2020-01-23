@@ -136,8 +136,8 @@ server response contains proper error message
                         Should Contain Any    ${resp_string}
                         ...                   Invalid template input content
                         ...                   Required request body is missing
-                        ...                   bar    # TODO: @WLAD add more
-                        ...                   baz
+                        ...                   Unexpected end of file after null
+                        ...                   baz    # TODO: @WLAD add more
 
 
 server returned specified version of OPT
