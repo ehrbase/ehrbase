@@ -22,7 +22,6 @@ import com.nedap.archie.rm.datavalues.quantity.DvInterval;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import org.ehrbase.validation.constraints.wrappers.CArchetypeConstraint;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.time.LocalDateTime;
@@ -42,7 +41,6 @@ public class DvIntervalDvDateTimeTest extends ConstraintTestBase {
 
 
     @Test
-    @Ignore
     public void testConstraintValidation() {
         DvInterval<DvDateTime> dvDateTimeDvInterval = new DvInterval<>(new DvDateTime(LocalDateTime.now()), null);
 
