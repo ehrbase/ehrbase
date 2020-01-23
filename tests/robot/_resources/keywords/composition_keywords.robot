@@ -423,20 +423,6 @@ get composition - latest version
                         Set Test Variable     ${response}    ${resp}
 
 
-get composition - latest version (XML)
-    [Documentation]     ENDPOINT: /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version
-
-                        prepare new request session    XML    Prefer=return=representation
-
-        ####### TODO: @WLAD/PABLO - remove when fixed!!!!! #####################
-        TRACE GITHUB ISSUE  17  not-ready
-        ########################################################################
-
-    ${resp}=            Get Request           ${SUT}   /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version   headers=${headers}
-                        log to console        ${resp.text}
-                        Set Test Variable     ${response}    ${resp}
-
-
 check content of compositions latest version (JSON)
     [Documentation]     DEPENDENCY: `get composition - latest version` keyword
                         Should Be Equal As Strings   ${response.status_code}   200
