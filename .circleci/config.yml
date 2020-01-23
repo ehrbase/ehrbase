@@ -332,6 +332,7 @@ jobs:
       image: circleci/classic:201808-01
     steps:
       - configure-python-version
+      - install-java-11
       - checkout
       - restore-build-artifacts-job-caches
       - setup-database
@@ -344,6 +345,7 @@ jobs:
       image: circleci/classic:201808-01
     steps:
       - configure-python-version
+      - install-java-11
       - checkout
       - attach_workspace:
           at: /home/circleci
@@ -357,6 +359,7 @@ jobs:
       image: circleci/classic:201808-01
     steps:
       - configure-python-version
+      - install-java-11
       - checkout
       - restore-unit-tests-job-caches
       - setup-database
@@ -460,6 +463,7 @@ jobs:
       image: circleci/classic:201808-01
     steps:
       - configure-python-version
+      - install-java-11
       - checkout
       - attach_workspace:
           at: /home/circleci
@@ -580,16 +584,26 @@ commands:
 
 
 
-#                                                 88                 ad88
-#     ,d                             ,d           ""                d8"
-#     88                             88                             88
-#   MM88MMM  ,adPPYba,  ,adPPYba,  MM88MMM        88  8b,dPPYba,  MM88MMM  8b,dPPYba,  ,adPPYYba,
-#     88    a8P_____88  I8[    ""    88           88  88P'   `"8a   88     88P'   "Y8  ""     `Y8
-#     88    8PP"""""""   `"Y8ba,     88           88  88       88   88     88          ,adPPPPP88
-#     88,   "8b,   ,aa  aa    ]8I    88,          88  88       88   88     88          88,    ,88
-#     "Y888  `"Ybbd8"'  `"YbbdP"'    "Y888        88  88       88   88     88          `"8bbdP"Y8
-#
-
+  #                                                 88                 ad88
+  #     ,d                             ,d           ""                d8"
+  #     88                             88                             88
+  #   MM88MMM  ,adPPYba,  ,adPPYba,  MM88MMM        88  8b,dPPYba,  MM88MMM  8b,dPPYba,  ,adPPYYba,
+  #     88    a8P_____88  I8[    ""    88           88  88P'   `"8a   88     88P'   "Y8  ""     `Y8
+  #     88    8PP"""""""   `"Y8ba,     88           88  88       88   88     88          ,adPPPPP88
+  #     88,   "8b,   ,aa  aa    ]8I    88,          88  88       88   88     88          88,    ,88
+  #     "Y888  `"Ybbd8"'  `"YbbdP"'    "Y888        88  88       88   88     88          `"8bbdP"Y8
+  #
+  install-java-11:
+    description: Install Zulu Java 11
+    steps:
+      - run:
+          name: Install Zulu Java 11
+          command: |
+            sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0xB1998361219BD9C9
+            sudo apt-add-repository 'deb http://repos.azulsystems.com/ubuntu stable main'
+            sudo apt-get update
+            sudo apt-get install -f -y zulu-11
+            sudo update-alternatives --set java /usr/lib/jvm/zulu-11-amd64/bin/java
   configure-python-version:
     description: Configure Python version to 3.7.0
     steps:
