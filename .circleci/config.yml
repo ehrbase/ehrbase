@@ -599,9 +599,9 @@ commands:
       - run:
           name: Install Zulu Java 11
           command: |
-            sudo killall -9 apt-get || true
             sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0xB1998361219BD9C9
             sudo apt-add-repository 'deb http://repos.azulsystems.com/ubuntu stable main'
+            sudo killall -9 apt-get || true
             sudo apt-get update
             sudo apt-get install -f -y zulu-11
             sudo update-alternatives --set java /usr/lib/jvm/zulu-11-amd64/bin/java
