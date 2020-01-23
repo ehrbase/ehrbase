@@ -82,13 +82,9 @@ Get Status Of Existing EHR (XML)
 verify response (JSON)
                         Integer     response status         200
 
-                        String    response body uid value    ${ehrstatus_uid}::local.ehrbase.org::1
+                        String    response body uid value    ${ehrstatus_uid}
                         String    response body subject external_ref id value    ${subject_Id}
                         
-        TRACE GITHUB ISSUE  NO-ID-YET  not-ready
-
-                        Object    response body    ${ehr_status}
-
 
 verify response (XML)
                         Should Be Equal As Strings   ${response.status}  200
