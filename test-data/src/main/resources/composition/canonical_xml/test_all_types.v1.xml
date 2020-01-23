@@ -48,7 +48,7 @@
             <value>20190114T183649,294+0000</value>
         </start_time>
         <setting>
-            <value>Hospital D</value>
+            <value>primary nursing care</value>
             <defining_code>
                 <terminology_id>
                     <value>openehr</value>
@@ -342,9 +342,8 @@
                 <name>
                     <value>choice</value>
                 </name>
-                <value xsi:type="DV_QUANTITY">
-                    <magnitude>148.01210165023804</magnitude>
-                    <units>mm[H20]</units>
+                <value xsi:type="DV_COUNT">
+                    <magnitude>148</magnitude>
                 </value>
             </items>
             <items archetype_node_id="at0006" xsi:type="CLUSTER">

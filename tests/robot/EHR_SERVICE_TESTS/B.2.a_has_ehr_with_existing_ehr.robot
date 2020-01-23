@@ -41,7 +41,7 @@ Force Tags    has_ehr
 *** Test Cases ***
 Check has EHR with existing EHR
 
-    ehr_keywords.start request session    JSON
+    prepare new request session    JSON
 
     create new EHR
 

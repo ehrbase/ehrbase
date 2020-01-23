@@ -35,7 +35,7 @@ Force Tags    XML
 *** Test Cases ***
 Main flow delete event COMPOSITION
 
-    upload OPT    minimal/minimal_observation.opt    XML
+    upload OPT    minimal/minimal_observation.opt
 
     create EHR    XML
 

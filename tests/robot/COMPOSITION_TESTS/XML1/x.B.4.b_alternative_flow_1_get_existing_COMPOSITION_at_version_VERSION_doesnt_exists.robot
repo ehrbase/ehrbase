@@ -35,14 +35,14 @@ Force Tags    XML
 *** Test Cases ***
 Main flow get existing COMPOSITION at version, VERSION doesnt exists
 
-    upload OPT    minimal/minimal_observation.opt    XML
+    upload OPT    minimal/minimal_observation.opt
 
     create EHR   XML
 
-    # Create fake COMPOSITION
+    # comment: Create fake COMPOSITION
     generate random composition_uid
 
-    composition_keywords.start request session    application/xml    application/xml    Prefer=return\=representation
+    prepare new request session    XML    Prefer=return=representation
     get composition by composition_uid    ${version_uid}
     check composition does not exist
 

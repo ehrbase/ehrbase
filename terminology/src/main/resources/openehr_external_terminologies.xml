@@ -1,0 +1,465 @@
+<terminology name="openehr" language="en">
+    <codeset issuer="ISO" openehr_id="countries" external_id="ISO_3166-1">
+        <code value="AF" description="AFGHANISTAN"/>
+        <code value="AX" description="ÅLAND ISLANDS"/>
+        <code value="AL" description="ALBANIA"/>
+        <code value="DZ" description="ALGERIA"/>
+        <code value="AS" description="AMERICAN SAMOA"/>
+        <code value="AD" description="ANDORRA"/>
+        <code value="AO" description="ANGOLA"/>
+        <code value="AI" description="ANGUILLA"/>
+        <code value="AQ" description="ANTARCTICA"/>
+        <code value="AG" description="ANTIGUA AND BARBUDA"/>
+        <code value="AR" description="ARGENTINA"/>
+        <code value="AM" description="ARMENIA"/>
+        <code value="AW" description="ARUBA"/>
+        <code value="AU" description="AUSTRALIA"/>
+        <code value="AT" description="AUSTRIA"/>
+        <code value="AZ" description="AZERBAIJAN"/>
+        <code value="BS" description="BAHAMAS"/>
+        <code value="BH" description="BAHRAIN"/>
+        <code value="BD" description="BANGLADESH"/>
+        <code value="BB" description="BARBADOS"/>
+        <code value="BY" description="BELARUS"/>
+        <code value="BE" description="BELGIUM"/>
+        <code value="BZ" description="BELIZE"/>
+        <code value="BJ" description="BENIN"/>
+        <code value="BM" description="BERMUDA"/>
+        <code value="BT" description="BHUTAN"/>
+        <code value="BO" description="BOLIVIA"/>
+        <code value="BA" description="BOSNIA AND HERZEGOVINA"/>
+        <code value="BW" description="BOTSWANA"/>
+        <code value="BV" description="BOUVET ISLAND"/>
+        <code value="BR" description="BRAZIL"/>
+        <code value="IO" description="BRITISH INDIAN OCEAN TERRITORY"/>
+        <code value="BN" description="BRUNEI DARUSSALAM"/>
+        <code value="BG" description="BULGARIA"/>
+        <code value="BF" description="BURKINA FASO"/>
+        <code value="BI" description="BURUNDI"/>
+        <code value="KH" description="CAMBODIA"/>
+        <code value="CM" description="CAMEROON"/>
+        <code value="CA" description="CANADA"/>
+        <code value="CV" description="CAPE VERDE"/>
+        <code value="KY" description="CAYMAN ISLANDS"/>
+        <code value="CF" description="CENTRAL AFRICAN REPUBLIC"/>
+        <code value="TD" description="CHAD"/>
+        <code value="CL" description="CHILE"/>
+        <code value="CN" description="CHINA"/>
+        <code value="CX" description="CHRISTMAS ISLAND"/>
+        <code value="CC" description="COCOS (KEELING) ISLANDS"/>
+        <code value="CO" description="COLOMBIA"/>
+        <code value="KM" description="COMOROS"/>
+        <code value="CG" description="CONGO"/>
+        <code value="CD" description="CONGO, THE DEMOCRATIC REPUBLIC OF THE"/>
+        <code value="CK" description="COOK ISLANDS"/>
+        <code value="CR" description="COSTA RICA"/>
+        <code value="CI" description="CÔTE D'IVOIRE"/>
+        <code value="HR" description="CROATIA"/>
+        <code value="CU" description="CUBA"/>
+        <code value="CY" description="CYPRUS"/>
+        <code value="CZ" description="CZECH REPUBLIC"/>
+        <code value="DK" description="DENMARK"/>
+        <code value="DJ" description="DJIBOUTI"/>
+        <code value="DM" description="DOMINICA"/>
+        <code value="DO" description="DOMINICAN REPUBLIC"/>
+        <code value="EC" description="ECUADOR"/>
+        <code value="EG" description="EGYPT"/>
+        <code value="SV" description="EL SALVADOR"/>
+        <code value="GQ" description="EQUATORIAL GUINEA"/>
+        <code value="ER" description="ERITREA"/>
+        <code value="EE" description="ESTONIA"/>
+        <code value="ET" description="ETHIOPIA"/>
+        <code value="FK" description="FALKLAND ISLANDS (MALVINAS)"/>
+        <code value="FO" description="FAROE ISLANDS"/>
+        <code value="FJ" description="FIJI"/>
+        <code value="FI" description="FINLAND"/>
+        <code value="FR" description="FRANCE"/>
+        <code value="GF" description="FRENCH GUIANA"/>
+        <code value="PF" description="FRENCH POLYNESIA"/>
+        <code value="TF" description="FRENCH SOUTHERN TERRITORIES"/>
+        <code value="GA" description="GABON"/>
+        <code value="GM" description="GAMBIA"/>
+        <code value="GE" description="GEORGIA"/>
+        <code value="DE" description="GERMANY"/>
+        <code value="GH" description="GHANA"/>
+        <code value="GI" description="GIBRALTAR"/>
+        <code value="GR" description="GREECE"/>
+        <code value="GL" description="GREENLAND"/>
+        <code value="GD" description="GRENADA"/>
+        <code value="GP" description="GUADELOUPE"/>
+        <code value="GU" description="GUAM"/>
+        <code value="GT" description="GUATEMALA"/>
+        <code value="GG" description="GUERNSEY"/>
+        <code value="GN" description="GUINEA"/>
+        <code value="GW" description="GUINEA-BISSAU"/>
+        <code value="GY" description="GUYANA"/>
+        <code value="HT" description="HAITI"/>
+        <code value="HM" description="HEARD ISLAND AND MCDONALD ISLANDS"/>
+        <code value="VA" description="HOLY SEE (VATICAN CITY STATE)"/>
+        <code value="HN" description="HONDURAS"/>
+        <code value="HK" description="HONG KONG"/>
+        <code value="HU" description="HUNGARY"/>
+        <code value="IS" description="ICELAND"/>
+        <code value="IN" description="INDIA"/>
+        <code value="ID" description="INDONESIA"/>
+        <code value="IR" description="IRAN, ISLAMIC REPUBLIC OF"/>
+        <code value="IQ" description="IRAQ"/>
+        <code value="IE" description="IRELAND"/>
+        <code value="IM" description="ISLE OF MAN"/>
+        <code value="IL" description="ISRAEL"/>
+        <code value="IT" description="ITALY"/>
+        <code value="JM" description="JAMAICA"/>
+        <code value="JP" description="JAPAN"/>
+        <code value="JE" description="JERSEY"/>
+        <code value="JO" description="JORDAN"/>
+        <code value="KZ" description="KAZAKHSTAN"/>
+        <code value="KE" description="KENYA"/>
+        <code value="KI" description="KIRIBATI"/>
+        <code value="KP" description="KOREA, DEMOCRATIC PEOPLE'S REPUBLIC OF"/>
+        <code value="KR" description="KOREA, REPUBLIC OF"/>
+        <code value="KW" description="KUWAIT"/>
+        <code value="KG" description="KYRGYZSTAN"/>
+        <code value="LA" description="LAO PEOPLE'S DEMOCRATIC REPUBLIC"/>
+        <code value="LV" description="LATVIA"/>
+        <code value="LB" description="LEBANON"/>
+        <code value="LS" description="LESOTHO"/>
+        <code value="LR" description="LIBERIA"/>
+        <code value="LY" description="LIBYAN ARAB JAMAHIRIYA"/>
+        <code value="LI" description="LIECHTENSTEIN"/>
+        <code value="LT" description="LITHUANIA"/>
+        <code value="LU" description="LUXEMBOURG"/>
+        <code value="MO" description="MACAO"/>
+        <code value="MK" description="MACEDONIA, THE FORMER YUGOSLAV REPUBLIC OF"/>
+        <code value="MG" description="MADAGASCAR"/>
+        <code value="MW" description="MALAWI"/>
+        <code value="MY" description="MALAYSIA"/>
+        <code value="MV" description="MALDIVES"/>
+        <code value="ML" description="MALI"/>
+        <code value="MT" description="MALTA"/>
+        <code value="MH" description="MARSHALL ISLANDS"/>
+        <code value="MQ" description="MARTINIQUE"/>
+        <code value="MR" description="MAURITANIA"/>
+        <code value="MU" description="MAURITIUS"/>
+        <code value="YT" description="MAYOTTE"/>
+        <code value="MX" description="MEXICO"/>
+        <code value="FM" description="MICRONESIA, FEDERATED STATES OF"/>
+        <code value="MD" description="MOLDOVA, REPUBLIC OF"/>
+        <code value="MC" description="MONACO"/>
+        <code value="MN" description="MONGOLIA"/>
+        <code value="ME" description="MONTENEGRO"/>
+        <code value="MS" description="MONTSERRAT"/>
+        <code value="MA" description="MOROCCO"/>
+        <code value="MZ" description="MOZAMBIQUE"/>
+        <code value="MM" description="MYANMAR"/>
+        <code value="NA" description="NAMIBIA"/>
+        <code value="NR" description="NAURU"/>
+        <code value="NP" description="NEPAL"/>
+        <code value="NL" description="NETHERLANDS"/>
+        <code value="AN" description="NETHERLANDS ANTILLES"/>
+        <code value="NC" description="NEW CALEDONIA"/>
+        <code value="NZ" description="NEW ZEALAND"/>
+        <code value="NI" description="NICARAGUA"/>
+        <code value="NE" description="NIGER"/>
+        <code value="NG" description="NIGERIA"/>
+        <code value="NU" description="NIUE"/>
+        <code value="NF" description="NORFOLK ISLAND"/>
+        <code value="MP" description="NORTHERN MARIANA ISLANDS"/>
+        <code value="NO" description="NORWAY"/>
+        <code value="OM" description="OMAN"/>
+        <code value="PK" description="PAKISTAN"/>
+        <code value="PW" description="PALAU"/>
+        <code value="PS" description="PALESTINIAN TERRITORY, OCCUPIED"/>
+        <code value="PA" description="PANAMA"/>
+        <code value="PG" description="PAPUA NEW GUINEA"/>
+        <code value="PY" description="PARAGUAY"/>
+        <code value="PE" description="PERU"/>
+        <code value="PH" description="PHILIPPINES"/>
+        <code value="PN" description="PITCAIRN"/>
+        <code value="PL" description="POLAND"/>
+        <code value="PT" description="PORTUGAL"/>
+        <code value="PR" description="PUERTO RICO"/>
+        <code value="QA" description="QATAR"/>
+        <code value="RE" description="REUNION"/>
+        <code value="RO" description="ROMANIA"/>
+        <code value="RU" description="RUSSIAN FEDERATION"/>
+        <code value="RW" description="RWANDA"/>
+        <code value="BL" description="SAINT BARTHÉLEMY"/>
+        <code value="SH" description="SAINT HELENA"/>
+        <code value="KN" description="SAINT KITTS AND NEVIS"/>
+        <code value="LC" description="SAINT LUCIA"/>
+        <code value="MF" description="SAINT MARTIN"/>
+        <code value="PM" description="SAINT PIERRE AND MIQUELON"/>
+        <code value="VC" description="SAINT VINCENT AND THE GRENADINES"/>
+        <code value="WS" description="SAMOA"/>
+        <code value="SM" description="SAN MARINO"/>
+        <code value="ST" description="SAO TOME AND PRINCIPE"/>
+        <code value="SA" description="SAUDI ARABIA"/>
+        <code value="SN" description="SENEGAL"/>
+        <code value="RS" description="SERBIA"/>
+        <code value="SC" description="SEYCHELLES"/>
+        <code value="SL" description="SIERRA LEONE"/>
+        <code value="SG" description="SINGAPORE"/>
+        <code value="SK" description="SLOVAKIA"/>
+        <code value="SI" description="SLOVENIA"/>
+        <code value="SB" description="SOLOMON ISLANDS"/>
+        <code value="SO" description="SOMALIA"/>
+        <code value="ZA" description="SOUTH AFRICA"/>
+        <code value="GS" description="SOUTH GEORGIA AND THE SOUTH SANDWICH ISLANDS"/>
+        <code value="ES" description="SPAIN"/>
+        <code value="LK" description="SRI LANKA"/>
+        <code value="SD" description="SUDAN"/>
+        <code value="SR" description="SURINAME"/>
+        <code value="SJ" description="SVALBARD AND JAN MAYEN"/>
+        <code value="SZ" description="SWAZILAND"/>
+        <code value="SE" description="SWEDEN"/>
+        <code value="CH" description="SWITZERLAND"/>
+        <code value="SY" description="SYRIAN ARAB REPUBLIC"/>
+        <code value="TW" description="TAIWAN, PROVINCE OF CHINA"/>
+        <code value="TJ" description="TAJIKISTAN"/>
+        <code value="TZ" description="TANZANIA, UNITED REPUBLIC OF"/>
+        <code value="TH" description="THAILAND"/>
+        <code value="TL" description="TIMOR-LESTE"/>
+        <code value="TG" description="TOGO"/>
+        <code value="TK" description="TOKELAU"/>
+        <code value="TO" description="TONGA"/>
+        <code value="TT" description="TRINIDAD AND TOBAGO"/>
+        <code value="TN" description="TUNISIA"/>
+        <code value="TR" description="TURKEY"/>
+        <code value="TM" description="TURKMENISTAN"/>
+        <code value="TC" description="TURKS AND CAICOS ISLANDS"/>
+        <code value="TV" description="TUVALU"/>
+        <code value="UG" description="UGANDA"/>
+        <code value="UA" description="UKRAINE"/>
+        <code value="AE" description="UNITED ARAB EMIRATES"/>
+        <code value="GB" description="UNITED KINGDOM"/>
+        <code value="US" description="UNITED STATES"/>
+        <code value="UM" description="UNITED STATES MINOR OUTLYING ISLANDS"/>
+        <code value="UY" description="URUGUAY"/>
+        <code value="UZ" description="UZBEKISTAN"/>
+        <code value="VU" description="VANUATU"/>
+        <code value="VE" description="VENEZUELA"/>
+        <code value="VN" description="VIET NAM"/>
+        <code value="VG" description="VIRGIN ISLANDS, BRITISH"/>
+        <code value="VI" description="VIRGIN ISLANDS, U.S."/>
+        <code value="WF" description="WALLIS AND FUTUNA"/>
+        <code value="EH" description="WESTERN SAHARA"/>
+        <code value="YE" description="YEMEN"/>
+        <code value="ZM" description="ZAMBIA"/>
+        <code value="ZW" description="ZIMBABWE"/>
+    </codeset>
+    <codeset issuer="IANA" openehr_id="character sets" external_id="IANA_character-sets">
+        <code value="ISO-10646-UTF-1"/>
+        <code value="ISO_8859-3:1988"/>
+        <code value="UTF-8"/>
+        <code value="UTF-7"/>
+        <code value="UTF-16BE"/>
+        <code value="UTF-16LE"/>
+        <code value="UTF-16"/>
+        <code value="UTF-32"/>
+        <code value="UTF-32BE"/>
+        <code value="UTF-32LE"/>
+        <code value="ISO_8859-1:1987"/>
+    </codeset>
+    <codeset issuer="ISO" openehr_id="languages" external_id="ISO_639-1">
+        <code value="aa" description="Afar"/>
+        <code value="af" description="Afrikaans"/>
+        <code value="sq" description="Albanian"/>
+        <code value="ar-sa" description="Arabic (Saudi Arabia)"/>
+        <code value="ar-iq" description="Arabic (Iraq)"/>
+        <code value="ar-eg" description="Arabic (Egypt)"/>
+        <code value="ar-ly" description="Arabic (Libya)"/>
+        <code value="ar-dz" description="Arabic (Algeria)"/>
+        <code value="ar-ma" description="Arabic (Morocco)"/>
+        <code value="ar-tn" description="Arabic (Tunisia)"/>
+        <code value="ar-om" description="Arabic (Oman)"/>
+        <code value="ar-ye" description="Arabic (Yemen)"/>
+        <code value="ar-sy" description="Arabic (Syria)"/>
+        <code value="ar-jo" description="Arabic (Jordan)"/>
+        <code value="ar-lb" description="Arabic (Lebanon)"/>
+        <code value="ar-kw" description="Arabic (Kuwait)"/>
+        <code value="ar-ae" description="Arabic (U.A.E.)"/>
+        <code value="ar-bh" description="Arabic (Bahrain)"/>
+        <code value="ar-qa" description="Arabic (Qatar)"/>
+        <code value="az" description="Azerbaijani"/>
+        <code value="eu" description="Basque"/>
+        <code value="bg" description="Bulgarian"/>
+        <code value="be" description="Belarusian"/>
+        <code value="ca" description="Catalan"/>
+        <code value="zh" description="Chinese"/>
+        <code value="zh-tw" description="Chinese (Taiwan)"/>
+        <code value="zh-cn" description="Chinese (PRC)"/>
+        <code value="zh-hk" description="Chinese (Hong Kong SAR)"/>
+        <code value="zh-sg" description="Chinese (Singapore)"/>
+        <code value="hr" description="Croatian"/>
+        <code value="cs" description="Czech"/>
+        <code value="da" description="Danish"/>
+        <code value="nl" description="Dutch (Standard)"/>
+        <code value="nl-be" description="Dutch (Belgium)"/>
+        <code value="en" description="English"/>
+        <code value="en-us" description="English (United States)"/>
+        <code value="en-gb" description="English (United Kingdom)"/>
+        <code value="en-au" description="English (Australia)"/>
+        <code value="en-ca" description="English (Canada)"/>
+        <code value="en-nz" description="English (New Zealand)"/>
+        <code value="en-ie" description="English (Ireland)"/>
+        <code value="en-za" description="English (South Africa)"/>
+        <code value="en-jm" description="English (Jamaica)"/>
+        <code value="en" description="English (Caribbean)"/>
+        <code value="en-bz" description="English (Belize)"/>
+        <code value="en-tt" description="English (Trinidad)"/>
+        <code value="et" description="Estonian"/>
+        <code value="fo" description="Faeroese"/>
+        <code value="fa" description="Farsi"/>
+        <code value="fi" description="Finnish"/>
+        <code value="fr" description="French (Standard)"/>
+        <code value="fr-be" description="French (Belgium)"/>
+        <code value="fr-ca" description="French (Canada)"/>
+        <code value="fr-ch" description="French (Switzerland)"/>
+        <code value="fr-lu" description="French (Luxembourg)"/>
+        <code value="gd" description="Gaelic (Scotland)"/>
+        <code value="gd-ie" description="Gaelic (Ireland)"/>
+        <code value="de" description="German (Standard)"/>
+        <code value="de-ch" description="German (Switzerland)"/>
+        <code value="de-at" description="German (Austria)"/>
+        <code value="de-lu" description="German (Luxembourg)"/>
+        <code value="de-li" description="German (Liechtenstein)"/>
+        <code value="el" description="Greek"/>
+        <code value="he" description="Hebrew"/>
+        <code value="hi" description="Hindi"/>
+        <code value="hu" description="Hungarian"/>
+        <code value="is" description="Icelandic"/>
+        <code value="id" description="Indonesian"/>
+        <code value="it" description="Italian (Standard)"/>
+        <code value="it-ch" description="Italian (Switzerland)"/>
+        <code value="ja" description="Japanese"/>
+        <code value="kk" description="Kasakh"/>
+        <code value="km" description="Central Khmer"/>
+        <code value="ko" description="Korean"/>
+        <code value="ko" description="Korean (Johab)"/>
+        <code value="lv" description="Latvian"/>
+        <code value="lt" description="Lithuanian"/>
+        <code value="mk" description="FYRO Macedonian ms Malaysian"/>
+        <code value="mt" description="Maltese"/>
+        <code value="nb" description="Norwegian Bokmal"/>
+        <code value="nn" description="Norwegian Nynorsk"/>
+        <code value="pl" description="Polish"/>
+        <code value="pt-br" description="Portuguese (Brazil)"/>
+        <code value="pt-pt" description="Portuguese (Portugal)"/>
+        <code value="pt" description="Portuguese"/>
+        <code value="rm" description="Rhaeto-Romanic"/>
+        <code value="ro" description="Romanian"/>
+        <code value="ro-mo" description="Romanian (Moldavia)"/>
+        <code value="ru" description="Russian"/>
+        <code value="ru-mo" description="Russian (Moldavia)"/>
+        <code value="sz" description="Sami (Lappish)"/>
+        <code value="sr" description="Serbian (Cyrillic)"/>
+        <code value="sr" description="Serbian (Latin)"/>
+        <code value="sk" description="Slovak"/>
+        <code value="sl" description="Slovenian"/>
+        <code value="si" description="Sinhala"/>
+        <code value="sb" description="Serbian"/>
+        <code value="es" description="Spanish (Spain ? Traditional)"/>
+        <code value="es-mx" description="Spanish (Mexico)"/>
+        <code value="es" description="Spanish (Spain ? Modern)"/>
+        <code value="es-gt" description="Spanish (Guatemala)"/>
+        <code value="es-cr" description="Spanish (Costa Rica)"/>
+        <code value="es-pa" description="Spanish (Panama)"/>
+        <code value="es-do" description="Spanish (Dominican Republic)"/>
+        <code value="es-ve" description="Spanish (Venezuela)"/>
+        <code value="es-co" description="Spanish (Colombia)"/>
+        <code value="es-pe" description="Spanish (Peru)"/>
+        <code value="es-ar" description="Spanish (Argentina)"/>
+        <code value="es-ec" description="Spanish (Ecuador)"/>
+        <code value="es-cl" description="Spanish (Chile)"/>
+        <code value="es-uy" description="Spanish (Uruguay)"/>
+        <code value="es-py" description="Spanish (Paraguay)"/>
+        <code value="es-bo" description="Spanish (Bolivia)"/>
+        <code value="es-sv" description="Spanish (El Salvador)"/>
+        <code value="es-hn" description="Spanish (Honduras)"/>
+        <code value="es-ni" description="Spanish (Nicaragua)"/>
+        <code value="es-pr" description="Spanish (Puerto Rico)"/>
+        <code value="sx" description="Sutu"/>
+        <code value="sv" description="Swedish"/>
+        <code value="sv-fi" description="Swedish (Finland)"/>
+        <code value="th" description="Thai"/>
+        <code value="ts" description="Tsonga"/>
+        <code value="tn" description="Tswana"/>
+        <code value="tr" description="Turkish"/>
+        <code value="uk" description="Ukrainian"/>
+        <code value="ur" description="Urdu"/>
+        <code value="ve" description="Venda"/>
+        <code value="vi" description="Vietnamese"/>
+        <code value="cy" description="Welsh"/>
+        <code value="cy-gb" description="Welsh (United Kingdom)"/>
+        <code value="cy-ar" description="Welsh (Argentina)"/>
+        <code value="xh" description="Xhosa"/>
+        <code value="ji" description="Yiddish"/>
+        <code value="zu" description="Zulu"/>
+    </codeset>
+    <codeset issuer="IANA" openehr_id="media types" external_id="IANA_media-types">
+        <code  value="audio/DVI4" />
+        <code  value="audio/G722" />
+        <code  value="audio/G723" />
+        <code  value="audio/G726-16" />
+        <code  value="audio/G726-24" />
+        <code  value="audio/G726-32" />
+        <code  value="audio/G726-40" />
+        <code  value="audio/G728" />
+        <code  value="audio/L8" />
+        <code  value="audio/L16" />
+        <code  value="audio/LPC" />
+        <code  value="audio/G729" />
+        <code  value="audio/G729D" />
+        <code  value="audio/G729E" />
+        <code  value="video/BT656" />
+        <code  value="video/CelB" />
+        <code  value="video/JPEG" />
+        <code  value="video/H261" />
+        <code  value="video/H263" />
+        <code  value="video/H263-1998" />
+        <code  value="video/H263-2000" />
+        <code  value="video/MPV" />
+        <code  value="audio/basic"/>
+        <code  value="audio/mpeg" />
+        <code  value="audio/mpeg4-generic" />
+        <code  value="audio/L20" />
+        <code  value="audio/L24" />
+        <code  value="audio/telephone-event" />
+        <code  value="video/quicktime" />
+        <code  value="text/calendar" />
+        <code  value="text/directory" />
+        <code  value="text/html" />
+        <code  value="text/plain" />
+        <code  value="text/richtext"/>
+        <code  value="text/rtf" />
+        <code  value="text/rfc822-headers"/>
+        <code  value="text/sgml" />
+        <code  value="text/tab-separated-values" />
+        <code  value="text/uri-list" />
+        <code  value="text/xml" />
+        <code  value="text/xml-external-parsed-entity" />
+        <code  value="image/cgm" />
+        <code  value="image/gif" />
+        <code  value="image/png" />
+        <code  value="image/tiff" />
+        <code  value="image/jpeg" />
+        <code  value="application/msword" />
+        <code  value="application/pdf" />
+        <code  value="application/rtf" />
+        <code  value="application/dicom" />
+        <code  value="application/vnd.oasis.opendocument.text" />
+        <code  value="application/vnd.ms-word.document.macroEnabled.12" />
+        <code  value="application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+        <code  value="application/vnd.ms-word.template.macroEnabled.12" />
+        <code  value="application/vnd.openxmlformats-officedocument.wordprocessingml.template" />
+        <code  value="application/vnd.ms-powerpoint.slideshow.macroEnabled.12" />
+        <code  value="application/vnd.openxmlformats-officedocument.presentationml.slideshow" />
+        <code  value="application/vnd.ms-powerpoint.presentation.macroEnabled.12" />
+        <code  value="application/vnd.openxmlformats-officedocument.presentationml.presentation" />
+        <code  value="application/vnd.ms-excel.sheet.binary.macroEnabled.12" />
+        <code  value="application/vnd.ms-excel.sheet.macroEnabled.12" />
+        <code  value="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
+        <code  value="application/vnd.ms-xpsdocument" />
+        <code  value="application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+    </codeset>
+</terminology>

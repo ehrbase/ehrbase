@@ -83,7 +83,7 @@
         <value>20190416T211223,400+0000</value>
       </start_time>
       <setting>
-        <value>Hospital B</value>
+        <value>primary nursing care</value>
         <defining_code>
           <terminology_id>
             <value>openehr</value>

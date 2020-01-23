@@ -18,15 +18,14 @@
 
 package org.ehrbase.rest.openehr.controller;
 
-import org.ehrbase.api.definitions.CompositionFormat;
 import org.apache.commons.lang.StringUtils;
+import org.ehrbase.api.definitions.CompositionFormat;
 import org.ehrbase.api.exception.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -34,7 +33,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.util.UriUtils;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -107,9 +105,10 @@ public abstract class BaseController {
     /**
      * Helper to allow string UUID input from controllers, which throws an ObjectNotFound exception when no UUID representation
      * can be created. This case is equal to no matching object.
+     *
      * @param ehrIdString Input String representation of the ehrId
-     * @throws ObjectNotFoundException when no UUID can't be created from input
      * @return UUID representation of the ehrId
+     * @throws ObjectNotFoundException when no UUID can't be created from input
      */
     protected UUID getEhrUuid(String ehrIdString) {
         return extractUUIDFromStringWithError(ehrIdString, "ehr", "EHR not found, in fact, only UUID-type IDs are supported");
@@ -118,9 +117,10 @@ public abstract class BaseController {
     /**
      * Helper to allow string UUID input from controllers, which throws an ObjectNotFound exception when no UUID representation
      * can be created. This case is equal to no matching object.
+     *
      * @param compositionVersionedObjectUidString Input String representation
-     * @throws ObjectNotFoundException when no UUID can't be created from input
      * @return UUID representation
+     * @throws ObjectNotFoundException when no UUID can't be created from input
      */
     protected UUID getCompositionVersionedObjectUidString(String compositionVersionedObjectUidString) {
         return extractUUIDFromStringWithError(compositionVersionedObjectUidString, "composition", "Composition not found, in fact, only UUID-type versionedObjectUids are supported");
@@ -129,9 +129,10 @@ public abstract class BaseController {
     /**
      * Helper to allow string UUID input from controllers, which throws an ObjectNotFound exception when no UUID representation
      * can be created. This case is equal to no matching object.
+     *
      * @param compositionVersionedObjectUidString Input String representation
-     * @throws ObjectNotFoundException when no UUID can't be created from input
      * @return UUID representation
+     * @throws ObjectNotFoundException when no UUID can't be created from input
      */
     protected UUID getContributionVersionedObjectUidString(String compositionVersionedObjectUidString) {
         return extractUUIDFromStringWithError(compositionVersionedObjectUidString, "contribution", "Contribution not found, in fact, only UUID-type versionedObjectUids are supported");
@@ -150,6 +151,7 @@ public abstract class BaseController {
 
     /**
      * Extracts the {@link CompositionFormat} from the REST request's input {@link MediaType} style content type header string.
+     *
      * @param contentType String representation of REST request's input {@link MediaType} style content type header
      * @return {@link CompositionFormat} expressing the content type
      * @throws NotAcceptableException when content type is not supported or input is invalid
@@ -169,16 +171,15 @@ public abstract class BaseController {
 
     /**
      * Convenience helper to encode path strings to URI-safe strings
+     *
      * @param path input
      * @return URI-safe escaped string
      * @throws InternalServerException when encoding failed
      */
     public String encodePath(String path) {
-        try {
+
             path = UriUtils.encodePath(path, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new InternalServerException("Error encoding parameter {}", e);
-        }
+
         return path;
     }
 
@@ -191,6 +192,7 @@ public abstract class BaseController {
 
     /**
      * Extracts the UUID base from a versioned UID. Or, if
+     *
      * @param versionUid
      * @return
      */
@@ -216,7 +218,8 @@ public abstract class BaseController {
 
     /**
      * Handler for project-custom exception.
-     * @return ResponseEntity<Map<String, String>> as ALREADY_REPORTED - 208
+     *
+     * @return ResponseEntity<Map < String, String>> as ALREADY_REPORTED - 208
      */
     @ExceptionHandler(DuplicateObjectException.class)
     public ResponseEntity<Map<String, String>> restErrorHandler(DuplicateObjectException e) {
@@ -226,8 +229,9 @@ public abstract class BaseController {
     /**
      * Handler for broad and general Java standard exception IllegalArgumentException. Shall be replaced with a more
      * specific exception like InvalidApiParameterException in backend code with time.
+     *
+     * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
      * @deprecated Throw a more specific exception.
-     * @return ResponseEntity<Map<String, String>> as BAD_REQUEST - 400
      */
     @Deprecated
     @ExceptionHandler(IllegalArgumentException.class)
@@ -237,7 +241,8 @@ public abstract class BaseController {
 
     /**
      * Handler for project-custom exception.
-     * @return ResponseEntity<Map<String, String>> as BAD_REQUEST - 400
+     *
+     * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
      */
     @ExceptionHandler(GeneralRequestProcessingException.class)
     public ResponseEntity<Map<String, String>> restErrorHandler(GeneralRequestProcessingException e) {
@@ -246,7 +251,8 @@ public abstract class BaseController {
 
     /**
      * Handler for project-custom exception.
-     * @return ResponseEntity<Map<String, String>> as BAD_REQUEST - 400
+     *
+     * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
      */
     @ExceptionHandler(InvalidApiParameterException.class)
     public ResponseEntity<Map<String, String>> restErrorHandler(InvalidApiParameterException e) {
@@ -256,7 +262,8 @@ public abstract class BaseController {
     /**
      * This handler catches the exception automatically generated and thrown by the framework, when specified
      * parameters are not present or matching.
-     * @return ResponseEntity<Map<String, String>> as BAD_REQUEST - 400
+     *
+     * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
      */
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<Map<String, String>> restErrorHandler(MissingServletRequestParameterException e) {
@@ -266,7 +273,8 @@ public abstract class BaseController {
     /**
      * This handler catches the exception automatically generated and thrown by the framework, when the request's
      * message can't be read. For example, due to missing body, while required.
-     * @return ResponseEntity<Map<String, String>> as BAD_REQUEST - 400
+     *
+     * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Map<String, String>> restErrorHandler(HttpMessageNotReadableException e) {
@@ -275,18 +283,11 @@ public abstract class BaseController {
 
     // 401 Unauthorized is created automatically by framework
 
-    /**
-     * Handler for authentication related errors.
-     * @return ResponseEntity<Map<String, String>> as FORBIDDEN - 403
-     */
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<Map<String, String>> restErrorHandler(AccessDeniedException e) {
-        return createErrorResponse(e.getMessage(), HttpStatus.FORBIDDEN);
-    }
 
     /**
      * Handler for project-custom exception.
-     * @return ResponseEntity<Map<String, String>> as NOT_FOUND - 404
+     *
+     * @return ResponseEntity<Map < String, String>> as NOT_FOUND - 404
      */
     @ExceptionHandler(ObjectNotFoundException.class)
     public ResponseEntity<Map<String, String>> restErrorHandler(ObjectNotFoundException e) {
@@ -295,7 +296,8 @@ public abstract class BaseController {
 
     /**
      * Handler for project-custom exception.
-     * @return ResponseEntity<Map<String, String>> as NOT_ACCEPTABLE - 406
+     *
+     * @return ResponseEntity<Map < String, String>> as NOT_ACCEPTABLE - 406
      */
     @ExceptionHandler(NotAcceptableException.class)
     public ResponseEntity<Map<String, String>> restErrorHandler(NotAcceptableException e) {
@@ -304,7 +306,8 @@ public abstract class BaseController {
 
     /**
      * Handler for project-custom exception.
-     * @return ResponseEntity<Map<String, String>> as CONFLICT - 409
+     *
+     * @return ResponseEntity<Map < String, String>> as CONFLICT - 409
      */
     @ExceptionHandler(StateConflictException.class)
     public ResponseEntity<Map<String, String>> restErrorHandler(StateConflictException e) {
@@ -313,7 +316,8 @@ public abstract class BaseController {
 
     /**
      * Handler for project-custom exception.
-     * @return ResponseEntity<Map<String, String>> as PRECONDITION FAILED - 412
+     *
+     * @return ResponseEntity<Map < String, String>> as PRECONDITION FAILED - 412
      */
     @ExceptionHandler(PreconditionFailedException.class)
     public ResponseEntity<Map<String, String>> restErrorHandler(PreconditionFailedException e) {
@@ -325,7 +329,7 @@ public abstract class BaseController {
      * processed by a service or subordinated handlers.
      *
      * @param e - UnsupportedMediaTypeException thrown at handler mechanism
-     * @return ResponseEntity<Map<String, String>> as UNSUPPORTED MEDIA Type - 415
+     * @return ResponseEntity<Map < String, String>> as UNSUPPORTED MEDIA Type - 415
      */
     @ExceptionHandler(UnsupportedMediaTypeException.class)
     public ResponseEntity<Map<String, String>> restErrorHandler(UnsupportedMediaTypeException e) {
@@ -333,9 +337,11 @@ public abstract class BaseController {
     }
 
     // TODO: Maybe remove this redundant handler since fallback will cover the same functionality
+
     /**
      * Handler for less specific internal error
-     * @return ResponseEntity<Map<String, String>> as INTERNAL_SERVER_ERROR - 500
+     *
+     * @return ResponseEntity<Map < String, String>> as INTERNAL_SERVER_ERROR - 500
      */
     @ExceptionHandler(InternalServerException.class)
     public ResponseEntity<Map<String, String>> restErrorHandler(InternalServerException e) {
@@ -344,7 +350,8 @@ public abstract class BaseController {
 
     /**
      * Handler for project-custom exception.
-     * @return ResponseEntity<Map<String, String>> as BAD_GATEWAY - 502
+     *
+     * @return ResponseEntity<Map < String, String>> as BAD_GATEWAY - 502
      */
     @ExceptionHandler(BadGatewayException.class)
     public ResponseEntity<Map<String, String>> restErrorHandler(BadGatewayException e) {
@@ -353,7 +360,8 @@ public abstract class BaseController {
 
     /**
      * Fallback error handler.
-     * @return ResponseEntity<Map<String, String>> as INTERNAL_SERVER_ERROR - 500
+     *
+     * @return ResponseEntity<Map < String, String>> as INTERNAL_SERVER_ERROR - 500
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> restErrorHandler(Exception e) {

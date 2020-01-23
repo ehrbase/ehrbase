@@ -20,7 +20,7 @@
   <packaging>pom</packaging>
   <groupId>org.ehrbase.openehr</groupId>
   <artifactId>server</artifactId>
-  <version>0.9.0</version>
+  <version>0.10.0</version>
 
   <name>${project.groupId}:${project.artifactId}</name>
   <description>EHRbase is a Free, Libre, Open Source openEHR Clinical Data Repository</description>
@@ -110,7 +110,7 @@
     <assertj.core>3.11.1</assertj.core>
     <json.path.version>2.4.0</json.path.version>
     <log4j.version>2.7</log4j.version>
-    <jooq.version>3.10.0</jooq.version>
+    <jooq.version>3.12.3</jooq.version>
     <jackson.version>2.9.7</jackson.version>
     <keycloak.version>4.0.0.Final</keycloak.version>
     <springfox.version>2.9.2</springfox.version>
@@ -118,6 +118,7 @@
     <swagger.version>1.5.23</swagger.version>
     <swagger-snapshot.version>2.0.0-rc2</swagger-snapshot.version>
     <postgressql.version>42.2.5</postgressql.version>
+    <flyway.version>6.1.4</flyway.version>
     <database.name>ehrbase</database.name>
     <database.user>ehrbase</database.user>
     <database.pass>ehrbase</database.pass>
@@ -129,7 +130,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>1.5.10.RELEASE</version>
+    <version>2.2.1.RELEASE</version>
     <relativePath/> <!-- lookup parent from repository -->
     <!--<version>2.0.5.RELEASE</version>-->
   </parent>
@@ -146,6 +147,7 @@
     <module>test-data</module>
     <module>opt</module>
     <module>validation</module>
+    <module>terminology</module>
   </modules>
 
 
@@ -190,6 +192,16 @@
       <dependency>
         <groupId>org.ehrbase.openehr</groupId>
         <artifactId>serialisation</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ehrbase.openehr</groupId>
+        <artifactId>validation</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ehrbase.openehr</groupId>
+        <artifactId>terminology</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
@@ -333,7 +345,7 @@
       <dependency>
         <groupId>com.google.code.gson</groupId>
         <artifactId>gson</artifactId>
-        <version>2.4</version>
+        <version>2.8.6</version>
       </dependency>
       <dependency>
         <groupId>org.apache.xmlbeans</groupId>
@@ -395,7 +407,7 @@
       <dependency>
         <groupId>org.flywaydb</groupId>
         <artifactId>flyway-core</artifactId>
-        <version>4.0.3</version>
+        <version>${flyway.version}</version>
       </dependency>
 
       <dependency>
@@ -553,30 +565,12 @@
         <plugin>
           <groupId>org.flywaydb</groupId>
           <artifactId>flyway-maven-plugin</artifactId>
-          <version>4.0.3</version>
-          <configuration>
-            <locations>
-              <location>filesystem:src/main/resources/db/migration</location>
-              <location>classpath:org/ehrbase/db/migration</location>
-            </locations>
-            <url>jdbc:postgresql://${database.host}:${database.port}/${database.name}</url>
-            <driver>org.postgresql.Driver</driver>
-            <user>${database.user}</user>
-            <password>${database.pass}</password>
-            <schemas>
-              <schema>ehr</schema>
-            </schemas>
-          </configuration>
+          <version>${flyway.version}</version>
           <dependencies>
             <dependency>
               <groupId>org.postgresql</groupId>
               <artifactId>postgresql</artifactId>
               <version>${postgressql.version}</version>
-            </dependency>
-            <dependency>
-              <groupId>org.ehrbase.openehr</groupId>
-              <artifactId>V3__terminology</artifactId>
-              <version>1.0</version>
             </dependency>
           </dependencies>
           <executions>
@@ -635,7 +629,7 @@
       <properties>
         <gpg.keyname>FAB0BE712374BFC3D26DA5B43A7041C227272DD8</gpg.keyname>
         <gpg.executable>gpg2</gpg.executable>
-        <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
+
       </properties>
       <build>
         <plugins>

@@ -12,5 +12,35 @@
     }
   ],
   "rows": [
+    [
+      "__MODIFY_COMPOSITION_OBSERVATION_1_EHR_1__"
+    ],
+    [
+      "__MODIFY_COMPOSITION_OBSERVATION_1_EHR_2__"
+    ],
+    [
+      "__MODIFY_COMPOSITION_OBSERVATION_1_EHR_3__"
+    ],
+    [
+      "__MODIFY_COMPOSITION_OBSERVATION_1_EHR_4__"
+    ],
+    [
+      "__MODIFY_COMPOSITION_OBSERVATION_1_EHR_5__"
+    ],
+    [
+      "__MODIFY_COMPOSITION_OBSERVATION_1_EHR_6__"
+    ],
+    [
+      "__MODIFY_COMPOSITION_OBSERVATION_1_EHR_7__"
+    ],
+    [
+      "__MODIFY_COMPOSITION_OBSERVATION_1_EHR_8__"
+    ],
+    [
+      "__MODIFY_COMPOSITION_OBSERVATION_1_EHR_9__"
+    ],
+    [
+      "__MODIFY_COMPOSITION_OBSERVATION_1_EHR_10__"
+    ]
   ]
 }

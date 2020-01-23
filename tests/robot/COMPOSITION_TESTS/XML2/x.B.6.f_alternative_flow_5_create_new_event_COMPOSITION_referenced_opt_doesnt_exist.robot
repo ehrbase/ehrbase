@@ -37,5 +37,5 @@ Alternative flow 5 create new event COMPOSITION referenced opt doesnt exist
 
     create EHR    XML
 
-    composition_keywords.start request session    application/xml    application/xml    Prefer=return\=representation
+    prepare new request session    XML    Prefer=return=representation
     commit composition - no referenced OPT    nested/nested.composition.extdatetimes.optdoesntexist.xml

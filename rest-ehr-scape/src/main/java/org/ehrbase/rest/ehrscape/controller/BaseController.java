@@ -22,7 +22,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -120,14 +119,6 @@ public abstract class BaseController {
 
     // 401 Unauthorized is created automatically by framework
 
-    /**
-     * Handler for authentication related errors.
-     * @return ResponseEntity<Map<String, String>> as FORBIDDEN - 403
-     */
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<Map<String, String>> restErrorHandler(AccessDeniedException e) {
-        return createErrorResponse(e.getMessage(), HttpStatus.FORBIDDEN);
-    }
 
     /**
      * Handler for project-custom exception.

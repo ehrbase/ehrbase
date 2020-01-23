@@ -231,7 +231,7 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
             String scheme = System.getProperty("host.name");
             if (scheme == null)
                 scheme = "local";
-            committerId = I_PartyIdentifiedAccess.getOrCreatePartyByExternalRef(this, defaultUser, UUID.randomUUID().toString(), scheme, localMachine.getCanonicalHostName(), "PARTY");
+            committerId = I_PartyIdentifiedAccess.getOrCreatePartyByExternalRef(this, defaultUser, UUID.randomUUID().toString(), scheme, getServerConfig().getNodename(), "PARTY");
         }
         auditDetails.setCommitter(committerId);
 

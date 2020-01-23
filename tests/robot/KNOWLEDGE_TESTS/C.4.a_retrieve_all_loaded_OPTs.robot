@@ -40,8 +40,8 @@ Documentation   OPT1.4 integration tests
 Resource    ${CURDIR}${/}../_resources/suite_settings.robot
 Resource    ${CURDIR}${/}../_resources/keywords/template_opt1.4_keywords.robot
 
-Suite Setup  startup OPT SUT
-Suite Teardown  shutdown SUT
+# Suite Setup  startup OPT SUT
+Suite Teardown  Delete All Templates
 
 Force Tags   OPT14    refactor
 
@@ -76,7 +76,7 @@ Retrieve OPT List From Server
 
     retrieve list of uploaded OPTs
     verify server response
-    clean up test variables
+    Clean Up Suite Variables
 
 
 
@@ -84,11 +84,12 @@ Retrieve OPT List From Server
 upload valid OPT
     [Arguments]           ${opt file}
 
-    start request session
+    prepare new request session    XML
+    ...                            Prefer=return=representation
     get valid OPT file    ${opt file}
     upload OPT file
     server accepted OPT
-    [Teardown]            clean up test variables
+    [Teardown]            Clean Up Suite Variables
 
 
 retrieve list of uploaded OPTs

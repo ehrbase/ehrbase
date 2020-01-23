@@ -22,7 +22,7 @@
     <parent>
         <artifactId>server</artifactId>
         <groupId>org.ehrbase.openehr</groupId>
-        <version>0.9.0</version>
+        <version>0.10.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -32,6 +32,10 @@
         <dependency>
             <groupId>org.ehrbase.openehr</groupId>
             <artifactId>serialisation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.ehrbase.openehr</groupId>
+            <artifactId>terminology</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

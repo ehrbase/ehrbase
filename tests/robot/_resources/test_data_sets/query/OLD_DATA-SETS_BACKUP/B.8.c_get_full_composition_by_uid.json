@@ -1,3 +1,0 @@
-{
-  "q": "SELECT c FROM COMPOSITION c WHERE c/uid/value='__MODIFY_COMPOSITION_UID_1__'"
-}

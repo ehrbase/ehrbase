@@ -100,7 +100,7 @@
           },
           "setting": {
             "_type": "DV_CODED_TEXT",
-            "value": "Hospital C",
+            "value": "primary nursing care",
             "defining_code": {
               "_type": "CODE_PHRASE",
               "terminology_id": {
@@ -339,7 +339,7 @@
           },
           "setting": {
             "_type": "DV_CODED_TEXT",
-            "value": "Hospital C",
+            "value": "primary nursing care",
             "defining_code": {
               "_type": "CODE_PHRASE",
               "terminology_id": {

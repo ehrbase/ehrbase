@@ -37,9 +37,9 @@ Alternative flow 1: has COMPOSITION, COMPOSITION does not exist
 
     create EHR    XML
 
-    # Commit fake COMPOSITION
+    # comment: Commit fake COMPOSITION
     generate random composition_uid
 
-    composition_keywords.start request session    accept=application/xml
+    prepare new request session    XML
     get composition by composition_uid    ${version_uid}
     check composition does not exist

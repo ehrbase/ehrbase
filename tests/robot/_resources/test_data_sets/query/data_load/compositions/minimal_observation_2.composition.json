@@ -1,0 +1,186 @@
+{
+	"_type": "COMPOSITION",
+	"name": {
+		"_type": "DV_TEXT",
+		"value": "Minimal"
+	},
+	"archetype_details": {
+		"_type": "ARCHETYPED",
+		"archetype_id": {
+			"_type": "ARCHETYPE_ID",
+			"value": "openEHR-EHR-COMPOSITION.minimal.v1"
+		},
+		"template_id": {
+			"_type": "TEMPLATE_ID",
+			"value": "minimal_observation.en.v1"
+		},
+		"rm_version": "1.0.2"
+	},
+	"archetype_node_id": "openEHR-EHR-COMPOSITION.minimal.v1",
+	"language": {
+		"_type": "CODE_PHRASE",
+		"terminology_id": {
+			"_type": "TERMINOLOGY_ID",
+			"value": "ISO_639-1"
+		},
+		"code_string": "en"
+	},
+	"territory": {
+		"_type": "CODE_PHRASE",
+		"terminology_id": {
+			"_type": "TERMINOLOGY_ID",
+			"value": "ISO_3166-1"
+		},
+		"code_string": "UY"
+	},
+	"category": {
+		"_type": "DV_CODED_TEXT",
+		"value": "event",
+		"defining_code": {
+			"_type": "CODE_PHRASE",
+			"terminology_id": {
+				"_type": "TERMINOLOGY_ID",
+				"value": "openehr"
+			},
+			"code_string": "433"
+		}
+	},
+	"composer": {
+		"_type": "PARTY_IDENTIFIED",
+		"external_ref": {
+			"_type": "PARTY_REF",
+			"id": {
+				"_type": "HIER_OBJECT_ID",
+				"value": "1f31861a-b5fd-4052-b00b-32893371fcd4"
+			},
+			"namespace": "DEMOGRAPHIC",
+			"type": "PERSON"
+		},
+		"name": "Dr. House"
+	},
+	"context": {
+		"_type": "EVENT_CONTEXT",
+		"start_time": {
+			"_type": "DV_DATE_TIME",
+			"value": "2019-01-28T21:22:19,501+0000"
+		},
+		"setting": {
+			"_type": "DV_CODED_TEXT",
+			"value": "primary nursing care",
+			"defining_code": {
+				"_type": "CODE_PHRASE",
+				"terminology_id": {
+					"_type": "TERMINOLOGY_ID",
+					"value": "openehr"
+				},
+				"code_string": "229"
+			}
+		},
+		"participations": [{
+			"_type": "PARTICIPATION",
+			"function": {
+				"_type": "DV_TEXT",
+				"value": "legal guardian"
+			},
+			"performer": {
+				"_type": "PARTY_RELATED",
+				"name": "Martha Stewart",
+				"relationship": {
+					"_type": "DV_CODED_TEXT",
+					"value": "mother",
+					"defining_code": {
+						"_type": "CODE_PHRASE",
+						"terminology_id": {
+							"_type": "TERMINOLOGY_ID",
+							"value": "openehr"
+						},
+						"code_string": "10"
+					}
+				}
+			},
+			"mode": {
+				"_type": "DV_CODED_TEXT",
+				"value": "not specified",
+				"defining_code": {
+					"_type": "CODE_PHRASE",
+					"terminology_id": {
+						"_type": "TERMINOLOGY_ID",
+						"value": "openehr"
+					},
+					"code_string": "193"
+				}
+			}
+		}]
+	},
+	"content": [{
+		"_type": "OBSERVATION",
+		"name": {
+			"_type": "DV_TEXT",
+			"value": "Minimal"
+		},
+		"archetype_node_id": "openEHR-EHR-OBSERVATION.minimal.v1",
+		"language": {
+			"_type": "CODE_PHRASE",
+			"terminology_id": {
+				"_type": "TERMINOLOGY_ID",
+				"value": "ISO_639-1"
+			},
+			"code_string": "en"
+		},
+		"encoding": {
+			"_type": "CODE_PHRASE",
+			"terminology_id": {
+				"_type": "TERMINOLOGY_ID",
+				"value": "Unicode"
+			},
+			"code_string": "UTF-8"
+		},
+		"subject": {
+			"_type": "PARTY_SELF"
+		},
+		"data": {
+			"_type": "HISTORY",
+			"name": {
+				"_type": "DV_TEXT",
+				"value": "Event Series"
+			},
+			"archetype_node_id": "at0001",
+			"origin": {
+				"_type": "DV_DATE_TIME",
+				"value": "2019-01-28T21:22:19,552+0000"
+			},
+			"events": [{
+				"_type": "POINT_EVENT",
+				"name": {
+					"_type": "DV_TEXT",
+					"value": "Cualquier evento"
+				},
+				"archetype_node_id": "at0002",
+				"time": {
+					"_type": "DV_DATE_TIME",
+					"value": "2019-01-28T21:22:19,562+0000"
+				},
+				"data": {
+					"_type": "ITEM_TREE",
+					"name": {
+						"_type": "DV_TEXT",
+						"value": "Arbol"
+					},
+					"archetype_node_id": "at0003",
+					"items": [{
+						"_type": "ELEMENT",
+						"name": {
+							"_type": "DV_TEXT",
+							"value": "text"
+						},
+						"archetype_node_id": "at0004",
+						"value": {
+							"_type": "DV_TEXT",
+							"value": "second value"
+						}
+					}]
+				}
+			}]
+		}
+	}]
+}

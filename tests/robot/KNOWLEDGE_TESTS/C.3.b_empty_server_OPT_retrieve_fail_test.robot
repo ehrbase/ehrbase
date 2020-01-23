@@ -39,8 +39,8 @@ Documentation   OPT1.4 integration tests
 Resource    ${CURDIR}${/}../_resources/suite_settings.robot
 Resource    ${CURDIR}${/}../_resources/keywords/template_opt1.4_keywords.robot
 
-Suite Setup  startup OPT SUT
-Suite Teardown  shutdown SUT
+# Suite Setup  startup OPT SUT
+Suite Teardown  Delete All Templates
 
 Force Tags   OPT14
 
@@ -57,11 +57,12 @@ Retrieve OPT from empty server
 *** Keywords ***
 retrieve OPT by random templade_id
 
-    start request session
+    prepare new request session    XML
+    ...                            Prefer=return=representation
     generate random templade_id
     retrieve OPT by template_id         ${template_id}
     verify server response
-    [Teardown]                          clean up test variables
+    [Teardown]                          Clean Up Suite Variables
 
 
 retrieve OPT by template_id

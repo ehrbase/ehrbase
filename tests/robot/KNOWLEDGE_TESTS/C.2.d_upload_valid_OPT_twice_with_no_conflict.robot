@@ -133,7 +133,8 @@ upload valid OPT twice w/o conflict
     Log               NOT APPLICABLE FOR ADL 1.4    level=WARN
     Pass Execution    NOT APPLICABLE FOR ADL 1.4    not-ready
 
-    start request session
+    prepare new request session    XML
+    ...                            Prefer=return=representation
     get valid OPT file     ${opt file}
     upload OPT file with version parameter  1    # not implemented
     server accepted OPT

@@ -39,7 +39,7 @@ Force Tags    get_ehr
 *** Test Cases ***
 Get existing EHR by subject_id
 
-    start request session    JSON
+    prepare new request session    JSON
 
     create new EHR with subject_id (JSON)
     check content of created EHR (JSON)
