@@ -81,6 +81,17 @@ upload valid OPT
     [Teardown]            Clean Up Suite Variables
 
 
+upload invalid OPT
+    [Arguments]           ${opt file}
+
+    prepare new request session    XML
+    ...                            Prefer=return=representation
+    get invalid OPT file  ${opt file}
+    upload OPT file
+    server rejected OPT with status code 400
+    server response contains proper error message
+
+
 upload OPT file
     [Documentation]     Uploads OPT file which was obtained with one of the Keywords
     ...                 `get valid OPT file` or `get invalid OPT file`
@@ -106,7 +117,7 @@ retrieve versioned OPT
 
 
 server accepted OPT
-                        Should Be Equal As Strings   ${response.status_code}   201
+                        Should Be Equal As Strings    ${response.status_code}   201
 
 
 server rejected OPT with status code ${status code}
@@ -115,8 +126,18 @@ server rejected OPT with status code ${status code}
     ...                 409: Conflict - is returned when a template with given id
     ...                      already exists. This response is optional.
 
-                        Should Be Equal As Strings   ${response.status_code}
-                        ...                          ${status code}
+                        Should Be Equal As Strings    ${response.status_code}
+                        ...                           ${status code}
+
+
+server response contains proper error message
+    ${resp_bstring}     Set Variable    ${response.content}
+    ${resp_string}      Convert To String    ${resp_bstring}
+                        Should Contain Any    ${resp_string}
+                        ...                   Invalid template input content
+                        ...                   foo    # TODO: @WLAD add more
+                        ...                   bar
+                        ...                   baz
 
 
 server returned specified version of OPT
