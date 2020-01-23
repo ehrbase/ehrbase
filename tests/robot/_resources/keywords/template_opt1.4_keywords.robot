@@ -131,9 +131,7 @@ server rejected OPT with status code ${status code}
 
 
 server response contains proper error message
-    ${resp_bstring}     Set Variable    ${response.content}
-    ${resp_string}      Convert To String    ${resp_bstring}
-                        Should Contain Any    ${resp_string}
+                        Should Contain Any  ${response.text}
                         ...                   Invalid template input content
                         ...                   Required request body is missing
                         ...                   Unexpected end of file after null
@@ -245,6 +243,13 @@ upload valid template (XML)
 # o888bood8P'  o88o     o8888o  `Y8bood8P'  o888o  o888o    `YbodP'    o888o
 #
 # [ BACKUP ]
+
+# server response contains proper error message
+#     ${resp_bstring}     Set Variable    ${response.content}
+#     ${resp_string}      Convert To String    ${resp_bstring}
+#                         Should Contain Any    ${resp_string}
+#                         ...                   foo
+#                         ...                   bar
 
 # start request session
 #     Create Session      ${SUT}    ${${SUT}.URL}

@@ -35,13 +35,7 @@ Force Tags    JSON
 *** Test Cases ***
 Alternative flow 2 get VERSIONED COMPOSITION EHR doesnt exist
 
-    # Create fake EHR
-    generate random ehr_id
-
-    # Create fake COMPOSITION
-    generate random composition_uid
-
-    # Check COMPOSITION does not exist
-    prepare new request session
-    get versioned composition by uid    ${versioned_object_uid}
+    create fake EHR
+    create fake composition
+    get versioned composition by uid    JSON    ${versioned_object_uid}
     check versioned composition does not exist
