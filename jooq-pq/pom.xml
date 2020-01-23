@@ -50,10 +50,7 @@
             <artifactId>jooq-codegen-maven</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>javax.annotation</groupId>
-            <artifactId>javax.annotation-api</artifactId>
-        </dependency>
+
 
         <dependency>
             <groupId>junit</groupId>
