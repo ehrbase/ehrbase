@@ -135,8 +135,8 @@ server response contains proper error message
     ${resp_string}      Convert To String    ${resp_bstring}
                         Should Contain Any    ${resp_string}
                         ...                   Invalid template input content
-                        ...                   foo    # TODO: @WLAD add more
-                        ...                   bar
+                        ...                   Required request body is missing
+                        ...                   bar    # TODO: @WLAD add more
                         ...                   baz
 
 
