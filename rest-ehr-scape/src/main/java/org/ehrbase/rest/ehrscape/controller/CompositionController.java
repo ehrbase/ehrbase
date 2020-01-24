@@ -21,7 +21,7 @@ package org.ehrbase.rest.ehrscape.controller;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.definitions.CompositionFormat;
 import org.ehrbase.api.definitions.StructuredString;
 import org.ehrbase.api.dto.CompositionDto;

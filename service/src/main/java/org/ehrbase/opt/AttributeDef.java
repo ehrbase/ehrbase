@@ -18,9 +18,9 @@
 
 package org.ehrbase.opt;
 
-import org.ehrbase.opt.mapper.Constants;
+import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.ehr.encode.wrappers.SnakeCase;
-import org.apache.commons.lang.StringUtils;
+import org.ehrbase.opt.mapper.Constants;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -18,7 +18,7 @@
 
 package org.ehrbase.api.exception;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * <p>
