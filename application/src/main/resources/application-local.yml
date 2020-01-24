@@ -18,10 +18,10 @@ spring:
     url: jdbc:postgresql://localhost:5432/ehrbase
     username: ehrbase
     password: ehrbase
-    hikari:
-      maximum-pool-size: 50
-      max-lifetime: 1800000
-      minimum-idle: 10
+    tomcat:
+      maxIdle: 10
+      max-active: 50
+      max-wait: 10000
 
 server:
   port: 8080

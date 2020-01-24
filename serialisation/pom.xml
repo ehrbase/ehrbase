@@ -30,11 +30,8 @@
 
 <dependencies>
 
-    <!-- from archie, that is the java7 version
-    com.github.everit-org.json-schema:org.everit.json.schema:1.9.2
-    -->
 
-    <dependency>
+<dependency>
         <groupId>com.github.everit-org.json-schema</groupId>
         <artifactId>org.everit.json.schema</artifactId>
     </dependency>
@@ -44,24 +41,20 @@
         <dependency>
           <groupId>javax.xml.bind</groupId>
           <artifactId>jaxb-api</artifactId>
-          <version>2.3.0</version>
         </dependency>
 
         <dependency>
           <groupId>com.google.guava</groupId>
           <artifactId>guava</artifactId>
-          <version>25.1-jre</version>
         </dependency>
 
         <dependency>
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-annotations</artifactId>
-          <version>2.9.0</version>
         </dependency>
         <dependency>
           <groupId>org.json</groupId>
           <artifactId>json</artifactId>
-          <version>20140107</version>
         </dependency>
         <dependency>
             <groupId>com.github.openEHR</groupId>
@@ -70,17 +63,14 @@
         <dependency>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-api</artifactId>
-          <version>1.7.25</version>
         </dependency>
         <dependency>
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-databind</artifactId>
-          <version>2.9.7</version>
         </dependency>
         <dependency>
           <groupId>commons-io</groupId>
           <artifactId>commons-io</artifactId>
-          <version>2.6</version>
         </dependency>
 
 
