@@ -157,10 +157,11 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
     private LinkedTreeMap reformatEmbeddedValue(LinkedTreeMap instructionMap, String tag) {
 
         if (instructionMap.containsKey(tag)) {
-            LinkedTreeMap<String, Object> narrative = (LinkedTreeMap) instructionMap.get(tag);
+            LinkedTreeMap<String, Object> treeMap = (LinkedTreeMap) instructionMap.get(tag);
             //get the value
-            LinkedTreeMap narrativeValue = (LinkedTreeMap) narrative.get(CompositionSerializer.TAG_VALUE);
-            narrative.replace(CompositionSerializer.TAG_VALUE, narrativeValue.get("value"));
+            LinkedTreeMap mapValue = (LinkedTreeMap) treeMap.get(CompositionSerializer.TAG_VALUE);
+            if (mapValue != null)
+                treeMap.replace(CompositionSerializer.TAG_VALUE, mapValue.get("value"));
         }
 
         return instructionMap;
