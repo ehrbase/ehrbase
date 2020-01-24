@@ -58,7 +58,7 @@
 			"@type": "CODE_PHRASE",
 			"terminology_id": {
 				"@type": "TERMINOLOGY_ID",
-				"value": "openEhr"
+				"value": "openehr"
 			},
 			"code_string": "433"
 		}
