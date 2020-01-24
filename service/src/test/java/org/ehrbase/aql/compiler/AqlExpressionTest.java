@@ -26,6 +26,7 @@ import org.jooq.DSLContext;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 /**
  * Created by christian on 4/1/2016.
@@ -84,6 +85,25 @@ public class AqlExpressionTest {
         assertThat(statements.getVariables()).isNotNull();
         assertThat(statements.getWhereClause()).isNotNull();
 
+    }
+
+    @Test
+    public void testRejectDuplicateAliases() {
+
+        String query = "SELECT o/data[at0002]/events[at0003] AS value, o/data[at0003]/events[at0004] as value\n" +
+                "FROM EHR [ehr_id/value='1234'] \n" +
+                "CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.encounter.v1] \n" +
+                "CONTAINS OBSERVATION o [openEHR-EHR-OBSERVATION.blood_pressure.v1]";
+
+        AqlExpression cut = new AqlExpression().parse(query);
+
+        try {
+            new Statements(cut.getParseTree(), new Contains(cut.getParseTree()).process().getIdentifierMapper()).process();
+            fail("duplicate alias has not been detected");
+        }
+        catch (IllegalArgumentException e){
+
+        }
     }
 
 
