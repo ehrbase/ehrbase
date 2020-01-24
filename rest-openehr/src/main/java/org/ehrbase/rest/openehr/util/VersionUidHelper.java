@@ -18,7 +18,7 @@
 
 package org.ehrbase.rest.openehr.util;
 
-import javax.annotation.Nullable;
+
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -51,7 +51,7 @@ public class VersionUidHelper {
         return VERSION_PATTERN.matcher(testString).matches();
     }
 
-    @Nullable
+
     public static UUID extractUUID(String versionUid) {
         Matcher matcher = UUID_PATTERN.matcher(versionUid);
         if (matcher.find()) {
@@ -60,7 +60,7 @@ public class VersionUidHelper {
         return null;
     }
 
-    @Nullable
+
     public static String extractSystemId(String versionUid) {
         Matcher matcher = SYSTEM_ID_PATTERN.matcher(versionUid);
         if (matcher.find()) {
@@ -69,7 +69,7 @@ public class VersionUidHelper {
         return null;
     }
 
-    @Nullable
+
     public static Integer extractVersion(String versionUid) {
         Matcher matcher = VERSION_PATTERN.matcher(versionUid);
         if (matcher.find()) {

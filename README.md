@@ -12,7 +12,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-You will need Java JDK/JRE 8 (preferably openJDK: e.g. from https://adoptopenjdk.net/)
+You will need Java JDK/JRE 11 (preferably openJDK: e.g. from https://adoptopenjdk.net/)
 
 You will need a Postgres Database (Docker image or local installation). We recommend the Docker image to get started quickly.
 

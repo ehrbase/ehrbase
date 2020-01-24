@@ -3,28 +3,22 @@ spring:
     url: jdbc:postgresql://localhost:5432/ehrbase
     username: ehrbase
     password: ehrbase
-    tomcat:
-      maxIdle: 10
-      max-active: 50
-      max-wait: 10000
+    hikari:
+      maximum-pool-size: 50
+      max-lifetime: 1800000
+      minimum-idle: 10
 
 
 server:
-  contextPath: /ehrbase
   port: 8080
   # Optional custom server nodename
   # nodename: 'local.test.org'
   aql:
-# set to true by default (comment out to enable jsquery)
+    # set to true by default (comment out to enable jsquery)
     use-jsquery: false
+  servlet:
+    context-path: /ehrbase
 
 system:
   type: LOCAL
 
-
-keycloak:
-  bearer-only: true
-  realm: demo
-  resource: myclient
-  use-resource-role-mappings: true
-  auth-server-url: http://localhost:8090/auth

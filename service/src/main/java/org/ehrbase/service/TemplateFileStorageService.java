@@ -18,7 +18,7 @@
 
 package org.ehrbase.service;
 
-import org.apache.velocity.io.UnicodeInputStream;
+import org.apache.commons.io.input.BOMInputStream;
 import org.apache.xmlbeans.XmlOptions;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
@@ -132,7 +132,7 @@ public class TemplateFileStorageService implements TemplateStorage {
 
         File file = optFileMap.get(templateId);
 
-        try (InputStream in = file != null ? new UnicodeInputStream(new FileInputStream(file), true) : null) { // manual reading of OPT file and following parsing into object
+        try (InputStream in = file != null ? new BOMInputStream(new FileInputStream(file), true) : null) { // manual reading of OPT file and following parsing into object
             org.openehr.schemas.v1.TemplateDocument document = org.openehr.schemas.v1.TemplateDocument.Factory.parse(in);
             operationaltemplate = document.getTemplate();
             //use the template id instead of the file name as key
