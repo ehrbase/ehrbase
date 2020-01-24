@@ -25,6 +25,7 @@ import org.jooq.SortField;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,10 +38,10 @@ public class OrderByBinderTest {
         //ascending
         {
             // represents a/context/start_time/value as date_created and order by date_created ASC
-            OrderAttribute orderAttribute = new OrderAttribute(I_VariableDefinitionHelper.build("$ALIAS$", null, "date_created", false, false, false));
+            OrderAttribute orderAttribute = new OrderAttribute(I_VariableDefinitionHelper.build(null, "date_created", null, false, false, false));
             orderAttribute.setDirection(OrderAttribute.OrderDirection.ASC);
 
-            OrderByBinder cut = new OrderByBinder(Arrays.asList(orderAttribute), DSLContextHelper.buildContext().selectQuery());
+            OrderByBinder cut = new OrderByBinder(Collections.singletonList(orderAttribute), DSLContextHelper.buildContext().selectQuery());
             List<SortField<Object>> actual = cut.getOrderByFields();
 
             assertThat(actual).size().isEqualTo(1);
@@ -51,10 +52,10 @@ public class OrderByBinderTest {
         //descending
         {
             // represents a/context/start_time/value as date_created and order by date_created DESC
-            OrderAttribute orderAttribute = new OrderAttribute(I_VariableDefinitionHelper.build("$ALIAS$", null, "date_created", false, false, false));
+            OrderAttribute orderAttribute = new OrderAttribute(I_VariableDefinitionHelper.build(null, "date_created", null, false, false, false));
             orderAttribute.setDirection(OrderAttribute.OrderDirection.DESC);
 
-            OrderByBinder cut = new OrderByBinder(Arrays.asList(orderAttribute), DSLContextHelper.buildContext().selectQuery());
+            OrderByBinder cut = new OrderByBinder(Collections.singletonList(orderAttribute), DSLContextHelper.buildContext().selectQuery());
             List<SortField<Object>> actual = cut.getOrderByFields();
 
             assertThat(actual).size().isEqualTo(1);
@@ -65,10 +66,10 @@ public class OrderByBinderTest {
         //no direction
         {
             // represents a/context/start_time/value as date_created and order by date_created
-            OrderAttribute orderAttribute = new OrderAttribute(I_VariableDefinitionHelper.build("$ALIAS$", null, "date_created", false, false, false));
+            OrderAttribute orderAttribute = new OrderAttribute(I_VariableDefinitionHelper.build(null, "date_created", null, false, false, false));
 
 
-            OrderByBinder cut = new OrderByBinder(Arrays.asList(orderAttribute), DSLContextHelper.buildContext().selectQuery());
+            OrderByBinder cut = new OrderByBinder(Collections.singletonList(orderAttribute), DSLContextHelper.buildContext().selectQuery());
             List<SortField<Object>> actual = cut.getOrderByFields();
 
             assertThat(actual).size().isEqualTo(1);

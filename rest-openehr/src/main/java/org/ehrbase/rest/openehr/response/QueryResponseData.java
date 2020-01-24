@@ -44,6 +44,7 @@ public class QueryResponseData {
     @JsonProperty(value = "rows")
     private List<List<Object>> rows;
 
+    @SuppressWarnings("unchecked")
     public QueryResponseData(QueryResultDto queryResultDto) {
         this.query = queryResultDto.getExecutedAQL();
         this.name = null;
@@ -60,23 +61,32 @@ public class QueryResponseData {
             for (String columnId : record.keySet()) {
                 Map<String, String> fieldMap = new HashMap<>();
 
-                if (queryResultDto.getVariables().containsKey(columnId)) {
-                    fieldMap.put("name", columnId);
-                    fieldMap.put("path", queryResultDto.getVariables().get(columnId));
+                if (queryResultDto.getVariables().containsKey(columnId) || queryResultDto.getVariables().inverse().containsKey(columnId)) {
+
+                    if (queryResultDto.getVariables().containsKey(columnId)) {
+                        fieldMap.put("name", columnId);
+                        fieldMap.put("path", queryResultDto.getVariables().get(columnId));
+                    } else {
+                        fieldMap.put("name", "#" + count);
+                        fieldMap.put("path", columnId);
+                    }
+
+                    count++;
+                    columns.add(fieldMap);
                 }
-                else {
-                    fieldMap.put("name", "#"+count);
-                    fieldMap.put("path", columnId);
-                }
-                count++;
-                columns.add(fieldMap);
             }
 
 
             //set the row results
             for (Map valueSet : queryResultDto.getResultSet()){
-                List values =  new ArrayList();
-                values.addAll(valueSet.values());
+                List values = new ArrayList();
+                for (Object entry: valueSet.entrySet()) {
+                    Map.Entry<String, Object> entryMap = (Map.Entry)entry;
+                    String entryKey = entryMap.getKey();
+
+                    if (queryResultDto.getVariables().containsKey(entryKey) || queryResultDto.getVariables().inverse().containsKey(entryKey))
+                        values.add(entryMap.getValue());
+                }
                 rows.add(values);
             }
         }

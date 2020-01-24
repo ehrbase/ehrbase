@@ -73,12 +73,18 @@ public class ExtensionDefinition implements I_VariableDefinition {
     }
 
     @Override
+    public boolean isHidden() {
+        return false;
+    }
+
+    @Override
     public List<FuncParameter> getFuncParameters() {
         return null;
     }
 
     @Override
-    public I_VariableDefinition clone() {
+    public I_VariableDefinition clone() throws CloneNotSupportedException {
+        super.clone();
         return new ExtensionDefinition(this.context, this.parsableExpression, this.alias);
     }
 
@@ -89,6 +95,11 @@ public class ExtensionDefinition implements I_VariableDefinition {
 
     @Override
     public void setDistinct(boolean distinct) {
+
+    }
+
+    @Override
+    public void setHidden(boolean hidden) {
 
     }
 }
