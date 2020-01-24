@@ -1217,7 +1217,7 @@
     <Concept Language="en" ConceptID="430" Rubric="URI - resource identifier"/>
     <Concept Language="en" ConceptID="431" Rubric="persistent"/>
     <Concept Language="en" ConceptID="432" Rubric="Composition category"/>
-    <Concept Language="en" ConceptID="433" Rubric="Event"/>
+    <Concept Language="en" ConceptID="433" Rubric="event"/>
     <Concept Language="en" ConceptID="434" Rubric="process"/>
     <Concept Language="en" ConceptID="435" Rubric="laboratory"/>
     <Concept Language="en" ConceptID="436" Rubric="imaging"/>
