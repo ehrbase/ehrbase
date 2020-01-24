@@ -74,12 +74,10 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
 
         String parentItemsArchetypeNodeId = null;
         String parentItemsType = null;
-        String parentItemsName = null;
 
         if (isItemsOnly || isMultiEvents) {
             //promote archetype node id and type at parent level
             //get the archetype node id
-            //get the items name
             if (map.containsKey(I_DvTypeAdapter.ARCHETYPE_NODE_ID)) {
                 parentItemsArchetypeNodeId = (String) map.get(I_DvTypeAdapter.ARCHETYPE_NODE_ID);
                 map.remove(I_DvTypeAdapter.ARCHETYPE_NODE_ID);
@@ -92,10 +90,6 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
                 parentItemsType = new SnakeCase((String) ((ArrayList) map.get(CompositionSerializer.TAG_CLASS)).get(0)).camelToUpperSnake();
                 map.remove(CompositionSerializer.TAG_CLASS);
             }
-            if (map.containsKey(CompositionSerializer.TAG_NAME)) {
-                parentItemsName = (String)((LinkedTreeMap)((ArrayList) map.get(CompositionSerializer.TAG_NAME)).get(0)).get("value");
-                map.remove(CompositionSerializer.TAG_NAME);
-            }
         } else if (isMultiContent) {
             if (map.containsKey(I_DvTypeAdapter.ARCHETYPE_NODE_ID)) {
                 parentItemsArchetypeNodeId = (String) map.get(I_DvTypeAdapter.ARCHETYPE_NODE_ID);
@@ -106,11 +100,18 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
         if (isItemsOnly) {
             //CHC 20191003: Removed archetype_node_id writer since it is serviced by closing the array.
             ArrayList items = new Children(map).items();
-            writeItemInArray(ITEMS, items, writer, parentItemsArchetypeNodeId, parentItemsType, parentItemsName);
+
+            if (map.containsKey(CompositionSerializer.TAG_NAME)){
+                if (map.get(CompositionSerializer.TAG_NAME) instanceof ArrayList)
+                    writeNameAsValue(writer, (ArrayList)map.get(CompositionSerializer.TAG_NAME));
+                else if (map.get(CompositionSerializer.TAG_NAME) instanceof String)
+                    writeNameAsValue(writer, (String)map.get(CompositionSerializer.TAG_NAME));
+            }
+            writeItemInArray(ITEMS, items, writer, parentItemsArchetypeNodeId, parentItemsType);
         } else if (isMultiEvents) {
             //assumed sorted (LinkedTreeMap preserve input order)
             ArrayList events = new Children(map).events();
-            writeItemInArray(EVENTS, events, writer, parentItemsArchetypeNodeId, parentItemsType, parentItemsName);
+            writeItemInArray(EVENTS, events, writer, parentItemsArchetypeNodeId, parentItemsType);
         } else if (isMultiContent) {
 //            Iterator iterator = map.keySet().iterator();
             String key = map.keySet().iterator().next().toString();
@@ -278,8 +279,8 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
      * @return
      * @throws IOException
      */
-    private void writeItemInArray(String heading, ArrayList value, JsonWriter writer, String parentItemsArchetypeNodeId, String parentItemsType, String parentItemsName) throws IOException {
-        new ArrayClosure(writer, parentItemsArchetypeNodeId, parentItemsType, parentItemsName).start();
+    private void writeItemInArray(String heading, ArrayList value, JsonWriter writer, String parentItemsArchetypeNodeId, String parentItemsType) throws IOException {
+        new ArrayClosure(writer, parentItemsArchetypeNodeId, parentItemsType).start();
         if (value.isEmpty()) {
             return;
         }
