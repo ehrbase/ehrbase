@@ -22,6 +22,7 @@ import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -298,12 +299,12 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         Field<UUID> subfolderChildFolder = field("subfolders.{0}", FOLDER_HIERARCHY.CHILD_FOLDER.getDataType(), FOLDER_HIERARCHY.CHILD_FOLDER.getUnqualifiedName());
         Field<UUID> subfolderParentFolderRef = field(name("subfolders", "parent_folder"), UUID.class);
         Result<Record> folderSelectedRecordSub = domainAccess.getContext().withRecursive("subfolders").as(
-                select().
+                select(ArrayUtils.addAll(initial_table.fields(), folder_table.fields())).
                         from(initial_table).
                         leftJoin(folder_table).on(initial_table.field("parent_folder", FOLDER_HIERARCHY.PARENT_FOLDER.getType()).eq(
                         folder_table.field("id", FOLDER.ID.getType()))).
                         union(
-                                (select().from(sf_table).
+                                (select(ArrayUtils.addAll(sf_table.fields(), folder_table2.fields())).from(sf_table).
                                         innerJoin("subfolders").on(sf_table.field("parent_folder", FOLDER_HIERARCHY.PARENT_FOLDER.getType()).
                                         eq(subfolderChildFolder))).leftJoin(folder_table2).on(
                                         folder_table2.field("id", FOLDER.ID.getType()).eq(subfolderChildFolder)))
@@ -373,10 +374,10 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         Field<UUID> subfolderChildFolder = field("subfolders.{0}", FOLDER_HIERARCHY.CHILD_FOLDER.getDataType(), FOLDER_HIERARCHY.CHILD_FOLDER.getUnqualifiedName());
 
         result = this.getContext().delete(FOLDER).where(FOLDER.ID.in(this.getContext().withRecursive("subfolders").as(
-                select().
+                select(initial_table.fields()).
                         from(initial_table).
                         union(
-                                (select().from(sf_table).
+                                (select(sf_table.fields()).from(sf_table).
                                         innerJoin("subfolders").on(sf_table.field("parent_folder", FOLDER_HIERARCHY.PARENT_FOLDER.getType()).
                                         eq(subfolderChildFolder))))
                 ).select()

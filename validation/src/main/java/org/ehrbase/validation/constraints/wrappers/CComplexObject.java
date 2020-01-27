@@ -73,7 +73,7 @@ public class CComplexObject extends CConstraint implements I_CArchetypeConstrain
 //                throw new IllegalArgumentException("INTERNAL: could not validate attribute:"+cattribute);
         }
 
-        if (attributeCount > 0 && failCount == attributeCount) {
+        if (attributeCount > 0 && failCount > 0) {
             if (lastException != null)
                 throw lastException;
             else

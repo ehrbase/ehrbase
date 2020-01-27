@@ -33,7 +33,6 @@ import com.nedap.archie.rm.generic.Participation;
 import com.nedap.archie.rm.generic.PartyIdentified;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.*;
-import org.apache.catalina.Server;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -46,13 +45,8 @@ import org.ehrbase.dao.access.interfaces.I_PartyIdentifiedAccess;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.jooq.pg.tables.records.*;
 import org.ehrbase.serialisation.RawJson;
-import org.jooq.DSLContext;
-import org.jooq.InsertQuery;
-import org.jooq.Result;
-import org.jooq.UpdateQuery;
+import org.jooq.*;
 import org.jooq.exception.DataAccessException;
-import org.jooq.impl.DSL;
-import org.postgresql.util.PGobject;
 
 import java.sql.PreparedStatement;
 import java.sql.Timestamp;
@@ -105,7 +99,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         eventContextRecord.setEndTime((Timestamp) records.getValue(0, I_CompositionAccess.F_CONTEXT_END_TIME));
         eventContextRecord.setEndTimeTzid((String) records.getValue(0, I_CompositionAccess.F_CONTEXT_END_TIME_TZID));
         eventContextRecord.setLocation((String) records.getValue(0, I_CompositionAccess.F_CONTEXT_LOCATION));
-        eventContextRecord.setOtherContext(records.getValue(0, I_CompositionAccess.F_CONTEXT_OTHER_CONTEXT));
+        eventContextRecord.setOtherContext((JSONB) records.getValue(0, I_CompositionAccess.F_CONTEXT_OTHER_CONTEXT));
 
         return contextAccess;
     }
@@ -324,7 +318,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         //other context
         if (eventContext.getOtherContext() != null && CollectionUtils.isNotEmpty(eventContext.getOtherContext().getItems())) {
             //set up the JSONB field other_context
-            eventContextRecord.setOtherContext(new RawJson().marshal(eventContext.getOtherContext()));
+            eventContextRecord.setOtherContext(JSONB.valueOf(new RawJson().marshal(eventContext.getOtherContext())));
         }
     }
 
@@ -354,7 +348,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         insertQuery.addValue(EVENT_CONTEXT.LOCATION, eventContextRecord.getLocation());
 //        Field jsonbOtherContext = DSL.field(EVENT_CONTEXT.OTHER_CONTEXT+"::jsonb");
         if (eventContextRecord.getOtherContext() != null)
-            insertQuery.addValue(EVENT_CONTEXT.OTHER_CONTEXT, (Object) DSL.field(DSL.val(eventContextRecord.getOtherContext()) + "::jsonb"));
+            insertQuery.addValue(EVENT_CONTEXT.OTHER_CONTEXT, eventContextRecord.getOtherContext());
         insertQuery.addValue(EVENT_CONTEXT.SETTING, eventContextRecord.getSetting());
         insertQuery.addValue(EVENT_CONTEXT.SYS_TRANSACTION, eventContextRecord.getSysTransaction());
 
@@ -430,7 +424,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         updateQuery.addValue(EVENT_CONTEXT.LOCATION, eventContextRecord.getLocation());
 //        Field jsonbOtherContext = DSL.field(EVENT_CONTEXT.OTHER_CONTEXT+"::jsonb");
         if (eventContextRecord.getOtherContext() != null)
-            updateQuery.addValue(EVENT_CONTEXT.OTHER_CONTEXT, (Object) DSL.field(DSL.val(eventContextRecord.getOtherContext().toString()) + "::jsonb"));
+            updateQuery.addValue(EVENT_CONTEXT.OTHER_CONTEXT, eventContextRecord.getOtherContext());
         updateQuery.addValue(EVENT_CONTEXT.SETTING, eventContextRecord.getSetting());
         updateQuery.addValue(EVENT_CONTEXT.SYS_TRANSACTION, eventContextRecord.getSysTransaction());
         updateQuery.addConditions(EVENT_CONTEXT.ID.eq(getId()));
@@ -562,7 +556,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         ItemStructure otherContext = null;
 
         if (eventContextRecord.getOtherContext() != null) {
-            otherContext = new RawJson().unmarshal(((PGobject) eventContextRecord.getOtherContext()).getValue(), ItemStructure.class);
+            otherContext = new RawJson().unmarshal((eventContextRecord.getOtherContext().data()), ItemStructure.class);
         }
 
         return new EventContext(healthCareFacility,
@@ -580,7 +574,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
     public String getOtherContextJson() {
         if (eventContextRecord.getOtherContext() == null)
             return null;
-        return ((PGobject) eventContextRecord.getOtherContext()).getValue();
+        return (eventContextRecord.getOtherContext().data());
     }
 
     @Override

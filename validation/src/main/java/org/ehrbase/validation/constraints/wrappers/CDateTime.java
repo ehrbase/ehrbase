@@ -21,8 +21,9 @@
 
 package org.ehrbase.validation.constraints.wrappers;
 
-import org.ehrbase.validation.constraints.util.DateTimeSyntax;
+import com.nedap.archie.datetime.DateTimeFormatters;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
+import org.ehrbase.validation.constraints.util.DateTimeSyntax;
 import org.openehr.schemas.v1.CDATETIME;
 import org.openehr.schemas.v1.CPRIMITIVE;
 
@@ -32,10 +33,10 @@ import java.util.Map;
 /**
  * validate a DvDateTime
  *
- * @see DvDateTime
  * @link https://specifications.openehr.org/releases/AM/latest/AOM1.4.html#_c_date_time_class
- *
+ * <p>
  * Created by christian on 7/23/2016.
+ * @see DvDateTime
  */
 public class CDateTime extends CConstraint implements I_CTypeValidate {
 
@@ -49,7 +50,7 @@ public class CDateTime extends CConstraint implements I_CTypeValidate {
             ValidationException.raise(path, "INTERNAL: Time validation expects a java-date-time argument", "DATE_TIME_01");
 
         CDATETIME cdatetime = (CDATETIME) cprimitive;
-        String dvDateStr = aValue.toString();
+        String dvDateStr = DateTimeFormatters.ISO_8601_DATE_TIME.format((Temporal) aValue);
 
         new DateTimeSyntax(path, dvDateStr, cdatetime.isSetPattern() ? cdatetime.getPattern() : null).validate();
 
