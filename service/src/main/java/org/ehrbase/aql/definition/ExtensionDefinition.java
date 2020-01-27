@@ -86,4 +86,9 @@ public class ExtensionDefinition implements I_VariableDefinition {
     public void setPath(String path) {
 
     }
+
+    @Override
+    public void setDistinct(boolean distinct) {
+
+    }
 }

@@ -87,6 +87,8 @@ public class ItemStack {
         //replace all dots by underscores since it is used as delimiter in a dotted labels expression for ltree
         //only A-Za-z0-9_ are allowed to express a label
         label = label.replaceAll("\\.", "_").replaceAll("\\-", "_");
+        if (label.endsWith("]"))
+            label = label.substring(0, label.indexOf("]"));
         return label;
     }
 

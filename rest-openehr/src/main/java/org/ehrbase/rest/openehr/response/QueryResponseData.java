@@ -18,6 +18,7 @@
 
 package org.ehrbase.rest.openehr.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.ehrbase.api.dto.QueryResultDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
@@ -35,6 +36,7 @@ public class QueryResponseData {
     private String query;
 
     @JsonProperty(value = "name")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String name;
 
     //the list of columns as defined in the SELECT clause (with a path...)
@@ -52,31 +54,46 @@ public class QueryResponseData {
         this.rows = new ArrayList<>();
 
         //set the columns definitions
-        if (queryResultDto.getVariables().size() > 0 && queryResultDto.getResultSet().size() > 0) {
-            //the order of the column definitions is set by the resultSet ordering
-            Map<String, Object> record = queryResultDto.getResultSet().get(0);
-            int count = 0;
+        if (queryResultDto.getVariables().size() > 0 ) {
+            if (queryResultDto.getResultSet().size() > 0) {
+                //the order of the column definitions is set by the resultSet ordering
+                Map<String, Object> record = queryResultDto.getResultSet().get(0);
+                int count = 0;
 
-            for (String columnId : record.keySet()) {
-                Map<String, String> fieldMap = new HashMap<>();
+                for (String columnId : record.keySet()) {
+                    Map<String, String> fieldMap = new HashMap<>();
 
-                if (queryResultDto.getVariables().containsKey(columnId)) {
-                    fieldMap.put("name", columnId);
-                    fieldMap.put("path", queryResultDto.getVariables().get(columnId));
+                    if (queryResultDto.getVariables().containsKey(columnId)) {
+                        fieldMap.put("name", columnId);
+                        fieldMap.put("path", queryResultDto.getVariables().get(columnId));
+                    } else {
+                        fieldMap.put("name", "#" + count);
+                        fieldMap.put("path", columnId);
+                    }
+                    count++;
+                    columns.add(fieldMap);
                 }
-                else {
-                    fieldMap.put("name", "#"+count);
-                    fieldMap.put("path", columnId);
-                }
-                count++;
-                columns.add(fieldMap);
             }
-
+            else {
+                //use the variable definition instead
+                int count = 0;
+                for (Map.Entry variableEntry: queryResultDto.getVariables().entrySet()){
+                    Map<String, String> fieldMap = new HashMap<>();
+                    if (variableEntry.getKey() != null) {
+                        fieldMap.put("name", variableEntry.getKey().toString());
+                        fieldMap.put("path", variableEntry.getValue().toString());
+                    } else {
+                        fieldMap.put("name", "#" + count);
+                        fieldMap.put("path", variableEntry.getValue().toString());
+                    }
+                    count++;
+                    columns.add(fieldMap);
+                }
+            }
 
             //set the row results
             for (Map valueSet : queryResultDto.getResultSet()){
-                List values =  new ArrayList();
-                values.addAll(valueSet.values());
+                List values = new ArrayList(valueSet.values());
                 rows.add(values);
             }
         }

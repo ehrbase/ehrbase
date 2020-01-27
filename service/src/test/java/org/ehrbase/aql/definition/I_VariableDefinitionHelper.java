@@ -81,6 +81,11 @@ public class I_VariableDefinitionHelper {
             public void setPath(String path) {
 
             }
+
+            @Override
+            public void setDistinct(boolean distinct) {
+
+            }
         };
     }
 

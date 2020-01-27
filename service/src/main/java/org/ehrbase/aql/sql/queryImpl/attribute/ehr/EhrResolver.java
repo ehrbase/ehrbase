@@ -64,4 +64,11 @@ public class EhrResolver extends AttributeResolver
         }
         throw new IllegalArgumentException("Unresolved ehr attribute path:"+path);
     }
+
+    public static boolean isEhrAttribute(String path){
+        if (path.startsWith("ehr_status") || path.startsWith("system_id"))
+            return true;
+        else
+            return path.matches("ehr_id|ehr_id/value|time_created|time_created/value");
+    }
 }

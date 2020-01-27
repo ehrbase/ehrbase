@@ -122,7 +122,6 @@
 
                                          If provided, both "includeExpressions" and "includeTypes" must match. -->
                                     <includeExpression>^(other_)?details$</includeExpression>
-                                    <!-- TODO tag name was rolled back to older version here, needs to be "includeExpressions" with newer jooq version again -->
 
                                     <!-- Add a Java regular expression matching data types to be forced to
                                          have this type.
@@ -137,7 +136,6 @@
 
                                          If provided, both "includeExpressions" and "includeTypes" must match. -->
                                     <includeTypes>.*</includeTypes>
-                                    <!-- TODO tag name was rolled back to older version here, needs to be "includeTypes" with newer jooq version again -->
                                 </forcedType>
 
                             </forcedTypes>
