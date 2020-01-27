@@ -31,8 +31,8 @@ import org.ehrbase.aql.sql.QueryProcessor;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.support.DataAccess;
 
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -69,7 +69,7 @@ public class AqlQueryHandler extends DataAccess {
         AqlResult aqlResult =  queryProcessor.execute();
 
         //add the variable from statements
-        Map<String, String> variables = new HashMap();
+        Map<String, String> variables =  new LinkedHashMap<>();;
         Iterator<I_VariableDefinition> iterator = statements.getVariables().iterator();
         int serial = 0;
         while (iterator.hasNext()) {
