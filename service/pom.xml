@@ -22,7 +22,7 @@
     <parent>
         <artifactId>server</artifactId>
         <groupId>org.ehrbase.openehr</groupId>
-        <version>0.9.0</version>
+        <version>0.10.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -30,11 +30,8 @@
     <artifactId>service</artifactId>
 
     <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-        <dependency>
+
+    <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-jdbc</artifactId>
         </dependency>
@@ -45,12 +42,10 @@
         <dependency>
             <groupId>org.ehrbase.openehr</groupId>
             <artifactId>api</artifactId>
-            <version>0.9.0</version>
         </dependency>
         <dependency>
             <groupId>org.ehrbase.openehr</groupId>
             <artifactId>serialisation</artifactId>
-            <version>0.9.0</version>
         </dependency>
         <dependency>
             <groupId>com.github.openEHR</groupId>
@@ -59,17 +54,14 @@
         <dependency>
             <groupId>org.ehrbase.openehr</groupId>
             <artifactId>opt-1.4</artifactId>
-            <version>0.9.0</version>
         </dependency>
         <dependency>
             <groupId>org.ehrbase.openehr</groupId>
             <artifactId>jooq-pg</artifactId>
-            <version>0.9.0</version>
         </dependency>
         <dependency>
             <groupId>org.ehrbase.openehr</groupId>
             <artifactId>validation</artifactId>
-            <version>0.9.0</version>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -83,11 +75,6 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
-            <version>4.1</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
@@ -120,10 +107,6 @@
         <dependency>
             <groupId>org.ehcache</groupId>
             <artifactId>ehcache</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.velocity</groupId>
-            <artifactId>velocity</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>

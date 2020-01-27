@@ -109,4 +109,32 @@ public class DBEncodeTest {
 
         assertTrue(object instanceof Composition);
     }
+
+    @Test
+    public void compositionEncodingCycleWithDuplicateSections() throws Exception {
+        Composition composition = new CanonicalXML().unmarshal(IOUtils.toString(CompositionTestDataCanonicalXML.REGISTRO_DE_ATENDIMENTO.getStream(), UTF_8),Composition.class);
+
+        assertNotNull(composition);
+
+        int sectionOccurrences = composition.getContent().size();
+
+        CompositionSerializer compositionSerializerRawJson = new CompositionSerializer();
+
+        String db_encoded = compositionSerializerRawJson.dbEncode(composition);
+        assertNotNull(db_encoded);
+
+        String converted = new LightRawJsonEncoder(db_encoded).encodeCompositionAsString();
+
+        //see if this can be interpreted by Archie
+        Object object = new CanonicalJson().unmarshal(converted,Composition.class);
+
+        assertTrue(object instanceof Composition);
+
+        //check if encoded/decode carry the same name
+        assertEquals(sectionOccurrences, ((Composition) object).getContent().size());
+
+        String interpreted = new CanonicalXML().marshal((Composition) object);
+
+        assertNotNull(interpreted);
+    }
 }
