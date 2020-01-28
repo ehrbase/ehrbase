@@ -114,7 +114,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
         InputStream inputStream = new ByteArrayInputStream(content);
 
-        TemplateDocument document = null;
+        TemplateDocument document;
         try {
             document = TemplateDocument.Factory.parse(inputStream);
         } catch (XmlException | IOException e) {
@@ -125,6 +125,10 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         if (template == null) {
             throw new InvalidApiParameterException("Could not parse input template");
         }
+
+
+        if (template.getTemplateId() == null || template.getTemplateId().isNil() || template.getTemplateId().getValue() == null || template.getTemplateId().getValue().isEmpty())
+            throw new IllegalArgumentException("Supplied template has nil or empty template id value");
 
         //get the filename from the template template Id
         Optional<TEMPLATEID> filenameOptional = Optional.ofNullable(template.getTemplateId());
@@ -245,8 +249,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
             log.warn(e.getMessage(), e);
         }
         if (operationaltemplate.isPresent()) {
-            I_QueryOptMetaData visitor = buildAndCacheQueryOptMetaData(operationaltemplate.get());
-            retval = visitor;
+            retval = buildAndCacheQueryOptMetaData(operationaltemplate.get());
         } else {
             throw new IllegalArgumentException("Could not retrieve  knowledgeCacheService.getKnowledgeCache() cache for template Uid:" + uuid);
         }
