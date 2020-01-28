@@ -120,7 +120,7 @@ public class OpenehrEhrStatusController extends BaseController {
 
         Optional<OriginalVersion<EhrStatus>> ehrStatus = ehrService.getEhrStatusAtVersion(ehrId, versionedObjectUid, version);
 
-        UUID ehrStatusId = UUID.fromString(ehrStatus.orElseThrow(() -> new ObjectNotFoundException("ehr_status", "EHR_STATUS not found")).getUid().toString());
+        UUID ehrStatusId = extractVersionedObjectUidFromVersionUid(ehrStatus.orElseThrow(() -> new ObjectNotFoundException("ehr_status", "EHR_STATUS not found")).getUid().toString());
 
         return internalGetEhrStatusProcessing(accept, ehrId, ehrStatusId, version);
     }
@@ -233,7 +233,7 @@ public class OpenehrEhrStatusController extends BaseController {
             if (ehrStatus.isPresent()) {
                 objByReference.setArchetypeNodeId(ehrStatus.get().getData().getArchetypeNodeId());
                 objByReference.setName(ehrStatus.get().getData().getName());
-                objByReference.setUid(new ObjectVersionId(ehrStatus.get().getUid().toString() + "::" + ehrService.getServerConfig().getNodename() + "::" + version));
+                objByReference.setUid(ehrStatus.get().getUid());
                 objByReference.setSubject(ehrStatus.get().getData().getSubject());
                 objByReference.setOtherDetails(ehrStatus.get().getData().getOtherDetails());
                 objByReference.setModifiable(ehrStatus.get().getData().isModifiable());

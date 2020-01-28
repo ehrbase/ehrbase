@@ -697,8 +697,9 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     public Integer delete(UUID committerId, UUID systemId, String description) {
 
         Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
-        // update contribution (with embedded contribution.audit handling)
-        contributionAccess.update(timestamp, committerId, systemId, null, ContributionDef.ContributionState.DELETED, I_ConceptAccess.ContributionChangeType.DELETED, description);
+        // create new contribution for this deletion action (with embedded contribution.audit handling)
+        contributionAccess = I_ContributionAccess.getInstance(getDataAccess(), contributionAccess.getEhrId()); // overwrite old contribution with new one
+        contributionAccess.commit(timestamp, committerId, systemId, null, ContributionDef.ContributionState.COMPLETE, I_ConceptAccess.ContributionChangeType.DELETED, description);
         // update this composition's audit
         auditDetailsAccess.update(systemId, committerId, I_ConceptAccess.ContributionChangeType.DELETED, description);
         return compositionRecord.delete();
