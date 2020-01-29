@@ -72,6 +72,18 @@ public class CanonicalXMLTest {
     }
 
     @Test
+    public void unmarshalWithDuplicatedSections() throws IOException {
+        String value = IOUtils.toString(CompositionTestDataCanonicalXML.REGISTRO_DE_ATENDIMENTO.getStream(), UTF_8);
+        CanonicalXML cut = new CanonicalXML();
+
+        Composition composition = cut.unmarshal(value, Composition.class);
+
+        assertThat(composition).isNotNull();
+        //assertThat(composition.getArchetypeDetails().getTemplateId().getValue()).isEqualTo("test_all_types.en.v1");
+
+    }
+
+    @Test
     public void marshalInline() {
         Folder folder = new Folder();
         folder.setName(new DvText("folder name"));

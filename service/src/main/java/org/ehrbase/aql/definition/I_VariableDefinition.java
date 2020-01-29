@@ -46,4 +46,6 @@ public interface I_VariableDefinition {
     I_VariableDefinition clone();
 
     void setPath(String path); //used to modify the path in case of struct query (canonical json).
+
+    void setDistinct(boolean distinct);
 }

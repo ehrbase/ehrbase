@@ -33,6 +33,9 @@ public class TerminologyCheck implements I_TerminologyCheck {
             return;
 
         //get the actual attribute
+        if (!codesetMapping.isLocalizedAttribute(codePhrase.getTerminologyId().getValue(), context, language))
+            language = "en"; //default to English for the rest of the validation
+
         String attribute = codesetMapping.actualAttributeId(codePhrase.getTerminologyId().getValue(), context, language);
         ContainerType containerType = codesetMapping.containerType(codePhrase.getTerminologyId().getValue(), context);
 
@@ -68,6 +71,9 @@ public class TerminologyCheck implements I_TerminologyCheck {
 
         if (terminologyInterface.terminology(dvCodedText.getDefiningCode().getTerminologyId().getValue()) == null) //terminology is NOT defined
             return;
+
+        if (!codesetMapping.isLocalizedAttribute(dvCodedText.getDefiningCode().getTerminologyId().getValue(), context, language))
+            language = "en"; //default to English for the rest of the validation
 
         String rubric = terminologyInterface.terminology(dvCodedText.getDefiningCode().getTerminologyId().getValue()).rubricForCode(dvCodedText.getDefiningCode().getCodeString(), language);
         boolean valid = rubric.equals(dvCodedText.getValue());

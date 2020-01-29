@@ -32,7 +32,7 @@ public class VariableDefinition implements I_VariableDefinition {
     private String path;
     private String alias;
     private String identifier;
-    private boolean isDistinct = false;
+    private boolean isDistinct;
 
     public VariableDefinition(String path, String alias, String identifier, boolean isDistinct) {
         this.path = path;
@@ -89,5 +89,10 @@ public class VariableDefinition implements I_VariableDefinition {
     @Override
     public void setPath(String path){
         this.path = path;
+    }
+
+    @Override
+    public void setDistinct(boolean distinct) {
+        this.isDistinct = distinct;
     }
 }

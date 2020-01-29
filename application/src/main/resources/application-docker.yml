@@ -19,25 +19,19 @@ spring:
     url: ${DB_URL}
     username: ${DB_USER}
     password: ${DB_PASS}
-    tomcat:
-      maxIdle: 10
-      max-active: 50
-      max-wait: 10000
+    hikari:
+      maximum-pool-size: 50
+      max-lifetime: 1800000
+      minimum-idle: 10
 
 server:
-  contextPath: /ehrbase
   port: 8080
   # Optional custom server nodename
   # nodename: 'local.test.org'
+  servlet:
+    context-path: /ehrbase
 
 system:
   type: ${SYSTEM_NAME}
 
 
-
-keycloak:
-  bearer-only: true
-  realm: ${OUTH2_REALM_NAME}
-  resource: ${OUTH2_CLIENT_NAME}
-  use-resource-role-mappings: true
-  auth-server-url: ${OUTH2_SERVER_URL}

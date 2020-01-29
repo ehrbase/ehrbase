@@ -48,4 +48,16 @@ public class DvCountTest extends ConstraintTestBase {
         }
     }
 
+
+    @Test
+    public void testConstraintValidationNullMagnitude() {
+        DvCount count = new DvCount(null);
+
+        try {
+            new CArchetypeConstraint(null).validate("test", count, archetypeconstraint);
+            fail("mandatory element not detected");
+        } catch (Exception e) {
+
+        }
+    }
 }

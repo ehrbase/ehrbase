@@ -14,6 +14,7 @@
         <container>group</container>
         <match>
             <codeset language="en" id="composition category"/>
+            <codeset language="pt" id="categoria de composição"/>
         </match>
     </map>
     <map>
@@ -22,6 +23,7 @@
         <container>group</container>
         <match>
             <codeset language="en" id="setting"/>
+            <codeset language="pt" id="configuração"/>
         </match>
     </map>
     <map>
@@ -30,6 +32,8 @@
         <container>group</container>
         <match>
             <codeset language="en" id="instruction states"/>
+            <codeset language="pt" id="estados de instrução"/>
+
         </match>
     </map>
     <map>
@@ -38,6 +42,7 @@
         <container>group</container>
         <match>
             <codeset language="en" id="instruction transitions"/>
+            <codeset language="pt" id="transições de instrução"/>
         </match>
     </map>
     <map>
@@ -86,6 +91,7 @@
         <container>group</container>
         <match>
             <codeset language="en" id="participation mode"/>
+            <codeset language="pt" id="modo de participação"/>
         </match>
     </map>
     <map>
@@ -94,6 +100,7 @@
         <container>group</container>
         <match>
             <codeset language="en" id="participation functions"/>
+            <codeset language="pt" id="função de participação"/>
         </match>
     </map>
     <map>
@@ -102,6 +109,7 @@
         <container>group</container>
         <match>
             <codeset language="en" id="subject relationship"/>
+            <codeset language="pt" id="relacionamento de sujeito"/>
         </match>
     </map>
     <map>
@@ -110,6 +118,7 @@
         <container>group</container>
         <match>
             <codeset language="en" id="property"/>
+            <codeset language="pt" id="propriedade"/>
         </match>
     </map>
     <map>
@@ -118,6 +127,7 @@
         <container>group</container>
         <match>
             <codeset language="en" id="event math function"/>
+            <codeset language="pt" id="função matemática de evento"/>
         </match>
     </map>
     <map>
@@ -134,6 +144,7 @@
         <container>group</container>
         <match>
             <codeset language="en" id="term mapping purpose"/>
+            <codeset language="pt" id="propósito de mapeamento de termo"/>
         </match>
     </map>
     <map>

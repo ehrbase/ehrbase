@@ -122,40 +122,43 @@ public class ConstraintChecker {
 
         Iterator<Map.Entry<String, ConstraintMapper.ConstraintItem>> iterator = constraintMapper.getElementConstraintIterator();
         int count = 0;
-        while (iterator.hasNext()){
+        while (iterator.hasNext()) {
             count++;
             //check Cardinality
             Map.Entry<String, ConstraintMapper.ConstraintItem> watch = iterator.next();
             String path = watch.getKey();
 
-            Locatable item = (Locatable)locatable.itemAtPath(path);
+            for (Object pathItem : locatable.itemsAtPath(path)) {
+                if (pathItem instanceof Locatable) {
+                    Locatable item = (Locatable) pathItem;
 
-            //if null, it has not be assigned potentially (example, unassigned protocol)
-            ConstraintMapper.CardinalityItem cardinalityItem = constraintMapper.getCardinalityList().get(path);
+                    //if null, it has not be assigned potentially (example, unassigned protocol)
+                    ConstraintMapper.CardinalityItem cardinalityItem = constraintMapper.getCardinalityList().get(path);
 
-            if (item == null) {
-                if (((OptConstraintMapper.OptConstraintItem) watch.getValue()).isMandatory()){
+                    if (item == null) {
+                        if (((OptConstraintMapper.OptConstraintItem) watch.getValue()).isMandatory()) {
 //                    validationException.append("Validation error at "+path+", "+"Mandatory element missing, expected:"+((OptConstraintMapper.OptConstraintItem) watch.getValue()).occurrencesToString()+"\n");
 
-                    if (!cardinality.isTransitivelyOptional(path))
-                        validationException.append("Validation error at "+path+", "+"Mandatory element missing, expected:"+((OptConstraintMapper.OptConstraintItem) watch.getValue()).occurrencesToString()+"\n");
-                    else
-                        continue;
+                            if (!cardinality.isTransitivelyOptional(path))
+                                validationException.append("Validation error at " + path + ", " + "Mandatory element missing, expected:" + ((OptConstraintMapper.OptConstraintItem) watch.getValue()).occurrencesToString() + "\n");
+                            else
+                                continue;
+                        } else
+                            continue;
+                    }
+
+                    //get the cardinality if specified
+                    if (cardinalityItem != null)
+                        cardinality.check(item, path, cardinalityItem);
+
+                    //validate this element
+                    try {
+                        if (item instanceof Element && !isNilElement((Element) item))
+                            validateItem(path, item);
+                    } catch (Exception e) {
+                        validationException.append(new Message().encode(path, e.getMessage(), "") + "\n");
+                    }
                 }
-                else
-                    continue;
-            }
-
-            //get the cardinality if specified
-            if (cardinalityItem != null)
-                cardinality.check(item, path, cardinalityItem);
-
-            //validate this element
-            try {
-                if (item instanceof Element && !isNilElement((Element)item))
-                    validateItem(path, item);
-            } catch (Exception e){
-                validationException.append(new Message().encode(path, e.getMessage(), "")+"\n");
             }
         }
 

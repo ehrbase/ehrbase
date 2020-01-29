@@ -90,4 +90,9 @@ public class FunctionDefinition implements I_VariableDefinition {
     public void setPath(String path) {
         this.path = path;
     }
+
+    @Override
+    public void setDistinct(boolean distinct) {
+
+    }
 }

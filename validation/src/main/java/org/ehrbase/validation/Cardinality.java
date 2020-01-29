@@ -91,7 +91,7 @@ public class Cardinality {
                 if (occurrences.isOptional()) {
                     //check if this optional node contains any datavalue element in its children
                     NodeCounter counter =  new NodeCounter();
-                    counter.count(locatable.itemAtPath(checkPath));
+                    counter.count(locatable.itemsAtPath(checkPath));
                     Integer elementCount = counter.getCount();
                     if (elementCount > 0)
                         return false;
@@ -122,11 +122,11 @@ public class Cardinality {
         for (Map.Entry<String, ConstraintMapper.CardinalityItem> entry: constraintMapper.getCardinalityList().entrySet()){
             valcount++;
             //get the corresponding node
-            Object item = locatable.itemAtPath(entry.getKey());
-
-            NodeCounter counter =  new NodeCounter();
-            counter.count(item);
-            Integer childOccurrence = counter.getCount();
+            List<Object> item = locatable.itemsAtPath(entry.getKey());
+//
+//            NodeCounter counter =  new NodeCounter();
+//            counter.count(item);
+            Integer childOccurrence = item.size();
 
             try {
                 IntervalComparator.isWithinBoundaries(childOccurrence, entry.getValue().getCardinality());

@@ -418,7 +418,10 @@ public class CompositionSerializer {
 
         if (composition.getContent() != null && !composition.getContent().isEmpty()) {
             for (ContentItem item : composition.getContent()) {
-                putObject(null, item, ltree, getNodeTag(TAG_CONTENT, item, ltree), traverse(item, TAG_CONTENT));
+                Map contentMap = traverse(item, TAG_CONTENT);
+                if (!contentMap.containsKey(TAG_NAME))
+                    contentMap.put(TAG_NAME, mapName(item.getName())); //this fixes the issue with SECTION name
+                putObject(null, item, ltree, getNodeTag(TAG_CONTENT, item, ltree), contentMap);
             }
         }
         log.debug(ltree.toString());
@@ -655,7 +658,7 @@ public class CompositionSerializer {
             }
             //CHC: 160531 add explicit name
             Section section = (Section) item;
-            if (section.getName() != null) encodeNodeMetaData(ltree, section);
+            if (section.getName() != null)encodeNodeAttribute(ltree, null, null, section.getName());
 
             if (ltree.size() > 0)
                 retmap = ltree;

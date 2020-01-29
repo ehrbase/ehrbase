@@ -50,6 +50,8 @@
             <artifactId>jooq-codegen-maven</artifactId>
         </dependency>
 
+
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -60,7 +62,23 @@
     <build>
         <plugins>
             <plugin>
-
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <configuration>
+                    <locations>
+                        <location>classpath:db/migration</location>
+                    </locations>
+                    <url>jdbc:postgresql://${database.host}:${database.port}/${database.name}</url>
+                    <driver>org.postgresql.Driver</driver>
+                    <user>${database.user}</user>
+                    <password>${database.pass}</password>
+                    <defaultSchema>ehr</defaultSchema>
+                    <schemas>
+                        <schema>ehr</schema>
+                    </schemas>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.jooq</groupId>
                 <artifactId>jooq-codegen-maven</artifactId>
                 <configuration>
@@ -77,7 +95,7 @@
                                 implementation here, if your database is currently not supported or if you
                                 wish to read the database schema fromBinder a file, such as a Hibernate .hbm.xml
                                 file -->
-                            <name>org.jooq.util.postgres.PostgresDatabase</name>
+                            <name>org.jooq.meta.postgres.PostgresDatabase</name>
                             <!-- All elements that are generated fromBinder your schema (A Java regular
                                 expression. Use the pipe to separate several expressions) Watch out for case-sensitivity.
                                 Depending on your database, this might be important! You can storeComposition case-insensitive
@@ -103,8 +121,7 @@
                                     <!-- Add a Java regular expression matching fully-qualified columns. Use the pipe to separate several expressions.
 
                                          If provided, both "includeExpressions" and "includeTypes" must match. -->
-                                    <expression>^(other_)?details$</expression>
-                                    <!-- TODO tag name was rolled back to older version here, needs to be "includeExpressions" with newer jooq version again -->
+                                    <includeExpression>^(other_)?details$</includeExpression>
 
                                     <!-- Add a Java regular expression matching data types to be forced to
                                          have this type.
@@ -118,8 +135,7 @@
                                          It is thus recommended to use defensive regexes for types.
 
                                          If provided, both "includeExpressions" and "includeTypes" must match. -->
-                                    <types>.*</types>
-                                    <!-- TODO tag name was rolled back to older version here, needs to be "includeTypes" with newer jooq version again -->
+                                    <includeTypes>.*</includeTypes>
                                 </forcedType>
 
                             </forcedTypes>

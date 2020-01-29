@@ -35,30 +35,31 @@ import java.util.Optional;
  * See pom.xml of this module for further configuration, like what columns are linked with this binding.
  * Source: https://www.jooq.org/doc/3.12/manual/code-generation/custom-data-type-bindings/
  */
-public class OtherDetailsJsonbBinder implements Binding<Object, ItemStructure> {
+public class OtherDetailsJsonbBinder implements Binding<org.jooq.JSONB, ItemStructure> {
 
     // The converter does all the work
     @Override
-    public Converter<Object, ItemStructure> converter() {
-        return new Converter<Object, ItemStructure>() {
+    public Converter<org.jooq.JSONB, ItemStructure> converter() {
+        return new Converter<org.jooq.JSONB, ItemStructure>() {
             @Override
-            public ItemStructure from(Object databaseObject) {
+            public ItemStructure from(org.jooq.JSONB databaseObject) {
                 // null is valid "other_details" column's value
                 return Optional.ofNullable(databaseObject)
-                               .map(i -> new RawJson().unmarshal((String) i, ItemStructure.class))
-                               .orElse(null);
+                        .map(JSONB::data)
+                        .map(i -> new RawJson().unmarshal(i, ItemStructure.class))
+                        .orElse(null);
             }
 
             @Override
-            public Object to(ItemStructure userObject) {
+            public org.jooq.JSONB to(ItemStructure userObject) {
                 return Optional.ofNullable(userObject)
-                               .map(i -> new RawJson().marshal(i))
-                               .orElse(null);
+                        .map(i -> JSONB.valueOf(new RawJson().marshal(i)))
+                        .orElse(null);
             }
 
             @Override
-            public Class<Object> fromType() {
-                return Object.class;
+            public Class<org.jooq.JSONB> fromType() {
+                return org.jooq.JSONB.class;
             }
 
             @Override
@@ -73,6 +74,7 @@ public class OtherDetailsJsonbBinder implements Binding<Object, ItemStructure> {
 
     /**
      * Rending a bind variable for the binding context's value and casting it to the ItemStructure type
+     *
      * @param ctx internal DB context
      * @throws SQLException when SQL execution failed
      */
@@ -88,6 +90,7 @@ public class OtherDetailsJsonbBinder implements Binding<Object, ItemStructure> {
 
     /**
      * Registering VARCHAR types for JDBC CallableStatement OUT parameters
+     *
      * @param ctx internal DB context
      * @throws SQLException when SQL execution failed
      */
@@ -98,6 +101,7 @@ public class OtherDetailsJsonbBinder implements Binding<Object, ItemStructure> {
 
     /**
      * Converting the ItemStructure to a String value and setting that on a JDBC PreparedStatement
+     *
      * @param ctx internal DB context
      * @throws SQLException when SQL execution failed
      */
@@ -108,26 +112,29 @@ public class OtherDetailsJsonbBinder implements Binding<Object, ItemStructure> {
 
     /**
      * Getting a String value from a JDBC ResultSet and converting that to a ItemStructure
+     *
      * @param ctx internal DB context
      * @throws SQLException when SQL execution failed
      */
     @Override
     public void get(BindingGetResultSetContext<ItemStructure> ctx) throws SQLException {
-        ctx.convert(converter()).value(ctx.resultSet().getString(ctx.index()));
+        ctx.convert(converter()).value(JSONB.valueOf(ctx.resultSet().getString(ctx.index())));
     }
 
     /**
      * Getting a String value from a JDBC CallableStatement and converting that to a ItemStructure
+     *
      * @param ctx internal DB context
      * @throws SQLException when SQL execution failed
      */
     @Override
     public void get(BindingGetStatementContext<ItemStructure> ctx) throws SQLException {
-        ctx.convert(converter()).value(ctx.statement().getString(ctx.index()));
+        ctx.convert(converter()).value(JSONB.valueOf(ctx.statement().getString(ctx.index())));
     }
 
     /**
      * Getting a value from a JDBC SQLInput (useful for Oracle OBJECT types)
+     *
      * @param ctx internal DB context
      * @throws SQLException when SQL execution failed
      */
@@ -138,6 +145,7 @@ public class OtherDetailsJsonbBinder implements Binding<Object, ItemStructure> {
 
     /**
      * Setting a value on a JDBC SQLOutput (useful for Oracle OBJECT types)
+     *
      * @param ctx internal DB context
      * @throws SQLException when SQL execution failed
      */

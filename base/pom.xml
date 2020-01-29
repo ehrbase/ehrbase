@@ -29,35 +29,6 @@
 
     <artifactId>base</artifactId>
 
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-install-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>install V3__terminology</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <groupId>org.ehrbase.openehr</groupId>
-                            <artifactId>V3__terminology</artifactId>
-                            <version>1.0</version>
-                            <packaging>jar</packaging>
-                            <file>${project.basedir}/lib/V3__terminology.jar</file>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.flywaydb</groupId>
-                <artifactId>flyway-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
     <dependencies>
         <dependency>
             <groupId>org.flywaydb</groupId>
