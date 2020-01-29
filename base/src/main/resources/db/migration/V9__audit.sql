@@ -33,7 +33,7 @@ CREATE TABLE ehr.audit_details_history (like ehr.audit_details);
 CREATE INDEX ehr_audit_details_history ON ehr.audit_details_history USING BTREE (id);
 
 CREATE TRIGGER versioning_trigger BEFORE INSERT OR UPDATE OR DELETE ON ehr.audit_details
-    FOR EACH ROW EXECUTE PROCEDURE ext.versioning('sys_period', 'ehr.audit_details_history', true);
+FOR EACH ROW EXECUTE PROCEDURE ext.versioning('sys_period', 'ehr.audit_details_history', true);
 
 -- Finally, modify existing object tables to include new audit feature
 -- add audit capabilities to contribution table and remove older columns that were part of the early audit implementation
