@@ -138,7 +138,18 @@ workflows:
                 - release
                 - master
 
-      - QUERYSERVICE-test:
+      - QUERYSERVICE-test-1:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
+
+      - QUERYSERVICE-test-2:
           context: org-global
           requires:
             - build-artifacts
@@ -160,7 +171,8 @@ workflows:
             - DIRECTORY-test
             - EHRSERVICE-test
             - KNOWLEDGE-test
-            - QUERYSERVICE-test
+            - QUERYSERVICE-test-1
+            - QUERYSERVICE-test-2
           filters:
             branches:
               ignore:
@@ -274,7 +286,17 @@ workflows:
               only:
                 - /^(release\/v\d+\.\d+\.\d+|master)$/
 
-      - QUERYSERVICE-test:
+      - QUERYSERVICE-test-1:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              only:
+                - /^(release\/v\d+\.\d+\.\d+|master)$/
+
+      - QUERYSERVICE-test-2:
           context: org-global
           requires:
             - build-artifacts
@@ -295,7 +317,8 @@ workflows:
             - DIRECTORY-test
             - EHRSERVICE-test
             - KNOWLEDGE-test
-            - QUERYSERVICE-test
+            - QUERYSERVICE-test-1
+            - QUERYSERVICE-test-2
           filters:
             branches:
               only:
@@ -439,14 +462,23 @@ jobs:
               test-suite-path: "KNOWLEDGE_TESTS"
               test-suite-name: "KNOWLEDGE"
 
-  QUERYSERVICE-test:
+  QUERYSERVICE-test-1:
       machine:
             image: ubuntu-1604:201903-01
       steps:
         - run-robot-tests:
-              include-tags: "ADHOC-QUERY"
+              include-tags: "adhoc-queryANDempty_db"
               test-suite-path: "QUERY_SERVICE_TESTS"
-              test-suite-name: "ADHOC-QUERY"
+              test-suite-name: "ADHOC-QUERY-1"
+  
+  QUERYSERVICE-test-2:
+    machine:
+          image: ubuntu-1604:201903-01
+    steps:
+      - run-robot-tests:
+            include-tags: "adhoc-queryANDloaded_db"
+            test-suite-path: "QUERY_SERVICE_TESTS"
+            test-suite-name: "ADHOC-QUERY-2"
 
   ROBOT-REPORT:
       machine:

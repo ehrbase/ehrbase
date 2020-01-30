@@ -36,12 +36,9 @@ Force Tags    XML
 Main flow get existing VERSIONED COMPOSITION
 
     upload OPT    minimal/minimal_observation.opt
-
     create EHR    XML
-
     commit composition (XML)    minimal/minimal_observation.composition.participations.extdatetimes.xml
-
-    get versioned composition by uid    ${versioned_object_uid}
+    get versioned composition by uid    XML    ${versioned_object_uid}
     check content of versioned composition (XML)
 
     # [Teardown]    restart SUT

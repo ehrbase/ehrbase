@@ -43,5 +43,5 @@ Alternative flow 2 get COMPOSITION latest on non-existent EHR
 
     # check composition does not exist
     prepare new request session
-    get composition - latest version
+    get composition - latest version    JSON
     check composition does not exist

@@ -137,12 +137,11 @@ check response: is negative indicating errors in committed data
                         # TODO: keep failing to avoid false positive, rm when has checks.
                         Fail    msg=brake it till you make it!
 
-
-check response: is negative indicating empty versions list
+check response: is negative - complaining about empty versions list
                         Should Be Equal As Strings   ${response.status_code}   400
                         Set Test Variable    ${body}    ${response.json()}
-                        Set Test Variable    ${versions}    ${body['versions']}
-                        Length Should Be    ${versions}    0
+                        Set Test Variable    ${error_message}    ${body['error']}
+                        Should Be Equal As Strings    ${error_message}    Invalid Contribution, must have at least one Version object.
 
 
 check response: is negative indicating wrong change_type

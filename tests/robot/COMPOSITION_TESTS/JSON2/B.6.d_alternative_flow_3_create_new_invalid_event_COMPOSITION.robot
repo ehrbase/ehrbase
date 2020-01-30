@@ -40,8 +40,8 @@ Alternative flow 3 create new invalid event COMPOSITION
     create EHR
 
 
+        TRACE GITHUB ISSUE  127  not-ready
 
-        TRACE JIRA BUG    EHR-433    not-ready
 
     commit invalid composition (JSON)    nested/nested.composition.extdatetimes.invalid.xml
 

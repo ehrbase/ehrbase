@@ -41,6 +41,6 @@ Alternative flow 2 get COMPOSITION latest on non-existent EHR
     # commit fake COMPOSITION
     generate random composition_uid
 
-    get composition - latest version (XML)
+    get composition - latest version    XML
 
     check versioned composition does not exist
