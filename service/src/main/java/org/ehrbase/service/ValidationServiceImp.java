@@ -18,6 +18,7 @@
 
 package org.ehrbase.service;
 
+import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.terminology.openehr.TerminologyService;
@@ -79,13 +80,11 @@ public class ValidationServiceImp implements ValidationService {
 
 
     @Override
-    public void check(String templateID, Composition composition)  throws Exception {
+    public void check(String templateID, Composition composition) throws Exception {
         Optional<OPERATIONALTEMPLATE> operationaltemplate = knowledgeCache.retrieveOperationalTemplate(templateID);
 
-        if (!operationaltemplate.isPresent())
-            throw new IllegalArgumentException("Not found template id:" + templateID);
-
-
+        if (operationaltemplate.isEmpty())
+            throw new UnprocessableEntityException("Not found template id: " + templateID);
 
         check(UUID.fromString(operationaltemplate.get().getUid().getValue()), composition);
     }

@@ -336,6 +336,16 @@ public abstract class BaseController {
         return createErrorResponse(e.getMessage(), HttpStatus.UNSUPPORTED_MEDIA_TYPE);
     }
 
+    /**
+     * Handler for project-custom exception.
+     *
+     * @return ResponseEntity<Map < String, String>> as UNPROCESSABLE ENTITY Type - 422
+     */
+    @ExceptionHandler(UnprocessableEntityException.class)
+    public ResponseEntity<Map<String, String>> restErrorHandler(UnprocessableEntityException e) {
+        return createErrorResponse(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
     // TODO: Maybe remove this redundant handler since fallback will cover the same functionality
 
     /**
