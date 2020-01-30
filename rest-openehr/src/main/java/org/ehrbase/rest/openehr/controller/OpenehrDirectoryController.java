@@ -18,9 +18,10 @@
 
 package org.ehrbase.rest.openehr.controller;
 
+import com.nedap.archie.rm.directory.Folder;
+import io.swagger.annotations.*;
 import org.ehrbase.api.dto.FolderDto;
 import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.FolderService;
@@ -28,8 +29,6 @@ import org.ehrbase.rest.openehr.annotation.RequestUrl;
 import org.ehrbase.rest.openehr.controller.OperationNotesResourcesReaderOpenehr.ApiNotes;
 import org.ehrbase.rest.openehr.response.DirectoryResponseData;
 import org.ehrbase.rest.openehr.response.ErrorResponseData;
-import com.nedap.archie.rm.directory.Folder;
-import io.swagger.annotations.*;
 import org.ehrbase.rest.openehr.util.VersionUidHelper;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,7 +60,7 @@ public class OpenehrDirectoryController extends BaseController {
         this.ehrService = Objects.requireNonNull(ehrService);
     }
 
-    @PostMapping(value = "/{ehr_id}/directory", consumes = {"application/xml", "application/json"})
+    @PostMapping(value = "/{ehr_id}/directory")
     @ApiOperation("Create a new directory folder associated with the EHR identified by ehr_id.")
     @ApiNotes("directoryPost.md")
     @ApiResponses(value = {
@@ -151,7 +150,7 @@ public class OpenehrDirectoryController extends BaseController {
             FolderDto folderDto = newFolder.get();
             // Evaluate target format from accept header
             MediaType resContentType = MediaType.APPLICATION_JSON;
-
+/*
             switch (accept) {
                 case MediaType.APPLICATION_JSON_VALUE:
                     break;
@@ -163,7 +162,7 @@ public class OpenehrDirectoryController extends BaseController {
                             "Media type " + accept + " not supported."
                     );
             }
-
+*/
             DirectoryResponseData resBody = buildResponse(folderDto);
 
             resHeaders.setContentType(resContentType);
@@ -219,6 +218,7 @@ public class OpenehrDirectoryController extends BaseController {
         // Get response data format for deserialization; defaults to JSON
         MediaType responseContentType = MediaType.APPLICATION_JSON;
 
+        /*
         switch (accept) {
             case MediaType.APPLICATION_XML_VALUE:
                 responseContentType = MediaType.APPLICATION_XML;
@@ -228,7 +228,7 @@ public class OpenehrDirectoryController extends BaseController {
             default:
                 throw new NotAcceptableException("Media type " + accept + " not supported.");
         }
-
+*/
         // Check if EHR for the folder exists
         if (!ehrService.doesEhrExist(ehrId)) {
             throw new ObjectNotFoundException(
@@ -405,6 +405,7 @@ public class OpenehrDirectoryController extends BaseController {
             // Evaluate target format from accept header
             MediaType resContentType = MediaType.APPLICATION_JSON;
 
+            /*
             switch (accept) {
                 case MediaType.APPLICATION_JSON_VALUE:
                     break;
@@ -416,7 +417,7 @@ public class OpenehrDirectoryController extends BaseController {
                             "Media type " + accept + " not supported."
                     );
             }
-
+*/
             DirectoryResponseData resBody = buildResponse(folderDto);
 
             resHeaders.setContentType(resContentType);
