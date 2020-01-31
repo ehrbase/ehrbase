@@ -21,26 +21,22 @@ Metadata    Version    0.1.0
 Metadata    Author    *Wladislaw Wagner*
 Metadata    Created    2019.03.03
 
-Documentation   B.3.c) Alternative flow 2: Get non existing EHR
+Documentation   B.3.d) Alternative flow 3: Get non existing EHR by subject_id
 
+Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Resource    ${CURDIR}${/}../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../_resources/keywords/generic_keywords.robot
-Resource    ${CURDIR}${/}../_resources/keywords/ehr_keywords.robot
+# Suite Setup  startup SUT
+# Suite Teardown  shutdown SUT
 
-# Setup/Teardown from __init.robot is used
-#Suite Setup    startup SUT
-#Suite Teardown    shutdown SUT
-
-Force Tags    get_ehr
+Force Tags    
 
 
 
 *** Test Cases ***
-Get non-existing EHR
+Get non-existing EHR by subject_id
 
     prepare new request session    JSON
 
     create fake EHR
 
-    retrieve non-existing EHR by ehr_id
+    retrieve non-existing EHR by subject_id

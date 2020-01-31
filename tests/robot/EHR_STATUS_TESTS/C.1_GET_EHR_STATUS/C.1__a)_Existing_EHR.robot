@@ -22,7 +22,6 @@ Metadata    Author    *Wladislaw Wagner*
 Metadata    Created    2019.07.02
 
 Documentation   C.1.a) Main flow: Get status of an existing EHR
-
 ...             Preconditions:
 ...                 An EHR with known ehr_id should exist.
 ...
@@ -40,15 +39,12 @@ Documentation   C.1.a) Main flow: Get status of an existing EHR
 ...                    c) has correct value for is_queryable
 
 
-Resource    ${CURDIR}${/}../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../_resources/keywords/generic_keywords.robot
-Resource    ${CURDIR}${/}../_resources/keywords/ehr_keywords.robot
+Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 
-# Setup/Teardown from __init.robot is used
-# Suite Setup         startup SUT
-# Suite Teardown      shutdown SUT
+# Suite Setup  startup SUT
+# Suite Teardown  shutdown SUT
 
-Force Tags    ehr_status
+Force Tags    
 
 
 

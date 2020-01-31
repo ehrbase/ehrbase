@@ -22,7 +22,6 @@ Metadata    Author    *Wladislaw Wagner*
 Metadata    Created    2019.03.03
 
 Documentation   C.2.b) Alternative flow: Set EHR queryable of non existing EHR
-
 ...             Preconditions:
 ...                 The server should be empty (no EHRs, no commits, no OPTs).
 ...
@@ -35,15 +34,12 @@ Documentation   C.2.b) Alternative flow: Set EHR queryable of non existing EHR
 ...                    an error related to "EHR with ehr_id doesn't exists".
 
 
-Resource    ${CURDIR}${/}../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../_resources/keywords/generic_keywords.robot
-Resource    ${CURDIR}${/}../_resources/keywords/ehr_keywords.robot
+Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 
-# Setup/Teardown from __init.robot is used
-# Suite Setup       startup SUT
-# Suite Teardown    shutdown SUT
+# Suite Setup  startup SUT
+# Suite Teardown  shutdown SUT
 
-Force Tags    ehr_status
+Force Tags    refactor
 
 
 *** Test Cases ***

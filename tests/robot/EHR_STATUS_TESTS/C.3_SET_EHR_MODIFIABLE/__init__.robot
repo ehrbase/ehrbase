@@ -19,28 +19,14 @@
 *** Settings ***
 Metadata    Version    0.1.0
 Metadata    Author    *Wladislaw Wagner*
-Metadata    Created    2019.03.03
+Metadata    Created    2019.02.26
+Metadata    Updated    2020.01.30
 
-Documentation   C.4.b) Clear EHR queryable of non existent EHR
+Documentation    https://docs.google.com/document/d/1r_z_E8MhlNdeVZS4xecl-8KbG0JPqCzKtKMfhuL81jY/edit#heading=h.fkdj6wod6hv2
 
+Resource   ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Resource    ${CURDIR}${/}../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../_resources/keywords/generic_keywords.robot
-Resource    ${CURDIR}${/}../_resources/keywords/ehr_keywords.robot
+# Suite Setup    startup SUT
+# Suite Teardown    shutdown SUT
 
-# Setup/Teardown from __init.robot is used
-#Suite Setup    startup SUT
-#Suite Teardown    shutdown SUT
-
-Force Tags    put_ehr_status
-
-
-
-*** Test Cases ***
-
-
-Clear EHR queryable of non existent EHR (with body)
-
-    create fake EHR
-
-    update ehr_status of fake EHR (with body)
+Force Tags    set_ehr_status    set_modifiable

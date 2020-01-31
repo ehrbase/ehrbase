@@ -22,19 +22,14 @@ Metadata    Author    *Wladislaw Wagner*
 Metadata    Created    2019.03.03
 
 Documentation   B.2.a) Main flow: Check has EHR with existing EHR
-...
 ...             https://vitasystemsgmbh.atlassian.net/wiki/spaces/ETHERCIS/pages/498532998/EHR+Test+Suite#EHRTestSuite-a.Mainflow:CheckhasEHRwithexistingEHR
 
+Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Resource    ${CURDIR}${/}../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../_resources/keywords/generic_keywords.robot
-Resource    ${CURDIR}${/}../_resources/keywords/ehr_keywords.robot
+# Suite Setup  startup SUT
+# Suite Teardown  shutdown SUT
 
-# Setup/Teardown from __init.robot is used
-# Suite Setup       startup SUT
-# Suite Teardown    shutdown SUT
-
-Force Tags    has_ehr
+Force Tags    refactor
 
 
 

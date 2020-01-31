@@ -35,15 +35,12 @@ Documentation   C.1.b) Alternative flow 1: Get status of a non existing EHR
 ...                    related to "EHR with ehr_id doesn't exists".
 
 
-Resource    ${CURDIR}${/}../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../_resources/keywords/generic_keywords.robot
-Resource    ${CURDIR}${/}../_resources/keywords/ehr_keywords.robot
+Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 
-# Setup/Teardown from __init.robot is used
-# Suite Setup       startup SUT
-# Suite Teardown    shutdown SUT
+# Suite Setup  startup SUT
+# Suite Teardown  shutdown SUT
 
-Force Tags    ehr_status
+Force Tags    refactor
 
 
 *** Comments ***

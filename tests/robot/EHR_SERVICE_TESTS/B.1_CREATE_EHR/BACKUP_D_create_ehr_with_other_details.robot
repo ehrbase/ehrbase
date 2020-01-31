@@ -37,7 +37,7 @@ Resource    ${CURDIR}${/}../_resources/keywords/ehr_keywords.robot
 # Suite Teardown    shutdown SUT
 # Test Template    client sends POST request to /ehr
 
-Force Tags    create_ehr
+Force Tags    create_ehr    obsolete
 
 *** Test Cases ***
 Create EHR with other_details (JSON)

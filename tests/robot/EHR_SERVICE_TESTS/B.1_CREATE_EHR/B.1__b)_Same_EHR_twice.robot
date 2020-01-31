@@ -23,8 +23,6 @@ Metadata    Created    2019.03.03
 
 Documentation   B.1.b) Alternative flow 1: Create same EHR twice
 ...
-...             https://vitasystemsgmbh.atlassian.net/wiki/spaces/ETHERCIS/pages/498532998/EHR+Test+Suite#EHRTestSuite-b.Alternativeflow1:CreatesameEHRtwice
-...
 ...             Flow:
 ...
 ...                 1. Invoke the create EHR service (for each item in the Data set with given ehr_id, data sets 9 to 16)
@@ -35,12 +33,11 @@ Documentation   B.1.b) Alternative flow 1: Create same EHR twice
 ...
 ...             Postconditions:
 ...                 A new EHR will exists in the system, the first one created, and be consistent with the data sets used.
+...
+...             source: https://docs.google.com/document/d/1r_z_E8MhlNdeVZS4xecl-8KbG0JPqCzKtKMfhuL81jY/edit#heading=h.vja1suxm86z8
 
-Resource    ${CURDIR}${/}../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../_resources/keywords/generic_keywords.robot
-Resource    ${CURDIR}${/}../_resources/keywords/ehr_keywords.robot
+Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 
-# Setup/Teardown from __init.robot is used
 # Suite Setup    startup SUT
 # Suite Teardown    shutdown SUT
 

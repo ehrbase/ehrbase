@@ -120,25 +120,25 @@ create new EHR (XML)
                         Output Debug Info To Console
 
 
-create EHR XML
-    [Documentation]     Creates new EHR record and extracts server generated ehr_id
-    ...                 Puts `ehr_id` on Test Level scope so that it can be accessed
-    ...                 by other keywords, e.g. `commit composition (XML)`.
+# create EHR XML
+#     [Documentation]     Creates new EHR record and extracts server generated ehr_id
+#     ...                 Puts `ehr_id` on Test Level scope so that it can be accessed
+#     ...                 by other keywords, e.g. `commit composition (XML)`.
 
-    Log         DEPRECATION WARNING: @WLAD remove this KW - it's only used in old AQL-QUERY tests.
-                ...         level=WARN
+#     Log         DEPRECATION WARNING: @WLAD remove this KW - it's only used in old AQL-QUERY tests.
+#                 ...         level=WARN
 
-    &{headers}=         Create Dictionary  Prefer=return=representation  Accept=application/xml
-    ${resp}=            Post Request       ${SUT}     /ehr    headers=${headers}
-                        Should Be Equal As Strings    ${resp.status_code}    201
+#     &{headers}=         Create Dictionary  Prefer=return=representation  Accept=application/xml
+#     ${resp}=            Post Request       ${SUT}     /ehr    headers=${headers}
+#                         Should Be Equal As Strings    ${resp.status_code}    201
 
-    ${xresp}=           Parse Xml          ${resp.text}
-                        Log Element        ${xresp}
-                        Set Test Variable  ${xresp}   ${xresp}
+#     ${xresp}=           Parse Xml          ${resp.text}
+#                         Log Element        ${xresp}
+#                         Set Test Variable  ${xresp}   ${xresp}
 
-    ${xehr_id}=         Get Element        ${xresp}    ehr_id/value
-                        Set Test Variable  ${ehr_id}   ${xehr_id.text}
-                        # Log To Console     ${ehr_id}
+#     ${xehr_id}=         Get Element        ${xresp}    ehr_id/value
+#                         Set Test Variable  ${ehr_id}   ${xehr_id.text}
+#                         # Log To Console     ${ehr_id}
 
 
 create new EHR with ehr_status

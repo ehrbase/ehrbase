@@ -21,28 +21,20 @@ Metadata    Version    0.1.0
 Metadata    Author    *Wladislaw Wagner*
 Metadata    Created    2019.03.03
 
-Documentation   B.3.a) Main flow: Get existing EHR
+Documentation   C.5.b) Clear EHR modifiable of non existent EHR
 
+Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Resource    ${CURDIR}${/}../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../_resources/keywords/generic_keywords.robot
-Resource    ${CURDIR}${/}../_resources/keywords/ehr_keywords.robot
+# Suite Setup  startup SUT
+# Suite Teardown  shutdown SUT
 
-# Setup/Teardown from __init.robot is used
-#Suite Setup    startup SUT
-#Suite Teardown    shutdown SUT
-
-Force Tags    get_ehr
+Force Tags    refactor
 
 
 
 *** Test Cases ***
-Get existing EHR
+Clear EHR modifiable of non existent EHR (with body)
 
-    prepare new request session    JSON
+    create fake EHR
 
-    create new EHR
-
-    retrieve EHR by ehr_id
-
-    check content of retrieved EHR (JSON)
+    update ehr_status of fake EHR (with body)

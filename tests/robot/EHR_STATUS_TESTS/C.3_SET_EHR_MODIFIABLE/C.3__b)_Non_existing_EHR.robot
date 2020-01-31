@@ -21,39 +21,32 @@ Metadata    Version    0.1.0
 Metadata    Author    *Wladislaw Wagner*
 Metadata    Created    2019.03.03
 
-Documentation   C.3.a) Main flow: Set EHR modifiable of an existing EHR
-...
+Documentation   C.3.b) Alternative flow: Set EHR modifiable of non existing EHR
 ...             Preconditions:
-...                 An EHR with known ehr_id should exist.
+...                 The server should be empty (no EHRs, no commits, no OPTs).
 ...
 ...             Postconditions:
-...                 EHR_STATUS.is_queryable, for the EHR with known ehr_id, should be `true`
+...                 None
 ...
 ...             Flow:
-...                 1. For the existing EHR, invoke the set EHR modifiable service
-...                 2. The result should be positive and the corresponding
-...                    EHR_STATUS.is_queryable should be `true`
+...                 1. Invoke the set EHR modifiable service by a random ehr_id
+...                 2. The result should be negative and the result should include
+...                    an error related to "EHR with ehr_id doesn't exists".
 
+Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Resource    ${CURDIR}${/}../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../_resources/keywords/generic_keywords.robot
-Resource    ${CURDIR}${/}../_resources/keywords/ehr_keywords.robot
+# Suite Setup  startup SUT
+# Suite Teardown  shutdown SUT
 
-# Setup/Teardown from __init.robot is usedq
-# Suite Setup       startup SUT
-# Suite Teardown    shutdown SUT
-
-Force Tags    ehr_status
+Force Tags    refactor
 
 
 
 *** Test Cases ***
-Set EHR modifiable of an existing EHR
+Set EHR queryable of non existing EHR
 
     prepare new request session    JSON
 
-    create new EHR
+    create fake EHR
 
-    update EHR: set ehr-status modifiable    ${TRUE}
-
-    check response of 'update EHR' (JSON)
+    update ehr_status of fake EHR (with body)

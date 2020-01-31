@@ -17,24 +17,11 @@
 
 
 *** Settings ***
-Metadata    Version    0.1.0
-Metadata    Author    *Wladislaw Wagner*
-Metadata    Created    2019.03.03
+Documentation    Has EHR related tests
 
-Documentation   B.2.b) Alternative flow 1: Check has EHR with existing EHR by subject_id
+Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 
+# Suite Setup    startup SUT
+# Suite Teardown    shutdown SUT
 
-Resource    ${CURDIR}${/}../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../_resources/keywords/ehr_keywords.robot
-
-# Setup/Teardown from __init.robot is used
-#Suite Setup    startup SUT
-#Suite Teardown    shutdown SUT
-
-Force Tags    has_ehr    TODO
-
-
-
-*** Test Cases ***
-Check has EHR with existing EHR by subject_id
-    THIS IS JUST A PLACEHOLDER!
+Force Tags    has_ehr

@@ -17,16 +17,11 @@
 
 
 *** Settings ***
-Metadata    Version    0.1.0
-Metadata    Author    *Wladislaw Wagner*
-Metadata    Created    2019.02.26
-Metadata    Updated    2020.01.30
+Documentation    Create EHR related tests
 
-Documentation    https://docs.google.com/document/d/1r_z_E8MhlNdeVZS4xecl-8KbG0JPqCzKtKMfhuL81jY/edit#heading=h.fkdj6wod6hv2
-
-Resource   ${EXECDIR}/robot/_resources/suite_settings.robot
+Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 
 # Suite Setup    startup SUT
 # Suite Teardown    shutdown SUT
 
-Force Tags    EHR_SERVICE
+Force Tags    create_ehr   xxx

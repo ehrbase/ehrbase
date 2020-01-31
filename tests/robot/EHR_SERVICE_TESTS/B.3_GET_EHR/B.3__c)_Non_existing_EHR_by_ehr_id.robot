@@ -21,24 +21,22 @@ Metadata    Version    0.1.0
 Metadata    Author    *Wladislaw Wagner*
 Metadata    Created    2019.03.03
 
-Documentation   C.5.b) Clear EHR modifiable of non existent EHR
+Documentation   B.3.c) Alternative flow 2: Get non existing EHR
 
+Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Resource    ${CURDIR}${/}../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../_resources/keywords/generic_keywords.robot
-Resource    ${CURDIR}${/}../_resources/keywords/ehr_keywords.robot
+# Suite Setup  startup SUT
+# Suite Teardown  shutdown SUT
 
-# Setup/Teardown from __init.robot is used
-#Suite Setup    startup SUT
-#Suite Teardown    shutdown SUT
-
-Force Tags    put_ehr_status
+Force Tags    
 
 
 
 *** Test Cases ***
-Clear EHR modifiable of non existent EHR (with body)
+Get non-existing EHR
+
+    prepare new request session    JSON
 
     create fake EHR
 
-    update ehr_status of fake EHR (with body)
+    retrieve non-existing EHR by ehr_id

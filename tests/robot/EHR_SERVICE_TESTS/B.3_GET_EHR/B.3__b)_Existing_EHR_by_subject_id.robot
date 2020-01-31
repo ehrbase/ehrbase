@@ -21,20 +21,24 @@ Metadata    Version    0.1.0
 Metadata    Author    *Wladislaw Wagner*
 Metadata    Created    2019.03.03
 
-Documentation   B.2.d) Alternative flow 3: Check has EHR with non existing EHR by subject_id
+Documentation   B.3.b) Alternative flow 1: Get existing EHR by subject_id
 
+Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Resource    ${CURDIR}${/}../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../_resources/keywords/ehr_keywords.robot
+# Suite Setup  startup SUT
+# Suite Teardown  shutdown SUT
 
-# Setup/Teardown from __init.robot is used
-#Suite Setup    startup SUT
-#Suite Teardown    shutdown SUT
-
-Force Tags    has_ehr    TODO
+Force Tags    
 
 
 
 *** Test Cases ***
-Check has EHR with non-existing EHR by subject_id
-    THIS IS JUST A PLACEHOLDER!
+Get existing EHR by subject_id
+
+    prepare new request session    JSON
+
+    create new EHR with subject_id (JSON)
+    check content of created EHR (JSON)
+
+    retrieve EHR by subject_id
+    check content of retrieved EHR (JSON)

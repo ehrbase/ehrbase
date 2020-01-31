@@ -21,27 +21,17 @@ Metadata    Version    0.1.0
 Metadata    Author    *Wladislaw Wagner*
 Metadata    Created    2019.03.03
 
-Documentation   C.5.a) Clear EHR modifiable of existing EHR
+Documentation   B.2.b) Alternative flow 1: Check has EHR with existing EHR by subject_id
 
+Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Resource    ${CURDIR}${/}../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../_resources/keywords/ehr_keywords.robot
+# Suite Setup  startup SUT
+# Suite Teardown  shutdown SUT
 
-# Setup/Teardown from __init.robot is used
-#Suite Setup    startup SUT
-#Suite Teardown    shutdown SUT
-
-Force Tags    put_ehr_status
+Force Tags    TODO    refactor
 
 
 
 *** Test Cases ***
-Clear EHR modifiable of existing EHR
-
-    prepare new request session    JSON
-
-    create new EHR
-
-    update EHR: set ehr-status modifiable    ${FALSE}
-
-    check response of 'update EHR' (JSON)
+Check has EHR with existing EHR by subject_id
+    THIS IS JUST A PLACEHOLDER!

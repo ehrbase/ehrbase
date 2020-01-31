@@ -19,30 +19,37 @@
 *** Settings ***
 Metadata    Version    0.1.0
 Metadata    Author    *Wladislaw Wagner*
-Metadata    Created    2019.03.03
+Metadata    Created    2020.01.30
 
-Documentation   C.4.a) Clear EHR queryable of existing EHR
+Documentation   B.1.c) Alternative flow 2: Create two EHRs for the same patient
+...             
+...             source: https://docs.google.com/document/d/1r_z_E8MhlNdeVZS4xecl-8KbG0JPqCzKtKMfhuL81jY/edit#heading=h.j8svfp6lz278
 
+Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Resource    ${CURDIR}${/}../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../_resources/keywords/generic_keywords.robot
-Resource    ${CURDIR}${/}../_resources/keywords/ehr_keywords.robot
+# Suite Setup  startup SUT
+# Suite Teardown  shutdown SUT
 
-# Setup/Teardown from __init.robot is used
-#Suite Setup    startup SUT
-#Suite Teardown    shutdown SUT
-
-Force Tags    put_ehr_status
+Force Tags    create_ehr    refactor
 
 
 
 *** Test Cases ***
-Clear EHR queryable of existing EHR
+Create Same EHR Twice For The Same Patient (JSON)
 
     prepare new request session    JSON
 
-    create new EHR
+    generate random subject_id
+    create new EHR for subject_id (JSON)    ${subject_id}
 
-    update EHR: set ehr_status is_queryable    ${FALSE}
+    create new EHR for subject_id (JSON)    ${subject_id}
 
-    check response of 'update EHR' (JSON)
+    verify response
+
+
+
+*** Keywords ***
+verify response
+    Integer    response status    409
+
+    # TODO: response should indicate a conflict with an already existing EHR with the same subject id, namespace pair.
