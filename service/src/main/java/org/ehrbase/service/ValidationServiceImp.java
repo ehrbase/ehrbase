@@ -55,6 +55,7 @@ public class ValidationServiceImp implements ValidationService {
 
     @Override
     public void check(UUID templateUUID, Composition composition) throws Exception {
+
         //check if a validator is already in the cache
         Validator validator = validatorCache.get(templateUUID);
 
@@ -81,12 +82,34 @@ public class ValidationServiceImp implements ValidationService {
 
     @Override
     public void check(String templateID, Composition composition) throws Exception {
+
         Optional<OPERATIONALTEMPLATE> operationaltemplate = knowledgeCache.retrieveOperationalTemplate(templateID);
 
         if (operationaltemplate.isEmpty())
             throw new UnprocessableEntityException("Not found template id: " + templateID);
 
         check(UUID.fromString(operationaltemplate.get().getUid().getValue()), composition);
+    }
+
+    @Override
+    public void check(Composition composition) throws Exception {
+        //check if this composition is valid for processing
+        if (composition.getName() == null)
+            throw new IllegalArgumentException("Composition missing mandatory attribute: name");
+        if (composition.getArchetypeNodeId() == null)
+            throw new IllegalArgumentException("Composition missing mandatory attribute: archetype_node_id");
+        if (composition.getLanguage() == null)
+            throw new IllegalArgumentException("Composition missing mandatory attribute: language");
+        if (composition.getCategory() == null)
+            throw new IllegalArgumentException("Composition missing mandatory attribute: category");
+        if (composition.getComposer() == null)
+            throw new IllegalArgumentException("Composition missing mandatory attribute: composer");
+        if (composition.getArchetypeDetails() == null)
+            throw new IllegalArgumentException("Composition missing mandatory attribute: archetype details");
+        if (composition.getArchetypeDetails().getTemplateId() == null)
+            throw new IllegalArgumentException("Composition missing mandatory attribute: archetype details/template_id");
+
+        check(composition.getArchetypeDetails().getTemplateId().getValue(), composition);
     }
 
     @Override
