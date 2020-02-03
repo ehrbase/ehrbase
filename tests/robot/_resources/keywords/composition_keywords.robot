@@ -116,8 +116,6 @@ commit composition - no referenced OPT
 
                         get valid OPT file  ${opt_file}
 
-        TRACE GITHUB ISSUE  51  not-ready  message=discovered bug
-
     ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
                         # log to console      ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   422
