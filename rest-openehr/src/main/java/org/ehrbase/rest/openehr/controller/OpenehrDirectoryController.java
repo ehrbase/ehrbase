@@ -295,12 +295,41 @@ public class OpenehrDirectoryController extends BaseController {
             @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
             @ApiParam(value = "EHR identifier from resource path after ehr/", required = true) @PathVariable(value = "ehr_id") UUID ehrId,
             @ApiParam(value = "Timestamp in extended ISO8601 format to identify version of folder.") @RequestParam(value = "version_at_time", required = false) String versionAtTime,
-            @ApiParam(value = "Path parameter to specify a subfolder at directory") @RequestParam(value = "path", required = false) String path
-                                                ) {
+            @ApiParam(value = "Path parameter to specify a subfolder at directory") @RequestParam(value = "path", required = false) String path,
+            @RequestUrl String requestUrl
+    ) {
         // UUID ehrId = getEhrUuid(ehrIdString);
         // TODO: Implement get folder by version at time functionality
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
-                             .build();
+        // Get the folder entry from database
+        Optional<FolderDto> foundFolder = folderService.retrieveLatest(ehrId);
+        if (!foundFolder.isPresent()) {
+            throw new ObjectNotFoundException("folder",
+                    "The FOLDER for ehrId " +
+                            ehrId.toString() +
+                            " does not exist.");
+        }
+
+        FolderDto folderDto = foundFolder.get();
+
+        // Get system and version information
+        String systemId = folderService.getServerConfig().getNodename();
+        Integer version = folderService.getLastVersionNumber(UUID.fromString(foundFolder.get().getUid().toString()));
+
+        String versionedUid = foundFolder.get().getUid().toString() + "::" + systemId + "::" + version.toString();
+
+        // Create response data
+        MediaType responseContentType = MediaType.APPLICATION_JSON;
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(responseContentType);
+        headers.setETag("\"" + versionedUid + "\"");
+        headers.setLocation(URI.create(requestUrl + "/" + versionedUid));
+        // TODO: Set LastModified header by audit details
+        headers.setLastModified(DateTime.now().getMillis());
+
+        DirectoryResponseData resBody = buildResponse(folderDto);
+
+        return new ResponseEntity<>(resBody, headers, HttpStatus.OK);
+
     }
 
     @PutMapping(path = "/{ehr_id}/directory")

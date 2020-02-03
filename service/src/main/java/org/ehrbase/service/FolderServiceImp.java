@@ -100,6 +100,16 @@ public class FolderServiceImp extends BaseService implements FolderService {
     }
 
 
+    @Override
+    public Optional<FolderDto> retrieveLatest(UUID ehrId) {
+        I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
+        if (ehrAccess == null) {
+            throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
+        }
+
+        return retrieve(ehrAccess.getDirectoryId(), null);
+    }
+
     /**
      * {@inheritDoc}
      */
