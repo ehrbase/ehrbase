@@ -1,6 +1,6 @@
 DROP FUNCTION IF EXISTS ehr.js_dv_date_time(TIMESTAMP WITH TIME ZONE, TEXT);
 
-CREATE OR REPLACE FUNCTION ehr.js_dv_date_time(TIMESTAMP WITHOUT TIME ZONE, TEXT)
+CREATE OR REPLACE FUNCTION ehr.js_dv_date_time(TIMESTAMPTZ, TEXT)
   RETURNS JSON AS
 $$
 DECLARE
@@ -20,8 +20,8 @@ BEGIN
 
   RETURN
     json_build_object(
-        '_type', 'DV_DATE_TIME',
-        'value', ehr.iso_timestamp(date_time)||time_zone
+        '@class', 'DV_DATE_TIME',
+        'value', timezone(time_zone, date_time::timestamp)
       );
 END
 $$
