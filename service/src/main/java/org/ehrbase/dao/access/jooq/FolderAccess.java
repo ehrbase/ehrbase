@@ -22,6 +22,7 @@ import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -589,7 +590,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
     private static  ObjectRef parseObjectRefRecordIntoObjectRef(ObjectRefRecord objectRefRecord, I_DomainAccess domainAccess){
         ObjectRef result = new ObjectRef();
         ObjectRefId oref = new FolderAccess(domainAccess).new ObjectRefId(objectRefRecord.getId().toString());
-        result.setId(oref);
+        result.setId(new ObjectVersionId(oref.getValue()));
         result.setType(objectRefRecord.getType());
         result.setNamespace(objectRefRecord.getIdNamespace());
         return result;
