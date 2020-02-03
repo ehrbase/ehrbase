@@ -396,7 +396,7 @@ public class OpenehrDirectoryController extends BaseController {
             );
         }
 
-        UUID folderId = UUID.fromString(ifMatch);
+        UUID folderId = UUID.fromString(ifMatch.split("::")[0]);
 
         // Update folder and get new version
         Optional<FolderDto> updatedFolder = this.folderService.update(
