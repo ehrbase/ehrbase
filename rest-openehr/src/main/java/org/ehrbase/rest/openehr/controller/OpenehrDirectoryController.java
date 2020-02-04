@@ -42,6 +42,7 @@ import java.net.URI;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 /**
  * Controller for openEHR /directory endpoints
@@ -200,6 +201,10 @@ public class OpenehrDirectoryController extends BaseController {
             @RequestUrl String requestUrl
     ) {
 
+        // Path value
+        if (path != null && !isValidPath(path)) {
+            throw new IllegalArgumentException("Value for path is malformed. Expecting a unix like notation, e.g. '/episodes/a/b/c'");
+        }
         // Tries to create an UUID from versionUid and throws an IllegalArgumentException for 400 error
         UUID versionUUID = extractVersionedObjectUidFromVersionUid(versionUid);
 
@@ -276,7 +281,15 @@ public class OpenehrDirectoryController extends BaseController {
             @RequestUrl String requestUrl
     ) {
         // UUID ehrId = getEhrUuid(ehrIdString);
-        // TODO: Implement get folder by version at time functionality
+
+        // Check path and version_at_time string if they are valid
+        if (versionAtTime != null && !isValidVersionAtTime(versionAtTime)) {
+            throw new IllegalArgumentException("value for version_at_time is malformed. Expecting an extended ISO8601 string, e.g. '2020-01-01T12:30:25.123+01:00'");
+        }
+        if (path != null && !isValidPath(path)) {
+            throw new IllegalArgumentException("Value for path is malformed. Expecting a unix like notation, e.g. '/episodes/a/b/c'");
+        }
+
         // Get the folder entry from database
         Optional<FolderDto> foundFolder = folderService.retrieveLatest(ehrId);
         if (!foundFolder.isPresent()) {
@@ -489,4 +502,30 @@ public class OpenehrDirectoryController extends BaseController {
         resBody.setUid(folderDto.getUid());
         return resBody;
     }
+
+    /**
+     * Checks if a version a possible version_at_time string value has the expected format as defined by openEHR spec,
+     * i.e. in extended ISO8601 format, e.g. 2020-03-12T12:36:31.245+01:00)
+     *
+     * @param versionAtTime - String to check
+     * @return String is a valid version_at_time value or not
+     */
+    private boolean isValidVersionAtTime(String versionAtTime) {
+        Pattern versionAtTimePattern = Pattern.compile("^[1-2]\\d{3}-[0-1]\\d-[0-3]\\dT[0-2]\\d(?::[0-5]\\d){2}\\.\\d{3}[+\\-][0-1]\\d:\\d{2}$");
+        return versionAtTimePattern.matcher(versionAtTime).matches();
+    }
+
+    /**
+     * Checks if a given path is a valid path value, i.e. a unix like notation of a path which allows trailing forward
+     * slashes as well as only one slash which is equivalent to the root folder and would not have any effect on the
+     * result.
+     *
+     * @param path - String to check
+     * @return String is a valid path value or not
+     */
+    private boolean isValidPath(String path) {
+        Pattern pathPattern = Pattern.compile("^(?:(?:/\\w+)+/?|/)$");
+        return pathPattern.matcher(path).matches();
+    }
 }
+
