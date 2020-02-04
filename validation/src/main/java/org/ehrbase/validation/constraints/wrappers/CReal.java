@@ -37,22 +37,22 @@ import java.util.Map;
  * Created by christian on 7/23/2016.
  */
 public class CReal extends CConstraint implements I_CTypeValidate {
-    protected CReal(Map<String, Map<String, String>> localTerminologyLookup) {
+    CReal(Map<String, Map<String, String>> localTerminologyLookup) {
         super(localTerminologyLookup);
     }
 
     @Override
-    public void validate(String path, Object aValue, CPRIMITIVE cprimitive) throws Exception {
+    public void validate(String path, Object aValue, CPRIMITIVE cprimitive) throws IllegalArgumentException {
 
         CREAL creal = (CREAL) cprimitive;
         Float aFloat = null;
 
         if (aValue instanceof Double)
-            aFloat = new Float((Double) aValue);
+            aFloat = ((Double) aValue).floatValue();
         else if (aValue instanceof Float)
             aFloat = (Float) aValue;
         else if (aValue instanceof Integer)
-            aFloat = new Float((Integer) aValue);
+            aFloat = ((Integer) aValue).floatValue();
         else
             ValidationException.raise(path, "Value could not be handled (is it numerical?)" + aValue, "FLOAT01");
 

@@ -26,12 +26,12 @@ public class DvOrdered extends TerminologyCheck{
         this.RM_CLASS = com.nedap.archie.rm.datavalues.quantity.DvOrdered.class;
     }
 
-    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datavalues.quantity.DvOrdered dvOrdered, String language) throws Exception {
+    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datavalues.quantity.DvOrdered dvOrdered, String language) throws IllegalArgumentException {
         if (dvOrdered.getNormalStatus() != null)
             validate(terminologyInterface, codesetMapping, "normal_status", dvOrdered.getNormalStatus(), language);
     }
 
-    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datavalues.quantity.DvOrdered dvOrdered) throws Exception {
+    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datavalues.quantity.DvOrdered dvOrdered) throws IllegalArgumentException {
         check(terminologyInterface, codesetMapping, context, dvOrdered, "en");
     }
 }

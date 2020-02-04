@@ -33,10 +33,8 @@
 package org.ehrbase.terminology.openehr.implementation;
 
 import java.util.*;
-import org.ehrbase.terminology.openehr.CodeSetAccess;
-import org.ehrbase.terminology.openehr.OpenEHRCodeSetIdentifiers;
-import org.ehrbase.terminology.openehr.TerminologyAccess;
-import org.ehrbase.terminology.openehr.TerminologyInterface;
+
+import org.ehrbase.terminology.openehr.*;
 
 
 /**
@@ -75,11 +73,11 @@ public class SimpleTerminologyInterface implements TerminologyInterface {
 	}
 
 	public List<String> terminologyIdentifiers() {
-		return new ArrayList<String>(terminologies.keySet());
+		return new ArrayList<>(terminologies.keySet());
 	}
 
 	public List<String> codeSetIdentifiers() {
-		return new ArrayList<String>(codeSets.keySet());
+		return new ArrayList<>(codeSets.keySet());
 	}
 
 	public Map<String, String> openehrCodeSets() {
@@ -89,7 +87,7 @@ public class SimpleTerminologyInterface implements TerminologyInterface {
 	/*
 	 * Creates a simpleTerminologyService
 	 */
-	protected SimpleTerminologyInterface(String language) {
+	SimpleTerminologyInterface(String language) {
 		
 		terminologies = new HashMap<>();
 		codeSets = new HashMap<>();
@@ -106,7 +104,7 @@ public class SimpleTerminologyInterface implements TerminologyInterface {
 			loadCodeSets(terminologySource);			
 			
 		} catch(Exception e) {
-			throw new RuntimeException(e);
+			throw new TerminologyResourceException(e.getMessage());
 		}
 	}
 	

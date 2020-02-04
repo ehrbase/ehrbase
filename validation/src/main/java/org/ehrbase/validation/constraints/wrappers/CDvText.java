@@ -40,14 +40,14 @@ import java.util.Map;
  */
 public class CDvText extends CConstraint implements I_CArchetypeConstraintValidate {
 
-    Logger logger = LogManager.getLogger(CDvText.class);
+    private Logger logger = LogManager.getLogger(CDvText.class);
 
-    protected CDvText(Map<String, Map<String, String>> localTerminologyLookup) {
+    CDvText(Map<String, Map<String, String>> localTerminologyLookup) {
         super(localTerminologyLookup);
     }
 
     @Override
-    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws Exception {
+    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws IllegalArgumentException {
 
         DvText checkValue = (DvText) aValue;
 

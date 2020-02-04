@@ -38,12 +38,12 @@ import java.util.Map;
  */
 public class CInteger extends CConstraint implements I_CTypeValidate {
 
-    protected CInteger(Map<String, Map<String, String>> localTerminologyLookup) {
+    CInteger(Map<String, Map<String, String>> localTerminologyLookup) {
         super(localTerminologyLookup);
     }
 
     @Override
-    public void validate(String path, Object aValue, CPRIMITIVE cprimitive) throws Exception {
+    public void validate(String path, Object aValue, CPRIMITIVE cprimitive) throws IllegalArgumentException {
 
         CINTEGER cinteger = (CINTEGER) cprimitive;
         Integer integer = null;
