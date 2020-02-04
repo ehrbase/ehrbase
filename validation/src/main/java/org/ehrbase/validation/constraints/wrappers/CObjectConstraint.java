@@ -44,7 +44,7 @@ public class CObjectConstraint extends ElementConstraint {
     }
 
     @Override
-    public Boolean validate(DataValue value) throws Exception {
+    public Boolean validate(DataValue value) throws IllegalArgumentException {
 
         //check occurences
         //element is not set but at least one occurence is required

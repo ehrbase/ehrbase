@@ -26,12 +26,12 @@ public class TermMapping extends TerminologyCheck{
         this.RM_CLASS = com.nedap.archie.rm.datavalues.TermMapping.class;
     }
 
-    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datavalues.TermMapping termMapping, String language) throws Exception {
+    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datavalues.TermMapping termMapping, String language) throws IllegalArgumentException {
         if (termMapping.getPurpose() != null)
             validate(terminologyInterface, codesetMapping, "purpose", termMapping.getPurpose().getDefiningCode(), language);
     }
 
-    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datavalues.TermMapping termMapping) throws Exception {
+    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datavalues.TermMapping termMapping) throws IllegalArgumentException {
        check(terminologyInterface, codesetMapping, context, termMapping, "en");
     }
 }

@@ -35,6 +35,7 @@ package org.ehrbase.terminology.openehr.implementation;
 import java.io.*;
 import java.util.*;
 
+import org.ehrbase.terminology.openehr.TerminologyException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -52,7 +53,7 @@ public class XMLTerminologySource implements TerminologySource {
 	/**
 	 * Gets an terminology source loaded with specified xml content
 	 */
-	public static XMLTerminologySource getInstance(String xmlfilename)  throws Exception {
+	public static XMLTerminologySource getInstance(String xmlfilename)  throws TerminologyException {
 		return new XMLTerminologySource(xmlfilename);
 	}	
 	
@@ -67,14 +68,18 @@ public class XMLTerminologySource implements TerminologySource {
 	/*
 	 * Constructs an instance loaded with terminology content
 	 */
-	private XMLTerminologySource(String filename) throws Exception {
+	private XMLTerminologySource(String filename) throws TerminologyException {
 		codeSetList = new ArrayList<>();
 		groupList = new ArrayList<>();
 		loadTerminologyFromXML(filename);
 	}
 	
-	private void loadTerminologyFromXML(String filename) throws Exception {
+	private void loadTerminologyFromXML(String filename) throws TerminologyException {
 		try (InputStream resourceAsStream = getClass().getClassLoader().getResourceAsStream(filename)) {
+
+			if (resourceAsStream == null){
+				throw new IllegalStateException("Could not access filename:"+filename);
+			}
 
 			final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			final DocumentBuilder documentBuilder = factory.newDocumentBuilder();
@@ -94,6 +99,9 @@ public class XMLTerminologySource implements TerminologySource {
 				Element element = (Element) groups.item(idx);
 				groupList.add(loadGroup(element));
 			}
+		}
+		catch (Exception e){
+			throw new TerminologyException(e.getMessage());
 		}
 	}
 

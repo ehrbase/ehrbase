@@ -38,12 +38,12 @@ import java.util.Map;
  */
 public class CObject extends CConstraint implements I_CArchetypeConstraintValidate {
 
-    protected CObject(Map<String, Map<String, String>> localTerminologyLookup) {
+    CObject(Map<String, Map<String, String>> localTerminologyLookup) {
         super(localTerminologyLookup);
     }
 
     @Override
-    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws Exception {
+    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws IllegalArgumentException {
 
         SchemaType type = I_CArchetypeConstraintValidate.findSchemaType(I_CArchetypeConstraintValidate.getXmlType(archetypeconstraint));
         Object constraint = archetypeconstraint.changeType(type);

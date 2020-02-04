@@ -18,12 +18,14 @@
 package org.ehrbase.terminology.openehr.implementation;
 
 import org.ehrbase.ehr.encode.wrappers.SnakeCase;
+import org.ehrbase.terminology.openehr.TerminologyException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -45,28 +47,31 @@ public class AttributeCodesetMapping {
 	/**
 	 * Gets an terminology source loaded with specified xml content
 	 */
-	public static AttributeCodesetMapping getInstance(String xmlfilename) throws Exception {
+	public static AttributeCodesetMapping getInstance(String xmlfilename) throws TerminologyException {
 		return new AttributeCodesetMapping(xmlfilename);
 	}
 
-	public static AttributeCodesetMapping getInstance() throws Exception {
+	public static AttributeCodesetMapping getInstance() throws TerminologyException {
 		return new AttributeCodesetMapping(ATTRIBUTE_MAP_DEFINITION);
 	}
 
-	public Map<String, Map<String, AttributeGroupMap>> getMappers() {
+	private Map<String, Map<String, AttributeGroupMap>> getMappers() {
 		return groupMaps;
 	}
 
 	/*
 	 * Constructs an instance loaded with terminology content
 	 */
-	private AttributeCodesetMapping(String filename) throws Exception {
+	private AttributeCodesetMapping(String filename) throws TerminologyException {
 		groupMaps = new HashMap<>();
 		loadMappersFromXML(filename);
 	}
 
-	private void loadMappersFromXML(String filename) throws Exception {
+	private void loadMappersFromXML(String filename) throws TerminologyException {
 		try (InputStream resourceAsStream = getClass().getClassLoader().getResourceAsStream(filename)) {
+
+			if (resourceAsStream == null)
+				throw new TerminologyException("Could not access filename:"+filename);
 
 			final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			final DocumentBuilder documentBuilder = factory.newDocumentBuilder();
@@ -90,6 +95,9 @@ public class AttributeCodesetMapping {
 					throw new IllegalArgumentException("no terminology specified for entry:"+element.toString());
 				}
 			}
+		}
+		catch (Exception e){
+			throw new TerminologyException(e.getMessage());
 		}
 	}
 
@@ -145,10 +153,8 @@ public class AttributeCodesetMapping {
 		if (!getMappers().get(terminology).containsKey(snakeAttribute))
 			throw new IllegalArgumentException("attribute:"+attribute+", is not defined in terminology:"+terminology);
 
-		if (!getMappers().get(terminology).get(snakeAttribute).getIdMap().containsKey(language))
-			return false; //default to English
-
-		return true;
+		//default to English
+		return getMappers().get(terminology).get(snakeAttribute).getIdMap().containsKey(language);
 	}
 
 	public ContainerType containerType(String terminology, String attribute){

@@ -42,7 +42,7 @@ public class CDefinedObject extends CConstraint implements I_CArchetypeConstrain
     }
 
     @Override
-    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws Exception {
+    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws IllegalArgumentException {
 
         if (archetypeconstraint instanceof CCOMPLEXOBJECT)
             new CComplexObject(localTerminologyLookup).validate(path, aValue, archetypeconstraint);

@@ -39,33 +39,34 @@ import java.time.temporal.ChronoUnit;
  *         migrated to nedap Archie
  *
  */
+@SuppressWarnings("unchecked")
 public class IntervalComparator {
 
     //lower exclusive, upper exclusive
-    private static void isWithinLxUx(Comparable value, Comparable lower, Comparable upper) throws Exception {
+    private static void isWithinLxUx(Comparable value, Comparable lower, Comparable upper) throws IllegalArgumentException {
         if (value.compareTo(lower) > 0 && value.compareTo(upper) < 0) return;
         throw new IllegalArgumentException("value is not within interval, expected:" + lower + " < " + value + " < " + upper);
     }
 
     //lower inclusive, upper exclusive
-    private static void isWithinLiUx(Comparable value, Comparable lower, Comparable upper) throws Exception {
+    private static void isWithinLiUx(Comparable value, Comparable lower, Comparable upper) throws IllegalArgumentException {
         if (value.compareTo(lower) >= 0 && value.compareTo(upper) < 0) return;
         throw new IllegalArgumentException("value is not within interval, expected:" + lower + " <= " + value + " < " + upper);
     }
 
     //lower exclusive, upper inclusive
-    private static void isWithinLxUi(Comparable value, Comparable lower, Comparable upper) throws Exception {
+    private static void isWithinLxUi(Comparable value, Comparable lower, Comparable upper) throws IllegalArgumentException {
         if (value.compareTo(lower) > 0 && value.compareTo(upper) <= 0) return;
         throw new IllegalArgumentException("value is not within interval, expected:" + lower + " < " + value + " <= " + upper);
     }
 
     //lower inclusive, upper inclusive
-    private static void isWithinLiUi(Comparable value, Comparable lower, Comparable upper) throws Exception {
+    private static void isWithinLiUi(Comparable value, Comparable lower, Comparable upper) throws IllegalArgumentException {
         if (value.compareTo(lower) >= 0 && value.compareTo(upper) <= 0) return;
         throw new IllegalArgumentException("value is not within interval, expected:" + lower + " <= " + value + " <= " + upper);
     }
 
-    private static void compareWithinInterval(Comparable value, Interval interval, Comparable lower, Comparable upper) throws Exception {
+    private static void compareWithinInterval(Comparable value, Interval interval, Comparable lower, Comparable upper) throws IllegalArgumentException {
         boolean isLowerIncluded = (interval.isSetLowerIncluded() ? interval.getLowerIncluded() : false);
         boolean isUpperIncluded = (interval.isSetUpperIncluded() ? interval.getUpperIncluded() : false);
 
@@ -79,7 +80,7 @@ public class IntervalComparator {
             isWithinLxUx(value, lower, upper);
     }
 
-//    private static void compareWithinInterval(Comparable value, ConstraintOccurrences occurrences, Comparable lower, Comparable upper) throws Exception {
+//    private static void compareWithinInterval(Comparable value, ConstraintOccurrences occurrences, Comparable lower, Comparable upper) throws IllegalArgumentException {
 //        boolean isLowerIncluded = (occurrences.getLowerIncluded() ? occurrences.getLowerIncluded() : false);
 //        boolean isUpperIncluded = (occurrences.getLowerIncluded() ? occurrences.getUpperIncluded() : false);
 //
@@ -94,28 +95,28 @@ public class IntervalComparator {
 //    }
 
 
-    public static void isWithinBoundaries(Float real, IntervalOfReal intervalOfReal) throws Exception {
+    public static void isWithinBoundaries(Float real, IntervalOfReal intervalOfReal) throws IllegalArgumentException {
         Float lower = (intervalOfReal.isSetLower() ? intervalOfReal.getLower() : Float.MIN_VALUE);
         Float upper = (intervalOfReal.isSetUpper() ? intervalOfReal.getUpper() : Float.MAX_VALUE);
 
         compareWithinInterval(real, intervalOfReal, lower, upper);
     }
 
-    public static void isWithinBoundaries(Integer integer, IntervalOfInteger intervalOfInteger) throws Exception {
+    public static void isWithinBoundaries(Integer integer, IntervalOfInteger intervalOfInteger) throws IllegalArgumentException {
         Integer lower = (intervalOfInteger.isSetLower() ? intervalOfInteger.getLower() : Integer.MIN_VALUE);
         Integer upper = (intervalOfInteger.isSetUpper() ? intervalOfInteger.getUpper() : Integer.MAX_VALUE);
 
         compareWithinInterval(integer, intervalOfInteger, lower, upper);
     }
 
-    public static void isWithinBoundaries(Integer integer, ConstraintOccurrences occurrences) throws Exception {
+    public static void isWithinBoundaries(Integer integer, ConstraintOccurrences occurrences) throws IllegalArgumentException {
         Integer lower = occurrences.getLower();
         Integer upper = occurrences.getUpper();
 
         compareWithinInterval(integer, makeOptInterval(occurrences.asInterval()), lower, upper);
     }
 
-    public static void isWithinPrecision(Integer integer, IntervalOfInteger intervalOfInteger) throws Exception {
+    static void isWithinPrecision(Integer integer, IntervalOfInteger intervalOfInteger) throws IllegalArgumentException {
         if (intervalOfInteger == null)
             return;
         Integer lower = (intervalOfInteger.isSetLower() ? intervalOfInteger.getLower() : Integer.MIN_VALUE);
@@ -128,35 +129,35 @@ public class IntervalComparator {
         }
     }
 
-    public static void isWithinBoundaries(String rawDate, IntervalOfDate intervalOfDate) throws Exception {
+    public static void isWithinBoundaries(String rawDate, IntervalOfDate intervalOfDate) throws IllegalArgumentException {
 
         ZonedDateTime valueDate = ZonedDateTime.parse(rawDate);
 
         isWithinBoundaries(valueDate, intervalOfDate);
     }
 
-    public static void isWithinBoundaries(DvDate date, IntervalOfDate intervalOfDate) throws Exception {
+    public static void isWithinBoundaries(DvDate date, IntervalOfDate intervalOfDate) throws IllegalArgumentException {
 
         ZonedDateTime valueDate = ZonedDateTime.from(date.getValue());
 
         isWithinBoundaries(valueDate, intervalOfDate);
     }
 
-    public static void isWithinBoundaries(DvDateTime dateTime, IntervalOfDateTime intervalOfDateTime) throws Exception {
+    public static void isWithinBoundaries(DvDateTime dateTime, IntervalOfDateTime intervalOfDateTime) throws IllegalArgumentException {
 
         ZonedDateTime valueDate = ZonedDateTime.from(dateTime.getValue());
 
         isWithinBoundaries(valueDate, intervalOfDateTime);
     }
 
-    public static void isWithinBoundaries(DvTime dateTime, IntervalOfTime intervalOfTime) throws Exception {
+    public static void isWithinBoundaries(DvTime dateTime, IntervalOfTime intervalOfTime) throws IllegalArgumentException {
 
         ZonedDateTime valueDate = ZonedDateTime.from(dateTime.getValue());
 
         isWithinBoundaries(valueDate, intervalOfTime);
     }
 
-    public static void isWithinBoundaries(ZonedDateTime valueDate, IntervalOfDate intervalOfDate) throws Exception {
+    public static void isWithinBoundaries(ZonedDateTime valueDate, IntervalOfDate intervalOfDate) throws IllegalArgumentException {
 
         String lower = (intervalOfDate.isSetLower() ? intervalOfDate.getLower() : null);
         String upper = (intervalOfDate.isSetUpper() ? intervalOfDate.getUpper() : null);
@@ -176,7 +177,7 @@ public class IntervalComparator {
         compareWithinInterval(valueDate, intervalOfDate, lowerDate, upperDate);
     }
 
-    public static void isWithinBoundaries(String rawDateTime, IntervalOfDateTime intervalOfDateTime) throws Exception {
+    public static void isWithinBoundaries(String rawDateTime, IntervalOfDateTime intervalOfDateTime) throws IllegalArgumentException {
 
         ZonedDateTime valueDateTime = ZonedDateTime.parse(rawDateTime);
 
@@ -184,7 +185,7 @@ public class IntervalComparator {
 
     }
 
-    public static void isWithinBoundaries(ZonedDateTime valueDateTime, IntervalOfDateTime intervalOfDateTime) throws Exception {
+    public static void isWithinBoundaries(ZonedDateTime valueDateTime, IntervalOfDateTime intervalOfDateTime) throws IllegalArgumentException {
 
         String lower = (intervalOfDateTime.isSetLower() ? intervalOfDateTime.getLower() : null);
         String upper = (intervalOfDateTime.isSetUpper() ? intervalOfDateTime.getUpper() : null);
@@ -194,7 +195,7 @@ public class IntervalComparator {
         if (lower != null)
             lowerDateTime = ZonedDateTime.parse(lower);
         else
-            lowerDateTime = new ZonedDateTimeUtil().min();;
+            lowerDateTime = new ZonedDateTimeUtil().min();
 
         if (upper != null)
             upperDateTime = ZonedDateTime.parse(upper);
@@ -204,12 +205,12 @@ public class IntervalComparator {
         compareWithinInterval(valueDateTime, intervalOfDateTime, lowerDateTime, upperDateTime);
     }
 
-    public static void isWithinBoundaries(String rawTime, IntervalOfTime intervalOfTime) throws Exception {
+    public static void isWithinBoundaries(String rawTime, IntervalOfTime intervalOfTime) throws IllegalArgumentException {
         ZonedDateTime valueTime = ZonedDateTime.parse(rawTime);
         isWithinBoundaries(valueTime, intervalOfTime);
     }
 
-    public static void isWithinBoundaries(ZonedDateTime valueTime, IntervalOfTime intervalOfTime) throws Exception {
+    public static void isWithinBoundaries(ZonedDateTime valueTime, IntervalOfTime intervalOfTime) throws IllegalArgumentException {
 
         String lower = (intervalOfTime.isSetLower() ? intervalOfTime.getLower() : null);
         String upper = (intervalOfTime.isSetUpper() ? intervalOfTime.getUpper() : null);
@@ -219,25 +220,25 @@ public class IntervalComparator {
         if (lower != null)
             lowerTime = ZonedDateTime.parse(lower);
         else
-            lowerTime = new ZonedDateTimeUtil().min();;
+            lowerTime = new ZonedDateTimeUtil().min();
 
 
         if (upper != null)
             upperTime = ZonedDateTime.parse(upper);
         else
-            upperTime = new ZonedDateTimeUtil().min();;
+            upperTime = new ZonedDateTimeUtil().min();
 
         compareWithinInterval(valueTime, intervalOfTime, lowerTime, upperTime);
     }
 
-    public static void isWithinBoundaries(String rawDuration, IntervalOfDuration intervalOfDuration) throws Exception {
+    public static void isWithinBoundaries(String rawDuration, IntervalOfDuration intervalOfDuration) throws IllegalArgumentException {
 
         Duration valueDuration = Duration.parse(rawDuration);
         isWithinBoundaries(valueDuration, intervalOfDuration);
 
     }
 
-    public static void isWithinBoundaries(Duration valueDuration, IntervalOfDuration intervalOfDuration) throws Exception {
+    public static void isWithinBoundaries(Duration valueDuration, IntervalOfDuration intervalOfDuration) throws IllegalArgumentException {
 
         String lower = (intervalOfDuration.isSetLower() ? intervalOfDuration.getLower() : null);
         String upper = (intervalOfDuration.isSetUpper() ? intervalOfDuration.getUpper() : null);
@@ -271,7 +272,7 @@ public class IntervalComparator {
      * @param integerInterval
      * @return
      */
-    public static IntervalOfInteger makeOptInterval(com.nedap.archie.base.Interval<Integer> integerInterval) {
+    private static IntervalOfInteger makeOptInterval(com.nedap.archie.base.Interval<Integer> integerInterval) {
         IntervalOfInteger intervalOfInteger = IntervalOfInteger.Factory.newInstance();
         intervalOfInteger.setLower(integerInterval.getLower());
         intervalOfInteger.setUpper(integerInterval.getUpper());
@@ -281,7 +282,7 @@ public class IntervalComparator {
     }
 
     public static String toString(IntervalOfInteger intervalOfInteger) {
-        StringBuffer stringBuffer = new StringBuffer();
+        StringBuilder stringBuffer = new StringBuilder();
 
         stringBuffer.append("[");
         if (intervalOfInteger.isSetLower())
@@ -299,7 +300,7 @@ public class IntervalComparator {
     }
 
     public static String toString(com.nedap.archie.base.Interval<Integer> intervalOfInteger) {
-        StringBuffer stringBuffer = new StringBuffer();
+        StringBuilder stringBuffer = new StringBuilder();
 
         stringBuffer.append("[");
         if (intervalOfInteger.getLower() != null && intervalOfInteger.getLower() != Integer.MIN_VALUE)

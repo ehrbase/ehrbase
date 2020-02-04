@@ -87,8 +87,8 @@ public abstract class BaseController {
         return metaMap;
     }
 
-    protected String getBaseEnvLinkURL() {
-        String baseEnvLinkURL = null;
+    String getBaseEnvLinkURL() {
+        String baseEnvLinkURL;
         HttpServletRequest currentRequest =
                 ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
         // lazy about determining protocol but can be done too
@@ -110,7 +110,7 @@ public abstract class BaseController {
      * @return UUID representation of the ehrId
      * @throws ObjectNotFoundException when no UUID can't be created from input
      */
-    protected UUID getEhrUuid(String ehrIdString) {
+    UUID getEhrUuid(String ehrIdString) {
         return extractUUIDFromStringWithError(ehrIdString, "ehr", "EHR not found, in fact, only UUID-type IDs are supported");
     }
 
@@ -122,7 +122,7 @@ public abstract class BaseController {
      * @return UUID representation
      * @throws ObjectNotFoundException when no UUID can't be created from input
      */
-    protected UUID getCompositionVersionedObjectUidString(String compositionVersionedObjectUidString) {
+    UUID getCompositionVersionedObjectUidString(String compositionVersionedObjectUidString) {
         return extractUUIDFromStringWithError(compositionVersionedObjectUidString, "composition", "Composition not found, in fact, only UUID-type versionedObjectUids are supported");
     }
 
@@ -134,13 +134,13 @@ public abstract class BaseController {
      * @return UUID representation
      * @throws ObjectNotFoundException when no UUID can't be created from input
      */
-    protected UUID getContributionVersionedObjectUidString(String compositionVersionedObjectUidString) {
+    UUID getContributionVersionedObjectUidString(String compositionVersionedObjectUidString) {
         return extractUUIDFromStringWithError(compositionVersionedObjectUidString, "contribution", "Contribution not found, in fact, only UUID-type versionedObjectUids are supported");
     }
 
     // Internal abstraction layer helper, so calling methods above can invoke with meaningful error messages depending on context.
     private UUID extractUUIDFromStringWithError(String uuidString, String type, String error) {
-        UUID uuid = null;
+        UUID uuid;
         try {
             uuid = UUID.fromString(uuidString);
         } catch (IllegalArgumentException e) {
@@ -156,7 +156,7 @@ public abstract class BaseController {
      * @return {@link CompositionFormat} expressing the content type
      * @throws NotAcceptableException when content type is not supported or input is invalid
      */
-    protected CompositionFormat extractCompositionFormat(String contentType) {
+    CompositionFormat extractCompositionFormat(String contentType) {
         final CompositionFormat compositionFormat;
 
         if (MediaType.parseMediaType(contentType).isCompatibleWith(MediaType.APPLICATION_XML)) {
@@ -176,14 +176,14 @@ public abstract class BaseController {
      * @return URI-safe escaped string
      * @throws InternalServerException when encoding failed
      */
-    public String encodePath(String path) {
+    String encodePath(String path) {
 
             path = UriUtils.encodePath(path, "UTF-8");
 
         return path;
     }
 
-    protected ResponseEntity<Map<String, String>> createErrorResponse(String message, HttpStatus status) {
+    private ResponseEntity<Map<String, String>> createErrorResponse(String message, HttpStatus status) {
         Map<String, String> error = new HashMap<>();
         error.put("error", message);
         error.put("status", status.getReasonPhrase());
@@ -196,13 +196,13 @@ public abstract class BaseController {
      * @param versionUid
      * @return
      */
-    protected UUID extractVersionedObjectUidFromVersionUid(String versionUid) {
+    UUID extractVersionedObjectUidFromVersionUid(String versionUid) {
         if (!versionUid.contains("::"))
             return UUID.fromString(versionUid);
         return UUID.fromString(versionUid.substring(0, versionUid.indexOf("::")));
     }
 
-    protected int extractVersionFromVersionUid(String versionUid) {
+    int extractVersionFromVersionUid(String versionUid) {
         if (!versionUid.contains("::"))
             return 0; //current version
         // extract the version from string of format "$UUID::$SYSTEM::$VERSION"
@@ -366,6 +366,17 @@ public abstract class BaseController {
     @ExceptionHandler(BadGatewayException.class)
     public ResponseEntity<Map<String, String>> restErrorHandler(BadGatewayException e) {
         return createErrorResponse("Bad Gateway: Proxied connection failed", HttpStatus.BAD_GATEWAY);
+    }
+
+
+    /**
+     * Handler for validation errors
+     *
+     * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
+     */
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<Map<String, String>> restErrorHandler(ValidationException e) {
+        return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     /**

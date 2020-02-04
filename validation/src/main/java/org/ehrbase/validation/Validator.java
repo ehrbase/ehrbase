@@ -44,7 +44,7 @@ public class Validator implements Serializable {
         this.lenient = lenient;
     }
 
-    public Validator(OPERATIONALTEMPLATE operationaltemplate) throws Exception {
+    public Validator(OPERATIONALTEMPLATE operationaltemplate) throws IllegalArgumentException {
         optConstraint = new OptConstraint().map(operationaltemplate);
     }
 
@@ -52,18 +52,18 @@ public class Validator implements Serializable {
     /**
      * Validate a composition
      * @param composition
-     * @throws Exception
+     * @throws IllegalArgumentException
      */
-    public void check(Composition composition) throws Exception {
+    public void check(Composition composition) throws IllegalArgumentException {
         new ConstraintChecker(lenient, composition, optConstraint).validate();
     }
 
     /**
      * Validate an ItemStructure
      * @param itemStructure
-     * @throws Exception
+     * @throws IllegalArgumentException
      */
-    public void check(ItemStructure itemStructure) throws Exception {
+    public void check(ItemStructure itemStructure) throws IllegalArgumentException {
         new ConstraintChecker(lenient, itemStructure, optConstraint).validate();
     }
 

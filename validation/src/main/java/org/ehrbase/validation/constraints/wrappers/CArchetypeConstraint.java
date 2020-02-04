@@ -37,11 +37,11 @@ public class CArchetypeConstraint extends CConstraint implements I_CArchetypeCon
     }
 
     @Override
-    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws Exception {
+    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws IllegalArgumentException {
         if (archetypeconstraint instanceof COBJECT)
-            new CObject(localTerminologyLookup).validate(path, aValue, (COBJECT) archetypeconstraint);
+            new CObject(localTerminologyLookup).validate(path, aValue, archetypeconstraint);
         else if (archetypeconstraint instanceof CATTRIBUTE)
-            new CAttribute(localTerminologyLookup).validate(path, aValue, (CATTRIBUTE) archetypeconstraint);
+            new CAttribute(localTerminologyLookup).validate(path, aValue, archetypeconstraint);
         else
             throw new IllegalArgumentException("INTERNAL: could not resolve archetypeconstraint type:" + archetypeconstraint);
     }
