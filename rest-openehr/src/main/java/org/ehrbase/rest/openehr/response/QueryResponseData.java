@@ -46,6 +46,7 @@ public class QueryResponseData {
     @JsonProperty(value = "rows")
     private List<List<Object>> rows;
 
+    @SuppressWarnings("unchecked")
     public QueryResponseData(QueryResultDto queryResultDto) {
         this.query = queryResultDto.getExecutedAQL();
         this.name = null;
@@ -54,14 +55,16 @@ public class QueryResponseData {
         this.rows = new ArrayList<>();
 
         //set the columns definitions
-        if (queryResultDto.getVariables().size() > 0 ) {
-            if (queryResultDto.getResultSet().size() > 0) {
-                //the order of the column definitions is set by the resultSet ordering
-                Map<String, Object> record = queryResultDto.getResultSet().get(0);
-                int count = 0;
 
-                for (String columnId : record.keySet()) {
-                    Map<String, String> fieldMap = new HashMap<>();
+        if (queryResultDto.getVariables().size() > 0 && queryResultDto.getResultSet().size() > 0) {
+            //the order of the column definitions is set by the resultSet ordering
+            Map<String, Object> record = queryResultDto.getResultSet().get(0);
+            int count = 0;
+
+            for (String columnId : record.keySet()) {
+                Map<String, String> fieldMap = new HashMap<>();
+
+                if (queryResultDto.getVariables().containsKey(columnId) || queryResultDto.getVariables().inverse().containsKey(columnId)) {
 
                     if (queryResultDto.getVariables().containsKey(columnId)) {
                         fieldMap.put("name", columnId);
@@ -74,26 +77,17 @@ public class QueryResponseData {
                     columns.add(fieldMap);
                 }
             }
-            else {
-                //use the variable definition instead
-                int count = 0;
-                for (Map.Entry variableEntry: queryResultDto.getVariables().entrySet()){
-                    Map<String, String> fieldMap = new HashMap<>();
-                    if (variableEntry.getKey() != null) {
-                        fieldMap.put("name", variableEntry.getKey().toString());
-                        fieldMap.put("path", variableEntry.getValue().toString());
-                    } else {
-                        fieldMap.put("name", "#" + count);
-                        fieldMap.put("path", variableEntry.getValue().toString());
-                    }
-                    count++;
-                    columns.add(fieldMap);
-                }
-            }
 
             //set the row results
             for (Map valueSet : queryResultDto.getResultSet()){
-                List values = new ArrayList(valueSet.values());
+                List values = new ArrayList();
+                for (Object entry: valueSet.entrySet()) {
+                    Map.Entry<String, Object> entryMap = (Map.Entry)entry;
+                    String entryKey = entryMap.getKey();
+
+                    if (queryResultDto.getVariables().containsKey(entryKey) || queryResultDto.getVariables().inverse().containsKey(entryKey))
+                        values.add(entryMap.getValue());
+                }
                 rows.add(values);
             }
         }

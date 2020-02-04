@@ -192,7 +192,7 @@ public class QueryCompilerPass2Test {
 
             OrderAttribute orderAttribute = orderAttributes.get(0);
             assertThat(orderAttribute.getDirection()).isEqualTo(OrderAttribute.OrderDirection.ASC);
-            I_VariableDefinition expected = I_VariableDefinitionHelper.build("$ALIAS$", null, "date_created", false, false, false);
+            I_VariableDefinition expected = I_VariableDefinitionHelper.build(null, "date_created", null, false, false, false);
             I_VariableDefinitionHelper.checkEqualWithoutFuncParameters(orderAttribute.getVariableDefinition(), expected);
         }
     }
