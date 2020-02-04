@@ -25,7 +25,7 @@ import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import java.sql.Timestamp;
 import java.util.UUID;
 
-public interface I_AuditDetailsAccess extends I_SimpleCRUD<I_AuditDetailsAccess, UUID> {
+public interface I_AuditDetailsAccess extends I_SimpleCRUD {
 
     /**
      * get a new minimal AuditDetails access layer instance

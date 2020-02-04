@@ -26,6 +26,6 @@ import java.util.UUID;
 /**
  * Created by christian on 6/1/2016.
  */
-public interface I_ContainmentAccess extends I_SimpleCRUD<I_EhrAccess, UUID> {
+public interface I_ContainmentAccess extends I_SimpleCRUD {
     void setCompositionId(UUID compositionId);
 }

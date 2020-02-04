@@ -57,7 +57,7 @@ public class ContributionServiceHelper {
      * @return List of deserialized version objects
      * @throws IllegalArgumentException when processing of given input fails
      */
-    static public List<Version> extractVersionObjects(ArrayList listVersions, CompositionFormat format) {
+    public static List<Version> extractVersionObjects(ArrayList listVersions, CompositionFormat format) {
         List<Version> versionsList = new LinkedList<>();
 
         switch (format) {
@@ -92,7 +92,7 @@ public class ContributionServiceHelper {
      * @return RM Object representation fitting the given content
      * @throws IllegalArgumentException when processing of given input fails
      */
-    static public RMObject unmarshalMapContentToRmObject(LinkedHashMap content, CompositionFormat format) {
+    public static RMObject unmarshalMapContentToRmObject(LinkedHashMap content, CompositionFormat format) {
         switch (format) {
             case JSON:
                 String json = null;
@@ -114,7 +114,7 @@ public class ContributionServiceHelper {
      * @param format Format of content
      * @return List of version objects extracted from content
      */
-    static public List<Version> getVersions(String content, CompositionFormat format) {
+    public static List<Version> parseVersions(String content, CompositionFormat format) {
         // extract both per standard parts of the content: data block containing versions & audit
         Map<String, Object> splitContent = splitContent(content, format);
 

@@ -44,7 +44,7 @@ import static org.ehrbase.jooq.pg.Tables.*;
  * Composition Access Layer Interface<br>
  * Interface CRUD and specific methods
  */
-public interface I_CompositionAccess extends I_SimpleCRUD<I_CompositionAccess, UUID> {
+public interface I_CompositionAccess extends I_SimpleCRUD {
 
     //definitions of aliases used in joins
     String COMPOSITION_JOIN = "composition_join";
@@ -186,11 +186,11 @@ public interface I_CompositionAccess extends I_SimpleCRUD<I_CompositionAccess, U
      *
      * @param domainAccess   SQL context, knowledge
      * @param contributionId contribution object uuid
-     * @return a map of {@link I_CompositionAccess} referenced by their UUID, that match the condition
+     * @return a map of {@link I_CompositionAccess} and their version number, that match the condition
      * @throws IllegalArgumentException on DB inconsistency
      */
-    static Map<UUID, I_CompositionAccess> retrieveInstancesInContributionVersion(I_DomainAccess domainAccess, UUID contributionId) {
-        return CompositionAccess.retrieveCompositionsInContributionVersion(domainAccess, contributionId, 0); //FIXME: target methods doesn't use version parameter
+    static Map<I_CompositionAccess, Integer> retrieveInstancesInContributionVersion(I_DomainAccess domainAccess, UUID contributionId) {
+        return CompositionAccess.retrieveCompositionsInContributionVersion(domainAccess, contributionId);
     }
 
     /**
@@ -202,6 +202,17 @@ public interface I_CompositionAccess extends I_SimpleCRUD<I_CompositionAccess, U
      */
     static boolean hasPreviousVersion(I_DomainAccess domainAccess, UUID compositionId) {
         return CompositionAccess.hasPreviousVersion(domainAccess, compositionId);
+    }
+
+    /**
+     * Creates Map containing all versions as their Access object with their matching version number.
+     *
+     * @param domainAccess  Data Access
+     * @param compositionId Given composition ID
+     * @return Map referencing all versions and their version number
+     */
+    static Map<I_CompositionAccess, Integer> getVersionMapOfComposition(I_DomainAccess domainAccess, UUID compositionId) {
+        return I_CompositionAccess.getVersionMapOfComposition(domainAccess, compositionId);
     }
 
     /**
@@ -409,6 +420,12 @@ public interface I_CompositionAccess extends I_SimpleCRUD<I_CompositionAccess, U
     void setContributionId(UUID contributionId);
 
     void setCompositionRecord(CompositionRecord record);
+
+    /**
+     * Set the record via converting from a history record.
+     * @param record History record
+     */
+    void setCompositionRecord(CompositionHistoryRecord record);
 
     /**
      * @throws IllegalArgumentException when handling of record failed

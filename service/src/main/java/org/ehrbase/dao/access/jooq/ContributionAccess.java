@@ -112,8 +112,10 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
         if (contributionAccess.contributionRecord == null)
             return null;
 
-        contributionAccess.compositions = CompositionAccess
-                .retrieveCompositionsInContributionVersion(domainAccess, contributionAccess.contributionRecord.getId(), 0);
+        Map<UUID, I_CompositionAccess> compos = new HashMap<>();
+        CompositionAccess.retrieveCompositionsInContributionVersion(domainAccess, contributionAccess.contributionRecord.getId())
+            .forEach((access, version) -> compos.put(access.getId(), access));
+        contributionAccess.compositions = compos;
 
         // also retrieve attached audit
         contributionAccess.auditDetails = new AuditDetailsAccess(domainAccess.getDataAccess()).retrieveInstance(domainAccess.getDataAccess(), contributionAccess.getHasAuditDetails());

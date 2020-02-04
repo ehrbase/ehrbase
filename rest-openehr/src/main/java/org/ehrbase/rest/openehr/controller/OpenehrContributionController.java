@@ -18,6 +18,7 @@
 
 package org.ehrbase.rest.openehr.controller;
 
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import org.ehrbase.api.definitions.CompositionFormat;
 import org.ehrbase.api.dto.ContributionDto;
 import org.ehrbase.api.exception.NotAcceptableException;
@@ -172,10 +173,10 @@ public class OpenehrContributionController extends BaseController {
 
             // set all response field according to retrieved contribution
             objByReference.setUid(new HierObjectId(contributionId.toString()));
-            List<ObjectRef<HierObjectId>> refs = new LinkedList<>();
+            List<ObjectRef<ObjectVersionId>> refs = new LinkedList<>();
             contribution.get().getObjectReferences().forEach((id, type) ->
                     refs.add(
-                            new ObjectRef<HierObjectId>(new HierObjectId(id), "local", type)
+                            new ObjectRef<>(new ObjectVersionId(id), "local", type)
                     ));
             objByReference.setVersions(refs);
             objByReference.setAudit(contribution.get().getAuditDetails());

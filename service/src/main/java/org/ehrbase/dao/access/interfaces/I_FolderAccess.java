@@ -37,7 +37,7 @@ import java.util.UUID;
 /**
  * Data Access Object for CRUD operations on instances of {@link  com.nedap.archie.rm.directory.Folder}.
  */
-public interface I_FolderAccess extends I_SimpleCRUD<I_EntryAccess, UUID> {
+public interface I_FolderAccess extends I_SimpleCRUD {
 
     /**
      * Get the list of subfolders for the {@link  com.nedap.archie.rm.directory.Folder} that corresponds to this {@link  I_FolderAccess}

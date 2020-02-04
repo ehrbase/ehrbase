@@ -25,9 +25,8 @@ import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
 import java.util.List;
-import java.util.UUID;
 
-public interface I_TemplateStoreAccess extends I_SimpleCRUD<I_TemplateStoreAccess, UUID> {
+public interface I_TemplateStoreAccess extends I_SimpleCRUD {
 
     OPERATIONALTEMPLATE getTemplate();
 

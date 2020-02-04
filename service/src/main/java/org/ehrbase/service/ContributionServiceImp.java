@@ -110,7 +110,7 @@ public class ContributionServiceImp extends BaseService implements ContributionS
         return Optional.of(contribution);
     }
 
-    @Override   // TODO: this will need to be one transaction, as the contribution itself will be created before the object handling. revoking it if the objects are failing will be necessary - see EHR-259
+    @Override
     public UUID commitContribution(UUID ehrId, String content, CompositionFormat format) {
         //pre-step: check for valid ehrId
         if (ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
@@ -121,7 +121,7 @@ public class ContributionServiceImp extends BaseService implements ContributionS
         I_ContributionAccess contributionAccess = I_ContributionAccess.getInstance(this.getDataAccess(), ehrId);
         // commits with all default values
         UUID contributionId = contributionAccess.commit(null, null, null, null, null, null, null);
-        List<Version> versions = ContributionServiceHelper.getVersions(content, format);
+        List<Version> versions = ContributionServiceHelper.parseVersions(content, format);
 
         if (versions.isEmpty())
             throw new InvalidApiParameterException("Invalid Contribution, must have at least one Version object.");
@@ -180,7 +180,7 @@ public class ContributionServiceImp extends BaseService implements ContributionS
                 /*String versionUid =*/ compositionService.update(getVersionedUidFromVersion(version), versionRmObject, contributionId);
                 break;
             case DELETED:   // case of deletion change type, but request also has payload (TODO: should that be even allowed? specification-wise it's not forbidden)
-                /*LocalDateTime localDateTime =*/ compositionService.delete(getVersionedUidFromVersion(version));
+                /*LocalDateTime localDateTime =*/ compositionService.delete(getVersionedUidFromVersion(version), contributionId);
                 break;
             case SYNTHESIS:     // TODO
             case UNKNOWN:       // TODO
@@ -252,9 +252,9 @@ public class ContributionServiceImp extends BaseService implements ContributionS
         Map<String, String> objRefs = new HashMap<>();
 
         // query for compositions
-        Map<UUID, I_CompositionAccess> compositions = I_CompositionAccess.retrieveInstancesInContributionVersion(this.getDataAccess(), contribution);
-        // for each fetched composition: add it to the return map and add the composition type tag - ignoring the value (the access)
-        compositions.forEach((k, v) -> objRefs.put(k.toString(), TYPE_COMPOSITION));
+        Map<I_CompositionAccess, Integer> compositions = I_CompositionAccess.retrieveInstancesInContributionVersion(this.getDataAccess(), contribution);
+        // for each fetched composition: add it to the return map and add the composition type tag - ignoring the access obj
+        compositions.forEach((k, v) -> objRefs.put(k.getId() + "::" + getServerConfig().getNodename() + "::" + v, TYPE_COMPOSITION));
 
         // TODO query for folders
 

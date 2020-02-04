@@ -35,6 +35,7 @@ import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
+import org.ehrbase.jooq.pg.tables.records.CompositionHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.CompositionRecord;
 import org.ehrbase.jooq.pg.tables.records.EventContextRecord;
 import org.ehrbase.service.IntrospectService;
@@ -113,7 +114,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
      * @throws IllegalArgumentException when seeking language code, territory code or composer ID failed
      */
     public CompositionAccess(I_DomainAccess domainAccess, Composition composition, UUID ehrId) {
-        super(domainAccess.getContext(), domainAccess.getKnowledgeManager(), domainAccess.getIntrospectService(), domainAccess.getServerConfig());
+        super(domainAccess);
 
         this.composition = composition;
 
@@ -238,13 +239,11 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     }
 
     public static Integer getLastVersionNumber(I_DomainAccess domainAccess, UUID compositionId) {
-
-        if (!hasPreviousVersion(domainAccess, compositionId))
-            return 1;
-
-        int versionCount = domainAccess.getContext().fetchCount(COMPOSITION_HISTORY, COMPOSITION_HISTORY.ID.eq(compositionId));
-
-        return versionCount + 1;
+        // check if compositionId is valid (version count = 1) and add number of existing older versions
+        if (domainAccess.getContext().fetchExists(COMPOSITION, COMPOSITION.ID.eq(compositionId))) {
+            return 1 + domainAccess.getContext().fetchCount(COMPOSITION_HISTORY, COMPOSITION_HISTORY.ID.eq(compositionId));
+        } else
+            return domainAccess.getContext().fetchCount(COMPOSITION_HISTORY, COMPOSITION_HISTORY.ID.eq(compositionId));
     }
 
     public static boolean hasPreviousVersion(I_DomainAccess domainAccess, UUID compositionId) {
@@ -322,31 +321,65 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         return retrieveCompositionVersion(domainAccess, compositionUid, version);
     }
 
-    /**
-     * @throws IllegalArgumentException on DB inconsistency
-     */
-    // TODO retrieve version without using the version parameter?! appears actually not to deal with versioning at all (contributions don't have versions in openEHR sense, but *_history table for audit)
-    public static Map<UUID, I_CompositionAccess> retrieveCompositionsInContributionVersion(I_DomainAccess domainAccess, UUID contribution, Integer versionNumber) {
-        Map<UUID, I_CompositionAccess> compositions = new HashMap<>();
+    public static Map<I_CompositionAccess, Integer> retrieveCompositionsInContributionVersion(I_DomainAccess domainAccess, UUID contribution) {
+        Set<UUID> compositions = new HashSet<>();   // Set, because of unique values
 
-        try {
-            domainAccess.getContext()
-                    .selectFrom(COMPOSITION)
-                    .where(COMPOSITION.IN_CONTRIBUTION.eq(contribution))
-                    .fetch()
-                    .forEach(record -> {
-                        I_CompositionAccess compositionAccess = new CompositionAccess(domainAccess);
-                        compositionAccess.setCompositionRecord(record);
-                        compositionAccess.setContent(I_EntryAccess.retrieveInstanceInComposition(domainAccess, compositionAccess));
-//                        compositionAccess.setCommitted(true);
-                        compositions.put(compositionAccess.getId(), compositionAccess);
+        // add all compositions having a link to given contribution
+        domainAccess.getContext().select(COMPOSITION.ID).from(COMPOSITION).where(COMPOSITION.IN_CONTRIBUTION.eq(contribution)).fetch()
+                .forEach(rec -> compositions.add(rec.value1()));
+        // and older versions or deleted ones, too
+        domainAccess.getContext().select(COMPOSITION_HISTORY.ID).from(COMPOSITION_HISTORY).where(COMPOSITION_HISTORY.IN_CONTRIBUTION.eq(contribution)).fetch()
+                .forEach(rec -> compositions.add(rec.value1()));
 
-                    });
-        } catch (Exception e) {
-            log.error("DB inconsistency:" + e);
-            throw new IllegalArgumentException("DB inconsistency:" + e);
+        // get whole "version map" of each matching composition and join them
+        // precondition: each UUID in `compositions` set is unique, so for each the "version map" is only created once below
+        Map<I_CompositionAccess, Integer> resultMap = new HashMap<>();
+        for (UUID compositionId : compositions) {
+            Map<I_CompositionAccess, Integer> map = getVersionMapOfComposition(domainAccess, compositionId);
+            resultMap.putAll(map);
         }
-        return compositions;
+
+        return resultMap;
+    }
+
+    public static Map<I_CompositionAccess, Integer> getVersionMapOfComposition(I_DomainAccess domainAccess, UUID compositionId) {
+        // TODO check like hasComposition or doesExist
+
+        Map<I_CompositionAccess, Integer> versionMap = new HashMap<>();
+
+        // create counter with highest version, to keep track of version number and allow check in the end
+        Integer versionCounter = getLastVersionNumber(domainAccess, compositionId);
+
+        // fetch matching entry
+        CompositionRecord record = domainAccess.getContext().fetchOne(COMPOSITION, COMPOSITION.ID.eq(compositionId));
+        if (record != null) {
+            I_CompositionAccess compositionAccess = new CompositionAccess(domainAccess);
+            compositionAccess.setCompositionRecord(record);
+            compositionAccess.setContent(I_EntryAccess.retrieveInstanceInComposition(domainAccess, compositionAccess));
+            versionMap.put(compositionAccess, versionCounter);
+
+            versionCounter--;
+        }
+
+        // if composition was removed (i.e. from "COMPOSITION" table) *or* other versions are existing
+        Result<CompositionHistoryRecord> historyRecords = domainAccess.getContext()
+                .selectFrom(COMPOSITION_HISTORY)
+                .where(COMPOSITION_HISTORY.ID.eq(compositionId))
+                .orderBy(COMPOSITION_HISTORY.SYS_TRANSACTION.desc())
+                .fetch();
+
+        for (CompositionHistoryRecord historyRecord : historyRecords) {
+            I_CompositionAccess historyAccess = new CompositionAccess(domainAccess);
+            historyAccess.setCompositionRecord(historyRecord);
+            historyAccess.setContent(I_EntryAccess.retrieveInstanceInComposition(domainAccess, historyAccess));
+            versionMap.put(historyAccess, versionCounter);
+            versionCounter--;
+        }
+
+        if (versionCounter != 0)
+            throw new InternalServerException("Version Map generation failed");
+
+        return versionMap;
     }
 
     /**
@@ -487,6 +520,24 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     @Override
     public void setCompositionRecord(CompositionRecord record) {
         this.compositionRecord = record;
+    }
+
+    @Override
+    public void setCompositionRecord(CompositionHistoryRecord historyRecord) {
+        CompositionRecord compositionRecord = new CompositionRecord(
+                historyRecord.getId(),
+                historyRecord.getEhrId(),
+                historyRecord.getInContribution(),
+                historyRecord.getActive(),
+                historyRecord.getIsPersistent(),
+                historyRecord.getLanguage(),
+                historyRecord.getTerritory(),
+                historyRecord.getComposer(),
+                null,
+                null,
+                historyRecord.getHasAudit()
+        );
+        this.compositionRecord = compositionRecord;
     }
 
     /**
@@ -710,7 +761,16 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         // TODO: db-wise, this way a new audit "version" will be created which is (openEHR-)semantically wrong. but safe and processable anyway. so need to change that or is it okay?
         auditDetailsAccess.update(systemId, committerId, I_ConceptAccess.ContributionChangeType.DELETED, description);
 
-        return compositionRecord.delete();
+        // .delete() moves it to history, where the record's "in_contriubtion" column needs to be modified to contain
+        // the new contribution.
+        // (Normal approach of first .update() then .delete() won't work, because postgres' transaction optimizer will
+        // just skip the update if it will get deleted anyway.)
+        int delRows = compositionRecord.delete();
+        I_CompositionHistoryAccess historyAccess = I_CompositionHistoryAccess.retrieveLatest(this, compositionRecord.getId());
+        historyAccess.setInContribution(compositionRecord.getInContribution());
+        if (historyAccess.update().equals(Boolean.FALSE))
+            throw new InternalServerException("DB inconsistency");
+        return delRows;
     }
 
     @Override

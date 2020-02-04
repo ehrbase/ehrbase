@@ -34,7 +34,7 @@ import java.util.UUID;
  * Access layer to Contributions
  * Created by Christian Chevalley on 4/21/2015.
  */
-public interface I_ContributionAccess extends I_SimpleCRUD<I_ContributionAccess, UUID> {
+public interface I_ContributionAccess extends I_SimpleCRUD {
 
     /**
      * get a new minimal contribution access layer instance

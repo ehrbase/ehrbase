@@ -32,7 +32,7 @@ import static org.ehrbase.jooq.pg.Tables.SYSTEM;
  * System access layer interface
  * Created by Christian Chevalley on 4/21/2015.
  */
-public interface I_SystemAccess extends I_SimpleCRUD<I_SystemAccess, UUID> {
+public interface I_SystemAccess extends I_SimpleCRUD {
 
     static I_SystemAccess getInstance(I_DomainAccess domainAccess, String description, String settings) {
         return new SystemAccess(domainAccess, description, settings);

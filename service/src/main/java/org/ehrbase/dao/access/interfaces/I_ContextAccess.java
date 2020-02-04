@@ -36,7 +36,7 @@ import static org.ehrbase.jooq.pg.Tables.EVENT_CONTEXT;
  * ETHERCIS Project
  * Created by Christian Chevalley on 4/21/2015.
  */
-public interface I_ContextAccess extends I_SimpleCRUD<I_ContextAccess, UUID> {
+public interface I_ContextAccess extends I_SimpleCRUD {
 
     /**
      * get a new access layer instance to the table
