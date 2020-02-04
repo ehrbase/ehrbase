@@ -6,11 +6,10 @@ import org.ehrbase.dao.access.interfaces.I_FolderAccess;
 import org.ehrbase.serialisation.RawJson;
 import org.postgresql.util.PGobject;
 
-import java.util.UUID;
-
 public class FolderUtils {
 
-    private FolderUtils(){}
+    private FolderUtils() {
+    }
 
     /**
      * Checks all fields that can be updated from update Folder object and sets
@@ -34,7 +33,6 @@ public class FolderUtils {
             target.getItems().clear();
             target.getItems().addAll(update.getItems());
         }
-        target.setFolderId(UUID.fromString(update.getUid().getValue()));
     }
 
     public static ItemStructure parseFromPGobject(PGobject databaseObject) {
