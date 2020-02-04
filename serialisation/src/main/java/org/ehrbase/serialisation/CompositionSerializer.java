@@ -37,12 +37,12 @@ import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.generic.Participation;
 import com.nedap.archie.rm.generic.PartyIdentified;
 import com.nedap.archie.rm.integration.GenericEntry;
-import org.ehrbase.ehr.encode.EncodeUtilArchie;
-import org.ehrbase.ehr.encode.ItemStack;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.collections.PredicateUtils;
 import org.apache.commons.collections.map.PredicatedMap;
 import org.apache.commons.collections4.map.MultiValueMap;
+import org.ehrbase.ehr.encode.EncodeUtilArchie;
+import org.ehrbase.ehr.encode.ItemStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -658,7 +658,7 @@ public class CompositionSerializer {
             }
             //CHC: 160531 add explicit name
             Section section = (Section) item;
-            if (section.getName() != null)encodeNodeAttribute(ltree, null, null, section.getName());
+            if (section.getName() != null) encodeNodeAttribute(ltree, null, null, section.getName());
 
             if (ltree.size() > 0)
                 retmap = ltree;
@@ -985,12 +985,13 @@ public class CompositionSerializer {
 
         if (uppertag != null) itemStack.popStacks();
 
-        if (retmap.containsKey(TAG_CLASS)) {
+        if (retmap != null && retmap.containsKey(TAG_CLASS)) {
             retmap.remove(CompositionSerializer.TAG_CLASS); //this will come out as an array...
         }
 
-        retmap.put(CompositionSerializer.TAG_CLASS, className(item)); //this will come out as an array...
-
+        if (retmap != null) {
+            retmap.put(CompositionSerializer.TAG_CLASS, className(item)); //this will come out as an array...
+        }
         return retmap;
 
     }
@@ -1082,7 +1083,7 @@ public class CompositionSerializer {
             return null;
         }
 
-        if (item instanceof Element && !new Elements((Element)item).isVoid()) {
+        if (item instanceof Element && !new Elements((Element) item).isVoid()) {
             itemStack.pushStacks(tag + "[" + item.getArchetypeNodeId() + "]", null);
             retmap = setElementAttributesMap((Element) item);
             itemStack.popStacks();
