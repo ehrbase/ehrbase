@@ -105,7 +105,7 @@ public class OpenehrDirectoryController extends BaseController {
             @ApiParam(value = "EHR identifier from resource path after ehr/", required = true) @PathVariable(value = "ehr_id") UUID ehrId,
             @ApiParam(value = "The FOLDER to create.", required = true) @RequestBody Folder folder,
             @RequestUrl String requestUrl
-                                      ) {
+    ) {
 
         // Check for existence of EHR record
         if (!this.ehrService.doesEhrExist(ehrId)) {
@@ -118,7 +118,7 @@ public class OpenehrDirectoryController extends BaseController {
         UUID folderId = this.folderService.create(
                 ehrId,
                 folder
-                                                 );
+        );
 
         // Fetch inserted folder for response data
         Optional<FolderDto> newFolder = this.folderService.retrieve(folderId, 1);
@@ -138,8 +138,8 @@ public class OpenehrDirectoryController extends BaseController {
         // Create response data
         HttpHeaders resHeaders = new HttpHeaders();
         resHeaders.setLocation(URI.create(requestUrl +
-                                          "/" +
-                                          versionUid));
+                "/" +
+                versionUid));
         resHeaders.setETag("\"" + versionUid + "\"");
         // TODO: Set LastModified header by audit details
         resHeaders.setLastModified(DateTime.now().getMillis());
@@ -149,20 +149,8 @@ public class OpenehrDirectoryController extends BaseController {
 
             FolderDto folderDto = newFolder.get();
             // Evaluate target format from accept header
-            MediaType resContentType = MediaType.APPLICATION_JSON;
-/*
-            switch (accept) {
-                case MediaType.APPLICATION_JSON_VALUE:
-                    break;
-                case MediaType.APPLICATION_XML_VALUE:
-                    resContentType = MediaType.APPLICATION_XML;
-                    break;
-                default:
-                    throw new NotAcceptableException(
-                            "Media type " + accept + " not supported."
-                    );
-            }
-*/
+            MediaType resContentType = extractMediaType(accept);
+
             DirectoryResponseData resBody = buildResponse(folderDto);
 
             resHeaders.setContentType(resContentType);
@@ -210,25 +198,14 @@ public class OpenehrDirectoryController extends BaseController {
             @ApiParam(value = "DIRECTORY identifier from resource path after directory/", required = true) @PathVariable(value = "version_uid") String versionUid,
             @ApiParam(value = "Path parameter to specify a subfolder at directory") @RequestParam(value = "path", required = false) String path,
             @RequestUrl String requestUrl
-                                                          ) {
+    ) {
 
         // Tries to create an UUID from versionUid and throws an IllegalArgumentException for 400 error
-        UUID versionUUID = UUID.fromString(versionUid);
+        UUID versionUUID = extractVersionedObjectUidFromVersionUid(versionUid);
 
         // Get response data format for deserialization; defaults to JSON
-        MediaType responseContentType = MediaType.APPLICATION_JSON;
+        MediaType responseContentType = extractMediaType(accept);
 
-        /*
-        switch (accept) {
-            case MediaType.APPLICATION_XML_VALUE:
-                responseContentType = MediaType.APPLICATION_XML;
-                break;
-            case MediaType.APPLICATION_JSON_VALUE:
-                break;
-            default:
-                throw new NotAcceptableException("Media type " + accept + " not supported.");
-        }
-*/
         // Check if EHR for the folder exists
         if (!ehrService.doesEhrExist(ehrId)) {
             throw new ObjectNotFoundException(
@@ -241,9 +218,9 @@ public class OpenehrDirectoryController extends BaseController {
         Optional<FolderDto> foundFolder = folderService.retrieve(versionUUID, 1);
         if (!foundFolder.isPresent()) {
             throw new ObjectNotFoundException("folder",
-                                              "The FOLDER with id " +
-                                              versionUUID.toString() +
-                                              " does not exist.");
+                    "The FOLDER with id " +
+                            versionUUID.toString() +
+                            " does not exist.");
         }
 
         FolderDto folderDto = foundFolder.get();
@@ -318,7 +295,7 @@ public class OpenehrDirectoryController extends BaseController {
         String versionedUid = foundFolder.get().getUid().toString() + "::" + systemId + "::" + version.toString();
 
         // Create response data
-        MediaType responseContentType = MediaType.APPLICATION_JSON;
+        MediaType responseContentType = extractMediaType(accept);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(responseContentType);
         headers.setETag("\"" + versionedUid + "\"");
@@ -386,7 +363,7 @@ public class OpenehrDirectoryController extends BaseController {
             @ApiParam(value = "EHR identifier from resource path after ehr/", required = true) @PathVariable(value = "ehr_id") UUID ehrId,
             @ApiParam(value = "Update data for the target FOLDER") @RequestBody Folder folder,
             @RequestUrl String requestUrl
-                                      ) {
+    ) {
 
         // Check for existence of EHR record
         if (!this.ehrService.doesEhrExist(ehrId)) {
@@ -396,14 +373,14 @@ public class OpenehrDirectoryController extends BaseController {
             );
         }
 
-        UUID folderId = UUID.fromString(ifMatch.split("::")[0]);
+        UUID folderId = extractVersionedObjectUidFromVersionUid(ifMatch);
 
         // Update folder and get new version
         Optional<FolderDto> updatedFolder = this.folderService.update(
                 folderId,
                 folder,
                 ehrId
-                                                                     );
+        );
 
 
         if (!updatedFolder.isPresent()) {
@@ -420,8 +397,8 @@ public class OpenehrDirectoryController extends BaseController {
         // Create response data
         HttpHeaders resHeaders = new HttpHeaders();
         resHeaders.setLocation(URI.create(requestUrl +
-                                          "/" +
-                                          versionedUid));
+                "/" +
+                versionedUid));
         resHeaders.setETag("\"" + versionedUid + "\"");
         // TODO: Set LastModified header by audit details
         resHeaders.setLastModified(DateTime.now().getMillis());
@@ -432,21 +409,8 @@ public class OpenehrDirectoryController extends BaseController {
             FolderDto folderDto = updatedFolder.get();
 
             // Evaluate target format from accept header
-            MediaType resContentType = MediaType.APPLICATION_JSON;
+            MediaType resContentType = extractMediaType(accept);
 
-            /*
-            switch (accept) {
-                case MediaType.APPLICATION_JSON_VALUE:
-                    break;
-                case MediaType.APPLICATION_XML_VALUE:
-                    resContentType = MediaType.APPLICATION_XML;
-                    break;
-                default:
-                    throw new NotAcceptableException(
-                            "Media type " + accept + " not supported."
-                    );
-            }
-*/
             DirectoryResponseData resBody = buildResponse(folderDto);
 
             resHeaders.setContentType(resContentType);
@@ -502,17 +466,17 @@ public class OpenehrDirectoryController extends BaseController {
             @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
             @ApiParam(value = "{preceding_version_uid}", required = true) @RequestHeader(value = IF_MATCH) String ifMatch,
             @ApiParam(value = "EHR identifier from resource path after ehr/", required = true) @PathVariable(value = "ehr_id") String ehrIdString
-                                      ) {
+    ) {
         UUID ehrId = getEhrUuid(ehrIdString);
 
         if (!this.ehrService.doesEhrExist(ehrId)) {
             throw new ObjectNotFoundException("EHR with id " + ehrIdString + " not found",
-                                              "FOLDER");
+                    "FOLDER");
         }
 
         this.folderService.delete(VersionUidHelper.extractUUID(ifMatch));
         return ResponseEntity.status(HttpStatus.NO_CONTENT)
-                             .build();
+                .build();
     }
 
     private DirectoryResponseData buildResponse(FolderDto folderDto) {
