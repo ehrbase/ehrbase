@@ -140,9 +140,10 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         this.setInContribution(newContribution);
 
         // Copy into new instance and attach to DB context.
-        // The new instance is required to store the new record with a new ID
         FolderRecord updatedFolderRecord = new FolderRecord();
-        if (rootFolder) {
+
+        if(rootFolder) {//if it is the root folder preserve the original id, itherwise let the DB provide a new one for the overriden subfolders.
+
             updatedFolderRecord.setId(this.getFolderId());
         }
         updatedFolderRecord.setInContribution(newContribution);
