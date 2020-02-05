@@ -18,19 +18,16 @@
 package org.ehrbase.terminology.openehr.implementation;
 
 import org.ehrbase.ehr.encode.wrappers.SnakeCase;
-import org.ehrbase.terminology.openehr.TerminologyException;
+import org.ehrbase.terminology.openehr.TerminologyResourceException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * This class provide mappings between RM object attributes and their corresponding entry into openehr terminology
@@ -47,11 +44,11 @@ public class AttributeCodesetMapping {
 	/**
 	 * Gets an terminology source loaded with specified xml content
 	 */
-	public static AttributeCodesetMapping getInstance(String xmlfilename) throws TerminologyException {
+	public static AttributeCodesetMapping getInstance(String xmlfilename) throws TerminologyResourceException {
 		return new AttributeCodesetMapping(xmlfilename);
 	}
 
-	public static AttributeCodesetMapping getInstance() throws TerminologyException {
+	public static AttributeCodesetMapping getInstance() throws TerminologyResourceException {
 		return new AttributeCodesetMapping(ATTRIBUTE_MAP_DEFINITION);
 	}
 
@@ -62,16 +59,16 @@ public class AttributeCodesetMapping {
 	/*
 	 * Constructs an instance loaded with terminology content
 	 */
-	private AttributeCodesetMapping(String filename) throws TerminologyException {
+	private AttributeCodesetMapping(String filename) throws TerminologyResourceException {
 		groupMaps = new HashMap<>();
 		loadMappersFromXML(filename);
 	}
 
-	private void loadMappersFromXML(String filename) throws TerminologyException {
+	private void loadMappersFromXML(String filename) throws TerminologyResourceException {
 		try (InputStream resourceAsStream = getClass().getClassLoader().getResourceAsStream(filename)) {
 
 			if (resourceAsStream == null)
-				throw new TerminologyException("Could not access filename:"+filename);
+				throw new TerminologyResourceException("Could not access filename:"+filename);
 
 			final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			final DocumentBuilder documentBuilder = factory.newDocumentBuilder();
@@ -97,7 +94,7 @@ public class AttributeCodesetMapping {
 			}
 		}
 		catch (Exception e){
-			throw new TerminologyException(e.getMessage());
+			throw new TerminologyResourceException(e.getMessage());
 		}
 	}
 
@@ -149,6 +146,9 @@ public class AttributeCodesetMapping {
 		}
 
 		String snakeAttribute =  new SnakeCase(attribute).camelToSnake();
+
+		if (!getMappers().containsKey(terminology))
+		    throw new IllegalArgumentException("Invalid terminology id:"+terminology);
 
 		if (!getMappers().get(terminology).containsKey(snakeAttribute))
 			throw new IllegalArgumentException("attribute:"+attribute+", is not defined in terminology:"+terminology);

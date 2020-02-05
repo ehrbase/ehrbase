@@ -46,7 +46,7 @@ public class CDvState extends CConstraint implements I_CArchetypeConstraintValid
     public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws IllegalArgumentException {
 
         if (!(archetypeconstraint instanceof CDVSTATE))
-            throw new IllegalArgumentException("INTERNAL: archetype constraint is not a CDvState");
+            throw new IllegalStateException("INTERNAL: archetype constraint is not a CDvState");
 
         CDVSTATE cdvstate = (CDVSTATE) archetypeconstraint;
         DvState dvState = (DvState) aValue;

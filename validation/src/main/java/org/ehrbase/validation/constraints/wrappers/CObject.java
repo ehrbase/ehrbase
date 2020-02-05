@@ -55,7 +55,7 @@ public class CObject extends CConstraint implements I_CArchetypeConstraintValida
         else if (constraint instanceof CDOMAINTYPE)
             new CDomainType(localTerminologyLookup).validate(path, aValue, (CDOMAINTYPE) constraint);
         else
-            throw new IllegalArgumentException("INTERNAL: unsupported COBJECT:" + archetypeconstraint);
+            throw new IllegalStateException("INTERNAL: unsupported COBJECT:" + archetypeconstraint);
 
     }
 }

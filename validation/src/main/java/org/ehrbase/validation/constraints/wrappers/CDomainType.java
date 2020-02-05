@@ -50,7 +50,7 @@ public class CDomainType extends CConstraint implements I_CArchetypeConstraintVa
         else if (archetypeconstraint instanceof CDVSTATE)
             new CDvState(localTerminologyLookup).validate(path, aValue, archetypeconstraint);
         else
-            throw new IllegalArgumentException("INTERNAL: unsupported CDOMAINTYPE:" + archetypeconstraint);
+            throw new IllegalStateException("INTERNAL: unsupported CDOMAINTYPE:" + archetypeconstraint);
 
     }
 }

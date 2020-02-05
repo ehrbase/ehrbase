@@ -72,7 +72,7 @@ public class CPrimitive extends CConstraint implements I_CArchetypeConstraintVal
                 new CDuration(localTerminologyLookup).validate(path, aValue, (CDURATION) constraint.getItem().changeType(CDURATION.type));
                 break;
             default:
-                throw new IllegalArgumentException("INTERNAL: unsupported CPRIMIITVE:" + archetypeconstraint);
+                throw new IllegalStateException("INTERNAL: unsupported CPRIMIITVE:" + archetypeconstraint);
         }
     }
 }

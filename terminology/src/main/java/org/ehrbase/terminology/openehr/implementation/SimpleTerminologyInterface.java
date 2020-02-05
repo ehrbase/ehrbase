@@ -33,10 +33,8 @@
 package org.ehrbase.terminology.openehr.implementation;
 
 import java.util.*;
-import org.ehrbase.terminology.openehr.CodeSetAccess;
-import org.ehrbase.terminology.openehr.OpenEHRCodeSetIdentifiers;
-import org.ehrbase.terminology.openehr.TerminologyAccess;
-import org.ehrbase.terminology.openehr.TerminologyInterface;
+
+import org.ehrbase.terminology.openehr.*;
 
 
 /**
@@ -106,7 +104,7 @@ public class SimpleTerminologyInterface implements TerminologyInterface {
 			loadCodeSets(terminologySource);			
 			
 		} catch(Exception e) {
-			throw new InternalError(e);
+			throw new TerminologyResourceException(e.getMessage());
 		}
 	}
 	

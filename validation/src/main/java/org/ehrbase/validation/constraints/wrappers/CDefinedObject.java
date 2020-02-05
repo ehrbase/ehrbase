@@ -51,6 +51,6 @@ public class CDefinedObject extends CConstraint implements I_CArchetypeConstrain
         else if (archetypeconstraint instanceof CDOMAINTYPE)
             new CDomainType(localTerminologyLookup).validate(path, aValue, archetypeconstraint);
         else
-            throw new IllegalArgumentException("INTERNAL: unsupported CDefinedObject:" + archetypeconstraint);
+            throw new IllegalStateException("INTERNAL: unsupported CDefinedObject:" + archetypeconstraint);
     }
 }

@@ -45,7 +45,7 @@ public class CCodePhrase extends CConstraint implements I_CArchetypeConstraintVa
     public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws IllegalArgumentException {
 
         if (!(aValue instanceof CodePhrase))
-            throw new IllegalArgumentException("INTERNAL: argument is not a CodePhrase");
+            throw new IllegalStateException("INTERNAL: argument is not a CodePhrase");
 
         CodePhrase codePhrase = (CodePhrase) aValue;
         CCODEPHRASE ccodephrase = (CCODEPHRASE) archetypeconstraint;

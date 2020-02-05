@@ -110,7 +110,7 @@ public class ConstraintChecker {
         else if (item instanceof Element)
             validateElement(path, (Element) item);
         else
-            throw new ValidationException(path, "Unhandled specific data type:"+item);
+            throw new IllegalStateException("Unhandled specific data type:"+item);
     }
 
     private String validateElements() throws IllegalArgumentException {
@@ -144,7 +144,7 @@ public class ConstraintChecker {
                         if (item instanceof Element && !isNilElement((Element) item))
                             validateItem(path, item);
                     } catch (Exception e) {
-                        validationException.append(new Message().encode(path, e.getMessage(), "") + "\n");
+                        validationException.append(new Message().encode(path, e.getMessage(), "")).append("\n");
                     }
                 }
         }
