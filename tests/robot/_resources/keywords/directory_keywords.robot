@@ -274,6 +274,8 @@ get DIRECTORY at version (JSON)
 
                         Set Test Variable  ${KEYWORD NAME}  GET DIRECTORY AT VERSION (JSON)
 
+        TRACE GITHUB ISSUE  148  not-ready
+
                         GET /ehr/ehr_id/directory/version_uid    JSON
 
 
@@ -282,6 +284,8 @@ get FOLDER in DIRECTORY at version (JSON)
                         Set Test Variable  ${KEYWORD NAME}  GET FOLDER AT VERSION (JSON)
 
                         Set Test Variable    ${path}    ${path}
+
+        TRACE GITHUB ISSUE  148  not-ready
 
                         GET /ehr/ehr_id/directory/version_uid?path    JSON
 
