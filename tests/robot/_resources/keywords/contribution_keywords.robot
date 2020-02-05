@@ -380,10 +380,10 @@ Output Debug Info:
                         # Log To Console      \trequest body: \n\t${response.request.body} \n
                         Log To Console      \tresponse status code: \n\t${response.status_code} \n
                         Log To Console      \tresponse headers: \n\t${response.headers} \n
-                        # Log To Console      \tresponse body: \n\t${response.content} \n
+                        Log To Console      \tresponse body: \n\t${response.text} \n
 
-    ${resti_response}=  Set Variable  ${response.json()}
-                        Output    ${resti_response}
+    # ${resti_response}=  Set Variable  ${response.text}
+    #                     Output    ${resti_response}
 
 
 
