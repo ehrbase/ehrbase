@@ -658,7 +658,7 @@ public class CompositionSerializer {
             }
             //CHC: 160531 add explicit name
             Section section = (Section) item;
-            if (section.getName() != null)encodeNodeAttribute(ltree, null, null, section.getName());
+            if (section.getName() != null) encodeNodeAttribute(ltree, null, null, section.getName());
 
             if (ltree.size() > 0)
                 retmap = ltree;
@@ -984,12 +984,13 @@ public class CompositionSerializer {
 
         if (uppertag != null) itemStack.popStacks();
 
-        if (retmap.containsKey(TAG_CLASS)) {
+        if (retmap != null && retmap.containsKey(TAG_CLASS)) {
             retmap.remove(CompositionSerializer.TAG_CLASS); //this will come out as an array...
         }
 
-        retmap.put(CompositionSerializer.TAG_CLASS, className(item)); //this will come out as an array...
-
+        if (retmap != null) {
+            retmap.put(CompositionSerializer.TAG_CLASS, className(item)); //this will come out as an array...
+        }
         return retmap;
 
     }
@@ -1081,7 +1082,7 @@ public class CompositionSerializer {
             return null;
         }
 
-        if (item instanceof Element && !new Elements((Element)item).isVoid()) {
+        if (item instanceof Element && !new Elements((Element) item).isVoid()) {
             itemStack.pushStacks(tag + "[" + item.getArchetypeNodeId() + "]", null);
             retmap = setElementAttributesMap((Element) item);
             itemStack.popStacks();
