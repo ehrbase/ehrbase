@@ -59,6 +59,6 @@ Alternative flow 3: commit CONTRIBUTION with multiple valid and invalid VERSION<
     create EHR
     commit invalid CONTRIBUTION (JSON)    multiple_valid_and_invalid_compos.json
 
-        TRACE GITHUB ISSUE  51  not-ready
+        TRACE GITHUB ISSUE  61  not-ready
 
     check response: is negative indicating errors in committed data

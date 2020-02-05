@@ -18,10 +18,14 @@
 
 package org.ehrbase.dao.access.jooq;
 
+import com.nedap.archie.rm.datatypes.CodePhrase;
+import com.nedap.archie.rm.datavalues.DvCodedText;
+import com.nedap.archie.rm.datavalues.DvText;
+import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
+import com.nedap.archie.rm.generic.AuditDetails;
+import com.nedap.archie.rm.generic.PartyProxy;
 import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.dao.access.interfaces.I_AuditDetailsAccess;
-import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
-import org.ehrbase.dao.access.interfaces.I_DomainAccess;
+import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.tables.records.AuditDetailsRecord;
@@ -29,6 +33,7 @@ import org.ehrbase.jooq.pg.tables.records.AuditDetailsRecord;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import static org.ehrbase.jooq.pg.tables.AuditDetails.AUDIT_DETAILS;
@@ -79,7 +84,7 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
     public UUID commit(Timestamp transactionTime) {
         auditDetailsRecord.setTimeCommitted(transactionTime);
         auditDetailsRecord.setTimeCommittedTzid(ZonedDateTime.now().getZone().getId()); // extracting only TZ, ignoring now() itself
-        int result = auditDetailsRecord.store();
+        int result = auditDetailsRecord.insert();
         if (result == 1) {
             return auditDetailsRecord.getId();
         } else {
@@ -117,7 +122,8 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
         boolean result = false;
 
         if (force || auditDetailsRecord.changed()) {
-            result = auditDetailsRecord.store() == 1;   // store() returns 1 if stored, 0 if not
+            auditDetailsRecord.setId(UUID.randomUUID()); // force to create new entry from old values
+            result = auditDetailsRecord.insert() == 1;
         }
 
         return result;
@@ -155,6 +161,11 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
     @Override
     public Integer delete() {
         return auditDetailsRecord.delete();
+    }
+
+    @Override
+    public UUID getId() {
+        return auditDetailsRecord.getId();
     }
 
     @Override
@@ -211,5 +222,20 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
     @Override
     public String getTimeCommittedTzId() {
         return auditDetailsRecord.getTimeCommittedTzid();
+    }
+
+    @Override
+    public void setRecord(AuditDetailsRecord record) {
+        this.auditDetailsRecord = record;
+    }
+
+    @Override
+    public AuditDetails getAsAuditDetails() {
+        String systemId = getSystemId().toString();
+        PartyProxy party = I_PartyIdentifiedAccess.retrievePartyIdentified(this, getCommitter());
+        DvDateTime time = new DvDateTime(getTimeCommitted().toLocalDateTime());
+        DvCodedText changeType = new DvCodedText(getChangeType().getName(), new CodePhrase("openehr"));
+        DvText description = new DvText(getDescription());
+        return new AuditDetails(systemId, party, time, changeType, description);
     }
 }
