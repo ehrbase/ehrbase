@@ -53,7 +53,7 @@
             @Override
             public MockResult[] execute(MockExecuteContext ctx) throws SQLException {
 
-                DSLContext create = DSL.using(SQLDialect.POSTGRES_9_5);
+                DSLContext create = DSL.using(SQLDialect.POSTGRES);
                 MockResult[] mock = new MockResult[1];
                 String sql2 = ctx.sql();
 

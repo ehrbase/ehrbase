@@ -44,9 +44,9 @@ import static org.jooq.impl.DSL.*;
 /***
  *@Created by Luis Marco-Ruiz on Jun 13, 2019
  */
-public class FolderAccessHistory extends DataAccess implements I_FolderAccess, Comparable<FolderAccessHistory> {
+public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, Comparable<FolderHistoryAccess> {
 
-    private static final Logger log = LogManager.getLogger(FolderAccessHistory.class);
+    private static final Logger log = LogManager.getLogger(FolderHistoryAccess.class);
 
     // TODO: Check how to remove this unused details for confusion prevention
     private ItemStructure details;
@@ -59,7 +59,7 @@ public class FolderAccessHistory extends DataAccess implements I_FolderAccess, C
 
     /********Constructors*******/
 
-    public FolderAccessHistory(I_DomainAccess domainAccess) {
+    public FolderHistoryAccess(I_DomainAccess domainAccess) {
         super(domainAccess);
         this.folderRecord = getContext().newRecord(org.ehrbase.jooq.pg.tables.Folder.FOLDER);
 
@@ -68,7 +68,7 @@ public class FolderAccessHistory extends DataAccess implements I_FolderAccess, C
         this.contributionAccess.setState(ContributionDef.ContributionState.COMPLETE);
     }
 
-    public FolderAccessHistory(I_DomainAccess domainAccess, UUID ehrId, I_ContributionAccess contributionAccess) {
+    public FolderHistoryAccess(I_DomainAccess domainAccess, UUID ehrId, I_ContributionAccess contributionAccess) {
         super(domainAccess);
         this.ehrId=ehrId;
         this.folderRecord = getContext().newRecord(org.ehrbase.jooq.pg.tables.Folder.FOLDER);
@@ -118,13 +118,13 @@ public class FolderAccessHistory extends DataAccess implements I_FolderAccess, C
     }
 
 
-    private static FolderAccessHistory buildFolderAccessFromGenericRecord(final Record record_,
+    private static FolderHistoryAccess buildFolderAccessFromGenericRecord(final Record record_,
                                                                           final I_DomainAccess domainAccess) {
 
         Record15<UUID, UUID, UUID, Timestamp, Object, UUID, Timestamp, UUID, UUID, String, String, Boolean, PGobject, Timestamp, Object>
                 record
                 = (Record15<UUID, UUID, UUID, Timestamp, Object, UUID, Timestamp, UUID, UUID, String, String, Boolean, PGobject, Timestamp, Object>) record_;
-        FolderAccessHistory folderAccess = new FolderAccessHistory(domainAccess);
+        FolderHistoryAccess folderAccess = new FolderHistoryAccess(domainAccess);
         folderAccess.folderRecord = new FolderRecord();
         folderAccess.setFolderId(record.value1());
         folderAccess.setInContribution(record.value3());
@@ -137,7 +137,7 @@ public class FolderAccessHistory extends DataAccess implements I_FolderAccess, C
         folderAccess.setFolderSysTransaction(record.value14());
         folderAccess.setFolderSysPeriod(record.value15());
         folderAccess.getItems()
-                    .addAll(FolderAccessHistory.retrieveItemsByFolderAndContributionId(record.value1(),
+                    .addAll(FolderHistoryAccess.retrieveItemsByFolderAndContributionId(record.value1(),
                                                                                 record.value3(),
                                                                                 domainAccess));
         return folderAccess;
@@ -150,10 +150,10 @@ public class FolderAccessHistory extends DataAccess implements I_FolderAccess, C
      * @param domainAccess containing the DB connection information.
      * @return FolderAccess instance corresponding to the org.ehrbase.jooq.pg.tables.records.FolderRecord provided.
      */
-    private static FolderAccessHistory buildFolderAccessFromFolderRecord(final FolderRecord record_,
+    private static FolderHistoryAccess buildFolderAccessFromFolderRecord(final FolderRecord record_,
                                                                          final I_DomainAccess domainAccess) {
         FolderRecord record = record_;
-        FolderAccessHistory folderAccess = new FolderAccessHistory(domainAccess);
+        FolderHistoryAccess folderAccess = new FolderHistoryAccess(domainAccess);
         folderAccess.folderRecord = new FolderRecord();
         folderAccess.setFolderId(record.getId());
         folderAccess.setInContribution(record.getInContribution());
@@ -164,7 +164,7 @@ public class FolderAccessHistory extends DataAccess implements I_FolderAccess, C
         folderAccess.setFolderSysTransaction(record.getSysTransaction());
         folderAccess.setFolderSysPeriod(record.getSysPeriod());
         folderAccess.getItems()
-                    .addAll(FolderAccessHistory.retrieveItemsByFolderAndContributionId(record.getId(),
+                    .addAll(FolderHistoryAccess.retrieveItemsByFolderAndContributionId(record.getId(),
                                                                                 record.getInContribution(),
                                                                                 domainAccess));
         return folderAccess;
@@ -172,11 +172,11 @@ public class FolderAccessHistory extends DataAccess implements I_FolderAccess, C
 
     /**
      * Given a UUID for a folder creates the corresponding FolderAccess from the information conveyed by the {@link Result} provided. Alternatively queries the DB if the information needed is not in {@link Result}.
-     * * @param id of the folder to define a {@link FolderAccessHistory} from.
+     * * @param id of the folder to define a {@link FolderHistoryAccess} from.
      * * @param {@link Result} containing the Records that represent the rows to retrieve from the DB corresponding to the children hierarchy.
      * @return a FolderAccess corresponding to the Folder id provided
      */
-    private static FolderAccessHistory buildFolderAccessFromFolderId(final UUID id, final UUID contributionId,  final I_DomainAccess domainAccess, final Result<Record> folderSelectedRecordSub){
+    private static FolderHistoryAccess buildFolderAccessFromFolderId(final UUID id, final UUID contributionId,  final I_DomainAccess domainAccess, final Result<Record> folderSelectedRecordSub){
 
         for(Record record : folderSelectedRecordSub){
             //if the FOLDER items were returned in the recursive query use them and avoid a DB transaction
@@ -278,7 +278,7 @@ public class FolderAccessHistory extends DataAccess implements I_FolderAccess, C
      */
     private static  ObjectRef parseObjectRefRecordIntoObjectRef(ObjectRefRecord objectRefRecord, I_DomainAccess domainAccess){
         ObjectRef result = new ObjectRef();
-        ObjectRefId oref = new FolderAccessHistory(domainAccess).new ObjectRefId(objectRefRecord.getId().toString());
+        ObjectRefId oref = new FolderHistoryAccess(domainAccess).new ObjectRefId(objectRefRecord.getId().toString());
         result.setId(oref);
         result.setType(objectRefRecord.getType());
         result.setNamespace(objectRefRecord.getIdNamespace());
@@ -451,7 +451,7 @@ public class FolderAccessHistory extends DataAccess implements I_FolderAccess, C
     }
 
     @Override
-    public int compareTo(final FolderAccessHistory o) {
+    public int compareTo(final FolderHistoryAccess o) {
         return o.getFolderRecord().getId().compareTo(this.folderRecord.getId());
     }
 
@@ -492,7 +492,7 @@ public class FolderAccessHistory extends DataAccess implements I_FolderAccess, C
             versionComHist++;
         }
         if (versionComHist == 0) {
-            throw new IllegalArgumentException("There are no versions available prior to date " + timeCommitted + " for the the FOLDER with id: " + vFolderUid);
+            throw new ObjectNotFoundException("FOLDER VERSION", "There are no versions available prior to date " + timeCommitted + " for the the FOLDER with id: " + vFolderUid);
         }
         return versionComHist;
     }
@@ -635,7 +635,7 @@ public class FolderAccessHistory extends DataAccess implements I_FolderAccess, C
         }
 
         /**3-populate result and return**/
-        return FolderAccessHistory.buildFolderAccessHierarchy(fHierarchyMap, folderId, null, folderSelectedRecordSub, domainAccess);
+        return FolderHistoryAccess.buildFolderAccessHierarchy(fHierarchyMap, folderId, null, folderSelectedRecordSub, domainAccess);
     }
 
     private static I_FolderAccess buildFolderAccessHierarchy(final Map<UUID, Map<UUID, I_FolderAccess>> fHierarchyMap, final UUID currentFolder, final I_FolderAccess parentFa, final Result<Record> folderSelectedRecordSub, final I_DomainAccess domainAccess){
