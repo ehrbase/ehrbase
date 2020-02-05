@@ -203,14 +203,22 @@ predicateEquality
 predicateOperand
         : objectPath | operand;
 
-operand
-        : STRING
-        | INTEGER
-        | FLOAT
-        | DATE
-        | PARAMETER
-        | BOOLEAN;
 
+
+operand
+                : STRING
+                | INTEGER
+                | FLOAT
+                | DATE
+                | PARAMETER
+                | BOOLEAN
+        	    | invokeOperand;
+
+invokeOperand
+        	: invokeExpr;
+
+invokeExpr
+                : INVOKE OPEN_PAR URIVALUE CLOSE_PAR ;
 
 objectPath
         : pathPart (SLASH pathPart)*;
@@ -250,6 +258,7 @@ XOR : X O R ;
 NOT : N O T ;
 IN : I N ;
 MATCHES : M A T C H E S ;
+INVOKE : I N V O K E ;
 LIKE : L I K E ;
 ILIKE : I L I K E ;
 SIMILARTO: S I M I L A R ' ' T O;

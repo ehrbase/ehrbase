@@ -77,17 +77,33 @@ public class FunctionDefinition implements I_VariableDefinition {
     }
 
     @Override
+    public boolean isHidden() {
+        return false;
+    }
+
+    @Override
     public List<FuncParameter> getFuncParameters() {
         return parameters;
     }
 
     @Override
-    public I_VariableDefinition clone() {
+    public I_VariableDefinition clone() throws CloneNotSupportedException {
+        super.clone();
         return new FunctionDefinition(this.identifier, this.alias, this.path, this.parameters);
     }
 
     @Override
     public void setPath(String path) {
         this.path = path;
+    }
+
+    @Override
+    public void setDistinct(boolean distinct) {
+
+    }
+
+    @Override
+    public void setHidden(boolean hidden) {
+
     }
 }

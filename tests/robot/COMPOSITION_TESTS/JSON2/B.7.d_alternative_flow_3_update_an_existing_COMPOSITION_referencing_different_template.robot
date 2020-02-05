@@ -48,7 +48,9 @@ Alternative flow 3 update an existing persistent COMPOSITION referencing differe
     # Tries to commit as a new version of the first committed COMPO
     update composition (JSON)    minimal_persistent/persistent_minimal.composition.extdatetime.v2_2.xml
 
-        TRACE JIRA BUG    EHR-517    not-ready
+
+        TRACE GITHUB ISSUE  124  not-ready
+
 
     Should Be Equal As Strings   ${response.status_code}   400
 

@@ -135,6 +135,22 @@ public class AttributeCodesetMapping {
 		return getMappers().get(terminology).get(snakeAttribute).getIdMap().get(language);
 	}
 
+	public boolean isLocalizedAttribute(String terminology, String attribute, String language){
+		if (attribute == null){
+			return false;
+		}
+
+		String snakeAttribute =  new SnakeCase(attribute).camelToSnake();
+
+		if (!getMappers().get(terminology).containsKey(snakeAttribute))
+			throw new IllegalArgumentException("attribute:"+attribute+", is not defined in terminology:"+terminology);
+
+		if (!getMappers().get(terminology).get(snakeAttribute).getIdMap().containsKey(language))
+			return false; //default to English
+
+		return true;
+	}
+
 	public ContainerType containerType(String terminology, String attribute){
 		if (!getMappers().containsKey(terminology))
 			return ContainerType.UNDEFINED;

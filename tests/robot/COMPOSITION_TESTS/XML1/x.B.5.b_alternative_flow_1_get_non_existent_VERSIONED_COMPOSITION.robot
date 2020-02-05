@@ -36,10 +36,6 @@ Force Tags    XML
 Alternative flow 1 get non existent VERSIONED COMPOSITION
 
     create EHR    XML
-
-    # comment: Create fake COMPOSITION
-    generate random composition_uid
-
-    prepare new request session      XML
-    get versioned composition by uid    ${versioned_object_uid}
+    create fake composition
+    get versioned composition by uid    XML    ${versioned_object_uid}
     check versioned composition does not exist

@@ -44,12 +44,8 @@ import org.ehrbase.jooq.pg.tables.records.EntryHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EntryRecord;
 import org.ehrbase.serialisation.RawJson;
 import org.ehrbase.service.IntrospectService;
-import org.jooq.DSLContext;
-import org.jooq.Record;
-import org.jooq.Result;
-import org.jooq.UpdateQuery;
+import org.jooq.*;
 import org.jooq.impl.DSL;
-import org.postgresql.util.PGobject;
 
 import java.sql.Timestamp;
 import java.util.*;
@@ -73,14 +69,15 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
 
     /**
      * Basic constructor for entry.
-     * @param context DB context object of current server context
-     * @param knowledge Knowledge cache object of current server context
+     *
+     * @param context         DB context object of current server context
+     * @param knowledge       Knowledge cache object of current server context
      * @param introspectCache Introspect cache object of current server context
-     * @param serverConfig Server config object of current server context
-     * @param templateId Template ID of this entry
-     * @param sequence Sequence number of this entry
-     * @param compositionId Linked composition ID
-     * @param composition Object representation of linked composition
+     * @param serverConfig    Server config object of current server context
+     * @param templateId      Template ID of this entry
+     * @param sequence        Sequence number of this entry
+     * @param compositionId   Linked composition ID
+     * @param composition     Object representation of linked composition
      */
     public EntryAccess(DSLContext context, I_KnowledgeCache knowledge, IntrospectService introspectCache, ServerConfig serverConfig, String templateId, Integer sequence, UUID compositionId, Composition composition) {
         super(context, knowledge, introspectCache, serverConfig);
@@ -89,11 +86,12 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
 
     /**
      * Constructor with convenient {@link I_DomainAccess} parameter, for better readability.
-     * @param domainAccess Current domain access object
-     * @param templateId Template ID of this entry
-     * @param sequence Sequence number of this entry
+     *
+     * @param domainAccess  Current domain access object
+     * @param templateId    Template ID of this entry
+     * @param sequence      Sequence number of this entry
      * @param compositionId Linked composition ID
-     * @param composition Object representation of linked composition
+     * @param composition   Object representation of linked composition
      */
     public EntryAccess(I_DomainAccess domainAccess, String templateId, Integer sequence, UUID compositionId, Composition composition) {
         super(domainAccess.getContext(), domainAccess.getKnowledgeManager(), domainAccess.getIntrospectService(), domainAccess.getServerConfig());
@@ -138,7 +136,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
                         new ObjectVersionId(compositionAccess.getId().toString() + "::" + domainAccess.getServerConfig().getNodename() + "::" + version));
 
                 entryAccess.entryRecord = record;
-                String value = ((PGobject) record.getEntry()).getValue();
+                String value = record.getEntry().data();
                 entryAccess.composition = new RawJson().unmarshal(value, Composition.class);
 
                 // continuing optional handling for persistent compositions
@@ -202,7 +200,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
 //                EntryAccess entry = new EntryAccess();
                 entryAccess.entryRecord = domainAccess.getContext().newRecord(ENTRY);
                 entryAccess.entryRecord.from(record);
-                entryAccess.composition = new RawJson().unmarshal(((PGobject) record.getEntry()).getValue(), Composition.class);
+                entryAccess.composition = new RawJson().unmarshal(record.getEntry().data(), Composition.class);
 
                 setCompositionAttributes(entryAccess.composition, values);
                 buildArchetypeDetails(entryAccess);
@@ -291,7 +289,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
 
 
         RawJson rawJson = new RawJson();
-        record.setEntry(rawJson.marshal(composition));
+        record.setEntry(JSONB.valueOf(rawJson.marshal(composition)));
         containmentAccess = new ContainmentAccess(getDataAccess(), record.getId(), record.getArchetypeId(), rawJson.getLtreeMap(), true);
     }
 
@@ -357,7 +355,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
                         DSL.val(EntryType.valueOf(getItemType())),
                         DSL.val(getArchetypeId()),
                         DSL.val(getCategory()),
-                        DSL.field(DSL.val(getEntryJson()) + "::jsonb"),
+                        DSL.val(getEntryJson()),
                         DSL.val(transactionTime))
                 .returning(ENTRY.ID)
                 .fetchOne();
@@ -406,7 +404,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
         updateQuery.addValue(ENTRY.ITEM_TYPE, DSL.field(DSL.val(EntryType.valueOf(getItemType()))));
         updateQuery.addValue(ENTRY.ARCHETYPE_ID, DSL.field(DSL.val(getArchetypeId())));
         updateQuery.addValue(ENTRY.CATEGORY, DSL.field(DSL.val(getCategory())));
-        updateQuery.addValue(ENTRY.ENTRY_, (Object) DSL.field(DSL.val(getEntryJson()) + "::jsonb"));
+        updateQuery.addValue(ENTRY.ENTRY_, DSL.field(DSL.val(getEntryJson())));
         updateQuery.addValue(ENTRY.SYS_TRANSACTION, DSL.field(DSL.val(transactionTime)));
         updateQuery.addConditions(ENTRY.ID.eq(getId()));
 
@@ -456,12 +454,8 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
     }
 
     @Override
-    public String getEntryJson() {
-        if (entryRecord.getEntry() instanceof String)
-            return (String) entryRecord.getEntry();
-
-        PGobject entryPGobject = (PGobject) entryRecord.getEntry();
-        return entryPGobject.getValue();
+    public JSONB getEntryJson() {
+        return entryRecord.getEntry();
     }
 
     @Override

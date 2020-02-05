@@ -26,14 +26,13 @@ Documentation   C.2.a) Main flow: Set EHR queryable of an existing EHR
 ...             Preconditions:
 ...                 An EHR with known ehr_id should exist.
 ...
-...             Postconditions:
-...                 EHR_STATUS.is_queryable, for the EHR with known ehr_id, should be true
-...
 ...             Flow:
 ...                 1. For the existing EHR, invoke the set EHR queryable service
 ...                 2. The result should be positive and the corresponding
 ...                    EHR_STATUS.is_queryable should be `true`
-
+...
+...             Postconditions:
+...                 EHR_STATUS.is_queryable, for the EHR with known ehr_id, should be true
 
 Resource    ${CURDIR}${/}../_resources/suite_settings.robot
 Resource    ${CURDIR}${/}../_resources/keywords/generic_keywords.robot

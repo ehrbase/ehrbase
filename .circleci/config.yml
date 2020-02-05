@@ -138,7 +138,18 @@ workflows:
                 - release
                 - master
 
-      - QUERYSERVICE-test:
+      - QUERYSERVICE-test-1:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
+
+      - QUERYSERVICE-test-2:
           context: org-global
           requires:
             - build-artifacts
@@ -160,7 +171,8 @@ workflows:
             - DIRECTORY-test
             - EHRSERVICE-test
             - KNOWLEDGE-test
-            - QUERYSERVICE-test
+            - QUERYSERVICE-test-1
+            - QUERYSERVICE-test-2
           filters:
             branches:
               ignore:
@@ -274,7 +286,17 @@ workflows:
               only:
                 - /^(release\/v\d+\.\d+\.\d+|master)$/
 
-      - QUERYSERVICE-test:
+      - QUERYSERVICE-test-1:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              only:
+                - /^(release\/v\d+\.\d+\.\d+|master)$/
+
+      - QUERYSERVICE-test-2:
           context: org-global
           requires:
             - build-artifacts
@@ -295,7 +317,8 @@ workflows:
             - DIRECTORY-test
             - EHRSERVICE-test
             - KNOWLEDGE-test
-            - QUERYSERVICE-test
+            - QUERYSERVICE-test-1
+            - QUERYSERVICE-test-2
           filters:
             branches:
               only:
@@ -332,6 +355,7 @@ jobs:
       image: circleci/classic:201808-01
     steps:
       - configure-python-version
+      - install-java-11
       - checkout
       - restore-build-artifacts-job-caches
       - setup-database
@@ -344,6 +368,7 @@ jobs:
       image: circleci/classic:201808-01
     steps:
       - configure-python-version
+      - install-java-11
       - checkout
       - attach_workspace:
           at: /home/circleci
@@ -357,6 +382,7 @@ jobs:
       image: circleci/classic:201808-01
     steps:
       - configure-python-version
+      - install-java-11
       - checkout
       - restore-unit-tests-job-caches
       - setup-database
@@ -436,14 +462,23 @@ jobs:
               test-suite-path: "KNOWLEDGE_TESTS"
               test-suite-name: "KNOWLEDGE"
 
-  QUERYSERVICE-test:
+  QUERYSERVICE-test-1:
       machine:
             image: ubuntu-1604:201903-01
       steps:
         - run-robot-tests:
-              include-tags: "ADHOC-QUERY"
+              include-tags: "adhoc-queryANDempty_db"
               test-suite-path: "QUERY_SERVICE_TESTS"
-              test-suite-name: "ADHOC-QUERY"
+              test-suite-name: "ADHOC-QUERY-1"
+  
+  QUERYSERVICE-test-2:
+    machine:
+          image: ubuntu-1604:201903-01
+    steps:
+      - run-robot-tests:
+            include-tags: "adhoc-queryANDloaded_db"
+            test-suite-path: "QUERY_SERVICE_TESTS"
+            test-suite-name: "ADHOC-QUERY-2"
 
   ROBOT-REPORT:
       machine:
@@ -460,6 +495,7 @@ jobs:
       image: circleci/classic:201808-01
     steps:
       - configure-python-version
+      - install-java-11
       - checkout
       - attach_workspace:
           at: /home/circleci
@@ -508,6 +544,7 @@ commands:
         - restore-integration-tests-job-caches
         - attach-target-folder
         - install-python-requirements
+        - install-java-11
         - run:
             name: EXECUTE ROBOT COMMAND
             no_output_timeout: 30m
@@ -580,16 +617,27 @@ commands:
 
 
 
-#                                                 88                 ad88
-#     ,d                             ,d           ""                d8"
-#     88                             88                             88
-#   MM88MMM  ,adPPYba,  ,adPPYba,  MM88MMM        88  8b,dPPYba,  MM88MMM  8b,dPPYba,  ,adPPYYba,
-#     88    a8P_____88  I8[    ""    88           88  88P'   `"8a   88     88P'   "Y8  ""     `Y8
-#     88    8PP"""""""   `"Y8ba,     88           88  88       88   88     88          ,adPPPPP88
-#     88,   "8b,   ,aa  aa    ]8I    88,          88  88       88   88     88          88,    ,88
-#     "Y888  `"Ybbd8"'  `"YbbdP"'    "Y888        88  88       88   88     88          `"8bbdP"Y8
-#
-
+  #                                                 88                 ad88
+  #     ,d                             ,d           ""                d8"
+  #     88                             88                             88
+  #   MM88MMM  ,adPPYba,  ,adPPYba,  MM88MMM        88  8b,dPPYba,  MM88MMM  8b,dPPYba,  ,adPPYYba,
+  #     88    a8P_____88  I8[    ""    88           88  88P'   `"8a   88     88P'   "Y8  ""     `Y8
+  #     88    8PP"""""""   `"Y8ba,     88           88  88       88   88     88          ,adPPPPP88
+  #     88,   "8b,   ,aa  aa    ]8I    88,          88  88       88   88     88          88,    ,88
+  #     "Y888  `"Ybbd8"'  `"YbbdP"'    "Y888        88  88       88   88     88          `"8bbdP"Y8
+  #
+  install-java-11:
+    description: Install Zulu Java 11
+    steps:
+      - run:
+          name: Install Zulu Java 11
+          command: |
+            wget https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.3%2B7/OpenJDK11U-jdk_x64_linux_hotspot_11.0.3_7.tar.gz -O /tmp/openjdk-11.tar.gz
+            sudo mkdir -p /usr/lib/jvm
+            sudo tar xfvz /tmp/openjdk-11.tar.gz --directory /usr/lib/jvm
+            rm -f /tmp/openjdk-11.tar.gz
+            sudo sh -c 'for bin in /usr/lib/jvm/jdk-11.0.3+7/bin/*; do update-alternatives --install /usr/bin/$(basename $bin) $(basename $bin) $bin 100; done'
+            sudo sh -c 'for bin in /usr/lib/jvm/jdk-11.0.3+7/bin/*; do update-alternatives --set $(basename $bin) $bin; done'
   configure-python-version:
     description: Configure Python version to 3.7.0
     steps:

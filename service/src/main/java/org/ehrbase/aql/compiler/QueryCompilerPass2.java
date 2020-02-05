@@ -24,6 +24,7 @@ package org.ehrbase.aql.compiler;
 
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ehrbase.aql.definition.*;
@@ -45,7 +46,7 @@ import java.util.*;
  */
 public class QueryCompilerPass2 extends AqlBaseListener {
 
-    Logger logger = LogManager.getLogger(QueryCompilerPass2.class);
+    private Logger logger = LogManager.getLogger(QueryCompilerPass2.class);
 
     private Deque<I_VariableDefinition> variableStack = new ArrayDeque<>();
     private Deque<OrderAttribute> orderAttributes = null;
@@ -73,7 +74,7 @@ public class QueryCompilerPass2 extends AqlBaseListener {
 
         if (identifiedPathContext != null) {
             VariableDefinition variableDefinition = new IdentifiedPathVariable(identifiedPathContext, selectExprContext, isDistinct).definition();
-            variableStack.push(variableDefinition);
+            pushVariableDefinition(variableDefinition);
         } else if (selectExprContext.stdExpression() != null) {
             //function handling
             logger.debug("Found standard expression");
@@ -93,7 +94,7 @@ public class QueryCompilerPass2 extends AqlBaseListener {
                     if (pathTree instanceof AqlParser.IdentifiedPathContext) {
                         AqlParser.IdentifiedPathContext pathContext = (AqlParser.IdentifiedPathContext) pathTree;
                         VariableDefinition variableDefinition = new IdentifiedPathVariable(pathContext, selectExprContext, false).definition();
-                        variableStack.push(variableDefinition);
+                        pushVariableDefinition(variableDefinition);
                         parameters.add(new FuncParameter(FuncParameterType.VARIABLE, variableDefinition.getAlias()));
                     } else if (pathTree instanceof AqlParser.OperandContext) {
                         parameters.add(new FuncParameter(FuncParameterType.OPERAND, pathTree.getText()));
@@ -105,7 +106,7 @@ public class QueryCompilerPass2 extends AqlBaseListener {
                 String alias = selectExprContext.IDENTIFIER() == null ? name : selectExprContext.IDENTIFIER().getText();
                 String path = functionContext.getText();
                 FunctionDefinition definition = new FunctionDefinition(name, alias, path, parameters);
-                variableStack.push(definition);
+                pushVariableDefinition(definition);
             }
             if (selectExprContext.stdExpression().extension() != null) {
                 logger.debug("Found extension");
@@ -114,11 +115,34 @@ public class QueryCompilerPass2 extends AqlBaseListener {
                 String parsableExpression = extensionContext.getChild(4).getText();
                 String alias = selectExprContext.IDENTIFIER() == null ? "_alias_" + Math.abs(new Random().nextLong()) : selectExprContext.IDENTIFIER().getText();
                 ExtensionDefinition definition = new ExtensionDefinition(context, parsableExpression, alias);
-                variableStack.push(definition);
+                pushVariableDefinition(definition);
             }
 
         } else
             throw new IllegalArgumentException("Could not interpret select context");
+    }
+
+    private void pushVariableDefinition(I_VariableDefinition variableDefinition){
+        isUnique(variableDefinition);
+        variableStack.push(variableDefinition);
+    }
+
+    /**
+     * check if a variable definition is unique (e.g. new aliase)
+     * @param variableDefinition
+     */
+    private void isUnique(I_VariableDefinition variableDefinition) {
+
+        //allow duplicate aliases whe used in function expressions
+        if (variableDefinition.isFunction())
+            return;
+
+        String alias = variableDefinition.getAlias();
+
+        for (I_VariableDefinition stackedVariableDefinition: variableStack){
+            if (!StringUtils.isEmpty(stackedVariableDefinition.getAlias()) && stackedVariableDefinition.getAlias().equals(alias))
+                throw new IllegalArgumentException("Duplicated alias detected:"+alias);
+        }
     }
 
 //    @Override
@@ -169,9 +193,16 @@ public class QueryCompilerPass2 extends AqlBaseListener {
                 if (identifiedPathContext.objectPath() != null)
                     path = identifiedPathContext.objectPath().getText();
                 else
-                    path = "$ALIAS$";
-                String identifier = identifiedPathContext.IDENTIFIER().getText();
-                OrderAttribute orderAttribute = new OrderAttribute(new VariableDefinition(path, null, identifier, false));
+                    path = null;
+
+                String identifier = identifiedPathContext.IDENTIFIER().getText();  //f.e. 'e' in 'e/time_created/value
+
+                OrderAttribute orderAttribute;
+                if (path == null)
+                    orderAttribute = new OrderAttribute(new VariableDefinition(path, identifier, null, false));
+                else
+                    orderAttribute = new OrderAttribute(new VariableDefinition(path, null, identifier, false));
+
                 if (context1.ASC() != null || context1.ASCENDING() != null)
                     orderAttribute.setDirection(OrderAttribute.OrderDirection.ASC);
                 else if (context1.DESC() != null || context1.DESCENDING() != null)
@@ -201,22 +232,22 @@ public class QueryCompilerPass2 extends AqlBaseListener {
         return new ArrayList<>(variableStack);
     }
 
-    public TopAttributes getTopAttributes() {
+    TopAttributes getTopAttributes() {
         return topAttributes;
     }
 
-    public List<OrderAttribute> getOrderAttributes() {
+    List<OrderAttribute> getOrderAttributes() {
         if (orderAttributes == null)
             return null;
         return new ArrayList<>(orderAttributes);
     }
 
 
-    public Integer getLimitAttribute() {
+    Integer getLimitAttribute() {
         return limitAttribute;
     }
 
-    public Integer getOffsetAttribute() {
+    Integer getOffsetAttribute() {
         return offsetAttribute;
     }
 }

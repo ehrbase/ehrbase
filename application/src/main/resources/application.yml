@@ -19,18 +19,14 @@ spring:
     active: local
   datasource:
     driver-class-name: org.postgresql.Driver
-    type: org.apache.tomcat.jdbc.pool.DataSource
-    tomcat:
-      validationQuery: /* ping */ SELECT 1
-      testOnBorrow: true
+
+  flyway:
+    schemas: ehr
+
 cache:
   config: '/ehcache.xml'
   enabled: true
-flyway:
-  locations:
-    - classpath:db/migration
-    - classpath:org.ehrbase.db.migration
-  schemas: ehr
+
 
 logging:
   level:

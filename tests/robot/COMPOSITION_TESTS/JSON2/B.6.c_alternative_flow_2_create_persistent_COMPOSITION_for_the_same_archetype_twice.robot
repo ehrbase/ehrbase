@@ -41,7 +41,7 @@ Alternative flow 2 create persistent COMPOSITION for the same archetype twice
 
     commit composition (JSON)    minimal_persistent/persistent_minimal.composition.extdatetime.xml
 
-    # Another commit for the same persistent archetype/template to the same EHR
+    # comment: Another commit for the same persistent archetype/template to the same EHR
     commit same composition again    minimal_persistent/persistent_minimal.composition.extdatetime.xml
 
     [Teardown]    restart SUT

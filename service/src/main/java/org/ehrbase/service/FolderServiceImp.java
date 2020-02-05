@@ -24,10 +24,13 @@ import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.definitions.StructuredString;
 import org.ehrbase.api.definitions.StructuredStringFormat;
 import org.ehrbase.api.dto.FolderDto;
+import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.service.FolderService;
+import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
 import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
+import org.ehrbase.dao.access.interfaces.I_EhrAccess;
 import org.ehrbase.dao.access.interfaces.I_FolderAccess;
 import org.ehrbase.dao.access.jooq.FolderAccess;
 import org.ehrbase.dao.access.util.FolderUtils;
@@ -43,7 +46,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Formatter;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
@@ -69,6 +74,11 @@ public class FolderServiceImp extends BaseService implements FolderService {
     @Override
     public UUID create(UUID ehrId, Folder content) {
 
+        I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
+        if (ehrAccess == null) {
+            throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
+        }
+
         // Save current time which will be used as transaction time
         DateTime currentTimeStamp = DateTime.now();
 
@@ -79,13 +89,26 @@ public class FolderServiceImp extends BaseService implements FolderService {
 
         // Get first FolderAccess instance
         I_FolderAccess folderAccess = FolderAccess.buildNewFolderAccessHierarchy(getDataAccess(),
-                                                                                 content,
-                                                                                 currentTimeStamp,
-                                                                                 ehrId,
-                                                                                 contributionAccess);
-        return folderAccess.commit(new Timestamp(currentTimeStamp.getMillis()));
+                content,
+                currentTimeStamp,
+                ehrId,
+                contributionAccess);
+        UUID folderId = folderAccess.commit(new Timestamp(currentTimeStamp.getMillis()));
+        ehrAccess.setDirectory(folderId);
+        ehrAccess.update(getUserUuid(), getSystemUuid(), null, I_ConceptAccess.ContributionChangeType.MODIFICATION, EhrServiceImp.DESCRIPTION);
+        return folderId;
     }
 
+
+    @Override
+    public Optional<FolderDto> retrieveLatest(UUID ehrId) {
+        I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
+        if (ehrAccess == null) {
+            throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
+        }
+
+        return retrieve(ehrAccess.getDirectoryId(), null);
+    }
 
     /**
      * {@inheritDoc}
@@ -115,7 +138,7 @@ public class FolderServiceImp extends BaseService implements FolderService {
             logger.debug(formatter.format(
                     "Folder entry not found for timestamp: %s",
                     timestamp.format(ISO_DATE_TIME))
-                                  .toString());
+                    .toString());
             return Optional.empty();
         }
     }
@@ -139,24 +162,24 @@ public class FolderServiceImp extends BaseService implements FolderService {
 
         // Clear sub folder list
         folderAccess.getSubfoldersList()
-                    .clear();
+                .clear();
 
         // Create FolderAccess instances for sub folders if there are any
         if (update.getFolders() != null &&
-            !update.getFolders()
-                   .isEmpty()) {
+                !update.getFolders()
+                        .isEmpty()) {
 
             // Create new sub folders list
             update.getFolders()
-                  .forEach(childFolder -> folderAccess.getSubfoldersList()
-                                                      .put(
-                                                              UUID.randomUUID(),
-                                                              FolderAccess.buildNewFolderAccessHierarchy(
-                                                                      getDataAccess(),
-                                                                      childFolder,
-                                                                      timestamp,
-                                                                      ehrId,
-                                                                      ((FolderAccess) folderAccess).getContributionAccess())));
+                    .forEach(childFolder -> folderAccess.getSubfoldersList()
+                            .put(
+                                    UUID.randomUUID(),
+                                    FolderAccess.buildNewFolderAccessHierarchy(
+                                            getDataAccess(),
+                                            childFolder,
+                                            timestamp,
+                                            ehrId,
+                                            ((FolderAccess) folderAccess).getContributionAccess())));
         }
 
         // Send update to access layer which updates the hierarchy recursive
@@ -175,8 +198,15 @@ public class FolderServiceImp extends BaseService implements FolderService {
     @Override
     public LocalDateTime delete(UUID folderId) {
 
-        // TODO implement logic
-        return LocalDateTime.now();
+        I_FolderAccess folderAccess = I_FolderAccess.retrieveInstanceForExistingFolder(getDataAccess(), folderId);
+
+        if (folderAccess.delete() > 0) {
+            return LocalDateTime.now();
+        } else {
+            // Not found and bad argument exceptions are handled before thus this case can only occur on unknown errors
+            // On the server side
+            throw new InternalServerException("Error during deletion of folder " + folderId);
+        }
     }
 
     /**
@@ -261,17 +291,17 @@ public class FolderServiceImp extends BaseService implements FolderService {
         result.setNameAsString(folderAccess.getFolderName());
         result.setItems(folderAccess.getItems());
         result.setUid(new ObjectVersionId(folderAccess.getFolderId()
-                                                      .toString()));
+                .toString()));
 
         // Handle subfolder list recursively
         if (!folderAccess.getSubfoldersList()
-                         .isEmpty()) {
+                .isEmpty()) {
 
             result.setFolders(folderAccess.getSubfoldersList()
-                                          .values()
-                                          .stream()
-                                          .map(this::createFolderObject)
-                                          .collect(Collectors.toList()));
+                    .values()
+                    .stream()
+                    .map(this::createFolderObject)
+                    .collect(Collectors.toList()));
 
         } else {
             result.setFolders(null);

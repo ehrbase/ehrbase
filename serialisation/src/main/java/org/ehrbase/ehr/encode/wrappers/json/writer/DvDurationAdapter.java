@@ -43,7 +43,7 @@ public class DvDurationAdapter extends DvTypeAdapter<DvDuration> {
 
     @Override
     public void write(JsonWriter writer, DvDuration dvDuration) throws IOException {
-        if (dvDuration == null) {
+        if (dvDuration == null || dvDuration.getValue() == null) {
             writer.nullValue();
             return;
         }

@@ -36,10 +36,6 @@ Force Tags    XML
 Alternative flow 1 get COMPOSITION latest, COMPOSITION doesn't exist
 
     create EHR    XML
-
-    # Commit fake COMPOSITION
-    generate random composition_uid
-
-    get composition - latest version (XML)
-
-    check versioned composition does not exist
+    create fake composition
+    get composition - latest version    XML
+    check composition does not exist (latest version)

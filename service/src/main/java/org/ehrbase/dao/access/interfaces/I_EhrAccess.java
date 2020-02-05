@@ -27,7 +27,6 @@ import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.dao.access.jooq.EhrAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.jooq.pg.tables.records.EhrRecord;
-import com.nedap.archie.rm.archetyped.Locatable;
 import com.nedap.archie.rm.ehr.EhrStatus;
 
 import java.sql.Timestamp;
@@ -110,13 +109,14 @@ public interface I_EhrAccess extends I_SimpleCRUD<I_EhrAccess, UUID> {
      * retrieve an Ehr for a known status entry
      *
      * @param domainAccess SQL access
+     * @param ehrId        EHR ID of current context
      * @param status       status UUID
      * @param version      optional version, will assume latest if null
      * @return UUID of corresponding Ehr or null
      * @throws IllegalArgumentException if retrieving failed for given input
      */
-    static I_EhrAccess retrieveInstanceByStatus(I_DomainAccess domainAccess, UUID status, int version) {
-        return EhrAccess.retrieveInstanceByStatus(domainAccess, status, version);
+    static I_EhrAccess retrieveInstanceByStatus(I_DomainAccess domainAccess, UUID ehrId, UUID status, int version) {
+        return EhrAccess.retrieveInstanceByStatus(domainAccess, ehrId, status, version);
     }
 
     static boolean checkExist(I_DomainAccess domainAccess, UUID partyId) {
@@ -235,6 +235,10 @@ public interface I_EhrAccess extends I_SimpleCRUD<I_EhrAccess, UUID> {
 
     void setContributionAccess(I_ContributionAccess contributionAccess);
 
+    I_StatusAccess getStatusAccess();
+
+    void setStatusAccess(I_StatusAccess statusAccess);
+
     void setOtherDetails(ItemStructure otherDetails, String templateId);
 
     ItemStructure getOtherDetails();
@@ -264,4 +268,16 @@ public interface I_EhrAccess extends I_SimpleCRUD<I_EhrAccess, UUID> {
      * @return version number
      */
     int getEhrStatusVersionFromTimeStamp(Timestamp time);
+
+    /**
+     * Get initial time (or time of oldest record) of the status object linked to the EHR of this EhrAccess instance.
+     * @return time as {@link Timestamp}
+     */
+    Timestamp getInitialTimeOfVersionedEhrStatus();
+
+    /**
+     * Get number of available versions of EhrStatus' linked to this EhrAccess instance.
+     * @return Number of versions
+     */
+    Integer getNumberOfEhrStatusVersions();
 }

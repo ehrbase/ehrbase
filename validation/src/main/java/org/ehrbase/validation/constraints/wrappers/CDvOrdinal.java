@@ -46,10 +46,16 @@ public class CDvOrdinal extends CConstraint implements I_CArchetypeConstraintVal
     public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws Exception {
 
         if (!(aValue instanceof DvOrdinal))
-            throw new IllegalArgumentException("INTERNAL: argument is not a DvOrdinal");
+            ValidationException.raise(path, "INTERNAL: argument is not a DvOrdinal", "DV_ORDINAL_01");
 
         DvOrdinal dvOrdinal = (DvOrdinal) aValue;
         CDVORDINAL cdvordinal = (CDVORDINAL) archetypeconstraint;
+
+        if (dvOrdinal.getValue() == null)
+            ValidationException.raise(path, "DvOrdinal requires a non null value", "DV_ORDINAL_02");
+
+        if (dvOrdinal.getSymbol() == null)
+            ValidationException.raise(path, "DvOrdinal requires a non null symbol", "DV_ORDINAL_03");
 
         match_loop:
         {

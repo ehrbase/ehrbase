@@ -32,13 +32,31 @@ public class VariableDefinition implements I_VariableDefinition {
     private String path;
     private String alias;
     private String identifier;
-    private boolean isDistinct = false;
+    private boolean isDistinct;
+    private boolean isHidden;
 
     public VariableDefinition(String path, String alias, String identifier, boolean isDistinct) {
         this.path = path;
         this.alias = alias;
         this.identifier = identifier;
         this.isDistinct = isDistinct;
+        this.isHidden = false;
+    }
+
+    /**
+     * used whenever a variable is added for technical reason (f.e. a order by field not present in the select clause)
+     * @param path
+     * @param alias
+     * @param identifier
+     * @param isDistinct
+     * @param isHidden
+     */
+    public VariableDefinition(String path, String alias, String identifier, boolean isDistinct, boolean isHidden) {
+        this.path = path;
+        this.alias = alias;
+        this.identifier = identifier;
+        this.isDistinct = isDistinct;
+        this.isHidden = isHidden;
     }
 
     @Override
@@ -77,17 +95,32 @@ public class VariableDefinition implements I_VariableDefinition {
     }
 
     @Override
+    public boolean isHidden() {
+        return isHidden;
+    }
+
+    @Override
     public List<FuncParameter> getFuncParameters() {
         return null;
     }
 
     @Override
-    public I_VariableDefinition clone(){
-        return new VariableDefinition(this.path, this.alias, this.identifier, this.isDistinct);
+    public void setPath(String path){
+        this.path = path;
     }
 
     @Override
-    public void setPath(String path){
-        this.path = path;
+    public void setDistinct(boolean distinct) {
+        this.isDistinct = distinct;
+    }
+
+    @Override
+    public void setHidden(boolean hidden) {
+        this.isHidden = hidden;
+    }
+
+    @Override
+    public I_VariableDefinition clone(){
+        return new VariableDefinition(this.path, this.alias, this.identifier, this.isDistinct, this.isHidden);
     }
 }
