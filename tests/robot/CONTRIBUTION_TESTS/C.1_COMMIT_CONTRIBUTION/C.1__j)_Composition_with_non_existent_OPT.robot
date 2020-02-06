@@ -54,8 +54,6 @@ Alternative flow 9. commit CONTRIBUTION with COMPOSITION referencing a non exist
 
       create EHR
 
-            TRACE GITHUB ISSUE  51  not-ready  message=Next step fails due to a bug.
-
       commit invalid CONTRIBUTION (JSON)    ref_to_non_existent_OPT.json
 
       check response: is negative indicating non-existent OPT

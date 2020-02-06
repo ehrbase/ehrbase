@@ -234,7 +234,7 @@ public class OpenehrDirectoryController extends BaseController {
         // Create response data
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(responseContentType);
-        headers.setETag("\"" + versionedUid + "\"");
+        headers.setETag(versionedUid);
         headers.setLocation(URI.create(requestUrl + "/" + versionedUid));
         // TODO: Set LastModified header by audit details
         headers.setLastModified(DateTime.now().getMillis());
@@ -397,9 +397,9 @@ public class OpenehrDirectoryController extends BaseController {
         // Create response data
         HttpHeaders resHeaders = new HttpHeaders();
         resHeaders.setLocation(URI.create(requestUrl +
-                "/" +
-                versionedUid));
-        resHeaders.setETag("\"" + versionedUid + "\"");
+                                          "/" +
+                                          versionedUid));
+        resHeaders.setETag(versionedUid);
         // TODO: Set LastModified header by audit details
         resHeaders.setLastModified(DateTime.now().getMillis());
 
