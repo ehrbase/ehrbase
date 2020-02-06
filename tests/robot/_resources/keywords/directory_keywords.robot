@@ -460,7 +460,7 @@ PUT /ehr/ehr_id/directory
                         ...                 Prefer=return=representation
                         ...                 If-Match=${preceding_version_uid}
 
-        TRACE GITHUB ISSUE  NO-ISSUE-ID  not-ready  message=endpoint not implemented  loglevel=WARN
+        TRACE GITHUB ISSUE  148  not-ready
 
     ${resp}=            Put Request        ${SUT}   /ehr/${ehr_id}/directory
                         ...                 data=${test_data}
@@ -481,7 +481,7 @@ PUT /ehr/ehr_id/directory (w/o prefer)
                         prepare new request session    ${format}
                         ...                 If-Match=${preceding_version_uid}
 
-        TRACE GITHUB ISSUE  NO-ISSUE-ID  not-ready  message=endpoint not implemented  loglevel=WARN
+        TRACE GITHUB ISSUE  148  not-ready
 
     ${resp}=            Put Request        ${SUT}   /ehr/${ehr_id}/directory
                         ...                 data=${test_data}
