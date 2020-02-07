@@ -252,7 +252,7 @@ public class ContributionServiceImp extends BaseService implements ContributionS
         Map<String, String> objRefs = new HashMap<>();
 
         // query for compositions
-        Map<I_CompositionAccess, Integer> compositions = I_CompositionAccess.retrieveInstancesInContributionVersion(this.getDataAccess(), contribution);
+        Map<I_CompositionAccess, Integer> compositions = I_CompositionAccess.retrieveInstancesInContribution(this.getDataAccess(), contribution);
         // for each fetched composition: add it to the return map and add the composition type tag - ignoring the access obj
         compositions.forEach((k, v) -> objRefs.put(k.getId() + "::" + getServerConfig().getNodename() + "::" + v, TYPE_COMPOSITION));
 

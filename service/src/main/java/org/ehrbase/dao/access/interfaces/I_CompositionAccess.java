@@ -189,8 +189,8 @@ public interface I_CompositionAccess extends I_SimpleCRUD {
      * @return a map of {@link I_CompositionAccess} and their version number, that match the condition
      * @throws IllegalArgumentException on DB inconsistency
      */
-    static Map<I_CompositionAccess, Integer> retrieveInstancesInContributionVersion(I_DomainAccess domainAccess, UUID contributionId) {
-        return CompositionAccess.retrieveCompositionsInContributionVersion(domainAccess, contributionId);
+    static Map<I_CompositionAccess, Integer> retrieveInstancesInContribution(I_DomainAccess domainAccess, UUID contributionId) {
+        return CompositionAccess.retrieveCompositionsInContribution(domainAccess, contributionId);
     }
 
     /**
@@ -343,11 +343,11 @@ public interface I_CompositionAccess extends I_SimpleCRUD {
     Optional<UUID> getContextId();
 
     /**
-     * get the contribution version id
+     * get the contribution id
      *
      * @return {@link UUID}
      */
-    UUID getContributionVersionId();
+    UUID getContributionId();
 
     /**
      * get the language code for this composition (eg. 'en', 'fr' etc.)
@@ -450,4 +450,15 @@ public interface I_CompositionAccess extends I_SimpleCRUD {
     UUID getAuditDetailsId();
 
     void setAuditDetailsId(UUID auditId);
+
+    /**
+     * Checks if the given versionedObjectID points to an existing composition.
+     * @param domainAccess Data access object
+     * @param versionedObjectId ID to be checked
+     * @return True if exists
+     * @throws ObjectNotFoundException if ID does not exist
+     */
+    static boolean exists(I_DomainAccess domainAccess, UUID versionedObjectId) {
+        return CompositionAccess.exists(domainAccess, versionedObjectId);
+    }
 }

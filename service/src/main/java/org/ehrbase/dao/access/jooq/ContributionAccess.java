@@ -113,7 +113,7 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
             return null;
 
         Map<UUID, I_CompositionAccess> compos = new HashMap<>();
-        CompositionAccess.retrieveCompositionsInContributionVersion(domainAccess, contributionAccess.contributionRecord.getId())
+        CompositionAccess.retrieveCompositionsInContribution(domainAccess, contributionAccess.contributionRecord.getId())
             .forEach((access, version) -> compos.put(access.getId(), access));
         contributionAccess.compositions = compos;
 

@@ -216,7 +216,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
             compositionHistoryAccess.setContent(I_EntryAccess.retrieveInstanceInCompositionVersion(domainAccess, compositionHistoryAccess, version));
 
             //retrieve the corresponding contribution
-            I_ContributionAccess contributionAccess = I_ContributionAccess.retrieveVersionedInstance(domainAccess, compositionHistoryAccess.getContributionVersionId(), compositionHistoryAccess.getSysTransaction());
+            I_ContributionAccess contributionAccess = I_ContributionAccess.retrieveVersionedInstance(domainAccess, compositionHistoryAccess.getContributionId(), compositionHistoryAccess.getSysTransaction());
             compositionHistoryAccess.setContributionAccess(contributionAccess);
 
             I_AuditDetailsAccess auditDetailsAccess = new AuditDetailsAccess(domainAccess.getDataAccess()).retrieveInstance(domainAccess.getDataAccess(), compositionHistoryAccess.getAuditDetailsId());
@@ -261,7 +261,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         compositionAccess.setCompositionRecord(compositionRecord);
         compositionAccess.setContent(I_EntryAccess.retrieveInstanceInComposition(domainAccess, compositionAccess));
         //retrieve the corresponding contribution
-        I_ContributionAccess contributionAccess = I_ContributionAccess.retrieveInstance(domainAccess, compositionAccess.getContributionVersionId());
+        I_ContributionAccess contributionAccess = I_ContributionAccess.retrieveInstance(domainAccess, compositionAccess.getContributionId());
         compositionAccess.setContributionAccess(contributionAccess);
         // retrieve corresponding audit
         I_AuditDetailsAccess auditAccess = new AuditDetailsAccess(domainAccess.getDataAccess()).retrieveInstance(domainAccess.getDataAccess(), compositionAccess.getAuditDetailsId());
@@ -321,9 +321,8 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         return retrieveCompositionVersion(domainAccess, compositionUid, version);
     }
 
-    public static Map<I_CompositionAccess, Integer> retrieveCompositionsInContributionVersion(I_DomainAccess domainAccess, UUID contribution) {
+    public static Map<I_CompositionAccess, Integer> retrieveCompositionsInContribution(I_DomainAccess domainAccess, UUID contribution) {
         Set<UUID> compositions = new HashSet<>();   // Set, because of unique values
-
         // add all compositions having a link to given contribution
         domainAccess.getContext().select(COMPOSITION.ID).from(COMPOSITION).where(COMPOSITION.IN_CONTRIBUTION.eq(contribution)).fetch()
                 .forEach(rec -> compositions.add(rec.value1()));
@@ -331,12 +330,17 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         domainAccess.getContext().select(COMPOSITION_HISTORY.ID).from(COMPOSITION_HISTORY).where(COMPOSITION_HISTORY.IN_CONTRIBUTION.eq(contribution)).fetch()
                 .forEach(rec -> compositions.add(rec.value1()));
 
-        // get whole "version map" of each matching composition and join them
+        // get whole "version map" of each matching composition and do fine-grain check for matching contribution
         // precondition: each UUID in `compositions` set is unique, so for each the "version map" is only created once below
+        // (meta: can't do that as jooq query, because the specific version number isn't stored in DB)
         Map<I_CompositionAccess, Integer> resultMap = new HashMap<>();
         for (UUID compositionId : compositions) {
             Map<I_CompositionAccess, Integer> map = getVersionMapOfComposition(domainAccess, compositionId);
-            resultMap.putAll(map);
+            // fine-grained contribution ID check
+            for (Map.Entry<I_CompositionAccess, Integer> entry : map.entrySet()) {
+                if (entry.getKey().getContributionId().equals(contribution))
+                    resultMap.put(entry.getKey(), entry.getValue());
+            }
         }
 
         return resultMap;
@@ -463,7 +467,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     }
 
     @Override
-    public UUID getContributionVersionId() {
+    public UUID getContributionId() {
         return compositionRecord.getInContribution();
     }
 
@@ -597,9 +601,9 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         compositionRecord.setHasAudit(auditId);
 
         // check if custom contribution is already set, because changing it would yield updating in DB which is not desired (creates wrong new "version")
-        if (getContributionVersionId() != null) {
+        if (getContributionId() != null) {
             // check if set contribution is sane
-            Optional.ofNullable(I_ContributionAccess.retrieveInstance(this, getContributionVersionId())).orElseThrow(IllegalArgumentException::new);
+            Optional.ofNullable(I_ContributionAccess.retrieveInstance(this, getContributionId())).orElseThrow(IllegalArgumentException::new);
         } else {
             // if not set, create DB entry of contribution so it can get referenced in this composition
             contributionAccess.setAuditDetailsChangeType(I_ConceptAccess.fetchContributionChangeType(this, I_ConceptAccess.ContributionChangeType.CREATION));
@@ -757,19 +761,32 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
     @Override
     public Integer deleteWithCustomContribution(UUID committerId, UUID systemId, String description) {
-        // update only the audit, so it shows the modification change type. a new custom contribution is set beforehand.
-        // TODO: db-wise, this way a new audit "version" will be created which is (openEHR-)semantically wrong. but safe and processable anyway. so need to change that or is it okay?
-        auditDetailsAccess.update(systemId, committerId, I_ConceptAccess.ContributionChangeType.DELETED, description);
+        // .delete() moves the old version to _history table.
+        int delRows = compositionRecord.delete();
 
-        // .delete() moves it to history, where the record's "in_contriubtion" column needs to be modified to contain
-        // the new contribution.
+        // create new deletion audit
+        I_AuditDetailsAccess delAudit = I_AuditDetailsAccess.getInstance(this, systemId, committerId, I_ConceptAccess.ContributionChangeType.DELETED, description);
+        UUID delAuditId = delAudit.commit();
+
+        // a bit hacky: create new, BUT already moved to _history, version documenting the deletion
         // (Normal approach of first .update() then .delete() won't work, because postgres' transaction optimizer will
         // just skip the update if it will get deleted anyway.)
-        int delRows = compositionRecord.delete();
-        I_CompositionHistoryAccess historyAccess = I_CompositionHistoryAccess.retrieveLatest(this, compositionRecord.getId());
-        historyAccess.setInContribution(compositionRecord.getInContribution());
-        if (historyAccess.update().equals(Boolean.FALSE))
+        // so copy values, but add deletion meta data
+        CompositionHistoryAccess newDeletedVersionAsHistoryAccess = new CompositionHistoryAccess(getDataAccess());
+        CompositionHistoryRecord newRecord = getDataAccess().getContext().newRecord(COMPOSITION_HISTORY);
+        newRecord.setId(compositionRecord.getId());
+        newRecord.setEhrId(compositionRecord.getEhrId());
+        newRecord.setInContribution(compositionRecord.getInContribution());
+        newRecord.setActive(compositionRecord.getActive());
+        newRecord.setIsPersistent(compositionRecord.getIsPersistent());
+        newRecord.setLanguage(compositionRecord.getLanguage());
+        newRecord.setTerritory(compositionRecord.getTerritory());
+        newRecord.setComposer(compositionRecord.getComposer());
+        newRecord.setHasAudit(delAuditId);
+        newDeletedVersionAsHistoryAccess.setRecord(newRecord);
+        if (newDeletedVersionAsHistoryAccess.commit() == null) // commit and throw error if nothing was inserted into DB
             throw new InternalServerException("DB inconsistency");
+
         return delRows;
     }
 
@@ -829,5 +846,14 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     @Override
     public void setAuditDetailsId(UUID auditId) {
         compositionRecord.setHasAudit(auditId);
+    }
+
+    public static boolean exists(I_DomainAccess domainAccess, UUID versionedObjectId) {
+        if (domainAccess.getContext().fetchExists(COMPOSITION, COMPOSITION.ID.eq(versionedObjectId)) ||
+            domainAccess.getContext().fetchExists(COMPOSITION_HISTORY, COMPOSITION_HISTORY.ID.eq(versionedObjectId))) {
+            return true;
+        } else {
+            throw new ObjectNotFoundException("composition", "No composition with given ID found");
+        }
     }
 }

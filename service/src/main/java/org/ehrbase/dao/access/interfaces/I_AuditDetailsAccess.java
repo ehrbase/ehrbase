@@ -48,7 +48,7 @@ public interface I_AuditDetailsAccess extends I_SimpleCRUD {
      * @return new access instance
      * @throws InternalServerException if creating or retrieving system failed
      */
-    static I_AuditDetailsAccess getInstance(I_DomainAccess dataAccess, UUID systemId, UUID committer, ContributionChangeType changeType, String description) {
+    static I_AuditDetailsAccess getInstance(I_DomainAccess dataAccess, UUID systemId, UUID committer, I_ConceptAccess.ContributionChangeType changeType, String description) {
         return new AuditDetailsAccess(dataAccess, systemId, committer, changeType, description);
     }
 
@@ -104,4 +104,6 @@ public interface I_AuditDetailsAccess extends I_SimpleCRUD {
     Timestamp getTimeCommitted();
 
     String getTimeCommittedTzId();
+
+    UUID getId();
 }

@@ -42,12 +42,12 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
         this.auditDetailsRecord = dataAccess.getContext().newRecord(AUDIT_DETAILS);
     }
 
-    public AuditDetailsAccess(I_DomainAccess dataAccess, UUID systemId, UUID committer, ContributionChangeType changeType, String description) {
+    public AuditDetailsAccess(I_DomainAccess dataAccess, UUID systemId, UUID committer, I_ConceptAccess.ContributionChangeType changeType, String description) {
         super(dataAccess.getContext(), null, null, dataAccess.getServerConfig());
         this.auditDetailsRecord = dataAccess.getContext().newRecord(AUDIT_DETAILS);
         auditDetailsRecord.setSystemId(systemId);
         auditDetailsRecord.setCommitter(committer);
-        auditDetailsRecord.setChangeType(changeType);
+        setChangeType(I_ConceptAccess.fetchContributionChangeType(this, changeType));
         auditDetailsRecord.setDescription(description);
     }
 
@@ -211,5 +211,10 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
     @Override
     public String getTimeCommittedTzId() {
         return auditDetailsRecord.getTimeCommittedTzid();
+    }
+
+    @Override
+    public UUID getId() {
+        return auditDetailsRecord.getId();
     }
 }

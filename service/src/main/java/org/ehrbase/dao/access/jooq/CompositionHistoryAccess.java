@@ -24,8 +24,10 @@ import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.jooq.pg.tables.records.CompositionHistoryRecord;
 import org.jooq.Result;
+import org.jooq.impl.DSL;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static org.ehrbase.jooq.pg.Tables.COMPOSITION_HISTORY;
@@ -40,6 +42,7 @@ public class CompositionHistoryAccess extends DataAccess implements I_Compositio
 
     public CompositionHistoryAccess(I_DomainAccess domainAccess) {
         super(domainAccess);
+        this.record = domainAccess.getContext().newRecord(COMPOSITION_HISTORY);
     }
 
     @Override
@@ -49,12 +52,21 @@ public class CompositionHistoryAccess extends DataAccess implements I_Compositio
 
     @Override
     public UUID commit(Timestamp transactionTime) {
-        return null;    // TODO
+        record.setSysTransaction(transactionTime);
+        return commit();
     }
 
     @Override
     public UUID commit() {
-        return null;    // TODO
+        if (this.record.getSysTransaction() == null) {
+            this.record.setSysTransaction(Timestamp.valueOf(LocalDateTime.now()));
+            this.record.setSysPeriod(DSL.field(DSL.val(
+                    "[\"" + record.getSysTransaction().toString() + "+00" + "\",)") + "::tstzrange"));
+        }
+        if (record.insert() == 1)
+            return record.getId();
+        else
+            return null;
     }
 
     @Override
@@ -72,7 +84,7 @@ public class CompositionHistoryAccess extends DataAccess implements I_Compositio
 
         // manually constructing an update query, because _history tables aren't of type UpdatableRecord, because table has no PK
         // two conditions: same ID and timestamp
-        int num = this.getDataAccess().getContext().update(COMPOSITION_HISTORY)
+        int num = this.getContext().update(COMPOSITION_HISTORY)
                 .set(this.record)
                 .where(COMPOSITION_HISTORY.ID.eq(this.record.getId())
                         .and(COMPOSITION_HISTORY.SYS_TRANSACTION.eq(this.record.getSysTransaction())))
@@ -113,7 +125,17 @@ public class CompositionHistoryAccess extends DataAccess implements I_Compositio
     }
 
     @Override
+    public CompositionHistoryRecord getRecord() {
+        return this.record;
+    }
+
+    @Override
     public void setInContribution(UUID contribution) {
         this.record.setInContribution(contribution);
+    }
+
+    @Override
+    public void setHasAudit(UUID audit) {
+        this.record.setHasAudit(audit);
     }
 }
