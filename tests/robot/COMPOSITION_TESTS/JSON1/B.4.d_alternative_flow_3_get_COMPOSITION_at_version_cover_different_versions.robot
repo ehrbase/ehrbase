@@ -44,10 +44,10 @@ Alternative flow 3 get COMPOSITION at version cover different versions
     update composition (JSON)    minimal_persistent/persistent_minimal.composition.extdatetime.v2.xml
     check composition update succeeded
 
-    # Check COMPO v1 exist and has correct content
+    # comment: Check COMPO v1 exist and has correct content
     get composition by composition_uid    ${version_uid_v1}
     check content of composition (JSON)
 
-    # Check COMPO v2 exist and has correct content
+    # comment: Check COMPO v2 exist and has correct content
     get composition by composition_uid    ${version_uid_v2}
     check content of updated composition (JSON)

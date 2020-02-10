@@ -47,6 +47,8 @@ ${INVALID DATA SETS}   ${PROJECT_ROOT}${/}tests${/}robot${/}_resources${/}test_d
 #
 # 4) FAKE Data
 
+create fake composition
+    generate random composition_uid
 
 
 # TODO: rename to `generate random versioned_object_uid`
@@ -222,7 +224,7 @@ commit same composition again
                         ...                 Accept=application/json
                         ...                 Prefer=return=representation
 
-        TRACE JIRA BUG    EHR-412    not-ready
+        TRACE GITHUB ISSUE  125  not-ready
 
     ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
                         log to console      ${resp.content}
@@ -362,22 +364,22 @@ get composition by composition_uid
     # the uid param in the doc is verioned_object.uid but is really the version.uid,
     # because the response from the create compo has this endpoint in the Location header
 
-    # &{headers}=         Create Dictionary   Content-Type=application/xml   Prefer=return=representation
-
     ${resp}=            Get Request         ${SUT}    /ehr/${ehr_id}/composition/${uid}    headers=${headers}
                         log to console      ${resp.content}
                         Set Test Variable   ${response}    ${resp}
 
 
 get versioned composition by uid
-    [Arguments]         ${uid}
+    [Arguments]         ${format}    ${uid}
     [Documentation]     :uid: versioned_object_uid
     ...                 DEPENDENCY: `prepare new request session`
     ...                     and `commit composition (JSON/XML)` keywords
-    ...
+    ...                 format: JSON or XML for accept/content headers
     ...                 ENDPOINT: /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}
 
-        TRACE JIRA BUG    EHR-364    not-ready
+                        prepare new request session    ${format}
+
+        TRACE GITHUB ISSUE  122  not-ready
 
     ${resp}=            Get Request         ${SUT}    /ehr/${ehr_id}/versioned_composition/${uid}    headers=${headers}
                         log to console      ${resp.content}
@@ -390,50 +392,32 @@ get versioned composition by uid
 
 
 check content of versioned composition (JSON)
-                        Should Be Equal As Strings   ${response.status_code}   200
-                        Should Be Equal   ${response.json()['uid']['value']}    ${versioned_object_uid}
+                        Should Be Equal As Strings    ${response.status_code}    200
+                        Should Be Equal    ${response.json()['uid']['value']}    ${versioned_object_uid}
+                        Should Be Equal    ${response.json()['owner_id']}    ${ehr_id}
 
 
 check content of versioned composition (XML)
-                        Should Be Equal As Strings    ${response.status_code}   200
+                        Should Be Equal As Strings    ${response.status_code}    200
     ${xml}=             Parse Xml           ${response.text}
     ${uid}=             Get Element         ${xml}    uid/value
                         Element Text Should Be    ${uid}    ${versioned_object_uid}
 
 
 get composition - latest version
+    [Arguments]         ${format}
+    [Documentation]     The way to return the latest version is using the versioned_composition with
+    ...                 the versioned_object_uid and without the version_at_time param.
+    ...                 format: JSON or XML for accept/content headers
 
-                        prepare new request session    Prefer=return=representation
-    # The way to return the latest version is using the versioned_composition with
-    # the versioned_object_uid and without the version_at_time param.
-
-    # &{headers}=         Create Dictionary     Prefer=return=representation
+                        prepare new request session    ${format}    Prefer=return=representation
 
         ####### TODO: @WLAD/PABLO - remove when fixed!!!!! #####################
         TRACE GITHUB ISSUE  17  not-ready
         ########################################################################
 
     ${resp}=            Get Request           ${SUT}   /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version    headers=${headers}
-                        log to console        ${resp.content}
-                        Set Test Variable     ${response}    ${resp}
-
-
-get composition - latest version (XML)
-    [Documentation]     ENDPOINT: /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version
-
-                        prepare new request session    XML    Prefer=return=representation
-
-    # The way to return the latest version is using the versioned_composition with
-    # the versioned_object_uid and without the version_at_time param.
-
-    # &{headers}=         Create Dictionary     Prefer=return=representation  Accept=application/xml
-
-        ####### TODO: @WLAD/PABLO - remove when fixed!!!!! #####################
-        TRACE GITHUB ISSUE  17  not-ready
-        ########################################################################
-
-    ${resp}=            Get Request           ${SUT}   /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version   headers=${headers}
-                        log to console        ${resp.content}
+                        log to console        ${resp.text}
                         Set Test Variable     ${response}    ${resp}
 
 
@@ -442,10 +426,10 @@ check content of compositions latest version (JSON)
                         Should Be Equal As Strings   ${response.status_code}   200
                         Set Test Variable     ${version_uid_latest}    ${resp.json()['uid']['value']}
 
-                        # Check the latest version uid is equal to the second committed compo uid
+                        # comment: Check the latest version uid is equal to the second committed compo uid
                         Should Be Equal       ${version_uid_latest}    ${composition_uid_v2}
 
-                        # check content of the latest version is equal to the content committed on the second compo
+                        # comment: check content of the latest version is equal to the content committed on the second compo
                         # should be the content in the 2nd committed compo "modified value"
                         Set Test Variable     ${text}    ${resp.json()['data']['content'][0]['data']['events'][0]['data']['items'][0]['value']['value']}
                         Should Be Equal       ${text}    modified value
@@ -568,7 +552,11 @@ check composition does not exist
     [Documentation]     DEPENDENCY: `get composition` keywords
 
                         Should Be Equal As Strings   ${response.status_code}   404
-
+                        Log To Console    ${response.text}
+                        # Should Contain Any    ${response.text}
+                        # ...                   foo
+                        # ...                   bar
+                        
 
 check composition does not exist (version at time)
     [Documentation]     DEPENDENCY: `get composition - version at time` keywords
@@ -576,10 +564,20 @@ check composition does not exist (version at time)
                         Should Be Equal As Strings   ${response.status_code}   404
 
 
+check composition does not exist (latest version)
+    [Documentation]     DEPENDENCY: `get composition - latest version`
+                        Should Be Equal As Strings   ${response.status_code}   404
+                        Should Contain Any  ${response.text}
+                        ...                   foo   # TODO @WLAD update asap
+                        ...                   bar
+
+
 check versioned composition does not exist
     [Documentation]     DEPENDENCY: `get versioned composition`
-
                         Should Be Equal As Strings   ${response.status_code}   404
+                        Should Contain Any  ${response.text}
+                        ...                   foo   # TODO @WLAD update asap
+                        ...                   bar
 
 
 delete composition
@@ -601,6 +599,10 @@ delete composition
 get deleted composition
     [Documentation]     The deleted compo should not exist
     ...                 204 is the code for deleted - as per OpenEHR spec
+
+
+            TRACE GITHUB ISSUE  123  not-ready
+
 
     ${resp}=            Get Request           ${SUT}   /ehr/${ehr_id}/composition/${del_version_uid}
                         log to console        ${resp.content}

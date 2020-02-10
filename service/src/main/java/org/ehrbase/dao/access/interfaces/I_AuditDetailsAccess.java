@@ -18,9 +18,11 @@
 
 package org.ehrbase.dao.access.interfaces;
 
+import com.nedap.archie.rm.generic.AuditDetails;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.jooq.AuditDetailsAccess;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
+import org.ehrbase.jooq.pg.tables.records.AuditDetailsRecord;
 
 import java.sql.Timestamp;
 import java.util.UUID;
@@ -53,7 +55,7 @@ public interface I_AuditDetailsAccess extends I_SimpleCRUD {
     }
 
     /**
-     * Retrieve a specfic audit instance via UUID
+     * Retrieve a specific audit instance via UUID
      * @param dataAccess    general data access
      * @param auditId ID of audit to retrieve
      * @return access to instance
@@ -81,6 +83,8 @@ public interface I_AuditDetailsAccess extends I_SimpleCRUD {
      */
     Boolean update(UUID systemId, UUID committer, I_ConceptAccess.ContributionChangeType changeType, String description);
 
+    UUID getId();
+
     void setSystemId(UUID systemId);
     UUID getSystemId();
 
@@ -105,5 +109,7 @@ public interface I_AuditDetailsAccess extends I_SimpleCRUD {
 
     String getTimeCommittedTzId();
 
-    UUID getId();
+    void setRecord(AuditDetailsRecord record);
+
+    AuditDetails getAsAuditDetails();
 }

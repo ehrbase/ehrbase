@@ -22,6 +22,7 @@ import org.ehrbase.dao.access.jooq.FolderAccess;
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectRef;
+import org.ehrbase.dao.access.jooq.FolderHistoryAccess;
 import org.joda.time.DateTime;
 
 import java.sql.Timestamp;
@@ -85,6 +86,10 @@ public interface I_FolderAccess extends I_SimpleCRUD {
      */
     static I_FolderAccess retrieveInstanceForExistingFolder(I_DomainAccess domainAccess, UUID folderId){
         return FolderAccess.retrieveInstanceForExistingFolder(domainAccess, folderId);
+    }
+
+    static I_FolderAccess retrieveInstanceForExistingFolder(I_DomainAccess domainAccess, UUID folderId, Timestamp timestamp){
+        return FolderHistoryAccess.retrieveInstanceForExistingFolder(domainAccess, folderId, timestamp);
     }
 
     UUID getFolderId();

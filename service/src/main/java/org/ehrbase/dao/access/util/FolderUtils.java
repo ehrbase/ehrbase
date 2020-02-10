@@ -8,7 +8,8 @@ import org.postgresql.util.PGobject;
 
 public class FolderUtils {
 
-    private FolderUtils(){}
+    private FolderUtils() {
+    }
 
     /**
      * Checks all fields that can be updated from update Folder object and sets

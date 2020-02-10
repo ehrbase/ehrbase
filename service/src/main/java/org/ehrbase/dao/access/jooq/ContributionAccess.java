@@ -182,7 +182,8 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
 
         contributionRecord.setSysTransaction(transactionTime);
         contributionRecord.setEhrId(this.getEhrId());
-        contributionRecord.store();
+        if (contributionRecord.insert() == 0)
+            throw new InternalServerException("Couldn't store contribution");
         UUID contributionId = contributionRecord.getId();
 
         //commit the compositions
@@ -311,15 +312,15 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
             setState(state);
 
         // embedded audit handling
-        I_AuditDetailsAccess auditDetailsAccess = new AuditDetailsAccess(this.getDataAccess()).retrieveInstance(this.getDataAccess(), getHasAuditDetails());
+        this.auditDetails = I_AuditDetailsAccess.getInstance(getDataAccess()); // new audit for new action
         if (committerId != null)
-            auditDetailsAccess.setCommitter(committerId);
+            this.auditDetails.setCommitter(committerId);
         if (systemId != null)
-            auditDetailsAccess.setSystemId(systemId);
-        if (contributionChangeType != null)
-            auditDetailsAccess.setChangeType(I_ConceptAccess.fetchContributionChangeType(this, contributionChangeType));
+            this.auditDetails.setSystemId(systemId);
         if (description != null)
-            auditDetailsAccess.setDescription(description);
+            this.auditDetails.setDescription(description);
+        if (contributionChangeType != null)
+            this.auditDetails.setChangeType(I_ConceptAccess.fetchContributionChangeType(this, contributionChangeType));
 
         return update(transactionTime);
     }
@@ -377,10 +378,13 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
 
             // update contribution's audit with modification change type and execute update of it, too
             this.auditDetails.setChangeType(I_ConceptAccess.fetchContributionChangeType(this, I_ConceptAccess.ContributionChangeType.MODIFICATION));
-            this.auditDetails.update(transactionTime, force);
+            if (this.auditDetails.update(transactionTime, force).equals(Boolean.FALSE))
+                throw new InternalServerException("Couldn't update auditDetails");
+            contributionRecord.setHasAudit(this.auditDetails.getId());  // new audit ID
 
             // execute update of contribution itself
-            updated = contributionRecord.store() == 1;
+            contributionRecord.setId(UUID.randomUUID());    // force to create new entry from old values
+            updated = contributionRecord.insert() == 1;
         }
 
         //commit or updateComposition the compositions
@@ -461,11 +465,6 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
         auditDetails.setChangeType(changeType);
     }
 
-    /*@Override
-    public void setChangeType(I_ConceptAccess.ContributionChangeType changeType) {
-        auditDetails.setChangeType(ContributionChangeType.valueOf(changeType.name()));
-    }*/
-
     @Override
     public ContributionDataType getContributionDataType() {
         return contributionRecord.getContributionType();
@@ -478,7 +477,8 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
 
     @Override
     public void setState(ContributionDef.ContributionState state) {
-        contributionRecord.setState(ContributionState.valueOf(state.getLiteral()));
+        if (state != null)
+            contributionRecord.setState(ContributionState.valueOf(state.getLiteral()));
     }
 
     @Override
@@ -498,11 +498,13 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
 
     @Override
     public void setAuditDetailsValues(UUID committer, UUID system, String description) {
-        if (committer == null || system == null || description == null)
+        if (committer == null || system == null)
             throw new IllegalArgumentException("arguments not optional");
         auditDetails.setCommitter(committer);
         auditDetails.setSystemId(system);
-        auditDetails.setDescription(description);
+
+        if (description != null)
+            auditDetails.setDescription(description);
     }
 
     @Override
@@ -522,6 +524,21 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
         // optional description
         if (auditObject.getDescription() != null)
             auditDetails.setDescription(auditObject.getDescription().getValue());
+    }
+
+    @Override
+    public UUID getAuditsCommitter() {
+        return auditDetails.getCommitter();
+    }
+
+    @Override
+    public UUID getAuditsSystemId() {
+        return auditDetails.getSystemId();
+    }
+
+    @Override
+    public String getAuditsDescription() {
+        return auditDetails.getDescription();
     }
 
     @Override

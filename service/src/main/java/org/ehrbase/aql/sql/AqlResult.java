@@ -18,11 +18,19 @@
 
 package org.ehrbase.aql.sql;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import org.apache.commons.collections.BidiMap;
+import org.apache.commons.collections.MapIterator;
+import org.apache.commons.collections.OrderedBidiMap;
+import org.apache.commons.collections.OrderedMapIterator;
 import org.jooq.Record;
 import org.jooq.Result;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Wrapper calls for a query result
@@ -30,9 +38,10 @@ import java.util.Map;
 public class AqlResult {
     private final Result<Record> records;
     private final List<List<String>> explain;
-    private Map<String, String> variables;
+    //bijective map to allow reverse lookup
+    private BiMap<String, String> variables;
 
-    public AqlResult(Result<Record> records, List<List<String>> explain) {
+    AqlResult(Result<Record> records, List<List<String>> explain) {
         this.records = records;
         this.explain = explain;
     }
@@ -50,6 +59,6 @@ public class AqlResult {
     }
 
     public void setVariables(Map<String, String> variables) {
-        this.variables = variables;
+        this.variables = HashBiMap.create(variables);
     }
 }

@@ -1,15 +1,15 @@
 (optional) Summary: What is this issue about?
 
 ## Steps To Reproduce This Issue
-> path to test case file
 
-tests/robot/CONTRIBUTION_TESTS/C.1_COMMIT_CONTRIBUTION/...
+```
+# path to test case
+tests/robot/CONTRIBUTION_TESTS/...
+```
 
+```
+# robot command to execute related test case(s) - run it in your terminal/console
 
-
-> robot command to execute related test case(s) - run it in your terminal/console
-
-```shell
 # by test case name (wildcards possible)
 robot -t "*Bug Case 01*" -d results -L TRACE robot/TEST_SUITE FOLDER
 

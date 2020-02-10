@@ -36,7 +36,7 @@
     <value>5c726a1c-dce0-401b-9638-4abd1101e320</value>
   </uid>
   <template_id>
-    <value>minimal_action.en.v1</value>
+    <value>minimal_action_rm_concept.en.v1</value>
   </template_id>
   <definition>
     <rm_type_name>COMPOSITION</rm_type_name>

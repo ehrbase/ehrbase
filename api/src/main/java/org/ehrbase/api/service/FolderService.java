@@ -18,11 +18,11 @@
 
 package org.ehrbase.api.service;
 
+import com.nedap.archie.rm.directory.Folder;
 import org.ehrbase.api.definitions.StructuredString;
 import org.ehrbase.api.definitions.StructuredStringFormat;
 import org.ehrbase.api.dto.FolderDto;
 import org.ehrbase.api.exception.ObjectNotFoundException;
-import com.nedap.archie.rm.directory.Folder;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -53,6 +53,8 @@ public interface FolderService extends BaseService {
      * @return Data transfer object to return to client
      */
     Optional<FolderDto> retrieve(UUID folderId, Integer version);
+
+    Optional<FolderDto> retrieveLatest(UUID ehrId);
 
     /**
      * Returns a versioned folder object which has been or is current at the

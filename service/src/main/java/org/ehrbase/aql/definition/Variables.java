@@ -22,6 +22,9 @@
 
 package org.ehrbase.aql.definition;
 
+import org.ehrbase.aql.sql.binding.VariableDefinitions;
+
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -29,23 +32,25 @@ import java.util.List;
  */
 public class Variables {
 
-    private List<I_VariableDefinition> definitionList;
+    private VariableDefinitions variableDefinitions;
 
-    public Variables(List<I_VariableDefinition> definitionList) {
-        this.definitionList = definitionList;
+    public Variables(VariableDefinitions variableDefinitions) {
+        this.variableDefinitions = variableDefinitions;
     }
 
     public boolean hasDefinedDistinct() {
-        for (I_VariableDefinition variableDefinition : definitionList) {
-            if (variableDefinition.isDistinct())
+        Iterator<I_VariableDefinition> iterator = variableDefinitions.iterator();
+        while (iterator.hasNext()) {
+            if (iterator.next().isDistinct())
                 return true;
         }
         return false;
     }
 
     public boolean hasDefinedFunction() {
-        for (I_VariableDefinition variableDefinition : definitionList) {
-            if (variableDefinition.isFunction())
+        Iterator<I_VariableDefinition> iterator = variableDefinitions.iterator();
+        while (iterator.hasNext()) {
+            if (iterator.next().isFunction())
                 return true;
         }
         return false;

@@ -40,8 +40,8 @@ Alternative flow 4 create new invalid persistent COMPOSITION
     create EHR
 
 
+        TRACE GITHUB ISSUE  126  not-ready
 
-        TRACE JIRA BUG    EHR-414    not-ready
 
     commit invalid composition (JSON)    minimal_persistent/persistent_minimal.composition.extdatetime.invalid.xml
 
