@@ -32,6 +32,7 @@ import org.ehrbase.rest.openehr.response.ErrorResponseData;
 import org.ehrbase.rest.openehr.util.VersionUidHelper;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -39,6 +40,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -276,22 +278,20 @@ public class OpenehrDirectoryController extends BaseController {
     public ResponseEntity getFolderVersionAtTime(
             @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
             @ApiParam(value = "EHR identifier from resource path after ehr/", required = true) @PathVariable(value = "ehr_id") UUID ehrId,
-            @ApiParam(value = "Timestamp in extended ISO8601 format to identify version of folder.") @RequestParam(value = "version_at_time", required = false) String versionAtTime,
+            @ApiParam(value = "Timestamp in extended ISO8601 format to identify version of folder.") @RequestParam(value = "version_at_time", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime versionAtTime,
             @ApiParam(value = "Path parameter to specify a subfolder at directory") @RequestParam(value = "path", required = false) String path,
             @RequestUrl String requestUrl
     ) {
-        // UUID ehrId = getEhrUuid(ehrIdString);
-
-        // Check path and version_at_time string if they are valid
-        if (versionAtTime != null && !isValidVersionAtTime(versionAtTime)) {
-            throw new IllegalArgumentException("value for version_at_time is malformed. Expecting an extended ISO8601 string, e.g. '2020-01-01T12:30:25.123+01:00'");
-        }
+        // Check path string if they are valid
         if (path != null && !isValidPath(path)) {
             throw new IllegalArgumentException("Value for path is malformed. Expecting a unix like notation, e.g. '/episodes/a/b/c'");
         }
 
+        // Get directory root entry for ehr
+        UUID rootDirectoryId = ehrService.getDirectoryId(ehrId);
+
         // Get the folder entry from database
-        Optional<FolderDto> foundFolder = folderService.retrieveLatest(ehrId);
+        Optional<FolderDto> foundFolder = folderService.retrieveByTimestamp(rootDirectoryId, versionAtTime);
         if (!foundFolder.isPresent()) {
             throw new ObjectNotFoundException("folder",
                     "The FOLDER for ehrId " +
@@ -410,8 +410,8 @@ public class OpenehrDirectoryController extends BaseController {
         // Create response data
         HttpHeaders resHeaders = new HttpHeaders();
         resHeaders.setLocation(URI.create(requestUrl +
-                                          "/" +
-                                          versionedUid));
+                "/" +
+                versionedUid));
         resHeaders.setETag(versionedUid);
         // TODO: Set LastModified header by audit details
         resHeaders.setLastModified(DateTime.now().getMillis());
@@ -501,18 +501,6 @@ public class OpenehrDirectoryController extends BaseController {
         resBody.setName(folderDto.getName());
         resBody.setUid(folderDto.getUid());
         return resBody;
-    }
-
-    /**
-     * Checks if a version a possible version_at_time string value has the expected format as defined by openEHR spec,
-     * i.e. in extended ISO8601 format, e.g. 2020-03-12T12:36:31.245+01:00)
-     *
-     * @param versionAtTime - String to check
-     * @return String is a valid version_at_time value or not
-     */
-    private boolean isValidVersionAtTime(String versionAtTime) {
-        Pattern versionAtTimePattern = Pattern.compile("^[1-2]\\d{3}-[0-1]\\d-[0-3]\\dT[0-2]\\d(?::[0-5]\\d){2}\\.\\d{3}[+\\-][0-1]\\d:\\d{2}$");
-        return versionAtTimePattern.matcher(versionAtTime).matches();
     }
 
     /**

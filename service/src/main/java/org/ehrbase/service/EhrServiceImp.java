@@ -354,4 +354,18 @@ public class EhrServiceImp extends BaseService implements EhrService {
 
         return new RevisionHistoryItem(objectVersionId, auditDetailsList);
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public UUID getDirectoryId(UUID ehrId) {
+        try{
+            I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
+            return ehrAccess.getDirectoryId();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            throw new InternalServerException(e.getMessage(), e);
+        }
+    }
 }
