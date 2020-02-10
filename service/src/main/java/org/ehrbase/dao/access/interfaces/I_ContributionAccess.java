@@ -21,6 +21,7 @@
  */
 package org.ehrbase.dao.access.interfaces;
 
+import com.nedap.archie.rm.generic.AuditDetails;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.jooq.ContributionAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
@@ -99,6 +100,16 @@ public interface I_ContributionAccess extends I_SimpleCRUD {
      * @return ?
      */
     boolean removeComposition(I_CompositionAccess compositionAccess);
+
+    /**
+     * Commits given input as contribution record. Creation of audit is required beforehand. All parameters are optional and will be provided with default values if NULL.
+     *
+     * @param transactionTime Timestamp of transaction time
+     * @param contributionType String representation of contribution type
+     * @param state String representation of contribution state
+     * @return @link UUID} of committed contribution
+     */
+    UUID commit(Timestamp transactionTime, ContributionDataType contributionType, ContributionDef.ContributionState state);
 
     /**
      * Commits given input as contribution record. Embeds creation of audit for this commit. All parameters are optional and will be provided with default values if NULL.
@@ -230,6 +241,8 @@ public interface I_ContributionAccess extends I_SimpleCRUD {
      * @param description   description
      */
     void setAuditDetailsValues(UUID committer, UUID system, String description);
+
+    void setAuditDetailsValues(AuditDetails auditObject);
 
     void setAuditDetailsChangeType(UUID changeType);
 

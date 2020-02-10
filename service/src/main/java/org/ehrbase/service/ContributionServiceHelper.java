@@ -18,6 +18,7 @@
 
 package org.ehrbase.service;
 
+import com.nedap.archie.rm.generic.AuditDetails;
 import org.ehrbase.api.definitions.CompositionFormat;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -128,5 +129,34 @@ public class ContributionServiceHelper {
             throw new IllegalArgumentException("Can't process input, possible malformed version payload");
         }
         return versions;
+    }
+
+    /**
+     * Helper that parses the AuditDetails from the contribution input.
+     * @param content Plain string content
+     * @param format Format of content
+     * @return AuditDetails object
+     */
+    public static AuditDetails parseAuditDetails(String content, CompositionFormat format) {
+        // extract both per standard parts of the content: data block containing versions & audit
+        Map<String, Object> splitContent = splitContent(content, format);
+
+        Object auditContent = splitContent.get("audit");
+        AuditDetails auditResult;
+
+        switch (format) {
+            case JSON:
+                try {
+                    String json = JacksonUtil.getObjectMapper().writeValueAsString(auditContent);
+                    auditResult = new CanonicalJson().unmarshal(json, AuditDetails.class);
+                } catch (JsonProcessingException e) {
+                    throw new IllegalArgumentException("Error while processing given json input: " + e.getMessage());
+                }
+                break;
+            case XML:
+            default:
+                throw new UnexpectedSwitchCaseException(format);
+        }
+        return auditResult;
     }
 }
