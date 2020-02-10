@@ -100,7 +100,9 @@ public class WhereVisitor extends AqlBaseVisitor<List<Object>> {
                 else if (operandContext.DATE() != null)
                     operand.add(operandContext.DATE().getText());
                 else if (operandContext.FLOAT() != null)
-                    operand.add(operandContext.FLOAT().getText());
+                	operand.add(operandContext.FLOAT().getText());
+                else if (operandContext.invokeOperand() != null)
+                	operand.add(visitInvokeOperand(operandContext.invokeOperand()));
                 else if (operandContext.PARAMETER() != null)
                     operand.add("** unsupported operand: PARAMETER **");
                 else
@@ -114,6 +116,39 @@ public class WhereVisitor extends AqlBaseVisitor<List<Object>> {
         }
         return operand;
     }
+    
+	
+	  @Override public List<Object> visitInvokeOperand(AqlParser.InvokeOperandContext ctx) {
+	  System.out.println("inside invoke operand");
+	  
+	  //if(((AqlParser.InvokeOperandContext)ctx).INVOKE())
+	  
+	  
+	  return visitChildren(ctx);
+	  
+	  }
+	 
+		@Override public List<Object> visitInvokeExpr(AqlParser.InvokeExprContext ctx) { 
+			List<Object> invokeExpr = new ArrayList<>();
+			  System.out.println("inside invoke Expr");
+
+			 // if(((AqlParser.InvokeExprContext)ctx).INVOKE()!=null) {
+				  invokeExpr.add(((AqlParser.InvokeExprContext)ctx).INVOKE().getText());
+
+			  //}else if(((AqlParser.InvokeExprContext)ctx).OPEN_PAR()!=null){
+				  invokeExpr.add(((AqlParser.InvokeExprContext)ctx).OPEN_PAR().getText());
+
+				// }else if(((AqlParser.InvokeExprContext)ctx).URIVALUE()!=null){
+				  invokeExpr.add(((AqlParser.InvokeExprContext)ctx).URIVALUE().getText());
+
+				  
+			  //}else if(((AqlParser.InvokeExprContext)ctx).CLOSE_PAR()!=null){
+				  
+				  invokeExpr.add(((AqlParser.InvokeExprContext)ctx).CLOSE_PAR().getText());
+			 // }
+			return invokeExpr; 
+			
+		}
 
 //    @Override
 //    public List<Object> visitIdentifiedExprAnd(AqlParser.IdentifiedExprAndContext context){
