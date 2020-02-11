@@ -1,17 +1,20 @@
 {
   "_type": "EHR_STATUS",
+  "archetype_node_id": "openEHR-EHR-EHR_STATUS.generic.v1",
+  "name": {
+    "value": "EHR Status"
+  },
   "subject": {
     "external_ref": {
-      "_type": "PARTY_REF",
       "id": {
         "_type": "GENERIC_ID",
-        "value": "abc12345-none-exis-ting-fa8308e1242f",
+        "value": "__AUTO-GENRATED-BY-TEST__",
         "scheme": "id_scheme"
       },
-      "namespace": "patients",
+      "namespace": "examples",
       "type": "PERSON"
     }
   },
   "is_modifiable": true,
-  "is_queryable": false
+  "is_queryable": true
 }

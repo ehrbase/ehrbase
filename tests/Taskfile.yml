@@ -99,10 +99,10 @@ tasks:
         desc: RUN SPECIFIED TESTS
         cmds:
           # adjust this part to the needs of your current test session
-          - robot -i ADHOC-QUERYANDempty_DB -e future -e circleci -e TODO -e obsolete -d results -L TRACE --noncritical not-ready robot/QUERY_SERVICE_TESTS
+          - robot -i xxx -e future -e circleci -e TODO -e obsolete -d results -L TRACE --noncritical not-ready robot/EHR_SERVICE_TESTS
           # example of "execute single test by it's test-case name" (wildcards accepted):
           # - robot -t "*create directory on empty EHR" -d results -L TRACE robot/DIRECTORY_TESTS
-          - spd-say "Robot is ready! Check the results!"
+          # - spd-say "Robot is ready! Check the results!"
 
     test_all:
         desc: RUN ALL ROBOT TESTS

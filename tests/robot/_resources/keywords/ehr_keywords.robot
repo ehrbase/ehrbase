@@ -525,15 +525,16 @@ generate fake ehr_status
 
 
 set is_queryable / is_modifiable
-    [Arguments]         ${is_queryable}=${TRUE}    ${is_modifiable}=${TRUE}
+    [Arguments]         ${is_modifiable}=${TRUE}    ${is_queryable}=${TRUE}
     [Documentation]     Sets boolean values of is_queryable / is_modifiable.
     ...                 Both default to ${TRUE},
     ...                 Valid Values: ${TRUE}, ${FALSE},
     ...                 DEPENDENCY: keywords that expose a `${ehr_status}` variable
     ...                 e.g. `generate fake ehr_status`
 
-                        modify ehr_status is_queryable to    ${is_queryable}
+                        Import Library  distutils.util
                         modify ehr_status is_modifiable to    ${is_modifiable}
+                        modify ehr_status is_queryable to    ${is_queryable}
 
 
 modify ehr_status is_queryable to
@@ -543,6 +544,10 @@ modify ehr_status is_queryable to
     ...                 DEPENDENCY: keywords that expose and `ehr_status` variable
     ...                 Valid values: `${FALSE}`, `${TRUE}`
 
+    ${value}=           Set Variable If    "${value}"=="true" or "${value}"=="false"
+                        ...    ${{bool(distutils.util.strtobool("${value}"))}}
+                        # comment: else
+                        ...    ${value}
     ${ehr_status}=      Update Value To Json  ${ehr_status}  $..is_queryable  ${value}
                         # NOTE: alternatively u can save output to file
                         # Output   ${ehr_status}[0]             # ehr_status.json
@@ -553,9 +558,13 @@ modify ehr_status is_modifiable to
     [Arguments]         ${value}
     [Documentation]     Modifies `is_queryable` property of ehr_status JSON object
     ...                 and exposes  `ehr_status` Test Variable.
-    ...                 DEPENDENCY: `get ehr_status from response (JSON EHRSCAPE)`
+    ...                 DEPENDENCY: `get ehr_status from response`
     ...                 Valid values: `${FALSE}`, `${TRUE}`
 
+    ${value}=           Set Variable If    "${value}"=="true" or "${value}"=="false"
+                        ...    ${{bool(distutils.util.strtobool("${value}"))}}
+                        # comment: else
+                        ...    ${value}
     ${ehr_status}=      Update Value To Json  ${ehr_status}  $..is_modifiable  ${value}
                         # Output   ${ehr_status}[0]             # ehr_status.json
                         Set Test Variable    ${ehr_status}    ${ehr_status}
