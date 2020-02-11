@@ -31,88 +31,100 @@ Force Tags    refactor
 
 *** Test Cases ***
 MF-001 - Create new EHR (w/o Prefer header)
-    [Tags]    not-ready
+    [Tags]    not-ready   xxx
     prepare new request session    JSON
     create new EHR
 
-        # TODO: @WLAD create GITHUB ISSUE
+        TRACE GITHUB ISSUE  143  not-ready
 
     # comment: check step
     Null   response body
 
 
-MF-002 - Create new EHR (Prefer header: representation)
+MF-002 - Create new EHR (Prefer header: minimal)
+    [Tags]    not-ready
+    [Documentation]     This test should behave equqly to MF-001
+    prepare new request session    JSON    Prefer=return=minimal
+    create new EHR
+
+        TRACE GITHUB ISSUE  143  not-ready
+
+    # comment: check step
+    Null   response body
+
+
+MF-003 - Create new EHR (XML, Prefer header: minimal)
+    prepare new request session    XML    Prefer=return=minimal
+    create new EHR (XML)
+
+        TRACE GITHUB ISSUE  143  not-ready
+
+    # TODO: @WLAD create step to check body is null
+    Null   response body    # not sure this works with XML response
+
+
+MF-004 - Create new EHR (Prefer header: representation)
     prepare new request session    JSON    Prefer=return=representation
     create new EHR
     # comment: check step
     Object    response body
 
 
-MF-003 - Create new EHR (Prefer header: minimal)
-    [Tags]    not-ready
-    [Documentation]     This test should behave equqly to MF-001
-    prepare new request session    JSON    Prefer=return=minimal
-    create new EHR
-
-        # TODO: @WLAD create GITHUB ISSUE
-
-    # comment: check step
-    Null   response body
-
-
-MF-004 - Create new EHR (XML, Prefer header: representation)
+MF-005 - Create new EHR (XML, Prefer header: representation)
     prepare new request session    XML    Prefer=return=representation
     create new EHR (XML)
 
 
-MF-005 - Create new EHR (XML, Prefer: minimal)
-    prepare new request session    XML    Prefer=return=minimal
-    create new EHR (XML)
+MF-006 - Create new EHR (w/ body: empty json)
+    [Tags]    not-ready   xxx
+    prepare new request session    JSON
+    # create new EHR
+    POST /ehr    {}    201
 
-    # TODO: @WLAD create step to check body is null
 
-
-MF-006 - Create new EHR (POST /ehr variants)
-    [Tags]              not-ready     
+MF-007 - Create new EHR (POST /ehr variants)
+    [Tags]              not-ready     xxx
     [Template]          create ehr
 
-  # EHR_ID      SUBJECT_ID  SUBJECT_NMSP.  IS_QUERYABLE  IS_MODIFIABLE  R.CODE  w/BODY  REQUEST
-    ${EMPTY}    ${EMPTY}    ${EMPTY}       ${EMPTY}      ${EMPTY}       201     NO      # post /ehr
-    ${EMPTY}    ${EMPTY}    ${EMPTY}       ${EMPTY}      true           201     YES     # post /ehr + body
-    ${EMPTY}    ${EMPTY}    ${EMPTY}       true          ${EMPTY}       201     YES     # post /ehr + body
-    ${EMPTY}    ${EMPTY}    ${EMPTY}       true          true           201     YES     # post /ehr + body
-    ${EMPTY}    ${EMPTY}    ${EMPTY}       ${EMPTY}      false          201     YES     # post /ehr + body
-    ${EMPTY}    ${EMPTY}    ${EMPTY}       true          false          201     YES     # post /ehr + body
-    ${EMPTY}    ${EMPTY}    ${EMPTY}       false         ${EMPTY}       201     YES     # post /ehr + body
-    ${EMPTY}    ${EMPTY}    ${EMPTY}       false         true           201     YES     # post /ehr + body
-    ${EMPTY}    ${EMPTY}    ${EMPTY}       false         false          201     YES     # post /ehr + body
-    ${EMPTY}    given       given          ${EMPTY}      true           201     YES     # post /ehr + body
-    ${EMPTY}    given       given          true          ${EMPTY}       201     YES     # post /ehr + body
-    ${EMPTY}    given       given          ${EMPTY}      ${EMPTY}       201     YES     # post /ehr + body
-    ${EMPTY}    given       given          true          true           201     YES     # post /ehr + body
-    ${EMPTY}    given       given          ${EMPTY}      false          201     YES     # post /ehr + body
-    ${EMPTY}    given       given          true          false          201     YES     # post /ehr + body
-    ${EMPTY}    given       given          false         ${EMPTY}       201     YES     # post /ehr + body
-    ${EMPTY}    given       given          false         true           201     YES     # post /ehr + body
-    ${EMPTY}    given       given          false         false          201     YES     # post /ehr + body
-    ${EMPTY}    given       ${EMPTY}       ${EMPTY}      true           400     YES     # post /ehr + body
-    ${EMPTY}    given       ${EMPTY}       true          ${EMPTY}       400     YES     # post /ehr + body
-    ${EMPTY}    given       ${EMPTY}       ${EMPTY}      ${EMPTY}       400     YES     # post /ehr + body
-    ${EMPTY}    given       ${EMPTY}       true          true           400     YES     # post /ehr + body
-    ${EMPTY}    ${EMPTY}    given          ${EMPTY}      ${EMPTY}       400     YES     # post /ehr + body
-    ${EMPTY}    ${EMPTY}    given          ${EMPTY}      true           400     YES     # post /ehr + body
-    ${EMPTY}    ${EMPTY}    given          true          ${EMPTY}       400     YES     # post /ehr + body
-    ${EMPTY}    ${EMPTY}    given          true          true           400     YES     # post /ehr + body
-    ${EMPTY}    given       ${EMPTY}       false         false          400     YES     # post /ehr + body
-    ${EMPTY}    given       ${EMPTY}       ${EMPTY}      false          400     YES     # post /ehr + body
-    ${EMPTY}    given       ${EMPTY}       true          false          400     YES     # post /ehr + body
-    ${EMPTY}    given       ${EMPTY}       false         ${EMPTY}       400     YES     # post /ehr + body
-    ${EMPTY}    given       ${EMPTY}       false         true           400     YES     # post /ehr + body
-    ${EMPTY}    ${EMPTY}    given          ${EMPTY}      false          400     YES     # post /ehr + body
-    ${EMPTY}    ${EMPTY}    given          true          false          400     YES     # post /ehr + body
-    ${EMPTY}    ${EMPTY}    given          false         ${EMPTY}       400     YES     # post /ehr + body
-    ${EMPTY}    ${EMPTY}    given          false         true           400     YES     # post /ehr + body
-    ${EMPTY}    ${EMPTY}    given          false         false          400     YES     # post /ehr + body
+  # EHR_ID      SUBJECT_ID  SUBJECT_NMSP.  IS_QUERYABLE  IS_MODIFIABLE  R.CODE  BODY
+    ${EMPTY}    ${EMPTY}    ${EMPTY}       ${EMPTY}      true           201     002_ehr_status_no_subject.json
+    ${EMPTY}    ${EMPTY}    ${EMPTY}       true          ${EMPTY}       201     002_ehr_status_no_subject.json
+    ${EMPTY}    ${EMPTY}    ${EMPTY}       true          true           201     002_ehr_status_no_subject.json
+    ${EMPTY}    ${EMPTY}    ${EMPTY}       ${EMPTY}      false          201     002_ehr_status_no_subject.json
+    ${EMPTY}    ${EMPTY}    ${EMPTY}       true          false          201     002_ehr_status_no_subject.json
+    ${EMPTY}    ${EMPTY}    ${EMPTY}       false         ${EMPTY}       201     002_ehr_status_no_subject.json
+    ${EMPTY}    ${EMPTY}    ${EMPTY}       false         true           201     002_ehr_status_no_subject.json
+    ${EMPTY}    ${EMPTY}    ${EMPTY}       false         false          201     002_ehr_status_no_subject.json
+
+    # ${EMPTY}    given       given          ${EMPTY}      true           201     YES     # post /ehr + body
+    # ${EMPTY}    given       given          true          ${EMPTY}       201     YES     # post /ehr + body
+    # ${EMPTY}    given       given          ${EMPTY}      ${EMPTY}       201     YES     # post /ehr + body
+    # ${EMPTY}    given       given          true          true           201     YES     # post /ehr + body
+    # ${EMPTY}    given       given          ${EMPTY}      false          201     YES     # post /ehr + body
+    # ${EMPTY}    given       given          true          false          201     YES     # post /ehr + body
+    # ${EMPTY}    given       given          false         ${EMPTY}       201     YES     # post /ehr + body
+    # ${EMPTY}    given       given          false         true           201     YES     # post /ehr + body
+    # ${EMPTY}    given       given          false         false          201     YES     # post /ehr + body
+
+    # ${EMPTY}    ${EMPTY}    given          ${EMPTY}      ${EMPTY}       400     YES     # post /ehr + body
+    # ${EMPTY}    ${EMPTY}    given          ${EMPTY}      true           400     YES     # post /ehr + body
+    # ${EMPTY}    ${EMPTY}    given          true          ${EMPTY}       400     YES     # post /ehr + body
+    # ${EMPTY}    ${EMPTY}    given          true          true           400     YES     # post /ehr + body
+    # ${EMPTY}    ${EMPTY}    given          ${EMPTY}      false          400     YES     # post /ehr + body
+    # ${EMPTY}    ${EMPTY}    given          true          false          400     YES     # post /ehr + body
+    # ${EMPTY}    ${EMPTY}    given          false         ${EMPTY}       400     YES     # post /ehr + body
+    # ${EMPTY}    ${EMPTY}    given          false         true           400     YES     # post /ehr + body
+    # ${EMPTY}    ${EMPTY}    given          false         false          400     YES     # post /ehr + body
+    # ${EMPTY}    given       ${EMPTY}       false         false          400     YES     # post /ehr + body
+    # ${EMPTY}    given       ${EMPTY}       ${EMPTY}      false          400     YES     # post /ehr + body
+    # ${EMPTY}    given       ${EMPTY}       true          false          400     YES     # post /ehr + body
+    # ${EMPTY}    given       ${EMPTY}       false         ${EMPTY}       400     YES     # post /ehr + body
+    # ${EMPTY}    given       ${EMPTY}       false         true           400     YES     # post /ehr + body
+    # ${EMPTY}    given       ${EMPTY}       ${EMPTY}      true           400     YES     # post /ehr + body
+    # ${EMPTY}    given       ${EMPTY}       true          ${EMPTY}       400     YES     # post /ehr + body
+    # ${EMPTY}    given       ${EMPTY}       ${EMPTY}      ${EMPTY}       400     YES     # post /ehr + body
+    # ${EMPTY}    given       ${EMPTY}       true          true           400     YES     # post /ehr + body
+
 
 
 MF-007 - Create new EHR w/ given ehr_id (PUT /ehr variants)
@@ -161,16 +173,18 @@ MF-007 - Create new EHR w/ given ehr_id (PUT /ehr variants)
 
 *** Keywords ***
 create ehr
-    [Arguments]  ${ehr_id}  ${subj_id}  ${subj_namespace}  ${is_queryable}  ${is_modifiable}  ${status_code}  ${w/body}
+    [Arguments]  ${ehr_id}  ${subj_id}  ${subj_namespace}  ${is_queryable}  ${is_modifiable}  ${status_code}  ${body}
 
     prepare new request session
     compose valid body    ${is_queryable}    ${is_modifiable}
 
-    &{resp}=    Run Keyword If  "${w/body}"=="NO"    POST /ehr    None    ${status_code}
-    ...         ELSE IF  "${w/body}"=="YES" and "${is_modifiable}"=="true"    POST /ehr    ${body}    ${status_code}
-    ...         ELSE IF  "${w/body}"=="YES" and "${is_queryable}"=="true"    POST /ehr    ${body}    ${status_code}
-    ...         ELSE IF  "${w/body}"=="YES" and "${is_modifiable}"=="true" and "${is_queryable}"==true
-                ...       POST /ehr    ${body}    ${status_code}
+    &{response}=        Run Keyword If  "${body}"=="002_ehr_status_no_subject.json"  POST /ehr  $payload  status
+
+    # &{resp}=    Run Keyword If  "${w/body}"=="NO"    POST /ehr    None    ${status_code}
+    # ...         ELSE IF  "${w/body}"=="YES"    POST /ehr    ${body}    ${status_code}
+    # ...         ELSE IF  "${w/body}"=="YES" and "${is_queryable}"=="true"    POST /ehr    ${body}    ${status_code}
+    # ...         ELSE IF  "${w/body}"=="YES" and "${is_modifiable}"=="true" and "${is_queryable}"==true
+    #             ...       POST /ehr    ${body}    ${status_code}
 
     # ...         ELSE IF  "${subject_namespace}"==""  create ehr with query params  subjectId\=${subject_id}  body=${body}
     # ...    ELSE IF  "${ehr_id}"!="" and "${subject_id}"=="" and "${subject_namespace}"==""  REST.PUT  /ehr/${ehr_id}  body=${body}
@@ -208,6 +222,8 @@ PUT /ehr
                         Output Debug Info To Console
 
                         Integer    response status    ${status}
+
+    001_ehr_status.json
 
 
 compose valid body
