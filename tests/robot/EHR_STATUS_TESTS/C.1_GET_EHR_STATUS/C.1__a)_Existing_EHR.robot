@@ -78,6 +78,8 @@ Get Status Of Existing EHR (XML)
 verify response (JSON)
                         Integer     response status         200
 
+        TRACE GITHUB ISSUE  147  not-ready
+
                         String    response body uid value    ${ehrstatus_uid}
                         String    response body subject external_ref id value    ${subject_Id}
                         

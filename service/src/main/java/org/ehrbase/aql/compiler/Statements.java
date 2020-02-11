@@ -24,12 +24,13 @@ import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.VariableDefinition;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.ehrbase.aql.sql.binding.VariableDefinitions;
 
 import java.util.List;
 
 public class Statements {
 
-    protected ParseTree parseTree;
+    private ParseTree parseTree;
     private List<Object> whereClause;
     //    private ParseTreeWalker walker = new ParseTreeWalker();
     private List<I_VariableDefinition> variables;
@@ -84,8 +85,8 @@ public class Statements {
         return whereClause;
     }
 
-    public List<I_VariableDefinition> getVariables() {
-        return variables;
+    public VariableDefinitions getVariables() {
+        return new VariableDefinitions(variables);
     }
 
     public TopAttributes getTopAttributes() {
@@ -102,5 +103,9 @@ public class Statements {
 
     public Integer getOffsetAttribute() {
         return offsetAttribute;
+    }
+
+    public void put(I_VariableDefinition variableDefinition) {
+        variables.add(variableDefinition);
     }
 }

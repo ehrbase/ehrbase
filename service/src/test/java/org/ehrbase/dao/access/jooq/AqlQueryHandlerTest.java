@@ -51,7 +51,7 @@ public class AqlQueryHandlerTest {
                         "select \"ehr_join\".\"id\" as \"/ehr_id/value\" " +
                         "from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" " +
                         "right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\" " +
-                        "limit ? offset ?" +
-                        ") as \"\"");
+                        ") as \"\"" +
+                        "limit ? offset ?");
     }
 }
