@@ -88,11 +88,13 @@ public class FolderServiceImp extends BaseService implements FolderService {
                 ehrId);
 
         // Get first FolderAccess instance
-        I_FolderAccess folderAccess = FolderAccess.buildNewFolderAccessHierarchy(getDataAccess(),
+        I_FolderAccess folderAccess = FolderAccess.buildNewFolderAccessHierarchy(
+                getDataAccess(),
                 content,
                 currentTimeStamp,
                 ehrId,
-                contributionAccess);
+                contributionAccess
+        );
         UUID folderId = folderAccess.commit(new Timestamp(currentTimeStamp.getMillis()));
         ehrAccess.setDirectory(folderId);
         ehrAccess.update(getUserUuid(), getSystemUuid(), null, I_ConceptAccess.ContributionChangeType.MODIFICATION, EhrServiceImp.DESCRIPTION);
@@ -128,17 +130,23 @@ public class FolderServiceImp extends BaseService implements FolderService {
      */
     @Override
     public Optional<FolderDto> retrieveByTimestamp(
-            UUID folderId, LocalDateTime timestamp) {
+            UUID folderId,
+            Timestamp timestamp
+    ) {
 
         try {
-            // Get version active at the timestamp
-            // TODO: Fetch entry by FolderAccess.retrieveByTimestamp
-            return Optional.empty();
+
+            I_FolderAccess folderAccess = I_FolderAccess.retrieveInstanceForExistingFolder(
+                    getDataAccess(),
+                    folderId,
+                    timestamp
+            );
+
+            return createDto(folderAccess);
         } catch (ObjectNotFoundException e) {
-            logger.debug(formatter.format(
+            logger.error(formatter.format(
                     "Folder entry not found for timestamp: %s",
-                    timestamp.format(ISO_DATE_TIME))
-                    .toString());
+                    timestamp.toLocalDateTime().format(ISO_DATE_TIME)).toString());
             return Optional.empty();
         }
     }

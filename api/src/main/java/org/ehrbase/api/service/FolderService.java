@@ -24,6 +24,7 @@ import org.ehrbase.api.definitions.StructuredStringFormat;
 import org.ehrbase.api.dto.FolderDto;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -69,7 +70,7 @@ public interface FolderService extends BaseService {
      */
     Optional<FolderDto> retrieveByTimestamp(
             UUID folderId,
-            LocalDateTime timestamp
+            Timestamp timestamp
     );
 
     /**

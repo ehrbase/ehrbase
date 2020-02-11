@@ -438,9 +438,9 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
     private static FolderAccess buildFolderAccessFromGenericRecord(final Record record_,
                                                                    final I_DomainAccess domainAccess) {
 
-        Record13<UUID, UUID, UUID, Timestamp, Object, UUID, UUID, String, String, Boolean, PGobject, Timestamp, Timestamp>
+        Record13<UUID, UUID, UUID, Timestamp, Object, UUID, UUID, String, String, Boolean, JSONB, Timestamp, Timestamp>
                 record
-                = (Record13<UUID, UUID, UUID, Timestamp, Object, UUID, UUID, String, String, Boolean, PGobject, Timestamp, Timestamp>) record_;
+                = (Record13<UUID, UUID, UUID, Timestamp, Object, UUID, UUID, String, String, Boolean, JSONB, Timestamp, Timestamp>) record_;
         FolderAccess folderAccess = new FolderAccess(domainAccess);
         folderAccess.folderRecord = new FolderRecord();
         folderAccess.setFolderId(record.value1());
@@ -450,7 +450,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         folderAccess.setIsFolderActive(record.value10());
         // Due to generic type from JOIN The ItemStructure binding does not cover the details
         // and we have to parse it from PGobject manually
-        folderAccess.setFolderDetails(FolderUtils.parseFromPGobject(record.value11()));
+        folderAccess.setFolderDetails(FolderUtils.parseFromJSONB(record.value11()));
         folderAccess.setFolderSysTransaction(record.value12());
         folderAccess.setFolderSysPeriod(record.value13());
         folderAccess.getItems()

@@ -4,6 +4,7 @@ import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.directory.Folder;
 import org.ehrbase.dao.access.interfaces.I_FolderAccess;
 import org.ehrbase.serialisation.RawJson;
+import org.jooq.JSONB;
 import org.postgresql.util.PGobject;
 
 public class FolderUtils {
@@ -33,6 +34,14 @@ public class FolderUtils {
             target.getItems().clear();
             target.getItems().addAll(update.getItems());
         }
+    }
+
+    public static ItemStructure parseFromJSONB(JSONB dbObject) {
+        if (dbObject == null) {
+            return null;
+        }
+        String value = dbObject.data();
+        return new RawJson().unmarshal(value, ItemStructure.class);
     }
 
     public static ItemStructure parseFromPGobject(PGobject databaseObject) {
