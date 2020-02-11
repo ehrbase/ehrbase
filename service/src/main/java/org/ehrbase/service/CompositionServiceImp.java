@@ -22,16 +22,12 @@
 package org.ehrbase.service;
 
 import com.nedap.archie.rm.composition.Composition;
-import org.apache.catalina.Server;
 import org.ehrbase.api.definitions.CompositionFormat;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.definitions.StructuredString;
 import org.ehrbase.api.definitions.StructuredStringFormat;
 import org.ehrbase.api.dto.CompositionDto;
-import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
-import org.ehrbase.api.exception.UnprocessableEntityException;
+import org.ehrbase.api.exception.*;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.ValidationService;
@@ -252,6 +248,21 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
             //validate RM composition
             validationService.check(composition.getArchetypeDetails().getTemplateId().getValue(), composition);
 
+            // Check if template ID is not the same in existing and given data -> error
+            String existingTemplateId = compositionAccess.getContent().get(0).getTemplateId();
+            String inputTemplateId = composition.getArchetypeDetails().getTemplateId().getValue();
+            if (!existingTemplateId.equals(inputTemplateId)) {
+                // check if base template ID doesn't match  (template ID schema: "$NAME.$LANG.v$VER")
+                if (!existingTemplateId.split("\\.")[0].equals(inputTemplateId.split("\\.")[0]))
+                    throw new InvalidApiParameterException("Can't update composition to have different template.");
+                // if base matches, check if given template ID is just a new version of the correct template
+                int existingTemplateIdVersion = Integer.parseInt(existingTemplateId.split("\\.v")[1]);
+                int inputTemplateIdVersion = Integer.parseInt(inputTemplateId.substring(inputTemplateId.lastIndexOf("\\.v") + 1));
+                if (inputTemplateIdVersion < existingTemplateIdVersion) {
+                    throw new InvalidApiParameterException("Can't update composition with wrong template version bump.");
+                }
+            }
+
             // to keep reference to entry to update: pull entry out of composition access and replace composition content with input, then write back to the original access
             List<I_EntryAccess> contentList = compositionAccess.getContent();
             contentList.get(0).setCompositionData(composition);
@@ -263,7 +274,7 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
                 result = compositionAccess.update(getUserUuid(), getSystemUuid(), null, I_ConceptAccess.ContributionChangeType.MODIFICATION, DESCRIPTION);
             }
 
-        } catch (ObjectNotFoundException e) {   //otherwise ObjectNotFound exceptions would always get sucked up by the catch below
+        } catch (ObjectNotFoundException | InvalidApiParameterException e) {   //otherwise exceptions would always get sucked up by the catch below
             throw e;
         } catch (Exception e) {
             throw new InternalServerException(e);
