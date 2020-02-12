@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Stefan Spiska (Vitasystems GmbH) and Hannover Medical School.
+ * Copyright (c) 2020 Stefan Spiska (Vitasystems GmbH) and Luis Marco-Ruiz (Hannover Medical School).
  *
  * This file is part of project EHRbase
  *
