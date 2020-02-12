@@ -21,6 +21,8 @@
 
 package org.ehrbase.aql.compiler;
 
+import org.ehrbase.aql.compiler.tsclient.FhirTerminologyServerImpl;
+import org.ehrbase.aql.compiler.tsclient.TerminologyServer;
 import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.parser.AqlBaseVisitor;
 import org.ehrbase.aql.parser.AqlParser;
@@ -33,8 +35,9 @@ import java.util.List;
 /**
  * Interpret an AQL WHERE clause and set the result into a list of WHERE parts
  * Created by christian on 5/18/2016.
+ * @param <T>
  */
-public class WhereVisitor extends AqlBaseVisitor<List<Object>> {
+public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
     public static final String MATCHES = "MATCHES";
     public static final String IN = " IN ";
     public static final String OPEN_CURL = "{";
@@ -42,8 +45,10 @@ public class WhereVisitor extends AqlBaseVisitor<List<Object>> {
     public static final String CLOSING_CURL = "}";
     public static final String CLOSING_PAR = ")";
     public static final String COMMA = ",";
+    
+    private TerminologyServer<T, ID> tsserver = (TerminologyServer<T, ID>) new FhirTerminologyServerImpl();
 
-    private List whereExpression = new ArrayList<>();
+    private List<Object> whereExpression = new ArrayList<>();
 
 //    @Override
 //    public List visit(ParseTree tree){
@@ -101,9 +106,13 @@ public class WhereVisitor extends AqlBaseVisitor<List<Object>> {
                     operand.add(operandContext.DATE().getText());
                 else if (operandContext.FLOAT() != null)
                 	operand.add(operandContext.FLOAT().getText());
-                else if (operandContext.invokeOperand() != null)
-                	operand.add(visitInvokeOperand(operandContext.invokeOperand()));
-                else if (operandContext.PARAMETER() != null)
+                else if (operandContext.invokeOperand() != null) {
+                	for(Object obj: visitInvokeOperand(operandContext.invokeOperand())) {
+                		operand.add(obj);
+                		operand.add(",");
+                	}
+                	operand.remove(operand.size()-1);
+                }else if (operandContext.PARAMETER() != null)
                     operand.add("** unsupported operand: PARAMETER **");
                 else
                     operand.add("** unsupported operand: " + operandContext.getText());
@@ -130,43 +139,12 @@ public class WhereVisitor extends AqlBaseVisitor<List<Object>> {
 	 
 		@Override public List<Object> visitInvokeExpr(AqlParser.InvokeExprContext ctx) { 
 			List<Object> invokeExpr = new ArrayList<>();
-			  System.out.println("inside invoke Expr");
-
-			 // if(((AqlParser.InvokeExprContext)ctx).INVOKE()!=null) {
-				  invokeExpr.add(((AqlParser.InvokeExprContext)ctx).INVOKE().getText());
-
-			  //}else if(((AqlParser.InvokeExprContext)ctx).OPEN_PAR()!=null){
-				  invokeExpr.add(((AqlParser.InvokeExprContext)ctx).OPEN_PAR().getText());
-
-				// }else if(((AqlParser.InvokeExprContext)ctx).URIVALUE()!=null){
-				  invokeExpr.add(((AqlParser.InvokeExprContext)ctx).URIVALUE().getText());
-
-				  
-			  //}else if(((AqlParser.InvokeExprContext)ctx).CLOSE_PAR()!=null){
-				  
-				  invokeExpr.add(((AqlParser.InvokeExprContext)ctx).CLOSE_PAR().getText());
-			 // }
+			assert(((AqlParser.InvokeExprContext)ctx).INVOKE().getText().equals("INVOKE"));			
+			assert(((AqlParser.InvokeExprContext)ctx).OPEN_PAR().getText().equals("("));
+			assert(((AqlParser.InvokeExprContext)ctx).CLOSE_PAR().getText().equals(")"));  
+			invokeExpr.addAll((List<T>)tsserver.expand((ID)((AqlParser.InvokeExprContext)ctx).URIVALUE().getText()));
 			return invokeExpr; 
-			
 		}
-
-//    @Override
-//    public List<Object> visitIdentifiedExprAnd(AqlParser.IdentifiedExprAndContext context){
-//        for (ParseTree tree: context.children) {
-//            if (tree instanceof TerminalNodeImpl) {
-//                String what = tree.getText().trim();
-//                whereExpression.add(what);
-//            }
-//            else if (tree instanceof AqlParser.IdentifiedEqualityContext) {
-//                visitIdentifiedEquality((AqlParser.IdentifiedEqualityContext) tree);
-//            }
-//            else if (tree instanceof AqlParser.IdentifiedExprContext) {
-//                visitIdentifiedExpr((AqlParser.IdentifiedExprContext) tree);
-//            }
-//        }
-//
-//        return whereExpression;
-//    }
 
     @Override
     public List<Object> visitIdentifiedEquality(AqlParser.IdentifiedEqualityContext context) {

@@ -144,7 +144,7 @@ public class InvokeVisitorTest {
             cut.visit(tree);
 
             List<Object> whereExpression = cut.getWhereExpression();
-            assertThat(whereExpression).size().isEqualTo(9);
+            assertThat(whereExpression).size().isEqualTo(13);
 
             I_VariableDefinition where1 = (I_VariableDefinition) whereExpression.get(0);
             I_VariableDefinition expected1 = I_VariableDefinitionHelper.build("archetype_details/template_id/value", null, "c", false, false, false);
@@ -158,19 +158,21 @@ public class InvokeVisitorTest {
 
             assertThat(whereExpression.get(4)).isEqualTo(",");
 
-            assertThat(((List<Object>)whereExpression.get(5)).get(0)).isEqualTo("INVOKE");
+            assertThat(whereExpression.get(5)).isEqualTo("48377-6");
             
-            assertThat(((List<Object>)whereExpression.get(5)).get(1)).isEqualTo("(");
-            
-            assertThat(((List<Object>)whereExpression.get(5)).get(2)).isEqualTo("https://highmed.de/ts/ValueSet/23/$expand?filter=abdo");
-            
-            assertThat(((List<Object>)whereExpression.get(5)).get(3)).isEqualTo(")");
-
             assertThat(whereExpression.get(6)).isEqualTo(",");
             
-            assertThat(whereExpression.get(7)).isEqualTo("'Kloralhidrat'");
+            assertThat(whereExpression.get(7)).isEqualTo("27478-7");
+            
+            assertThat(whereExpression.get(8)).isEqualTo(",");
 
-            assertThat(whereExpression.get(8)).isEqualTo(")");
+            assertThat(whereExpression.get(9)).isEqualTo("52539-9");
+            
+            assertThat(whereExpression.get(10)).isEqualTo(",");
+           
+            assertThat(whereExpression.get(11)).isEqualTo("'Kloralhidrat'");
+
+            assertThat(whereExpression.get(12)).isEqualTo(")");
 
 
         }
