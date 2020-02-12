@@ -31,6 +31,8 @@ import org.ehrbase.ehr.encode.wrappers.json.writer.translator_db2raw.ArchieCompo
 import org.ehrbase.ehr.encode.wrappers.json.writer.translator_db2raw.CompositionRoot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -39,7 +41,7 @@ import java.util.regex.Pattern;
  */
 public class LightRawJsonEncoder {
 
-    String jsonbOrigin;
+    private String jsonbOrigin;
 
     public LightRawJsonEncoder(String jsonbOrigin) {
         this.jsonbOrigin = jsonbOrigin;
@@ -51,12 +53,23 @@ public class LightRawJsonEncoder {
 
         GsonBuilder gsonRaw = EncodeUtilArchie.getGsonBuilderInstance(I_DvTypeAdapter.AdapterType.DBJSON2RAWJSON);
         String raw;
-        if (root != null)
-            raw = gsonRaw.create().toJson(fromDB.get(root));
+        if (root != null) {
+            Object contentMap = fromDB.get(root);
+            if (contentMap instanceof LinkedTreeMap && ((LinkedTreeMap) contentMap).size() == 0) //empty content
+                raw = encodeNullContent();
+            else
+                raw = gsonRaw.create().toJson(fromDB.get(root));
+        }
         else
             raw = gsonRaw.create().toJson(fromDB);
 
         return raw;
+    }
+
+    private String encodeNullContent(){
+        Map<String, Object> nullContentMap = new Hashtable<>();
+        nullContentMap.put("content", new ArrayList<>());
+        return new GsonBuilder().create().toJson(nullContentMap);
     }
 
     public JsonElement encodeContentAsJson(String root){
@@ -88,7 +101,7 @@ public class LightRawJsonEncoder {
                 jsonbOrigin = "{\"items\":"+jsonbOrigin+"}"; //joy of json... this deals with array with and name/value predicate
         }
 
-        Map<String, Object> fromDB = gsondb.create().fromJson(jsonbOrigin, Map.class);
+        Map fromDB = gsondb.create().fromJson(jsonbOrigin, Map.class);
 
         if (fromDB.containsKey("content")){
             //push contents upward
