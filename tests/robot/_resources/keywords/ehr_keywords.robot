@@ -410,7 +410,7 @@ update ehr_status of fake EHR (with body)
 
                         Output Debug Info To Console
                         Integer    response status    404
-                        String    response body error    EHR with this ID not found
+                        # String    response body error    EHR with this ID not found
 
 
 extract ehr_id from response (JSON)
