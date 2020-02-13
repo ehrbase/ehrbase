@@ -22,6 +22,7 @@ Resource        generic_keywords.robot
 Library         XML
 Library         REST
 Library         Collections
+Library         distutils.util
 
 
 
@@ -536,7 +537,6 @@ set is_queryable / is_modifiable
     ...                 DEPENDENCY: keywords that expose a `${ehr_status}` variable
     ...                 e.g. `generate fake ehr_status`
 
-                        Import Library  distutils.util
                         modify ehr_status is_modifiable to    ${is_modifiable}
                         modify ehr_status is_queryable to    ${is_queryable}
 
@@ -548,8 +548,24 @@ modify ehr_status is_queryable to
     ...                 DEPENDENCY: keywords that expose and `ehr_status` variable
     ...                 Valid values: `${FALSE}`, `${TRUE}`
 
-    ${value}=           Set Variable If    "${value}"=="true" or "${value}"=="false"
-                        ...    ${{bool(distutils.util.strtobool("${value}"))}}
+    ${value}=           Set Variable If    $value=="true" or $value=="false"
+                        ...    ${{bool(distutils.util.strtobool($value))}}
+                        # comment: else leave it as is
+                        ...    ${value}
+    ${value}=           Set Variable If    $value=='"true"' or $value=='"false"'
+                        ...    ${{$value.strip('"')}}
+                        # comment: else
+                        ...    ${value}
+    ${value}=           Set Variable If    $value=="0" or $value=="1"
+                        ...    ${{int($value)}}
+                        # comment: else
+                        ...    ${value}
+    ${value}=           Set Variable If    $value=="null"
+                        ...    ${{None}}
+                        # comment: else
+                        ...    ${value}
+    ${value}=           Set Variable If    $value=='"null"'
+                        ...    ${{$value.strip('"')}}
                         # comment: else
                         ...    ${value}
     ${ehr_status}=      Update Value To Json  ${ehr_status}  $..is_queryable  ${value}
@@ -565,8 +581,24 @@ modify ehr_status is_modifiable to
     ...                 DEPENDENCY: `get ehr_status from response`
     ...                 Valid values: `${FALSE}`, `${TRUE}`
 
-    ${value}=           Set Variable If    "${value}"=="true" or "${value}"=="false"
-                        ...    ${{bool(distutils.util.strtobool("${value}"))}}
+    ${value}=           Set Variable If    $value=="true" or $value=="false"
+                        ...    ${{bool(distutils.util.strtobool($value))}}
+                        # comment: else
+                        ...    ${value}
+    ${value}=           Set Variable If    $value=='"true"' or $value=='"false"'
+                        ...    ${{$value.strip('"')}}
+                        # comment: else
+                        ...    ${value}
+    ${value}=           Set Variable If    $value=="0" or $value=="1"
+                        ...    ${{int($value)}}
+                        # comment: else
+                        ...    ${value}
+    ${value}=           Set Variable If    $value=="null"
+                        ...    ${{None}}
+                        # comment: else
+                        ...    ${value}
+    ${value}=           Set Variable If    $value=='"null"'
+                        ...    ${{$value.strip('"')}}
                         # comment: else
                         ...    ${value}
     ${ehr_status}=      Update Value To Json  ${ehr_status}  $..is_modifiable  ${value}
