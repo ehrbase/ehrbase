@@ -204,7 +204,7 @@ MF-014 - Create new EHR w/ body: invalid ehr_status
     POST /ehr    ${body}
 
         # TODO: @WLAD create issue
-        TRACE GITHUB ISSUE  GITHUB_ISSUE  not-ready
+        TRACE GITHUB ISSUE  154  not-ready
 
     # comment: check step
     Integer    response status    400
@@ -218,7 +218,7 @@ MF-015 - Create new EHR w/ body: invalid ehr_status
     POST /ehr    ${body}
 
         # TODO: @WLAD create issue
-        TRACE GITHUB ISSUE  GITHUB_ISSUE  not-ready
+        TRACE GITHUB ISSUE  154  not-ready
 
     # comment: check step
     Integer    response status    400
@@ -262,18 +262,13 @@ MF-018 - Create new EHR w/ body: valid ehr_status
 
 MF-019 - Create new EHR w/ body: valid ehr_status w/ o.d.
     [Documentation]     Covers happy path w/ "other_details" _type ITEM_TREE
-    [Tags]              not-ready   xxx
+    [Tags]              not-ready   zzz
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/002_ehr_status_with_other_details_item_tree.json
     POST /ehr    ${body}
     Integer    response status    201
 
-
-
     ${actual_ehr_status}=    Object    response body ehr_status
-
-    # Set Test Variable   ${actual_ehr_status}    ${resp.json()['ehr_status']}
-    
 
     # comment: this converts dict to json string, without strings the compare jsons keyword doesn't work
     ${actual_ehr_status}=    evaluate    json.dumps(${actual_ehr_status})    json
