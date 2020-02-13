@@ -22,6 +22,8 @@ import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
+
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.exception.InternalServerException;
@@ -121,9 +123,9 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
     private static FolderHistoryAccess buildFolderAccessFromGenericRecord(final Record record_,
                                                                           final I_DomainAccess domainAccess) {
 
-        Record15<UUID, UUID, UUID, Timestamp, Object, UUID, Timestamp, UUID, UUID, String, String, Boolean, PGobject, Timestamp, Object>
+        Record15<UUID, UUID, UUID, Timestamp, Object, UUID, Timestamp, UUID, UUID, String, String, Boolean, JSONB, Timestamp, Object>
                 record
-                = (Record15<UUID, UUID, UUID, Timestamp, Object, UUID, Timestamp, UUID, UUID, String, String, Boolean, PGobject, Timestamp, Object>) record_;
+                = (Record15<UUID, UUID, UUID, Timestamp, Object, UUID, Timestamp, UUID, UUID, String, String, Boolean, JSONB, Timestamp, Object>) record_;
         FolderHistoryAccess folderAccess = new FolderHistoryAccess(domainAccess);
         folderAccess.folderRecord = new FolderRecord();
         folderAccess.setFolderId(record.value1());
@@ -133,7 +135,7 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
         folderAccess.setIsFolderActive(record.value12());
         // Due to generic type from JOIN The ItemStructure binding does not cover the details
         // and we have to parse it from PGobject manually
-        folderAccess.setFolderDetails(FolderUtils.parseFromPGobject(record.value13()));
+        folderAccess.setFolderDetails(FolderUtils.parseFromJSONB(record.value13()));
         folderAccess.setFolderSysTransaction(record.value14());
         folderAccess.setFolderSysPeriod(record.value15());
         folderAccess.getItems()
@@ -605,10 +607,11 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
 
 
         Result<Record> folderSelectedRecordSub = domainAccess.getContext().withRecursive("subfolders").as(
-                select().
+                select(initial_table2.fields()).
                         from(initial_table2).
                         union(
-                                (select().from(filteredHierarchicalTable).
+                                (select(ArrayUtils.addAll(filteredHierarchicalTable.fields(), allFolderRowsUnifiedAndFilteredIterative.fields())).
+                                		from(filteredHierarchicalTable).
                                         innerJoin("subfolders").
                                         on(
                                                 filteredHierarchicalTable.field("parent_folder", FOLDER_HIERARCHY.PARENT_FOLDER.getType()).
