@@ -352,7 +352,7 @@ get ehr_status of fake EHR
                         Output Debug Info To Console
 
                         Integer    response status    404
-                        String    response body error    EHR with this ID not found
+                        # String    response body error    EHR with this ID not found
 
 
 set ehr_status of EHR
