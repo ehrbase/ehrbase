@@ -665,7 +665,7 @@ MF-049 - Create new EHR w/ given ehr_id w/ body: valid ehr_status
     [Tags]              
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/001_ehr_status_subject_empty.json
-    PPUT /ehr/$ehr_id    body=${body}
+    PUT /ehr/$ehr_id    body=${body}
 
         # TODO: @WLAD create issue
         TRACE GITHUB ISSUE  GITHUB_ISSUE  not-ready
