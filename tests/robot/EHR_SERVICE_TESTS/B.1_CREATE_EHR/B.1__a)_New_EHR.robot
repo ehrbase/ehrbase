@@ -64,8 +64,7 @@ MF-003 - Create new EHR (XML, Prefer header: minimal)
 
         TRACE GITHUB ISSUE  143  not-ready
 
-    # TODO: @WLAD create step to check body is null
-    Null   response body    # not sure this works with XML response
+    Null   response body
 
 
 MF-004 - Create new EHR (Prefer header: representation)
@@ -88,12 +87,11 @@ MF-005 - Create new EHR (XML, Prefer header: representation)
 
 MF-006 - Create new EHR w/ body: invalid ehr_status
     [Documentation]     Covers case where provided ehr_staus is just empty json
-    [Tags]   
+    [Tags]              
     prepare new request session    JSON    Prefer=return=representation
     POST /ehr    {}
 
-        # TODO: @WLAD create issue
-        TRACE GITHUB ISSUE  GITHUB_ISSUE  not-ready
+        TRACE GITHUB ISSUE  157  not-ready
 
     # comment: check step
     Integer    response status    400
@@ -106,8 +104,7 @@ MF-007 - Create new EHR w/ body: invalid ehr_status
     ${body}=     randomize subject_id in test-data-set    invalid/000_ehr_status_type_missing.json
     POST /ehr    ${body}
 
-        # TODO: @WLAD create issue
-        TRACE GITHUB ISSUE  GITHUB_ISSUE  not-ready
+        TRACE GITHUB ISSUE  157  not-ready
 
     # comment: check step
     Integer    response status    400
@@ -119,8 +116,7 @@ MF-008 - Create new EHR w/ body: invalid ehr_status
     prepare new request session    JSON    Prefer=return=representation
     POST /ehr    ${EXECDIR}/robot/_resources/test_data_sets/ehr/invalid/001_ehr_status_subject_missing.json
 
-        # TODO: @WLAD create issue
-        TRACE GITHUB ISSUE  GITHUB_ISSUE  not-ready
+        TRACE GITHUB ISSUE  157  not-ready
 
     # comment: check step
     Integer    response status    400
@@ -135,8 +131,7 @@ MF-009 - Create new EHR w/ body: invalid ehr_status
     ...          invalid/002_ehr_status_subject_and_archetype_and_name_missing.json
     POST /ehr    ${body}
 
-        # TODO: @WLAD create issue
-        TRACE GITHUB ISSUE  GITHUB_ISSUE  not-ready
+        TRACE GITHUB ISSUE  157  not-ready
 
     # comment: check step
     Integer    response status    400
@@ -148,8 +143,7 @@ MF-010 - Create new EHR w/ body: invalid ehr_status
     prepare new request session    JSON    Prefer=return=representation
     POST /ehr    ${EXECDIR}/robot/_resources/test_data_sets/ehr/invalid/003_ehr_status_subject_id_empty.json
 
-        # TODO: @WLAD create issue
-        TRACE GITHUB ISSUE  GITHUB_ISSUE  not-ready
+        TRACE GITHUB ISSUE  158  not-ready
 
     # comment: check step
     Integer    response status    400
@@ -161,8 +155,7 @@ MF-011 - Create new EHR w/ body: invalid ehr_status
     prepare new request session    JSON    Prefer=return=representation
     POST /ehr    ${EXECDIR}/robot/_resources/test_data_sets/ehr/invalid/004_ehr_status_subject_id_missing.json
 
-        # TODO: @WLAD create issue
-        TRACE GITHUB ISSUE  GITHUB_ISSUE  not-ready
+        TRACE GITHUB ISSUE  158  not-ready
 
     # comment: check step
     Integer    response status    400
@@ -175,8 +168,7 @@ MF-012 - Create new EHR w/ body: invalid ehr_status
     ${body}=     randomize subject_id in test-data-set    invalid/005_ehr_status_subject_namespace_missing.json
     POST /ehr    ${body}
 
-        # TODO: @WLAD create issue
-        TRACE GITHUB ISSUE  GITHUB_ISSUE  not-ready
+        TRACE GITHUB ISSUE  159  not-ready
 
     # comment: check step
     Integer    response status    400
@@ -189,8 +181,7 @@ MF-013 - Create new EHR w/ body: invalid ehr_status
     ${body}=     randomize subject_id in test-data-set    invalid/006_ehr_status_subject_namespace_empty.json
     POST /ehr    ${body}
 
-        # TODO: @WLAD create issue
-        TRACE GITHUB ISSUE  GITHUB_ISSUE  not-ready
+        TRACE GITHUB ISSUE  159  not-ready
 
     # comment: check step
     Integer    response status    400
@@ -203,7 +194,6 @@ MF-014 - Create new EHR w/ body: invalid ehr_status
     ${body}=     randomize subject_id in test-data-set    invalid/007_ehr_status_is_modifiable_missing.json
     POST /ehr    ${body}
 
-        # TODO: @WLAD create issue
         TRACE GITHUB ISSUE  154  not-ready
 
     # comment: check step
@@ -217,7 +207,6 @@ MF-015 - Create new EHR w/ body: invalid ehr_status
     ${body}=     randomize subject_id in test-data-set    invalid/008_ehr_status_is_queryable_missing.json
     POST /ehr    ${body}
 
-        # TODO: @WLAD create issue
         TRACE GITHUB ISSUE  154  not-ready
 
     # comment: check step
@@ -254,15 +243,14 @@ MF-018 - Create new EHR w/ body: valid ehr_status
     ${body}=     randomize subject_id in test-data-set    valid/001_ehr_status_subject_empty.json
     POST /ehr    ${body}
 
-        # TODO: @WLAD create issue
-        TRACE GITHUB ISSUE  GITHUB_ISSUE  not-ready
+        TRACE GITHUB ISSUE  160  not-ready
 
     Integer    response status    201
 
 
 MF-019 - Create new EHR w/ body: valid ehr_status w/ o.d.
     [Documentation]     Covers happy path w/ "other_details" _type ITEM_TREE
-    [Tags]              not-ready   zzz
+    [Tags]              refactor
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/002_ehr_status_with_other_details_item_tree.json
     POST /ehr    ${body}
@@ -271,10 +259,13 @@ MF-019 - Create new EHR w/ body: valid ehr_status w/ o.d.
     ${actual_ehr_status}=    Object    response body ehr_status
 
     # comment: this converts dict to json string, without strings the compare jsons keyword doesn't work
+    #          TODO: @WLAD this have to be implemented in may jsonlib.py
     ${actual_ehr_status}=    evaluate    json.dumps(${actual_ehr_status})    json
     ${expected_ehr_status}=    evaluate    json.dumps(${body})    json
     &{diff}=            compare json-strings    ${actual_ehr_status}  ${expected_ehr_status}
                         ...    exclude_paths=$..uid
+    
+        TRACE GITHUB ISSUE  161  not-ready
 
                         Log To Console    \n\n&{diff}
                         Should Be Empty    ${diff}    msg=DIFF DETECTED!
@@ -288,6 +279,12 @@ MF-020 - Create new EHR w/ body: valid ehr_status w/ o.d.
     POST /ehr    ${body}
     Integer    response status    201
 
+        # TODO: @WLAD add diff check as in MF-019
+        # after https://github.com/ehrbase/project_management/issues/161 was solved
+        TRACE GITHUB ISSUE  161  not-ready
+    
+    Fail  msg=Beak it til you make it!
+
 
 MF-021 - Create new EHR w/ body: valid ehr_status w/ o.d.
     [Documentation]     Covers happy path w/ "other_details" _type ITEM_SINGLE
@@ -296,8 +293,7 @@ MF-021 - Create new EHR w/ body: valid ehr_status w/ o.d.
     ${body}=     randomize subject_id in test-data-set    valid/004_ehr_status_with_other_details_item_single.json
     POST /ehr    ${body}
 
-        # TODO: @WLAD create issue
-        TRACE GITHUB ISSUE  GITHUB_ISSUE  not-ready
+        TRACE GITHUB ISSUE  162  not-ready
 
     Integer    response status    201
 
@@ -309,13 +305,12 @@ MF-022 - Create new EHR w/ body: valid ehr_status w/ o.d.
     ${body}=     randomize subject_id in test-data-set    valid/005_ehr_status_with_other_details_item_table.json
     POST /ehr    ${body}
 
-        # TODO: @WLAD create issue
-        TRACE GITHUB ISSUE  GITHUB_ISSUE  not-ready
+        TRACE GITHUB ISSUE  162  not-ready
 
     Integer    response status    201
 
 
-MF-0023 - Create new EHR (POST /ehr variants)
+MF-023 - Create new EHR (POST /ehr variants)
     [Tags]              
     [Template]          create ehr from data table
 
@@ -355,8 +350,7 @@ MF-024 - Create new EHR w/ empty subject (POST /ehr variants)
     ${EMPTY}   false           true           201
     ${EMPTY}   false           false          201
 
-    [Teardown]          TRACE GITHUB ISSUE  TODO WIE MF-018  not-ready
-                        # TODO: @WLAD create issue
+    [Teardown]          TRACE GITHUB ISSUE  160  not-ready
 
 
 MF-025 - Create new EHR w/ invalid subject (POST /ehr variants)
@@ -366,22 +360,23 @@ MF-025 - Create new EHR w/ invalid subject (POST /ehr variants)
     [Template]          create ehr from data table
 
   # SUBJECT    IS_MODIFIABLE   IS_QUERYABLE   R.CODE
+    # TODO: remove when fixed. Issue 158
     invalid    true            true           400
     invalid    true            false          400
     invalid    false           true           400
     invalid    false           false          400
     invalid    0               1              400
 
+    # TODO: remove when fixed. Issue 157
     missing    true            true           400
     missing    true            false          400
     missing    false           true           400
     missing    false           false          400
 
-    [Teardown]          TRACE GITHUB ISSUE  GITHUB_ISSUE  not-ready
-                        # TODO: @WLAD create issue
+    [Teardown]          TRACE GITHUB ISSUE  158  not-ready  message=Related to issue 157
 
 
-MF-030 - Create new EHR w/ given ehr_id (PUT /ehr variants)
+MF-030 - Create new EHR w/ given ehr_id (PUT /ehr/ehr_id variants)
     [Tags]              
     [Template]          create ehr w/ given ehr_id from data table
 
@@ -405,7 +400,7 @@ MF-030 - Create new EHR w/ given ehr_id (PUT /ehr variants)
     [Teardown]          TRACE GITHUB ISSUE  134  not-ready
 
 
-MF-031 - Create new EHR w/ given ehr_id (PUT /ehr variants)
+MF-031 - Create new EHR w/ given ehr_id (PUT /ehr/ehr_id variants)
     [Tags]              
     [Template]          create ehr w/ given ehr_id from data table
 
@@ -415,10 +410,10 @@ MF-031 - Create new EHR w/ given ehr_id (PUT /ehr variants)
     given     ${EMPTY}   false           false          201
     given     ${EMPTY}   false           true           201
 
-    [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  160  not-ready
 
 
-MF-032 - Create new EHR w/ invalid ehr_id
+MF-032 - Create new EHR w/ invalid ehr_id (PUT /ehr/ehr_id variants)
     [Tags]              
     [Template]          create ehr w/ given ehr_id from data table
 
@@ -429,16 +424,7 @@ MF-032 - Create new EHR w/ invalid ehr_id
     invalid   ${EMPTY}   false           ${EMPTY}       400
     invalid   ${EMPTY}   true            ${EMPTY}       400
 
-    [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
-
-
-
-
-
-
-
-
-#####################################
+    [Teardown]          TRACE GITHUB ISSUE  163  not-ready
 
 
 MF-033 - Create new EHR w/ given ehr_id (w/o Prefer header)
@@ -448,7 +434,7 @@ MF-033 - Create new EHR w/ given ehr_id (w/o Prefer header)
     prepare new request session    JSON    Prefer=${None}
     PUT /ehr/$ehr_id
 
-        TRACE GITHUB ISSUE  TODO  not-ready
+        TRACE GITHUB ISSUE  143  not-ready
 
     # comment: check step
     Null   response body
@@ -460,7 +446,7 @@ MF-034 - Create new EHR w/ given ehr_id (Prefer header: minimal)
     prepare new request session    JSON    Prefer=return=minimal
     PUT /ehr/$ehr_id
 
-        TRACE GITHUB ISSUE  TODO  not-ready
+        TRACE GITHUB ISSUE  143  not-ready
 
     # comment: check step
     Null   response body
@@ -471,9 +457,8 @@ MF-035 - Create new EHR w/ given ehr_id (XML, Prefer header: minimal)
     prepare new request session    XML    Prefer=return=minimal
     PUT /ehr/$ehr_id
 
-        TRACE GITHUB ISSUE  TODO  not-ready
+        TRACE GITHUB ISSUE  143  not-ready
 
-    # TODO: @WLAD create step to check body is null
     Null   response body
 
 
@@ -499,10 +484,9 @@ MF-038 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
     [Documentation]     Covers case where provided ehr_staus is just empty json
     [Tags]              
     prepare new request session    JSON    Prefer=return=representation
-    PUT /ehr/$ehr_id    ehr_id=body={}
+    PUT /ehr/$ehr_id    body={}
 
-        # TODO: @WLAD create issue
-        TRACE GITHUB ISSUE  GITHUB_ISSUE  not-ready
+        TRACE GITHUB ISSUE  157  not-ready
 
     # comment: check step
     Integer    response status    400
@@ -515,8 +499,7 @@ MF-039 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
     ${body}=     randomize subject_id in test-data-set    invalid/000_ehr_status_type_missing.json
     PUT /ehr/$ehr_id    body=${body}
 
-        # TODO: @WLAD create issue
-        TRACE GITHUB ISSUE  GITHUB_ISSUE  not-ready
+        TRACE GITHUB ISSUE  157  not-ready
 
     # comment: check step
     Integer    response status    400
@@ -528,8 +511,7 @@ MF-040 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
     prepare new request session    JSON    Prefer=return=representation
     PUT /ehr/$ehr_id    body=${EXECDIR}/robot/_resources/test_data_sets/ehr/invalid/001_ehr_status_subject_missing.json
 
-        # TODO: @WLAD create issue
-        TRACE GITHUB ISSUE  GITHUB_ISSUE  not-ready
+        TRACE GITHUB ISSUE  157  not-ready
 
     # comment: check step
     Integer    response status    400
@@ -543,96 +525,90 @@ MF-041 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
     ${body}=     randomize subject_id in test-data-set    invalid/002_ehr_status_subject_and_archetype_and_name_missing.json
     PUT /ehr/$ehr_id    body=${body}
 
-        # TODO: @WLAD create issue
-        TRACE GITHUB ISSUE  GITHUB_ISSUE  not-ready
-
-    # comment: check step
-    Integer    response status    400
-
-
-MF-041 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
-    [Documentation]     Covers case where mandatory subject..id is empty
-    [Tags]              
-    prepare new request session    JSON    Prefer=return=representation
-    PUT /ehr/$ehr_id    body=${EXECDIR}/robot/_resources/test_data_sets/ehr/invalid/003_ehr_status_subject_id_empty.json
-
-        # TODO: @WLAD create issue
-        TRACE GITHUB ISSUE  GITHUB_ISSUE  not-ready
+  
+        TRACE GITHUB ISSUE  157  not-ready
 
     # comment: check step
     Integer    response status    400
 
 
 MF-042 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
-    [Documentation]     Covers case where mand. subject..id is missing
+    [Documentation]     Covers case where mandatory subject..id is empty
     [Tags]              
     prepare new request session    JSON    Prefer=return=representation
-    PUT /ehr/$ehr_id    body=${EXECDIR}/robot/_resources/test_data_sets/ehr/invalid/004_ehr_status_subject_id_missing.json
+    PUT /ehr/$ehr_id    body=${EXECDIR}/robot/_resources/test_data_sets/ehr/invalid/003_ehr_status_subject_id_empty.json
 
-        # TODO: @WLAD create issue
-        TRACE GITHUB ISSUE  GITHUB_ISSUE  not-ready
+        TRACE GITHUB ISSUE  158  not-ready
 
     # comment: check step
     Integer    response status    400
 
 
 MF-043 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
-    [Documentation]     Covers case where mand. subject..namespace is missing
+    [Documentation]     Covers case where mand. subject..id is missing
     [Tags]              
     prepare new request session    JSON    Prefer=return=representation
-    ${body}=     randomize subject_id in test-data-set    invalid/005_ehr_status_subject_namespace_missing.json
-    PUT /ehr/$ehr_id    body=${body}
+    PUT /ehr/$ehr_id    body=${EXECDIR}/robot/_resources/test_data_sets/ehr/invalid/004_ehr_status_subject_id_missing.json
 
-        # TODO: @WLAD create issue
-        TRACE GITHUB ISSUE  GITHUB_ISSUE  not-ready
+        TRACE GITHUB ISSUE  158  not-ready
 
     # comment: check step
     Integer    response status    400
 
 
 MF-044 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
-    [Documentation]     Covers case where mand. subject..namespace is empty
+    [Documentation]     Covers case where mand. subject..namespace is missing
     [Tags]              
     prepare new request session    JSON    Prefer=return=representation
-    ${body}=     randomize subject_id in test-data-set    invalid/006_ehr_status_subject_namespace_empty.json
+    ${body}=     randomize subject_id in test-data-set    invalid/005_ehr_status_subject_namespace_missing.json
     PUT /ehr/$ehr_id    body=${body}
 
-        # TODO: @WLAD create issue
-        TRACE GITHUB ISSUE  GITHUB_ISSUE  not-ready
+        TRACE GITHUB ISSUE  159  not-ready
 
     # comment: check step
     Integer    response status    400
 
 
 MF-045 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
-    [Documentation]     Covers case where mand. is_modifiable is missing
+    [Documentation]     Covers case where mand. subject..namespace is empty
     [Tags]              
     prepare new request session    JSON    Prefer=return=representation
-    ${body}=     randomize subject_id in test-data-set    invalid/007_ehr_status_is_modifiable_missing.json
+    ${body}=     randomize subject_id in test-data-set    invalid/006_ehr_status_subject_namespace_empty.json
     PUT /ehr/$ehr_id    body=${body}
 
-        # TODO: @WLAD create issue
-        TRACE GITHUB ISSUE  GITHUB_ISSUE  not-ready
+        TRACE GITHUB ISSUE  159  not-ready
 
     # comment: check step
     Integer    response status    400
 
 
 MF-046 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
-    [Documentation]     Covers case where mand. is_queryable is missing
+    [Documentation]     Covers case where mand. is_modifiable is missing
     [Tags]              
     prepare new request session    JSON    Prefer=return=representation
-    ${body}=     randomize subject_id in test-data-set    invalid/008_ehr_status_is_queryable_missing.json
+    ${body}=     randomize subject_id in test-data-set    invalid/007_ehr_status_is_modifiable_missing.json
     PUT /ehr/$ehr_id    body=${body}
 
-        # TODO: @WLAD create issue
-        TRACE GITHUB ISSUE  GITHUB_ISSUE  not-ready
+        TRACE GITHUB ISSUE  154  not-ready
 
     # comment: check step
     Integer    response status    400
 
 
 MF-047 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
+    [Documentation]     Covers case where mand. is_queryable is missing
+    [Tags]              
+    prepare new request session    JSON    Prefer=return=representation
+    ${body}=     randomize subject_id in test-data-set    invalid/008_ehr_status_is_queryable_missing.json
+    PUT /ehr/$ehr_id    body=${body}
+
+        TRACE GITHUB ISSUE  154  not-ready
+
+    # comment: check step
+    Integer    response status    400
+
+
+MF-048 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
     [Documentation]     Covers case where mand. is_modifiable and is_queryableis are missing
     [Tags]              
     prepare new request session    JSON    Prefer=return=representation
@@ -645,7 +621,7 @@ MF-047 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
     Integer    response status    400
 
 
-MF-048 - Create new EHR w/ given ehr_id w/ body: valid ehr_status
+MF-049 - Create new EHR w/ given ehr_id w/ body: valid ehr_status
     [Documentation]     Covers happy path: valid ehr_status as body payload
     [Tags]              
     prepare new request session    JSON    Prefer=return=representation
@@ -654,7 +630,7 @@ MF-048 - Create new EHR w/ given ehr_id w/ body: valid ehr_status
     Integer    response status    201
 
 
-MF-049 - Create new EHR w/ given ehr_id w/ body: valid ehr_status
+MF-050 - Create new EHR w/ given ehr_id w/ body: valid ehr_status
     [Documentation]     Covers valid case where subject is empty JSON
     ...                 check: https://github.com/ehrbase/project_management/issues/142#issuecomment-583759331
     [Tags]              
@@ -662,13 +638,12 @@ MF-049 - Create new EHR w/ given ehr_id w/ body: valid ehr_status
     ${body}=     randomize subject_id in test-data-set    valid/001_ehr_status_subject_empty.json
     PUT /ehr/$ehr_id    body=${body}
 
-        # TODO: @WLAD create issue
-        TRACE GITHUB ISSUE  GITHUB_ISSUE  not-ready
+        TRACE GITHUB ISSUE  160  not-ready
 
     Integer    response status    201
 
 
-MF-050 - Create new EHR w/ given ehr_id w/ body: valid ehr_status w/ o.d.
+MF-051 - Create new EHR w/ given ehr_id w/ body: valid ehr_status w/ o.d.
     [Documentation]     Covers happy path w/ "other_details" _type ITEM_TREE
     [Tags]              
     prepare new request session    JSON    Prefer=return=representation
@@ -676,8 +651,14 @@ MF-050 - Create new EHR w/ given ehr_id w/ body: valid ehr_status w/ o.d.
     PUT /ehr/$ehr_id    body=${body}
     Integer    response status    201
 
+        # TODO: @WLAD add diff check as in MF-019
+        # after https://github.com/ehrbase/project_management/issues/161 was solved
+        TRACE GITHUB ISSUE  161  not-ready
+    
+    Fail  msg=Beak it til you make it!
 
-MF-051 - Create new EHR w/ given ehr_id w/ body: valid ehr_status w/ o.d.
+
+MF-052 - Create new EHR w/ given ehr_id w/ body: valid ehr_status w/ o.d.
     [Documentation]     Covers happy path w/ "other_details" _type ITEM_LIST
     [Tags]              
     prepare new request session    JSON
@@ -685,38 +666,36 @@ MF-051 - Create new EHR w/ given ehr_id w/ body: valid ehr_status w/ o.d.
     PUT /ehr/$ehr_id    body=${body}
     Integer    response status    201
 
+        # TODO: @WLAD add diff check as in MF-019
+        # after https://github.com/ehrbase/project_management/issues/161 was solved
+        TRACE GITHUB ISSUE  161  not-ready
+    
+    Fail  msg=Beak it til you make it!
 
-MF-052 - Create new EHR w/ given ehr_id w/ body: valid ehr_status w/ o.d.
+
+MF-053 - Create new EHR w/ given ehr_id w/ body: valid ehr_status w/ o.d.
     [Documentation]     Covers happy path w/ "other_details" _type ITEM_SINGLE
     [Tags]              
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/004_ehr_status_with_other_details_item_single.json
     PUT /ehr/$ehr_id    body=${body}
 
-        # TODO: @WLAD create issue
-        TRACE GITHUB ISSUE  GITHUB_ISSUE  not-ready
+        TRACE GITHUB ISSUE  162  not-ready
 
     Integer    response status    201
 
 
-MF-053 - Create new EHR w/ given ehr_id w/ body: valid ehr_status w/ o.d.
+MF-054 - Create new EHR w/ given ehr_id w/ body: valid ehr_status w/ o.d.
     [Documentation]     Covers happy path w/ "other_details" _type ITEM_TABLE
     [Tags]              
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/005_ehr_status_with_other_details_item_table.json
     PUT /ehr/$ehr_id    body=${body}
 
-        # TODO: @WLAD create issue
-        TRACE GITHUB ISSUE  GITHUB_ISSUE  not-ready
+        TRACE GITHUB ISSUE  162  not-ready
 
     Integer    response status    201
 
-
-
-
-
-
-###############################################
 
 
 
