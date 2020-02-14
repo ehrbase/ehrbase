@@ -160,7 +160,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         auditDetailsAccess = I_AuditDetailsAccess.getInstance(this.getDataAccess());
     }
 
-    public CompositionAccess(I_DomainAccess domainAccess) {
+    CompositionAccess(I_DomainAccess domainAccess) {
         super(domainAccess);
     }
 
@@ -635,16 +635,38 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
             }
 
             compositionRecord.setSysTransaction(transactionTime);
+
+            //update attributes
+            updateCompositionData(composition);
+
             result = compositionRecord.update() > 0;
 
             //updateComposition each entry if required
             for (I_EntryAccess entryAccess : content) {
+                entryAccess.setCompositionData(composition);
                 entryAccess.update(transactionTime, true);
             }
-        }
 
-        //updateComposition event context accordingly, if composition is not persistent (i.e. has a context)
-        getContextId().ifPresent(id -> I_ContextAccess.retrieveInstance(this, id).update(transactionTime, force));
+            //update context
+            //context
+            Optional<UUID> contextId = getContextId();
+            I_ContextAccess contextAccess;
+
+            if (contextId.isEmpty()){
+                EventContext context = new EventContextFactory().makeNull();
+                contextAccess = I_ContextAccess.getInstance(this, context);
+                contextAccess.commit(transactionTime);
+            }
+            else
+                contextAccess = I_ContextAccess.retrieveInstance(this, contextId.get());
+
+            EventContext newEventContext = composition.getContext();
+
+            if (contextId.isPresent()) {
+                contextAccess.setRecordFields(contextId.get(), newEventContext);
+                contextAccess.update(transactionTime, true);
+            }
+        }
 
         return result;
     }
@@ -771,4 +793,5 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     public void setAuditDetailsId(UUID auditId) {
         compositionRecord.setHasAudit(auditId);
     }
+
 }
