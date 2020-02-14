@@ -126,9 +126,14 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
             throw new InvalidApiParameterException("Could not parse input template");
         }
 
+        if (template.getConcept() == null || template.getConcept().isEmpty())
+            throw new IllegalArgumentException("Supplied template has nil or empty concept");
 
-        if (template.getTemplateId() == null || template.getTemplateId().isNil() || template.getTemplateId().getValue() == null || template.getTemplateId().getValue().isEmpty())
-            throw new IllegalArgumentException("Supplied template has nil or empty template id value");
+        if (template.getDefinition() == null || template.getDefinition().isNil())
+            throw new IllegalArgumentException("Supplied template has nil or empty definition");
+
+        if (template.getDescription() == null || !template.getDescription().validate())
+            throw new IllegalArgumentException("Supplied template has nil or empty description");
 
         //get the filename from the template template Id
         Optional<TEMPLATEID> filenameOptional = Optional.ofNullable(template.getTemplateId());
