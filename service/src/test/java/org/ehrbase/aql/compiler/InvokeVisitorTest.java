@@ -30,9 +30,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class InvokeVisitorTest {
 
+	@Ignore("This test runs against ontoserver sample inteance. It is deactivated until we have a test FHIR terminology server.")
     @Test
     public void shouldVisitInvokeExpression() {
-
+ 
         {
             WhereVisitor cut = new WhereVisitor();
             String aql = "SELECT o/data[at0002]/events[at0003] AS systolic " +
