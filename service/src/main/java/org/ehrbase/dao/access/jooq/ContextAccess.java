@@ -401,6 +401,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                     if (getContext().fetchExists(PARTICIPATION, PARTICIPATION.ID.eq(participationRecord.getId()))) {
                         participationRecord.update();
                     } else {
+                        participationRecord.setId(UUID.randomUUID());
                         participationRecord.store();
                     }
                 } catch (DataAccessException e) {   // generalize DB exceptions
@@ -529,7 +530,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                 startTime = new DvInterval<>(decodeDvDateTime(record.getStartTime(), record.getStartTimeTzid()), null);
             }
 
-            DvCodedText mode = null;
+            DvCodedText mode;
             try {
                 mode = decodeDvCodedText(record.getMode());
             } catch (IllegalArgumentException e) {
