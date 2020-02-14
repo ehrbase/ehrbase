@@ -193,7 +193,10 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
                 compositionId = compositionAccess.commit(getUserUuid(), getSystemUuid(), DESCRIPTION);
             }
         } catch (Exception e) {
-            throw new InternalServerException(e);
+            if (e instanceof IllegalArgumentException)
+                throw new IllegalArgumentException(e);
+            else
+                throw new InternalServerException(e);
         }
         return compositionId;
     }
@@ -293,7 +296,7 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
      * @return Time of deletion, if successful
      */
     private LocalDateTime internalDelete(UUID compositionId, UUID contributionId) {
-        I_CompositionAccess compositionAccess = null;
+        I_CompositionAccess compositionAccess;
         try {
             compositionAccess = I_CompositionAccess.retrieveInstance(getDataAccess(), compositionId);
         } catch (Exception e) {
@@ -303,7 +306,7 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
             throw new ObjectNotFoundException(I_CompositionAccess.class.getName(), "Could not find composition:" + compositionId);
         }
 
-        Integer result = 0;
+        Integer result;
         if (contributionId != null) {   // if custom contribution should be set
             compositionAccess.setContributionId(contributionId);
             try {

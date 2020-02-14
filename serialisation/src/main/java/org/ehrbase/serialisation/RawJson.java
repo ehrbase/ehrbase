@@ -37,7 +37,7 @@ public class RawJson implements RMDataFormat {
             ltreeMap = compositionSerializer.getLtreeMap();
             return encode;
         } catch (Exception e) {
-            throw new MarshalException(e.getMessage(), e);
+            throw new IllegalArgumentException(e.getMessage(), e);
         }
     }
 
@@ -53,7 +53,7 @@ public class RawJson implements RMDataFormat {
         try {
             return JacksonUtil.getObjectMapper().readValue(converted, clazz);
         } catch (IOException e) {
-            throw new UnmarshalException(e.getMessage(), e);
+            throw new IllegalArgumentException(e.getMessage(), e);
         }
     }
 
