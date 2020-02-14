@@ -23,14 +23,12 @@ package org.ehrbase.ehr.encode.rawjson;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.internal.LinkedTreeMap;
 import org.ehrbase.ehr.encode.EncodeUtilArchie;
 import org.ehrbase.ehr.encode.wrappers.json.I_DvTypeAdapter;
 import org.ehrbase.ehr.encode.wrappers.json.writer.translator_db2raw.ArchieCompositionProlog;
 import org.ehrbase.ehr.encode.wrappers.json.writer.translator_db2raw.CompositionRoot;
 
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -39,7 +37,7 @@ import java.util.regex.Pattern;
  */
 public class LightRawJsonEncoder {
 
-    String jsonbOrigin;
+    private String jsonbOrigin;
 
     public LightRawJsonEncoder(String jsonbOrigin) {
         this.jsonbOrigin = jsonbOrigin;
@@ -79,6 +77,7 @@ public class LightRawJsonEncoder {
         return converted.replaceFirst(Pattern.quote("{"), new ArchieCompositionProlog(root).toString());
     }
 
+    @SuppressWarnings("unchecked")
     private Map<String, Object> db2map(boolean isValue){
         GsonBuilder gsondb = EncodeUtilArchie.getGsonBuilderInstance();
         if (jsonbOrigin.startsWith("[")) {
@@ -88,19 +87,23 @@ public class LightRawJsonEncoder {
                 jsonbOrigin = "{\"items\":"+jsonbOrigin+"}"; //joy of json... this deals with array with and name/value predicate
         }
 
-        Map<String, Object> fromDB = gsondb.create().fromJson(jsonbOrigin, Map.class);
+        Map<String, Object> fromDB = (Map<String, Object>)gsondb.create().fromJson(jsonbOrigin, Map.class);
 
         if (fromDB.containsKey("content")){
             //push contents upward
-            for (Object contentItem: ((LinkedTreeMap)fromDB.get("content")).entrySet()){
-                if (contentItem instanceof Map.Entry) {
-                    fromDB.put(((Map.Entry) contentItem).getKey().toString(), ((Map.Entry) contentItem).getValue());
-                }
-            }
+            Object contents = fromDB.get("content");
 
+            if (contents instanceof LinkedTreeMap){
+                for (Object contentItem: ((LinkedTreeMap)contents).entrySet()){
+                    if (contentItem instanceof Map.Entry) {
+                        fromDB.put(((Map.Entry) contentItem).getKey().toString(), ((Map.Entry) contentItem).getValue());
+                    }
+                }
+                fromDB.remove("content");
+            }
         }
 
-        fromDB.remove("content");
+
         return fromDB;
     }
 

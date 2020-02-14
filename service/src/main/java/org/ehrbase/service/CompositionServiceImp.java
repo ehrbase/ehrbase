@@ -193,7 +193,10 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
                 compositionId = compositionAccess.commit(getUserUuid(), getSystemUuid(), DESCRIPTION);
             }
         } catch (Exception e) {
-            throw new InternalServerException(e);
+            if (e instanceof IllegalArgumentException)
+                throw new IllegalArgumentException(e);
+            else
+                throw new InternalServerException(e);
         }
         return compositionId;
     }
@@ -378,6 +381,10 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
             return composition.getUid().toString();
         }
 
+    }
+
+    public boolean exists(UUID versionedObjectId) {
+        return I_CompositionAccess.exists(this.getDataAccess(), versionedObjectId);
     }
 }
 

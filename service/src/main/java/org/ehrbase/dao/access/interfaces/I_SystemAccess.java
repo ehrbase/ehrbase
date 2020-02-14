@@ -23,6 +23,7 @@ package org.ehrbase.dao.access.interfaces;
 
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.jooq.SystemAccess;
+import org.jooq.meta.derby.sys.Sys;
 
 import java.util.UUID;
 
@@ -32,7 +33,7 @@ import static org.ehrbase.jooq.pg.Tables.SYSTEM;
  * System access layer interface
  * Created by Christian Chevalley on 4/21/2015.
  */
-public interface I_SystemAccess extends I_SimpleCRUD<I_SystemAccess, UUID> {
+public interface I_SystemAccess extends I_SimpleCRUD {
 
     static I_SystemAccess getInstance(I_DomainAccess domainAccess, String description, String settings) {
         return new SystemAccess(domainAccess, description, settings);
@@ -72,6 +73,18 @@ public interface I_SystemAccess extends I_SimpleCRUD<I_SystemAccess, UUID> {
      */
     static UUID createOrRetrieveLocalSystem(I_DomainAccess domainAccess) {
         return SystemAccess.createOrRetrieveLocalSystem(domainAccess);
+    }
+
+    /**
+     * Try to retrieve system with given input. If not available create instance.
+     *
+     * @param domainAccess Data Access Object
+     * @param description Optional description, can be NULL to use default
+     * @param settings a string describing the system (arbitrary convention)
+     * @return UUID of system entry
+     */
+    static UUID createOrRetrieveInstanceId(I_DomainAccess domainAccess, String description, String settings) {
+        return SystemAccess.createOrRetrieveInstanceId(domainAccess, description, settings);
     }
 
     static Integer delete(I_DomainAccess domainAccess, UUID id) {
