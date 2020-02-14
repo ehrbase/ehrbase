@@ -44,28 +44,41 @@ import javax.xml.datatype.XMLGregorianCalendar;
 @XmlType(name = "instant")
 public class Instant extends Element {
 
+//	@XmlAttribute(name = "value")
+//	protected XMLGregorianCalendar value;
+	
 	@XmlAttribute(name = "value")
-	protected XMLGregorianCalendar value;
+	protected String value;
 
+//	/**
+//	 * Gets the value of the value property.
+//	 * 
+//	 * @return possible object is {@link XMLGregorianCalendar }
+//	 * 
+//	 */
+//	public XMLGregorianCalendar getValue() {
+//		return value;
+//	}
+	
 	/**
 	 * Gets the value of the value property.
 	 * 
 	 * @return possible object is {@link XMLGregorianCalendar }
 	 * 
 	 */
-	public XMLGregorianCalendar getValue() {
+	public String getValue() {
 		return value;
 	}
 
-	/**
-	 * Sets the value of the value property.
-	 * 
-	 * @param value allowed object is {@link XMLGregorianCalendar }
-	 * 
-	 */
-	public void setValue(XMLGregorianCalendar value) {
-		this.value = value;
-	}
+//	/**
+//	 * Sets the value of the value property.
+//	 * 
+//	 * @param value allowed object is {@link XMLGregorianCalendar }
+//	 * 
+//	 */
+//	public void setValue(XMLGregorianCalendar value) {
+//		this.value = value;
+//	}
 
 	/**
 	 * Gets the value of the value property.
@@ -76,6 +89,18 @@ public class Instant extends Element {
 		 * public String getValue() { return value.toString(); }
 		 */
 
+//	/**
+//	 * Sets the value of the value property.
+//	 * 
+//	 * @param value allowed object is {@link String }
+//	 * @throws DatatypeConfigurationException
+//	 * 
+//	 */
+//	public void setValue(String value) throws DatatypeConfigurationException {
+//		org.joda.time.DateTime dateTime = new org.joda.time.DateTime(value);
+//		this.value = DatatypeFactory.newInstance().newXMLGregorianCalendar(dateTime.toGregorianCalendar());
+//	}
+	
 	/**
 	 * Sets the value of the value property.
 	 * 
@@ -84,8 +109,8 @@ public class Instant extends Element {
 	 * 
 	 */
 	public void setValue(String value) throws DatatypeConfigurationException {
-		org.joda.time.DateTime dateTime = new org.joda.time.DateTime(value);
-		this.value = DatatypeFactory.newInstance().newXMLGregorianCalendar(dateTime.toGregorianCalendar());
+		
+		this.value = value;
 	}
 
 }

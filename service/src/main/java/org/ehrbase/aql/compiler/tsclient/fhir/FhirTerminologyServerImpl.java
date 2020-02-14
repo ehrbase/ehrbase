@@ -29,30 +29,57 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
 /***
  *@Created by Luis Marco-Ruiz on Feb 12, 2020
  */
 public class FhirTerminologyServerImpl  implements TerminologyServer<String, String>{
 
-	@Override
+	/*@Override
 	public List expand(String valueSetId) {
 		
 		RestTemplate rest = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
-		headers.set("accept","application/fhir+xml");
+		headers.set("accept","application/fhir+json");
 		HttpEntity<ValueSet> entity =  new HttpEntity<ValueSet>(headers);
-		ResponseEntity<ValueSet> responseEntity = rest.exchange("https://r4.ontoserver.csiro.au/fhir/ValueSet/131d2e3a-85ae-493c-b0b5-546895427853/$expand/",
+		ResponseEntity<String> responseEntity = rest.exchange("https://r4.ontoserver.csiro.au/fhir/ValueSet/942e1d78-d481-416f-bebd-5754ba4d0b69/$expand/",
 				HttpMethod.GET,
 				entity,
-				ValueSet.class);
-		ValueSet response = responseEntity.getBody();
-		//ValueSet response = rest.getForObject("https://r4.ontoserver.csiro.au/fhir/ValueSet/131d2e3a-85ae-493c-b0b5-546895427853/$expand/", ValueSet.class);
+				String.class);
+		String response = responseEntity.getBody();
+
 		System.out.println("THE RESPONSE FROM THE EXTERNAL FHIR SERVER IS: "+response);
 		List<String> result = new ArrayList();
 		result.add("48377-6");
 		result.add("27478-7");
 		result.add("52539-9");
+		
+		String jsonCodePath = "$[\"expansion\"][\"contains\"][*][\"code\"]";
+		DocumentContext jsonContext = JsonPath.parse(response);
+		List<String> jsonpathCreatorName = jsonContext.read(jsonCodePath);
+		System.out.println(jsonpathCreatorName);
+		
 		return result;
+	}*/
+	
+	@Override
+	public List expand(String valueSetId) {
+		
+		RestTemplate rest = new RestTemplate();
+		HttpHeaders headers = new HttpHeaders();
+		headers.set("accept","application/fhir+json");
+		HttpEntity<ValueSet> entity =  new HttpEntity<ValueSet>(headers);
+		ResponseEntity<String> responseEntity = rest.exchange(valueSetId,
+				HttpMethod.GET,
+				entity,
+				String.class);
+		String response = responseEntity.getBody();
+		String jsonCodePath = "$[\"expansion\"][\"contains\"][*][\"code\"]";
+		DocumentContext jsonContext = JsonPath.parse(response);
+		List<String> jsonpathCreatorName = jsonContext.read(jsonCodePath);
+		return jsonpathCreatorName;
 	}
 
 	@Override
