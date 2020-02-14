@@ -66,7 +66,7 @@ public class SelectBinderTest {
             when(pathResolver.classNameOf("d")).thenReturn("ACTION");
 
             //represents SELECT d/description[at0001]/items[at0002]/value
-            List<I_VariableDefinition> variableDefinitions = Arrays.asList(I_VariableDefinitionHelper.build("description[at0001]/items[at0002]/value", null, "d", false, false, false));
+            VariableDefinitions variableDefinitions = new VariableDefinitions(Collections.singletonList(I_VariableDefinitionHelper.build("description[at0001]/items[at0002]/value", null, "d", false, false, false)));
 
 
             SelectBinder cut = new SelectBinder(context, introspectCache, pathResolver, variableDefinitions, where, "local", entryRoot);
@@ -84,7 +84,9 @@ public class SelectBinderTest {
             when(pathResolver.classNameOf("e")).thenReturn("EHR");
 
             //represents SELECT e/ehr_id/value
-            List<I_VariableDefinition> variableDefinitions = Arrays.asList(I_VariableDefinitionHelper.build("ehr_id/value", null, "e", false, false, false));
+            VariableDefinitions variableDefinitions = new VariableDefinitions(
+                    Collections.singletonList(I_VariableDefinitionHelper.build("ehr_id/value", null, "e", false, false, false))
+            );
 
 
             SelectBinder cut = new SelectBinder(context, introspectCache, pathResolver, variableDefinitions, where, "local", entryRoot);
@@ -101,7 +103,9 @@ public class SelectBinderTest {
             when(pathResolver.classNameOf("a")).thenReturn("COMPOSITION");
 
             //represents SELECT a/composer/name, a/content[openEHR-EHR-ACTION.immunisation_procedure.v1]
-            List<I_VariableDefinition> variableDefinitions = Arrays.asList(I_VariableDefinitionHelper.build("composer/name", null, "a", false, false, false), I_VariableDefinitionHelper.build("content[openEHR-EHR-ACTION.immunisation_procedure.v1]", null, "a", false, false, false));
+            VariableDefinitions variableDefinitions = new VariableDefinitions(
+                    Arrays.asList(I_VariableDefinitionHelper.build("composer/name", null, "a", false, false, false), I_VariableDefinitionHelper.build("content[openEHR-EHR-ACTION.immunisation_procedure.v1]", null, "a", false, false, false))
+            );
 
 
             SelectBinder cut = new SelectBinder(context, introspectCache, pathResolver, variableDefinitions, where, "local", entryRoot);

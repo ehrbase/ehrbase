@@ -233,6 +233,12 @@ public interface I_ContributionAccess extends I_SimpleCRUD<I_ContributionAccess,
 
     void setAuditDetailsChangeType(UUID changeType);
 
+    UUID getAuditsCommitter();
+
+    UUID getAuditsSystemId();
+
+    String getAuditsDescription();
+
     void setHasAuditDetails(UUID auditId);
 
     UUID getHasAuditDetails();

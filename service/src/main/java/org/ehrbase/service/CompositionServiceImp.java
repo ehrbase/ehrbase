@@ -31,6 +31,7 @@ import org.ehrbase.api.dto.CompositionDto;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
+import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.ValidationService;
@@ -168,6 +169,9 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
         try {
             validationService.check(composition.getArchetypeDetails().getTemplateId().getValue(), composition);
         } catch (Exception e) {
+            // rethrow if this class, but wrap all others in InternalServerException
+            if (e.getClass().equals(UnprocessableEntityException.class))
+                throw (UnprocessableEntityException) e;
             throw new InternalServerException(e);
         }
 

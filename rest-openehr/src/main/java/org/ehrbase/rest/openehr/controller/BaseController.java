@@ -169,6 +169,22 @@ public abstract class BaseController {
         return compositionFormat;
     }
 
+
+    protected MediaType extractMediaType(String accept) {
+        final MediaType mediaType;
+
+        if (StringUtils.isBlank(accept) || "*/*".equals(accept)) {
+            return MediaType.APPLICATION_XML;
+        } else if (MediaType.parseMediaType(accept).isCompatibleWith(MediaType.APPLICATION_XML)) {
+            mediaType = MediaType.APPLICATION_XML;
+        } else if (MediaType.parseMediaType(accept).isCompatibleWith(MediaType.APPLICATION_JSON)) {
+            mediaType = MediaType.APPLICATION_JSON;
+        } else {
+            throw new NotAcceptableException("Only  XML or JSON are supported at the moment");
+        }
+        return mediaType;
+    }
+
     /**
      * Convenience helper to encode path strings to URI-safe strings
      *
@@ -334,6 +350,16 @@ public abstract class BaseController {
     @ExceptionHandler(UnsupportedMediaTypeException.class)
     public ResponseEntity<Map<String, String>> restErrorHandler(UnsupportedMediaTypeException e) {
         return createErrorResponse(e.getMessage(), HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+    }
+
+    /**
+     * Handler for project-custom exception.
+     *
+     * @return ResponseEntity<Map < String, String>> as UNPROCESSABLE ENTITY Type - 422
+     */
+    @ExceptionHandler(UnprocessableEntityException.class)
+    public ResponseEntity<Map<String, String>> restErrorHandler(UnprocessableEntityException e) {
+        return createErrorResponse(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     // TODO: Maybe remove this redundant handler since fallback will cover the same functionality

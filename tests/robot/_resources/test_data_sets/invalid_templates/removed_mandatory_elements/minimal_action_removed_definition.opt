@@ -33,10 +33,10 @@
     </details>
   </description>
   <uid>
-    <value>5c726a1c-dce0-401b-9638-4abd1101e320</value>
+    <value>5c726a1c-dce0-401b-9638-4abd1101e322</value>
   </uid>
   <template_id>
-    <value>minimal_action.en.v1</value>
+    <value>minimal_action_rm_definition.en.v1</value>
   </template_id>
   <concept>Minimal action</concept>
 </template>

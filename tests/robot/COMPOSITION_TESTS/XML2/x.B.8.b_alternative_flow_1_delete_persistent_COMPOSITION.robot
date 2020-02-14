@@ -43,11 +43,6 @@ Alternative flow 1 delete persistent COMPOSITION
 
     delete composition    ${preceding_version_uid}
 
-        ####### TODO: @WLAD/PABLO - remove when fixed!!!!! #####################
-        TRACE JIRA BUG  EHR-517    not-ready
-        # NOTE: relates to persistent compos
-        ########################################################################
-
     get deleted composition
 
     # [Teardown]    restart SUT

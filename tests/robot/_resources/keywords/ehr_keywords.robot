@@ -68,12 +68,10 @@ update EHR: set ehr-status modifiable
 
 
 check response of 'update EHR' (JSON)
-                        Integer     response status         200
-
-                        String    response body ehr_id value                    ${ehr_id}
-                        String    response body system_id value                 ${system_id}
-                        String    response body ehr_status subject external_ref id value    ${subject_Id}
-                        Object    response body ehr_status                      ${ehr_status}
+                        Integer     response status    200
+                        String    response body uid value    ${ehrstatus_uid[0:-1]}2
+                        String    response body subject external_ref id value    ${subject_Id}
+                        String    response body _type    EHR_STATUS
 
 
 # 2) HTTP Methods
@@ -365,17 +363,15 @@ set ehr_status of EHR
     # ${ehrstatus}=       Load JSON From File   ehr_status.json
                         # Log To Console    ${ehr_status}
                         # Log To Console    ${ehr_status}[0]
-
-
-        TRACE JIRA BUG    EHR-437    not-ready
-
+        
+        TRACE GITHUB ISSUE  147  not-ready
 
     &{resp}=            REST.PUT    ${baseurl}/ehr/${ehr_id}/ehr_status    ${ehr_status}
                         ...         headers={"Content-Type": "application/json"}
                         ...         headers={"Prefer": "return=representation"}
                         ...         headers={"If-Match": "${ehrstatus_uid}"}
 
-                                    # NOTE: spec says "If-Match: {preceding_version_uid}"
+                                    # TODO: spec says "If-Match: {preceding_version_uid}"
                                     #       but we don't have this !!!
                                     # So what should be used as {preceding_version_uid} ???
 
@@ -390,8 +386,8 @@ update ehr_status of fake EHR (w/o body)
     &{resp}=            REST.PUT    ${baseurl}/ehr/${ehr_id}/ehr_status
                     ...         headers={"Content-Type": "application/json"}
                     ...         headers={"Prefer": "return=representation"}
-                    ...         headers={"If-Match": "${ehr_id}"}               # NOTE: spec --> "If-Match: {preceding_version_uid}"
-                    Set Test Variable    ${response}    ${resp}
+                    ...         headers={"If-Match": "${ehr_id}"}               # TODO: spec --> "If-Match: {preceding_version_uid}"
+                    Set Test Variable    ${response}    ${resp}                 #       update If-Match value asap
 
                     Output Debug Info To Console
                     Integer    response status    404
@@ -406,7 +402,7 @@ update ehr_status of fake EHR (with body)
                         ...         headers={"Content-Type": "application/json"}
                         ...         headers={"Prefer": "return=representation"}
                         ...         headers={"If-Match": "${ehr_id}"}           # NOTE: spec --> "If-Match: {preceding_version_uid}"
-                        Set Test Variable    ${response}    ${resp}
+                        Set Test Variable    ${response}    ${resp}             #       update If-Match value asap
 
                         Output Debug Info To Console
                         Integer    response status    404
@@ -465,7 +461,10 @@ extract ehrstatus_uid (JSON)
     ${ehrstatus_uid}=   String       response body ehr_status uid value
 
                         Log To Console    \n\tDEBUG OUTPUT - EHR_STATUS UUID: \n\t${ehrstatus_uid}[0]
-
+                        # Set Test Variable    ${ehrstatus_uid}   ${ehrstatus_uid}[0]::local.ehrbase.org::1
+                        #                                         # NOTE: ::local.ehrbase.org::1 has to be provided
+                        #                                         # as part of ehr_status.uid.value by the repsonse
+                        #                                         # and must not be hard coded here
                         Set Test Variable    ${ehrstatus_uid}   ${ehrstatus_uid}[0]
 
 
@@ -484,8 +483,9 @@ extract ehrstatus_uid (XML)
 
     ${xml}=             Parse Xml    ${response.body}
     ${ehrstatus_uid}=   Get Element Text    ${xml}    xpath=ehr_status/uid/value
+                        # Set Test Variable   ${ehrstatus_uid}    ${ehrstatus_uid}::local.ehrbase.org::1
+                        #                                         # TODO this should probaply not be hard coded!!!
                         Set Test Variable   ${ehrstatus_uid}    ${ehrstatus_uid}
-
 
 extract system_id from response (XML)
     [Documentation]     Extracts `system_id` from response of preceding request with content-type=xml
@@ -573,11 +573,6 @@ set ehr_status of EHR (from fixture)
                         Set Headers    {"Prefer": "return=representation"}
                         Set Headers    {"Content-Type": "application/json"}
                         Set Headers    {"If-Match": "abc1234-none-exis-ting-fa8308e1242f::1"}
-
-
-        TRACE JIRA BUG    EHR-437    not-ready
-        Set Tags    not-implemented
-
 
     &{resp}=            REST.PUT    ${baseurl}/ehr/${ehr_id}/ehr_status
     ...                             ${FIXTURES}/ehr/${fixture}

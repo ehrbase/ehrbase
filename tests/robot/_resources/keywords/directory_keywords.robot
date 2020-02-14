@@ -51,12 +51,8 @@ create DIRECTORY (JSON)
 
                         POST /ehr/ehr_id/directory    JSON
 
-                        Log  TO CLARIFY: @AXEL - version_uid format???  level=WARN
-                            # API spec: 8849182c-82ad-4088-a07f-48ead4180515::openEHRSys.example.com::1
-                            # version_uid has also to be part of `Location` and `ETag` in response headers
-
                         Set Test Variable  ${folder_uid}  ${response.json()['uid']['value']}
-                        Set Test Variable  ${version_uid}  ${response.json()['uid']['value']}  #TODO: + ::openEHRSys.example.com::1
+                        Set Test Variable  ${version_uid}  ${response.json()['uid']['value']}
                         Set Test Variable  ${preceding_version_uid}  ${version_uid}
 
                         capture point in time    of_first_version
@@ -278,6 +274,8 @@ get DIRECTORY at version (JSON)
 
                         Set Test Variable  ${KEYWORD NAME}  GET DIRECTORY AT VERSION (JSON)
 
+        TRACE GITHUB ISSUE  148  not-ready
+
                         GET /ehr/ehr_id/directory/version_uid    JSON
 
 
@@ -286,6 +284,8 @@ get FOLDER in DIRECTORY at version (JSON)
                         Set Test Variable  ${KEYWORD NAME}  GET FOLDER AT VERSION (JSON)
 
                         Set Test Variable    ${path}    ${path}
+
+        TRACE GITHUB ISSUE  148  not-ready
 
                         GET /ehr/ehr_id/directory/version_uid?path    JSON
 
@@ -460,7 +460,7 @@ PUT /ehr/ehr_id/directory
                         ...                 Prefer=return=representation
                         ...                 If-Match=${preceding_version_uid}
 
-        TRACE GITHUB ISSUE  NO-ISSUE-ID  not-ready  message=endpoint not implemented  loglevel=WARN
+        TRACE GITHUB ISSUE  148  not-ready
 
     ${resp}=            Put Request        ${SUT}   /ehr/${ehr_id}/directory
                         ...                 data=${test_data}
@@ -481,7 +481,7 @@ PUT /ehr/ehr_id/directory (w/o prefer)
                         prepare new request session    ${format}
                         ...                 If-Match=${preceding_version_uid}
 
-        TRACE GITHUB ISSUE  NO-ISSUE-ID  not-ready  message=endpoint not implemented  loglevel=WARN
+        TRACE GITHUB ISSUE  148  not-ready
 
     ${resp}=            Put Request        ${SUT}   /ehr/${ehr_id}/directory
                         ...                 data=${test_data}
@@ -515,8 +515,6 @@ DELETE /ehr/ehr_id/directory
 
                         prepare new request session    ${format}
                         ...             If-Match=${preceding_version_uid}
-
-        TRACE GITHUB ISSUE  NO-ISSUE-ID  not-ready  message=endpoint not implemented  loglevel=WARN
 
     ${resp}=            Delete Request      ${SUT}   /ehr/${ehr_id}/directory
                         ...                 headers=${headers}
@@ -684,9 +682,9 @@ validate POST response - 201 created
                         #      version_uid format: 8849182c-82ad-4088-a07f-48ead4180515::openEHRSys.example.com::1
                         Dictionary Should Contain Key    ${response.headers}    ETag
 
-        TRACE GITHUB ISSUE  37  not-ready  message=Response header ETag does not match expected value
+        TRACE GITHUB ISSUE  148  not-ready
 
-                        Dictionary Should Contain Item    ${response.headers}    ETag  ${version_uid}
+                        Dictionary Should Contain Item    ${response.headers}    ETag  "${version_uid}"
 
 
 validate POST response (w/o) - 201 created
@@ -903,8 +901,9 @@ validate GET-@version response - 404 unknown version_uid
                         Should Be Equal As Strings    ${response.status_code}    404
 
                         Should Be Equal    ${response.json()['status']}    Not Found
-                        Should Be Equal    ${response.json()['error']}    Folder with id ${folder_uid} could not be found
-
+                        # Should Be Equal    ${response.json()['error']}    Folder with id ${folder_uid} could not be found
+                        Should Contain    Folder with id ${folder_uid} could not be found     ${response.json()['error']}
+      
 
 validate GET-@version response - 404 unknown path
     [Documentation]     CASE: `path` does not exist within the directory.
@@ -1041,7 +1040,7 @@ generate fake version_uid
 
     ${uid}=             Evaluate    str(uuid.uuid4())    uuid
                         Set Test Variable    ${folder_uid}    ${uid}
-                        Set Test Variable    ${version_uid}    ${uid}
+                        Set Test Variable    ${version_uid}    ${uid}::local.ehrbase.org::1
                         Set Test Variable    ${preceding_version_uid}    ${version_uid}
 
 

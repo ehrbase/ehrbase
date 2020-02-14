@@ -41,8 +41,9 @@ Alternative flow 1 get existing COMPOSITION at time, without given time
     update composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.v2.xml
     check composition update succeeded
 
-    # Check COPMOSITION exists and has correct content / Get version at time 1, should exist and be COMPO 1
-    get composition - latest version    # NOTE: this keyword equals to `get composition - verstion at time`  without time parameter
+    # comment: Check COPMOSITION exists and has correct content / Get version at time 1, should exist and be COMPO 1
+    # NOTE: below keyword equals to `get composition - verstion at time`  without time parameter
+    get composition - latest version    JSON
     check content of compositions latest version (JSON)
 
     [Teardown]    restart SUT

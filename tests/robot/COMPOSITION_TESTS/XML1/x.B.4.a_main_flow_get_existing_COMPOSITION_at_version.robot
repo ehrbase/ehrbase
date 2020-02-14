@@ -44,7 +44,7 @@ Main flow get existing COMPOSITION at version
     update composition (XML)    minimal/minimal_observation.composition.participations.extdatetimes.v2.xml
     check composition update succeeded
 
-    get composition - latest version (XML)
+    get composition - latest version    XML
     check content of compositions latest version (XML)
 
     [Teardown]    restart SUT

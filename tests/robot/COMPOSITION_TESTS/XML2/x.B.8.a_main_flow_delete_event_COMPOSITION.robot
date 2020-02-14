@@ -44,11 +44,6 @@ Main flow delete event COMPOSITION
 
     delete composition    ${preceding_version_uid}
 
-
-
-        TRACE JIRA BUG    EHR-435    not-ready
-
-
     get deleted composition
 
     [Teardown]    restart SUT

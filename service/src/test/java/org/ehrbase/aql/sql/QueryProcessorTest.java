@@ -140,11 +140,18 @@ public class QueryProcessorTest {
                 "select c/composer/name from EHR e " +
                         "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1] " +
                         "order by c/context/start_time/value DESC",
-                "select \"composer_ref\".\"name\" as \"/composer/name\" " +
-                        "from \"ehr\".\"entry\" " +
-                        "right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" " +
-                        "join \"ehr\".\"party_identified\" as \"composer_ref\" on \"composition_join\".\"composer\" = \"composer_ref\".\"id\" " +
-                        "where \"ehr\".\"entry\".\"template_id\" = ? order by c desc",
+                "select \"\".\"/composer/name\", \"\".\"/context/start_time/value\" from (select \"composer_ref\".\"name\" as \"/composer/name\", to_char((\"ehr\".\"event_context\".\"start_time\"::timestamptz AT TIME ZONE 'UTC' + (case when left(event_context.START_TIME_TZID,1)='+' then \"interval\"(event_context.START_TIME_TZID) else \"interval\"('+00:00') end)),'YYYY-MM-DD\"T\"HH24:MI:SS')||case\n" +
+                        "  when event_context.START_TIME_TZID = 'UTC' then 'Z'\n" +
+                        "  else event_context.START_TIME_TZID\n" +
+                        "end as \"/context/start_time/value\" " +
+                        "from \"ehr\".\"entry\" join \"ehr\".\"event_context\" " +
+                        "on \"ehr\".\"event_context\".\"composition_id\" = \"ehr\".\"entry\".\"composition_id\" " +
+                        "right outer join \"ehr\".\"composition\" as \"composition_join\" " +
+                        "on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" " +
+                        "join \"ehr\".\"party_identified\" as \"composer_ref\" " +
+                        "on \"composition_join\".\"composer\" = \"composer_ref\".\"id\" " +
+                        "where \"ehr\".\"entry\".\"template_id\" = ?) as \"\" " +
+                        "order by \"/context/start_time/value\" desc",
                 false));
 
 
@@ -163,10 +170,11 @@ public class QueryProcessorTest {
                         "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  " +
                         "contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]" +
                         "order by description ASC",
-                "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') as \"description\" " +
-                        "from \"ehr\".\"entry\" " +
-                        "where \"ehr\".\"entry\".\"template_id\" = ? " +
-                        "order by description asc",
+                "select \"\".\"description\" " +
+                        "from (" +
+                        "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') " +
+                        "as \"description\" from \"ehr\".\"entry\" where \"ehr\".\"entry\".\"template_id\" = ?" +
+                        ") as \"\" order by description asc",
                 true));
 
         // where  clause json column  from entry
@@ -205,8 +213,8 @@ public class QueryProcessorTest {
                         "select \"ehr_join\".\"id\" as \"/ehr_id/value\" " +
                         "from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" " +
                         "right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\" " +
-                        "limit ? offset ?" +
-                        ") as \"\"",
+                        ") as \"\"" +
+                        "limit ? offset ?",
                 false));
 
         // select TOP
@@ -216,8 +224,8 @@ public class QueryProcessorTest {
                         "select \"ehr_join\".\"id\" as \"/ehr_id/value\" " +
                         "from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" " +
                         "right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\" " +
-                        "limit ?" +
-                        ") as \"\"",
+                        ") as \"\"" +
+                        " limit ?",
                 false));
 
         // where clausal json column from entry  with matches
@@ -272,6 +280,7 @@ public class QueryProcessorTest {
      *   ?          | openEHR_EHR_COMPOSITION_health_summary_v1.openEHR_EHR_ACTION_immunisation_procedure_v1| /content[openEHR-EHR-ACTION.immunisation_procedure.v1 and name/value='Immunisation procedure']
      */
     @Test
+    @SuppressWarnings("deprecation")
     public void testBuildAqlSelectQuery() throws Exception {
         IntrospectService introspectCache = KnowledgeCacheHelper.buildKnowledgeCache(testFolder, cacheRule);
 

@@ -46,7 +46,7 @@ import java.util.*;
  */
 public class QueryCompilerPass2 extends AqlBaseListener {
 
-    Logger logger = LogManager.getLogger(QueryCompilerPass2.class);
+    private Logger logger = LogManager.getLogger(QueryCompilerPass2.class);
 
     private Deque<I_VariableDefinition> variableStack = new ArrayDeque<>();
     private Deque<OrderAttribute> orderAttributes = null;
@@ -193,9 +193,16 @@ public class QueryCompilerPass2 extends AqlBaseListener {
                 if (identifiedPathContext.objectPath() != null)
                     path = identifiedPathContext.objectPath().getText();
                 else
-                    path = "$ALIAS$";
-                String identifier = identifiedPathContext.IDENTIFIER().getText();
-                OrderAttribute orderAttribute = new OrderAttribute(new VariableDefinition(path, null, identifier, false));
+                    path = null;
+
+                String identifier = identifiedPathContext.IDENTIFIER().getText();  //f.e. 'e' in 'e/time_created/value
+
+                OrderAttribute orderAttribute;
+                if (path == null)
+                    orderAttribute = new OrderAttribute(new VariableDefinition(path, identifier, null, false));
+                else
+                    orderAttribute = new OrderAttribute(new VariableDefinition(path, null, identifier, false));
+
                 if (context1.ASC() != null || context1.ASCENDING() != null)
                     orderAttribute.setDirection(OrderAttribute.OrderDirection.ASC);
                 else if (context1.DESC() != null || context1.DESCENDING() != null)
@@ -225,22 +232,22 @@ public class QueryCompilerPass2 extends AqlBaseListener {
         return new ArrayList<>(variableStack);
     }
 
-    public TopAttributes getTopAttributes() {
+    TopAttributes getTopAttributes() {
         return topAttributes;
     }
 
-    public List<OrderAttribute> getOrderAttributes() {
+    List<OrderAttribute> getOrderAttributes() {
         if (orderAttributes == null)
             return null;
         return new ArrayList<>(orderAttributes);
     }
 
 
-    public Integer getLimitAttribute() {
+    Integer getLimitAttribute() {
         return limitAttribute;
     }
 
-    public Integer getOffsetAttribute() {
+    Integer getOffsetAttribute() {
         return offsetAttribute;
     }
 }
