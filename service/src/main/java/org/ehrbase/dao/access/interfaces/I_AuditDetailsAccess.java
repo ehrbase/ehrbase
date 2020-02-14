@@ -25,10 +25,9 @@ import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.tables.records.AuditDetailsRecord;
 
 import java.sql.Timestamp;
-import java.util.List;
 import java.util.UUID;
 
-public interface I_AuditDetailsAccess extends I_SimpleCRUD<I_AuditDetailsAccess, UUID> {
+public interface I_AuditDetailsAccess extends I_SimpleCRUD {
 
     /**
      * get a new minimal AuditDetails access layer instance
@@ -51,7 +50,7 @@ public interface I_AuditDetailsAccess extends I_SimpleCRUD<I_AuditDetailsAccess,
      * @return new access instance
      * @throws InternalServerException if creating or retrieving system failed
      */
-    static I_AuditDetailsAccess getInstance(I_DomainAccess dataAccess, UUID systemId, UUID committer, ContributionChangeType changeType, String description) {
+    static I_AuditDetailsAccess getInstance(I_DomainAccess dataAccess, UUID systemId, UUID committer, I_ConceptAccess.ContributionChangeType changeType, String description) {
         return new AuditDetailsAccess(dataAccess, systemId, committer, changeType, description);
     }
 

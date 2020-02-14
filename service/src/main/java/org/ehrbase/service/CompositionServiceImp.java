@@ -381,5 +381,9 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
         }
 
     }
+
+    public boolean exists(UUID versionedObjectId) {
+        return I_CompositionAccess.exists(this.getDataAccess(), versionedObjectId);
+    }
 }
 

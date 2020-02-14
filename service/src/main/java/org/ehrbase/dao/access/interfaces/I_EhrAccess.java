@@ -41,7 +41,7 @@ import static org.ehrbase.jooq.pg.Tables.STATUS;
  * related to the actual Ehr owner (eg. patient or Named Subject generally).
  * Created by Christian Chevalley on 4/21/2015.
  */
-public interface I_EhrAccess extends I_SimpleCRUD<I_EhrAccess, UUID> {
+public interface I_EhrAccess extends I_SimpleCRUD {
 
     String TAG_TEMPLATE_ID = "$TEMPLATE_ID$"; //used to serialize template id in json structure
 
