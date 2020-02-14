@@ -88,6 +88,9 @@ public interface I_ContextAccess extends I_SimpleCRUD {
         return ContextAccess.retrieveHistoricalEventContext(domainAccess, id, transactionTime);
     }
 
+    // TODO: doc!
+    void setRecordFields(UUID id, EventContext eventContext);
+
     /**
      * Creates an EventContext object from already set record data of an already existing ContextAccess instance.
      * @return {@link EventContext} object representing this instance's data

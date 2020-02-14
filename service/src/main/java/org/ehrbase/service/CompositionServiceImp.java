@@ -259,6 +259,7 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
             List<I_EntryAccess> contentList = compositionAccess.getContent();
             contentList.get(0).setCompositionData(composition);
             compositionAccess.setContent(contentList);
+            compositionAccess.setComposition(composition);
             if (contributionId != null) {   // if custom contribution should be set
                 compositionAccess.setContributionId(contributionId);
                 result = compositionAccess.updateWithCustomContribution(getUserUuid(), getSystemUuid(), I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
