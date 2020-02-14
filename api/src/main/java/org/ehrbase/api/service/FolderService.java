@@ -51,11 +51,12 @@ public interface FolderService extends BaseService {
      *
      * @param folderId - UUID of the folder to fetch
      * @param version - Target version to fetch
+     * @param path - Path of sub folder to get
      * @return Data transfer object to return to client
      */
-    Optional<FolderDto> retrieve(UUID folderId, Integer version);
+    Optional<FolderDto> retrieve(UUID folderId, Integer version, String path);
 
-    Optional<FolderDto> retrieveLatest(UUID ehrId);
+    Optional<FolderDto> retrieveLatest(UUID ehrId, String path);
 
     /**
      * Returns a versioned folder object which has been or is current at the
@@ -70,7 +71,8 @@ public interface FolderService extends BaseService {
      */
     Optional<FolderDto> retrieveByTimestamp(
             UUID folderId,
-            Timestamp timestamp
+            Timestamp timestamp,
+            String path
     );
 
     /**

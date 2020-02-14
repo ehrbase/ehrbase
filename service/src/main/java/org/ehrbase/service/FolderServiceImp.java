@@ -33,6 +33,7 @@ import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
 import org.ehrbase.dao.access.interfaces.I_EhrAccess;
 import org.ehrbase.dao.access.interfaces.I_FolderAccess;
 import org.ehrbase.dao.access.jooq.FolderAccess;
+import org.ehrbase.dao.access.jooq.FolderHistoryAccess;
 import org.ehrbase.dao.access.util.FolderUtils;
 import org.ehrbase.serialisation.CanonicalJson;
 import org.ehrbase.serialisation.CanonicalXML;
@@ -103,24 +104,32 @@ public class FolderServiceImp extends BaseService implements FolderService {
 
 
     @Override
-    public Optional<FolderDto> retrieveLatest(UUID ehrId) {
+    public Optional<FolderDto> retrieveLatest(UUID ehrId, String path) {
         I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
         if (ehrAccess == null) {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
         }
 
-        return retrieve(ehrAccess.getDirectoryId(), null);
+        return retrieve(ehrAccess.getDirectoryId(), null, path);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Optional<FolderDto> retrieve(UUID folderId, Integer version) {
+    public Optional<FolderDto> retrieve(UUID folderId, Integer version, String path) {
 
         I_FolderAccess folderAccess;
 
         folderAccess = I_FolderAccess.retrieveInstanceForExistingFolder(getDataAccess(), folderId);
+
+        if (path != null && !"/".equals(path)) {
+            // Trim starting forward slash
+            if (path.startsWith("/")) {
+                path = path.substring(1);
+            }
+            folderAccess = FolderUtils.getPath(folderAccess, 0, path.split("/"));
+        }
 
         return createDto(folderAccess);
     }
@@ -131,16 +140,22 @@ public class FolderServiceImp extends BaseService implements FolderService {
     @Override
     public Optional<FolderDto> retrieveByTimestamp(
             UUID folderId,
-            Timestamp timestamp
+            Timestamp timestamp,
+            String path
     ) {
 
         try {
 
-            I_FolderAccess folderAccess = I_FolderAccess.retrieveInstanceForExistingFolder(
-                    getDataAccess(),
+            FolderHistoryAccess folderHistoryAccess = new FolderHistoryAccess(getDataAccess());
+            I_FolderAccess folderAccess = folderHistoryAccess.retrieveInstanceForExistingFolder(
+                    folderHistoryAccess,
                     folderId,
                     timestamp
             );
+
+            if (path != null && !"/".equals(path)) {
+                folderAccess = FolderUtils.getPath(folderAccess, 0, path.split("/"));
+            }
 
             return createDto(folderAccess);
         } catch (ObjectNotFoundException e) {

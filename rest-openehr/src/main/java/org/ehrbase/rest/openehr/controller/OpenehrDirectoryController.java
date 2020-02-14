@@ -121,7 +121,7 @@ public class OpenehrDirectoryController extends BaseController {
         );
 
         // Fetch inserted folder for response data
-        Optional<FolderDto> newFolder = this.folderService.retrieve(folderId, 1);
+        Optional<FolderDto> newFolder = this.folderService.retrieve(folderId, 1, null);
 
         if (newFolder.isEmpty()) {
             throw new InternalServerException(
@@ -179,7 +179,7 @@ public class OpenehrDirectoryController extends BaseController {
         }
 
         // Get the folder entry from database
-        Optional<FolderDto> foundFolder = folderService.retrieve(versionUUID, 1);
+        Optional<FolderDto> foundFolder = folderService.retrieve(versionUUID, 1, path);
         if (foundFolder.isEmpty()) {
             throw new ObjectNotFoundException("folder",
                     "The FOLDER with id " +
@@ -228,7 +228,7 @@ public class OpenehrDirectoryController extends BaseController {
         UUID rootDirectoryId = ehrService.getDirectoryId(ehrId);
 
         // Get the folder entry from database
-        Optional<FolderDto> foundFolder = folderService.retrieveByTimestamp(rootDirectoryId, Timestamp.from(versionAtTime.toInstant()));
+        Optional<FolderDto> foundFolder = folderService.retrieveByTimestamp(rootDirectoryId, Timestamp.from(versionAtTime.toInstant()), path);
         if (foundFolder.isEmpty()) {
             throw new ObjectNotFoundException("folder",
                     "The FOLDER for ehrId " +
@@ -441,7 +441,7 @@ public class OpenehrDirectoryController extends BaseController {
      * @return String is a valid path value or not
      */
     private boolean isValidPath(String path) {
-        Pattern pathPattern = Pattern.compile("^(?:(?:/\\w+)+/?|/)$");
+        Pattern pathPattern = Pattern.compile("^(?:/?(?:\\w+|\\s)*/?)+$");
         return pathPattern.matcher(path).matches();
     }
 }
