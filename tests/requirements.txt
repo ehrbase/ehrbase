@@ -1,4 +1,3 @@
-# robotframework == 3.1.2
 robotframework == 3.2
 
 robotframework-jsonlibrary == 0.3.1
