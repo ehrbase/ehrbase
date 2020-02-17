@@ -67,9 +67,9 @@ import static org.ehrbase.jooq.pg.Tables.*;
  */
 public class ContextAccess extends DataAccess implements I_ContextAccess {
 
-    public static final TerminologyId OPENEHR_TERMINOLOGY_ID = new TerminologyId("openehr");
-    final static String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZZ";
-    public static final String DB_INCONSISTENCY = "DB inconsistency";
+    private static final TerminologyId OPENEHR_TERMINOLOGY_ID = new TerminologyId("openehr");
+    private final static String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZZ";
+    private static final String DB_INCONSISTENCY = "DB inconsistency";
     private static Logger log = LogManager.getLogger(ContextAccess.class);
     private EventContextRecord eventContextRecord;
     private PreparedStatement updateStatement;
@@ -81,7 +81,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         setRecordFields(UUID.randomUUID(), eventContext);
     }
 
-    public ContextAccess(I_DomainAccess domainAccess) {
+    private ContextAccess(I_DomainAccess domainAccess) {
         super(domainAccess);
     }
 
@@ -145,7 +145,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
             codedLocalDateTime = Optional.of(timestamp.toLocalDateTime());
 
         Optional<String> convertedDateTime = codedLocalDateTime.map(i -> i.format(java.time.format.DateTimeFormatter.ofPattern(DATE_FORMAT)));
-        if (!convertedDateTime.isPresent())
+        if (convertedDateTime.isEmpty())
             convertedDateTime = zonedDateTime.map(i -> i.format(java.time.format.DateTimeFormatter.ofPattern(DATE_FORMAT)));
 
         return new DvDateTime(convertedDateTime.orElseThrow(() -> new InternalServerException("Decoding DvDateTime failed")));
@@ -199,7 +199,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
 
 
                     DvInterval<DvDateTime> startTime = new DvInterval<>(decodeDvDateTime(record.getStartTime(), record.getStartTimeTzid()), null);
-                    DvCodedText mode = null;
+                    DvCodedText mode;
                     try {
                         mode = decodeDvCodedText(record.getMode());
                     } catch (IllegalArgumentException e) {
@@ -251,7 +251,8 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
     }
 
     // TODO: doc!
-    private void setRecordFields(UUID id, EventContext eventContext) {
+    @Override
+    public void setRecordFields(UUID id, EventContext eventContext) {
         //@TODO get from eventContext
         eventContextRecord.setStartTimeTzid(ZoneId.systemDefault().getId());
         eventContextRecord.setStartTime(toTimestamp(eventContext.getStartTime()));
@@ -288,7 +289,8 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                 ParticipationRecord participationRecord = getContext().newRecord(PARTICIPATION);
                 participationRecord.setEventContext(eventContextRecord.getId());
                 participationRecord.setFunction(participation.getFunction().getValue());
-                participationRecord.setMode(participation.getMode().toString());
+                if (participation.getMode() != null)
+                    participationRecord.setMode(participation.getMode().toString());
                 if (participation.getTime() != null) {
                     DvDateTime lower = (DvDateTime) participation.getTime().getLower();
                     if (lower != null) {
@@ -399,6 +401,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                     if (getContext().fetchExists(PARTICIPATION, PARTICIPATION.ID.eq(participationRecord.getId()))) {
                         participationRecord.update();
                     } else {
+                        participationRecord.setId(UUID.randomUUID());
                         participationRecord.store();
                     }
                 } catch (DataAccessException e) {   // generalize DB exceptions
@@ -527,7 +530,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                 startTime = new DvInterval<>(decodeDvDateTime(record.getStartTime(), record.getStartTimeTzid()), null);
             }
 
-            DvCodedText mode = null;
+            DvCodedText mode;
             try {
                 mode = decodeDvCodedText(record.getMode());
             } catch (IllegalArgumentException e) {

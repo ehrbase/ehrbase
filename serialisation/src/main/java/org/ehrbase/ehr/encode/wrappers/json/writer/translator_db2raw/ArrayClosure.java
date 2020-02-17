@@ -26,10 +26,10 @@ import java.io.IOException;
 public class ArrayClosure {
 
     JsonWriter writer;
-    String parentItemsArchetypeNodeId = null;
-    String parentItemsType = null;
+    private String parentItemsArchetypeNodeId;
+    private String parentItemsType;
 
-    public ArrayClosure(JsonWriter writer, String parentItemsArchetypeNodeId, String parentItemsType) {
+    ArrayClosure(JsonWriter writer, String parentItemsArchetypeNodeId, String parentItemsType) {
         this.writer = writer;
         this.parentItemsArchetypeNodeId = parentItemsArchetypeNodeId;
         this.parentItemsType = parentItemsType;
@@ -38,7 +38,7 @@ public class ArrayClosure {
     /**
      * close an item array
      */
-    public void close() throws IOException {
+    private void close() throws IOException {
         if (parentItemsArchetypeNodeId != null)
             writer.name(I_DvTypeAdapter.ARCHETYPE_NODE_ID).value(parentItemsArchetypeNodeId);
         if (parentItemsType != null)

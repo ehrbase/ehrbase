@@ -475,6 +475,13 @@ public class CompositionSerializer {
         }
 
         log.debug("traverse element of class:" + item.getClass() + ", tag:" + tag + ", nodeid:" + item.getArchetypeNodeId());
+
+        if (item.getArchetypeNodeId() == null || item.getArchetypeNodeId().isEmpty())
+            throw new IllegalArgumentException("ContentItem mandatory attribute archetype_node_id null or empty, item:"+item);
+
+        if (item.getName() == null || item.getName().getValue().isEmpty())
+            throw new IllegalArgumentException("ContentItem mandatory attribute name is null or empty, item:"+item.getArchetypeNodeId());
+
         itemStack.pushStacks(tag + "[" + item.getArchetypeNodeId() + "]", item.getName().getValue());
 //		pushPathStack(tag + "[" + item.getArchetypeNodeId() + "]");
 //        pushNamedStack(item.getName().getValue());

@@ -170,4 +170,12 @@ public interface CompositionService extends BaseService {
      * @return Version closest in time before given timestamp, or `null` in case of
      */
     Integer getVersionByTimestamp(UUID compositionId, LocalDateTime timestamp);
+
+    /**
+     * Checks if given ID is a valid composition ID.
+     * @param versionedObjectId ID to check
+     * @return True if ID exists
+     * @throws ObjectNotFoundException if ID does not exist
+     */
+    boolean exists(UUID versionedObjectId);
 }

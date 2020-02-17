@@ -34,7 +34,7 @@ import java.util.UUID;
  * the status entry holds data pertaining to an Ehr owner, generally a patient
  * Created by Christian Chevalley on 4/21/2015.
  */
-public interface I_StatusAccess extends I_SimpleCRUD<I_StatusAccess, UUID> {
+public interface I_StatusAccess extends I_SimpleCRUD {
 
     /**
      * retrieve a status by given status ID
