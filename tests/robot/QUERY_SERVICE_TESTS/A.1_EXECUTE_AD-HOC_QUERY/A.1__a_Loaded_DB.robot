@@ -161,8 +161,6 @@ MF-007 Execute Ad-Hoc Query - Get Compositions From All EHRs
     B/200_query.tmp.json    B/200.tmp.json
     B/300_get_compositions_with_archetype_from_all_ehrs.json    B/300.tmp.json
 
-    [Teardown]          TRACE GITHUB ISSUE  108  not-ready
-
 
 MF-009 Execute Ad-Hoc Query - Get Composition(s)
     [Template]          execute ad-hoc query and check result (loaded DB)
