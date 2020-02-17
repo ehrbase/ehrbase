@@ -35,8 +35,7 @@ Alternative flow 2: get directory on EHR with complex directory structure and it
 
     create EHR
         
-        TRACE GITHUB ISSUE  43  not-ready
-        ...             message=DISCOVERED ERROR: PGobject cannot be cast to com.nedap.archie.rm
+        TRACE GITHUB ISSUE  171  not-ready
 
     create DIRECTORY (JSON)    subfolders_in_directory_with_details_items.json
 
