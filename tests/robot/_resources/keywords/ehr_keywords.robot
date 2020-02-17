@@ -338,10 +338,6 @@ get ehr_status of fake EHR
     ...                             - `create new EHR`
     ...                             - `generate random ehr_id`
 
-
-        TRACE GITHUB ISSUE  96  not-ready
-
-
     &{resp}=            REST.GET    ${baseurl}/ehr/${ehr_id}/ehr_status
                         ...         headers={"Content-Type": "application/json"}
                         # ...         headers={"If-Match": null}
