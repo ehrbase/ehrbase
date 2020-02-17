@@ -93,8 +93,6 @@ Removed Mandatory Elements
     # SPECIAL: removing an optional AND a mandatory element
     removed_mandatory_elements/minimal_action_removed_description_and_concept.opt
 
-    [Teardown]  TRACE GITHUB ISSUE  120  not-ready
-
 
 Multiple Elements With Upper Bound Of 1
     [Documentation]    Issues with elements that should occur only once.
