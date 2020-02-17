@@ -196,8 +196,6 @@ MF-011 Execute Ad-Hoc Query - Get Compositions (ordered by: name)
 
     B/102_get_compositions_orderby_name.json    B/102.tmp.json
 
-    [Teardown]          TRACE GITHUB ISSUE  105  not-ready  
-
 
 MF-012 Execute Ad-Hoc Query - Get Compositions (filtered: timewindow)
     [Template]          execute ad-hoc query and check result (loaded DB)
@@ -260,8 +258,7 @@ MF-016 Execute Ad-Hoc Query - Get Entries (ordered by: name)
 
     C/102_query.tmp.json    C/102.tmp.json
 
-    [Teardown]          Run Keywords  TRACE GITHUB ISSUE  105  not-ready  blocked by
-                        ...    AND    TRACE GITHUB ISSUE  101  not-ready  related
+    [Teardown]          TRACE GITHUB ISSUE  101  not-ready  related
 
 
 MF-017 Execute Ad-Hoc Query - Get Entries (filtered: timewindow)
