@@ -29,8 +29,9 @@ import org.ehrbase.ehr.encode.wrappers.json.I_DvTypeAdapter;
 import org.ehrbase.ehr.encode.wrappers.json.writer.translator_db2raw.ArchieCompositionProlog;
 import org.ehrbase.ehr.encode.wrappers.json.writer.translator_db2raw.CompositionRoot;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Created by christian on 6/21/2017.
