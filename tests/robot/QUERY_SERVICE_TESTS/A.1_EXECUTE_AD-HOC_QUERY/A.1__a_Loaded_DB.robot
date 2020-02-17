@@ -275,11 +275,9 @@ MF-017 Execute Ad-Hoc Query - Get Entries (filtered: timewindow)
 MF-019 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              
+    [Tags]              not-ready
 
     D/200_select_data_values_from_all_ehrs_contains_composition.json    D/200.tmp.json
-
-    [Teardown]          TRACE GITHUB ISSUE  110  not-ready
 
 
 MF-020 Execute Ad-HOc Query - Get Data
@@ -295,11 +293,9 @@ MF-020 Execute Ad-HOc Query - Get Data
 MF-021 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              
+    [Tags]              not-ready
     
     D/300_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/300.tmp.json
-
-    [Teardown]          TRACE GITHUB ISSUE  110  not-ready
 
 
 MF-022 Execute Ad-HOc Query - Get Data
@@ -315,11 +311,9 @@ MF-022 Execute Ad-HOc Query - Get Data
 MF-023 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              
+    [Tags]              not-ready
     
     D/302_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/302.tmp.json
-
-    [Teardown]          TRACE GITHUB ISSUE  110  not-ready
 
 
 MF-024 Execute Ad-HOc Query - Get Data
@@ -335,11 +329,9 @@ MF-024 Execute Ad-HOc Query - Get Data
 MF-025 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              
+    [Tags]              not-ready
     
     D/304_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/304.tmp.json
-
-    [Teardown]          TRACE GITHUB ISSUE  110  not-ready
 
 
 MF-026 Execute Ad-HOc Query - Get Data
@@ -361,11 +353,9 @@ MF-027 Execute Ad-HOc Query - Get Data
 MF-028 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              
+    [Tags]              not-ready
     
     D/308_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/308.tmp.json
-
-    [Teardown]          TRACE GITHUB ISSUE  110  not-ready
 
 
 MF-029 Execute Ad-HOc Query - Get Data
@@ -381,11 +371,9 @@ MF-029 Execute Ad-HOc Query - Get Data
 MF-030 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              
+    [Tags]              not-ready
     
     D/310_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/310.tmp.json
-
-    [Teardown]          TRACE GITHUB ISSUE  110  not-ready
 
 
 MF-031 Execute Ad-HOc Query - Get Data
@@ -399,11 +387,9 @@ MF-031 Execute Ad-HOc Query - Get Data
 MF-032 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              
+    [Tags]              not-ready
     
     D/312_select_data_values_from_all_ehrs_contains_composition_with_archetype_top_5.json    D/312.tmp.json
-
-    [Teardown]          TRACE GITHUB ISSUE  110  not-ready
 
 
 MF-033 Execute Ad-HOc Query - Get Data
