@@ -178,4 +178,11 @@ public interface CompositionService extends BaseService {
      * @throws ObjectNotFoundException if ID does not exist
      */
     boolean exists(UUID versionedObjectId);
+
+    /**
+     * FIXME 123: docs
+     * @param versionedObjectId
+     * @return
+     */
+    boolean isDeleted(UUID versionedObjectId);
 }

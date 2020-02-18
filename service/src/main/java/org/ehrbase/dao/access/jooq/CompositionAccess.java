@@ -34,7 +34,9 @@ import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
+import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
+import org.ehrbase.jooq.pg.tables.records.AuditDetailsRecord;
 import org.ehrbase.jooq.pg.tables.records.CompositionHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.CompositionRecord;
 import org.ehrbase.jooq.pg.tables.records.EventContextRecord;
@@ -773,14 +775,21 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
     @Override
     public Integer delete(UUID committerId, UUID systemId, String description) {
+        // .delete() moves the old version to _history table.
+        int delRows = compositionRecord.delete();
 
-        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
+        // create new deletion audit
+        I_AuditDetailsAccess delAudit = I_AuditDetailsAccess.getInstance(this, systemId, committerId, I_ConceptAccess.ContributionChangeType.DELETED, description);
+        UUID delAuditId = delAudit.commit();
+
         // create new contribution for this deletion action (with embedded contribution.audit handling)
         contributionAccess = I_ContributionAccess.getInstance(getDataAccess(), contributionAccess.getEhrId()); // overwrite old contribution with new one
-        contributionAccess.commit(timestamp, committerId, systemId, null, ContributionDef.ContributionState.COMPLETE, I_ConceptAccess.ContributionChangeType.DELETED, description);
-        // update this composition's audit
-        auditDetailsAccess.update(systemId, committerId, I_ConceptAccess.ContributionChangeType.DELETED, description);
-        return compositionRecord.delete();
+        UUID contrib = contributionAccess.commit(Timestamp.valueOf(LocalDateTime.now()), committerId, systemId, null, ContributionDef.ContributionState.COMPLETE, I_ConceptAccess.ContributionChangeType.DELETED, description);
+
+        // create new, BUT already moved to _history, version documenting the deletion
+        createAndCommitNewDeletedVersionAsHistory(delAuditId, contrib);
+
+        return delRows;
     }
 
     @Override
@@ -792,6 +801,13 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         I_AuditDetailsAccess delAudit = I_AuditDetailsAccess.getInstance(this, systemId, committerId, I_ConceptAccess.ContributionChangeType.DELETED, description);
         UUID delAuditId = delAudit.commit();
 
+        // create new, BUT already moved to _history, version documenting the deletion
+        createAndCommitNewDeletedVersionAsHistory(delAuditId, compositionRecord.getInContribution());
+
+        return delRows;
+    }
+
+    private void createAndCommitNewDeletedVersionAsHistory(UUID delAuditId, UUID contrib) {
         // a bit hacky: create new, BUT already moved to _history, version documenting the deletion
         // (Normal approach of first .update() then .delete() won't work, because postgres' transaction optimizer will
         // just skip the update if it will get deleted anyway.)
@@ -800,7 +816,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         CompositionHistoryRecord newRecord = getDataAccess().getContext().newRecord(COMPOSITION_HISTORY);
         newRecord.setId(compositionRecord.getId());
         newRecord.setEhrId(compositionRecord.getEhrId());
-        newRecord.setInContribution(compositionRecord.getInContribution());
+        newRecord.setInContribution(contrib);
         newRecord.setActive(compositionRecord.getActive());
         newRecord.setIsPersistent(compositionRecord.getIsPersistent());
         newRecord.setLanguage(compositionRecord.getLanguage());
@@ -810,8 +826,6 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         newDeletedVersionAsHistoryAccess.setRecord(newRecord);
         if (newDeletedVersionAsHistoryAccess.commit() == null) // commit and throw error if nothing was inserted into DB
             throw new InternalServerException("DB inconsistency");
-
-        return delRows;
     }
 
     @Override
@@ -879,5 +893,34 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         } else {
             throw new ObjectNotFoundException("composition", "No composition with given ID found");
         }
+    }
+
+    public static boolean isDeleted(I_DomainAccess domainAccess, UUID versionedObjectId) {
+        // if available in normal table -> not deleted
+        if (domainAccess.getContext().fetchExists(COMPOSITION, COMPOSITION.ID.eq(versionedObjectId)))
+            return false;
+
+        // if only in history table
+        if (domainAccess.getContext().fetchExists(COMPOSITION_HISTORY, COMPOSITION_HISTORY.ID.eq(versionedObjectId))) {
+            // retrieve the record
+            Result<CompositionHistoryRecord> historyRecordsRes = domainAccess.getContext()
+                    .selectFrom(COMPOSITION_HISTORY)
+                    .where(COMPOSITION_HISTORY.ID.eq(versionedObjectId))
+                    .orderBy(COMPOSITION_HISTORY.SYS_TRANSACTION.desc())    // latest at top, i.e. [0]
+                    .fetch();
+            // assumed not empty, because fetchExists was successful
+
+            // retrieve matching audit
+            AuditDetailsRecord audit = domainAccess.getContext().fetchOne(AUDIT_DETAILS, AUDIT_DETAILS.ID.eq(historyRecordsRes.get(0).getHasAudit()));
+            if (audit == null)
+                throw new InternalServerException("DB inconsistency: couldn't retrieve referenced audit");
+            // and check for correct change type -> is deleted
+            if (audit.getChangeType().equals(ContributionChangeType.deleted))
+                return true;
+        } else {
+            throw new ObjectNotFoundException("composition", "No composition with given ID found");
+        }
+        // TODO: why is this line necessary? won't compile without return or throw. but if/else above is always reaching a return or throw anyway!?
+        throw new InternalServerException("Problem processing CompositionAccess.isDeleted(..)");
     }
 }

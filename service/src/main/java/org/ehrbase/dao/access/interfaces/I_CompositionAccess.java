@@ -461,4 +461,14 @@ public interface I_CompositionAccess extends I_SimpleCRUD {
     static boolean exists(I_DomainAccess domainAccess, UUID versionedObjectId) {
         return CompositionAccess.exists(domainAccess, versionedObjectId);
     }
+
+    /**
+     * FIXME 123: docs
+     * @param domainAccess
+     * @param versionedObjectId
+     * @return
+     */
+    static boolean isDeleted(I_DomainAccess domainAccess, UUID versionedObjectId) {
+        return CompositionAccess.isDeleted(domainAccess, versionedObjectId);
+    }
 }

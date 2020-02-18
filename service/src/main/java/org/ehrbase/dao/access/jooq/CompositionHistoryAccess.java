@@ -61,7 +61,7 @@ public class CompositionHistoryAccess extends DataAccess implements I_Compositio
         if (this.record.getSysTransaction() == null) {
             this.record.setSysTransaction(Timestamp.valueOf(LocalDateTime.now()));
             this.record.setSysPeriod(DSL.field(DSL.val(
-                    "[\"" + record.getSysTransaction().toString() + "+00" + "\",)") + "::tstzrange"));
+                    "[\"" + record.getSysTransaction().toString() + "+00" + "\",)") + "::tstzrange"));  // FIXME 123: probably not reliable
         }
         if (record.insert() == 1)
             return record.getId();
