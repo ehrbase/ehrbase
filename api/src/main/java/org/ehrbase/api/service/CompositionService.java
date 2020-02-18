@@ -180,9 +180,9 @@ public interface CompositionService extends BaseService {
     boolean exists(UUID versionedObjectId);
 
     /**
-     * FIXME 123: docs
-     * @param versionedObjectId
-     * @return
+     * Checks if given composition ID is ID of a logically deleted composition.
+     * @param versionedObjectId ID to check
+     * @return True if deleted, false if not
      */
     boolean isDeleted(UUID versionedObjectId);
 }

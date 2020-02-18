@@ -896,6 +896,8 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     }
 
     public static boolean isDeleted(I_DomainAccess domainAccess, UUID versionedObjectId) {
+        // meta: logically deleted means that of this ID only entries in the history table are available
+
         // if available in normal table -> not deleted
         if (domainAccess.getContext().fetchExists(COMPOSITION, COMPOSITION.ID.eq(versionedObjectId)))
             return false;
@@ -920,7 +922,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         } else {
             throw new ObjectNotFoundException("composition", "No composition with given ID found");
         }
-        // TODO: why is this line necessary? won't compile without return or throw. but if/else above is always reaching a return or throw anyway!?
+        // TODO: why is this line necessary? won't compile without return or throw. but if/else above is always reaching a return/throw anyway!?
         throw new InternalServerException("Problem processing CompositionAccess.isDeleted(..)");
     }
 }
