@@ -183,16 +183,7 @@ workflows:
           context: org-global
           requires:
             - unit-tests
-            - COMPOSITION-tests-1
-            - COMPOSITION-tests-2
-            - COMPOSITION-tests-3
-            - COMPOSITION-tests-4
-            - CONTRIBUTION-test
-            - DIRECTORY-test
-            - EHRSERVICE-test
-            - KNOWLEDGE-test
-            - QUERYSERVICE-test-1
-            - QUERYSERVICE-test-2
+            - build-artifacts
           filters:
             branches:
               ignore:
