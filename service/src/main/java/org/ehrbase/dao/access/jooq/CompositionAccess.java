@@ -397,7 +397,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
      */
     private UUID seekComposerId(PartyProxy composer) {
         if (!(composer instanceof PartyIdentified))
-            throw new IllegalArgumentException("Composer found in composition is not an IdenfiedParty and is not supported:" + composer.toString());
+            throw new IllegalArgumentException("Composer found in composition is not an IdenfiedParty and is not supported:" + composer);
 
         return I_PartyIdentifiedAccess.getOrCreateParty(this, (PartyIdentified) composer);
     }
