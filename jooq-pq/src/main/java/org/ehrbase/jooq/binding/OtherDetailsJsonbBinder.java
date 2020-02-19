@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.ehrbase.binding;
+package org.ehrbase.jooq.binding;
 
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import org.ehrbase.serialisation.RawJson;

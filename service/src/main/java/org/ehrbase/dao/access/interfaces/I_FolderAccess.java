@@ -26,6 +26,8 @@ import org.ehrbase.dao.access.jooq.FolderHistoryAccess;
 import org.joda.time.DateTime;
 
 import java.sql.Timestamp;
+import java.time.OffsetDateTime;
+import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -120,7 +122,7 @@ public interface I_FolderAccess extends I_SimpleCRUD {
 
     Timestamp getFolderSysTransaction();
 
-    Object getFolderSysPeriod();
+    AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime> getFolderSysPeriod();
 
-    void setFolderSysPeriod(Object folderSysPeriod);
+    void setFolderSysPeriod(AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime> folderSysPeriod);
 }
