@@ -203,3 +203,6 @@ report.html
 
 # Template file repository
 file_repo
+
+# sonar
+.scannerwork

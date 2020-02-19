@@ -42,6 +42,8 @@ workflows:
 
       - unit-tests:
           context: org-global
+          requires:
+            - build-artifacts
           filters:
             branches:
               ignore:
@@ -400,7 +402,7 @@ jobs:
       - setup-database
       - maven-test
       - save-unit-tests-job-caches
-      # - persist-unit-test-coverage
+      - persist-unit-test-coverage
 
   COMPOSITION-tests-1:
       machine:
@@ -738,7 +740,12 @@ commands:
       - persist_to_workspace:
           root: /home/circleci
           paths:
-            - project/application/target/jacoco.exec
+            - rest-ehr-scape/target/site/jacoco/jacoco.xml
+            - rest-openehr/target/site/jacoco/jacoco.xml
+            - serialisation/target/site/jacoco/jacoco.xml
+            - service/target/site/jacoco/jacoco.xml
+            - terminology/target/site/jacoco/jacoco.xml
+            - validation/target/site/jacoco/jacoco.xml
 
 
   save-unit-tests-job-caches:
