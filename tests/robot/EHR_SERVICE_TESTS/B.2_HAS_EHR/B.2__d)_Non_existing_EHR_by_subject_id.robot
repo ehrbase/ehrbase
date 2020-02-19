@@ -19,14 +19,20 @@
 *** Settings ***
 Metadata    Version    0.1.0
 Metadata    Author    *Wladislaw Wagner*
-Metadata    Created    2019.02.26
-Metadata    Updated    2020.01.30
+Metadata    Created    2019.03.03
 
-Documentation    https://docs.google.com/document/d/1r_z_E8MhlNdeVZS4xecl-8KbG0JPqCzKtKMfhuL81jY/edit#heading=h.fkdj6wod6hv2
+Documentation   B.2.d) Alternative flow 3: Check has EHR with non existing EHR by subject_id
 
-Resource   ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Suite Setup    startup SUT
-Suite Teardown    shutdown SUT
+Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Force Tags    EHR_SERVICE
+# Suite Setup  startup SUT
+# Suite Teardown  shutdown SUT
+
+Force Tags    TODO    refactor
+
+
+
+*** Test Cases ***
+Check has EHR with non-existing EHR by subject_id
+    THIS IS JUST A PLACEHOLDER!

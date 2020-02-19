@@ -1,0 +1,57 @@
+# EHR SERVICE TEST CASES
+
+folders:
+
+  B.1_CREATE_EHR:
+    files:
+      - B.1__a)_New_EHR.robot
+      - B.1__b)_Same_EHR_twice.robot
+      - B.1__c)_Two_EHRs_for_same_patient.robot
+
+  B.2_HAS_EHR:
+    files:
+      - B.2__a)_Existing_EHR.robot
+      - B.2__b)_Existing_EHR_by_subject_id.robot
+      - B.2__c)_Non_existing_EHR_by_ehr_id.robot
+      - B.2__d)_Non_existing_EHR_by_subject_id.robot
+
+  B.3_GET_EHR:
+    files:
+      - B.3__a)_Existing_EHR.robot
+      - B.3__b)_Existing_EHR_by_subject_id.robot
+      - B.3__c)_Non_existing_EHR_by_ehr_id.robot
+      - B.3__d)_Non_existing_EHR_by_subject_id.robot
+
+
+
+placeholder: |
+    # Copyright (c) 2019 Wladislaw Wagner (Vitasystems GmbH), Pablo Pazos (Hannover Medical School).
+    #
+    # This file is part of Project EHRbase
+    #
+    # Licensed under the Apache License, Version 2.0 (the "License");
+    # you may not use this file except in compliance with the License.
+    # You may obtain a copy of the License at
+    #
+    # http://www.apache.org/licenses/LICENSE-2.0
+    #
+    # Unless required by applicable law or agreed to in writing, software
+    # distributed under the License is distributed on an "AS IS" BASIS,
+    # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    # See the License for the specific language governing permissions and
+    # limitations under the License.
+
+
+
+    *** Settings ***
+    Documentation       EHR Service Integration Tests
+
+    Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
+
+    Force Tags          EHR_SERVICE    TODO   refactor
+
+
+
+    *** Test Cases ***
+    TODO: implement me!
+        THIS IS JUST A PLACEHOLDER!
