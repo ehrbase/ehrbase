@@ -368,8 +368,14 @@ public class CompositionSerializer {
 
     private Map<String, Object> objectAttributes(RMObject object, String name) throws Exception {
         Map<String, Object> valuemap = newPathMap();
-        putObject(className(object), object, valuemap, TAG_NAME, mapName(name));
+
+        if (object instanceof PartyIdentified) {
+            // The PartyIdentified name field is a string and should not be treated like other name fields and changed to DvText
+            valuemap.put("name", name);
+        } else {
+            putObject(className(object), object, valuemap, TAG_NAME, mapName(name));
 //        putObject(object, valuemap, TAG_CLASS, object).getSimpleName());
+        }
 
         //assign the actual object to the value (instead of its field equivalent...)
         if (object instanceof Participation) {
