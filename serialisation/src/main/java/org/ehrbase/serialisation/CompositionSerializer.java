@@ -39,8 +39,9 @@ import com.nedap.archie.rm.generic.PartyIdentified;
 import com.nedap.archie.rm.integration.GenericEntry;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.collections.PredicateUtils;
+import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.commons.collections.map.PredicatedMap;
-import org.apache.commons.collections4.map.MultiValueMap;
+
 import org.ehrbase.ehr.encode.EncodeUtilArchie;
 import org.ehrbase.ehr.encode.ItemStack;
 import org.slf4j.Logger;
@@ -57,7 +58,7 @@ import java.util.*;
  */
 public class CompositionSerializer {
 
-    public static final String INITIAL_DUMMY_PREFIX = "$*>";
+    private static final String INITIAL_DUMMY_PREFIX = "$*>";
 
     public enum WalkerOutputMode {
         PATH,
@@ -73,8 +74,8 @@ public class CompositionSerializer {
     private String treeRootClass;
     private String treeRootArchetype;
 
-    protected final WalkerOutputMode tag_mode; //default
-    protected final boolean allElements; //default
+    private final WalkerOutputMode tag_mode; //default
+    private final boolean allElements; //default
 
 //	private Gson gson = new Gson();
 
@@ -153,7 +154,7 @@ public class CompositionSerializer {
 
     @SuppressWarnings("unchecked")
     private Map<String, Object> newMultiMap() {
-        return new MultiValueMap<>();
+        return new MultiValueMap();
     }
 
     private Map<String, Object> mapName(DvText aName) {
@@ -193,11 +194,14 @@ public class CompositionSerializer {
     private Object putObject(String clazz, Object node, Map<String, Object> map, String key, Object addStructure) throws Exception {
         //CHC: 160602
         if (addStructure == null) return null;
-        if (addStructure instanceof Map && ((Map) addStructure).size() == 0)
+        if (addStructure instanceof Map && ((Map) addStructure).size() == 0 && !clazz.equals("Composition"))
             return null;
 
         if (key.equals(TAG_NAME)) {
-            return nameAsValueList(map, (Map) addStructure);
+            if (addStructure instanceof Map)
+                return nameAsValueList(map, (Map) addStructure);
+            else
+                throw new IllegalStateException("INTERNAL: addStructure is not a map, found:"+addStructure.getClass());
         }
 
         try {
@@ -211,7 +215,7 @@ public class CompositionSerializer {
             log.error("Ignoring duplicate key in path detected:" + key + " path:" + itemStack.pathStackDump() + " Exception:" + e);
         }
 
-        if (clazz != null && key != TAG_PATH && key != TAG_NAME && !map.containsKey(TAG_CLASS))
+        if (clazz != null && !key.equals(TAG_PATH) && !map.containsKey(TAG_CLASS))
             map.put(CompositionSerializer.TAG_CLASS, clazz);
         else
             log.debug(map.containsKey(TAG_CLASS) ? "duplicate TAG_CLASS" : "null clazz");
@@ -801,7 +805,7 @@ public class CompositionSerializer {
         Map<String, Object> ltree = newPathMap();
 
         //CHC: 160531 add explicit name
-        History history = (History) item;
+        History history = item;
 
 
         if (history.getName() != null) encodeNodeMetaData(ltree, history);
@@ -938,7 +942,7 @@ public class CompositionSerializer {
                 for (Item listItem : list.getItems()) {
                     if (ltree.containsKey(extractNodeTag(TAG_ITEMS, item, ltree)))
                         log.warn("ItemList: Overwriting entry for key:" + TAG_ITEMS + "[" + item.getArchetypeNodeId() + "]");
-                    compactEntry(listItem, ltree, getNodeTag(TAG_ITEMS, (Locatable) listItem, ltree), traverse(listItem, TAG_ITEMS));
+                    compactEntry(listItem, ltree, getNodeTag(TAG_ITEMS, listItem, ltree), traverse(listItem, TAG_ITEMS));
                 }
             }
             if (ltree.size() > 0)
@@ -1012,20 +1016,17 @@ public class CompositionSerializer {
     private String getCompositeClassName(DataValue dataValue) {
         String classname = className(dataValue);
 
-        switch (classname) {
-            case "DvInterval":
-                //get the classname of lower/upper
-                DvInterval interval = (DvInterval) dataValue;
-                String lowerClassName = className(interval.getLower());
-                String upperClassName = className(interval.getUpper());
+        if ("DvInterval".equals(classname)) {//get the classname of lower/upper
+            DvInterval interval = (DvInterval) dataValue;
+            String lowerClassName = className(interval.getLower());
+            String upperClassName = className(interval.getUpper());
 
-                if (!lowerClassName.equals(upperClassName))
-                    throw new IllegalArgumentException("Lower and Upper classnames do not match:" + lowerClassName + " vs." + upperClassName);
+            if (!lowerClassName.equals(upperClassName))
+                throw new IllegalArgumentException("Lower and Upper classnames do not match:" + lowerClassName + " vs." + upperClassName);
 
-                return classname + "<" + lowerClassName + ">";
-            default:
-                return classname;
+            return classname + "<" + lowerClassName + ">";
         }
+        return classname;
     }
 
     private Map<String, Object> setElementAttributesMap(Element element) throws Exception {
@@ -1041,8 +1042,7 @@ public class CompositionSerializer {
                 return ltree;
         }
 
-        if (element != null && element.getValue() != null
-                && !element.getValue().toString().isEmpty()
+        if (element.getValue() != null && !element.getValue().toString().isEmpty()
         ) {
             log.debug(itemStack.pathStackDump() + "=" + element.getValue());
             Map<String, Object> valuemap = newPathMap();
@@ -1114,11 +1114,7 @@ public class CompositionSerializer {
                             if (clusterItems.containsKey(TAG_CLASS)) {
                                 clusterItems.put(TAG_CLASS, item.getClass().getSimpleName());
                             }
-                            if (clusterItems.containsKey(TAG_VALUE)) {
-                                ltree.put(getNodeTag(TAG_ITEMS, clusterItem, ltree), clusterItems.get(TAG_VALUE));
-                            } else {
-                                ltree.put(getNodeTag(TAG_ITEMS, clusterItem, ltree), clusterItems);
-                            }
+                            ltree.put(getNodeTag(TAG_ITEMS, clusterItem, ltree), clusterItems.getOrDefault(TAG_VALUE, clusterItems));
 //
                         }
                     } else

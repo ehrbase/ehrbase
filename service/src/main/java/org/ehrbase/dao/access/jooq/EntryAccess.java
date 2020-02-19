@@ -272,7 +272,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
         Integer categoryId = Integer.parseInt(composition.getCategory().getDefiningCode().getCodeString());
         record.setCategory(I_ConceptAccess.fetchConcept(this, categoryId, "en"));
 
-        if (composition.getContent() != null) {
+        if (composition.getContent() != null && !composition.getContent().isEmpty()) {
             Object node = composition.getContent().get(0);
 
 
