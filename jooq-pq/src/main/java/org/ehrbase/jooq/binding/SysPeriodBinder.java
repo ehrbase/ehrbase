@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
 
 import static java.time.format.DateTimeFormatter.*;
 
-// Map.Entry<OffsetDateTime, OffsetDateTime> is used to mimic a range as postgres's tstzrange is a range.
+// meta: AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>is used to mimic a range as postgres's tstzrange is a range.
 /**
  * Binding <T> = Object (unknown DB type), and <U> = {@link AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>} (user type) for "sys_period" column (of STATUS table).
  * See pom.xml of this module for further configuration, like what columns are linked with this binding.
@@ -51,7 +51,8 @@ public class SysPeriodBinder implements Binding<Object, AbstractMap.SimpleEntry<
 
             @Override
             public AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime> from(Object databaseObject) {
-                // FIXME 123: should handle null value
+                if (databaseObject == null)
+                    return null;
 
                 Matcher m = PATTERN.matcher("" + databaseObject);
                 if (m.find()) {
@@ -73,7 +74,8 @@ public class SysPeriodBinder implements Binding<Object, AbstractMap.SimpleEntry<
 
             @Override
             public Object to(AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime> userObject) {
-                // FIXME 123: should handle null value
+                if (userObject == null)
+                    return null;
 
                 String lower = userObject.getKey().format(ISO_OFFSET_DATE_TIME).replace("T", " ");
                 String upper = "";
@@ -103,7 +105,7 @@ public class SysPeriodBinder implements Binding<Object, AbstractMap.SimpleEntry<
     // jooq-compatible sql executions. For instance, .store() or manually building a InsertQuery.
 
     /**
-     * Rending a bind variable for the binding context's value and casting it to the Map.Entry<OffsetDateTime, OffsetDateTime> type
+     * Rending a bind variable for the binding context's value and casting it to the AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime> type
      *
      * @param ctx internal DB context
      * @throws SQLException when SQL execution failed
@@ -130,7 +132,7 @@ public class SysPeriodBinder implements Binding<Object, AbstractMap.SimpleEntry<
     }
 
     /**
-     * Converting the Map.Entry<OffsetDateTime, OffsetDateTime> to a String value and setting that on a JDBC PreparedStatement
+     * Converting the AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime> to a String value and setting that on a JDBC PreparedStatement
      *
      * @param ctx internal DB context
      * @throws SQLException when SQL execution failed
@@ -141,7 +143,7 @@ public class SysPeriodBinder implements Binding<Object, AbstractMap.SimpleEntry<
     }
 
     /**
-     * Getting a String value from a JDBC ResultSet and converting that to a Map.Entry<OffsetDateTime, OffsetDateTime>
+     * Getting a String value from a JDBC ResultSet and converting that to a AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>
      *
      * @param ctx internal DB context
      * @throws SQLException when SQL execution failed
@@ -152,7 +154,7 @@ public class SysPeriodBinder implements Binding<Object, AbstractMap.SimpleEntry<
     }
 
     /**
-     * Getting a String value from a JDBC CallableStatement and converting that to a Map.Entry<OffsetDateTime, OffsetDateTime>
+     * Getting a String value from a JDBC CallableStatement and converting that to a AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>
      *
      * @param ctx internal DB context
      * @throws SQLException when SQL execution failed
