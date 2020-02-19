@@ -105,6 +105,7 @@ public class CompositionSerializer {
     public static final String TAG_EVALUATION = "/evaluation";
     public static final String TAG_OBSERVATION = "/observation";
     public static final String TAG_ACTION = "/action";
+    public static final String TAG_SUBJECT = "/subject";
     public static final String TAG_ISM_TRANSITION = "/ism_transition";
     public static final String TAG_CURRENT_STATE = "/current_state";
     public static final String TAG_CAREFLOW_STEP = "/careflow_step";
@@ -514,6 +515,9 @@ public class CompositionSerializer {
 
             if (observation.getUid() != null)
                 encodeNodeAttribute(ltree, TAG_UID, observation.getUid(), observation.getName());
+
+            if (observation.getSubject() != null)
+                encodeNodeAttribute(ltree, TAG_SUBJECT, observation.getSubject(), observation.getName());
 
             if (ltree.size() > 0)
                 retmap = ltree;
