@@ -398,6 +398,8 @@ jobs:
       - configure-python-version
       - install-java-11
       - checkout
+      - attach_workspace:
+          at: /home/circleci
       - restore-unit-tests-job-caches
       - setup-database
       - maven-test
@@ -740,12 +742,12 @@ commands:
       - persist_to_workspace:
           root: /home/circleci
           paths:
-            - rest-ehr-scape/target/site/jacoco/jacoco.xml
-            - rest-openehr/target/site/jacoco/jacoco.xml
-            - serialisation/target/site/jacoco/jacoco.xml
-            - service/target/site/jacoco/jacoco.xml
-            - terminology/target/site/jacoco/jacoco.xml
-            - validation/target/site/jacoco/jacoco.xml
+            - project/rest-ehr-scape/target/site/jacoco/jacoco.xml
+            - project/rest-openehr/target/site/jacoco/jacoco.xml
+            - project/serialisation/target/site/jacoco/jacoco.xml
+            - project/service/target/site/jacoco/jacoco.xml
+            - project/terminology/target/site/jacoco/jacoco.xml
+            - project/validation/target/site/jacoco/jacoco.xml
 
 
   save-unit-tests-job-caches:
