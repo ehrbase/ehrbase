@@ -266,7 +266,7 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
             objectRef.setId(recordParam.value8());
             objectRef.setInContribution(recordParam.value9());
             objectRef.setSysTransaction(recordParam.value10());
-            objectRef.setSysPeriod(new SysPeriodBinder().converter().from(recordParam.value11()));
+            objectRef.setSysPeriod(recordParam.value11());
             objectRef.setId(recordParam.value8());
             result.add(parseObjectRefRecordIntoObjectRef(objectRef, domainAccess));
         }
