@@ -34,7 +34,7 @@
       },
     	"preceding_version_uid": {
     		"_type": "OBJECT_VERSION_ID",
-    		"value": "__THIS_SHOULD_BE_MODIFIED_BY_THE_TEST_::piri.ehrscape.com::1"
+    		"value": "__THIS_SHOULD_BE_MODIFIED_BY_THE_TEST_"
     	},
       "data": {
       	"_type": "COMPOSITION",

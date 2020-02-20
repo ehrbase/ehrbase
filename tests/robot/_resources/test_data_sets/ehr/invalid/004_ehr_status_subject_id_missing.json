@@ -1,0 +1,15 @@
+{
+  "_type": "EHR_STATUS",
+  "archetype_node_id": "openEHR-EHR-EHR_STATUS.generic.v1",
+  "name": {
+    "value": "EHR Status"
+  },
+  "subject": {
+    "external_ref": {
+      "namespace": "examples",
+      "type": "PERSON"
+    }
+  },
+  "is_modifiable": true,
+  "is_queryable": true
+}

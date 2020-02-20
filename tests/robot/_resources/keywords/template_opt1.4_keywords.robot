@@ -135,8 +135,11 @@ server response contains proper error message
                         ...                   Invalid template input content
                         ...                   Required request body is missing
                         ...                   Unexpected end of file after null
+                        ...                   Supplied template has nil or empty template id value
+                        ...                   Supplied template has nil or empty concept
+                        ...                   Supplied template has nil or empty definition
+                        ...                   Supplied template has nil or empty description
                         ...                   baz    # TODO: @WLAD add more
-
 
 server returned specified version of OPT
     Fail    msg=Brake it till you make it!

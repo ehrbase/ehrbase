@@ -50,6 +50,13 @@ public interface ValidationService {
     void check(String templateID, Composition composition) throws Exception;
 
     /**
+     * initially check if the composition is valid for further processing
+     * @param composition
+     * @throws IllegalArgumentException
+     */
+    void check(Composition composition) throws Exception;
+
+    /**
      * Remove all mappings in the cache
      */
     void invalidate();

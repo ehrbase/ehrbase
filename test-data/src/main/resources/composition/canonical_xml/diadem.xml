@@ -155,6 +155,9 @@
             </terminology_id>
             <code_string>en</code_string>
         </language>
+        <provider  xsi:type="PARTY_IDENTIFIED">
+            <name>TestName</name>
+        </provider>
         <encoding>
             <terminology_id>
                 <value>IANA_character-sets</value>
