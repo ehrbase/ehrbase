@@ -585,7 +585,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
             objectRef.setId(recordParam.value3());
             objectRef.setInContribution(recordParam.value4());
             objectRef.setSysTransaction(recordParam.value5());
-            objectRef.setSysPeriod(recordParam.value6());
+            objectRef.setSysPeriod(new SysPeriodBinder().converter().from(recordParam.value6()));
             objectRef.setId(recordParam.value7());
             result.add(parseObjectRefRecordIntoObjectRef(objectRef, domainAccess));
         }
