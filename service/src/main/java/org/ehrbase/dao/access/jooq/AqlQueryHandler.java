@@ -21,6 +21,7 @@
 
 package org.ehrbase.dao.access.jooq;
 
+import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.aql.compiler.AqlExpression;
 import org.ehrbase.aql.compiler.AqlExpressionWithParameters;
 import org.ehrbase.aql.compiler.Contains;
@@ -75,7 +76,7 @@ public class AqlQueryHandler extends DataAccess {
         while (iterator.hasNext()) {
             I_VariableDefinition variableDefinition = iterator.next();
             if (!variableDefinition.isHidden())
-                variables.put(variableDefinition.getAlias()==null ? "NULL_"+serial++ : variableDefinition.getAlias(), "/"+variableDefinition.getPath());
+                variables.put(variableDefinition.getAlias() == null ? "NULL_" + serial++ : variableDefinition.getAlias(), StringUtils.isNotBlank(variableDefinition.getPath()) ? "/" + variableDefinition.getPath() : variableDefinition.getIdentifier());
         }
         aqlResult.setVariables(variables);
         return aqlResult;
