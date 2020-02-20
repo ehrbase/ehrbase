@@ -33,7 +33,6 @@ import org.ehrbase.jooq.pg.tables.records.AuditDetailsRecord;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.UUID;
 
 import static org.ehrbase.jooq.pg.tables.AuditDetails.AUDIT_DETAILS;
@@ -47,12 +46,12 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
         this.auditDetailsRecord = dataAccess.getContext().newRecord(AUDIT_DETAILS);
     }
 
-    public AuditDetailsAccess(I_DomainAccess dataAccess, UUID systemId, UUID committer, ContributionChangeType changeType, String description) {
+    public AuditDetailsAccess(I_DomainAccess dataAccess, UUID systemId, UUID committer, I_ConceptAccess.ContributionChangeType changeType, String description) {
         super(dataAccess.getContext(), null, null, dataAccess.getServerConfig());
         this.auditDetailsRecord = dataAccess.getContext().newRecord(AUDIT_DETAILS);
         auditDetailsRecord.setSystemId(systemId);
         auditDetailsRecord.setCommitter(committer);
-        auditDetailsRecord.setChangeType(changeType);
+        setChangeType(I_ConceptAccess.fetchContributionChangeType(this, changeType));
         auditDetailsRecord.setDescription(description);
     }
 

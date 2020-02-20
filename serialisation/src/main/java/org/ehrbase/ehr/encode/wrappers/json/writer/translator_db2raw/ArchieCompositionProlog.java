@@ -27,6 +27,10 @@ public class ArchieCompositionProlog {
 
     public String toString() {
         String predicate = new NodeId(compositionRoot).predicate();
+
+        if (predicate.isEmpty())
+            return "";
+
         String archetypeNodeId = predicate.substring(0, predicate.indexOf(" "));
         String name = predicate.substring(predicate.indexOf("=") + 1).replace("'", "");
 

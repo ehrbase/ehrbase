@@ -1,0 +1,60 @@
+<composition archetype_node_id="openEHR-EHR-COMPOSITION.test_all_types.v1" xmlns:v1="http://schemas.openehr.org/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <name>
+        <value>Test all types</value>
+    </name>
+    <!-- the following is currently not supported by ARCHIE unmarshalling as of 14.7.2019 -->
+    <archetype_details>
+        <archetype_id>
+            <value>openEHR-EHR-COMPOSITION.test_all_types.v1</value>
+        </archetype_id>
+        <template_id>
+            <value>test_all_types.en.v1</value>
+        </template_id>
+        <rm_version>1.0.2</rm_version>
+    </archetype_details>
+    <language>
+        <terminology_id>
+            <value>ISO_639-1</value>
+        </terminology_id>
+        <code_string>en</code_string>
+    </language>
+    <territory>
+        <terminology_id>
+            <value>ISO_3166-1</value>
+        </terminology_id>
+        <code_string>UY</code_string>
+    </territory>
+    <category>
+        <value>event</value>
+        <defining_code>
+            <terminology_id>
+                <value>openehr</value>
+            </terminology_id>
+            <code_string>433</code_string>
+        </defining_code>
+    </category>
+    <composer xsi:type="PARTY_IDENTIFIED">
+        <external_ref>
+            <id xsi:type="HIER_OBJECT_ID">
+                <value>b7c07d35-fa06-4280-8e65-eabdfbe64fdc</value>
+            </id>
+            <namespace>DEMOGRAPHIC</namespace>
+            <type>PERSON</type>
+        </external_ref>
+        <name>Dr. House</name>
+    </composer>
+    <context>
+        <start_time>
+            <value>20190114T183649,294+0000</value>
+        </start_time>
+        <setting>
+            <value>primary nursing care</value>
+            <defining_code>
+                <terminology_id>
+                    <value>openehr</value>
+                </terminology_id>
+                <code_string>229</code_string>
+            </defining_code>
+        </setting>
+    </context>
+</composition>
