@@ -116,12 +116,39 @@
                                     <userType>com.nedap.archie.rm.datastructures.ItemStructure</userType>
 
                                     <!-- Associate that custom type with your binding. -->
-                                    <binding>org.ehrbase.binding.OtherDetailsJsonbBinder</binding>
+                                    <binding>org.ehrbase.jooq.binding.OtherDetailsJsonbBinder</binding>
 
                                     <!-- Add a Java regular expression matching fully-qualified columns. Use the pipe to separate several expressions.
 
                                          If provided, both "includeExpressions" and "includeTypes" must match. -->
                                     <includeExpression>^(other_)?details$</includeExpression>
+
+                                    <!-- Add a Java regular expression matching data types to be forced to
+                                         have this type.
+
+                                         Data types may be reported by your database as:
+                                         - NUMBER              regexp suggestion: NUMBER
+                                         - NUMBER(5)           regexp suggestion: NUMBER\(5\)
+                                         - NUMBER(5, 2)        regexp suggestion: NUMBER\(5,\s*2\)
+                                         - any other form
+
+                                         It is thus recommended to use defensive regexes for types.
+
+                                         If provided, both "includeExpressions" and "includeTypes" must match. -->
+                                    <includeTypes>.*</includeTypes>
+                                </forcedType>
+                                <forcedType>
+                                    <!-- Specify the Java type of your custom type. This corresponds to the Binding's <U> type. -->
+                                    <userType>java.util.AbstractMap.SimpleEntry&lt;java.time.OffsetDateTime, java.time.OffsetDateTime></userType>
+                                    <!--<userType>java.util.AbstractMap.SimpleEntry</userType>-->
+
+                                    <!-- Associate that custom type with your binding. -->
+                                    <binding>org.ehrbase.jooq.binding.SysPeriodBinder</binding>
+
+                                    <!-- Add a Java regular expression matching fully-qualified columns. Use the pipe to separate several expressions.
+
+                                         If provided, both "includeExpressions" and "includeTypes" must match. -->
+                                    <includeExpression>sys_period</includeExpression>
 
                                     <!-- Add a Java regular expression matching data types to be forced to
                                          have this type.
