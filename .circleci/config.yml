@@ -180,12 +180,22 @@ workflows:
 #              ignore:
 #                - release
 #                - master
+      - dependency-check:
+          context: org-global
+          requires:
+            - build-artifacts
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
 
       - sonar-analysis:
           context: org-global
           requires:
-            - unit-tests
             - build-artifacts
+            - unit-tests
+            - dependency-check
           filters:
             branches:
               ignore:
