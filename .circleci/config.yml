@@ -853,7 +853,7 @@ commands:
             python ~/project/.circleci/convert_vulnerability_analysis.py \
                 ~/project/vulnerability_analysis.json \
                 ~/project/sonar_issues.json \
-                application/src/main/java/com/ethercis/application/HipOpenEhr.java
+                application/src/main/java/org/ehrbase/application/HipOpenEhr.java
 
 
 #                                                88
