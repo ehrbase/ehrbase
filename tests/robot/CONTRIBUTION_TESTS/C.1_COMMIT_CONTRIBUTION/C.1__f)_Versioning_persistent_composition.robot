@@ -62,7 +62,7 @@ Alternative flow 5: commit CONTRIBUTIONS versioning persistent COMPOSITION
     create EHR
     commit CONTRIBUTION (JSON)    minimal_persistent/minimal_persistent.contribution.json
     check response: is positive - returns version id
-    commit CONTRIBUTION - with preceding_version_uid (JSON)    minimal_persistent/minimal_persistent.contribution.json
+    commit CONTRIBUTION - with preceding_version_uid (JSON)    minimal_persistent/minimal_persistent.contribution.modification.json
 
         TRACE GITHUB ISSUE  74  not-ready
 

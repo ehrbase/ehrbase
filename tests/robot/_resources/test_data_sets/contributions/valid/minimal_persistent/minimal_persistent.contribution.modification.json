@@ -24,12 +24,12 @@
           }
         },
         "change_type": {
-          "value": "creation",
+          "value": "modification",
           "defining_code": {
             "terminology_id": {
               "value": "openehr"
             },
-            "code_string": "249"
+            "code_string": "251"
           }
         },
         "description": {
