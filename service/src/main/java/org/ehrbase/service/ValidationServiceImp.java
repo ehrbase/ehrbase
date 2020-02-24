@@ -18,6 +18,9 @@
 
 package org.ehrbase.service;
 
+import com.nedap.archie.rminfo.ArchieRMInfoLookup;
+import com.nedap.archie.rmobjectvalidator.RMObjectValidationMessage;
+import com.nedap.archie.rmobjectvalidator.RMObjectValidator;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
@@ -32,6 +35,7 @@ import org.springframework.stereotype.Service;
 import javax.cache.Cache;
 import javax.cache.CacheManager;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -108,6 +112,20 @@ public class ValidationServiceImp implements ValidationService {
             throw new IllegalArgumentException("Composition missing mandatory attribute: archetype details");
         if (composition.getArchetypeDetails().getTemplateId() == null)
             throw new IllegalArgumentException("Composition missing mandatory attribute: archetype details/template_id");
+
+        RMObjectValidator rmObjectValidator = new RMObjectValidator(ArchieRMInfoLookup.getInstance());
+
+        List<RMObjectValidationMessage> rmObjectValidationMessages = rmObjectValidator.validate(composition);
+
+        if (!rmObjectValidationMessages.isEmpty()){
+            StringBuilder stringBuilder = new StringBuilder();
+            for (RMObjectValidationMessage rmObjectValidationMessage: rmObjectValidationMessages){
+                stringBuilder.append(rmObjectValidationMessage.toString());
+                stringBuilder.append("\n");
+            }
+            throw new IllegalArgumentException(stringBuilder.toString());
+        }
+
 
         check(composition.getArchetypeDetails().getTemplateId().getValue(), composition);
     }
