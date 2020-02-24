@@ -87,7 +87,7 @@ public abstract class BaseController {
         return metaMap;
     }
 
-    String getBaseEnvLinkURL() {
+    protected String getBaseEnvLinkURL() {
         String baseEnvLinkURL;
         HttpServletRequest currentRequest =
                 ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();

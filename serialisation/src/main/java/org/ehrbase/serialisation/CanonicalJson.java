@@ -90,7 +90,7 @@ public class CanonicalJson implements RMDataFormat {
         try {
             return JacksonUtil.getObjectMapper().readValue(value, clazz);
         } catch (IOException e) {
-            throw new IllegalArgumentException(e.getMessage(), e);
+            throw new UnmarshalException(e.getMessage(), e);
         }
     }
 
