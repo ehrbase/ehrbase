@@ -42,7 +42,10 @@ import org.ehrbase.ehr.encode.EncodeUtilArchie;
 import org.ehrbase.ehr.encode.ItemStack;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.collections.PredicateUtils;
+import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.commons.collections.map.PredicatedMap;
+import org.ehrbase.ehr.encode.EncodeUtilArchie;
+import org.ehrbase.ehr.encode.ItemStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -152,7 +155,7 @@ public class CompositionSerializer {
     }
 
     private Map<String, Object> newMultiMap() {
-        return new org.apache.commons.collections.map.MultiValueMap();
+        return new MultiValueMap();
     }
 
     private Map<String, Object> mapName(DvText aName) {
@@ -192,7 +195,7 @@ public class CompositionSerializer {
     private Object putObject(String clazz, Object node, Map<String, Object> map, String key, Object addStructure)  {
         //CHC: 160602
         if (addStructure == null) return null;
-        if (addStructure instanceof Map && ((Map) addStructure).size() == 0)
+        if (addStructure instanceof Map && ((Map) addStructure).size() == 0 && !clazz.equals("Composition"))
             return null;
 
         if (key.equals(TAG_NAME)) {
@@ -369,8 +372,14 @@ public class CompositionSerializer {
 
     private Map<String, Object> objectAttributes(RMObject object, String name)  {
         Map<String, Object> valuemap = newPathMap();
-        putObject(className(object), object, valuemap, TAG_NAME, mapName(name));
+
+        if (object instanceof PartyIdentified) {
+            // The PartyIdentified name field is a string and should not be treated like other name fields and changed to DvText
+            valuemap.put("name", name);
+        } else {
+            putObject(className(object), object, valuemap, TAG_NAME, mapName(name));
 //        putObject(object, valuemap, TAG_CLASS, object).getSimpleName());
+        }
 
         //assign the actual object to the value (instead of its field equivalent...)
         if (object instanceof Participation) {
@@ -471,6 +480,13 @@ public class CompositionSerializer {
         }
 
         log.debug("traverse element of class:" + item.getClass() + ", tag:" + tag + ", nodeid:" + item.getArchetypeNodeId());
+
+        if (item.getArchetypeNodeId() == null || item.getArchetypeNodeId().isEmpty())
+            throw new IllegalArgumentException("ContentItem mandatory attribute archetype_node_id null or empty, item:"+item);
+
+        if (item.getName() == null || item.getName().getValue().isEmpty())
+            throw new IllegalArgumentException("ContentItem mandatory attribute name is null or empty, item:"+item.getArchetypeNodeId());
+
         itemStack.pushStacks(tag + "[" + item.getArchetypeNodeId() + "]", item.getName().getValue());
 //		pushPathStack(tag + "[" + item.getArchetypeNodeId() + "]");
 //        pushNamedStack(item.getName().getValue());
@@ -658,7 +674,7 @@ public class CompositionSerializer {
             }
             //CHC: 160531 add explicit name
             Section section = (Section) item;
-            if (section.getName() != null)encodeNodeAttribute(ltree, null, null, section.getName());
+            if (section.getName() != null) encodeNodeAttribute(ltree, null, null, section.getName());
 
             if (ltree.size() > 0)
                 retmap = ltree;
@@ -794,7 +810,7 @@ public class CompositionSerializer {
         Map<String, Object> ltree = newPathMap();
 
         //CHC: 160531 add explicit name
-        History history = (History) item;
+        History history = item;
 
 
         if (history.getName() != null) encodeNodeMetaData(ltree, history);
@@ -930,7 +946,7 @@ public class CompositionSerializer {
                 for (Item listItem : list.getItems()) {
                     if (ltree.containsKey(extractNodeTag(TAG_ITEMS, item, ltree)))
                         log.warn("ItemList: Overwriting entry for key:" + TAG_ITEMS + "[" + item.getArchetypeNodeId() + "]");
-                    compactEntry(listItem, ltree, getNodeTag(TAG_ITEMS, (Locatable) listItem, ltree), traverse(listItem, TAG_ITEMS));
+                    compactEntry(listItem, ltree, getNodeTag(TAG_ITEMS, listItem, ltree), traverse(listItem, TAG_ITEMS));
                 }
             }
             if (ltree.size() > 0)
@@ -984,12 +1000,13 @@ public class CompositionSerializer {
 
         if (uppertag != null) itemStack.popStacks();
 
-        if (retmap.containsKey(TAG_CLASS)) {
+        if (retmap != null && retmap.containsKey(TAG_CLASS)) {
             retmap.remove(CompositionSerializer.TAG_CLASS); //this will come out as an array...
         }
 
-        retmap.put(CompositionSerializer.TAG_CLASS, className(item)); //this will come out as an array...
-
+        if (retmap != null) {
+            retmap.put(CompositionSerializer.TAG_CLASS, className(item)); //this will come out as an array...
+        }
         return retmap;
 
     }
@@ -1003,20 +1020,17 @@ public class CompositionSerializer {
     private String getCompositeClassName(DataValue dataValue) {
         String classname = className(dataValue);
 
-        switch (classname) {
-            case "DvInterval":
-                //get the classname of lower/upper
-                DvInterval interval = (DvInterval) dataValue;
-                String lowerClassName = className(interval.getLower());
-                String upperClassName = className(interval.getUpper());
+        if ("DvInterval".equals(classname)) {//get the classname of lower/upper
+            DvInterval interval = (DvInterval) dataValue;
+            String lowerClassName = className(interval.getLower());
+            String upperClassName = className(interval.getUpper());
 
-                if (!lowerClassName.equals(upperClassName))
-                    throw new IllegalArgumentException("Lower and Upper classnames do not match:" + lowerClassName + " vs." + upperClassName);
+            if (!lowerClassName.equals(upperClassName))
+                throw new IllegalArgumentException("Lower and Upper classnames do not match:" + lowerClassName + " vs." + upperClassName);
 
-                return classname + "<" + lowerClassName + ">";
-            default:
-                return classname;
+            return classname + "<" + lowerClassName + ">";
         }
+        return classname;
     }
 
     private Map<String, Object> setElementAttributesMap(Element element) {
@@ -1032,8 +1046,7 @@ public class CompositionSerializer {
                 return ltree;
         }
 
-        if (element != null && element.getValue() != null
-                && !element.getValue().toString().isEmpty()
+        if (element.getValue() != null && !element.getValue().toString().isEmpty()
         ) {
             log.debug(itemStack.pathStackDump() + "=" + element.getValue());
             Map<String, Object> valuemap = newPathMap();
@@ -1081,7 +1094,7 @@ public class CompositionSerializer {
             return null;
         }
 
-        if (item instanceof Element && !new Elements((Element)item).isVoid()) {
+        if (item instanceof Element && !new Elements((Element) item).isVoid()) {
             itemStack.pushStacks(tag + "[" + item.getArchetypeNodeId() + "]", null);
             retmap = setElementAttributesMap((Element) item);
             itemStack.popStacks();
@@ -1105,11 +1118,7 @@ public class CompositionSerializer {
                             if (clusterItems.containsKey(TAG_CLASS)) {
                                 clusterItems.put(TAG_CLASS, item.getClass().getSimpleName());
                             }
-                            if (clusterItems.containsKey(TAG_VALUE)) {
-                                ltree.put(getNodeTag(TAG_ITEMS, clusterItem, ltree), clusterItems.get(TAG_VALUE));
-                            } else {
-                                ltree.put(getNodeTag(TAG_ITEMS, clusterItem, ltree), clusterItems);
-                            }
+                            ltree.put(getNodeTag(TAG_ITEMS, clusterItem, ltree), clusterItems.getOrDefault(TAG_VALUE, clusterItems));
 //
                         }
                     } else

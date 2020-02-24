@@ -169,6 +169,22 @@ public abstract class BaseController {
         return compositionFormat;
     }
 
+
+    protected MediaType extractMediaType(String accept) {
+        final MediaType mediaType;
+
+        if (StringUtils.isBlank(accept) || "*/*".equals(accept)) {
+            return MediaType.APPLICATION_XML;
+        } else if (MediaType.parseMediaType(accept).isCompatibleWith(MediaType.APPLICATION_XML)) {
+            mediaType = MediaType.APPLICATION_XML;
+        } else if (MediaType.parseMediaType(accept).isCompatibleWith(MediaType.APPLICATION_JSON)) {
+            mediaType = MediaType.APPLICATION_JSON;
+        } else {
+            throw new NotAcceptableException("Only  XML or JSON are supported at the moment");
+        }
+        return mediaType;
+    }
+
     /**
      * Convenience helper to encode path strings to URI-safe strings
      *

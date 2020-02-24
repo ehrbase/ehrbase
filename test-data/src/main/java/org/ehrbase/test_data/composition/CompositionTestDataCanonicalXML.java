@@ -33,7 +33,8 @@ public enum CompositionTestDataCanonicalXML {
     RIPPLE_COMFORMANCE_INSTRUCTION("Instruction section from Ripple comformance", "RIPPLE_conformanceTesting_INSTRUCTION.request-procedure.v1.xml"),
     REGISTRO_DE_ATENDIMENTO("Duplicate section headings with different name", "Registro_de_Atendimento_Clinico.xml"),
     //this canonical XML has the
-    ALL_TYPES_FIXED("test all node types without archetype details at the moment", "test_all_types.fixed.v1.xml");
+    ALL_TYPES_FIXED("test all node types without archetype details at the moment", "test_all_types.fixed.v1.xml"),
+    ALL_TYPES_NO_CONTENT("a composition with null content", "test_all_no_content.xml");
 
 
     private final String filename;

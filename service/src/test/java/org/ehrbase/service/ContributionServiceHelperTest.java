@@ -146,7 +146,7 @@ public class ContributionServiceHelperTest {
         assertNotNull(stream);
         String streamString = IOUtils.toString(stream, UTF_8);
         List<Version> versionsA = unmarshalMapContentToRmObjectPreStep(ContributionTestDataCanonicalJson.ONE_ENTRY_COMPOSITION.getStream(), CompositionFormat.JSON);
-        List<Version> versionsB = ContributionServiceHelper.getVersions(streamString, CompositionFormat.JSON);
+        List<Version> versionsB = ContributionServiceHelper.parseVersions(streamString, CompositionFormat.JSON);
 
         assertEquals(versionsA, versionsB);
 
@@ -155,7 +155,7 @@ public class ContributionServiceHelperTest {
         assertNotNull(stream2);
         String streamString2 = IOUtils.toString(stream2, UTF_8);
         List<Version> versionsA2 = unmarshalMapContentToRmObjectPreStep(ContributionTestDataCanonicalJson.TWO_ENTRIES_COMPOSITION.getStream(), CompositionFormat.JSON);
-        List<Version> versionsB2 = ContributionServiceHelper.getVersions(streamString2, CompositionFormat.JSON);
+        List<Version> versionsB2 = ContributionServiceHelper.parseVersions(streamString2, CompositionFormat.JSON);
 
         assertEquals(versionsA2, versionsB2);
 

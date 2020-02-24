@@ -1,0 +1,78 @@
+{
+  "uid": {
+    "_type": "OBJECT_VERSION_ID",
+    "value": "7f069129-7312-447b-bd71-567305a9a871"
+  },
+  "folders": [
+    {
+      "_type": "FOLDER",
+      "name": {
+        "_type": "DV_TEXT",
+        "value": "2nd Upd. Sub folder"
+      },
+      "items": [
+        {
+          "_type": "OBJECT_REF",
+          "namespace": "namespace1",
+          "type": "FOLDER",
+          "id": {
+            "_type": "OBJECT_REF_ID",
+            "value": "48282ddd-4c7d-444a-8159-458a03c9827f"
+          }
+        }
+      ],
+      "folders": [
+        {
+          "_type": "FOLDER",
+          "name": {
+            "_type": "DV_TEXT",
+            "value": "2nd Upd. Sub Sub folder"
+          },
+          "items": [
+            {
+              "_type": "OBJECT_REF",
+              "namespace": "namespace2",
+              "type": "COMPOSITION",
+              "id": {
+                "_type": "OBJECT_REF_ID",
+                "value": "076f09ee-8da3-ae1b-0072-3ee18965fbb9"
+              }
+            }
+          ],
+          "archetype_node_id": "at[0003]",
+          "uid": {
+            "_type": "OBJECT_VERSION_ID",
+            "value": "eda6951b-5506-4726-89dc-7032872997ce"
+          }
+        }
+      ],
+      "archetype_node_id": "at[0002]",
+      "uid": {
+        "_type": "OBJECT_VERSION_ID",
+        "value": "129dc79c-e0bc-4946-bfa6-28ce609bbd2c"
+      }
+    }
+  ],
+  "items": [],
+  "details": {
+    "_type": "ITEM_TREE",
+    "items": [
+      {
+        "_type": "ELEMENT",
+        "name": {
+          "_type": "DV_TEXT",
+          "value": "text"
+        },
+        "value": {
+          "_type": "DV_TEXT",
+          "value": "Test entry for the first item structure element"
+        },
+        "archetype_node_id": "at0004"
+      }
+    ]
+  },
+  "name": {
+    "_type": "DV_TEXT",
+    "value": " 2nd Updated Root name on 27th nov 2019"
+  }
+}

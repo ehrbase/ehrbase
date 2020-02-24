@@ -55,6 +55,7 @@ import static org.ehrbase.jooq.pg.Tables.ENTRY;
  * <p>
  * Created by christian on 4/28/2016.
  */
+@SuppressWarnings("unchecked")
 public class QueryProcessor extends TemplateMetaData {
 
     /**
@@ -87,7 +88,7 @@ public class QueryProcessor extends TemplateMetaData {
     private final DSLContext context;
     private final I_KnowledgeCache knowledgeCache;
     private final Contains contains;
-    private final Statements statements;
+    private Statements statements;
     private final String serverNodeId;
     private final Boolean usePgExtensions;
 
@@ -120,12 +121,14 @@ public class QueryProcessor extends TemplateMetaData {
 
     AqlSelectQuery buildAqlSelectQuery() {
 
-        // fetch all potential containment's  according  to the contains clausal
+        // fetch all potential containment's  according  to the contains clause
         ContainsSet containsSet = new ContainsSet(contains.getContainClause(), context);
         Result<?> containmentRecords = containsSet.getInSet();
 
 
         Map<String, QuerySteps> cacheQuery = new HashMap<>();
+
+        statements = new OrderByField(statements).merge();
 
         //Do to the way the query is build it is not possible to build sql if the AQL contains only compositions which have no instances in the DB. Thus we must manual handle this case.
         if (containmentRecords.isEmpty()) {
@@ -133,6 +136,8 @@ public class QueryProcessor extends TemplateMetaData {
             falseSelectQuery.addConditions(DSL.falseCondition());
             return new AqlSelectQuery(falseSelectQuery, null, false);
         }
+
+
 
         // build a query for each containment
         containmentRecords.forEach(containmentRecord ->
@@ -165,6 +170,19 @@ public class QueryProcessor extends TemplateMetaData {
         }
 
 
+        // Add function or Distinct
+        //TODO: inject ORDER BY into the superQuery
+        if (new Variables(statements.getVariables()).hasDefinedDistinct() || new Variables(statements.getVariables()).hasDefinedFunction()) {
+            SuperQuery superQuery = new SuperQuery(context, statements.getVariables(), unionSetQuery);
+            unionSetQuery = superQuery.select();
+            if (statements.getOrderAttributes() != null && !statements.getOrderAttributes().isEmpty()){
+                unionSetQuery = superQuery.setOrderBy(statements.getOrderAttributes(), unionSetQuery);
+            }
+        }
+        else if (statements.getOrderAttributes() != null && !statements.getOrderAttributes().isEmpty()) {
+            unionSetQuery = new SuperQuery(context, statements.getVariables(), unionSetQuery).selectOrderBy(statements.getOrderAttributes());
+        }
+
         // Add Top , Limit or Offset; Top and Limit can not be both present.
         LimitBinding limitBinding = new LimitBinding(Optional
                 .ofNullable(statements.getTopAttributes())
@@ -172,16 +190,6 @@ public class QueryProcessor extends TemplateMetaData {
                 .orElse(statements.getLimitAttribute()), statements.getOffsetAttribute(), unionSetQuery);
 
         unionSetQuery = limitBinding.bind();
-
-        // Add order by
-        OrderByBinder orderByBinder = new OrderByBinder(statements.getOrderAttributes(), unionSetQuery);
-        unionSetQuery = orderByBinder.bind();
-
-
-        // Add function or Distinct
-        if (new Variables(statements.getVariables()).hasDefinedDistinct() || new Variables(statements.getVariables()).hasDefinedFunction()) {
-            unionSetQuery = new SuperQuery(context, statements.getVariables(), unionSetQuery).select();
-        }
 
         return new AqlSelectQuery(unionSetQuery, cacheQuery.values(), cacheQuery.values().stream().anyMatch(QuerySteps::isContainsJson));
     }

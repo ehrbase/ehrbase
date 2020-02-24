@@ -23,6 +23,8 @@ package org.ehrbase.aql.sql.binding;
 
 import org.ehrbase.aql.compiler.OrderAttribute;
 import org.apache.commons.collections4.CollectionUtils;
+import org.ehrbase.aql.definition.I_VariableDefinition;
+import org.ehrbase.aql.definition.VariableDefinition;
 import org.jooq.Record;
 import org.jooq.SelectQuery;
 import org.jooq.SortField;
@@ -41,7 +43,7 @@ public class OrderByBinder {
     private List<OrderAttribute> orderAttributes;
     private final SelectQuery<Record> select;
 
-    public OrderByBinder(List<OrderAttribute> orderAttributes, SelectQuery<Record> select) {
+    OrderByBinder(List<OrderAttribute> orderAttributes, SelectQuery<Record> select) {
         this.orderAttributes = orderAttributes;
         this.select = select;
     }
@@ -53,16 +55,16 @@ public class OrderByBinder {
         List<SortField<Object>> orderFields = new ArrayList<>();
 
         for (OrderAttribute orderAttribute : orderAttributes) {
-            String identifier = orderAttribute.getVariableDefinition().getIdentifier();
-            SortField<Object> field = null;
-            if (identifier != null) {
-                if (orderAttribute.getDirection() != null && orderAttribute.getDirection().equals(OrderAttribute.OrderDirection.DESC)) {
-                    field = DSL.field(identifier).desc();
-                } else //default to ASCENDING
-                    field = DSL.field(identifier).asc();
+            SortField<Object> field;
+                String fieldIdentifier = orderAttribute.getVariableDefinition().getAlias() == null ?
+                        "\"/"+orderAttribute.getVariableDefinition().getPath()+"\"" :
+                        orderAttribute.getVariableDefinition().getAlias();
 
-            } else
-                throw new IllegalArgumentException("Could not resolve field in ORDER BY clause:" + orderAttribute.getVariableDefinition());
+                if (orderAttribute.getDirection() != null && orderAttribute.getDirection().equals(OrderAttribute.OrderDirection.DESC)) {
+                    field = DSL.field(fieldIdentifier).desc();
+                } else //default to ASCENDING
+                    field = DSL.field(fieldIdentifier).asc();
+
             orderFields.add(field);
         }
         return orderFields;
