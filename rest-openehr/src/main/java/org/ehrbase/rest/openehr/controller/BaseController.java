@@ -88,7 +88,7 @@ public abstract class BaseController {
     }
 
     protected String getBaseEnvLinkURL() {
-        String baseEnvLinkURL = null;
+        String baseEnvLinkURL;
         HttpServletRequest currentRequest =
                 ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
         // lazy about determining protocol but can be done too
