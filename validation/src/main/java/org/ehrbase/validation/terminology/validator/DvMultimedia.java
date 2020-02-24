@@ -26,11 +26,11 @@ public class DvMultimedia extends TerminologyCheck{
         this.RM_CLASS = com.nedap.archie.rm.datavalues.encapsulated.DvMultimedia.class;
     }
 
-    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datavalues.encapsulated.DvMultimedia dvMultimedia) throws Exception {
+    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datavalues.encapsulated.DvMultimedia dvMultimedia) throws IllegalArgumentException {
        check(terminologyInterface, codesetMapping, context, dvMultimedia, "en");
     }
 
-    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datavalues.encapsulated.DvMultimedia dvMultimedia, String language) throws Exception {
+    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datavalues.encapsulated.DvMultimedia dvMultimedia, String language) throws IllegalArgumentException {
         if (dvMultimedia.getIntegrityCheckAlgorithm() != null)
             validate(terminologyInterface, codesetMapping, "integrity_check_algorithm", dvMultimedia.getIntegrityCheckAlgorithm(), language);
 

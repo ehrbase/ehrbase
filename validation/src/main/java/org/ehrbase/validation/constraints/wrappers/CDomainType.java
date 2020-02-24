@@ -34,12 +34,12 @@ import java.util.Map;
  */
 public class CDomainType extends CConstraint implements I_CArchetypeConstraintValidate {
 
-    protected CDomainType(Map<String, Map<String, String>> localTerminologyLookup) {
+    CDomainType(Map<String, Map<String, String>> localTerminologyLookup) {
         super(localTerminologyLookup);
     }
 
     @Override
-    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws Exception {
+    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws IllegalArgumentException {
 
         if (archetypeconstraint instanceof CDVORDINAL)
             new CDvOrdinal(localTerminologyLookup).validate(path, aValue, archetypeconstraint);
@@ -50,7 +50,7 @@ public class CDomainType extends CConstraint implements I_CArchetypeConstraintVa
         else if (archetypeconstraint instanceof CDVSTATE)
             new CDvState(localTerminologyLookup).validate(path, aValue, archetypeconstraint);
         else
-            throw new IllegalArgumentException("INTERNAL: unsupported CDOMAINTYPE:" + archetypeconstraint);
+            throw new IllegalStateException("INTERNAL: unsupported CDOMAINTYPE:" + archetypeconstraint);
 
     }
 }

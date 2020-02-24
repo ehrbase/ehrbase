@@ -28,10 +28,7 @@ import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.definitions.StructuredString;
 import org.ehrbase.api.definitions.StructuredStringFormat;
 import org.ehrbase.api.dto.CompositionDto;
-import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
-import org.ehrbase.api.exception.UnprocessableEntityException;
+import org.ehrbase.api.exception.*;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.ValidationService;
@@ -173,7 +170,12 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
             // rethrow if this class, but wrap all others in InternalServerException
             if (e.getClass().equals(UnprocessableEntityException.class))
                 throw (UnprocessableEntityException) e;
-            throw new InternalServerException(e);
+            if (e.getClass().equals(IllegalArgumentException.class))
+                throw new ValidationException(e);
+            else if (e.getClass().equals(org.ehrbase.validation.constraints.wrappers.ValidationException.class))
+                throw new ValidationException(e);
+            else
+                throw new InternalServerException(e);
         }
 
         //pre-step: check for valid ehrId

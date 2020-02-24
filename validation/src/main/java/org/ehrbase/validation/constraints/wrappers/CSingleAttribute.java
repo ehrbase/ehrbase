@@ -36,18 +36,18 @@ import java.util.Map;
  */
 public class CSingleAttribute extends CConstraint implements I_CArchetypeConstraintValidate {
 
-    protected CSingleAttribute(Map<String, Map<String, String>> localTerminologyLookup) {
+    CSingleAttribute(Map<String, Map<String, String>> localTerminologyLookup) {
         super(localTerminologyLookup);
     }
 
     @Override
-    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws Exception {
+    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws IllegalArgumentException {
 
         CSINGLEATTRIBUTE csingleattribute = (CSINGLEATTRIBUTE) archetypeconstraint;
 
         if (csingleattribute.sizeOfChildrenArray() > 0) {
             int rulecount = csingleattribute.sizeOfChildrenArray();
-            StringBuffer messageBuffer = new StringBuffer();
+            StringBuilder messageBuffer = new StringBuilder();
             for (COBJECT cobject : csingleattribute.getChildrenArray()) {
                 //multiple rules for a specific item, at least one must be verified
                 try {

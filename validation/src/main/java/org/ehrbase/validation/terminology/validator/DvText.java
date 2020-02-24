@@ -27,7 +27,7 @@ public class DvText extends TerminologyCheck {
         this.RM_CLASS = com.nedap.archie.rm.datavalues.DvText.class;
     }
 
-    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datavalues.DvText dvText, String language) throws Exception {
+    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datavalues.DvText dvText, String language) throws IllegalArgumentException {
 
         if (dvText.getMappings() != null && !dvText.getMappings().isEmpty()){
 
@@ -38,7 +38,7 @@ public class DvText extends TerminologyCheck {
 
     }
 
-    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datavalues.DvText dvText) throws Exception {
+    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datavalues.DvText dvText) throws IllegalArgumentException {
 
         if (dvText.getMappings() != null && !dvText.getMappings().isEmpty()){
 

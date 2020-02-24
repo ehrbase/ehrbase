@@ -38,12 +38,12 @@ import java.util.Map;
  */
 public class CDvOrdinal extends CConstraint implements I_CArchetypeConstraintValidate {
 
-    protected CDvOrdinal(Map<String, Map<String, String>> localTerminologyLookup) {
+    CDvOrdinal(Map<String, Map<String, String>> localTerminologyLookup) {
         super(localTerminologyLookup);
     }
 
     @Override
-    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws Exception {
+    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws IllegalArgumentException {
 
         if (!(aValue instanceof DvOrdinal))
             ValidationException.raise(path, "INTERNAL: argument is not a DvOrdinal", "DV_ORDINAL_01");
@@ -63,7 +63,7 @@ public class CDvOrdinal extends CConstraint implements I_CArchetypeConstraintVal
                 for (DVORDINAL ordinal : cdvordinal.getListArray()) {
                     if (ordinal.getValue() == dvOrdinal.getValue()) {
                         //check symbol
-                        if (StringUtils.isNotEmpty(ordinal.getSymbol().getValue()) && !(ordinal.getSymbol().getValue().equals(dvOrdinal.getSymbol())))
+                        if (StringUtils.isNotEmpty(ordinal.getSymbol().getValue()) && !(ordinal.getSymbol().getValue().equals(dvOrdinal.getSymbol().getValue())))
                             continue;
                         String codeString = dvOrdinal.getSymbol().getDefiningCode().getCodeString();
                         String terminology = dvOrdinal.getSymbol().getDefiningCode().getTerminologyId().getValue();

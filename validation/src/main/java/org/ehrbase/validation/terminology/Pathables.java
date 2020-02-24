@@ -18,7 +18,7 @@ public class Pathables {
     private AttributeCodesetMapping codesetMapping;
     private String language;
 
-    public Pathables(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, ItemValidator itemValidator, String language) {
+    Pathables(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, ItemValidator itemValidator, String language) {
         this.terminologyInterface = terminologyInterface;
         this.itemValidator = itemValidator;
         this.codesetMapping = codesetMapping;
@@ -36,12 +36,12 @@ public class Pathables {
 
                     Object object = objectForField(pathable, field);
 
-                    if (object != null && object instanceof Pathable) {
+                    if (object instanceof Pathable) {
                         new Pathables(terminologyInterface, codesetMapping, itemValidator, language).traverse((Pathable) object, excludes);
                     }
                     else
                         if (object != null)
-                            throw new IllegalArgumentException("Internal: couldn't handle object retrieved using getter");
+                            throw new IllegalStateException("Internal: couldn't handle object retrieved using getter");
                 }
             }
             catch (ClassCastException e){
@@ -50,6 +50,7 @@ public class Pathables {
                     RMObject object = objectForField(pathable, field);
                     itemValidator.validate(terminologyInterface, codesetMapping, field.getName(), object, language);
                 }
+
             } //continue
         }
 
@@ -71,17 +72,17 @@ public class Pathables {
             methodHandle = MethodHandles.lookup().findVirtual(pathable.getClass(), getterName, MethodType.methodType(field.getType()));
         }
         catch (NoSuchMethodException | IllegalAccessException e){
-            throw new InternalError("Internal error:"+e.getMessage());
+            throw new IllegalStateException("Internal error:"+e.getMessage());
         }
         try {
             Object object = methodHandle.invoke(pathable);
             if (object != null && !(object instanceof RMObject))
-                throw new IllegalArgumentException("Internal: object is not of class RMObject:" + object.toString());
+                throw new IllegalStateException("Internal: object is not of class RMObject:" + object.toString());
 
             return (RMObject) object;
         }
         catch (Throwable throwable){
-            throw new InternalError("Internal:"+throwable.getMessage());
+            throw new IllegalStateException("Internal:"+throwable.getMessage());
         }
     }
 
