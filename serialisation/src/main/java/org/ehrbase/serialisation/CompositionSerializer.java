@@ -879,7 +879,7 @@ public class CompositionSerializer {
      * @param target
      * @throws Exception
      */
-    private void compactEntry(Object node, Map<String, Object> target, String key, Map<String, Object> entry) throws Exception {
+    private void compactEntry(Object node, Map<String, Object> target, String key, Map<String, Object> entry) {
         //if entry is null, ignore, the dirty bit is not set...
         if (entry != null) {
             if (entry.keySet().size() == 1 && entry.get(TAG_VALUE) != null) {
