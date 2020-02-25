@@ -113,6 +113,7 @@ public class ValidationServiceImp implements ValidationService {
         if (composition.getArchetypeDetails().getTemplateId() == null)
             throw new IllegalArgumentException("Composition missing mandatory attribute: archetype details/template_id");
 
+        //check the built composition using Archie Validator
         RMObjectValidator rmObjectValidator = new RMObjectValidator(ArchieRMInfoLookup.getInstance());
 
         List<RMObjectValidationMessage> rmObjectValidationMessages = rmObjectValidator.validate(composition);
