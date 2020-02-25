@@ -27,7 +27,7 @@ public class Participation extends TerminologyCheck {
         this.RM_CLASS = com.nedap.archie.rm.generic.Participation.class;
     }
 
-    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.generic.Participation participation, String language) throws Exception {
+    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.generic.Participation participation, String language){
         if (participation.getMode() != null) {
             //validate mode as a DvCodedText
             validate(terminologyInterface, codesetMapping, "mode", new DvCodedText(participation.getMode().getValue(), participation.getMode().getDefiningCode()), language);
