@@ -40,13 +40,13 @@ public abstract class ConstraintMapper implements Serializable {
     Logger logger = LogManager.getLogger(ConstraintMapper.class);
 
     protected Map<String, Map<String, String>> localTerminologyLookup;
-    protected boolean lenient;
+    private boolean lenient;
 
     public class OccurrenceItem implements Serializable {
         private ConstraintOccurrences constraintOccurrences;
         private MultiplicityInterval existence;
 
-        public OccurrenceItem(ConstraintOccurrences constraintOccurrences, MultiplicityInterval existence) {
+        OccurrenceItem(ConstraintOccurrences constraintOccurrences, MultiplicityInterval existence) {
             this.constraintOccurrences = constraintOccurrences;
             this.existence = existence;
         }
@@ -64,7 +64,7 @@ public abstract class ConstraintMapper implements Serializable {
         private ConstraintOccurrences existence;
         private ConstraintOccurrences cardinality;
 
-        public CardinalityItem(ConstraintOccurrences existence, ConstraintOccurrences cardinality) {
+        CardinalityItem(ConstraintOccurrences existence, ConstraintOccurrences cardinality) {
             this.existence = existence;
             this.cardinality = cardinality;
         }
@@ -78,10 +78,10 @@ public abstract class ConstraintMapper implements Serializable {
         }
     }
 
-    protected Map<String, OccurrenceItem> watchList = new HashMap<>(); //required nodes
-    protected Set<String> validNodeList = new HashSet<>(); //valid nodes
-    protected Map<String, CardinalityItem> cardinalityList = new HashMap<>(); //valid nodes
-    protected Map<String, ConstraintOccurrences> occurrencesMap = new HashMap<>(); //transitive list of occurrences
+    Map<String, OccurrenceItem> watchList = new HashMap<>(); //required nodes
+    Set<String> validNodeList = new HashSet<>(); //valid nodes
+    Map<String, CardinalityItem> cardinalityList = new HashMap<>(); //valid nodes
+    Map<String, ConstraintOccurrences> occurrencesMap = new HashMap<>(); //transitive list of occurrences
 
     public Map<String, CardinalityItem> getCardinalityList() {
         return cardinalityList;
@@ -90,7 +90,7 @@ public abstract class ConstraintMapper implements Serializable {
     public abstract class ConstraintItem implements Serializable {
         private String path;
 
-        public ConstraintItem(String path) {
+        ConstraintItem(String path) {
             this.path = path;
         }
 
@@ -99,7 +99,7 @@ public abstract class ConstraintMapper implements Serializable {
         }
     }
 
-    protected Map<String, ConstraintItem> elementConstraintMap = new HashMap<>();
+    Map<String, ConstraintItem> elementConstraintMap = new HashMap<>();
 
     public ConstraintItem getConstraintItem(String key) {
         return elementConstraintMap.get(key);
@@ -115,14 +115,10 @@ public abstract class ConstraintMapper implements Serializable {
 
     public void updateWatchList(String path) {
         //retrieve path in watch list and remove it
-        if (watchList.containsKey(path)) {
-            //check its class
-//            Object object = watchList.get(path);
-            watchList.remove(path);
-        }
+        watchList.remove(path);
     }
 
-    public void _validateCardinality(Composition composition) throws Exception {
+    public void _validateCardinality(Composition composition) throws IllegalArgumentException {
         for (Map.Entry<String, CardinalityItem> entry : cardinalityList.entrySet()) {
             //get the corresponding node
             Object locatable = composition.itemAtPath(entry.getKey());
@@ -161,7 +157,7 @@ public abstract class ConstraintMapper implements Serializable {
         }
     }
 
-    public Iterator<Map.Entry<String, ConstraintItem>> getElementConstraintIterator() {
+    Iterator<Map.Entry<String, ConstraintItem>> getElementConstraintIterator() {
         return elementConstraintMap.entrySet().iterator();
     }
 

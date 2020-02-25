@@ -28,5 +28,5 @@ import org.openehr.schemas.v1.CPRIMITIVE;
  */
 public interface I_CTypeValidate {
 
-    void validate(String path, Object aValue, CPRIMITIVE cprimitive) throws Exception;
+    void validate(String path, Object aValue, CPRIMITIVE cprimitive) throws IllegalArgumentException;
 }

@@ -37,15 +37,15 @@ import java.util.Map;
  */
 public class CCodePhrase extends CConstraint implements I_CArchetypeConstraintValidate {
 
-    protected CCodePhrase(Map<String, Map<String, String>> localTerminologyLookup) {
+    CCodePhrase(Map<String, Map<String, String>> localTerminologyLookup) {
         super(localTerminologyLookup);
     }
 
     @Override
-    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws Exception {
+    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws IllegalArgumentException {
 
         if (!(aValue instanceof CodePhrase))
-            throw new IllegalArgumentException("INTERNAL: argument is not a CodePhrase");
+            throw new IllegalStateException("INTERNAL: argument is not a CodePhrase");
 
         CodePhrase codePhrase = (CodePhrase) aValue;
         CCODEPHRASE ccodephrase = (CCODEPHRASE) archetypeconstraint;
@@ -61,15 +61,14 @@ public class CCodePhrase extends CConstraint implements I_CArchetypeConstraintVa
                     ValidationException.raise(path, "CodePhrase terminology does not match, expected:" + terminologyid + ", found:" + codePhrase.getTerminologyId().getValue(), "CODE_PHRASE_02");
 
                 if (terminologyid.equals("openehr") || terminologyid.equals("local")) {
-                    code_match:
-                    {
-                        if (ccodephrase.sizeOfCodeListArray() > 0) {
-                            //should match one in the list
-                            if (!(Arrays.asList(ccodephrase.getCodeListArray()).contains(codePhrase.getCodeString())))
-                                ValidationException.raise(path, "CodePhrase codeString does not match any option, found:" + codePhrase.getCodeString(), "CODE_PHRASE_03");
 
-                        }
+                    if (ccodephrase.sizeOfCodeListArray() > 0) {
+                        //should match one in the list
+                        if (!(Arrays.asList(ccodephrase.getCodeListArray()).contains(codePhrase.getCodeString())))
+                            ValidationException.raise(path, "CodePhrase codeString does not match any option, found:" + codePhrase.getCodeString(), "CODE_PHRASE_03");
+
                     }
+
                 }
             }
         }
