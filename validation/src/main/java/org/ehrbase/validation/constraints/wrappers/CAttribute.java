@@ -21,12 +21,12 @@
 
 package org.ehrbase.validation.constraints.wrappers;
 
+import org.apache.commons.text.WordUtils;
 import org.ehrbase.validation.constraints.util.SnakeToCamel;
 import com.nedap.archie.rm.archetyped.Locatable;
 import com.nedap.archie.rm.datavalues.DataValue;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.DvText;
-import org.apache.commons.lang3.text.WordUtils;
 import org.apache.xmlbeans.SchemaType;
 import org.openehr.schemas.v1.ARCHETYPECONSTRAINT;
 import org.openehr.schemas.v1.CATTRIBUTE;
@@ -46,14 +46,14 @@ import java.util.Map;
  */
 public class CAttribute extends CConstraint implements I_CArchetypeConstraintValidate {
 
-    boolean isAttributeResolved = false; //true if a getter or function has been found
+    private boolean isAttributeResolved = false; //true if a getter or function has been found
 
-    protected CAttribute(Map<String, Map<String, String>> localTerminologyLookup) {
+    CAttribute(Map<String, Map<String, String>> localTerminologyLookup) {
         super(localTerminologyLookup);
     }
 
     @Override
-    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws Exception {
+    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws IllegalArgumentException {
 //        if (!(archetypeconstraint instanceof CATTRIBUTE))
 //            throw new IllegalArgumentException("INTERNAL: constraint is not a C_ATTRIBUTE");
 
@@ -92,9 +92,9 @@ public class CAttribute extends CConstraint implements I_CArchetypeConstraintVal
         }
 
         if (attribute instanceof CSINGLEATTRIBUTE) {
-            new CSingleAttribute(localTerminologyLookup).validate(path, value, (CSINGLEATTRIBUTE) attribute);
+            new CSingleAttribute(localTerminologyLookup).validate(path, value, attribute);
         } else if (attribute instanceof CMULTIPLEATTRIBUTE) {
-            new CMultipleAttribute(localTerminologyLookup).validate(path, value, (CMULTIPLEATTRIBUTE) attribute);
+            new CMultipleAttribute(localTerminologyLookup).validate(path, value, attribute);
         }
     }
 
@@ -109,14 +109,15 @@ public class CAttribute extends CConstraint implements I_CArchetypeConstraintVal
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     private Object getAttributeValue(Object obj, String attribute) {
         Class rmClass = obj.getClass();
         Object value = null;
-        Method getter = null;
+        Method getter;
         String getterName = "get" + new SnakeToCamel(attribute).convert();
 
         try {
-            getter = rmClass.getMethod(getterName, null);
+            getter = rmClass.getMethod(getterName);
             isAttributeResolved = true;
             value = getter.invoke(obj, null);
 
@@ -129,13 +130,13 @@ public class CAttribute extends CConstraint implements I_CArchetypeConstraintVal
     private Object getFunctionValue(Object obj, String attribute) {
         Class rmClass = obj.getClass();
         Object value = null;
-        Method function = null;
+        Method function;
         String functionName = WordUtils.uncapitalize(new SnakeToCamel(attribute).convert());
 
         try {
-            function = rmClass.getMethod(functionName, null);
+            function = rmClass.getMethod(functionName);
             isAttributeResolved = true;
-            value = function.invoke(obj, null);
+            value = function.invoke(obj);
 
         } catch (Exception e) {
             isAttributeResolved = false;
@@ -148,8 +149,8 @@ public class CAttribute extends CConstraint implements I_CArchetypeConstraintVal
         Object value = null;
 
         try {
-            Method getter = rmClass.getMethod("getValue", null);
-            value = getter.invoke(obj, null);
+            Method getter = rmClass.getMethod("getValue");
+            value = getter.invoke(obj);
 
         } catch (Exception e) {
             // TODO log as kernel warning

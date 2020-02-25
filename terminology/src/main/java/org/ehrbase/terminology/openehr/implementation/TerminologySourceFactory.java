@@ -32,6 +32,8 @@
  */
 package org.ehrbase.terminology.openehr.implementation;
 
+import org.ehrbase.terminology.openehr.TerminologyResourceException;
+
 /**
  * Factory for concrete terminology source implementation
  * 
@@ -49,7 +51,7 @@ public class TerminologySourceFactory {
 	 * 
 	 * @return terminology source instance
 	 */
-	public static TerminologySource getOpenEHRTerminology(String language) throws Exception {
+	static TerminologySource getOpenEHRTerminology(String language) throws TerminologyResourceException {
 		switch (language) {
 			case "en":
 				return XMLTerminologySource.getInstance(OPENEHR_TERMINOLOGY_EN);
@@ -62,7 +64,7 @@ public class TerminologySourceFactory {
 		}
 	}
 
-	public static TerminologySource getOpenEHRTerminology() throws Exception {
+	static TerminologySource getOpenEHRTerminology() throws TerminologyResourceException {
 		return getOpenEHRTerminology("en");
 	}
 	
@@ -71,11 +73,11 @@ public class TerminologySourceFactory {
 	 * 
 	 * @return terminology source instance
 	 */
-	public static TerminologySource getExternalTerminologies(String language) throws Exception {
+	static TerminologySource getExternalTerminologies(String language) throws TerminologyResourceException {
 		return XMLTerminologySource.getInstance(EXTERNAL_TERMINOLOGIES);
 	}
 
-	public static TerminologySource getAttributeToGroupMappings() throws Exception {
+	public static TerminologySource getAttributeToGroupMappings() throws TerminologyResourceException {
 		return XMLTerminologySource.getInstance(EXTERNAL_TERMINOLOGIES);
 	}
 

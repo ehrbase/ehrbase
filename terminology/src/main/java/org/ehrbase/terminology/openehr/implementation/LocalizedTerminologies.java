@@ -17,6 +17,7 @@
  */
 package org.ehrbase.terminology.openehr.implementation;
 
+import org.ehrbase.terminology.openehr.TerminologyResourceException;
 import org.ehrbase.terminology.openehr.TerminologyInterface;
 
 import java.util.HashMap;
@@ -27,7 +28,7 @@ public class LocalizedTerminologies {
     private Map<String, TerminologyInterface> terminologies = new HashMap<>();
     private AttributeCodesetMapping codesetMapping;
 
-    public LocalizedTerminologies() throws Exception {
+    public LocalizedTerminologies() throws TerminologyResourceException {
         terminologies.put("en", new SimpleTerminologyInterface("en"));
         terminologies.put("ja", new SimpleTerminologyInterface("ja"));
         terminologies.put("pt", new SimpleTerminologyInterface("pt"));

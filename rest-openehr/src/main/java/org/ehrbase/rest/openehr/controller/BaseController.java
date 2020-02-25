@@ -384,6 +384,17 @@ public abstract class BaseController {
         return createErrorResponse("Bad Gateway: Proxied connection failed", HttpStatus.BAD_GATEWAY);
     }
 
+
+    /**
+     * Handler for validation errors
+     *
+     * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
+     */
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<Map<String, String>> restErrorHandler(ValidationException e) {
+        return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
     /**
      * Fallback error handler.
      *

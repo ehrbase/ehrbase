@@ -38,7 +38,7 @@ public class Participation extends TerminologyCheck {
         }
     }
 
-    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.generic.Participation participation) throws Exception {
+    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.generic.Participation participation) throws IllegalArgumentException {
        check(terminologyInterface, codesetMapping, context, participation, "en");
     }
 

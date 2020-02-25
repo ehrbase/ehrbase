@@ -67,7 +67,6 @@ public class Pathables {
                 }
             }
         }
-
     }
 
     private boolean isFieldExcluded(String[] excludes, String fieldName){
@@ -78,25 +77,4 @@ public class Pathables {
 
         return false;
     }
-
-//    private RMObject objectForField(Pathable pathable, Field field) throws IllegalArgumentException, InternalError {
-//        String getterName = "get"+ StringUtils.capitalize(field.getName());
-//        MethodHandle methodHandle;
-//        try {
-//            methodHandle = MethodHandles.lookup().findVirtual(pathable.getClass(), getterName, MethodType.methodType(field.getType()));
-//        }
-//        catch (NoSuchMethodException | IllegalAccessException e){
-//            throw new InternalError("Internal error:"+e.getMessage());
-//        }
-//        try {
-//            Object object = methodHandle.invoke(pathable);
-//            if (object != null && !(object instanceof RMObject))
-//                throw new IllegalArgumentException("Internal: object is not of class RMObject:" + object.toString());
-//
-//            return (RMObject) object;
-//        }
-//        catch (Throwable throwable){
-//            throw new InternalError("Internal:"+throwable.getMessage());
-//        }
-//    }
 }

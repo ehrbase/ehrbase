@@ -42,7 +42,7 @@ public class OptConstraintMapper extends ConstraintMapper  {
     public class OptConstraintItem extends ConstraintItem {
         private CCOMPLEXOBJECT ccomplexobject;
 
-        public OptConstraintItem(String path, CCOMPLEXOBJECT ccomplexobject) {
+        OptConstraintItem(String path, CCOMPLEXOBJECT ccomplexobject) {
             super(path);
             this.ccomplexobject = ccomplexobject;
         }
@@ -55,16 +55,16 @@ public class OptConstraintMapper extends ConstraintMapper  {
             return !IntervalComparator.isOptional(ccomplexobject.getOccurrences());
         }
 
-        public String occurrencesToString() {
+        String occurrencesToString() {
             return IntervalComparator.toString(ccomplexobject.getOccurrences());
         }
     }
 
-    public void bind(String path, CCOMPLEXOBJECT ccobj) throws Exception {
+    public void bind(String path, CCOMPLEXOBJECT ccobj) throws IllegalArgumentException {
         elementConstraintMap.put(path, new OptConstraintItem(path, ccobj));
     }
 
-    public void addToValidPath(String path) {
+    void addToValidPath(String path) {
         if (path.isEmpty())
             return;
         String setPath = path.substring(0, path.lastIndexOf("]") + 1);
@@ -75,7 +75,7 @@ public class OptConstraintMapper extends ConstraintMapper  {
         validNodeList.add(setPath);
     }
 
-    public void addToWatchList(String path, CSINGLEATTRIBUTE csingleattribute) {
+    void addToWatchList(String path, CSINGLEATTRIBUTE csingleattribute) {
         //check the cardinality of this node
         if (path.isEmpty())
             return;
@@ -94,32 +94,23 @@ public class OptConstraintMapper extends ConstraintMapper  {
         //check for cardinality
     }
 
-    public void addToCardinalityList(String path, CMULTIPLEATTRIBUTE cmultipleattribute) {
+    void addToCardinalityList(String path, CMULTIPLEATTRIBUTE cmultipleattribute) {
         IntervalOfInteger cardinalInterval = cmultipleattribute.getCardinality().getInterval();
 
         try {
-//            String setPath = Locatable.parentPath(path);
-            String setPath = path;
 
             //monitor only "interesting" cardinality: lower >= 1, upper <= n
-            if (cardinalInterval.getLower() >= 1 || cardinalInterval.getUpperUnbounded() == false) {
+            if (cardinalInterval.getLower() >= 1 || !cardinalInterval.getUpperUnbounded()) {
                 CardinalityItem cardinalityItem = new CardinalityItem(new ConstraintOccurrences(cmultipleattribute.getExistence()), new ConstraintOccurrences(cmultipleattribute.getCardinality().getInterval()));
-                cardinalityList.put(setPath, cardinalityItem);
+                cardinalityList.put(path, cardinalityItem);
             }
 
-//        if (watchList.containsKey(path)){
-//            IntervalOfInteger occurrenceInterval = IntervalComparator.makeOptInterval(watchList.get(path).getConstraintOccurrences().asInterval());
-//            //check if the cardinality "defeats" the existence constraint...
-//            if (IntervalComparator.isOptional(cardinalInterval) && !(IntervalComparator.isOptional(occurrenceInterval))){
-//                watchList.remove(path);
-//            }
-//        }
         } catch (Exception e) {
-            ; //do nothing, fails if path is root
+             //do nothing, fails if path is root
         }
     }
 
-    public void addToExistence(String path, IntervalOfInteger occurrences) {
+    void addToExistence(String path, IntervalOfInteger occurrences) {
         occurrencesMap.put(path, new ConstraintOccurrences(occurrences));
     }
 
