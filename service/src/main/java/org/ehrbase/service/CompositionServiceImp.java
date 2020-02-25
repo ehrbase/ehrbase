@@ -373,6 +373,7 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
      * @param format  Composition format
      * @return
      */
+    @Override
     public String getUidFromInputComposition(String content, CompositionFormat format) throws IllegalArgumentException, InternalServerException, UnexpectedSwitchCaseException {
 
         Composition composition = buildComposition(content, format);
@@ -384,8 +385,14 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
 
     }
 
+    @Override
     public boolean exists(UUID versionedObjectId) {
         return I_CompositionAccess.exists(this.getDataAccess(), versionedObjectId);
+    }
+
+    @Override
+    public boolean isDeleted(UUID versionedObjectId) {
+        return I_CompositionAccess.isDeleted(this.getDataAccess(), versionedObjectId);
     }
 }
 

@@ -182,6 +182,8 @@ __pycache__
 log.html
 output.xml
 report.html
+std*
+*.tmp.json
 
 ### VisualStudioCode ###
 .vscode/*

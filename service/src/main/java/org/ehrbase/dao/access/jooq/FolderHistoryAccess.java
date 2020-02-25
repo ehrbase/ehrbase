@@ -32,11 +32,14 @@ import org.ehrbase.dao.access.interfaces.I_FolderAccess;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.dao.access.util.FolderUtils;
+import org.ehrbase.jooq.binding.OtherDetailsJsonbBinder;
+import org.ehrbase.jooq.binding.SysPeriodBinder;
 import org.ehrbase.jooq.pg.tables.records.FolderRecord;
 import org.ehrbase.jooq.pg.tables.records.ObjectRefRecord;
 import org.jooq.*;
 import org.postgresql.util.PGobject;
 import java.sql.Timestamp;
+import java.time.OffsetDateTime;
 import java.util.*;
 import static org.ehrbase.jooq.pg.Tables.*;
 import static org.jooq.impl.DSL.*;
@@ -121,9 +124,9 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
     private static FolderHistoryAccess buildFolderAccessFromGenericRecord(final Record record_,
                                                                           final I_DomainAccess domainAccess) {
 
-        Record15<UUID, UUID, UUID, Timestamp, Object, UUID, Timestamp, UUID, UUID, String, String, Boolean, PGobject, Timestamp, Object>
+        Record15<UUID, UUID, UUID, Timestamp, Object, UUID, Timestamp, UUID, UUID, String, String, Boolean, JSONB, Timestamp, Object>
                 record
-                = (Record15<UUID, UUID, UUID, Timestamp, Object, UUID, Timestamp, UUID, UUID, String, String, Boolean, PGobject, Timestamp, Object>) record_;
+                = (Record15<UUID, UUID, UUID, Timestamp, Object, UUID, Timestamp, UUID, UUID, String, String, Boolean, JSONB, Timestamp, Object>) record_;
         FolderHistoryAccess folderAccess = new FolderHistoryAccess(domainAccess);
         folderAccess.folderRecord = new FolderRecord();
         folderAccess.setFolderId(record.value1());
@@ -132,10 +135,10 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
         folderAccess.setFolderNArchetypeNodeId(record.value11());
         folderAccess.setIsFolderActive(record.value12());
         // Due to generic type from JOIN The ItemStructure binding does not cover the details
-        // and we have to parse it from PGobject manually
-        folderAccess.setFolderDetails(FolderUtils.parseFromPGobject(record.value13()));
+        // and we have to parse it manually
+        folderAccess.setFolderDetails(new OtherDetailsJsonbBinder().converter().from(record.value13()));
         folderAccess.setFolderSysTransaction(record.value14());
-        folderAccess.setFolderSysPeriod(record.value15());
+        folderAccess.setFolderSysPeriod(new SysPeriodBinder().converter().from(record.value15()));
         folderAccess.getItems()
                     .addAll(FolderHistoryAccess.retrieveItemsByFolderAndContributionId(record.value1(),
                                                                                 record.value3(),
@@ -256,7 +259,7 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
 
         List<ObjectRef> result = new ArrayList<>();
         for(Record recordRecord : retrievedRecords){
-            Record11<UUID, UUID, UUID, Timestamp, Timestamp, String, String, UUID, UUID, Timestamp, Timestamp>  recordParam =  (Record11<UUID, UUID, UUID, Timestamp, Timestamp, String, String, UUID, UUID, Timestamp, Timestamp>) recordRecord;
+            Record11<UUID, UUID, UUID, Timestamp, Timestamp, String, String, UUID, UUID, Timestamp, AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>>  recordParam =  (Record11<UUID, UUID, UUID, Timestamp, Timestamp, String, String, UUID, UUID, Timestamp, AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>>) recordRecord;
             ObjectRefRecord objectRef = new ObjectRefRecord();
             objectRef.setIdNamespace(recordParam.value6());
             objectRef.setType(recordParam.value7());
@@ -435,12 +438,12 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
         return this.folderRecord.getSysTransaction();
     }
 
-    public Object getFolderSysPeriod(){
+    public AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime> getFolderSysPeriod(){
 
         return this.folderRecord.getSysPeriod();
     }
 
-    public void setFolderSysPeriod(Object folderSysPeriod){
+    public void setFolderSysPeriod(AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime> folderSysPeriod){
 
         this.folderRecord.setSysPeriod(folderSysPeriod);
     }

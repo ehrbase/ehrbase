@@ -32,10 +32,8 @@ import org.jooq.tools.jdbc.MockResult;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.TimeZone;
-import java.util.UUID;
+import java.time.OffsetDateTime;
+import java.util.*;
 
 import static org.ehrbase.jooq.pg.Tables.*;
 
@@ -79,7 +77,7 @@ public class FolderMockDataProvider implements MockDataProvider{
                 DateTime expected
                         = DateTime.parse("2019-06-13 18:10:33.76", dateTimeFormatter);
                 MockResult[] mock2 = new MockResult[1];
-                Result<Record8<UUID, UUID, String, String, Boolean, ItemStructure, Timestamp, Object>> result2 = create.newResult(FOLDER.ID, FOLDER.IN_CONTRIBUTION, FOLDER.NAME, FOLDER.ARCHETYPE_NODE_ID, FOLDER.ACTIVE, FOLDER.DETAILS, FOLDER.SYS_TRANSACTION, FOLDER.SYS_PERIOD);
+                Result<Record8<UUID, UUID, String, String, Boolean, ItemStructure, Timestamp, AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>>> result2 = create.newResult(FOLDER.ID, FOLDER.IN_CONTRIBUTION, FOLDER.NAME, FOLDER.ARCHETYPE_NODE_ID, FOLDER.ACTIVE, FOLDER.DETAILS, FOLDER.SYS_TRANSACTION, FOLDER.SYS_PERIOD);
 
                 result2.add(create
                         .newRecord(
@@ -113,7 +111,7 @@ public class FolderMockDataProvider implements MockDataProvider{
                                     }
                                 },
                                 new Timestamp(expected.getMillis()),
-                                new Timestamp(expected.getMillis())
+                                new AbstractMap.SimpleEntry<>(OffsetDateTime.now(), null)
                         )
                 );
 
@@ -126,7 +124,7 @@ public class FolderMockDataProvider implements MockDataProvider{
                 DateTime expected
                         = DateTime.parse("2019-06-13 18:10:33.76", dateTimeFormatter);
                 MockResult[] mock2 = new MockResult[1];
-                Result<Record8<UUID, UUID, String, String, Boolean, ItemStructure, Timestamp, Object>> result2 = create.newResult(FOLDER.ID, FOLDER.IN_CONTRIBUTION, FOLDER.NAME, FOLDER.ARCHETYPE_NODE_ID, FOLDER.ACTIVE, FOLDER.DETAILS, FOLDER.SYS_TRANSACTION, FOLDER.SYS_PERIOD);
+                Result<Record8<UUID, UUID, String, String, Boolean, ItemStructure, Timestamp, AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>>> result2 = create.newResult(FOLDER.ID, FOLDER.IN_CONTRIBUTION, FOLDER.NAME, FOLDER.ARCHETYPE_NODE_ID, FOLDER.ACTIVE, FOLDER.DETAILS, FOLDER.SYS_TRANSACTION, FOLDER.SYS_PERIOD);
 
                 result2.add(create
                         .newRecord(
@@ -218,7 +216,7 @@ public class FolderMockDataProvider implements MockDataProvider{
                             = DateTime.parse("2019-06-13 18:10:33.76", dateTimeFormatter);
                     TimeZone.getTimeZone("UTC");
                     MockResult[] mock2 = new MockResult[1];
-                    Result<Record13<UUID, UUID, UUID, Timestamp, Object, UUID, UUID, String, String, Boolean, ItemStructure, Timestamp, Object>> result2 = create.newResult(FOLDER_HIERARCHY.PARENT_FOLDER, FOLDER_HIERARCHY.CHILD_FOLDER, FOLDER_HIERARCHY.IN_CONTRIBUTION, FOLDER_HIERARCHY.SYS_TRANSACTION, FOLDER_HIERARCHY.SYS_PERIOD, FOLDER.ID, FOLDER.IN_CONTRIBUTION, FOLDER.NAME, FOLDER.ARCHETYPE_NODE_ID, FOLDER.ACTIVE, FOLDER.DETAILS, FOLDER.SYS_TRANSACTION, FOLDER.SYS_PERIOD);
+                    Result<Record13<UUID, UUID, UUID, Timestamp, AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>, UUID, UUID, String, String, Boolean, ItemStructure, Timestamp, AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>>> result2 = create.newResult(FOLDER_HIERARCHY.PARENT_FOLDER, FOLDER_HIERARCHY.CHILD_FOLDER, FOLDER_HIERARCHY.IN_CONTRIBUTION, FOLDER_HIERARCHY.SYS_TRANSACTION, FOLDER_HIERARCHY.SYS_PERIOD, FOLDER.ID, FOLDER.IN_CONTRIBUTION, FOLDER.NAME, FOLDER.ARCHETYPE_NODE_ID, FOLDER.ACTIVE, FOLDER.DETAILS, FOLDER.SYS_TRANSACTION, FOLDER.SYS_PERIOD);
 
                     result2.add(create
                             .newRecord(
@@ -241,7 +239,7 @@ public class FolderMockDataProvider implements MockDataProvider{
                                     UUID.fromString("99550555-ec91-4025-838d-09ddb4e999cb"),
                                     UUID.fromString("00550555-ec91-4025-838d-09ddb4e473cb"),
                                     new Timestamp(expected.getMillis()),
-                                    "xxx1",
+                                    new AbstractMap.SimpleEntry<>(OffsetDateTime.now(), null), // was "xxx1",
                                     UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb"),
                                     UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb"),
                                     "folder_archetype_name_1",
@@ -263,7 +261,7 @@ public class FolderMockDataProvider implements MockDataProvider{
                                         }
                                     },
                                     new Timestamp(expected.getMillis()),
-                                    "[\"2019-08-09 09:56:52.464799+02\",)"
+                                    new AbstractMap.SimpleEntry<>(OffsetDateTime.parse("2019-08-09T09:56:52.464799+02"), null)
                             )
                     );
                     result2.add(create
@@ -287,7 +285,7 @@ public class FolderMockDataProvider implements MockDataProvider{
                                     UUID.fromString("33550555-ec91-4025-838d-09ddb4e999cb"),
                                     UUID.fromString("00550555-ec91-4025-838d-09ddb4e473cb"),
                                     new Timestamp(expected.getMillis()),
-                                    "xxx2",
+                                    new AbstractMap.SimpleEntry<>(OffsetDateTime.now(), null), // was "xxx2",
                                     UUID.fromString("99550555-ec91-4025-838d-09ddb4e999cb"),
                                     UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb"),
                                     "folder_archetype_name_2",
@@ -309,7 +307,7 @@ public class FolderMockDataProvider implements MockDataProvider{
                                         }
                                     },
                                     new Timestamp(expected.getMillis()),
-                                    "[\"2019-08-09 09:56:52.464799+02\",)"
+                                    new AbstractMap.SimpleEntry<>(OffsetDateTime.parse("2019-08-09T09:56:52.464799+02"), null)
                             )
                     );
                     result2.add(create
@@ -333,7 +331,7 @@ public class FolderMockDataProvider implements MockDataProvider{
                                     UUID.fromString("77750555-ec91-4025-838d-09ddb4e999cb"),
                                     UUID.fromString("00550555-ec91-4025-838d-09ddb4e473cb"),
                                     new Timestamp(expected.getMillis()),
-                                    "xxx3",
+                                    new AbstractMap.SimpleEntry<>(OffsetDateTime.now(), null), // was "xxx3",
                                     UUID.fromString("33550555-ec91-4025-838d-09ddb4e999cb"),
                                     UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb"),
                                     "folder_archetype_name_3",
@@ -355,7 +353,7 @@ public class FolderMockDataProvider implements MockDataProvider{
                                         }
                                     },
                                     new Timestamp(expected.getMillis()),
-                                    "[\"2019-08-09 09:56:52.464799+02\",)"
+                                    new AbstractMap.SimpleEntry<>(OffsetDateTime.parse("2019-08-09T09:56:52.464799+02"), null)
                             )
                     );
                     result2.add(create
@@ -379,7 +377,7 @@ public class FolderMockDataProvider implements MockDataProvider{
                                     UUID.fromString("8701233c-c8fd-47ba-91b5-ef9ff23c259b"),
                                     UUID.fromString("00550555-ec91-4025-838d-09ddb4e473cb"),
                                     new Timestamp(expected.getMillis()),
-                                    "xxx3",
+                                    new AbstractMap.SimpleEntry<>(OffsetDateTime.now(), null), // was "xxx3",
                                     UUID.fromString("33550555-ec91-4025-838d-09ddb4e999cb"),
                                     UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb"),
                                     "folder_archetype_name_3",
@@ -401,7 +399,7 @@ public class FolderMockDataProvider implements MockDataProvider{
                                         }
                                     },
                                     new Timestamp(expected.getMillis()),
-                                    "[\"2019-08-09 09:56:52.464799+02\",)"
+                                    new AbstractMap.SimpleEntry<>(OffsetDateTime.parse("2019-08-09T09:56:52.464799+02"), null)
                             )
                     );
 
@@ -417,13 +415,13 @@ public class FolderMockDataProvider implements MockDataProvider{
                 TimeZone.getTimeZone("UTC");
 
                 MockResult[] mock2 = new MockResult[1];
-                Result<Record8<String, String, UUID, UUID, Timestamp, Object, UUID, UUID>> result2 = create.newResult(OBJECT_REF.ID_NAMESPACE, OBJECT_REF.TYPE, OBJECT_REF.ID, OBJECT_REF.IN_CONTRIBUTION, OBJECT_REF.SYS_TRANSACTION, OBJECT_REF.SYS_PERIOD, FOLDER_ITEMS.OBJECT_REF_ID, FOLDER_ITEMS.IN_CONTRIBUTION);
+                Result<Record8<String, String, UUID, UUID, Timestamp, AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>, UUID, UUID>> result2 = create.newResult(OBJECT_REF.ID_NAMESPACE, OBJECT_REF.TYPE, OBJECT_REF.ID, OBJECT_REF.IN_CONTRIBUTION, OBJECT_REF.SYS_TRANSACTION, OBJECT_REF.SYS_PERIOD, FOLDER_ITEMS.OBJECT_REF_ID, FOLDER_ITEMS.IN_CONTRIBUTION);
 
 
                 if(((UUID)ctx.bindings()[0]).compareTo(UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb"))==0) {
                     result2.add(create
                             .newRecord(OBJECT_REF.ID_NAMESPACE, OBJECT_REF.TYPE, OBJECT_REF.ID, OBJECT_REF.IN_CONTRIBUTION, OBJECT_REF.SYS_TRANSACTION, OBJECT_REF.SYS_PERIOD, FOLDER_ITEMS.OBJECT_REF_ID, FOLDER_ITEMS.IN_CONTRIBUTION)
-                            .values("namespace", "FOLDER", UUID.fromString("48282ddd-4c7d-444a-8159-458a03c9827f"), UUID.fromString("00550555-ec91-4025-838d-09ddb4e473cb"), new Timestamp(expected.getMillis()),  "[\"2019-08-09 09:56:52.464799+02\",)", UUID.fromString("48282ddd-4c7d-444a-8159-458a03c9827f"), UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb")));
+                            .values("namespace", "FOLDER", UUID.fromString("48282ddd-4c7d-444a-8159-458a03c9827f"), UUID.fromString("00550555-ec91-4025-838d-09ddb4e473cb"), new Timestamp(expected.getMillis()), new AbstractMap.SimpleEntry<>(OffsetDateTime.parse("2019-08-09T09:56:52.464799+02"), null), UUID.fromString("48282ddd-4c7d-444a-8159-458a03c9827f"), UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb")));
                     mock2[0] = new MockResult(1, result2);
                     return mock2;
 
@@ -431,11 +429,11 @@ public class FolderMockDataProvider implements MockDataProvider{
 
                     result2.add(create
                             .newRecord(OBJECT_REF.ID_NAMESPACE, OBJECT_REF.TYPE, OBJECT_REF.ID, OBJECT_REF.IN_CONTRIBUTION, OBJECT_REF.SYS_TRANSACTION, OBJECT_REF.SYS_PERIOD, FOLDER_ITEMS.OBJECT_REF_ID, FOLDER_ITEMS.IN_CONTRIBUTION)
-                            .values("namespace2", "COMPOSITION", UUID.fromString("076f09ee-8da3-ae1b-0072-3ee18965fbb9"), UUID.fromString("00550555-ec91-4025-838d-09ddb4e473cb"), new Timestamp(expected.getMillis()),  "[\"2019-08-09 09:56:52.464799+02\",)", UUID.fromString("076f09ee-8da3-ae1b-0072-3ee18965fbb9"), UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb")));
+                            .values("namespace2", "COMPOSITION", UUID.fromString("076f09ee-8da3-ae1b-0072-3ee18965fbb9"), UUID.fromString("00550555-ec91-4025-838d-09ddb4e473cb"), new Timestamp(expected.getMillis()), new AbstractMap.SimpleEntry<>(OffsetDateTime.parse("2019-08-09T09:56:52.464799+02"), null), UUID.fromString("076f09ee-8da3-ae1b-0072-3ee18965fbb9"), UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb")));
 
                     result2.add(create
                             .newRecord(OBJECT_REF.ID_NAMESPACE, OBJECT_REF.TYPE, OBJECT_REF.ID, OBJECT_REF.IN_CONTRIBUTION, OBJECT_REF.SYS_TRANSACTION, OBJECT_REF.SYS_PERIOD, FOLDER_ITEMS.OBJECT_REF_ID, FOLDER_ITEMS.IN_CONTRIBUTION)
-                            .values("namespace3", "EHR", UUID.fromString("5bf07118-e22e-e233-35c9-78820d76627c"), UUID.fromString("00550555-ec91-4025-838d-09ddb4e473cb"), new Timestamp(expected.getMillis()),  "[\"2019-08-09 09:56:52.464799+02\",)", UUID.fromString("5bf07118-e22e-e233-35c9-78820d76627c"), UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb")));
+                            .values("namespace3", "EHR", UUID.fromString("5bf07118-e22e-e233-35c9-78820d76627c"), UUID.fromString("00550555-ec91-4025-838d-09ddb4e473cb"), new Timestamp(expected.getMillis()), new AbstractMap.SimpleEntry<>(OffsetDateTime.parse("2019-08-09T09:56:52.464799+02"), null), UUID.fromString("5bf07118-e22e-e233-35c9-78820d76627c"), UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb")));
                     mock2[0] = new MockResult(2, result2);
                     return mock2;
                 }
