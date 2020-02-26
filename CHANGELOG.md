@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Docker and docker-compose support for both application and database
+
 ### Changed
 
 - FasterXML Jackson version raised to 2.10.2
