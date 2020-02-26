@@ -7,8 +7,6 @@ services:
       - 8080:8080
     networks:
       - ehrbase-net
-    volumes:
-      - ./.file_repo:/ehrbase/file_repo
     environment:
       DB_URL: jdbc:postgresql://ehrdb:5432/ehrbase
       DB_USER: ehrbase
