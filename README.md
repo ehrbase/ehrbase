@@ -42,8 +42,9 @@ When installing locally, the Postgres Database (at least Version 10.4) needs the
 Run `./db-setup/createdb.sql` as `postgres` User.
 
 You can also use this Docker image which is a preconfigured  Postgres database:
-```
-    docker run --name ehrdb -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -d -p 5432:5432 ehrbaseorg/ehrbase-database-docker:11.5
+```shell
+    docker network create ehrbase-net
+    docker run --name ehrdb --network ehrbase-net -e POSTGRES_PASSWORD=postgres -d -p 5432:5432 ehrbaseorg/ehrbase-postgres:latest
 ```
 #### 2. Setup Maven environment
 
@@ -82,9 +83,27 @@ cd tests
 
 ## Docker
 
-To create a Docker image
+Fist build the application as described in [Installing](#Installing)
 
-`docker build -f application/Dockerfile --build-arg JAR_FILE=application-*.jar -t my-org/ehrbase:latest .`
+To create a Docker image run the following command and provide the correct build output file name created in the previous step, e.g. application-0.10.0.jar for version 0.10.0.
+
+`docker build -f application/Dockerfile --build-arg JAR_FILE=application-*.jar -t ehrbaseorg/ehrbase:latest .`
+
+To run the built container image use the following command:
+
+`docker run --name ehrbase --network ehrbase-net -d -p 8080:8080 -e DB_URL=jdbc:postgresql://ehrdb:5432/ehrbase -e DB_USER=ehrbase -e DB_PASS=ehrbase -e SYSTEM_NAME=local.ehrbase.org ehrbaseorg/ehrbase`.
+
+Adopt the parameters by your needs. The following parameters for `-e` must be set to start the EHRbase container:
+
+| Parameter   | Usage                                                    | Example                                   |
+| ----------- | -------------------------------------------------------- | ----------------------------------------- |
+| DB_URL      | Database URL. Must point to the running database server. | jdbc:postgresql://ehrdb:5432/ehrbase  |
+| DB_USER     | Database user configured for the ehr schema.             | ehrbase                                   |
+| DB_PASS     | Password for the database user                           | ehrbase                                   |
+| SYSTEM_NAME | Name for the local system                                | local.ehrbase.org                         |
+
+
+
 
 ## Built With
 
