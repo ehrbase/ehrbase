@@ -1,4 +1,4 @@
-FROM openjdk:8-jdk-alpine
+FROM adoptopenjdk:11-jre-openj9
 ARG JAR_FILE
 COPY application/target/${JAR_FILE} app.jar
 RUN mkdir -p file_repo/knowledge/archetypes &&  mkdir -p file_repo/knowledge/operational_templates && mkdir -p file_repo/knowledge/templates
