@@ -205,3 +205,6 @@ std*
 
 # Template file repository
 file_repo
+
+# Docker
+application/.pgdata
