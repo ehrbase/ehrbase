@@ -30,7 +30,9 @@ public enum OperationalTemplateTestData {
     BLOOD_PRESSURE_SIMPLE("Very simple blood_pressure template", "ehrbase_blood_pressure_simple.de.v0.opt", "ehrbase_blood_pressure_simple.de.v0"),
     MULTI_OCCURRENCE("Template with multiple occurrence", "ehrbase_multi_occurrence.de.opt", "ehrbase_multi_occurrence.de.v1"),
     ALL_TYPES("Template with all types", "Test_all_types.opt", "test_all_types.en.v1"),
-    ALT_EVENTS("Template with alternative Events", "AlternativeEvents.opt", "AlternativeEvents");
+    ALT_EVENTS("Template with alternative Events", "AlternativeEvents.opt", "AlternativeEvents"),
+    TWO_EVENTS("Template with two Events", "TwoEvents.opt", "SingleEvent"),
+    AVERAGE_24("Template with  a Interval Events", "24StundenDurchschnitt.opt", "24StundenDurchschnitt");
 
     private final String filename;
     private final String templateId;
