@@ -41,11 +41,13 @@ When installing locally, the Postgres Database (at least Version 10.4) needs the
 
 Run `./db-setup/createdb.sql` as `postgres` User.
 
-You can also use this Docker image which is a preconfigured  Postgres database:
+You can also use this Docker image which is a preconfigured Postgres database:
 ```shell
     docker network create ehrbase-net
     docker run --name ehrdb --network ehrbase-net -e POSTGRES_PASSWORD=postgres -d -p 5432:5432 ehrbaseorg/ehrbase-postgres:latest
 ```
+
+(For a preconfigured EHRbase application Docker image and its usage see [below](#Docker))
 #### 2. Setup Maven environment
 
 Edit the database properties in  `./pom.xml` if necessary
@@ -83,7 +85,9 @@ cd tests
 
 ## Docker
 
-Fist build the application as described in [Installing](#Installing)
+### Locally Build Docker Image
+
+First build the application as described in [Installing](#Installing)
 
 To create a Docker image run the following command and provide the correct build output file name created in the previous step, e.g. application-0.10.0.jar for version 0.10.0.
 
@@ -102,8 +106,21 @@ Adopt the parameters by your needs. The following parameters for `-e` must be se
 | DB_PASS     | Password for the database user                           | ehrbase                                   |
 | SYSTEM_NAME | Name for the local system                                | local.ehrbase.org                         |
 
+### Pre-build Docker Image
 
+See: https://hub.docker.com/r/ehrbaseorg/ehrbase
 
+There is also a preconfigured `docker-compose.yml` file, which sets up and starts the necessary database and EHRbase 
+application with, for instance:
+
+```shell script
+cd application
+docker-compose up
+```
+
+Notes: It is not necessary to have the whole repository on your machine, just copy the `docker-compose.yml` file to
+a local working directory and run it. Using the `-d` argument starts both containers detached, without blocking the 
+terminal. And the DB data is saved in `application/.pgdata` for easier access.
 
 ## Built With
 
