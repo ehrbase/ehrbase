@@ -598,11 +598,7 @@ delete composition
 
 get deleted composition
     [Documentation]     The deleted compo should not exist
-    ...                 204 is the code for deleted - as per OpenEHR spec
-
-
-            TRACE GITHUB ISSUE  123  not-ready
-
+    ...                 204 is the code for deleted - as per openEHR REST spec
 
     ${resp}=            Get Request           ${SUT}   /ehr/${ehr_id}/composition/${del_version_uid}
                         log to console        ${resp.content}

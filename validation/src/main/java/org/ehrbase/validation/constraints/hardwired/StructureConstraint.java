@@ -39,9 +39,9 @@ import org.openehr.schemas.v1.CMULTIPLEATTRIBUTE;
  * Created by christian on 8/11/2016.
  */
 public abstract class StructureConstraint {
-    protected final ConstraintMapper constraintMapper;
+    private final ConstraintMapper constraintMapper;
 
-    public StructureConstraint(ConstraintMapper constraintMapper) {
+    StructureConstraint(ConstraintMapper constraintMapper) {
         this.constraintMapper = constraintMapper;
     }
 
@@ -49,9 +49,9 @@ public abstract class StructureConstraint {
      * validate the occurrences of events
      * @param path the node path
      * @param eventsOccurrences the identified event occurrences
-     * @throws Exception
+     * @throws IllegalArgumentException
      */
-    public void validate(String path, Integer eventsOccurrences) throws Exception {
+    public void validate(String path, Integer eventsOccurrences) throws IllegalArgumentException {
 
         //check mandatory fields
         CCOMPLEXOBJECT ccomplexobject = ((OptConstraintMapper.OptConstraintItem) constraintMapper.getConstraintItem(path)).getConstraint();

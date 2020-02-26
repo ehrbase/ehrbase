@@ -26,12 +26,12 @@ public class Participation extends TerminologyCheck {
         this.RM_CLASS = com.nedap.archie.rm.generic.Participation.class;
     }
 
-    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.generic.Participation participation, String language) throws Exception {
+    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.generic.Participation participation, String language) throws IllegalArgumentException {
         if (participation.getMode() != null)
             validate(terminologyInterface, codesetMapping, "mode", participation.getMode().getDefiningCode(), language);
     }
 
-    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.generic.Participation participation) throws Exception {
+    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.generic.Participation participation) throws IllegalArgumentException {
        check(terminologyInterface, codesetMapping, context, participation, "en");
     }
 

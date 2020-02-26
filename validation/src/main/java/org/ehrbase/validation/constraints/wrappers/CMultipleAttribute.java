@@ -34,12 +34,12 @@ import java.util.Map;
  */
 public class CMultipleAttribute extends CConstraint implements I_CArchetypeConstraintValidate {
 
-    protected CMultipleAttribute(Map<String, Map<String, String>> localTerminologyLookup) {
+    CMultipleAttribute(Map<String, Map<String, String>> localTerminologyLookup) {
         super(localTerminologyLookup);
     }
 
     @Override
-    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws Exception {
+    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws IllegalArgumentException {
 
         CMULTIPLEATTRIBUTE cmultipleattribute = (CMULTIPLEATTRIBUTE) archetypeconstraint;
 

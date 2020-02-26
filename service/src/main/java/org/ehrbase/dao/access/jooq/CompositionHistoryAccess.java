@@ -28,6 +28,8 @@ import org.jooq.impl.DSL;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.util.AbstractMap;
 import java.util.UUID;
 
 import static org.ehrbase.jooq.pg.Tables.COMPOSITION_HISTORY;
@@ -60,8 +62,7 @@ public class CompositionHistoryAccess extends DataAccess implements I_Compositio
     public UUID commit() {
         if (this.record.getSysTransaction() == null) {
             this.record.setSysTransaction(Timestamp.valueOf(LocalDateTime.now()));
-            this.record.setSysPeriod(DSL.field(DSL.val(
-                    "[\"" + record.getSysTransaction().toString() + "+00" + "\",)") + "::tstzrange"));
+            this.record.setSysPeriod(new AbstractMap.SimpleEntry<>(OffsetDateTime.now(), null));
         }
         if (record.insert() == 1)
             return record.getId();

@@ -27,6 +27,9 @@ public class CompositionRoot {
 
     public String toString() {
 
+        if (!dbEncoded.contains("/composition"))
+            return "";
+
         int beginIndex = dbEncoded.indexOf("/composition");
         int endIndex = dbEncoded.indexOf("]", beginIndex) + 1;
         return dbEncoded.substring(beginIndex, endIndex).replace("\\u003d", "=").replace("\\u0027", "'");
