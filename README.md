@@ -118,8 +118,9 @@ cd application
 docker-compose up
 ```
 
-Notes: Using the `-d` argument starts both containers detached, without blocking the terminal. And the DB data is 
-saved in `application/.pgdata` for easier access.
+Notes: It is not necessary to have the whole repository on your machine, just copy the `docker-compose.yml` file to
+a local working directory and run it. Using the `-d` argument starts both containers detached, without blocking the 
+terminal. And the DB data is saved in `application/.pgdata` for easier access.
 
 ## Built With
 
