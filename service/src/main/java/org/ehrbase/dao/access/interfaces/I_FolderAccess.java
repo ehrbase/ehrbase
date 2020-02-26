@@ -92,6 +92,8 @@ public interface I_FolderAccess extends I_SimpleCRUD<I_EntryAccess, UUID> {
         return FolderHistoryAccess.retrieveInstanceForExistingFolder(domainAccess, folderId, timestamp);
     }
 
+    UUID commit(Timestamp transactionTime, I_ContributionAccess contributionAccess);
+
     UUID getFolderId();
 
     void setFolderId(UUID folderId);

@@ -119,6 +119,11 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
         return null;
     }
 
+    @Override
+    public UUID commit(Timestamp transactionTime, I_ContributionAccess contributionAccess){
+        return null;
+    }
+
 
     private static FolderHistoryAccess buildFolderAccessFromGenericRecord(final Record record_,
                                                                           final I_DomainAccess domainAccess) {
