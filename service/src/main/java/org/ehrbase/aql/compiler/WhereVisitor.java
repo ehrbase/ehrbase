@@ -37,14 +37,15 @@ import java.util.List;
  * Created by christian on 5/18/2016.
  * @param <T>
  */
+@SuppressWarnings("unchecked")
 public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
-    public static final String MATCHES = "MATCHES";
+    private static final String MATCHES = "MATCHES";
     public static final String IN = " IN ";
-    public static final String OPEN_CURL = "{";
-    public static final String OPEN_PAR = "(";
-    public static final String CLOSING_CURL = "}";
-    public static final String CLOSING_PAR = ")";
-    public static final String COMMA = ",";
+    private static final String OPEN_CURL = "{";
+    private static final String OPEN_PAR = "(";
+    private static final String CLOSING_CURL = "}";
+    private static final String CLOSING_PAR = ")";
+    private static final String COMMA = ",";
     
     private TerminologyServer<T, ID> tsserver = (TerminologyServer<T, ID>) new FhirTerminologyServerImpl();
 
@@ -119,8 +120,7 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
                 operand.add(",");
             } else if (tree instanceof AqlParser.ValueListItemsContext) {
                 List<Object> token = visitValueListItems((AqlParser.ValueListItemsContext) tree);
-                for (Object item : token)
-                    operand.add(item);
+                operand.addAll(token);
             }
         }
         return operand;
@@ -139,10 +139,10 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
 	 
 		@Override public List<Object> visitInvokeExpr(AqlParser.InvokeExprContext ctx) { 
 			List<Object> invokeExpr = new ArrayList<>();
-			assert(((AqlParser.InvokeExprContext)ctx).INVOKE().getText().equals("INVOKE"));			
-			assert(((AqlParser.InvokeExprContext)ctx).OPEN_PAR().getText().equals("("));
-			assert(((AqlParser.InvokeExprContext)ctx).CLOSE_PAR().getText().equals(")"));  
-			invokeExpr.addAll((List<T>)tsserver.expand((ID)((AqlParser.InvokeExprContext)ctx).URIVALUE().getText()));
+			assert(ctx.INVOKE().getText().equals("INVOKE"));
+			assert(ctx.OPEN_PAR().getText().equals("("));
+			assert(ctx.CLOSE_PAR().getText().equals(")"));
+			invokeExpr.addAll(tsserver.expand((ID)ctx.URIVALUE().getText()));
 			return invokeExpr; 
 		}
 
@@ -176,6 +176,8 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
                         whereExpression.add(child.getText());
                     } else if (child instanceof AqlParser.IdentifiedPathContext) {
                         AqlParser.IdentifiedPathContext identifiedPathContext = (AqlParser.IdentifiedPathContext) child;
+                        if (identifiedPathContext.objectPath()==null)
+                            throw new IllegalArgumentException("WHERE variable should be a path, found:'"+child.getText()+"'");
                         String path = identifiedPathContext.objectPath().getText();
                         String identifier = identifiedPathContext.IDENTIFIER().getText();
                         String alias = null;
@@ -193,7 +195,7 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
         return whereExpression;
     }
 
-    public List<Object> getWhereExpression() {
+    List<Object> getWhereExpression() {
         return whereExpression;
     }
 
