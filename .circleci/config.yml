@@ -127,6 +127,17 @@ workflows:
                 - release
                 - master
 
+      - EHRSTATUS-test:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
+
       - KNOWLEDGE-test:
           context: org-global
           requires:
@@ -170,6 +181,7 @@ workflows:
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
+            - EHRSTATUS-test
             - KNOWLEDGE-test
             - QUERYSERVICE-test-1
             - QUERYSERVICE-test-2
@@ -298,6 +310,16 @@ workflows:
             branches:
               only:
                 - /^(release\/v\d+\.\d+\.\d+|master)$/
+      
+      - EHRSTATUS-test:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              only:
+                - /^(release\/v\d+\.\d+\.\d+|master)$/
 
       - KNOWLEDGE-test:
           context: org-global
@@ -339,6 +361,7 @@ workflows:
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
+            - EHRSTATUS-test
             - KNOWLEDGE-test
             - QUERYSERVICE-test-1
             - QUERYSERVICE-test-2
@@ -476,6 +499,15 @@ jobs:
               include-tags: "EHR_SERVICE"
               test-suite-path: "EHR_SERVICE_TESTS"
               test-suite-name: "EHR_SERVICE"
+  
+  EHRSTATUS-test:
+      machine:
+            image: ubuntu-1604:201903-01
+      steps:
+        - run-robot-tests:
+              include-tags: "EHR_STATUS"
+              test-suite-path: "EHR_STATUS_TESTS"
+              test-suite-name: "EHR_STATUS"
 
   KNOWLEDGE-test:
       machine:

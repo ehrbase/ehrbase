@@ -182,6 +182,8 @@ __pycache__
 log.html
 output.xml
 report.html
+std*
+*.tmp.json
 
 ### VisualStudioCode ###
 .vscode/*
@@ -210,3 +212,6 @@ file_repo
 #dependency check
 sonar_issues.json
 vulnerability_analysis.json
+
+# Docker
+application/.pgdata

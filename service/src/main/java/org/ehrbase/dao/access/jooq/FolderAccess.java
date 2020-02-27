@@ -34,6 +34,8 @@ import org.ehrbase.dao.access.interfaces.I_FolderAccess;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.dao.access.util.FolderUtils;
+import org.ehrbase.jooq.binding.OtherDetailsJsonbBinder;
+import org.ehrbase.jooq.binding.SysPeriodBinder;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.tables.FolderHierarchy;
 import org.ehrbase.jooq.pg.tables.records.FolderHierarchyRecord;
@@ -46,6 +48,7 @@ import org.jooq.impl.DSL;
 import org.postgresql.util.PGobject;
 
 import java.sql.Timestamp;
+import java.time.OffsetDateTime;
 import java.util.*;
 
 import static org.ehrbase.jooq.pg.Tables.*;
@@ -152,7 +155,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         updatedFolderRecord.setActive(this.isFolderActive());
         updatedFolderRecord.setDetails(this.getFolderDetails());
         updatedFolderRecord.setSysTransaction(transactionTime);
-        updatedFolderRecord.setSysPeriod(PGObjectParser.parseSysPeriod(this.getFolderSysPeriod()));
+        updatedFolderRecord.setSysPeriod(this.getFolderSysPeriod());
 
         // attach to context DB
         dslContext.attach(updatedFolderRecord);
@@ -176,7 +179,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
             updatedFhR.setChildFolder(updatedFolderId);
             updatedFhR.setInContribution(newContribution);
             updatedFhR.setSysTransaction(transactionTime);
-            updatedFhR.setSysPeriod(PGObjectParser.parseSysPeriod(folderRecord.getSysPeriod()));
+            updatedFhR.setSysPeriod(folderRecord.getSysPeriod());
             dslContext.attach(updatedFhR);
             updatedFhR.store();
         }
@@ -205,12 +208,12 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         for (ObjectRef or : this.getItems()) {
 
             //insert in object_ref
-            ObjectRefRecord orr = new ObjectRefRecord(or.getNamespace(), or.getType(), UUID.fromString(or.getId().getValue()), new_contribution, transactionTime, PGObjectParser.parseSysPeriod(folderRecord.getSysPeriod()));
+            ObjectRefRecord orr = new ObjectRefRecord(or.getNamespace(), or.getType(), UUID.fromString(or.getId().getValue()), new_contribution, transactionTime, folderRecord.getSysPeriod());
             context.attach(orr);
             orr.store();
 
             //insert in folder_item
-            FolderItemsRecord fir = new FolderItemsRecord(folderId, UUID.fromString(or.getId().getValue()), new_contribution, transactionTime, PGObjectParser.parseSysPeriod(folderRecord.getSysPeriod()));
+            FolderItemsRecord fir = new FolderItemsRecord(folderId, UUID.fromString(or.getId().getValue()), new_contribution, transactionTime, folderRecord.getSysPeriod());
             context.attach(fir);
             fir.store();
         }
@@ -438,9 +441,9 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
     private static FolderAccess buildFolderAccessFromGenericRecord(final Record record_,
                                                                    final I_DomainAccess domainAccess) {
 
-        Record13<UUID, UUID, UUID, Timestamp, Object, UUID, UUID, String, String, Boolean, PGobject, Timestamp, Timestamp>
+        Record13<UUID, UUID, UUID, Timestamp, Object, UUID, UUID, String, String, Boolean, JSONB, Timestamp, AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>>
                 record
-                = (Record13<UUID, UUID, UUID, Timestamp, Object, UUID, UUID, String, String, Boolean, PGobject, Timestamp, Timestamp>) record_;
+                = (Record13<UUID, UUID, UUID, Timestamp, Object, UUID, UUID, String, String, Boolean, JSONB, Timestamp, AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>>) record_;
         FolderAccess folderAccess = new FolderAccess(domainAccess);
         folderAccess.folderRecord = new FolderRecord();
         folderAccess.setFolderId(record.value1());
@@ -449,10 +452,10 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         folderAccess.setFolderNArchetypeNodeId(record.value9());
         folderAccess.setIsFolderActive(record.value10());
         // Due to generic type from JOIN The ItemStructure binding does not cover the details
-        // and we have to parse it from PGobject manually
-        folderAccess.setFolderDetails(FolderUtils.parseFromPGobject(record.value11()));
+        // and we have to parse it manually
+        folderAccess.setFolderDetails(new OtherDetailsJsonbBinder().converter().from(record.value11()));
         folderAccess.setFolderSysTransaction(record.value12());
-        folderAccess.setFolderSysPeriod(record.value13());
+        folderAccess.setFolderSysPeriod(new SysPeriodBinder().converter().from(record.value13()));
         folderAccess.getItems()
                 .addAll(FolderAccess.retrieveItemsByFolderAndContributionId(record.value1(),
                         record.value7(),
@@ -575,14 +578,14 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
 
         List<ObjectRef> result = new ArrayList<>();
         for (Record recordRecord : retrievedRecords) {
-            Record8<String, String, UUID, UUID, Timestamp, Object, UUID, UUID> recordParam = (Record8<String, String, UUID, UUID, Timestamp, Object, UUID, UUID>) recordRecord;
+            Record8<String, String, UUID, UUID, Timestamp, AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>, UUID, UUID> recordParam = (Record8<String, String, UUID, UUID, Timestamp, AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>, UUID, UUID>) recordRecord;
             ObjectRefRecord objectRef = new ObjectRefRecord();
             objectRef.setIdNamespace(recordParam.value1());
             objectRef.setType(recordParam.value2());
             objectRef.setId(recordParam.value3());
             objectRef.setInContribution(recordParam.value4());
             objectRef.setSysTransaction(recordParam.value5());
-            objectRef.setSysPeriod(recordParam.value6());
+            objectRef.setSysPeriod(new SysPeriodBinder().converter().from(recordParam.value6()));
             objectRef.setId(recordParam.value7());
             result.add(parseObjectRefRecordIntoObjectRef(objectRef, domainAccess));
         }
@@ -763,10 +766,12 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
 
     }
 
+    @Override
     public Map<UUID, I_FolderAccess> getSubfoldersList() {
         return this.subfoldersList;
     }
 
+    @Override
     public void setDetails(final ItemStructure details) {
         this.details = details;
     }
@@ -776,85 +781,102 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         return null;
     }
 
+    @Override
     public List<ObjectRef> getItems() {
         return this.items;
     }
 
+    @Override
     public UUID getFolderId() {
 
         return this.folderRecord.getId();
     }
 
+    @Override
     public void setFolderId(UUID folderId) {
 
         this.folderRecord.setId(folderId);
     }
 
+    @Override
     public UUID getInContribution() {
         return this.folderRecord.getInContribution();
     }
 
+    @Override
     public void setInContribution(UUID inContribution) {
 
         this.folderRecord.setInContribution(inContribution);
     }
 
+    @Override
     public String getFolderName() {
 
         return this.folderRecord.getName();
     }
 
+    @Override
     public void setFolderName(String folderName) {
 
         this.folderRecord.setName(folderName);
     }
 
+    @Override
     public String getFolderArchetypeNodeId() {
 
         return this.folderRecord.getArchetypeNodeId();
     }
 
+    @Override
     public void setFolderNArchetypeNodeId(String folderArchetypeNodeId) {
 
         this.folderRecord.setArchetypeNodeId(folderArchetypeNodeId);
     }
 
+    @Override
     public boolean isFolderActive() {
 
         return this.folderRecord.getActive();
     }
 
+    @Override
     public void setIsFolderActive(boolean folderActive) {
 
         this.folderRecord.setActive(folderActive);
     }
 
+    @Override
     public ItemStructure getFolderDetails() {
 
         return this.folderRecord.getDetails();
     }
 
+    @Override
     public void setFolderDetails(ItemStructure folderDetails) {
 
         this.folderRecord.setDetails(folderDetails);
     }
 
+    @Override
     public void setFolderSysTransaction(Timestamp folderSysTransaction) {
 
         this.folderRecord.setSysTransaction(folderSysTransaction);
     }
 
+    @Override
     public Timestamp getFolderSysTransaction() {
 
         return this.folderRecord.getSysTransaction();
     }
 
-    public Object getFolderSysPeriod() {
+    @Override
+    public AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime> getFolderSysPeriod() {
 
         return this.folderRecord.getSysPeriod();
     }
 
-    public void setFolderSysPeriod(Object folderSysPeriod) {
+    @Override
+    public void setFolderSysPeriod(AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime> folderSysPeriod) {
 
         this.folderRecord.setSysPeriod(folderSysPeriod);
     }
@@ -867,19 +889,6 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
     @Override
     public int compareTo(final FolderAccess o) {
         return o.getFolderRecord().getId().compareTo(this.folderRecord.getId());
-    }
-
-    /**
-     * Utility class to parse joow PGObjects that are not automatically managed by jooq.
-     */
-    private static class PGObjectParser {
-        public static Field<Object> parseSysPeriod(Object sysPeriodToParse) {
-            String sysPeriodVal = "[\"0001-01-01 15:12:15.841936+00\",)";//sample default value with non-sense date.
-            if (sysPeriodToParse != null) {
-                sysPeriodVal = sysPeriodToParse.toString().replaceAll("::tstzrange", "").replaceAll("'", "");
-            }
-            return DSL.field(DSL.val(sysPeriodVal) + "::tstzrange");
-        }
     }
 
     private class ObjectRefId extends ObjectId {

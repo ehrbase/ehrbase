@@ -26,11 +26,11 @@ public class IntervalEvent extends TerminologyCheck{
         this.RM_CLASS = com.nedap.archie.rm.datastructures.IntervalEvent.class;
     }
 
-    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datastructures.IntervalEvent intervalEvent, String language) throws Exception {
+    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datastructures.IntervalEvent intervalEvent, String language) throws IllegalArgumentException {
         if (intervalEvent.getMathFunction() != null)
             validate(terminologyInterface, codesetMapping, "mathFunction", intervalEvent.getMathFunction().getDefiningCode(), language);
     }
-    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datastructures.IntervalEvent intervalEvent) throws Exception {
+    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datastructures.IntervalEvent intervalEvent) throws IllegalArgumentException {
         check(terminologyInterface, codesetMapping, context, intervalEvent, "en");
     }
 

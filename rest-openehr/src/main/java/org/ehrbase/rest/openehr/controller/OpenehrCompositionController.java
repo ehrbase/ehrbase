@@ -324,6 +324,9 @@ public class OpenehrCompositionController extends BaseController {
         // Note: versionUid should be of format "uuid::domain::version", versionObjectUid of format "uuid"
         UUID compositionUid = extractVersionedObjectUidFromVersionUid(versionedObjectUid);  // extracts UUID from long or short notation
 
+        if (compositionService.isDeleted(compositionUid))
+            return createErrorResponse("Composition is logically deleted.", HttpStatus.NO_CONTENT);
+
         int version = 0;    // fallback 0 means latest version
         if (extractVersionFromVersionUid(versionedObjectUid) != 0) {
             // the given ID contains a version, therefore this is case GET {version_uid}

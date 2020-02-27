@@ -39,7 +39,7 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
     private AttributeCodesetMapping codesetMapping;
     private String itemStructureLanguage = "en"; //if a composition, the language can be found in the structure
 
-    public ItemStructureVisitor(LocalizedTerminologies localizedTerminologies) throws NoSuchMethodException, IllegalAccessException, ClassNotFoundException {
+    public ItemStructureVisitor(LocalizedTerminologies localizedTerminologies) throws NoSuchMethodException, IllegalAccessException {
         this.localizedTerminologies = localizedTerminologies;
         this.codesetMapping = localizedTerminologies.codesetMapping();
 
@@ -105,7 +105,7 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
         else if (locatable instanceof EhrStatus && ((EhrStatus)locatable).getOtherDetails() != null)
             traverse(((EhrStatus)locatable).getOtherDetails());
         else
-            throw new IllegalArgumentException("pathable is not an Item or ItemStructure instance...");
+            throw new IllegalStateException("pathable is not an Item or ItemStructure instance...");
 
     }
 
@@ -304,7 +304,6 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
         log.debug("traverse history:"+item);
 
         //CHC: 160531 add explicit name
-        History history = (History)item;
 
         if (item.getSummary() != null)
             traverse(item.getSummary());
@@ -372,7 +371,7 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
         }
     }
 
-    protected void validateElement(Element element) throws IllegalArgumentException, InternalError {
+    private void validateElement(Element element) throws IllegalArgumentException, InternalError {
         log.debug("should validate this element:"+element);
         elementOccurrences += 1;
 
@@ -385,7 +384,7 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
         }
 
         if (element.getName() != null && element.getName() instanceof DvCodedText){
-            itemValidator.validate(localizedTerminologies.locale(itemStructureLanguage), codesetMapping, null, (DvCodedText)element.getName(), itemStructureLanguage);
+            itemValidator.validate(localizedTerminologies.locale(itemStructureLanguage), codesetMapping, null, element.getName(), itemStructureLanguage);
         }
     }
 
@@ -415,7 +414,7 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
                     if (clusterItem instanceof Item)
                         traverse((Item)clusterItem);
                     else 
-                        throw new IllegalArgumentException("Cannot handle cluster item:"+clusterItem);
+                        throw new IllegalStateException("Cannot handle cluster item:"+clusterItem);
                 }
             }
         }

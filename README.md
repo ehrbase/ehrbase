@@ -41,10 +41,13 @@ When installing locally, the Postgres Database (at least Version 10.4) needs the
 
 Run `./db-setup/createdb.sql` as `postgres` User.
 
-You can also use this Docker image which is a preconfigured  Postgres database:
+You can also use this Docker image which is a preconfigured Postgres database:
+```shell
+    docker network create ehrbase-net
+    docker run --name ehrdb --network ehrbase-net -e POSTGRES_PASSWORD=postgres -d -p 5432:5432 ehrbaseorg/ehrbase-postgres:latest
 ```
-    docker run --name ehrdb -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -d -p 5432:5432 ehrbaseorg/ehrbase-database-docker:11.5
-```
+
+(For a preconfigured EHRbase application Docker image and its usage see [below](#Docker))
 #### 2. Setup Maven environment
 
 Edit the database properties in  `./pom.xml` if necessary
@@ -79,6 +82,45 @@ cd tests
  1. `java -jar application/target/application-*.jar` You can override the application properties (like database settings) using the normal spring boot mechanism: [Command-Line Arguments in Spring Boot](https://www.baeldung.com/spring-boot-command-line-arguments)
  2. Browse to Swagger UI --> http://localhost:8080/ehrbase/swagger-ui.html
 
+
+## Docker
+
+### Locally Build Docker Image
+
+First build the application as described in [Installing](#Installing)
+
+To create a Docker image run the following command and provide the correct build output file name created in the previous step, e.g. application-0.10.0.jar for version 0.10.0.
+
+`docker build -f application/Dockerfile --build-arg JAR_FILE=application-*.jar -t ehrbaseorg/ehrbase:latest .`
+
+To run the built container image use the following command:
+
+`docker run --name ehrbase --network ehrbase-net -d -p 8080:8080 -e DB_URL=jdbc:postgresql://ehrdb:5432/ehrbase -e DB_USER=ehrbase -e DB_PASS=ehrbase -e SYSTEM_NAME=local.ehrbase.org ehrbaseorg/ehrbase`.
+
+Adopt the parameters by your needs. The following parameters for `-e` must be set to start the EHRbase container:
+
+| Parameter   | Usage                                                    | Example                                   |
+| ----------- | -------------------------------------------------------- | ----------------------------------------- |
+| DB_URL      | Database URL. Must point to the running database server. | jdbc:postgresql://ehrdb:5432/ehrbase  |
+| DB_USER     | Database user configured for the ehr schema.             | ehrbase                                   |
+| DB_PASS     | Password for the database user                           | ehrbase                                   |
+| SYSTEM_NAME | Name for the local system                                | local.ehrbase.org                         |
+
+### Pre-build Docker Image
+
+See: https://hub.docker.com/r/ehrbaseorg/ehrbase
+
+There is also a preconfigured `docker-compose.yml` file, which sets up and starts the necessary database and EHRbase 
+application with, for instance:
+
+```shell script
+cd application
+docker-compose up
+```
+
+Notes: It is not necessary to have the whole repository on your machine, just copy the `docker-compose.yml` file to
+a local working directory and run it. Using the `-d` argument starts both containers detached, without blocking the 
+terminal. And the DB data is saved in `application/.pgdata` for easier access.
 
 ## Built With
 

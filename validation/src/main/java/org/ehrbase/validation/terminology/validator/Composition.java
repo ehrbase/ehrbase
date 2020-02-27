@@ -26,11 +26,11 @@ public class Composition extends TerminologyCheck{
         this.RM_CLASS = com.nedap.archie.rm.composition.Composition.class;
     }
 
-    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.composition.Composition composition) throws Exception {
+    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.composition.Composition composition) throws IllegalArgumentException {
         check(terminologyInterface, codesetMapping, context, composition, "en");
     }
 
-    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.composition.Composition composition, String language) throws Exception {
+    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.composition.Composition composition, String language) throws IllegalArgumentException {
         if (composition.getCategory() != null)
             validate(terminologyInterface, codesetMapping, "category", composition.getCategory().getDefiningCode(), language);
         if (composition.getLanguage() != null)
