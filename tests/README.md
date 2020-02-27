@@ -86,6 +86,11 @@ robot --include get_contribution \
 
 
 
+## Manually Controlled Test Environment
+   TODO: @WLAD
+
+
+
 ## ERRORS and WARNINGS
 
 You will see `[WARN]` and `[ERROR]` in console output and in log.html
