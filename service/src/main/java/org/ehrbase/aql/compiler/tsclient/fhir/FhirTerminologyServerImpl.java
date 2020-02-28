@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.ehrbase.aql.compiler.tsclient.TerminologyServer;
-import org.ehrbase.aql.compiler.tsclient.fhir.model.ValueSet;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -70,7 +69,7 @@ public class FhirTerminologyServerImpl  implements TerminologyServer<String, Str
 		RestTemplate rest = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("accept","application/fhir+json");
-		HttpEntity<ValueSet> entity =  new HttpEntity<ValueSet>(headers);
+		HttpEntity<String> entity =  new HttpEntity<String>(headers);
 		ResponseEntity<String> responseEntity = rest.exchange(valueSetId,
 				HttpMethod.GET,
 				entity,
