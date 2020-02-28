@@ -235,6 +235,12 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
     }
 
     @Override
+    public UUID commit() {
+        Timestamp timestamp = new Timestamp(DateTime.now().getMillis());
+        return this.commit(timestamp);
+    }
+
+    @Override
     public UUID commit(Timestamp transactionTime) {
         // Create Contribution entry for all folders
         this.contributionAccess.commit(
@@ -246,33 +252,39 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
                 I_ConceptAccess.ContributionChangeType.CREATION,
                 null
         );
-        this.getFolderRecord().setInContribution(this.contributionAccess.getId());
+
+        return this.commit(transactionTime, this.contributionAccess.getContributionId());
+
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public UUID commit(Timestamp transactionTime, UUID contributionId) {
+
+        this.getFolderRecord().setInContribution(contributionId);
 
         // Save the folder record to database
         this.getFolderRecord().store();
 
         //Save folder items
-        this.saveFolderItems(this.getFolderRecord().getId(), this.contributionAccess.getContributionId(), this.contributionAccess.getContributionId(), new Timestamp(DateTime.now().getMillis()), getContext());
+        this.saveFolderItems(this.getFolderRecord().getId(), contributionId, contributionId, transactionTime, getContext());
 
         // Save list of sub folders to database with parent <-> child ID relations
-        this.getSubfoldersList().forEach((child_id, child) -> {
-            child.commit();
+        this.getSubfoldersList().values().forEach(child -> {
+            child.commit(transactionTime, contributionId);
             FolderHierarchyRecord fhRecord = this.buildFolderHierarchyRecord(
                     this.getFolderRecord().getId(),
                     ((FolderAccess) child).getFolderRecord().getId(),
-                    this.contributionAccess.getId(),
-                    new Timestamp(DateTime.now().getMillis()),
+                    contributionId,
+                    transactionTime,
                     null
             );
             fhRecord.store();
         });
         return this.getFolderRecord().getId();
-    }
 
-    @Override
-    public UUID commit() {
-        Timestamp timestamp = new Timestamp(DateTime.now().getMillis());
-        return this.commit(timestamp);
     }
 
     /**

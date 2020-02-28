@@ -22,6 +22,8 @@ import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
+
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.exception.InternalServerException;
@@ -117,6 +119,11 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
 
     @Override
     public UUID commit(){
+        return null;
+    }
+
+    @Override
+    public UUID commit(Timestamp transactionTime, UUID contributionId){
         return null;
     }
 
@@ -608,10 +615,11 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
 
 
         Result<Record> folderSelectedRecordSub = domainAccess.getContext().withRecursive("subfolders").as(
-                select().
+                select(initial_table2.fields()).
                         from(initial_table2).
                         union(
-                                (select().from(filteredHierarchicalTable).
+                                (select(ArrayUtils.addAll(filteredHierarchicalTable.fields(), allFolderRowsUnifiedAndFilteredIterative.fields())).
+                                		from(filteredHierarchicalTable).
                                         innerJoin("subfolders").
                                         on(
                                                 filteredHierarchicalTable.field("parent_folder", FOLDER_HIERARCHY.PARENT_FOLDER.getType()).

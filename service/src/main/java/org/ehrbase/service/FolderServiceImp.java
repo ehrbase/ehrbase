@@ -33,6 +33,7 @@ import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
 import org.ehrbase.dao.access.interfaces.I_EhrAccess;
 import org.ehrbase.dao.access.interfaces.I_FolderAccess;
 import org.ehrbase.dao.access.jooq.FolderAccess;
+import org.ehrbase.dao.access.jooq.FolderHistoryAccess;
 import org.ehrbase.dao.access.util.FolderUtils;
 import org.ehrbase.serialisation.CanonicalJson;
 import org.ehrbase.serialisation.CanonicalXML;
@@ -88,11 +89,13 @@ public class FolderServiceImp extends BaseService implements FolderService {
                 ehrId);
 
         // Get first FolderAccess instance
-        I_FolderAccess folderAccess = FolderAccess.buildNewFolderAccessHierarchy(getDataAccess(),
+        I_FolderAccess folderAccess = FolderAccess.buildNewFolderAccessHierarchy(
+                getDataAccess(),
                 content,
                 currentTimeStamp,
                 ehrId,
-                contributionAccess);
+                contributionAccess
+        );
         UUID folderId = folderAccess.commit(new Timestamp(currentTimeStamp.getMillis()));
         ehrAccess.setDirectory(folderId);
         ehrAccess.update(getUserUuid(), getSystemUuid(), null, I_ConceptAccess.ContributionChangeType.MODIFICATION, EhrServiceImp.DESCRIPTION);
@@ -101,24 +104,27 @@ public class FolderServiceImp extends BaseService implements FolderService {
 
 
     @Override
-    public Optional<FolderDto> retrieveLatest(UUID ehrId) {
+    public Optional<FolderDto> retrieveLatest(UUID ehrId, String path) {
         I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
         if (ehrAccess == null) {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
         }
 
-        return retrieve(ehrAccess.getDirectoryId(), null);
+        return retrieve(ehrAccess.getDirectoryId(), null, path);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Optional<FolderDto> retrieve(UUID folderId, Integer version) {
+    public Optional<FolderDto> retrieve(UUID folderId, Integer version, String path) {
 
         I_FolderAccess folderAccess;
 
         folderAccess = I_FolderAccess.retrieveInstanceForExistingFolder(getDataAccess(), folderId);
+
+        // Handle path
+        folderAccess = extractPath(folderAccess, path);
 
         return createDto(folderAccess);
     }
@@ -128,17 +134,28 @@ public class FolderServiceImp extends BaseService implements FolderService {
      */
     @Override
     public Optional<FolderDto> retrieveByTimestamp(
-            UUID folderId, LocalDateTime timestamp) {
+            UUID folderId,
+            Timestamp timestamp,
+            String path
+    ) {
 
         try {
-            // Get version active at the timestamp
-            // TODO: Fetch entry by FolderAccess.retrieveByTimestamp
-            return Optional.empty();
+
+            FolderHistoryAccess folderHistoryAccess = new FolderHistoryAccess(getDataAccess());
+            I_FolderAccess folderAccess = folderHistoryAccess.retrieveInstanceForExistingFolder(
+                    folderHistoryAccess,
+                    folderId,
+                    timestamp
+            );
+
+            // Handle path
+            folderAccess = extractPath(folderAccess, path);
+
+            return createDto(folderAccess);
         } catch (ObjectNotFoundException e) {
-            logger.debug(formatter.format(
+            logger.error(formatter.format(
                     "Folder entry not found for timestamp: %s",
-                    timestamp.format(ISO_DATE_TIME))
-                    .toString());
+                    timestamp.toLocalDateTime().format(ISO_DATE_TIME)).toString());
             return Optional.empty();
         }
     }
@@ -308,5 +325,28 @@ public class FolderServiceImp extends BaseService implements FolderService {
         }
 
         return result;
+    }
+
+    /**
+     * If a path was sent by the client the folderAccess retrieved from database will be iterated recursive to find a
+     * given sub folder. If the path is empty or contains only one forward slash the root folder will be returned.
+     * Trailing slashes at the end of a path will be ignored. If the path cannot be found an ObjectNotFound exception
+     * will be thrown which can be handled by the controller layer.
+     *
+     * @param folderAccess - Retrieved result folder hierarchy from database
+     * @param path - Path to identify desired sub folder
+     * @return folderAccess containing the sub folder and its sub tree if path can be found
+     */
+    private I_FolderAccess extractPath(I_FolderAccess folderAccess, String path) {
+        // Handle path if sent by client
+        if (path != null && !"/".equals(path)) {
+            // Trim starting forward slash
+            if (path.startsWith("/")) {
+                path = path.substring(1);
+            }
+            folderAccess = FolderUtils.getPath(folderAccess, 0, path.split("/"));
+        }
+
+        return folderAccess;
     }
 }
