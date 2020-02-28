@@ -31,10 +31,13 @@ import org.springframework.web.client.RestTemplate;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import com.nedap.archie.rm.datatypes.CodePhrase;
+import com.nedap.archie.rm.datavalues.DvCodedText;
+import com.nedap.archie.rm.support.identification.TerminologyId;
 /***
  *@Created by Luis Marco-Ruiz on Feb 12, 2020
  */
-public class FhirTerminologyServerImpl  implements TerminologyServer<String, String>{
+public class FhirTerminologyServerImpl  implements TerminologyServer<DvCodedText, String>{
 
 	/*@Override
 	public List expand(String valueSetId) {
@@ -64,7 +67,7 @@ public class FhirTerminologyServerImpl  implements TerminologyServer<String, Str
 	}*/
 	
 	@Override
-	public List expand(String valueSetId) {
+	public List<DvCodedText> expand(String valueSetId) {
 		
 		RestTemplate rest = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
@@ -76,25 +79,39 @@ public class FhirTerminologyServerImpl  implements TerminologyServer<String, Str
 				String.class);
 		String response = responseEntity.getBody();
 		String jsonCodePath = "$[\"expansion\"][\"contains\"][*][\"code\"]";
+		String jsonSystemPath = "$[\"expansion\"][\"contains\"][*][\"system\"]";
+		String jsonDisplayPath = "$[\"expansion\"][\"contains\"][*][\"display\"]";
+
 		DocumentContext jsonContext = JsonPath.parse(response);
-		List<String> jsonpathCreatorName = jsonContext.read(jsonCodePath);
-		return jsonpathCreatorName;
+		List<String> codeList = jsonContext.read(jsonCodePath);
+		List<String> systemList = jsonContext.read(jsonSystemPath);
+		List<String> displayList = jsonContext.read(jsonDisplayPath);
+		
+		List<DvCodedText> expansionList = new ArrayList<>();
+		for(int i = 0; i< codeList.size(); i++) {
+			TerminologyId termId = new TerminologyId(systemList.get(i));
+			CodePhrase codePhrase = new CodePhrase(termId, codeList.get(i));
+			DvCodedText codedText = new DvCodedText(displayList.get(i), codePhrase);
+			expansionList.add(codedText);
+		}
+		return expansionList;
 	}
 
+
 	@Override
-	public Boolean validate(String concept, String valueSetId) {
+	public DvCodedText lookUp(String conceptId) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public SubsumptionResult subsumes(String conceptA, String conceptB) {
+	public Boolean validate(DvCodedText concept, String valueSetId) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public String lookUp(String conceptId) {
+	public SubsumptionResult subsumes(DvCodedText conceptA, DvCodedText conceptB) {
 		// TODO Auto-generated method stub
 		return null;
 	}
