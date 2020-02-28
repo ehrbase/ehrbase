@@ -226,9 +226,13 @@ public class OpenehrDirectoryController extends BaseController {
 
         // Get directory root entry for ehr
         UUID rootDirectoryId = ehrService.getDirectoryId(ehrId);
-
+        final Optional<FolderDto> foundFolder;
         // Get the folder entry from database
-        Optional<FolderDto> foundFolder = folderService.retrieveByTimestamp(rootDirectoryId, Timestamp.from(versionAtTime.toInstant()), path);
+        if (versionAtTime != null) {
+            foundFolder = folderService.retrieveByTimestamp(rootDirectoryId, Timestamp.from(versionAtTime.toInstant()), path);
+        } else {
+            foundFolder = folderService.retrieveLatest(ehrId, path);
+        }
         if (foundFolder.isEmpty()) {
             throw new ObjectNotFoundException("folder",
                     "The FOLDER for ehrId " +
