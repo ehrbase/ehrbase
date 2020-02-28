@@ -26,7 +26,7 @@ Library    OperatingSystem
 
 *** Variables ***
 ${README_LINK}    https://github.com/ehrbase/ehrbase/blob/develop/tests/README.md
-${MANUAL_TEST_ENV}    \#manually-controlled-test-environment
+${MANUAL_TEST_ENV}    \#manually-controlled-sut
 
 
 
@@ -317,7 +317,7 @@ warn about manual test environment start up
     Log    //${SPACE * 54}///                                                   level=WARN
     Log    ///////////////////////////////////////////////////////////          level=WARN
     Log    ${EMPTY}                                                             level=WARN
-    Log    [ check "Manually Controlled Test Environment" in test README ]      level=WARN
+    Log    [ check "Manually Controlled SUT" in test README ]      level=WARN
     Log    [ ${README_LINK}${MANUAL_TEST_ENV} ]                                 level=WARN
     Log    ${EMPTY}                                                             level=WARN
     Set Global Variable    ${SKIP_SHUTDOWN_WARNING}    ${FALSE}
@@ -344,7 +344,7 @@ abort tests due to issues with manually controlled test environment
     Log    //${SPACE * 53}///                                                   level=WARN
     Log    //////////////////////////////////////////////////////////           level=WARN
     Log    ${EMPTY}                                                             level=WARN
-    Log    [ check "Manually Controlled Test Environment" in test README ]      level=WARN
+    Log    [ check "Manually Controlled SUT" in test README ]      level=WARN
     Log    [ ${README_LINK}${MANUAL_TEST_ENV} ]                                 level=WARN
     Log    ${EMPTY}    level=WARN
     Set Global Variable    ${SKIP_SHUTDOWN_WARNING}    ${TRUE}
