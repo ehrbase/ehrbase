@@ -426,7 +426,7 @@ public class CompositionSerializer {
         if (composition.getContent() != null && !composition.getContent().isEmpty()) {
             for (ContentItem item : composition.getContent()) {
                 Map contentMap = traverse(item, TAG_CONTENT);
-                if (!contentMap.containsKey(TAG_NAME))
+                if (contentMap != null && !contentMap.containsKey(TAG_NAME))
                     contentMap.put(TAG_NAME, mapName(item.getName())); //this fixes the issue with SECTION name
                 putObject(null, item, ltree, getNodeTag(TAG_CONTENT, item, ltree), contentMap);
             }
@@ -1048,23 +1048,17 @@ public class CompositionSerializer {
         ) {
             log.debug(itemStack.pathStackDump() + "=" + element.getValue());
             Map<String, Object> valuemap = newPathMap();
-            //VBeanUtil.setValueMap(valuemap, element.getValue());
-            putObject(null, element, valuemap, TAG_NAME, mapName(element.getName()));
 
-//			if (element.getName() instanceof DvCodedText) {
-//				DvCodedText dvCodedText = (DvCodedText)element.getName();
-//				if (dvCodedText.getDefiningCode() != null)
-//					putObject(element, valuemap, TAG_DEFINING_CODE, dvCodedText.getDefiningCode());
-//			}
+            //set name
+            if (element.getName() != null)
+                putObject(null, element, valuemap, TAG_NAME, mapName(element.getName()));
 
-//            putObject(valuemap, TAG_CLASS, element.getValue()).getSimpleName());
-            //assign the actual object to the value (instead of its field equivalent...)
-            putObject(getCompositeClassName(element.getValue()), element, valuemap, TAG_VALUE, element.getValue());
-//
+            //set value
+            if (element.getValue() != null && !element.getValue().toString().isEmpty())
+                putObject(getCompositeClassName(element.getValue()), element, valuemap, TAG_VALUE, element.getValue());
+
+            //set path
             encodePathItem(valuemap, null);
-//            if (tag_mode == WalkerOutputMode.PATH) {
-//                putObject(valuemap, TAG_PATH, elementStack.pathStackDump());
-//            }
 
             ltree.put(TAG_VALUE, valuemap);
         }
@@ -1092,7 +1086,7 @@ public class CompositionSerializer {
             return null;
         }
 
-        if (item instanceof Element && !new Elements((Element) item).isVoid()) {
+        if (item instanceof Element) { //NB. Element value and null flavour are optional
             itemStack.pushStacks(tag + "[" + item.getArchetypeNodeId() + "]", null);
             retmap = setElementAttributesMap((Element) item);
             itemStack.popStacks();
