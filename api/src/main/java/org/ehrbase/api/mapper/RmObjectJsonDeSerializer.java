@@ -29,13 +29,13 @@ import org.ehrbase.serialisation.CanonicalXML;
 
 import java.io.IOException;
 
-public class RmObjektJsonDeSerializer extends StdDeserializer {
+public class RmObjectJsonDeSerializer extends StdDeserializer {
 
-    public RmObjektJsonDeSerializer() {
+    public RmObjectJsonDeSerializer() {
         this(null);
     }
 
-    public RmObjektJsonDeSerializer(Class<?> vc) {
+    public RmObjectJsonDeSerializer(Class<?> vc) {
         super(vc);
     }
 
