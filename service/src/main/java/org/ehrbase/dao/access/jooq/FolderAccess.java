@@ -232,6 +232,12 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
     }
 
     @Override
+    public UUID commit() {
+        Timestamp timestamp = new Timestamp(DateTime.now().getMillis());
+        return this.commit(timestamp);
+    }
+
+    @Override
     public UUID commit(Timestamp transactionTime) {
         // Create Contribution entry for all folders
         this.contributionAccess.commit(
@@ -244,34 +250,31 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
                 null
         );
 
-        return this.commit(transactionTime, this.contributionAccess);
+        return this.commit(transactionTime, this.contributionAccess.getContributionId());
 
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public UUID commit() {
-        Timestamp timestamp = new Timestamp(DateTime.now().getMillis());
-        return this.commit(timestamp);
-    }
+    public UUID commit(Timestamp transactionTime, UUID contributionId) {
 
-    @Override
-    public UUID commit(Timestamp transactionTime, I_ContributionAccess contributionAccess) {
-
-        this.getFolderRecord().setInContribution(contributionAccess.getId());
+        this.getFolderRecord().setInContribution(contributionId);
 
         // Save the folder record to database
         this.getFolderRecord().store();
 
         //Save folder items
-        this.saveFolderItems(this.getFolderRecord().getId(), contributionAccess.getContributionId(), contributionAccess.getContributionId(), transactionTime, getContext());
+        this.saveFolderItems(this.getFolderRecord().getId(), contributionId, contributionId, transactionTime, getContext());
 
         // Save list of sub folders to database with parent <-> child ID relations
-        this.getSubfoldersList().forEach((child_id, child) -> {
-            child.commit(transactionTime, contributionAccess);
+        this.getSubfoldersList().values().forEach(child -> {
+            child.commit(transactionTime, contributionId);
             FolderHierarchyRecord fhRecord = this.buildFolderHierarchyRecord(
                     this.getFolderRecord().getId(),
                     ((FolderAccess) child).getFolderRecord().getId(),
-                    contributionAccess.getId(),
+                    contributionId,
                     transactionTime,
                     null
             );

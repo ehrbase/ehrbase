@@ -123,13 +123,8 @@ public class FolderServiceImp extends BaseService implements FolderService {
 
         folderAccess = I_FolderAccess.retrieveInstanceForExistingFolder(getDataAccess(), folderId);
 
-        if (path != null && !"/".equals(path)) {
-            // Trim starting forward slash
-            if (path.startsWith("/")) {
-                path = path.substring(1);
-            }
-            folderAccess = FolderUtils.getPath(folderAccess, 0, path.split("/"));
-        }
+        // Handle path
+        folderAccess = extractPath(folderAccess, path);
 
         return createDto(folderAccess);
     }
@@ -153,9 +148,8 @@ public class FolderServiceImp extends BaseService implements FolderService {
                     timestamp
             );
 
-            if (path != null && !"/".equals(path)) {
-                folderAccess = FolderUtils.getPath(folderAccess, 0, path.split("/"));
-            }
+            // Handle path
+            folderAccess = extractPath(folderAccess, path);
 
             return createDto(folderAccess);
         } catch (ObjectNotFoundException e) {
@@ -331,5 +325,28 @@ public class FolderServiceImp extends BaseService implements FolderService {
         }
 
         return result;
+    }
+
+    /**
+     * If a path was sent by the client the folderAccess retrieved from database will be iterated recursive to find a
+     * given sub folder. If the path is empty or contains only one forward slash the root folder will be returned.
+     * Trailing slashes at the end of a path will be ignored. If the path cannot be found an ObjectNotFound exception
+     * will be thrown which can be handled by the controller layer.
+     *
+     * @param folderAccess - Retrieved result folder hierarchy from database
+     * @param path - Path to identify desired sub folder
+     * @return folderAccess containing the sub folder and its sub tree if path can be found
+     */
+    private I_FolderAccess extractPath(I_FolderAccess folderAccess, String path) {
+        // Handle path if sent by client
+        if (path != null && !"/".equals(path)) {
+            // Trim starting forward slash
+            if (path.startsWith("/")) {
+                path = path.substring(1);
+            }
+            folderAccess = FolderUtils.getPath(folderAccess, 0, path.split("/"));
+        }
+
+        return folderAccess;
     }
 }

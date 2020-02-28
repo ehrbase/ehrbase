@@ -92,7 +92,15 @@ public interface I_FolderAccess extends I_SimpleCRUD<I_EntryAccess, UUID> {
         return FolderHistoryAccess.retrieveInstanceForExistingFolder(domainAccess, folderId, timestamp);
     }
 
-    UUID commit(Timestamp transactionTime, I_ContributionAccess contributionAccess);
+    /**
+     * Additional commit method to store a new entry of folder to the database and get all of inserted sub folders
+     * connected by one contribution which has been created before.
+     *
+     * @param transactionTime - Timestamp which will be applied to all folder sys_transaction values
+     * @param contributionId - ID of contribution for CREATE applied to all folders that will be created
+     * @return UUID of the new created root folder
+     */
+    UUID commit(Timestamp transactionTime, UUID contributionId);
 
     UUID getFolderId();
 

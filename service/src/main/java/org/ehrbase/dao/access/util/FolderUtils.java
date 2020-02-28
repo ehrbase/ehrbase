@@ -8,10 +8,11 @@ import org.ehrbase.serialisation.RawJson;
 import org.jooq.JSONB;
 import org.postgresql.util.PGobject;
 
-import java.util.Map;
 import java.util.Optional;
 
 public class FolderUtils {
+
+    private FolderUtils() {}
 
     public static I_FolderAccess getPath(I_FolderAccess folderAccess, int currentIndex, String[] path) {
 
@@ -31,7 +32,7 @@ public class FolderUtils {
                 .getSubfoldersList()
                 .values()
                 .stream()
-                .filter(i_folderAccess -> searchFolderName.equals(i_folderAccess.getFolderName()))
+                .filter(subFolderAccess -> searchFolderName.equals(subFolderAccess.getFolderName()))
                 .findFirst();
 
         // Throw not found if folder could not be found

@@ -120,7 +120,7 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
     }
 
     @Override
-    public UUID commit(Timestamp transactionTime, I_ContributionAccess contributionAccess){
+    public UUID commit(Timestamp transactionTime, UUID contributionId){
         return null;
     }
 
