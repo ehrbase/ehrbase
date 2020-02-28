@@ -220,8 +220,9 @@ wait until openehr server is online
 
 
 openehr server is online
-    REST.GET    ${SWAGGER_URL}
-    Integer  response status  200
+    prepare new request session  JSON
+    REST.GET    ${HEARTBEAT_URL}
+    Integer  response status  404
 
 
 abort test execution
@@ -308,45 +309,45 @@ do quick sanity check
 
 
 warn about manual test environment start up
-    Log    ${EMPTY}    level=WARN
-    Log    ///////////////////////////////////////////////////////////          level=WARN
-    Log    //${SPACE * 54}///                                                   level=WARN
-    Log    // YOU HAVE CHOSEN TO START YOUR OWN TEST ENVIRONMENT!\ \ ///        level=WARN
-    Log    // MAKE SURE IT MEETS PREREQUISITES FOR TEST EXECUTION!\ ///         level=WARN
-    Log    // MAKE SURE TO RESET IT PROPERLY AFTER EACH TEST RUN!\ \ ///        level=WARN
-    Log    //${SPACE * 54}///                                                   level=WARN
-    Log    ///////////////////////////////////////////////////////////          level=WARN
-    Log    ${EMPTY}                                                             level=WARN
-    Log    [ check "Manually Controlled SUT" in test README ]      level=WARN
-    Log    [ ${README_LINK}${MANUAL_TEST_ENV} ]                                 level=WARN
-    Log    ${EMPTY}                                                             level=WARN
+    Log    ${EMPTY}                                                                             level=WARN
+    Log    /////////////////////////////////////////////////////////////////////                level=WARN
+    Log    //${SPACE * 64}///                                                                   level=WARN
+    Log    //${SPACE * 10} YOU HAVE CHOSEN TO START YOUR SUT MANUALLY! ${SPACE * 9}///          level=WARN
+    Log    //${SPACE * 5} MAKE SURE IT MEETS PREREQUISITES FOR TEST EXECUTION! ${SPACE * 5}///  level=WARN
+    Log    //${SPACE * 6} MAKE SURE TO RESET IT PROPERLY AFTER EACH TEST RUN! ${SPACE * 5}///   level=WARN
+    Log    //${SPACE * 64}///                                                                   level=WARN
+    Log    /////////////////////////////////////////////////////////////////////                level=WARN
+    Log    ${EMPTY}                                                                             level=WARN
+    Log    [ check "Manually Controlled SUT" in test README ]                                   level=WARN
+    Log    [ ${README_LINK}${MANUAL_TEST_ENV} ]                                                 level=WARN
+    Log    ${EMPTY}                                                                             level=WARN
     Set Global Variable    ${SKIP_SHUTDOWN_WARNING}    ${FALSE}
 
 
 warn about manual test environment shut down
     Run Keyword And Return If    ${SKIP_SHUTDOWN_WARNING}==${TRUE}    Log
                           ...    skipping manual test env control warning due to test abortion
-    Log    ${EMPTY}    level=WARN
-    Log    ////////////////////////////////////////////////////////             level=WARN
-    Log    //${SPACE * 51}///                                                   level=WARN
-    Log    // REMBER TO PROPERLY RESTART YOUR TEST ENVIRONMENT! ///             level=WARN
-    Log    //${SPACE * 51}///                                                   level=WARN
-    Log    ////////////////////////////////////////////////////////             level=WARN
-    Log    ${EMPTY}                                                             level=WARN
+    Log    ${EMPTY}                                                                             level=WARN
+    Log    /////////////////////////////////////////////////////////////////////                level=WARN
+    Log    //${SPACE * 64}///                                                                   level=WARN
+    Log    //${SPACE * 13}REMBER TO PROPERLY RESTART YOUR SUT! ${SPACE * 13} ///                level=WARN
+    Log    //${SPACE * 64}///                                                                   level=WARN
+    Log    /////////////////////////////////////////////////////////////////////                level=WARN
+    Log    ${EMPTY}                                                                             level=WARN
 
 
 abort tests due to issues with manually controlled test environment
-    Log    ${EMPTY}    level=WARN
-    Log    //////////////////////////////////////////////////////////           level=WARN
-    Log    //${SPACE * 53}///                                                   level=WARN
-    Log    // YOU HAVE CHOSEN TO START YOUR OWN TEST ENVIRONMENT!\ ///          level=WARN
-    Log    // BUT IT IS NOT AVAILABLE OR IS NOT SET UP PROPERLY!\ \ ///         level=WARN
-    Log    //${SPACE * 53}///                                                   level=WARN
-    Log    //////////////////////////////////////////////////////////           level=WARN
-    Log    ${EMPTY}                                                             level=WARN
-    Log    [ check "Manually Controlled SUT" in test README ]      level=WARN
-    Log    [ ${README_LINK}${MANUAL_TEST_ENV} ]                                 level=WARN
-    Log    ${EMPTY}    level=WARN
+    Log    ${EMPTY}                                                                             level=WARN
+    Log    /////////////////////////////////////////////////////////////////////                level=WARN
+    Log    //${SPACE * 64}///                                                                   level=WARN
+    Log    //${SPACE * 10} YOU HAVE CHOSEN TO START YOUR SUT MANUALLY ${SPACE * 10}///          level=WARN
+    Log    //${SPACE * 6} BUT IT IS NOT AVAILABLE OR IS NOT SET UP PROPERLY! ${SPACE * 6}///    level=WARN
+    Log    //${SPACE * 64}///                                                                   level=WARN
+    Log    /////////////////////////////////////////////////////////////////////                level=WARN
+    Log    ${EMPTY}                                                                             level=WARN
+    Log    [ check "Manually Controlled SUT" in test README ]                                   level=WARN
+    Log    [ ${README_LINK}${MANUAL_TEST_ENV} ]                                                 level=WARN
+    Log    ${EMPTY}                                                                             level=WARN
     Set Global Variable    ${SKIP_SHUTDOWN_WARNING}    ${TRUE}
     abort test execution    @{TEST_ENVIRONMENT_STATUS}
 
@@ -357,16 +358,16 @@ startup SUT
     # comment: switch to manual test environment control when "-v nodocker" cli option is used
     Run Keyword If      $NODOCKER.upper() in ["TRUE", ""]    Run Keywords
                ...      Set Global Variable    ${NODOCKER}    TRUE    AND
-               ...      Set Global Variable    ${baseurl}    ${DEV.URL}    AND
-               ...      Set Global Variable    ${SWAGGER_URL}    ${DEV.SWAGGER}    AND
-               ...      Set Global Variable    ${authorization}    ${DEV.AUTH}    AND
+               ...      Set Global Variable    ${BASEURL}    ${DEV.URL}    AND
+               ...      Set Global Variable    ${HEARTBEAT_URL}    ${DEV.HEARTBEAT}    AND
+               ...      Set Global Variable    ${AUTHORIZATION}    ${DEV.AUTH}    AND
                ...      Set Global Variable    ${CREATING_SYSTEM_ID}    ${DEV.NODENAME}    AND
                ...      Set Global Variable    ${CONTROL_MODE}    ${DEV.CONTROL}
 
-                        Log    \n\t TEST ENVIRONMENT CONFIG\n    console=true
-                        Log    \t BASEURL: ${baseurl}    console=true
-                        Log    \t SWAGGER: ${SWAGGER_URL}    console=true
-                        Log    \t AUTH: ${authorization}    console=true
+                        Log    \n\t SUT CONFIG\n    console=true
+                        Log    \t BASEURL: ${BASEURL}    console=true
+                        Log    \t HEARTBEAT: ${HEARTBEAT_URL}    console=true
+                        Log    \t AUTH: ${AUTHORIZATION}    console=true
                         Log    \t CREATING SYSTEM ID: ${CREATING_SYSTEM_ID}    console=true
                         Log    \t CONTROL MODE: ${CONTROL_MODE}\n    console=true
 

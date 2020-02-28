@@ -68,7 +68,7 @@ ${SUT}                  TEST    # DEFAULT
 
 # local test environment: for development
 &{DEV}                  URL=http://localhost:8080/ehrbase/rest/openehr/v1
-...                     SWAGGER=http://localhost:8080/ehrbase/swagger-ui.html
+...                     HEARTBEAT=http://localhost:8080/ehrbase/
 ...                     CREDENTIALS=${devcreds}
 ...                     AUTH={"Authorization": null}
                         # comment: nodename is actually "CREATING_SYSTEM_ID" and can be set from cli
@@ -81,7 +81,7 @@ ${devcreds}             None
 
 # testing environment: used on CI pipeline
 &{TEST}                 URL=http://localhost:8080/ehrbase/rest/openehr/v1
-...                     SWAGGER=http://localhost:8080/ehrbase/swagger-ui.html
+...                     HEARTBEAT=http://localhost:8080/ehrbase/
 ...                     CREDENTIALS=${testcreds}
 ...                     AUTH={"Authorization": null}
 ...                     NODENAME=local.ehrbase.org
@@ -90,7 +90,7 @@ ${testcreds}            None
 
 # staging environment
 &{STAGE}                URL=http://localhost:8080/ehrbase/rest/openehr/v1
-...                     SWAGGER=http://localhost:8080/ehrbase/swagger-ui.html
+...                     HEARTBEAT=http://localhost:8080/ehrbase/
 ...                     CREDENTIALS=${stagecreds}
 ...                     AUTH={"Authorization": null}
 ...                     NODENAME=stage.ehrbase.org
@@ -99,7 +99,7 @@ ${stagecreds}           None
 
 # pre production environment
 &{PREPROD}              URL=http://localhost:8080/ehrbase/rest/openehr/v1
-...                     SWAGGER=http://localhost:8080/ehrbase/swagger-ui.html
+...                     HEARTBEAT=http://localhost:8080/ehrbase/
 ...                     CREDENTIALS=${preprodcreds}
 ...                     AUTH={"Authorization": null}
 ...                     NODENAME=preprod.ehrbase.org
@@ -113,9 +113,9 @@ ${preprodcreds}         None
 # ...                     AUTH={"Authorization": "Basic Auth-String"}
 # @{aircreds}             username    password
 
-${baseurl}              ${${SUT}.URL}
-${SWAGGER_URL}          ${${SUT}.SWAGGER}
-${authorization}        ${${SUT}.AUTH}
+${BASEURL}              ${${SUT}.URL}
+${HEARTBEAT_URL}        ${${SUT}.HEARTBEAT}
+${AUTHORIZATION}        ${${SUT}.AUTH}
 ${CREATING_SYSTEM_ID}   ${${SUT}.NODENAME}
 ${CONTROL_MODE}         ${${SUT}.CONTROL}
 
