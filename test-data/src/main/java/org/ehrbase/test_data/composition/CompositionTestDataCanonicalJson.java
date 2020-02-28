@@ -22,6 +22,7 @@ import java.io.InputStream;
 
 public enum CompositionTestDataCanonicalJson {
     LABORATORY_REPORT("Valid Laboratory report", "laboratory_report.json"),
+    LABORATORY_REPORT_NO_CONTENT("Laboratory report no content", "laboratory_report_no_content.json"),
     MINIMAL_ADMIN("Minimal Admin", "minimal_admin.json"),
     MINIMAL_EVAL("Minimal Evaluation", "minimal_evaluation.json"),
     MINIMAL_INST("Minimal Instruction", "minimal_instruction.json"),

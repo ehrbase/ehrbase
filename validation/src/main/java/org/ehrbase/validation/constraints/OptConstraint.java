@@ -27,13 +27,13 @@ import java.util.*;
 
 public class OptConstraint {
 
-    Logger log = LogManager.getLogger(OptConstraint.class);
+    private Logger log = LogManager.getLogger(OptConstraint.class);
 
     private OptConstraintMapper constrainMapper = new OptConstraintMapper();
 
-    private Map<String, Map<String, String>> termTable = new HashMap<String, Map<String, String>>();
+    private Map<String, Map<String, String>> termTable = new HashMap<>();
 
-    private Map<String, List<DVORDINAL>> ordinalTable = new HashMap<String, List<DVORDINAL>>();
+    private Map<String, List<DVORDINAL>> ordinalTable = new HashMap<>();
 
     //field identifiers
     protected static final String VALUE = "value";
@@ -42,11 +42,11 @@ public class OptConstraint {
     /**
      * Generate empty Rm from template
      *
-     * @param opt
-     * @return
-     * @throws Exception
+     * @param opt Operational template
+     * @return a constraint mapper corresponding to the template
+     * @throws IllegalArgumentException
      */
-    public OptConstraintMapper map(OPERATIONALTEMPLATE opt) throws Exception {
+    public OptConstraintMapper map(OPERATIONALTEMPLATE opt) throws IllegalArgumentException {
         CARCHETYPEROOT def = opt.getDefinition();
 
         handleArchetypeRoot(opt, def, null, "");
@@ -60,11 +60,11 @@ public class OptConstraint {
      * @param name
      * @param path
      * @return
-     * @throws Exception
+     * @throws IllegalArgumentException
      */
-    private void handleArchetypeRoot(OPERATIONALTEMPLATE opt,CARCHETYPEROOT def, String name, String path) throws Exception {
+    private void handleArchetypeRoot(OPERATIONALTEMPLATE opt,CARCHETYPEROOT def, String name, String path) throws IllegalArgumentException {
 
-        Map<String, String> termDef = new HashMap<String, String>();
+        Map<String, String> termDef = new HashMap<>();
         // Keep term definition to map
         for (ARCHETYPETERM term : def.getTermDefinitionsArray()) {
             String code = term.getCode();
@@ -90,11 +90,11 @@ public class OptConstraint {
      * @param termDef
      * @param name
      * @return
-     * @throws Exception
+     * @throws IllegalArgumentException
      */
     private void handleComplexObject(OPERATIONALTEMPLATE opt,
                                        CCOMPLEXOBJECT ccobj, Map<String, String> termDef, String name,
-                                       String path) throws Exception {
+                                       String path) throws IllegalArgumentException {
 
         String nodeId = ccobj.getNodeId();
         String rmTypeName = ccobj.getRmTypeName();
@@ -185,7 +185,7 @@ public class OptConstraint {
         }
     }
 
-    private void handleCObject(OPERATIONALTEMPLATE opt, COBJECT cobj, Map<String, String> termDef, String attrName, String path) throws Exception {
+    private void handleCObject(OPERATIONALTEMPLATE opt, COBJECT cobj, Map<String, String> termDef, String attrName, String path) throws IllegalArgumentException {
         // if ( cobj.getOccurrences().isAvailable() ) {
         log.debug("cobj=" + cobj.getClass() + ":" + cobj.getRmTypeName());
 
@@ -204,17 +204,16 @@ public class OptConstraint {
             } else if ("/context".equalsIgnoreCase(path)) {
                 handleComplexObject(opt, (CCOMPLEXOBJECT) cobj, termDef, attrName, path);
             }
-            if (((CCOMPLEXOBJECT) cobj).getNodeId() != null && !((CCOMPLEXOBJECT) cobj).getNodeId().isEmpty()) {
-                path = path + "[" + ((CCOMPLEXOBJECT) cobj).getNodeId() + "]";
+            if (cobj.getNodeId() != null && !cobj.getNodeId().isEmpty()) {
+                path = path + "[" + cobj.getNodeId() + "]";
             }
             log.debug("CONTEXT path=" + path);
             handleComplexObject(opt, (CCOMPLEXOBJECT) cobj, termDef, attrName, path);
         } else if (cobj instanceof ARCHETYPESLOT) {
-            if (!((ARCHETYPESLOT) cobj).getNodeId().isEmpty()) {
-                path = path + "[" + ((ARCHETYPESLOT) cobj).getNodeId() + "]";
+            if (!cobj.getNodeId().isEmpty()) {
+                path = path + "[" + cobj.getNodeId() + "]";
             }
-            ARCHETYPESLOT slot = (ARCHETYPESLOT) cobj;
-            // slot.
+
 
             // slot.getIncludes().get(0).
             log.debug("ARCHETYPESLOT path=" + path);
@@ -250,16 +249,16 @@ public class OptConstraint {
         return null;
     }
 
-    private void handleDvOrdinal(CDVORDINAL cdo, Map<String, String> termDef, String path) throws Exception {
+    private void handleDvOrdinal(CDVORDINAL cdo, Map<String, String> termDef, String path) throws IllegalArgumentException {
 
         List<DVORDINAL> list = Arrays.asList(cdo.getListArray());
-        if (list == null || list.size() == 0) {
-            throw new Exception("empty list of ordinal");
+        if (list.size() == 0) {
+            throw new IllegalArgumentException("empty list of ordinal");
         }
         ordinalTable.put(path, list);
     }
 
-    private void handleDomainTypeObject(CDOMAINTYPE cpo, Map<String, String> termDef, String path) throws Exception {
+    private void handleDomainTypeObject(CDOMAINTYPE cpo, Map<String, String> termDef, String path) throws IllegalArgumentException {
 
         if (cpo instanceof CDVORDINAL) {
             if (((CDVORDINAL) cpo).isSetAssumedValue()) {

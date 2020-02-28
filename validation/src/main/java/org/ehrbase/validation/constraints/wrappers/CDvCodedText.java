@@ -41,14 +41,14 @@ import java.util.Map;
  */
 public class CDvCodedText extends CConstraint implements I_CArchetypeConstraintValidate {
 
-    Logger logger = LogManager.getLogger(CDvCodedText.class);
+    private Logger logger = LogManager.getLogger(CDvCodedText.class);
 
-    protected CDvCodedText(Map<String, Map<String, String>> localTerminologyLookup) {
+    CDvCodedText(Map<String, Map<String, String>> localTerminologyLookup) {
         super(localTerminologyLookup);
     }
 
     @Override
-    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws Exception {
+    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws IllegalArgumentException {
 
         DvCodedText checkValue = (DvCodedText) aValue;
 
@@ -58,7 +58,7 @@ public class CDvCodedText extends CConstraint implements I_CArchetypeConstraintV
 
         Object object = csingleattribute.getChildrenArray(0);
 
-        if (object instanceof COBJECT){
+        if (object != null){
             String rmTypeName = ((COBJECT)object).getRmTypeName();
             SchemaType type = rmTypeName.equals("CODE_PHRASE") ? CCODEPHRASE.type : XmlObject.type;
             object = ((COBJECT) object).changeType(type);

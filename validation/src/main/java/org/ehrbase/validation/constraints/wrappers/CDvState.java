@@ -38,15 +38,15 @@ import java.util.Map;
  */
 public class CDvState extends CConstraint implements I_CArchetypeConstraintValidate {
 
-    protected CDvState(Map<String, Map<String, String>> localTerminologyLookup) {
+    CDvState(Map<String, Map<String, String>> localTerminologyLookup) {
         super(localTerminologyLookup);
     }
 
     @Override
-    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws Exception {
+    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws IllegalArgumentException {
 
         if (!(archetypeconstraint instanceof CDVSTATE))
-            throw new IllegalArgumentException("INTERNAL: archetype constraint is not a CDvState");
+            throw new IllegalStateException("INTERNAL: archetype constraint is not a CDvState");
 
         CDVSTATE cdvstate = (CDVSTATE) archetypeconstraint;
         DvState dvState = (DvState) aValue;
@@ -56,7 +56,7 @@ public class CDvState extends CConstraint implements I_CArchetypeConstraintValid
 
             if (statemachine.sizeOfStatesArray() > 0) {
                 for (STATE state : statemachine.getStatesArray()) {
-                    if (dvState.getValue().equals(state.getName()))
+                    if (dvState.getValue().getValue().equals(state.getName()))
                         break;
                 }
             }

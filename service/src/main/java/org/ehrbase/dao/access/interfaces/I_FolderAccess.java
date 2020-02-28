@@ -26,6 +26,8 @@ import org.ehrbase.dao.access.jooq.FolderHistoryAccess;
 import org.joda.time.DateTime;
 
 import java.sql.Timestamp;
+import java.time.OffsetDateTime;
+import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -38,7 +40,7 @@ import java.util.UUID;
 /**
  * Data Access Object for CRUD operations on instances of {@link  com.nedap.archie.rm.directory.Folder}.
  */
-public interface I_FolderAccess extends I_SimpleCRUD<I_EntryAccess, UUID> {
+public interface I_FolderAccess extends I_SimpleCRUD {
 
     /**
      * Get the list of subfolders for the {@link  com.nedap.archie.rm.directory.Folder} that corresponds to this {@link  I_FolderAccess}
@@ -130,7 +132,7 @@ public interface I_FolderAccess extends I_SimpleCRUD<I_EntryAccess, UUID> {
 
     Timestamp getFolderSysTransaction();
 
-    Object getFolderSysPeriod();
+    AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime> getFolderSysPeriod();
 
-    void setFolderSysPeriod(Object folderSysPeriod);
+    void setFolderSysPeriod(AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime> folderSysPeriod);
 }

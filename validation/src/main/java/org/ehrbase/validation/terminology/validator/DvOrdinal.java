@@ -26,12 +26,12 @@ public class DvOrdinal extends TerminologyCheck{
         this.RM_CLASS = com.nedap.archie.rm.datavalues.quantity.DvOrdinal.class;
     }
 
-    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datavalues.quantity.DvOrdinal dvOrdinal, String language) throws Exception {
+    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datavalues.quantity.DvOrdinal dvOrdinal, String language) throws IllegalArgumentException {
         if (dvOrdinal.getSymbol() != null)
             validate(terminologyInterface, codesetMapping, "symbol", dvOrdinal.getSymbol(), language);
     }
 
-    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datavalues.quantity.DvOrdinal dvOrdinal) throws Exception {
+    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datavalues.quantity.DvOrdinal dvOrdinal) throws IllegalArgumentException {
         check(terminologyInterface, codesetMapping, context, dvOrdinal, "en");
     }
 }

@@ -29,5 +29,5 @@ import com.nedap.archie.rm.datavalues.DataValue;
  */
 public interface I_ElementConstraint {
 
-    Boolean validate(DataValue value) throws Exception;
+    Boolean validate(DataValue value) throws IllegalArgumentException;
 }

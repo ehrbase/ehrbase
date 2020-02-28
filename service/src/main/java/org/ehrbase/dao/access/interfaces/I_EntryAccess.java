@@ -36,7 +36,7 @@ import static org.ehrbase.jooq.pg.Tables.ENTRY;
  * Entry (Composition Content) access layer
  * Created by Christian Chevalley on 4/21/2015.
  */
-public interface I_EntryAccess extends I_SimpleCRUD<I_EntryAccess, UUID> {
+public interface I_EntryAccess extends I_SimpleCRUD {
 
     /**
      * create and get a new Entry commit

@@ -53,6 +53,9 @@ public class ValidationServiceTest {
             //set composition
             Composition composition = new CanonicalXML().unmarshal(IOUtils.toString(Files.newInputStream(Paths.get("./src/test/resources/samples/RIPPLE-ConformanceTest.xml")), UTF_8),Composition.class);
 
+            //check validation
+            validationService.check(composition);
+
             //check validation using templateId
             validationService.check("RIPPLE - Conformance Test template", composition);
 

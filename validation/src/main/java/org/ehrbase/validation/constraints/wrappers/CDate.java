@@ -40,12 +40,12 @@ import java.util.Map;
  */
 public class CDate extends CConstraint implements I_CTypeValidate {
 
-    protected CDate(Map<String, Map<String, String>> localTerminologyLookup) {
+    CDate(Map<String, Map<String, String>> localTerminologyLookup) {
         super(localTerminologyLookup);
     }
 
     @Override
-    public void validate(String path, Object aValue, CPRIMITIVE cprimitive) throws Exception {
+    public void validate(String path, Object aValue, CPRIMITIVE cprimitive) throws IllegalArgumentException {
         if (!(aValue instanceof Temporal))
             ValidationException.raise(path, "INTERNAL: Time validation expects a java-date-time argument", "DATE_01");
 
@@ -64,7 +64,7 @@ public class CDate extends CConstraint implements I_CTypeValidate {
         validateTimeZone(path, date, cdate);
     }
 
-    public void validateTimeZone(String path, DvDate dvDate, CDATE cdate) throws Exception {
+    private void validateTimeZone(String path, DvDate dvDate, CDATE cdate) throws IllegalArgumentException {
         //TODO: migrate to Temporal
 //        if (cdate.isSetTimezoneValidity() && cdate.getTimezoneValidity().equals(new BigInteger("1001")) && dvDate.getValue().get(ChronoField.OFFSET_SECONDS) == null) {
 //            ValidationException.raise(path, "Time zone is mandatory", "DATE02");
