@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.ehrbase.aql.compiler.tsclient.OpenehrTerminologyServer;
 import org.ehrbase.aql.compiler.tsclient.TerminologyServer;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -37,34 +38,7 @@ import com.nedap.archie.rm.support.identification.TerminologyId;
 /***
  *@Created by Luis Marco-Ruiz on Feb 12, 2020
  */
-public class FhirTerminologyServerImpl  implements TerminologyServer<DvCodedText, String>{
-
-	/*@Override
-	public List expand(String valueSetId) {
-		
-		RestTemplate rest = new RestTemplate();
-		HttpHeaders headers = new HttpHeaders();
-		headers.set("accept","application/fhir+json");
-		HttpEntity<ValueSet> entity =  new HttpEntity<ValueSet>(headers);
-		ResponseEntity<String> responseEntity = rest.exchange("https://r4.ontoserver.csiro.au/fhir/ValueSet/942e1d78-d481-416f-bebd-5754ba4d0b69/$expand/",
-				HttpMethod.GET,
-				entity,
-				String.class);
-		String response = responseEntity.getBody();
-
-		System.out.println("THE RESPONSE FROM THE EXTERNAL FHIR SERVER IS: "+response);
-		List<String> result = new ArrayList();
-		result.add("48377-6");
-		result.add("27478-7");
-		result.add("52539-9");
-		
-		String jsonCodePath = "$[\"expansion\"][\"contains\"][*][\"code\"]";
-		DocumentContext jsonContext = JsonPath.parse(response);
-		List<String> jsonpathCreatorName = jsonContext.read(jsonCodePath);
-		System.out.println(jsonpathCreatorName);
-		
-		return result;
-	}*/
+public class FhirTerminologyServerAdaptorImpl  implements OpenehrTerminologyServer<DvCodedText, String>{
 	
 	@Override
 	public List<DvCodedText> expand(String valueSetId) {

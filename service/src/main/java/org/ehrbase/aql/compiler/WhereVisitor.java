@@ -21,11 +21,15 @@
 
 package org.ehrbase.aql.compiler;
 
+import org.ehrbase.aql.compiler.tsclient.OpenehrTerminologyServer;
 import org.ehrbase.aql.compiler.tsclient.TerminologyServer;
-import org.ehrbase.aql.compiler.tsclient.fhir.FhirTerminologyServerImpl;
+import org.ehrbase.aql.compiler.tsclient.fhir.FhirTerminologyServerAdaptorImpl;
 import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.parser.AqlBaseVisitor;
 import org.ehrbase.aql.parser.AqlParser;
+
+import com.nedap.archie.rm.datavalues.DvCodedText;
+
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 
@@ -47,15 +51,9 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
     private static final String CLOSING_PAR = ")";
     private static final String COMMA = ",";
     
-    private TerminologyServer<T, ID> tsserver = (TerminologyServer<T, ID>) new FhirTerminologyServerImpl();
+    private OpenehrTerminologyServer<DvCodedText, ID> tsserver = (OpenehrTerminologyServer<DvCodedText, ID>) new FhirTerminologyServerAdaptorImpl();
 
     private List<Object> whereExpression = new ArrayList<>();
-
-//    @Override
-//    public List visit(ParseTree tree){
-//        return null;
-////        return visitWhere(tree.getChild(0));
-//    }
 
     @Override
     public List<Object> visitWhere(AqlParser.WhereContext ctx) {
@@ -142,7 +140,9 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
 			assert(ctx.INVOKE().getText().equals("INVOKE"));
 			assert(ctx.OPEN_PAR().getText().equals("("));
 			assert(ctx.CLOSE_PAR().getText().equals(")"));
-			invokeExpr.addAll(tsserver.expand((ID)ctx.URIVALUE().getText()));
+			List<String> codesList = new ArrayList<>();
+			tsserver.expand((ID)ctx.URIVALUE().getText()).forEach((DvCodedText dvCode) -> {codesList.add(dvCode.getDefiningCode().getCodeString());});
+			invokeExpr.addAll(codesList);
 			return invokeExpr; 
 		}
 
