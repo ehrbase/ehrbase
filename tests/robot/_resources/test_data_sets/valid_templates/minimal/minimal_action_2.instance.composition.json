@@ -27,7 +27,7 @@
       "_type": "TERMINOLOGY_ID",
       "value": "ISO_639-1"
     },
-    "code_string": "es"
+    "code_string": "en"
   },
   "territory": {
     "_type": "CODE_PHRASE",
@@ -39,7 +39,7 @@
   },
   "category": {
     "_type": "DV_CODED_TEXT",
-    "value": "evento",
+    "value": "event",
     "defining_code": {
       "_type": "CODE_PHRASE",
       "terminology_id": {
@@ -95,7 +95,7 @@
           "_type": "TERMINOLOGY_ID",
           "value": "ISO_639-1"
         },
-        "code_string": "es"
+        "code_string": "en"
       },
       "encoding": {
         "_type": "CODE_PHRASE",
