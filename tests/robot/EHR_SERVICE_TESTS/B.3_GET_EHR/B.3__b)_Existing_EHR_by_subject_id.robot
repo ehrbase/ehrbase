@@ -28,14 +28,14 @@ Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 # Suite Setup  startup SUT
 # Suite Teardown  shutdown SUT
 
-Force Tags    
+Force Tags
 
 
 
 *** Test Cases ***
 Get existing EHR by subject_id
 
-    prepare new request session    JSON
+    prepare new request session    JSON    Prefer=return=representation
 
     create new EHR with subject_id (JSON)
     check content of created EHR (JSON)
