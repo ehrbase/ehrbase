@@ -21,7 +21,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.ehrbase.aql.compiler.tsclient.OpenehrTerminologyServer;
 import org.ehrbase.aql.compiler.tsclient.TerminologyServer;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -31,40 +33,22 @@ import org.springframework.web.client.RestTemplate;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import com.nedap.archie.rm.datatypes.CodePhrase;
+import com.nedap.archie.rm.datavalues.DvCodedText;
+import com.nedap.archie.rm.support.identification.TerminologyId;
 /***
  *@Created by Luis Marco-Ruiz on Feb 12, 2020
  */
-public class FhirTerminologyServerImpl  implements TerminologyServer<String, String>{
 
-	/*@Override
-	public List expand(String valueSetId) {
-		
-		RestTemplate rest = new RestTemplate();
-		HttpHeaders headers = new HttpHeaders();
-		headers.set("accept","application/fhir+json");
-		HttpEntity<ValueSet> entity =  new HttpEntity<ValueSet>(headers);
-		ResponseEntity<String> responseEntity = rest.exchange("https://r4.ontoserver.csiro.au/fhir/ValueSet/942e1d78-d481-416f-bebd-5754ba4d0b69/$expand/",
-				HttpMethod.GET,
-				entity,
-				String.class);
-		String response = responseEntity.getBody();
-
-		System.out.println("THE RESPONSE FROM THE EXTERNAL FHIR SERVER IS: "+response);
-		List<String> result = new ArrayList();
-		result.add("48377-6");
-		result.add("27478-7");
-		result.add("52539-9");
-		
-		String jsonCodePath = "$[\"expansion\"][\"contains\"][*][\"code\"]";
-		DocumentContext jsonContext = JsonPath.parse(response);
-		List<String> jsonpathCreatorName = jsonContext.read(jsonCodePath);
-		System.out.println(jsonpathCreatorName);
-		
-		return result;
-	}*/
+public class FhirTerminologyServerAdaptorImpl  implements OpenehrTerminologyServer<DvCodedText, String>{
 	
+	private String codePath = null;// = "$[\"expansion\"][\"contains\"][*][\"code\"]";
+	private String systemPath = null;// = "$[\"expansion\"][\"contains\"][*][\"system\"]";
+	private String displayPath = null;// = "$[\"expansion\"][\"contains\"][*][\"display\"]";
+	
+	@ConfigurationProperties(prefix="terminology_server")
 	@Override
-	public List expand(String valueSetId) {
+	public List<DvCodedText> expand(String valueSetId) {
 		
 		RestTemplate rest = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
@@ -75,26 +59,38 @@ public class FhirTerminologyServerImpl  implements TerminologyServer<String, Str
 				entity,
 				String.class);
 		String response = responseEntity.getBody();
-		String jsonCodePath = "$[\"expansion\"][\"contains\"][*][\"code\"]";
+
+
 		DocumentContext jsonContext = JsonPath.parse(response);
-		List<String> jsonpathCreatorName = jsonContext.read(jsonCodePath);
-		return jsonpathCreatorName;
+		List<String> codeList = jsonContext.read(codePath);
+		List<String> systemList = jsonContext.read(systemPath);
+		List<String> displayList = jsonContext.read(displayPath);
+		
+		List<DvCodedText> expansionList = new ArrayList<>();
+		for(int i = 0; i< codeList.size(); i++) {
+			TerminologyId termId = new TerminologyId(systemList.get(i));
+			CodePhrase codePhrase = new CodePhrase(termId, codeList.get(i));
+			DvCodedText codedText = new DvCodedText(displayList.get(i), codePhrase);
+			expansionList.add(codedText);
+		}
+		return expansionList;
 	}
 
+
 	@Override
-	public Boolean validate(String concept, String valueSetId) {
+	public DvCodedText lookUp(String conceptId) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public SubsumptionResult subsumes(String conceptA, String conceptB) {
+	public Boolean validate(DvCodedText concept, String valueSetId) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public String lookUp(String conceptId) {
+	public SubsumptionResult subsumes(DvCodedText conceptA, DvCodedText conceptB) {
 		// TODO Auto-generated method stub
 		return null;
 	}
