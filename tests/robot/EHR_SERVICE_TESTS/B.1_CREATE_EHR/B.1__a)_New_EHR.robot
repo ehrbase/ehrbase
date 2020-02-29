@@ -35,36 +35,35 @@ Force Tags      refactor
 
 *** Test Cases ***
 MF-001 - Create new EHR (w/o Prefer header)
-    [Tags]    
+    [Tags]
     prepare new request session    JSON
-    create new EHR
+    create supernew ehr
 
         TRACE GITHUB ISSUE  143  not-ready
-
-    # comment: check step
-    Null   response body
+    
+    ehr_keywords.validate POST response - 204 no content
 
 
 MF-002 - Create new EHR (Prefer header: minimal)
-    [Tags]              
+    [Tags]
     [Documentation]     This test should behave equqly to MF-001
     prepare new request session    JSON    Prefer=return=minimal
-    create new EHR
+    create supernew ehr
 
         TRACE GITHUB ISSUE  143  not-ready
-
-    # comment: check step
-    Null   response body
+    
+    ehr_keywords.validate POST response - 204 no content
 
 
 MF-003 - Create new EHR (XML, Prefer header: minimal)
-    [Tags]              
+    [Tags]      
     prepare new request session    XML    Prefer=return=minimal
-    create new EHR (XML)
+    # create new EHR (XML)
+    create supernew ehr
 
         TRACE GITHUB ISSUE  143  not-ready
 
-    Null   response body
+    ehr_keywords.validate POST response - 204 no content
 
 
 MF-004 - Create new EHR (Prefer header: representation)
