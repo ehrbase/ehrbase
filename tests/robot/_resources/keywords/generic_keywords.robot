@@ -294,13 +294,36 @@ set request headers
                         Set Suite Variable   ${headers}    ${headers}
 
 
-do quick sanity check
+server sanity check
+    [Documentation]     Sends a GET request to ${HEARTBEAT_URL} to check whether
+    ...                 the server is up and running.
+    
     ${server_status}    Run Keyword And Return Status    openehr server is online
+    [RETURN]            ${server_status}
+
+
+database sanity check
+    [Documentation]     Connects to local PostgreSQL DB regardless whether it was 
+    ...                 installed natively or dockerized. Disconnects immediately
+    ...                 on success.
+    ...                 Is skipped when CONTROL_MODE is not manual - e.g. when SUT
+    ...                 is on a remote host.
+
+    Return From Keyword If    "${CONTROL_MODE}"=="docker"    NO DB CHECK ON REMOTE SUT
+
     ${db_status}        Run Keyword And Return Status    Connect With DB
                         Run Keyword If    $db_status    Disconnect From Database
+    [RETURN]            ${db_status}
+
+
+do quick sanity check
+
+    ${server_status}    server sanity check
+    ${db_status}        database sanity check
 
     ${env_status}       Set Variable If   $server_status==False or $db_status==False
                         ...    ${FALSE}    ${TRUE}
+
 
                         Set Global Variable    @{TEST_ENVIRONMENT_STATUS}
                         ...                    ${env_status}    ${server_status}    ${db_status}
