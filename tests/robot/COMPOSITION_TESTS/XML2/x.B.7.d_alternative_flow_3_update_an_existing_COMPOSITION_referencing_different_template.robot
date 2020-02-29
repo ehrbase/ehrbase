@@ -46,13 +46,7 @@ Alternative flow 3 update an existing persistent COMPOSITION referencing differe
 
     # comment: Commit a new version for the COMPOSITION referencing the _2 OPT which is a different
     #          one than the one referenced by the first committed COMPO
-    # update composition (XML)    minimal_persistent/persistent_minimal.composition.extdatetime.v2_2.xml
     update composition - invalid opt reference (XML)    minimal_persistent/persistent_minimal.composition.extdatetime.v2_2.xml
-
-
-        TRACE GITHUB ISSUE  124  not-ready
-
-
     Should Be Equal As Strings   ${response.status_code}   400
 
     [Teardown]    restart SUT
