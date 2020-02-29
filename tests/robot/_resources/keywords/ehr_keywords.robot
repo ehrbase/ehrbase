@@ -153,7 +153,7 @@ validate POST response - 201 created
     [Documentation]     CASE: new ehr was created.
     ...                 Request was send with `Prefer=return=representation`.
 
-    Integer             response status    201   
+    Integer             response status    201
     Object              response body
 
 
@@ -166,6 +166,16 @@ validate POST response - 204 no content
     String              response body    ${EMPTY}
 
 
+# PUT PUT PUT PUT PUT
+#/////////////////////
+
+validate PUT response - 204 no content
+    [Documentation]     CASE: new ehr was created w/ given ehr_id.
+    ...                 Request was send w/o `Prefer=return` header or with
+    ...                 `Prefer=return=minimal`. Body has to be empty.
+
+    Integer             response status    204
+    String              response body    ${EMPTY}
 
 
 
@@ -410,7 +420,7 @@ set ehr_status of EHR
     # ${ehrstatus}=       Load JSON From File   ehr_status.json
                         # Log To Console    ${ehr_status}
                         # Log To Console    ${ehr_status}[0]
-        
+
         TRACE GITHUB ISSUE  147  not-ready
 
     &{resp}=            REST.PUT    ${baseurl}/ehr/${ehr_id}/ehr_status    ${ehr_status}
