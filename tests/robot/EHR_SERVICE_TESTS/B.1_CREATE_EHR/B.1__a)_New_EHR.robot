@@ -423,9 +423,6 @@ MF-033 - Create new EHR w/ given ehr_id (w/o Prefer header)
     #       remove "Prefer=${None}"
     prepare new request session    JSON    Prefer=${None}
     PUT /ehr/$ehr_id
-
-        TRACE GITHUB ISSUE  143  not-ready
-
     ehr_keywords.validate PUT response - 204 no content
 
 
@@ -434,9 +431,6 @@ MF-034 - Create new EHR w/ given ehr_id (Prefer header: minimal)
     [Documentation]     This test should behave equqly to MF-033
     prepare new request session    JSON    Prefer=return=minimal
     PUT /ehr/$ehr_id
-
-        TRACE GITHUB ISSUE  143  not-ready
-
     ehr_keywords.validate PUT response - 204 no content
 
 
@@ -444,9 +438,6 @@ MF-035 - Create new EHR w/ given ehr_id (XML, Prefer header: minimal)
     [Tags]
     prepare new request session    XML    Prefer=return=minimal
     PUT /ehr/$ehr_id
-
-        TRACE GITHUB ISSUE  143  not-ready
-
     ehr_keywords.validate PUT response - 204 no content
 
 
