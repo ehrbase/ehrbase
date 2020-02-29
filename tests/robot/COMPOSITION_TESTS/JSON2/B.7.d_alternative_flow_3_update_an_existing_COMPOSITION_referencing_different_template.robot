@@ -35,7 +35,7 @@ Force Tags    JSON
 *** Test Cases ***
 Alternative flow 3 update an existing persistent COMPOSITION referencing different template
 
-    # Upload multiple OPTs
+    # comment: Upload multiple OPTs
     upload OPT    minimal_persistent/persistent_minimal.opt
     upload OPT    minimal_persistent/persistent_minimal_2.opt
 
@@ -44,9 +44,9 @@ Alternative flow 3 update an existing persistent COMPOSITION referencing differe
     commit composition (JSON)    minimal_persistent/persistent_minimal.composition.extdatetime.xml
     check content of composition (JSON)
 
-    # Commit a new version for the COMPOSITION (references the _2 OPT different than the referenced by the first committed COMPO)
-    # Tries to commit as a new version of the first committed COMPO
-    update composition (JSON)    minimal_persistent/persistent_minimal.composition.extdatetime.v2_2.xml
+    # comment: Commit a new version for the COMPOSITION referencing _2 OPT which is a different one 
+    #          than the one referenced by the first committed COMPO
+    update composition - invalid opt reference (JSON)    minimal_persistent/persistent_minimal.composition.extdatetime.v2_2.xml
 
 
         TRACE GITHUB ISSUE  124  not-ready
