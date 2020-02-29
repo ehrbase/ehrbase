@@ -126,10 +126,7 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
     
 	
 	  @Override public List<Object> visitInvokeOperand(AqlParser.InvokeOperandContext ctx) {
-	  System.out.println("inside invoke operand");
-	  
-	  //if(((AqlParser.InvokeOperandContext)ctx).INVOKE())
-	  
+	  System.out.println("inside invoke operand");	  
 	  
 	  return visitChildren(ctx);
 	  

@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.ehrbase.aql.compiler.tsclient.OpenehrTerminologyServer;
 import org.ehrbase.aql.compiler.tsclient.TerminologyServer;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -38,8 +39,14 @@ import com.nedap.archie.rm.support.identification.TerminologyId;
 /***
  *@Created by Luis Marco-Ruiz on Feb 12, 2020
  */
+
 public class FhirTerminologyServerAdaptorImpl  implements OpenehrTerminologyServer<DvCodedText, String>{
 	
+	private String codePath = null;// = "$[\"expansion\"][\"contains\"][*][\"code\"]";
+	private String systemPath = null;// = "$[\"expansion\"][\"contains\"][*][\"system\"]";
+	private String displayPath = null;// = "$[\"expansion\"][\"contains\"][*][\"display\"]";
+	
+	@ConfigurationProperties(prefix="terminology_server")
 	@Override
 	public List<DvCodedText> expand(String valueSetId) {
 		
@@ -52,14 +59,12 @@ public class FhirTerminologyServerAdaptorImpl  implements OpenehrTerminologyServ
 				entity,
 				String.class);
 		String response = responseEntity.getBody();
-		String jsonCodePath = "$[\"expansion\"][\"contains\"][*][\"code\"]";
-		String jsonSystemPath = "$[\"expansion\"][\"contains\"][*][\"system\"]";
-		String jsonDisplayPath = "$[\"expansion\"][\"contains\"][*][\"display\"]";
+
 
 		DocumentContext jsonContext = JsonPath.parse(response);
-		List<String> codeList = jsonContext.read(jsonCodePath);
-		List<String> systemList = jsonContext.read(jsonSystemPath);
-		List<String> displayList = jsonContext.read(jsonDisplayPath);
+		List<String> codeList = jsonContext.read(codePath);
+		List<String> systemList = jsonContext.read(systemPath);
+		List<String> displayList = jsonContext.read(displayPath);
 		
 		List<DvCodedText> expansionList = new ArrayList<>();
 		for(int i = 0; i< codeList.size(); i++) {
