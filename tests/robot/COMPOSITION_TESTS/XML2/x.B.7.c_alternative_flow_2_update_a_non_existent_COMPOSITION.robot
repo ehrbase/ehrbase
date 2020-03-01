@@ -39,8 +39,7 @@ Alternative flow 2 update a non-exitent COMPOSITION
 
     create EHR    XML
 
-    # Commit fake COMPOSITION
-    generate random composition_uid
+    create fake composition
 
     update non-existent composition (XML)    minimal_persistent/persistent_minimal.composition.extdatetime.v2.xml
 

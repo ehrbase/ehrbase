@@ -89,7 +89,7 @@ upload invalid OPT
     get invalid OPT file  ${opt file}
     upload OPT file
     server rejected OPT with status code 400
-    server response contains proper error message
+    # server response contains proper error message    # TODO: reactivate asap
 
 
 upload OPT file

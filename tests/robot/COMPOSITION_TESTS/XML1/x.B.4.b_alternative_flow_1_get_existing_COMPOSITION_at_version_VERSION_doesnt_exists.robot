@@ -39,8 +39,7 @@ Main flow get existing COMPOSITION at version, VERSION doesnt exists
 
     create EHR   XML
 
-    # comment: Create fake COMPOSITION
-    generate random composition_uid
+    create fake composition
 
     prepare new request session    XML    Prefer=return=representation
     get composition by composition_uid    ${version_uid}
