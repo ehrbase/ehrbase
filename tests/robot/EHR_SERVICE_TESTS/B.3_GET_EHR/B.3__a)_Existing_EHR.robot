@@ -35,7 +35,7 @@ Force Tags
 *** Test Cases ***
 Get existing EHR
 
-    prepare new request session    JSON
+    prepare new request session    JSON    Prefer=return=representation
 
     create new EHR
 

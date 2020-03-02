@@ -44,14 +44,14 @@ Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 # Suite Setup  startup SUT
 # Suite Teardown  shutdown SUT
 
-Force Tags    
+Force Tags
 
 
 
 *** Test Cases ***
 Get Status Of Existing EHR (JSON)
 
-    prepare new request session    JSON
+    prepare new request session    JSON    Prefer=return=representation
 
     create new EHR
 
@@ -62,7 +62,7 @@ Get Status Of Existing EHR (JSON)
 
 Get Status Of Existing EHR (XML)
 
-    prepare new request session    XML
+    prepare new request session    XML    Prefer=return=representation
 
     create new EHR (XML)
 

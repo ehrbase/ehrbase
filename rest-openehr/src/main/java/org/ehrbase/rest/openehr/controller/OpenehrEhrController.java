@@ -25,7 +25,6 @@ import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.rest.openehr.controller.OperationNotesResourcesReaderOpenehr.ApiNotes;
 import org.ehrbase.rest.openehr.response.EhrResponseData;
-import org.ehrbase.rest.openehr.response.EhrResponseDataRepresentation;
 import org.ehrbase.rest.openehr.response.InternalResponse;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.support.identification.HierObjectId;
@@ -141,12 +140,16 @@ public class OpenehrEhrController extends BaseController {
 
         Optional<InternalResponse<EhrResponseData>> respData;   // variable to overload with more specific object if requested
         if (Optional.ofNullable(prefer).map(i -> i.equals(RETURN_REPRESENTATION)).orElse(false)) {      // null safe way to test prefer header
-            respData = buildEhrResponseData(() -> new EhrResponseDataRepresentation(), resultEhrId, accept, headerList);
+            respData = buildEhrResponseData(EhrResponseData::new, resultEhrId, accept, headerList);
         } else {    // "minimal" is default fallback
-            respData = buildEhrResponseData(() -> new EhrResponseData(), resultEhrId, accept, headerList);
+            respData = buildEhrResponseData(() -> null, resultEhrId, accept, headerList);
         }
 
-        return respData.map(i -> ResponseEntity.created(url).headers(i.getHeaders()).body(i.getResponseData()))
+        // returns 201 with body + headers, 204 only with headers or 500 error depending on what processing above yields
+        return respData.map(i -> Optional.ofNullable(i.getResponseData()).map(j -> ResponseEntity.created(url).headers(i.getHeaders()).body(j))
+                // when the body is empty
+                .orElse(ResponseEntity.noContent().headers(i.getHeaders()).build()))
+                // when no response could be created at all
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
@@ -204,12 +207,7 @@ public class OpenehrEhrController extends BaseController {
     private ResponseEntity<EhrResponseData> internalGetEhrProcessing(String accept, UUID ehrId) {
         List<String> headerList = Arrays.asList(CONTENT_TYPE, LOCATION, ETAG, LAST_MODIFIED);   // whatever is required by REST spec
 
-        Optional<InternalResponse<EhrResponseData>> respData;   // variable to overload with more specific object if requested
-        if (Optional.ofNullable(false).map(i -> i.equals(RETURN_REPRESENTATION)).orElse(false)) {      // null safe way to test prefer header
-            respData = buildEhrResponseData(() -> new EhrResponseDataRepresentation(), ehrId, accept, headerList);
-        } else {    // "minimal" is default fallback
-            respData = buildEhrResponseData(() -> new EhrResponseData(), ehrId, accept, headerList);
-        }
+        Optional<InternalResponse<EhrResponseData>> respData = buildEhrResponseData(EhrResponseData::new, ehrId, accept, headerList);
 
         return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData()))
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
@@ -250,18 +248,16 @@ public class OpenehrEhrController extends BaseController {
             return Optional.empty();
         }
 
-        // create either EhrResponseData or EhrResponseDataRepresentation, via lambda request
+        // create either null or maximum response data class
         T minimalOrRepresentation = factory.get();
-        // do steps of "minimal" (EhrResponseData) scope
-        minimalOrRepresentation.setEhrId(new HierObjectId(ehrId.toString()));
-        minimalOrRepresentation.setEhrStatus(ehrStatus.get());
-        minimalOrRepresentation.setSystemId(new HierObjectId(ehrService.getSystemUuid().toString()));
-        minimalOrRepresentation.setTimeCreated(ehrService.getCreationTime(ehrId).toString());
 
-        // if response data objects was created as "representation" do all task from wider scope, too
-        if (minimalOrRepresentation.getClass().equals(EhrResponseDataRepresentation.class)) {
-            // when this "if" is true the following casting can be executed and data manipulated by reference (handled by temporary variable)
-            EhrResponseDataRepresentation objByReference = (EhrResponseDataRepresentation) minimalOrRepresentation;
+        if (minimalOrRepresentation != null) {
+            // populate maximum response data
+            EhrResponseData objByReference = (EhrResponseData) minimalOrRepresentation;
+            objByReference.setEhrId(new HierObjectId(ehrId.toString()));
+            objByReference.setEhrStatus(ehrStatus.get());
+            objByReference.setSystemId(new HierObjectId(ehrService.getSystemUuid().toString()));
+            objByReference.setTimeCreated(ehrService.getCreationTime(ehrId).toString());
             objByReference.setCompositions(null);    // TODO get actual data from service layer
             objByReference.setContributions(null);   // TODO get actual data from service layer
         }
@@ -271,11 +267,12 @@ public class OpenehrEhrController extends BaseController {
         for (String header : headerList) {
             switch (header) {
                 case CONTENT_TYPE:
-                    respHeaders.setContentType(contentTypeHeaderInput);
+                    if (minimalOrRepresentation != null)    // if response is going to have a body
+                        respHeaders.setContentType(contentTypeHeaderInput);
                     break;
                 case LOCATION:
                     try {
-                        URI url = new URI(getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + minimalOrRepresentation.getEhrId().getValue());
+                        URI url = new URI(getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId);
                         respHeaders.setLocation(url);
                     } catch (Exception e) {
                         throw new InternalServerException(e.getMessage());
