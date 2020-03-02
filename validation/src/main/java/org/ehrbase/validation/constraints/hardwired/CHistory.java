@@ -41,7 +41,7 @@ public class CHistory extends StructureConstraint implements I_CHWConstraintVali
     }
 
     @Override
-    public void validate(String path, Object aValue) throws Exception {
+    public void validate(String path, Object aValue) throws IllegalArgumentException {
         if (!(aValue instanceof History))
             ValidationException.raise(path, "Unexpected value type in History:" + aValue, "HIS01");
 

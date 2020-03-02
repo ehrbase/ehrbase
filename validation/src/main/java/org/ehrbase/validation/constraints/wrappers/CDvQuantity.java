@@ -41,11 +41,11 @@ import java.util.Map;
  */
 public class CDvQuantity extends CConstraint implements I_CArchetypeConstraintValidate {
 
-    protected CDvQuantity(Map<String, Map<String, String>> localTerminologyLookup) {
+    CDvQuantity(Map<String, Map<String, String>> localTerminologyLookup) {
         super(localTerminologyLookup);
     }
 
-    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws Exception {
+    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws IllegalArgumentException {
 
         DvQuantity quantity = (DvQuantity) aValue;
 
@@ -70,7 +70,7 @@ public class CDvQuantity extends CConstraint implements I_CArchetypeConstraintVa
                 }
                 if (cquantityitem.isSetMagnitude()) {
                     IntervalOfReal magnitudes = cquantityitem.getMagnitude();
-                    IntervalComparator.isWithinBoundaries(new Float(quantity.getMagnitude()), magnitudes);
+                    IntervalComparator.isWithinBoundaries((quantity.getMagnitude()).floatValue(), magnitudes);
                 }
                 if (cquantityitem.isSetMagnitude() && quantity.getMagnitude() != null) {
                     Long precision = quantity.getPrecision();

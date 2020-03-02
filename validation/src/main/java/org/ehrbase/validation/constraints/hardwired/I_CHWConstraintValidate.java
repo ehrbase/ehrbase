@@ -25,5 +25,5 @@ package org.ehrbase.validation.constraints.hardwired;
  * Created by christian on 8/11/2016.
  */
 public interface I_CHWConstraintValidate {
-    void validate(String path, Object aValue) throws Exception;
+    void validate(String path, Object aValue) throws IllegalArgumentException;
 }

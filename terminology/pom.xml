@@ -14,8 +14,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.github.openEHR</groupId>
-            <artifactId>archie</artifactId>
+            <groupId>com.github.ehrbase</groupId>
+            <artifactId>archie-fork</artifactId>
         </dependency>
         <dependency>
             <groupId>org.ehrbase.openehr</groupId>

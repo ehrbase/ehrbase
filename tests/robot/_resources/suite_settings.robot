@@ -30,11 +30,22 @@ Library    Process
 Library    XML
 Library    JSONLibrary
 Library    DateTime
-Library    ${CURDIR}${/}../_resources/libraries/dockerlib.py
-Library    ${CURDIR}${/}../_resources/libraries/jsonlib.py
-Resource   ${CURDIR}${/}../_resources/keywords/generic_keywords.robot
-Resource   ${CURDIR}${/}../_resources/keywords/db_keywords.robot
+# Library    ${CURDIR}${/}../_resources/libraries/dockerlib.py
+# Library    ${CURDIR}${/}../_resources/libraries/jsonlib.py
+# Resource   ${CURDIR}${/}../_resources/keywords/generic_keywords.robot
+# Resource   ${CURDIR}${/}../_resources/keywords/db_keywords.robot
 
+Library    ${EXECDIR}/robot/_resources/libraries/dockerlib.py
+Library    ${EXECDIR}/robot/_resources/libraries/jsonlib.py
+
+Resource   ${EXECDIR}/robot/_resources/keywords/generic_keywords.robot
+Resource   ${EXECDIR}/robot/_resources/keywords/aql_query_keywords.robot
+Resource   ${EXECDIR}/robot/_resources/keywords/composition_keywords.robot
+Resource   ${EXECDIR}/robot/_resources/keywords/contribution_keywords.robot
+Resource   ${EXECDIR}/robot/_resources/keywords/db_keywords.robot
+Resource   ${EXECDIR}/robot/_resources/keywords/directory_keywords.robot
+Resource   ${EXECDIR}/robot/_resources/keywords/ehr_keywords.robot
+Resource   ${EXECDIR}/robot/_resources/keywords/template_opt1.4_keywords.robot
 
 
 

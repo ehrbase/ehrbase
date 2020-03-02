@@ -26,6 +26,8 @@ import org.ehrbase.dao.access.jooq.FolderHistoryAccess;
 import org.joda.time.DateTime;
 
 import java.sql.Timestamp;
+import java.time.OffsetDateTime;
+import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -92,6 +94,16 @@ public interface I_FolderAccess extends I_SimpleCRUD {
         return FolderHistoryAccess.retrieveInstanceForExistingFolder(domainAccess, folderId, timestamp);
     }
 
+    /**
+     * Additional commit method to store a new entry of folder to the database and get all of inserted sub folders
+     * connected by one contribution which has been created before.
+     *
+     * @param transactionTime - Timestamp which will be applied to all folder sys_transaction values
+     * @param contributionId - ID of contribution for CREATE applied to all folders that will be created
+     * @return UUID of the new created root folder
+     */
+    UUID commit(Timestamp transactionTime, UUID contributionId);
+
     UUID getFolderId();
 
     void setFolderId(UUID folderId);
@@ -120,7 +132,7 @@ public interface I_FolderAccess extends I_SimpleCRUD {
 
     Timestamp getFolderSysTransaction();
 
-    Object getFolderSysPeriod();
+    AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime> getFolderSysPeriod();
 
-    void setFolderSysPeriod(Object folderSysPeriod);
+    void setFolderSysPeriod(AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime> folderSysPeriod);
 }

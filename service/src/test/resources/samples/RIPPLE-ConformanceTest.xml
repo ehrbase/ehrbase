@@ -421,7 +421,8 @@
                             </items>
                         </state>
                         <width>
-                            <value>P1DT11H11M</value>
+                            <!-- fixed unsupported Duration encoding -->
+                            <value>PT11H11M</value>
                         </width>
                         <math_function>
                             <value>maximum</value>
@@ -1053,7 +1054,7 @@
                                         <value>Duration</value>
                                     </name>
                                     <value xsi:type="DV_DURATION">
-                                        <value>P1DT11H11M</value>
+                                        <value>PT11H11M</value>
                                     </value>
                                 </items>
                                 <items xsi:type="ELEMENT" archetype_node_id="at0015">

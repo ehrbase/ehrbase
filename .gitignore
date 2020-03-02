@@ -182,6 +182,8 @@ __pycache__
 log.html
 output.xml
 report.html
+std*
+*.tmp.json
 
 ### VisualStudioCode ###
 .vscode/*
@@ -203,3 +205,13 @@ report.html
 
 # Template file repository
 file_repo
+
+# sonar
+.scannerwork
+
+#dependency check
+sonar_issues.json
+vulnerability_analysis.json
+
+# Docker
+application/.pgdata

@@ -461,4 +461,16 @@ public interface I_CompositionAccess extends I_SimpleCRUD {
     static boolean exists(I_DomainAccess domainAccess, UUID versionedObjectId) {
         return CompositionAccess.exists(domainAccess, versionedObjectId);
     }
+
+    /**
+     * Checks if given composition ID is ID of a logically deleted composition.
+     * @param domainAccess Data access object
+     * @param versionedObjectId ID to be checked
+     * @return True if deleted, false if not
+     * @throws ObjectNotFoundException If no composition entries at all can be found
+     * @throws InternalServerException If DB is inconsistent or some other problem occurs
+     */
+    static boolean isDeleted(I_DomainAccess domainAccess, UUID versionedObjectId) {
+        return CompositionAccess.isDeleted(domainAccess, versionedObjectId);
+    }
 }

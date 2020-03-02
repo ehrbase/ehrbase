@@ -33,12 +33,12 @@ import java.util.Map;
  * Created by christian on 7/24/2016.
  */
 public class CPrimitive extends CConstraint implements I_CArchetypeConstraintValidate {
-    protected CPrimitive(Map<String, Map<String, String>> localTerminologyLookup) {
+    CPrimitive(Map<String, Map<String, String>> localTerminologyLookup) {
         super(localTerminologyLookup);
     }
 
     @Override
-    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws Exception {
+    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws IllegalArgumentException {
 
         String rmTypeName = ((CPRIMITIVEOBJECT) archetypeconstraint).getRmTypeName();
 //        SchemaType type = I_CArchetypeConstraintValidate.findSchemaType("C_"+((CPRIMITIVEOBJECT)archetypeconstraint).getRmTypeName());
@@ -46,23 +46,33 @@ public class CPrimitive extends CConstraint implements I_CArchetypeConstraintVal
 
         CPRIMITIVEOBJECT constraint = (CPRIMITIVEOBJECT) archetypeconstraint;
 
-        if (rmTypeName.equals("BOOLEAN"))
-            new CBoolean(localTerminologyLookup).validate(path, aValue, (CBOOLEAN) constraint.getItem().changeType(CBOOLEAN.type));
-        else if (rmTypeName.equals("STRING"))
-            new CString(localTerminologyLookup).validate(path, aValue, (CSTRING) constraint.getItem().changeType(CSTRING.type));
-        else if (rmTypeName.equals("INTEGER"))
-            new CInteger(localTerminologyLookup).validate(path, aValue, (CINTEGER) constraint.getItem().changeType(CINTEGER.type));
-        else if (rmTypeName.equals("REAL"))
-            new CReal(localTerminologyLookup).validate(path, aValue, (CREAL) constraint.getItem().changeType(CREAL.type));
-        else if (rmTypeName.equals("DATE"))
-            new CDate(localTerminologyLookup).validate(path, aValue, (CDATE) constraint.getItem().changeType(CDATE.type));
-        else if (rmTypeName.equals("DATE_TIME"))
-            new CDateTime(localTerminologyLookup).validate(path, aValue, (CDATETIME) constraint.getItem().changeType(CDATETIME.type));
-        else if (rmTypeName.equals("TIME"))
-            new CTime(localTerminologyLookup).validate(path, aValue, (CTIME) constraint.getItem().changeType(CTIME.type));
-        else if (rmTypeName.equals("DURATION"))
-            new CDuration(localTerminologyLookup).validate(path, aValue, (CDURATION) constraint.getItem().changeType(CDURATION.type));
-        else
-            throw new IllegalArgumentException("INTERNAL: unsupported CPRIMIITVE:" + archetypeconstraint);
+        switch (rmTypeName) {
+            case "BOOLEAN":
+                new CBoolean(localTerminologyLookup).validate(path, aValue, (CBOOLEAN) constraint.getItem().changeType(CBOOLEAN.type));
+                break;
+            case "STRING":
+                new CString(localTerminologyLookup).validate(path, aValue, (CSTRING) constraint.getItem().changeType(CSTRING.type));
+                break;
+            case "INTEGER":
+                new CInteger(localTerminologyLookup).validate(path, aValue, (CINTEGER) constraint.getItem().changeType(CINTEGER.type));
+                break;
+            case "REAL":
+                new CReal(localTerminologyLookup).validate(path, aValue, (CREAL) constraint.getItem().changeType(CREAL.type));
+                break;
+            case "DATE":
+                new CDate(localTerminologyLookup).validate(path, aValue, (CDATE) constraint.getItem().changeType(CDATE.type));
+                break;
+            case "DATE_TIME":
+                new CDateTime(localTerminologyLookup).validate(path, aValue, (CDATETIME) constraint.getItem().changeType(CDATETIME.type));
+                break;
+            case "TIME":
+                new CTime(localTerminologyLookup).validate(path, aValue, (CTIME) constraint.getItem().changeType(CTIME.type));
+                break;
+            case "DURATION":
+                new CDuration(localTerminologyLookup).validate(path, aValue, (CDURATION) constraint.getItem().changeType(CDURATION.type));
+                break;
+            default:
+                throw new IllegalStateException("INTERNAL: unsupported CPRIMIITVE:" + archetypeconstraint);
+        }
     }
 }
