@@ -39,9 +39,9 @@ public class JacksonConfiguration {
     public Jackson2ObjectMapperBuilderCustomizer addCustomSerialization() {
         return jacksonObjectMapperBuilder -> jacksonObjectMapperBuilder
                 .serializerByType(StructuredString.class, new StructuredStringJSonSerializer())
-                .serializerByType(RMObject.class, new RmObjektJsonSerializer())
-                .deserializerByType(EhrStatus.class, new RmObjektJsonDeSerializer())
-                .deserializerByType(Folder.class, new RmObjektJsonDeSerializer())
+                .serializerByType(RMObject.class, new RmObjectJsonSerializer())
+                .deserializerByType(EhrStatus.class, new RmObjectJsonDeSerializer())
+                .deserializerByType(Folder.class, new RmObjectJsonDeSerializer())
                 .modules(new JavaTimeModule());
     }
 

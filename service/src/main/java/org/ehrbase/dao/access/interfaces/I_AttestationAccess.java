@@ -24,7 +24,7 @@ import org.ehrbase.dao.access.jooq.AttestationAccess;
 import java.util.List;
 import java.util.UUID;
 
-public interface I_AttestationAccess extends I_SimpleCRUD<I_AttestationAccess, UUID> {
+public interface I_AttestationAccess extends I_SimpleCRUD {
 
     /**
      * Retrieve runtime instance of given attestation from DB

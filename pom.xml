@@ -114,7 +114,7 @@
         <json.path.version>2.4.0</json.path.version>
         <log4j.version>2.7</log4j.version>
         <jooq.version>3.12.3</jooq.version>
-        <jackson.version>2.9.7</jackson.version>
+        <jackson.version>2.10.2</jackson.version>
         <keycloak.version>4.0.0.Final</keycloak.version>
         <springfox.version>2.9.2</springfox.version>
         <springfox-snapshot.version>3.0.0-SNAPSHOT</springfox-snapshot.version>
@@ -302,13 +302,18 @@
                 <version>${json.path.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.reflections</groupId>
+                <artifactId>reflections</artifactId>
+                <version>0.9.12</version>
+            </dependency>
+            <dependency>
                 <!--        <groupId>com.nedap.healthcare.archie</groupId>
                         <artifactId>archie-all</artifactId>
                         <version>0.7.0-SNAPSHOT</version>
                 -->
-                <groupId>com.github.openEHR</groupId>
-                <artifactId>archie</artifactId>
-                <version>738152e</version>
+                <groupId>com.github.ehrbase</groupId>
+                <artifactId>archie-fork</artifactId>
+                <version>27d982b</version>
             </dependency>
             <dependency>
                 <groupId>com.cedarsoftware</groupId>
@@ -336,7 +341,7 @@
                 <version>${jackson.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.fasterxml.jackson.coren</groupId>
+                <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-core</artifactId>
                 <version>${jackson.version}</version>
             </dependency>

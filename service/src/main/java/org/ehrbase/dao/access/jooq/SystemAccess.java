@@ -65,24 +65,25 @@ public class SystemAccess extends DataAccess implements I_SystemAccess {
 
 
     public static UUID createOrRetrieveLocalSystem(I_DomainAccess domainAccess) {
-        DSLContext context1 = domainAccess.getContext();
-
         String settings = domainAccess.getServerConfig().getNodename();
 
-        //try to retrieveInstanceByNamedSubject the corresponding entry in the system table
-        Result<Record1<UUID>> uuids = context1.select(SYSTEM.ID).from(SYSTEM).where(SYSTEM.SETTINGS.equal(settings)).fetch();
+        // try to retrieve and return if successful, otherwise create
+        UUID res = retrieveInstanceId(domainAccess, settings);
+        if (res == null) {
+            return new SystemAccess(domainAccess, "DEFAULT RUNNING SYSTEM", settings).commit();
+        } else
+            return res;
+    }
 
-        if (uuids.isEmpty()) { //storeComposition a new default entry
-
-            Record result = context1.insertInto(SYSTEM, SYSTEM.DESCRIPTION, SYSTEM.SETTINGS).values("DEFAULT RUNNING SYSTEM", settings).returning(SYSTEM.ID).fetchOne();
-
-            if (result == null)
-                return null;
-
-            return ((SystemRecord) result).getId();
-        }
-
-        return (UUID) uuids.get(0).getValue(0);
+    public static UUID createOrRetrieveInstanceId(I_DomainAccess domainAccess, String description, String settings) {
+        // try to retrieve and return if successful, otherwise create
+        UUID res = retrieveInstanceId(domainAccess, settings);
+        if (res == null) {
+            if (description == null)
+                description = "default";
+            return new SystemAccess(domainAccess, description, settings).commit();
+        } else
+            return res;
     }
 
     /**
@@ -95,7 +96,6 @@ public class SystemAccess extends DataAccess implements I_SystemAccess {
             uuid = Optional.ofNullable(domainAccess.getContext().fetchOne(SYSTEM, SYSTEM.SETTINGS.eq(settings))).map(SystemRecord::getId).orElse(null);
 
             if (uuid == null) {
-                log.warn("Could not retrieveInstanceByNamedSubject system for settings:" + settings);
                 return null;
             }
         } catch (Exception e) {

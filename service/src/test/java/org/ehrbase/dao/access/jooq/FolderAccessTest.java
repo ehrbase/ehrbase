@@ -48,6 +48,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.Timestamp;
+import java.time.OffsetDateTime;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -388,7 +390,7 @@ public class FolderAccessTest {
         //fa2.setFolderDetails(DSL.field(DSL.val("{\"s\": \"modifiedValue\"}") + "::jsonb"));
         fa2.setFolderDetails(is);
         fa2.setFolderSysTransaction(new Timestamp(DateTime.now().getMillis()));
-        fa2.setFolderSysPeriod(DSL.field(DSL.val("[\"2019-07-26 11:28:11.631959+02\",)") + "::tstzrange"));
+        fa2.setFolderSysPeriod(new AbstractMap.SimpleEntry<>(OffsetDateTime.parse("2019-07-26 11:28:11.631959+02"), null));
 
         //perform updates in a second level subfolder
         I_FolderAccess fa3 = fa2.getSubfoldersList().get(UUID.fromString("99550555-ec91-4025-838d-09ddb4e999cb"));

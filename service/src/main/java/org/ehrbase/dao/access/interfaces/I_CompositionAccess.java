@@ -44,7 +44,7 @@ import static org.ehrbase.jooq.pg.Tables.*;
  * Composition Access Layer Interface<br>
  * Interface CRUD and specific methods
  */
-public interface I_CompositionAccess extends I_SimpleCRUD<I_CompositionAccess, UUID> {
+public interface I_CompositionAccess extends I_SimpleCRUD {
 
     //definitions of aliases used in joins
     String COMPOSITION_JOIN = "composition_join";
@@ -186,11 +186,11 @@ public interface I_CompositionAccess extends I_SimpleCRUD<I_CompositionAccess, U
      *
      * @param domainAccess   SQL context, knowledge
      * @param contributionId contribution object uuid
-     * @return a map of {@link I_CompositionAccess} referenced by their UUID, that match the condition
+     * @return a map of {@link I_CompositionAccess} and their version number, that match the condition
      * @throws IllegalArgumentException on DB inconsistency
      */
-    static Map<UUID, I_CompositionAccess> retrieveInstancesInContributionVersion(I_DomainAccess domainAccess, UUID contributionId) {
-        return CompositionAccess.retrieveCompositionsInContributionVersion(domainAccess, contributionId, 0); //FIXME: target methods doesn't use version parameter
+    static Map<I_CompositionAccess, Integer> retrieveInstancesInContribution(I_DomainAccess domainAccess, UUID contributionId) {
+        return CompositionAccess.retrieveCompositionsInContribution(domainAccess, contributionId);
     }
 
     /**
@@ -202,6 +202,17 @@ public interface I_CompositionAccess extends I_SimpleCRUD<I_CompositionAccess, U
      */
     static boolean hasPreviousVersion(I_DomainAccess domainAccess, UUID compositionId) {
         return CompositionAccess.hasPreviousVersion(domainAccess, compositionId);
+    }
+
+    /**
+     * Creates Map containing all versions as their Access object with their matching version number.
+     *
+     * @param domainAccess  Data Access
+     * @param compositionId Given composition ID
+     * @return Map referencing all versions and their version number
+     */
+    static Map<I_CompositionAccess, Integer> getVersionMapOfComposition(I_DomainAccess domainAccess, UUID compositionId) {
+        return I_CompositionAccess.getVersionMapOfComposition(domainAccess, compositionId);
     }
 
     /**
@@ -332,11 +343,11 @@ public interface I_CompositionAccess extends I_SimpleCRUD<I_CompositionAccess, U
     Optional<UUID> getContextId();
 
     /**
-     * get the contribution version id
+     * get the contribution id
      *
      * @return {@link UUID}
      */
-    UUID getContributionVersionId();
+    UUID getContributionId();
 
     /**
      * get the language code for this composition (eg. 'en', 'fr' etc.)
@@ -411,6 +422,12 @@ public interface I_CompositionAccess extends I_SimpleCRUD<I_CompositionAccess, U
     void setCompositionRecord(CompositionRecord record);
 
     /**
+     * Set the record via converting from a history record.
+     * @param record History record
+     */
+    void setCompositionRecord(CompositionHistoryRecord record);
+
+    /**
      * @throws IllegalArgumentException when handling of record failed
      */
     void setCompositionRecord(Result<?> records);
@@ -433,4 +450,27 @@ public interface I_CompositionAccess extends I_SimpleCRUD<I_CompositionAccess, U
     UUID getAuditDetailsId();
 
     void setAuditDetailsId(UUID auditId);
+
+    /**
+     * Checks if the given versionedObjectID points to an existing composition.
+     * @param domainAccess Data access object
+     * @param versionedObjectId ID to be checked
+     * @return True if exists
+     * @throws ObjectNotFoundException if ID does not exist
+     */
+    static boolean exists(I_DomainAccess domainAccess, UUID versionedObjectId) {
+        return CompositionAccess.exists(domainAccess, versionedObjectId);
+    }
+
+    /**
+     * Checks if given composition ID is ID of a logically deleted composition.
+     * @param domainAccess Data access object
+     * @param versionedObjectId ID to be checked
+     * @return True if deleted, false if not
+     * @throws ObjectNotFoundException If no composition entries at all can be found
+     * @throws InternalServerException If DB is inconsistent or some other problem occurs
+     */
+    static boolean isDeleted(I_DomainAccess domainAccess, UUID versionedObjectId) {
+        return CompositionAccess.isDeleted(domainAccess, versionedObjectId);
+    }
 }

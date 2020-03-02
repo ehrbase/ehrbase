@@ -156,6 +156,9 @@ public class OpenehrCompositionController extends BaseController {
 
         CompositionFormat compositionFormat = extractCompositionFormat(contentType);
 
+        // check if composition ID path variable is valid
+        compositionService.exists(versionedObjectUid);
+
         // If the If-Match is not the latest latest existing version, throw error
         if (!((versionedObjectUid + "::" + compositionService.getServerConfig().getNodename() + "::" + compositionService.getLastVersionNumber(extractVersionedObjectUidFromVersionUid(versionedObjectUid.toString()))).equals(ifMatch))) {
             throw new PreconditionFailedException("If-Match header does not match latest existing version");
@@ -320,6 +323,9 @@ public class OpenehrCompositionController extends BaseController {
         // Note: Since this method can be called by another mapping as "almost overloaded" function some parameters might be semantically named wrong in that case. E.g. versionedObjectUid can contain a versionUid.
         // Note: versionUid should be of format "uuid::domain::version", versionObjectUid of format "uuid"
         UUID compositionUid = extractVersionedObjectUidFromVersionUid(versionedObjectUid);  // extracts UUID from long or short notation
+
+        if (compositionService.isDeleted(compositionUid))
+            return createErrorResponse("Composition is logically deleted.", HttpStatus.NO_CONTENT);
 
         int version = 0;    // fallback 0 means latest version
         if (extractVersionFromVersionUid(versionedObjectUid) != 0) {
