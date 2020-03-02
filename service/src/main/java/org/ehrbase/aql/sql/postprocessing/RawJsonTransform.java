@@ -64,9 +64,6 @@ public class RawJsonTransform implements I_RawJsonTransform {
                         //apply the transformation
                         try {
                             JsonElement jsonElement = new LightRawJsonEncoder(jsonbOrigin).encodeContentAsJson(jsonbBlockDef.getJsonPathRoot());
-                            //debugging
-                            if (jsonbOrigin.contains("@class"))
-                                System.out.print("Hum...");
                             record.setValue(jsonbBlockDef.getField(), jsonElement);
                         } catch (Exception e) {
                             //assumes this is not a json element
