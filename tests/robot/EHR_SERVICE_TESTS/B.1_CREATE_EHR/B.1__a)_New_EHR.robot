@@ -35,40 +35,30 @@ Force Tags      refactor
 
 *** Test Cases ***
 MF-001 - Create new EHR (w/o Prefer header)
-    [Tags]    
+    [Tags]
     prepare new request session    JSON
-    create new EHR
-
-        TRACE GITHUB ISSUE  143  not-ready
-
-    # comment: check step
-    Null   response body
+    create supernew ehr
+    ehr_keywords.validate POST response - 204 no content
 
 
 MF-002 - Create new EHR (Prefer header: minimal)
-    [Tags]              
+    [Tags]
     [Documentation]     This test should behave equqly to MF-001
     prepare new request session    JSON    Prefer=return=minimal
-    create new EHR
-
-        TRACE GITHUB ISSUE  143  not-ready
-
-    # comment: check step
-    Null   response body
+    create supernew ehr
+    ehr_keywords.validate POST response - 204 no content
 
 
 MF-003 - Create new EHR (XML, Prefer header: minimal)
-    [Tags]              
+    [Tags]
     prepare new request session    XML    Prefer=return=minimal
-    create new EHR (XML)
-
-        TRACE GITHUB ISSUE  143  not-ready
-
-    Null   response body
+    # create new EHR (XML)
+    create supernew ehr
+    ehr_keywords.validate POST response - 204 no content
 
 
 MF-004 - Create new EHR (Prefer header: representation)
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     create new EHR
     # comment: check step
@@ -76,7 +66,7 @@ MF-004 - Create new EHR (Prefer header: representation)
 
 
 MF-005 - Create new EHR (XML, Prefer header: representation)
-    [tags]              
+    [tags]
     prepare new request session    XML    Prefer=return=representation
     create new EHR (XML)
     # comment: check steps
@@ -87,7 +77,7 @@ MF-005 - Create new EHR (XML, Prefer header: representation)
 
 MF-006 - Create new EHR w/ body: invalid ehr_status
     [Documentation]     Covers case where provided ehr_staus is just empty json
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     POST /ehr    {}
 
@@ -99,7 +89,7 @@ MF-006 - Create new EHR w/ body: invalid ehr_status
 
 MF-007 - Create new EHR w/ body: invalid ehr_status
     [Documentation]     Covers case where _type is missing
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    invalid/000_ehr_status_type_missing.json
     POST /ehr    ${body}
@@ -112,7 +102,7 @@ MF-007 - Create new EHR w/ body: invalid ehr_status
 
 MF-008 - Create new EHR w/ body: invalid ehr_status
     [Documentation]     Covers case where mandatory subject is missing
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     POST /ehr    ${EXECDIR}/robot/_resources/test_data_sets/ehr/invalid/001_ehr_status_subject_missing.json
 
@@ -125,7 +115,7 @@ MF-008 - Create new EHR w/ body: invalid ehr_status
 MF-009 - Create new EHR w/ body: invalid ehr_status
     [Documentation]     Covers case where the following mandatory elements are missing:
     ...                 subject, archetype_node_id and name
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set
     ...          invalid/002_ehr_status_subject_and_archetype_and_name_missing.json
@@ -139,7 +129,7 @@ MF-009 - Create new EHR w/ body: invalid ehr_status
 
 MF-010 - Create new EHR w/ body: invalid ehr_status
     [Documentation]     Covers case where mandatory subject..id is empty
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     POST /ehr    ${EXECDIR}/robot/_resources/test_data_sets/ehr/invalid/003_ehr_status_subject_id_empty.json
 
@@ -151,7 +141,7 @@ MF-010 - Create new EHR w/ body: invalid ehr_status
 
 MF-011 - Create new EHR w/ body: invalid ehr_status
     [Documentation]     Covers case where mand. subject..id is missing
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     POST /ehr    ${EXECDIR}/robot/_resources/test_data_sets/ehr/invalid/004_ehr_status_subject_id_missing.json
 
@@ -163,7 +153,7 @@ MF-011 - Create new EHR w/ body: invalid ehr_status
 
 MF-012 - Create new EHR w/ body: invalid ehr_status
     [Documentation]     Covers case where mand. subject..namespace is missing
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    invalid/005_ehr_status_subject_namespace_missing.json
     POST /ehr    ${body}
@@ -176,7 +166,7 @@ MF-012 - Create new EHR w/ body: invalid ehr_status
 
 MF-013 - Create new EHR w/ body: invalid ehr_status
     [Documentation]     Covers case where mand. subject..namespace is empty
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    invalid/006_ehr_status_subject_namespace_empty.json
     POST /ehr    ${body}
@@ -189,7 +179,7 @@ MF-013 - Create new EHR w/ body: invalid ehr_status
 
 MF-014 - Create new EHR w/ body: invalid ehr_status
     [Documentation]     Covers case where mand. is_modifiable is missing
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    invalid/007_ehr_status_is_modifiable_missing.json
     POST /ehr    ${body}
@@ -202,7 +192,7 @@ MF-014 - Create new EHR w/ body: invalid ehr_status
 
 MF-015 - Create new EHR w/ body: invalid ehr_status
     [Documentation]     Covers case where mand. is_queryable is missing
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    invalid/008_ehr_status_is_queryable_missing.json
     POST /ehr    ${body}
@@ -215,7 +205,7 @@ MF-015 - Create new EHR w/ body: invalid ehr_status
 
 MF-016 - Create new EHR w/ body: invalid ehr_status
     [Documentation]     Covers case where mand. is_modifiable and is_queryableis are missing
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    invalid/009_ehr_status_is_mod_and_is_quer_missing.json
     POST /ehr    ${body}
@@ -228,7 +218,7 @@ MF-016 - Create new EHR w/ body: invalid ehr_status
 
 MF-017 - Create new EHR w/ body: valid ehr_status
     [Documentation]     Covers happy path: valid ehr_status as body payload
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/000_ehr_status.json
     POST /ehr    ${body}
@@ -238,7 +228,7 @@ MF-017 - Create new EHR w/ body: valid ehr_status
 MF-018 - Create new EHR w/ body: valid ehr_status
     [Documentation]     Covers valid case where subject is empty JSON
     ...                 check: https://github.com/ehrbase/project_management/issues/142#issuecomment-583759331
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/001_ehr_status_subject_empty.json
     POST /ehr    ${body}
@@ -264,7 +254,7 @@ MF-019 - Create new EHR w/ body: valid ehr_status w/ o.d.
     ${expected_ehr_status}=    evaluate    json.dumps(${body})    json
     &{diff}=            compare json-strings    ${actual_ehr_status}  ${expected_ehr_status}
                         ...    exclude_paths=$..uid
-    
+
         TRACE GITHUB ISSUE  161  not-ready
 
                         Log To Console    \n\n&{diff}
@@ -273,7 +263,7 @@ MF-019 - Create new EHR w/ body: valid ehr_status w/ o.d.
 
 MF-020 - Create new EHR w/ body: valid ehr_status w/ o.d.
     [Documentation]     Covers happy path w/ "other_details" _type ITEM_LIST
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/003_ehr_status_with_other_details_item_list.json
     POST /ehr    ${body}
@@ -282,13 +272,13 @@ MF-020 - Create new EHR w/ body: valid ehr_status w/ o.d.
         # TODO: @WLAD add diff check as in MF-019
         # after https://github.com/ehrbase/project_management/issues/161 was solved
         TRACE GITHUB ISSUE  161  not-ready
-    
+
     Fail  msg=Beak it til you make it!
 
 
 MF-021 - Create new EHR w/ body: valid ehr_status w/ o.d.
     [Documentation]     Covers happy path w/ "other_details" _type ITEM_SINGLE
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/004_ehr_status_with_other_details_item_single.json
     POST /ehr    ${body}
@@ -300,7 +290,7 @@ MF-021 - Create new EHR w/ body: valid ehr_status w/ o.d.
 
 MF-022 - Create new EHR w/ body: valid ehr_status w/ o.d.
     [Documentation]     Covers happy path w/ "other_details" _type ITEM_TABLE
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/005_ehr_status_with_other_details_item_table.json
     POST /ehr    ${body}
@@ -311,7 +301,7 @@ MF-022 - Create new EHR w/ body: valid ehr_status w/ o.d.
 
 
 MF-023 - Create new EHR (POST /ehr variants)
-    [Tags]              
+    [Tags]
     [Template]          create ehr from data table
 
   # SUBJECT    IS_MODIFIABLE   IS_QUERYABLE   R.CODE
@@ -323,7 +313,7 @@ MF-023 - Create new EHR (POST /ehr variants)
     given      true            false          201
     given      false           false          201
     given      false           true           201
-    
+
     given      null            null           201
     given      "null"          "null"         201
     given      "true"          "true"         201
@@ -336,7 +326,7 @@ MF-023 - Create new EHR (POST /ehr variants)
 
 MF-024 - Create new EHR w/ empty subject (POST /ehr variants)
     [Documentation]     Covers edge case where subject is provided but is just empty JSON.
-    [Tags]              
+    [Tags]
     [Template]          create ehr from data table
 
 
@@ -356,7 +346,7 @@ MF-024 - Create new EHR w/ empty subject (POST /ehr variants)
 MF-025 - Create new EHR w/ invalid subject (POST /ehr variants)
     [Documentation]     Covers edge case where subject is provided but is invalid
     ...                 because of some mandatory elements missing.
-    [Tags]              
+    [Tags]
     [Template]          create ehr from data table
 
   # SUBJECT    IS_MODIFIABLE   IS_QUERYABLE   R.CODE
@@ -377,7 +367,7 @@ MF-025 - Create new EHR w/ invalid subject (POST /ehr variants)
 
 
 MF-030 - Create new EHR w/ given ehr_id (PUT /ehr/ehr_id variants)
-    [Tags]              
+    [Tags]
     [Template]          create ehr w/ given ehr_id from data table
 
   # EHR_ID  SUBJECT    IS_MODIFIABLE   IS_QUERYABLE   R.CODE
@@ -401,7 +391,7 @@ MF-030 - Create new EHR w/ given ehr_id (PUT /ehr/ehr_id variants)
 
 
 MF-031 - Create new EHR w/ given ehr_id (PUT /ehr/ehr_id variants)
-    [Tags]              
+    [Tags]
     [Template]          create ehr w/ given ehr_id from data table
 
   # EHR_ID    SUBJECT    IS_MODIFIABLE   IS_QUERYABLE   R.CODE
@@ -414,7 +404,7 @@ MF-031 - Create new EHR w/ given ehr_id (PUT /ehr/ehr_id variants)
 
 
 MF-032 - Create new EHR w/ invalid ehr_id (PUT /ehr/ehr_id variants)
-    [Tags]              
+    [Tags]
     [Template]          create ehr w/ given ehr_id from data table
 
   # EHR_ID    SUBJECT    IS_MODIFIABLE   IS_QUERYABLE   R.CODE
@@ -428,42 +418,31 @@ MF-032 - Create new EHR w/ invalid ehr_id (PUT /ehr/ehr_id variants)
 
 
 MF-033 - Create new EHR w/ given ehr_id (w/o Prefer header)
-    [Tags]              
+    [Tags]
     # TODO: @WLAD update as soon as RESTInstance allows unsetting/clearing headers
     #       remove "Prefer=${None}"
     prepare new request session    JSON    Prefer=${None}
     PUT /ehr/$ehr_id
-
-        TRACE GITHUB ISSUE  143  not-ready
-
-    # comment: check step
-    Null   response body
+    ehr_keywords.validate PUT response - 204 no content
 
 
 MF-034 - Create new EHR w/ given ehr_id (Prefer header: minimal)
-    [Tags]              
+    [Tags]
     [Documentation]     This test should behave equqly to MF-033
     prepare new request session    JSON    Prefer=return=minimal
     PUT /ehr/$ehr_id
-
-        TRACE GITHUB ISSUE  143  not-ready
-
-    # comment: check step
-    Null   response body
+    ehr_keywords.validate PUT response - 204 no content
 
 
 MF-035 - Create new EHR w/ given ehr_id (XML, Prefer header: minimal)
-    [Tags]              
+    [Tags]
     prepare new request session    XML    Prefer=return=minimal
     PUT /ehr/$ehr_id
-
-        TRACE GITHUB ISSUE  143  not-ready
-
-    Null   response body
+    ehr_keywords.validate PUT response - 204 no content
 
 
 MF-036 - Create new EHR w/ given ehr_id (Prefer header: representation)
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     PUT /ehr/$ehr_id
     # comment: check step
@@ -471,7 +450,7 @@ MF-036 - Create new EHR w/ given ehr_id (Prefer header: representation)
 
 
 MF-037 - Create new EHR w/ given ehr_id (XML, Prefer header: representation)
-    [tags]              
+    [tags]
     prepare new request session    XML    Prefer=return=representation
     PUT /ehr/$ehr_id
     # comment: check steps
@@ -482,7 +461,7 @@ MF-037 - Create new EHR w/ given ehr_id (XML, Prefer header: representation)
 
 MF-038 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
     [Documentation]     Covers case where provided ehr_staus is just empty json
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     PUT /ehr/$ehr_id    body={}
 
@@ -494,7 +473,7 @@ MF-038 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
 
 MF-039 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
     [Documentation]     Covers case where _type is missing
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    invalid/000_ehr_status_type_missing.json
     PUT /ehr/$ehr_id    body=${body}
@@ -507,7 +486,7 @@ MF-039 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
 
 MF-040 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
     [Documentation]     Covers case where mandatory subject is missing
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     PUT /ehr/$ehr_id    body=${EXECDIR}/robot/_resources/test_data_sets/ehr/invalid/001_ehr_status_subject_missing.json
 
@@ -520,12 +499,12 @@ MF-040 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
 MF-041 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
     [Documentation]     Covers case where the following mandatory elements are missing:
     ...                 subject, archetype_node_id and name
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    invalid/002_ehr_status_subject_and_archetype_and_name_missing.json
     PUT /ehr/$ehr_id    body=${body}
 
-  
+
         TRACE GITHUB ISSUE  157  not-ready
 
     # comment: check step
@@ -534,7 +513,7 @@ MF-041 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
 
 MF-042 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
     [Documentation]     Covers case where mandatory subject..id is empty
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     PUT /ehr/$ehr_id    body=${EXECDIR}/robot/_resources/test_data_sets/ehr/invalid/003_ehr_status_subject_id_empty.json
 
@@ -546,7 +525,7 @@ MF-042 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
 
 MF-043 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
     [Documentation]     Covers case where mand. subject..id is missing
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     PUT /ehr/$ehr_id    body=${EXECDIR}/robot/_resources/test_data_sets/ehr/invalid/004_ehr_status_subject_id_missing.json
 
@@ -558,7 +537,7 @@ MF-043 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
 
 MF-044 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
     [Documentation]     Covers case where mand. subject..namespace is missing
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    invalid/005_ehr_status_subject_namespace_missing.json
     PUT /ehr/$ehr_id    body=${body}
@@ -571,7 +550,7 @@ MF-044 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
 
 MF-045 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
     [Documentation]     Covers case where mand. subject..namespace is empty
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    invalid/006_ehr_status_subject_namespace_empty.json
     PUT /ehr/$ehr_id    body=${body}
@@ -584,7 +563,7 @@ MF-045 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
 
 MF-046 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
     [Documentation]     Covers case where mand. is_modifiable is missing
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    invalid/007_ehr_status_is_modifiable_missing.json
     PUT /ehr/$ehr_id    body=${body}
@@ -597,7 +576,7 @@ MF-046 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
 
 MF-047 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
     [Documentation]     Covers case where mand. is_queryable is missing
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    invalid/008_ehr_status_is_queryable_missing.json
     PUT /ehr/$ehr_id    body=${body}
@@ -610,7 +589,7 @@ MF-047 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
 
 MF-048 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
     [Documentation]     Covers case where mand. is_modifiable and is_queryableis are missing
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    invalid/009_ehr_status_is_mod_and_is_quer_missing.json
     PUT /ehr/$ehr_id    body=${body}
@@ -623,7 +602,7 @@ MF-048 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
 
 MF-049 - Create new EHR w/ given ehr_id w/ body: valid ehr_status
     [Documentation]     Covers happy path: valid ehr_status as body payload
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/000_ehr_status.json
     PUT /ehr/$ehr_id    body=${body}
@@ -633,7 +612,7 @@ MF-049 - Create new EHR w/ given ehr_id w/ body: valid ehr_status
 MF-050 - Create new EHR w/ given ehr_id w/ body: valid ehr_status
     [Documentation]     Covers valid case where subject is empty JSON
     ...                 check: https://github.com/ehrbase/project_management/issues/142#issuecomment-583759331
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/001_ehr_status_subject_empty.json
     PUT /ehr/$ehr_id    body=${body}
@@ -645,7 +624,7 @@ MF-050 - Create new EHR w/ given ehr_id w/ body: valid ehr_status
 
 MF-051 - Create new EHR w/ given ehr_id w/ body: valid ehr_status w/ o.d.
     [Documentation]     Covers happy path w/ "other_details" _type ITEM_TREE
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/002_ehr_status_with_other_details_item_tree.json
     PUT /ehr/$ehr_id    body=${body}
@@ -654,13 +633,13 @@ MF-051 - Create new EHR w/ given ehr_id w/ body: valid ehr_status w/ o.d.
         # TODO: @WLAD add diff check as in MF-019
         # after https://github.com/ehrbase/project_management/issues/161 was solved
         TRACE GITHUB ISSUE  161  not-ready
-    
+
     Fail  msg=Beak it til you make it!
 
 
 MF-052 - Create new EHR w/ given ehr_id w/ body: valid ehr_status w/ o.d.
     [Documentation]     Covers happy path w/ "other_details" _type ITEM_LIST
-    [Tags]              
+    [Tags]
     prepare new request session    JSON
     ${body}=     randomize subject_id in test-data-set    valid/003_ehr_status_with_other_details_item_list.json
     PUT /ehr/$ehr_id    body=${body}
@@ -669,13 +648,13 @@ MF-052 - Create new EHR w/ given ehr_id w/ body: valid ehr_status w/ o.d.
         # TODO: @WLAD add diff check as in MF-019
         # after https://github.com/ehrbase/project_management/issues/161 was solved
         TRACE GITHUB ISSUE  161  not-ready
-    
+
     Fail  msg=Beak it til you make it!
 
 
 MF-053 - Create new EHR w/ given ehr_id w/ body: valid ehr_status w/ o.d.
     [Documentation]     Covers happy path w/ "other_details" _type ITEM_SINGLE
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/004_ehr_status_with_other_details_item_single.json
     PUT /ehr/$ehr_id    body=${body}
@@ -687,7 +666,7 @@ MF-053 - Create new EHR w/ given ehr_id w/ body: valid ehr_status w/ o.d.
 
 MF-054 - Create new EHR w/ given ehr_id w/ body: valid ehr_status w/ o.d.
     [Documentation]     Covers happy path w/ "other_details" _type ITEM_TABLE
-    [Tags]              
+    [Tags]
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/005_ehr_status_with_other_details_item_table.json
     PUT /ehr/$ehr_id    body=${body}
@@ -745,7 +724,7 @@ set ehr_status subject
                         # commment: missing subject (makes ehr_status invalid)
                         Run Keyword And Return If    $subject=="missing"
                         ...    delete subject from ehr_status    ${ehr_status}
-                        
+
                         # comment: invalid subject (makes ehr_status invalid)
                         Run Keyword And Return If    $subject=="invalid"
                         ...    create randomly invalid subject    ${ehr_status}

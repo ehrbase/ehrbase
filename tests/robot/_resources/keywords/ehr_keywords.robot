@@ -105,6 +105,16 @@ create new EHR
                         Output Debug Info To Console  # NOTE: won't work with content-type=XML
 
 
+#TODO: @WLAD  rename KW name when refactor this resource file
+create supernew ehr
+    [Documentation]     Creates new EHR record with a server-generated ehr_id.
+    ...                 DEPENDENCY: `prepare new request session`
+
+    &{resp}=            REST.POST    ${baseurl}/ehr
+                        Set Test Variable    ${response}    ${resp}
+                        Output Debug Info To Console
+
+
 create new EHR (XML)
     [Documentation]     Creates new EHR record with a server-generated ehr_id.
     ...                 DEPENDENCY: `prepare new request session`
@@ -119,6 +129,56 @@ create new EHR (XML)
                         extract ehrstatus_uid (XML)
 
                         Output Debug Info To Console
+
+
+
+
+
+
+
+# ooooooooo.   oooooooooooo  .oooooo..o ooooooooo.     .oooooo.   ooooo      ooo  .oooooo..o oooooooooooo  .oooooo..o
+# `888   `Y88. `888'     `8 d8P'    `Y8 `888   `Y88.  d8P'  `Y8b  `888b.     `8' d8P'    `Y8 `888'     `8 d8P'    `Y8
+#  888   .d88'  888         Y88bo.       888   .d88' 888      888  8 `88b.    8  Y88bo.       888         Y88bo.
+#  888ooo88P'   888oooo8     `"Y8888o.   888ooo88P'  888      888  8   `88b.  8   `"Y8888o.   888oooo8     `"Y8888o.
+#  888`88b.     888    "         `"Y88b  888         888      888  8     `88b.8       `"Y88b  888    "         `"Y88b
+#  888  `88b.   888       o oo     .d8P  888         `88b    d88'  8       `888  oo     .d8P  888       o oo     .d8P
+# o888o  o888o o888ooooood8 8""88888P'  o888o         `Y8bood8P'  o8o        `8  8""88888P'  o888ooooood8 8""88888P'
+#
+# [ RESPONSE VALIDATION ]
+
+# POST POST POST POST
+#/////////////////////
+
+validate POST response - 201 created
+    [Documentation]     CASE: new ehr was created.
+    ...                 Request was send with `Prefer=return=representation`.
+
+    Integer             response status    201
+    Object              response body
+
+
+validate POST response - 204 no content
+    [Documentation]     CASE: new ehr was created.
+    ...                 Request was send w/o `Prefer=return` header or with
+    ...                 `Prefer=return=minimal`. Body has to be empty.
+
+    Integer             response status    204
+    String              response body    ${EMPTY}
+
+
+# PUT PUT PUT PUT PUT
+#/////////////////////
+
+validate PUT response - 204 no content
+    [Documentation]     CASE: new ehr was created w/ given ehr_id.
+    ...                 Request was send w/o `Prefer=return` header or with
+    ...                 `Prefer=return=minimal`. Body has to be empty.
+
+    Integer             response status    204
+    String              response body    ${EMPTY}
+
+
+
 
 
 # create EHR XML
@@ -360,7 +420,7 @@ set ehr_status of EHR
     # ${ehrstatus}=       Load JSON From File   ehr_status.json
                         # Log To Console    ${ehr_status}
                         # Log To Console    ${ehr_status}[0]
-        
+
         TRACE GITHUB ISSUE  147  not-ready
 
     &{resp}=            REST.PUT    ${baseurl}/ehr/${ehr_id}/ehr_status    ${ehr_status}

@@ -46,7 +46,7 @@ Force Tags    refactor
 *** Test Cases ***
 Set EHR queryable of an existing EHR
 
-    prepare new request session    JSON
+    prepare new request session    JSON    Prefer=return=representation
 
     create new EHR
 

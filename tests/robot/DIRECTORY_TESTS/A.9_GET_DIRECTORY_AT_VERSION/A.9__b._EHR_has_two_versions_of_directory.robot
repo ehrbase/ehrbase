@@ -38,7 +38,7 @@ Alternative flow 1: get directory at version from existent EHR that has two vers
     create EHR
 
     create DIRECTORY (JSON)    subfolders_in_directory.json
-    validate POST response - 201 created
+    directory_keywords.validate POST response - 201 created
 
     get DIRECTORY at version (JSON)
     validate GET-@version response - 200 retrieved
