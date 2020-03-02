@@ -267,7 +267,8 @@ public class OpenehrEhrController extends BaseController {
         for (String header : headerList) {
             switch (header) {
                 case CONTENT_TYPE:
-                    respHeaders.setContentType(contentTypeHeaderInput);
+                    if (minimalOrRepresentation != null)    // if response is going to have a body
+                        respHeaders.setContentType(contentTypeHeaderInput);
                     break;
                 case LOCATION:
                     try {
