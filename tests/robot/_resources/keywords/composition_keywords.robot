@@ -256,6 +256,47 @@ update composition (JSON)
                         capture point in time    2
 
 
+update composition - invalid opt reference (JSON)
+    [Arguments]         ${new_version_of_composition}
+    [Documentation]     Commit a new version for the COMPOSITION but with wrong OPT reference.
+    ...                 DEPENDENCY: `commit composition (JSON/XML)` keyword
+    ...                 ENDPOINT: PUT /ehr/${ehr_id}/composition/${versioned_object_uid}
+
+                        # TODO: @WLAD rename to "get invalid compo dataset    ${new_version_of_composition}"
+                        #       when refactoring this resource file!
+                        #       ALL compo dataset should be moved into proper test_data_sets/ subfolders.
+                        #       At the moment they are all (valid/invalid) in  "valid_templates" !!!
+                        get valid OPT file  ${new_version_of_composition}
+
+    &{headers}=         Create Dictionary   Content-Type=application/xml
+                        ...                 Accept=application/json
+                        ...                 Prefer=return=representation
+                        ...                 If-Match=${preceding_version_uid}
+
+    ${resp}=            Put Request         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   headers=${headers}
+                        Log To Console      \nREQUEST HEADERS:\n${resp.request.headers}
+                        Log To Console      \nRESPONSE:\n${resp.content}
+                        Set Test Variable   ${response}    ${resp}
+
+
+update composition - invalid opt reference (XML)
+    [Arguments]         ${new_version_of_composition}
+    [Documentation]     Commit a new version for the COMPOSITION but with wrong OPT reference.
+    ...                 DEPENDENCY: `commit composition (JSON/XML)` keyword
+    ...                 ENDPOINT: PUT /ehr/${ehr_id}/composition/${versioned_object_uid}
+
+                        get valid OPT file  ${new_version_of_composition}
+    &{headers}=         Create Dictionary   Content-Type=application/xml
+                        ...                 Accept=application/xml
+                        ...                 Prefer=return=representation
+                        ...                 If-Match=${preceding_version_uid}
+
+    ${resp}=            Put Request         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   headers=${headers}
+                        Log To Console      \nREQUEST HEADERS:\n${resp.request.headers}
+                        Log To Console      \nRESPONSE:\n${resp.content}
+                        Set Test Variable   ${response}    ${resp}
+
+
 check composition update succeeded
     [Documentation]     the uids without the version should be the same
     ...                 DEPENDENCY: `update composition (JSON/XML)` keyword
@@ -287,7 +328,6 @@ update composition (XML)
     &{headers}=         Create Dictionary   Content-Type=application/xml
                         ...                 Accept=application/xml
                         ...                 Prefer=return=representation
-
                         ...                 If-Match=${preceding_version_uid}   # TODO: must be ${preceding_version_uid} - has same format as `version_uid`
     ${resp}=            Put Request         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   headers=${headers}
                         log to console      ${resp.content}

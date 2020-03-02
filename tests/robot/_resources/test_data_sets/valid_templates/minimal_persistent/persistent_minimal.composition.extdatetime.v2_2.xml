@@ -7,7 +7,7 @@
         <value>openEHR-EHR-COMPOSITION.persistent_minimal.v1</value>
       </archetype_id>
       <template_id>
-        <value>persistent_minimal.en.v1</value>
+        <value>persistent_minimal_2.en.v1</value>
       </template_id>
       <rm_version>1.0.2</rm_version>
     </archetype_details>
