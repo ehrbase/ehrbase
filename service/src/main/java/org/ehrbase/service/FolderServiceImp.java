@@ -18,6 +18,7 @@
 
 package org.ehrbase.service;
 
+import com.nedap.archie.rm.archetyped.Locatable;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import org.ehrbase.api.definitions.ServerConfig;
@@ -47,9 +48,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.Formatter;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
@@ -79,6 +78,9 @@ public class FolderServiceImp extends BaseService implements FolderService {
         if (ehrAccess == null) {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
         }
+
+        // Check of there are name conflicts on each folder level
+        checkSiblingNameConflicts(content);
 
         // Save current time which will be used as transaction time
         DateTime currentTimeStamp = DateTime.now();
@@ -168,6 +170,9 @@ public class FolderServiceImp extends BaseService implements FolderService {
             UUID folderId, Folder update, UUID ehrId) {
 
         DateTime timestamp = DateTime.now();
+
+        // Check of there are name conflicts on each folder level
+        checkSiblingNameConflicts(update);
 
         // Get existing root folder
         I_FolderAccess
@@ -348,5 +353,31 @@ public class FolderServiceImp extends BaseService implements FolderService {
         }
 
         return folderAccess;
+    }
+
+    /**
+     * Checks each sub folder level for conflicts. For this purpose for each sub folder level there will be a set
+     * created that contains all names of the siblings as values. If at least one value could not be inserted it will
+     * be identified as duplicate and will throw an IllegalArgumentException that results to a 400 error on the
+     * controller layer.
+     *
+     * @param folder - Folder to check sub folders for
+     */
+    private void checkSiblingNameConflicts(Folder folder) {
+
+        if (folder.getFolders() != null && !folder.getFolders().isEmpty()) {
+            Set<String> folderNames = new HashSet<>();
+
+            folder.getFolders().forEach(subFolder -> {
+
+                // A new entry in the set results to false if there is already a duplicate element existing
+                if (!folderNames.add(subFolder.getNameAsString())) {
+                    throw new IllegalArgumentException("Duplicate folder name " + subFolder.getNameAsString());
+                } else {
+                    // Check sub folder hierarchies as well for duplicates
+                    checkSiblingNameConflicts(subFolder);
+                }
+            });
+        }
     }
 }
