@@ -40,8 +40,6 @@ Main flow get existing VERSIONED COMPOSITION
     commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.xml
     check existence and content of composition
 
-    # [Teardown]    TRACE GITHUB ISSUE  122  not-ready
-
 
 
 *** Keywords ***

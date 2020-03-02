@@ -607,17 +607,17 @@ check composition does not exist (version at time)
 check composition does not exist (latest version)
     [Documentation]     DEPENDENCY: `get composition - latest version`
                         Should Be Equal As Strings   ${response.status_code}   404
-                        Should Contain Any  ${response.text}
-                        ...                   foo   # TODO @WLAD update asap
-                        ...                   bar
+                        # Should Contain Any  ${response.text}
+                        # ...                   foo   # TODO @WLAD update asap
+                        # ...                   bar
 
 
 check versioned composition does not exist
     [Documentation]     DEPENDENCY: `get versioned composition`
                         Should Be Equal As Strings   ${response.status_code}   404
-                        Should Contain Any  ${response.text}
-                        ...                   foo   # TODO @WLAD update asap
-                        ...                   bar
+                        # Should Contain Any  ${response.text}
+                        # ...                   foo   # TODO @WLAD update asap
+                        # ...                   bar
 
 
 delete composition
@@ -692,7 +692,6 @@ create EHR
 
 capture time before first commit
     capture point in time   0
-    # Sleep                   1
 
 
 capture point in time
