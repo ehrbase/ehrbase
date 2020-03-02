@@ -129,4 +129,12 @@ public interface EhrService extends BaseService {
      */
     RevisionHistory getRevisionHistoryOfVersionedEhrStatus(UUID ehrUid);
 
+    /**
+     * Reads the EHR entry from database and returns the ID of the root directory entry.
+     *
+     * @param ehrId - EHR id to find the directory for
+     * @return UUID of the root directory if existing
+     */
+    UUID getDirectoryId(UUID ehrId);
+
 }

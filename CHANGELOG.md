@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Docker and docker-compose support for both application and database
+- Get folder with version_at_time parameter
+- Get Folder with path parameter
+
 ### Changed
 
 - FasterXML Jackson version raised to 2.10.2
@@ -15,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Response code when composition is logically deleted (see: https://github.com/ehrbase/ehrbase/pull/144)
 - Response and `PREFER` header handling of `/ehr` endpoints (see: https://github.com/ehrbase/ehrbase/pull/165)
+- Deserialization of EhrStatus attributes is_modifiable and is_queryable are defaulting to `true` now (see: https://github.com/ehrbase/ehrbase/pull/158)
 
 ## [0.10.0] (alpha)
 

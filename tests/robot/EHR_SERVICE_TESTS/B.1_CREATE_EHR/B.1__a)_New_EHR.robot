@@ -321,8 +321,6 @@ MF-023 - Create new EHR (POST /ehr variants)
     given      1               1              201
     given      0               0              201
 
-    [Teardown]          TRACE GITHUB ISSUE  134  not-ready
-
 
 MF-024 - Create new EHR w/ empty subject (POST /ehr variants)
     [Documentation]     Covers edge case where subject is provided but is just empty JSON.
@@ -386,8 +384,6 @@ MF-030 - Create new EHR w/ given ehr_id (PUT /ehr/ehr_id variants)
     given   given      "false"         "false"        201
     given   given      1               1              201
     given   given      0               0              201
-
-    [Teardown]          TRACE GITHUB ISSUE  134  not-ready
 
 
 MF-031 - Create new EHR w/ given ehr_id (PUT /ehr/ehr_id variants)

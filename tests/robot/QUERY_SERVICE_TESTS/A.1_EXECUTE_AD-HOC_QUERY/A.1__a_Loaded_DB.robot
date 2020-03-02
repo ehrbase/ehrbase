@@ -71,7 +71,7 @@ MF-105 Execute Ad-Hoc Query - Get EHRs
     A/105_get_ehrs.json    A/105.tmp.json
     A/106_get_ehrs.json    A/106.tmp.json
 
-    [Teardown]          TRACE GITHUB ISSUE  104  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
 
 
 MF-002 Execute Ad-Hoc Query - Get EHR By ID
@@ -123,7 +123,7 @@ MF-502 Execute Ad-Hoc Query - Get EHRs Which Have Compositions
     A/503_get_ehrs_by_contains_composition_contains_entry_of_type.json    A/503.tmp.json
     A/603_get_ehrs_by_contains_composition_contains_entry_with_archetype.json  A/603.tmp.json
 
-    [Teardown]         TRACE GITHUB ISSUE  102  not-ready  blocked by
+    [Teardown]         TRACE GITHUB ISSUE  TODO  not-ready
 
 
 MF-107 Execute Ad-Hoc Query - Get EHRs (filtered: top 5)
@@ -287,7 +287,7 @@ MF-020 Execute Ad-HOc Query - Get Data
     
     D/201_select_data_values_from_all_ehrs_contains_composition.json    D/201.tmp.json
 
-    [Teardown]          TRACE GITHUB ISSUE  104  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
 
 
 MF-021 Execute Ad-HOc Query - Get Data
@@ -305,7 +305,7 @@ MF-022 Execute Ad-HOc Query - Get Data
     
     D/301_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/301.tmp.json
 
-    [Teardown]          TRACE GITHUB ISSUE  104  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
 
 
 MF-023 Execute Ad-HOc Query - Get Data
@@ -323,7 +323,7 @@ MF-024 Execute Ad-HOc Query - Get Data
     
     D/303_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/303.tmp.json
 
-    [Teardown]          TRACE GITHUB ISSUE  104  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
 
 
 MF-025 Execute Ad-HOc Query - Get Data
@@ -365,7 +365,7 @@ MF-029 Execute Ad-HOc Query - Get Data
     
     D/309_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/309.tmp.json
 
-    [Teardown]          TRACE GITHUB ISSUE  104  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
 
 
 MF-030 Execute Ad-HOc Query - Get Data

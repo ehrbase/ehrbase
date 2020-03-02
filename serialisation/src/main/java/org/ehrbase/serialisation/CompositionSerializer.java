@@ -37,13 +37,12 @@ import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.generic.Participation;
 import com.nedap.archie.rm.generic.PartyIdentified;
 import com.nedap.archie.rm.integration.GenericEntry;
-import org.apache.commons.collections.MapUtils;
-import org.apache.commons.collections.PredicateUtils;
 import org.apache.commons.collections.map.MultiValueMap;
-import org.apache.commons.collections.map.PredicatedMap;
-
 import org.ehrbase.ehr.encode.EncodeUtilArchie;
 import org.ehrbase.ehr.encode.ItemStack;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.collections.PredicateUtils;
+import org.apache.commons.collections.map.PredicatedMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,6 +105,7 @@ public class CompositionSerializer {
     public static final String TAG_EVALUATION = "/evaluation";
     public static final String TAG_OBSERVATION = "/observation";
     public static final String TAG_ACTION = "/action";
+    public static final String TAG_SUBJECT = "/subject";
     public static final String TAG_ISM_TRANSITION = "/ism_transition";
     public static final String TAG_CURRENT_STATE = "/current_state";
     public static final String TAG_CAREFLOW_STEP = "/careflow_step";
@@ -191,7 +191,7 @@ public class CompositionSerializer {
      * @return
      * @throws Exception
      */
-    private Object putObject(String clazz, Object node, Map<String, Object> map, String key, Object addStructure) throws Exception {
+    private Object putObject(String clazz, Object node, Map<String, Object> map, String key, Object addStructure)  {
         //CHC: 160602
         if (addStructure == null) return null;
         if (addStructure instanceof Map && ((Map) addStructure).size() == 0 && !clazz.equals("Composition"))
@@ -319,7 +319,7 @@ public class CompositionSerializer {
         }
     }
 
-    private void encodePathItem(Map<String, Object> map, String tag) throws Exception {
+    private void encodePathItem(Map<String, Object> map, String tag) {
         switch (tag_mode) {
             case PATH:
                 putObject(null, null, map, TAG_PATH, tag == null ? itemStack.pathStackDump() : itemStack.pathStackDump() + tag);
@@ -345,9 +345,8 @@ public class CompositionSerializer {
      * @param map
      * @param tag
      * @param value
-     * @throws Exception
      */
-    private void encodeNodeAttribute(Map<String, Object> map, String tag, Object value, DvText name) throws Exception {
+    private void encodeNodeAttribute(Map<String, Object> map, String tag, Object value, DvText name)  {
         Map<String, Object> valuemap = newPathMap();
         //CHC: 160317 make name optional ex: timing
         if (name != null) {
@@ -366,11 +365,11 @@ public class CompositionSerializer {
 
     }
 
-    private void encodeNodeMetaData(Map<String, Object> map, Locatable locatable) throws Exception {
+    private void encodeNodeMetaData(Map<String, Object> map, Locatable locatable) {
         //do nothing (side effects)
     }
 
-    private Map<String, Object> objectAttributes(RMObject object, String name) throws Exception {
+    private Map<String, Object> objectAttributes(RMObject object, String name)  {
         Map<String, Object> valuemap = newPathMap();
 
         if (object instanceof PartyIdentified) {
@@ -395,7 +394,7 @@ public class CompositionSerializer {
         return valuemap;
     }
 
-    private Map<String, Object> mapRmObjectAttributes(RMObject object, String name) throws Exception {
+    private Map<String, Object> mapRmObjectAttributes(RMObject object, String name)  {
         Map<String, Object> valuemap = objectAttributes(object, name);
         if (object instanceof Participation)
             encodePathItem(valuemap, TAG_OTHER_PARTICIPATIONS);
@@ -404,7 +403,7 @@ public class CompositionSerializer {
         return valuemap;
     }
 
-    private Map<String, Object> mapRmObjectAttributes(RMObject object, String name, String tag) throws Exception {
+    private Map<String, Object> mapRmObjectAttributes(RMObject object, String name, String tag)  {
         Map<String, Object> valuemap = objectAttributes(object, name);
         encodePathItem(valuemap, tag);
         return valuemap;
@@ -415,10 +414,9 @@ public class CompositionSerializer {
      *
      * @param composition
      * @return
-     * @throws Exception
      */
 //    @Override
-    private Map<String, Object> process(Composition composition) throws Exception {
+    private Map<String, Object> process(Composition composition)  {
         ctree = newPathMap();
         if (composition == null  /* CHC 170426: no content is legit... || composition.getContent() == null || composition.getContent().isEmpty() */)
             return null;
@@ -429,7 +427,7 @@ public class CompositionSerializer {
         if (composition.getContent() != null && !composition.getContent().isEmpty()) {
             for (ContentItem item : composition.getContent()) {
                 Map contentMap = traverse(item, TAG_CONTENT);
-                if (!contentMap.containsKey(TAG_NAME))
+                if (contentMap != null && !contentMap.containsKey(TAG_NAME))
                     contentMap.put(TAG_NAME, mapName(item.getName())); //this fixes the issue with SECTION name
                 putObject(null, item, ltree, getNodeTag(TAG_CONTENT, item, ltree), contentMap);
             }
@@ -450,7 +448,7 @@ public class CompositionSerializer {
     }
 
     //    @Override
-    private Map<String, Object> processItem(Locatable locatable) throws Exception {
+    private Map<String, Object> processItem(Locatable locatable) {
 
 
         if (locatable instanceof Item)
@@ -472,7 +470,7 @@ public class CompositionSerializer {
      * @param tag
      * @throws Exception
      */
-    private Map<String, Object> traverse(ContentItem item, String tag) throws Exception {
+    private Map<String, Object> traverse(ContentItem item, String tag) {
 
         Map<String, Object> retmap = null;
 
@@ -517,6 +515,9 @@ public class CompositionSerializer {
 
             if (observation.getUid() != null)
                 encodeNodeAttribute(ltree, TAG_UID, observation.getUid(), observation.getName());
+
+            if (observation.getSubject() != null)
+                encodeNodeAttribute(ltree, TAG_SUBJECT, observation.getSubject(), observation.getName());
 
             if (ltree.size() > 0)
                 retmap = ltree;
@@ -730,7 +731,7 @@ public class CompositionSerializer {
 
     }
 
-    private void putEntryMetaData(Map<String, Object> map, Entry item) throws Exception {
+    private void putEntryMetaData(Map<String, Object> map, Entry item)  {
         List<Participation> participations = item.getOtherParticipations();
 
         if (participations != null && !participations.isEmpty()) {
@@ -752,7 +753,7 @@ public class CompositionSerializer {
 //		}
     }
 
-    private Map<String, Object> traverse(Activity activity, String tag) throws Exception {
+    private Map<String, Object> traverse(Activity activity, String tag)  {
         if (activity == null)
             return null;
 
@@ -797,7 +798,7 @@ public class CompositionSerializer {
      * @param tag
      * @throws Exception
      */
-    private Map<String, Object> traverse(History<?> item, String tag) throws Exception {
+    private Map<String, Object> traverse(History<?> item, String tag)  {
         if (item == null) {
             return null;
         }
@@ -882,7 +883,7 @@ public class CompositionSerializer {
      * @param target
      * @throws Exception
      */
-    private void compactEntry(Object node, Map<String, Object> target, String key, Map<String, Object> entry) throws Exception {
+    private void compactEntry(Object node, Map<String, Object> target, String key, Map<String, Object> entry) {
         //if entry is null, ignore, the dirty bit is not set...
         if (entry != null) {
             if (entry.keySet().size() == 1 && entry.get(TAG_VALUE) != null) {
@@ -899,9 +900,8 @@ public class CompositionSerializer {
      *
      * @param item
      * @param uppertag
-     * @throws Exception
      */
-    private Map<String, Object> traverse(ItemStructure item, String uppertag) throws Exception {
+    private Map<String, Object> traverse(ItemStructure item, String uppertag)  {
 
         Map<String, Object> retmap = null;
 
@@ -1035,7 +1035,7 @@ public class CompositionSerializer {
         return classname;
     }
 
-    private Map<String, Object> setElementAttributesMap(Element element) throws Exception {
+    private Map<String, Object> setElementAttributesMap(Element element) {
         Map<String, Object> ltree = newPathMap();
 
         //to deal with ITEM_SINGLE initial value
@@ -1052,23 +1052,17 @@ public class CompositionSerializer {
         ) {
             log.debug(itemStack.pathStackDump() + "=" + element.getValue());
             Map<String, Object> valuemap = newPathMap();
-            //VBeanUtil.setValueMap(valuemap, element.getValue());
-            putObject(null, element, valuemap, TAG_NAME, mapName(element.getName()));
 
-//			if (element.getName() instanceof DvCodedText) {
-//				DvCodedText dvCodedText = (DvCodedText)element.getName();
-//				if (dvCodedText.getDefiningCode() != null)
-//					putObject(element, valuemap, TAG_DEFINING_CODE, dvCodedText.getDefiningCode());
-//			}
+            //set name
+            if (element.getName() != null)
+                putObject(null, element, valuemap, TAG_NAME, mapName(element.getName()));
 
-//            putObject(valuemap, TAG_CLASS, element.getValue()).getSimpleName());
-            //assign the actual object to the value (instead of its field equivalent...)
-            putObject(getCompositeClassName(element.getValue()), element, valuemap, TAG_VALUE, element.getValue());
-//
+            //set value
+            if (element.getValue() != null && !element.getValue().toString().isEmpty())
+                putObject(getCompositeClassName(element.getValue()), element, valuemap, TAG_VALUE, element.getValue());
+
+            //set path
             encodePathItem(valuemap, null);
-//            if (tag_mode == WalkerOutputMode.PATH) {
-//                putObject(valuemap, TAG_PATH, elementStack.pathStackDump());
-//            }
 
             ltree.put(TAG_VALUE, valuemap);
         }
@@ -1087,7 +1081,7 @@ public class CompositionSerializer {
      * @param tag
      * @throws Exception
      */
-    private Map<String, Object> traverse(Item item, String tag) throws Exception {
+    private Map<String, Object> traverse(Item item, String tag) {
         Map<String, Object> retmap = null;
 
         log.debug("traverse item:" + item);
@@ -1096,7 +1090,7 @@ public class CompositionSerializer {
             return null;
         }
 
-        if (item instanceof Element && !new Elements((Element) item).isVoid()) {
+        if (item instanceof Element) { //NB. Element value and null flavour are optional
             itemStack.pushStacks(tag + "[" + item.getArchetypeNodeId() + "]", null);
             retmap = setElementAttributesMap((Element) item);
             itemStack.popStacks();
@@ -1146,7 +1140,7 @@ public class CompositionSerializer {
 
 
     //    @Override
-    public String dbEncode(RMObject rmObject) throws Exception {
+    public String dbEncode(RMObject rmObject) {
 
         Map<String, Object> stringObjectMap;
         if (rmObject instanceof Composition) {

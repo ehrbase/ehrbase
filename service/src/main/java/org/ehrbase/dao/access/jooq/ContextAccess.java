@@ -34,6 +34,7 @@ import com.nedap.archie.rm.generic.PartyIdentified;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.*;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.definitions.ServerConfig;
@@ -532,7 +533,11 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
 
             DvCodedText mode;
             try {
-                mode = decodeDvCodedText(record.getMode());
+                if (StringUtils.isNotBlank(record.getMode())) {
+                    mode = decodeDvCodedText(record.getMode());
+                } else {
+                    mode = null;
+                }
             } catch (IllegalArgumentException e) {
                 throw new InternalServerException(DB_INCONSISTENCY, e);
             }

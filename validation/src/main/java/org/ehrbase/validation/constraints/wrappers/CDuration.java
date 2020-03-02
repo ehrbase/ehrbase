@@ -37,12 +37,12 @@ import java.util.Map;
  */
 public class CDuration extends CConstraint implements I_CTypeValidate {
 
-    protected CDuration(Map<String, Map<String, String>> localTerminologyLookup) {
+    CDuration(Map<String, Map<String, String>> localTerminologyLookup) {
         super(localTerminologyLookup);
     }
 
     @Override
-    public void validate(String path, Object aValue, CPRIMITIVE cprimitive) throws Exception {
+    public void validate(String path, Object aValue, CPRIMITIVE cprimitive) throws IllegalArgumentException {
         if (!(aValue instanceof OffsetDateTime))
             ValidationException.raise(path, "INTERNAL: Time validation expects a java-date-time argument", "DURATION_01");
 

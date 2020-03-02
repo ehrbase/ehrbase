@@ -51,7 +51,7 @@
       <terminology_id>
         <value>ISO_639-1</value>
       </terminology_id>
-      <code_string>es</code_string>
+      <code_string>en</code_string>
     </language>
     <territory>
       <terminology_id>
@@ -60,7 +60,7 @@
       <code_string>UY</code_string>
     </territory>
     <category>
-      <value>evento</value>
+      <value>event</value>
       <defining_code>
         <terminology_id>
           <value>openehr</value>

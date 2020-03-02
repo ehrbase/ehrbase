@@ -26,7 +26,7 @@ public class IsmTransition extends TerminologyCheck{
         this.RM_CLASS = com.nedap.archie.rm.composition.IsmTransition.class;
     }
 
-    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.composition.IsmTransition ismTransition, String language) throws Exception {
+    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.composition.IsmTransition ismTransition, String language) throws IllegalArgumentException {
         if (ismTransition.getCurrentState() != null)
             validate(terminologyInterface, codesetMapping, "current_state", ismTransition.getCurrentState().getDefiningCode(), language);
 
@@ -34,7 +34,7 @@ public class IsmTransition extends TerminologyCheck{
             validate(terminologyInterface, codesetMapping, "transition", ismTransition.getTransition().getDefiningCode(), language);
     }
 
-    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.composition.IsmTransition ismTransition) throws Exception {
+    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.composition.IsmTransition ismTransition) throws IllegalArgumentException {
         check(terminologyInterface, codesetMapping, context, ismTransition, "en");
     }
 }

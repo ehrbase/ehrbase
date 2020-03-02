@@ -40,8 +40,8 @@
             <artifactId>opt-1.4</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.openEHR</groupId>
-            <artifactId>archie</artifactId>
+            <groupId>com.github.ehrbase</groupId>
+            <artifactId>archie-fork</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>

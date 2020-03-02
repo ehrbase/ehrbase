@@ -29,7 +29,7 @@ import org.ehrbase.serialisation.CanonicalXML;
 import javax.xml.namespace.QName;
 import java.io.IOException;
 
-public class RmObjektJsonSerializer extends JsonSerializer<RMObject> {
+public class RmObjectJsonSerializer extends JsonSerializer<RMObject> {
     @Override
     public void serialize(RMObject value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
         if (gen instanceof ToXmlGenerator) {

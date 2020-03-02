@@ -27,11 +27,11 @@ public class CodePhrase extends TerminologyCheck {
     }
 
 
-    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datatypes.CodePhrase codePhrase) throws Exception {
+    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datatypes.CodePhrase codePhrase) throws IllegalArgumentException {
         check(terminologyInterface, codesetMapping, context, codePhrase, "en");
     }
 
-    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datatypes.CodePhrase codePhrase, String language) throws Exception {
+    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datatypes.CodePhrase codePhrase, String language) throws IllegalArgumentException {
         validate(terminologyInterface, codesetMapping, context, codePhrase, language);
     }
 }

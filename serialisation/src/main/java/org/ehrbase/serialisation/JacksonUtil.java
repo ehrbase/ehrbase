@@ -23,11 +23,16 @@ package org.ehrbase.serialisation;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.DeserializationProblemHandler;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.nedap.archie.base.OpenEHRBase;
+import com.nedap.archie.rm.ehr.EhrStatus;
 
 import java.io.IOException;
 
@@ -53,7 +58,7 @@ public class JacksonUtil {
     public static ObjectMapper getObjectMapper() {
         if (objectMapper == null) {
             objectMapper = new ObjectMapper();
-            configureObjectMapper(objectMapper);
+            configureObjectMapper(objectMapper, true);
 
         }
         return objectMapper;
@@ -63,9 +68,10 @@ public class JacksonUtil {
      * Configure an existing object mapper to work with Archie RM and AOM Objects.
      * Indentation is enabled. Feel free to disable again in your own code.
      *
-     * @param objectMapper
+     * @param objectMapper target mapper to configure
+     * @param withCustomizers setting to include customizers for primary mapping
      */
-    public static void configureObjectMapper(ObjectMapper objectMapper) {
+    public static void configureObjectMapper(ObjectMapper objectMapper, boolean withCustomizers) {
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
         objectMapper.enable(SerializationFeature.FLUSH_AFTER_WRITE_VALUE);
         objectMapper.disable(SerializationFeature.WRITE_NULL_MAP_VALUES);
@@ -101,6 +107,13 @@ public class JacksonUtil {
 
         objectMapper.setDefaultTyping(typeResolverBuilder);
 
+        // should be included in normal cases, but not in the mapper used by the custom (de)serializers below, or they will loop forever
+        if (withCustomizers) {
+            // add module to allow custom deserializers
+            SimpleModule module = new SimpleModule();
+            module.addDeserializer(EhrStatus.class, new EhrStatusDeserializer(EhrStatus.class));
+            objectMapper.registerModule(module);
+        }
     }
 
     /**
@@ -115,6 +128,45 @@ public class JacksonUtil {
         @Override
         public boolean useForType(JavaType t) {
             return (OpenEHRBase.class.isAssignableFrom(t.getRawClass()));
+        }
+    }
+
+    /**
+     * Custom deserializer for {@link EhrStatus} objects. Used to default the is_modifiable and is_queryable attributes
+     * to `true`.
+     */
+    public static class EhrStatusDeserializer extends StdDeserializer<EhrStatus> {
+
+        protected EhrStatusDeserializer(Class<?> vc) {
+            super(vc);
+        }
+
+        @Override
+        public EhrStatus deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+            final String IS_MODIFIABLE = "is_modifiable";
+            final String IS_QUERYABLE = "is_queryable";
+
+            JsonNode node = p.getCodec().readTree(p);
+
+            // check for "is_modifiable", correct to default if necessary
+            if (node.has(IS_MODIFIABLE)) {
+                if (!node.get(IS_MODIFIABLE).isBoolean()) // is available but invalid value -> default to `true`
+                    ((ObjectNode) node).put(IS_MODIFIABLE, true);
+            } else  // not available at all -> default to `true`
+                ((ObjectNode) node).put(IS_MODIFIABLE, true);
+
+            // check for "is_queryable", correct to default if necessary
+            if (node.has(IS_QUERYABLE)) {
+                if (!node.get(IS_QUERYABLE).isBoolean()) // is available but invalid value -> default to `true`
+                    ((ObjectNode) node).put(IS_QUERYABLE, true);
+            } else  // not available at all -> default to `true`
+                ((ObjectNode) node).put(IS_QUERYABLE, true);
+
+            // continue with normal deserialization
+            ObjectMapper objectMapper = new ObjectMapper();
+            configureObjectMapper(objectMapper, false); // to prevent looping through this custom deserializer forever
+
+            return objectMapper.readValue(node.toString(), EhrStatus.class);
         }
     }
 }
