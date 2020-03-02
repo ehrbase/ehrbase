@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Response code when composition is logically deleted (see: https://github.com/ehrbase/ehrbase/pull/144)
 - Deserialization of EhrStatus attributes is_modifiable and is_queryable are defaulting to `true` now (see: https://github.com/ehrbase/ehrbase/pull/158)
+- Folder names are checked for duplicates (see: https://github.com/ehrbase/ehrbase/pull/168)
 
 ## [0.10.0] (alpha)
 
