@@ -518,10 +518,6 @@ extract ehrstatus_uid (JSON)
     ${ehrstatus_uid}=   String       response body ehr_status uid value
 
                         Log To Console    \n\tDEBUG OUTPUT - EHR_STATUS UUID: \n\t${ehrstatus_uid}[0]
-                        # Set Test Variable    ${ehrstatus_uid}   ${ehrstatus_uid}[0]::local.ehrbase.org::1
-                        #                                         # NOTE: ::local.ehrbase.org::1 has to be provided
-                        #                                         # as part of ehr_status.uid.value by the repsonse
-                        #                                         # and must not be hard coded here
                         Set Test Variable    ${ehrstatus_uid}   ${ehrstatus_uid}[0]
 
 
@@ -540,8 +536,6 @@ extract ehrstatus_uid (XML)
 
     ${xml}=             Parse Xml    ${response.body}
     ${ehrstatus_uid}=   Get Element Text    ${xml}    xpath=ehr_status/uid/value
-                        # Set Test Variable   ${ehrstatus_uid}    ${ehrstatus_uid}::local.ehrbase.org::1
-                        #                                         # TODO this should probaply not be hard coded!!!
                         Set Test Variable   ${ehrstatus_uid}    ${ehrstatus_uid}
 
 extract system_id from response (XML)

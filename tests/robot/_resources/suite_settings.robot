@@ -54,26 +54,70 @@ ${hip_baseurl_v1}     http://localhost:8080/ehrbase/rest/ecis/v1
 ${template_id}    IDCR%20-%20Immunisation%20summary.v0
 ${invalid_ehr_id}    123
 ${CODE_COVERAGE}    False
+${NODOCKER}         False
 
 ${PROJECT_ROOT}  ${EXECDIR}${/}..
 ${POM_FILE}    ${PROJECT_ROOT}${/}pom.xml
 ${FIXTURES}     ${PROJECT_ROOT}/tests/robot/_resources/fixtures
 
 
-${SUT}                 EHRBASE
 
-&{EHRSCAPE}            URL=https://rest.ehrscape.com/rest/openehr/v1
-...                    CREDENTIALS=@{scapecreds}
-...                    AUTH={"Authorization": "Basic YmlyZ2VyLmhhYXJicmFuZHRAcGxyaS5kZTplaHI0YmlyZ2VyLmhhYXJicmFuZHQ"}
-@{scapecreds}          birger.haarbrandt@plri.de    ehr4birger.haarbrandt
+# Your System Under Test (SUT) configuration goes here!
+# Check tests/README.md for details.
+${SUT}                  TEST    # DEFAULT
 
-&{EHRBASE}             URL=http://localhost:8080/ehrbase/rest/openehr/v1
-...                    CREDENTIALS=${basecreds}
-...                    AUTH={ "Authorization": null}
-${basecreds}           None
+# local test environment: for development
+&{DEV}                  URL=http://localhost:8080/ehrbase/rest/openehr/v1
+...                     HEARTBEAT=http://localhost:8080/ehrbase/
+...                     CREDENTIALS=${devcreds}
+...                     AUTH={"Authorization": null}
+                        # comment: nodename is actually "CREATING_SYSTEM_ID" and can be set from cli
+                        #          when starting server .jar
+                        #          i.e. java -jar application.jar --server.nodename=some.foobar.baz
+                        #          EHRbase's default is local.ehrbase.org
+...                     NODENAME=local.ehrbase.org
+...                     CONTROL=manual
+${devcreds}             None
 
-${baseurl}             ${${SUT}.URL}
-${authorization}        ${${SUT}.AUTH}
+# testing environment: used on CI pipeline
+&{TEST}                 URL=http://localhost:8080/ehrbase/rest/openehr/v1
+...                     HEARTBEAT=http://localhost:8080/ehrbase/
+...                     CREDENTIALS=${testcreds}
+...                     AUTH={"Authorization": null}
+...                     NODENAME=local.ehrbase.org
+...                     CONTROL=docker
+${testcreds}            None
+
+# staging environment
+&{STAGE}                URL=http://localhost:8080/ehrbase/rest/openehr/v1
+...                     HEARTBEAT=http://localhost:8080/ehrbase/
+...                     CREDENTIALS=${stagecreds}
+...                     AUTH={"Authorization": null}
+...                     NODENAME=stage.ehrbase.org
+...                     CONTROL=docker
+${stagecreds}           None
+
+# pre production environment
+&{PREPROD}              URL=http://localhost:8080/ehrbase/rest/openehr/v1
+...                     HEARTBEAT=http://localhost:8080/ehrbase/
+...                     CREDENTIALS=${preprodcreds}
+...                     AUTH={"Authorization": null}
+...                     NODENAME=preprod.ehrbase.org
+...                     CONTROL=docker
+${preprodcreds}         None
+
+
+# # Basic Auth example
+# &{AIRBASE}              URL=https://domain.com/rest/openehr/v1
+# ...                     CREDENTIALS=@{aircreds}
+# ...                     AUTH={"Authorization": "Basic Auth-String"}
+# @{aircreds}             username    password
+
+${BASEURL}              ${${SUT}.URL}
+${HEARTBEAT_URL}        ${${SUT}.HEARTBEAT}
+${AUTHORIZATION}        ${${SUT}.AUTH}
+${CREATING_SYSTEM_ID}   ${${SUT}.NODENAME}
+${CONTROL_MODE}         ${${SUT}.CONTROL}
 
 
 

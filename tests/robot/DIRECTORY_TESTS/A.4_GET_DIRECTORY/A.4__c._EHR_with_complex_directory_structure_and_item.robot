@@ -34,11 +34,11 @@ Force Tags
 Alternative flow 2: get directory on EHR with complex directory structure and items
 
     create EHR
-        
+
         TRACE GITHUB ISSUE  171  not-ready
 
     create DIRECTORY (JSON)    subfolders_in_directory_with_details_items.json
 
     get DIRECTORY at time (JSON)  time
 
-    validate GET version@time response - 200 retrieved
+    validate GET-version@time response - 200 retrieved

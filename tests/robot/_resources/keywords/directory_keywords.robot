@@ -1040,7 +1040,7 @@ generate fake version_uid
 
     ${uid}=             Evaluate    str(uuid.uuid4())    uuid
                         Set Test Variable    ${folder_uid}    ${uid}
-                        Set Test Variable    ${version_uid}    ${uid}::local.ehrbase.org::1
+                        Set Test Variable    ${version_uid}    ${uid}::${CREATING_SYSTEM_ID}::1
                         Set Test Variable    ${preceding_version_uid}    ${version_uid}
 
 
