@@ -16,7 +16,6 @@
 ---
 
 ## Prerequisites
-xcvzxcvz
 
 1) Docker, Java 11 & Maven, Python 3 & Pip are installed
 2) Robot Framework & dependencies are installed (`pip install -r requirements.txt`)
