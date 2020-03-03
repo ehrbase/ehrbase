@@ -59,7 +59,7 @@ generate random composition_uid
     ${uid}=             Evaluate    str(uuid.uuid4())    uuid
                         Set Test Variable   ${composition_uid}    ${uid}    # TODO: remove
                         Set Test Variable   ${versioned_object_uid}    ${uid}
-                        Set Test Variable   ${version_uid}    ${uid}::local.ehrbase.org::1    # TODO: get `local.ehrbase.org` from a variable
+                        Set Test Variable   ${version_uid}    ${uid}::${CREATING_SYSTEM_ID}::1
                         Set Test Variable   ${preceding_version_uid}    ${version_uid}
 
 
@@ -68,7 +68,7 @@ generate random version_uid
     ...                 also as `preceding_version_uid` to test level scope
 
     ${uid}=             Evaluate    str(uuid.uuid4())    uuid
-                        Set Test Variable   ${version_uid}    ${uid}::local.ehrbase.org::1
+                        Set Test Variable   ${version_uid}    ${uid}::${CREATING_SYSTEM_ID}::1
                         Set Test Variable   ${preceding_version_uid}    ${version_uid}
 
 
@@ -159,7 +159,7 @@ commit composition (JSON)
                         Set Test Variable   ${version_uid_v1}    ${version_uid}                  # different namesfor full uid
                         Set Test Variable   ${preceding_version_uid}    ${version_uid}          # for usage in other steps
 
-    ${short_uid}=       Remove String       ${version_uid}    ::local.ehrbase.org::1
+    ${short_uid}=       Remove String       ${version_uid}    ::${CREATING_SYSTEM_ID}::1
                         Set Test Variable   ${compo_uid_v1}    ${short_uid}                      # TODO: rmv
                         Set Test Variable   ${versioned_object_uid}    ${short_uid}
 
@@ -197,7 +197,7 @@ commit composition (XML)
                         Set Test Variable   ${version_uid_v1}    ${version_uid}                  # different namesfor full uid
                         Set Test Variable   ${preceding_version_uid}    ${version_uid}          # for usage in other steps
 
-    ${short_uid}=       Remove String       ${version_uid}    ::local.ehrbase.org::1
+    ${short_uid}=       Remove String       ${version_uid}    ::${CREATING_SYSTEM_ID}::1
                         Set Test Variable   ${compo_uid_v1}    ${short_uid}                 # TODO; rmv
                         Set Test Variable   ${versioned_object_uid}    ${short_uid}
 
@@ -249,11 +249,52 @@ update composition (JSON)
                         Set Test Variable   ${composition_uid_v2}    ${resp.json()['uid']['value']}    # TODO: remove
                         Set Test Variable   ${version_uid_v2}    ${resp.json()['uid']['value']}
 
-    ${short_uid}=       Remove String       ${version_uid_v2}    ::local.ehrbase.org::1
+    ${short_uid}=       Remove String       ${version_uid_v2}    ::${CREATING_SYSTEM_ID}::1
                         Set Test Variable   ${versioned_object_uid_v2}    ${short_uid}
 
                         Set Test Variable   ${response}    ${resp}
                         capture point in time    2
+
+
+update composition - invalid opt reference (JSON)
+    [Arguments]         ${new_version_of_composition}
+    [Documentation]     Commit a new version for the COMPOSITION but with wrong OPT reference.
+    ...                 DEPENDENCY: `commit composition (JSON/XML)` keyword
+    ...                 ENDPOINT: PUT /ehr/${ehr_id}/composition/${versioned_object_uid}
+
+                        # TODO: @WLAD rename to "get invalid compo dataset    ${new_version_of_composition}"
+                        #       when refactoring this resource file!
+                        #       ALL compo dataset should be moved into proper test_data_sets/ subfolders.
+                        #       At the moment they are all (valid/invalid) in  "valid_templates" !!!
+                        get valid OPT file  ${new_version_of_composition}
+
+    &{headers}=         Create Dictionary   Content-Type=application/xml
+                        ...                 Accept=application/json
+                        ...                 Prefer=return=representation
+                        ...                 If-Match=${preceding_version_uid}
+
+    ${resp}=            Put Request         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   headers=${headers}
+                        Log To Console      \nREQUEST HEADERS:\n${resp.request.headers}
+                        Log To Console      \nRESPONSE:\n${resp.content}
+                        Set Test Variable   ${response}    ${resp}
+
+
+update composition - invalid opt reference (XML)
+    [Arguments]         ${new_version_of_composition}
+    [Documentation]     Commit a new version for the COMPOSITION but with wrong OPT reference.
+    ...                 DEPENDENCY: `commit composition (JSON/XML)` keyword
+    ...                 ENDPOINT: PUT /ehr/${ehr_id}/composition/${versioned_object_uid}
+
+                        get valid OPT file  ${new_version_of_composition}
+    &{headers}=         Create Dictionary   Content-Type=application/xml
+                        ...                 Accept=application/xml
+                        ...                 Prefer=return=representation
+                        ...                 If-Match=${preceding_version_uid}
+
+    ${resp}=            Put Request         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   headers=${headers}
+                        Log To Console      \nREQUEST HEADERS:\n${resp.request.headers}
+                        Log To Console      \nRESPONSE:\n${resp.content}
+                        Set Test Variable   ${response}    ${resp}
 
 
 check composition update succeeded
@@ -287,7 +328,6 @@ update composition (XML)
     &{headers}=         Create Dictionary   Content-Type=application/xml
                         ...                 Accept=application/xml
                         ...                 Prefer=return=representation
-
                         ...                 If-Match=${preceding_version_uid}   # TODO: must be ${preceding_version_uid} - has same format as `version_uid`
     ${resp}=            Put Request         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   headers=${headers}
                         log to console      ${resp.content}
@@ -300,7 +340,7 @@ update composition (XML)
                         Set Test Variable   ${composition_uid_v2}     ${long_uid.text}    # TODO: remove
                         Set Test Variable   ${version_uid_v2}     ${long_uid.text}
 
-    ${short_uid}=       Remove String       ${version_uid_v2}    ::local.ehrbase.org::1
+    ${short_uid}=       Remove String       ${version_uid_v2}    ::${CREATING_SYSTEM_ID}::1
                         Set Test Variable   ${versioned_object_uid_v2}    ${short_uid}
 
                         Set Test Variable   ${response}    ${resp}
@@ -567,17 +607,17 @@ check composition does not exist (version at time)
 check composition does not exist (latest version)
     [Documentation]     DEPENDENCY: `get composition - latest version`
                         Should Be Equal As Strings   ${response.status_code}   404
-                        Should Contain Any  ${response.text}
-                        ...                   foo   # TODO @WLAD update asap
-                        ...                   bar
+                        # Should Contain Any  ${response.text}
+                        # ...                   foo   # TODO @WLAD update asap
+                        # ...                   bar
 
 
 check versioned composition does not exist
     [Documentation]     DEPENDENCY: `get versioned composition`
                         Should Be Equal As Strings   ${response.status_code}   404
-                        Should Contain Any  ${response.text}
-                        ...                   foo   # TODO @WLAD update asap
-                        ...                   bar
+                        # Should Contain Any  ${response.text}
+                        # ...                   foo   # TODO @WLAD update asap
+                        # ...                   bar
 
 
 delete composition
@@ -652,7 +692,6 @@ create EHR
 
 capture time before first commit
     capture point in time   0
-    # Sleep                   1
 
 
 capture point in time

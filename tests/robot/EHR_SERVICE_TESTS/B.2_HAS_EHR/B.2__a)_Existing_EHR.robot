@@ -36,7 +36,7 @@ Force Tags    refactor
 *** Test Cases ***
 Check has EHR with existing EHR
 
-    prepare new request session    JSON
+    prepare new request session    JSON    Prefer=return=representation
 
     create new EHR
 

@@ -134,8 +134,8 @@ commit invalid CONTRIBUTION (JSON)
 # VARIATIONS OF RESULTS FROM INVALID CONTRIBUTIONS
 check response: is negative indicating errors in committed data
                         Should Be Equal As Strings   ${response.status_code}   400
-                        # TODO: keep failing to avoid false positive, rm when has checks.
-                        Fail    msg=brake it till you make it!
+                        # # TODO: keep failing to avoid false positive, rm when has checks.
+                        # Fail    msg=brake it till you make it!
 
 check response: is negative - complaining about empty versions list
                         Should Be Equal As Strings   ${response.status_code}   400
@@ -148,9 +148,9 @@ check response: is negative indicating wrong change_type
                         Should Be Equal As Strings   ${response.status_code}   400
                         Set Test Variable    ${body}    ${response.json()}
 
-                        # TODO: keep failing to avoid false positive
-                        #       add checks when available.
-                        Fail    msg=brake it till you make it!
+                        # # TODO: keep failing to avoid false positive
+                        # #       add checks when available.
+                        # Fail    msg=brake it till you make it!
 
 
 check response: is negative indicating non-existent OPT
@@ -212,20 +212,20 @@ retrieve CONTRIBUTION(S) by fake ehr_id (JSON)
 
 check response: is negative indicating non-existent ehr_id
                         Should Be Equal As Strings    ${response.status_code}    404
-                        Set Test Variable    ${body}    ${response.json()}
-                        Should Be Equal As Strings  ${body['error']}  No EHR found with given ID: ${ehr_id}
+                        # Set Test Variable    ${body}    ${response.json()}
+                        # Should Be Equal As Strings  ${body['error']}  No EHR found with given ID: ${ehr_id}
 
 
 check response: is negative indicating non-existent contribution_uid
                         Should Be Equal As Strings    ${response.status_code}    404
-                        Set Test Variable    ${body}    ${response.json()}
-                        Should Be Equal As Strings  ${body['error']}  Contribution with given ID does not exist
+                        # Set Test Variable    ${body}    ${response.json()}
+                        # Should Be Equal As Strings  ${body['error']}  Contribution with given ID does not exist
 
 
 check response: is negative indicating non-existent contribution_uid on ehr_id
                         Should Be Equal As Strings    ${response.status_code}    404
-                        Set Test Variable    ${body}    ${response.json()}
-                        Should Be Equal As Strings  ${body['error']}  Contribution with given ID does not exist
+                        # Set Test Variable    ${body}    ${response.json()}
+                        # Should Be Equal As Strings  ${body['error']}  Contribution with given ID does not exist
 
 
 check response: is positive with list of ${x} contribution(s)

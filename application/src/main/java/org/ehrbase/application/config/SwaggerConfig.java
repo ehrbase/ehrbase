@@ -19,6 +19,7 @@
 package org.ehrbase.application.config;
 
 import com.nedap.archie.rm.changecontrol.Contribution;
+import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.directory.Folder;
@@ -73,7 +74,7 @@ public class SwaggerConfig extends WebMvcConfigurerAdapter {
 
         // Add classes from ReferenceModel to be ignored if causing errors
         Class[] classesToIgnore = {EhrStatus.class, Folder.class, PartySelf.class, ItemStructure.class, DvText.class,
-        Contribution.class, AuditDetails.class, Attestation.class};
+        Contribution.class, AuditDetails.class, Attestation.class, Composition.class};
 
         return new Docket(DocumentationType.SWAGGER_2).groupName("openEHR API")
                 //.host("http://localhost:8080")

@@ -24,6 +24,12 @@ Library    OperatingSystem
 
 
 
+*** Variables ***
+${README_LINK}    https://github.com/ehrbase/ehrbase/blob/develop/tests/README.md
+${MANUAL_TEST_ENV}    \#manually-controlled-sut
+
+
+
 *** Keywords ***
 # oooo    oooo oooooooooooo oooooo   oooo oooooo   oooooo     oooo   .oooooo.   ooooooooo.   oooooooooo.    .oooooo..o
 # `888   .8P'  `888'     `8  `888.   .8'   `888.    `888.     .8'   d8P'  `Y8b  `888   `Y88. `888'   `Y8b  d8P'    `Y8
@@ -138,7 +144,7 @@ restart SUT
 get application version
     ${root}=  Parse Xml    ${POM_FILE}
     ${version}=  Get Element Text   ${root}  version
-    Set Suite Variable    ${VERSION}    ${version}
+    Set Global Variable    ${VERSION}    ${version}
 
 
 unzip file_repo_content.zip
@@ -173,29 +179,32 @@ start openehr server
     get application version
     run keyword if  '${CODE_COVERAGE}' == 'True'   start server process with coverage
     run keyword if  '${CODE_COVERAGE}' == 'False'  start server process without coverage
-    Wait For Process  ehrserver  timeout=10  on_timeout=continue
+    Wait For Process  ehrserver  timeout=25  on_timeout=continue
     Is Process Running  ehrserver
-    Process Should Be Running  ehrserver
+    ${status}=      Run Keyword And Return Status    Process Should Be Running    ehrserver
+                    Run Keyword If    ${status}==${FALSE}    Fatal Error    Server failed to start!
     wait until openehr server is ready
     wait until openehr server is online
 
 
 start server process without coverage
     ${result}=          Start Process  java  -jar  ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
-                        ...                  --cache.enabled\=false    alias=ehrserver
+                        ...                  --cache.enabled\=false
+                        ...                  --server.nodename\=${CREATING_SYSTEM_ID}    alias=ehrserver
                         ...                    cwd=${PROJECT_ROOT}    stdout=stdout.txt    stderr=stderr.txt
 
 
 start server process with coverage
     ${result}=          Start Process  java  -javaagent:${JACOCO_LIB_PATH}/jacocoagent.jar\=output\=tcpserver,address\=127.0.0.1
                         ...                  -jar    ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
-                        ...                  --cache.enabled\=false    alias=ehrserver
+                        ...                  --cache.enabled\=false
+                        ...                  --server.nodename\=${CREATING_SYSTEM_ID}    alias=ehrserver
                         ...                    cwd=${PROJECT_ROOT}    stdout=stdout.txt    stderr=stderr.txt
 
 
 wait until openehr server is ready
     Wait Until Keyword Succeeds  120 sec  3 sec  text "Started EhrBase ..." is in log
-    [Teardown]  Run keyword if  "${KEYWORD STATUS}"=="FAIL"  abort test execution if server not ready
+    [Teardown]  Run keyword if  "${KEYWORD STATUS}"=="FAIL"  abort test execution    Server is NOT running!
 
 
 text "Started EhrBase ..." is in log
@@ -207,17 +216,26 @@ text "Started EhrBase ..." is in log
 
 wait until openehr server is online
     Wait Until Keyword Succeeds  33 sec  3 sec  openehr server is online
-    [Teardown]  Run keyword if  "${KEYWORD STATUS}"=="FAIL"  abort test execution if server not ready
+    [Teardown]  Run keyword if  "${KEYWORD STATUS}"=="FAIL"  abort test execution    Server is NOT running!
 
 
 openehr server is online
-    REST.GET    http://localhost:8080/ehrbase/swagger-ui.html
-    Integer  response status  200
+    prepare new request session  JSON
+    REST.GET    ${HEARTBEAT_URL}
+    Integer  response status  404
 
 
-abort test execution if server not ready
-    Log    THE SERVER IS NOT RUNNING    ERROR
-    Fatal Error  Aborted Tests Execution - Server is NOT running!
+abort test execution
+    [Arguments]         @{TEST_ENVIRONMENT_STATUS}
+
+    ${overall_status}    ${server_status}    ${db_status}=    Set Variable    ${TEST_ENVIRONMENT_STATUS}
+                        Log    ABORTING EXECUTION DUE TO TEST ENVIRONMENT ISSUES:    level=ERROR
+                        Run Keyword if    ${server_status}==${FALSE}    Log
+                        ...               Could not connect to server!    level=ERROR
+                        Run Keyword if    ${db_status}==${FALSE}    Log
+                        ...               Could not connect to database!    level=ERROR
+
+                        Fatal Error  ABORTED TEST EXECUTION!
 
 
 abort test execution if this test fails
@@ -268,7 +286,7 @@ set request headers
     # library: RESTinstance
     &{headers}=         Set Headers         ${headers}
                         Set Headers         ${authorization}
-    
+
     # library: RequestLibrary
                         Create Session      ${SUT}    ${${SUT}.URL}    debug=2
                         ...                 auth=${${SUT}.CREDENTIALS}    verify=True
@@ -276,14 +294,124 @@ set request headers
                         Set Suite Variable   ${headers}    ${headers}
 
 
+server sanity check
+    [Documentation]     Sends a GET request to ${HEARTBEAT_URL} to check whether
+    ...                 the server is up and running.
+    
+    ${server_status}    Run Keyword And Return Status    openehr server is online
+    [RETURN]            ${server_status}
+
+
+database sanity check
+    [Documentation]     Connects to local PostgreSQL DB regardless whether it was 
+    ...                 installed natively or dockerized. Disconnects immediately
+    ...                 on success.
+    ...                 Is skipped when CONTROL_MODE is not manual - e.g. when SUT
+    ...                 is on a remote host.
+
+    Return From Keyword If    "${CONTROL_MODE}"=="docker"    NO DB CHECK ON REMOTE SUT
+
+    ${db_status}        Run Keyword And Return Status    Connect With DB
+                        Run Keyword If    $db_status    Disconnect From Database
+    [RETURN]            ${db_status}
+
+
+do quick sanity check
+
+    ${server_status}    server sanity check
+    ${db_status}        database sanity check
+
+    ${env_status}       Set Variable If   $server_status==False or $db_status==False
+                        ...    ${FALSE}    ${TRUE}
+
+
+                        Set Global Variable    @{TEST_ENVIRONMENT_STATUS}
+                        ...                    ${env_status}    ${server_status}    ${db_status}
+
+    [RETURN]            ${env_status}    ${server_status}    ${db_status}
+
+
+warn about manual test environment start up
+    Log    ${EMPTY}                                                                             level=WARN
+    Log    /////////////////////////////////////////////////////////////////////                level=WARN
+    Log    //${SPACE * 64}///                                                                   level=WARN
+    Log    //${SPACE * 10} YOU HAVE CHOSEN TO START YOUR SUT MANUALLY! ${SPACE * 9}///          level=WARN
+    Log    //${SPACE * 5} MAKE SURE IT MEETS PREREQUISITES FOR TEST EXECUTION! ${SPACE * 5}///  level=WARN
+    Log    //${SPACE * 6} MAKE SURE TO RESET IT PROPERLY AFTER EACH TEST RUN! ${SPACE * 5}///   level=WARN
+    Log    //${SPACE * 64}///                                                                   level=WARN
+    Log    /////////////////////////////////////////////////////////////////////                level=WARN
+    Log    ${EMPTY}                                                                             level=WARN
+    Log    [ check "Manually Controlled SUT" in test README ]                                   level=WARN
+    Log    [ ${README_LINK}${MANUAL_TEST_ENV} ]                                                 level=WARN
+    Log    ${EMPTY}                                                                             level=WARN
+    Set Global Variable    ${SKIP_SHUTDOWN_WARNING}    ${FALSE}
+
+
+warn about manual test environment shut down
+    Run Keyword And Return If    ${SKIP_SHUTDOWN_WARNING}==${TRUE}    Log
+                          ...    skipping manual test env control warning due to test abortion
+    Log    ${EMPTY}                                                                             level=WARN
+    Log    /////////////////////////////////////////////////////////////////////                level=WARN
+    Log    //${SPACE * 64}///                                                                   level=WARN
+    Log    //${SPACE * 13}REMBER TO PROPERLY RESTART YOUR SUT! ${SPACE * 13} ///                level=WARN
+    Log    //${SPACE * 64}///                                                                   level=WARN
+    Log    /////////////////////////////////////////////////////////////////////                level=WARN
+    Log    ${EMPTY}                                                                             level=WARN
+
+
+abort tests due to issues with manually controlled test environment
+    Log    ${EMPTY}                                                                             level=WARN
+    Log    /////////////////////////////////////////////////////////////////////                level=WARN
+    Log    //${SPACE * 64}///                                                                   level=WARN
+    Log    //${SPACE * 10} YOU HAVE CHOSEN TO START YOUR SUT MANUALLY ${SPACE * 10}///          level=WARN
+    Log    //${SPACE * 6} BUT IT IS NOT AVAILABLE OR IS NOT SET UP PROPERLY! ${SPACE * 6}///    level=WARN
+    Log    //${SPACE * 64}///                                                                   level=WARN
+    Log    /////////////////////////////////////////////////////////////////////                level=WARN
+    Log    ${EMPTY}                                                                             level=WARN
+    Log    [ check "Manually Controlled SUT" in test README ]                                   level=WARN
+    Log    [ ${README_LINK}${MANUAL_TEST_ENV} ]                                                 level=WARN
+    Log    ${EMPTY}                                                                             level=WARN
+    Set Global Variable    ${SKIP_SHUTDOWN_WARNING}    ${TRUE}
+    abort test execution    @{TEST_ENVIRONMENT_STATUS}
+
+    abort test execution  TEST_ENVIRONMENT_STATUS
+    abort test execution if this test fails
+
 startup SUT
+    # comment: switch to manual test environment control when "-v nodocker" cli option is used
+    Run Keyword If      $NODOCKER.upper() in ["TRUE", ""]    Run Keywords
+               ...      Set Global Variable    ${NODOCKER}    TRUE    AND
+               ...      Set Global Variable    ${BASEURL}    ${DEV.URL}    AND
+               ...      Set Global Variable    ${HEARTBEAT_URL}    ${DEV.HEARTBEAT}    AND
+               ...      Set Global Variable    ${AUTHORIZATION}    ${DEV.AUTH}    AND
+               ...      Set Global Variable    ${CREATING_SYSTEM_ID}    ${DEV.NODENAME}    AND
+               ...      Set Global Variable    ${CONTROL_MODE}    ${DEV.CONTROL}
+
+                        Log    \n\t SUT CONFIG\n    console=true
+                        Log    \t BASEURL: ${BASEURL}    console=true
+                        Log    \t HEARTBEAT: ${HEARTBEAT_URL}    console=true
+                        Log    \t AUTH: ${AUTHORIZATION}    console=true
+                        Log    \t CREATING SYSTEM ID: ${CREATING_SYSTEM_ID}    console=true
+                        Log    \t CONTROL MODE: ${CONTROL_MODE}\n    console=true
+
+    ${sanity_check_passed}  ${server_status}  ${db_status}=    do quick sanity check
+
+    Run Keyword And Return If   "${CONTROL_MODE}"=="manual" and ${sanity_check_passed}
+                          ...    warn about manual test environment start up
+
+    Run Keyword And Return If   "${CONTROL_MODE}"=="manual" and not ${sanity_check_passed}
+                          ...   abort tests due to issues with manually controlled test environment
+
+    # comment: test environment controlled by Robot
     get application version
-    unzip file_repo_content.zip
     start ehrdb
     start openehr server
 
 
 shutdown SUT
+    Run Keyword And Return If   "${CONTROL_MODE}"=="manual"
+                          ...    warn about manual test environment shut down
+
     stop openehr server
     stop and remove ehrdb
     empty operational_templates folder
@@ -304,8 +432,10 @@ dump test coverage
 
 
 start ehrdb
-    run postgresql container
-    wait until ehrdb is ready
+    ${status}           Run Keyword And Return Status    run postgresql container
+                        Run Keyword If    ${status}==${FALSE}    Fatal Error   Could not start DB!
+
+                        wait until ehrdb is ready
 
 
 stop and remove ehrdb
@@ -388,20 +518,6 @@ log an ERROR and set tag(s)
 THIS IS JUST A PLACEHOLDER!
     Fail    Placeholder - no impact on CI!
     [Teardown]  Set Tags    not-ready    TODO
-
-
-TRACE JIRA BUG
-    [Arguments]     ${JIRA_BUG_ID}
-    ...             ${not-ready}=
-    ...             ${message}=Next step fails due to a bug!
-    ...             ${loglevel}=ERROR
-
-    Log  DEPRECATION WARNING - @WLAD replace/update this keyword!
-    ...  level=WARN
-
-                    Log    ${message} | JIRA: ${JIRA_BUG_ID}   level=${loglevel}
-                    Set Tags    bug    ${JIRA_BUG_ID}
-                    Run Keyword If    '${not-ready}'=='not-ready'    Set Tags    not-ready
 
 
 TRACE GITHUB ISSUE
