@@ -18,7 +18,6 @@
 
 package org.ehrbase.service;
 
-import com.nedap.archie.rm.archetyped.Locatable;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import org.ehrbase.api.definitions.ServerConfig;
@@ -52,6 +51,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
+import static org.ehrbase.dao.access.util.FolderUtils.checkSiblingNameConflicts;
 
 @Service
 @Transactional
@@ -353,31 +353,5 @@ public class FolderServiceImp extends BaseService implements FolderService {
         }
 
         return folderAccess;
-    }
-
-    /**
-     * Checks each sub folder level for conflicts. For this purpose for each sub folder level there will be a set
-     * created that contains all names of the siblings as values. If at least one value could not be inserted it will
-     * be identified as duplicate and will throw an IllegalArgumentException that results to a 400 error on the
-     * controller layer.
-     *
-     * @param folder - Folder to check sub folders for
-     */
-    private void checkSiblingNameConflicts(Folder folder) {
-
-        if (folder.getFolders() != null && !folder.getFolders().isEmpty()) {
-            Set<String> folderNames = new HashSet<>();
-
-            folder.getFolders().forEach(subFolder -> {
-
-                // A new entry in the set results to false if there is already a duplicate element existing
-                if (!folderNames.add(subFolder.getNameAsString())) {
-                    throw new IllegalArgumentException("Duplicate folder name " + subFolder.getNameAsString());
-                } else {
-                    // Check sub folder hierarchies as well for duplicates
-                    checkSiblingNameConflicts(subFolder);
-                }
-            });
-        }
     }
 }

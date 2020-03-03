@@ -1,0 +1,26 @@
+{
+  "_type": "FOLDER",
+  "archetype_node_id": "openEHR-EHR-FOLDER.generic.v1",
+  "folders": [
+    {
+      "_type": "FOLDER",
+      "archetype_node_id": "openEHR-EHR-FOLDER.generic.v1",
+      "name": {
+        "_type": "DV_TEXT",
+        "value": "episodes"
+      }
+    },
+    {
+      "_type": "FOLDER",
+      "archetype_node_id": "openEHR-EHR-FOLDER.generic.v1",
+      "name": {
+        "_type": "DV_TEXT",
+        "name": "hospitalization"
+      }
+    }
+  ],
+  "name": {
+    "_type": "DV_TEXT",
+    "value": "root"
+  }
+}
