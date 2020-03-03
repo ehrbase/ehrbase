@@ -47,12 +47,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.Formatter;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
+import static org.ehrbase.dao.access.util.FolderUtils.checkSiblingNameConflicts;
 
 @Service
 @Transactional
@@ -79,6 +78,9 @@ public class FolderServiceImp extends BaseService implements FolderService {
         if (ehrAccess == null) {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
         }
+
+        // Check of there are name conflicts on each folder level
+        checkSiblingNameConflicts(content);
 
         // Save current time which will be used as transaction time
         DateTime currentTimeStamp = DateTime.now();
@@ -168,6 +170,9 @@ public class FolderServiceImp extends BaseService implements FolderService {
             UUID folderId, Folder update, UUID ehrId) {
 
         DateTime timestamp = DateTime.now();
+
+        // Check of there are name conflicts on each folder level
+        checkSiblingNameConflicts(update);
 
         // Get existing root folder
         I_FolderAccess
