@@ -110,6 +110,19 @@
           "upper_included" : true
         },
         "archetype_node_id" : "at0014"
+      },
+      {
+        "_type": "ELEMENT",
+        "name": {
+          "_type": "DV_TEXT",
+          "value": "quantity"
+        },
+        "archetype_node_id": "at0002",
+        "value": {
+          "_type": "DV_QUANTITY",
+          "magnitude": 5.772531032562256,
+          "units": "kg"
+        }
       }
       ],
       "archetype_node_id" : "at0001"

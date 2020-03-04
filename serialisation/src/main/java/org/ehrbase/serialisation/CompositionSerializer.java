@@ -1065,7 +1065,7 @@ public class CompositionSerializer {
 
             //set value
             if (element.getValue() != null && !element.getValue().toString().isEmpty())
-                putObject(getCompositeClassName(element.getValue()), element, valuemap, TAG_VALUE, element.getValue());
+                putObject(getCompositeClassName(element.getValue()), element, valuemap, TAG_VALUE, new ElementValue(element.getValue()).normalize());
 
             //set path
             encodePathItem(valuemap, null);

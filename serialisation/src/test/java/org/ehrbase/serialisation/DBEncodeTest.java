@@ -235,6 +235,13 @@ public class DBEncodeTest {
 
         String db_encoded = compositionSerializerRawJson.dbEncode(composition);
         assertNotNull(db_encoded);
+
+        JsonElement converted = new LightRawJsonEncoder(db_encoded).encodeContentAsJson("composition");
+
+        //see if this can be interpreted by Archie
+        Composition composition2 = new CanonicalJson().unmarshal(converted.toString(), Composition.class);
+
+        assertTrue(composition2 != null);
     }
 
 }

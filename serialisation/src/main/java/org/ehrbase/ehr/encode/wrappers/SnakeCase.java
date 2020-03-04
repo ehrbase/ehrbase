@@ -37,7 +37,7 @@ public class SnakeCase {
         StringBuilder buffer = new StringBuilder();
         for (int i = 0; i < aString.length(); i++) {
             if (Character.isUpperCase(aString.charAt(i))) {
-                if (i > 0) {
+                if (i > 0 && aString.charAt(i - 1) != '<') {
                     buffer.append('_');
                 }
                 buffer.append(Character.toLowerCase(aString.charAt(i)));
