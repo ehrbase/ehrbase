@@ -1022,15 +1022,21 @@ public class CompositionSerializer {
     private String getCompositeClassName(DataValue dataValue) {
         String classname = className(dataValue);
 
-        if ("DvInterval".equals(classname)) {//get the classname of lower/upper
+        if ("DvInterval".equals(classname) && !(((DvInterval)dataValue).getLower() == null && ((DvInterval)dataValue).getUpper() == null)) {//get the classname of lower/upper
             DvInterval interval = (DvInterval) dataValue;
-            String lowerClassName = className(interval.getLower());
-            String upperClassName = className(interval.getUpper());
+            String lowerClassName = null, upperClassName = null;
 
-            if (!lowerClassName.equals(upperClassName))
+            //either lower or upper or both are set value
+            if (interval.getLower() != null)
+                lowerClassName = className(interval.getLower());
+
+            if (interval.getUpper() != null)
+                upperClassName = className(interval.getUpper());
+
+            if (lowerClassName != null && upperClassName != null && (!lowerClassName.equals(upperClassName)))
                 throw new IllegalArgumentException("Lower and Upper classnames do not match:" + lowerClassName + " vs." + upperClassName);
 
-            return classname + "<" + lowerClassName + ">";
+            return classname + "<" + (lowerClassName != null ? lowerClassName : upperClassName) + ">";
         }
         return classname;
     }

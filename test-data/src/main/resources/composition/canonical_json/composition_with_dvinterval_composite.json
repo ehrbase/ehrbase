@@ -1,0 +1,51 @@
+{
+  "uid": {
+    "_type": "OBJECT_VERSION_ID",
+    "value": "77dfa5f6-1ada-47e1-acd8-1e50c95ae8f7::local.ethercis.com::1"
+  },
+  "name": {
+    "_type": "DV_TEXT",
+    "value": "Test all types"
+  },
+  "_type": "COMPOSITION",
+  "content": {
+    "/content[openEHR-EHR-ADMIN_ENTRY.episodeofcare.v0]": [
+      {
+        "/name": [
+          {
+            "value": "Episodeofcare"
+          }
+        ],
+        "/$CLASS$": "AdminEntry",
+        "/data[at0001]": {
+          "/$CLASS$": [
+            "ItemTree"
+          ],
+          "/items[at0014]": [
+            {
+              "/name": [
+                {
+                  "value": "period"
+                }
+              ],
+              "/value": {
+                "interval": {
+                  "lower": {
+                    "value": "2019-11-22T00:00+01:00",
+                    "epoch_offset": 1574377200
+                  },
+                  "lowerIncluded": true,
+                  "upperIncluded": true,
+                  "lowerUnbounded": false,
+                  "upperUnbounded": false
+                }
+              },
+              "/$PATH$": "/content[openEHR-EHR-ADMIN_ENTRY.episodeofcare.v0 and name/value='Episodeofcare']/data[at0001]/items[at0014]",
+              "/$CLASS$": "DvInterval<DvDateTime>"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -19,6 +19,15 @@
 package org.ehrbase.serialisation;
 
 import com.google.gson.JsonElement;
+import com.nedap.archie.rm.composition.AdminEntry;
+import com.nedap.archie.rm.composition.ContentItem;
+import com.nedap.archie.rm.composition.Evaluation;
+import com.nedap.archie.rm.datastructures.Element;
+import com.nedap.archie.rm.datatypes.CodePhrase;
+import com.nedap.archie.rm.datavalues.DvText;
+import com.nedap.archie.rm.datavalues.quantity.DvInterval;
+import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
+import com.nedap.archie.rm.support.identification.TerminologyId;
 import org.ehrbase.test_data.composition.CompositionTestDataCanonicalJson;
 import org.ehrbase.test_data.composition.CompositionTestDataCanonicalXML;
 import com.nedap.archie.rm.composition.Composition;
@@ -191,4 +200,41 @@ public class DBEncodeTest {
 
         assertNotNull(interpreted);
     }
+
+    @Test
+    public void testDBDecodeDvIntervalCompositeClass() throws Exception {
+
+        String db_encoded = IOUtils.resourceToString("/composition/canonical_json/composition_with_dvinterval_composite.json", UTF_8);
+        assertNotNull(db_encoded);
+
+        JsonElement converted = new LightRawJsonEncoder(db_encoded).encodeContentAsJson(null);
+
+        //see if this can be interpreted by Archie
+        Composition composition = new CanonicalJson().unmarshal(converted.toString(), Composition.class);
+
+        //hack the composition to figure out what is the format of DvInterval...
+        ((DvInterval)((Element)((AdminEntry)composition.getContent().get(0)).getData().getItems().get(0)).getValue()).setLower(new DvDateTime("2019-11-22T00:00+01:00"));
+        ((DvInterval)((Element)((AdminEntry)composition.getContent().get(0)).getData().getItems().get(0)).getValue()).setUpper(new DvDateTime("2019-12-22T00:00+01:00"));
+
+        assertTrue(composition != null);
+
+        String toJson  = new CanonicalJson().marshal(composition);
+
+        String interpreted = new CanonicalXML().marshal(composition);
+
+        assertNotNull(interpreted);
+    }
+
+    @Test
+    public void testDvIntervalRoundTrip() throws IOException {
+        Composition composition = new CanonicalJson().unmarshal(IOUtils.resourceToString("/composition/canonical_json/simple_composition_dvinterval.json", UTF_8),Composition.class);
+
+        assertNotNull(composition);
+
+        CompositionSerializer compositionSerializerRawJson = new CompositionSerializer();
+
+        String db_encoded = compositionSerializerRawJson.dbEncode(composition);
+        assertNotNull(db_encoded);
+    }
+
 }
