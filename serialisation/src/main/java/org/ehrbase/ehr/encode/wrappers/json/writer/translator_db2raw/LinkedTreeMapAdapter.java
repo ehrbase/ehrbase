@@ -386,9 +386,14 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
                 if (key.equals(CompositionSerializer.TAG_VALUE)) {
                     //get the class and add it to the value map
                     String type = (String) map.get(CompositionSerializer.TAG_CLASS);
-                    if (type != null && !type.isEmpty())
+                    if (type != null && !type.isEmpty()) {
                         //pushed into the value map for the next recursion
                         valueMap.put(AT_TYPE, new SnakeCase(type).camelToUpperSnake());
+                        //check if this type is composite (DV_INTERVAL<DV_DATE>) to push the actual type down the value structure
+                        if (new GenericRmType(type).isSpecialized()){ //composite
+                            valueMap = new GenericRmType(new SnakeCase(type).camelToUpperSnake()).inferSpecialization(valueMap);
+                        }
+                    }
 //                            writer.name(AT_TYPE).value(new SnakeCase(type).camelToUpperSnake());
                 }
                 //get the value point type and add it to the value map
