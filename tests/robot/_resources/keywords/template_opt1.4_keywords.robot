@@ -81,6 +81,17 @@ upload valid OPT
     [Teardown]            Clean Up Suite Variables
 
 
+upload invalid OPT
+    [Arguments]           ${opt file}
+
+    prepare new request session    XML
+    ...                            Prefer=return=representation
+    get invalid OPT file  ${opt file}
+    upload OPT file
+    server rejected OPT with status code 400
+    # server response contains proper error message    # TODO: reactivate asap
+
+
 upload OPT file
     [Documentation]     Uploads OPT file which was obtained with one of the Keywords
     ...                 `get valid OPT file` or `get invalid OPT file`
@@ -106,7 +117,7 @@ retrieve versioned OPT
 
 
 server accepted OPT
-                        Should Be Equal As Strings   ${response.status_code}   201
+                        Should Be Equal As Strings    ${response.status_code}   201
 
 
 server rejected OPT with status code ${status code}
@@ -115,9 +126,20 @@ server rejected OPT with status code ${status code}
     ...                 409: Conflict - is returned when a template with given id
     ...                      already exists. This response is optional.
 
-                        Should Be Equal As Strings   ${response.status_code}
-                        ...                          ${status code}
+                        Should Be Equal As Strings    ${response.status_code}
+                        ...                           ${status code}
 
+
+server response contains proper error message
+                        Should Contain Any  ${response.text}
+                        ...                   Invalid template input content
+                        ...                   Required request body is missing
+                        ...                   Unexpected end of file after null
+                        ...                   Supplied template has nil or empty template id value
+                        ...                   Supplied template has nil or empty concept
+                        ...                   Supplied template has nil or empty definition
+                        ...                   Supplied template has nil or empty description
+                        ...                   baz    # TODO: @WLAD add more
 
 server returned specified version of OPT
     Fail    msg=Brake it till you make it!
@@ -224,6 +246,13 @@ upload valid template (XML)
 # o888bood8P'  o88o     o8888o  `Y8bood8P'  o888o  o888o    `YbodP'    o888o
 #
 # [ BACKUP ]
+
+# server response contains proper error message
+#     ${resp_bstring}     Set Variable    ${response.content}
+#     ${resp_string}      Convert To String    ${resp_bstring}
+#                         Should Contain Any    ${resp_string}
+#                         ...                   foo
+#                         ...                   bar
 
 # start request session
 #     Create Session      ${SUT}    ${${SUT}.URL}

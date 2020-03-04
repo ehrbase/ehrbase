@@ -21,7 +21,6 @@
  */
 package org.ehrbase.dao.access.interfaces;
 
-import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.UUID;
 
@@ -31,7 +30,7 @@ import java.util.UUID;
  * NB: read is implemented as a static (generally as retrieveInstanceForExistingFolder(...))
  * Created by Christian Chevalley on 4/10/2015.
  */
-public interface I_SimpleCRUD<T, PK extends Serializable> {
+public interface I_SimpleCRUD {
     /**
      * storeComposition a new entry in the DB
      *

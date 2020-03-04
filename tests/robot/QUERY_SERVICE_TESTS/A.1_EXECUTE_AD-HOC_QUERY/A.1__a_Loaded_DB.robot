@@ -71,7 +71,7 @@ MF-105 Execute Ad-Hoc Query - Get EHRs
     A/105_get_ehrs.json    A/105.tmp.json
     A/106_get_ehrs.json    A/106.tmp.json
 
-    [Teardown]          TRACE GITHUB ISSUE  GITHUB 104  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
 
 
 MF-002 Execute Ad-Hoc Query - Get EHR By ID
@@ -89,7 +89,7 @@ MF-202 Execute Ad-Hoc Query - Get EHR By ID
     A/202_query.tmp.json    A/202.tmp.json    # blueprint: A/202_get_ehr_by_id.json
     A/203_query.tmp.json    A/203.tmp.json    # blueprint: A/203_get_ehr_by_id.json
 
-    [Teardown]         TRACE GITHUB ISSUE  GITHUB 107  not-ready 
+    [Teardown]         TRACE GITHUB ISSUE  107  not-ready 
 
 
 MF-003 Execute Ad-Hoc Query - Get EHRs Which Have Compositions
@@ -123,7 +123,7 @@ MF-502 Execute Ad-Hoc Query - Get EHRs Which Have Compositions
     A/503_get_ehrs_by_contains_composition_contains_entry_of_type.json    A/503.tmp.json
     A/603_get_ehrs_by_contains_composition_contains_entry_with_archetype.json  A/603.tmp.json
 
-    [Teardown]         TRACE GITHUB ISSUE  102  not-ready  blocked by
+    [Teardown]         TRACE GITHUB ISSUE  TODO  not-ready
 
 
 MF-107 Execute Ad-Hoc Query - Get EHRs (filtered: top 5)
@@ -132,7 +132,7 @@ MF-107 Execute Ad-Hoc Query - Get EHRs (filtered: top 5)
 
     A/107_get_ehrs_top_5.json    A/107.tmp.json
 
-    [Teardown]          TRACE GITHUB ISSUE  GITHUB 103  not-ready  blocked by
+    [Teardown]          TRACE GITHUB ISSUE  103  not-ready  blocked by
 
 
 MF-108 Execute Ad-Hoc Query - Get EHRs (ordered by: time-created)
@@ -141,7 +141,7 @@ MF-108 Execute Ad-Hoc Query - Get EHRs (ordered by: time-created)
 
     A/108_get_ehrs_orderby_time-created.json    A/108.tmp.json
 
-    [Teardown]          TRACE GITHUB ISSUE  GITHUB 105  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  118  not-ready
 
 
 MF-109 Execute Ad-Hoc Query - Get EHRs (filtered: timewindow)
@@ -150,7 +150,7 @@ MF-109 Execute Ad-Hoc Query - Get EHRs (filtered: timewindow)
 
     A/109_get_ehrs_within_timewindow.json       A/109.tmp.json
 
-    [Teardown]          TRACE GITHUB ISSUE  GITHUB 106  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  106  not-ready
 
 
 MF-007 Execute Ad-Hoc Query - Get Compositions From All EHRs
@@ -160,8 +160,6 @@ MF-007 Execute Ad-Hoc Query - Get Compositions From All EHRs
     B/100_get_compositions_from_all_ehrs.json    B/100.tmp.json
     B/200_query.tmp.json    B/200.tmp.json
     B/300_get_compositions_with_archetype_from_all_ehrs.json    B/300.tmp.json
-
-    [Teardown]          TRACE GITHUB ISSUE  GITHUB 108  not-ready
 
 
 MF-009 Execute Ad-Hoc Query - Get Composition(s)
@@ -198,8 +196,6 @@ MF-011 Execute Ad-Hoc Query - Get Compositions (ordered by: name)
 
     B/102_get_compositions_orderby_name.json    B/102.tmp.json
 
-    [Teardown]          TRACE GITHUB ISSUE  GITHUB 105  not-ready  
-
 
 MF-012 Execute Ad-Hoc Query - Get Compositions (filtered: timewindow)
     [Template]          execute ad-hoc query and check result (loaded DB)
@@ -207,7 +203,7 @@ MF-012 Execute Ad-Hoc Query - Get Compositions (filtered: timewindow)
 
     B/103_get_compositions_within_timewindow.json    B/103.tmp.json
 
-    [Teardown]          TRACE GITHUB ISSUE  GITHUB 106  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  106  not-ready
 
 
 MF-013 Execute Ad-Hoc Query - Get Compositions By UID
@@ -225,7 +221,7 @@ MF-013 Execute Ad-Hoc Query - Get Compositions By UID
     B/802_query.tmp.json    B/802.tmp.json
     B/803_query.tmp.json    B/803.tmp.json
 
-    [Teardown]          TRACE GITHUB ISSUE  GITHUB 109  not-ready  blocked by
+    [Teardown]          TRACE GITHUB ISSUE  109  not-ready  blocked by
 
 
 MF-014 Execute Ad-Hoc Query - Get Entries from EHR
@@ -251,8 +247,8 @@ MF-015 Execute Ad-Hoc Query - Get Entries (filtered: top 5)
 
     C/101_query.tmp.json    C/101.tmp.json
 
-    [Teardown]          Run Keywords  TRACE GITHUB ISSUE  GITHUB 103  not-ready  blocked by
-                        ...    AND    TRACE GITHUB ISSUE  GITHUB 101  not-ready  related
+    [Teardown]          Run Keywords  TRACE GITHUB ISSUE  103  not-ready  blocked by
+                        ...    AND    TRACE GITHUB ISSUE  101  not-ready  related
 
 
 MF-016 Execute Ad-Hoc Query - Get Entries (ordered by: name)
@@ -262,8 +258,7 @@ MF-016 Execute Ad-Hoc Query - Get Entries (ordered by: name)
 
     C/102_query.tmp.json    C/102.tmp.json
 
-    [Teardown]          Run Keywords  TRACE GITHUB ISSUE  GITHUB 105  not-ready  blocked by
-                        ...    AND    TRACE GITHUB ISSUE  GITHUB 101  not-ready  related
+    [Teardown]          TRACE GITHUB ISSUE  101  not-ready  related
 
 
 MF-017 Execute Ad-Hoc Query - Get Entries (filtered: timewindow)
@@ -273,18 +268,16 @@ MF-017 Execute Ad-Hoc Query - Get Entries (filtered: timewindow)
 
     C/103_query.tmp.json    C/103.tmp.json
 
-    [Teardown]          Run Keywords  TRACE GITHUB ISSUE  GITHUB 106  not-ready  blocked by
-                        ...    AND    TRACE GITHUB ISSUE  GITHUB 101  not-ready  reladed
+    [Teardown]          Run Keywords  TRACE GITHUB ISSUE  106  not-ready  blocked by
+                        ...    AND    TRACE GITHUB ISSUE  101  not-ready  reladed
 
 
 MF-019 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              
+    [Tags]              not-ready
 
     D/200_select_data_values_from_all_ehrs_contains_composition.json    D/200.tmp.json
-
-    [Teardown]          TRACE GITHUB ISSUE  GITHUB 110  not-ready
 
 
 MF-020 Execute Ad-HOc Query - Get Data
@@ -294,17 +287,15 @@ MF-020 Execute Ad-HOc Query - Get Data
     
     D/201_select_data_values_from_all_ehrs_contains_composition.json    D/201.tmp.json
 
-    [Teardown]          TRACE GITHUB ISSUE  GITHUB 104  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
 
 
 MF-021 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              
+    [Tags]              not-ready
     
     D/300_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/300.tmp.json
-
-    [Teardown]          TRACE GITHUB ISSUE  GITHUB 110  not-ready
 
 
 MF-022 Execute Ad-HOc Query - Get Data
@@ -314,17 +305,15 @@ MF-022 Execute Ad-HOc Query - Get Data
     
     D/301_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/301.tmp.json
 
-    [Teardown]          TRACE GITHUB ISSUE  GITHUB 104  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
 
 
 MF-023 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              
+    [Tags]              not-ready
     
     D/302_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/302.tmp.json
-
-    [Teardown]          TRACE GITHUB ISSUE  GITHUB 110  not-ready
 
 
 MF-024 Execute Ad-HOc Query - Get Data
@@ -334,17 +323,15 @@ MF-024 Execute Ad-HOc Query - Get Data
     
     D/303_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/303.tmp.json
 
-    [Teardown]          TRACE GITHUB ISSUE  GITHUB 104  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
 
 
 MF-025 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              
+    [Tags]              not-ready
     
     D/304_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/304.tmp.json
-
-    [Teardown]          TRACE GITHUB ISSUE  GITHUB 110  not-ready
 
 
 MF-026 Execute Ad-HOc Query - Get Data
@@ -366,11 +353,9 @@ MF-027 Execute Ad-HOc Query - Get Data
 MF-028 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              
+    [Tags]              not-ready
     
     D/308_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/308.tmp.json
-
-    [Teardown]          TRACE GITHUB ISSUE  GITHUB 110  not-ready
 
 
 MF-029 Execute Ad-HOc Query - Get Data
@@ -380,17 +365,15 @@ MF-029 Execute Ad-HOc Query - Get Data
     
     D/309_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/309.tmp.json
 
-    [Teardown]          TRACE GITHUB ISSUE  GITHUB 104  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
 
 
 MF-030 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              
+    [Tags]              not-ready
     
     D/310_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/310.tmp.json
-
-    [Teardown]          TRACE GITHUB ISSUE  GITHUB 110  not-ready
 
 
 MF-031 Execute Ad-HOc Query - Get Data
@@ -404,11 +387,9 @@ MF-031 Execute Ad-HOc Query - Get Data
 MF-032 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              
+    [Tags]              not-ready
     
     D/312_select_data_values_from_all_ehrs_contains_composition_with_archetype_top_5.json    D/312.tmp.json
-
-    [Teardown]          TRACE GITHUB ISSUE  GITHUB 110  not-ready
 
 
 MF-033 Execute Ad-HOc Query - Get Data
@@ -1355,13 +1336,13 @@ C/102
     Return From Keyword If    not (${compo_index}==1)    NOTHING TO DO HERE!
                         # updates the query
     ${query}=           Load JSON From File    ${VALID QUERY DATA SETS}/C/102_query.tmp.json
-                        Update Value To Json   ${query}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c CONTAINS ENTRY entry ORDER BY entry/name/value
+                        Update Value To Json   ${query}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c CONTAINS ENTRY entry ORDER BY entry/name/value ASC
                         Output    ${query}    ${VALID QUERY DATA SETS}/C/102_query.tmp.json
 
                         # updates expected result set
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/C/102.tmp.json
-                        Update Value To Json   ${expected}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c CONTAINS ENTRY entry ORDER BY entry/name/value
-                        Update Value To Json   ${expected}    $.meta._executed_aql    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c CONTAINS ENTRY entry ORDER BY entry/name/value
+                        Update Value To Json   ${expected}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c CONTAINS ENTRY entry ORDER BY entry/name/value ASC
+                        Update Value To Json   ${expected}    $.meta._executed_aql    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c CONTAINS ENTRY entry ORDER BY entry/name/value ASC
                         Add Object To Json     ${expected}    $.rows    ${response.body.content}
                         Output    ${expected}     ${QUERY RESULTS LOADED DB}/C/102.tmp.json
 

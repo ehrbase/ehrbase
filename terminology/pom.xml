@@ -5,7 +5,7 @@
     <parent>
         <artifactId>server</artifactId>
         <groupId>org.ehrbase.openehr</groupId>
-        <version>0.10.0</version>
+        <version>0.11.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -14,12 +14,16 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.github.openEHR</groupId>
-            <artifactId>archie</artifactId>
+            <groupId>com.github.ehrbase</groupId>
+            <artifactId>archie-fork</artifactId>
         </dependency>
         <dependency>
             <groupId>org.ehrbase.openehr</groupId>
             <artifactId>serialisation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
         </dependency>
         <!-- Test-->
         <dependency>

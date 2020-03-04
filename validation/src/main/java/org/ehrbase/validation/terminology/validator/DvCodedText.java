@@ -26,11 +26,11 @@ public class DvCodedText extends TerminologyCheck {
         this.RM_CLASS = com.nedap.archie.rm.datavalues.DvCodedText.class;
     }
 
-    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datavalues.DvCodedText dvCodedText) throws Exception {
+    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datavalues.DvCodedText dvCodedText) throws IllegalArgumentException {
         check(terminologyInterface, codesetMapping, context, dvCodedText, "en");
     }
 
-    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datavalues.DvCodedText dvCodedText, String language) throws Exception {
+    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.datavalues.DvCodedText dvCodedText, String language) throws IllegalArgumentException {
         validate(terminologyInterface, codesetMapping, context, dvCodedText, language);
     }
 }

@@ -22,17 +22,17 @@
 
 package org.ehrbase.aql.sql.queryImpl;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
 import org.ehrbase.aql.sql.binding.I_JoinBinder;
 import org.ehrbase.aql.sql.queryImpl.value_field.NodePredicate;
 import org.ehrbase.ehr.util.LocatableHelper;
-import org.ehrbase.service.IntrospectService;
 import org.ehrbase.serialisation.CompositionSerializer;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.ehrbase.service.IntrospectService;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.impl.DSL;

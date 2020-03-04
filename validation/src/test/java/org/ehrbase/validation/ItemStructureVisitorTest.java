@@ -18,25 +18,19 @@
 
 package org.ehrbase.validation;
 
-import com.nedap.archie.rm.archetyped.Locatable;
 import com.nedap.archie.rm.composition.Composition;
-import com.nedap.archie.rm.datastructures.Element;
-import com.nedap.archie.rm.datastructures.Item;
 import com.nedap.archie.rm.datastructures.ItemTree;
-import com.nedap.archie.rm.datatypes.CodePhrase;
-import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.PartyRef;
-import com.nedap.archie.rm.support.identification.TerminologyId;
 import com.nedap.archie.xml.JAXBUtil;
 import org.apache.commons.io.IOUtils;
 import org.ehrbase.serialisation.CanonicalJson;
-import org.ehrbase.terminology.openehr.TerminologyInterface;
+import org.ehrbase.serialisation.CanonicalXML;
 import org.ehrbase.terminology.openehr.implementation.AttributeCodesetMapping;
 import org.ehrbase.terminology.openehr.implementation.LocalizedTerminologies;
-import org.ehrbase.terminology.openehr.implementation.SimpleTerminologyInterface;
+import org.ehrbase.test_data.composition.CompositionTestDataCanonicalXML;
 import org.ehrbase.test_data.item_structure.ItemStruktureTestDataCanonicalJson;
 import org.ehrbase.validation.terminology.ItemStructureVisitor;
 import org.junit.Before;
@@ -45,15 +39,18 @@ import org.junit.Test;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.fail;
 
 public class ItemStructureVisitorTest {
 
-    LocalizedTerminologies localizedTerminologies;
-    AttributeCodesetMapping codesetMapping;
-    ItemStructureVisitor itemStructureVisitor;
+    private LocalizedTerminologies localizedTerminologies;
+    private AttributeCodesetMapping codesetMapping;
+    private ItemStructureVisitor itemStructureVisitor;
 
     @Before
     public void setup() throws Exception {
@@ -80,12 +77,25 @@ public class ItemStructureVisitorTest {
         Composition composition = (Composition) unmarshaller.unmarshal(new FileInputStream(new File("./src/test/resources/composition/RIPPLE-ConformanceTest.xml")));
 
         itemStructureVisitor.validate(composition);
-        assertEquals(57, itemStructureVisitor.getElementOccurrences()); //4 elements are in the context/other_context structure
+        assertEquals(61, itemStructureVisitor.getElementOccurrences()); //4 elements are in the context/other_context structure
 
         itemStructureVisitor.validate(composition.getContext().getOtherContext());
-        assertEquals(61, itemStructureVisitor.getElementOccurrences());
+        assertEquals(65, itemStructureVisitor.getElementOccurrences());
 
     }
+    @Test
+    public void elementVisitorTest3() throws Throwable {
+        Unmarshaller unmarshaller = JAXBUtil.createRMContext().createUnmarshaller();
+        Composition composition = (Composition) unmarshaller.unmarshal(new FileInputStream(new File("./src/test/resources/composition/RIPPLE-ConformanceTest_invalid_other_context_mm_type.xml")));
+
+        try {
+            itemStructureVisitor.validate(composition);
+        } catch (IllegalArgumentException e){
+            assertTrue(e.getMessage().contains("supplied code string [video/mp4] is not found in codeset:media types"));
+        }
+
+    }
+
 
     @Test
     public void ehrVisitorTest() throws Throwable {
@@ -102,11 +112,17 @@ public class ItemStructureVisitorTest {
 
     }
 
-//    @Test
-//    public void anyValidationTest() throws Throwable {
-//        DvCodedText dvCodedText = new DvCodedText("zzz", new CodePhrase(new TerminologyId("openehr"), "222"));
-//        Element element = new Element("element", new DvText("element"), dvCodedText);
-//        itemStructureVisitor.validate(element);
-//    }
+    @Test
+    public void testValidateTestAllTypesWithInvalidParticipations() throws IOException {
+        Composition composition = new CanonicalXML().unmarshal(IOUtils.toString(CompositionTestDataCanonicalXML.ALL_TYPES_INVALID_PARTICIPATIONS.getStream(), UTF_8),Composition.class);
+
+        try {
+            itemStructureVisitor.validate(composition);
+            fail("invalid value in participations not detected");
+        }catch (Exception e){
+
+        }
+    }
+
 
 }

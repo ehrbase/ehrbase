@@ -36,14 +36,13 @@ Force Tags    JSON
 Main flow get existing VERSIONED COMPOSITION
 
     upload OPT    minimal/minimal_observation.opt
-
     create EHR
-
     commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.xml
+    check existence and content of composition
 
-    # Check COMPOSITION exists (by versioned_object_uid)
-    prepare new request session    # Prefer=return\=representation
-    get versioned composition by uid    ${versioned_object_uid}
+
+
+*** Keywords ***
+check existence and content of composition
+    get versioned composition by uid    JSON    ${versioned_object_uid}
     check content of versioned composition (JSON)
-
-    # [Teardown]    restart SUT

@@ -20,8 +20,13 @@
  */
 package org.ehrbase.dao.access.interfaces;
 
+import com.nedap.archie.rm.changecontrol.Version;
+import com.nedap.archie.rm.datastructures.ItemStructure;
+import com.nedap.archie.rm.ehr.EhrStatus;
 import org.ehrbase.dao.access.jooq.StatusAccess;
+import org.ehrbase.jooq.pg.tables.records.StatusRecord;
 
+import java.sql.Timestamp;
 import java.util.UUID;
 
 /**
@@ -29,17 +34,39 @@ import java.util.UUID;
  * the status entry holds data pertaining to an Ehr owner, generally a patient
  * Created by Christian Chevalley on 4/21/2015.
  */
-public interface I_StatusAccess extends I_SimpleCRUD<I_StatusAccess, UUID> {
+public interface I_StatusAccess extends I_SimpleCRUD {
+
+    /**
+     * retrieve a status by given status ID
+     *
+     * @param domainAccess  SQL access
+     * @param statusId      Id of an status to retrieve
+     * @return UUID or null
+     */
+    static I_StatusAccess retrieveInstance(I_DomainAccess domainAccess, UUID statusId) {
+        return StatusAccess.retrieveInstance(domainAccess, statusId);
+    }
 
     /**
      * retrieve a status by an identified party id
      *
      * @param domainAccess    SQL access
      * @param partyIdentified Id of an identified party
-     * @return UUID
+     * @return UUID or null
      */
-    static I_StatusAccess retrieveInstance(I_DomainAccess domainAccess, UUID partyIdentified) {
-        return StatusAccess.retrieveInstance(domainAccess, partyIdentified);
+    static I_StatusAccess retrieveInstanceByParty(I_DomainAccess domainAccess, UUID partyIdentified) {
+        return StatusAccess.retrieveInstanceByParty(domainAccess, partyIdentified);
+    }
+
+    /**
+     * retrieve a status by given EHR ID
+     *
+     * @param domainAccess  SQL access
+     * @param ehrId         Id of associated EHR
+     * @return UUID or null
+     */
+    static I_StatusAccess retrieveInstanceByEhrId(I_DomainAccess domainAccess, UUID ehrId) {
+        return StatusAccess.retrieveInstanceByEhrId(domainAccess, ehrId);
     }
 
     /**
@@ -49,11 +76,62 @@ public interface I_StatusAccess extends I_SimpleCRUD<I_StatusAccess, UUID> {
      *
      * @param domainAccess SQL access
      * @param partyName    a subject name
-     * @return UUID
+     * @return UUID or null
      */
     static I_StatusAccess retrieveInstanceByNamedSubject(I_DomainAccess domainAccess, String partyName) {
         return StatusAccess.retrieveInstanceByNamedSubject(domainAccess, partyName);
     }
 
+    /**
+     * Commit this status instance.
+     * @param transactionTime Time of transaction
+     * @param ehrId Associated EHR
+     * @param otherDetails Object representation of otherDetails
+     * @return ID of DB entry if successful
+     */
+    UUID commit(Timestamp transactionTime, UUID ehrId, ItemStructure otherDetails);
+
+    /**
+     * commit this instance, which has contribution already set with setContributionId(...) beforehand
+     * @param transactionTime Time of transaction
+     * @param ehrId Associated EHR
+     * @param otherDetails Object representation of otherDetails
+     * @return ID of DB entry if successful
+     */
+    UUID commitWithCustomContribution(Timestamp transactionTime, UUID ehrId, ItemStructure otherDetails);
+
+    /**
+     * Update this status instance.
+     * @param otherDetails Object representation of otherDetails
+     * @param transactionTime Time of transaction
+     * @param force Option to force
+     * @return True if successful
+     */
+    Boolean update(ItemStructure otherDetails, Timestamp transactionTime, boolean force);
+
     UUID getId();
+
+    void setStatusRecord(StatusRecord record);
+
+    StatusRecord getStatusRecord();
+
+    void setAuditDetailsAccess(I_AuditDetailsAccess auditDetailsAccess);
+
+    void setContributionAccess(I_ContributionAccess contributionAccess);
+
+    I_AuditDetailsAccess getAuditDetailsAccess();
+
+    UUID getAuditDetailsId();
+
+    void setContributionId(UUID contribution);
+
+    UUID getContributionId();
+
+    /**
+     * Helper that sets values in Status' direct audit and Status' implicit contribution audit
+     * @param systemId ID of committing system
+     * @param committerId ID of committer
+     * @param description Optional description
+     */
+    void setAuditAndContributionAuditValues(UUID systemId, UUID committerId, String description);
 }

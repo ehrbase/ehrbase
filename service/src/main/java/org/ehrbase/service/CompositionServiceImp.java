@@ -22,15 +22,12 @@
 package org.ehrbase.service;
 
 import com.nedap.archie.rm.composition.Composition;
-import org.apache.catalina.Server;
 import org.ehrbase.api.definitions.CompositionFormat;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.definitions.StructuredString;
 import org.ehrbase.api.definitions.StructuredStringFormat;
 import org.ehrbase.api.dto.CompositionDto;
-import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
+import org.ehrbase.api.exception.*;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.ValidationService;
@@ -51,6 +48,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -166,9 +164,17 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
     private UUID internalCreate(UUID ehrId, Composition composition, UUID contributionId) {
         //pre-step: validate
         try {
-            validationService.check(composition.getArchetypeDetails().getTemplateId().getValue(), composition);
+            validationService.check(composition);
         } catch (Exception e) {
-            throw new InternalServerException(e);
+            // rethrow if this class, but wrap all others in InternalServerException
+            if (e.getClass().equals(UnprocessableEntityException.class))
+                throw (UnprocessableEntityException) e;
+            if (e.getClass().equals(IllegalArgumentException.class))
+                throw new ValidationException(e);
+            else if (e.getClass().equals(org.ehrbase.validation.constraints.wrappers.ValidationException.class))
+                throw new ValidationException(e);
+            else
+                throw new InternalServerException(e);
         }
 
         //pre-step: check for valid ehrId
@@ -180,7 +186,7 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
         final UUID compositionId;
         try {
             I_CompositionAccess compositionAccess = I_CompositionAccess.getNewInstance(getDataAccess(), composition, ehrId);
-            I_EntryAccess entryAccess = I_EntryAccess.getNewInstance(getDataAccess(), composition.getArchetypeDetails().getTemplateId().getValue(), 0, compositionAccess.getId(), composition);
+            I_EntryAccess entryAccess = I_EntryAccess.getNewInstance(getDataAccess(), Objects.requireNonNull(composition.getArchetypeDetails().getTemplateId()).getValue(), 0, compositionAccess.getId(), composition);
             compositionAccess.addContent(entryAccess);
             if (contributionId != null) {   // in case of custom contribution, set it and invoke commit that allows custom contributions
                 compositionAccess.setContributionId(contributionId);
@@ -189,7 +195,10 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
                 compositionId = compositionAccess.commit(getUserUuid(), getSystemUuid(), DESCRIPTION);
             }
         } catch (Exception e) {
-            throw new InternalServerException(e);
+            if (e instanceof IllegalArgumentException)
+                throw new IllegalArgumentException(e);
+            else
+                throw new InternalServerException(e);
         }
         return compositionId;
     }
@@ -246,12 +255,28 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
             }
 
             //validate RM composition
-            validationService.check(composition.getArchetypeDetails().getTemplateId().getValue(), composition);
+            validationService.check(composition);
+
+            // Check if template ID is not the same in existing and given data -> error
+            String existingTemplateId = compositionAccess.getContent().get(0).getTemplateId();
+            String inputTemplateId = composition.getArchetypeDetails().getTemplateId().getValue();
+            if (!existingTemplateId.equals(inputTemplateId)) {
+                // check if base template ID doesn't match  (template ID schema: "$NAME.$LANG.v$VER")
+                if (!existingTemplateId.split("\\.")[0].equals(inputTemplateId.split("\\.")[0]))
+                    throw new InvalidApiParameterException("Can't update composition to have different template.");
+                // if base matches, check if given template ID is just a new version of the correct template
+                int existingTemplateIdVersion = Integer.parseInt(existingTemplateId.split("\\.v")[1]);
+                int inputTemplateIdVersion = Integer.parseInt(inputTemplateId.substring(inputTemplateId.lastIndexOf("\\.v") + 1));
+                if (inputTemplateIdVersion < existingTemplateIdVersion) {
+                    throw new InvalidApiParameterException("Can't update composition with wrong template version bump.");
+                }
+            }
 
             // to keep reference to entry to update: pull entry out of composition access and replace composition content with input, then write back to the original access
             List<I_EntryAccess> contentList = compositionAccess.getContent();
             contentList.get(0).setCompositionData(composition);
             compositionAccess.setContent(contentList);
+            compositionAccess.setComposition(composition);
             if (contributionId != null) {   // if custom contribution should be set
                 compositionAccess.setContributionId(contributionId);
                 result = compositionAccess.updateWithCustomContribution(getUserUuid(), getSystemUuid(), I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
@@ -259,7 +284,7 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
                 result = compositionAccess.update(getUserUuid(), getSystemUuid(), null, I_ConceptAccess.ContributionChangeType.MODIFICATION, DESCRIPTION);
             }
 
-        } catch (ObjectNotFoundException e) {   //otherwise ObjectNotFound exceptions would always get sucked up by the catch below
+        } catch (ObjectNotFoundException | InvalidApiParameterException e) {   //otherwise exceptions would always get sucked up by the catch below
             throw e;
         } catch (Exception e) {
             throw new InternalServerException(e);
@@ -289,7 +314,7 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
      * @return Time of deletion, if successful
      */
     private LocalDateTime internalDelete(UUID compositionId, UUID contributionId) {
-        I_CompositionAccess compositionAccess = null;
+        I_CompositionAccess compositionAccess;
         try {
             compositionAccess = I_CompositionAccess.retrieveInstance(getDataAccess(), compositionId);
         } catch (Exception e) {
@@ -299,7 +324,7 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
             throw new ObjectNotFoundException(I_CompositionAccess.class.getName(), "Could not find composition:" + compositionId);
         }
 
-        Integer result = 0;
+        Integer result;
         if (contributionId != null) {   // if custom contribution should be set
             compositionAccess.setContributionId(contributionId);
             try {
@@ -364,6 +389,7 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
      * @param format  Composition format
      * @return
      */
+    @Override
     public String getUidFromInputComposition(String content, CompositionFormat format) throws IllegalArgumentException, InternalServerException, UnexpectedSwitchCaseException {
 
         Composition composition = buildComposition(content, format);
@@ -373,6 +399,16 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
             return composition.getUid().toString();
         }
 
+    }
+
+    @Override
+    public boolean exists(UUID versionedObjectId) {
+        return I_CompositionAccess.exists(this.getDataAccess(), versionedObjectId);
+    }
+
+    @Override
+    public boolean isDeleted(UUID versionedObjectId) {
+        return I_CompositionAccess.isDeleted(this.getDataAccess(), versionedObjectId);
     }
 }
 

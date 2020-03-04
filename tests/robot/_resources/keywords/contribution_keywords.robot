@@ -134,24 +134,23 @@ commit invalid CONTRIBUTION (JSON)
 # VARIATIONS OF RESULTS FROM INVALID CONTRIBUTIONS
 check response: is negative indicating errors in committed data
                         Should Be Equal As Strings   ${response.status_code}   400
-                        # TODO: keep failing to avoid false positive, rm when has checks.
-                        Fail    msg=brake it till you make it!
+                        # # TODO: keep failing to avoid false positive, rm when has checks.
+                        # Fail    msg=brake it till you make it!
 
-
-check response: is negative indicating empty versions list
+check response: is negative - complaining about empty versions list
                         Should Be Equal As Strings   ${response.status_code}   400
                         Set Test Variable    ${body}    ${response.json()}
-                        Set Test Variable    ${versions}    ${body['versions']}
-                        Length Should Be    ${versions}    0
+                        Set Test Variable    ${error_message}    ${body['error']}
+                        Should Be Equal As Strings    ${error_message}    Invalid Contribution, must have at least one Version object.
 
 
 check response: is negative indicating wrong change_type
                         Should Be Equal As Strings   ${response.status_code}   400
                         Set Test Variable    ${body}    ${response.json()}
 
-                        # TODO: keep failing to avoid false positive
-                        #       add checks when available.
-                        Fail    msg=brake it till you make it!
+                        # # TODO: keep failing to avoid false positive
+                        # #       add checks when available.
+                        # Fail    msg=brake it till you make it!
 
 
 check response: is negative indicating non-existent OPT
@@ -213,20 +212,20 @@ retrieve CONTRIBUTION(S) by fake ehr_id (JSON)
 
 check response: is negative indicating non-existent ehr_id
                         Should Be Equal As Strings    ${response.status_code}    404
-                        Set Test Variable    ${body}    ${response.json()}
-                        Should Be Equal As Strings  ${body['error']}  No EHR found with given ID: ${ehr_id}
+                        # Set Test Variable    ${body}    ${response.json()}
+                        # Should Be Equal As Strings  ${body['error']}  No EHR found with given ID: ${ehr_id}
 
 
 check response: is negative indicating non-existent contribution_uid
                         Should Be Equal As Strings    ${response.status_code}    404
-                        Set Test Variable    ${body}    ${response.json()}
-                        Should Be Equal As Strings  ${body['error']}  Contribution with given ID does not exist
+                        # Set Test Variable    ${body}    ${response.json()}
+                        # Should Be Equal As Strings  ${body['error']}  Contribution with given ID does not exist
 
 
 check response: is negative indicating non-existent contribution_uid on ehr_id
                         Should Be Equal As Strings    ${response.status_code}    404
-                        Set Test Variable    ${body}    ${response.json()}
-                        Should Be Equal As Strings  ${body['error']}  Contribution with given ID does not exist
+                        # Set Test Variable    ${body}    ${response.json()}
+                        # Should Be Equal As Strings  ${body['error']}  Contribution with given ID does not exist
 
 
 check response: is positive with list of ${x} contribution(s)
@@ -365,8 +364,7 @@ inject preceding_version_uid into valid test-data-set
     [Arguments]         ${valid_test_data_set}
     ${test_data}=       Load JSON from File    ${VALID CONTRI DATA SETS}/${valid_test_data_set}
     ${test_data}=       Update Value To Json  ${test_data}  $..versions..preceding_version_uid.value
-                        ...                   ${version_id}::piri.ehrscape.com::1
-                                                        # TODO: rm hardcoded value "piri..."
+                        ...                   ${version_id}
                         Set Test Variable    ${test_data}    ${test_data}
                         Output    ${test_data}
 
@@ -381,10 +379,10 @@ Output Debug Info:
                         # Log To Console      \trequest body: \n\t${response.request.body} \n
                         Log To Console      \tresponse status code: \n\t${response.status_code} \n
                         Log To Console      \tresponse headers: \n\t${response.headers} \n
-                        # Log To Console      \tresponse body: \n\t${response.content} \n
+                        Log To Console      \tresponse body: \n\t${response.text} \n
 
-    ${resti_response}=  Set Variable  ${response.json()}
-                        Output    ${resti_response}
+    # ${resti_response}=  Set Variable  ${response.text}
+    #                     Output    ${resti_response}
 
 
 

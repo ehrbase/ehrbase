@@ -38,13 +38,15 @@ import java.util.Map;
 
 /**
  * GSON adapter for LinkedTreeMap
+ *
+ * NB. @SuppressWarnings("unchecked") is used to deal with generics
  */
 public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements I_DvTypeAdapter {
 
-    String[] structuralClasses = {"PointEvent", "Instruction", "Evaluation", "Observation", "Action", "AdminEntry", "IntervalEvent"};
+    private String[] structuralClasses = {"PointEvent", "Instruction", "Evaluation", "Observation", "Action", "AdminEntry", "IntervalEvent"};
 
     protected AdapterType adapterType;
-    boolean isRoot;
+    private boolean isRoot;
 
     public LinkedTreeMapAdapter(AdapterType adapterType) {
         super();
@@ -60,13 +62,14 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
     }
 
     //	@Override
-    public LinkedTreeMap read(JsonReader arg0) throws IOException {
+    public LinkedTreeMap read(JsonReader arg0) {
         // TODO Auto-generated method stub
         return null;
     }
 
-    //	@Override
-    private void writeInternal(JsonWriter writer, LinkedTreeMap map) throws IOException {
+
+    @SuppressWarnings("unchecked")
+    private void writeInternal(JsonWriter writer, LinkedTreeMap<String, Object> map) throws IOException {
 
         boolean isItemsOnly = new Children(map).isItemsOnly();
         boolean isMultiEvents = new Children(map).isEvents();
@@ -74,12 +77,10 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
 
         String parentItemsArchetypeNodeId = null;
         String parentItemsType = null;
-        String parentItemsName = null;
 
         if (isItemsOnly || isMultiEvents) {
             //promote archetype node id and type at parent level
             //get the archetype node id
-            //get the items name
             if (map.containsKey(I_DvTypeAdapter.ARCHETYPE_NODE_ID)) {
                 parentItemsArchetypeNodeId = (String) map.get(I_DvTypeAdapter.ARCHETYPE_NODE_ID);
                 map.remove(I_DvTypeAdapter.ARCHETYPE_NODE_ID);
@@ -92,10 +93,6 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
                 parentItemsType = new SnakeCase((String) ((ArrayList) map.get(CompositionSerializer.TAG_CLASS)).get(0)).camelToUpperSnake();
                 map.remove(CompositionSerializer.TAG_CLASS);
             }
-            if (map.containsKey(CompositionSerializer.TAG_NAME)) {
-                parentItemsName = (String)((LinkedTreeMap)((ArrayList) map.get(CompositionSerializer.TAG_NAME)).get(0)).get("value");
-                map.remove(CompositionSerializer.TAG_NAME);
-            }
         } else if (isMultiContent) {
             if (map.containsKey(I_DvTypeAdapter.ARCHETYPE_NODE_ID)) {
                 parentItemsArchetypeNodeId = (String) map.get(I_DvTypeAdapter.ARCHETYPE_NODE_ID);
@@ -106,15 +103,22 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
         if (isItemsOnly) {
             //CHC 20191003: Removed archetype_node_id writer since it is serviced by closing the array.
             ArrayList items = new Children(map).items();
-            writeItemInArray(ITEMS, items, writer, parentItemsArchetypeNodeId, parentItemsType, parentItemsName);
+
+            if (map.containsKey(CompositionSerializer.TAG_NAME)){
+                if (map.get(CompositionSerializer.TAG_NAME) instanceof ArrayList)
+                    writeNameAsValue(writer, (ArrayList)map.get(CompositionSerializer.TAG_NAME));
+                else if (map.get(CompositionSerializer.TAG_NAME) instanceof String)
+                    writeNameAsValue(writer, (String)map.get(CompositionSerializer.TAG_NAME));
+            }
+            writeItemInArray(ITEMS, items, writer, parentItemsArchetypeNodeId, parentItemsType);
         } else if (isMultiEvents) {
             //assumed sorted (LinkedTreeMap preserve input order)
             ArrayList events = new Children(map).events();
-            writeItemInArray(EVENTS, events, writer, parentItemsArchetypeNodeId, parentItemsType, parentItemsName);
+            writeItemInArray(EVENTS, events, writer, parentItemsArchetypeNodeId, parentItemsType);
         } else if (isMultiContent) {
 //            Iterator iterator = map.keySet().iterator();
-            String key = map.keySet().iterator().next().toString();
-            while (key != null){
+            while (map.keySet().iterator().hasNext()){
+                String key = map.keySet().iterator().next();
                 if (!key.startsWith(CompositionSerializer.TAG_CONTENT)){
                     if (map.get(key) instanceof LinkedTreeMap) {
                         writer.name(key);
@@ -127,49 +131,53 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
                     map.remove(key);
                 }
                 else {
+                    if (isNodePredicate(key)) {
+                        //set the archetype node id in each children
+                        for (Object entry: map.entrySet()){
+                            if (entry instanceof Map.Entry){
+                                Map.Entry kv = (Map.Entry)entry;
+                                for (Object valueMap: (ArrayList)kv.getValue()){
+                                    if (valueMap instanceof LinkedTreeMap){
+                                        LinkedTreeMap<String, Object> vm = (LinkedTreeMap<String, Object>)valueMap;
+                                        vm.put(CompositionSerializer.TAG_ARCHETYPE_NODE_ID, new PathAttribute((String) kv.getKey()).archetypeNodeId());
+                                    }
+                                }
+                            }
+                        }
+                    }
                     Children children = new Children(map);
                     ArrayList contents = children.contents();
-                    if (isNodePredicate(key)) {
-                        String archetypeNodeId = new PathAttribute(key).archetypeNodeId();
-                        contents
-                                .stream()
-                                .filter(o -> List.class.isAssignableFrom(o.getClass()))
-                                .flatMap(o -> ((List) o).stream())
-                                .filter(o -> Map.class.isAssignableFrom(o.getClass()))
-                                .forEach(m -> ((Map) m).put(I_DvTypeAdapter.ARCHETYPE_NODE_ID, archetypeNodeId));
-                    }
                     writeContent(contents, writer);
                     map = children.removeContents();
                 }
                 if (map.size() == 0) {
                     return;
                 }
-                else
-                    key = map.keySet().iterator().next().toString();
             }
         } else {
             writeNode(map, writer);
         }
-
-        return;
     }
 
+    @SuppressWarnings("unchecked")
     private LinkedTreeMap reformatEmbeddedValue(LinkedTreeMap instructionMap, String tag) {
 
         if (instructionMap.containsKey(tag)) {
-            LinkedTreeMap<String, Object> narrative = (LinkedTreeMap) instructionMap.get(tag);
+            LinkedTreeMap<String, Object> narrative = (LinkedTreeMap<String, Object>) instructionMap.get(tag);
             //get the value
             LinkedTreeMap narrativeValue = (LinkedTreeMap) narrative.get(CompositionSerializer.TAG_VALUE);
-            narrative.replace(CompositionSerializer.TAG_VALUE, narrativeValue.get("value"));
+            if (narrativeValue != null)
+                narrative.replace(CompositionSerializer.TAG_VALUE, narrativeValue.get("value"));
         }
 
         return instructionMap;
     }
 
-    private LinkedTreeMap promoteActivities(LinkedTreeMap instructionMap) {
+    @SuppressWarnings("unchecked")
+    private LinkedTreeMap promoteActivities(LinkedTreeMap<String, Object> instructionMap) {
 
         if (instructionMap.containsKey(CompositionSerializer.TAG_ACTIVITIES)) {
-            LinkedTreeMap<String, Object> activities = (LinkedTreeMap) instructionMap.get(CompositionSerializer.TAG_ACTIVITIES);
+            LinkedTreeMap<String, Object> activities = (LinkedTreeMap<String, Object>) instructionMap.get(CompositionSerializer.TAG_ACTIVITIES);
             for (Map.Entry<String, Object> activityItem : activities.entrySet()) {
                 if (activityItem.getKey().startsWith(CompositionSerializer.TAG_ACTIVITIES)) {
                     instructionMap.put(activityItem.getKey(), activityItem.getValue());
@@ -180,22 +188,24 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
         return instructionMap;
     }
 
+    @SuppressWarnings("unchecked")
     private LinkedTreeMap reformatMapForCanonical(LinkedTreeMap map) {
         if (map.containsKey(CompositionSerializer.TAG_ACTIVITIES))
-            map = promoteActivities(map);
+            promoteActivities(map);
         if (map.containsKey(CompositionSerializer.TAG_NARRATIVE))
-            map = reformatEmbeddedValue(map, CompositionSerializer.TAG_NARRATIVE);
+            reformatEmbeddedValue(map, CompositionSerializer.TAG_NARRATIVE);
         if (map.containsKey(CompositionSerializer.TAG_MATH_FUNCTION))
-            map = reformatEmbeddedValue(map, CompositionSerializer.TAG_MATH_FUNCTION);
+            reformatEmbeddedValue(map, CompositionSerializer.TAG_MATH_FUNCTION);
         if (map.containsKey(CompositionSerializer.TAG_WIDTH))
-            map = reformatEmbeddedValue(map, CompositionSerializer.TAG_WIDTH);
+            reformatEmbeddedValue(map, CompositionSerializer.TAG_WIDTH);
         if (map.containsKey(CompositionSerializer.TAG_UID))
-            map = reformatEmbeddedValue(map, CompositionSerializer.TAG_UID);
+            reformatEmbeddedValue(map, CompositionSerializer.TAG_UID);
         return map;
     }
 
 
     //	@Override
+    @SuppressWarnings("unchecked")
     public void write(JsonWriter writer, LinkedTreeMap map) throws IOException {
         if (map.isEmpty()) {
             writer.nullValue();
@@ -204,10 +214,9 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
         writer.beginObject();
         writeInternal(writer, map);
         writer.endObject();
-        return;
     }
 
-    void writeNameAsValue(JsonWriter writer, String value) throws IOException {
+    private void writeNameAsValue(JsonWriter writer, String value) throws IOException {
         if (value == null || value.isEmpty())
             return;
         writer.name(NAME);
@@ -216,7 +225,7 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
         writer.endObject();
     }
 
-    void writeNameAsValue(JsonWriter writer, ArrayList value) throws IOException {
+    private void writeNameAsValue(JsonWriter writer, ArrayList value) throws IOException {
 //        return;
         //get the name value
         //protective against old entries in the DB...
@@ -233,13 +242,11 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
 
     private boolean isNodePredicate(String key) {
         //a key in the form '/xyz[atNNNN]'
-        if (key.startsWith("/") && key.contains("[") && key.contains("]"))
-            return true;
-        else
-            return false;
+        return key.startsWith("/") && key.contains("[") && key.contains("]");
     }
 
-    private LinkedTreeMap compactTimeMap(LinkedTreeMap valueMap) {
+    @SuppressWarnings("unchecked")
+    private LinkedTreeMap compactTimeMap(LinkedTreeMap<String, Object> valueMap) {
         LinkedTreeMap compactMap = new LinkedTreeMap();
         for (Object item : valueMap.entrySet()) {
             String key = (String) ((Map.Entry) item).getKey();
@@ -270,15 +277,15 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
      * </code>
      * with the node predicate passed as archetype node id inside its respective item content
      *
-     * @param value
-     * @param writer
-     * @param parentItemsArchetypeNodeId
-     * @param parentItemsType
-     * @return
-     * @throws IOException
+     * @param heading String the heading of this node (f.e. 'items')
+     * @param value ArrayList the content of this node as a list of json structures
+     * @param writer {@link JsonWriter} the writer used to create the json translation
+     * @param parentItemsArchetypeNodeId String the id of the parent node
+     * @param parentItemsType String the type of the parent node (f.e. SECTION)
+     * @throws IOException whenever a json writing issue occurs
      */
-    private void writeItemInArray(String heading, ArrayList value, JsonWriter writer, String parentItemsArchetypeNodeId, String parentItemsType, String parentItemsName) throws IOException {
-        new ArrayClosure(writer, parentItemsArchetypeNodeId, parentItemsType, parentItemsName).start();
+    private void writeItemInArray(String heading, ArrayList value, JsonWriter writer, String parentItemsArchetypeNodeId, String parentItemsType) throws IOException {
+        new ArrayClosure(writer, parentItemsArchetypeNodeId, parentItemsType).start();
         if (value.isEmpty()) {
             return;
         }
@@ -290,7 +297,7 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
             if (value.get(cursor) instanceof ArrayList) {
                 new ArrayListAdapter().write(writer, (ArrayList) value.get(cursor));
             } else { //next siblings
-                new LinkedTreeMapAdapter().write(writer, (LinkedTreeMap) ((ArrayList) value).get(cursor));
+                new LinkedTreeMapAdapter().write(writer, (LinkedTreeMap)value.get(cursor));
 
             }
         }
@@ -314,12 +321,13 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
         writer.endArray();
     }
 
+    @SuppressWarnings("unchecked")
     private void writeNode(LinkedTreeMap map, JsonWriter writer) throws IOException {
 
         ArrayList nodeNameValue;
 
         //some hacking for some specific entries...
-        map = reformatMapForCanonical(map);
+        reformatMapForCanonical(map);
 
         for (Object entry : map.entrySet()) {
             Object value = ((Map.Entry) entry).getValue();
@@ -335,7 +343,7 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
             if (value instanceof ArrayList && key.equals("data") && map.get("_type").equals(ArchieRMInfoLookup.getInstance().getTypeInfo(DvMultimedia.class).getRmName())){
                 //prepare a store for the value
                 Double[] dataStore = new Double[((ArrayList) value).size()];
-                value = ((ArrayList) value).toArray(dataStore);
+                value = ((ArrayList<Double>) value).toArray(dataStore);
 
             }
 
@@ -350,15 +358,15 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
                     writer.name(jsonKey);
                     writer.beginArray();
                     if (isNodePredicate(key)) {
-                        ((ArrayList) value).stream()
+                        ((ArrayList<Object>) value).stream()
                                 .filter(o -> Map.class.isAssignableFrom(o.getClass()))
-                                .forEach(m -> ((Map) m).put(I_DvTypeAdapter.ARCHETYPE_NODE_ID, archetypeNodeId));
+                                .forEach(m -> ((Map<String, Object>) m).put(I_DvTypeAdapter.ARCHETYPE_NODE_ID, archetypeNodeId));
                     }
                     new ArrayListAdapter().write(writer, (ArrayList) value);
                     writer.endArray();
                 }
             } else if (value instanceof LinkedTreeMap) {
-                LinkedTreeMap valueMap = (LinkedTreeMap) value;
+                LinkedTreeMap<String, Object> valueMap = (LinkedTreeMap<String, Object>) value;
                 String elementType = new ElementType(valueMap).type();
 
                 if (elementType.equals("History")) {
@@ -388,7 +396,7 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
                     valueMap.put(AT_TYPE, new SnakeCase(elementType).camelToUpperSnake());
                     valueMap.remove(CompositionSerializer.TAG_CLASS);
                     //TODO: CHC, 180426 temporary fix, modify DB encoding to not include name for attribute.
-                    if (key.contains("/time") && valueMap.containsKey(CompositionSerializer.TAG_NAME)) {
+                    if (key.contains("/time")) {
                         valueMap.remove(CompositionSerializer.TAG_NAME);
                     }
                 }

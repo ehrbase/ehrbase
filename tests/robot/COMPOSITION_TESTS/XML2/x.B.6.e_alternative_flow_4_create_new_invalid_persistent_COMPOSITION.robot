@@ -39,13 +39,6 @@ Alternative flow 4 create new invalid persistent COMPOSITION
 
     create EHR    XML
 
-    # comment: Commit invalid COMPOSITION
-
-
-
-        TRACE JIRA BUG    EHR-414    not-ready
-
-
     commit invalid composition (XML)    /minimal_persistent/persistent_minimal.composition.extdatetime.invalid.xml
 
     [Teardown]    restart SUT

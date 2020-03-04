@@ -33,6 +33,9 @@ public class TerminologyCheck implements I_TerminologyCheck {
             return;
 
         //get the actual attribute
+        if (!codesetMapping.isLocalizedAttribute(codePhrase.getTerminologyId().getValue(), context, language))
+            language = "en"; //default to English for the rest of the validation
+
         String attribute = codesetMapping.actualAttributeId(codePhrase.getTerminologyId().getValue(), context, language);
         ContainerType containerType = codesetMapping.containerType(codePhrase.getTerminologyId().getValue(), context);
 
@@ -59,15 +62,18 @@ public class TerminologyCheck implements I_TerminologyCheck {
         }
     }
 
-    public static void validate(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, CodePhrase codePhrase) throws Exception {
+    public static void validate(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, CodePhrase codePhrase) throws IllegalArgumentException {
         validate(terminologyInterface, codesetMapping, context, codePhrase, "en");
     }
 
-    public static void validate(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, DvCodedText dvCodedText, String language) throws Exception {
+    public static void validate(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, DvCodedText dvCodedText, String language) throws IllegalArgumentException {
         validate(terminologyInterface, codesetMapping, context, dvCodedText.getDefiningCode(), language);
 
         if (terminologyInterface.terminology(dvCodedText.getDefiningCode().getTerminologyId().getValue()) == null) //terminology is NOT defined
             return;
+
+        if (!codesetMapping.isLocalizedAttribute(dvCodedText.getDefiningCode().getTerminologyId().getValue(), context, language))
+            language = "en"; //default to English for the rest of the validation
 
         String rubric = terminologyInterface.terminology(dvCodedText.getDefiningCode().getTerminologyId().getValue()).rubricForCode(dvCodedText.getDefiningCode().getCodeString(), language);
         boolean valid = rubric.equals(dvCodedText.getValue());
@@ -79,7 +85,7 @@ public class TerminologyCheck implements I_TerminologyCheck {
                     +" (language:"+language+", terminology:"+dvCodedText.getDefiningCode().getTerminologyId().getValue()+"), expected:"+rubric);
         }
     }
-    public static void validate(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, DvCodedText dvCodedText) throws Exception {
+    public static void validate(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, DvCodedText dvCodedText) throws IllegalArgumentException {
         validate(terminologyInterface, codesetMapping, context, dvCodedText, "en");
     }
 

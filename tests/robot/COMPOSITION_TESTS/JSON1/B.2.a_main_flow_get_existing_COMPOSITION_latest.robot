@@ -44,7 +44,7 @@ Main flow get existing COMPOSITION latest
     update composition (JSON)   minimal/minimal_observation.composition.participations.extdatetimes.v2.xml
     check composition update succeeded
 
-    get composition - latest version
+    get composition - latest version    JSON
     check content of compositions latest version (JSON)
 
     [Teardown]    restart SUT

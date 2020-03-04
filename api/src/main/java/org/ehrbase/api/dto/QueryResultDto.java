@@ -18,13 +18,16 @@
 
 package org.ehrbase.api.dto;
 
+import com.google.common.collect.BiMap;
+import org.apache.commons.collections.BidiMap;
+
 import java.util.List;
 import java.util.Map;
 
 public class QueryResultDto {
     private String executedAQL;
     private List<List<String>> explain;
-    private Map<String, String> variables;
+    private BiMap<String, String> variables;
     private List<Map<String, Object>> resultSet;
 
     public List<Map<String, Object>> getResultSet() {
@@ -51,11 +54,11 @@ public class QueryResultDto {
         this.explain = explain;
     }
 
-    public Map<String, String> getVariables() {
+    public BiMap<String, String> getVariables() {
         return variables;
     }
 
-    public void setVariables(Map<String, String> variables) {
+    public void setVariables(BiMap<String, String> variables) {
         this.variables = variables;
     }
 }

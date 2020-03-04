@@ -19,8 +19,6 @@
 package org.ehrbase.ehr.encode.wrappers.json.writer.translator_db2raw;
 
 import com.google.gson.stream.JsonWriter;
-import com.nedap.archie.rm.datastructures.Cluster;
-import com.nedap.archie.rminfo.ArchieRMInfoLookup;
 import org.ehrbase.ehr.encode.wrappers.json.I_DvTypeAdapter;
 
 import java.io.IOException;
@@ -28,28 +26,23 @@ import java.io.IOException;
 public class ArrayClosure {
 
     JsonWriter writer;
-    String parentItemsArchetypeNodeId = null;
-    String parentItemsType = null;
-    String parentItemsName = null;
+    private String parentItemsArchetypeNodeId;
+    private String parentItemsType;
 
-    public ArrayClosure(JsonWriter writer, String parentItemsArchetypeNodeId, String parentItemsType, String parentItemsName) {
+    ArrayClosure(JsonWriter writer, String parentItemsArchetypeNodeId, String parentItemsType) {
         this.writer = writer;
         this.parentItemsArchetypeNodeId = parentItemsArchetypeNodeId;
         this.parentItemsType = parentItemsType;
-        this.parentItemsName = parentItemsName;
     }
 
     /**
      * close an item array
      */
-    public void close() throws IOException {
+    private void close() throws IOException {
         if (parentItemsArchetypeNodeId != null)
             writer.name(I_DvTypeAdapter.ARCHETYPE_NODE_ID).value(parentItemsArchetypeNodeId);
-        if (parentItemsType != null) {
+        if (parentItemsType != null)
             writer.name(I_DvTypeAdapter.AT_CLASS).value(parentItemsType);
-            if(parentItemsType.equals(ArchieRMInfoLookup.getInstance().getTypeInfo(Cluster.class).getRmName()))
-                writer.name(I_DvTypeAdapter.NAME).beginObject().name(I_DvTypeAdapter.VALUE).value(parentItemsName).endObject();
-        }
     }
 
     public void start() throws IOException {

@@ -34,8 +34,8 @@ public class CompAccessTestMockDataProvider implements MockDataProvider{
 @Override
 public MockResult[] execute(MockExecuteContext ctx) throws SQLException {
 	
-    DSLContext create = DSL.using(SQLDialect.POSTGRES_9_5);
-    MockResult[] mock = new MockResult[1];
+    DSLContext create = DSL.using(SQLDialect.POSTGRES);
+	MockResult[] mock = new MockResult[1];
     String sql2 = ctx.sql();
 
     if (sql2.toUpperCase().startsWith("DROP")) {

@@ -47,6 +47,8 @@ ${INVALID DATA SETS}   ${PROJECT_ROOT}${/}tests${/}robot${/}_resources${/}test_d
 #
 # 4) FAKE Data
 
+create fake composition
+    generate random composition_uid
 
 
 # TODO: rename to `generate random versioned_object_uid`
@@ -57,7 +59,7 @@ generate random composition_uid
     ${uid}=             Evaluate    str(uuid.uuid4())    uuid
                         Set Test Variable   ${composition_uid}    ${uid}    # TODO: remove
                         Set Test Variable   ${versioned_object_uid}    ${uid}
-                        Set Test Variable   ${version_uid}    ${uid}::local.ehrbase.org::1    # TODO: get `local.ehrbase.org` from a variable
+                        Set Test Variable   ${version_uid}    ${uid}::${CREATING_SYSTEM_ID}::1
                         Set Test Variable   ${preceding_version_uid}    ${version_uid}
 
 
@@ -66,7 +68,7 @@ generate random version_uid
     ...                 also as `preceding_version_uid` to test level scope
 
     ${uid}=             Evaluate    str(uuid.uuid4())    uuid
-                        Set Test Variable   ${version_uid}    ${uid}::local.ehrbase.org::1
+                        Set Test Variable   ${version_uid}    ${uid}::${CREATING_SYSTEM_ID}::1
                         Set Test Variable   ${preceding_version_uid}    ${version_uid}
 
 
@@ -114,8 +116,6 @@ commit composition - no referenced OPT
 
                         get valid OPT file  ${opt_file}
 
-        TRACE GITHUB ISSUE  51  not-ready  message=discovered bug
-
     ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
                         # log to console      ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   422
@@ -159,7 +159,7 @@ commit composition (JSON)
                         Set Test Variable   ${version_uid_v1}    ${version_uid}                  # different namesfor full uid
                         Set Test Variable   ${preceding_version_uid}    ${version_uid}          # for usage in other steps
 
-    ${short_uid}=       Remove String       ${version_uid}    ::local.ehrbase.org::1
+    ${short_uid}=       Remove String       ${version_uid}    ::${CREATING_SYSTEM_ID}::1
                         Set Test Variable   ${compo_uid_v1}    ${short_uid}                      # TODO: rmv
                         Set Test Variable   ${versioned_object_uid}    ${short_uid}
 
@@ -197,7 +197,7 @@ commit composition (XML)
                         Set Test Variable   ${version_uid_v1}    ${version_uid}                  # different namesfor full uid
                         Set Test Variable   ${preceding_version_uid}    ${version_uid}          # for usage in other steps
 
-    ${short_uid}=       Remove String       ${version_uid}    ::local.ehrbase.org::1
+    ${short_uid}=       Remove String       ${version_uid}    ::${CREATING_SYSTEM_ID}::1
                         Set Test Variable   ${compo_uid_v1}    ${short_uid}                 # TODO; rmv
                         Set Test Variable   ${versioned_object_uid}    ${short_uid}
 
@@ -224,7 +224,7 @@ commit same composition again
                         ...                 Accept=application/json
                         ...                 Prefer=return=representation
 
-        TRACE JIRA BUG    EHR-412    not-ready
+        TRACE GITHUB ISSUE  125  not-ready
 
     ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
                         log to console      ${resp.content}
@@ -249,11 +249,52 @@ update composition (JSON)
                         Set Test Variable   ${composition_uid_v2}    ${resp.json()['uid']['value']}    # TODO: remove
                         Set Test Variable   ${version_uid_v2}    ${resp.json()['uid']['value']}
 
-    ${short_uid}=       Remove String       ${version_uid_v2}    ::local.ehrbase.org::1
+    ${short_uid}=       Remove String       ${version_uid_v2}    ::${CREATING_SYSTEM_ID}::1
                         Set Test Variable   ${versioned_object_uid_v2}    ${short_uid}
 
                         Set Test Variable   ${response}    ${resp}
                         capture point in time    2
+
+
+update composition - invalid opt reference (JSON)
+    [Arguments]         ${new_version_of_composition}
+    [Documentation]     Commit a new version for the COMPOSITION but with wrong OPT reference.
+    ...                 DEPENDENCY: `commit composition (JSON/XML)` keyword
+    ...                 ENDPOINT: PUT /ehr/${ehr_id}/composition/${versioned_object_uid}
+
+                        # TODO: @WLAD rename to "get invalid compo dataset    ${new_version_of_composition}"
+                        #       when refactoring this resource file!
+                        #       ALL compo dataset should be moved into proper test_data_sets/ subfolders.
+                        #       At the moment they are all (valid/invalid) in  "valid_templates" !!!
+                        get valid OPT file  ${new_version_of_composition}
+
+    &{headers}=         Create Dictionary   Content-Type=application/xml
+                        ...                 Accept=application/json
+                        ...                 Prefer=return=representation
+                        ...                 If-Match=${preceding_version_uid}
+
+    ${resp}=            Put Request         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   headers=${headers}
+                        Log To Console      \nREQUEST HEADERS:\n${resp.request.headers}
+                        Log To Console      \nRESPONSE:\n${resp.content}
+                        Set Test Variable   ${response}    ${resp}
+
+
+update composition - invalid opt reference (XML)
+    [Arguments]         ${new_version_of_composition}
+    [Documentation]     Commit a new version for the COMPOSITION but with wrong OPT reference.
+    ...                 DEPENDENCY: `commit composition (JSON/XML)` keyword
+    ...                 ENDPOINT: PUT /ehr/${ehr_id}/composition/${versioned_object_uid}
+
+                        get valid OPT file  ${new_version_of_composition}
+    &{headers}=         Create Dictionary   Content-Type=application/xml
+                        ...                 Accept=application/xml
+                        ...                 Prefer=return=representation
+                        ...                 If-Match=${preceding_version_uid}
+
+    ${resp}=            Put Request         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   headers=${headers}
+                        Log To Console      \nREQUEST HEADERS:\n${resp.request.headers}
+                        Log To Console      \nRESPONSE:\n${resp.content}
+                        Set Test Variable   ${response}    ${resp}
 
 
 check composition update succeeded
@@ -287,7 +328,6 @@ update composition (XML)
     &{headers}=         Create Dictionary   Content-Type=application/xml
                         ...                 Accept=application/xml
                         ...                 Prefer=return=representation
-
                         ...                 If-Match=${preceding_version_uid}   # TODO: must be ${preceding_version_uid} - has same format as `version_uid`
     ${resp}=            Put Request         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   headers=${headers}
                         log to console      ${resp.content}
@@ -300,7 +340,7 @@ update composition (XML)
                         Set Test Variable   ${composition_uid_v2}     ${long_uid.text}    # TODO: remove
                         Set Test Variable   ${version_uid_v2}     ${long_uid.text}
 
-    ${short_uid}=       Remove String       ${version_uid_v2}    ::local.ehrbase.org::1
+    ${short_uid}=       Remove String       ${version_uid_v2}    ::${CREATING_SYSTEM_ID}::1
                         Set Test Variable   ${versioned_object_uid_v2}    ${short_uid}
 
                         Set Test Variable   ${response}    ${resp}
@@ -364,22 +404,22 @@ get composition by composition_uid
     # the uid param in the doc is verioned_object.uid but is really the version.uid,
     # because the response from the create compo has this endpoint in the Location header
 
-    # &{headers}=         Create Dictionary   Content-Type=application/xml   Prefer=return=representation
-
     ${resp}=            Get Request         ${SUT}    /ehr/${ehr_id}/composition/${uid}    headers=${headers}
                         log to console      ${resp.content}
                         Set Test Variable   ${response}    ${resp}
 
 
 get versioned composition by uid
-    [Arguments]         ${uid}
+    [Arguments]         ${format}    ${uid}
     [Documentation]     :uid: versioned_object_uid
     ...                 DEPENDENCY: `prepare new request session`
     ...                     and `commit composition (JSON/XML)` keywords
-    ...
+    ...                 format: JSON or XML for accept/content headers
     ...                 ENDPOINT: /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}
 
-        TRACE JIRA BUG    EHR-364    not-ready
+                        prepare new request session    ${format}
+
+        TRACE GITHUB ISSUE  122  not-ready
 
     ${resp}=            Get Request         ${SUT}    /ehr/${ehr_id}/versioned_composition/${uid}    headers=${headers}
                         log to console      ${resp.content}
@@ -392,50 +432,32 @@ get versioned composition by uid
 
 
 check content of versioned composition (JSON)
-                        Should Be Equal As Strings   ${response.status_code}   200
-                        Should Be Equal   ${response.json()['uid']['value']}    ${versioned_object_uid}
+                        Should Be Equal As Strings    ${response.status_code}    200
+                        Should Be Equal    ${response.json()['uid']['value']}    ${versioned_object_uid}
+                        Should Be Equal    ${response.json()['owner_id']}    ${ehr_id}
 
 
 check content of versioned composition (XML)
-                        Should Be Equal As Strings    ${response.status_code}   200
+                        Should Be Equal As Strings    ${response.status_code}    200
     ${xml}=             Parse Xml           ${response.text}
     ${uid}=             Get Element         ${xml}    uid/value
                         Element Text Should Be    ${uid}    ${versioned_object_uid}
 
 
 get composition - latest version
+    [Arguments]         ${format}
+    [Documentation]     The way to return the latest version is using the versioned_composition with
+    ...                 the versioned_object_uid and without the version_at_time param.
+    ...                 format: JSON or XML for accept/content headers
 
-                        prepare new request session    Prefer=return=representation
-    # The way to return the latest version is using the versioned_composition with
-    # the versioned_object_uid and without the version_at_time param.
-
-    # &{headers}=         Create Dictionary     Prefer=return=representation
+                        prepare new request session    ${format}    Prefer=return=representation
 
         ####### TODO: @WLAD/PABLO - remove when fixed!!!!! #####################
         TRACE GITHUB ISSUE  17  not-ready
         ########################################################################
 
     ${resp}=            Get Request           ${SUT}   /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version    headers=${headers}
-                        log to console        ${resp.content}
-                        Set Test Variable     ${response}    ${resp}
-
-
-get composition - latest version (XML)
-    [Documentation]     ENDPOINT: /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version
-
-                        prepare new request session    XML    Prefer=return=representation
-
-    # The way to return the latest version is using the versioned_composition with
-    # the versioned_object_uid and without the version_at_time param.
-
-    # &{headers}=         Create Dictionary     Prefer=return=representation  Accept=application/xml
-
-        ####### TODO: @WLAD/PABLO - remove when fixed!!!!! #####################
-        TRACE GITHUB ISSUE  17  not-ready
-        ########################################################################
-
-    ${resp}=            Get Request           ${SUT}   /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version   headers=${headers}
-                        log to console        ${resp.content}
+                        log to console        ${resp.text}
                         Set Test Variable     ${response}    ${resp}
 
 
@@ -444,10 +466,10 @@ check content of compositions latest version (JSON)
                         Should Be Equal As Strings   ${response.status_code}   200
                         Set Test Variable     ${version_uid_latest}    ${resp.json()['uid']['value']}
 
-                        # Check the latest version uid is equal to the second committed compo uid
+                        # comment: Check the latest version uid is equal to the second committed compo uid
                         Should Be Equal       ${version_uid_latest}    ${composition_uid_v2}
 
-                        # check content of the latest version is equal to the content committed on the second compo
+                        # comment: check content of the latest version is equal to the content committed on the second compo
                         # should be the content in the 2nd committed compo "modified value"
                         Set Test Variable     ${text}    ${resp.json()['data']['content'][0]['data']['events'][0]['data']['items'][0]['value']['value']}
                         Should Be Equal       ${text}    modified value
@@ -570,7 +592,11 @@ check composition does not exist
     [Documentation]     DEPENDENCY: `get composition` keywords
 
                         Should Be Equal As Strings   ${response.status_code}   404
-
+                        Log To Console    ${response.text}
+                        # Should Contain Any    ${response.text}
+                        # ...                   foo
+                        # ...                   bar
+                        
 
 check composition does not exist (version at time)
     [Documentation]     DEPENDENCY: `get composition - version at time` keywords
@@ -578,10 +604,20 @@ check composition does not exist (version at time)
                         Should Be Equal As Strings   ${response.status_code}   404
 
 
+check composition does not exist (latest version)
+    [Documentation]     DEPENDENCY: `get composition - latest version`
+                        Should Be Equal As Strings   ${response.status_code}   404
+                        # Should Contain Any  ${response.text}
+                        # ...                   foo   # TODO @WLAD update asap
+                        # ...                   bar
+
+
 check versioned composition does not exist
     [Documentation]     DEPENDENCY: `get versioned composition`
-
                         Should Be Equal As Strings   ${response.status_code}   404
+                        # Should Contain Any  ${response.text}
+                        # ...                   foo   # TODO @WLAD update asap
+                        # ...                   bar
 
 
 delete composition
@@ -602,7 +638,7 @@ delete composition
 
 get deleted composition
     [Documentation]     The deleted compo should not exist
-    ...                 204 is the code for deleted - as per OpenEHR spec
+    ...                 204 is the code for deleted - as per openEHR REST spec
 
     ${resp}=            Get Request           ${SUT}   /ehr/${ehr_id}/composition/${del_version_uid}
                         log to console        ${resp.content}
@@ -656,7 +692,6 @@ create EHR
 
 capture time before first commit
     capture point in time   0
-    # Sleep                   1
 
 
 capture point in time

@@ -84,7 +84,7 @@ public interface I_ConceptAccess {
      * @throws IllegalArgumentException when the given change type can't be found
      */
     static UUID fetchContributionChangeType(I_DomainAccess domainAccess, String changeTypeStr) {
-        ContributionChangeType contributionChangeType = ContributionChangeType.valueOf(changeTypeStr);
+        ContributionChangeType contributionChangeType = ContributionChangeType.valueOf(changeTypeStr.toUpperCase());
         int code = contributionChangeType.getCode();
         return domainAccess.getContext().fetchAny(CONCEPT, CONCEPT.CONCEPTID.eq(code).and(CONCEPT.LANGUAGE.equal("en"))).getId();
     }

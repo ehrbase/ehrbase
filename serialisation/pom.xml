@@ -22,78 +22,55 @@
     <parent>
         <artifactId>server</artifactId>
         <groupId>org.ehrbase.openehr</groupId>
-        <version>0.10.0</version>
+        <version>0.11.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>serialisation</artifactId>
 
-
-    <dependencies>
-        <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>jsr305</artifactId>
-            <version>3.0.2</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.annotation</groupId>
-            <artifactId>javax.annotation-api</artifactId>
-            <version>1.3.2</version>
-        </dependency>
+<dependencies>
 
 
-        <!-- from archie, that is the java7 version
-        com.github.everit-org.json-schema:org.everit.json.schema:1.9.2
-        -->
-
-        <dependency>
-          <groupId>com.github.everit-org.json-schema</groupId>
-          <artifactId>org.everit.json.schema</artifactId>
-          <version>1.11.1</version>
-        </dependency>
+<dependency>
+        <groupId>com.github.everit-org.json-schema</groupId>
+        <artifactId>org.everit.json.schema</artifactId>
+    </dependency>
 
 
-        <!-- added because of maven-dependency-plugin:2.8:analyze-only (analyze) plugin -->
+    <!-- added because of maven-dependency-plugin:2.8:analyze-only (analyze) plugin -->
         <dependency>
           <groupId>javax.xml.bind</groupId>
           <artifactId>jaxb-api</artifactId>
-          <version>2.3.0</version>
         </dependency>
 
         <dependency>
           <groupId>com.google.guava</groupId>
           <artifactId>guava</artifactId>
-          <version>25.1-jre</version>
         </dependency>
 
         <dependency>
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-annotations</artifactId>
-          <version>2.9.0</version>
         </dependency>
         <dependency>
           <groupId>org.json</groupId>
           <artifactId>json</artifactId>
-          <version>20140107</version>
         </dependency>
         <dependency>
-            <groupId>com.github.openEHR</groupId>
-            <artifactId>archie</artifactId>
+            <groupId>com.github.ehrbase</groupId>
+            <artifactId>archie-fork</artifactId>
         </dependency>
         <dependency>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-api</artifactId>
-          <version>1.7.25</version>
         </dependency>
         <dependency>
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-databind</artifactId>
-          <version>2.9.7</version>
         </dependency>
         <dependency>
           <groupId>commons-io</groupId>
           <artifactId>commons-io</artifactId>
-          <version>2.6</version>
         </dependency>
 
 
@@ -117,10 +94,7 @@
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
         </dependency>
-        <dependency>
-            <groupId>commons-collections</groupId>
-            <artifactId>commons-collections</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>

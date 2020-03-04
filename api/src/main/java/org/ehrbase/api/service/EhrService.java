@@ -18,6 +18,10 @@
 
 package org.ehrbase.api.service;
 
+import com.nedap.archie.rm.changecontrol.OriginalVersion;
+import com.nedap.archie.rm.changecontrol.Version;
+import com.nedap.archie.rm.ehr.VersionedEhrStatus;
+import com.nedap.archie.rm.generic.RevisionHistory;
 import org.ehrbase.api.definitions.CompositionFormat;
 import org.ehrbase.api.dto.EhrStatusDto;
 import org.ehrbase.api.exception.DuplicateObjectException;
@@ -57,7 +61,7 @@ public interface EhrService extends BaseService {
      * @param version Given version of EHR_STATUS
      * @return Matching EHR_STATUS or empty
      */
-    Optional<EhrStatus> getEhrStatusAtVersion(UUID ehrUuid, UUID versionedObjectUid, int version);
+    Optional<OriginalVersion<EhrStatus>> getEhrStatusAtVersion(UUID ehrUuid, UUID versionedObjectUid, int version);
 
     /**
      * Update the EHR_STATUS linked to the given EHR
@@ -110,5 +114,27 @@ public interface EhrService extends BaseService {
      * @return UUID of corresponding EHR_STATUS
      */
     UUID getEhrStatusVersionedObjectUidByEhr(UUID ehrUid);
+
+    /**
+     * Gets version container EhrStatus associated with given EHR.
+     * @param ehrUid Given EHR ID
+     * @return Version container object
+     */
+    VersionedEhrStatus getVersionedEhrStatus(UUID ehrUid);
+
+    /**
+     * Gets revision history of EhrStatus associated with given EHR.
+     * @param ehrUid Given EHR ID
+     * @return Revision history object
+     */
+    RevisionHistory getRevisionHistoryOfVersionedEhrStatus(UUID ehrUid);
+
+    /**
+     * Reads the EHR entry from database and returns the ID of the root directory entry.
+     *
+     * @param ehrId - EHR id to find the directory for
+     * @return UUID of the root directory if existing
+     */
+    UUID getDirectoryId(UUID ehrId);
 
 }

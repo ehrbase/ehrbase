@@ -28,7 +28,7 @@ import java.util.List;
  * Represents a AQL Select Variable
  * Created by christian on 9/22/2017.
  */
-public interface I_VariableDefinition {
+public interface I_VariableDefinition extends Cloneable {
     String getPath();
 
     String getAlias();
@@ -41,9 +41,15 @@ public interface I_VariableDefinition {
 
     boolean isExtension();
 
+    boolean isHidden();
+
     List<FuncParameter> getFuncParameters();
 
-    I_VariableDefinition clone();
+    I_VariableDefinition clone() throws CloneNotSupportedException;
 
     void setPath(String path); //used to modify the path in case of struct query (canonical json).
+
+    void setDistinct(boolean distinct);
+
+    void setHidden(boolean hidden);
 }

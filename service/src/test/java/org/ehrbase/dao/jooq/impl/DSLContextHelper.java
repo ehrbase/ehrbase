@@ -30,13 +30,13 @@ public class DSLContextHelper {
     }
 
     public static DSLContext buildContext() {
-        return DSL.using(SQLDialect.POSTGRES_9_5);
+        return DSL.using(SQLDialect.POSTGRES);
     }
 
 
     public static DSLContext buildContext(MockDataProvider provider) {
         MockConnection connection = new MockConnection(provider);
-        return DSL.using(connection, SQLDialect.POSTGRES_9_5);
+        return DSL.using(connection, SQLDialect.POSTGRES);
     }
 
 }

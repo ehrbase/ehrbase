@@ -17,6 +17,7 @@
  */
 package org.ehrbase.validation.terminology.validator;
 
+import com.nedap.archie.rm.datavalues.DvCodedText;
 import org.ehrbase.terminology.openehr.TerminologyInterface;
 import org.ehrbase.terminology.openehr.implementation.AttributeCodesetMapping;
 
@@ -26,12 +27,18 @@ public class Participation extends TerminologyCheck {
         this.RM_CLASS = com.nedap.archie.rm.generic.Participation.class;
     }
 
-    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.generic.Participation participation, String language) throws Exception {
-        if (participation.getMode() != null)
-            validate(terminologyInterface, codesetMapping, "mode", participation.getMode().getDefiningCode(), language);
+    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.generic.Participation participation, String language){
+        if (participation.getMode() != null) {
+            //validate mode as a DvCodedText
+            validate(terminologyInterface, codesetMapping, "mode", new DvCodedText(participation.getMode().getValue(), participation.getMode().getDefiningCode()), language);
+        }
+
+        if (participation.getFunction() != null && participation.getFunction() instanceof DvCodedText){
+            validate(terminologyInterface, codesetMapping, "mode", (DvCodedText)participation.getFunction(), language);
+        }
     }
 
-    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.generic.Participation participation) throws Exception {
+    public static void check(TerminologyInterface terminologyInterface, AttributeCodesetMapping codesetMapping, String context, com.nedap.archie.rm.generic.Participation participation) throws IllegalArgumentException {
        check(terminologyInterface, codesetMapping, context, participation, "en");
     }
 

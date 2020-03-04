@@ -127,6 +127,17 @@ workflows:
                 - release
                 - master
 
+      - EHRSTATUS-test:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
+
       - KNOWLEDGE-test:
           context: org-global
           requires:
@@ -138,7 +149,18 @@ workflows:
                 - release
                 - master
 
-      - QUERYSERVICE-test:
+      - QUERYSERVICE-test-1:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
+
+      - QUERYSERVICE-test-2:
           context: org-global
           requires:
             - build-artifacts
@@ -159,13 +181,38 @@ workflows:
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
+            - EHRSTATUS-test
             - KNOWLEDGE-test
-            - QUERYSERVICE-test
+            - QUERYSERVICE-test-1
+            - QUERYSERVICE-test-2
           filters:
             branches:
               ignore:
                 - release
                 - master
+
+      - dependency-check:
+          context: org-global
+          requires:
+            - build-artifacts
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
+
+      - sonar-analysis:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+            - dependency-check
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
+
 
   release:
     jobs:
@@ -263,6 +310,16 @@ workflows:
             branches:
               only:
                 - /^(release\/v\d+\.\d+\.\d+|master)$/
+      
+      - EHRSTATUS-test:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              only:
+                - /^(release\/v\d+\.\d+\.\d+|master)$/
 
       - KNOWLEDGE-test:
           context: org-global
@@ -274,7 +331,17 @@ workflows:
               only:
                 - /^(release\/v\d+\.\d+\.\d+|master)$/
 
-      - QUERYSERVICE-test:
+      - QUERYSERVICE-test-1:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              only:
+                - /^(release\/v\d+\.\d+\.\d+|master)$/
+
+      - QUERYSERVICE-test-2:
           context: org-global
           requires:
             - build-artifacts
@@ -294,24 +361,25 @@ workflows:
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
+            - EHRSTATUS-test
             - KNOWLEDGE-test
-            - QUERYSERVICE-test
+            - QUERYSERVICE-test-1
+            - QUERYSERVICE-test-2
           filters:
             branches:
               only:
                 - /^(release\/v\d+\.\d+\.\d+|master)$/
 
-      # - sonar-analysis:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
-      #       - unit-tests
-      #       - integration-tests
-      #       - dependency-check
-      #     filters:
-      #       branches:
-      #         only:
-      #           - /^(release\/v\d+\.\d+\.\d+|master)$/
+      - sonar-analysis:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+            - dependency-check
+          filters:
+            branches:
+              only:
+                - /^(release\/v\d+\.\d+\.\d+|master)$/
 
 
 
@@ -332,6 +400,7 @@ jobs:
       image: circleci/classic:201808-01
     steps:
       - configure-python-version
+      - install-java-11
       - checkout
       - restore-build-artifacts-job-caches
       - setup-database
@@ -344,6 +413,7 @@ jobs:
       image: circleci/classic:201808-01
     steps:
       - configure-python-version
+      - install-java-11
       - checkout
       - attach_workspace:
           at: /home/circleci
@@ -357,12 +427,15 @@ jobs:
       image: circleci/classic:201808-01
     steps:
       - configure-python-version
+      - install-java-11
       - checkout
+      - attach_workspace:
+          at: /home/circleci
       - restore-unit-tests-job-caches
       - setup-database
       - maven-test
       - save-unit-tests-job-caches
-      # - persist-unit-test-coverage
+      - persist-unit-test-coverage
 
   COMPOSITION-tests-1:
       machine:
@@ -426,6 +499,15 @@ jobs:
               include-tags: "EHR_SERVICE"
               test-suite-path: "EHR_SERVICE_TESTS"
               test-suite-name: "EHR_SERVICE"
+  
+  EHRSTATUS-test:
+      machine:
+            image: ubuntu-1604:201903-01
+      steps:
+        - run-robot-tests:
+              include-tags: "EHR_STATUS"
+              test-suite-path: "EHR_STATUS_TESTS"
+              test-suite-name: "EHR_STATUS"
 
   KNOWLEDGE-test:
       machine:
@@ -436,14 +518,23 @@ jobs:
               test-suite-path: "KNOWLEDGE_TESTS"
               test-suite-name: "KNOWLEDGE"
 
-  QUERYSERVICE-test:
+  QUERYSERVICE-test-1:
       machine:
             image: ubuntu-1604:201903-01
       steps:
         - run-robot-tests:
-              include-tags: "ADHOC-QUERY"
+              include-tags: "adhoc-queryANDempty_db"
               test-suite-path: "QUERY_SERVICE_TESTS"
-              test-suite-name: "ADHOC-QUERY"
+              test-suite-name: "ADHOC-QUERY-1"
+  
+  QUERYSERVICE-test-2:
+    machine:
+          image: ubuntu-1604:201903-01
+    steps:
+      - run-robot-tests:
+            include-tags: "adhoc-queryANDloaded_db"
+            test-suite-path: "QUERY_SERVICE_TESTS"
+            test-suite-name: "ADHOC-QUERY-2"
 
   ROBOT-REPORT:
       machine:
@@ -460,6 +551,7 @@ jobs:
       image: circleci/classic:201808-01
     steps:
       - configure-python-version
+      - install-java-11
       - checkout
       - attach_workspace:
           at: /home/circleci
@@ -508,6 +600,7 @@ commands:
         - restore-integration-tests-job-caches
         - attach-target-folder
         - install-python-requirements
+        - install-java-11
         - run:
             name: EXECUTE ROBOT COMMAND
             no_output_timeout: 30m
@@ -580,16 +673,27 @@ commands:
 
 
 
-#                                                 88                 ad88
-#     ,d                             ,d           ""                d8"
-#     88                             88                             88
-#   MM88MMM  ,adPPYba,  ,adPPYba,  MM88MMM        88  8b,dPPYba,  MM88MMM  8b,dPPYba,  ,adPPYYba,
-#     88    a8P_____88  I8[    ""    88           88  88P'   `"8a   88     88P'   "Y8  ""     `Y8
-#     88    8PP"""""""   `"Y8ba,     88           88  88       88   88     88          ,adPPPPP88
-#     88,   "8b,   ,aa  aa    ]8I    88,          88  88       88   88     88          88,    ,88
-#     "Y888  `"Ybbd8"'  `"YbbdP"'    "Y888        88  88       88   88     88          `"8bbdP"Y8
-#
-
+  #                                                 88                 ad88
+  #     ,d                             ,d           ""                d8"
+  #     88                             88                             88
+  #   MM88MMM  ,adPPYba,  ,adPPYba,  MM88MMM        88  8b,dPPYba,  MM88MMM  8b,dPPYba,  ,adPPYYba,
+  #     88    a8P_____88  I8[    ""    88           88  88P'   `"8a   88     88P'   "Y8  ""     `Y8
+  #     88    8PP"""""""   `"Y8ba,     88           88  88       88   88     88          ,adPPPPP88
+  #     88,   "8b,   ,aa  aa    ]8I    88,          88  88       88   88     88          88,    ,88
+  #     "Y888  `"Ybbd8"'  `"YbbdP"'    "Y888        88  88       88   88     88          `"8bbdP"Y8
+  #
+  install-java-11:
+    description: Install Zulu Java 11
+    steps:
+      - run:
+          name: Install Zulu Java 11
+          command: |
+            wget https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.3%2B7/OpenJDK11U-jdk_x64_linux_hotspot_11.0.3_7.tar.gz -O /tmp/openjdk-11.tar.gz
+            sudo mkdir -p /usr/lib/jvm
+            sudo tar xfvz /tmp/openjdk-11.tar.gz --directory /usr/lib/jvm
+            rm -f /tmp/openjdk-11.tar.gz
+            sudo sh -c 'for bin in /usr/lib/jvm/jdk-11.0.3+7/bin/*; do update-alternatives --install /usr/bin/$(basename $bin) $(basename $bin) $bin 100; done'
+            sudo sh -c 'for bin in /usr/lib/jvm/jdk-11.0.3+7/bin/*; do update-alternatives --set $(basename $bin) $bin; done'
   configure-python-version:
     description: Configure Python version to 3.7.0
     steps:
@@ -678,7 +782,12 @@ commands:
       - persist_to_workspace:
           root: /home/circleci
           paths:
-            - project/application/target/jacoco.exec
+            - project/rest-ehr-scape/target/site/jacoco/jacoco.xml
+            - project/rest-openehr/target/site/jacoco/jacoco.xml
+            - project/serialisation/target/site/jacoco/jacoco.xml
+            - project/service/target/site/jacoco/jacoco.xml
+            - project/terminology/target/site/jacoco/jacoco.xml
+            - project/validation/target/site/jacoco/jacoco.xml
 
 
   save-unit-tests-job-caches:
@@ -736,14 +845,14 @@ commands:
           command: |
             mkdir -p ~/downloads
             cd ~/downloads
-            [ -e sonar-scanner-cli-3.3.0.1492-linux.zip ] || wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.3.0.1492-linux.zip
-            unzip -uo sonar-scanner-cli-3.3.0.1492-linux.zip -d ~
+            [ -e sonar-scanner-cli-4.2.0.1873-linux.zip ] || wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.2.0.1873-linux.zip
+            unzip -uo sonar-scanner-cli-4.2.0.1873-linux.zip -d ~
       - run:
           name: Excecute Sonar analysis
           command: |
             chmod 744 ~/project/.circleci/*.sh
-            ~/sonar-scanner-3.3.0.1492-linux/bin/sonar-scanner \
-            -Dsonar.login=$SONARCLOUD_TOKEN \
+            ~/sonar-scanner-4.2.0.1873-linux/bin/sonar-scanner \
+            -Dsonar.login=$SONAR_TOKEN \
             -Dsonar.branch.name=$CIRCLE_BRANCH \
             -Dsonar.branch.target=$(~/project/.circleci/get_target_branch.sh) \
             -Dsonar.projectVersion=$(~/project/.circleci/verify_and_return_version.sh)
@@ -774,7 +883,7 @@ commands:
             python ~/project/.circleci/convert_vulnerability_analysis.py \
                 ~/project/vulnerability_analysis.json \
                 ~/project/sonar_issues.json \
-                application/src/main/java/com/ethercis/application/HipOpenEhr.java
+                application/src/main/java/org/ehrbase/application/EhrBase.java
 
 
 #                                                88
@@ -935,13 +1044,13 @@ commands:
     description: Save all caches in dependency check job
     steps:
       - save_cache:
-          key: job-sonar-analysis-v1-download-3.3.0.1492
+          key: job-sonar-analysis-v1-download-4.2.0.1873
           paths:
             - ~/downloads
       - save_cache:
-          key: job-sonar-analysis-v1-installation-3.3.0.1492
+          key: job-sonar-analysis-v1-installation-4.2.0.1873
           paths:
-            - ~/sonar-scanner-3.3.0.1492-linux
+            - ~/sonar-scanner-4.2.0.1873-linux
       - save_cache:
           key: job-sonar-analysis-v1-scannerwork-{{ epoch }}
           paths:
@@ -956,10 +1065,10 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - job-sonar-analysis-v1-download-3.3.0.1492
+            - job-sonar-analysis-v1-download-4.2.0.1873
       - restore_cache:
           keys:
-            - job-sonar-analysis-v1-installation-3.3.0.1492
+            - job-sonar-analysis-v1-installation-4.2.0.1873
       - restore_cache:
           keys:
             - job-sonar-analysis-v1-scannerwork

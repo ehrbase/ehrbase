@@ -18,6 +18,10 @@
 
 package org.ehrbase.service;
 
+import com.nedap.archie.rminfo.ArchieRMInfoLookup;
+import com.nedap.archie.rmobjectvalidator.RMObjectValidationMessage;
+import com.nedap.archie.rmobjectvalidator.RMObjectValidator;
+import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.terminology.openehr.TerminologyService;
@@ -31,6 +35,7 @@ import org.springframework.stereotype.Service;
 import javax.cache.Cache;
 import javax.cache.CacheManager;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -54,6 +59,7 @@ public class ValidationServiceImp implements ValidationService {
 
     @Override
     public void check(UUID templateUUID, Composition composition) throws Exception {
+
         //check if a validator is already in the cache
         Validator validator = validatorCache.get(templateUUID);
 
@@ -79,15 +85,50 @@ public class ValidationServiceImp implements ValidationService {
 
 
     @Override
-    public void check(String templateID, Composition composition)  throws Exception {
+    public void check(String templateID, Composition composition) throws Exception {
+
         Optional<OPERATIONALTEMPLATE> operationaltemplate = knowledgeCache.retrieveOperationalTemplate(templateID);
 
-        if (!operationaltemplate.isPresent())
-            throw new IllegalArgumentException("Not found template id:" + templateID);
-
-
+        if (operationaltemplate.isEmpty())
+            throw new UnprocessableEntityException("Not found template id: " + templateID);
 
         check(UUID.fromString(operationaltemplate.get().getUid().getValue()), composition);
+    }
+
+    @Override
+    public void check(Composition composition) throws Exception {
+        //check if this composition is valid for processing
+        if (composition.getName() == null)
+            throw new IllegalArgumentException("Composition missing mandatory attribute: name");
+        if (composition.getArchetypeNodeId() == null)
+            throw new IllegalArgumentException("Composition missing mandatory attribute: archetype_node_id");
+        if (composition.getLanguage() == null)
+            throw new IllegalArgumentException("Composition missing mandatory attribute: language");
+        if (composition.getCategory() == null)
+            throw new IllegalArgumentException("Composition missing mandatory attribute: category");
+        if (composition.getComposer() == null)
+            throw new IllegalArgumentException("Composition missing mandatory attribute: composer");
+        if (composition.getArchetypeDetails() == null)
+            throw new IllegalArgumentException("Composition missing mandatory attribute: archetype details");
+        if (composition.getArchetypeDetails().getTemplateId() == null)
+            throw new IllegalArgumentException("Composition missing mandatory attribute: archetype details/template_id");
+
+        //check the built composition using Archie Validator
+        RMObjectValidator rmObjectValidator = new RMObjectValidator(ArchieRMInfoLookup.getInstance());
+
+        List<RMObjectValidationMessage> rmObjectValidationMessages = rmObjectValidator.validate(composition);
+
+        if (!rmObjectValidationMessages.isEmpty()){
+            StringBuilder stringBuilder = new StringBuilder();
+            for (RMObjectValidationMessage rmObjectValidationMessage: rmObjectValidationMessages){
+                stringBuilder.append(rmObjectValidationMessage.toString());
+                stringBuilder.append("\n");
+            }
+            throw new IllegalArgumentException(stringBuilder.toString());
+        }
+
+
+        check(composition.getArchetypeDetails().getTemplateId().getValue(), composition);
     }
 
     @Override

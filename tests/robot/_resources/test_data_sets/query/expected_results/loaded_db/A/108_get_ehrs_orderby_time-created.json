@@ -2,9 +2,9 @@
   "meta": {
     "_type": "RESULTSET",
     "_created": "2019-10-17T19:35:13.372Z",
-    "_executed_aql": "SELECT e/ehr_id/value FROM EHR e ORDER BY e/time_created"
+    "_executed_aql": "SELECT e/ehr_id/value FROM EHR e ORDER BY e/time_created ASC"
   },
-  "q": "SELECT e/ehr_id/value FROM EHR e ORDER BY e/time_created",
+  "q": "SELECT e/ehr_id/value FROM EHR e ORDER BY e/time_created ASC",
   "columns": [
     {
       "name": "#0",

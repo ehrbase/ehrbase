@@ -43,12 +43,6 @@ Alternative flow 1 delete persistent COMPOSITION
 
     delete composition    ${preceding_version_uid}
 
-
-
-        TRACE JIRA BUG    EHR-413   not-ready
-        TRACE JIRA BUG    EHR-436   not-ready
-
-
     get deleted composition
 
     # [Teardown]    restart SUT

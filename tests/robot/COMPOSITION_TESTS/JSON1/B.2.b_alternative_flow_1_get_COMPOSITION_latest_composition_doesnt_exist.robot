@@ -36,10 +36,6 @@ Force Tags    JSON
 Alternative flow 1 get COMPOSITION latest, COMPOSITION doesn't exist
 
     create EHR      JSON
-
-    # Commit fake COMPOSITION
-    generate random composition_uid
-
-    get composition - latest version
-
-    check versioned composition does not exist
+    create fake composition
+    get composition - latest version    JSON
+    check composition does not exist (latest version)

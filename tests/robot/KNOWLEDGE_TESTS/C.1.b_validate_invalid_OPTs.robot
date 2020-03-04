@@ -77,7 +77,7 @@ Empty Template ID
     removed_template_id/minimal_admin_invalid_3.opt
     removed_template_id/minimal_admin_invalid_4.opt
 
-    [Teardown]  TRACE JIRA BUG    EHR-332    not-ready
+    [Teardown]  TRACE GITHUB ISSUE  119  not-ready  
 
 
 Removed Mandatory Elements
@@ -93,13 +93,10 @@ Removed Mandatory Elements
     # SPECIAL: removing an optional AND a mandatory element
     removed_mandatory_elements/minimal_action_removed_description_and_concept.opt
 
-    [Teardown]  TRACE JIRA BUG    EHR-333    not-ready
-
 
 Multiple Elements With Upper Bound Of 1
     [Documentation]    Issues with elements that should occur only once.
     ...                Any element without an maxOccurs="unbounded" has upper bound=1
-    ...
     [Template]         validate invalid OPT
 
     multiple_elements/minimal_action_template-id_twice_1.opt
@@ -109,22 +106,10 @@ Multiple Elements With Upper Bound Of 1
     multiple_elements/minimal_action_concept_twice_2.opt
     multiple_elements/minimal_action_definition_twice.opt
 
-    [Teardown]  TRACE JIRA BUG    EHR-334    not-ready
+    [Teardown]  TRACE GITHUB ISSUE  121  not-ready
                 # server accepts OPTs with multiple template_id tags, etc
                 # actual --> status code 201
                 # expected --> status code 400
-
-
-Alien Tags
-    [Documentation]    Issues with unknown tags.
-    ...                e.g. <bullfrog>Minimal action</bullfrog>
-    [Template]         validate invalid OPT
-
-    # NOTE: added tag <bullfrog>Minimal action</bullfrog>
-    alien_tags/minimal_action.opt
-
-    [Teardown]  TRACE JIRA BUG    EHR-335    not-ready
-                # should the server responce with a 400 here?
 
 
 

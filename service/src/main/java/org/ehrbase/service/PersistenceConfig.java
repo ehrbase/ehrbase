@@ -88,7 +88,7 @@ public class PersistenceConfig {
         jooqConfiguration.set(new DefaultExecuteListenerProvider(exceptionTransformer()));
 
 
-        SQLDialect dialect = SQLDialect.POSTGRES_9_5;
+        SQLDialect dialect = SQLDialect.POSTGRES;
         jooqConfiguration.set(dialect);
 
         return jooqConfiguration;

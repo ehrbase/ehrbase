@@ -18,14 +18,16 @@
 
 package org.ehrbase.dao.access.interfaces;
 
+import com.nedap.archie.rm.generic.AuditDetails;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.jooq.AuditDetailsAccess;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
+import org.ehrbase.jooq.pg.tables.records.AuditDetailsRecord;
 
 import java.sql.Timestamp;
 import java.util.UUID;
 
-public interface I_AuditDetailsAccess extends I_SimpleCRUD<I_AuditDetailsAccess, UUID> {
+public interface I_AuditDetailsAccess extends I_SimpleCRUD {
 
     /**
      * get a new minimal AuditDetails access layer instance
@@ -48,12 +50,12 @@ public interface I_AuditDetailsAccess extends I_SimpleCRUD<I_AuditDetailsAccess,
      * @return new access instance
      * @throws InternalServerException if creating or retrieving system failed
      */
-    static I_AuditDetailsAccess getInstance(I_DomainAccess dataAccess, UUID systemId, UUID committer, ContributionChangeType changeType, String description) {
+    static I_AuditDetailsAccess getInstance(I_DomainAccess dataAccess, UUID systemId, UUID committer, I_ConceptAccess.ContributionChangeType changeType, String description) {
         return new AuditDetailsAccess(dataAccess, systemId, committer, changeType, description);
     }
 
     /**
-     * Retrieve a specfic audit instance via UUID
+     * Retrieve a specific audit instance via UUID
      * @param dataAccess    general data access
      * @param auditId ID of audit to retrieve
      * @return access to instance
@@ -81,6 +83,8 @@ public interface I_AuditDetailsAccess extends I_SimpleCRUD<I_AuditDetailsAccess,
      */
     Boolean update(UUID systemId, UUID committer, I_ConceptAccess.ContributionChangeType changeType, String description);
 
+    UUID getId();
+
     void setSystemId(UUID systemId);
     UUID getSystemId();
 
@@ -104,4 +108,8 @@ public interface I_AuditDetailsAccess extends I_SimpleCRUD<I_AuditDetailsAccess,
     Timestamp getTimeCommitted();
 
     String getTimeCommittedTzId();
+
+    void setRecord(AuditDetailsRecord record);
+
+    AuditDetails getAsAuditDetails();
 }
