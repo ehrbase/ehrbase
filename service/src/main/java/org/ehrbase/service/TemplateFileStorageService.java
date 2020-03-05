@@ -26,10 +26,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 import javax.xml.namespace.QName;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -123,7 +121,7 @@ public class TemplateFileStorageService implements TemplateStorage {
     public void storeTemplate(OPERATIONALTEMPLATE template) {
         XmlOptions opts = new XmlOptions();
         opts.setSaveSyntheticDocumentElement(new QName("http://schemas.openehr.org/v1", "template"));
-        saveTemplateFile(template.getTemplateId().getValue(), template.xmlText(opts).getBytes());
+            saveTemplateFile(template.getTemplateId().getValue(), template.xmlText(opts).getBytes(StandardCharsets.UTF_8));
     }
 
     @Override
