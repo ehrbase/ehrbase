@@ -35,7 +35,7 @@ Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags    todo-data-driven
+Force Tags    todo-data-driven   xxx
 
 
 
@@ -145,7 +145,5 @@ Alternative flow 2: has path on EHR with given folder structure (DS 9)
     generate random path
 
     get FOLDER in DIRECTORY at version (JSON)    ${path}
-
-        TRACE GITHUB ISSUE  36  not-ready  DISCOVERED ISSUE: `path` URI parameter is ignored(?)
 
     validate GET-@version response - 404 unknown path
