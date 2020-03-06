@@ -1584,7 +1584,7 @@
   },
   "category": {
     "_type": "DV_CODED_TEXT",
-    "value": "Event",
+    "value": "event",
     "defining_code": {
       "_type": "CODE_PHRASE",
       "code_string": "433",

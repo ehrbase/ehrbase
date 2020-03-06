@@ -52,7 +52,7 @@
 	},
 	"category": {
 		"@type": "DV_CODED_TEXT",
-		"value": "Event",
+		"value": "event",
 		"mappings": [],
 		"defining_code": {
 			"@type": "CODE_PHRASE",
