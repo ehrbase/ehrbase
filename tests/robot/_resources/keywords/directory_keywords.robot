@@ -1053,9 +1053,10 @@ extract version_uid from response (JSON)
 load valid dir test-data-set
     [Arguments]        ${valid_test_data_set}
 
-    ${file}=            Get File    ${VALID DIR DATA SETS}/${valid_test_data_set}
+    # ${file}=            Get File    ${VALID DIR DATA SETS}/${valid_test_data_set}
+    ${json}=            Load JSON From File    ${VALID DIR DATA SETS}/${valid_test_data_set}
 
-                        Set Test Variable    ${test_data}    ${file}
+                        Set Test Variable    ${test_data}    ${json}
 
 
 load invalid dir test-data-set
