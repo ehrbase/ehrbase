@@ -18,7 +18,7 @@
           "_type": "FOLDER",
           "name": {
             "_type": "DV_TEXT",
-            "value": "episode-x"
+            "value": "episode_x"
           },
           "archetype_node_id": "openEHR-EHR-FOLDER.generic.v1",
           "folders": [
@@ -26,7 +26,7 @@
               "_type": "FOLDER",
               "name": {
                 "_type": "DV_TEXT",
-                "value": "summary-compo-x"
+                "value": "summary_compo_x"
               },
               "archetype_node_id": "openEHR-EHR-FOLDER.generic.v1"
             }
@@ -36,7 +36,7 @@
           "_type": "FOLDER",
           "name": {
             "_type": "DV_TEXT",
-            "value": "episode-y"
+            "value": "episode_y"
           },
           "archetype_node_id": "openEHR-EHR-FOLDER.generic.v1",
           "folders": [
@@ -44,7 +44,7 @@
               "_type": "FOLDER",
               "name": {
                 "_type": "DV_TEXT",
-                "value": "summary-compo-y"
+                "value": "summary_compo_y"
               },
               "archetype_node_id": "openEHR-EHR-FOLDER.generic.v1"
             }
@@ -64,11 +64,19 @@
           "_type": "FOLDER",
           "name": {
             "_type": "DV_TEXT",
-            "value": "summary-compo-z"
+            "value": "summary_compo_z"
           },
           "archetype_node_id": "openEHR-EHR-FOLDER.generic.v1"
         }
       ]
+    },
+    {
+      "_type": "FOLDER",
+      "name": {
+        "_type": "DV_TEXT",
+        "value": "foldername-w-special-chars"
+      },
+      "archetype_node_id": "openEHR-EHR-FOLDER.generic.v1"
     }
   ]
 }

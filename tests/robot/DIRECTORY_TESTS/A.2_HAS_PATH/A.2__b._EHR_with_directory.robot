@@ -30,7 +30,7 @@ Suite Setup    Establish Preconditions
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags    xxx
+Force Tags
 
 
 

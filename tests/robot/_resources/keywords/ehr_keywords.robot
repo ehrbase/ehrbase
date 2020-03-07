@@ -100,7 +100,7 @@ create new EHR
                         extract ehr_status from response (JSON)
                         extract ehrstatus_uid (JSON)
 
-                        Set Test Variable    ${response}    ${resp}
+                        Set Suite Variable    ${response}    ${resp}
 
                         Output Debug Info To Console  # NOTE: won't work with content-type=XML
 
@@ -486,7 +486,7 @@ extract system_id from response (JSON)
 
                         Log To Console    \n\tDEBUG OUTPUT - SYSTEM_ID: \n\t${system_id}[0]
 
-                        Set Test Variable    ${system_id}   ${system_id}[0]
+                        Set Suite Variable    ${system_id}   ${system_id}[0]
 
 
 extract subject_id from response (JSON)
@@ -496,7 +496,7 @@ extract subject_id from response (JSON)
 
                         Log To Console    \n\tDEBUG OUTPUT - EHR_STATUS SUBJECT_ID: \n\t${subjectid}[0]
 
-                        Set Test Variable    ${subject_id}    ${subjectid}[0]
+                        Set Suite Variable    ${subject_id}    ${subjectid}[0]
 
 
 extract ehr_status from response (JSON)
@@ -508,7 +508,7 @@ extract ehr_status from response (JSON)
                         Log To Console    \n\tDEBUG OUTPUT - EHR_STATUS:
                         Output       response body ehr_status
 
-                        Set Test Variable    ${ehr_status}     ${ehr_status}[0]
+                        Set Suite Variable    ${ehr_status}     ${ehr_status}[0]
 
 
 extract ehrstatus_uid (JSON)
@@ -518,7 +518,7 @@ extract ehrstatus_uid (JSON)
     ${ehrstatus_uid}=   String       response body ehr_status uid value
 
                         Log To Console    \n\tDEBUG OUTPUT - EHR_STATUS UUID: \n\t${ehrstatus_uid}[0]
-                        Set Test Variable    ${ehrstatus_uid}   ${ehrstatus_uid}[0]
+                        Set Suite Variable    ${ehrstatus_uid}   ${ehrstatus_uid}[0]
 
 
 extract ehr_id from response (XML)
