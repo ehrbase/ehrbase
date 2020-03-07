@@ -25,38 +25,33 @@ Resource    ${CURDIR}${/}../../_resources/keywords/directory_keywords.robot
 Resource    ${CURDIR}${/}../../_resources/keywords/template_opt1.4_keywords.robot
 Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
 
-#Suite Setup  startup SUT
+Suite Setup    Establish Preconditions
 # Test Setup  start openehr server
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags
+Force Tags    xxx
 
 
 
 *** Test Cases ***
 Alternative flow 1: has path on EHR with just root directory (DS 1)
 
-    create EHR
-
-    create DIRECTORY (JSON)    empty_directory.json
-
     get FOLDER in DIRECTORY at version (JSON)    /
-
-    validate GET-@version response - 200 retrieved
+    validate GET-@version response - 200 retrieved    root
 
 
 
 Alternative flow 1: has path on EHR with just root directory (DS 2)
 
-    create EHR
-
-    create DIRECTORY (JSON)    empty_directory.json
-
     generate random path
-
     get FOLDER in DIRECTORY at version (JSON)    ${path}
-
-        TRACE GITHUB ISSUE  36  not-ready  DISCOVERED ISSUE: `path` URI parameter is ignored(?)
-
     validate GET-@version response - 404 unknown path
+
+
+
+
+*** Keywords ***
+Establish Preconditions
+    create EHR
+    create DIRECTORY (JSON)    empty_directory.json
