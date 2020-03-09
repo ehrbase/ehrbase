@@ -57,10 +57,11 @@ public class RawJsonTransform implements I_RawJsonTransform {
                     List<JsonbBlockDef> deleteList = new ArrayList<>();
                     for (JsonbBlockDef jsonbBlockDef : queryStep.getJsonColumns()) {
 
+                        if (record.getValue(jsonbBlockDef.getField()) == null)
+                            continue;
+
                         String jsonbOrigin = record.getValue(jsonbBlockDef.getField()).toString();
 
-                        if (jsonbOrigin == null)
-                            continue;
                         //apply the transformation
                         try {
                             JsonElement jsonElement = new LightRawJsonEncoder(jsonbOrigin).encodeContentAsJson(jsonbBlockDef.getJsonPathRoot());

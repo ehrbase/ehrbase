@@ -64,7 +64,7 @@ public interface I_ConceptAccess {
 
     static DvCodedText fetchConceptText(I_DomainAccess domainAccess, UUID uuid) {
         ConceptRecord conceptRecord = domainAccess.getContext().fetchAny(CONCEPT, CONCEPT.ID.eq(uuid));
-        return new DvCodedText(conceptRecord.getDescription(), new CodePhrase(new TerminologyId("openEhr"), "" + conceptRecord.getConceptid()));
+        return new DvCodedText(conceptRecord.getDescription(), new CodePhrase(new TerminologyId("openehr"), "" + conceptRecord.getConceptid()));
     }
 
     static String fetchConceptLiteral(I_DomainAccess domainAccess, Integer conceptId, String language) {

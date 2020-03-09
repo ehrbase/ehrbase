@@ -21,8 +21,8 @@
 
 package org.ehrbase.aql.compiler;
 
-import org.ehrbase.aql.compiler.tsclient.FhirTerminologyServerImpl;
 import org.ehrbase.aql.compiler.tsclient.TerminologyServer;
+import org.ehrbase.aql.compiler.tsclient.fhir.FhirTerminologyServerImpl;
 import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.parser.AqlBaseVisitor;
 import org.ehrbase.aql.parser.AqlParser;
