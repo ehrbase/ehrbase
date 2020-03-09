@@ -59,7 +59,7 @@ public interface I_StatusAccess extends I_SimpleCRUD {
     }
 
     /**
-     * retrieve a status by given EHR ID
+     * retrieve latest status by given EHR ID
      *
      * @param domainAccess  SQL access
      * @param ehrId         Id of associated EHR

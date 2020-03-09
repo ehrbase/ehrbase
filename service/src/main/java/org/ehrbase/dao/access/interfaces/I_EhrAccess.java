@@ -124,7 +124,7 @@ public interface I_EhrAccess extends I_SimpleCRUD {
     }
 
     /**
-     * retrieve the Ehr entry from its id
+     * Retrieve the Ehr entry from its ID (incl latest STATUS).
      *
      * @param domainAccess SQL access
      * @param ehrId        the Ehr UUID

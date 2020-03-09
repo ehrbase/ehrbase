@@ -21,16 +21,7 @@
  */
 package org.ehrbase.dao.access.jooq;
 
-import com.nedap.archie.rm.changecontrol.OriginalVersion;
-import com.nedap.archie.rm.changecontrol.Version;
 import com.nedap.archie.rm.datastructures.ItemStructure;
-import com.nedap.archie.rm.datavalues.DvCodedText;
-import com.nedap.archie.rm.ehr.EhrStatus;
-import com.nedap.archie.rm.generic.Attestation;
-import com.nedap.archie.rm.generic.AuditDetails;
-import com.nedap.archie.rm.support.identification.HierObjectId;
-import com.nedap.archie.rm.support.identification.ObjectRef;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.dao.access.interfaces.*;
@@ -40,14 +31,13 @@ import org.ehrbase.jooq.pg.tables.records.StatusRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jooq.DSLContext;
+import org.jooq.Result;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
-import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
-import static org.ehrbase.jooq.pg.Tables.STATUS;
+import static org.ehrbase.jooq.pg.Tables.*;
 
 /**
  * Created by Christian Chevalley on 4/20/2015.
@@ -119,8 +109,24 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
 
     }
 
+    // fetch latest status
     public static I_StatusAccess retrieveInstanceByEhrId(I_DomainAccess domainAccess, UUID ehrId) {
-        StatusRecord record = domainAccess.getContext().fetchOne(STATUS, STATUS.EHR_ID.eq(ehrId));
+        StatusRecord record = null;
+
+        int numHistory = domainAccess.getContext().fetchCount(STATUS_HISTORY);
+        if (numHistory == 0)    // no history, so just take the one in normal table
+            record = domainAccess.getContext().fetchOne(STATUS, STATUS.EHR_ID.eq(ehrId));
+        else {
+            Result<StatusRecord> recordsRes = domainAccess.getContext()
+                    .selectFrom(STATUS)
+                    .where(STATUS.EHR_ID.eq(ehrId))
+                    .orderBy(STATUS.SYS_TRANSACTION.desc())    // latest at top, i.e. [0]
+                    .fetch();
+            // get latest
+            if (recordsRes.get(0) != null) {
+                record = recordsRes.get(0);
+            }
+        }
 
         if (record == null)
             return null;

@@ -696,7 +696,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         setParty(subjectUuid);
     }
 
-    @Override
+    @Override   // get latest status
     public EhrStatus getStatus() {
         EhrStatus status = new EhrStatus();
 
@@ -706,7 +706,9 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         if (getStatusAccess().getStatusRecord().getOtherDetails() != null) {
             status.setOtherDetails(getStatusAccess().getStatusRecord().getOtherDetails());
         }
-        status.setUid(new HierObjectId(getStatusAccess().getStatusRecord().getId().toString()));
+        UUID statusId = getStatusAccess().getStatusRecord().getId();
+        status.setUid(new HierObjectId(statusId.toString() + "::" + getServerConfig().getNodename() + "::" +
+                getLastVersionNumberOfStatus(this, statusId)));
 
         I_PartyIdentifiedAccess party = I_PartyIdentifiedAccess.retrieveInstance(getDataAccess(), getParty());
 
