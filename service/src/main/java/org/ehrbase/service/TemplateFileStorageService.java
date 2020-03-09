@@ -121,7 +121,7 @@ public class TemplateFileStorageService implements TemplateStorage {
     public void storeTemplate(OPERATIONALTEMPLATE template) {
         XmlOptions opts = new XmlOptions();
         opts.setSaveSyntheticDocumentElement(new QName("http://schemas.openehr.org/v1", "template"));
-            saveTemplateFile(template.getTemplateId().getValue(), template.xmlText(opts).getBytes(StandardCharsets.UTF_8));
+        saveTemplateFile(template.getTemplateId().getValue(), template.xmlText(opts).getBytes(StandardCharsets.UTF_8));
     }
 
     @Override
