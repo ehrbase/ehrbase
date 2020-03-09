@@ -79,9 +79,8 @@ public interface FolderService extends BaseService {
      * Updates a target folder entry identified by the given folderId with new
      * content. The content string will be serialized from the given source
      * format.
-     * TODO: Copy from CompositionService. Must be designed for folder
      *
-     * @param folderId - Id of the target folder
+     * @param folderId - Full version_uid for folder including system id and version
      * @param update - Update content from request body
      * @param ehrId - EHR id for contribution creation
      * @return Updated folder entry

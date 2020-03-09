@@ -35,6 +35,19 @@ public class VersionUidHelper {
                             VERSION_PATTERN.toString()
             );
 
+    private UUID uuid;
+    private String systemId;
+    private int version;
+
+    public VersionUidHelper(String versionUid) {
+        if (!VERSION_UID_PATTERN.matcher(versionUid).matches()) {
+            throw new IllegalArgumentException("Version uid " + versionUid + " is not a valid version_uid,");
+        }
+        this.uuid = extractUUID(versionUid);
+        this.systemId = extractSystemId(versionUid);
+        this.version = extractVersion(versionUid);
+    }
+
     public static boolean isVersionUid(String testString) {
         return VERSION_UID_PATTERN.matcher(testString).matches();
     }
@@ -70,11 +83,31 @@ public class VersionUidHelper {
     }
 
 
-    public static Integer extractVersion(String versionUid) {
+    public static int extractVersion(String versionUid) {
         Matcher matcher = VERSION_PATTERN.matcher(versionUid);
         if (matcher.find()) {
             return Integer.parseInt(matcher.group(1));
         }
-        return null;
+        return 1;
     }
+
+    public UUID getUuid() {
+        return this.uuid;
+    }
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
+    }
+    public String getSystemId() {
+        return systemId;
+    }
+    public void setSystemId(String systemId) {
+        this.systemId = systemId;
+    }
+    public int getVersion() {
+        return version;
+    }
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
 }

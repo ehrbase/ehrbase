@@ -35,6 +35,7 @@ import org.ehrbase.dao.access.interfaces.I_FolderAccess;
 import org.ehrbase.dao.access.jooq.FolderAccess;
 import org.ehrbase.dao.access.jooq.FolderHistoryAccess;
 import org.ehrbase.dao.access.util.FolderUtils;
+import org.ehrbase.rest.openehr.util.VersionUidHelper;
 import org.ehrbase.serialisation.CanonicalJson;
 import org.ehrbase.serialisation.CanonicalXML;
 import org.joda.time.DateTime;
