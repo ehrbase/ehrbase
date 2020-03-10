@@ -45,15 +45,15 @@ ${INVALID DIR DATA SETS}   ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets
 
 create DIRECTORY (JSON)
     [Arguments]         ${valid_test_data_set}
-                        Set Test Variable  ${KEYWORD NAME}  CREATE DIRECTORY (JSON)
+                        Set Suite Variable  ${KEYWORD NAME}  CREATE DIRECTORY (JSON)
 
                         load valid dir test-data-set    ${valid_test_data_set}
 
                         POST /ehr/ehr_id/directory    JSON
 
-                        Set Test Variable  ${folder_uid}  ${response.json()['uid']['value']}
-                        Set Test Variable  ${version_uid}  ${response.json()['uid']['value']}
-                        Set Test Variable  ${preceding_version_uid}  ${version_uid}
+                        Set Suite Variable  ${folder_uid}  ${response.json()['uid']['value']}
+                        Set Suite Variable  ${version_uid}  ${response.json()['uid']['value']}
+                        Set Suite Variable  ${preceding_version_uid}  ${version_uid}
 
                         capture point in time    of_first_version
 
@@ -124,9 +124,9 @@ update DIRECTORY (JSON)
 
                         PUT /ehr/ehr_id/directory    JSON
 
-                        Set Test Variable  ${folder_uid}  ${response.json()['uid']}
-                        Set Test Variable  ${version_uid}  ${response.json()['uid']}  #TODO: + ::openEHRSys.example.com::1
-                        Set Test Variable  ${preceding_version_uid}  ${version_uid}
+                        Set Suite Variable  ${folder_uid}  ${response.json()['uid']['value']}
+                        Set Suite Variable  ${version_uid}  ${response.json()['uid']['value']}
+                        Set Suite Variable  ${preceding_version_uid}  ${version_uid}
 
                         capture point in time    of_updated_version
 
@@ -412,7 +412,7 @@ POST /ehr/ehr_id/directory
                         ...                 data=${test_data}
                         ...                 headers=${headers}
 
-                        Set Test Variable   ${response}    ${resp}
+                        Set Suite Variable   ${response}    ${resp}
                         Output Debug Info:  POST /ehr/ehr_id/directory
 
 
@@ -864,6 +864,7 @@ validate DELETE response - 412 precondition failed
 
 validate GET-@version response - 200 retrieved
     [Documentation]     CASE: requested directory FOLDER is successfully retrieved.
+    [Arguments]         ${folder_name}
 
                         Should Be Equal As Strings    ${response.status_code}    200
 
@@ -871,6 +872,7 @@ validate GET-@version response - 200 retrieved
 
                         Dictionary Should Contain Key    ${response.json()}    uid
                         Dictionary Should Contain Key    ${response.json()}    folders
+                        Dictionary Should Contain Item    ${response.json()['name']}    value    ${folder_name}
                         # Dictionary Should Contain Item    ${response.json()['folder']}    _type  FOLDER
 
 
@@ -1053,9 +1055,10 @@ extract version_uid from response (JSON)
 load valid dir test-data-set
     [Arguments]        ${valid_test_data_set}
 
-    ${file}=            Get File    ${VALID DIR DATA SETS}/${valid_test_data_set}
+    # ${file}=            Get File    ${VALID DIR DATA SETS}/${valid_test_data_set}
+    ${json}=            Load JSON From File    ${VALID DIR DATA SETS}/${valid_test_data_set}
 
-                        Set Test Variable    ${test_data}    ${file}
+                        Set Suite Variable    ${test_data}    ${json}
 
 
 load invalid dir test-data-set
@@ -1063,7 +1066,7 @@ load invalid dir test-data-set
 
     ${file}=            Get File    ${INVALID DIR DATA SETS}/${invalid_test_data_set}
 
-                        Set Test Variable    ${test_data}    ${file}
+                        Set Suite Variable    ${test_data}    ${file}
 
 
 
