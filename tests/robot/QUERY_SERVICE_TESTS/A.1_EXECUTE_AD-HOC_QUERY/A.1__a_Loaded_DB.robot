@@ -780,6 +780,7 @@ Create EHR Record On The Server
     ${ehr_id_value}=    String    response body ehr_id value
                         Set Suite Variable    ${ehr_id_value}    ${ehr_id_value}
                         Set Suite Variable    ${ehr_id_obj}    ${ehr_id_obj}
+                        Set Suite Variable    ${ehr_id}    ${ehr_id_value}
 
     # TODO: BUG - time_created should be an object! Update when iplementation is fixed
         # this is how it should look like:

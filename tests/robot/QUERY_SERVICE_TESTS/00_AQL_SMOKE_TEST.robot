@@ -459,12 +459,12 @@ Create EHR Record On The Server
 
                         create new EHR with ehr_status  ${payload}
                         Integer    response status    201
-                        # extract ehr_id from response (JSON)    # TODOO: remove
 
     ${ehr_id_obj}=      Object    response body ehr_id
     ${ehr_id_value}=    String    response body ehr_id value
                         Set Suite Variable    ${ehr_id_value}    ${ehr_id_value}
                         Set Suite Variable    ${ehr_id_obj}    ${ehr_id_obj}
+                        Set Suite Variable    ${ehr_id}    ${ehr_id_value}
 
     # TODO: BUG - time_created should be an object! Update when iplementation is fixed
         # this is how it should look like:
