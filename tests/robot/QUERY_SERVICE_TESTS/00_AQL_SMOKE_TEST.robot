@@ -8,7 +8,7 @@ Resource    ${CURDIR}${/}../_resources/suite_settings.robot
 # Test Teardown  restore clean SUT state
 # Suite Teardown    Run Keywords    Clean DB    # Delete Temp Result-Data-Sets
 
-Force Tags    adhoc-query
+Force Tags    adhoc-query    loaded_db
 
 
 
