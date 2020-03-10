@@ -23,13 +23,14 @@ import io.swagger.annotations.*;
 import org.ehrbase.api.dto.FolderDto;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.FolderService;
+import org.ehrbase.api.util.VersionUidHelper;
 import org.ehrbase.rest.openehr.annotation.RequestUrl;
 import org.ehrbase.rest.openehr.controller.OperationNotesResourcesReaderOpenehr.ApiNotes;
 import org.ehrbase.rest.openehr.response.DirectoryResponseData;
 import org.ehrbase.rest.openehr.response.ErrorResponseData;
-import org.ehrbase.rest.openehr.util.VersionUidHelper;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -168,7 +169,7 @@ public class OpenehrDirectoryController extends BaseController {
             throw new IllegalArgumentException("Value for path is malformed. Expecting a unix like notation, e.g. '/episodes/a/b/c'");
         }
         // Tries to create an UUID from versionUid and throws an IllegalArgumentException for 400 error
-        UUID versionUUID = extractVersionedObjectUidFromVersionUid(versionUid);
+        VersionUidHelper versionUidHelper = new VersionUidHelper(versionUid);
 
         // Check if EHR for the folder exists
         if (!ehrService.doesEhrExist(ehrId)) {
@@ -179,12 +180,18 @@ public class OpenehrDirectoryController extends BaseController {
         }
 
         // Get the folder entry from database
-        Optional<FolderDto> foundFolder = folderService.retrieve(versionUUID, 1, path);
+        Optional<FolderDto> foundFolder = folderService.retrieve(
+                versionUidHelper.getUuid(),
+                versionUidHelper.getVersion(),
+                path
+        );
         if (foundFolder.isEmpty()) {
-            throw new ObjectNotFoundException("folder",
-                    "The FOLDER with id " +
-                            versionUUID.toString() +
-                            " does not exist.");
+            throw new ObjectNotFoundException(
+                    "folder",
+                    "The FOLDER with id "
+                    + versionUidHelper.toString()
+                    + " does not exist."
+            );
         }
 
         return createDirectoryResponse(HttpMethod.GET, RETURN_REPRESENTATION, accept, foundFolder.get(), ehrId);
@@ -308,8 +315,23 @@ public class OpenehrDirectoryController extends BaseController {
         }
 
         VersionUidHelper versionUidHelper = new VersionUidHelper(ifMatch);
-
         UUID folderId = versionUidHelper.getUuid();
+        int latestVersion = this.folderService.getLastVersionNumber(folderId);
+
+        if (versionUidHelper.getVersion() < latestVersion) {
+            // Provided version is not the latest
+            versionUidHelper.setVersion(latestVersion);
+
+            throw new PreconditionFailedException(
+                    "If-Match version_uid does not match latest version.",
+                    versionUidHelper.toString(),
+                    encodePath(getBaseEnvLinkURL()
+                            + "/rest/openehr/v1/ehr/"
+                            + ehrId.toString()
+                            + "/directory/" + versionUidHelper.toString()
+                    )
+            );
+        }
 
         // Update folder and get new version
         Optional<FolderDto> updatedFolder = this.folderService.update(
@@ -373,6 +395,25 @@ public class OpenehrDirectoryController extends BaseController {
                     "FOLDER");
         }
 
+        VersionUidHelper versionUidHelper = new VersionUidHelper(ifMatch);
+
+        int latestVersion = this.folderService.getLastVersionNumber(versionUidHelper.getUuid());
+
+        if (versionUidHelper.getVersion() < latestVersion) {
+            // Provided version is not the latest
+            versionUidHelper.setVersion(latestVersion);
+
+            throw new PreconditionFailedException(
+                    "If-Match version_uid does not match latest version.",
+                    versionUidHelper.toString(),
+                    encodePath(getBaseEnvLinkURL()
+                            + "/rest/openehr/v1/ehr/"
+                            + ehrId.toString()
+                            + "/directory/" + versionUidHelper.toString()
+                    )
+            );
+        }
+
         this.folderService.delete(VersionUidHelper.extractUUID(ifMatch));
         return createDirectoryResponse(HttpMethod.DELETE, null, accept, null, ehrId);
     }
@@ -404,10 +445,8 @@ public class OpenehrDirectoryController extends BaseController {
         }
 
         if (folderDto != null) {
-            String versionUid = folderDto.getUid().toString() +
-                    "::" + this.folderService.getServerConfig().getNodename() +
-                    "::" + folderService.getLastVersionNumber(UUID.fromString(folderDto.getUid().toString())
-            );
+
+            String versionUid = folderDto.getVersionUidHelper().toString();
 
             headers.setETag("\"" + versionUid + "\"");
             headers.setLocation(
@@ -447,7 +486,7 @@ public class OpenehrDirectoryController extends BaseController {
      * @return String is a valid path value or not
      */
     private boolean isValidPath(String path) {
-        Pattern pathPattern = Pattern.compile("^(?:/?(?:\\w+|\\s)*/?)+$");
+        Pattern pathPattern = Pattern.compile("^(?:/?(?:\\w+|\\s|-)*/?)+$");
         return pathPattern.matcher(path).matches();
     }
 }

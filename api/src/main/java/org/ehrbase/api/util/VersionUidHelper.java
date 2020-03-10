@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.ehrbase.rest.openehr.util;
+package org.ehrbase.api.util;
 
 
 import java.util.UUID;
@@ -89,6 +89,10 @@ public class VersionUidHelper {
             return Integer.parseInt(matcher.group(1));
         }
         return 1;
+    }
+
+    public String toString() {
+        return this.uuid.toString() + "::" + this.systemId + "::" + this.version;
     }
 
     public UUID getUuid() {

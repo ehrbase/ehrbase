@@ -23,6 +23,9 @@ spring:
   flyway:
     schemas: ehr
 
+  jackson:
+    default-property-inclusion: NON_NULL
+
 cache:
   config: '/ehcache.xml'
   enabled: true

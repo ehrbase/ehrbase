@@ -18,7 +18,9 @@
 
 package org.ehrbase.service;
 
+import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.directory.Folder;
+import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.definitions.StructuredString;
@@ -28,6 +30,7 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.service.FolderService;
+import org.ehrbase.api.util.VersionUidHelper;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
 import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
 import org.ehrbase.dao.access.interfaces.I_EhrAccess;
@@ -35,7 +38,6 @@ import org.ehrbase.dao.access.interfaces.I_FolderAccess;
 import org.ehrbase.dao.access.jooq.FolderAccess;
 import org.ehrbase.dao.access.jooq.FolderHistoryAccess;
 import org.ehrbase.dao.access.util.FolderUtils;
-import org.ehrbase.rest.openehr.util.VersionUidHelper;
 import org.ehrbase.serialisation.CanonicalJson;
 import org.ehrbase.serialisation.CanonicalXML;
 import org.joda.time.DateTime;
@@ -126,10 +128,14 @@ public class FolderServiceImp extends BaseService implements FolderService {
 
         folderAccess = I_FolderAccess.retrieveInstanceForExistingFolder(getDataAccess(), folderId);
 
+        if (version == null) {
+            version = this.getLastVersionNumber(folderId);
+        }
+
         // Handle path
         folderAccess = extractPath(folderAccess, path);
 
-        return createDto(folderAccess);
+        return createDto(folderAccess, version, path == null);
     }
 
     /**
@@ -151,10 +157,12 @@ public class FolderServiceImp extends BaseService implements FolderService {
                     timestamp
             );
 
+            int version = this.getVersionNumberForTimestamp(folderId, timestamp);
+
             // Handle path
             folderAccess = extractPath(folderAccess, path);
 
-            return createDto(folderAccess);
+            return createDto(folderAccess, version, path == null);
         } catch (ObjectNotFoundException e) {
             logger.error(formatter.format(
                     "Folder entry not found for timestamp: %s",
@@ -208,7 +216,7 @@ public class FolderServiceImp extends BaseService implements FolderService {
         // Send update to access layer which updates the hierarchy recursive
         if (folderAccess.update(new Timestamp(timestamp.getMillis()))) {
 
-            return createDto(folderAccess);
+            return createDto(folderAccess, this.getLastVersionNumber(folderAccess.getFolderId()), true);
         } else {
 
             return Optional.empty();
@@ -274,9 +282,9 @@ public class FolderServiceImp extends BaseService implements FolderService {
      */
     @Override
     public Integer getVersionNumberForTimestamp(
-            UUID folderId, LocalDateTime timestamp) {
+            UUID folderId, Timestamp timestamp) {
 
-        return 1;
+        return FolderAccess.getVersionNumberAtTime(getDataAccess(), folderId, timestamp);
     }
 
     /**
@@ -286,7 +294,7 @@ public class FolderServiceImp extends BaseService implements FolderService {
      * @param folderAccess - The {@link I_FolderAccess} containing the data
      * @return {@link Optional<FolderDto>}
      */
-    private Optional<FolderDto> createDto(I_FolderAccess folderAccess) {
+    private Optional<FolderDto> createDto(I_FolderAccess folderAccess, int version, boolean isRoot) {
 
         if (folderAccess == null) {
 
@@ -294,8 +302,17 @@ public class FolderServiceImp extends BaseService implements FolderService {
         }
 
         Folder folder = createFolderObject(folderAccess);
+        VersionUidHelper versionUidHelper = new VersionUidHelper(
+                folderAccess.getFolderId().toString()
+                        + "::"
+                        + this.getServerConfig().getNodename()
+                        + "::" + version);
+        // Set the root uid to a valid version_uid
+        if (isRoot) {
+            folder.setUid(new ObjectVersionId(versionUidHelper.toString()));
+        }
 
-        return Optional.of(new FolderDto(folder));
+        return Optional.of(new FolderDto(folder, versionUidHelper));
     }
 
     /**
@@ -308,15 +325,21 @@ public class FolderServiceImp extends BaseService implements FolderService {
      */
     private Folder createFolderObject(I_FolderAccess folderAccess) {
 
-        Folder result = new Folder();
-        result.setDetails(folderAccess.getFolderDetails());
-        result.setArchetypeNodeId(folderAccess.getFolderArchetypeNodeId());
-        result.setNameAsString(folderAccess.getFolderName());
-        result.setItems(folderAccess.getItems());
-        result.setUid(new ObjectVersionId(folderAccess.getFolderId()
-                .toString()));
+        Folder result = new Folder(
+                new HierObjectId(folderAccess.getFolderId().toString() + "::" + this.getServerConfig().getNodename()),
+                folderAccess.getFolderArchetypeNodeId(),
+                new DvText(folderAccess.getFolderName()),
+                folderAccess.getDetails(),
+                null,
+                null,
+                null,
+                null,
+                null,
+                folderAccess.getItems(),
+                null
+        );
 
-        // Handle subfolder list recursively
+        // Handle sub folder list recursively
         if (!folderAccess.getSubfoldersList()
                 .isEmpty()) {
 
@@ -326,8 +349,6 @@ public class FolderServiceImp extends BaseService implements FolderService {
                     .map(this::createFolderObject)
                     .collect(Collectors.toList()));
 
-        } else {
-            result.setFolders(null);
         }
 
         return result;
