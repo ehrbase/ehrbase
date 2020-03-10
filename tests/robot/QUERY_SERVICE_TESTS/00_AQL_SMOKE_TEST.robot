@@ -24,13 +24,17 @@ BUG-111 - Temp Test Case For Bug Resolution
     [Tags]              GITHUB ISSUE 111    not-ready    temp
 
     upload OPT    all_types/Test_all_types.opt
-    Create EHR Record On The Server    1    ${ehr data sets}/ehr_status_01.json
+    prepare new request session    Prefer=return=representation
+    create new EHR with ehr_status    ${ehr data sets}/ehr_status_01.json
+    Integer    response status    201
+    extract ehr_id from response (JSON)
+
     Log    NEXT STEP FAILS
     Commit Compo    1    1    ${compo data sets}/all_types.composition.json
 
-    # CLEAN UP
-        db_keywords.Delete All Templates
-        db_keywords.Delete All EHR Records
+    [Teardown]          Run Keywords
+                        ...    db_keywords.Delete All Templates
+                        ...    db_keywords.Delete All EHR Records
 
 
 BUG-61 - Temp TC for bug resolution
@@ -38,7 +42,11 @@ BUG-61 - Temp TC for bug resolution
     [Tags]              GITHUB ISSUE 61    not-ready    temp
 
     upload OPT          minimal/minimal_instruction.opt
-    Create EHR Record On The Server    1    ${ehr data sets}/ehr_status_02.json
+    prepare new request session    Prefer=return=representation
+    create new EHR with ehr_status    ${ehr data sets}/ehr_status_02.json
+    Integer    response status    201
+    extract ehr_id from response (JSON)
+
     Log                 NEXT STEPS FAIL
     ${PASSED} =         Run Keyword And Return Status    Commit Compo    9    1    ${compo data sets}/minimal_instruction_1.composition.json
     ${PASSED} =         Run Keyword And Return Status    Commit Compo   10    1    ${compo data sets}/minimal_instruction_2.composition.json
@@ -46,9 +54,9 @@ BUG-61 - Temp TC for bug resolution
     ${PASSED} =         Run Keyword And Return Status    Commit Compo   12    1    ${compo data sets}/minimal_instruction_4.composition.json
     Run Keyword if      not $PASSED    FAIL    ERROR: committing INSTRUCTION COMPOs failed
 
-    # CLEAN UP
-        db_keywords.Delete All Templates
-        db_keywords.Delete All EHR Records
+    [Teardown]          Run Keywords
+                        ...    db_keywords.Delete All Templates
+                        ...    db_keywords.Delete All EHR Records
 
 
 
@@ -451,7 +459,7 @@ Create EHR Record On The Server
 
                         create new EHR with ehr_status  ${payload}
                         Integer    response status    201
-                        extract ehr_id from response (JSON)    # TODOO: remove
+                        # extract ehr_id from response (JSON)    # TODOO: remove
 
     ${ehr_id_obj}=      Object    response body ehr_id
     ${ehr_id_value}=    String    response body ehr_id value
