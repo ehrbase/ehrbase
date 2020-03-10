@@ -106,5 +106,30 @@ public class AqlExpressionTest {
         }
     }
 
+    @Test
+    public void testWhereExpressionWithParenthesis() {
+
+        String query = "select\n" +
+                "    e/ehr_id,\n" +
+                "    a_a/data[at0002]/events[at0003]/data[at0001]/items[at0004]/value/magnitude,\n" +
+                "    a_a/data[at0002]/events[at0003]/time/value\n" +
+                "from EHR e\n" +
+                "contains COMPOSITION a\n" +
+                "contains OBSERVATION a_a[openEHR-EHR-OBSERVATION.body_temperature.v1]\n" +
+                "where a_a/data[at0002]/events[at0003]/data[at0001]/items[at0004]/value/magnitude>38\n" +
+                "AND  a_a/data[at0002]/events[at0003]/data[at0001]/items[at0004]/value/units = '°C'\n" +
+                "AND e/ehr_id/value MATCHES {\n" +
+                "    '849bf097-bd16-44fc-a394-10676284a012',\n" +
+                "    '34b2e263-00eb-40b8-88f1-823c87096457'}\n" +
+                "    OR (a_a/data[at0002]/events[at0003]/data[at0001]/items[at0004]/value/units = '°C' AND a_a/data[at0002]/events[at0003]/data[at0001]/items[at0004]/value/units = '°C')";
+
+        AqlExpression cut = new AqlExpression().parse(query);
+
+        Statements statements = new Statements(cut.getParseTree(), new Contains(cut.getParseTree()).process().getIdentifierMapper()).process();
+
+        assertThat(statements.getWhereClause()).isNotNull();
+
+    }
+
 
 }
