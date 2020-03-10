@@ -11,7 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### DIRECTORY
+
+- PreconditionFailed error response contains proper ETag and Location headers (see: https://github.com/ehrbase/ehrbase/pull/183)
+
 ### Fixed
+
+#### DIRECTORY
+
+- Directory IDs from input path or If-Match header must now be in version_uid format (see https://github.com/ehrbase/ehrbase/pull/183)
+- Folder IDs inside body are now parsed correctly (see: https://github.com/ehrbase/ehrbase/pull/183)
 
 ## [0.11.0] (alpha)
 
