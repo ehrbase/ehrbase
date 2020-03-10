@@ -24,9 +24,11 @@ package org.ehrbase.dao.access.jooq;
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
+import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
+import org.ehrbase.jooq.pg.tables.records.StatusHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.StatusRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -113,18 +115,22 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
     public static I_StatusAccess retrieveInstanceByEhrId(I_DomainAccess domainAccess, UUID ehrId) {
         StatusRecord record = null;
 
-        int numHistory = domainAccess.getContext().fetchCount(STATUS_HISTORY);
-        if (numHistory == 0)    // no history, so just take the one in normal table
+        if (domainAccess.getContext().fetchExists(STATUS, STATUS.EHR_ID.eq(ehrId)))
             record = domainAccess.getContext().fetchOne(STATUS, STATUS.EHR_ID.eq(ehrId));
         else {
-            Result<StatusRecord> recordsRes = domainAccess.getContext()
-                    .selectFrom(STATUS)
-                    .where(STATUS.EHR_ID.eq(ehrId))
-                    .orderBy(STATUS.SYS_TRANSACTION.desc())    // latest at top, i.e. [0]
-                    .fetch();
-            // get latest
-            if (recordsRes.get(0) != null) {
-                record = recordsRes.get(0);
+            if (!domainAccess.getContext().fetchExists(STATUS_HISTORY, STATUS_HISTORY.EHR_ID.eq(ehrId)))
+                // no current one (premise from above) and no history --> inconsistency
+                throw new InternalServerException("DB inconsistency. No STATUS for given EHR ID: " + ehrId);
+            else {
+                Result<StatusHistoryRecord> recordsRes = domainAccess.getContext()
+                        .selectFrom(STATUS_HISTORY)
+                        .where(STATUS_HISTORY.EHR_ID.eq(ehrId))
+                        .orderBy(STATUS_HISTORY.SYS_TRANSACTION.desc())    // latest at top, i.e. [0]
+                        .fetch();
+                // get latest
+                if (recordsRes.get(0) != null) {
+                    record = historyRecToNormalRec(recordsRes.get(0));
+                }
             }
         }
 
@@ -328,5 +334,86 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
             this.auditDetailsAccess.setDescription(description);
 
         this.contributionAccess.setAuditDetailsValues(committerId, systemId, description);
+    }
+
+    /**
+     * Helper method to convert result from query on history table to a record of the normal table.
+     * @param statusHistoryRecord Given history record
+     * @return Converted normal record
+     */
+    protected static StatusRecord historyRecToNormalRec(StatusHistoryRecord statusHistoryRecord) {
+        return new StatusRecord(
+                statusHistoryRecord.getId(),
+                statusHistoryRecord.getEhrId(),
+                statusHistoryRecord.getIsQueryable(),
+                statusHistoryRecord.getIsModifiable(),
+                statusHistoryRecord.getParty(),
+                statusHistoryRecord.getOtherDetails(),
+                statusHistoryRecord.getSysTransaction(),
+                statusHistoryRecord.getSysPeriod(),
+                statusHistoryRecord.getHasAudit(),
+                statusHistoryRecord.getAttestationRef(),
+                statusHistoryRecord.getInContribution()
+        );
+    }
+
+    public static Integer getLatestVersionNumber(I_DomainAccess domainAccess, UUID statusId) {
+
+        if (!hasPreviousVersionOfStatus(domainAccess, statusId))
+            return 1;
+
+        int versionCount = domainAccess.getContext().fetchCount(STATUS_HISTORY, STATUS_HISTORY.ID.eq(statusId));
+
+        return versionCount + 1;
+    }
+
+    private static boolean hasPreviousVersionOfStatus(I_DomainAccess domainAccess, UUID ehrStatusId) {
+        return domainAccess.getContext().fetchExists(STATUS_HISTORY, STATUS_HISTORY.ID.eq(ehrStatusId));
+    }
+
+    @Override
+    @SuppressWarnings("rawtypes")   // `result` is raw so later iterating also gets the version number
+    public int getEhrStatusVersionFromTimeStamp(Timestamp time) {
+        UUID statusUid = this.statusRecord.getId();
+        // retrieve current version from status tables
+        I_StatusAccess retStatusAccess = I_StatusAccess.retrieveInstance(this.getDataAccess(), statusUid);
+
+        // retrieve all other versions from status_history and sort by time
+        Result result = getDataAccess().getContext().selectFrom(STATUS_HISTORY)
+                .orderBy(STATUS_HISTORY.SYS_TRANSACTION.desc())    // latest at top, i.e. [0]
+                .fetch();
+
+        // see 'what version was the top version at moment T?'
+        // first: is time T after current version? then current version is result
+        if (time.after(retStatusAccess.getStatusRecord().getSysTransaction()))
+            return getLatestVersionNumber(getDataAccess(), statusUid);
+        // second: if not, which one of the historical versions matches?
+        for (int i = 0; i < result.size(); i++) {
+            if (result.get(i) instanceof StatusHistoryRecord) {
+                // is time T after this version? then return its version number
+                if (time.after(((StatusHistoryRecord) result.get(i)).getSysTransaction()))
+                    return result.size() - i;   // reverses iterator because order was reversed above and always get non zero
+            } else {
+                throw new InternalServerException("Problem comparing timestamps of EHR_STATUS versions");
+            }
+        }
+
+        throw new ObjectNotFoundException("EHR_STATUS", "Could not find EHR_STATUS version matching given timestamp");
+    }
+
+    @Override
+    public Timestamp getInitialTimeOfVersionedEhrStatus() {
+        Result<StatusHistoryRecord> result = getDataAccess().getContext().selectFrom(STATUS_HISTORY)
+                .where(STATUS_HISTORY.EHR_ID.eq(statusRecord.getEhrId())) // ehrId from this instance
+                .orderBy(STATUS_HISTORY.SYS_TRANSACTION.asc())  // oldest at top, i.e. [0]
+                .fetch();
+
+        if (!result.isEmpty()) {
+            StatusHistoryRecord statusHistoryRecord = result.get(0); // get oldest
+            return statusHistoryRecord.getSysTransaction();
+        }
+
+        // if haven't returned above use time from latest version (already available in this instance)
+        return statusRecord.getSysTransaction();
     }
 }

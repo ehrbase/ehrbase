@@ -245,7 +245,7 @@ public class EhrServiceImp extends BaseService implements EhrService {
     @Override
     public Integer getEhrStatusVersionByTimestamp(UUID ehrUid, Timestamp timestamp) {
         I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrUid);
-        return ehrAccess.getEhrStatusVersionFromTimeStamp(timestamp);
+        return ehrAccess.getStatusAccess().getEhrStatusVersionFromTimeStamp(timestamp);
     }
 
     /**
@@ -257,7 +257,7 @@ public class EhrServiceImp extends BaseService implements EhrService {
         try {
             I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrStatusId);
             UUID statusId = ehrAccess.getStatusId();
-            Integer version = ehrAccess.getLastVersionNumberOfStatus(getDataAccess(), statusId);
+            Integer version = I_StatusAccess.getLatestVersionNumber(getDataAccess(), statusId);
 
             return statusId.toString() + "::" + getServerConfig().getNodename() + "::" + version;
         } catch (Exception e) {
@@ -293,7 +293,7 @@ public class EhrServiceImp extends BaseService implements EhrService {
             versionedEhrStatus.setUid(new HierObjectId(ehrStatus.get().getUid().toString()));
             versionedEhrStatus.setOwnerId(new ObjectRef<>(new HierObjectId(ehrUid.toString()), "local", "EHR"));
             I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrUid);
-            versionedEhrStatus.setTimeCreated(new DvDateTime(OffsetDateTime.of(ehrAccess.getInitialTimeOfVersionedEhrStatus().toLocalDateTime(),
+            versionedEhrStatus.setTimeCreated(new DvDateTime(OffsetDateTime.of(ehrAccess.getStatusAccess().getInitialTimeOfVersionedEhrStatus().toLocalDateTime(),
                     OffsetDateTime.now().getOffset())));
         }
 
@@ -305,7 +305,7 @@ public class EhrServiceImp extends BaseService implements EhrService {
         I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrUid);
 
         // get number of versions
-        int versions = ehrAccess.getNumberOfEhrStatusVersions();
+        int versions = I_StatusAccess.getLatestVersionNumber(getDataAccess(), ehrAccess.getStatusId());
         // fetch each version
         UUID versionedObjectUid = getEhrStatusVersionedObjectUidByEhr(ehrUid);
         RevisionHistory revisionHistory = new RevisionHistory();
