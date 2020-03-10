@@ -116,7 +116,7 @@ MF-502 Execute Ad-Hoc Query - Get EHRs Which Have Compositions
     [Teardown]         TRACE GITHUB ISSUE  61  not-ready  blocked by
 
 
-MF-502 Execute Ad-Hoc Query - Get EHRs Which Have Compositions
+MF-503 Execute Ad-Hoc Query - Get EHRs Which Have Compositions
     [Template]          execute ad-hoc query and check result (loaded DB)
     [Tags]
 
@@ -774,7 +774,7 @@ Create EHR Record On The Server
 
                         create new EHR with ehr_status  ${payload}
                         Integer    response status    201
-                        extract ehr_id from response (JSON)    # TODOO: remove
+                        # extract ehr_id from response (JSON)    # TODOO: remove
 
     ${ehr_id_obj}=      Object    response body ehr_id
     ${ehr_id_value}=    String    response body ehr_id value
