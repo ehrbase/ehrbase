@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [0.11.0] (alpha)
+
+### Added
+
 - Docker and docker-compose support for both application and database
 - Get folder with version_at_time parameter
 - Get Folder with path parameter
