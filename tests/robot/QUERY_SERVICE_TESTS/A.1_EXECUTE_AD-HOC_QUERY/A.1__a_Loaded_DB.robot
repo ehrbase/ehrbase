@@ -780,7 +780,9 @@ Create EHR Record On The Server
     ${ehr_id_value}=    String    response body ehr_id value
                         Set Suite Variable    ${ehr_id_value}    ${ehr_id_value}
                         Set Suite Variable    ${ehr_id_obj}    ${ehr_id_obj}
-                        Set Suite Variable    ${ehr_id}    ${ehr_id_value}
+                        # comment: ATTENTION - RESTinstance lib returns a LIST!
+                        #          The value is at index 0 in that list
+                        Set Suite Variable    ${ehr_id}    ${ehr_id_value}[0]
 
     # TODO: BUG - time_created should be an object! Update when iplementation is fixed
         # this is how it should look like:
