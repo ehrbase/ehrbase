@@ -19,12 +19,12 @@ package org.ehrbase.aql.sql.queryImpl.attribute.eventcontext.facility;
 
 import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
-import org.ehrbase.aql.sql.queryImpl.attribute.partyref.PartyRefResolver;
+import org.ehrbase.aql.sql.queryImpl.attribute.partyref.PartyResolver;
 import org.jooq.Field;
 
 import static org.ehrbase.aql.sql.binding.I_JoinBinder.facilityRef;
 
-public class FacilityResolver extends PartyRefResolver
+public class FacilityResolver extends PartyResolver
 {
 
     public FacilityResolver(FieldResolutionContext fieldResolutionContext, JoinSetup joinSetup) {
