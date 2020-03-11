@@ -49,6 +49,9 @@ public class PartyResolver extends AttributeResolver
                 return new PartyRefJson(fieldResolutionContext, joinSetup).sqlField();
             case "":
                 return new PartyIdentifiedJson(fieldResolutionContext, joinSetup).sqlField();
+            case "identifiers":
+                return new PartyIdentifiedJson(fieldResolutionContext, joinSetup).forJsonPath(path).sqlField();
+
 
         }
         throw new IllegalArgumentException("Unresolved party_identified external_ref attribute path:"+path);

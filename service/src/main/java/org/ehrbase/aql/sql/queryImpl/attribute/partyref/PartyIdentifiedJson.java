@@ -26,7 +26,7 @@ import org.jooq.TableField;
 
 import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
 
-public class PartyIdentifiedJson extends PartyRefAttribute {
+public class PartyIdentifiedJson extends GenericJsonField {
 
     PartyIdentifiedJson(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
         super(fieldContext, joinSetup);
@@ -34,12 +34,12 @@ public class PartyIdentifiedJson extends PartyRefAttribute {
 
     @Override
     public Field<?> sqlField() {
-        return new GenericJsonField(fieldContext, joinSetup)
-                .jsonField("PARTY_IDENTIFIED","ehr.js_canonical_party_identified", joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.ID));
+        return super.jsonField("PARTY_IDENTIFIED","ehr.js_canonical_party_identified", joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.ID));
     }
 
     @Override
     public I_RMObjectAttribute forTableField(TableField tableField) {
         return this;
     }
+
 }
