@@ -51,28 +51,6 @@ Force Tags    refactor    empty_db
 
 
 *** Test Cases ***
-Bug Case 03 - Failing Ad-Hoc Queries - Get Entrie(s)
-    [Documentation]     TEMP TEST CASE FOR BUG REPORTING
-    [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              failing
-
-    C/103_get_entries_empty_db.json
-
-    [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
-
-
-Bug Case 04 - Failing Ad-Hoc Queries - Get Data
-    [Documentation]     TEMP TEST CASE FOR BUG REPORTING
-    [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              failing
-
-    D/306_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
-    D/307_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
-    D/311_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
-
-    [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
-
-
 AF-100 Execute Ad-Hoc Query - Get EHR(s)
     [Template]          execute ad-hoc query and check result (empty DB)
     [Tags]              not-ready
@@ -245,12 +223,9 @@ AF-04 Execute Ad-Hoc Query - Get Data
     D/303_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
     D/304_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
     D/305_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
-    D/306_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
-    D/307_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
     D/308_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
     D/309_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
     D/310_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
-    D/311_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
     D/400_select_data_empty_db.json
     D/401_select_data_empty_db.json
     D/402_select_data_empty_db.json
@@ -261,6 +236,35 @@ AF-04 Execute Ad-Hoc Query - Get Data
     D/501_select_data_empty_db.json
     D/502_select_data_empty_db.json
     D/503_select_data_empty_db.json
+
+
+AF-306 Execute Ad-Hoc Query - Get Data
+    [Template]          execute ad-hoc query and check result (empty DB)
+    [Tags]              GITHUB ISSUE 191
+
+    D/306_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
+
+    [Teardown]          TRACE GITHUB ISSUE  191  not-ready
+
+
+AF-307 Execute Ad-Hoc Query - Get Data
+    [Template]          execute ad-hoc query and check result (empty DB)
+    [Tags]              GITHUB ISSUE 191
+
+    D/307_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
+
+    [Teardown]          TRACE GITHUB ISSUE  191  not-ready
+
+
+AF-311 Execute Ad-Hoc Query - Get Data
+    [Template]          execute ad-hoc query and check result (empty DB)
+    [Tags]              GITHUB ISSUE 191
+
+    D/311_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
+
+    [Teardown]          TRACE GITHUB ISSUE  191  not-ready
+
+
 
 
 
