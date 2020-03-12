@@ -86,25 +86,22 @@ execute ad-hoc query
 load valid query test-data-set
     [Arguments]        ${valid_test_data_set}
 
-    ${file}=            Get File            ${VALID QUERY DATA SETS}/${valid_test_data_set}
-
-                        Set Test Variable   ${test_data}    ${file}
+    ${file} =           Load JSON From File    ${VALID QUERY DATA SETS}/${valid_test_data_set}
+                        Set Test Variable      ${test_data}    ${file}
 
 
 load expected results-data-set (LOADED DB)
     [Arguments]        ${expected_result_data_set}
 
-    ${file}=            Get File            ${QUERY RESULTS LOADED DB}/${expected_result_data_set}
-
-                        Set Test Variable   ${expected_result}    ${file}
+    ${file}=            Load JSON From File    ${QUERY RESULTS LOADED DB}/${expected_result_data_set}
+                        Set Test Variable      ${expected_result}    ${file}
 
 
 load expected results-data-set (EMPTY DB)
     [Arguments]        ${expected_result_data_set}
 
-    ${file}=            Get File            ${QUERY RESULTS EMPTY DB}/${expected_result_data_set}
-
-                        Set Test Variable   ${expected_result}    ${file}
+    ${file}=            Load JSON From File    ${QUERY RESULTS EMPTY DB}/${expected_result_data_set}
+                        Set Test Variable      ${expected_result}    ${file}
 
 
 # load expected result schema
@@ -179,7 +176,7 @@ POST /query/aql
                         # Output Debug Info:  POST /query/aql
     
     # UNCOMMENT NEXT BLOCK FOR DEBUGGING (BETTER OUTPUT IN CONSOLE)
-    # TODO: rm/comment when test stable
+    # TODO: rm/comment it out when test stable
                         Log To Console  \n//////////// ACTUAL //////////////////////////////
                         Output    ${response.json()}
 

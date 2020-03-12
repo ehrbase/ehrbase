@@ -84,7 +84,7 @@ MF-002 Execute Ad-Hoc Query - Get EHR By ID
 
 MF-202 Execute Ad-Hoc Query - Get EHR By ID
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              future    not-ready
+    [Tags]              TODO    not-ready
 
     A/202_query.tmp.json    A/202.tmp.json    # blueprint: A/202_get_ehr_by_id.json
     A/203_query.tmp.json    A/203.tmp.json    # blueprint: A/203_get_ehr_by_id.json
@@ -98,7 +98,7 @@ MF-202 Execute Ad-Hoc Query - Get EHR By ID
     # CHECK https://github.com/ehrbase/ehrbase/pull/149
     # and https://github.com/ehrbase/project_management/issues/107#issuecomment-597920117
     #     for reference!!!
-    [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready  TEST NEEDS UPDATE!
+    [Teardown]          TRACE GITHUB ISSUE  200  not-ready  TEST NEEDS UPDATE!
 
 
 MF-003 Execute Ad-Hoc Query - Get EHRs Which Have Compositions

@@ -2,9 +2,9 @@
   "meta": {
     "_type": "RESULTSET",
     "_created": "2019-10-22T01:14:12.715Z",
-    "_executed_aql": "SELECT c/uid/value, c/name/value, c/archetype_node_id, c/language, c/territory, c/category/value FROM EHR e [ehr_id/value='__MODIFY_EHR_ID_1__'] CONTAINS COMPOSITION c"
+    "_executed_aql": "SELECT c/uid/value, c/name/value, c/archetype_node_id, c/language, c/territory, c/category/value FROM EHR e [ehr_id/value='4cd7ed03-f199-4692-9320-c270b6ea2b93'] CONTAINS COMPOSITION c"
   },
-  "q": "SELECT c/uid/value, c/name/value, c/archetype_node_id, c/language, c/territory, c/category/value FROM EHR e [ehr_id/value='__MODIFY_EHR_ID_1__'] CONTAINS COMPOSITION c",
+  "q": "SELECT c/uid/value, c/name/value, c/archetype_node_id, c/language, c/territory, c/category/value FROM EHR e [ehr_id/value='4cd7ed03-f199-4692-9320-c270b6ea2b93'] CONTAINS COMPOSITION c",
   "columns": [
     {
       "name": "#0",
