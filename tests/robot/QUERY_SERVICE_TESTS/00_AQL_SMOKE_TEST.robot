@@ -8,7 +8,7 @@ Resource    ${CURDIR}${/}../_resources/suite_settings.robot
 # Test Teardown  restore clean SUT state
 # Suite Teardown    Run Keywords    Clean DB    # Delete Temp Result-Data-Sets
 
-Force Tags    adhoc-query    loaded_db
+Force Tags    adhoc-query    loaded_db    smoke
 
 
 
@@ -37,35 +37,13 @@ BUG-111 - Temp Test Case For Bug Resolution
                         ...    db_keywords.Delete All EHR Records
 
 
-BUG-61 - Temp TC for bug resolution
-    [Documentation]     TEMP TC! TODO:@WLAD REMOVE AS SOON AS BUG IS FIXED!
-    [Tags]              GITHUB ISSUE 61    not-ready    temp
-
-    upload OPT          minimal/minimal_instruction.opt
-    prepare new request session    Prefer=return=representation
-    create new EHR with ehr_status    ${ehr data sets}/ehr_status_02.json
-    Integer    response status    201
-    extract ehr_id from response (JSON)
-
-    Log                 NEXT STEPS FAIL
-    ${PASSED} =         Run Keyword And Return Status    Commit Compo    9    1    ${compo data sets}/minimal_instruction_1.composition.json
-    ${PASSED} =         Run Keyword And Return Status    Commit Compo   10    1    ${compo data sets}/minimal_instruction_2.composition.json
-    ${PASSED} =         Run Keyword And Return Status    Commit Compo   11    1    ${compo data sets}/minimal_instruction_3.composition.json
-    ${PASSED} =         Run Keyword And Return Status    Commit Compo   12    1    ${compo data sets}/minimal_instruction_4.composition.json
-    Run Keyword if      not $PASSED    FAIL    ERROR: committing INSTRUCTION COMPOs failed
-
-    [Teardown]          Run Keywords
-                        ...    db_keywords.Delete All Templates
-                        ...    db_keywords.Delete All EHR Records
 
 
 
 
 
-
-
-AQL SMOKE TEST
-    [Tags]              SMOKE
+AQL LOADED DB SMOKE TEST
+    [Tags]    xxx
 
     # PRECONDITIONS
         Preconditions (PART 1) - Load Blueprints of Queries and Expected-Results
@@ -103,6 +81,10 @@ AQL SMOKE TEST
         # Commit Compo    5    1    ${compo data sets}/minimal_evaluation_2.composition.json
         # Commit Compo    6    1    ${compo data sets}/minimal_evaluation_3.composition.json
         # Commit Compo    7    1    ${compo data sets}/minimal_evaluation_4.composition.json
+        # Commit Compo    9    1    ${compo data sets}/minimal_instruction_1.composition.json
+        # Commit Compo   10    1    ${compo data sets}/minimal_instruction_2.composition.json
+        # Commit Compo   11    1    ${compo data sets}/minimal_instruction_3.composition.json
+        # Commit Compo   12    1    ${compo data sets}/minimal_instruction_4.composition.json
         # Commit Compo   13    1    ${compo data sets}/minimal_observation_1.composition.json
         # Commit Compo   14    1    ${compo data sets}/minimal_observation_2.composition.json
         # Commit Compo   15    1    ${compo data sets}/minimal_observation_3.composition.json
@@ -113,12 +95,6 @@ AQL SMOKE TEST
 
         # # FAILS - GITHUB #111
         # Commit Compo    8    1    ${compo data sets}/all_types.composition.json
-
-        # # FAILS - GITHUB #61
-        # Commit Compo    9    1    ${compo data sets}/minimal_instruction_1.composition.json
-        # Commit Compo   10    1    ${compo data sets}/minimal_instruction_2.composition.json
-        # Commit Compo   11    1    ${compo data sets}/minimal_instruction_3.composition.json
-        # Commit Compo   12    1    ${compo data sets}/minimal_instruction_4.composition.json
 
 
     # QUERY EXECUTION
@@ -161,15 +137,15 @@ AQL SMOKE TEST
         # execute ad-hoc query and check result (loaded DB)  B/103_get_compositions_within_timewindow.json    B/103.tmp.json
         # execute ad-hoc query and check result (loaded DB)  B/200_query.tmp.json    B/200.tmp.json
         # execute ad-hoc query and check result (loaded DB)  B/300_get_compositions_with_archetype_from_all_ehrs.json    B/300.tmp.json
-        # # execute ad-hoc query and check result (loaded DB)  B/400_get_compositions_contains_section_with_archetype_from_all_ehrs.json    B/400.tmp.json
+            # # execute ad-hoc query and check result (loaded DB)  B/400_get_compositions_contains_section_with_archetype_from_all_ehrs.json    B/400.tmp.json
         # execute ad-hoc query and check result (loaded DB)  B/500_get_compositions_by_contains_entry_of_type_from_all_ehrs.json    B/500.tmp.json
         # execute ad-hoc query and check result (loaded DB)  B/501_get_compositions_by_contains_entry_of_type_from_all_ehrs.json    B/501.tmp.json
-        # # execute ad-hoc query and check result (loaded DB)  B/502_get_compositions_by_contains_entry_of_type_from_all_ehrs.json    B/502.tmp.json
-        # # execute ad-hoc query and check result (loaded DB)  B/503_get_compositions_by_contains_entry_of_type_from_all_ehrs.json    B/503.tmp.json
+            # # execute ad-hoc query and check result (loaded DB)  B/502_get_compositions_by_contains_entry_of_type_from_all_ehrs.json    B/502.tmp.json
+            # # execute ad-hoc query and check result (loaded DB)  B/503_get_compositions_by_contains_entry_of_type_from_all_ehrs.json    B/503.tmp.json
         # execute ad-hoc query and check result (loaded DB)  B/600_get_compositions_by_contains_entry_with_archetype_from_all_ehrs.json    B/600.tmp.json
         # execute ad-hoc query and check result (loaded DB)  B/601_get_compositions_by_contains_entry_with_archetype_from_all_ehrs.json    B/601.tmp.json
-        # # execute ad-hoc query and check result (loaded DB)  B/602_get_compositions_by_contains_entry_with_archetype_from_all_ehrs.json    B/602.tmp.json
-        # # execute ad-hoc query and check result (loaded DB)  B/603_get_compositions_by_contains_entry_with_archetype_from_all_ehrs.json    B/603.tmp.json
+            # # execute ad-hoc query and check result (loaded DB)  B/602_get_compositions_by_contains_entry_with_archetype_from_all_ehrs.json    B/602.tmp.json
+            # # execute ad-hoc query and check result (loaded DB)  B/603_get_compositions_by_contains_entry_with_archetype_from_all_ehrs.json    B/603.tmp.json
         # execute ad-hoc query and check result (loaded DB)  B/700_get_compositions_by_contains_entry_with_archetype_and_condition_from_all_ehrs.json    B/700.tmp.json
         # execute ad-hoc query and check result (loaded DB)  B/701_get_compositions_by_contains_entry_with_archetype_and_condition_from_all_ehrs.json    B/701.tmp.json
         # execute ad-hoc query and check result (loaded DB)  B/702_get_compositions_by_contains_entry_with_archetype_and_condition_from_all_ehrs.json    B/702.tmp.json
@@ -181,10 +157,10 @@ AQL SMOKE TEST
         # execute ad-hoc query and check result (loaded DB)  C/301_query.tmp.json    C/301.tmp.json
         # execute ad-hoc query and check result (loaded DB)  C/400_query.tmp.json    C/400.tmp.json
         # execute ad-hoc query and check result (loaded DB)  C/500_query.tmp.json    C/500.tmp.json
-        # # execute ad-hoc query and check result (loaded DB)  C/100_query.tmp.json    C/100.tmp.json
-        # # execute ad-hoc query and check result (loaded DB)  C/200_query.tmp.json    C/200.tmp.json
-        # # execute ad-hoc query and check result (loaded DB)  C/302_query.tmp.json    C/302.tmp.json
-        # # execute ad-hoc query and check result (loaded DB)  C/303_query.tmp.json    C/303.tmp.json
+            # # execute ad-hoc query and check result (loaded DB)  C/100_query.tmp.json    C/100.tmp.json
+            # # execute ad-hoc query and check result (loaded DB)  C/200_query.tmp.json    C/200.tmp.json
+            # # execute ad-hoc query and check result (loaded DB)  C/302_query.tmp.json    C/302.tmp.json
+            # # execute ad-hoc query and check result (loaded DB)  C/303_query.tmp.json    C/303.tmp.json
         # execute ad-hoc query and check result (loaded DB)  C/101_query.tmp.json    C/101.tmp.json
         # execute ad-hoc query and check result (loaded DB)  C/102_query.tmp.json    C/102.tmp.json
         # execute ad-hoc query and check result (loaded DB)  C/103_query.tmp.json    C/103.tmp.json
@@ -212,12 +188,37 @@ AQL SMOKE TEST
         # execute ad-hoc query and check result (loaded DB)  D/502_query.tmp.json    D/502.tmp.json
         # execute ad-hoc query and check result (loaded DB)  D/503_query.tmp.json    D/503.tmp.json
 
-
-    # CLEAN UP
-        db_keywords.Delete All Templates
-        db_keywords.Delete All EHR Records
-
     [Teardown]    Set Smoke Test Status
+
+
+
+
+
+
+#////////////////////////////////////////////////////////////////////////
+#///                                                                  ///
+#///      TODO: @WLAD MOVE BELOW TCs to A.1__a.Loaded_DB suite        ///
+#///            as soon as they start to PASS                         ///
+#///                                                                  ///
+#////////////////////////////////////////////////////////////////////////
+
+
+MF-101 Execute Ad-Hoc Query - Get EHRs
+    [Template]          execute ad-hoc query and check result (loaded DB)
+    [Tags]              GITHUB ISSUE 196    not-ready
+    A/101_get_ehrs.json    A/101.tmp.json
+
+MF-103 Execute Ad-Hoc Query - Get EHRs
+    [Template]          execute ad-hoc query and check result (loaded DB)
+    [Tags]              GITHUB ISSUE 196    not-ready
+    A/103_get_ehrs.json    A/103.tmp.json
+
+
+
+CLEAN UP SUT
+    [Tags]    xxx
+    db_keywords.Delete All Templates
+    db_keywords.Delete All EHR Records
 
 
 
@@ -526,6 +527,7 @@ Commit Compo
         Log To Console  \nCOMPOSITION ${compo_index}(${ehr_index}) ////////////////////////////////////
 
                         Set Suite Variable    ${compo_index}    ${compo_index}
+                        # Set Suite Variable    ${ehr_index}    ${ehr_index}    # TODO: @WLAD REMOVE
 
     &{resp}=            REST.POST    ${baseurl}/ehr/${ehr_id}/composition    ${compo_file}
                         Output Debug Info To Console
@@ -1212,7 +1214,6 @@ D/312
                         Create Temp List    ${ehr_id_value}[0]
                         ...                 ${time_created}[0]
                         ...                 ${system_id}[0]
-                        ...                 TODOO: CLARIFY w/ @PABLO - TOP5 newest OR oldest?
                         Update 'rows' in Temp Result-Data-Set    D/312
 
 D/400

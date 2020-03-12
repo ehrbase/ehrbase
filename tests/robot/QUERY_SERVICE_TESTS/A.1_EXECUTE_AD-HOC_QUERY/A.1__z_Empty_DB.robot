@@ -51,30 +51,6 @@ Force Tags    refactor    empty_db
 
 
 *** Test Cases ***
-Bug Case 01 - Failing Ad-Hoc Queries - Get EHR(s)
-    [Documentation]     TEMP TEST CASE FOR BUG REPORTING
-    [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              failing
-
-    A/109_get_ehrs_within_timewindow.json
-    A/202_get_ehr_by_id_empty_db.json
-    A/203_get_ehr_by_id_empty_db.json
-
-    [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
-
-
-Bug Case 02 - Failing Ad-Hoc Queries - Get Composition(s)
-    [Documentation]     TEMP TEST CASE FOR BUG REPORTING
-    [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              failing
-
-    B/103_get_compositions_within_timewindow.json
-    B/800_get_composition_by_uid_empty_db.json
-    B/801_get_composition_by_uid_empty_db.json
-
-    [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
-
-
 Bug Case 03 - Failing Ad-Hoc Queries - Get Entrie(s)
     [Documentation]     TEMP TEST CASE FOR BUG REPORTING
     [Template]          execute ad-hoc query and check result (empty DB)
@@ -97,24 +73,25 @@ Bug Case 04 - Failing Ad-Hoc Queries - Get Data
     [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
 
 
+AF-100 Execute Ad-Hoc Query - Get EHR(s)
+    [Template]          execute ad-hoc query and check result (empty DB)
+    [Tags]              not-ready
+                        A/100_get_ehrs.json
+    [Teardown]          TRACE GITHUB ISSUE  197  not-ready
+
+
 AF-01 Execute Ad-Hoc Query - Get EHR(s)
     [Template]          execute ad-hoc query and check result (empty DB)
     [Tags]              not-ready
 
-    A/100_get_ehrs.json
-    A/101_get_ehrs.json
     A/102_get_ehrs.json
-    A/103_get_ehrs.json
     A/104_get_ehrs.json
     A/105_get_ehrs.json
     A/106_get_ehrs.json
     A/107_get_ehrs_top_5.json
     A/108_get_ehrs_orderby_time-created.json
-    A/109_get_ehrs_within_timewindow.json
     A/200_get_ehr_by_id_empty_db.json
     A/201_get_ehr_by_id_empty_db.json
-    A/202_get_ehr_by_id_empty_db.json
-    A/203_get_ehr_by_id_empty_db.json
     A/300_get_ehrs_by_contains_any_composition.json
     A/400_get_ehrs_by_contains_composition_with_archetype.json
     A/401_get_ehrs_by_contains_composition_with_archetype.json
@@ -128,6 +105,46 @@ AF-01 Execute Ad-Hoc Query - Get EHR(s)
     A/602_get_ehrs_by_contains_composition_contains_entry_with_archetype.json
     A/603_get_ehrs_by_contains_composition_contains_entry_with_archetype.json
 
+    [Teardown]          TRACE GITHUB ISSUE  197  not-ready
+
+
+AF-101 Execute Ad-Hoc Query - Get EHR(s)
+    [Template]          execute ad-hoc query and check result (empty DB)
+    [Tags]              GITHUB ISSUE 196
+                        A/101_get_ehrs.json
+    [Teardown]          TRACE GITHUB ISSUE  196  not-ready
+
+
+AF-103 Execute Ad-Hoc Query - Get EHR(s)
+    [Template]          execute ad-hoc query and check result (empty DB)
+    [Tags]              GITHUB ISSUE 196
+                        A/103_get_ehrs.json
+    [Teardown]          TRACE GITHUB ISSUE  196  not-ready
+
+
+AF-109 Execute Ad-Hoc Query - Get EHR(s)
+    [Template]          execute ad-hoc query and check result (empty DB)
+    [Tags]              future    not-ready
+                        A/109_get_ehrs_within_timewindow.json
+
+
+AF-202 Execute Ad-Hoc Query - Get EHR(s)
+    [Template]          execute ad-hoc query and check result (empty DB)
+    [Tags]              not-ready
+                        A/202_get_ehr_by_id_empty_db.json
+                        A/203_get_ehr_by_id_empty_db.json
+    [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready  TEST NEEDS UPDATE!
+    
+    # TODO: @WLAD make a new TCs
+    # expected result for both queries is:
+    # {
+    #     "error": "WHERE variable should be a path, found:'uid'",
+    #     "status": "Bad Request"
+    # }
+    # CHECK https://github.com/ehrbase/ehrbase/pull/149
+    # and https://github.com/ehrbase/project_management/issues/107#issuecomment-597920117
+    #     for reference!!!
+
 
 AF-02 Execute Ad-Hoc Query - Get Composition(s)
     [Template]          execute ad-hoc query and check result (empty DB)
@@ -136,7 +153,6 @@ AF-02 Execute Ad-Hoc Query - Get Composition(s)
     B/100_get_compositions_from_all_ehrs.json
     B/101_get_compositions_top_5.json
     B/102_get_compositions_orderby_name.json
-    B/103_get_compositions_within_timewindow.json
     B/200_get_compositions_from_ehr_by_id_empty_db.json
     B/300_get_compositions_with_archetype_from_all_ehrs.json
     B/400_get_compositions_contains_section_with_archetype_from_all_ehrs.json
@@ -151,10 +167,27 @@ AF-02 Execute Ad-Hoc Query - Get Composition(s)
     B/700_get_compositions_by_contains_entry_with_archetype_and_condition_from_all_ehrs.json
     B/701_get_compositions_by_contains_entry_with_archetype_and_condition_from_all_ehrs.json
     B/702_get_compositions_by_contains_entry_with_archetype_and_condition_from_all_ehrs.json
+    B/802_get_composition_by_uid_empty_db.json
+    B/803_get_composition_by_uid_empty_db.json
+
+    [Teardown]          TRACE GITHUB ISSUE  197  not-ready
+
+
+AF-103 Execute Ad-Hoc Query - Get Composition(s)
+    [Template]          execute ad-hoc query and check result (empty DB)
+    [Tags]              future    not-ready
+
+    B/103_get_compositions_within_timewindow.json
+
+
+AF-800 Execute Ad-Hoc Query - Get Composition(s)
+    [Template]          execute ad-hoc query and check result (empty DB)
+    [Tags]              GITHUB ISSUE 109
+
     B/800_get_composition_by_uid_empty_db.json
     B/801_get_composition_by_uid_empty_db.json
-    B/802_get_composition_by_uid_empty_db.json
-    B/803_get_composition_by_uid_empty_db.js
+
+    [Teardown]          TRACE GITHUB ISSUE  109  not-ready  blocked by
 
 
 AF-03 Execute Ad-Hoc Query - Get Entrie(s)
@@ -162,9 +195,6 @@ AF-03 Execute Ad-Hoc Query - Get Entrie(s)
     [Tags]              not-ready
 
     C/100_get_entries_empty_db.json
-    C/101_get_entries_empty_db.json
-    C/102_get_entries_empty_db.json
-    C/103_get_entries_empty_db.json
     C/200_get_entries_empty_db.json
     C/300_get_entries_empty_db.json
     C/301_get_entries_empty_db.json
@@ -172,6 +202,35 @@ AF-03 Execute Ad-Hoc Query - Get Entrie(s)
     C/303_get_entries_empty_db.json
     C/400_get_entries_empty_db.json
     C/500_get_entries_empty_db.json
+
+    [Teardown]          TRACE GITHUB ISSUE  197  not-ready
+
+
+AF-101 Execute Ad-Hoc Query - Get Entries (filtered: top 5)
+    [Template]          execute ad-hoc query and check result (empty DB)
+    [Tags]              not-ready
+
+    C/101_get_entries_empty_db.json
+
+    [Teardown]          TRACE GITHUB ISSUE  197  not-ready  blocked by
+
+
+AF-102 Execute Ad-Hoc Query - Get Entries (ordered by: name)
+    [Template]          execute ad-hoc query and check result (empty DB)
+    [Tags]              not-ready
+
+    C/102_get_entries_empty_db.json
+
+    [Teardown]          TRACE GITHUB ISSUE  197  not-ready
+
+
+AF-103 Execute Ad-Hoc Query - Get Entries (filtered: timewindow)
+    [Template]          execute ad-hoc query and check result (empty DB)
+    [Tags]              future    not-ready
+
+    C/103_get_entries_empty_db.json
+
+    [Teardown]          TRACE GITHUB ISSUE  101  not-ready  reladed
     
 
 AF-04 Execute Ad-Hoc Query - Get Data

@@ -58,9 +58,9 @@ MF-001 Execute Ad-Hoc Query - Get EHRs
     [Tags]              not-ready
 
     A/100_get_ehrs.json    A/100.tmp.json
-    A/101_get_ehrs.json    A/101.tmp.json
+    # A/101_get_ehrs.json    A/101.tmp.json    # --> moved to SMOKE TEST tempor.
     A/102_get_ehrs.json    A/102.tmp.json
-    A/103_get_ehrs.json    A/103.tmp.json
+    # A/103_get_ehrs.json    A/103.tmp.json    # --> moved to SMOKE TEST tempor.
     A/104_get_ehrs.json    A/104.tmp.json
 
 
@@ -84,12 +84,21 @@ MF-002 Execute Ad-Hoc Query - Get EHR By ID
 
 MF-202 Execute Ad-Hoc Query - Get EHR By ID
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              
+    [Tags]              future    not-ready
 
     A/202_query.tmp.json    A/202.tmp.json    # blueprint: A/202_get_ehr_by_id.json
     A/203_query.tmp.json    A/203.tmp.json    # blueprint: A/203_get_ehr_by_id.json
 
-    [Teardown]         TRACE GITHUB ISSUE  107  not-ready 
+    # TODO: @WLAD make a new TCs
+    # expected result for both queries is:
+    # {
+    #     "error": "WHERE variable should be a path, found:'uid'",
+    #     "status": "Bad Request"
+    # }
+    # CHECK https://github.com/ehrbase/ehrbase/pull/149
+    # and https://github.com/ehrbase/project_management/issues/107#issuecomment-597920117
+    #     for reference!!!
+    [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready  TEST NEEDS UPDATE!
 
 
 MF-003 Execute Ad-Hoc Query - Get EHRs Which Have Compositions
@@ -108,12 +117,10 @@ MF-003 Execute Ad-Hoc Query - Get EHRs Which Have Compositions
 
 MF-502 Execute Ad-Hoc Query - Get EHRs Which Have Compositions
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]
+    [Tags]              not-ready
   
     A/502_get_ehrs_by_contains_composition_contains_entry_of_type.json    A/502.tmp.json
     A/602_get_ehrs_by_contains_composition_contains_entry_with_archetype.json  A/602.tmp.json
-
-    [Teardown]         TRACE GITHUB ISSUE  61  not-ready  blocked by
 
 
 MF-503 Execute Ad-Hoc Query - Get EHRs Which Have Compositions
@@ -132,7 +139,9 @@ MF-107 Execute Ad-Hoc Query - Get EHRs (filtered: top 5)
 
     A/107_get_ehrs_top_5.json    A/107.tmp.json
 
-    [Teardown]          TRACE GITHUB ISSUE  103  not-ready  blocked by
+    # TODO: @WLAD REFACTOR TEST!
+
+    [Teardown]          TRACE GITHUB ISSUE  103  not-ready
 
 
 MF-108 Execute Ad-Hoc Query - Get EHRs (ordered by: time-created)
@@ -146,11 +155,9 @@ MF-108 Execute Ad-Hoc Query - Get EHRs (ordered by: time-created)
 
 MF-109 Execute Ad-Hoc Query - Get EHRs (filtered: timewindow)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              
+    [Tags]              future    not-ready
 
     A/109_get_ehrs_within_timewindow.json       A/109.tmp.json
-
-    [Teardown]          TRACE GITHUB ISSUE  106  not-ready
 
 
 MF-007 Execute Ad-Hoc Query - Get Compositions From All EHRs
@@ -199,29 +206,32 @@ MF-011 Execute Ad-Hoc Query - Get Compositions (ordered by: name)
 
 MF-012 Execute Ad-Hoc Query - Get Compositions (filtered: timewindow)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              
+    [Tags]              future    not-ready
 
     B/103_get_compositions_within_timewindow.json    B/103.tmp.json
 
-    [Teardown]          TRACE GITHUB ISSUE  106  not-ready
-
 
 MF-013 Execute Ad-Hoc Query - Get Compositions By UID
+    [Documentation]     B/802: SELECT c FROM COMPOSITION c WHERE c/uid/value='123::local.ehrbase.org::1'
+    ...                 B/803: SELECT c FROM COMPOSITION c WHERE c/uid/value=$uid
+    [Template]          execute ad-hoc query and check result (loaded DB)
+    [Tags]              not-ready
+
+    # # NOTE: FAIL when different compsosition types are committed
+    B/802_query.tmp.json    B/802.tmp.json
+    B/803_query.tmp.json    B/803.tmp.json
+
+
+MF-800 Execute Ad-Hoc Query - Get Compositions By UID
     [Documentation]     B/800: SELECT c FROM COMPOSITION c [uid/value='123::local.ehrbase.org::1']
     ...                 B/801: SELECT c FROM COMPOSITION c [uid/value=$uid]
-    ...                 B/802: SELECT c FROM COMPOSITION c WHERE c/uid/value='123::local.ehrbase.org::1'
-    ...                 B/803: SELECT c FROM COMPOSITION c WHERE c/uid/value=$uid
     [Template]          execute ad-hoc query and check result (loaded DB)
     [Tags]              not-ready
 
     B/800_query.tmp.json    B/800.tmp.json
     B/801_query.tmp.json    B/801.tmp.json
 
-    # # NOTE: FAIL when different compsosition types are committed
-    B/802_query.tmp.json    B/802.tmp.json
-    B/803_query.tmp.json    B/803.tmp.json
-
-    [Teardown]          TRACE GITHUB ISSUE  109  not-ready  blocked by
+    [Teardown]          TRACE GITHUB ISSUE  109  not-ready  still blocked by
 
 
 MF-014 Execute Ad-Hoc Query - Get Entries from EHR
@@ -247,8 +257,7 @@ MF-015 Execute Ad-Hoc Query - Get Entries (filtered: top 5)
 
     C/101_query.tmp.json    C/101.tmp.json
 
-    [Teardown]          Run Keywords  TRACE GITHUB ISSUE  103  not-ready  blocked by
-                        ...    AND    TRACE GITHUB ISSUE  101  not-ready  related
+    [Teardown]          TRACE GITHUB ISSUE  101  not-ready  blocked by
 
 
 MF-016 Execute Ad-Hoc Query - Get Entries (ordered by: name)
@@ -258,18 +267,17 @@ MF-016 Execute Ad-Hoc Query - Get Entries (ordered by: name)
 
     C/102_query.tmp.json    C/102.tmp.json
 
-    [Teardown]          TRACE GITHUB ISSUE  101  not-ready  related
+    [Teardown]          TRACE GITHUB ISSUE  101  not-ready  blocked by
 
 
 MF-017 Execute Ad-Hoc Query - Get Entries (filtered: timewindow)
     [Documentation]     get_entries_within_timewindow
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]
+    [Tags]              future    not-ready
 
     C/103_query.tmp.json    C/103.tmp.json
 
-    [Teardown]          Run Keywords  TRACE GITHUB ISSUE  106  not-ready  blocked by
-                        ...    AND    TRACE GITHUB ISSUE  101  not-ready  reladed
+    [Teardown]          TRACE GITHUB ISSUE  101  not-ready  reladed
 
 
 MF-019 Execute Ad-HOc Query - Get Data
@@ -732,9 +740,6 @@ Populate SUT with Test-Data and Prepare Expected Results
     [Arguments]         ${ehr_index}    ${ehr_status_object}
     Log To Console  \nEHR RECORD ${ehr_index} ////////////////////////////////////
 
-    # TODO: @WLAD rm if this change has no effect
-    # prepare new request session    Prefer=return=representation
-
     Create EHR Record On The Server    ${ehr_index}    ${ehr_status_object}
 
     Commit Compo     1    ${ehr_index}    ${compo data sets}/minimal_admin_1.composition.json
@@ -745,6 +750,11 @@ Populate SUT with Test-Data and Prepare Expected Results
     Commit Compo     5    ${ehr_index}    ${compo data sets}/minimal_evaluation_2.composition.json
     Commit Compo     6    ${ehr_index}    ${compo data sets}/minimal_evaluation_3.composition.json
     Commit Compo     7    ${ehr_index}    ${compo data sets}/minimal_evaluation_4.composition.json
+
+    Commit Compo     9    ${ehr_index}    ${compo data sets}/minimal_instruction_1.composition.json
+    Commit Compo    10    ${ehr_index}    ${compo data sets}/minimal_instruction_2.composition.json
+    Commit Compo    11    ${ehr_index}    ${compo data sets}/minimal_instruction_3.composition.json
+    Commit Compo    12    ${ehr_index}    ${compo data sets}/minimal_instruction_4.composition.json
 
     Commit Compo    13    ${ehr_index}    ${compo data sets}/minimal_observation_1.composition.json
     Commit Compo    14    ${ehr_index}    ${compo data sets}/minimal_observation_2.composition.json
@@ -757,13 +767,6 @@ Populate SUT with Test-Data and Prepare Expected Results
 
     # # FAILS - GITHUB #111
     # Commit Compo    8    ${ehr_index}    ${compo data sets}/all_types.composition.json
-
-    # # FAILS - GITHUB #61
-    # Commit Compo    9    ${ehr_index}    ${compo data sets}/minimal_instruction_1.composition.json
-    # Commit Compo   10    ${ehr_index}    ${compo data sets}/minimal_instruction_2.composition.json
-    # Commit Compo   11    ${ehr_index}    ${compo data sets}/minimal_instruction_3.composition.json
-    # Commit Compo   12    ${ehr_index}    ${compo data sets}/minimal_instruction_4.composition.json
-
 
 
 Create EHR Record On The Server
@@ -842,6 +845,7 @@ Commit Compo
         Log To Console  \nCOMPOSITION ${compo_index}(${ehr_index}) ////////////////////////////////////
 
                         Set Suite Variable    ${compo_index}    ${compo_index}
+                        # Set Suite Variable    ${ehr_index}    ${ehr_index}    # TODO: @WLAD REMOVE
 
     &{resp}=            REST.POST    ${baseurl}/ehr/${ehr_id}/composition    ${compo_file}
                         Output Debug Info To Console
