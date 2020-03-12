@@ -73,6 +73,9 @@ public class CAttribute extends CConstraint implements I_CArchetypeConstraintVal
 
         Object value = findAttribute(aValue, attribute.getRmAttributeName());
 
+        if (value == null && IntervalComparator.isOptional(attribute.getExistence()))
+            return;
+
         if (!isAttributeResolved && value == null) {
             //check for a function
             value = getFunctionValue(aValue, attribute.getRmAttributeName());
@@ -81,11 +84,10 @@ public class CAttribute extends CConstraint implements I_CArchetypeConstraintVal
         }
 
         if (value == null) {
-            if (IntervalComparator.isOptional(attribute.getExistence()))
-                return;
             //resolved but missing
             ValidationException.raise(path, "Mandatory attribute has no value:" + attribute.getRmAttributeName(), "ATTR02");
         }
+
         //if value is an enum use its actual value
         if (value.getClass().isEnum()) {
             value = getEnumValue(value);
@@ -119,7 +121,7 @@ public class CAttribute extends CConstraint implements I_CArchetypeConstraintVal
         try {
             getter = rmClass.getMethod(getterName);
             isAttributeResolved = true;
-            value = getter.invoke(obj, null);
+            value = getter.invoke(obj, (Object) null);
 
         } catch (Exception e) {
             isAttributeResolved = false;

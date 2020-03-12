@@ -61,7 +61,7 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
 
     }
 
-    public ItemStructureVisitor(TerminologyService terminologyService) throws NoSuchMethodException, IllegalAccessException, ClassNotFoundException {
+    public ItemStructureVisitor(TerminologyService terminologyService) throws NoSuchMethodException, IllegalAccessException {
         this(terminologyService.localizedTerminologies());
     }
 
@@ -376,7 +376,7 @@ public class ItemStructureVisitor implements I_ItemStructureVisitor {
         elementOccurrences += 1;
 
         if (element.getNullFlavour() != null && itemValidator.isValidatedRmObjectType(element.getNullFlavour())){
-            itemValidator.validate(localizedTerminologies.locale(itemStructureLanguage), codesetMapping, null, element.getNullFlavour(), itemStructureLanguage);
+            itemValidator.validate(localizedTerminologies.locale(itemStructureLanguage), codesetMapping, "null_flavour", element.getNullFlavour(), itemStructureLanguage);
         }
 
         if (element.getValue() != null && itemValidator.isValidatedRmObjectType(element.getValue())){

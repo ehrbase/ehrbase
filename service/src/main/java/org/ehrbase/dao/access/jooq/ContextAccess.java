@@ -327,9 +327,15 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
 
     private Timestamp toTimestamp(DvDateTime dateTime) {
         TemporalAccessor accessor = dateTime.getValue();
-        long millis = accessor.getLong(ChronoField.INSTANT_SECONDS) * 1000 + accessor.getLong(ChronoField.MILLI_OF_SECOND);
+        if (accessor instanceof LocalDateTime) {
+            long millis = (((LocalDateTime) accessor).atZone(ZoneId.of("Z")).toInstant().getEpochSecond() * 1000) + accessor.getLong(ChronoField.MILLI_OF_SECOND);
+            //CCH 12.3.20: ChronoField.INSTANT_SECONDS no more supported...
+//        long millis = accessor.getLong(ChronoField.INSTANT_SECONDS) * 1000 + accessor.getLong(ChronoField.MILLI_OF_SECOND);
 
-        return new Timestamp(millis);
+            return new Timestamp(millis);
+        }
+        else
+            throw new InternalServerException("DateTime accessor is not supported:"+accessor.getClass().getCanonicalName());
     }
 
     /**
