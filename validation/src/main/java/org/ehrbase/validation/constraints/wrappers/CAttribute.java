@@ -121,7 +121,7 @@ public class CAttribute extends CConstraint implements I_CArchetypeConstraintVal
         try {
             getter = rmClass.getMethod(getterName);
             isAttributeResolved = true;
-            value = getter.invoke(obj, (Object) null);
+            value = getter.invoke(obj, null);
 
         } catch (Exception e) {
             isAttributeResolved = false;
