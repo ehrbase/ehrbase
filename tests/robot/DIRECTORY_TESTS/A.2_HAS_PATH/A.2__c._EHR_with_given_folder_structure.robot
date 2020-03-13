@@ -12,15 +12,18 @@ Documentation    Alternative flow 2: has path on EHR with given folder structure
 ...         None
 ...
 ...     Data set
-...         DS   | $path                                | $result |
-...         -----+--------------------------------------+---------+
-...         DS 1 | /                                    | true    |
-...         DS 2 | /emergency                           | true    |
-...         DS 3 | /emergency/episode-x                 | true    |
-...         DS 4 | /emergency/episode-x/summary-compo-x | true    |
-...         DS 5 | ... see test documentation ...
-...              | ...
-...         DS 9 | ...
+...         DS    | $path                                | $result |
+...         ------+--------------------------------------+---------+
+...         DS 01 | /                                    | true    |
+...         DS 02 | /emergency                           | true    |
+...         DS 03 | /emergency/episode_x                 | true    |
+...         DS 04 | /emergency/episode_x/summary_compo_x | true    |
+...         DS 05 | /emergency/episode_y                 | true    |
+...         DS 06 | /emergency/episode_y/summary_compo_y | true    |
+...         DS 07 | /hospitalization                     | true    |
+...         DS 08 | /hospitalization/summary_compo_z     | true    |
+...         DS 09 | /random_path                         | false   |
+...         DS 10 | /foldername-w-special-chars          | true    |
 
 
 Resource    ${CURDIR}${/}../../_resources/suite_settings.robot
@@ -30,7 +33,7 @@ Resource    ${CURDIR}${/}../../_resources/keywords/directory_keywords.robot
 Resource    ${CURDIR}${/}../../_resources/keywords/template_opt1.4_keywords.robot
 Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
 
-#Suite Setup  startup SUT
+Suite Setup    Establish Preconditions
 # Test Setup  start openehr server
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
@@ -40,112 +43,73 @@ Force Tags    todo-data-driven
 
 
 *** Test Cases ***
-Alternative flow 2: has path on EHR with given folder structure (DS 1)
-
-    create EHR
-
-    create DIRECTORY (JSON)    subfolders_in_directory.json
-
+DS-01 - has path on EHR with given folder structure
+    [Tags]
     get FOLDER in DIRECTORY at version (JSON)    /
-
-    validate GET-@version response - 200 retrieved
-
+    validate GET-@version response - 200 retrieved    root
 
 
-Alternative flow 2: has path on EHR with given folder structure (DS 2)
-
-    create EHR
-
-    create DIRECTORY (JSON)    subfolders_in_directory.json
-
+DS-02 - has path on EHR with given folder structure
+    [Tags]
     get FOLDER in DIRECTORY at version (JSON)    /emergency
-
-    validate GET-@version response - 200 retrieved
-
+    validate GET-@version response - 200 retrieved    emergency
 
 
-Alternative flow 2: has path on EHR with given folder structure (DS 3)
-
-    create EHR
-
-    create DIRECTORY (JSON)    subfolders_in_directory.json
-
-    get FOLDER in DIRECTORY at version (JSON)    /emergency/episode-x
-
-    validate GET-@version response - 200 retrieved
+DS-03 - has path on EHR with given folder structure
+    [Tags]
+    get FOLDER in DIRECTORY at version (JSON)    /emergency/episode_x
+    validate GET-@version response - 200 retrieved    episode_x
 
 
+DS-04 - has path on EHR with given folder structure
 
-Alternative flow 2: has path on EHR with given folder structure (DS 4)
-
-    create EHR
-
-    create DIRECTORY (JSON)    subfolders_in_directory.json
-
-    get FOLDER in DIRECTORY at version (JSON)    /emergency/episode-x/summary-compo-x
-
-    validate GET-@version response - 200 retrieved
+    get FOLDER in DIRECTORY at version (JSON)    /emergency/episode_x/summary_compo_x
+    validate GET-@version response - 200 retrieved    summary_compo_x
 
 
+DS-05 - has path on EHR with given folder structure
 
-Alternative flow 2: has path on EHR with given folder structure (DS 5)
-
-    create EHR
-
-    create DIRECTORY (JSON)    subfolders_in_directory.json
-
-    get FOLDER in DIRECTORY at version (JSON)    /emergency/episode-y
-
-    validate GET-@version response - 200 retrieved
+    get FOLDER in DIRECTORY at version (JSON)    /emergency/episode_y
+    validate GET-@version response - 200 retrieved    episode_y
 
 
+DS-06 - has path on EHR with given folder structure
 
-Alternative flow 2: has path on EHR with given folder structure (DS 6)
-
-    create EHR
-
-    create DIRECTORY (JSON)    subfolders_in_directory.json
-
-    get FOLDER in DIRECTORY at version (JSON)    /emergency/episode-y/summary-compo-y
-
-    validate GET-@version response - 200 retrieved
+    get FOLDER in DIRECTORY at version (JSON)    /emergency/episode_y/summary_compo_y
+    validate GET-@version response - 200 retrieved    summary_compo_y
 
 
-
-Alternative flow 2: has path on EHR with given folder structure (DS 7)
-
-    create EHR
-
-    create DIRECTORY (JSON)    subfolders_in_directory.json
+DS-07 - has path on EHR with given folder structure
 
     get FOLDER in DIRECTORY at version (JSON)    /hospitalization
-
-    validate GET-@version response - 200 retrieved
-
+    validate GET-@version response - 200 retrieved    hospitalization
 
 
-Alternative flow 2: has path on EHR with given folder structure (DS 8)
+DS-08 - has path on EHR with given folder structure
 
-    create EHR
-
-    create DIRECTORY (JSON)    subfolders_in_directory.json
-
-    get FOLDER in DIRECTORY at version (JSON)    /hospitalization/summary-compo-z
-
-    validate GET-@version response - 200 retrieved
+    get FOLDER in DIRECTORY at version (JSON)    /hospitalization/summary_compo_z
+    validate GET-@version response - 200 retrieved    summary_compo_z
 
 
-
-Alternative flow 2: has path on EHR with given folder structure (DS 9)
-
-    create EHR
-
-    create DIRECTORY (JSON)    subfolders_in_directory.json
-
+DS-09 - retrieving non-existing (random) path
+    [Tags]
     generate random path
-
     get FOLDER in DIRECTORY at version (JSON)    ${path}
-
-        TRACE GITHUB ISSUE  36  not-ready  DISCOVERED ISSUE: `path` URI parameter is ignored(?)
-
     validate GET-@version response - 404 unknown path
+
+
+DS-10 - has path with special characters
+    [Tags]
+
+        TRACE GITHUB ISSUE  TODO  not-ready
+
+    get FOLDER in DIRECTORY at version (JSON)    /foldername-w-special-chars
+    validate GET-@version response - 200 retrieved    foldername-w-special-chars
+
+
+
+
+*** Keywords ****
+Establish Preconditions
+    create EHR
+    create DIRECTORY (JSON)    subfolders_in_directory.json

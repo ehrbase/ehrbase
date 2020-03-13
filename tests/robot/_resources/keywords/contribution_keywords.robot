@@ -381,8 +381,8 @@ Output Debug Info:
                         Log To Console      \tresponse headers: \n\t${response.headers} \n
                         Log To Console      \tresponse body: \n\t${response.text} \n
 
-    # ${resti_response}=  Set Variable  ${response.text}
-    #                     Output    ${resti_response}
+    # ${nice_response}=   Set Variable  ${response.text}
+    #                     Output    ${nice_response}
 
 
 
