@@ -155,7 +155,7 @@ MF-108 Execute Ad-Hoc Query - Get EHRs (ordered by: time-created)
 
 MF-109 Execute Ad-Hoc Query - Get EHRs (filtered: timewindow)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              future    not-ready
+    [Tags]              timewindow    future    not-ready
 
     A/109_get_ehrs_within_timewindow.json       A/109.tmp.json
 
@@ -206,7 +206,7 @@ MF-011 Execute Ad-Hoc Query - Get Compositions (ordered by: name)
 
 MF-012 Execute Ad-Hoc Query - Get Compositions (filtered: timewindow)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              future    not-ready
+    [Tags]              timewindow    future    not-ready
 
     B/103_get_compositions_within_timewindow.json    B/103.tmp.json
 
@@ -236,7 +236,7 @@ MF-800 Execute Ad-Hoc Query - Get Compositions By UID
 
 MF-014 Execute Ad-Hoc Query - Get Entries from EHR
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              not-ready
+    [Tags]              entry    future    not-ready
 
     C/300_query.tmp.json    C/300.tmp.json
     C/301_query.tmp.json    C/301.tmp.json
@@ -253,7 +253,7 @@ MF-014 Execute Ad-Hoc Query - Get Entries from EHR
 MF-015 Execute Ad-Hoc Query - Get Entries (filtered: top 5)
     [Documentation]     get_entries_top_5
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              
+    [Tags]              entry    future
 
     C/101_query.tmp.json    C/101.tmp.json
 
@@ -263,7 +263,7 @@ MF-015 Execute Ad-Hoc Query - Get Entries (filtered: top 5)
 MF-016 Execute Ad-Hoc Query - Get Entries (ordered by: name)
     [Documentation]     get_entries_orderby_name
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              
+    [Tags]              entry    future
 
     C/102_query.tmp.json    C/102.tmp.json
 
@@ -273,7 +273,7 @@ MF-016 Execute Ad-Hoc Query - Get Entries (ordered by: name)
 MF-017 Execute Ad-Hoc Query - Get Entries (filtered: timewindow)
     [Documentation]     get_entries_within_timewindow
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              future    not-ready
+    [Tags]              entry    timewindow    future
 
     C/103_query.tmp.json    C/103.tmp.json
 
