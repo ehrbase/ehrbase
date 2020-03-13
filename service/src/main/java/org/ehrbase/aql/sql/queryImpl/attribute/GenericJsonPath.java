@@ -10,7 +10,7 @@ import java.util.Optional;
 //TODO: add a clause allowing to get the RmType FROM the DB (f.e. ELEMENT/value doesn't get the type)
 public class GenericJsonPath {
 
-    final String path;
+    private final String path;
 
     public GenericJsonPath(String path) {
         this.path = path;
@@ -47,9 +47,6 @@ public class GenericJsonPath {
     }
 
     private boolean isTerminalValue(List paths, int index){
-        if (index == paths.size() - 1 && paths.get(index - 1).toString().matches("value|name")){
-            return true;
-        }
-        return false;
+        return paths.size() == 1 || (paths.size() > 1 && index == paths.size() - 1 && paths.get(index - 1).toString().matches("value|name"));
     }
 }
