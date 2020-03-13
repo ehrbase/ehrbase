@@ -410,8 +410,6 @@ MF-032 - Create new EHR w/ invalid ehr_id (PUT /ehr/ehr_id variants)
     0000000   ${EMPTY}   false           ${EMPTY}       400
     %%%%%%%   ${EMPTY}   true            ${EMPTY}       400
 
-    [Teardown]          TRACE GITHUB ISSUE  163  not-ready
-
 
 MF-033 - Create new EHR w/ given ehr_id (w/o Prefer header)
     [Tags]
