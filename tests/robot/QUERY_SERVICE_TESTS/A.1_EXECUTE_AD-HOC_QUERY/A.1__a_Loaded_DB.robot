@@ -397,6 +397,7 @@ D-311 Execute Ad-HOc Query - Get Data
     [Template]          execute ad-hoc query and check result (loaded DB)
     [Tags]              205
     D/311_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/311.tmp.json
+    [Teardown]          TRACE GITHUB ISSUE  205  not-ready
 
 
 D-312 Execute Ad-HOc Query - Get Data
