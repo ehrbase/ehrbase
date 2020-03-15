@@ -306,7 +306,6 @@ D-300 Execute Ad-Hoc Query - Get Data
     D/302_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
     D/303_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
     D/304_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
-    D/305_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
     D/308_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
     D/309_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
     D/310_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
