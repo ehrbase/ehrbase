@@ -104,12 +104,12 @@
                             <value>coded text</value>
                         </name>
                         <value xsi:type="DV_CODED_TEXT">
-                            <value>cHAWCHf.Kt.RNIAiZ,FVvBUdKAWQkU</value>
+                            <value>value1</value>
                             <defining_code>
                                 <terminology_id>
                                     <value>terminology_not_specified_as_constraint_or_referenceSetUri_in_opt</value>
                                 </terminology_id>
-                                <code_string>1008204</code_string>
+                                <code_string>at0006</code_string>
                             </defining_code>
                         </value>
                     </items>
