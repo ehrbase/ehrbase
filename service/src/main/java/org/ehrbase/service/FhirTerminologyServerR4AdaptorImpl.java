@@ -27,8 +27,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import com.jayway.jsonpath.DocumentContext;
@@ -40,28 +38,28 @@ import com.nedap.archie.rm.support.identification.TerminologyId;
  *@Created by Luis Marco-Ruiz on Feb 12, 2020
  */
 @Component
-public final class FhirTerminologyServerAdaptorImpl  implements org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer<DvCodedText, String>{
-	
-	private static volatile FhirTerminologyServerAdaptorImpl  instance = null;
+public final class FhirTerminologyServerR4AdaptorImpl  implements org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer<DvCodedText, String>{
+
+	private static volatile FhirTerminologyServerR4AdaptorImpl  instance = null;//thread safety is ensure in the getInstance method.
 	/**
-	 * Returns an instance of {@link org.ehrbase.service.FhirTerminologyServerAdaptorImpl} with default properties or creates a new one it does not exist.
-	 * @return the instance of {@link org.ehrbase.service.FhirTerminologyServerAdaptorImpl}.
+	 * Returns an instance of {@link org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl} with default properties or creates a new one it does not exist.
+	 * @return the instance of {@link org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl}.
 	 */
-	public static FhirTerminologyServerAdaptorImpl getInstance() {
-		return FhirTerminologyServerAdaptorImpl.getInstance(null);
+	public static FhirTerminologyServerR4AdaptorImpl getInstance() {
+		return FhirTerminologyServerR4AdaptorImpl.getInstance(null);
 	}
 	/**
-	 * Returns an instance of {@link org.ehrbase.service.FhirTerminologyServerAdaptorImpl} with the properties provided or creates a new one it does not exist.
-	 * @return the instance of {@link org.ehrbase.service.FhirTerminologyServerAdaptorImpl}.
+	 * Returns an instance of {@link org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl} with the properties provided or creates a new one it does not exist.
+	 * @return the instance of {@link org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl}.
 	 */
-	public static FhirTerminologyServerAdaptorImpl getInstance(FhirTsProps properties) {
+	public static FhirTerminologyServerR4AdaptorImpl getInstance(FhirTsProps properties) {
 		if(properties == null) {//if Spring did not do autowiring, take the default ones.
 			properties = new FhirTsPropsImpl(); 
 		}
 		if(instance == null) {
-			synchronized(FhirTerminologyServerAdaptorImpl.class) {
+			synchronized(FhirTerminologyServerR4AdaptorImpl.class) {
 				if(instance == null) {
-					instance = new FhirTerminologyServerAdaptorImpl(properties);
+					instance = new FhirTerminologyServerR4AdaptorImpl(properties);
 				}
 			}
 		}
@@ -69,12 +67,14 @@ public final class FhirTerminologyServerAdaptorImpl  implements org.ehrbase.dao.
 	}
 
 	private FhirTsPropsImpl props;
-	
+
 	@Autowired
-	private FhirTerminologyServerAdaptorImpl(FhirTsProps props2) {
+	private FhirTerminologyServerR4AdaptorImpl(FhirTsProps props2) {
 		super();
 		this.props = (FhirTsPropsImpl) props2;
-		instance=this;
+		synchronized(FhirTerminologyServerR4AdaptorImpl.class) {
+			instance=this;//we need this for Spring initialization. Constructor set to private so other users rely on the getInstance method.
+		}
 	}
 
 
@@ -83,19 +83,17 @@ public final class FhirTerminologyServerAdaptorImpl  implements org.ehrbase.dao.
 		RestTemplate rest = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("accept","application/fhir+json");
-		HttpEntity<String> entity =  new HttpEntity<String>(headers);
+		HttpEntity<String> entity =  new HttpEntity<>(headers);
 		ResponseEntity<String> responseEntity = rest.exchange(valueSetId,
 				HttpMethod.GET,
 				entity,
 				String.class);
 		String response = responseEntity.getBody();
-		System.out.println("the response from CSIRO has been: "+response);
-
 		DocumentContext jsonContext = JsonPath.parse(response);
 		List<String> codeList = jsonContext.read(props.getCodePath().replace("\\", ""));
 		List<String> systemList = jsonContext.read(props.getSystemPath());
 		List<String> displayList = jsonContext.read(props.getDisplayPath());
-		
+
 		List<DvCodedText> expansionList = new ArrayList<>();
 		for(int i = 0; i< codeList.size(); i++) {
 			TerminologyId termId = new TerminologyId(systemList.get(i));
@@ -111,7 +109,7 @@ public final class FhirTerminologyServerAdaptorImpl  implements org.ehrbase.dao.
 	public final DvCodedText lookUp(final String conceptId) {
 		// TODO Auto-generated method stub
 		return null;
-		
+
 	}
 
 	@Override

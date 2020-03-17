@@ -25,7 +25,7 @@ import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.parser.AqlBaseVisitor;
 import org.ehrbase.aql.parser.AqlParser;
 import org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer;
-import org.ehrbase.service.FhirTerminologyServerAdaptorImpl;
+import org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.nedap.archie.rm.datavalues.DvCodedText;
@@ -52,7 +52,7 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
 	private static final String COMMA = ",";
 
 
-	private I_OpenehrTerminologyServer<DvCodedText, ID> tsserver = (I_OpenehrTerminologyServer<DvCodedText, ID>) FhirTerminologyServerAdaptorImpl.getInstance(null);// = (OpenehrTerminologyServer<DvCodedText, ID>) I_OpenehrTerminologyServer.;
+	private I_OpenehrTerminologyServer<DvCodedText, ID> tsserver = (I_OpenehrTerminologyServer<DvCodedText, ID>) FhirTerminologyServerR4AdaptorImpl.getInstance(null);// = (OpenehrTerminologyServer<DvCodedText, ID>) I_OpenehrTerminologyServer.;
 
 	private List<Object> whereExpression = new ArrayList<>();
 
