@@ -53,7 +53,7 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
     
     
     @Autowired
-    private I_OpenehrTerminologyServer<DvCodedText, ID> tsserver; //= (OpenehrTerminologyServer<DvCodedText, ID>) BaseService.;
+    private I_OpenehrTerminologyServer<DvCodedText, ID> tsserver = (I_OpenehrTerminologyServer<DvCodedText, ID>) FhirTerminologyServerAdaptorImpl.instance;// = (OpenehrTerminologyServer<DvCodedText, ID>) I_OpenehrTerminologyServer.;
 
     private List<Object> whereExpression = new ArrayList<>();
 
@@ -87,6 +87,10 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
                 visitIdentifiedEquality((AqlParser.IdentifiedEqualityContext) tree);
             }
         }
+        
+        System.out.println("The where expression returned is: ");
+        whereExpression.forEach((Object o)->{System.out.println(o.toString());});
+
 
         return whereExpression;
     }
@@ -142,6 +146,7 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
 			assert(ctx.CLOSE_PAR().getText().equals(")"));
 			List<String> codesList = new ArrayList<>();
 			tsserver.expand((ID)ctx.URIVALUE().getText()).forEach((DvCodedText dvCode) -> {codesList.add(dvCode.getDefiningCode().getCodeString());});
+			codesList.forEach((String cod)->{System.out.println("expanded code: "+cod);});
 			invokeExpr.addAll(codesList);
 			return invokeExpr; 
 		}

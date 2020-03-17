@@ -42,18 +42,22 @@ import com.nedap.archie.rm.support.identification.TerminologyId;
 @Component
 public class FhirTerminologyServerAdaptorImpl  implements org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer<DvCodedText, String>{
 	
+	public static FhirTerminologyServerAdaptorImpl  instance = null;
 	private FhirTsPropsImpl props;
 	
 	@Autowired
 	public FhirTerminologyServerAdaptorImpl(FhirTsProps props2) {
 		super();
 		this.props = (FhirTsPropsImpl) props2;
+		System.out.println("inside constructor TS: "+this.props.getCodePath()+this.props.getDisplayPath()+this.props.getDisplayPath());
+		instance=this;
 	}
 
 
 	@Override
 	public List<DvCodedText> expand(String valueSetId) {
-		
+		System.out.println("inside expand TS: "+this.props.getCodePath()+this.props.getDisplayPath()+this.props.getDisplayPath()+"\n the url is: "+valueSetId);
+
 		RestTemplate rest = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("accept","application/fhir+json");
@@ -63,10 +67,10 @@ public class FhirTerminologyServerAdaptorImpl  implements org.ehrbase.dao.access
 				entity,
 				String.class);
 		String response = responseEntity.getBody();
-
+		System.out.println("the response from CSIRO has been: "+response);
 
 		DocumentContext jsonContext = JsonPath.parse(response);
-		List<String> codeList = jsonContext.read(props.getCodePath());
+		List<String> codeList = jsonContext.read(props.getCodePath().replace("\\", ""));
 		List<String> systemList = jsonContext.read(props.getSystemPath());
 		List<String> displayList = jsonContext.read(props.getDisplayPath());
 		

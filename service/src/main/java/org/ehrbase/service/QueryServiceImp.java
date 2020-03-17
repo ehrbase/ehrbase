@@ -128,6 +128,7 @@ public class QueryServiceImp extends BaseService implements QueryService {
 
     private QueryResultDto queryAql(String queryString, boolean explain) {
         try {
+        	System.out.print("The query  IN STRING IS: "+queryString);
             AqlQueryHandler queryHandler = new AqlQueryHandler(getDataAccess(), usePgExtensions);
             AqlResult aqlResult = queryHandler.process(queryString);
 
@@ -137,6 +138,7 @@ public class QueryServiceImp extends BaseService implements QueryService {
         } catch (IllegalArgumentException iae){
             throw new IllegalArgumentException(iae.getMessage());
         } catch (Exception e){
+        	System.out.println(e);
             throw new IllegalArgumentException("Could not process query, reason:" + e);
         }
     }

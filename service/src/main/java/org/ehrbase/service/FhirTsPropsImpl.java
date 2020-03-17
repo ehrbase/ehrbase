@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
  */
 //@Component
 @Configuration
-@ConfigurationProperties(prefix="terminology_server")
+@ConfigurationProperties(prefix="terminology-server")
 public class FhirTsPropsImpl implements FhirTsProps{
 	private String codePath = "default";// = "$[\"expansion\"][\"contains\"][*][\"code\"]";
 	private String systemPath = "default";// = "$[\"expansion\"][\"contains\"][*][\"system\"]";

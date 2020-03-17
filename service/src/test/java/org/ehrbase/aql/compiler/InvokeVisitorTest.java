@@ -23,20 +23,30 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.ehrbase.ServiceModuleConfiguration;
+import org.ehrbase.api.ApiModuleConfiguration;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.I_VariableDefinitionHelper;
+import org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
+//import org.ehrbase.application.EhrBase;
+
+import com.nedap.archie.rm.datavalues.DvCodedText;
 
 //@ExtendWith(SpringExtension.class)
 //@ContextConfiguration(initializers = ConfigFileApplicationContextInitializer.class)
 //@RunWith(SpringRunner.class)
 //@EnableConfigurationProperties(value=FhirTsPropsImpl.class)
 //@TestPropertySource("classpath:application.yml")
-//@SpringBootTest//(classes= {InvokeVisitorTest.TestConfiguration.class})
+//@SpringBootTest//(classes= {org.ehrbase.application.EhrBase.class})
 //@ActiveProfiles("test")
 public class InvokeVisitorTest {
 	
@@ -56,11 +66,17 @@ public class InvokeVisitorTest {
 	 * TestConfiguration { // nothing }
 	 */
 
-	@Ignore("This test runs against ontoserver sample inteance. It is deactivated until we have a test FHIR terminology server.")
-    @Test
+	//@Ignore("This test runs against ontoserver sample inteance. It is deactivated until we have a test FHIR terminology server.")
+	
+	 @Autowired
+	    private I_OpenehrTerminologyServer<DvCodedText, String> tsserver;
+	 
+    @Ignore
+	 @Test
     public void shouldVisitInvokeExpression() {
- 
-        {
+    	
+    	System.out.println("En el test el TS client es: "+tsserver);
+
             WhereVisitor cut = new WhereVisitor();
             String aql = "SELECT o/data[at0002]/events[at0003] AS systolic " +
                     "FROM EHR [ehr_id/value='1234'] " +
@@ -133,7 +149,17 @@ public class InvokeVisitorTest {
 
             assertThat(whereExpression.get(28)).isEqualTo(")");
 
-
-        }
     }
+    
+	/*
+	 * @SpringBootApplication
+	 * 
+	 * @Import({ServiceModuleConfiguration.class,
+	 * RestEHRScapeModuleConfiguration.class, RestOpenehrModuleConfiguration.class,
+	 * ApiModuleConfiguration.class}) public class EhrBase {
+	 * 
+	 * public static void main(String[] args) { SpringApplication.run(EhrBase.class,
+	 * args); } }
+	 */
+    
 }
