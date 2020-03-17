@@ -56,7 +56,7 @@ public class InvokeVisitorTest {
 	 * TestConfiguration { // nothing }
 	 */
 
-	//@Ignore("This test runs against ontoserver sample inteance. It is deactivated until we have a test FHIR terminology server.")
+	@Ignore("This test runs against ontoserver sample inteance. It is deactivated until we have a test FHIR terminology server.")
     @Test
     public void shouldVisitInvokeExpression() {
  
