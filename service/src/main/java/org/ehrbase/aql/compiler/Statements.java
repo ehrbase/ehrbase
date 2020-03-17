@@ -18,12 +18,12 @@
 
 package org.ehrbase.aql.compiler;
 
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.ehrbase.aql.containment.IdentifierMapper;
 import org.ehrbase.aql.definition.FromEhrDefinition;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.VariableDefinition;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.ehrbase.aql.sql.binding.VariableDefinitions;
 
 import java.util.List;
@@ -76,6 +76,9 @@ public class Statements {
             return;
 
         //append field, operator and value to the where clause
+        if (!whereClause.isEmpty()) {
+            whereClause.add("and");
+        }
         whereClause.add(new VariableDefinition(ehrPredicate.getField(), null, ehrPredicate.getIdentifier(), false));
         whereClause.add(ehrPredicate.getOperator());
         whereClause.add(ehrPredicate.getValue());
