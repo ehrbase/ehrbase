@@ -196,6 +196,11 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
     }
 
     List<Object> getWhereExpression() {
+        WhereClauseUtil whereClauseUtil = new WhereClauseUtil(whereExpression);
+
+        if (!whereClauseUtil.isBalancedBlocks())
+            throw new IllegalArgumentException("Unbalanced block in WHERE clause missing:'"+whereClauseUtil.getUnbalanced()+"'");
+
         return whereExpression;
     }
 

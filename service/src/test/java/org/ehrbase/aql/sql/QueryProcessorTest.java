@@ -229,19 +229,18 @@ public class QueryProcessorTest {
                 false));
 
         // where clausal json column from entry  with matches
+        //CHC 10.3.20: the 'IN' operator implies that the condition is SQL instead of JSQUERY
         testCases.add(new AqlTestCase(12,
                 "select e/ehr_id/value from EHR e " +
                         "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  " +
                         "contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]" +
                         "where a/description[at0001]/items[at0002]/value/value matches {'Hepatitis A','Hepatitis B'} ",
-                "select distinct on (\"/ehr_id/value\") \"\".\"/ehr_id/value\" from (" +
-                        "select \"ehr_join\".\"id\" as \"/ehr_id/value\" " +
-                        "from \"ehr\".\"entry\" " +
+                "select distinct on (\"/ehr_id/value\") \"\".\"/ehr_id/value\" " +
+                        "from (" +
+                        "select \"ehr_join\".\"id\" as \"/ehr_id/value\" from \"ehr\".\"entry\" " +
                         "right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" " +
                         "right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\" " +
-                        "where (\"ehr\".\"entry\".\"template_id\" = ? " +
-                        "and (\"ehr\".\"entry\".\"entry\" @@ '\"/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary'']\".\"/content[openEHR-EHR-ACTION.immunisation_procedure.v1]\".#.\"/description[at0001]\".\"/items[at0002]\".#.\"/value\".\"value\" IN (\"Hepatitis A\",\"Hepatitis B\") '::jsquery))" +
-                        ") as \"\"",
+                        "where (\"ehr\".\"entry\".\"template_id\" = ? and (\"ehr\".\"entry\".\"entry\" #>> '{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1],0,/description[at0001],/items[at0002],0,/value,value}' IN ('Hepatitis A','Hepatitis B')))) as \"\"",
                 true));
 
         // select with function
@@ -261,6 +260,46 @@ public class QueryProcessorTest {
                 //Do to the way the query is build it is not possible to build sql if the AQL contains only compositions which have no instances in the DB. Thus we must manual handle this case.
                 "select 1 where 1 = 0",
                 false));
+
+        //WHERE clause from node predicate
+        testCases.add(new AqlTestCase(15,
+                "select e/ehr_status/other_details from EHR e[ehr_id/value='2a3b673f-d1b1-44c5-9e38-dcadf67ff2fc']",
+                "select distinct on (\"/ehr_status/other_details\") \"\".\"/ehr_status/other_details\" " +
+                        "from (" +
+                        "select ehr.js_ehr_status(\"status_join\".\"ehr_id\")::json #>>'{other_details}' as \"/ehr_status/other_details\" " +
+                        "from \"ehr\".\"entry\" " +
+                        "right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" " +
+                        "right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\" " +
+                        "join \"ehr\".\"status\" as \"status_join\" on \"status_join\".\"ehr_id\" = \"ehr_join\".\"id\" " +
+                        "where (\"ehr_join\".\"id\"='2a3b673f-d1b1-44c5-9e38-dcadf67ff2fc')) as \"\"",
+                true
+        ));
+
+//        where with parenthesis
+        testCases.add(new AqlTestCase(16,
+                        "select a/description[at0001]/items[openEHR-EHR-CLUSTER.test_all_types.v1]/items[at0001]/items[at0002]/items[at0003]/value/value " +
+                         "from EHR e " +
+                         "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  " +
+                         "contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]" +
+                         "WHERE a/description[at0001]/items[at0001]/items[at0002]/items[at0003]/value/value = true " +
+                         "OR " +
+                         "(" +
+                         "a/description[at0001]/items[at0001]/items[at0002]/items[at0003]/value/value = true " +
+                         "AND" +
+                         " a/description[at0001]/items[at0001]/items[at0002]/items[at0003]/value/value = true" +
+                         ")",
+                "select " +
+                        "(jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[openEHR-EHR-CLUSTER.test_all_types.v1],0,/items[at0001],0,/items[at0002],0,/items[at0003],0,/value,value}') as \"/description[at0001]/items[openEHR-EHR-CLUSTER.test_all_types.v1]/items[at0001]/items[at0002]/items[at0003]/value/value\" from \"ehr\".\"entry\" where (\"ehr\".\"entry\".\"template_id\" = ? and (\"ehr\".\"entry\".\"entry\" @@ '\"/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary'']\".\"/content[openEHR-EHR-ACTION.immunisation_procedure.v1]\".#.\"/description[at0001]\".\"/items[at0001]\".#.\"/items[at0002]\".#.\"/items[at0003]\".#.\"/value\".\"value\"=true '::jsquery " +
+                        "OR " +
+                        "(" +
+                        "\"ehr\".\"entry\".\"entry\" @@ '\"/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary'']\".\"/content[openEHR-EHR-ACTION.immunisation_procedure.v1]\".#.\"/description[at0001]\".\"/items[at0001]\".#.\"/items[at0002]\".#.\"/items[at0003]\".#.\"/value\".\"value\"=true '::jsquery " +
+                        "AND " +
+                        "\"ehr\".\"entry\".\"entry\" @@ '\"/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary'']\".\"/content[openEHR-EHR-ACTION.immunisation_procedure.v1]\".#.\"/description[at0001]\".\"/items[at0001]\".#.\"/items[at0002]\".#.\"/items[at0003]\".#.\"/value\".\"value\"=true'::jsquery" +
+                        ")" +
+                        ")" +
+                        ")",
+                true
+        ));
 
         return testCases;
     }

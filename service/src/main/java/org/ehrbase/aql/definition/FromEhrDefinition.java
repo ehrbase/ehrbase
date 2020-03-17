@@ -74,6 +74,10 @@ public class FromEhrDefinition implements I_FromEntityDefinition {
         public String toString() {
             return "EHR::" + getIdentifier() + "::" + getIdentifier() + "::" + getValue();
         }
+
+        public boolean isVoid(){
+            return field == null && value == null && operator == null;
+        }
     }
 
     private boolean isEHR = false;
@@ -121,4 +125,5 @@ public class FromEhrDefinition implements I_FromEntityDefinition {
     public List<EhrPredicate> getEhrPredicates() {
         return fromEhrPredicates;
     }
+
 }
