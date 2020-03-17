@@ -40,7 +40,7 @@ public interface I_OpenehrTerminologyServer<DvCodedText, ID> extends Terminology
     	
     	//Cast is correct because of the fixed parameterization of generics in FhirTerminologyServerAdaptorImpl
     	@SuppressWarnings("unchecked")
-		I_OpenehrTerminologyServer<DvCodedText, String> result = (I_OpenehrTerminologyServer<DvCodedText, String>) new FhirTerminologyServerAdaptorImpl(props);
+		I_OpenehrTerminologyServer<DvCodedText, String> result = (I_OpenehrTerminologyServer<DvCodedText, String>) FhirTerminologyServerAdaptorImpl.getInstance(props);
         return result;
     }
 }

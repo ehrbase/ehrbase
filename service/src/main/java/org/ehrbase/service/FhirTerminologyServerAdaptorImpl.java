@@ -42,22 +42,36 @@ import com.nedap.archie.rm.support.identification.TerminologyId;
 @Component
 public class FhirTerminologyServerAdaptorImpl  implements org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer<DvCodedText, String>{
 	
-	public static FhirTerminologyServerAdaptorImpl  instance = null;
+	private static volatile FhirTerminologyServerAdaptorImpl  instance = null;
+	public static FhirTerminologyServerAdaptorImpl getInstance() {
+		return FhirTerminologyServerAdaptorImpl.getInstance(null);
+	}
+	public static FhirTerminologyServerAdaptorImpl getInstance(FhirTsProps properties) {
+		if(properties == null) {//if Spring did not do autowiring, take the default ones.
+			properties = new FhirTsPropsImpl(); 
+		}
+		if(instance == null) {
+			synchronized(FhirTerminologyServerAdaptorImpl.class) {
+				if(instance == null) {
+					instance = new FhirTerminologyServerAdaptorImpl(properties);
+				}
+			}
+		}
+		return instance;
+	}
+
 	private FhirTsPropsImpl props;
 	
 	@Autowired
-	public FhirTerminologyServerAdaptorImpl(FhirTsProps props2) {
+	private FhirTerminologyServerAdaptorImpl(FhirTsProps props2) {
 		super();
 		this.props = (FhirTsPropsImpl) props2;
-		System.out.println("inside constructor TS: "+this.props.getCodePath()+this.props.getDisplayPath()+this.props.getDisplayPath());
 		instance=this;
 	}
 
 
 	@Override
 	public List<DvCodedText> expand(String valueSetId) {
-		System.out.println("inside expand TS: "+this.props.getCodePath()+this.props.getDisplayPath()+this.props.getDisplayPath()+"\n the url is: "+valueSetId);
-
 		RestTemplate rest = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("accept","application/fhir+json");

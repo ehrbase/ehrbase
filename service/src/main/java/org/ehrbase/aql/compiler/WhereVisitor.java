@@ -53,7 +53,7 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
 
 
 	@Autowired
-	private I_OpenehrTerminologyServer<DvCodedText, ID> tsserver = (I_OpenehrTerminologyServer<DvCodedText, ID>) FhirTerminologyServerAdaptorImpl.instance;// = (OpenehrTerminologyServer<DvCodedText, ID>) I_OpenehrTerminologyServer.;
+	private I_OpenehrTerminologyServer<DvCodedText, ID> tsserver = (I_OpenehrTerminologyServer<DvCodedText, ID>) FhirTerminologyServerAdaptorImpl.getInstance(null);// = (OpenehrTerminologyServer<DvCodedText, ID>) I_OpenehrTerminologyServer.;
 
 	private List<Object> whereExpression = new ArrayList<>();
 
@@ -74,7 +74,6 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
 				visitIdentifiedEquality((AqlParser.IdentifiedEqualityContext) tree);
 			}
 		}
-
 		return whereExpression;
 	}
 
