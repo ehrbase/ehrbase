@@ -149,7 +149,7 @@ public class WhereBinder {
                     case "XOR":
                     case "AND":
                     case "NOT":
-                        taggedBuffer = jsqueryClosure(taggedBuffer);
+                        taggedBuffer = new WhereJsQueryExpression(taggedBuffer, requiresJSQueryClosure, isFollowedBySQLConditionalOperator).closure();
                         taggedBuffer.append(" " + item + " ");
                         break;
 
@@ -212,23 +212,23 @@ public class WhereBinder {
 
         }
 
-        taggedBuffer = jsqueryClosure(taggedBuffer); //termination
+        taggedBuffer = new WhereJsQueryExpression(taggedBuffer, requiresJSQueryClosure, isFollowedBySQLConditionalOperator).closure(); //termination
 
         return DSL.condition(taggedBuffer.toString());
     }
 
 
-    private TaggedStringBuilder jsqueryClosure(TaggedStringBuilder taggedStringBuilder){
-        if (requiresJSQueryClosure) {
-            if (taggedStringBuilder.toString().charAt(taggedStringBuilder.length()-1)==')' && !isFollowedBySQLConditionalOperator)
-                taggedStringBuilder.replaceLast(")", JsonbEntryQuery.Jsquery_CLOSE+")");
-            else
-                taggedStringBuilder.append(JsonbEntryQuery.Jsquery_CLOSE);
-            isFollowedBySQLConditionalOperator = false;
-            requiresJSQueryClosure = false;
-        }
-        return taggedStringBuilder;
-    }
+//    private TaggedStringBuilder jsqueryClosure(TaggedStringBuilder taggedStringBuilder){
+//        if (requiresJSQueryClosure) {
+//            if (taggedStringBuilder.toString().charAt(taggedStringBuilder.length()-1)==')' && !isFollowedBySQLConditionalOperator)
+//                taggedStringBuilder = new WhereJsQueryExpression(taggedStringBuilder, requiresJSQueryClosure).closeWithJsQueryTag();
+//            else
+//                taggedStringBuilder.append(JsonbEntryQuery.Jsquery_CLOSE);
+//            isFollowedBySQLConditionalOperator = false;
+//            requiresJSQueryClosure = false;
+//        }
+//        return taggedStringBuilder;
+//    }
 
     //look ahead for a SQL operator
     private boolean isFollowedBySQLConditionalOperator(int cursor) {

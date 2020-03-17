@@ -119,16 +119,16 @@ identifiedExpr
 //      : identifiedEquality (AND identifiedExpr)*;
 
 identifiedEquality
-        : OPEN_PAR? NOT? identifiedOperand COMPARABLEOPERATOR identifiedOperand CLOSE_PAR?
-        | OPEN_PAR? NOT? identifiedOperand MATCHES OPEN_CURLY matchesOperand CLOSE_CURLY CLOSE_PAR?
-        | OPEN_PAR? NOT? identifiedOperand MATCHES REGEXPATTERN CLOSE_PAR?
-        | OPEN_PAR? NOT? identifiedOperand LIKE STRING CLOSE_PAR?
-        | OPEN_PAR? NOT? identifiedOperand ILIKE STRING CLOSE_PAR?
-        | OPEN_PAR? NOT? identifiedOperand SIMILARTO STRING CLOSE_PAR?
+        : OPEN_PAR* NOT? identifiedOperand COMPARABLEOPERATOR identifiedOperand CLOSE_PAR*
+        | OPEN_PAR* NOT? identifiedOperand MATCHES OPEN_CURLY matchesOperand CLOSE_CURLY CLOSE_PAR*
+        | OPEN_PAR* NOT? identifiedOperand MATCHES REGEXPATTERN CLOSE_PAR*
+        | OPEN_PAR* NOT? identifiedOperand LIKE STRING CLOSE_PAR*
+        | OPEN_PAR* NOT? identifiedOperand ILIKE STRING CLOSE_PAR*
+        | OPEN_PAR* NOT? identifiedOperand SIMILARTO STRING CLOSE_PAR*
 //        | NOT identifiedEquality
-        | OPEN_PAR? NOT? IN OPEN_PAR queryExpr CLOSE_PAR CLOSE_PAR?
-        | OPEN_PAR? NOT? EXISTS identifiedPath CLOSE_PAR?
-        | OPEN_PAR? NOT? EXISTS identifiedExpr CLOSE_PAR?;
+        | OPEN_PAR* NOT? IN OPEN_PAR queryExpr CLOSE_PAR CLOSE_PAR*
+        | OPEN_PAR* NOT? EXISTS identifiedPath CLOSE_PAR*
+        | OPEN_PAR* NOT? EXISTS identifiedExpr CLOSE_PAR*;
 
 identifiedOperand
         : operand
