@@ -15,27 +15,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.aql.sql.queryImpl.attribute.composer;
+package org.ehrbase.aql.sql.queryImpl.attribute.partyref;
 
 import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
+import org.ehrbase.aql.sql.queryImpl.attribute.I_RMObjectAttribute;
 import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
-import org.ehrbase.aql.sql.queryImpl.attribute.partyref.PartyResolver;
+import org.ehrbase.aql.sql.queryImpl.value_field.GenericJsonField;
 import org.jooq.Field;
+import org.jooq.TableField;
 
-import static org.ehrbase.aql.sql.binding.I_JoinBinder.composerRef;
+import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
 
-public class ComposerResolver extends PartyResolver
-{
+public class PartyIdentifiedJson extends GenericJsonField {
 
-    public ComposerResolver(FieldResolutionContext fieldResolutionContext, JoinSetup joinSetup) {
-        super(fieldResolutionContext, joinSetup);
+    PartyIdentifiedJson(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
+        super(fieldContext, joinSetup);
     }
 
-    public Field<?> sqlField(String path){
-
-        joinSetup.setJoinComposer(true);
-        joinSetup.setPartyJoinRef(composerRef);
-
-        return super.sqlField(path);
+    @Override
+    public Field<?> sqlField() {
+        return super.jsonField("PARTY_IDENTIFIED","ehr.js_canonical_party_identified", joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.ID));
     }
+
+    @Override
+    public I_RMObjectAttribute forTableField(TableField tableField) {
+        return this;
+    }
+
 }

@@ -36,15 +36,14 @@ Force Tags    refactor
 Alternative flow 1: has directory from existent EHR that has two versions of directory
 
     create EHR
-
     create DIRECTORY (JSON)    subfolders_in_directory.json
     validate POST response - 201 created
 
     get DIRECTORY at version (JSON)
-    validate GET-@version response - 200 retrieved
+    validate GET-@version response - 200 retrieved    root
 
     update DIRECTORY (JSON)    subfolders_in_directory_with_details.json
     validate PUT response - 200 updated
 
     get DIRECTORY at version (JSON)
-    validate GET-@version response - 200 retrieved
+    validate GET-@version response - 200 retrieved    root

@@ -36,6 +36,7 @@ import javax.xml.namespace.QName;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -95,7 +96,7 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
             templateStoreRecord.setSysTransaction(transactionTime);
 
 
-            updated = templateStoreRecord.store() == 1;
+            updated = templateStoreRecord.update() == 1;
         }
 
         return updated;
@@ -134,7 +135,7 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
     }
 
     private static OPERATIONALTEMPLATE buildOperationaltemplate(String content) {
-        InputStream inputStream = new ByteArrayInputStream(content.getBytes());
+        InputStream inputStream = new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
 
         org.openehr.schemas.v1.TemplateDocument document = null;
         try {

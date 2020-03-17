@@ -25,7 +25,7 @@ Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags
+Force Tags    refactor
 
 
 
@@ -33,11 +33,10 @@ Force Tags
 Alternative flow 1: get versioned directory from existent EHR that has two versions of directory
 
     create EHR
-
     create DIRECTORY (JSON)    empty_directory.json
-
     update DIRECTORY (JSON)    subfolders_in_directory.json
-
     get DIRECTORY at version (JSON)
+    validate GET-@version response - 200 retrieved    root
 
-    validate GET-@version response - 200 retrieved
+    # TODO: @WLAD implement check for the second step in flow:
+    #       " ... and should have two versions"

@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Fixed
+
+- Fixes response code on /ehr PUT with invalid ID (see: https://github.com/ehrbase/project_management/issues/163)
+- Fixes STATUS w/ empty subject bug (see: https://github.com/ehrbase/ehrbase/pull/196)
+
+## [0.11.0] (alpha)
+
+**Note:** Due to the transition to this changelog the following list is not complete. 
+Starting with the next release this file will provide a proper overview.
+
+### Added
+
 - Docker and docker-compose support for both application and database
 - Get folder with version_at_time parameter
 - Get Folder with path parameter
@@ -32,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.10.0...HEAD
+[0.11.0]: https://github.com/ehrbase/ehrbase/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/ehrbase/ehrbase/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/ehrbase/ehrbase/releases/tag/v0.9.0
 

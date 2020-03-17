@@ -141,58 +141,61 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
 		return invokeExpr; 
 	}
 
-	@Override
-	public List<Object> visitIdentifiedEquality(AqlParser.IdentifiedEqualityContext context) {
-		//        List<Object> whereExpression = new ArrayList<>();
-		boolean isMatchExpr = false;
-		for (ParseTree tree : context.children) {
-			if (tree instanceof TerminalNodeImpl) {
-				String token = ((TerminalNodeImpl) tree).getSymbol().getText();
-				if (token.toUpperCase().equals(MATCHES)) {
-					isMatchExpr = true;
-					whereExpression.add(IN);
-				} else if (token.equals(OPEN_CURL) && isMatchExpr)
-					whereExpression.add(OPEN_PAR);
-				else if (token.equals(CLOSING_CURL) && isMatchExpr) {
-					//if the last element in expression is a comma, overwrite it with a closing parenthesis
-					if (whereExpression.get(whereExpression.size() - 1).equals(COMMA))
-						whereExpression.set(whereExpression.size() - 1, CLOSING_PAR);
-					else
-						whereExpression.add(CLOSING_PAR);
-					isMatchExpr = false; //closure
-				} else
-					whereExpression.add(token);
+    @Override
+    public List<Object> visitIdentifiedEquality(AqlParser.IdentifiedEqualityContext context) {
+//        List<Object> whereExpression = new ArrayList<>();
+        boolean isMatchExpr = false;
+        for (ParseTree tree : context.children) {
+            if (tree instanceof TerminalNodeImpl) {
+                String token = ((TerminalNodeImpl) tree).getSymbol().getText();
+                if (token.toUpperCase().equals(MATCHES)) {
+                    isMatchExpr = true;
+                    whereExpression.add(IN);
+                } else if (token.equals(OPEN_CURL) && isMatchExpr)
+                    whereExpression.add(OPEN_PAR);
+                else if (token.equals(CLOSING_CURL) && isMatchExpr) {
+                    //if the last element in expression is a comma, overwrite it with a closing parenthesis
+                    if (whereExpression.get(whereExpression.size() - 1).equals(COMMA))
+                        whereExpression.set(whereExpression.size() - 1, CLOSING_PAR);
+                    else
+                        whereExpression.add(CLOSING_PAR);
+                    isMatchExpr = false; //closure
+                } else
+                    whereExpression.add(token);
 
-			} else if (tree instanceof AqlParser.IdentifiedOperandContext) {
-				AqlParser.IdentifiedOperandContext operandContext = (AqlParser.IdentifiedOperandContext) tree;
-				//translate/substitute operand
-				for (ParseTree child : operandContext.children) {
-					if (child instanceof AqlParser.OperandContext) {
-						whereExpression.add(child.getText());
-					} else if (child instanceof AqlParser.IdentifiedPathContext) {
-						AqlParser.IdentifiedPathContext identifiedPathContext = (AqlParser.IdentifiedPathContext) child;
-						if (identifiedPathContext.objectPath()==null)
-							throw new IllegalArgumentException("WHERE variable should be a path, found:'"+child.getText()+"'");
-						String path = identifiedPathContext.objectPath().getText();
-						String identifier = identifiedPathContext.IDENTIFIER().getText();
-						String alias = null;
-						VariableDefinition variable = new VariableDefinition(path, alias, identifier, false);
-						whereExpression.add(variable);
-					}
-				}
-			} else if (tree instanceof AqlParser.IdentifiedEqualityContext) {
-				visitIdentifiedEquality((AqlParser.IdentifiedEqualityContext) tree);
-			} else if (tree instanceof AqlParser.MatchesOperandContext) {
-				visitMatchesOperand((AqlParser.MatchesOperandContext) tree);
-			}
-		}
+            } else if (tree instanceof AqlParser.IdentifiedOperandContext) {
+                AqlParser.IdentifiedOperandContext operandContext = (AqlParser.IdentifiedOperandContext) tree;
+                //translate/substitute operand
+                for (ParseTree child : operandContext.children) {
+                    if (child instanceof AqlParser.OperandContext) {
+                        whereExpression.add(child.getText());
+                    } else if (child instanceof AqlParser.IdentifiedPathContext) {
+                        AqlParser.IdentifiedPathContext identifiedPathContext = (AqlParser.IdentifiedPathContext) child;
+                        if (identifiedPathContext.objectPath()==null)
+                            throw new IllegalArgumentException("WHERE variable should be a path, found:'"+child.getText()+"'");
+                        String path = identifiedPathContext.objectPath().getText();
+                        String identifier = identifiedPathContext.IDENTIFIER().getText();
+                        String alias = null;
+                        VariableDefinition variable = new VariableDefinition(path, alias, identifier, false);
+                        whereExpression.add(variable);
+                    }
+                }
+            } else if (tree instanceof AqlParser.IdentifiedEqualityContext) {
+                visitIdentifiedEquality((AqlParser.IdentifiedEqualityContext) tree);
+            } else if (tree instanceof AqlParser.MatchesOperandContext) {
+                visitMatchesOperand((AqlParser.MatchesOperandContext) tree);
+            }
+        }
 
-		return whereExpression;
-	}
+        return whereExpression;
+    }
 
-	List<Object> getWhereExpression() {
-		return whereExpression;
-	}
+    List<Object> getWhereExpression() {
+        WhereClauseUtil whereClauseUtil = new WhereClauseUtil(whereExpression);
 
+        if (!whereClauseUtil.isBalancedBlocks())
+            throw new IllegalArgumentException("Unbalanced block in WHERE clause missing:'"+whereClauseUtil.getUnbalanced()+"'");
 
+        return whereExpression;
+    }
 }

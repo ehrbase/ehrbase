@@ -40,6 +40,10 @@ public interface I_TaggedStringBuilder {
 
     void replace(String previous, String newString);
 
+    void replace(Integer start, Integer end, String replacement);
+
+    void insert(Integer offset, String toInsert);
+
     String toString();
 
     int length();
