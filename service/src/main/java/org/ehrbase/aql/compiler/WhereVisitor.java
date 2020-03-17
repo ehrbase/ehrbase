@@ -52,7 +52,6 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
 	private static final String COMMA = ",";
 
 
-	@Autowired
 	private I_OpenehrTerminologyServer<DvCodedText, ID> tsserver = (I_OpenehrTerminologyServer<DvCodedText, ID>) FhirTerminologyServerAdaptorImpl.getInstance(null);// = (OpenehrTerminologyServer<DvCodedText, ID>) I_OpenehrTerminologyServer.;
 
 	private List<Object> whereExpression = new ArrayList<>();
@@ -143,7 +142,6 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
 
     @Override
     public List<Object> visitIdentifiedEquality(AqlParser.IdentifiedEqualityContext context) {
-//        List<Object> whereExpression = new ArrayList<>();
         boolean isMatchExpr = false;
         for (ParseTree tree : context.children) {
             if (tree instanceof TerminalNodeImpl) {
