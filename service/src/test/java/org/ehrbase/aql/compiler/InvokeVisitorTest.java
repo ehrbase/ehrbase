@@ -33,10 +33,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 //@ExtendWith(SpringExtension.class)
 //@ContextConfiguration(initializers = ConfigFileApplicationContextInitializer.class)
-@RunWith(SpringRunner.class)
+//@RunWith(SpringRunner.class)
 //@EnableConfigurationProperties(value=FhirTsPropsImpl.class)
 //@TestPropertySource("classpath:application.yml")
-@SpringBootTest//(classes= {InvokeVisitorTest.TestConfiguration.class})
+//@SpringBootTest//(classes= {InvokeVisitorTest.TestConfiguration.class})
 //@ActiveProfiles("test")
 public class InvokeVisitorTest {
 	
