@@ -42,9 +42,9 @@ import com.nedap.archie.rm.support.identification.TerminologyId;
 
 public class FhirTerminologyServerAdaptorImpl  implements OpenehrTerminologyServer<DvCodedText, String>{
 	
-	private String codePath = null;// = "$[\"expansion\"][\"contains\"][*][\"code\"]";
-	private String systemPath = null;// = "$[\"expansion\"][\"contains\"][*][\"system\"]";
-	private String displayPath = null;// = "$[\"expansion\"][\"contains\"][*][\"display\"]";
+	private String codePath = "$[\"expansion\"][\"contains\"][*][\"code\"]";
+	private String systemPath = "$[\"expansion\"][\"contains\"][*][\"system\"]";
+	private String displayPath = "$[\"expansion\"][\"contains\"][*][\"display\"]";
 	
 	@ConfigurationProperties(prefix="terminology_server")
 	@Override
