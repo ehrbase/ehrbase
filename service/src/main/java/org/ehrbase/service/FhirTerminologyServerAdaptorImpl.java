@@ -40,7 +40,7 @@ import com.nedap.archie.rm.support.identification.TerminologyId;
  *@Created by Luis Marco-Ruiz on Feb 12, 2020
  */
 @Component
-public class FhirTerminologyServerAdaptorImpl  implements org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer<DvCodedText, String>{
+public final class FhirTerminologyServerAdaptorImpl  implements org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer<DvCodedText, String>{
 	
 	private static volatile FhirTerminologyServerAdaptorImpl  instance = null;
 	/**
@@ -79,7 +79,7 @@ public class FhirTerminologyServerAdaptorImpl  implements org.ehrbase.dao.access
 
 
 	@Override
-	public List<DvCodedText> expand(String valueSetId) {
+	public final List<DvCodedText> expand(final String valueSetId) {
 		RestTemplate rest = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("accept","application/fhir+json");
@@ -108,20 +108,20 @@ public class FhirTerminologyServerAdaptorImpl  implements org.ehrbase.dao.access
 
 
 	@Override
-	public DvCodedText lookUp(String conceptId) {
+	public final DvCodedText lookUp(final String conceptId) {
 		// TODO Auto-generated method stub
 		return null;
 		
 	}
 
 	@Override
-	public Boolean validate(DvCodedText concept, String valueSetId) {
+	public final Boolean validate(final DvCodedText concept, final String valueSetId) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public SubsumptionResult subsumes(DvCodedText conceptA, DvCodedText conceptB) {
+	public final SubsumptionResult subsumes(final DvCodedText conceptA, final DvCodedText conceptB) {
 		// TODO Auto-generated method stub
 		return null;
 	}
