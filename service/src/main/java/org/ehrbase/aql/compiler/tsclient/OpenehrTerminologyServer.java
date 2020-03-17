@@ -20,7 +20,7 @@ package org.ehrbase.aql.compiler.tsclient;
  *@Created by Luis Marco-Ruiz on Mar 6, 2020
  *
  * @param <DvCodedText> concept type
- * @param <ID> id type
+ * @param <ID> generic id type to specify the data type used to identify the concept of the terminology. This will be specialized or determined in runtime depending on the Terminology Server used.
  */
 public interface OpenehrTerminologyServer<DvCodedText, ID> extends TerminologyServer<DvCodedText, ID> {
 
