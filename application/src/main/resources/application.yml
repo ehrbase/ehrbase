@@ -27,6 +27,8 @@ cache:
   config: '/ehcache.xml'
   enabled: true
 
+system:
+  allow-template-overwrite: false
 
 logging:
   level:

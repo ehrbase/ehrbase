@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PreDestroy;
@@ -94,6 +95,9 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
     private final CacheManager cacheManager;
 
+    @Value("${system.allow-template-overwrite:false}")
+    private boolean allowTemplateOverwrite;
+
     @Autowired
     public KnowledgeCacheService(@Qualifier("templateDBStorageService") TemplateStorage templateStorage, CacheManager cacheManager) {
         this.templateStorage = templateStorage;
@@ -141,7 +145,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
 
         // pre-check: if already existing throw proper exception
-        if (retrieveOperationalTemplate(templateId).isPresent()) {
+        if (!allowTemplateOverwrite && retrieveOperationalTemplate(templateId).isPresent()) {
             throw new StateConflictException("Operational template with this template ID already exists");
         }
 
