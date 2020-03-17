@@ -43,9 +43,17 @@ import com.nedap.archie.rm.support.identification.TerminologyId;
 public class FhirTerminologyServerAdaptorImpl  implements org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer<DvCodedText, String>{
 	
 	private static volatile FhirTerminologyServerAdaptorImpl  instance = null;
+	/**
+	 * Returns an instance of {@link org.ehrbase.service.FhirTerminologyServerAdaptorImpl} with default properties or creates a new one it does not exist.
+	 * @return the instance of {@link org.ehrbase.service.FhirTerminologyServerAdaptorImpl}.
+	 */
 	public static FhirTerminologyServerAdaptorImpl getInstance() {
 		return FhirTerminologyServerAdaptorImpl.getInstance(null);
 	}
+	/**
+	 * Returns an instance of {@link org.ehrbase.service.FhirTerminologyServerAdaptorImpl} with the properties provided or creates a new one it does not exist.
+	 * @return the instance of {@link org.ehrbase.service.FhirTerminologyServerAdaptorImpl}.
+	 */
 	public static FhirTerminologyServerAdaptorImpl getInstance(FhirTsProps properties) {
 		if(properties == null) {//if Spring did not do autowiring, take the default ones.
 			properties = new FhirTsPropsImpl(); 
