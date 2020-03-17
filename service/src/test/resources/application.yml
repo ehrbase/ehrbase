@@ -15,30 +15,11 @@
 # limitations under the License.
 
 spring:
-  profiles:
-    active: local
-  datasource:
-    driver-class-name: org.postgresql.Driver
-
-  flyway:
-    schemas: ehr
-
-cache:
-  config: '/ehcache.xml'
-  enabled: true
-
-
-logging:
-  level:
-    org.springframework: INFO
-    de.vitasystems: TRACE
-    com.ethercis: DEBUG
-    org.jooq: INFO
-    net.sf.ehcache: TRACE
-
-
+  profiles: test
+    
 terminology_server:
   tsUrl: 'https://r4.ontoserver.csiro.au/fhir/'
   codePath: '$[\"expansion\"][\"contains\"][*][\"code\"]'
   systemPath: '$[\"expansion\"][\"contains\"][*][\"system\"]'
   displayPath: '$[\"expansion\"][\"contains\"][*][\"display\"]'
+

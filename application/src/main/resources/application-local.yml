@@ -33,3 +33,9 @@ server:
 system:
   type: LOCAL
 
+terminology_server:
+  tsUrl: 'https://r4.ontoserver.csiro.au/fhir/'
+  codePath: '$[\"expansion\"][\"contains\"][*][\"code\"]'
+  systemPath: '$[\"expansion\"][\"contains\"][*][\"system\"]'
+  displayPath: '$[\"expansion\"][\"contains\"][*][\"display\"]'
+

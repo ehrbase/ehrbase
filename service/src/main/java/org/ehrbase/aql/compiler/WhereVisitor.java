@@ -21,12 +21,12 @@
 
 package org.ehrbase.aql.compiler;
 
-import org.ehrbase.aql.compiler.tsclient.OpenehrTerminologyServer;
-import org.ehrbase.aql.compiler.tsclient.TerminologyServer;
-import org.ehrbase.aql.compiler.tsclient.fhir.FhirTerminologyServerAdaptorImpl;
 import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.parser.AqlBaseVisitor;
 import org.ehrbase.aql.parser.AqlParser;
+import org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer;
+import org.ehrbase.service.FhirTerminologyServerAdaptorImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.nedap.archie.rm.datavalues.DvCodedText;
 
@@ -51,7 +51,9 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
     private static final String CLOSING_PAR = ")";
     private static final String COMMA = ",";
     
-    private OpenehrTerminologyServer<DvCodedText, ID> tsserver = (OpenehrTerminologyServer<DvCodedText, ID>) new FhirTerminologyServerAdaptorImpl();
+    
+    @Autowired
+    private I_OpenehrTerminologyServer<DvCodedText, ID> tsserver; //= (OpenehrTerminologyServer<DvCodedText, ID>) BaseService.;
 
     private List<Object> whereExpression = new ArrayList<>();
 
@@ -133,6 +135,7 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
 	  }
 	 
 		@Override public List<Object> visitInvokeExpr(AqlParser.InvokeExprContext ctx) { 
+			System.out.println("Inside INVOKE: the TS server is:   "+this.tsserver);
 			List<Object> invokeExpr = new ArrayList<>();
 			assert(ctx.INVOKE().getText().equals("INVOKE"));
 			assert(ctx.OPEN_PAR().getText().equals("("));

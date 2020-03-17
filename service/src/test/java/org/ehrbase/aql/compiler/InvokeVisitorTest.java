@@ -18,17 +18,43 @@
 
 package org.ehrbase.aql.compiler;
 
-import org.ehrbase.aql.definition.I_VariableDefinition;
-import org.ehrbase.aql.definition.I_VariableDefinitionHelper;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.junit.Ignore;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.ehrbase.aql.definition.I_VariableDefinition;
+import org.ehrbase.aql.definition.I_VariableDefinitionHelper;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+//@ExtendWith(SpringExtension.class)
+//@ContextConfiguration(initializers = ConfigFileApplicationContextInitializer.class)
+@RunWith(SpringRunner.class)
+//@EnableConfigurationProperties(value=FhirTsPropsImpl.class)
+//@TestPropertySource("classpath:application.yml")
+@SpringBootTest//(classes= {InvokeVisitorTest.TestConfiguration.class})
+//@ActiveProfiles("test")
 public class InvokeVisitorTest {
+	
+	//@Autowired
+	//private FhirTsPropsImpl props;
+	
+	//@Ignore
+	/*
+	 * @Test public void shouldPopulateMyConfigurationProperties() {
+	 * assertThat(props.getCodePath()).isEqualTo("default");
+	 * assertThat(props.getDisplayPath()).isEqualTo("default");
+	 * assertThat(props.getSystemPath()).isEqualTo("default"); }
+	 */
+	
+	/*
+	 * @EnableConfigurationProperties(FhirTsProps.class) public static class
+	 * TestConfiguration { // nothing }
+	 */
 
 	//@Ignore("This test runs against ontoserver sample inteance. It is deactivated until we have a test FHIR terminology server.")
     @Test

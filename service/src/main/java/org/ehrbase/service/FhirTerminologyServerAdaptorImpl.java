@@ -15,20 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.aql.compiler.tsclient.fhir;
+package org.ehrbase.service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import org.ehrbase.aql.compiler.tsclient.OpenehrTerminologyServer;
-import org.ehrbase.aql.compiler.tsclient.TerminologyServer;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.ehrbase.api.definitions.FhirTsProps;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import com.jayway.jsonpath.DocumentContext;
@@ -39,14 +39,18 @@ import com.nedap.archie.rm.support.identification.TerminologyId;
 /***
  *@Created by Luis Marco-Ruiz on Feb 12, 2020
  */
+@Component
+public class FhirTerminologyServerAdaptorImpl  implements org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer<DvCodedText, String>{
+	
+	private FhirTsPropsImpl props;
+	
+	@Autowired
+	public FhirTerminologyServerAdaptorImpl(FhirTsProps props2) {
+		super();
+		this.props = (FhirTsPropsImpl) props2;
+	}
 
-public class FhirTerminologyServerAdaptorImpl  implements OpenehrTerminologyServer<DvCodedText, String>{
-	
-	private String codePath = null;// = "$[\"expansion\"][\"contains\"][*][\"code\"]";
-	private String systemPath = null;// = "$[\"expansion\"][\"contains\"][*][\"system\"]";
-	private String displayPath = null;// = "$[\"expansion\"][\"contains\"][*][\"display\"]";
-	
-	@ConfigurationProperties(prefix="terminology_server")
+
 	@Override
 	public List<DvCodedText> expand(String valueSetId) {
 		
@@ -62,9 +66,9 @@ public class FhirTerminologyServerAdaptorImpl  implements OpenehrTerminologyServ
 
 
 		DocumentContext jsonContext = JsonPath.parse(response);
-		List<String> codeList = jsonContext.read(codePath);
-		List<String> systemList = jsonContext.read(systemPath);
-		List<String> displayList = jsonContext.read(displayPath);
+		List<String> codeList = jsonContext.read(props.getCodePath());
+		List<String> systemList = jsonContext.read(props.getSystemPath());
+		List<String> displayList = jsonContext.read(props.getDisplayPath());
 		
 		List<DvCodedText> expansionList = new ArrayList<>();
 		for(int i = 0; i< codeList.size(); i++) {
@@ -81,6 +85,7 @@ public class FhirTerminologyServerAdaptorImpl  implements OpenehrTerminologyServ
 	public DvCodedText lookUp(String conceptId) {
 		// TODO Auto-generated method stub
 		return null;
+		
 	}
 
 	@Override

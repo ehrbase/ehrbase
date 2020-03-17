@@ -29,6 +29,8 @@ import org.ehrbase.dao.access.support.ServiceDataAccess;
 import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Value;
 
+import com.nedap.archie.rm.datavalues.DvCodedText;
+
 import java.util.UUID;
 
 public class BaseService {
@@ -48,11 +50,13 @@ public class BaseService {
     private final ServerConfig serverConfig;
     private final KnowledgeCacheService knowledgeCacheService;
     private final DSLContext context;
+   // private final OpenehrTerminologyServer<DvCodedText, String> openehrTerminologyServer;
 
-    public BaseService(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig) {
-        this.knowledgeCacheService = knowledgeCacheService;
+    public BaseService(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig/*, OpenehrTerminologyServer<DvCodedText, String> openehrTerminologyServer*/) {
+		this.knowledgeCacheService = knowledgeCacheService;
         this.context = context;
         this.serverConfig = serverConfig;
+       // this.openehrTerminologyServer = openehrTerminologyServer;
     }
 
     protected I_DomainAccess getDataAccess() {
@@ -71,5 +75,9 @@ public class BaseService {
     public ServerConfig getServerConfig() {
         return this.serverConfig;
     }
+    
+    /*public OpenehrTerminologyServer<DvCodedText, String> getOpenehrTerminologyServer() {
+        return this.openehrTerminologyServer;
+    }*/
 
 }
