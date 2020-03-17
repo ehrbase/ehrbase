@@ -9,13 +9,12 @@ import org.springframework.stereotype.Component;
  * @author luis
  *
  */
-//@Component
 @Configuration
 @ConfigurationProperties(prefix="terminology-server")
 public class FhirTsPropsImpl implements FhirTsProps{
-	private String codePath = "default";// = "$[\"expansion\"][\"contains\"][*][\"code\"]";
-	private String systemPath = "default";// = "$[\"expansion\"][\"contains\"][*][\"system\"]";
-	private String displayPath = "default";// = "$[\"expansion\"][\"contains\"][*][\"display\"]";
+	private String codePath = "$[\"expansion\"][\"contains\"][*][\"code\"]";
+	private String systemPath = "$[\"expansion\"][\"contains\"][*][\"system\"]";
+	private String displayPath = "$[\"expansion\"][\"contains\"][*][\"display\"]";
 	public String getCodePath() {
 		return codePath;
 	}
