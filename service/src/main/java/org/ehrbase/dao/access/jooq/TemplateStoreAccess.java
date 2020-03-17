@@ -96,7 +96,7 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
             templateStoreRecord.setSysTransaction(transactionTime);
 
 
-            updated = templateStoreRecord.store() == 1;
+            updated = templateStoreRecord.update() == 1;
         }
 
         return updated;
