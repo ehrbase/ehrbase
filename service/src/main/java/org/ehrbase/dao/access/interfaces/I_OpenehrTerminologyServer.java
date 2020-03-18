@@ -52,9 +52,12 @@ public interface I_OpenehrTerminologyServer<DvCodedText, ID> extends Terminology
  * @param <ID>
  * @param props Configuration properties for the external terminology server adaptor.
  * @return
+ * @throws Exception 
  */
-    static  <DvCodedText, ID> I_OpenehrTerminologyServer<DvCodedText, String> getNewInstance(FhirTsProps props) {
-    	
+    static  <DvCodedText, ID> I_OpenehrTerminologyServer<DvCodedText, String> getInstance(final FhirTsProps props, final String adapterId) throws Exception {
+    	if(TerminologyServer.TerminologyAdapter.isAdapterSupported(adapterId)) {
+    		throw new Exception("Terminology adapter not supported exception: "+adapterId);
+    	}
     	//Cast is correct because of the fixed parameterization of generics in FhirTerminologyServerAdaptorImpl
     	@SuppressWarnings("unchecked")
 		I_OpenehrTerminologyServer<DvCodedText, String> result = (I_OpenehrTerminologyServer<DvCodedText, String>) FhirTerminologyServerR4AdaptorImpl.getInstance(props);

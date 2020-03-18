@@ -17,6 +17,7 @@
  */
 package org.ehrbase.api.service;
 
+import java.util.EnumSet;
 import java.util.List;
 
 /***
@@ -62,6 +63,33 @@ public interface TerminologyServer<T, ID> {
 	public enum SubsumptionResult{
 		
 		EQUIVALENT, SUBSUMES, SUBSUMEDBY, NOTSUBSUMED;
+	}
+	
+	public enum TerminologyAdapter{
+		FHIR("hl7.org/fhir/R4"), 
+		OCEAN("OTS.OCEANHEALTHSYSTEMS.COM"), 
+		BETTER("bts.better.care"), 
+		DTS4("dts4.apelon.com"), 
+		INDIZEN("cts2.indizen.com");
+		
+		private String adapterId;
+		public String getAdapterId() {
+			return adapterId;
+		}
+
+		private static EnumSet<TerminologyAdapter> supportedAdapters = EnumSet.of(FHIR);
+		
+		private TerminologyAdapter(String adapterId) {
+			this.adapterId = adapterId;
+		}
+
+		public static boolean isAdapterSupported(TerminologyAdapter adapterToCheck) {
+			return supportedAdapters.contains(adapterToCheck);
+		}
+		
+		public static boolean isAdapterSupported(String adapterToCheck) {
+			return supportedAdapters.contains(TerminologyAdapter.valueOf(adapterToCheck));
+		}
 	}
 	
 }
