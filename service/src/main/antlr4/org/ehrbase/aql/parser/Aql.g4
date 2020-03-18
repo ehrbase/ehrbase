@@ -218,7 +218,7 @@ invokeOperand
         	: invokeExpr;
 
 invokeExpr
-                : INVOKE OPEN_PAR URIVALUE CLOSE_PAR ;
+                : INVOKE OPEN_PAR STRING COMMA STRING COMMA STRING CLOSE_PAR ;
 
 objectPath
         : pathPart (SLASH pathPart)*;

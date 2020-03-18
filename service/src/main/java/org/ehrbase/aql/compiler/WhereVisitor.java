@@ -50,7 +50,7 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
 	private static final String COMMA = ",";
 
 
-	private I_OpenehrTerminologyServer<DvCodedText, ID> tsserver = (I_OpenehrTerminologyServer<DvCodedText, ID>) FhirTerminologyServerR4AdaptorImpl.getInstance(null);// = (OpenehrTerminologyServer<DvCodedText, ID>) I_OpenehrTerminologyServer.;
+	private I_OpenehrTerminologyServer<DvCodedText, ID> tsserver = (I_OpenehrTerminologyServer<DvCodedText, ID>) FhirTerminologyServerR4AdaptorImpl.getInstance(null);
 
 	private List<Object> whereExpression = new ArrayList<>();
 
@@ -133,7 +133,10 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
 		assert(ctx.OPEN_PAR().getText().equals("("));
 		assert(ctx.CLOSE_PAR().getText().equals(")"));
 		List<String> codesList = new ArrayList<>();
-		tsserver.expand((ID)ctx.URIVALUE().getText()).forEach((DvCodedText dvCode) -> {codesList.add(dvCode.getDefiningCode().getCodeString());});
+		String invokeUrl = ctx.STRING(0)+""+ctx.STRING(1)+""+ctx.STRING(2);
+		tsserver.expand((ID)invokeUrl).forEach((DvCodedText dvCode) -> {codesList.add(dvCode.getDefiningCode().getCodeString());});
+
+	//	tsserver.expand((ID)ctx..URIVALUE().getText()).forEach((DvCodedText dvCode) -> {codesList.add(dvCode.getDefiningCode().getCodeString());});
 		invokeExpr.addAll(codesList);
 		return invokeExpr; 
 	}
