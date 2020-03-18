@@ -23,7 +23,7 @@ import java.util.List;
  *@Created by Luis Marco-Ruiz on Feb 12, 2020
  *
  * @param <T> concept type
- * @param <ID> id type
+ * @param <ID> generic id type to specify the data type used for the identifier of the concept in the terminology server of choice.
  */
 
 public interface TerminologyServer<T, ID> {
