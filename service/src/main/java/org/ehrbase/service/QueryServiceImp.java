@@ -27,6 +27,7 @@ import org.ehrbase.api.definitions.StructuredString;
 import org.ehrbase.api.definitions.StructuredStringFormat;
 import org.ehrbase.api.dto.QueryDefinitionResultDto;
 import org.ehrbase.api.dto.QueryResultDto;
+import org.ehrbase.api.exception.BadGatewayException;
 import org.ehrbase.api.exception.GeneralRequestProcessingException;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.service.QueryService;
@@ -46,6 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClientException;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -147,12 +149,14 @@ public class QueryServiceImp extends BaseService implements QueryService {
             AqlResult aqlResult = queryHandler.process(queryString, parameters);
 
             return formatResult(aqlResult, queryString, explain);
+        } catch(RestClientException rce) {
+        	throw new BadGatewayException("Bad gateway exception: "+rce.getCause().getMessage());
         } catch (DataAccessException dae){
-            throw new GeneralRequestProcessingException("Data Access Error:"+dae.getCause().getMessage());
+            throw new GeneralRequestProcessingException("Data Access Error: "+dae.getCause().getMessage());
         } catch (IllegalArgumentException iae){
             throw new IllegalArgumentException(iae.getMessage());
         } catch (Exception e){
-            throw new IllegalArgumentException("Could not retrieve stored query, reason:" + e);
+            throw new IllegalArgumentException("Could not retrieve stored query, reason: " + e);
         }
     }
 

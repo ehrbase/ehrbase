@@ -93,7 +93,7 @@ public final class FhirTerminologyServerR4AdaptorImpl  implements org.ehrbase.da
 		List<String> codeList = jsonContext.read(props.getCodePath().replace("\\", ""));
 		List<String> systemList = jsonContext.read(props.getSystemPath());
 		List<String> displayList = jsonContext.read(props.getDisplayPath());
-
+		
 		List<DvCodedText> expansionList = new ArrayList<>();
 		for(int i = 0; i< codeList.size(); i++) {
 			TerminologyId termId = new TerminologyId(systemList.get(i));
