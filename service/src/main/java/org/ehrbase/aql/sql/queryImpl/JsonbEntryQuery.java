@@ -66,7 +66,7 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
 
     //CCH 191018 EHR-163 matches trailing '/value'
     // '/name,0' is to matches path relative to the name array
-    public final static String matchNodePredicate = "(/(content|events|protocol|data|description|instruction|items|activities|activity|composition|entry|evaluation|observation|action)\\[([(0-9)|(A-Z)|(a-z)|\\-|_|\\.]*)\\])|(/value|/time|/name,0)";
+    public final static String matchNodePredicate = "(/(content|events|protocol|data|description|instruction|items|activities|activity|composition|entry|evaluation|observation|action)\\[([(0-9)|(A-Z)|(a-z)|\\-|_|\\.]*)\\])|(/value|/value,definingCode|/time|/name,0)";
 
     //Generic stuff
     private final static String JSONBSelector_CLOSE = "}'";

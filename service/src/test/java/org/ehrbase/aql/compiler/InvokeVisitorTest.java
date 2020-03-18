@@ -116,16 +116,4 @@ public class InvokeVisitorTest {
 		assertThat(whereExpression.get(28)).isEqualTo(")");
 
 	}
-
-	/*
-	 * @SpringBootApplication
-	 * 
-	 * @Import({ServiceModuleConfiguration.class,
-	 * RestEHRScapeModuleConfiguration.class, RestOpenehrModuleConfiguration.class,
-	 * ApiModuleConfiguration.class}) public class EhrBase {
-	 * 
-	 * public static void main(String[] args) { SpringApplication.run(EhrBase.class,
-	 * args); } }
-	 */
-
 }
