@@ -20,7 +20,6 @@ package org.ehrbase.aql.sql.queryImpl.attribute.partyref;
 import org.ehrbase.aql.sql.queryImpl.attribute.AttributeResolver;
 import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
-import org.ehrbase.aql.sql.queryImpl.value_field.GenericJsonField;
 import org.jooq.Field;
 
 import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
