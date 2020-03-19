@@ -83,6 +83,10 @@ public class EhrServiceImp extends BaseService implements EhrService {
         }
         status.setUid(new HierObjectId(UUID.randomUUID().toString()));  // server sets own new UUID in both cases (new or given status)
 
+        // subject can be empty, even in otherwise valid status object --> create new default party
+        if (status.getSubject().getExternalRef() == null)
+            status.setSubject(new PartySelf(new PartyRef(new HierObjectId(UUID.randomUUID().toString()), "default", null)));
+
         String subjectId = status.getSubject().getExternalRef().getId().getValue();
         String subjectNamespace = status.getSubject().getExternalRef().getNamespace();
 
