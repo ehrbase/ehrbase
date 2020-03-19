@@ -24,10 +24,10 @@ import org.jooq.Field;
 
 import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
 
-public class PartyRefResolver extends AttributeResolver
+public class PartyResolver extends AttributeResolver
 {
 
-    public PartyRefResolver(FieldResolutionContext fieldResolutionContext, JoinSetup joinSetup) {
+    public PartyResolver(FieldResolutionContext fieldResolutionContext, JoinSetup joinSetup) {
         super(fieldResolutionContext, joinSetup);
     }
 
@@ -47,6 +47,11 @@ public class PartyRefResolver extends AttributeResolver
                 return new SimplePartyRefAttribute(fieldResolutionContext, joinSetup).forTableField(PARTY_IDENTIFIED.PARTY_REF_VALUE).sqlField();
             case "external_ref":
                 return new PartyRefJson(fieldResolutionContext, joinSetup).sqlField();
+            case "":
+                return new PartyIdentifiedJson(fieldResolutionContext, joinSetup).sqlField();
+            case "identifiers":
+                return new PartyIdentifiedJson(fieldResolutionContext, joinSetup).forJsonPath(path).sqlField();
+
 
         }
         throw new IllegalArgumentException("Unresolved party_identified external_ref attribute path:"+path);
