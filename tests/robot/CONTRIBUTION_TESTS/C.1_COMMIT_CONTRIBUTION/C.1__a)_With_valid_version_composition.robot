@@ -61,3 +61,14 @@ Main flow: successfully commit CONTRIBUTION with single valid VERSION<COMPOSITIO
     check content of committed CONTRIBUTION
 
     [Teardown]    restart SUT
+
+
+Main flow: successfully commit CONTRIBUTION with single valid VERSION<COMPOSITION> withtout accept header
+
+    upload OPT    minimal/minimal_evaluation.opt
+    create EHR
+    commit CONTRIBUTION without accept header  minimal/minimal_evaluation.contribution.json
+    check response: is positive - returns version id
+    check content of committed CONTRIBUTION
+
+    [Teardown]    restart SUT

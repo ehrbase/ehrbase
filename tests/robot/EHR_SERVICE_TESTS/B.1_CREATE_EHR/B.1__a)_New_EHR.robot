@@ -34,7 +34,7 @@ Force Tags      refactor
 
 
 *** Test Cases ***
-MF-001 - Create new EHR (w/o Prefer header)
+MF-001 - Create new EHR (w/o Prefer and Accept header)
     [Tags]
     prepare new request session    JSON
     create supernew ehr
