@@ -58,6 +58,8 @@ workflows:
               ignore:
                 - release
                 - master
+          environment:
+            DISABLE_SECURITY: true
           # post-steps:
           #   - provide-test-status-report-via-slack #
 
