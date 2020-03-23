@@ -61,6 +61,23 @@ Replace the * with the current version, e.g. `application/target/application-0.9
 
 `java -jar application/target/application-*.jar`
 
+### Authentication
+
+By default EHRbase uses Basic Authentication for all resources. This means you have to send an 'Authorization' header
+set with keyword `Basic ` followed by the authentication information in Base64 encoded username and password. To
+generate the Base64 encoded username and password combination create the string after the following schema:
+`username:password`.
+
+The Basic Auth mechanism is implemented as "opt-in" and can be deactivated by providing an environment variable
+`DISABLE_SECURITY=true` with the start command like this in bash:
+
+```bash
+$ DISABLE_SECURITY=true java -jar application/target/application-x.x.x.jar
+```
+
+Currently we have support one user with password which can be set via environment variables `AUTH_USER` and
+`AUTH_PASSWORD`. By default these values are set with `AUTH_USER=ehrbase-client` and `authPassword=SuperSecretPassword`
+and can be overridden by own environment values.
 
 ## Running the tests
 
@@ -101,9 +118,12 @@ Adopt the parameters by your needs. The following parameters for `-e` must be se
 
 | Parameter   | Usage                                                    | Example                                   |
 | ----------- | -------------------------------------------------------- | ----------------------------------------- |
-| DB_URL      | Database URL. Must point to the running database server. | jdbc:postgresql://ehrdb:5432/ehrbase  |
+| DB_URL      | Database URL. Must point to the running database server. | jdbc:postgresql://ehrdb:5432/ehrbase      |
 | DB_USER     | Database user configured for the ehr schema.             | ehrbase                                   |
 | DB_PASS     | Password for the database user                           | ehrbase                                   |
+| DISABLE_SECURITY | Disable HTTP security                               | true                                      |
+| AUTH_USER   | Username for Basic Auth                                  | myuser                                    |
+| AUTH_PASSWORD | Password for Basic Auth                                | myPassword432                             |
 | SYSTEM_NAME | Name for the local system                                | local.ehrbase.org                         |
 
 ### Pre-build Docker Image

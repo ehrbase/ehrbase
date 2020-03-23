@@ -11,6 +11,7 @@ services:
       DB_URL: jdbc:postgresql://ehrdb:5432/ehrbase
       DB_USER: ehrbase
       DB_PASS: ehrbase
+      DISABLE_SECURITY: false
       SYSTEM_NAME: local.ehrbase.org
     restart: on-failure
 
