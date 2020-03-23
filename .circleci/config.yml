@@ -604,8 +604,6 @@ commands:
         - run:
             name: EXECUTE ROBOT COMMAND
             no_output_timeout: 30m
-            environment:
-              DISABLE_SECURITY: true
             command: |
                 cd tests
                 robot --include << parameters.include-tags >> \

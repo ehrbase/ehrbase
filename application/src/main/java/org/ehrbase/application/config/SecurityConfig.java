@@ -15,7 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Value("${DISABLE_SECURITY:false}")
+    @Value("${DISABLE_SECURITY:true}")
     private boolean disableSecurity;
 
     @Value("${AUTH_USER:ehrbase-user}")
