@@ -15,7 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Value("${DISABLE_SECURITY:true}")
+    @Value("${DISABLE_SECURITY:false}")
     private boolean disableSecurity;
 
     @Value("${AUTH_USER:ehrbase-user}")
@@ -37,10 +37,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         if (disableSecurity) {
             http.authorizeRequests()
-                    .anyRequest().permitAll();
+                    .antMatchers("/**").permitAll()
+                    .and()
+                    .csrf().disable();
         } else {
             http.authorizeRequests()
-                    .anyRequest().authenticated()
+                    .antMatchers("/**")
+                    .authenticated()
                     .and()
                     .httpBasic();
         }
