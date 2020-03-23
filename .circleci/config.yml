@@ -58,8 +58,6 @@ workflows:
               ignore:
                 - release
                 - master
-          environment:
-            DISABLE_SECURITY: true
           # post-steps:
           #   - provide-test-status-report-via-slack #
 
@@ -606,6 +604,8 @@ commands:
         - run:
             name: EXECUTE ROBOT COMMAND
             no_output_timeout: 30m
+            environment:
+              DISABLE_SECURITY: true
             command: |
                 cd tests
                 robot --include << parameters.include-tags >> \
