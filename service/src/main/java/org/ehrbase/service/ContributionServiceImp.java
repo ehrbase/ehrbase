@@ -217,8 +217,14 @@ public class ContributionServiceImp extends BaseService implements ContributionS
                 if (version.getPrecedingVersionUid() == null)
                     throw new InvalidApiParameterException("Invalid version. Change type MODIFICATION, but without \"preceding_version_uid\" attribute");
                 break;
+            // block of valid change types, without any rules to apply (yet)
+            case AMENDMENT:
+            case DELETED:
+            case SYNTHESIS:
+            case UNKNOWN:
+                break;
+            // invalid change type
             default:
-                // invalid change type
                 throw new InvalidApiParameterException("Change type \"" + changeType + "\" not valid");
         }
     }
