@@ -1,5 +1,7 @@
 package org.ehrbase.application.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -24,6 +26,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Value("${AUTH_PASSWORD:SuperSecretPassword}")
     private String authPassword;
 
+    private Logger logger = LoggerFactory.getLogger(getClass());
+
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
 
@@ -36,11 +40,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
 
         if (disableSecurity) {
+            logger.warn("Authentication disabled! This is a security risk.");
+            logger.warn("To enable security set env 'DISABLE_SECURITY=false' with start up command");
             http.authorizeRequests()
                     .antMatchers("/**").permitAll()
                     .and()
                     .csrf().disable();
         } else {
+            logger.info("Authentication enabled.");
+            logger.info("Username: " + authUser);
+            logger.info("Password: " + authPassword);
             http.authorizeRequests()
                     .antMatchers("/**")
                     .authenticated()
