@@ -1,0 +1,133 @@
+{
+  "_type" : "COMPOSITION",
+  "name" : {
+    "_type" : "DV_TEXT",
+    "value" : "Versorgungsfall"
+  },
+  "archetype_details" : {
+    "archetype_id" : {
+      "value" : "openEHR-EHR-COMPOSITION.versorgungsfall.v0"
+    },
+    "template_id" : {
+      "value" : "EpisodeOfCare"
+    },
+    "rm_version" : "1.0.4"
+  },
+  "language" : {
+    "terminology_id" : {
+      "value" : "ISO_639-1"
+    },
+    "code_string" : "de"
+  },
+  "territory" : {
+    "terminology_id" : {
+      "value" : "ISO_3166-1"
+    },
+    "code_string" : "DE"
+  },
+  "category" : {
+    "_type" : "DV_CODED_TEXT",
+    "value" : "event",
+    "defining_code" : {
+      "terminology_id" : {
+        "value" : "openehr"
+      },
+      "code_string" : "433"
+    }
+  },
+  "composer" : {
+    "_type" : "PARTY_IDENTIFIED",
+    "external_ref" : {
+      "_type" : "PARTY_REF",
+      "namespace" : "http://localhost:8090",
+      "type" : "PractitionerRole",
+      "id" : {
+        "_type" : "HIER_OBJECT_ID",
+        "value" : "PractitionerRole/12345-mock"
+      }
+    }
+  },
+  "context" : {
+    "_type" : "EVENT_CONTEXT",
+    "start_time" : {
+      "_type" : "DV_DATE_TIME",
+      "value" : "2020-03-02T15:57:15,897+01:00"
+    },
+    "setting" : {
+      "_type" : "DV_CODED_TEXT",
+      "value" : "other care",
+      "defining_code" : {
+        "terminology_id" : {
+          "value" : "openehr"
+        },
+        "code_string" : "238"
+      }
+    }
+  },
+  "content" : [ {
+    "_type" : "ADMIN_ENTRY",
+    "name" : {
+      "_type" : "DV_TEXT",
+      "value" : "Episodeofcare"
+    },
+    "language" : {
+      "terminology_id" : {
+        "value" : "ISO_639-1"
+      },
+      "code_string" : "de"
+    },
+    "encoding" : {
+      "terminology_id" : {
+        "value" : "IANA_character-sets"
+      },
+      "code_string" : "UTF-8"
+    },
+    "subject" : {
+      "_type" : "PARTY_SELF"
+    },
+    "data" : {
+      "_type" : "ITEM_TREE",
+      "name" : {
+        "_type" : "DV_TEXT",
+        "value" : "Baum"
+      },
+      "items" : [
+       {
+        "_type" : "ELEMENT",
+        "name" : {
+          "_type" : "DV_TEXT",
+          "value" : "period"
+        },
+        "value" : {
+          "_type" : "DV_INTERVAL",
+          "lower" : {
+            "_type" : "DV_DATE_TIME",
+            "value" : "2019-11-22T00:00:00+01:00"
+          },
+          "upper_unbounded" : false,
+          "lower_unbounded" : false,
+          "lower_included" : true,
+          "upper_included" : true
+        },
+        "archetype_node_id" : "at0014"
+      },
+      {
+        "_type": "ELEMENT",
+        "name": {
+          "_type": "DV_TEXT",
+          "value": "quantity"
+        },
+        "archetype_node_id": "at0002",
+        "value": {
+          "_type": "DV_QUANTITY",
+          "magnitude": 5.772531032562256,
+          "units": "kg"
+        }
+      }
+      ],
+      "archetype_node_id" : "at0001"
+    },
+    "archetype_node_id" : "openEHR-EHR-ADMIN_ENTRY.episodeofcare.v0"
+  } ],
+  "archetype_node_id" : "openEHR-EHR-COMPOSITION.versorgungsfall.v0"
+}

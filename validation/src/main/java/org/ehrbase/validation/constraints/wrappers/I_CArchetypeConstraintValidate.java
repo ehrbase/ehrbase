@@ -49,5 +49,5 @@ public interface I_CArchetypeConstraintValidate {
         return XmlBeans.getContextTypeLoader().findType(qName);
     }
 
-    void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws Exception;
+    void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws IllegalArgumentException;
 }

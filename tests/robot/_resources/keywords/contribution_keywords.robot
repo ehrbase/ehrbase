@@ -101,7 +101,7 @@ check response: is positive - contribution has new version
                         Set Test Variable    ${version_id}    ${body['versions'][0]['id']['value']}
                         Set Test Variable    ${change_type}    ${body['audit']['change_type']['value']}
 
-                        Should Contain  ${version_id}  ::2       
+                        Should Contain  ${version_id}  ::2
                         Output    ${body}
 
 
@@ -141,24 +141,23 @@ commit invalid CONTRIBUTION (JSON)
 # VARIATIONS OF RESULTS FROM INVALID CONTRIBUTIONS
 check response: is negative indicating errors in committed data
                         Should Be Equal As Strings   ${response.status_code}   400
-                        # TODO: keep failing to avoid false positive, rm when has checks.
-                        Fail    msg=brake it till you make it!
+                        # # TODO: keep failing to avoid false positive, rm when has checks.
+                        # Fail    msg=brake it till you make it!
 
-
-check response: is negative indicating empty versions list
+check response: is negative - complaining about empty versions list
                         Should Be Equal As Strings   ${response.status_code}   400
                         Set Test Variable    ${body}    ${response.json()}
-                        Set Test Variable    ${versions}    ${body['versions']}
-                        Length Should Be    ${versions}    0
+                        Set Test Variable    ${error_message}    ${body['error']}
+                        Should Be Equal As Strings    ${error_message}    Invalid Contribution, must have at least one Version object.
 
 
 check response: is negative indicating wrong change_type
                         Should Be Equal As Strings   ${response.status_code}   400
                         Set Test Variable    ${body}    ${response.json()}
 
-                        # TODO: keep failing to avoid false positive
-                        #       add checks when available.
-                        Fail    msg=brake it till you make it!
+                        # # TODO: keep failing to avoid false positive
+                        # #       add checks when available.
+                        # Fail    msg=brake it till you make it!
 
 
 check response: is negative indicating non-existent OPT
@@ -194,9 +193,6 @@ check content of retrieved CONTRIBUTION (JSON)
 retrieve CONTRIBUTION by fake contri_uid (JSON)
                         Set Test Variable  ${KEYWORD NAME}  GET CONTRI BY FAKE CONTRI_UID
                         generate random contribution_uid
-
-            TRACE GITHUB ISSUE  68  not-ready  message=Next step fails due to a bug.
-
                         GET /ehr/ehr_id/contribution/contribution_uid    JSON
 
 
@@ -223,20 +219,20 @@ retrieve CONTRIBUTION(S) by fake ehr_id (JSON)
 
 check response: is negative indicating non-existent ehr_id
                         Should Be Equal As Strings    ${response.status_code}    404
-                        Set Test Variable    ${body}    ${response.json()}
-                        Should Be Equal As Strings  ${body['error']}  No EHR found with given ID: ${ehr_id}  
+                        # Set Test Variable    ${body}    ${response.json()}
+                        # Should Be Equal As Strings  ${body['error']}  No EHR found with given ID: ${ehr_id}
 
 
 check response: is negative indicating non-existent contribution_uid
                         Should Be Equal As Strings    ${response.status_code}    404
-                        Set Test Variable    ${body}    ${response.json()}
-                        Should Be Equal As Strings  ${body['error']}  No Contribution found with given uid: ${contribution_uid}
+                        # Set Test Variable    ${body}    ${response.json()}
+                        # Should Be Equal As Strings  ${body['error']}  Contribution with given ID does not exist
 
 
 check response: is negative indicating non-existent contribution_uid on ehr_id
                         Should Be Equal As Strings    ${response.status_code}    404
-                        Set Test Variable    ${body}    ${response.json()}
-                        Should Be Equal As Strings  ${body['error']}  TODO: tbd
+                        # Set Test Variable    ${body}    ${response.json()}
+                        # Should Be Equal As Strings  ${body['error']}  Contribution with given ID does not exist
 
 
 check response: is positive with list of ${x} contribution(s)
@@ -258,14 +254,12 @@ POST /ehr/ehr_id/contribution
     ...                 to test level scope e.g. `load valid test-data-set`
 
                         # JSON format: defaults apply
-                        Run Keyword If      $format=='JSON'    prepare request session
+                        Run Keyword If      $format=='JSON'    prepare new request session
                         ...                 Prefer=return=representation
 
                         # XML format: overriding defaults
-                        Run Keyword If      $format=='XML'    prepare request session
-                        ...                 content=application/xml
-                        ...                 accept=application/xml
-                        ...                 Prefer=return=representation
+                        Run Keyword If      $format=='XML'    prepare new request session
+                        ...                 XML    Prefer=return=representation
 
     ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/contribution
                         ...                 data=${test_data}
@@ -291,13 +285,11 @@ GET /ehr/ehr_id/contribution/contribution_uid
     [Arguments]         ${format}
     [Documentation]     DEPENDENCY ${ehr_id} & ${contribution_uid} in test scope
 
-                        Run Keyword If      $format=='JSON'    prepare request session
+                        Run Keyword If      $format=='JSON'    prepare new request session
                         ...                 Prefer=return=representation
 
-                        Run Keyword If      $format=='XML'    prepare request session
-                        ...                 content=application/xml
-                        ...                 accept=application/xml
-                        ...                 Prefer=return=representation
+                        Run Keyword If      $format=='XML'    prepare new request session
+                        ...                 XML    Prefer=return=representation
 
     ${resp}=            Get Request         ${SUT}   /ehr/${ehr_id}/contribution/${contribution_uid}
                         ...                 headers=${headers}
@@ -310,13 +302,11 @@ GET /ehr/ehr_id/contributions
     [Arguments]         ${format}
     [Documentation]     DEPENDENCY ${ehr_id} in test scope
 
-                        Run Keyword If      $format=='JSON'    prepare request session
+                        Run Keyword If      $format=='JSON'    prepare new request session
                         ...                 Prefer=return=representation
 
-                        Run Keyword If      $format=='XML'    prepare request session
-                        ...                 content=application/xml
-                        ...                 accept=application/xml
-                        ...                 Prefer=return=representation
+                        Run Keyword If      $format=='XML'    prepare new request session
+                        ...                 XML    Prefer=return=representation
                         # NOTE: edpoint does not exist (any more)???
     ${resp}=            Get Request         ${SUT}   /ehr/${ehr_id}/contributions
                         ...                 headers=${headers}
@@ -329,25 +319,12 @@ GET /ehr/ehr_id/contributions
 
 
 # 3) HTTP Headers
-prepare request session
-    [Arguments]         ${content}=application/json  ${accept}=application/json  &{others}
-    [Documentation]     Prepares request settings for RequestLib
-    ...                 :content: application/json (default) / application/xml
-    ...                 :accept: application/json (default) / application/xml
-    ...                 :others: optional e.g. If-Match={ehrstatus_uid}
-    ...                                   e.g. Prefer=return=representation
 
-                        Log Many            ${content}  ${accept}  ${others}
+# NOTE: All request header settings are handled from generic_keywords.robot resource file.
 
-    &{headers}=         Create Dictionary   Content-Type=${content}
-                        ...                 Accept=${accept}
-
-                        Run Keyword If      ${others}    Set To Dictionary    ${headers}    &{others}
-
-                        Create Session      ${SUT}    ${${SUT}.URL}
-                        ...                 auth=${${SUT}.CREDENTIALS}    debug=2    verify=True
-
-                        Set Test Variable   ${headers}    ${headers}
+Available keywords:
+    generic_keywords.prepare new request session
+    generic_keywords.set request headers
 
 
 
@@ -394,8 +371,7 @@ inject preceding_version_uid into valid test-data-set
     [Arguments]         ${valid_test_data_set}
     ${test_data}=       Load JSON from File    ${VALID CONTRI DATA SETS}/${valid_test_data_set}
     ${test_data}=       Update Value To Json  ${test_data}  $..versions..preceding_version_uid.value
-                        ...                   ${version_id}::piri.ehrscape.com::1
-                                                        # TODO: rm hardcoded value "piri..."
+                        ...                   ${version_id}
                         Set Test Variable    ${test_data}    ${test_data}
                         Output    ${test_data}
 
@@ -419,10 +395,10 @@ Output Debug Info:
                         # Log To Console      \trequest body: \n\t${response.request.body} \n
                         Log To Console      \tresponse status code: \n\t${response.status_code} \n
                         Log To Console      \tresponse headers: \n\t${response.headers} \n
-                        # Log To Console      \tresponse body: \n\t${response.content} \n
-                        
-    ${resti_response}=  Set Variable  ${response.json()}
-                        Output    ${resti_response}
+                        Log To Console      \tresponse body: \n\t${response.text} \n
+
+    # ${nice_response}=   Set Variable  ${response.text}
+    #                     Output    ${nice_response}
 
 
 
@@ -459,3 +435,23 @@ Output Debug Info:
 # # commit invalid CONTRIBUTION modification
 #     - incomplete modification
 #     - incorrect modification (e.g. wrong change_type)
+
+
+
+
+
+# *** Keywords ***
+# prepare request session
+#     [Arguments]         ${content}=application/json  ${accept}=application/json  &{others}
+#     [Documentation]     Prepares request settings for RequestLib
+#     ...                 :content: application/json (default) / application/xml
+#     ...                 :accept: application/json (default) / application/xml
+#     ...                 :others: optional e.g. If-Match={ehrstatus_uid}
+#     ...                                   e.g. Prefer=return=representation
+#                         Log Many            ${content}  ${accept}  ${others}
+#     &{headers}=         Create Dictionary   Content-Type=${content}
+#                         ...                 Accept=${accept}
+#                         Run Keyword If      ${others}    Set To Dictionary    ${headers}    &{others}
+#                         Create Session      ${SUT}    ${${SUT}.URL}
+#                         ...                 auth=${${SUT}.CREDENTIALS}    debug=2    verify=True
+#                         Set Test Variable   ${headers}    ${headers}

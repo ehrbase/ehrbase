@@ -35,18 +35,13 @@ Force Tags    XML
 *** Test Cases ***
 Alternative flow 1 delete persistent COMPOSITION
 
-    upload OPT    minimal_persistent/persistent_minimal.opt   XML
+    upload OPT    minimal_persistent/persistent_minimal.opt
 
     create EHR    XML
 
     commit composition (XML)    minimal_persistent/persistent_minimal.composition.extdatetime.xml
 
     delete composition    ${preceding_version_uid}
-
-        ####### TODO: @WLAD/PABLO - remove when fixed!!!!! #####################
-        TRACE JIRA BUG  EHR-517    not-ready
-        # NOTE: relates to persistent compos
-        ########################################################################
 
     get deleted composition
 

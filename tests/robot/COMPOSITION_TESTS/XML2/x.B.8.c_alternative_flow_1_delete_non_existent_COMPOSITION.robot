@@ -35,11 +35,10 @@ Force Tags    XML
 *** Test Cases ***
 Alternative flow 2 delete non existent COMPOSITION
 
-    upload OPT    minimal/minimal_observation.opt    XML
+    upload OPT    minimal/minimal_observation.opt
 
     create EHR    XML
 
-    # Commit fake COMPOSITION
-    generate random composition_uid
+    create fake composition
 
     delete non-existent composition

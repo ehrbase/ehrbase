@@ -18,7 +18,7 @@
 
 package org.ehrbase.service;
 
-import org.apache.velocity.io.UnicodeInputStream;
+import org.apache.commons.io.input.BOMInputStream;
 import org.apache.xmlbeans.XmlOptions;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
@@ -26,10 +26,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 import javax.xml.namespace.QName;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -123,7 +121,7 @@ public class TemplateFileStorageService implements TemplateStorage {
     public void storeTemplate(OPERATIONALTEMPLATE template) {
         XmlOptions opts = new XmlOptions();
         opts.setSaveSyntheticDocumentElement(new QName("http://schemas.openehr.org/v1", "template"));
-        saveTemplateFile(template.getTemplateId().getValue(), template.xmlText(opts).getBytes());
+        saveTemplateFile(template.getTemplateId().getValue(), template.xmlText(opts).getBytes(StandardCharsets.UTF_8));
     }
 
     @Override
@@ -132,7 +130,7 @@ public class TemplateFileStorageService implements TemplateStorage {
 
         File file = optFileMap.get(templateId);
 
-        try (InputStream in = file != null ? new UnicodeInputStream(new FileInputStream(file), true) : null) { // manual reading of OPT file and following parsing into object
+        try (InputStream in = file != null ? new BOMInputStream(new FileInputStream(file), true) : null) { // manual reading of OPT file and following parsing into object
             org.openehr.schemas.v1.TemplateDocument document = org.openehr.schemas.v1.TemplateDocument.Factory.parse(in);
             operationaltemplate = document.getTemplate();
             //use the template id instead of the file name as key

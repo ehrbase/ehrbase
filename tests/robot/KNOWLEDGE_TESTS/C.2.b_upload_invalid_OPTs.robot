@@ -46,11 +46,6 @@ Force Tags   OPT14
 
 
 
-*** Comments ***
-NOTE: sync with review results of C.1.b_validate_invalid_OPTs.robot
-
-
-
 *** Test Cases ***
 
 Empty File
@@ -62,69 +57,43 @@ Empty File
     empty_file/empty_xml_template.opt
 
 
-Empty Template ID
-    [Documentation]    Different issues with template_id.
-    ...                invalid_1:
-    ...                    with template_id tag but value tag w/o text
-    ...                    <template_id><value></value></template_id>
-    ...                invalid_2:
-    ...                    with template_id tag but w/o value tag
-    ...                    <template_id></template_id>
-    ...                invalid_3:
-    ...                    no template_id tag at all
-    ...                invalid_4:
-    ...                    a template_id tag with text, w/o value tag
-    ...                    <template_id>bullfrog</template_id>
-    [Template]         upload invalid OPT
+Invalid Template ID
+    [Documentation]     Different issues with template_id.
+    ...                 invalid_1:
+    ...                     with template_id tag but value tag w/o text
+    ...                     <template_id><value></value></template_id>
+    ...                 invalid_2:
+    ...                     with template_id tag but w/o value tag
+    ...                     <template_id></template_id>
+    ...                 invalid_3:
+    ...                     no template_id tag at all
+    ...                 invalid_4:
+    ...                     a template_id tag with text, w/o value tag
+    ...                     <template_id>bullfrog</template_id>
+    [Template]          upload invalid OPT
+    [Tags]              invalid_template_id
 
-    #NOTE: invalid_1 IS FAILING!
     removed_template_id/minimal_admin_invalid_1.opt
     removed_template_id/minimal_admin_invalid_2.opt
     removed_template_id/minimal_admin_invalid_3.opt
     removed_template_id/minimal_admin_invalid_4.opt
 
-    [Teardown]  TRACE JIRA BUG    EHR-332    not-ready
+    [Teardown]  TRACE GITHUB ISSUE  119  not-ready
 
 
 Removed Mandatory Elements
-    [Documentation]    Issues with missing elements.
-    ...                Mandatory, optional or combination of it.
-    ...                Elements without minOccurs or MaxOccurs are mandatory
-    [Template]         upload invalid OPT
+    [Documentation]     Issues with missing elements.
+    ...                 Mandatory, optional or combination of it.
+    ...                 Elements without minOccurs or MaxOccurs are mandatory
+    [Template]          upload invalid OPT
+    [Tags]              mandatory_elements
 
     removed_mandatory_elements/minimal_action_removed_concept.opt
     removed_mandatory_elements/minimal_action_removed_concept_value.opt
-    removed_mandatory_elements/minimal_action_removed_description_and_concept.opt
     removed_mandatory_elements/minimal_action_removed_definition.opt
 
-    [Teardown]  TRACE JIRA BUG    EHR-333    not-ready
-
-
-Multiple Elements With Upper Bound Of 1
-    [Documentation]    Issues with elements that should occur only once.
-    ...                Any element without an maxOccurs="unbounded" has upper bound=1
-    ...
-    [Template]         upload invalid OPT
-
-    multiple_elements/minimal_action_template-id_twice_1.opt
-    multiple_elements/minimal_action_template-id_twice_2.opt
-    multiple_elements/minimal_action_template-id_twice_3.opt
-    multiple_elements/minimal_action_concept_twice_1.opt
-    multiple_elements/minimal_action_concept_twice_2.opt
-    multiple_elements/minimal_action_definition_twice.opt
-
-    [Teardown]  TRACE JIRA BUG    EHR-334    not-ready
-
-
-Alien Tags
-    [Documentation]    Issues with unknown tags.
-    [Template]         upload invalid OPT
-
-    # NOTE: added tag <bullfrog>Minimal action</bullfrog>
-    alien_tags/minimal_action.opt
-
-    [Teardown]  TRACE JIRA BUG    EHR-335    not-ready
-
+    # SPECIAL: removing an optional AND a mandatory element
+    removed_mandatory_elements/minimal_action_removed_description_and_concept.opt
 
 
 # Test Suite Self Test For Debugging
@@ -138,22 +107,3 @@ Alien Tags
 #     ${resp}=          Get Request    ${SUT}    /definition/template/adl1.4
 #                       Log To Console    ${resp.content}
 #                       Should Be Equal As Strings    ${resp.status_code}    200
-
-
-
-*** Keywords ***
-
-upload invalid OPT
-    [Arguments]           ${opt file}
-
-    start request session
-    get invalid OPT file  ${opt file}
-    upload OPT file
-
-    server rejected OPT with status code 400
-    server response contains location of errors in OPT
-
-
-server response contains location of errors in OPT
-    Log    This feature is not implemented yet.     level=WARN
-    Log    TODO: @WLAD implement response checks 

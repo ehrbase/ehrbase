@@ -24,7 +24,6 @@ import org.ehrbase.rest.ehrscape.RestEHRScapeModuleConfiguration;
 import org.ehrbase.rest.openehr.RestOpenehrModuleConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Import;
 
 @SpringBootApplication
@@ -32,7 +31,7 @@ import org.springframework.context.annotation.Import;
         RestEHRScapeModuleConfiguration.class,
         RestOpenehrModuleConfiguration.class,
         ApiModuleConfiguration.class})
-public class EhrBase extends SpringBootServletInitializer {
+public class EhrBase {
 
     public static void main(String[] args) {
         SpringApplication.run(EhrBase.class, args);

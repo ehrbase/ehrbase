@@ -4,31 +4,31 @@ folders:
 
   A.1_EXECUTE_AD-HOC_QUERY:
     files:
-      - A.1__a._Data_exists.robot
-      - A.1__b._EHR_exists_but_no_COMPOSITIONs.robot
-      - A.1__c._EHR_does_not_exist.robot
-      - A.1__d._Data_exists_ORDERBY_path_ascending.robot
-      - A.1__e._Data_exists_ORDERBY_path_descending.robot
-      - A.1__f._Data_exists_TIMEWINDOW.robot
-      - A.1__g._Data_exists_rows-to-fetch.robot
-      - A.1__h._Data_exists_TOP_match_rows-to-fetch.robot
-      - A.1__i._Data_exists_rows-to-fetch_and_row-offset.robot
+      - A.1__a_Data_exists.robot
+      - A.1__b_EHR_exists_but_no_COMPOSITIONs.robot
+      - A.1__c_EHR_does_not_exist.robot
+      - A.1__d_Data_exists_ORDERBY_path_ascending.robot
+      - A.1__e_Data_exists_ORDERBY_path_descending.robot
+      - A.1__f_Data_exists_TIMEWINDOW.robot
+      - A.1__g_Data_exists_rows-to-fetch.robot
+      - A.1__h_Data_exists_TOP_match_rows-to-fetch.robot
+      - A.1__i_Data_exists_rows-to-fetch_and_row-offset.robot
 
-  A.2._EXECUTE_STORED_QUERY:
+  A.2_EXECUTE_STORED_QUERY:
     files:
       - A.2__a._placeholder.robot
 
-  A.3._REGISTER_QUERY:
+  A.3_REGISTER_QUERY:
     files:
-      - A.3__a._Valid_AQL_QUERY.robot
-      - A.3__b._Invalid_AQL_QUERY.robot
-      - A.3__c._Unsupported_formalism.robot
+      - A.3__a_Valid_AQL_QUERY.robot
+      - A.3__b_Invalid_AQL_QUERY.robot
+      - A.3__c_Unsupported_formalism.robot
 
-  A.4._LIST_QUERIES:
+  A.4_LIST_QUERIES:
     files:
-      - A.4__a._Stored_QUERIES_exist.robot
-      - A.4__b._Stored_QUERIES_do_not_exist.robot
-      - A.4__c._Stored_QUERIES_check_items-to-fetch.robot
+      - A.4__a_Stored_QUERIES_exist.robot
+      - A.4__b_Stored_QUERIES_do_not_exist.robot
+      - A.4__c_Stored_QUERIES_check_items-to-fetch.robot
 
 placeholder: |
     # Copyright (c) 2019 Wladislaw Wagner (Vitasystems GmbH), Pablo Pazos (Hannover Medical School).

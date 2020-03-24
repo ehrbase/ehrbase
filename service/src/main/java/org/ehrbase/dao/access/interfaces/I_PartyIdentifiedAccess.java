@@ -20,13 +20,13 @@
  */
 package org.ehrbase.dao.access.interfaces;
 
+import com.nedap.archie.rm.generic.PartyProxy;
 import org.ehrbase.dao.access.jooq.PartyIdentifiedAccess;
 import com.nedap.archie.rm.datavalues.DvIdentifier;
 import com.nedap.archie.rm.generic.PartyIdentified;
 import com.nedap.archie.rm.support.identification.GenericId;
 import com.nedap.archie.rm.support.identification.PartyRef;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,7 +37,7 @@ import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
  * Party Identified access layer
  * Created by Christian Chevalley on 4/21/2015.
  */
-public interface I_PartyIdentifiedAccess extends I_SimpleCRUD<I_PartyIdentifiedAccess, UUID> {
+public interface I_PartyIdentifiedAccess extends I_SimpleCRUD {
 
     /**
      * get a new access layer instance for a party name
@@ -84,27 +84,6 @@ public interface I_PartyIdentifiedAccess extends I_SimpleCRUD<I_PartyIdentifiedA
     static int deleteInstance(I_DomainAccess domainAccess, UUID id) {
         domainAccess.getContext().delete(IDENTIFIER).where(IDENTIFIER.PARTY.eq(id)).execute();
         return domainAccess.getContext().delete(PARTY_IDENTIFIED).where(PARTY_IDENTIFIED.ID.eq(id)).execute();
-    }
-
-    /**
-     * get the list of identifiers for a party
-     *
-     * @param domainAccess
-     * @param partyId
-     * @return
-     */
-    static List<DvIdentifier> getPartyIdentifiers(I_DomainAccess domainAccess, UUID partyId) {
-        List<DvIdentifier> resList = new ArrayList<>();
-        domainAccess.getContext().selectFrom(IDENTIFIER).where(IDENTIFIER.PARTY.eq(partyId)).fetch().forEach(records -> {
-            DvIdentifier identifier = new DvIdentifier();
-            identifier.setIssuer(records.getIssuer());
-            identifier.setAssigner(records.getAssigner());
-            identifier.setId(records.getIdValue());
-            identifier.setType(records.getTypeName());
-            resList.add(identifier);
-        });
-
-        return resList;
     }
 
     /**
@@ -164,6 +143,11 @@ public interface I_PartyIdentifiedAccess extends I_SimpleCRUD<I_PartyIdentifiedA
         return PartyIdentifiedAccess.getOrCreateParty(domainAccess, partyIdentified);
     }
 
+    static UUID getOrCreatePartySelf(I_DomainAccess domainAccess) {
+        return PartyIdentifiedAccess.getOrCreatePartySelf(domainAccess);
+    }
+
+
     /**
      * retrieve an identified party by its UUID
      *
@@ -171,8 +155,8 @@ public interface I_PartyIdentifiedAccess extends I_SimpleCRUD<I_PartyIdentifiedA
      * @param id
      * @return
      */
-    static PartyIdentified retrievePartyIdentified(I_DomainAccess domainAccess, UUID id) {
-        return PartyIdentifiedAccess.retrievePartyIdentified(domainAccess, id);
+    static PartyProxy retrievePartyIdentified(I_DomainAccess domainAccess, UUID id) {
+        return PartyIdentifiedAccess.retrievePartyProxy(domainAccess, id);
     }
 
     /**

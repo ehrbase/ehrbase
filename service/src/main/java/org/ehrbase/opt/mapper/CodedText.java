@@ -24,7 +24,7 @@ package org.ehrbase.opt.mapper;
 
 import org.ehrbase.opt.TermDefinition;
 import org.ehrbase.opt.ValuePoint;
-import org.ehrbase.service.TerminologieService;
+import org.ehrbase.service.TerminologyServiceImp;
 import org.openehr.schemas.v1.*;
 
 import java.util.ArrayList;
@@ -77,8 +77,8 @@ public class CodedText {
                             codeMap.put(Constants.VALUE, termDef.get(code).getValue());
                             codeMap.put(Constants.DESCRIPTION, termDef.get(code).getDescription());
                         } else if (((CCODEPHRASE) cobject).getTerminologyId() != null && "openehr".equals(((CCODEPHRASE) cobject).getTerminologyId().getValue())) {
-                            if (TerminologieService.getInstance() != null)
-                                codeMap.put(Constants.VALUE, TerminologieService.getInstance().getLabelForCode(code));
+                            if (TerminologyServiceImp.getInstance() != null)
+                                codeMap.put(Constants.VALUE, TerminologyServiceImp.getInstance().getLabelForCode(code, "en"));
 
                         }
                         valueList.add(codeMap);

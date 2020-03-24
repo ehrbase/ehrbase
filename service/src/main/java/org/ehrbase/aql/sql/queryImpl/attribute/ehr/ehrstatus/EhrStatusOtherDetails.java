@@ -34,11 +34,11 @@ public class EhrStatusOtherDetails extends EhrStatusAttribute {
 
     @Override
     public Field<?> sqlField(){
-        fieldContext.setJsonDatablock(true);
-        String variablePath = fieldContext.getVariableDefinition().getPath().substring("ehr_status/other_details".length() + 1);
-        Field<?> field = new JsonbEntryQuery(fieldContext.getContext(), fieldContext.getIntrospectCache(), fieldContext.getPathResolver(), fieldContext.getEntry_root())
-                .makeField(JsonbEntryQuery.OTHER_ITEM.OTHER_DETAILS, null, fieldContext.getVariableDefinition().getAlias(), variablePath, fieldContext.isWithAlias());
-        return field;
+        String variablePath = fieldContext.getVariableDefinition().getPath().substring("ehr_status/other_details".length());
+        if (variablePath.startsWith("/"))
+            variablePath = variablePath.substring(1);
+
+        return new EhrStatusJson(fieldContext, joinSetup).forJsonPath("other_details/"+variablePath).sqlField();
     }
 
     @Override

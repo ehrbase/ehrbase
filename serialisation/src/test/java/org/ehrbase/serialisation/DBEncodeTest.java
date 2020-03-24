@@ -19,6 +19,16 @@
 package org.ehrbase.serialisation;
 
 import com.google.gson.JsonElement;
+import com.nedap.archie.rm.composition.AdminEntry;
+import com.nedap.archie.rm.composition.ContentItem;
+import com.nedap.archie.rm.composition.Evaluation;
+import com.nedap.archie.rm.datastructures.Element;
+import com.nedap.archie.rm.datatypes.CodePhrase;
+import com.nedap.archie.rm.datavalues.DvText;
+import com.nedap.archie.rm.datavalues.quantity.DvInterval;
+import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
+import com.nedap.archie.rm.support.identification.TerminologyId;
+import org.ehrbase.test_data.composition.CompositionTestDataCanonicalJson;
 import org.ehrbase.test_data.composition.CompositionTestDataCanonicalXML;
 import com.nedap.archie.rm.composition.Composition;
 import org.ehrbase.ehr.encode.rawjson.LightRawJsonEncoder;
@@ -34,7 +44,7 @@ import static org.junit.Assert.*;
 
 public class DBEncodeTest {
 
-    static CompositionTestDataCanonicalXML[] canonicals = {
+    private static CompositionTestDataCanonicalXML[] canonicals = {
             CompositionTestDataCanonicalXML.DIADEM,
             CompositionTestDataCanonicalXML.ALL_TYPES_FIXED,
             CompositionTestDataCanonicalXML.RIPPLE_COMFORMANCE_ACTION,
@@ -43,7 +53,8 @@ public class DBEncodeTest {
             CompositionTestDataCanonicalXML.RIPPLE_COMFORMANCE_OBSERVATION_DEMO,
             CompositionTestDataCanonicalXML.RIPPLE_COMFORMANCE_OBSERVATION_PULSE,
             CompositionTestDataCanonicalXML.RIPPLE_COMFORMANCE_INSTRUCTION,
-            CompositionTestDataCanonicalXML.RIPPLE_CONFORMANCE_FULL
+            CompositionTestDataCanonicalXML.RIPPLE_CONFORMANCE_FULL,
+            CompositionTestDataCanonicalXML.ALL_TYPES_NO_CONTENT
     };
 
     /**
@@ -70,14 +81,14 @@ public class DBEncodeTest {
             String converted = new LightRawJsonEncoder(db_encoded).encodeCompositionAsString();
 
             //see if this can be interpreted by Archie
-            Object object = new CanonicalJson().unmarshal(converted,Composition.class);
+            Composition object = new CanonicalJson().unmarshal(converted,Composition.class);
 
-            assertTrue(object instanceof Composition);
+            assertTrue(object != null);
 
             //check if encoded/decode carry the same name
-            assertThat(composition.getName().getValue()).isEqualTo(((Composition) object).getName().getValue());
+            assertThat(composition.getName().getValue()).isEqualTo(object.getName().getValue());
 
-            String interpreted = new CanonicalXML().marshal((Composition) object);
+            String interpreted = new CanonicalXML().marshal(object);
 
             assertNotNull(interpreted);
         }
@@ -92,11 +103,11 @@ public class DBEncodeTest {
         JsonElement converted = new LightRawJsonEncoder(db_encoded).encodeContentAsJson(null);
 
         //see if this can be interpreted by Archie
-        Object object = new CanonicalJson().unmarshal(converted.toString(), Composition.class);
+        Composition object = new CanonicalJson().unmarshal(converted.toString(), Composition.class);
 
-        assertTrue(object instanceof Composition);
+        assertTrue(object != null);
 
-        String interpreted = new CanonicalXML().marshal((Composition) object);
+        String interpreted = new CanonicalXML().marshal(object);
 
         assertNotNull(interpreted);
     }
@@ -107,6 +118,130 @@ public class DBEncodeTest {
         JsonElement converted = new LightRawJsonEncoder(marshal).encodeContentAsJson(null);
         Object object = new CanonicalJson().unmarshal(converted.toString(), Composition.class);
 
-        assertTrue(object instanceof Composition);
+        assertTrue(object != null);
     }
+
+    @Test
+    public void compositionEncodingCycleWithDuplicateSections() throws Exception {
+        Composition composition = new CanonicalXML().unmarshal(IOUtils.toString(CompositionTestDataCanonicalXML.REGISTRO_DE_ATENDIMENTO.getStream(), UTF_8),Composition.class);
+
+        assertNotNull(composition);
+
+        int sectionOccurrences = composition.getContent().size();
+
+        CompositionSerializer compositionSerializerRawJson = new CompositionSerializer();
+
+        String db_encoded = compositionSerializerRawJson.dbEncode(composition);
+        assertNotNull(db_encoded);
+
+        String converted = new LightRawJsonEncoder(db_encoded).encodeCompositionAsString();
+
+        //see if this can be interpreted by Archie
+        Composition object = new CanonicalJson().unmarshal(converted,Composition.class);
+
+        assertTrue(object != null);
+
+        //check if encoded/decode carry the same name
+        assertEquals(sectionOccurrences, object.getContent().size());
+
+        String interpreted = new CanonicalXML().marshal(object);
+
+        assertNotNull(interpreted);
+    }
+
+    @Test
+    public void compositionEncodingNoContentXML() throws Exception {
+        Composition composition = new CanonicalXML().unmarshal(IOUtils.toString(CompositionTestDataCanonicalXML.ALL_TYPES_NO_CONTENT.getStream(), UTF_8),Composition.class);
+
+        assertNotNull(composition);
+
+        CompositionSerializer compositionSerializerRawJson = new CompositionSerializer();
+
+        String db_encoded = compositionSerializerRawJson.dbEncode(composition);
+        assertNotNull(db_encoded);
+
+        String converted = new LightRawJsonEncoder(db_encoded).encodeCompositionAsString();
+
+        assertNotNull(converted);
+
+        //see if this can be interpreted by Archie
+        Composition object = new CanonicalJson().unmarshal(converted,Composition.class);
+
+        assertTrue(object != null);
+
+        String interpreted = new CanonicalXML().marshal(object);
+
+        assertNotNull(interpreted);
+    }
+
+    @Test
+    public void compositionEncodingNoContentJSON() throws Exception {
+        String value = IOUtils.toString(CompositionTestDataCanonicalJson.LABORATORY_REPORT_NO_CONTENT.getStream(), UTF_8);
+        CanonicalJson cut = new CanonicalJson();
+        Composition composition = cut.unmarshal(value, Composition.class);
+
+        assertNotNull(composition);
+
+        CompositionSerializer compositionSerializerRawJson = new CompositionSerializer();
+
+        String db_encoded = compositionSerializerRawJson.dbEncode(composition);
+        assertNotNull(db_encoded);
+
+        String converted = new LightRawJsonEncoder(db_encoded).encodeCompositionAsString();
+
+        assertNotNull(converted);
+
+        //see if this can be interpreted by Archie
+        Composition object = new CanonicalJson().unmarshal(converted,Composition.class);
+
+        assertTrue(object != null);
+
+        String interpreted = new CanonicalXML().marshal(object);
+
+        assertNotNull(interpreted);
+    }
+
+    @Test
+    public void testDBDecodeDvIntervalCompositeClass() throws Exception {
+
+        String db_encoded = IOUtils.resourceToString("/composition/canonical_json/composition_with_dvinterval_composite.json", UTF_8);
+        assertNotNull(db_encoded);
+
+        JsonElement converted = new LightRawJsonEncoder(db_encoded).encodeContentAsJson(null);
+
+        //see if this can be interpreted by Archie
+        Composition composition = new CanonicalJson().unmarshal(converted.toString(), Composition.class);
+
+        //hack the composition to figure out what is the format of DvInterval...
+        ((DvInterval)((Element)((AdminEntry)composition.getContent().get(0)).getData().getItems().get(0)).getValue()).setLower(new DvDateTime("2019-11-22T00:00+01:00"));
+        ((DvInterval)((Element)((AdminEntry)composition.getContent().get(0)).getData().getItems().get(0)).getValue()).setUpper(new DvDateTime("2019-12-22T00:00+01:00"));
+
+        assertTrue(composition != null);
+
+        String toJson  = new CanonicalJson().marshal(composition);
+
+        String interpreted = new CanonicalXML().marshal(composition);
+
+        assertNotNull(interpreted);
+    }
+
+    @Test
+    public void testDvIntervalRoundTrip() throws IOException {
+        Composition composition = new CanonicalJson().unmarshal(IOUtils.resourceToString("/composition/canonical_json/simple_composition_dvinterval.json", UTF_8),Composition.class);
+
+        assertNotNull(composition);
+
+        CompositionSerializer compositionSerializerRawJson = new CompositionSerializer();
+
+        String db_encoded = compositionSerializerRawJson.dbEncode(composition);
+        assertNotNull(db_encoded);
+
+        JsonElement converted = new LightRawJsonEncoder(db_encoded).encodeContentAsJson("composition");
+
+        //see if this can be interpreted by Archie
+        Composition composition2 = new CanonicalJson().unmarshal(converted.toString(), Composition.class);
+
+        assertTrue(composition2 != null);
+    }
+
 }

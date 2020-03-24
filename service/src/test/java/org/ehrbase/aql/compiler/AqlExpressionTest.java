@@ -26,6 +26,7 @@ import org.jooq.DSLContext;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 /**
  * Created by christian on 4/1/2016.
@@ -82,6 +83,50 @@ public class AqlExpressionTest {
         Statements statements = new Statements(cut.getParseTree(), new Contains(cut.getParseTree()).process().getIdentifierMapper()).process() ;
 
         assertThat(statements.getVariables()).isNotNull();
+        assertThat(statements.getWhereClause()).isNotNull();
+
+    }
+
+    @Test
+    public void testRejectDuplicateAliases() {
+
+        String query = "SELECT o/data[at0002]/events[at0003] AS value, o/data[at0003]/events[at0004] as value\n" +
+                "FROM EHR [ehr_id/value='1234'] \n" +
+                "CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.encounter.v1] \n" +
+                "CONTAINS OBSERVATION o [openEHR-EHR-OBSERVATION.blood_pressure.v1]";
+
+        AqlExpression cut = new AqlExpression().parse(query);
+
+        try {
+            new Statements(cut.getParseTree(), new Contains(cut.getParseTree()).process().getIdentifierMapper()).process();
+            fail("duplicate alias has not been detected");
+        }
+        catch (IllegalArgumentException e){
+
+        }
+    }
+
+    @Test
+    public void testWhereExpressionWithParenthesis() {
+
+        String query = "select\n" +
+                "    e/ehr_id,\n" +
+                "    a_a/data[at0002]/events[at0003]/data[at0001]/items[at0004]/value/magnitude,\n" +
+                "    a_a/data[at0002]/events[at0003]/time/value\n" +
+                "from EHR e\n" +
+                "contains COMPOSITION a\n" +
+                "contains OBSERVATION a_a[openEHR-EHR-OBSERVATION.body_temperature.v1]\n" +
+                "where a_a/data[at0002]/events[at0003]/data[at0001]/items[at0004]/value/magnitude>38\n" +
+                "AND  a_a/data[at0002]/events[at0003]/data[at0001]/items[at0004]/value/units = '°C'\n" +
+                "AND e/ehr_id/value MATCHES {\n" +
+                "    '849bf097-bd16-44fc-a394-10676284a012',\n" +
+                "    '34b2e263-00eb-40b8-88f1-823c87096457'}\n" +
+                "    OR (a_a/data[at0002]/events[at0003]/data[at0001]/items[at0004]/value/units = '°C' AND a_a/data[at0002]/events[at0003]/data[at0001]/items[at0004]/value/units = '°C')";
+
+        AqlExpression cut = new AqlExpression().parse(query);
+
+        Statements statements = new Statements(cut.getParseTree(), new Contains(cut.getParseTree()).process().getIdentifierMapper()).process();
+
         assertThat(statements.getWhereClause()).isNotNull();
 
     }

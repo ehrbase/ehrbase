@@ -83,7 +83,7 @@
         <value>20190502T154746,385+0000</value>
       </start_time>
       <setting>
-        <value>Hospital C</value>
+        <value>primary nursing care</value>
         <defining_code>
           <terminology_id>
             <value>openehr</value>

@@ -35,7 +35,7 @@ Force Tags    XML
 *** Test Cases ***
 Alternative flow 1 update an existing persistent COMPOSITION
 
-    upload OPT    minimal_persistent/persistent_minimal.opt    XML
+    upload OPT    minimal_persistent/persistent_minimal.opt
 
     create EHR    XML
 

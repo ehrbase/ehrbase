@@ -35,13 +35,13 @@ Force Tags    XML
 *** Test Cases ***
 Alternative flow 2 create persistent COMPOSITION for the same archetype twice
 
-    upload OPT    minimal_persistent/persistent_minimal.opt    XML
+    upload OPT    minimal_persistent/persistent_minimal.opt
 
     create EHR    XML
 
     commit composition (XML)    minimal_persistent/persistent_minimal.composition.extdatetime.xml
 
-    # Another commit for the same persistent archetype/template to the same EHR
+    # comment: Another commit for the same persistent archetype/template to the same EHR
     commit same composition again    minimal_persistent/persistent_minimal.composition.extdatetime.xml
 
     [Teardown]    restart SUT

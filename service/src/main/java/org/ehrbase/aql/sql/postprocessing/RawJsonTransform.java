@@ -22,6 +22,7 @@
 package org.ehrbase.aql.sql.postprocessing;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.ehrbase.aql.sql.QuerySteps;
 import org.ehrbase.aql.sql.binding.JsonbBlockDef;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
@@ -47,23 +48,23 @@ public class RawJsonTransform implements I_RawJsonTransform {
         this.context = context;
     }
 
+    @SuppressWarnings("unchecked")
     public static void toRawJson(Result<Record> result, Collection<QuerySteps> querySteps, I_KnowledgeCache knowledgeCache) {
 
         for (QuerySteps queryStep : querySteps) {
             if (queryStep.jsonColumnsSize() > 0) {
-                for (int cursor = 0; cursor < result.size(); cursor++) {
-                    Record record = result.get(cursor);
+                result.forEach(record -> {
                     List<JsonbBlockDef> deleteList = new ArrayList<>();
                     for (JsonbBlockDef jsonbBlockDef : queryStep.getJsonColumns()) {
-                        String jsonbOrigin = (String) record.getValue(jsonbBlockDef.getField());
-                        if (jsonbOrigin == null)
+
+                        if (record.getValue(jsonbBlockDef.getField()) == null)
                             continue;
+
+                        String jsonbOrigin = record.getValue(jsonbBlockDef.getField()).toString();
+
                         //apply the transformation
                         try {
                             JsonElement jsonElement = new LightRawJsonEncoder(jsonbOrigin).encodeContentAsJson(jsonbBlockDef.getJsonPathRoot());
-                            //debugging
-                            if (jsonbOrigin.contains("@class"))
-                                System.out.print("Hum...");
                             record.setValue(jsonbBlockDef.getField(), jsonElement);
                         } catch (Exception e) {
                             //assumes this is not a json element
@@ -71,10 +72,10 @@ public class RawJsonTransform implements I_RawJsonTransform {
                             deleteList.add(jsonbBlockDef);
                         }
                     }
-                    for (JsonbBlockDef deleteBlock: deleteList){
+                    for (JsonbBlockDef deleteBlock : deleteList) {
                         queryStep.getJsonColumns().remove(deleteBlock);
                     }
-                }
+                });
             }
         }
     }
@@ -93,9 +94,7 @@ public class RawJsonTransform implements I_RawJsonTransform {
 
     public static Result<Record> deleteNamedColumn(Result<Record> result, String columnName) {
 
-        List<Field> fields = new ArrayList<>();
-
-        fields.addAll(Arrays.asList(result.fields()));
+        List<Field> fields = new ArrayList<>(Arrays.asList(result.fields()));
         int ndx = columnIndex(fields, columnName);
         if (ndx >= 0) {
             fields.remove(ndx);

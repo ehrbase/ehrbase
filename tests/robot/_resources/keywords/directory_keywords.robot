@@ -29,7 +29,7 @@ ${INVALID DIR DATA SETS}   ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets
 #  888  `88b.   888       o      888           `888'    `888'      `88b    d88'  888  `88b.   888     d88' oo     .d8P
 # o888o  o888o o888ooooood8     o888o           `8'      `8'        `Y8bood8P'  o888o  o888o o888bood8P'   8""88888P'
 #
-# [ HIGH LEVEL KEYWORDS ]
+# [ HIGH LEVEL CRUD KEYWORDS ]
 
 
 
@@ -45,19 +45,15 @@ ${INVALID DIR DATA SETS}   ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets
 
 create DIRECTORY (JSON)
     [Arguments]         ${valid_test_data_set}
-                        Set Test Variable  ${KEYWORD NAME}  CREATE DIRECTORY (JSON)
+                        Set Suite Variable  ${KEYWORD NAME}  CREATE DIRECTORY (JSON)
 
                         load valid dir test-data-set    ${valid_test_data_set}
 
                         POST /ehr/ehr_id/directory    JSON
 
-                        Log  TO CLARIFY: @AXEL - version_uid format???  level=WARN
-                            # API spec: 8849182c-82ad-4088-a07f-48ead4180515::openEHRSys.example.com::1
-                            # version_uid has also to be part of `Location` and `ETag` in response headers
-
-                        Set Test Variable  ${folder_uid}  ${response.json()['uid']['value']}
-                        Set Test Variable  ${version_uid}  ${response.json()['uid']['value']}  #TODO: + ::openEHRSys.example.com::1
-                        Set Test Variable  ${preceding_version_uid}  ${version_uid}
+                        Set Suite Variable  ${folder_uid}  ${response.json()['uid']['value']}
+                        Set Suite Variable  ${version_uid}  ${response.json()['uid']['value']}
+                        Set Suite Variable  ${preceding_version_uid}  ${version_uid}
 
                         capture point in time    of_first_version
 
@@ -128,9 +124,9 @@ update DIRECTORY (JSON)
 
                         PUT /ehr/ehr_id/directory    JSON
 
-                        Set Test Variable  ${folder_uid}  ${response.json()['uid']}
-                        Set Test Variable  ${version_uid}  ${response.json()['uid']}  #TODO: + ::openEHRSys.example.com::1
-                        Set Test Variable  ${preceding_version_uid}  ${version_uid}
+                        Set Suite Variable  ${folder_uid}  ${response.json()['uid']['value']}
+                        Set Suite Variable  ${version_uid}  ${response.json()['uid']['value']}
+                        Set Suite Variable  ${preceding_version_uid}  ${version_uid}
 
                         capture point in time    of_updated_version
 
@@ -234,7 +230,7 @@ get DIRECTORY (JSON)
                         Set Test Variable  ${KEYWORD NAME}  GET DIRECTORY (JSON)
 
                         GET /ehr/ehr_id/directory    JSON
-            
+
 
 get DIRECTORY at time (JSON)
     [Documentation]     :time: valid time in the extended ISO8601 format
@@ -272,11 +268,13 @@ get FOLDER in DIRECTORY at time (JSON)
 
 
 get DIRECTORY at version (JSON)
-    [Documentation]     Retrieves a particular version of the directory FOLDER 
+    [Documentation]     Retrieves a particular version of the directory FOLDER
     ...                 identified by `version_uid` and associated with the EHR
     ...                 identified by `ehr_id`.
 
                         Set Test Variable  ${KEYWORD NAME}  GET DIRECTORY AT VERSION (JSON)
+
+        TRACE GITHUB ISSUE  148  not-ready
 
                         GET /ehr/ehr_id/directory/version_uid    JSON
 
@@ -286,6 +284,8 @@ get FOLDER in DIRECTORY at version (JSON)
                         Set Test Variable  ${KEYWORD NAME}  GET FOLDER AT VERSION (JSON)
 
                         Set Test Variable    ${path}    ${path}
+
+        TRACE GITHUB ISSUE  148  not-ready
 
                         GET /ehr/ehr_id/directory/version_uid?path    JSON
 
@@ -355,7 +355,7 @@ get FOLDER in DIRECTORY at version - fake version_uid/path (JSON)
                         Set Test Variable  ${KEYWORD NAME}  GET FOLDER AT VERSION (JSON)
 
                         generate fake version_uid
-                        
+
                         generate random path
 
                         GET /ehr/ehr_id/directory/version_uid?path    JSON
@@ -405,14 +405,14 @@ POST /ehr/ehr_id/directory
     ...                 DEPENDENCY: the following variables in test level scope:
     ...                 `\${ehr_id}`, `\${test_data}`
 
-                        prepare directory request session    ${format}
+                        prepare new request session    ${format}
                         ...                 Prefer=return=representation
 
     ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/directory
                         ...                 data=${test_data}
                         ...                 headers=${headers}
 
-                        Set Test Variable   ${response}    ${resp}
+                        Set Suite Variable   ${response}    ${resp}
                         Output Debug Info:  POST /ehr/ehr_id/directory
 
 
@@ -423,7 +423,8 @@ POST /ehr/ehr_id/directory (w/o)
     ...                 DEPENDENCY: the following variables in test level scope:
     ...                 `\${ehr_id}`, `\${test_data}`
 
-                        prepare directory request session    ${format}
+                        prepare new request session    ${format}
+                        ...                 Prefer=return=representation
 
     ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/directory
                         ...                 data=${test_data}
@@ -455,11 +456,11 @@ PUT /ehr/ehr_id/directory
 
     [Arguments]         ${format}
 
-                        prepare directory request session    ${format}
+                        prepare new request session    ${format}
                         ...                 Prefer=return=representation
                         ...                 If-Match=${preceding_version_uid}
 
-        TRACE GITHUB ISSUE  NO-ISSUE-ID  not-ready  message=endpoint not implemented  loglevel=WARN
+        TRACE GITHUB ISSUE  148  not-ready
 
     ${resp}=            Put Request        ${SUT}   /ehr/${ehr_id}/directory
                         ...                 data=${test_data}
@@ -477,10 +478,10 @@ PUT /ehr/ehr_id/directory (w/o prefer)
 
     [Arguments]         ${format}
 
-                        prepare directory request session    ${format}
+                        prepare new request session    ${format}
                         ...                 If-Match=${preceding_version_uid}
 
-        TRACE GITHUB ISSUE  NO-ISSUE-ID  not-ready  message=endpoint not implemented  loglevel=WARN
+        TRACE GITHUB ISSUE  148  not-ready
 
     ${resp}=            Put Request        ${SUT}   /ehr/${ehr_id}/directory
                         ...                 data=${test_data}
@@ -512,10 +513,8 @@ DELETE /ehr/ehr_id/directory
 
     [Arguments]         ${format}
 
-                        prepare directory request session    ${format}
+                        prepare new request session    ${format}
                         ...             If-Match=${preceding_version_uid}
-
-        TRACE GITHUB ISSUE  NO-ISSUE-ID  not-ready  message=endpoint not implemented  loglevel=WARN
 
     ${resp}=            Delete Request      ${SUT}   /ehr/${ehr_id}/directory
                         ...                 headers=${headers}
@@ -546,9 +545,7 @@ GET /ehr/ehr_id/directory/version_uid
 
     [Arguments]         ${format}
 
-                        prepare directory request session    ${format}
-
-        TRACE GITHUB ISSUE  81  not-ready
+                        prepare new request session    ${format}
 
     ${resp}=            Get Request         ${SUT}   /ehr/${ehr_id}/directory/${version_uid}
                         ...                 headers=${headers}
@@ -564,7 +561,7 @@ GET /ehr/ehr_id/directory/version_uid?path
 
     [Arguments]         ${format}
 
-                        prepare directory request session    ${format}
+                        prepare new request session    ${format}
 
     ${resp}=            Get Request         ${SUT}   /ehr/${ehr_id}/directory/${version_uid}?path=${path}
                         ...                 headers=${headers}
@@ -580,7 +577,7 @@ GET /ehr/ehr_id/directory
 
     [Arguments]         ${format}
 
-                        prepare directory request session    ${format}
+                        prepare new request session    ${format}
 
     ${resp}=            Get Request         ${SUT}   /ehr/ehr_id/directory
                         ...                 headers=${headers}
@@ -599,7 +596,7 @@ GET /ehr/ehr_id/directory?version_at_time
 
     [Arguments]         ${format}
 
-                        prepare directory request session    ${format}
+                        prepare new request session    ${format}
 
         TRACE GITHUB ISSUE  41  not-ready
         ...               message=DISCOVERED ERROR: Get folder in directory version at time fails
@@ -618,7 +615,7 @@ GET /ehr/ehr_id/directory?path
 
     [Arguments]         ${format}
 
-                        prepare directory request session    ${format}
+                        prepare new request session    ${format}
 
         TRACE GITHUB ISSUE  41  not-ready
         ...               message=DISCOVERED ERROR: Get folder in directory version at time fails
@@ -637,7 +634,7 @@ GET /ehr/ehr_id/directory?version_at_time&path
 
     [Arguments]         ${format}
 
-                        prepare directory request session    ${format}
+                        prepare new request session    ${format}
 
         TRACE GITHUB ISSUE  41  not-ready
         ...               message=DISCOVERED ERROR: Get folder in directory version at time fails
@@ -676,7 +673,7 @@ validate POST response - 201 created
 
                         Dictionary Should Contain Key    ${response.json()}    uid
                         Dictionary Should Contain Key    ${response.json()}    folders
-                        # Dictionary Should Contain Item    ${response.json()['folders']}    _type  FOLDER 
+                        # Dictionary Should Contain Item    ${response.json()['folders']}    _type  FOLDER
 
                         Dictionary Should Contain Key    ${response.headers}    Location
                         #TODO: value of Location as per API spec:
@@ -685,9 +682,9 @@ validate POST response - 201 created
                         #      version_uid format: 8849182c-82ad-4088-a07f-48ead4180515::openEHRSys.example.com::1
                         Dictionary Should Contain Key    ${response.headers}    ETag
 
-        TRACE GITHUB ISSUE  37  not-ready  message=Response header ETag does not match expected value
+        TRACE GITHUB ISSUE  148  not-ready
 
-                        Dictionary Should Contain Item    ${response.headers}    ETag  ${version_uid}
+                        Dictionary Should Contain Item    ${response.headers}    ETag  "${version_uid}"
 
 
 validate POST response (w/o) - 201 created
@@ -731,8 +728,8 @@ validate POST response - 404 unknown ehr_id
 
                         Should Be Equal As Strings    ${response.status_code}    404
 
-                        Should Be Equal    ${response.json()['status']}    Not Found
-                        Should Be Equal    ${response.json()['error']}    EHR with id ${ehr_id} not found.
+                        # Should Be Equal    ${response.json()['status']}    Not Found
+                        # Should Be Equal    ${response.json()['error']}    EHR with id ${ehr_id} not found.
 
 
 validate POST response - 409 folder already exists
@@ -812,8 +809,8 @@ validate PUT response - 412 precondition failed
                         #TODO:  Should Be Equal    ${response.json()['status']}    Bad Request
                         #TODO:  Should Be Equal    ${response.json()['error']} ...
 
-                        Dictionary Should Contain Key    ${response.headers}    Location
-                        Dictionary Should Contain Key    ${response.headers}    ETag
+                        # Dictionary Should Contain Key    ${response.headers}    Location
+                        # Dictionary Should Contain Key    ${response.headers}    ETag
                         #TODO: Dictionary Should Contain Item    ${response.headers}    ETag  ${version_uid}
 
 
@@ -867,6 +864,7 @@ validate DELETE response - 412 precondition failed
 
 validate GET-@version response - 200 retrieved
     [Documentation]     CASE: requested directory FOLDER is successfully retrieved.
+    [Arguments]         ${folder_name}
 
                         Should Be Equal As Strings    ${response.status_code}    200
 
@@ -874,6 +872,7 @@ validate GET-@version response - 200 retrieved
 
                         Dictionary Should Contain Key    ${response.json()}    uid
                         Dictionary Should Contain Key    ${response.json()}    folders
+                        Dictionary Should Contain Item    ${response.json()['name']}    value    ${folder_name}
                         # Dictionary Should Contain Item    ${response.json()['folder']}    _type  FOLDER
 
 
@@ -894,8 +893,8 @@ validate GET-@version response - 404 unknown ehr_id
 
                         Should Be Equal As Strings    ${response.status_code}    404
 
-                        Should Be Equal    ${response.json()['status']}    Not Found
-                        Should Be Equal    ${response.json()['error']}    EHR with id ${ehr_id} not found.
+                        # Should Be Equal    ${response.json()['status']}    Not Found
+                        # Should Be Equal    ${response.json()['error']}    EHR with id ${ehr_id} not found.
 
 
 validate GET-@version response - 404 unknown version_uid
@@ -903,16 +902,17 @@ validate GET-@version response - 404 unknown version_uid
 
                         Should Be Equal As Strings    ${response.status_code}    404
 
-                        Should Be Equal    ${response.json()['status']}    Not Found
-                        Should Be Equal    ${response.json()['error']}    Folder with id ${folder_uid} could not be found
-
+                        # Should Be Equal    ${response.json()['status']}    Not Found
+                        # # Should Be Equal    ${response.json()['error']}    Folder with id ${folder_uid} could not be found
+                        # Should Contain    Folder with id ${folder_uid} could not be found     ${response.json()['error']}
+      
 
 validate GET-@version response - 404 unknown path
     [Documentation]     CASE: `path` does not exist within the directory.
 
                         Should Be Equal As Strings    ${response.status_code}    404
 
-                        Should Be Equal               ${response.json()['status']}    Not Found
+                        # Should Be Equal               ${response.json()['status']}    Not Found
                         #TODO: Should Be Equal    ${response.json()['error']}    Path '${path}' could not be found.
 
 
@@ -971,8 +971,8 @@ validate GET-version@time response - 404 unknown ehr_id
 
                         Should Be Equal As Strings    ${response.status_code}    404
 
-                        Should Be Equal    ${response.json()['status']}    Not Found
-                        Should Be Equal    ${response.json()['error']}    EHR with id ${ehr_id} not found.
+                        # Should Be Equal    ${response.json()['status']}    Not Found
+                        # Should Be Equal    ${response.json()['error']}    EHR with id ${ehr_id} not found.
 
 
 validate GET-version@time response - 404 unknown folder-version@time
@@ -1008,44 +1008,11 @@ validate GET-version@time response - 404 unknown path
 #
 # [ HTTP HEADERS ]
 
-prepare directory request session
-    [Arguments]     ${format}=JSON    &{extra_headers}
-    [Documentation]     Prepares request settings for usage with RequestLibrary
-    ...                 :format: JSON (default) / XML
-    ...                 :extra_headers: optional - e.g. Prefer=return=representation
-    ...                                            e.g. If-Match={ehrstatus_uid}
+# NOTE: All request header settings are handled from generic_keywords.robot resource file.
 
-                        # case: JSON
-                        Run Keyword If      $format=='JSON'    set request headers
-                        ...                 content=application/json
-                        ...                 accept=application/json
-                        ...                 &{extra_headers}
-
-                        # case: XML
-                        Run Keyword If      $format=='XML'    set request headers
-                        ...                 content=application/xml
-                        ...                 accept=application/xml
-                        ...                 &{extra_headers}
-
-
-set request headers
-    [Arguments]         ${content}=application/json  ${accept}=application/json  &{extra_headers}
-    [Documentation]     Sets the headers of a request
-    ...                 :content: application/json (default) / application/xml
-    ...                 :accept: application/json (default) / application/xml
-    ...                 :extra_headers: optional
-
-                        Log Many            ${content}  ${accept}  ${extra_headers}
-
-    &{headers}=         Create Dictionary   Content-Type=${content}
-                        ...                 Accept=${accept}
-
-                        Run Keyword If      ${extra_headers}    Set To Dictionary    ${headers}    &{extra_headers}
-
-                        Create Session      ${SUT}    ${${SUT}.URL}
-                        ...                 auth=${${SUT}.CREDENTIALS}    debug=2    verify=True
-
-                        Set Test Variable   ${headers}    ${headers}
+Available keywords:
+    generic_keywords.prepare new request session
+    generic_keywords.set request headers
 
 
 
@@ -1075,7 +1042,7 @@ generate fake version_uid
 
     ${uid}=             Evaluate    str(uuid.uuid4())    uuid
                         Set Test Variable    ${folder_uid}    ${uid}
-                        Set Test Variable    ${version_uid}    ${uid}
+                        Set Test Variable    ${version_uid}    ${uid}::${CREATING_SYSTEM_ID}::1
                         Set Test Variable    ${preceding_version_uid}    ${version_uid}
 
 
@@ -1088,9 +1055,10 @@ extract version_uid from response (JSON)
 load valid dir test-data-set
     [Arguments]        ${valid_test_data_set}
 
-    ${file}=            Get File    ${VALID DIR DATA SETS}/${valid_test_data_set}
+    # ${file}=            Get File    ${VALID DIR DATA SETS}/${valid_test_data_set}
+    ${json}=            Load JSON From File    ${VALID DIR DATA SETS}/${valid_test_data_set}
 
-                        Set Test Variable    ${test_data}    ${file}
+                        Set Suite Variable    ${test_data}    ${json}
 
 
 load invalid dir test-data-set
@@ -1098,7 +1066,7 @@ load invalid dir test-data-set
 
     ${file}=            Get File    ${INVALID DIR DATA SETS}/${invalid_test_data_set}
 
-                        Set Test Variable    ${test_data}    ${file}
+                        Set Suite Variable    ${test_data}    ${file}
 
 
 
@@ -1195,7 +1163,7 @@ VARIANTS x2 (JSON / XML)
   validate PUT response - 400 invalid content
   validate PUT response - 404 unknown ehr_id
   validate PUT response - 412 precondition failed
-  
+
   validate DELETE response - 204 deleted
   validate DELETE response - 400 invalid ehr_id
   validate DELETE response - 404 unknown ehr_id
@@ -1219,8 +1187,35 @@ VARIANTS x2 (JSON / XML)
 
 
 # *** keywords ***
-# load dir test-data-set
-#     [Arguments]        ${path}
+# start new request session
+#     [Arguments]     ${format}=JSON    &{extra_headers}
+#     [Documentation]     Prepares request settings for usage with RequestLibrary
+#     ...                 :format: JSON (default) / XML
+#     ...                 :extra_headers: optional - e.g. Prefer=return=representation
+#     ...                                            e.g. If-Match={ehrstatus_uid}
 #
-#     Run Keyword If    '${VALID DIR DATA SETS}' in '${path}'  load valid dir test-data-set    ${path}
-#     Run Keyword If    '${INVALID DIR DATA SETS}' in '${path}'  load invalid dir test-data-set    ${path}
+#                         # case: JSON
+#                         Run Keyword If      $format=='JSON'    set request headers
+#                         ...                 content=application/json
+#                         ...                 accept=application/json
+#                         ...                 &{extra_headers}
+#
+#                         # case: XML
+#                         Run Keyword If      $format=='XML'    set request headers
+#                         ...                 content=application/xml
+#                         ...                 accept=application/xml
+#                         ...                 &{extra_headers}
+
+# set request headers
+#     [Arguments]         ${content}=application/json  ${accept}=application/json  &{extra_headers}
+#     [Documentation]     Sets the headers of a request
+#     ...                 :content: application/json (default) / application/xml
+#     ...                 :accept: application/json (default) / application/xml
+#     ...                 :extra_headers: optional
+#                         Log Many            ${content}  ${accept}  ${extra_headers}
+#     &{headers}=         Create Dictionary   Content-Type=${content}
+#                         ...                 Accept=${accept}
+#                         Run Keyword If      ${extra_headers}    Set To Dictionary    ${headers}    &{extra_headers}
+#                         Create Session      ${SUT}    ${${SUT}.URL}    debug=2
+#                         ...                 auth=${${SUT}.CREDENTIALS}    verify=True
+#                         Set Test Variable   ${headers}    ${headers}

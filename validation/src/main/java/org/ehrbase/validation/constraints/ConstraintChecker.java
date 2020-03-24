@@ -45,7 +45,7 @@ import java.util.Map;
  */
 public class ConstraintChecker {
 
-    private boolean lenient = false;
+    private boolean lenient;
     private ConstraintMapper constraintMapper;
     private Locatable locatable;
     private Cardinality cardinality;
@@ -66,7 +66,7 @@ public class ConstraintChecker {
         cardinality = new Cardinality(constraintMapper, locatable, lenient);
     }
 
-    public void validateElement(String path, Element referenceElement) throws Exception {
+    private void validateElement(String path, Element referenceElement) throws IllegalArgumentException {
 
         if (lenient) return;
 
@@ -102,7 +102,7 @@ public class ConstraintChecker {
 
     }
 
-    public void validateItem(String path, Object item) throws Exception {
+    private void validateItem(String path, Object item) throws IllegalArgumentException {
         if (lenient || item == null) return;
 
         if (item instanceof History)
@@ -110,61 +110,51 @@ public class ConstraintChecker {
         else if (item instanceof Element)
             validateElement(path, (Element) item);
         else
-            throw new ValidationException(path, "Unhandled specific data type:"+item);
+            throw new IllegalStateException("Unhandled specific data type:"+item);
     }
 
-    public String validateElements() throws Exception {
+    private String validateElements() throws IllegalArgumentException {
         if (lenient) return "";
 
         if (constraintMapper == null) return "";
 
-        StringBuffer validationException = new StringBuffer();
+        StringBuilder validationException = new StringBuilder();
 
         Iterator<Map.Entry<String, ConstraintMapper.ConstraintItem>> iterator = constraintMapper.getElementConstraintIterator();
         int count = 0;
-        while (iterator.hasNext()){
+        while (iterator.hasNext()) {
             count++;
             //check Cardinality
             Map.Entry<String, ConstraintMapper.ConstraintItem> watch = iterator.next();
             String path = watch.getKey();
 
-            Locatable item = (Locatable)locatable.itemAtPath(path);
+            for (Object pathItem : locatable.itemsAtPath(path))
+                if (pathItem instanceof Locatable) {
+                    Locatable item = (Locatable) pathItem;
 
-            //if null, it has not be assigned potentially (example, unassigned protocol)
-            ConstraintMapper.CardinalityItem cardinalityItem = constraintMapper.getCardinalityList().get(path);
+                    //if null, it has not be assigned potentially (example, unassigned protocol)
+                    ConstraintMapper.CardinalityItem cardinalityItem = constraintMapper.getCardinalityList().get(path);
 
-            if (item == null) {
-                if (((OptConstraintMapper.OptConstraintItem) watch.getValue()).isMandatory()){
-//                    validationException.append("Validation error at "+path+", "+"Mandatory element missing, expected:"+((OptConstraintMapper.OptConstraintItem) watch.getValue()).occurrencesToString()+"\n");
+                    //get the cardinality if specified
+                    if (cardinalityItem != null)
+                        cardinality.check(item, path, cardinalityItem);
 
-                    if (!cardinality.isTransitivelyOptional(path))
-                        validationException.append("Validation error at "+path+", "+"Mandatory element missing, expected:"+((OptConstraintMapper.OptConstraintItem) watch.getValue()).occurrencesToString()+"\n");
-                    else
-                        continue;
+                    //validate this element
+                    try {
+                        if (item instanceof Element && !isNilElement((Element) item))
+                            validateItem(path, item);
+                    } catch (Exception e) {
+                        validationException.append(new Message().encode(path, e.getMessage(), "")).append("\n");
+                    }
                 }
-                else
-                    continue;
-            }
-
-            //get the cardinality if specified
-            if (cardinalityItem != null)
-                cardinality.check(item, path, cardinalityItem);
-
-            //validate this element
-            try {
-                if (item instanceof Element && !isNilElement((Element)item))
-                    validateItem(path, item);
-            } catch (Exception e){
-                validationException.append(new Message().encode(path, e.getMessage(), "")+"\n");
-            }
         }
 
         log.debug("Validated "+count+" elements");
         return validationException.toString();
     }
 
-    public void validate() throws Exception {
-        StringBuffer exceptions = new StringBuffer();
+    public void validate() throws IllegalArgumentException {
+        StringBuilder exceptions = new StringBuilder();
         exceptions.append(validateElements());
         exceptions.append(cardinality.validate());
 

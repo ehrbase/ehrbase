@@ -71,6 +71,17 @@ robot -i EHR_SERVICE -e circleci -e EHRSCAPE -e obsolete -e libtest \
       --name EHR \
       robot/EHR_SERVICE_TESTS/
 
+# RUN EHR STATUS TESTS
+robot -i EHR_STATUS -e circleci -e EHRSCAPE -e obsolete -e libtest \
+      --outputdir results/test-suites/EHR_STATUS \
+      --noncritical not-ready \
+      --flattenkeywords for \
+      --flattenkeywords foritem \
+      --flattenkeywords name:_resources.* \
+      --loglevel $LOG_LEVEL \
+      --name EHR \
+      robot/EHR_STATUS_TESTS/
+
 # RUN KNOWLEDGE SERVICE TESTS
 robot -i KNOWLEDGE -e circleci -e EHRSCAPE -e obsolete -e libtest \
       --outputdir results/test-suites/KNOWLEDGE_SERVICE \

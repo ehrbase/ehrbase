@@ -68,17 +68,33 @@ public class I_VariableDefinitionHelper {
             }
 
             @Override
+            public boolean isHidden() {
+                return false;
+            }
+
+            @Override
             public List<FuncParameter> getFuncParameters() {
                 return null;
             }
 
             @Override
-            public I_VariableDefinition clone() {
+            public I_VariableDefinition clone() throws CloneNotSupportedException {
+                super.clone();
                 return I_VariableDefinitionHelper.build(path, alias, identifier, distinct, function, extension);
             }
 
             @Override
             public void setPath(String path) {
+
+            }
+
+            @Override
+            public void setDistinct(boolean distinct) {
+
+            }
+
+            @Override
+            public void setHidden(boolean hidden) {
 
             }
         };

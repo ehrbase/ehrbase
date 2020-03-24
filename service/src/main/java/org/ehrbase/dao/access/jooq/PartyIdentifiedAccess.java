@@ -23,18 +23,22 @@ package org.ehrbase.dao.access.jooq;
 
 import com.nedap.archie.rm.datavalues.DvIdentifier;
 import com.nedap.archie.rm.generic.PartyIdentified;
+import com.nedap.archie.rm.generic.PartyProxy;
+import com.nedap.archie.rm.generic.PartyRelated;
+import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.GenericId;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.PartyRef;
-import org.apache.catalina.Server;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_PartyIdentifiedAccess;
+import org.ehrbase.dao.access.jooq.rmdatavalue.JooqDvCodedText;
 import org.ehrbase.dao.access.support.DataAccess;
+import org.ehrbase.jooq.pg.enums.PartyType;
 import org.ehrbase.jooq.pg.tables.records.IdentifierRecord;
 import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
 import org.jooq.DSLContext;
@@ -177,6 +181,21 @@ public class PartyIdentifiedAccess extends DataAccess implements I_PartyIdentifi
         return null;
     }
 
+
+    public static UUID findPartySelf(DSLContext context) {
+
+
+            if (context.fetchExists(PARTY_IDENTIFIED,
+                    PARTY_IDENTIFIED.PARTY_TYPE.eq(PartyType.party_self)))
+
+                return context.fetchAny(PARTY_IDENTIFIED,
+                        PARTY_IDENTIFIED.PARTY_TYPE.eq(PartyType.party_self)).getId();
+
+
+        return null;
+    }
+
+
     public static UUID getOrCreateParty(I_DomainAccess domainAccess, PartyIdentified partyIdentified) {
         DSLContext context1 = domainAccess.getContext();
         //check if it exists first with idCode and issuer
@@ -236,12 +255,52 @@ public class PartyIdentifiedAccess extends DataAccess implements I_PartyIdentifi
         return partyIdentifiedUuid;
     }
 
-    public static PartyIdentified retrievePartyIdentified(I_DomainAccess domainAccess, UUID id) {
-        PartyRef partyRef = null;
-        if (!(domainAccess.getContext().fetchExists(PARTY_IDENTIFIED, PARTY_IDENTIFIED.ID.eq(id))))
-            return null;
+    public static UUID getOrCreatePartySelf(I_DomainAccess domainAccess) {
+        DSLContext context1 = domainAccess.getContext();
+        //check if it exists first with idCode and issuer
+        //check with external ref if any
 
-        //rebuild an identified party
+        UUID partySelf = findPartySelf(domainAccess.getContext());
+
+        if (partySelf != null)
+            return partySelf;
+
+        //store a new party identified
+        UUID partySelfUuid = context1
+                .insertInto(PARTY_IDENTIFIED,
+                        PARTY_IDENTIFIED.PARTY_TYPE)
+                .values(PartyType.party_self)
+                .returning(PARTY_IDENTIFIED.ID)
+                .fetchOne().getId();
+
+        return partySelfUuid;
+    }
+
+    public static PartyProxy retrievePartyProxy(I_DomainAccess domainAccess, UUID id) {
+
+        PartyProxy partyProxy;
+
+        if (!(domainAccess.getContext().fetchExists(PARTY_IDENTIFIED, PARTY_IDENTIFIED.ID.eq(id))))
+            partyProxy =  null;
+        else {
+
+            //identify the party type
+            PartyIdentifiedRecord identifiedRecord = domainAccess.getContext().fetchOne(PARTY_IDENTIFIED, PARTY_IDENTIFIED.ID.eq(id));
+
+            if (identifiedRecord.getPartyType().equals(PartyType.party_self)) {
+                partyProxy = new PartySelf();
+            } else if (identifiedRecord.getPartyType().equals(PartyType.party_identified)) {
+                partyProxy = retrievePartyIdentified(domainAccess, id, identifiedRecord);
+            } else if (identifiedRecord.getPartyType().equals(PartyType.party_related)) {
+                partyProxy = retrievePartyRelated(domainAccess, id, identifiedRecord);
+            } else
+                throw new InternalServerException("Inconsistent Party type detected:" + identifiedRecord.getPartyRefType());
+        }
+        return partyProxy;
+    }
+
+    private static PartyIdentified retrievePartyIdentified(I_DomainAccess domainAccess, UUID id, PartyIdentifiedRecord identifiedRecord){
+        PartyRef partyRef = null;
         List<DvIdentifier> identifierList = new ArrayList<>();
 
         domainAccess.getContext().fetch(IDENTIFIER, IDENTIFIER.PARTY.eq(id)).forEach(record -> {
@@ -252,8 +311,6 @@ public class PartyIdentifiedAccess extends DataAccess implements I_PartyIdentifi
             identifier.setType(record.getTypeName());
             identifierList.add(identifier);
         });
-
-        PartyIdentifiedRecord identifiedRecord = domainAccess.getContext().fetchOne(PARTY_IDENTIFIED, PARTY_IDENTIFIED.ID.eq(id));
 
         if (identifiedRecord.getPartyRefType() != null) {
             if (identifiedRecord.getPartyRefValue() != null && identifiedRecord.getPartyRefScheme() != null) {
@@ -272,38 +329,21 @@ public class PartyIdentifiedAccess extends DataAccess implements I_PartyIdentifi
         return partyIdentified;
     }
 
-    public static PartyIdentified retrievePartyIdentified(String name, String refScheme, String refNamespace, String refValue, String refType) {
-        PartyRef partyRef = null;
+    private static PartyProxy retrievePartyRelated(I_DomainAccess domainAccess, UUID id, PartyIdentifiedRecord identifiedRecord){
+        //a party identified with a relationship!
 
-        //rebuild an identified party
-        List<DvIdentifier> identifierList = new ArrayList<>();
+        PartyIdentified partyIdentified = retrievePartyIdentified(domainAccess, id, identifiedRecord);
 
-//        domainAccess.getContext().fetch(IDENTIFIER, IDENTIFIER.PARTY.eq(id)).forEach(record -> {
-//            DvIdentifier identifier = new DvIdentifier(record.getIssuer(), record.getAssigner(), record.getIdValue(), record.getTypeName());
-//            identifierList.add(identifier);
-//        });
+        PartyRelated partyRelated = new PartyRelated();
 
-//        PartyIdentifiedRecord identifiedRecord = domainAccess.getContext().fetchOne(PARTY_IDENTIFIED, PARTY_IDENTIFIED.ID.eq(id));
+        partyRelated.setExternalRef(partyIdentified.getExternalRef());
+        partyRelated.setName(partyIdentified.getName());
+        partyRelated.setIdentifiers(partyIdentified.getIdentifiers());
+        partyRelated.setRelationship(new JooqDvCodedText(identifiedRecord.getRelationship()).toRmInstance());
 
-        if (refType != null) {
-            if (refValue != null && refScheme != null) {
-                GenericId genericID = new GenericId(refValue, refScheme);
-                partyRef = new PartyRef(genericID, refNamespace, refType);
-            } else {
-                ObjectId objectID = new HierObjectId("ref");
-                partyRef = new PartyRef(objectID, refNamespace, refType);
-            }
-        }
-
-        if (name == null && partyRef == null)
-            return null;
-
-        PartyIdentified partyIdentified = new PartyIdentified(partyRef,
-                name,
-                identifierList.isEmpty() ? null : identifierList);
-
-        return partyIdentified;
+        return partyRelated;
     }
+
 
     // TODO not used at all. will it get used with ehr status?
     @Override

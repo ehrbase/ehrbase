@@ -33,8 +33,8 @@ import com.nedap.archie.rm.generic.Participation;
 import com.nedap.archie.rm.generic.PartyIdentified;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.*;
-import org.apache.catalina.Server;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.definitions.ServerConfig;
@@ -46,13 +46,8 @@ import org.ehrbase.dao.access.interfaces.I_PartyIdentifiedAccess;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.jooq.pg.tables.records.*;
 import org.ehrbase.serialisation.RawJson;
-import org.jooq.DSLContext;
-import org.jooq.InsertQuery;
-import org.jooq.Result;
-import org.jooq.UpdateQuery;
+import org.jooq.*;
 import org.jooq.exception.DataAccessException;
-import org.jooq.impl.DSL;
-import org.postgresql.util.PGobject;
 
 import java.sql.PreparedStatement;
 import java.sql.Timestamp;
@@ -60,6 +55,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -72,9 +68,9 @@ import static org.ehrbase.jooq.pg.Tables.*;
  */
 public class ContextAccess extends DataAccess implements I_ContextAccess {
 
-    public static final TerminologyId OPENEHR_TERMINOLOGY_ID = new TerminologyId("openehr");
-    final static String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZZ";
-    public static final String DB_INCONSISTENCY = "DB inconsistency";
+    private static final TerminologyId OPENEHR_TERMINOLOGY_ID = new TerminologyId("openehr");
+    private final static String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZZ";
+    private static final String DB_INCONSISTENCY = "DB inconsistency";
     private static Logger log = LogManager.getLogger(ContextAccess.class);
     private EventContextRecord eventContextRecord;
     private PreparedStatement updateStatement;
@@ -86,7 +82,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         setRecordFields(UUID.randomUUID(), eventContext);
     }
 
-    public ContextAccess(I_DomainAccess domainAccess) {
+    private ContextAccess(I_DomainAccess domainAccess) {
         super(domainAccess);
     }
 
@@ -104,7 +100,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         eventContextRecord.setEndTime((Timestamp) records.getValue(0, I_CompositionAccess.F_CONTEXT_END_TIME));
         eventContextRecord.setEndTimeTzid((String) records.getValue(0, I_CompositionAccess.F_CONTEXT_END_TIME_TZID));
         eventContextRecord.setLocation((String) records.getValue(0, I_CompositionAccess.F_CONTEXT_LOCATION));
-        eventContextRecord.setOtherContext(records.getValue(0, I_CompositionAccess.F_CONTEXT_OTHER_CONTEXT));
+        eventContextRecord.setOtherContext((JSONB) records.getValue(0, I_CompositionAccess.F_CONTEXT_OTHER_CONTEXT));
 
         return contextAccess;
     }
@@ -150,7 +146,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
             codedLocalDateTime = Optional.of(timestamp.toLocalDateTime());
 
         Optional<String> convertedDateTime = codedLocalDateTime.map(i -> i.format(java.time.format.DateTimeFormatter.ofPattern(DATE_FORMAT)));
-        if (!convertedDateTime.isPresent())
+        if (convertedDateTime.isEmpty())
             convertedDateTime = zonedDateTime.map(i -> i.format(java.time.format.DateTimeFormatter.ofPattern(DATE_FORMAT)));
 
         return new DvDateTime(convertedDateTime.orElseThrow(() -> new InternalServerException("Decoding DvDateTime failed")));
@@ -204,7 +200,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
 
 
                     DvInterval<DvDateTime> startTime = new DvInterval<>(decodeDvDateTime(record.getStartTime(), record.getStartTimeTzid()), null);
-                    DvCodedText mode = null;
+                    DvCodedText mode;
                     try {
                         mode = decodeDvCodedText(record.getMode());
                     } catch (IllegalArgumentException e) {
@@ -256,12 +252,13 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
     }
 
     // TODO: doc!
-    private void setRecordFields(UUID id, EventContext eventContext) {
+    @Override
+    public void setRecordFields(UUID id, EventContext eventContext) {
         //@TODO get from eventContext
         eventContextRecord.setStartTimeTzid(ZoneId.systemDefault().getId());
-        eventContextRecord.setStartTime(new Timestamp(eventContext.getStartTime().getValue().get(ChronoField.MILLI_OF_SECOND)));
+        eventContextRecord.setStartTime(toTimestamp(eventContext.getStartTime()));
         if (eventContext.getEndTime() != null) {
-            eventContextRecord.setEndTime(new Timestamp(eventContext.getEndTime().getValue().get(ChronoField.MILLI_OF_SECOND)));
+            eventContextRecord.setEndTime(toTimestamp(eventContext.getEndTime()));
             eventContextRecord.setEndTimeTzid(ZoneId.systemDefault().getId());
         }
         eventContextRecord.setId(id != null ? id : UUID.randomUUID());
@@ -293,7 +290,8 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                 ParticipationRecord participationRecord = getContext().newRecord(PARTICIPATION);
                 participationRecord.setEventContext(eventContextRecord.getId());
                 participationRecord.setFunction(participation.getFunction().getValue());
-                participationRecord.setMode(participation.getMode().toString());
+                if (participation.getMode() != null)
+                    participationRecord.setMode(participation.getMode().toString());
                 if (participation.getTime() != null) {
                     DvDateTime lower = (DvDateTime) participation.getTime().getLower();
                     if (lower != null) {
@@ -323,8 +321,15 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         //other context
         if (eventContext.getOtherContext() != null && CollectionUtils.isNotEmpty(eventContext.getOtherContext().getItems())) {
             //set up the JSONB field other_context
-            eventContextRecord.setOtherContext(new RawJson().marshal(eventContext.getOtherContext()));
+            eventContextRecord.setOtherContext(JSONB.valueOf(new RawJson().marshal(eventContext.getOtherContext())));
         }
+    }
+
+    private Timestamp toTimestamp(DvDateTime dateTime) {
+        TemporalAccessor accessor = dateTime.getValue();
+        long millis = accessor.getLong(ChronoField.INSTANT_SECONDS) * 1000 + accessor.getLong(ChronoField.MILLI_OF_SECOND);
+
+        return new Timestamp(millis);
     }
 
     /**
@@ -346,7 +351,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         insertQuery.addValue(EVENT_CONTEXT.LOCATION, eventContextRecord.getLocation());
 //        Field jsonbOtherContext = DSL.field(EVENT_CONTEXT.OTHER_CONTEXT+"::jsonb");
         if (eventContextRecord.getOtherContext() != null)
-            insertQuery.addValue(EVENT_CONTEXT.OTHER_CONTEXT, (Object) DSL.field(DSL.val(eventContextRecord.getOtherContext()) + "::jsonb"));
+            insertQuery.addValue(EVENT_CONTEXT.OTHER_CONTEXT, eventContextRecord.getOtherContext());
         insertQuery.addValue(EVENT_CONTEXT.SETTING, eventContextRecord.getSetting());
         insertQuery.addValue(EVENT_CONTEXT.SYS_TRANSACTION, eventContextRecord.getSysTransaction());
 
@@ -397,6 +402,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                     if (getContext().fetchExists(PARTICIPATION, PARTICIPATION.ID.eq(participationRecord.getId()))) {
                         participationRecord.update();
                     } else {
+                        participationRecord.setId(UUID.randomUUID());
                         participationRecord.store();
                     }
                 } catch (DataAccessException e) {   // generalize DB exceptions
@@ -422,7 +428,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         updateQuery.addValue(EVENT_CONTEXT.LOCATION, eventContextRecord.getLocation());
 //        Field jsonbOtherContext = DSL.field(EVENT_CONTEXT.OTHER_CONTEXT+"::jsonb");
         if (eventContextRecord.getOtherContext() != null)
-            updateQuery.addValue(EVENT_CONTEXT.OTHER_CONTEXT, (Object) DSL.field(DSL.val(eventContextRecord.getOtherContext().toString()) + "::jsonb"));
+            updateQuery.addValue(EVENT_CONTEXT.OTHER_CONTEXT, eventContextRecord.getOtherContext());
         updateQuery.addValue(EVENT_CONTEXT.SETTING, eventContextRecord.getSetting());
         updateQuery.addValue(EVENT_CONTEXT.SYS_TRANSACTION, eventContextRecord.getSysTransaction());
         updateQuery.addConditions(EVENT_CONTEXT.ID.eq(getId()));
@@ -525,9 +531,13 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                 startTime = new DvInterval<>(decodeDvDateTime(record.getStartTime(), record.getStartTimeTzid()), null);
             }
 
-            DvCodedText mode = null;
+            DvCodedText mode;
             try {
-                mode = decodeDvCodedText(record.getMode());
+                if (StringUtils.isNotBlank(record.getMode())) {
+                    mode = decodeDvCodedText(record.getMode());
+                } else {
+                    mode = null;
+                }
             } catch (IllegalArgumentException e) {
                 throw new InternalServerException(DB_INCONSISTENCY, e);
             }
@@ -554,7 +564,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         ItemStructure otherContext = null;
 
         if (eventContextRecord.getOtherContext() != null) {
-            otherContext = new RawJson().unmarshal(((PGobject) eventContextRecord.getOtherContext()).getValue(), ItemStructure.class);
+            otherContext = new RawJson().unmarshal((eventContextRecord.getOtherContext().data()), ItemStructure.class);
         }
 
         return new EventContext(healthCareFacility,
@@ -572,7 +582,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
     public String getOtherContextJson() {
         if (eventContextRecord.getOtherContext() == null)
             return null;
-        return ((PGobject) eventContextRecord.getOtherContext()).getValue();
+        return (eventContextRecord.getOtherContext().data());
     }
 
     @Override

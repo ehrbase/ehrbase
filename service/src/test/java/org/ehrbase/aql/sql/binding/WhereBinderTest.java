@@ -19,6 +19,7 @@
 package org.ehrbase.aql.sql.binding;
 
 import org.ehrbase.aql.containment.IdentifierMapper;
+import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.I_VariableDefinitionHelper;
 import org.ehrbase.aql.sql.PathResolver;
 import org.ehrbase.aql.sql.queryImpl.CompositionAttributeQuery;
@@ -100,11 +101,129 @@ public class WhereBinderTest {
             WhereBinder cut = new WhereBinder(jsonbEntryQuery, compositionAttributeQuery, where, identifierMapper);
 
             Condition actual = cut.bind("IDCR - Immunisation summary.v0", UUID.randomUUID());
-            assertThat(actual.toString()).isEqualTo("(\n" +
-                    "  (\"composer_ref\".\"name\"='Tony Stark')\n" +
-                    "  and (\"ehr\".\"entry\".\"entry\" @@ '\"/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary'']\".\"/content[openEHR-EHR-ACTION.immunisation_procedure.v1]\".#.\"/description[at0001]\".\"/items[at0002]\".#.\"/value\".\"value\"=\"Hepatitis A\" '::jsquery)\n" +
-                    ")");
+            assertThat(actual.toString().replaceAll(" ","")).isEqualTo(
+                    new String("(\n" +
+                    "  \"composer_ref\".\"name\"='Tony Stark'\n" +
+                    "  and \"ehr\".\"entry\".\"entry\" @@ '\"/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary'']\".\"/content[openEHR-EHR-ACTION.immunisation_procedure.v1]\".#.\"/description[at0001]\".\"/items[at0002]\".#.\"/value\".\"value\"=\"Hepatitis A\" '::jsquery\n" +
+                    ")").replaceAll(" ","").replaceAll("\n",""));
         }
+    }
+
+    @Test
+    public void testWhereWithParenthesis() throws Exception {
+        //   where clause with boolean operator
+        DSLContext context = DSLContextHelper.buildContext();
+        IntrospectService introspectCache = KnowledgeCacheHelper.buildKnowledgeCache(testFolder, cacheRule);
+        String entryRoot = "/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value='Immunisation summary']";
+
+
+        //represents contains COMPOSITION a[openEHR-EHR-COMPOSITION.health_summary.v1] contains ACTION d[openEHR-EHR-ACTION.immunisation_procedure.v1]
+        PathResolver pathResolver = mock(PathResolver.class);
+        when(pathResolver.classNameOf("e")).thenReturn("EHR");
+        IdentifierMapper identifierMapper = mock(IdentifierMapper.class);
+        when(identifierMapper.getClassName("e")).thenReturn("EHR");
+
+        JsonbEntryQuery jsonbEntryQuery = new JsonbEntryQuery(context, introspectCache, pathResolver, entryRoot);
+        CompositionAttributeQuery compositionAttributeQuery = new CompositionAttributeQuery(context, pathResolver, "local", "entry_root", introspectCache);
+
+        //represents where a/composer/name =  'Tony Stark' and  d/description[at0001]/items[at0002]/value = 'Hepatitis A'
+        //CCH 191016: EHR-163 required trailing '/value' as now the query allows canonical json return
+        List where = Arrays.asList("(",
+                I_VariableDefinitionHelper.build("ehr_id/value", null, "e", false, false, false), "=", "'1234'",
+                "and",
+                "(",
+                I_VariableDefinitionHelper.build("ehr_id/value", null, "e", false, false, false), "=", "'456'",
+                "or",
+                I_VariableDefinitionHelper.build("ehr_id/value", null, "e", false, false, false), "=", "'111'",
+                ")",
+                ")"
+        );
+
+        WhereBinder cut = new WhereBinder(jsonbEntryQuery, compositionAttributeQuery, where, identifierMapper);
+
+        Condition actual = cut.bind("IDCR - Immunisation summary.v0", UUID.randomUUID());
+        assertThat(actual.toString().replace(" ","")).isEqualTo("((\"ehr_join\".\"id\"='1234'and(\"ehr_join\".\"id\"='456'or\"ehr_join\".\"id\"='111')))");
+
+    }
+
+    @Test
+    public void testJsQueryParenthesis() throws Exception {
+        DSLContext context = DSLContextHelper.buildContext();
+        IntrospectService introspectCache = KnowledgeCacheHelper.buildKnowledgeCache(testFolder, cacheRule);
+        //represents contains COMPOSITION [openEHR-EHR-COMPOSITION.health_summary.v1]
+        String entryRoot = "/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value='Immunisation summary']";
+        //represents contains COMPOSITION a[openEHR-EHR-COMPOSITION.health_summary.v1] contains ACTION d[openEHR-EHR-ACTION.immunisation_procedure.v1]
+        PathResolver pathResolver = mock(PathResolver.class);
+        when(pathResolver.pathOf("a")).thenReturn("/composition[openEHR-EHR-COMPOSITION.health_summary.v1]");
+        when(pathResolver.classNameOf("a")).thenReturn("COMPOSITION");
+        when(pathResolver.pathOf("d")).thenReturn("/content[openEHR-EHR-ACTION.immunisation_procedure.v1 and name/value='Immunisation procedure']");
+        when(pathResolver.classNameOf("d")).thenReturn("ACTION");
+        IdentifierMapper identifierMapper = mock(IdentifierMapper.class);
+        when(identifierMapper.getClassName("a")).thenReturn("COMPOSITION");
+        when(identifierMapper.getClassName("d")).thenReturn("ACTION");
+
+        JsonbEntryQuery jsonbEntryQuery = new JsonbEntryQuery(context, introspectCache, pathResolver, entryRoot);
+        CompositionAttributeQuery compositionAttributeQuery = new CompositionAttributeQuery(context, pathResolver, "local", "entry_root", introspectCache);
+
+        //represents where a/composer/name =  'Tony Stark' and  d/description[at0001]/items[at0002]/value = 'Hepatitis A'
+        //CCH 191016: EHR-163 required trailing '/value' as now the query allows canonical json return
+        I_VariableDefinition aVariableDefinition = I_VariableDefinitionHelper.build("description[at0001]/items[at0002]/value/value", null, "d", false, false, false);
+        List where =
+                Arrays.asList(
+                        aVariableDefinition, "=", "'Hepatitis A'",
+                        "OR",
+                        "(",
+                        aVariableDefinition, "=", "'Hepatitis A'",
+                        "AND",
+                        aVariableDefinition, "=", "'Hepatitis A'",
+                        ")"
+                        );
+
+        WhereBinder cut = new WhereBinder(jsonbEntryQuery, compositionAttributeQuery, where, identifierMapper);
+
+        Condition actual = cut.bind("IDCR - Immunisation summary.v0", UUID.randomUUID());
+        assertThat(actual.toString().replaceAll(" ","")).isEqualTo(
+                new String("(\"ehr\".\"entry\".\"entry\"@@'\"/composition[openEHR-EHR-COMPOSITION.health_summary.v1andname/value=''Immunisationsummary'']\".\"/content[openEHR-EHR-ACTION.immunisation_procedure.v1]\".#.\"/description[at0001]\".\"/items[at0002]\".#.\"/value\".\"value\"=\"HepatitisA\"'::jsqueryOR(\"ehr\".\"entry\".\"entry\"@@'\"/composition[openEHR-EHR-COMPOSITION.health_summary.v1andname/value=''Immunisationsummary'']\".\"/content[openEHR-EHR-ACTION.immunisation_procedure.v1]\".#.\"/description[at0001]\".\"/items[at0002]\".#.\"/value\".\"value\"=\"HepatitisA\"'::jsqueryAND\"ehr\".\"entry\".\"entry\"@@'\"/composition[openEHR-EHR-COMPOSITION.health_summary.v1andname/value=''Immunisationsummary'']\".\"/content[openEHR-EHR-ACTION.immunisation_procedure.v1]\".#.\"/description[at0001]\".\"/items[at0002]\".#.\"/value\".\"value\"=\"HepatitisA\"'::jsquery))").replaceAll(" ","").replaceAll("\n",""));
+    }
+
+    @Test
+    public void testJsQueryMatches() throws Exception {
+        DSLContext context = DSLContextHelper.buildContext();
+        IntrospectService introspectCache = KnowledgeCacheHelper.buildKnowledgeCache(testFolder, cacheRule);
+        //represents contains COMPOSITION [openEHR-EHR-COMPOSITION.health_summary.v1]
+        String entryRoot = "/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value='Immunisation summary']";
+        //represents contains COMPOSITION a[openEHR-EHR-COMPOSITION.health_summary.v1] contains ACTION d[openEHR-EHR-ACTION.immunisation_procedure.v1]
+        PathResolver pathResolver = mock(PathResolver.class);
+        when(pathResolver.pathOf("a")).thenReturn("/composition[openEHR-EHR-COMPOSITION.health_summary.v1]");
+        when(pathResolver.classNameOf("a")).thenReturn("COMPOSITION");
+        when(pathResolver.pathOf("d")).thenReturn("/content[openEHR-EHR-ACTION.immunisation_procedure.v1 and name/value='Immunisation procedure']");
+        when(pathResolver.classNameOf("d")).thenReturn("ACTION");
+        IdentifierMapper identifierMapper = mock(IdentifierMapper.class);
+        when(identifierMapper.getClassName("a")).thenReturn("COMPOSITION");
+        when(identifierMapper.getClassName("d")).thenReturn("ACTION");
+
+        JsonbEntryQuery jsonbEntryQuery = new JsonbEntryQuery(context, introspectCache, pathResolver, entryRoot);
+        CompositionAttributeQuery compositionAttributeQuery = new CompositionAttributeQuery(context, pathResolver, "local", "entry_root", introspectCache);
+
+        //represents where a/composer/name =  'Tony Stark' and  d/description[at0001]/items[at0002]/value = 'Hepatitis A'
+        //CCH 191016: EHR-163 required trailing '/value' as now the query allows canonical json return
+        I_VariableDefinition aVariableDefinition = I_VariableDefinitionHelper.build("description[at0001]/items[at0002]/value/value", null, "d", false, false, false);
+        List where =
+                Arrays.asList(
+                        aVariableDefinition,
+                        "IN",
+                        "(",
+                        "'1111'",
+                        ",",
+                        "'2222'",
+                        ")"
+                );
+
+        WhereBinder cut = new WhereBinder(jsonbEntryQuery, compositionAttributeQuery, where, identifierMapper);
+
+        Condition actual = cut.bind("IDCR - Immunisation summary.v0", UUID.randomUUID());
+        assertThat(actual.toString().replaceAll(" ","")).isEqualTo(
+                new String("(\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1andname/value=''Immunisationsummary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1],0,/description[at0001],/items[at0002],0,/value,value}'IN('1111','2222'))").replaceAll(" ","").replaceAll("\n",""));
     }
 
 }

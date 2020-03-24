@@ -41,17 +41,17 @@ public class CComplexObject extends CConstraint implements I_CArchetypeConstrain
 
     static Logger logger = LogManager.getLogger(CComplexObject.class);
 
-    protected CComplexObject(Map<String, Map<String, String>> localTerminologyLookup) {
+    CComplexObject(Map<String, Map<String, String>> localTerminologyLookup) {
         super(localTerminologyLookup);
     }
 
-    public void validate(String path, Object value, ARCHETYPECONSTRAINT constraint) throws Exception {
+    public void validate(String path, Object value, ARCHETYPECONSTRAINT constraint) throws IllegalArgumentException {
 
         CCOMPLEXOBJECT ccomplexobject = (CCOMPLEXOBJECT) constraint;
 
         int attributeCount = ccomplexobject.sizeOfAttributesArray();
         int failCount = 0;
-        Exception lastException = null;
+        IllegalArgumentException lastException = null;
 
         for (CATTRIBUTE cattribute : ccomplexobject.getAttributesArray()) {
 //            if (cattribute.getRmAttributeName().equals("DV_CODED_TEXT") && (value instanceof DvText)){
@@ -73,7 +73,7 @@ public class CComplexObject extends CConstraint implements I_CArchetypeConstrain
 //                throw new IllegalArgumentException("INTERNAL: could not validate attribute:"+cattribute);
         }
 
-        if (attributeCount > 0 && failCount == attributeCount) {
+        if (attributeCount > 0 && failCount > 0) {
             if (lastException != null)
                 throw lastException;
             else

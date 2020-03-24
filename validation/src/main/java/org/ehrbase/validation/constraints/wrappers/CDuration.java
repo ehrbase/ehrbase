@@ -42,10 +42,7 @@ public class CDuration extends CConstraint implements I_CTypeValidate {
     }
 
     @Override
-    public void validate(String path, Object aValue, CPRIMITIVE cprimitive) throws Exception {
-        if (!(aValue instanceof OffsetDateTime))
-            ValidationException.raise(path, "INTERNAL: Time validation expects a java-date-time argument", "DURATION_01");
-
+    public void validate(String path, Object aValue, CPRIMITIVE cprimitive) {
         CDURATION cduration = (CDURATION) cprimitive;
         String dvDurationStr = aValue.toString();
 

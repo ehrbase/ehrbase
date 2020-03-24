@@ -111,7 +111,7 @@ contains
 
 identifiedExpr
         : identifiedEquality ((OR|XOR|AND) identifiedEquality)*
-        | OPEN_PAR identifiedEquality ((OR|XOR|AND) identifiedEquality)* CLOSE_PAR
+        | OPEN_PAR identifiedEquality ((OR|XOR|AND)identifiedEquality)* CLOSE_PAR
         ;
 
 //identifiedExprAnd
@@ -119,16 +119,16 @@ identifiedExpr
 //      : identifiedEquality (AND identifiedExpr)*;
 
 identifiedEquality
-        : NOT? identifiedOperand COMPARABLEOPERATOR identifiedOperand
-        | NOT? identifiedOperand MATCHES OPEN_CURLY matchesOperand CLOSE_CURLY
-        | NOT? identifiedOperand MATCHES REGEXPATTERN
-        | NOT? identifiedOperand LIKE STRING
-        | NOT? identifiedOperand ILIKE STRING
-        | NOT? identifiedOperand SIMILARTO STRING
+        : OPEN_PAR* NOT? identifiedOperand COMPARABLEOPERATOR identifiedOperand CLOSE_PAR*
+        | OPEN_PAR* NOT? identifiedOperand MATCHES OPEN_CURLY matchesOperand CLOSE_CURLY CLOSE_PAR*
+        | OPEN_PAR* NOT? identifiedOperand MATCHES REGEXPATTERN CLOSE_PAR*
+        | OPEN_PAR* NOT? identifiedOperand LIKE STRING CLOSE_PAR*
+        | OPEN_PAR* NOT? identifiedOperand ILIKE STRING CLOSE_PAR*
+        | OPEN_PAR* NOT? identifiedOperand SIMILARTO STRING CLOSE_PAR*
 //        | NOT identifiedEquality
-        | NOT? IN OPEN_PAR queryExpr CLOSE_PAR
-        | NOT? EXISTS identifiedPath
-        | NOT? EXISTS identifiedExpr;
+        | OPEN_PAR* NOT? IN OPEN_PAR queryExpr CLOSE_PAR CLOSE_PAR*
+        | OPEN_PAR* NOT? EXISTS identifiedPath CLOSE_PAR*
+        | OPEN_PAR* NOT? EXISTS identifiedExpr CLOSE_PAR*;
 
 identifiedOperand
         : operand
@@ -203,14 +203,22 @@ predicateEquality
 predicateOperand
         : objectPath | operand;
 
-operand
-        : STRING
-        | INTEGER
-        | FLOAT
-        | DATE
-        | PARAMETER
-        | BOOLEAN;
 
+
+operand
+                : STRING
+                | INTEGER
+                | FLOAT
+                | DATE
+                | PARAMETER
+                | BOOLEAN
+        	    | invokeOperand;
+
+invokeOperand
+        	: invokeExpr;
+
+invokeExpr
+                : INVOKE OPEN_PAR URIVALUE CLOSE_PAR ;
 
 objectPath
         : pathPart (SLASH pathPart)*;
@@ -250,6 +258,7 @@ XOR : X O R ;
 NOT : N O T ;
 IN : I N ;
 MATCHES : M A T C H E S ;
+INVOKE : I N V O K E ;
 LIKE : L I K E ;
 ILIKE : I L I K E ;
 SIMILARTO: S I M I L A R ' ' T O;
@@ -414,7 +423,7 @@ RAW_COMPOSITION_ENCODE : '_' '_' R A W '_' C O M P O S I T I O N '_' E N C O D E
 
 fragment
 ESC_SEQ
-    :   '\\' ('b'|'t'|'n'|'f'|'r'|'\"'|'\''|'\\')
+    :   '\\' ('b'|'t'|'n'|'f'|'r'|'\\"'|'\''|'\\')
     |   UNICODE_ESC
     |   OCTAL_ESC
     ;

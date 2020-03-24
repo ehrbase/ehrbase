@@ -445,9 +445,9 @@
                         }
                       ],
                       "/value": {
-                        "value": "cHAWCHf.Kt.RNIAiZ,FVvBUdKAWQkU",
+                        "value": "value1",
                         "definingCode": {
-                          "codeString": "1008204",
+                          "codeString": "at0006",
                           "terminologyId": {
                             "name": "local",
                             "value": "local"
@@ -716,7 +716,7 @@
   },
   "category": {
     "_type": "DV_CODED_TEXT",
-    "value": "Event",
+    "value": "event",
     "defining_code": {
       "_type": "CODE_PHRASE",
       "code_string": "433",

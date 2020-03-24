@@ -21,10 +21,10 @@
 
 package org.ehrbase.aql.sql.binding;
 
+import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.aql.containment.Containment;
 import org.ehrbase.aql.containment.ContainmentSet;
 import org.ehrbase.aql.containment.Predicates;
-import org.apache.commons.lang.StringUtils;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.SelectQuery;

@@ -32,9 +32,6 @@ Force Tags
 Alternative flow 1: get directory on EHR with just a root directory
 
     create EHR
-
     create DIRECTORY (JSON)    empty_directory.json
-
     get DIRECTORY at version (JSON)
-    
-    validate GET-@version response - 200 retrieved
+    validate GET-@version response - 200 retrieved    root

@@ -41,18 +41,21 @@ import java.util.Map;
  */
 public class CDvQuantity extends CConstraint implements I_CArchetypeConstraintValidate {
 
-    protected CDvQuantity(Map<String, Map<String, String>> localTerminologyLookup) {
+    CDvQuantity(Map<String, Map<String, String>> localTerminologyLookup) {
         super(localTerminologyLookup);
     }
 
-    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws Exception {
+    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws IllegalArgumentException {
 
         DvQuantity quantity = (DvQuantity) aValue;
+
+        if (quantity.getMagnitude() == null)
+            ValidationException.raise(path, "DvQuantity requires a non null magnitude", "DV_QUANTITY_01");
 
         CDVQUANTITY constraint = (CDVQUANTITY) archetypeconstraint;
         //check constraint attributes
         if (quantity.getUnits() == null)
-            throw new IllegalArgumentException("No units specified for item:" + quantity + " at path:" + path);
+            ValidationException.raise(path, "No units specified for item:" + quantity + " at path:" + path, "DV_QUANTITY_02");
 
         List<String> stringBuffer = new ArrayList<>();
         match_value:
@@ -67,7 +70,7 @@ public class CDvQuantity extends CConstraint implements I_CArchetypeConstraintVa
                 }
                 if (cquantityitem.isSetMagnitude()) {
                     IntervalOfReal magnitudes = cquantityitem.getMagnitude();
-                    IntervalComparator.isWithinBoundaries(new Float(quantity.getMagnitude()), magnitudes);
+                    IntervalComparator.isWithinBoundaries((quantity.getMagnitude()).floatValue(), magnitudes);
                 }
                 if (cquantityitem.isSetMagnitude() && quantity.getMagnitude() != null) {
                     Long precision = quantity.getPrecision();
@@ -78,7 +81,8 @@ public class CDvQuantity extends CConstraint implements I_CArchetypeConstraintVa
                 break match_value; //comparison done with a matching unit
             }
 
-            throw new IllegalArgumentException("No matching units for:" + (StringUtils.isNotEmpty(quantity.getUnits()) ? quantity.getUnits() : "*undef*") + ", expected units:" + String.join(",", stringBuffer));
+            ValidationException.raise(path, "No matching units for:" + (StringUtils.isNotEmpty(quantity.getUnits()) ? quantity.getUnits() : "*undef*") + ", expected units:" + String.join(",", stringBuffer), "DV_QUANTITY_03");
+
         }
     }
 }

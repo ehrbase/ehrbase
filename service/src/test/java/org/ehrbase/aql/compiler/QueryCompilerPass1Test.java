@@ -47,10 +47,7 @@ public class QueryCompilerPass1Test {
             IdentifierMapper identifierMapper = cut.getIdentifierMapper();
 
             assertThat(identifierMapper.getClassName("e")).isEqualTo("EHR");
-            assertThat(identifierMapper.getEhrContainer().getField()).isNull();
-            assertThat(identifierMapper.getEhrContainer().getIdentifier()).isEqualTo("e");
-            assertThat(identifierMapper.getEhrContainer().getOperator()).isNull();
-            assertThat(identifierMapper.getEhrContainer().getValue()).isNull();
+            assertThat(identifierMapper.getEhrContainer()).isNull();
         }
         // variable for ehr with predicate
         {

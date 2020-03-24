@@ -23,14 +23,13 @@ package org.ehrbase.ehr.encode.rawjson;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.internal.LinkedTreeMap;
 import org.ehrbase.ehr.encode.EncodeUtilArchie;
 import org.ehrbase.ehr.encode.wrappers.json.I_DvTypeAdapter;
 import org.ehrbase.ehr.encode.wrappers.json.writer.translator_db2raw.ArchieCompositionProlog;
 import org.ehrbase.ehr.encode.wrappers.json.writer.translator_db2raw.CompositionRoot;
-
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -39,7 +38,7 @@ import java.util.regex.Pattern;
  */
 public class LightRawJsonEncoder {
 
-    String jsonbOrigin;
+    private String jsonbOrigin;
 
     public LightRawJsonEncoder(String jsonbOrigin) {
         this.jsonbOrigin = jsonbOrigin;
@@ -51,12 +50,23 @@ public class LightRawJsonEncoder {
 
         GsonBuilder gsonRaw = EncodeUtilArchie.getGsonBuilderInstance(I_DvTypeAdapter.AdapterType.DBJSON2RAWJSON);
         String raw;
-        if (root != null)
-            raw = gsonRaw.create().toJson(fromDB.get(root));
+        if (root != null) {
+            Object contentMap = fromDB.get(root);
+            if (contentMap instanceof LinkedTreeMap && ((LinkedTreeMap) contentMap).size() == 0) //empty content
+                raw = encodeNullContent();
+            else
+                raw = gsonRaw.create().toJson(fromDB.get(root));
+        }
         else
             raw = gsonRaw.create().toJson(fromDB);
 
         return raw;
+    }
+
+    private String encodeNullContent(){
+        Map<String, Object> nullContentMap = new Hashtable<>();
+        nullContentMap.put("content", new ArrayList<>());
+        return new GsonBuilder().create().toJson(nullContentMap);
     }
 
     public JsonElement encodeContentAsJson(String root){
@@ -79,6 +89,7 @@ public class LightRawJsonEncoder {
         return converted.replaceFirst(Pattern.quote("{"), new ArchieCompositionProlog(root).toString());
     }
 
+    @SuppressWarnings("unchecked")
     private Map<String, Object> db2map(boolean isValue){
         GsonBuilder gsondb = EncodeUtilArchie.getGsonBuilderInstance();
         if (jsonbOrigin.startsWith("[")) {
@@ -88,19 +99,23 @@ public class LightRawJsonEncoder {
                 jsonbOrigin = "{\"items\":"+jsonbOrigin+"}"; //joy of json... this deals with array with and name/value predicate
         }
 
-        Map<String, Object> fromDB = gsondb.create().fromJson(jsonbOrigin, Map.class);
+        Map fromDB = gsondb.create().fromJson(jsonbOrigin, Map.class);
 
         if (fromDB.containsKey("content")){
             //push contents upward
-            for (Object contentItem: ((LinkedTreeMap)fromDB.get("content")).entrySet()){
-                if (contentItem instanceof Map.Entry) {
-                    fromDB.put(((Map.Entry) contentItem).getKey().toString(), ((Map.Entry) contentItem).getValue());
-                }
-            }
+            Object contents = fromDB.get("content");
 
+            if (contents instanceof LinkedTreeMap){
+                for (Object contentItem: ((LinkedTreeMap)contents).entrySet()){
+                    if (contentItem instanceof Map.Entry) {
+                        fromDB.put(((Map.Entry) contentItem).getKey().toString(), ((Map.Entry) contentItem).getValue());
+                    }
+                }
+                fromDB.remove("content");
+            }
         }
 
-        fromDB.remove("content");
+
         return fromDB;
     }
 

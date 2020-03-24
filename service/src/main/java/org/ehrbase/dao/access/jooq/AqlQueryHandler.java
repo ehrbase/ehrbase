@@ -21,6 +21,7 @@
 
 package org.ehrbase.dao.access.jooq;
 
+import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.aql.compiler.AqlExpression;
 import org.ehrbase.aql.compiler.AqlExpressionWithParameters;
 import org.ehrbase.aql.compiler.Contains;
@@ -31,7 +32,8 @@ import org.ehrbase.aql.sql.QueryProcessor;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.support.DataAccess;
 
-import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -58,6 +60,7 @@ public class AqlQueryHandler extends DataAccess {
         return execute(aqlExpression);
     }
 
+    @SuppressWarnings("unchecked")
     private AqlResult execute(AqlExpression aqlExpression){
         Contains contains = new Contains(aqlExpression.getParseTree()).process();
         Statements statements = new Statements(aqlExpression.getParseTree(), contains.getIdentifierMapper()).process() ;
@@ -67,9 +70,13 @@ public class AqlQueryHandler extends DataAccess {
         AqlResult aqlResult =  queryProcessor.execute();
 
         //add the variable from statements
-        Map<String, String> variables = new HashMap();
-        for (I_VariableDefinition variableDefinition: statements.getVariables()) {
-            variables.put(variableDefinition.getAlias(), "/"+variableDefinition.getPath());
+        Map<String, String> variables =  new LinkedHashMap<>();;
+        Iterator<I_VariableDefinition> iterator = statements.getVariables().iterator();
+        int serial = 0;
+        while (iterator.hasNext()) {
+            I_VariableDefinition variableDefinition = iterator.next();
+            if (!variableDefinition.isHidden())
+                variables.put(variableDefinition.getAlias() == null ? "#" + serial++ : variableDefinition.getAlias(), StringUtils.isNotBlank(variableDefinition.getPath()) ? "/" + variableDefinition.getPath() : variableDefinition.getIdentifier());
         }
         aqlResult.setVariables(variables);
         return aqlResult;

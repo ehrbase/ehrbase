@@ -38,18 +38,24 @@ import java.util.Map;
  */
 public class CDvOrdinal extends CConstraint implements I_CArchetypeConstraintValidate {
 
-    protected CDvOrdinal(Map<String, Map<String, String>> localTerminologyLookup) {
+    CDvOrdinal(Map<String, Map<String, String>> localTerminologyLookup) {
         super(localTerminologyLookup);
     }
 
     @Override
-    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws Exception {
+    public void validate(String path, Object aValue, ARCHETYPECONSTRAINT archetypeconstraint) throws IllegalArgumentException {
 
         if (!(aValue instanceof DvOrdinal))
-            throw new IllegalArgumentException("INTERNAL: argument is not a DvOrdinal");
+            ValidationException.raise(path, "INTERNAL: argument is not a DvOrdinal", "DV_ORDINAL_01");
 
         DvOrdinal dvOrdinal = (DvOrdinal) aValue;
         CDVORDINAL cdvordinal = (CDVORDINAL) archetypeconstraint;
+
+        if (dvOrdinal.getValue() == null)
+            ValidationException.raise(path, "DvOrdinal requires a non null value", "DV_ORDINAL_02");
+
+        if (dvOrdinal.getSymbol() == null)
+            ValidationException.raise(path, "DvOrdinal requires a non null symbol", "DV_ORDINAL_03");
 
         match_loop:
         {
@@ -57,7 +63,7 @@ public class CDvOrdinal extends CConstraint implements I_CArchetypeConstraintVal
                 for (DVORDINAL ordinal : cdvordinal.getListArray()) {
                     if (ordinal.getValue() == dvOrdinal.getValue()) {
                         //check symbol
-                        if (StringUtils.isNotEmpty(ordinal.getSymbol().getValue()) && !(ordinal.getSymbol().getValue().equals(dvOrdinal.getSymbol())))
+                        if (StringUtils.isNotEmpty(ordinal.getSymbol().getValue()) && !(ordinal.getSymbol().getValue().equals(dvOrdinal.getSymbol().getValue())))
                             continue;
                         String codeString = dvOrdinal.getSymbol().getDefiningCode().getCodeString();
                         String terminology = dvOrdinal.getSymbol().getDefiningCode().getTerminologyId().getValue();

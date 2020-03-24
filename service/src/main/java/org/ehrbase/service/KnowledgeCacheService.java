@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PreDestroy;
@@ -94,6 +95,9 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
     private final CacheManager cacheManager;
 
+    @Value("${system.allow-template-overwrite:false}")
+    private boolean allowTemplateOverwrite;
+
     @Autowired
     public KnowledgeCacheService(@Qualifier("templateDBStorageService") TemplateStorage templateStorage, CacheManager cacheManager) {
         this.templateStorage = templateStorage;
@@ -114,7 +118,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
         InputStream inputStream = new ByteArrayInputStream(content);
 
-        TemplateDocument document = null;
+        TemplateDocument document;
         try {
             document = TemplateDocument.Factory.parse(inputStream);
         } catch (XmlException | IOException e) {
@@ -126,13 +130,22 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
             throw new InvalidApiParameterException("Could not parse input template");
         }
 
+        if (template.getConcept() == null || template.getConcept().isEmpty())
+            throw new IllegalArgumentException("Supplied template has nil or empty concept");
+
+        if (template.getDefinition() == null || template.getDefinition().isNil())
+            throw new IllegalArgumentException("Supplied template has nil or empty definition");
+
+        if (template.getDescription() == null || !template.getDescription().validate())
+            throw new IllegalArgumentException("Supplied template has nil or empty description");
+
         //get the filename from the template template Id
         Optional<TEMPLATEID> filenameOptional = Optional.ofNullable(template.getTemplateId());
         String templateId = filenameOptional.orElseThrow(() -> new InvalidApiParameterException("Invalid template input content")).getValue();
 
 
         // pre-check: if already existing throw proper exception
-        if (retrieveOperationalTemplate(templateId).isPresent()) {
+        if (!allowTemplateOverwrite && retrieveOperationalTemplate(templateId).isPresent()) {
             throw new StateConflictException("Operational template with this template ID already exists");
         }
 
@@ -245,8 +258,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
             log.warn(e.getMessage(), e);
         }
         if (operationaltemplate.isPresent()) {
-            I_QueryOptMetaData visitor = buildAndCacheQueryOptMetaData(operationaltemplate.get());
-            retval = visitor;
+            retval = buildAndCacheQueryOptMetaData(operationaltemplate.get());
         } else {
             throw new IllegalArgumentException("Could not retrieve  knowledgeCacheService.getKnowledgeCache() cache for template Uid:" + uuid);
         }

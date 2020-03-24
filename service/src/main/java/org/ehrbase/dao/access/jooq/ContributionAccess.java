@@ -21,6 +21,10 @@
  */
 package org.ehrbase.dao.access.jooq;
 
+import com.nedap.archie.rm.generic.AuditDetails;
+import com.nedap.archie.rm.generic.PartyIdentified;
+import com.nedap.archie.rm.generic.PartyProxy;
+import com.nedap.archie.rm.support.identification.PartyRef;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.definitions.ServerConfig;
@@ -112,8 +116,10 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
         if (contributionAccess.contributionRecord == null)
             return null;
 
-        contributionAccess.compositions = CompositionAccess
-                .retrieveCompositionsInContributionVersion(domainAccess, contributionAccess.contributionRecord.getId(), 0);
+        Map<UUID, I_CompositionAccess> compos = new HashMap<>();
+        CompositionAccess.retrieveCompositionsInContribution(domainAccess, contributionAccess.contributionRecord.getId())
+            .forEach((access, version) -> compos.put(access.getId(), access));
+        contributionAccess.compositions = compos;
 
         // also retrieve attached audit
         contributionAccess.auditDetails = new AuditDetailsAccess(domainAccess.getDataAccess()).retrieveInstance(domainAccess.getDataAccess(), contributionAccess.getHasAuditDetails());
@@ -176,7 +182,8 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
 
         contributionRecord.setSysTransaction(transactionTime);
         contributionRecord.setEhrId(this.getEhrId());
-        contributionRecord.store();
+        if (contributionRecord.insert() == 0)
+            throw new InternalServerException("Couldn't store contribution");
         UUID contributionId = contributionRecord.getId();
 
         //commit the compositions
@@ -191,6 +198,30 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
     @Override
     public UUID commit() {
         return commit(Timestamp.valueOf(LocalDateTime.now()));
+    }
+
+    /**
+     * Commit the contribution with optional values, excluding audit, which needs to be created and set beforehand.
+     */
+    @Override
+    public UUID commit(Timestamp transactionTime, ContributionDataType contributionType, ContributionDef.ContributionState state) {
+
+        if (transactionTime == null) {
+            transactionTime = Timestamp.valueOf(LocalDateTime.now());
+        }
+
+        //set contribution attributes
+        if (contributionType == null)
+            setContributionDataType(ContributionDataType.other);
+        else
+            setContributionDataType(contributionType);
+
+        if (state != null)
+            setState(state);
+        else
+            setState(ContributionDef.ContributionState.COMPLETE);
+
+        return commit(transactionTime);
     }
 
     /**
@@ -231,7 +262,7 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
             String scheme = System.getProperty("host.name");
             if (scheme == null)
                 scheme = "local";
-            committerId = I_PartyIdentifiedAccess.getOrCreatePartyByExternalRef(this, defaultUser, UUID.randomUUID().toString(), scheme, localMachine.getCanonicalHostName(), "PARTY");
+            committerId = I_PartyIdentifiedAccess.getOrCreatePartyByExternalRef(this, defaultUser, UUID.randomUUID().toString(), scheme, getServerConfig().getNodename(), "PARTY");
         }
         auditDetails.setCommitter(committerId);
 
@@ -281,15 +312,15 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
             setState(state);
 
         // embedded audit handling
-        I_AuditDetailsAccess auditDetailsAccess = new AuditDetailsAccess(this.getDataAccess()).retrieveInstance(this.getDataAccess(), getHasAuditDetails());
+        this.auditDetails = I_AuditDetailsAccess.getInstance(getDataAccess()); // new audit for new action
         if (committerId != null)
-            auditDetailsAccess.setCommitter(committerId);
+            this.auditDetails.setCommitter(committerId);
         if (systemId != null)
-            auditDetailsAccess.setSystemId(systemId);
-        if (contributionChangeType != null)
-            auditDetailsAccess.setChangeType(I_ConceptAccess.fetchContributionChangeType(this, contributionChangeType));
+            this.auditDetails.setSystemId(systemId);
         if (description != null)
-            auditDetailsAccess.setDescription(description);
+            this.auditDetails.setDescription(description);
+        if (contributionChangeType != null)
+            this.auditDetails.setChangeType(I_ConceptAccess.fetchContributionChangeType(this, contributionChangeType));
 
         return update(transactionTime);
     }
@@ -347,10 +378,13 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
 
             // update contribution's audit with modification change type and execute update of it, too
             this.auditDetails.setChangeType(I_ConceptAccess.fetchContributionChangeType(this, I_ConceptAccess.ContributionChangeType.MODIFICATION));
-            this.auditDetails.update(transactionTime, force);
+            if (this.auditDetails.update(transactionTime, force).equals(Boolean.FALSE))
+                throw new InternalServerException("Couldn't update auditDetails");
+            contributionRecord.setHasAudit(this.auditDetails.getId());  // new audit ID
 
             // execute update of contribution itself
-            updated = contributionRecord.store() == 1;
+            contributionRecord.setId(UUID.randomUUID());    // force to create new entry from old values
+            updated = contributionRecord.insert() == 1;
         }
 
         //commit or updateComposition the compositions
@@ -431,11 +465,6 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
         auditDetails.setChangeType(changeType);
     }
 
-    /*@Override
-    public void setChangeType(I_ConceptAccess.ContributionChangeType changeType) {
-        auditDetails.setChangeType(ContributionChangeType.valueOf(changeType.name()));
-    }*/
-
     @Override
     public ContributionDataType getContributionDataType() {
         return contributionRecord.getContributionType();
@@ -448,7 +477,8 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
 
     @Override
     public void setState(ContributionDef.ContributionState state) {
-        contributionRecord.setState(ContributionState.valueOf(state.getLiteral()));
+        if (state != null)
+            contributionRecord.setState(ContributionState.valueOf(state.getLiteral()));
     }
 
     @Override
@@ -466,65 +496,49 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
         contributionRecord.setState(ContributionState.valueOf(ContributionState.deleted.getLiteral()));
     }
 
-/*    @Override
-    public UUID getChangeTypeId() {
-        ContributionChangeType contributionChangeType = contributionRecord.getChangeType();
-        I_ConceptAccess.ContributionChangeType contributionChangeType1 = I_ConceptAccess.ContributionChangeType.valueOf(contributionChangeType.getLiteral());
-        return I_ConceptAccess.fetchContributionChangeType(this, contributionChangeType1);
-    }
-
     @Override
-    public String getChangeTypeLitteral() {
-        ContributionChangeType contributionChangeType = contributionRecord.getChangeType();
-        return contributionChangeType.getLiteral();
-    }
-
-    @Override
-    public UUID getCommitter() {
-        return contributionRecord.getCommitter();
-    }
-
-    @Override
-    public void setCommitter(UUID committer) {
-        contributionRecord.setCommitter(committer);
-    }
-
-    @Override
-    public String getDescription() {
-        return contributionRecord.getDescription();
-    }
-
-    @Override
-    public void setDescription(String description) {
-        contributionRecord.setDescription(description);
-    }
-
-    @Override
-    public Timestamp getTimeCommitted() {
-        return contributionRecord.getTimeCommitted();
-    }
-
-    @Override
-    public void setTimeCommitted(Timestamp timeCommitted) {
-        contributionRecord.setTimeCommitted(timeCommitted);
-    }
-
-    @Override
-    public UUID getSystemId() {
-        return contributionRecord.getSystemId();
-    }
-
-    @Override
-    public void setSystemId(UUID systemId) {
-        contributionRecord.setSystemId(systemId);
-    }*/
-
     public void setAuditDetailsValues(UUID committer, UUID system, String description) {
-        if (committer == null || system == null || description == null)
+        if (committer == null || system == null)
             throw new IllegalArgumentException("arguments not optional");
         auditDetails.setCommitter(committer);
         auditDetails.setSystemId(system);
-        auditDetails.setDescription(description);
+
+        if (description != null)
+            auditDetails.setDescription(description);
+    }
+
+    @Override
+    public void setAuditDetailsValues(AuditDetails auditObject) {
+        // parse
+        UUID committer = I_PartyIdentifiedAccess.getOrCreateParty(this, (PartyIdentified) auditObject.getCommitter());
+        UUID system = I_SystemAccess.createOrRetrieveInstanceId(this, null, auditObject.getSystemId());
+        UUID changeType = I_ConceptAccess.fetchContributionChangeType(this, auditObject.getChangeType().getValue());
+
+        // set
+        if (committer == null || system == null)
+            throw new IllegalArgumentException("arguments not optional");
+        auditDetails.setCommitter(committer);
+        auditDetails.setSystemId(system);
+        auditDetails.setChangeType(changeType);
+
+        // optional description
+        if (auditObject.getDescription() != null)
+            auditDetails.setDescription(auditObject.getDescription().getValue());
+    }
+
+    @Override
+    public UUID getAuditsCommitter() {
+        return auditDetails.getCommitter();
+    }
+
+    @Override
+    public UUID getAuditsSystemId() {
+        return auditDetails.getSystemId();
+    }
+
+    @Override
+    public String getAuditsDescription() {
+        return auditDetails.getDescription();
     }
 
     @Override

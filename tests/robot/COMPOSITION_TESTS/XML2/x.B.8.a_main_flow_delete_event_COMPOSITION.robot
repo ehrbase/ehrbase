@@ -35,7 +35,7 @@ Force Tags    XML
 *** Test Cases ***
 Main flow delete event COMPOSITION
 
-    upload OPT    minimal/minimal_observation.opt    XML
+    upload OPT    minimal/minimal_observation.opt
 
     create EHR    XML
 
@@ -43,11 +43,6 @@ Main flow delete event COMPOSITION
     check content of composition (XML)
 
     delete composition    ${preceding_version_uid}
-
-
-
-        TRACE JIRA BUG    EHR-435    not-ready
-
 
     get deleted composition
 

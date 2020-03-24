@@ -35,4 +35,6 @@ Main flow: delete directory on empty EHR
 
     delete DIRECTORY - fake version_uid (JSON)
 
+        TRACE GITHUB ISSUE  146  not-ready
+
     validate DELETE response - 412 precondition failed

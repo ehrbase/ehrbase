@@ -21,10 +21,11 @@ package org.ehrbase.aql.sql.binding;
 import org.ehrbase.aql.containment.ContainmentSet;
 import org.ehrbase.aql.containment.ContainmentTest;
 import org.ehrbase.dao.jooq.impl.DSLContextHelper;
-import edu.emory.mathcs.backport.java.util.Arrays;
 import org.jooq.DSLContext;
 import org.jooq.SelectQuery;
 import org.junit.Test;
+
+import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

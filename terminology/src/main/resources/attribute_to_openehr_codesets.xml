@@ -1,0 +1,166 @@
+<attribute_mapper>
+    <map>
+        <rm_attribute>lifecycle_state</rm_attribute>
+        <terminology>openehr</terminology>
+        <container>group</container>
+        <match>
+            <codeset language="en" id= "version lifecycle state"/>
+            <codeset language="pt" id="estado de ciclo de vida de versão"/>
+        </match>
+    </map>
+    <map>
+        <rm_attribute>category</rm_attribute>
+        <terminology>openehr</terminology>
+        <container>group</container>
+        <match>
+            <codeset language="en" id="composition category"/>
+            <codeset language="pt" id="categoria de composição"/>
+        </match>
+    </map>
+    <map>
+        <rm_attribute>setting</rm_attribute>
+        <terminology>openehr</terminology>
+        <container>group</container>
+        <match>
+            <codeset language="en" id="setting"/>
+            <codeset language="pt" id="configuração"/>
+        </match>
+    </map>
+    <map>
+        <rm_attribute>current_state</rm_attribute>
+        <terminology>openehr</terminology>
+        <container>group</container>
+        <match>
+            <codeset language="en" id="instruction states"/>
+            <codeset language="pt" id="estados de instrução"/>
+
+        </match>
+    </map>
+    <map>
+        <rm_attribute>transition</rm_attribute>
+        <terminology>openehr</terminology>
+        <container>group</container>
+        <match>
+            <codeset language="en" id="instruction transitions"/>
+            <codeset language="pt" id="transições de instrução"/>
+        </match>
+    </map>
+    <map>
+        <rm_attribute>media_type</rm_attribute>
+        <terminology>IANA_media-types</terminology>
+        <container>codeset</container>
+        <match>
+            <codeset language="en" id="media types"/>
+        </match>
+    </map>
+    <map>
+        <rm_attribute>character_set</rm_attribute>
+        <terminology>IANA_character-sets</terminology>
+        <container>codeset</container>
+        <match>
+            <codeset language="en" id="character sets"/>
+        </match>
+    </map>
+    <map>
+        <rm_attribute>compression_algorithm</rm_attribute>
+        <terminology>openehr_compression_algorithm</terminology>
+        <container>codeset</container>
+        <match>
+            <codeset language="en" id="compression algorithms"/>
+        </match>
+    </map>
+    <map>
+        <rm_attribute>integrity_check_algorithm</rm_attribute>
+        <terminology>openehr_integrity_check_algorithm</terminology>
+        <container>codeset</container>
+        <match>
+            <codeset language="en" id="integrity check"/>
+        </match>
+    </map>
+    <map>
+        <rm_attribute>null_flavour</rm_attribute>
+        <terminology>openehr</terminology>
+        <container>group</container>
+        <match>
+            <codeset language="en" id="null flavours"/>
+        </match>
+    </map>
+    <map>
+        <rm_attribute>mode</rm_attribute>
+        <terminology>openehr</terminology>
+        <container>group</container>
+        <match>
+            <codeset language="en" id="participation mode"/>
+            <codeset language="pt" id="modo de participação"/>
+        </match>
+    </map>
+    <map>
+        <rm_attribute>function</rm_attribute>
+        <terminology>openehr</terminology>
+        <container>group</container>
+        <match>
+            <codeset language="en" id="participation functions"/>
+            <codeset language="pt" id="função de participação"/>
+        </match>
+    </map>
+    <map>
+        <rm_attribute>relationship</rm_attribute>
+        <terminology>openehr</terminology>
+        <container>group</container>
+        <match>
+            <codeset language="en" id="subject relationship"/>
+            <codeset language="pt" id="relacionamento de sujeito"/>
+        </match>
+    </map>
+    <map>
+        <rm_attribute>property</rm_attribute>
+        <terminology>openehr</terminology>
+        <container>group</container>
+        <match>
+            <codeset language="en" id="property"/>
+            <codeset language="pt" id="propriedade"/>
+        </match>
+    </map>
+    <map>
+        <rm_attribute>math_function</rm_attribute>
+        <terminology>openehr</terminology>
+        <container>group</container>
+        <match>
+            <codeset language="en" id="event math function"/>
+            <codeset language="pt" id="função matemática de evento"/>
+        </match>
+    </map>
+    <map>
+        <rm_attribute>normal_status</rm_attribute>
+        <terminology>openehr_normal_status</terminology>
+        <container>group</container>
+        <match>
+            <codeset language="en" id="normal statuses"/>
+        </match>
+    </map>
+    <map>
+        <rm_attribute>purpose</rm_attribute>
+        <terminology>openehr</terminology>
+        <container>group</container>
+        <match>
+            <codeset language="en" id="term mapping purpose"/>
+            <codeset language="pt" id="propósito de mapeamento de termo"/>
+        </match>
+    </map>
+    <map>
+        <rm_attribute>language</rm_attribute>
+        <terminology>ISO_639-1</terminology>
+        <container>codeset</container>
+        <match>
+            <codeset language="en" id="languages"/>
+        </match>
+    </map>
+    <map>
+        <rm_attribute>territory</rm_attribute>
+        <terminology>ISO_3166-1</terminology>
+        <container>codeset</container>
+        <match>
+            <codeset language="en" id="countries"/>
+        </match>
+    </map>
+</attribute_mapper>

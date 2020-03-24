@@ -48,7 +48,7 @@ a folder with existing test cases.
 
 
 
-def yaml_laoder(file_path):
+def yaml_loader(file_path):
     """Loads a YAML file.
     """
     with open(file_path, 'r') as yaml_file:
@@ -61,7 +61,7 @@ def main(file_path):
     file_path = file_path
 
     # creates a python dict from YAML file
-    data = yaml_laoder(file_path)
+    data = yaml_loader(file_path)
 
     for folder in data['folders']:
         # create folders

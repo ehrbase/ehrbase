@@ -35,21 +35,18 @@ Force Tags    XML
 *** Test Cases ***
 Alternative flow 3 update an existing persistent COMPOSITION referencing different template
 
-    # Upload multiple OPTs
-    upload OPT    minimal_persistent/persistent_minimal.opt    XML
-    upload OPT    minimal_persistent/persistent_minimal_2.opt    XML
+    # comment: Upload multiple OPTs
+    upload OPT    minimal_persistent/persistent_minimal.opt
+    upload OPT    minimal_persistent/persistent_minimal_2.opt
 
     create EHR    XML
 
     commit composition (XML)    minimal_persistent/persistent_minimal.composition.extdatetime.xml
     check content of composition (XML)
 
-    # Commit a new version for the COMPOSITION (references the _2 OPT different than the referenced by the first committed COMPO)
-    # Tries to commit as a new version of the first committed COMPO
-    update composition (XML)    minimal_persistent/persistent_minimal.composition.extdatetime.v2_2.xml
-
-        TRACE JIRA BUG    EHR-517    not-ready
-
+    # comment: Commit a new version for the COMPOSITION referencing the _2 OPT which is a different
+    #          one than the one referenced by the first committed COMPO
+    update composition - invalid opt reference (XML)    minimal_persistent/persistent_minimal.composition.extdatetime.v2_2.xml
     Should Be Equal As Strings   ${response.status_code}   400
 
     [Teardown]    restart SUT

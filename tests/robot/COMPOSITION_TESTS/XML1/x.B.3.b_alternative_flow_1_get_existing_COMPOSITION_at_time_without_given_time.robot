@@ -35,7 +35,7 @@ Force Tags    XML
 *** Test Cases ***
 Alternative flow 1 get existing COMPOSITION at time, without given time
 
-    upload OPT    minimal/minimal_observation.opt    XML
+    upload OPT    minimal/minimal_observation.opt
 
     create EHR    XML
 
@@ -43,7 +43,7 @@ Alternative flow 1 get existing COMPOSITION at time, without given time
 
     update composition (XML)    minimal/minimal_observation.composition.participations.extdatetimes.v2.xml
 
-    get composition - latest version (XML)     # NOTE: this keyword equals to `get composition - verstion at time`  without time parameter
+    get composition - latest version    XML
     check content of compositions latest version (XML)
 
     [Teardown]    restart SUT

@@ -57,11 +57,12 @@ Retrieve OPT from empty server
 *** Keywords ***
 retrieve OPT by random templade_id
 
-    start request session
+    prepare new request session    XML
+    ...                            Prefer=return=representation
     generate random templade_id
     retrieve OPT by template_id         ${template_id}
     verify server response
-    [Teardown]                          clean up test variables
+    [Teardown]                          Clean Up Suite Variables
 
 
 retrieve OPT by template_id

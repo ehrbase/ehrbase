@@ -37,8 +37,8 @@ get valid OPT file
 
     ${file}=            Get File             ${VALID DATA SETS}/${opt file}
     ${xml}=             Parse Xml            ${file}
-                        Set Test Variable    ${file}    ${file}
-                        Set Test Variable    ${expected}    ${xml}
+                        Set Suite Variable    ${file}    ${file}
+                        Set Suite Variable    ${expected}    ${xml}
                         Log Element          ${expected}
 
 
@@ -50,14 +50,14 @@ get invalid OPT file
 
                         # handle empty file and empty XML
                         Run Keyword And Return If    """${file}"""=='${EMPTY}'
-                        ...                          Set Test Variable  ${file}  ${file}
+                        ...                          Set Suite Variable  ${file}  ${file}
 
                         Run Keyword And Return If    """${file}"""=="""<?xml version="1.0" encoding="utf-8"?>\n"""
-                        ...                          Set Test Variable  ${file}  ${file}
+                        ...                          Set Suite Variable  ${file}  ${file}
 
     ${xml}=             Parse Xml            ${file}
-                        Set Test Variable    ${file}    ${file}
-                        Set Test Variable    ${expected}    ${xml}
+                        Set Suite Variable    ${file}    ${file}
+                        Set Suite Variable    ${expected}    ${xml}
                         Log Element          ${expected}
 
 
@@ -67,35 +67,29 @@ extract template_id from OPT file
 
     ${template_id}=     Get Element Text     ${expected}   xpath=template_id
     ...                 normalize_whitespace=True
-                        Set Test Variable    ${template_id}    ${template_id}
+                        Set Suite Variable    ${template_id}    ${template_id}
                         # Log To Console      ${template_id}
-
-
-start request session
-    Create Session      ${SUT}    ${${SUT}.URL}
-    ...                 auth=${${SUT}.CREDENTIALS}    debug=2    verify=True
-    &{headers}=         Create Dictionary    Content-Type=application/xml
-                        ...                  Prefer=return=representation
-                        Set Test Variable    ${headers}    ${headers}
-
-
-start request session (XML)
-    Create Session      ${SUT}    ${${SUT}.URL}
-    ...                 auth=${${SUT}.CREDENTIALS}    debug=2    verify=True
-    &{headers}=         Create Dictionary    Content-Type=application/xml
-                        ...                  Prefer=return=representation
-                        ...                  Accept=application/xml
-                        Set Test Variable    ${headers}    ${headers}
 
 
 upload valid OPT
     [Arguments]           ${opt file}
 
-    start request session
+    prepare new request session    XML
     get valid OPT file    ${opt file}
     upload OPT file
     server accepted OPT
-    [Teardown]            clean up test variables
+    [Teardown]            Clean Up Suite Variables
+
+
+upload invalid OPT
+    [Arguments]           ${opt file}
+
+    prepare new request session    XML
+    ...                            Prefer=return=representation
+    get invalid OPT file  ${opt file}
+    upload OPT file
+    server rejected OPT with status code 400
+    # server response contains proper error message    # TODO: reactivate asap
 
 
 upload OPT file
@@ -104,7 +98,7 @@ upload OPT file
 
     ${resp}=            Post Request         ${SUT}    /definition/template/adl1.4
                         ...                  data=${file}    headers=${headers}
-                        Set Test Variable    ${response}    ${resp}
+                        Set Suite Variable    ${response}    ${resp}
                         # Log To Console      ${resp.content}
 
 
@@ -114,16 +108,16 @@ retrieve versioned OPT
     Log               NOT APPLICABLE FOR ADL 1.4    level=WARN
     Pass Execution    NOT APPLICABLE FOR ADL 1.4    not-ready
 
-    start request session
+    prepare new request session    XML
     get valid OPT file                  ${opt file}
     extract template_id from OPT file
     retrieve OPT by template_id         ${template_id}
     verify server response
-    [Teardown]                          clean up test variables
+    [Teardown]                          Clean Up Suite Variables
 
 
 server accepted OPT
-                        Should Be Equal As Strings   ${response.status_code}   201
+                        Should Be Equal As Strings    ${response.status_code}   201
 
 
 server rejected OPT with status code ${status code}
@@ -132,9 +126,20 @@ server rejected OPT with status code ${status code}
     ...                 409: Conflict - is returned when a template with given id
     ...                      already exists. This response is optional.
 
-                        Should Be Equal As Strings   ${response.status_code}
-                        ...                          ${status code}
+                        Should Be Equal As Strings    ${response.status_code}
+                        ...                           ${status code}
 
+
+server response contains proper error message
+                        Should Contain Any  ${response.text}
+                        ...                   Invalid template input content
+                        ...                   Required request body is missing
+                        ...                   Unexpected end of file after null
+                        ...                   Supplied template has nil or empty template id value
+                        ...                   Supplied template has nil or empty concept
+                        ...                   Supplied template has nil or empty definition
+                        ...                   Supplied template has nil or empty description
+                        ...                   baz    # TODO: @WLAD add more
 
 server returned specified version of OPT
     Fail    msg=Brake it till you make it!
@@ -150,7 +155,7 @@ retrieve OPT by template_id
                         # Log    ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   200
     ${xml}=             Parse Xml            ${resp.text}
-                        Set Test Variable    ${actual}    ${xml}
+                        Set Suite Variable    ${actual}    ${xml}
 
 
 verify content of OPT
@@ -166,15 +171,25 @@ generate random templade_id
     ...                 into Test Case Scope.
 
     ${template_id}=     Generate Random String    16    [NUMBERS]abcdef
-                        Set Test Variable    ${template_id}    ${template_id}
+                        Set Suite Variable    ${template_id}    ${template_id}
 
 
-clean up test variables
+Clean Up Test Variables
     [Documentation]     Cleans up test variables to avoid impacts between tests.
 
                         Set Test Variable    ${file}           None
                         Set Test Variable    ${expected}       None
                         Set Test Variable    ${template_id}    None
+    &{vars in memory}=  Get Variables
+                        Log Many             &{vars in memory}
+
+
+Clean Up Suite Variables
+    [Documentation]     Cleans up test variables to avoid impacts between tests.
+
+                        Set Suite Variable    ${file}           None
+                        Set Suite Variable    ${expected}       None
+                        Set Suite Variable    ${template_id}    None
     &{vars in memory}=  Get Variables
                         Log Many             &{vars in memory}
 
@@ -231,6 +246,29 @@ upload valid template (XML)
 # o888bood8P'  o88o     o8888o  `Y8bood8P'  o888o  o888o    `YbodP'    o888o
 #
 # [ BACKUP ]
+
+# server response contains proper error message
+#     ${resp_bstring}     Set Variable    ${response.content}
+#     ${resp_string}      Convert To String    ${resp_bstring}
+#                         Should Contain Any    ${resp_string}
+#                         ...                   foo
+#                         ...                   bar
+
+# start request session
+#     Create Session      ${SUT}    ${${SUT}.URL}
+#     ...                 auth=${${SUT}.CREDENTIALS}    debug=2    verify=True
+#     &{headers}=         Create Dictionary    Content-Type=application/xml
+#                         ...                  Prefer=return=representation
+#                         Set Suite Variable    ${headers}    ${headers}
+
+
+# start request session (XML)
+#     Create Session      ${SUT}    ${${SUT}.URL}
+#     ...                 auth=${${SUT}.CREDENTIALS}    debug=2    verify=True
+#     &{headers}=         Create Dictionary    Content-Type=application/xml
+#                         ...                  Prefer=return=representation
+#                         ...                  Accept=application/xml
+#                         Set Suite Variable    ${headers}    ${headers}
 
 # retrieve list of uploaded OPTs (request lib example)
 #     [Documentation]    List all available operational templates on the system.

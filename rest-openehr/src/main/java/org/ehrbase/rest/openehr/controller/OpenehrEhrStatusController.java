@@ -18,6 +18,7 @@
 
 package org.ehrbase.rest.openehr.controller;
 
+import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import io.swagger.annotations.*;
@@ -76,6 +77,9 @@ public class OpenehrEhrStatusController extends BaseController {
             @ApiParam(value = "Timestamp in the extended ISO8601 format, e.g. 2015-01-20T19:30:22.765+01:00") @RequestParam(value = "version_at_time", required = false) String versionAtTime) {
         UUID ehrId = getEhrUuid(ehrIdString);
 
+        if (ehrService.hasEhr(ehrId).equals(Boolean.FALSE))
+            throw new ObjectNotFoundException("EHR", "No EHR with id " + ehrId + " found");
+
         // timestamp optional, otherwise latest
         int version;
         if (versionAtTime != null) {
@@ -110,16 +114,15 @@ public class OpenehrEhrStatusController extends BaseController {
         UUID ehrId = getEhrUuid(ehrIdString);
 
         // check if EHR is valid
-        if(ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
-            throw new ObjectNotFoundException("ehr", "No EHR with this ID can be found");
-        }
+        if (ehrService.hasEhr(ehrId).equals(Boolean.FALSE))
+            throw new ObjectNotFoundException("EHR", "No EHR with id " + ehrId + " found");
 
         UUID versionedObjectUid = extractVersionedObjectUidFromVersionUid(versionUid);
         int version = extractVersionFromVersionUid(versionUid);
 
-        Optional<EhrStatus> ehrStatus = ehrService.getEhrStatusAtVersion(ehrId, versionedObjectUid, version);
+        Optional<OriginalVersion<EhrStatus>> ehrStatus = ehrService.getEhrStatusAtVersion(ehrId, versionedObjectUid, version);
 
-        UUID ehrStatusId = UUID.fromString(ehrStatus.orElseThrow(() -> new ObjectNotFoundException("ehr_status", "EHR_STATUS not found")).getUid().toString());
+        UUID ehrStatusId = extractVersionedObjectUidFromVersionUid(ehrStatus.orElseThrow(() -> new ObjectNotFoundException("ehr_status", "EHR_STATUS not found")).getUid().toString());
 
         return internalGetEhrStatusProcessing(accept, ehrId, ehrStatusId, version);
     }
@@ -158,9 +161,8 @@ public class OpenehrEhrStatusController extends BaseController {
             @ApiParam(value = "EHR status.", required = true) @RequestBody() EhrStatus ehrStatus) {
         UUID ehrId = getEhrUuid(ehrIdString);
 
-        if (!ehrService.hasEhr(ehrId)) {
-            throw new ObjectNotFoundException("EHR", "EHR with this ID not found");
-        }
+        if (ehrService.hasEhr(ehrId).equals(Boolean.FALSE))
+            throw new ObjectNotFoundException("EHR", "No EHR with id " + ehrId + " found");
 
         // If-Match header check
         String latestVersionUid = ehrService.getLatestVersionUidOfStatus(ehrId);
@@ -228,15 +230,15 @@ public class OpenehrEhrStatusController extends BaseController {
             // when this "if" is true the following casting can be executed and data manipulated by reference (handled by temporary variable)
             EhrStatusResponseData objByReference = (EhrStatusResponseData) minimalOrRepresentation;
 
-            Optional<EhrStatus> ehrStatus = ehrService.getEhrStatusAtVersion(ehrId, ehrStatusId, version);
+            Optional<OriginalVersion<EhrStatus>> ehrStatus = ehrService.getEhrStatusAtVersion(ehrId, ehrStatusId, version);
             if (ehrStatus.isPresent()) {
-                objByReference.setArchetypeNodeId(ehrStatus.get().getArchetypeNodeId());
-                objByReference.setName(ehrStatus.get().getName());
-                objByReference.setUid(new ObjectVersionId(ehrStatus.get().getUid().toString() + "::" + ehrService.getServerConfig().getNodename() + "::" + version));
-                objByReference.setSubject(ehrStatus.get().getSubject());
-                objByReference.setOtherDetails(ehrStatus.get().getOtherDetails());
-                objByReference.setModifiable(ehrStatus.get().isModifiable());
-                objByReference.setQueryable(ehrStatus.get().isQueryable());
+                objByReference.setArchetypeNodeId(ehrStatus.get().getData().getArchetypeNodeId());
+                objByReference.setName(ehrStatus.get().getData().getName());
+                objByReference.setUid(ehrStatus.get().getUid());
+                objByReference.setSubject(ehrStatus.get().getData().getSubject());
+                objByReference.setOtherDetails(ehrStatus.get().getData().getOtherDetails());
+                objByReference.setModifiable(ehrStatus.get().getData().isModifiable());
+                objByReference.setQueryable(ehrStatus.get().getData().isQueryable());
             } else {
                 return Optional.empty();
             }

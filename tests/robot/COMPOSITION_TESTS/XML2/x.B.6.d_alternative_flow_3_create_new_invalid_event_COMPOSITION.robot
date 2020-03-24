@@ -36,16 +36,6 @@ Force Tags    XML
 Alternative flow 3 create new invalid event COMPOSITION
 
     upload OPT    nested/nested.opt
-
     create EHR    XML
-
-    # Commit invalid COMPOSITION
-
-
-
-        TRACE JIRA BUG    EHR-433    not-ready
-
-
     commit invalid composition (XML)    nested/nested.composition.extdatetimes.invalid.xml
-
     [Teardown]    restart SUT
