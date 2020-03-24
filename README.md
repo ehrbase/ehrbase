@@ -68,7 +68,7 @@ set with keyword `Basic ` followed by the authentication information in Base64 e
 generate the Base64 encoded username and password combination create the string after the following schema:
 `username:password`.
 
-The Basic Auth mechanism is implemented as "opt-in" and can be deactivated by providing an environment variable
+The Basic Auth mechanism is implemented as "opt-out" and can be deactivated by providing an environment variable
 `DISABLE_SECURITY=true` with the start command like this in bash:
 
 ```bash

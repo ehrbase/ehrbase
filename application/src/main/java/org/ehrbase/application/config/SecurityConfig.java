@@ -13,11 +13,13 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Formatter;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Value("${DISABLE_SECURITY:true}")
+    @Value("${DISABLE_SECURITY:false}")
     private boolean disableSecurity;
 
     @Value("${AUTH_USER:ehrbase-user}")
@@ -27,6 +29,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private String authPassword;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
+    private Formatter formatter = new Formatter();
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
@@ -48,8 +51,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .csrf().disable();
         } else {
             logger.info("Authentication enabled.");
-            logger.info("Username: " + authUser);
-            logger.info("Password: " + authPassword);
+            logger.info(formatter.format("Username: %s",authUser).toString());
+            logger.info(formatter.format("Password: %s", authPassword).toString());
             http.authorizeRequests()
                     .antMatchers("/**")
                     .authenticated()
