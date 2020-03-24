@@ -172,6 +172,9 @@ public class ContributionServiceImp extends BaseService implements ContributionS
     private void processCompositionVersion(UUID ehrId, UUID contributionId, Version version, Composition versionRmObject) {
         // access audit and extract method, e.g. CREATION
         I_ConceptAccess.ContributionChangeType changeType = I_ConceptAccess.ContributionChangeType.valueOf(version.getCommitAudit().getChangeType().getValue().toUpperCase());
+
+        checkContributionRules(version, changeType);    // evaluate and check contribution rules
+
         switch (changeType) {
             case CREATION:
                 // call creation of a new composition with given input
@@ -187,8 +190,36 @@ public class ContributionServiceImp extends BaseService implements ContributionS
                 break;
             case SYNTHESIS:     // TODO
             case UNKNOWN:       // TODO
-            default:
+            default:    // TODO keep as long as above has TODOs. Check of valid change type is done in checkContributionRules
                 throw new UnexpectedSwitchCaseException(changeType);
+        }
+    }
+
+    /**
+     * Checks contribution rules, i.e. context-aware checks of the content. For instance, a committed version can't be
+     * of change type CREATION while containing a "preceding_version_uid".
+     *
+     * Note: Those rules are checked here, because context of the contribution might be important.
+     * Apart from that, most rules logically could be checked within the appropriate service as well.
+     * @param version Input version object
+     * @param changeType Change type of this version
+     */
+    private void checkContributionRules(Version version, I_ConceptAccess.ContributionChangeType changeType) {
+
+        switch (changeType) {
+            case CREATION:
+                // can't have change type CREATION and a given "preceding_version_uid"
+                if (version.getPrecedingVersionUid() != null)
+                    throw new InvalidApiParameterException("Invalid version. Change type CREATION, but also set \"preceding_version_uid\" attribute");
+                break;
+            case MODIFICATION:
+                // can't have change type MODIFICATION and without giving "preceding_version_uid"
+                if (version.getPrecedingVersionUid() == null)
+                    throw new InvalidApiParameterException("Invalid version. Change type MODIFICATION, but without \"preceding_version_uid\" attribute");
+                break;
+            default:
+                // invalid change type
+                throw new InvalidApiParameterException("Change type \"" + changeType + "\" not valid");
         }
     }
 

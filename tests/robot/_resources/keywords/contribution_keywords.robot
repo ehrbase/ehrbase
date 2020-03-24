@@ -375,12 +375,12 @@ inject preceding_version_uid into valid test-data-set
                         Set Test Variable    ${test_data}    ${test_data}
                         Output    ${test_data}
 
+
 inject preceding_version_uid into invalid test-data-set
     [Arguments]         ${invalid_test_data_set}
     ${test_data}=       Load JSON from File    ${INVALID CONTRI DATA SETS}/${invalid_test_data_set}
     ${test_data}=       Update Value To Json  ${test_data}  $..versions..preceding_version_uid.value
-                        ...                   ${version_id}::piri.ehrscape.com::1
-                                                        # TODO: rm hardcoded value "piri..."
+                        ...                   ${version_id}
                         Set Test Variable    ${test_data}    ${test_data}
                         Output    ${test_data}
 
