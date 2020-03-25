@@ -45,17 +45,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         if (disableSecurity) {
             logger.warn("Authentication disabled! This is a security risk.");
             logger.warn("To enable security set env 'DISABLE_SECURITY=false' with start up command");
-            http.authorizeRequests()
-                    .antMatchers("/**").permitAll()
-                    .and()
-                    .csrf().disable();
+            http.csrf().disable()
+                    .authorizeRequests().anyRequest().permitAll();
         } else {
             logger.info("Authentication enabled.");
-            logger.info(formatter.format("Username: %s",authUser).toString());
-            logger.info(formatter.format("Password: %s", authPassword).toString());
-            http.authorizeRequests()
-                    .antMatchers("/**")
-                    .authenticated()
+            logger.info(formatter.format("Username: %s\nPassword: %s",authUser, authPassword).toString());
+            http.csrf().disable()
+                    .authorizeRequests().anyRequest().authenticated()
                     .and()
                     .httpBasic();
         }
