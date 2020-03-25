@@ -227,13 +227,10 @@ MF-017 - Create new EHR w/ body: valid ehr_status
 
 MF-018 - Create new EHR w/ body: valid ehr_status
     [Documentation]     Covers valid case where subject is empty JSON
-    ...                 check: https://github.com/ehrbase/project_management/issues/142#issuecomment-583759331
     [Tags]
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/001_ehr_status_subject_empty.json
     POST /ehr    ${body}
-
-        TRACE GITHUB ISSUE  160  not-ready
 
     Integer    response status    201
 
@@ -395,8 +392,6 @@ MF-031 - Create new EHR w/ given ehr_id (PUT /ehr/ehr_id variants)
     given     ${EMPTY}   true            false          201
     given     ${EMPTY}   false           false          201
     given     ${EMPTY}   false           true           201
-
-    [Teardown]          TRACE GITHUB ISSUE  160  not-ready
 
 
 MF-032 - Create new EHR w/ invalid ehr_id (PUT /ehr/ehr_id variants)
@@ -605,13 +600,10 @@ MF-049 - Create new EHR w/ given ehr_id w/ body: valid ehr_status
 
 MF-050 - Create new EHR w/ given ehr_id w/ body: valid ehr_status
     [Documentation]     Covers valid case where subject is empty JSON
-    ...                 check: https://github.com/ehrbase/project_management/issues/142#issuecomment-583759331
     [Tags]
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/001_ehr_status_subject_empty.json
     PUT /ehr/$ehr_id    body=${body}
-
-        TRACE GITHUB ISSUE  160  not-ready
 
     Integer    response status    201
 
