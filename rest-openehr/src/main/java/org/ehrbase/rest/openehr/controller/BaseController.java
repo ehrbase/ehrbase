@@ -21,6 +21,7 @@ package org.ehrbase.rest.openehr.controller;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.definitions.CompositionFormat;
 import org.ehrbase.api.exception.*;
+import org.ehrbase.serialisation.UnmarshalException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -394,6 +395,17 @@ public abstract class BaseController {
     public ResponseEntity<Map<String, String>> restErrorHandler(ValidationException e) {
         return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
+
+    /**
+     * Handler for unmarshalling error (f.e. invalid EhrStatus
+     *
+     * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
+     */
+    @ExceptionHandler(UnmarshalException.class)
+    public ResponseEntity<Map<String, String>> restErrorHandler(UnmarshalException e) {
+        return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
 
     /**
      * Fallback error handler.

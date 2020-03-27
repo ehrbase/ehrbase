@@ -140,6 +140,9 @@ public class ValidationServiceImp implements ValidationService {
         if (ehrStatus == null)
             return;
 
+        if (ehrStatus.getSubject() == null)
+            throw new IllegalArgumentException("subject is required");
+
         //few mandatory attribute
         if (ehrStatus.getSubject().getExternalRef() != null && (ehrStatus.getSubject().getExternalRef().getId() == null || ehrStatus.getSubject().getExternalRef().getId().getValue().isEmpty())){
             throw new IllegalArgumentException("ExternalRef ID is required");
