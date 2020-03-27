@@ -136,6 +136,10 @@ public class ValidationServiceImp implements ValidationService {
     @Override
     public void check(EhrStatus ehrStatus) {
 
+        //case of a system generated ehr
+        if (ehrStatus == null)
+            return;
+
         //few mandatory attribute
         if (ehrStatus.getSubject().getExternalRef() != null && (ehrStatus.getSubject().getExternalRef().getId() == null || ehrStatus.getSubject().getExternalRef().getId().getValue().isEmpty())){
             throw new IllegalArgumentException("ExternalRef ID is required");
