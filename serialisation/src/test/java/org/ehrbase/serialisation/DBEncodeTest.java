@@ -23,6 +23,7 @@ import com.nedap.archie.rm.composition.AdminEntry;
 import com.nedap.archie.rm.composition.ContentItem;
 import com.nedap.archie.rm.composition.Evaluation;
 import com.nedap.archie.rm.datastructures.Element;
+import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.datavalues.quantity.DvInterval;
@@ -244,4 +245,12 @@ public class DBEncodeTest {
         assertTrue(composition2 != null);
     }
 
+    @Test
+    public void decodeOtherDetailsWithArchetypeNodeIdAndName(){
+        String dbEncoded = "{\"/name\": [{\"value\": \"family group\"}], \"/$CLASS$\": [\"ItemTree\"], \"/items[at0001]\": [{\"/name\": [{\"value\": \"family group id\"}], \"/value\": {\"id\": \"55175056\", \"type\": \"FAMILY_GROUP_ID\", \"issuer\": \"MoH\", \"assigner\": \"MoH\"}, \"/$PATH$\": \"/items[openEHR-EHR-ITEM_TREE.fake.v1 and name/value='family group']/items[at0001]\", \"/$CLASS$\": \"DvIdentifier\"}], \"/archetype_node_id\": [\"openEHR-EHR-ITEM_TREE.fake.v1\"]}";
+
+        ItemStructure converted = new RawJson().unmarshal(dbEncoded, ItemStructure.class);
+
+        assertNotNull(converted);
+    }
 }

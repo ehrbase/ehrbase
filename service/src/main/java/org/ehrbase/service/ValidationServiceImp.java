@@ -18,6 +18,8 @@
 
 package org.ehrbase.service;
 
+import com.nedap.archie.rm.ehr.EhrStatus;
+import com.nedap.archie.rm.support.identification.PartyRef;
 import com.nedap.archie.rminfo.ArchieRMInfoLookup;
 import com.nedap.archie.rmobjectvalidator.RMObjectValidationMessage;
 import com.nedap.archie.rmobjectvalidator.RMObjectValidator;
@@ -66,7 +68,7 @@ public class ValidationServiceImp implements ValidationService {
         if (validator == null){
             //create a new one for template
             Optional<OPERATIONALTEMPLATE> operationaltemplate = knowledgeCache.retrieveOperationalTemplate(templateUUID);
-            if (!operationaltemplate.isPresent()){
+            if (operationaltemplate.isEmpty()){
                 throw new IllegalArgumentException("Not found template uuid:" + templateUUID);
             }
             validator = new Validator(operationaltemplate.get());
@@ -130,6 +132,30 @@ public class ValidationServiceImp implements ValidationService {
 
         check(composition.getArchetypeDetails().getTemplateId().getValue(), composition);
     }
+
+    @Override
+    public void check(EhrStatus ehrStatus) {
+
+        //few mandatory attribute
+        if (ehrStatus.getSubject().getExternalRef() != null && (ehrStatus.getSubject().getExternalRef().getId() == null || ehrStatus.getSubject().getExternalRef().getId().getValue().isEmpty())){
+            throw new IllegalArgumentException("ExternalRef ID is required");
+        }
+
+        //check the built composition using Archie Validator
+        RMObjectValidator rmObjectValidator = new RMObjectValidator(ArchieRMInfoLookup.getInstance());
+
+        List<RMObjectValidationMessage> rmObjectValidationMessages = rmObjectValidator.validate(ehrStatus);
+
+        if (!rmObjectValidationMessages.isEmpty()){
+            StringBuilder stringBuilder = new StringBuilder();
+            for (RMObjectValidationMessage rmObjectValidationMessage: rmObjectValidationMessages){
+                stringBuilder.append(rmObjectValidationMessage.toString());
+                stringBuilder.append("\n");
+            }
+            throw new IllegalArgumentException(stringBuilder.toString());
+        }
+    }
+
 
     @Override
     public void invalidate(){
