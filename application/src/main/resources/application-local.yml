@@ -31,9 +31,7 @@ server:
     context-path: /ehrbase
 
 security:
-  authType: BASIC
-  authUser: axel
-  authPassword: Password123!
+  authType: NONE
 
 system:
   type: LOCAL

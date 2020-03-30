@@ -39,9 +39,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         switch (securityYAMLConfig.getAuthType()) {
             case BASIC: {
                 logger.info("Using basic authentication.");
-                logger.info(formatter.format("Username: %s", securityYAMLConfig.getAuthUser()).toString());
-                logger.info(formatter.format("Password: %s", securityYAMLConfig.getAuthPassword()).toString());
+                logger.info(formatter.format(
+                        "Username: %s Password: %s", securityYAMLConfig.getAuthUser(), securityYAMLConfig.getAuthPassword()
+                ).toString());
                 http
+                        .csrf().disable()
                         .authorizeRequests().anyRequest().authenticated()
                         .and()
                         .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -52,7 +54,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             case NONE:
             default: {
                 logger.warn("Authentication disabled!");
-                logger.warn("To enable security start EHRbase with env 'AUTH_PROVIDER=BASIC'.");
+                logger.warn("To enable security set security.authType to BASIC in yaml properties file.");
                 http
                         .csrf().disable()
                         .authorizeRequests().anyRequest().permitAll();
