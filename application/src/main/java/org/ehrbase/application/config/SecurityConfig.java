@@ -3,13 +3,13 @@ package org.ehrbase.application.config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -19,14 +19,8 @@ import java.util.Formatter;
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Value("${DISABLE_SECURITY:true}")
-    private boolean disableSecurity;
-
-    @Value("${AUTH_USER:ehrbase-user}")
-    private String authUser;
-
-    @Value("${AUTH_PASSWORD:SuperSecretPassword}")
-    private String authPassword;
+    @Autowired
+    private SecurityYAMLConfig securityYAMLConfig;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
     private Formatter formatter = new Formatter();
@@ -35,25 +29,35 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
 
         auth.inMemoryAuthentication()
-                .withUser(authUser).password(passwordEncoder().encode(authPassword))
+                .withUser(securityYAMLConfig.getAuthUser())
+                .password(passwordEncoder().encode(securityYAMLConfig.getAuthPassword()))
                 .authorities("ROLE_USER");
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-
-        if (disableSecurity) {
-            logger.warn("Authentication disabled! This is a security risk.");
-            logger.warn("To enable security set env 'DISABLE_SECURITY=false' with start up command");
-            http.csrf().disable()
-                    .authorizeRequests().anyRequest().permitAll();
-        } else {
-            logger.info("Authentication enabled.");
-            logger.info(formatter.format("Username: %s\nPassword: %s",authUser, authPassword).toString());
-            http.csrf().disable()
-                    .authorizeRequests().anyRequest().authenticated()
-                    .and()
-                    .httpBasic();
+        switch (securityYAMLConfig.getAuthType()) {
+            case BASIC: {
+                logger.info("Using basic authentication.");
+                logger.info(formatter.format("Username: %s", securityYAMLConfig.getAuthUser()).toString());
+                logger.info(formatter.format("Password: %s", securityYAMLConfig.getAuthPassword()).toString());
+                http
+                        .authorizeRequests().anyRequest().authenticated()
+                        .and()
+                        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        .and()
+                        .httpBasic();
+                break;
+            }
+            case NONE:
+            default: {
+                logger.warn("Authentication disabled!");
+                logger.warn("To enable security start EHRbase with env 'AUTH_PROVIDER=BASIC'.");
+                http
+                        .csrf().disable()
+                        .authorizeRequests().anyRequest().permitAll();
+                break;
+            }
         }
     }
 

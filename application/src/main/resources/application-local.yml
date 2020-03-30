@@ -30,6 +30,11 @@ server:
   servlet:
     context-path: /ehrbase
 
+security:
+  authType: BASIC
+  authUser: axel
+  authPassword: Password123!
+
 system:
   type: LOCAL
 
