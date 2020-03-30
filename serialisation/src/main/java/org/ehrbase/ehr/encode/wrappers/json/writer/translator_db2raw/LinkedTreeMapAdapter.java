@@ -43,7 +43,7 @@ import java.util.Map;
  */
 public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements I_DvTypeAdapter {
 
-    private String[] structuralClasses = {"PointEvent", "Instruction", "Evaluation", "Observation", "Action", "AdminEntry", "IntervalEvent"};
+    private String[] structuralClasses = {"ItemTree", "ItemTable", "ItemSingle","PointEvent", "Instruction", "Evaluation", "Observation", "Action", "AdminEntry", "IntervalEvent"};
 
     protected AdapterType adapterType;
     private boolean isRoot;
@@ -90,7 +90,11 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
                 map.remove(AT_TYPE);
             }
             if (map.containsKey(CompositionSerializer.TAG_CLASS)) {
-                parentItemsType = new SnakeCase((String) ((ArrayList) map.get(CompositionSerializer.TAG_CLASS)).get(0)).camelToUpperSnake();
+                if (map.get(CompositionSerializer.TAG_CLASS) instanceof ArrayList)
+                    parentItemsType = new SnakeCase((String) ((ArrayList) map.get(CompositionSerializer.TAG_CLASS)).get(0)).camelToUpperSnake();
+                else if (map.get(CompositionSerializer.TAG_CLASS) instanceof String)
+                    parentItemsType = new SnakeCase((String)map.get(CompositionSerializer.TAG_CLASS)).camelToUpperSnake();
+
                 map.remove(CompositionSerializer.TAG_CLASS);
             }
         } else if (isMultiContent) {
@@ -109,7 +113,14 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
                     new ValueArrayList(writer, map.get(CompositionSerializer.TAG_NAME), CompositionSerializer.TAG_NAME).write();
                 else if (map.get(CompositionSerializer.TAG_NAME) instanceof String)
                     new NameValue(writer, (String)map.get(CompositionSerializer.TAG_NAME)).write();
+                else if (map.get(CompositionSerializer.TAG_NAME) instanceof LinkedTreeMap){
+                    new NameValue(writer, (LinkedTreeMap)map.get(CompositionSerializer.TAG_NAME)).write();
+                }
             }
+
+            if (map.containsKey(CompositionSerializer.TAG_ARCHETYPE_NODE_ID))
+                writer.name(ARCHETYPE_NODE_ID).value(map.get(CompositionSerializer.TAG_ARCHETYPE_NODE_ID).toString());
+
             writeItemInArray(ITEMS, items, writer, parentItemsArchetypeNodeId, parentItemsType);
         } else if (isMultiEvents) {
             //assumed sorted (LinkedTreeMap preserve input order)

@@ -17,6 +17,7 @@
  */
 package org.ehrbase.ehr.encode.wrappers.json.writer.translator_db2raw;
 
+import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.stream.JsonWriter;
 import org.ehrbase.ehr.encode.wrappers.json.I_DvTypeAdapter;
 
@@ -30,6 +31,11 @@ public class NameValue {
     NameValue(JsonWriter writer, String value) {
         this.writer = writer;
         this.value = value;
+    }
+
+    NameValue(JsonWriter writer, LinkedTreeMap value) {
+        this.writer = writer;
+        this.value = value.get("value").toString();
     }
 
 

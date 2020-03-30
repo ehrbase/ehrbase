@@ -253,4 +253,34 @@ public class DBEncodeTest {
 
         assertNotNull(converted);
     }
+
+    @Test
+    public void decodeOtherDetailsFailing(){
+        String dbEncoded = "{\n" +
+                "    \"/name\": {\n" +
+                "        \"value\": \"family group\"\n" +
+                "    },\n" +
+                "    \"/$CLASS$\": \"ItemTree\",\n" +
+                "    \"/archetype_node_id\": \"openEHR-EHR-ITEM_TREE.fake.v1\",\n" +
+                "    \"/items[openEHR-EHR-ITEM_TREE.fake.v1 and name/value='family group']\": {\n" +
+                "        \"/name\": [\n" +
+                "            {\n" +
+                "                \"value\": \"family group id\"\n" +
+                "            }\n" +
+                "        ],\n" +
+                "        \"/value\": {\n" +
+                "            \"id\": \"55175056\",\n" +
+                "            \"type\": \"FAMILY_GROUP_ID\",\n" +
+                "            \"issuer\": \"MoH\",\n" +
+                "            \"assigner\": \"MoH\"\n" +
+                "        },\n" +
+                "        \"/$PATH$\": \"/items[openEHR-EHR-ITEM_TREE.fake.v1 and name/value='family group']/items[at0001]\",\n" +
+                "        \"/$CLASS$\": \"DvIdentifier\"\n" +
+                "    }\n" +
+                "}";
+
+        ItemStructure converted = new RawJson().unmarshal(dbEncoded, ItemStructure.class);
+
+        assertNotNull(converted);
+    }
 }
