@@ -38,6 +38,8 @@ Starting with the next release this file will provide a proper overview.
 - Deserialization of EhrStatus attributes is_modifiable and is_queryable are defaulting to `true` now (see: https://github.com/ehrbase/ehrbase/pull/158)
 - Updating of composition with invalid template (e.g. completely different template than the previous version) (see: https://github.com/ehrbase/ehrbase/pull/166)
 - Folder names are checked for duplicates (see: https://github.com/ehrbase/ehrbase/pull/168)
+- Added validation checking for other_details and ehr_status. (https://github.com/ehrbase/ehrbase/pull/207)
+- Supports archetype_node_id and name for EHR_STATUS
 
 ## [0.10.0] (alpha)
 
