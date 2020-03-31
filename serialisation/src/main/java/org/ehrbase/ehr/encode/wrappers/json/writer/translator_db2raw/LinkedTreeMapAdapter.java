@@ -170,47 +170,11 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private LinkedTreeMap reformatEmbeddedValue(LinkedTreeMap instructionMap, String tag) {
-
-        if (instructionMap.containsKey(tag)) {
-            LinkedTreeMap<String, Object> narrative = (LinkedTreeMap<String, Object>) instructionMap.get(tag);
-            //get the value
-            LinkedTreeMap narrativeValue = (LinkedTreeMap) narrative.get(CompositionSerializer.TAG_VALUE);
-            if (narrativeValue != null)
-                narrative.replace(CompositionSerializer.TAG_VALUE, narrativeValue.get("value"));
-        }
-
-        return instructionMap;
-    }
 
     @SuppressWarnings("unchecked")
-    private LinkedTreeMap promoteActivities(LinkedTreeMap<String, Object> instructionMap) {
-
-        if (instructionMap.containsKey(CompositionSerializer.TAG_ACTIVITIES)) {
-            LinkedTreeMap<String, Object> activities = (LinkedTreeMap<String, Object>) instructionMap.get(CompositionSerializer.TAG_ACTIVITIES);
-            for (Map.Entry<String, Object> activityItem : activities.entrySet()) {
-                if (activityItem.getKey().startsWith(CompositionSerializer.TAG_ACTIVITIES)) {
-                    instructionMap.put(activityItem.getKey(), activityItem.getValue());
-                }
-            }
-            instructionMap.remove(CompositionSerializer.TAG_ACTIVITIES);
-        }
-        return instructionMap;
-    }
-
-    @SuppressWarnings("unchecked")
-    private LinkedTreeMap reformatMapForCanonical(LinkedTreeMap map) {
-        if (map.containsKey(CompositionSerializer.TAG_ACTIVITIES))
-            promoteActivities(map);
-        if (map.containsKey(CompositionSerializer.TAG_NARRATIVE))
-            reformatEmbeddedValue(map, CompositionSerializer.TAG_NARRATIVE);
-        if (map.containsKey(CompositionSerializer.TAG_MATH_FUNCTION))
-            reformatEmbeddedValue(map, CompositionSerializer.TAG_MATH_FUNCTION);
-        if (map.containsKey(CompositionSerializer.TAG_WIDTH))
-            reformatEmbeddedValue(map, CompositionSerializer.TAG_WIDTH);
-        if (map.containsKey(CompositionSerializer.TAG_UID))
-            reformatEmbeddedValue(map, CompositionSerializer.TAG_UID);
+    private LinkedTreeMap<String, Object> reformatMapForCanonical(LinkedTreeMap<String, Object> map) {
+        map = new IterativeItemStructure(map).promoteIterations();
+        map = new EmbeddedValue(map).formatForEmbeddedTag();
         return map;
     }
 
@@ -363,6 +327,7 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
                     LinkedTreeMap eventMap = (LinkedTreeMap) valueMap.get(CompositionSerializer.TAG_EVENTS);
                     valueMap.remove(CompositionSerializer.TAG_EVENTS);
                     valueMap.putAll(eventMap);
+                    valueMap.put(AT_TYPE, new SnakeCase(elementType).camelToUpperSnake());
                 } else if (archetypeNodeId.equals(CompositionSerializer.TAG_TIMING) && elementType.equals("DvParsable")) {
                     //promote value and formalism
                     Map timingValueMap = (LinkedTreeMap) valueMap.get(CompositionSerializer.TAG_VALUE);

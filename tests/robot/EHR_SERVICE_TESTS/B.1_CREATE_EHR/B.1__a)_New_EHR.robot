@@ -66,13 +66,13 @@ MF-004 - Create new EHR (Prefer header: representation)
 
 
 MF-005 - Create new EHR (XML, Prefer header: representation)
-    [tags]
+    [tags]    XML
     prepare new request session    XML    Prefer=return=representation
     create new EHR (XML)
     # comment: check steps
     String    response body    pattern=<?xml version
     String    response body    pattern=<ehr_id><value>
-    String    response body    pattern=<ehr_status><uid
+    String    response body    pattern=<ehr_status><name><value>EHR Status</value></name><uid
 
 
 MF-006 - Create new EHR w/ body: invalid ehr_status
@@ -439,13 +439,13 @@ MF-036 - Create new EHR w/ given ehr_id (Prefer header: representation)
 
 
 MF-037 - Create new EHR w/ given ehr_id (XML, Prefer header: representation)
-    [tags]
+    [tags]    XML
     prepare new request session    XML    Prefer=return=representation
     PUT /ehr/$ehr_id
     # comment: check steps
     String    response body    pattern=<?xml version
     String    response body    pattern=<ehr_id><value>
-    String    response body    pattern=<ehr_status><uid
+    String    response body    pattern=<ehr_status><name><value>EHR Status</value></name><uid
 
 
 MF-038 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
