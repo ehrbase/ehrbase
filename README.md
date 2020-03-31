@@ -3,8 +3,8 @@
 EHRbase is an [openEHR](openehr.org) Clinical Data Repository, providing a standard-based backend for interoperable clinical applications. It implements the latest version of the openEHR Reference Model (RM 1.0.4) and version 1.4 of the Archetype Definition Language (ADL). Applications can use the capabilities of EHRbase through the latest version of the [openEHR REST API](https://specifications.openehr.org/releases/ITS-REST/latest/) and model-based queries using the [Archetype Query Language](https://specifications.openehr.org/releases/QUERY/latest/AQL.html).
 
 ## Release Notes
-##### 2020, March 3
-This release of EHRbase (2020-03-03) provides several improvements, especially regarding stability and bug fixes. However, we consider EHRbase to be still in alpha status. Please see [EHRbase Documentation](https://ehrbase.readthedocs.io/en/latest/01_release_notes/0110.html) for further details.
+##### 2020, March 31
+This release of EHRbase (v0.12.0) adds basic authentication (see details below) and allows to overwrite templates. Besides, there are lots of bug fixes. Please see [EHRbase Documentation](https://ehrbase.readthedocs.io/en/latest/01_release_notes/0120.html) for further details.
 
 ## Getting Started
 
