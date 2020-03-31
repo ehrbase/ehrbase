@@ -25,6 +25,7 @@ import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.composition.EventContext;
 import com.nedap.archie.rm.generic.PartyIdentified;
 import com.nedap.archie.rm.generic.PartyProxy;
+import com.nedap.archie.rm.generic.PartySelf;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.definitions.ServerConfig;
@@ -396,10 +397,13 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
      * @throws IllegalArgumentException when composer in composition is not supported
      */
     private UUID seekComposerId(PartyProxy composer) {
-        if (!(composer instanceof PartyIdentified))
-            throw new IllegalArgumentException("Composer found in composition is not an IdenfiedParty and is not supported:" + composer);
+        if (composer instanceof PartyIdentified)
+            return I_PartyIdentifiedAccess.getOrCreateParty(this, (PartyIdentified) composer);
+        else if (composer instanceof PartySelf)
+            return I_PartyIdentifiedAccess.getOrCreatePartySelf(this);
+        else
+            throw new InternalServerException("composer of unsupported type:"+composer.getClass());
 
-        return I_PartyIdentifiedAccess.getOrCreateParty(this, (PartyIdentified) composer);
     }
 
     /**

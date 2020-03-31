@@ -38,6 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.xml.namespace.QName;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -135,6 +136,6 @@ public class TemplateServiceImp extends BaseService implements TemplateService {
 
     @Override
     public String create(String content) {
-        return this.knowledgeCacheService.addOperationalTemplate(content.getBytes());
+        return this.knowledgeCacheService.addOperationalTemplate(content.getBytes(StandardCharsets.UTF_8));
     }
 }

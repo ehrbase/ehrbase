@@ -102,7 +102,7 @@ public class IdentifierMapper {
 
     public FromEhrDefinition.EhrPredicate getEhrContainer() {
         for (Map.Entry<String, Mapper> containment : mapper.entrySet()) {
-            if (containment.getValue().getContainer() instanceof FromEhrDefinition.EhrPredicate)
+            if (containment.getValue().getContainer() instanceof FromEhrDefinition.EhrPredicate && !((FromEhrDefinition.EhrPredicate) containment.getValue().getContainer()).isVoid())
                 return (FromEhrDefinition.EhrPredicate) containment.getValue().getContainer();
         }
         return null;
