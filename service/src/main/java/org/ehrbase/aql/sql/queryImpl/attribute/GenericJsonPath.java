@@ -7,9 +7,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+//TODO: add a clause allowing to get the RmType FROM the DB (f.e. ELEMENT/value doesn't get the type)
 public class GenericJsonPath {
 
-    final String path;
+    private final String path;
 
     public GenericJsonPath(String path) {
         this.path = path;
@@ -33,13 +34,19 @@ public class GenericJsonPath {
                 actualPaths.add("content,/"+ segment);
                 actualPaths.add("0"); //as above
             }
-            else if (segment.equals("value") && (i < jqueryPaths.size() - 1) && jqueryPaths.get(i + 1).equals("value")){
+            else if (segment.matches("value|name") && !isTerminalValue(jqueryPaths, i)){
                 actualPaths.add("/"+ segment);
+                if (segment.matches("name"))
+                    actualPaths.add("0");
             }
             else
                 actualPaths.add(segment);
         }
 
         return "'{"+String.join(",", actualPaths)+"}'";
+    }
+
+    private boolean isTerminalValue(List paths, int index){
+        return paths.size() == 1 || (paths.size() > 1 && index == paths.size() - 1 && paths.get(index - 1).toString().matches("value|name"));
     }
 }

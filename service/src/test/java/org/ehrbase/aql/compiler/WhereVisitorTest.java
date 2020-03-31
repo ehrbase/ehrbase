@@ -25,6 +25,7 @@ import org.junit.Test;
 
 import java.util.List;
 
+import static junit.framework.TestCase.assertEquals;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class WhereVisitorTest {
@@ -163,5 +164,33 @@ public class WhereVisitorTest {
 
 
         }
+    }
+
+    @Test
+    public void testStructuredAST1()
+    {
+        WhereVisitor cut = new WhereVisitor();
+        String aql = "SELECT e " +
+                "FROM EHR e[ehr_id/value='1234'] " +
+                "WHERE ((e/ehr_id/value = '1111' AND e/ehr_id/value = '2222') OR (e/ehr_id/value = '333' OR e/ehr_id/value = '444')) ";
+        ParseTree tree = QueryHelper.setupParseTree(aql);
+        cut.visit(tree);
+
+        List<Object> whereExpression = cut.getWhereExpression();
+        assertThat(whereExpression).size().isEqualTo(21);
+
+        assertEquals(whereExpression.toString(), "[(, (, e::ehr_id/value, =, '1111', AND, e::ehr_id/value, =, '2222', ), OR, (, e::ehr_id/value, =, '333', OR, e::ehr_id/value, =, '444', ), )]");
+    }
+
+    @Test
+    public void testEmptyWhereStatement()
+    {
+        WhereVisitor cut = new WhereVisitor();
+        String aql = "select e/ehr_id/value from EHR e";
+        ParseTree tree = QueryHelper.setupParseTree(aql);
+        cut.visit(tree);
+
+        List<Object> whereExpression = cut.getWhereExpression();
+        assertThat(whereExpression).size().isEqualTo(0);
     }
 }

@@ -1,0 +1,43 @@
+[
+  {
+    "/name": [
+      {
+        "value": "Cualquier evento"
+      }
+    ],
+    "/time": {
+      "/name": [
+        {
+          "value": "Cualquier evento"
+        }
+      ],
+      "/value": {
+        "value": "2019-01-28T21:22:49.332Z",
+        "epoch_offset": 1548710569
+      },
+      "/$PATH$": "/content[openEHR-EHR-OBSERVATION.test_all_types.v1 and name/value='Test all types']/data[at0001]/events[at0002 and name/value='Cualquier evento']/time",
+      "/$CLASS$": "DvDateTime"
+    },
+    "/$CLASS$": "PointEvent",
+    "/data[at0003]": {
+      "/$CLASS$": [
+        "ItemTree"
+      ],
+      "/items[at0004]": [
+        {
+          "/name": [
+            {
+              "value": "text"
+            }
+          ],
+          "/value": {
+            "value": "aValue"
+          },
+          "/$PATH$": "/content[openEHR-EHR-OBSERVATION.test_all_types.v1 and name/value='Test all types']/data[at0001]/events[at0002 and name/value='Cualquier evento']/data[at0003]/items[at0004]",
+          "/$CLASS$": "DvText"
+        }
+      ]
+    }
+  }
+]
+

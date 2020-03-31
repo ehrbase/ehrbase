@@ -19,12 +19,12 @@ package org.ehrbase.aql.sql.queryImpl.attribute.composer;
 
 import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
-import org.ehrbase.aql.sql.queryImpl.attribute.partyref.PartyRefResolver;
+import org.ehrbase.aql.sql.queryImpl.attribute.partyref.PartyResolver;
 import org.jooq.Field;
 
 import static org.ehrbase.aql.sql.binding.I_JoinBinder.composerRef;
 
-public class ComposerResolver extends PartyRefResolver
+public class ComposerResolver extends PartyResolver
 {
 
     public ComposerResolver(FieldResolutionContext fieldResolutionContext, JoinSetup joinSetup) {

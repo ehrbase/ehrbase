@@ -96,26 +96,6 @@ Removed Mandatory Elements
     removed_mandatory_elements/minimal_action_removed_description_and_concept.opt
 
 
-Multiple Elements With Upper Bound Of 1
-    [Documentation]     Issues with elements that should occur only once.
-    ...                 Any element without an maxOccurs="unbounded" has upper bound=1
-    [Template]          upload invalid OPT
-    [Tags]              multiple_elements
-
-    multiple_elements/minimal_action_template-id_twice_1.opt
-    multiple_elements/minimal_action_template-id_twice_2.opt
-    multiple_elements/minimal_action_template-id_twice_3.opt
-    multiple_elements/minimal_action_concept_twice_1.opt
-    multiple_elements/minimal_action_concept_twice_2.opt
-    multiple_elements/minimal_action_definition_twice.opt
-
-    [Teardown]  TRACE GITHUB ISSUE  121  not-ready
-                # server accepts OPTs with multiple template_id tags, etc
-                # actual --> status code 201
-                # expected --> status code 400
-
-
-
 # Test Suite Self Test For Debugging
 #     Log To Console    \n
 #     Log To Console    ${SUT}

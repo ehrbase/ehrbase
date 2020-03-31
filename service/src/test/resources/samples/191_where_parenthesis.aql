@@ -1,0 +1,13 @@
+select
+    e/ehr_id,
+    a_a/data[at0002]/events[at0003]/data[at0001]/items[at0004]/value/magnitude,
+    a_a/data[at0002]/events[at0003]/time/value
+from EHR e
+contains COMPOSITION a
+contains OBSERVATION a_a[openEHR-EHR-OBSERVATION.body_temperature.v1]
+where a_a/data[at0002]/events[at0003]/data[at0001]/items[at0004]/value/magnitude>38
+AND  a_a/data[at0002]/events[at0003]/data[at0001]/items[at0004]/value/units = '°C'
+AND e/ehr_id/value MATCHES {
+    '849bf097-bd16-44fc-a394-10676284a012',
+    '34b2e263-00eb-40b8-88f1-823c87096457'}
+    OR (a_a/data[at0002]/events[at0003]/data[at0001]/items[at0004]/value/units = '°C' AND a_a/data[at0002]/events[at0003]/data[at0001]/items[at0004]/value/units = '°C')

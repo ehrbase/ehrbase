@@ -227,13 +227,10 @@ MF-017 - Create new EHR w/ body: valid ehr_status
 
 MF-018 - Create new EHR w/ body: valid ehr_status
     [Documentation]     Covers valid case where subject is empty JSON
-    ...                 check: https://github.com/ehrbase/project_management/issues/142#issuecomment-583759331
     [Tags]
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/001_ehr_status_subject_empty.json
     POST /ehr    ${body}
-
-        TRACE GITHUB ISSUE  160  not-ready
 
     Integer    response status    201
 
@@ -396,21 +393,18 @@ MF-031 - Create new EHR w/ given ehr_id (PUT /ehr/ehr_id variants)
     given     ${EMPTY}   false           false          201
     given     ${EMPTY}   false           true           201
 
-    [Teardown]          TRACE GITHUB ISSUE  160  not-ready
-
 
 MF-032 - Create new EHR w/ invalid ehr_id (PUT /ehr/ehr_id variants)
     [Tags]
-    [Template]          create ehr w/ given ehr_id from data table
+    [Template]          create ehr w/ invalid ehr_id from data table
 
   # EHR_ID    SUBJECT    IS_MODIFIABLE   IS_QUERYABLE   R.CODE
     invalid   ${EMPTY}   true            true           400
-    invalid   ${EMPTY}   ${EMPTY}        true           400
-    invalid   ${EMPTY}   ${EMPTY}        false          400
-    invalid   ${EMPTY}   false           ${EMPTY}       400
-    invalid   ${EMPTY}   true            ${EMPTY}       400
-
-    [Teardown]          TRACE GITHUB ISSUE  163  not-ready
+    1234567   ${EMPTY}   ${EMPTY}        true           400
+    .......   ${EMPTY}   ${EMPTY}        false          400
+    0000000   ${EMPTY}   false           ${EMPTY}       400
+    # TODO: Modify the next line since spring security remarks usage of % in request urls
+   # %%%%%%%   ${EMPTY}   true            ${EMPTY}       400
 
 
 MF-033 - Create new EHR w/ given ehr_id (w/o Prefer header)
@@ -607,13 +601,10 @@ MF-049 - Create new EHR w/ given ehr_id w/ body: valid ehr_status
 
 MF-050 - Create new EHR w/ given ehr_id w/ body: valid ehr_status
     [Documentation]     Covers valid case where subject is empty JSON
-    ...                 check: https://github.com/ehrbase/project_management/issues/142#issuecomment-583759331
     [Tags]
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/001_ehr_status_subject_empty.json
     PUT /ehr/$ehr_id    body=${body}
-
-        TRACE GITHUB ISSUE  160  not-ready
 
     Integer    response status    201
 
@@ -697,6 +688,18 @@ create ehr w/ given ehr_id from data table
                         ...    compose ehr_status    ${subject}    ${is_modifiable}    ${is_queryable}  AND
                         ...    PUT /ehr/$ehr_id    ${ehr_id}    ${ehr_status}  AND
                         ...    check response    ${status_code}    ${is_modifiable}    ${is_queryable}
+
+
+create ehr w/ invalid ehr_id from data table
+    [Arguments]         ${ehr_id}  ${subject}  ${is_modifiable}  ${is_queryable}  ${status_code}
+
+                        prepare new request session    Prefer=return=representation
+
+    ${ehr_id}=          Set Variable    ${ehr_id}
+    &{resp}=            Run Keywords
+                        ...    compose ehr_status    ${subject}    ${is_modifiable}    ${is_queryable}  AND
+                        ...    PUT /ehr/$ehr_id    ${ehr_id}    ${ehr_status}  AND
+                        ...    check response (invalid ehr_id)    ${status_code}
 
 
 compose ehr_status
@@ -811,3 +814,8 @@ check response
     ${is_queryable}=    Run Keyword If  $is_queryable=="${EMPTY}"    Set Variable    ${TRUE}
                         Boolean    response body ehr_status is_modifiable    ${is_modifiable}
                         Boolean    response body ehr_status is_queryable    ${is_queryable}
+
+check response (invalid ehr_id)
+    [Arguments]         ${status_code}
+                        Integer    response status    ${status_code}
+                        String    response body error    EHR ID format not a UUID

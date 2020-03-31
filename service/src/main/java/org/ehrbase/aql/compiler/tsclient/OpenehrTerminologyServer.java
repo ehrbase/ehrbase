@@ -16,39 +16,12 @@
  * limitations under the License.
  */
 package org.ehrbase.aql.compiler.tsclient;
-
-import java.util.ArrayList;
-import java.util.List;
 /***
- *@Created by Luis Marco-Ruiz on Feb 12, 2020
+ *@Created by Luis Marco-Ruiz on Mar 6, 2020
+ *
+ * @param <DvCodedText> concept type
+ * @param <ID> generic id type to specify the data type used to identify the concept of the terminology. This will be specialized or determined in runtime depending on the Terminology Server used.
  */
-public class FhirTerminologyServerImpl  implements TerminologyServer<String, String>{
-
-	@Override
-	public List expand(String valueSetId) {
-		List<String> result = new ArrayList();
-		result.add("48377-6");
-		result.add("27478-7");
-		result.add("52539-9");
-		return result;
-	}
-
-	@Override
-	public Boolean validate(String concept, String valueSetId) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public SubsumptionResult subsumes(String conceptA, String conceptB) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String lookUp(String conceptId) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+public interface OpenehrTerminologyServer<DvCodedText, ID> extends TerminologyServer<DvCodedText, ID> {
 
 }

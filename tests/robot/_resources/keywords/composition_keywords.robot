@@ -703,7 +703,7 @@ capture point in time
 
     ${time}=            Get Current Date    UTC    result_format=%Y-%m-%dT%H:%M:%S
     # ${time_tz}=         Catenate            SEPARATOR=${EMPTY}    ${time}   +00:00
-                        Set Test Variable   ${time_${point_in_time}}   ${time}+00:00
+                        Set Suite Variable   ${time_${point_in_time}}   ${time}+00:00
                         Sleep               1
 
 

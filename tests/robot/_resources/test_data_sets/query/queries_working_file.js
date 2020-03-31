@@ -99,7 +99,7 @@
 }
 //****
 {
-  "q": "SELECT e/ehr_id/value as uid FROM EHR e WHERE uid='dd616472-9432-4004-ad85-fd47affb1cc8'"
+  "q": "SELECT e/ehr_id/value as uid FROM EHR e WHERE e/ehr_id/value='dd616472-9432-4004-ad85-fd47affb1cc8'"
 }
 //****
 {
@@ -120,7 +120,7 @@
   }
 }
 {
-  "q": "SELECT e/ehr_id/value as uid FROM EHR e WHERE uid=$uid",
+  "q": "SELECT e/ehr_id/value as uid FROM EHR e WHERE e/ehr_id/value=$uid",
   "query_parameters": {
     "uid": "dd616472-9432-4004-ad85-fd47affb1cc8"
   }
