@@ -23,7 +23,12 @@ import com.nedap.archie.rm.composition.AdminEntry;
 import com.nedap.archie.rm.composition.ContentItem;
 import com.nedap.archie.rm.composition.Evaluation;
 import com.nedap.archie.rm.datastructures.Element;
+
 import com.nedap.archie.rm.datastructures.ItemStructure;
+
+import com.nedap.archie.rm.datastructures.History;
+import com.nedap.archie.rm.datastructures.PointEvent;
+
 import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.datavalues.quantity.DvInterval;
@@ -84,7 +89,7 @@ public class DBEncodeTest {
             //see if this can be interpreted by Archie
             Composition object = new CanonicalJson().unmarshal(converted,Composition.class);
 
-            assertTrue(object != null);
+            assertNotNull(object);
 
             //check if encoded/decode carry the same name
             assertThat(composition.getName().getValue()).isEqualTo(object.getName().getValue());
@@ -106,7 +111,7 @@ public class DBEncodeTest {
         //see if this can be interpreted by Archie
         Composition object = new CanonicalJson().unmarshal(converted.toString(), Composition.class);
 
-        assertTrue(object != null);
+        assertNotNull(object);
 
         String interpreted = new CanonicalXML().marshal(object);
 
@@ -119,7 +124,43 @@ public class DBEncodeTest {
         JsonElement converted = new LightRawJsonEncoder(marshal).encodeContentAsJson(null);
         Object object = new CanonicalJson().unmarshal(converted.toString(), Composition.class);
 
-        assertTrue(object != null);
+        assertNotNull(object);
+    }
+
+    @Test
+    public void unmarshal_from_js_composition_observation_events() throws IOException {
+        String marshal = IOUtils.resourceToString("/composition/canonical_json/rawdb_composition_observation_event.json", UTF_8);
+        JsonElement converted = new LightRawJsonEncoder(marshal).encodeContentAsJson(null);
+        Object object = new CanonicalJson().unmarshal(converted.toString(), Composition.class);
+
+        assertNotNull(object);
+    }
+
+    @Test
+    public void unmarshal_from_js_composition_observation_events_data() throws IOException {
+        String marshal = IOUtils.resourceToString("/composition/canonical_json/rawdb_composition_observation_event_item.json", UTF_8);
+        JsonElement converted = new LightRawJsonEncoder(marshal).encodeContentAsJson(null);
+        Object object = new CanonicalJson().unmarshal(converted.toString(), PointEvent.class);
+
+        assertNotNull(object);
+    }
+
+    @Test
+    public void unmarshal_from_js_events_data_as_array() throws IOException {
+        String marshal = IOUtils.resourceToString("/composition/canonical_json/rawdb_returning_array.json", UTF_8);
+        JsonElement converted = new LightRawJsonEncoder(marshal).encodeContentAsJson(null);
+        Object object = new CanonicalJson().unmarshal(converted.toString(), PointEvent.class);
+
+        assertNotNull(object);
+    }
+
+    @Test
+    public void unmarshal_from_js_history() throws IOException {
+        String marshal = IOUtils.resourceToString("/composition/canonical_json/rawdb_composition_history.json", UTF_8);
+        JsonElement converted = new LightRawJsonEncoder(marshal).encodeContentAsJson(null);
+        Object object = new CanonicalJson().unmarshal(converted.toString(), History.class);
+
+        assertNotNull(object);
     }
 
     @Test
@@ -140,7 +181,7 @@ public class DBEncodeTest {
         //see if this can be interpreted by Archie
         Composition object = new CanonicalJson().unmarshal(converted,Composition.class);
 
-        assertTrue(object != null);
+        assertNotNull(object);
 
         //check if encoded/decode carry the same name
         assertEquals(sectionOccurrences, object.getContent().size());
@@ -168,7 +209,7 @@ public class DBEncodeTest {
         //see if this can be interpreted by Archie
         Composition object = new CanonicalJson().unmarshal(converted,Composition.class);
 
-        assertTrue(object != null);
+        assertNotNull(object);
 
         String interpreted = new CanonicalXML().marshal(object);
 
@@ -195,7 +236,7 @@ public class DBEncodeTest {
         //see if this can be interpreted by Archie
         Composition object = new CanonicalJson().unmarshal(converted,Composition.class);
 
-        assertTrue(object != null);
+        assertNotNull(object);
 
         String interpreted = new CanonicalXML().marshal(object);
 
@@ -217,7 +258,7 @@ public class DBEncodeTest {
         ((DvInterval)((Element)((AdminEntry)composition.getContent().get(0)).getData().getItems().get(0)).getValue()).setLower(new DvDateTime("2019-11-22T00:00+01:00"));
         ((DvInterval)((Element)((AdminEntry)composition.getContent().get(0)).getData().getItems().get(0)).getValue()).setUpper(new DvDateTime("2019-12-22T00:00+01:00"));
 
-        assertTrue(composition != null);
+        assertNotNull(composition);
 
         String toJson  = new CanonicalJson().marshal(composition);
 
@@ -242,7 +283,7 @@ public class DBEncodeTest {
         //see if this can be interpreted by Archie
         Composition composition2 = new CanonicalJson().unmarshal(converted.toString(), Composition.class);
 
-        assertTrue(composition2 != null);
+        assertNotNull(composition2);
     }
 
     @Test
