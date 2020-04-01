@@ -219,7 +219,7 @@ B-700 Execute Ad-Hoc Query - Get Composition(s)
 
 B-800 Execute Ad-Hoc Query - Get Composition(s)
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              109
+    [Tags]              109    future
     B/800_get_composition_by_uid_empty_db.json
     B/801_get_composition_by_uid_empty_db.json
     [Teardown]          TRACE GITHUB ISSUE  109  not-ready  blocked by

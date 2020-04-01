@@ -280,7 +280,7 @@ B-800 Execute Ad-Hoc Query - Get Compositions By UID
     [Documentation]     B/800: SELECT c FROM COMPOSITION c [uid/value='123::local.ehrbase.org::1']
     ...                 B/801: SELECT c FROM COMPOSITION c [uid/value=$uid]
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              109
+    [Tags]              109    future
     B/800_query.tmp.json    B/800.tmp.json
     B/801_query.tmp.json    B/801.tmp.json
     [Teardown]          TRACE GITHUB ISSUE  109  not-ready  still blocked by
