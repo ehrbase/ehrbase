@@ -23,6 +23,11 @@ spring:
   flyway:
     schemas: ehr
 
+security:
+  authType: BASIC
+  authUser: ehrbase-user
+  authPassword: SuperSecretPassword
+
 cache:
   config: '/ehcache.xml'
   enabled: true

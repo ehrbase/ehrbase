@@ -8,6 +8,9 @@ spring:
       max-lifetime: 1800000
       minimum-idle: 10
 
+security:
+  authType: NONE
+
 
 server:
   port: 8080

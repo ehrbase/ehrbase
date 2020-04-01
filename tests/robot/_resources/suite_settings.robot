@@ -70,7 +70,7 @@ ${SUT}                  TEST    # DEFAULT
 &{DEV}                  URL=http://localhost:8080/ehrbase/rest/openehr/v1
 ...                     HEARTBEAT=http://localhost:8080/ehrbase/
 ...                     CREDENTIALS=${devcreds}
-...                     AUTH={"Authorization": null}
+...                     AUTH={"Authorization": "Basic ZWhyYmFzZS11c2VyOlN1cGVyU2VjcmV0UGFzc3dvcmQ="}
                         # comment: nodename is actually "CREATING_SYSTEM_ID" and can be set from cli
                         #          when starting server .jar
                         #          i.e. java -jar application.jar --server.nodename=some.foobar.baz
@@ -83,7 +83,7 @@ ${devcreds}             None
 &{TEST}                 URL=http://localhost:8080/ehrbase/rest/openehr/v1
 ...                     HEARTBEAT=http://localhost:8080/ehrbase/
 ...                     CREDENTIALS=${testcreds}
-...                     AUTH={"Authorization": null}
+...                     AUTH={"Authorization": "Basic ZWhyYmFzZS11c2VyOlN1cGVyU2VjcmV0UGFzc3dvcmQ="}
 ...                     NODENAME=local.ehrbase.org
 ...                     CONTROL=docker
 ${testcreds}            None
@@ -92,7 +92,7 @@ ${testcreds}            None
 &{STAGE}                URL=http://localhost:8080/ehrbase/rest/openehr/v1
 ...                     HEARTBEAT=http://localhost:8080/ehrbase/
 ...                     CREDENTIALS=${stagecreds}
-...                     AUTH={"Authorization": null}
+...                     AUTH={"Authorization": "Basic ZWhyYmFzZS11c2VyOlN1cGVyU2VjcmV0UGFzc3dvcmQ="}
 ...                     NODENAME=stage.ehrbase.org
 ...                     CONTROL=docker
 ${stagecreds}           None
@@ -101,7 +101,7 @@ ${stagecreds}           None
 &{PREPROD}              URL=http://localhost:8080/ehrbase/rest/openehr/v1
 ...                     HEARTBEAT=http://localhost:8080/ehrbase/
 ...                     CREDENTIALS=${preprodcreds}
-...                     AUTH={"Authorization": null}
+...                     AUTH={"Authorization": "Basic ZWhyYmFzZS11c2VyOlN1cGVyU2VjcmV0UGFzc3dvcmQ="}
 ...                     NODENAME=preprod.ehrbase.org
 ...                     CONTROL=docker
 ${preprodcreds}         None

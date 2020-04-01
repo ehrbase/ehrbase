@@ -3,8 +3,8 @@
 EHRbase is an [openEHR](openehr.org) Clinical Data Repository, providing a standard-based backend for interoperable clinical applications. It implements the latest version of the openEHR Reference Model (RM 1.0.4) and version 1.4 of the Archetype Definition Language (ADL). Applications can use the capabilities of EHRbase through the latest version of the [openEHR REST API](https://specifications.openehr.org/releases/ITS-REST/latest/) and model-based queries using the [Archetype Query Language](https://specifications.openehr.org/releases/QUERY/latest/AQL.html).
 
 ## Release Notes
-##### 2020, March 3
-This release of EHRbase (2020-03-03) provides several improvements, especially regarding stability and bug fixes. However, we consider EHRbase to be still in alpha status. Please see [EHRbase Documentation](https://ehrbase.readthedocs.io/en/latest/01_release_notes/0110.html) for further details.
+##### 2020, March 31
+This release of EHRbase (v0.12.0) adds basic authentication (see details below) and allows to overwrite templates. Besides, there are lots of bug fixes. Please see [EHRbase Documentation](https://ehrbase.readthedocs.io/en/latest/01_release_notes/0120.html) for further details.
 
 ## Getting Started
 
@@ -61,6 +61,20 @@ Replace the * with the current version, e.g. `application/target/application-0.9
 
 `java -jar application/target/application-*.jar`
 
+### Authentication
+
+As of now EHRbase uses Basic Authentication for all resources. This means you have to send an 'Authorization' header
+set with keyword `Basic ` followed by the authentication information in Base64 encoded username and password. To
+generate the Base64 encoded username and password combination create the string after the following schema:
+`username:password`.
+
+The Basic Auth mechanism is implemented as "opt-out" and can be activated either by providing an environment variable
+`security.authType=BASIC` with the start command or by adding the value into the target application.yml file.
+
+Currently we have support one user with password which can be set via environment variables `security.authUser` and
+`security.authPassword`. By default these values are set with `ehrbase-user` and `authPassword=SuperSecretPassword`
+and can be overridden by environment values. Alternatively you can set them inside the corresponding application.yml
+file.
 
 ## Running the tests
 
@@ -101,9 +115,12 @@ Adopt the parameters by your needs. The following parameters for `-e` must be se
 
 | Parameter   | Usage                                                    | Example                                   |
 | ----------- | -------------------------------------------------------- | ----------------------------------------- |
-| DB_URL      | Database URL. Must point to the running database server. | jdbc:postgresql://ehrdb:5432/ehrbase  |
+| DB_URL      | Database URL. Must point to the running database server. | jdbc:postgresql://ehrdb:5432/ehrbase      |
 | DB_USER     | Database user configured for the ehr schema.             | ehrbase                                   |
 | DB_PASS     | Password for the database user                           | ehrbase                                   |
+| AUTH_TYPE   | Set HTTP security method                                 | BASIC                                      |
+| AUTH_USER   | Username for Basic Auth                                  | myuser                                    |
+| AUTH_PASSWORD | Password for Basic Auth                                | myPassword432                             |
 | SYSTEM_NAME | Name for the local system                                | local.ehrbase.org                         |
 
 ### Pre-build Docker Image

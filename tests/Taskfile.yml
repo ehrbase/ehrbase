@@ -42,6 +42,8 @@ tasks:
           - echo ... EHRbase server started.
           #- grep -m 1 "Started EhrBase in" <(tail -f log)   # FAIL!
           # https://github.com/go-task/task/issues/270
+        env:
+          DISABLE_SECURITY: true
 
     starteb-cache:
         desc: START EHRBASE SERVER WITH CACHE ENABLED
@@ -61,7 +63,7 @@ tasks:
         desc: START POSTGRES DB DOCKER CONTAINER
         cmds:
           - echo ... starting DB server ...
-          - docker run --name ehrdb -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -d -p 5432:5432 ehrbaseorg/ehrbase-database-docker:11.5
+          - docker run --name ehrdb -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e DISABLE_SECURITY=true -d -p 5432:5432 ehrbaseorg/ehrbase-database-docker:11.5
           - echo ... DB server started.
 
     stopdb:
