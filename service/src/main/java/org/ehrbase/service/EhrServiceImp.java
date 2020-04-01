@@ -206,6 +206,8 @@ public class EhrServiceImp extends BaseService implements EhrService {
                 throw (UnprocessableEntityException) e;
             if (e.getClass().equals(IllegalArgumentException.class))
                 throw new ValidationException(e);
+            if (e.getClass().equals(ValidationException.class))
+                throw e;
             else if (e.getClass().equals(org.ehrbase.validation.constraints.wrappers.ValidationException.class))
                 throw new ValidationException(e);
             else

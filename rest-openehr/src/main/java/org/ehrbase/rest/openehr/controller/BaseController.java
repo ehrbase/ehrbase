@@ -298,6 +298,26 @@ public abstract class BaseController {
         return createErrorResponse("Bad Request: HTTP message not readable, for instance, due to missing parameter. Error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
+    /**
+     * Handler for validation errors
+     *
+     * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
+     */
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<Map<String, String>> restErrorHandler(ValidationException e) {
+        return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Handler for unmarshalling error (f.e. invalid EhrStatus)
+     *
+     * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
+     */
+    @ExceptionHandler(UnmarshalException.class)
+    public ResponseEntity<Map<String, String>> restErrorHandler(UnmarshalException e) {
+        return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
     // 401 Unauthorized is created automatically by framework
 
 
@@ -384,28 +404,6 @@ public abstract class BaseController {
     public ResponseEntity<Map<String, String>> restErrorHandler(BadGatewayException e) {
         return createErrorResponse("Bad Gateway: Proxied connection failed", HttpStatus.BAD_GATEWAY);
     }
-
-
-    /**
-     * Handler for validation errors
-     *
-     * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
-     */
-    @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<Map<String, String>> restErrorHandler(ValidationException e) {
-        return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
-    }
-
-    /**
-     * Handler for unmarshalling error (f.e. invalid EhrStatus
-     *
-     * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
-     */
-    @ExceptionHandler(UnmarshalException.class)
-    public ResponseEntity<Map<String, String>> restErrorHandler(UnmarshalException e) {
-        return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
-    }
-
 
     /**
      * Fallback error handler.
