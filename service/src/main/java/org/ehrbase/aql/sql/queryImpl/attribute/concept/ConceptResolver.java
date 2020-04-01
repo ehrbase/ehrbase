@@ -19,14 +19,11 @@ package org.ehrbase.aql.sql.queryImpl.attribute.concept;
 
 import org.ehrbase.aql.sql.queryImpl.attribute.AttributeResolver;
 import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
-import org.ehrbase.aql.sql.queryImpl.attribute.I_RMObjectAttribute;
 import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
-import org.ehrbase.aql.sql.queryImpl.attribute.eventcontext.EventContextJson;
-import org.ehrbase.aql.sql.queryImpl.attribute.setting.SettingAttribute;
 import org.jooq.Field;
 import org.jooq.TableField;
 
-import static org.ehrbase.jooq.pg.tables.EventContext.EVENT_CONTEXT;
+import java.util.Arrays;
 
 public class ConceptResolver extends AttributeResolver
 {
@@ -40,22 +37,15 @@ public class ConceptResolver extends AttributeResolver
     public Field<?> sqlField(String path){
 
         if (path.isEmpty())
-            return new EventContextJson(fieldResolutionContext, joinSetup).forJsonPath("setting").sqlField();
-
-        switch (path){
-            case "value":
-                return new SettingAttribute(fieldResolutionContext, joinSetup).forJsonPath(path).forTableField(tableField).sqlField();
-            case "defining_code":
-                return new EventContextJson(fieldResolutionContext, joinSetup).forJsonPath("setting/"+path).forTableField(tableField).sqlField();
-            case "defining_code/terminology_id":
-            case "defining_code/terminology_id/value":
-                return new SettingAttribute(fieldResolutionContext, joinSetup).forJsonPath(path).forTableField(tableField).sqlField();
-            case "defining_code/code_string":
-                return new SettingAttribute(fieldResolutionContext, joinSetup).forJsonPath(path).forTableField(tableField).sqlField();
-
-
+            return new ConceptJson(fieldResolutionContext, joinSetup).forTableField(tableField).sqlField();
+        else if (Arrays.asList("value", "defining_code", "defining_code/terminology_id", "defining_code/terminology_id/value", "defining_code/code_string").contains(path)) {
+            Field sqlField = new ConceptJson(fieldResolutionContext, joinSetup).forJsonPath(path).forTableField(tableField).sqlField();
+            if (path.equals("defining_code/terminology_id/value")||path.equals("value"))
+                fieldResolutionContext.setJsonDatablock(false);
+            return sqlField;
         }
-        throw new IllegalArgumentException("Unresolved context/facility attribute path:"+path);
+        else
+            throw new IllegalArgumentException("Unresolved concept attribute path:"+path);
     }
 
     public ConceptResolver forTableField(TableField tableField) {
