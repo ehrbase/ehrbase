@@ -669,7 +669,7 @@ Commit Compo
     D/308
     D/309
     D/310
-    D/311
+    # D/311     # comment: future feature? TODO check https://github.com/ehrbase/ehrbase/pull/179/files/4c2253f04e69c9e72986a74b464b9d20f9c43d70#r401266691
     D/312
     D/400
     D/401

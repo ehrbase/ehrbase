@@ -171,7 +171,6 @@ AQL LOADED DB SMOKE TEST
         # execute ad-hoc query and check result (loaded DB)  D/308_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/308.tmp.json
         # execute ad-hoc query and check result (loaded DB)  D/309_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/309.tmp.json
         # execute ad-hoc query and check result (loaded DB)  D/310_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/310.tmp.json
-        # execute ad-hoc query and check result (loaded DB)  D/311_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/311.tmp.json
         # execute ad-hoc query and check result (loaded DB)  D/312_select_data_values_from_all_ehrs_contains_composition_with_archetype_top_5.json    D/312.tmp.json
         # execute ad-hoc query and check result (loaded DB)  D/400_query.tmp.json    D/400.tmp.json   
         # execute ad-hoc query and check result (loaded DB)  D/401_query.tmp.json    D/401.tmp.json
@@ -196,6 +195,7 @@ AQL LOADED DB SMOKE TEST
             # execute ad-hoc query and check result (loaded DB)  C/303_query.tmp.json    C/303.tmp.json
             # execute ad-hoc query and check result (loaded DB)  C/400_query.tmp.json    C/400.tmp.json
             # execute ad-hoc query and check result (loaded DB)  C/500_query.tmp.json    C/500.tmp.json
+            # execute ad-hoc query and check result (loaded DB)  D/311_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/311.tmp.json
 
     [Teardown]    Set Smoke Test Status
 

@@ -328,7 +328,7 @@ D-307 Execute Ad-Hoc Query - Get Data
 
 D-311 Execute Ad-Hoc Query - Get Data
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              data
+    [Tags]              data    future
     D/311_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
 
 
