@@ -62,7 +62,7 @@ public interface ValidationService {
      * @param ehrStatus
      * @throws IllegalArgumentException
      */
-    void check(EhrStatus ehrStatus) throws Exception;
+    void check(EhrStatus ehrStatus);
 
 
     /**

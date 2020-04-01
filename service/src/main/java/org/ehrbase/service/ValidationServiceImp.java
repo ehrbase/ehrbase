@@ -19,11 +19,11 @@
 package org.ehrbase.service;
 
 import com.nedap.archie.rm.ehr.EhrStatus;
-import com.nedap.archie.rm.support.identification.PartyRef;
 import com.nedap.archie.rminfo.ArchieRMInfoLookup;
 import com.nedap.archie.rmobjectvalidator.RMObjectValidationMessage;
 import com.nedap.archie.rmobjectvalidator.RMObjectValidator;
 import org.ehrbase.api.exception.UnprocessableEntityException;
+import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.terminology.openehr.TerminologyService;
@@ -40,6 +40,7 @@ import javax.cache.CacheManager;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 
 import static org.ehrbase.configuration.CacheConfiguration.VALIDATOR_CACHE;
@@ -50,6 +51,9 @@ public class ValidationServiceImp implements ValidationService {
     private Cache<UUID, Validator> validatorCache;
     private final I_KnowledgeCache knowledgeCache;
     private final TerminologyService terminologyService;
+
+    private static final Pattern NAMESPACE_PATTERN = Pattern.compile("[a-zA-Z][a-zA-Z0-9-_:/&+?]*");
+    private static final RMObjectValidator RM_OBJECT_VALIDATOR = new RMObjectValidator(ArchieRMInfoLookup.getInstance());
 
     @Autowired
     public ValidationServiceImp(CacheManager cacheManager, I_KnowledgeCache knowledgeCache, TerminologyService terminologyService) {
@@ -116,9 +120,7 @@ public class ValidationServiceImp implements ValidationService {
             throw new IllegalArgumentException("Composition missing mandatory attribute: archetype details/template_id");
 
         //check the built composition using Archie Validator
-        RMObjectValidator rmObjectValidator = new RMObjectValidator(ArchieRMInfoLookup.getInstance());
-
-        List<RMObjectValidationMessage> rmObjectValidationMessages = rmObjectValidator.validate(composition);
+        List<RMObjectValidationMessage> rmObjectValidationMessages = RM_OBJECT_VALIDATOR.validate(composition);
 
         if (!rmObjectValidationMessages.isEmpty()){
             StringBuilder stringBuilder = new StringBuilder();
@@ -140,18 +142,8 @@ public class ValidationServiceImp implements ValidationService {
         if (ehrStatus == null)
             return;
 
-        if (ehrStatus.getSubject() == null)
-            throw new IllegalArgumentException("subject is required");
-
-        //few mandatory attribute
-        if (ehrStatus.getSubject().getExternalRef() != null && (ehrStatus.getSubject().getExternalRef().getId() == null || ehrStatus.getSubject().getExternalRef().getId().getValue().isEmpty())){
-            throw new IllegalArgumentException("ExternalRef ID is required");
-        }
-
-        //check the built composition using Archie Validator
-        RMObjectValidator rmObjectValidator = new RMObjectValidator(ArchieRMInfoLookup.getInstance());
-
-        List<RMObjectValidationMessage> rmObjectValidationMessages = rmObjectValidator.validate(ehrStatus);
+        //first, check the built EhrStatus using the general Archie RM-Validator
+        List<RMObjectValidationMessage> rmObjectValidationMessages = RM_OBJECT_VALIDATOR.validate(ehrStatus);
 
         if (!rmObjectValidationMessages.isEmpty()){
             StringBuilder stringBuilder = new StringBuilder();
@@ -159,10 +151,27 @@ public class ValidationServiceImp implements ValidationService {
                 stringBuilder.append(rmObjectValidationMessage.toString());
                 stringBuilder.append("\n");
             }
-            throw new IllegalArgumentException(stringBuilder.toString());
+            throw new ValidationException(stringBuilder.toString());
         }
-    }
 
+        //second, additional specific checks and other mandatory attributes
+
+        if (ehrStatus.getSubject() == null)
+            throw new ValidationException("subject is required");
+
+        if (ehrStatus.getSubject().getExternalRef() != null) {  // external_ref has 0..1 multiplicity, so null itself is okay
+            // but if it is there it has to have an ID
+            if (ehrStatus.getSubject().getExternalRef().getId() == null || ehrStatus.getSubject().getExternalRef().getId().getValue().isEmpty())
+                throw new ValidationException("ExternalRef ID is required");
+            // and a namespace
+            if (ehrStatus.getSubject().getExternalRef().getNamespace() == null) {
+                throw new ValidationException("ExternalRef namespace is required");
+                // which needs to be valid
+            } else if (!NAMESPACE_PATTERN.matcher(ehrStatus.getSubject().getExternalRef().getNamespace()).matches())
+                throw new ValidationException("Subject's namespace format invalid");
+        }
+
+    }
 
     @Override
     public void invalidate(){
