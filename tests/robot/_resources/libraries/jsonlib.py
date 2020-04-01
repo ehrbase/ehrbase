@@ -22,8 +22,7 @@ import json
 from robot.api import logger
 from json import JSONDecodeError
 from deepdiff import DeepDiff
-
-# from deepdiff import DeepSearch, grep
+from deepdiff import DeepSearch
 
 
 def compare_jsons(
@@ -62,19 +61,35 @@ def compare_jsons(
         {}
     """
 
+    logger.debug("BEFORE TRY BLOCK")
     logger.debug("json_1 type: {}".format(type(json_1)))
     logger.debug("json_2 type: {}".format(type(json_2)))
 
-    try:
-        actual = json.loads(json_1)
-        expected = json.loads(json_2)
-    except (JSONDecodeError, TypeError) as error:
-        raise JsonCompareError(
-            "Only VALID JSON strings accepted! ERROR: {}".format(error)
-        )
-    
-    logger.debug("actual type: {}".format(type(actual)))
-    logger.debug("expected type: {}".format(type(expected)))
+    # if inputs are dictionaries take them as they are otherwise
+    # try to convert to a python object (dict)
+    if isinstance(json_1, dict):
+        actual = json_1
+    else:
+        try:
+            actual = json.loads(json_1)
+        except (JSONDecodeError, TypeError) as error:
+            raise JsonCompareError(
+                f"Only VALID JSON strings accepted! ERROR: {error}"
+            )
+    if isinstance(json_2, dict):
+        expected = json_2
+    else:
+        try:
+            expected = json.loads(json_2)
+        except (JSONDecodeError, TypeError) as error:
+            raise JsonCompareError(
+                f"Only VALID JSON strings accepted! ERROR: {error}"
+            )
+
+    logger.debug("AFTER TRY BLOCK")
+    logger.debug(f"ACTUAL: {type(actual)}")
+    logger.debug(f"EXPECTED: {type(expected)}")
+
     logger.debug(
         "EXCLUDED PATHS: {}, type: {}".format(exclude_paths, type(exclude_paths))
     )
@@ -231,7 +246,7 @@ def payload_is_superset_of_expected(payload, expected, **kwargs):
         "iterable_item_added",
     ]
 
-    
+
     if diff != {}:
         for change in changes:
             # check if change are relevant or can be ignored
@@ -245,6 +260,26 @@ def payload_is_superset_of_expected(payload, expected, **kwargs):
     else:
         logger.info("NO difference between payloads.")
         return True
+
+
+def search_in(obj, item, **kwargs):
+    if isinstance(obj, dict):
+        obj = obj
+    else:
+        try:
+            obj = json.loads(obj)
+        except (JSONDecodeError, TypeError) as error:
+            raise JsonCompareError(
+                f"Only VALID JSON strings accepted! ERROR: {error}"
+            )
+    logger.debug(f"OBJ: {obj}")
+    logger.debug(f"ITEM: {item}")
+    logger.debug(f"KWARGS: {kwargs}")
+
+    ds = DeepSearch(obj, item, verbose_level=2, **kwargs)
+    logger.debug(f"DS: {type(ds)}")
+    print(ds)
+    return ds
 
 
 class JsonCompareError(Exception):
