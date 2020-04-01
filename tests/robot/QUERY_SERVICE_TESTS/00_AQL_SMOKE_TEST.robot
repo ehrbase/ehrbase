@@ -286,9 +286,9 @@ D-500 Execute Ad-HOc Query - Get Data
 D-501 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              208
+    [Tags]              225
     D/501_query.tmp.json    D/501.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  208  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  225  not-ready
 
 
 CLEAN UP SUT
