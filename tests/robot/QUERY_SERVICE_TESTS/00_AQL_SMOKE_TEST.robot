@@ -19,30 +19,6 @@ ${compo data sets}    ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/quer
 
 
 *** Test Cases ***
-BUG-111 - Temp Test Case For Bug Resolution
-    [Documentation]     TEMP TC! BLOCKS "B-400 Execute Ad-Hoc Query - Get Composition(s)"
-    ...                 TODO: @WLAD REMOVE AS SOON AS BUG IS FIXED!
-    [Tags]              111    not-ready
-
-    upload OPT    all_types/Test_all_types.opt
-    prepare new request session    Prefer=return=representation
-    create new EHR with ehr_status    ${ehr data sets}/ehr_status_01.json
-    Integer    response status    201
-    extract ehr_id from response (JSON)
-
-    Log    NEXT STEP FAILS
-    Commit Compo    1    1    ${compo data sets}/all_types.composition.json
-
-    [Teardown]          Run Keywords
-                        ...    db_keywords.Delete All Templates
-                        ...    db_keywords.Delete All EHR Records
-
-
-
-
-
-
-
 AQL LOADED DB SMOKE TEST
     [Tags]  SMOKE
 
@@ -74,6 +50,7 @@ AQL LOADED DB SMOKE TEST
         Commit Compo     3    1    ${compo data sets}/minimal_instruction_1.composition.json
         Commit Compo     4    1    ${compo data sets}/minimal_observation_1.composition.json
         Commit Compo     5    1    ${compo data sets}/minimal_action2_1.composition.json
+        Commit Compo     6    1    ${compo data sets}/all_types.composition.json
 
         #///////////////////////////////////////////////////
         #//                                              ///
@@ -81,26 +58,24 @@ AQL LOADED DB SMOKE TEST
         #//                                              ///
         #///////////////////////////////////////////////////
 
-        # Commit Compo    6    1    ${compo data sets}/minimal_admin_2.composition.json
-        # Commit Compo    7    1    ${compo data sets}/minimal_admin_3.composition.json
+        # Commit Compo    7    1    ${compo data sets}/minimal_admin_2.composition.json
+        # Commit Compo    8    1    ${compo data sets}/minimal_admin_3.composition.json
 
-        # Commit Compo    8    1    ${compo data sets}/minimal_evaluation_2.composition.json
-        # Commit Compo    9    1    ${compo data sets}/minimal_evaluation_3.composition.json
-        # Commit Compo   10    1    ${compo data sets}/minimal_evaluation_4.composition.json
+        # Commit Compo    9    1    ${compo data sets}/minimal_evaluation_2.composition.json
+        # Commit Compo   10    1    ${compo data sets}/minimal_evaluation_3.composition.json
+        # Commit Compo   11    1    ${compo data sets}/minimal_evaluation_4.composition.json
 
-        # Commit Compo   11    1    ${compo data sets}/minimal_instruction_2.composition.json
-        # Commit Compo   12    1    ${compo data sets}/minimal_instruction_3.composition.json
-        # Commit Compo   13    1    ${compo data sets}/minimal_instruction_4.composition.json
+        # Commit Compo   12    1    ${compo data sets}/minimal_instruction_2.composition.json
+        # Commit Compo   13    1    ${compo data sets}/minimal_instruction_3.composition.json
+        # Commit Compo   14    1    ${compo data sets}/minimal_instruction_4.composition.json
 
-        # Commit Compo   14    1    ${compo data sets}/minimal_observation_2.composition.json
-        # Commit Compo   15    1    ${compo data sets}/minimal_observation_3.composition.json
-        # Commit Compo   16    1    ${compo data sets}/minimal_observation_4.composition.json
+        # Commit Compo   15    1    ${compo data sets}/minimal_observation_2.composition.json
+        # Commit Compo   16    1    ${compo data sets}/minimal_observation_3.composition.json
+        # Commit Compo   17    1    ${compo data sets}/minimal_observation_4.composition.json
 
-        # Commit Compo   17    1    ${compo data sets}/minimal_action2_2.composition.json
-        # Commit Compo   18    1    ${compo data sets}/minimal_action2_3.composition.json
+        # Commit Compo   18    1    ${compo data sets}/minimal_action2_2.composition.json
+        # Commit Compo   19    1    ${compo data sets}/minimal_action2_3.composition.json
 
-        # # FAILS - GITHUB #111
-        # Commit Compo    19    1    ${compo data sets}/all_types.composition.json
 
     # COMMENT: QUERY EXECUTION
         #////////////////////////////////////////////////////////////////
@@ -142,7 +117,7 @@ AQL LOADED DB SMOKE TEST
         # execute ad-hoc query and check result (loaded DB)  B/103_get_compositions_within_timewindow.json    B/103.tmp.json
         # execute ad-hoc query and check result (loaded DB)  B/200_query.tmp.json    B/200.tmp.json
         # execute ad-hoc query and check result (loaded DB)  B/300_get_compositions_with_archetype_from_all_ehrs.json    B/300.tmp.json
-# FAILS # execute ad-hoc query and check result (loaded DB)  B/400_get_compositions_contains_section_with_archetype_from_all_ehrs.json    B/400.tmp.json
+        # execute ad-hoc query and check result (loaded DB)  B/400_get_compositions_contains_section_with_archetype_from_all_ehrs.json    B/400.tmp.json
         # execute ad-hoc query and check result (loaded DB)  B/500_get_compositions_by_contains_entry_of_type_from_all_ehrs.json    B/500.tmp.json
         # execute ad-hoc query and check result (loaded DB)  B/501_get_compositions_by_contains_entry_of_type_from_all_ehrs.json    B/501.tmp.json
         # execute ad-hoc query and check result (loaded DB)  B/502_get_compositions_by_contains_entry_of_type_from_all_ehrs.json    B/502.tmp.json
@@ -229,9 +204,9 @@ B-400 Execute Ad-Hoc Query - Get Composition(s)
     [Documentation]     NOTE: activate commit of "all_types.composition.json"
     ...                       in PRECONDITIONS step to make this test work!
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              111    TODO
+    [Tags]              227
     B/400_get_compositions_contains_section_with_archetype_from_all_ehrs.json    B/400.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  111  not-ready  BLOCKED BY
+    [Teardown]          TRACE GITHUB ISSUE  227  not-ready
 
 
 B-800 Execute Ad-Hoc Query - Get Compositions By UID
