@@ -229,9 +229,9 @@ B-400 Execute Ad-Hoc Query - Get Composition(s)
     [Documentation]     NOTE: activate commit of "all_types.composition.json"
     ...                       in PRECONDITIONS step to make this test work!
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              111    TODO
+    [Tags]              227
     B/400_get_compositions_contains_section_with_archetype_from_all_ehrs.json    B/400.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  111  not-ready  BLOCKED BY
+    [Teardown]          TRACE GITHUB ISSUE  227  not-ready
 
 
 B-500 Execute Ad-Hoc Query - Get Composition(s)
