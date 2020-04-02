@@ -34,9 +34,75 @@ Force Tags      refactor
 
 
 *** Test Cases ***
+000 - Default RESTInstance headers
+    [Documentation]     Demonstrates default headers set by RESTInstance library
+    ...                 which we use for many of our tests.
+    ...                 Sets {"Content-Type": "applicable/json"} and 
+    ...                      {"Accept": "application/json, */*"} by default!
+    ...                 NOTE: this test is not executed on CI!
+    [Tags]              libtest
+    &{resp}=            REST.POST    ${baseurl}/ehr
+                        Set Suite Variable    ${response}    ${resp}
+                        Output Debug Info To Console
+                        #Integer      response status    400
+
+
+001 - Default RequestLibrary Headers
+    [Documentation]     Demonstrates default headers set by RequestLibrary
+    ...                 which we use in cases where RESTInstance can't be used because
+    ...                 of missing XML support.
+    ...                 Sets {"Accept": "*/*"} by default!
+    ...                 NOTE: this test is not executed on CI!
+    [Tags]              libtest
+    ${resp}=            Post Request        ${SUT}   /ehr
+                        #...                 headers=${headers}
+                        Set Test Variable   ${response}    ${resp}
+                        Log To Console   \nREQUEST HEADERS: \n${response.request.headers}
+                        Log To Console   \nRESPONSE HEADERS: \n${response.headers}
+                        Log To Console    \nRESPONSE BODY: ${response.content}
+
+
+002 - POST /ehr (no accept header, content-type=json)
+    [Tags]              libtest
+    prepare new request session    no accept header
+    create supernew ehr
+    ehr_keywords.validate POST response - 204 no content
+
+
+003 - POST /ehr (no accept header, content-type=xml)
+    prepare new request session    no accept header xml
+    create supernew ehr
+    ehr_keywords.validate POST response - 204 no content
+
+
+004 - POST /ehr (no content header)
+    prepare new request session    no content header
+    create supernew ehr
+    ehr_keywords.validate POST response - 204 no content
+
+
+005 - POST /ehr (no accept/content-type headers)
+    prepare new request session    no accept/content headers
+    create supernew ehr
+    ehr_keywords.validate POST response - 204 no content
+
+
+006 - POST /ehr (no headers)
+    prepare new request session    no headers
+    create supernew ehr
+    ehr_keywords.validate POST response - 204 no content
+
+
 MF-001 - Create new EHR (w/o Prefer header)
     [Tags]
     prepare new request session    JSON
+    create supernew ehr
+    ehr_keywords.validate POST response - 204 no content
+
+
+MF-001a - Create new EHR (w/o Prefer and Accept header)
+    [Tags]
+    prepare new request session    no accept header
     create supernew ehr
     ehr_keywords.validate POST response - 204 no content
 
