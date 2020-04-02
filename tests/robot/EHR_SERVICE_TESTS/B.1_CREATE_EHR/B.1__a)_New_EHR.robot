@@ -34,9 +34,75 @@ Force Tags      refactor
 
 
 *** Test Cases ***
+000 - Default RESTInstance headers
+    [Documentation]     Demonstrates default headers set by RESTInstance library
+    ...                 which we use for many of our tests.
+    ...                 Sets {"Content-Type": "applicable/json"} and 
+    ...                      {"Accept": "application/json, */*"} by default!
+    ...                 NOTE: this test is not executed on CI!
+    [Tags]              libtest
+    &{resp}=            REST.POST    ${baseurl}/ehr
+                        Set Suite Variable    ${response}    ${resp}
+                        Output Debug Info To Console
+                        #Integer      response status    400
+
+
+001 - Default RequestLibrary Headers
+    [Documentation]     Demonstrates default headers set by RequestLibrary
+    ...                 which we use in cases where RESTInstance can't be used because
+    ...                 of missing XML support.
+    ...                 Sets {"Accept": "*/*"} by default!
+    ...                 NOTE: this test is not executed on CI!
+    [Tags]              libtest
+    ${resp}=            Post Request        ${SUT}   /ehr
+                        #...                 headers=${headers}
+                        Set Test Variable   ${response}    ${resp}
+                        Log To Console   \nREQUEST HEADERS: \n${response.request.headers}
+                        Log To Console   \nRESPONSE HEADERS: \n${response.headers}
+                        Log To Console    \nRESPONSE BODY: ${response.content}
+
+
+002 - POST /ehr (no accept header, content-type=json)
+    [Tags]              libtest
+    prepare new request session    no accept header
+    create supernew ehr
+    ehr_keywords.validate POST response - 204 no content
+
+
+003 - POST /ehr (no accept header, content-type=xml)
+    prepare new request session    no accept header xml
+    create supernew ehr
+    ehr_keywords.validate POST response - 204 no content
+
+
+004 - POST /ehr (no content header)
+    prepare new request session    no content header
+    create supernew ehr
+    ehr_keywords.validate POST response - 204 no content
+
+
+005 - POST /ehr (no accept/content-type headers)
+    prepare new request session    no accept/content headers
+    create supernew ehr
+    ehr_keywords.validate POST response - 204 no content
+
+
+006 - POST /ehr (no headers)
+    prepare new request session    no headers
+    create supernew ehr
+    ehr_keywords.validate POST response - 204 no content
+
+
 MF-001 - Create new EHR (w/o Prefer header)
     [Tags]
     prepare new request session    JSON
+    create supernew ehr
+    ehr_keywords.validate POST response - 204 no content
+
+
+MF-001a - Create new EHR (w/o Prefer and Accept header)
+    [Tags]
+    prepare new request session    no accept header
     create supernew ehr
     ehr_keywords.validate POST response - 204 no content
 
@@ -66,13 +132,13 @@ MF-004 - Create new EHR (Prefer header: representation)
 
 
 MF-005 - Create new EHR (XML, Prefer header: representation)
-    [tags]
+    [tags]    XML
     prepare new request session    XML    Prefer=return=representation
     create new EHR (XML)
     # comment: check steps
     String    response body    pattern=<?xml version
     String    response body    pattern=<ehr_id><value>
-    String    response body    pattern=<ehr_status><uid
+    String    response body    pattern=<ehr_status><name><value>EHR Status</value></name><uid
 
 
 MF-006 - Create new EHR w/ body: invalid ehr_status
@@ -80,8 +146,6 @@ MF-006 - Create new EHR w/ body: invalid ehr_status
     [Tags]
     prepare new request session    JSON    Prefer=return=representation
     POST /ehr    {}
-
-        TRACE GITHUB ISSUE  157  not-ready
 
     # comment: check step
     Integer    response status    400
@@ -94,8 +158,6 @@ MF-007 - Create new EHR w/ body: invalid ehr_status
     ${body}=     randomize subject_id in test-data-set    invalid/000_ehr_status_type_missing.json
     POST /ehr    ${body}
 
-        TRACE GITHUB ISSUE  157  not-ready
-
     # comment: check step
     Integer    response status    400
 
@@ -105,8 +167,6 @@ MF-008 - Create new EHR w/ body: invalid ehr_status
     [Tags]
     prepare new request session    JSON    Prefer=return=representation
     POST /ehr    ${EXECDIR}/robot/_resources/test_data_sets/ehr/invalid/001_ehr_status_subject_missing.json
-
-        TRACE GITHUB ISSUE  157  not-ready
 
     # comment: check step
     Integer    response status    400
@@ -121,8 +181,6 @@ MF-009 - Create new EHR w/ body: invalid ehr_status
     ...          invalid/002_ehr_status_subject_and_archetype_and_name_missing.json
     POST /ehr    ${body}
 
-        TRACE GITHUB ISSUE  157  not-ready
-
     # comment: check step
     Integer    response status    400
 
@@ -133,8 +191,6 @@ MF-010 - Create new EHR w/ body: invalid ehr_status
     prepare new request session    JSON    Prefer=return=representation
     POST /ehr    ${EXECDIR}/robot/_resources/test_data_sets/ehr/invalid/003_ehr_status_subject_id_empty.json
 
-        TRACE GITHUB ISSUE  158  not-ready
-
     # comment: check step
     Integer    response status    400
 
@@ -144,8 +200,6 @@ MF-011 - Create new EHR w/ body: invalid ehr_status
     [Tags]
     prepare new request session    JSON    Prefer=return=representation
     POST /ehr    ${EXECDIR}/robot/_resources/test_data_sets/ehr/invalid/004_ehr_status_subject_id_missing.json
-
-        TRACE GITHUB ISSUE  158  not-ready
 
     # comment: check step
     Integer    response status    400
@@ -158,8 +212,6 @@ MF-012 - Create new EHR w/ body: invalid ehr_status
     ${body}=     randomize subject_id in test-data-set    invalid/005_ehr_status_subject_namespace_missing.json
     POST /ehr    ${body}
 
-        TRACE GITHUB ISSUE  159  not-ready
-
     # comment: check step
     Integer    response status    400
 
@@ -170,8 +222,6 @@ MF-013 - Create new EHR w/ body: invalid ehr_status
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    invalid/006_ehr_status_subject_namespace_empty.json
     POST /ehr    ${body}
-
-        TRACE GITHUB ISSUE  159  not-ready
 
     # comment: check step
     Integer    response status    400
@@ -342,7 +392,7 @@ MF-025 - Create new EHR w/ invalid subject (POST /ehr variants)
     [Documentation]     Covers edge case where subject is provided but is invalid
     ...                 because of some mandatory elements missing.
     [Tags]
-    [Template]          create ehr from data table
+    [Template]          create ehr from data table (invalid)
 
   # SUBJECT    IS_MODIFIABLE   IS_QUERYABLE   R.CODE
     # TODO: remove when fixed. Issue 158
@@ -357,8 +407,6 @@ MF-025 - Create new EHR w/ invalid subject (POST /ehr variants)
     missing    true            false          400
     missing    false           true           400
     missing    false           false          400
-
-    [Teardown]          TRACE GITHUB ISSUE  158  not-ready  message=Related to issue 157
 
 
 MF-030 - Create new EHR w/ given ehr_id (PUT /ehr/ehr_id variants)
@@ -440,13 +488,13 @@ MF-036 - Create new EHR w/ given ehr_id (Prefer header: representation)
 
 
 MF-037 - Create new EHR w/ given ehr_id (XML, Prefer header: representation)
-    [tags]
+    [tags]    XML
     prepare new request session    XML    Prefer=return=representation
     PUT /ehr/$ehr_id
     # comment: check steps
     String    response body    pattern=<?xml version
     String    response body    pattern=<ehr_id><value>
-    String    response body    pattern=<ehr_status><uid
+    String    response body    pattern=<ehr_status><name><value>EHR Status</value></name><uid
 
 
 MF-038 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
@@ -454,8 +502,6 @@ MF-038 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
     [Tags]
     prepare new request session    JSON    Prefer=return=representation
     PUT /ehr/$ehr_id    body={}
-
-        TRACE GITHUB ISSUE  157  not-ready
 
     # comment: check step
     Integer    response status    400
@@ -468,8 +514,6 @@ MF-039 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
     ${body}=     randomize subject_id in test-data-set    invalid/000_ehr_status_type_missing.json
     PUT /ehr/$ehr_id    body=${body}
 
-        TRACE GITHUB ISSUE  157  not-ready
-
     # comment: check step
     Integer    response status    400
 
@@ -479,8 +523,6 @@ MF-040 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
     [Tags]
     prepare new request session    JSON    Prefer=return=representation
     PUT /ehr/$ehr_id    body=${EXECDIR}/robot/_resources/test_data_sets/ehr/invalid/001_ehr_status_subject_missing.json
-
-        TRACE GITHUB ISSUE  157  not-ready
 
     # comment: check step
     Integer    response status    400
@@ -494,9 +536,6 @@ MF-041 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
     ${body}=     randomize subject_id in test-data-set    invalid/002_ehr_status_subject_and_archetype_and_name_missing.json
     PUT /ehr/$ehr_id    body=${body}
 
-
-        TRACE GITHUB ISSUE  157  not-ready
-
     # comment: check step
     Integer    response status    400
 
@@ -507,8 +546,6 @@ MF-042 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
     prepare new request session    JSON    Prefer=return=representation
     PUT /ehr/$ehr_id    body=${EXECDIR}/robot/_resources/test_data_sets/ehr/invalid/003_ehr_status_subject_id_empty.json
 
-        TRACE GITHUB ISSUE  158  not-ready
-
     # comment: check step
     Integer    response status    400
 
@@ -518,8 +555,6 @@ MF-043 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
     [Tags]
     prepare new request session    JSON    Prefer=return=representation
     PUT /ehr/$ehr_id    body=${EXECDIR}/robot/_resources/test_data_sets/ehr/invalid/004_ehr_status_subject_id_missing.json
-
-        TRACE GITHUB ISSUE  158  not-ready
 
     # comment: check step
     Integer    response status    400
@@ -532,8 +567,6 @@ MF-044 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
     ${body}=     randomize subject_id in test-data-set    invalid/005_ehr_status_subject_namespace_missing.json
     PUT /ehr/$ehr_id    body=${body}
 
-        TRACE GITHUB ISSUE  159  not-ready
-
     # comment: check step
     Integer    response status    400
 
@@ -544,8 +577,6 @@ MF-045 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    invalid/006_ehr_status_subject_namespace_empty.json
     PUT /ehr/$ehr_id    body=${body}
-
-        TRACE GITHUB ISSUE  159  not-ready
 
     # comment: check step
     Integer    response status    400
@@ -678,6 +709,17 @@ create ehr from data table
                         ...    check response    ${status_code}    ${is_modifiable}    ${is_queryable}
 
 
+create ehr from data table (invalid)
+    [Arguments]         ${subject}  ${is_modifiable}  ${is_queryable}  ${status_code}
+
+                        prepare new request session    Prefer=return=representation
+
+    &{resp}=            Run Keywords
+                        ...    compose ehr_status    ${subject}    ${is_modifiable}    ${is_queryable}  AND
+                        ...    POST /ehr    ${ehr_status}  AND
+                        ...    check response (invalid)    ${status_code}
+
+
 create ehr w/ given ehr_id from data table
     [Arguments]         ${ehr_id}  ${subject}  ${is_modifiable}  ${is_queryable}  ${status_code}
 
@@ -741,10 +783,12 @@ create randomly invalid subject
                         ...   $..subject.external_ref.id.value
                         ...   $..subject.external_ref.id
                         ...   $..subject.external_ref.id._type
-                        ...   $..subject.external_ref.id.schema
+                        #...   $..subject.external_ref.id.schema    # not necessary for the most abstract OBJECT_ID type
                         ...   $..subject.external_ref.namespace
 
     ${elem_to_delete}=  Set Variable    ${{random.choice($subj_elements)}}
+
+    Log To Console    ${elem_to_delete}
 
     ${ehr_status}=      Delete Object From Json    ${ehr_status}    ${elem_to_delete}
                         Set Test Variable    ${ehr_status}    ${ehr_status}
@@ -814,6 +858,12 @@ check response
     ${is_queryable}=    Run Keyword If  $is_queryable=="${EMPTY}"    Set Variable    ${TRUE}
                         Boolean    response body ehr_status is_modifiable    ${is_modifiable}
                         Boolean    response body ehr_status is_queryable    ${is_queryable}
+
+
+check response (invalid)
+    [Arguments]         ${status_code}
+                        Integer    response status    ${status_code}
+
 
 check response (invalid ehr_id)
     [Arguments]         ${status_code}

@@ -1,3 +1,7 @@
 <ehr_status xsi:type="EHR_STATUS">
+    <name>
+        <value>EHR Status</value>
+    </name>
+    <archetype_node_id>openEHR-EHR-EHR_STATUS.generic.v1</archetype_node_id>
 
 </ehr_status>
