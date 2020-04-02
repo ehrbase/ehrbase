@@ -46,19 +46,20 @@ public class LightRawJsonEncoder {
 
     public String encodeContentAsString(String root) {
 
-        Map<String, Object> fromDB = db2map(root != null && root.equals("value"));
+        Object fromDB = db2map(root != null && root.equals("value"));
 
         GsonBuilder gsonRaw = EncodeUtilArchie.getGsonBuilderInstance(I_DvTypeAdapter.AdapterType.DBJSON2RAWJSON);
-        String raw;
-        if (root != null) {
-            Object contentMap = fromDB.get(root);
-            if (contentMap instanceof LinkedTreeMap && ((LinkedTreeMap) contentMap).size() == 0) //empty content
-                raw = encodeNullContent();
-            else
-                raw = gsonRaw.create().toJson(fromDB.get(root));
+        String raw = null;
+        if (fromDB instanceof Map) {
+            if (root != null) {
+                Object contentMap = ((Map)fromDB).get(root);
+                if (contentMap instanceof LinkedTreeMap && ((LinkedTreeMap) contentMap).size() == 0) //empty content
+                    raw = encodeNullContent();
+                else
+                    raw = gsonRaw.create().toJson(((Map)fromDB).get(root));
+            } else
+                raw = gsonRaw.create().toJson(fromDB);
         }
-        else
-            raw = gsonRaw.create().toJson(fromDB);
 
         return raw;
     }
@@ -90,28 +91,31 @@ public class LightRawJsonEncoder {
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, Object> db2map(boolean isValue){
+    private Object db2map(boolean isValue){
+        boolean isArray = false;
+
         GsonBuilder gsondb = EncodeUtilArchie.getGsonBuilderInstance();
         if (jsonbOrigin.startsWith("[")) {
-            if (isValue)
+            if (isValue) {
                 jsonbOrigin = jsonbOrigin.trim().substring(1, jsonbOrigin.length() - 1);
+            }
             else
-                jsonbOrigin = "{\"items\":"+jsonbOrigin+"}"; //joy of json... this deals with array with and name/value predicate
+                isArray = true;
         }
 
-        Map fromDB = gsondb.create().fromJson(jsonbOrigin, Map.class);
+        Object fromDB = gsondb.create().fromJson(jsonbOrigin, isArray ? ArrayList.class : Map.class);
 
-        if (fromDB.containsKey("content")){
+        if (fromDB instanceof  Map && ((Map)fromDB).containsKey("content")){
             //push contents upward
-            Object contents = fromDB.get("content");
+            Object contents = ((Map)fromDB).get("content");
 
             if (contents instanceof LinkedTreeMap){
                 for (Object contentItem: ((LinkedTreeMap)contents).entrySet()){
                     if (contentItem instanceof Map.Entry) {
-                        fromDB.put(((Map.Entry) contentItem).getKey().toString(), ((Map.Entry) contentItem).getValue());
+                        ((Map)fromDB).put(((Map.Entry) contentItem).getKey().toString(), ((Map.Entry) contentItem).getValue());
                     }
                 }
-                fromDB.remove("content");
+                ((Map)fromDB).remove("content");
             }
         }
 

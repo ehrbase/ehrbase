@@ -1,0 +1,65 @@
+{
+  "/name": [
+    {
+      "value": "Event Series"
+    }
+  ],
+  "/events": {
+    "/events[at0002]": [
+      {
+        "/name": [
+          {
+            "value": "Cualquier evento"
+          }
+        ],
+        "/time": {
+          "/name": [
+            {
+              "value": "Cualquier evento"
+            }
+          ],
+          "/value": {
+            "value": "2019-06-27T11:48:03.602+02:00",
+            "epoch_offset": 1561628883
+          },
+          "/$PATH$": "/content[openEHR-EHR-OBSERVATION.minimal.v1 and name/value='Minimal']/data[at0001]/events[at0002 and name/value='Cualquier evento']/time",
+          "/$CLASS$": "DvDateTime"
+        },
+        "/$CLASS$": "PointEvent",
+        "/data[at0003]": {
+          "/$CLASS$": [
+            "ItemTree"
+          ],
+          "/items[at0004]": [
+            {
+              "/name": [
+                {
+                  "value": "text"
+                }
+              ],
+              "/value": {
+                "value": "first value"
+              },
+              "/$PATH$": "/content[openEHR-EHR-OBSERVATION.minimal.v1 and name/value='Minimal']/data[at0001]/events[at0002 and name/value='Cualquier evento']/data[at0003]/items[at0004]",
+              "/$CLASS$": "DvText"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "/origin": {
+    "/name": [
+      {
+        "value": "Event Series"
+      }
+    ],
+    "/value": {
+      "value": "2019-06-27T11:48:03.602+02:00",
+      "epoch_offset": 1561628883
+    },
+    "/$PATH$": "/content[openEHR-EHR-OBSERVATION.minimal.v1 and name/value='Minimal']/data[at0001]/origin",
+    "/$CLASS$": "DvDateTime"
+  },
+  "/$CLASS$": "History"
+}

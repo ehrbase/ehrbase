@@ -259,6 +259,9 @@ public class IntervalComparator {
     }
 
     public static boolean isOptional(IntervalOfInteger intervalOfInteger) {
+        if (intervalOfInteger.isSetLower() && intervalOfInteger.getLower() == 1 && intervalOfInteger.isSetUpper() && intervalOfInteger.getUpper() == 1)
+            return false;
+
         try {
             isWithinBoundaries(0, intervalOfInteger);
         } catch (Exception e) {
