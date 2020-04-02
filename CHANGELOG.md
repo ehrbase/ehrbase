@@ -11,10 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ### Changed
-
+- Update of AQL-Query test suite (see: https://github.com/ehrbase/ehrbase/pull/179)
 
 ### Fixed
-
+- Added validation checking for other_details and ehr_status. (see: https://github.com/ehrbase/ehrbase/pull/207)
+- Supports archetype_node_id and name for EHR_STATUS (see: https://github.com/ehrbase/ehrbase/pull/207)
 
 ## [0.12.0] (alpha)
 
@@ -74,6 +75,7 @@ Starting with the next release this file will provide a proper overview.
 - Correct resolution of ehr/system_id in AQL (see: https://github.com/ehrbase/ehrbase/pull/102)
 - Detection of duplicate aliases in aql select (see: https://github.com/ehrbase/ehrbase/pull/98)
 
+
 ## [0.10.0] (alpha)
 
 ### Added
@@ -114,7 +116,8 @@ Starting with the next release this file will provide a proper overview.
 - Fixed error regarding DISTINCT operator in AQL (https://github.com/ehrbase/ehrbase/issues/50)
 - Fixed null pointer exceptions that could occur in persistent compositions
 
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.10.0...HEAD
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/ehrbase/ehrbase/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/ehrbase/ehrbase/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/ehrbase/ehrbase/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/ehrbase/ehrbase/releases/tag/v0.9.0

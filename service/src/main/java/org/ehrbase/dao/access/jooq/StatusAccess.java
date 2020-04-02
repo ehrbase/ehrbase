@@ -41,6 +41,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jooq.DSLContext;
 
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -120,12 +121,21 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
     }
 
     public static I_StatusAccess retrieveInstanceByEhrId(I_DomainAccess domainAccess, UUID ehrId) {
-        StatusRecord record = domainAccess.getContext().fetchOne(STATUS, STATUS.EHR_ID.eq(ehrId));
+        try {
+            StatusRecord record = domainAccess.getContext().fetchOne(STATUS, STATUS.EHR_ID.eq(ehrId));
 
-        if (record == null)
-            return null;
+            if (record == null)
+                return null;
 
-        return createStatusAccessForRetrieval(domainAccess, record);
+            return createStatusAccessForRetrieval(domainAccess, record);
+        }
+        catch (Exception e){
+            if (e instanceof SQLException){
+                //retrieve the cause and use the cause
+                throw new IllegalArgumentException(e.getCause().getMessage());
+            }
+        }
+        return null;
     }
 
     /**
