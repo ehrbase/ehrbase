@@ -638,8 +638,10 @@ Commit Compo
     B/700 701 702    B/700
     B/700 701 702    B/701
     B/700 701 702    B/702
-    B/800
-    B/801
+    
+    # B/800     # comment: future feature
+    # B/801     # NOTE: for details check --> https://github.com/ehrbase/project_management/issues/109#issuecomment-605975468
+                # TODO: @WLAD reactive when becomes available
     B/802
     B/803
 
@@ -669,7 +671,10 @@ Commit Compo
     D/308
     D/309
     D/310
-    D/311
+
+    # D/311     # comment: future feature
+                # NOTE: for details check -->  https://github.com/ehrbase/ehrbase/pull/179/files/4c2253f04e69c9e72986a74b464b9d20f9c43d70#r401266691
+                # TODO: @WLAD reactivate when becomes available
     D/312
     D/400
     D/401

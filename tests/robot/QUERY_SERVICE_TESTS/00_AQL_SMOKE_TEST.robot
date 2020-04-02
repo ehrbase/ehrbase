@@ -154,8 +154,6 @@ AQL LOADED DB SMOKE TEST
         # execute ad-hoc query and check result (loaded DB)  B/700_get_compositions_by_contains_entry_with_archetype_and_condition_from_all_ehrs.json    B/700.tmp.json
         # execute ad-hoc query and check result (loaded DB)  B/701_get_compositions_by_contains_entry_with_archetype_and_condition_from_all_ehrs.json    B/701.tmp.json
         # execute ad-hoc query and check result (loaded DB)  B/702_get_compositions_by_contains_entry_with_archetype_and_condition_from_all_ehrs.json    B/702.tmp.json
-        # execute ad-hoc query and check result (loaded DB)  B/800_query.tmp.json    B/800.tmp.json    # GITHUB ISSUE #109
-        # execute ad-hoc query and check result (loaded DB)  B/801_query.tmp.json    B/801.tmp.json    # GITHUB ISSUE #109
         # execute ad-hoc query and check result (loaded DB)  B/802_query.tmp.json    B/802.tmp.json
         # execute ad-hoc query and check result (loaded DB)  B/803_query.tmp.json    B/803.tmp.json
         
@@ -171,7 +169,6 @@ AQL LOADED DB SMOKE TEST
         # execute ad-hoc query and check result (loaded DB)  D/308_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/308.tmp.json
         # execute ad-hoc query and check result (loaded DB)  D/309_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/309.tmp.json
         # execute ad-hoc query and check result (loaded DB)  D/310_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/310.tmp.json
-        # execute ad-hoc query and check result (loaded DB)  D/311_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/311.tmp.json
         # execute ad-hoc query and check result (loaded DB)  D/312_select_data_values_from_all_ehrs_contains_composition_with_archetype_top_5.json    D/312.tmp.json
         # execute ad-hoc query and check result (loaded DB)  D/400_query.tmp.json    D/400.tmp.json   
         # execute ad-hoc query and check result (loaded DB)  D/401_query.tmp.json    D/401.tmp.json
@@ -185,6 +182,8 @@ AQL LOADED DB SMOKE TEST
         # execute ad-hoc query and check result (loaded DB)  D/503_query.tmp.json    D/503.tmp.json
 
         ## FUTURE FEATURE: DON'T USE YET!
+            # execute ad-hoc query and check result (loaded DB)  B/800_query.tmp.json    B/800.tmp.json    # GITHUB ISSUE #109
+            # execute ad-hoc query and check result (loaded DB)  B/801_query.tmp.json    B/801.tmp.json    # GITHUB ISSUE #109
             # execute ad-hoc query and check result (loaded DB)  C/100_query.tmp.json    C/100.tmp.json
             # execute ad-hoc query and check result (loaded DB)  C/101_query.tmp.json    C/101.tmp.json
             # execute ad-hoc query and check result (loaded DB)  C/102_query.tmp.json    C/102.tmp.json
@@ -196,6 +195,7 @@ AQL LOADED DB SMOKE TEST
             # execute ad-hoc query and check result (loaded DB)  C/303_query.tmp.json    C/303.tmp.json
             # execute ad-hoc query and check result (loaded DB)  C/400_query.tmp.json    C/400.tmp.json
             # execute ad-hoc query and check result (loaded DB)  C/500_query.tmp.json    C/500.tmp.json
+            # execute ad-hoc query and check result (loaded DB)  D/311_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/311.tmp.json
 
     [Teardown]    Set Smoke Test Status
 
@@ -238,7 +238,7 @@ B-800 Execute Ad-Hoc Query - Get Compositions By UID
     [Documentation]     B/800: SELECT c FROM COMPOSITION c [uid/value='123::local.ehrbase.org::1']
     ...                 B/801: SELECT c FROM COMPOSITION c [uid/value=$uid]
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              109
+    [Tags]              109    future
     B/800_query.tmp.json    B/800.tmp.json
     B/801_query.tmp.json    B/801.tmp.json
     [Teardown]          TRACE GITHUB ISSUE  109  not-ready  still blocked by
@@ -286,9 +286,9 @@ D-500 Execute Ad-HOc Query - Get Data
 D-501 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              208
+    [Tags]              225
     D/501_query.tmp.json    D/501.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  208  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  225  not-ready
 
 
 CLEAN UP SUT

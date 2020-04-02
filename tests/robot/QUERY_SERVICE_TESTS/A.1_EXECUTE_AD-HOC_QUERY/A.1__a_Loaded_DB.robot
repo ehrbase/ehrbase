@@ -280,7 +280,7 @@ B-800 Execute Ad-Hoc Query - Get Compositions By UID
     [Documentation]     B/800: SELECT c FROM COMPOSITION c [uid/value='123::local.ehrbase.org::1']
     ...                 B/801: SELECT c FROM COMPOSITION c [uid/value=$uid]
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              109
+    [Tags]              109    future
     B/800_query.tmp.json    B/800.tmp.json
     B/801_query.tmp.json    B/801.tmp.json
     [Teardown]          TRACE GITHUB ISSUE  109  not-ready  still blocked by
@@ -395,7 +395,7 @@ D-310 Execute Ad-HOc Query - Get Data
 D-311 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              205
+    [Tags]              future
     D/311_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/311.tmp.json
     [Teardown]          TRACE GITHUB ISSUE  205  not-ready
 
@@ -466,9 +466,9 @@ D-500 Execute Ad-HOc Query - Get Data
 D-501 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              208
+    [Tags]              225
     D/501_query.tmp.json    D/501.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  208  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  225  not-ready
 
 
 D-502 Execute Ad-HOc Query - Get Data

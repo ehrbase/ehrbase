@@ -329,9 +329,6 @@ MF-021 - Create new EHR w/ body: valid ehr_status w/ o.d.
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/004_ehr_status_with_other_details_item_single.json
     POST /ehr    ${body}
-
-        TRACE GITHUB ISSUE  162  not-ready
-
     Integer    response status    201
 
 
@@ -384,8 +381,6 @@ MF-024 - Create new EHR w/ empty subject (POST /ehr variants)
     ${EMPTY}   false           ${EMPTY}       201
     ${EMPTY}   false           true           201
     ${EMPTY}   false           false          201
-
-    [Teardown]          TRACE GITHUB ISSUE  160  not-ready
 
 
 MF-025 - Create new EHR w/ invalid subject (POST /ehr variants)
@@ -451,8 +446,6 @@ MF-032 - Create new EHR w/ invalid ehr_id (PUT /ehr/ehr_id variants)
     1234567   ${EMPTY}   ${EMPTY}        true           400
     .......   ${EMPTY}   ${EMPTY}        false          400
     0000000   ${EMPTY}   false           ${EMPTY}       400
-    # TODO: Modify the next line since spring security remarks usage of % in request urls
-   # %%%%%%%   ${EMPTY}   true            ${EMPTY}       400
 
 
 MF-033 - Create new EHR w/ given ehr_id (w/o Prefer header)
@@ -676,9 +669,6 @@ MF-053 - Create new EHR w/ given ehr_id w/ body: valid ehr_status w/ o.d.
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/004_ehr_status_with_other_details_item_single.json
     PUT /ehr/$ehr_id    body=${body}
-
-        TRACE GITHUB ISSUE  162  not-ready
-
     Integer    response status    201
 
 
