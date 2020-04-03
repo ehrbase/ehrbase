@@ -19,30 +19,6 @@ ${compo data sets}    ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/quer
 
 
 *** Test Cases ***
-BUG-111 - Temp Test Case For Bug Resolution
-    [Documentation]     TEMP TC! BLOCKS "B-400 Execute Ad-Hoc Query - Get Composition(s)"
-    ...                 TODO: @WLAD REMOVE AS SOON AS BUG IS FIXED!
-    [Tags]              111    not-ready
-
-    upload OPT    all_types/Test_all_types.opt
-    prepare new request session    Prefer=return=representation
-    create new EHR with ehr_status    ${ehr data sets}/ehr_status_01.json
-    Integer    response status    201
-    extract ehr_id from response (JSON)
-
-    Log    NEXT STEP FAILS
-    Commit Compo    1    1    ${compo data sets}/all_types.composition.json
-
-    [Teardown]          Run Keywords
-                        ...    db_keywords.Delete All Templates
-                        ...    db_keywords.Delete All EHR Records
-
-
-
-
-
-
-
 AQL LOADED DB SMOKE TEST
     [Tags]  SMOKE
 
@@ -74,6 +50,7 @@ AQL LOADED DB SMOKE TEST
         Commit Compo     3    1    ${compo data sets}/minimal_instruction_1.composition.json
         Commit Compo     4    1    ${compo data sets}/minimal_observation_1.composition.json
         Commit Compo     5    1    ${compo data sets}/minimal_action2_1.composition.json
+        Commit Compo     6    1    ${compo data sets}/all_types.composition.json
 
         #///////////////////////////////////////////////////
         #//                                              ///
@@ -81,26 +58,24 @@ AQL LOADED DB SMOKE TEST
         #//                                              ///
         #///////////////////////////////////////////////////
 
-        # Commit Compo    6    1    ${compo data sets}/minimal_admin_2.composition.json
-        # Commit Compo    7    1    ${compo data sets}/minimal_admin_3.composition.json
+        # Commit Compo    7    1    ${compo data sets}/minimal_admin_2.composition.json
+        # Commit Compo    8    1    ${compo data sets}/minimal_admin_3.composition.json
 
-        # Commit Compo    8    1    ${compo data sets}/minimal_evaluation_2.composition.json
-        # Commit Compo    9    1    ${compo data sets}/minimal_evaluation_3.composition.json
-        # Commit Compo   10    1    ${compo data sets}/minimal_evaluation_4.composition.json
+        # Commit Compo    9    1    ${compo data sets}/minimal_evaluation_2.composition.json
+        # Commit Compo   10    1    ${compo data sets}/minimal_evaluation_3.composition.json
+        # Commit Compo   11    1    ${compo data sets}/minimal_evaluation_4.composition.json
 
-        # Commit Compo   11    1    ${compo data sets}/minimal_instruction_2.composition.json
-        # Commit Compo   12    1    ${compo data sets}/minimal_instruction_3.composition.json
-        # Commit Compo   13    1    ${compo data sets}/minimal_instruction_4.composition.json
+        # Commit Compo   12    1    ${compo data sets}/minimal_instruction_2.composition.json
+        # Commit Compo   13    1    ${compo data sets}/minimal_instruction_3.composition.json
+        # Commit Compo   14    1    ${compo data sets}/minimal_instruction_4.composition.json
 
-        # Commit Compo   14    1    ${compo data sets}/minimal_observation_2.composition.json
-        # Commit Compo   15    1    ${compo data sets}/minimal_observation_3.composition.json
-        # Commit Compo   16    1    ${compo data sets}/minimal_observation_4.composition.json
+        # Commit Compo   15    1    ${compo data sets}/minimal_observation_2.composition.json
+        # Commit Compo   16    1    ${compo data sets}/minimal_observation_3.composition.json
+        # Commit Compo   17    1    ${compo data sets}/minimal_observation_4.composition.json
 
-        # Commit Compo   17    1    ${compo data sets}/minimal_action2_2.composition.json
-        # Commit Compo   18    1    ${compo data sets}/minimal_action2_3.composition.json
+        # Commit Compo   18    1    ${compo data sets}/minimal_action2_2.composition.json
+        # Commit Compo   19    1    ${compo data sets}/minimal_action2_3.composition.json
 
-        # # FAILS - GITHUB #111
-        # Commit Compo    19    1    ${compo data sets}/all_types.composition.json
 
     # COMMENT: QUERY EXECUTION
         #////////////////////////////////////////////////////////////////
@@ -142,7 +117,7 @@ AQL LOADED DB SMOKE TEST
         # execute ad-hoc query and check result (loaded DB)  B/103_get_compositions_within_timewindow.json    B/103.tmp.json
         # execute ad-hoc query and check result (loaded DB)  B/200_query.tmp.json    B/200.tmp.json
         # execute ad-hoc query and check result (loaded DB)  B/300_get_compositions_with_archetype_from_all_ehrs.json    B/300.tmp.json
-# FAILS # execute ad-hoc query and check result (loaded DB)  B/400_get_compositions_contains_section_with_archetype_from_all_ehrs.json    B/400.tmp.json
+        # execute ad-hoc query and check result (loaded DB)  B/400_get_compositions_contains_section_with_archetype_from_all_ehrs.json    B/400.tmp.json
         # execute ad-hoc query and check result (loaded DB)  B/500_get_compositions_by_contains_entry_of_type_from_all_ehrs.json    B/500.tmp.json
         # execute ad-hoc query and check result (loaded DB)  B/501_get_compositions_by_contains_entry_of_type_from_all_ehrs.json    B/501.tmp.json
         # execute ad-hoc query and check result (loaded DB)  B/502_get_compositions_by_contains_entry_of_type_from_all_ehrs.json    B/502.tmp.json
@@ -154,8 +129,6 @@ AQL LOADED DB SMOKE TEST
         # execute ad-hoc query and check result (loaded DB)  B/700_get_compositions_by_contains_entry_with_archetype_and_condition_from_all_ehrs.json    B/700.tmp.json
         # execute ad-hoc query and check result (loaded DB)  B/701_get_compositions_by_contains_entry_with_archetype_and_condition_from_all_ehrs.json    B/701.tmp.json
         # execute ad-hoc query and check result (loaded DB)  B/702_get_compositions_by_contains_entry_with_archetype_and_condition_from_all_ehrs.json    B/702.tmp.json
-        # execute ad-hoc query and check result (loaded DB)  B/800_query.tmp.json    B/800.tmp.json    # GITHUB ISSUE #109
-        # execute ad-hoc query and check result (loaded DB)  B/801_query.tmp.json    B/801.tmp.json    # GITHUB ISSUE #109
         # execute ad-hoc query and check result (loaded DB)  B/802_query.tmp.json    B/802.tmp.json
         # execute ad-hoc query and check result (loaded DB)  B/803_query.tmp.json    B/803.tmp.json
         
@@ -171,7 +144,6 @@ AQL LOADED DB SMOKE TEST
         # execute ad-hoc query and check result (loaded DB)  D/308_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/308.tmp.json
         # execute ad-hoc query and check result (loaded DB)  D/309_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/309.tmp.json
         # execute ad-hoc query and check result (loaded DB)  D/310_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/310.tmp.json
-        # execute ad-hoc query and check result (loaded DB)  D/311_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/311.tmp.json
         # execute ad-hoc query and check result (loaded DB)  D/312_select_data_values_from_all_ehrs_contains_composition_with_archetype_top_5.json    D/312.tmp.json
         # execute ad-hoc query and check result (loaded DB)  D/400_query.tmp.json    D/400.tmp.json   
         # execute ad-hoc query and check result (loaded DB)  D/401_query.tmp.json    D/401.tmp.json
@@ -185,6 +157,8 @@ AQL LOADED DB SMOKE TEST
         # execute ad-hoc query and check result (loaded DB)  D/503_query.tmp.json    D/503.tmp.json
 
         ## FUTURE FEATURE: DON'T USE YET!
+            # execute ad-hoc query and check result (loaded DB)  B/800_query.tmp.json    B/800.tmp.json    # GITHUB ISSUE #109
+            # execute ad-hoc query and check result (loaded DB)  B/801_query.tmp.json    B/801.tmp.json    # GITHUB ISSUE #109
             # execute ad-hoc query and check result (loaded DB)  C/100_query.tmp.json    C/100.tmp.json
             # execute ad-hoc query and check result (loaded DB)  C/101_query.tmp.json    C/101.tmp.json
             # execute ad-hoc query and check result (loaded DB)  C/102_query.tmp.json    C/102.tmp.json
@@ -196,6 +170,7 @@ AQL LOADED DB SMOKE TEST
             # execute ad-hoc query and check result (loaded DB)  C/303_query.tmp.json    C/303.tmp.json
             # execute ad-hoc query and check result (loaded DB)  C/400_query.tmp.json    C/400.tmp.json
             # execute ad-hoc query and check result (loaded DB)  C/500_query.tmp.json    C/500.tmp.json
+            # execute ad-hoc query and check result (loaded DB)  D/311_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/311.tmp.json
 
     [Teardown]    Set Smoke Test Status
 
@@ -229,16 +204,16 @@ B-400 Execute Ad-Hoc Query - Get Composition(s)
     [Documentation]     NOTE: activate commit of "all_types.composition.json"
     ...                       in PRECONDITIONS step to make this test work!
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              111    TODO
+    [Tags]              227
     B/400_get_compositions_contains_section_with_archetype_from_all_ehrs.json    B/400.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  111  not-ready  BLOCKED BY
+    [Teardown]          TRACE GITHUB ISSUE  227  not-ready
 
 
 B-800 Execute Ad-Hoc Query - Get Compositions By UID
     [Documentation]     B/800: SELECT c FROM COMPOSITION c [uid/value='123::local.ehrbase.org::1']
     ...                 B/801: SELECT c FROM COMPOSITION c [uid/value=$uid]
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              109
+    [Tags]              109    future
     B/800_query.tmp.json    B/800.tmp.json
     B/801_query.tmp.json    B/801.tmp.json
     [Teardown]          TRACE GITHUB ISSUE  109  not-ready  still blocked by
@@ -286,9 +261,9 @@ D-500 Execute Ad-HOc Query - Get Data
 D-501 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              208
+    [Tags]              225
     D/501_query.tmp.json    D/501.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  208  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  225  not-ready
 
 
 CLEAN UP SUT

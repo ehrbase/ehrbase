@@ -492,6 +492,7 @@ Populate SUT with Test-Data and Prepare Expected Results
     Commit Compo     5    ${ehr_index}    ${compo data sets}/minimal_evaluation_2.composition.json
     Commit Compo     6    ${ehr_index}    ${compo data sets}/minimal_evaluation_3.composition.json
     Commit Compo     7    ${ehr_index}    ${compo data sets}/minimal_evaluation_4.composition.json
+    Commit Compo     8    ${ehr_index}    ${compo data sets}/all_types.composition.json
 
     Commit Compo     9    ${ehr_index}    ${compo data sets}/minimal_instruction_1.composition.json
     Commit Compo    10    ${ehr_index}    ${compo data sets}/minimal_instruction_2.composition.json
@@ -507,8 +508,6 @@ Populate SUT with Test-Data and Prepare Expected Results
     Commit Compo    18    ${ehr_index}    ${compo data sets}/minimal_action2_2.composition.json
     Commit Compo    19    ${ehr_index}    ${compo data sets}/minimal_action2_3.composition.json
 
-    # # FAILS - GITHUB #111
-    # Commit Compo    8    ${ehr_index}    ${compo data sets}/all_types.composition.json
 
 
 Create EHR Record On The Server
@@ -629,6 +628,7 @@ Commit Compo
     B/100
     B/200
     B/300
+    B/400
     B/500
     B/501
     B/502
@@ -638,8 +638,10 @@ Commit Compo
     B/700 701 702    B/700
     B/700 701 702    B/701
     B/700 701 702    B/702
-    B/800
-    B/801
+    
+    # B/800     # comment: future feature
+    # B/801     # NOTE: for details check --> https://github.com/ehrbase/project_management/issues/109#issuecomment-605975468
+                # TODO: @WLAD reactive when becomes available
     B/802
     B/803
 
@@ -669,7 +671,10 @@ Commit Compo
     D/308
     D/309
     D/310
-    D/311
+
+    # D/311     # comment: future feature
+                # NOTE: for details check -->  https://github.com/ehrbase/ehrbase/pull/179/files/4c2253f04e69c9e72986a74b464b9d20f9c43d70#r401266691
+                # TODO: @WLAD reactivate when becomes available
     D/312
     D/400
     D/401
@@ -701,15 +706,10 @@ Commit Compo
     # ${B/103}=           Add Object To Json     ${B/103}    $.rows    ${response.body}
     #                     Output    ${B/103}     ${QUERY RESULTS LOADED DB}/B/103.tmp.json
 
-    # # FAILS because requiered compo fail to commit (all_types composition)
-    # ${B/400}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/B/400.tmp.json
-    #                     Set Suite Variable    ${B/400}    ${B/400}
-    #                     Run Keyword If    "${compo_archetype_id_value}"=="openEHR-EHR-SECTION.test_all_types.v1"    B/400
-
-    # # FAILS because requiered compos fail to commit (instruction compositions)
-    # ${B/602}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/B/602.tmp.json
-    #                     Set Suite Variable    ${B/602}    ${B/602}
-    #                     Run Keyword If    "${compo_content_archetype_node_id}"=="openEHR-EHR-INSTRUCTION.minimal.v1"    B/602
+        # # FAILS because requiered compos fail to commit (instruction compositions)
+        # ${B/602}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/B/602.tmp.json
+        #                     Set Suite Variable    ${B/602}    ${B/602}
+        #                     Run Keyword If    "${compo_content_archetype_node_id}"=="openEHR-EHR-INSTRUCTION.minimal.v1"    B/602
 
 
 
@@ -1053,6 +1053,7 @@ B/300
                         Output    ${expected}     ${QUERY RESULTS LOADED DB}/B/300.tmp.json
 
 B/400
+    Return From Keyword If    not ("${compo_archetype_id_value}"=="openEHR-EHR-COMPOSITION.test_all_types.v1")    nothing to do here!
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/B/400.tmp.json
                         Add Object To Json     ${expected}    $.rows    ${response.body}
                         Output    ${expected}     ${QUERY RESULTS LOADED DB}/B/400.tmp.json
@@ -1117,12 +1118,12 @@ B/700 701 702
 
 B/800
     Return From Keyword If    not (${compo_index}==1 and ${ehr_index}==1)    nothing to do here!
-                        # updates the query
+                        # comment: updates the query
     ${query}=           Load JSON From File    ${VALID QUERY DATA SETS}/B/800_query.tmp.json
                         Update Value To Json   ${query}    $.q    SELECT c FROM COMPOSITION c [uid/value='${compo_uid_value}']
                         Output    ${query}    ${VALID QUERY DATA SETS}/B/800_query.tmp.json
 
-                        # updates expected result set
+                        # comment: updates expected result set
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/B/800.tmp.json
                         Update Value To Json   ${expected}    $.q    SELECT c FROM COMPOSITION c [uid/value='${compo_uid_value}']
                         Update Value To Json   ${expected}    $.meta._executed_aql    SELECT c FROM COMPOSITION c [uid/value='${compo_uid_value}']
@@ -1131,12 +1132,10 @@ B/800
 
 B/801
     Return From Keyword If    not (${compo_index}==1 and ${ehr_index}==1)    nothing to do here!
-                        # updates the query
     ${query}=           Load JSON From File    ${VALID QUERY DATA SETS}/B/801_query.tmp.json
                         Update Value To Json   ${query}    $.query_parameters['uid']    ${compo_uid_value}
                         Output    ${query}    ${VALID QUERY DATA SETS}/B/801_query.tmp.json
 
-                        # updates expected result set
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/B/801.tmp.json
                         Update Value To Json   ${expected}    $.q    SELECT c FROM COMPOSITION c [uid/value='${compo_uid_value}']
                         Update Value To Json   ${expected}    $.meta._executed_aql    SELECT c FROM COMPOSITION c [uid/value='${compo_uid_value}']
@@ -1145,12 +1144,10 @@ B/801
 
 B/802
     Return From Keyword If    not (${compo_index}==1 and ${ehr_index}==1)    nothing to do here!
-                        # updates the query
     ${query}=           Load JSON From File    ${VALID QUERY DATA SETS}/B/802_query.tmp.json
                         Update Value To Json   ${query}    $.q    SELECT c FROM COMPOSITION c WHERE c/uid/value='${compo_uid_value}'
                         Output    ${query}    ${VALID QUERY DATA SETS}/B/802_query.tmp.json
 
-                        # updates expected result set
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/B/802.tmp.json
                         Update Value To Json   ${expected}    $.q    SELECT c FROM COMPOSITION c WHERE c/uid/value='${compo_uid_value}'
                         Update Value To Json   ${expected}    $.meta._executed_aql    SELECT c FROM COMPOSITION c WHERE c/uid/value='${compo_uid_value}'
@@ -1159,12 +1156,10 @@ B/802
 
 B/803
     Return From Keyword If    not (${compo_index}==1 and ${ehr_index}==1)    nothing to do here!
-                        # updates the query
     ${query}=           Load JSON From File    ${VALID QUERY DATA SETS}/B/803_query.tmp.json
                         Update Value To Json   ${query}    $.query_parameters['uid']    ${compo_uid_value}
                         Output    ${query}    ${VALID QUERY DATA SETS}/B/803_query.tmp.json
 
-                        # updates expected result set
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/B/803.tmp.json
                         Update Value To Json   ${expected}    $.q    SELECT c FROM COMPOSITION c WHERE c/uid/value='${compo_uid_value}'
                         Update Value To Json   ${expected}    $.meta._executed_aql    SELECT c FROM COMPOSITION c WHERE c/uid/value='${compo_uid_value}'
@@ -1185,12 +1180,10 @@ B/803
                                                               
 C/100
     Return From Keyword If    not (${compo_index}==1)    NOTHING TO DO HERE!
-                        # updates the query
     ${query}=           Load JSON From File    ${VALID QUERY DATA SETS}/C/100_query.tmp.json
                         Update Value To Json   ${query}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c CONTAINS ENTRY entry
                         Output    ${query}    ${VALID QUERY DATA SETS}/C/100_query.tmp.json
 
-                        # updates expected result set
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/C/100.tmp.json
                         Update Value To Json   ${expected}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c CONTAINS ENTRY entry
                         Update Value To Json   ${expected}    $.meta._executed_aql    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c CONTAINS ENTRY entry
@@ -1199,12 +1192,10 @@ C/100
 
 C/101
     Return From Keyword If    not (${compo_index}==1 and ${ehr_index}<6)    NOT IN TOP 5!
-                        # updates the query
     ${query}=           Load JSON From File    ${VALID QUERY DATA SETS}/C/101_query.tmp.json
                         Update Value To Json   ${query}    $.q    SELECT TOP 5 entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c CONTAINS ENTRY entry
                         Output    ${query}    ${VALID QUERY DATA SETS}/C/101_query.tmp.json
 
-                        # updates expected result set
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/C/101.tmp.json
                         Update Value To Json   ${expected}    $.q    SELECT TOP 5 entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c CONTAINS ENTRY entry
                         Update Value To Json   ${expected}    $.meta._executed_aql    SELECT TOP 5 entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c CONTAINS ENTRY entry
@@ -1213,12 +1204,10 @@ C/101
 
 C/102
     Return From Keyword If    not (${compo_index}==1)    NOTHING TO DO HERE!
-                        # updates the query
     ${query}=           Load JSON From File    ${VALID QUERY DATA SETS}/C/102_query.tmp.json
                         Update Value To Json   ${query}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c CONTAINS ENTRY entry ORDER BY entry/name/value ASC
                         Output    ${query}    ${VALID QUERY DATA SETS}/C/102_query.tmp.json
 
-                        # updates expected result set
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/C/102.tmp.json
                         Update Value To Json   ${expected}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c CONTAINS ENTRY entry ORDER BY entry/name/value ASC
                         Update Value To Json   ${expected}    $.meta._executed_aql    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c CONTAINS ENTRY entry ORDER BY entry/name/value ASC
@@ -1227,12 +1216,10 @@ C/102
 
 C/103
     Return From Keyword If    not (${compo_index}==1)    NOTHING TO DO HERE!
-                        # updates the query
     ${query}=           Load JSON From File    ${VALID QUERY DATA SETS}/C/103_query.tmp.json
                         Update Value To Json   ${query}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c CONTAINS ENTRY entry TIMEWINDOW PT12H/2019-10-24
                         Output    ${query}    ${VALID QUERY DATA SETS}/C/103_query.tmp.json
 
-                        # updates expected result set
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/C/103.tmp.json
                         Update Value To Json   ${expected}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c CONTAINS ENTRY entry TIMEWINDOW PT12H/2019-10-24
                         Update Value To Json   ${expected}    $.meta._executed_aql    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c CONTAINS ENTRY entry TIMEWINDOW PT12H/2019-10-24
@@ -1241,12 +1228,10 @@ C/103
 
 C/200
     Return From Keyword If    not (${compo_index}==1)    NOTHING TO DO HERE!
-                        # updates the query
     ${query}=           Load JSON From File    ${VALID QUERY DATA SETS}/C/200_query.tmp.json
                         Update Value To Json   ${query}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS ENTRY entry
                         Output    ${query}    ${VALID QUERY DATA SETS}/C/200_query.tmp.json
 
-                        # updates expected result set
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/C/200.tmp.json
                         Update Value To Json   ${expected}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS ENTRY entry
                         Update Value To Json   ${expected}    $.meta._executed_aql    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS ENTRY entry
@@ -1255,12 +1240,10 @@ C/200
 
 C/300
     Return From Keyword If    not (${ehr_index}==1 and "${compo_content_type}"=="OBSERVATION")    NOTHING TO DO HERE!
-                        # updates the query
     ${query}=           Load JSON From File    ${VALID QUERY DATA SETS}/C/300_query.tmp.json
                         Update Value To Json   ${query}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS OBSERVATION entry
                         Output    ${query}    ${VALID QUERY DATA SETS}/C/300_query.tmp.json
 
-                        # updates expected result set
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/C/300.tmp.json
                         Update Value To Json   ${expected}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS OBSERVATION entry
                         Update Value To Json   ${expected}    $.meta._executed_aql    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS OBSERVATION entry
@@ -1269,12 +1252,10 @@ C/300
 
 C/301
     Return From Keyword If    not (${ehr_index}==1 and "${compo_content_type}"=="EVALUATION")    NOTHING TO DO HERE!
-                        # updates the query
     ${query}=           Load JSON From File    ${VALID QUERY DATA SETS}/C/301_query.tmp.json
                         Update Value To Json   ${query}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS EVALUATION entry
                         Output    ${query}    ${VALID QUERY DATA SETS}/C/301_query.tmp.json
 
-                        # updates expected result set
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/C/301.tmp.json
                         Update Value To Json    ${expected}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS EVALUATION entry
                         Update Value To Json    ${expected}    $.meta._executed_aql    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS EVALUATION entry
@@ -1283,12 +1264,10 @@ C/301
 
 C/302
     Return From Keyword If    not (${ehr_index}==1 and "${compo_content_type}"=="INSTRUCTION")    NOTHING TO DO HERE!
-                        # updates the query
     ${query}=           Load JSON From File    ${VALID QUERY DATA SETS}/C/302_query.tmp.json
                         Update Value To Json   ${query}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS INSTRUCTION entry
                         Output    ${query}    ${VALID QUERY DATA SETS}/C/302_query.tmp.json
 
-                        # updates expected result set
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/C/302.tmp.json
                         Update Value To Json    ${expected}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS INSTRUCTION entry
                         Update Value To Json    ${expected}    $.meta._executed_aql    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS INSTRUCTION entry
@@ -1297,12 +1276,10 @@ C/302
 
 C/303
     Return From Keyword If    not (${ehr_index}==1 and "${compo_content_type}"=="ACTION")    NOTHING TO DO HERE!
-                        # updates the query
     ${query}=           Load JSON From File    ${VALID QUERY DATA SETS}/C/303_query.tmp.json
                         Update Value To Json   ${query}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS ACTION entry
                         Output    ${query}    ${VALID QUERY DATA SETS}/C/303_query.tmp.json
 
-                        # updates expected result set
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/C/303.tmp.json
                         Update Value To Json    ${expected}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS ACTION entry
                         Update Value To Json    ${expected}    $.meta._executed_aql    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS ACTION entry
@@ -1311,12 +1288,10 @@ C/303
 
 C/400
     Return From Keyword If    not ("${compo_content_archetype_node_id}"=="openEHR-EHR-OBSERVATION.minimal.v1")    NOTHING TO DO HERE!
-                        # updates the query
     ${query}=           Load JSON From File    ${VALID QUERY DATA SETS}/C/400_query.tmp.json
                         Update Value To Json   ${query}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS ENTRY entry [openEHR-EHR-OBSERVATION.minimal.v1]
                         Output    ${query}    ${VALID QUERY DATA SETS}/C/400_query.tmp.json
 
-                        # updates expected result set
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/C/400.tmp.json
                         Update Value To Json    ${expected}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS ENTRY entry [openEHR-EHR-OBSERVATION.minimal.v1]
                         Update Value To Json    ${expected}    $.meta._executed_aql    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS ENTRY entry [openEHR-EHR-OBSERVATION.minimal.v1]
@@ -1325,12 +1300,10 @@ C/400
 
 C/500
     Return From Keyword If    not ("${compo_content_archetype_node_id}"=="openEHR-EHR-OBSERVATION.minimal.v1")    NOTHING TO DO HERE!
-                        # updates the query
     ${query}=           Load JSON From File    ${VALID QUERY DATA SETS}/C/500_query.tmp.json
                         Update Value To Json   ${query}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS ENTRY entry [openEHR-EHR-OBSERVATION.minimal.v1] WHERE entry/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/value = 'first value'
                         Output    ${query}    ${VALID QUERY DATA SETS}/C/500_query.tmp.json
 
-                        # updates expected result set
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/C/500.tmp.json
                         Update Value To Json    ${expected}    $.q    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS ENTRY entry [openEHR-EHR-OBSERVATION.minimal.v1] WHERE entry/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/value = 'first value'
                         Update Value To Json    ${expected}    $.meta._executed_aql    SELECT entry FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS ENTRY entry [openEHR-EHR-OBSERVATION.minimal.v1] WHERE entry/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/value = 'first value'
