@@ -42,3 +42,14 @@ Main flow has existing COMPOSITION (JSON)
     check composition exists
 
     [Teardown]    restart SUT
+
+
+Main flow has existing COMPOSITION and works without accept header
+
+    upload OPT    minimal/minimal_observation.opt
+    create EHR
+    commit composition without accept header    minimal/minimal_observation.composition.participations.extdatetimes.xml
+    get composition by composition_uid    ${version_uid}
+    check composition exists
+
+    [Teardown]    restart SUT

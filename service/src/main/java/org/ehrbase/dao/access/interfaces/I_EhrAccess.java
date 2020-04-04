@@ -22,6 +22,8 @@
 package org.ehrbase.dao.access.interfaces;
 
 import com.nedap.archie.rm.datastructures.ItemStructure;
+import com.nedap.archie.rm.datavalues.DvCodedText;
+import com.nedap.archie.rm.datavalues.DvText;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.dao.access.jooq.EhrAccess;
@@ -161,6 +163,14 @@ public interface I_EhrAccess extends I_SimpleCRUD {
     }
 
     void setModifiable(Boolean modifiable);
+
+    void setArchetypeNodeId(String archetypeNodeId);
+
+    String getArchetypeNodeId();
+
+    void setName(DvText name);
+
+    void setName(DvCodedText name);
 
     void setQueryable(Boolean queryable);
 
