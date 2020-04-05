@@ -149,7 +149,7 @@ create new EHR (XML)
 # POST POST POST POST
 #/////////////////////
 
-validate POST response - 201 created
+validate POST response - 201 created ehr
     [Documentation]     CASE: new ehr was created.
     ...                 Request was send with `Prefer=return=representation`.
 

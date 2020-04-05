@@ -1,15 +1,19 @@
 *** Settings ***
-Documentation   Directory Integration Tests
-...
+Documentation   Alternative flow 2: update directory on non-existing EHR
+...             Preconditions:
+...                 An EHR with ehr_id does not exist.
+...             
+...             Flow:
+...                 1. Invoke the update directory service for random ehr_id
+...                 2. The service should return an error
+...                    related to the non-existent ehr_id
+...             
+...             Postconditions:
+...                 None.
 
 
 
 Resource    ${CURDIR}${/}../../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/generic_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/contribution_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/directory_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/template_opt1.4_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
 
 #Suite Setup  startup SUT
 # Test Setup  start openehr server
@@ -21,5 +25,9 @@ Force Tags    refactor
 
 
 *** Test Cases ***
-TODO: implement me!
-    THIS IS JUST A PLACEHOLDER!
+Alternative flow 2: update directory on non-existing EHR
+    [Tags]              
+
+    create fake EHR
+    update DIRECTORY - fake ehr_id (JSON)    update/2_add_subfolders.json
+    validate PUT response - 404 unknown ehr_id
