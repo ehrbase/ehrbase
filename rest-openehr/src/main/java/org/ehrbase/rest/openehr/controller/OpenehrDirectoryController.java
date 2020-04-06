@@ -19,6 +19,7 @@
 package org.ehrbase.rest.openehr.controller;
 
 import com.nedap.archie.rm.directory.Folder;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import io.swagger.annotations.*;
 import org.ehrbase.api.dto.FolderDto;
 import org.ehrbase.api.exception.InternalServerException;
@@ -116,13 +117,13 @@ public class OpenehrDirectoryController extends BaseController {
             );
         }
         // Insert New folder
-        UUID folderId = this.folderService.create(
+        ObjectVersionId folderId = this.folderService.create(
                 ehrId,
                 folder
         );
 
         // Fetch inserted folder for response data
-        Optional<FolderDto> newFolder = this.folderService.retrieve(folderId, 1, null);
+        Optional<FolderDto> newFolder = this.folderService.retrieve(extractUuidFromObjectVersionId(folderId), 1, null);
 
         if (newFolder.isEmpty()) {
             throw new InternalServerException(
@@ -488,6 +489,19 @@ public class OpenehrDirectoryController extends BaseController {
     private boolean isValidPath(String path) {
         Pattern pathPattern = Pattern.compile("^(?:/?(?:\\w+|\\s|-)*/?)+$");
         return pathPattern.matcher(path).matches();
+    }
+
+    public UUID extractUuidFromObjectVersionId(ObjectVersionId folderId) {
+
+        String value = folderId.getValue();
+        if (value == null) {
+            return null;
+        }
+        int index = value.indexOf("::");
+        if (index < 0) {
+            return UUID.fromString(value);
+        }
+        return UUID.fromString(value.substring(0, index));
     }
 }
 

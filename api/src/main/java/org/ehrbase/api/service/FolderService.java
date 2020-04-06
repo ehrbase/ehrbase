@@ -19,6 +19,7 @@
 package org.ehrbase.api.service;
 
 import com.nedap.archie.rm.directory.Folder;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import org.ehrbase.api.definitions.StructuredString;
 import org.ehrbase.api.definitions.StructuredStringFormat;
 import org.ehrbase.api.dto.FolderDto;
@@ -41,7 +42,7 @@ public interface FolderService extends BaseService {
      * @param content - {@link com.nedap.archie.rm.directory.Folder} to persist
      * @return UUID of the new created Folder from database
      */
-    UUID create(UUID ehrId, Folder content);
+    ObjectVersionId create(UUID ehrId, Folder content);
 
     /**
      * Returns a versioned folder object by target version number. If the

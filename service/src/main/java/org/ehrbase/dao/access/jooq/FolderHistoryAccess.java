@@ -23,6 +23,7 @@ import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -85,6 +86,9 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
     }
 
     /*************Data Access and modification methods*****************/
+
+    @Override
+    public ObjectVersionId create() { return null; }
 
     @Override
     public Boolean update(Timestamp transactionTime) {
