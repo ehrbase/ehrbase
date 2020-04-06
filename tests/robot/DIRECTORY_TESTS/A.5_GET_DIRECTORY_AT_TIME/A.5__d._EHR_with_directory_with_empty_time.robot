@@ -13,11 +13,6 @@ Documentation    Alternative flow 3: get directory at time on EHR with directory
 
 
 Resource    ${CURDIR}${/}../../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/generic_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/contribution_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/directory_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/template_opt1.4_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
 
 #Suite Setup  startup SUT
 # Test Setup  start openehr server
@@ -32,7 +27,6 @@ Force Tags
 Alternative flow 3: get directory at time on EHR with directory with empty time
 
     create EHR
-
+    create DIRECTORY (JSON)    empty_directory.json
     get DIRECTORY at time (JSON)    ${EMPTY}
-
     validate GET-version@time response - 200 retrieved

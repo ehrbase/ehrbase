@@ -58,13 +58,13 @@ create DIRECTORY (JSON)
                         capture point in time    of_first_version
 
 
-create DIRECTORY -w/o- (JSON)
+create DIRECTORY JSON) - w/o Prefer header
     [Arguments]         ${valid_test_data_set}
                         Set Test Variable  ${KEYWORD NAME}  CREATE DIRECTORY NO BODY (JSON)
 
                         load valid dir test-data-set    ${valid_test_data_set}
 
-                        POST /ehr/ehr_id/directory (w/o)    JSON
+                        POST /ehr/ehr_id/directory (w/ headers)    JSON
 
 
 create DIRECTORY (XML)
@@ -127,6 +127,17 @@ update DIRECTORY (JSON)
                         Set Suite Variable  ${folder_uid}  ${response.json()['uid']['value']}
                         Set Suite Variable  ${version_uid}  ${response.json()['uid']['value']}
                         Set Suite Variable  ${preceding_version_uid}  ${version_uid}
+
+                        capture point in time    of_updated_version
+
+
+update DIRECTORY (JSON) - w/o Prefer header
+    [Arguments]         ${valid_test_data_set}
+                        Set Test Variable  ${KEYWORD NAME}  UPDATE DIRECTORY 2 (JSON)
+
+                        load valid dir test-data-set    ${valid_test_data_set}
+
+                        PUT /ehr/ehr_id/directory (w/ headers)    JSON
 
                         capture point in time    of_updated_version
 
@@ -412,12 +423,12 @@ get FOLDER in DIRECTORY at version - fake version_uid/path (JSON)
 # [ HTTP POST ]
 
 POST /ehr/ehr_id/directory
-    [Arguments]         ${format}
+    [Arguments]         ${headers}
     [Documentation]     Executes HTTP method POST on /ehr/ehr_id/directory endpoint
     ...                 DEPENDENCY: the following variables in test level scope:
     ...                 `\${ehr_id}`, `\${test_data}`
 
-                        prepare new request session    ${format}
+                        prepare new request session    ${headers}
                         ...                 Prefer=return=representation
 
     ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/directory
@@ -428,15 +439,14 @@ POST /ehr/ehr_id/directory
                         Output Debug Info:  POST /ehr/ehr_id/directory
 
 
-POST /ehr/ehr_id/directory (w/o)
-    [Arguments]         ${format}
+POST /ehr/ehr_id/directory (w/ headers)
+    [Arguments]         ${headers}
     [Documentation]     Executes HTTP method POST on /ehr/ehr_id/directory endpoint
-    ...                 WITHOUT (w/o) Prefer=return=representation header
+    ...                 WITH modifiable headers. I.e. w/o headers at all.
     ...                 DEPENDENCY: the following variables in test level scope:
     ...                 `\${ehr_id}`, `\${test_data}`
 
-                        prepare new request session    ${format}
-                        ...                 Prefer=return=representation
+                        prepare new request session    ${headers}
 
     ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/directory
                         ...                 data=${test_data}
@@ -472,8 +482,6 @@ PUT /ehr/ehr_id/directory
                         ...                 Prefer=return=representation
                         ...                 If-Match=${preceding_version_uid}
 
-        TRACE GITHUB ISSUE  148  not-ready
-
     ${resp}=            Put Request        ${SUT}   /ehr/${ehr_id}/directory
                         ...                 data=${test_data}
                         ...                 headers=${headers}
@@ -482,18 +490,17 @@ PUT /ehr/ehr_id/directory
                         Output Debug Info:  PUT /ehr/ehr_id/directory
 
 
-PUT /ehr/ehr_id/directory (w/o prefer)
+PUT /ehr/ehr_id/directory (w/ headers)
     [Documentation]     Executes HTTP method PUT on /ehr/ehr_id/directory endpoint
-    ...                 WITHOUT (w/o) Prefer=return=representation header
+    ...                 WITH modifialbe header. i.e. Prefer=return=minimal or w/o any
+    ...                 headers at all.
     ...                 DEPENDENCY: the following variables in test level scope:
     ...                 `\${ehr_id}`, ${preceding_version_uid}, `\${test_data}`
 
-    [Arguments]         ${format}
+    [Arguments]         ${headers}
 
-                        prepare new request session    ${format}
+                        prepare new request session    ${headers}
                         ...                 If-Match=${preceding_version_uid}
-
-        TRACE GITHUB ISSUE  148  not-ready
 
     ${resp}=            Put Request        ${SUT}   /ehr/${ehr_id}/directory
                         ...                 data=${test_data}
@@ -597,9 +604,6 @@ GET /ehr/ehr_id/directory
                         Set Test Variable   ${response}    ${resp}
                         Output Debug Info:  GET /ehr/ehr_id/directory
 
-        TRACE GITHUB ISSUE  41  not-ready
-        ...               message=DISCOVERED ERROR: Get folder in directory version at time fails
-
 
 GET /ehr/ehr_id/directory?version_at_time
     [Documentation]     Executes HTTP method GET on given endpoint
@@ -609,9 +613,6 @@ GET /ehr/ehr_id/directory?version_at_time
     [Arguments]         ${format}
 
                         prepare new request session    ${format}
-
-        TRACE GITHUB ISSUE  41  not-ready
-        ...               message=DISCOVERED ERROR: Get folder in directory version at time fails
 
     ${resp}=            Get Request         ${SUT}   /ehr/${ehr_id}/directory?version_at_time=${version_at_time}
                         ...                 headers=${headers}
@@ -629,9 +630,6 @@ GET /ehr/ehr_id/directory?path
 
                         prepare new request session    ${format}
 
-        TRACE GITHUB ISSUE  41  not-ready
-        ...               message=DISCOVERED ERROR: Get folder in directory version at time fails
-
     ${resp}=            Get Request         ${SUT}   /ehr/${ehr_id}/directory?paht=${path}
                         ...                 headers=${headers}
 
@@ -647,9 +645,6 @@ GET /ehr/ehr_id/directory?version_at_time&path
     [Arguments]         ${format}
 
                         prepare new request session    ${format}
-
-        TRACE GITHUB ISSUE  41  not-ready
-        ...               message=DISCOVERED ERROR: Get folder in directory version at time fails
 
     ${resp}=            Get Request         ${SUT}   /ehr/${ehr_id}/directory?version_at_time=${version_at_time}&paht=${path}
                         ...                 headers=${headers}
