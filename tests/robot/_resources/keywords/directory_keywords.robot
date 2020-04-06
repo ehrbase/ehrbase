@@ -297,8 +297,6 @@ get DIRECTORY at version (JSON)
 
                         Set Test Variable  ${KEYWORD NAME}  GET DIRECTORY AT VERSION (JSON)
 
-        TRACE GITHUB ISSUE  148  not-ready
-
                         GET /ehr/ehr_id/directory/version_uid    JSON
 
 
@@ -307,8 +305,6 @@ get FOLDER in DIRECTORY at version (JSON)
                         Set Test Variable  ${KEYWORD NAME}  GET FOLDER AT VERSION (JSON)
 
                         Set Test Variable    ${path}    ${path}
-
-        TRACE GITHUB ISSUE  148  not-ready
 
                         GET /ehr/ehr_id/directory/version_uid?path    JSON
 
@@ -676,21 +672,9 @@ validate POST response - 201 created directory
     ...                 Request was send with `Prefer=return=representation`.
 
                         Should Be Equal As Strings    ${response.status_code}    201
-                        #TODO:  Should Be Equal       ${response.json()['status']}    OK / Created
-
-                        Dictionary Should Contain Key    ${response.json()}    uid
-                        Dictionary Should Contain Key    ${response.json()}    folders
-                        # Dictionary Should Contain Item    ${response.json()['folders']}    _type  FOLDER
-
-                        Dictionary Should Contain Key    ${response.headers}    Location
-                        #TODO: value of Location as per API spec:
-                        #      Location: {baseUrl}/ehr/$ehr_id/directory/version_uid
-                        #      where the last part is version_uid
-                        #      version_uid format: 8849182c-82ad-4088-a07f-48ead4180515::openEHRSys.example.com::1
-                        Dictionary Should Contain Key    ${response.headers}    ETag
-
-        TRACE GITHUB ISSUE  148  not-ready
-
+                        Dictionary Should Contain Key     ${response.json()}     uid
+                        Dictionary Should Contain Key     ${response.headers}    Location
+                        Dictionary Should Contain Key     ${response.headers}    ETag
                         Dictionary Should Contain Item    ${response.headers}    ETag  "${version_uid}"
 
 
@@ -701,10 +685,10 @@ validate POST response (w/o) - 201 created directory
                         Should Be Equal As Strings    ${response.status_code}    201
 
                         Log    ${response.json()['status']}
-                        #TODO:  Should Be Equal          ${response.json()['status']}    OK / Created
-                        Dictionary Should Contain Key    ${response.headers}    Location
-                        Dictionary Should Contain Key    ${response.headers}    ETag
-                        # TODO: Dictionary Should Contain Item    ${response.headers}    ETag  ${version_uid}
+
+                        Dictionary Should Contain Key     ${response.headers}    Location
+                        Dictionary Should Contain Key     ${response.headers}    ETag
+                        Dictionary Should Contain Item    ${response.headers}    ETag  "${version_uid}"
 
 
 validate POST response - 400 invalid ehr_id
@@ -743,7 +727,7 @@ validate POST response - 409 folder already exists
     [Documentation]     CASE: EHR with `ehr_id` already has a directory FOLDER.
     ...                 NOTE: @PABLO this is not (yet) in the SPEC
 
-        TRACE GITHUB ISSUE  NO-ISSUI-ID  not-ready
+        TRACE GITHUB ISSUE  231  not-ready
 
                         Should Be Equal As Strings    ${response.status_code}    409
 
@@ -883,13 +867,9 @@ validate GET-@version response - 200 retrieved
     [Arguments]         ${folder_name}
 
                         Should Be Equal As Strings    ${response.status_code}    200
-
-                        #TODO:  Should Be Equal    ${response.json()['status']}    OK / Retrieved
-
                         Dictionary Should Contain Key    ${response.json()}    uid
-                        Dictionary Should Contain Key    ${response.json()}    folders
                         Dictionary Should Contain Item    ${response.json()['name']}    value    ${folder_name}
-                        # Dictionary Should Contain Item    ${response.json()['folder']}    _type  FOLDER
+
 
 
 validate GET-@version response - 400 bad request
@@ -942,24 +922,14 @@ validate GET response - 200 retrieved
     ...                 without the optional URI parameters `version_at_time` and `path`.
 
                         Should Be Equal As Strings    ${response.status_code}    200
-
-                        #TODO:  Should Be Equal    ${response.json()['status']}    OK / Retrieved
-
                         Dictionary Should Contain Key    ${response.json()}    uid
-                        Dictionary Should Contain Key    ${response.json()}    folders
-                        # Dictionary Should Contain Item    ${response.json()['folder']}    _type  FOLDER
 
 
 validate GET-version@time response - 200 retrieved
     [Documentation]     CASE: requested directory FOLDER is successfully retrieved.
 
                         Should Be Equal As Strings    ${response.status_code}    200
-
-                        #TODO:  Should Be Equal    ${response.json()['status']}    OK / Retrieved
-
                         Dictionary Should Contain Key    ${response.json()}    uid
-                        Dictionary Should Contain Key    ${response.json()}    folders
-                        # Dictionary Should Contain Item    ${response.json()['folder']}    _type  FOLDER
 
 
 validate GET-version@time response - 204 folder has been deleted
