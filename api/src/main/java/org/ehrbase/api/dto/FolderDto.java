@@ -23,6 +23,7 @@ import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.UIDBasedId;
+import org.ehrbase.api.util.VersionUidHelper;
 
 import java.util.List;
 
@@ -33,13 +34,15 @@ public class FolderDto {
     private final List<ObjectRef> items;
     private final DvText name;
     private final ItemStructure details;
+    private final VersionUidHelper versionUidHelper;
 
-    public FolderDto(Folder folder) {
+    public FolderDto(Folder folder, VersionUidHelper versionUidHelper) {
         this.uid = folder.getUid();
         this.folders = folder.getFolders();
         this.items = folder.getItems();
         this.name = folder.getName();
         this.details = folder.getDetails();
+        this.versionUidHelper = versionUidHelper;
     }
 
     public List<Folder> getFolders() {
@@ -60,5 +63,8 @@ public class FolderDto {
 
     public ItemStructure getDetails() {
         return details;
+    }
+    public VersionUidHelper getVersionUidHelper() {
+        return versionUidHelper;
     }
 }

@@ -34,6 +34,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.util.UriUtils;
 
 import javax.servlet.http.HttpServletRequest;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -207,6 +208,13 @@ public abstract class BaseController {
         return new ResponseEntity<>(error, status);
     }
 
+    protected ResponseEntity<Map<String, String>> createErrorResponse(String message, HttpStatus status, HttpHeaders headers) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", message);
+        error.put("status", status.getReasonPhrase());
+        return new ResponseEntity<>(error, headers, status);
+    }
+
     /**
      * Extracts the UUID base from a versioned UID. Or, if
      *
@@ -358,7 +366,15 @@ public abstract class BaseController {
      */
     @ExceptionHandler(PreconditionFailedException.class)
     public ResponseEntity<Map<String, String>> restErrorHandler(PreconditionFailedException e) {
-        return createErrorResponse(e.getMessage(), HttpStatus.PRECONDITION_FAILED);
+
+        if (e.getUrl() == null || e.getCurrentVersionUid() == null) {
+            return createErrorResponse(e.getMessage(), HttpStatus.PRECONDITION_FAILED);
+        } else {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setETag("\"" + e.getCurrentVersionUid() + "\"");
+            headers.setLocation(URI.create(e.getUrl()));
+            return createErrorResponse(e.getMessage(), HttpStatus.PRECONDITION_FAILED, headers);
+        }
     }
 
     /**

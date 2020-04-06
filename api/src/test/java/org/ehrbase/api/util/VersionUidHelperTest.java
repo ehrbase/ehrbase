@@ -1,6 +1,7 @@
-package org.ehrbase.rest.openehr.util;
+package org.ehrbase.api.util;
 
 import java.util.UUID;
+
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -8,11 +9,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class VersionUidHelperTest {
 
-    static final String validVersionUid = "1234abcd-5678-ef12-ab34-cd56ef78ab90::test.ehrbase.org::10";
+    static final String VALID_VERSION_UID = "1234abcd-5678-ef12-ab34-cd56ef78ab90::test.ehrbase.org::10";
 
     @Test
     public void acceptsValidVersionUid() {
-        assertThat(VersionUidHelper.isVersionUid(validVersionUid)).isTrue();
+        assertThat(VersionUidHelper.isVersionUid(VALID_VERSION_UID)).isTrue();
     }
 
     @Test
@@ -60,18 +61,18 @@ public class VersionUidHelperTest {
     @Test
     public void extractsUUID() {
         UUID expected = UUID.fromString("1234abcd-5678-ef12-ab34-cd56ef78ab90");
-        assertThat(VersionUidHelper.extractUUID(validVersionUid)).isEqualTo(expected);
+        assertThat(VersionUidHelper.extractUUID(VALID_VERSION_UID)).isEqualTo(expected);
     }
 
     @Test
     public void extractsSystemId() {
         String expected = "test.ehrbase.org";
-        assertThat(VersionUidHelper.extractSystemId(validVersionUid)).isEqualTo(expected);
+        assertThat(VersionUidHelper.extractSystemId(VALID_VERSION_UID)).isEqualTo(expected);
     }
 
     @Test
     public void extractsVersion() {
         int expected = 10;
-        assertThat(VersionUidHelper.extractVersion(validVersionUid)).isEqualTo(expected);
+        assertThat(VersionUidHelper.extractVersion(VALID_VERSION_UID)).isEqualTo(expected);
     }
 }

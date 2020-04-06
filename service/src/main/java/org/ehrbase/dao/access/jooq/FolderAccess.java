@@ -33,19 +33,13 @@ import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_FolderAccess;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
-import org.ehrbase.dao.access.util.FolderUtils;
 import org.ehrbase.jooq.binding.OtherDetailsJsonbBinder;
 import org.ehrbase.jooq.binding.SysPeriodBinder;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.tables.FolderHierarchy;
-import org.ehrbase.jooq.pg.tables.records.FolderHierarchyRecord;
-import org.ehrbase.jooq.pg.tables.records.FolderItemsRecord;
-import org.ehrbase.jooq.pg.tables.records.FolderRecord;
-import org.ehrbase.jooq.pg.tables.records.ObjectRefRecord;
+import org.ehrbase.jooq.pg.tables.records.*;
 import org.joda.time.DateTime;
 import org.jooq.*;
-import org.jooq.impl.DSL;
-import org.postgresql.util.PGobject;
 
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
@@ -749,6 +743,46 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         return domainAccess
                 .getContext()
                 .fetchExists(FOLDER_HISTORY, FOLDER_HISTORY.ID.eq(folderId));
+    }
+
+    /**
+     * Evaluates the version for a folder at a given timestamp by counting all rows from folder history with root
+     * folder id and a sys_period timestamp before or at given timestamp value as also from the current folder entry
+     * if the sys_period provided is also newer than the sys_period of the current folder.
+     *
+     * @param domainAccess - Database access instance
+     * @param rootFolderId - Root folder id
+     * @param sysTransaction - Timestamp to get version for
+     * @return - Version number that has been current at that point in time
+     */
+    public static int getVersionNumberAtTime(I_DomainAccess domainAccess, final UUID rootFolderId, final Timestamp sysTransaction) {
+
+        // Check if the timestamp also includes the current folder
+        int folderCount = domainAccess
+                .getContext()
+                .fetchCount(FOLDER, FOLDER.ID.equal(rootFolderId).and(FOLDER.SYS_TRANSACTION.lessOrEqual(sysTransaction)));
+
+        // Count all history entries for the root folder
+        int folderHistoryCount = domainAccess
+                .getContext()
+                .fetchCount(FOLDER_HISTORY, FOLDER_HISTORY.ID.equal(rootFolderId).and(FOLDER_HISTORY.SYS_TRANSACTION.lessOrEqual(sysTransaction)));
+
+        if (folderHistoryCount <= 0) {
+            // No history entries found
+
+            if (folderCount <= 0) {
+                // Also no current entries
+                throw new ObjectNotFoundException(
+                        "directory",
+                        "No folder found for " + rootFolderId + " at time " + sysTransaction.toLocalDateTime().toString()
+                );
+            }
+
+            return folderCount;
+        }
+
+        // If we found entries in both tables return the sum. If there is no current entry the count will be 0
+        return folderHistoryCount + folderCount;
     }
 
     /****Getters and Setters for the FolderRecord to store****/
