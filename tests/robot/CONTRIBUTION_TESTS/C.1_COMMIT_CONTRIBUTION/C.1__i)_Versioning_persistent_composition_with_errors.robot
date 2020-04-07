@@ -70,8 +70,6 @@ Alternative flow 8: commit CONTRIBUTIONS for versioning a persistent COMPOSITION
 
     commit invalid CONTRIBUTION - with preceding_version_uid (JSON)    minimal_persistent/minimal_persistent.contribution.modification.json
 
-        TRACE GITHUB ISSUE  72  not-ready
-
     check response: is negative indicating wrong change_type
 
     [Teardown]    restart SUT
