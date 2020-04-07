@@ -75,7 +75,7 @@ public class FolderServiceImp extends BaseService implements FolderService {
      * {@inheritDoc}
      */
     @Override
-    public UUID create(UUID ehrId, Folder content) {
+    public ObjectVersionId create(UUID ehrId, Folder content) {
 
         I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
         if (ehrAccess == null) {
@@ -101,8 +101,8 @@ public class FolderServiceImp extends BaseService implements FolderService {
                 ehrId,
                 contributionAccess
         );
-        UUID folderId = folderAccess.commit(new Timestamp(currentTimeStamp.getMillis()));
-        ehrAccess.setDirectory(folderId);
+        ObjectVersionId folderId = folderAccess.create();
+        ehrAccess.setDirectory(FolderUtils.extractUuidFromObjectVersionId(folderId));
         ehrAccess.update(getUserUuid(), getSystemUuid(), null, I_ConceptAccess.ContributionChangeType.MODIFICATION, EhrServiceImp.DESCRIPTION);
         return folderId;
     }

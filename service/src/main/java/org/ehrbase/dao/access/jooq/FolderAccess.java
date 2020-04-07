@@ -20,9 +20,7 @@ package org.ehrbase.dao.access.jooq;
 
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.directory.Folder;
-import com.nedap.archie.rm.support.identification.ObjectId;
-import com.nedap.archie.rm.support.identification.ObjectRef;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import com.nedap.archie.rm.support.identification.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,10 +38,12 @@ import org.ehrbase.jooq.pg.tables.FolderHierarchy;
 import org.ehrbase.jooq.pg.tables.records.*;
 import org.joda.time.DateTime;
 import org.jooq.*;
+import org.openehr.schemas.v1.impl.UIDBASEDIDImpl;
 
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 import java.util.*;
+import java.util.UUID;
 
 import static org.ehrbase.jooq.pg.Tables.*;
 import static org.jooq.impl.DSL.*;
@@ -119,6 +119,14 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         this.delete(folderRecord.getId());
 
         return this.update(transactionTime, true, true, null, old_contribution, new_contribution);
+    }
+
+    public ObjectVersionId create() {
+        return new ObjectVersionId(
+                this.commit().toString()
+                + "::" + getServerConfig().getNodename()
+                + "::1"
+        );
     }
 
     private Boolean update(final Timestamp transactionTime,

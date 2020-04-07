@@ -11,9 +11,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ### Changed
+
+#### DIRECTORY
+
+- PreconditionFailed error response contains proper ETag and Location headers (see: https://github.com/ehrbase/ehrbase/pull/183)
+
+#### Robot Tests
+
 - Update of AQL-Query test suite (see: https://github.com/ehrbase/ehrbase/pull/179)
 
 ### Fixed
+
+#### DIRECTORY
+
+- Directory IDs from input path or If-Match header must now be in version_uid format (see https://github.com/ehrbase/ehrbase/pull/183)
+- Folder IDs inside body are now parsed correctly (see: https://github.com/ehrbase/ehrbase/pull/183)
+
+#### Robot Tests
 
 - Added validation checking for other_details and ehr_status. (see: https://github.com/ehrbase/ehrbase/pull/207)
 - Supports archetype_node_id and name for EHR_STATUS (see: https://github.com/ehrbase/ehrbase/pull/207)

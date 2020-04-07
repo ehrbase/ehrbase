@@ -18,6 +18,7 @@
 
 package org.ehrbase.dao.access.interfaces;
 
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import org.ehrbase.dao.access.jooq.FolderAccess;
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.directory.Folder;
@@ -93,6 +94,14 @@ public interface I_FolderAccess extends I_SimpleCRUD {
     static I_FolderAccess retrieveInstanceForExistingFolder(I_DomainAccess domainAccess, UUID folderId, Timestamp timestamp){
         return FolderHistoryAccess.retrieveInstanceForExistingFolder(domainAccess, folderId, timestamp);
     }
+
+    /**
+     * Creates a new directory object with a given structure and returns a valid Object_Version_Id containing the given
+     * system identifier and version part.
+     *
+     * @return Object_Version_Id for new root directory folder
+     */
+    ObjectVersionId create();
 
     /**
      * Additional commit method to store a new entry of folder to the database and get all of inserted sub folders

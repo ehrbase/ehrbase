@@ -2,6 +2,7 @@ package org.ehrbase.dao.access.util;
 
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.directory.Folder;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.dao.access.interfaces.I_FolderAccess;
 import org.ehrbase.serialisation.RawJson;
@@ -11,6 +12,7 @@ import org.postgresql.util.PGobject;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 public class FolderUtils {
 
@@ -94,6 +96,19 @@ public class FolderUtils {
                 }
             });
         }
+    }
+
+    public static UUID extractUuidFromObjectVersionId(ObjectVersionId folderId) {
+
+        String value = folderId.getValue();
+        if (value == null) {
+            return null;
+        }
+        int index = value.indexOf("::");
+        if (index < 0) {
+            return UUID.fromString(value);
+        }
+        return UUID.fromString(value.substring(0, index));
     }
 
     public static ItemStructure parseFromJSONB(JSONB dbObject) {
