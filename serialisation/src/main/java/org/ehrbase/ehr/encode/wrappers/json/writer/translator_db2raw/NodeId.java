@@ -33,8 +33,14 @@ public class NodeId {
     }
 
     public String predicate() {
+        int closingIndex = key.length();
+        if (key.contains(" and name/value"))
+            closingIndex = key.indexOf(" and name/value");
+        else if (key.contains("]"))
+            closingIndex = key.indexOf("]");
+
         if (key.contains("[") && key.contains("]"))
-            return key.substring(key.indexOf("[") + 1, key.indexOf("]"));
+            return key.substring(key.indexOf("[") + 1, closingIndex);
         return key;
     }
 }
