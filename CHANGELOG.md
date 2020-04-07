@@ -33,6 +33,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Supports archetype_node_id and name for EHR_STATUS (see: https://github.com/ehrbase/ehrbase/pull/207)
 - fixes bad canonical encoding for observation/data/origin (see: https://github.com/ehrbase/ehrbase/pull/213)
 - POST without accept header for ehr, composition and contribution endpoints (see: https://github.com/ehrbase/ehrbase/pull/199)
+- PreconditionFailed error response contains proper ETag and Location headers (see: https://github.com/ehrbase/ehrbase/pull/183)
+- Directory IDs from input path or If-Match header must now be in version_uid format (see https://github.com/ehrbase/ehrbase/pull/183)
+- Folder IDs inside body are now parsed correctly (see: https://github.com/ehrbase/ehrbase/pull/183)
+
+
 
 ## [0.12.0] (alpha)
 
