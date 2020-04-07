@@ -213,12 +213,12 @@ public class ContributionServiceImp extends BaseService implements ContributionS
                     throw new InvalidApiParameterException("Invalid version. Change type CREATION, but also set \"preceding_version_uid\" attribute");
                 break;
             case MODIFICATION:
+            case AMENDMENT:
                 // can't have change type MODIFICATION and without giving "preceding_version_uid"
                 if (version.getPrecedingVersionUid() == null)
                     throw new InvalidApiParameterException("Invalid version. Change type MODIFICATION, but without \"preceding_version_uid\" attribute");
                 break;
             // block of valid change types, without any rules to apply (yet)
-            case AMENDMENT:
             case DELETED:
             case SYNTHESIS:
             case UNKNOWN:
