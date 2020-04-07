@@ -22,8 +22,6 @@ import org.jooq.Field;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 
-import java.sql.Timestamp;
-
 public class TemporalWithTimeZone extends SimpleEventContextAttribute {
 
     private Field timeZoneField;
@@ -33,7 +31,7 @@ public class TemporalWithTimeZone extends SimpleEventContextAttribute {
     }
 
     public Field<?> sqlField() {
-        return as(DSL.field(prettyDateTime(tableField, timeZoneField) + "||" + tzNoZulu(timeZoneField)));
+        return as(DSL.field("timezone(COALESCE(" + timeZoneField + "::text,'UTC')," + tableField + "::timestamp)"));
     }
 
     public TemporalWithTimeZone useTimeZone(TableField tableField){
@@ -51,20 +49,5 @@ public class TemporalWithTimeZone extends SimpleEventContextAttribute {
         return this;
     }
 
-    private Field<?> tzNoZulu(Field<String> field) {
-        return DSL.field(DSL.decode().when(field.equal("UTC"), "Z").otherwise(field));
-    }
 
-    private Field<?> prettyDateTime(Field<Timestamp> dateTime, Field<String> timeZone) {
-        return DSL.field("to_char(" + dateTimeOffsetTimezone(dateTime, timeZone) + ",'YYYY-MM-DD\"T\"HH24:MI:SS')");
-    }
-
-    //sql expression adjusting the date with the timezone. Ignore literals and null timezone
-    private Field<?> dateTimeOffsetTimezone(Field<Timestamp> dateTime, Field<String> timeZone) {
-        return DSL.field("(" + dateTime + "::timestamptz AT TIME ZONE 'UTC'" +
-                " + (case when left(" + timeZone + ",1)='+'" +
-                " then \"interval\"(" + timeZone + ")" +
-                " else \"interval\"('+00:00')" +
-                " end))");
-    }
 }

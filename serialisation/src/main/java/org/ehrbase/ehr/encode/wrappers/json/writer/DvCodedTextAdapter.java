@@ -26,7 +26,9 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
+import com.nedap.archie.rm.support.identification.TerminologyId;
 import org.ehrbase.ehr.encode.wrappers.ObjectSnakeCase;
+import org.ehrbase.ehr.encode.wrappers.SnakeCase;
 import org.ehrbase.ehr.encode.wrappers.json.I_DvTypeAdapter;
 
 import java.io.IOException;
@@ -84,7 +86,9 @@ public class DvCodedTextAdapter extends DvTypeAdapter<DvCodedText> {
             writer.beginObject();
             writer.name("name").value(dvalue.getDefiningCode().getTerminologyId().getValue());
             writer.name("value").value(dvalue.getDefiningCode().getTerminologyId().getValue());
+            writer.name(I_DvTypeAdapter.TAG_CLASS_RAW_JSON).value(new SnakeCase(TerminologyId.class.getSimpleName()).camelToUpperSnake());
             writer.endObject();
+            writer.name(I_DvTypeAdapter.TAG_CLASS_RAW_JSON).value(new SnakeCase(CodePhrase.class.getSimpleName()).camelToUpperSnake());
             writer.endObject();
             termMappingAdapter.write(writer, dvalue.getMappings());
             writer.endObject();
@@ -95,6 +99,7 @@ public class DvCodedTextAdapter extends DvTypeAdapter<DvCodedText> {
             writer.name("value").value(dvalue.getValue());
             CodePhrase codePhrase = dvalue.getDefiningCode();
             writer.name("defining_code").value(gson.toJson(codePhrase));
+            writer.name(I_DvTypeAdapter.TAG_CLASS_RAW_JSON).value(new SnakeCase(CodePhrase.class.getSimpleName()).camelToUpperSnake());
             writer.endObject(); //}
         }
 
