@@ -85,13 +85,15 @@ public class QueryCompilerPass2 extends AqlBaseListener {
                 String name = functionContext.FUNCTION_IDENTIFIER().getText();
                 List<FuncParameter> parameters = new ArrayList<>();
 
-                //TODO: gives meaningful alias to function parameters (limit 63 bytes for column name)
-                //TODO: remove function parameter from the list of select variables of the super query (
-                //TODO: unless specifically specified in the query.
+                int serial = 0;
+
                 for (ParseTree pathTree : functionContext.children) {
                     if (pathTree instanceof AqlParser.IdentifiedPathContext) {
                         AqlParser.IdentifiedPathContext pathContext = (AqlParser.IdentifiedPathContext) pathTree;
                         VariableDefinition variableDefinition = new IdentifiedPathVariable(pathContext, selectExprContext, false).definition();
+                        //by default postgresql limits the size of column name to 63 bytes
+                        if (variableDefinition.getAlias() == null || variableDefinition.getAlias().isEmpty() || variableDefinition.getAlias().length() > 63)
+                            variableDefinition.setAlias("_FCT_ARG_"+serial++);
                         pushVariableDefinition(variableDefinition);
                         parameters.add(new FuncParameter(FuncParameterType.VARIABLE, variableDefinition.getAlias() == null ? variableDefinition.getPath() : variableDefinition.getAlias()));
                     } else if (pathTree instanceof AqlParser.OperandContext) {

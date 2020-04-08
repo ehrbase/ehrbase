@@ -123,4 +123,9 @@ public class VariableDefinition implements I_VariableDefinition {
     public I_VariableDefinition clone(){
         return new VariableDefinition(this.path, this.alias, this.identifier, this.isDistinct, this.isHidden);
     }
+
+    @Override
+    public void setAlias(String alias) {
+        this.alias = alias;
+    }
 }
