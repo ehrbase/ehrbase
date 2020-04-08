@@ -746,7 +746,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
 
         I_PartyIdentifiedAccess party = I_PartyIdentifiedAccess.retrieveInstance(getDataAccess(), getParty());
 
-        PartySelf partySelf = new PartySelf(new PartyRef(new HierObjectId(party.getPartyRefValue()), party.getPartyRefNamespace(), null));
+        PartySelf partySelf = new PartySelf(new PartyRef(new HierObjectId(party.getPartyRefValue()), party.getPartyRefNamespace(), party.getPartyRefType()));
         status.setSubject(partySelf);
 
         return status;

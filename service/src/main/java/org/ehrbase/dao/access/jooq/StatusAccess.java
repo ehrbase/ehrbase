@@ -353,7 +353,9 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
                 statusHistoryRecord.getSysPeriod(),
                 statusHistoryRecord.getHasAudit(),
                 statusHistoryRecord.getAttestationRef(),
-                statusHistoryRecord.getInContribution()
+                statusHistoryRecord.getInContribution(),
+                statusHistoryRecord.getArchetypeNodeId(),
+                statusHistoryRecord.getName()
         );
     }
 
