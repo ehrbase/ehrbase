@@ -31,8 +31,8 @@ public class ArchieCompositionProlog {
         if (predicate.isEmpty())
             return "";
 
-        String archetypeNodeId = predicate.substring(0, predicate.indexOf(" "));
-        String name = predicate.substring(predicate.indexOf("=") + 1).replace("'", "");
+        String archetypeNodeId = predicate;
+        String name = compositionRoot.substring(compositionRoot.indexOf("=") + 1, compositionRoot.indexOf("]")).replace("'", "");
 
         StringBuffer prolog = new StringBuffer();
         prolog.append("{");

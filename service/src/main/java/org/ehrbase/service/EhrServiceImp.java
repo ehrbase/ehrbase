@@ -33,10 +33,9 @@ import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.definitions.StructuredString;
 import org.ehrbase.api.definitions.StructuredStringFormat;
 import org.ehrbase.api.dto.EhrStatusDto;
-import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.api.exception.StateConflictException;
+import org.ehrbase.api.exception.*;
 import org.ehrbase.api.service.EhrService;
+import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.jooq.AttestationAccess;
 import org.ehrbase.serialisation.CanonicalJson;
@@ -58,21 +57,34 @@ import java.util.UUID;
 @Service
 @Transactional()
 public class EhrServiceImp extends BaseService implements EhrService {
-    public static final String MODIFIABLE = "modifiable";
-    public static final String QUERYABLE = "queryable";
-    public static final String SUBJECT_ID = "subjectId";
-    public static final String SUBJECT_NAMESPACE = "subjectNamespace";
     public static final String DESCRIPTION = "description";
     private Logger logger = LoggerFactory.getLogger(getClass());
+    private final ValidationService validationService;
 
     @Autowired
-    public EhrServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig) {
-
+    public EhrServiceImp(KnowledgeCacheService knowledgeCacheService, ValidationService validationService, DSLContext context, ServerConfig serverConfig) {
         super(knowledgeCacheService, context, serverConfig);
+        this.validationService = validationService;
     }
 
     @Override
     public UUID create(EhrStatus status, UUID ehrId) {
+
+        try {
+            validationService.check(status);
+        } catch (Exception e) {
+            // rethrow if this class, but wrap all others in InternalServerException
+            if (e.getClass().equals(UnprocessableEntityException.class))
+                throw (UnprocessableEntityException) e;
+            if (e.getClass().equals(IllegalArgumentException.class))
+                throw new ValidationException(e);
+            if (e.getClass().equals(ValidationException.class))
+                throw e;
+            else if (e.getClass().equals(org.ehrbase.validation.constraints.wrappers.ValidationException.class))
+                throw new ValidationException(e);
+            else
+                throw new InternalServerException(e);
+        }
 
         if (status == null) {   // in case of new status with default values
             status = new EhrStatus();
@@ -185,6 +197,23 @@ public class EhrServiceImp extends BaseService implements EhrService {
 
     @Override
     public Optional<EhrStatus> updateStatus(UUID ehrId, EhrStatus status) {
+
+        try {
+            validationService.check(status);
+        } catch (Exception e) {
+            // rethrow if this class, but wrap all others in InternalServerException
+            if (e.getClass().equals(UnprocessableEntityException.class))
+                throw (UnprocessableEntityException) e;
+            if (e.getClass().equals(IllegalArgumentException.class))
+                throw new ValidationException(e);
+            if (e.getClass().equals(ValidationException.class))
+                throw e;
+            else if (e.getClass().equals(org.ehrbase.validation.constraints.wrappers.ValidationException.class))
+                throw new ValidationException(e);
+            else
+                throw new InternalServerException(e);
+        }
+
         //pre-step: check for valid ehrId
         if (hasEhr(ehrId).equals(Boolean.FALSE)) {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
