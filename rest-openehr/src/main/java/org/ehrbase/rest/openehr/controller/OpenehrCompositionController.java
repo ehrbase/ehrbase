@@ -525,7 +525,7 @@ public class OpenehrCompositionController extends BaseController {
 
             // if accept is empty fall back to XML
             if (accept.equals("*/*") || accept.isEmpty())
-                accept = MediaType.APPLICATION_XML.toString();
+                accept = MediaType.APPLICATION_JSON.toString();
 
 
             CompositionFormat format = extractCompositionFormat(accept);

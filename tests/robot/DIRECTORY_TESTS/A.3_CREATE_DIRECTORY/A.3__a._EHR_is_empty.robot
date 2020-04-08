@@ -36,4 +36,4 @@ Main flow: create directory on empty EHR
 
     create DIRECTORY (JSON)    empty_directory.json
 
-    directory_keywords.validate POST response - 201 created
+    validate POST response - 201 created directory

@@ -62,6 +62,16 @@ commit CONTRIBUTION (JSON)
                         Set Test Variable    ${versions}    ${body['versions']}
 
 
+commit CONTRIBUTION without accept header
+    [Arguments]         ${valid_test_data_set}
+                        Set Test Variable  ${KEYWORD NAME}  COMMIT CONTRIBUTION 1 (JSON)
+                        load valid test-data-set    ${valid_test_data_set}
+                        POST /ehr/ehr_id/contribution without accept header    JSON
+                        Set Test Variable    ${body}    ${response.json()}
+                        Set Test Variable    ${contribution_uid}    ${body['uid']['value']}
+                        Set Test Variable    ${versions}    ${body['versions']}
+
+
 check response: is positive - returns version id
                         Should Be Equal As Strings    ${response.status_code}    201
                         Set Test Variable    ${body}    ${response.json()}
@@ -83,6 +93,13 @@ commit CONTRIBUTION - with preceding_version_uid (JSON)
     [Arguments]         ${test_data_set}
                         Set Test Variable  ${KEYWORD NAME}  COMMIT CONTRIBUTION 2 (JSON)
                         inject preceding_version_uid into valid test-data-set    ${test_data_set}
+                        POST /ehr/ehr_id/contribution    JSON
+
+
+commit invalid CONTRIBUTION - with preceding_version_uid (JSON)
+    [Arguments]         ${test_data_set}
+                        Set Test Variable  ${KEYWORD NAME}  COMMIT CONTRIBUTION 2 (JSON)
+                        inject preceding_version_uid into invalid test-data-set    ${test_data_set}
                         POST /ehr/ehr_id/contribution    JSON
 
 
@@ -262,6 +279,29 @@ POST /ehr/ehr_id/contribution
                         Output Debug Info:    POST /ehr/ehr_id/contribution
 
 
+POST /ehr/ehr_id/contribution without accept header
+    [Arguments]         ${format}
+    [Documentation]     DEPENDENCY any keyword that exposes a `${test_data}` variable
+    ...                 to test level scope e.g. `load valid test-data-set`
+
+                        # JSON format: defaults apply
+                        Run Keyword If      $format=='JSON'    prepare new request session
+                        ...                 Prefer=return=representation
+
+                        # XML format: overriding defaults
+                        Run Keyword If      $format=='XML'    prepare new request session
+                        ...                 XML    Prefer=return=representation
+
+                        Remove From Dictionary    ${headers}    Accept
+
+    ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/contribution
+                        ...                 data=${test_data}
+                        ...                 headers=${headers}
+
+                        Set Test Variable   ${response}    ${resp}
+                        Output Debug Info:    POST /ehr/ehr_id/contribution
+
+
 
 
 
@@ -363,6 +403,15 @@ load invalid test-data-set
 inject preceding_version_uid into valid test-data-set
     [Arguments]         ${valid_test_data_set}
     ${test_data}=       Load JSON from File    ${VALID CONTRI DATA SETS}/${valid_test_data_set}
+    ${test_data}=       Update Value To Json  ${test_data}  $..versions..preceding_version_uid.value
+                        ...                   ${version_id}
+                        Set Test Variable    ${test_data}    ${test_data}
+                        Output    ${test_data}
+
+
+inject preceding_version_uid into invalid test-data-set
+    [Arguments]         ${invalid_test_data_set}
+    ${test_data}=       Load JSON from File    ${INVALID CONTRI DATA SETS}/${invalid_test_data_set}
     ${test_data}=       Update Value To Json  ${test_data}  $..versions..preceding_version_uid.value
                         ...                   ${version_id}
                         Set Test Variable    ${test_data}    ${test_data}

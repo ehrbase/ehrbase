@@ -326,6 +326,32 @@ public class QueryProcessorTest {
 
 
         testCases.add(new AqlTestCase(19,
+                "select c/category from EHR e [ehr_id/value = '4a7c01cf-bb1c-4d3d-8385-4ae0674befb1']" +
+                        "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]",
+                "select ehr.js_concept(\"ehr\".\"entry\".\"category\")::text as \"/category\" " +
+                        "from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\"" +
+                        "where (\"ehr\".\"entry\".\"template_id\" = ? and (\"ehr_join\".\"id\"='4a7c01cf-bb1c-4d3d-8385-4ae0674befb1'))",
+                true));
+
+        testCases.add(new AqlTestCase(20,
+                "select c/category/defining_code from EHR e [ehr_id/value = '4a7c01cf-bb1c-4d3d-8385-4ae0674befb1']" +
+                        "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]",
+                "select ehr.js_concept(\"ehr\".\"entry\".\"category\")::json #>>'{defining_code}' as \"/category/defining_code\" " +
+                        "from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\"" +
+                        "where (\"ehr\".\"entry\".\"template_id\" = ? and (\"ehr_join\".\"id\"='4a7c01cf-bb1c-4d3d-8385-4ae0674befb1'))",
+                true));
+
+
+        testCases.add(new AqlTestCase(21,
+                "select c/category/defining_code/terminology_id/value from EHR e [ehr_id/value = '4a7c01cf-bb1c-4d3d-8385-4ae0674befb1']" +
+                        "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]",
+                "select ehr.js_concept(\"ehr\".\"entry\".\"category\")::json #>>'{defining_code,terminology_id,value}' as \"/category/defining_code/terminology_id/value\" " +
+                        "from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\"" +
+                        "where (\"ehr\".\"entry\".\"template_id\" = ? and (\"ehr_join\".\"id\"='4a7c01cf-bb1c-4d3d-8385-4ae0674befb1'))",
+                false));
+      
+      
+        testCases.add(new AqlTestCase(22,
                 "select max(a/description[at0001]/items[openEHR-EHR-CLUSTER.test_all_types.v1]/items[at0001]/items[at0002]/items[at0003]/value/value," +
                         "a/description[at0001]/items[openEHR-EHR-CLUSTER.test_all_types.v1]/items[at0001]/items[at0002]/items[at0004]/value/value)" +
                         "from EHR e " +
@@ -335,11 +361,12 @@ public class QueryProcessorTest {
                 true
         ));
 
-        testCases.add(new AqlTestCase(20,
+        testCases.add(new AqlTestCase(23,
                 "SELECT max(e/time_created) FROM EHR e",
                 "select max(DISTINCT \"_FCT_ARG_0\") as \"max\" from (select ehr.js_dv_date_time(\"ehr_join\".\"date_created\",\"ehr_join\".\"date_created_tzid\")::text as \"_FCT_ARG_0\" from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\") as \"\"",
                 true
         ));
+
         return testCases;
     }
 

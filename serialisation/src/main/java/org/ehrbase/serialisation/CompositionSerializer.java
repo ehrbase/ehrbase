@@ -1153,8 +1153,13 @@ public class CompositionSerializer {
             stringObjectMap = process((Composition) rmObject);
         } else if (rmObject instanceof Item)
             stringObjectMap = traverse((Item) rmObject, TAG_ITEMS);
-        else if (rmObject instanceof ItemStructure)
+        else if (rmObject instanceof ItemStructure) {
             stringObjectMap = traverse((ItemStructure) rmObject, TAG_ITEMS);
+            if (((ItemStructure)rmObject).getArchetypeNodeId() != null)
+                stringObjectMap.put(CompositionSerializer.TAG_ARCHETYPE_NODE_ID, ((ItemStructure)rmObject).getArchetypeNodeId());
+            if (((ItemStructure)rmObject).getName() != null)
+                stringObjectMap.put(CompositionSerializer.TAG_NAME, ((ItemStructure)rmObject).getName());
+        }
         else
             throw new MarshalException(String.format("Class %s not supported ", rmObject.getClass()), null);
 
