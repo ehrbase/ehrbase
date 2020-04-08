@@ -76,7 +76,7 @@ public class AqlQueryHandler extends DataAccess {
         while (iterator.hasNext()) {
             I_VariableDefinition variableDefinition = iterator.next();
             if (!variableDefinition.isHidden())
-                variables.put(variableDefinition.getAlias() == null ? "NULL_" + serial++ : variableDefinition.getAlias(), StringUtils.isNotBlank(variableDefinition.getPath()) ? "/" + variableDefinition.getPath() : variableDefinition.getIdentifier());
+                variables.put(variableDefinition.getAlias() == null ? "#" + serial++ : variableDefinition.getAlias(), StringUtils.isNotBlank(variableDefinition.getPath()) ? "/" + variableDefinition.getPath() : variableDefinition.getIdentifier());
         }
         aqlResult.setVariables(variables);
         return aqlResult;

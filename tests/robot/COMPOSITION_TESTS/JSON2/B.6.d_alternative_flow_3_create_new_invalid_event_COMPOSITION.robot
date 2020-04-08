@@ -36,13 +36,6 @@ Force Tags    JSON
 Alternative flow 3 create new invalid event COMPOSITION
 
     upload OPT    nested/nested.opt
-
     create EHR
-
-
-        TRACE GITHUB ISSUE  127  not-ready
-
-
     commit invalid composition (JSON)    nested/nested.composition.extdatetimes.invalid.xml
-
     [Teardown]    restart SUT

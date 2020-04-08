@@ -18,6 +18,8 @@
 
 package org.ehrbase.aql.sql.binding;
 
+import java.util.Optional;
+
 public class TaggedStringBuilder implements I_TaggedStringBuilder {
 
     private StringBuilder stringBuffer;
@@ -69,6 +71,16 @@ public class TaggedStringBuilder implements I_TaggedStringBuilder {
             stringBuffer.delete(indexOf, indexOf + previous.length());
             stringBuffer.insert(indexOf, newString);
         }
+    }
+
+    @Override
+    public void replace(Integer start, Integer end, String replacement){
+        stringBuffer.replace(start, end, replacement);
+    }
+
+    @Override
+    public void insert(Integer offset, String toInsert){
+        stringBuffer.insert(offset,toInsert);
     }
 
     @Override

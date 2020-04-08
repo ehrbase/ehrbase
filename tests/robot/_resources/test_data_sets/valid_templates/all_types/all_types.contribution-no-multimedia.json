@@ -186,14 +186,14 @@
       						"archetype_node_id": "at0005",
       						"value": {
       							"_type": "DV_CODED_TEXT",
-      							"value": "cHAWCHf.Kt.RNIAiZ,FVvBUdKAWQkU",
+      							"value": "value1",
       							"defining_code": {
       								"_type": "CODE_PHRASE",
       								"terminology_id": {
       									"_type": "TERMINOLOGY_ID",
       									"value": "local"
       								},
-      								"code_string": "1008204"
+      								"code_string": "at0006"
       							}
       						}
       					}, {

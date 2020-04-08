@@ -3,10 +3,6 @@
   "versions": [
     {
       "_type": "ORIGINAL_VERSION",
-	  "preceding_version_uid": {
-	    "_type": "OBJECT_VERSION_ID",
-	    "value": "{{composition_version_uid}}"
-	  },
       "commit_audit": {
         "_type": "AUDIT_DETAILS",
         "system_id": "test-system-id",

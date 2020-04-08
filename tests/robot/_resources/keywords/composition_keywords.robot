@@ -167,6 +167,35 @@ commit composition (JSON)
                         capture point in time    1
 
 
+commit composition without accept header
+    [Arguments]         ${opt_file}
+    [Documentation]     Creates the first version of a new COMPOSITION
+    ...                 DEPENDENCY: `upload OPT`, `create EHR`
+    ...
+    ...                 ENDPOINT: POST /ehr/${ehr_id}/composition
+
+                        get valid OPT file  ${opt_file}
+
+    &{headers}=         Create Dictionary   Content-Type=application/xml
+                        ...                 Prefer=return=representation
+
+    ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
+                        log to console      ${resp.content}
+                        Should Be Equal As Strings   ${resp.status_code}   201
+
+                        Set Test Variable   ${composition_uid}    ${resp.json()['uid']['value']}    # TODO: remove
+                        Set Test Variable   ${version_uid}    ${resp.json()['uid']['value']}    # full/long compo uid
+                        Set Test Variable   ${version_uid_v1}    ${version_uid}                  # different namesfor full uid
+                        Set Test Variable   ${preceding_version_uid}    ${version_uid}          # for usage in other steps
+
+    ${short_uid}=       Remove String       ${version_uid}    ::${CREATING_SYSTEM_ID}::1
+                        Set Test Variable   ${compo_uid_v1}    ${short_uid}                      # TODO: rmv
+                        Set Test Variable   ${versioned_object_uid}    ${short_uid}
+
+                        Set Test Variable   ${response}    ${resp}
+                        capture point in time    1
+
+
 check content of composition (JSON)
                         # Should Be Equal As Strings    ${response.status_code}    200
     ${text}=            Set Variable        ${response.json()['content'][0]['data']['events'][0]['data']['items'][0]['value']['value']}
@@ -703,7 +732,7 @@ capture point in time
 
     ${time}=            Get Current Date    UTC    result_format=%Y-%m-%dT%H:%M:%S
     # ${time_tz}=         Catenate            SEPARATOR=${EMPTY}    ${time}   +00:00
-                        Set Test Variable   ${time_${point_in_time}}   ${time}+00:00
+                        Set Suite Variable   ${time_${point_in_time}}   ${time}+00:00
                         Sleep               1
 
 

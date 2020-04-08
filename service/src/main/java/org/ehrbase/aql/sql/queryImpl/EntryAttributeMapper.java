@@ -124,27 +124,19 @@ public class EntryAttributeMapper {
                 else if ((ndxInterval = intervalValueIndex(fields)) > 0) { //interval
                     fields.add(ndxInterval, INTERVAL);
                 } else if (match != 0) {
-                    fields.set(match, SLASH_VALUE);
-                    if (match == fields.size() - 1)
-                        fields.add(VALUE);
+                    //deals with name/value (name value is contained into a list conventionally
+                    if (match > 1 && fields.get(match - 1).equals("name"))
+                        fields.set(match, VALUE);
+                    else
+                        //usual /value
+                        fields.set(match, SLASH_VALUE);
+
                 } else if (match + 1 < fields.size() - 1) {
                     Integer first = firstOccurence(match + 1, fields, VALUE);
                     if (first != null && first == match + 1)
                         fields.set(match + 1, SLASH_VALUE);
                 }
             }
-//            match = firstOccurence(0, fields, "name");
-//            if (match != null) {
-//                if (match < fields.size() - 1) {
-//                    if (fields.get(match + 1).equals("name")) {
-//                        fields.set(match + 1, "/name");
-//                    }
-//                }
-//                else if (match+1 == fields.size()){
-//                    //set it with a "/"
-//                    fields.set(match, "/name");
-//                }
-//            }
         }
 
         //prefix the first element
@@ -152,7 +144,14 @@ public class EntryAttributeMapper {
 
         //deals with the remainder of the array
         for (int i = floor; i < fields.size(); i++) {
-            fields.set(i, toCamelCase(fields.get(i)));
+
+            if (fields.get(i).toUpperCase().equals("NAME")){
+                //whenever the canonical json for name is queried
+                fields.set(i, "/name,0");
+            }
+            else
+                fields.set(i, toCamelCase(fields.get(i)));
+
         }
 
         //elegant...

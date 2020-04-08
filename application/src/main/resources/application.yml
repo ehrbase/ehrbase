@@ -23,10 +23,17 @@ spring:
   flyway:
     schemas: ehr
 
+security:
+  authType: BASIC
+  authUser: ehrbase-user
+  authPassword: SuperSecretPassword
+
 cache:
   config: '/ehcache.xml'
   enabled: true
 
+system:
+  allow-template-overwrite: false
 
 logging:
   level:
@@ -35,3 +42,10 @@ logging:
     com.ethercis: DEBUG
     org.jooq: INFO
     net.sf.ehcache: TRACE
+
+
+terminology_server :
+  tsUrl: 'https://r4.ontoserver.csiro.au/fhir/'
+  codePath: '$[\"expansion\"][\"contains\"][*][\"code\"]'
+  systemPath: '$[\"expansion\"][\"contains\"][*][\"system\"]'
+  displayPath: '$[\"expansion\"][\"contains\"][*][\"display\"]'

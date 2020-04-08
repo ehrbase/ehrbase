@@ -17,11 +17,6 @@ Documentation    Alternative flow 1: has directory from existent EHR that has tw
 
 
 Resource    ${CURDIR}${/}../../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/generic_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/contribution_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/directory_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/template_opt1.4_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
 
 #Suite Setup  startup SUT
 # Test Setup  start openehr server
@@ -36,15 +31,14 @@ Force Tags    refactor
 Alternative flow 1: has directory from existent EHR that has two versions of directory
 
     create EHR
-
     create DIRECTORY (JSON)    subfolders_in_directory.json
-    validate POST response - 201 created
+    validate POST response - 201 created ehr
 
     get DIRECTORY at version (JSON)
-    validate GET-@version response - 200 retrieved
+    validate GET-@version response - 200 retrieved    root
 
     update DIRECTORY (JSON)    subfolders_in_directory_with_details.json
     validate PUT response - 200 updated
 
     get DIRECTORY at version (JSON)
-    validate GET-@version response - 200 retrieved
+    validate GET-@version response - 200 retrieved    root

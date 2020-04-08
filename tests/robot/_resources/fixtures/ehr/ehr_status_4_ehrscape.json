@@ -1,5 +1,9 @@
 {
     "_type": "EHR_STATUS",
+    "archetype_node_id": "openEHR-EHR-EHR_STATUS.generic.v1",
+    "name": {
+        "value": "EHR Status"
+    },
     "uid": {
         "_type": "HIER_OBJECT_ID",
         "value": "99672720-6c22-4f0b-bb40-9c5f965886b4::piri.ehrscape.com::1"

@@ -46,6 +46,7 @@ public class Children {
             if (!key.startsWith(CompositionSerializer.TAG_ITEMS)
                     && !key.startsWith(CompositionSerializer.TAG_NAME)
                     && !key.equals(I_DvTypeAdapter.ARCHETYPE_NODE_ID)
+                    && !key.equals(CompositionSerializer.TAG_ARCHETYPE_NODE_ID)
                     && !key.equals(I_DvTypeAdapter.AT_CLASS)
                     && !key.equals(CompositionSerializer.TAG_CLASS)) {
                 isItems = false;

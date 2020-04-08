@@ -114,7 +114,14 @@ public class OpenehrEhrController extends BaseController {
                                                            @ApiParam(value = "May be used by clients for resource representation negotiation") @RequestHeader(value = PREFER, required = false) String prefer,
                                                            @ApiParam(value = "User supplied EHR ID", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
                                                            @ApiParam(value = "An ehr_status may be supplied as the request body") @RequestBody(required = false) EhrStatus ehrStatus) {
-        UUID ehrId = getEhrUuid(ehrIdString);
+
+        UUID ehrId; // can't use getEhrUuid(..) because here another exception needs to be thrown (-> 400, not 404 in response)
+        try {
+            ehrId = UUID.fromString(ehrIdString);
+        } catch (IllegalArgumentException e) {
+            throw new InvalidApiParameterException("EHR ID format not a UUID");
+        }
+
         if (ehrService.hasEhr(ehrId)) {
             throw new StateConflictException("EHR with this ID already exists");
         }

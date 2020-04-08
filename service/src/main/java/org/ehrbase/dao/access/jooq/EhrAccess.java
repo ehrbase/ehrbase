@@ -24,6 +24,8 @@ package org.ehrbase.dao.access.jooq;
 import com.nedap.archie.rm.archetyped.Archetyped;
 import com.nedap.archie.rm.archetyped.Locatable;
 import com.nedap.archie.rm.datastructures.ItemStructure;
+import com.nedap.archie.rm.datavalues.DvCodedText;
+import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.*;
@@ -38,8 +40,13 @@ import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.tables.records.*;
+import org.ehrbase.jooq.pg.udt.records.CodePhraseRecord;
+import org.ehrbase.jooq.pg.udt.records.DvCodedTextRecord;
 import org.ehrbase.serialisation.RawJson;
 import org.ehrbase.service.BaseService;
+import org.ehrbase.service.PersistentCodePhrase;
+import org.ehrbase.service.RecordedDvCodedText;
+import org.ehrbase.service.RecordedDvText;
 import org.jooq.*;
 
 import java.sql.Timestamp;
@@ -432,6 +439,26 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     }
 
     @Override
+    public void setArchetypeNodeId(String archetypeNodeId) {
+        getStatusAccess().getStatusRecord().setArchetypeNodeId(archetypeNodeId);
+    }
+
+    @Override
+    public String getArchetypeNodeId() {
+        return getStatusAccess().getStatusRecord().getArchetypeNodeId();
+    }
+
+    @Override
+    public void setName(DvText name) {
+        new RecordedDvText().toDB(getStatusAccess().getStatusRecord(), STATUS.NAME, name);
+    }
+
+    @Override
+    public void setName(DvCodedText name) {
+        new RecordedDvCodedText().toDB(getStatusAccess().getStatusRecord(), STATUS.NAME, name);
+    }
+
+    @Override
     public void setQueryable(Boolean queryable) {
         getStatusAccess().getStatusRecord().setIsQueryable(queryable);
     }
@@ -686,6 +713,13 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         String subjectId = status.getSubject().getExternalRef().getId().getValue();
         String subjectNamespace = status.getSubject().getExternalRef().getNamespace();
 
+        //Locatable stuff if present
+        if (status.getArchetypeNodeId() != null)
+            setArchetypeNodeId(status.getArchetypeNodeId());
+
+        if (status.getName() != null)
+            setName(status.getName());
+
         UUID subjectUuid = I_PartyIdentifiedAccess.getOrCreatePartyByExternalRef(getDataAccess(), null, subjectId, BaseService.DEMOGRAPHIC, subjectNamespace, BaseService.PARTY);
         setParty(subjectUuid);
     }
@@ -700,6 +734,12 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         if (getStatusAccess().getStatusRecord().getOtherDetails() != null) {
             status.setOtherDetails(getStatusAccess().getStatusRecord().getOtherDetails());
         }
+
+        //Locatable attribute
+        status.setArchetypeNodeId(getArchetypeNodeId());
+        Object name = new RecordedDvCodedText().fromDB(getStatusAccess().getStatusRecord(), STATUS.NAME);
+        status.setName(name instanceof DvText ? (DvText)name : (DvCodedText)name);
+
         UUID statusId = getStatusAccess().getStatusRecord().getId();
         status.setUid(new HierObjectId(statusId.toString() + "::" + getServerConfig().getNodename() + "::" +
                 I_StatusAccess.getLatestVersionNumber(this, statusId)));
