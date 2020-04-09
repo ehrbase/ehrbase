@@ -18,7 +18,6 @@
 
 package org.ehrbase.service;
 
-import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.gson.JsonElement;
 import org.ehrbase.api.definitions.QueryMode;
