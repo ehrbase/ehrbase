@@ -402,11 +402,16 @@ public class OpenehrDirectoryController extends BaseController {
         }
 
         if (folderDto != null) {
-            headers.setETag("\"" + folderDto.getUid().toString() + "\"");
+            String versionUid = folderDto.getUid().toString() +
+                    "::" + this.folderService.getServerConfig().getNodename() +
+                    "::" + folderService.getLastVersionNumber(UUID.fromString(folderDto.getUid().toString())
+            );
+
+            headers.setETag("\"" + versionUid + "\"");
             headers.setLocation(
                     URI.create(encodePath(getBaseEnvLinkURL() +
                             "/rest/openehr/v1/ehr/" + ehrId.toString() +
-                            "/directory/" + folderDto.getUid().toString()))
+                            "/directory/" + versionUid))
             );
             // TODO: Extract last modified from SysPeriod timestamp of fetched folder record
             headers.setLastModified(DateTime.now().getMillis());

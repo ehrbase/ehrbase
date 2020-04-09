@@ -19,7 +19,6 @@
 package org.ehrbase.service;
 
 import com.nedap.archie.rm.directory.Folder;
-import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.definitions.StructuredString;
@@ -129,7 +128,7 @@ public class FolderServiceImp extends BaseService implements FolderService {
         // Handle path
         folderAccess = extractPath(folderAccess, path);
 
-        return createDto(folderAccess, version);
+        return createDto(folderAccess);
     }
 
     /**
@@ -154,7 +153,7 @@ public class FolderServiceImp extends BaseService implements FolderService {
             // Handle path
             folderAccess = extractPath(folderAccess, path);
 
-            return createDto(folderAccess, null);
+            return createDto(folderAccess);
         } catch (ObjectNotFoundException e) {
             logger.error(formatter.format(
                     "Folder entry not found for timestamp: %s",
@@ -208,7 +207,7 @@ public class FolderServiceImp extends BaseService implements FolderService {
         // Send update to access layer which updates the hierarchy recursive
         if (folderAccess.update(new Timestamp(timestamp.getMillis()))) {
 
-            return createDto(folderAccess, null);
+            return createDto(folderAccess);
         } else {
 
             return Optional.empty();
@@ -284,21 +283,15 @@ public class FolderServiceImp extends BaseService implements FolderService {
      * returns an empty {@link Optional}.
      *
      * @param folderAccess - The {@link I_FolderAccess} containing the data
-     * @param version - Version in current scope. null to use versioned_object_uid as response.
      * @return {@link Optional<FolderDto>}
      */
-    private Optional<FolderDto> createDto(I_FolderAccess folderAccess, Integer version) {
+    private Optional<FolderDto> createDto(I_FolderAccess folderAccess) {
 
         if (folderAccess == null) {
             return Optional.empty();
         }
 
         Folder folder = createFolderObject(folderAccess);
-
-        // overwrites existing ID with a full valid version_object_uid if `version` is set.
-        if (version != null)
-            folder.setUid(new HierObjectId(folderAccess.getFolderId().toString() + "::" + getServerConfig().getNodename() + "::" +
-                version));
 
         return Optional.of(new FolderDto(folder));
     }
