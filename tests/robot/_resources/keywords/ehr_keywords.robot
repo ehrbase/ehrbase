@@ -421,8 +421,6 @@ set ehr_status of EHR
                         # Log To Console    ${ehr_status}
                         # Log To Console    ${ehr_status}[0]
 
-        TRACE GITHUB ISSUE  147  not-ready
-
     &{resp}=            REST.PUT    ${baseurl}/ehr/${ehr_id}/ehr_status    ${ehr_status}
                         ...         headers={"Content-Type": "application/json"}
                         ...         headers={"Prefer": "return=representation"}

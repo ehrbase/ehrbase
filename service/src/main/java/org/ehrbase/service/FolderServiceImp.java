@@ -288,7 +288,6 @@ public class FolderServiceImp extends BaseService implements FolderService {
     private Optional<FolderDto> createDto(I_FolderAccess folderAccess) {
 
         if (folderAccess == null) {
-
             return Optional.empty();
         }
 
