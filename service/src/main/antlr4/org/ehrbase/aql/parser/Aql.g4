@@ -218,7 +218,7 @@ invokeOperand
         	: invokeExpr;
 
 invokeExpr
-                : INVOKE OPEN_PAR STRING COMMA STRING COMMA STRING CLOSE_PAR ;
+                : TERMINOLOGY OPEN_PAR STRING COMMA STRING COMMA STRING CLOSE_PAR ;
 
 objectPath
         : pathPart (SLASH pathPart)*;
@@ -258,7 +258,7 @@ XOR : X O R ;
 NOT : N O T ;
 IN : I N ;
 MATCHES : M A T C H E S ;
-INVOKE : I N V O K E ;
+TERMINOLOGY : T E R M I N O L O G Y ;
 LIKE : L I K E ;
 ILIKE : I L I K E ;
 SIMILARTO: S I M I L A R ' ' T O;
