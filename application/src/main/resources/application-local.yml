@@ -30,6 +30,9 @@ server:
   servlet:
     context-path: /ehrbase
 
+security:
+  authType: NONE
+
 system:
   type: LOCAL
 

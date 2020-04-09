@@ -21,6 +21,7 @@ import org.ehrbase.aql.sql.queryImpl.attribute.AttributePath;
 import org.ehrbase.aql.sql.queryImpl.attribute.AttributeResolver;
 import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
+import org.ehrbase.aql.sql.queryImpl.attribute.concept.ConceptResolver;
 import org.ehrbase.aql.sql.queryImpl.attribute.setting.SettingResolver;
 import org.jooq.Field;
 
@@ -40,7 +41,7 @@ public class CompositionResolver extends AttributeResolver
             return new FullCompositionJson(fieldResolutionContext, joinSetup).sqlField();
 
         if (path.startsWith("category"))
-            return new SettingResolver(fieldResolutionContext, joinSetup).sqlField(new AttributePath("category").redux(path));
+            return new ConceptResolver(fieldResolutionContext, joinSetup).forTableField(ENTRY.CATEGORY).sqlField(new AttributePath("category").redux(path));
 
 
         switch (path){

@@ -149,7 +149,7 @@ create new EHR (XML)
 # POST POST POST POST
 #/////////////////////
 
-validate POST response - 201 created
+validate POST response - 201 created ehr
     [Documentation]     CASE: new ehr was created.
     ...                 Request was send with `Prefer=return=representation`.
 
@@ -420,8 +420,6 @@ set ehr_status of EHR
     # ${ehrstatus}=       Load JSON From File   ehr_status.json
                         # Log To Console    ${ehr_status}
                         # Log To Console    ${ehr_status}[0]
-
-        TRACE GITHUB ISSUE  147  not-ready
 
     &{resp}=            REST.PUT    ${baseurl}/ehr/${ehr_id}/ehr_status    ${ehr_status}
                         ...         headers={"Content-Type": "application/json"}

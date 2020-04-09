@@ -234,6 +234,8 @@ public interface I_PartyIdentifiedAccess extends I_SimpleCRUD {
 
     String getPartyRefNamespace();
 
+    String getPartyRefType();
+
     /**
      * get the list of identifier keys<br>
      * a key is formatted as 'code:issuer'

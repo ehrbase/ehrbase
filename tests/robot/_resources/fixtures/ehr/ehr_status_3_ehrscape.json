@@ -1,5 +1,6 @@
 {
     "_type": "EHR_STATUS",
+
     "subject": {
         "_type": "PARTY_SELF"
     },

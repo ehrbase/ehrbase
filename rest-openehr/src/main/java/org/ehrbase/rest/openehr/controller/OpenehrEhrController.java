@@ -265,8 +265,8 @@ public class OpenehrEhrController extends BaseController {
             objByReference.setEhrStatus(ehrStatus.get());
             objByReference.setSystemId(new HierObjectId(ehrService.getSystemUuid().toString()));
             objByReference.setTimeCreated(ehrService.getCreationTime(ehrId).toString());
-            objByReference.setCompositions(null);    // TODO get actual data from service layer
-            objByReference.setContributions(null);   // TODO get actual data from service layer
+            //objByReference.setCompositions(null);    // TODO get actual data from service layer
+            //objByReference.setContributions(null);   // TODO get actual data from service layer
         }
 
         // create and supplement headers with data depending on which headers are requested

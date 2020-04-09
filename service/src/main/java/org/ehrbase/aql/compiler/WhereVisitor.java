@@ -128,7 +128,6 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
 	}
 
 	@Override public List<Object> visitInvokeExpr(AqlParser.InvokeExprContext ctx) { 
-		System.out.println("inside visitInvokeExc");
 		List<Object> invokeExpr = new ArrayList<>();
 		assert(ctx.TERMINOLOGY().getText().equals("TERMINOLOGY"));
 		assert(ctx.OPEN_PAR().getText().equals("("));
