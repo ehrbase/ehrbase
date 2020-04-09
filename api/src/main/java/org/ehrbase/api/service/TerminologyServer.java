@@ -93,7 +93,10 @@ public interface TerminologyServer<T, ID, U> {
 		}*/
 		
 		public static boolean isAdapterSupported(String adapterToCheck) {
-			return supportedAdapters.contains(TerminologyAdapter.valueOf(adapterToCheck));
+			for(TerminologyAdapter ta: supportedAdapters) {
+				if(ta.name().equals(adapterToCheck))
+				{return true;}			}
+			return false;
 		}
 	}
 	

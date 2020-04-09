@@ -128,6 +128,7 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
 	}
 
 	@Override public List<Object> visitInvokeExpr(AqlParser.InvokeExprContext ctx) { 
+		System.out.println("inside visitInvokeExc");
 		List<Object> invokeExpr = new ArrayList<>();
 		assert(ctx.TERMINOLOGY().getText().equals("TERMINOLOGY"));
 		assert(ctx.OPEN_PAR().getText().equals("("));
@@ -136,7 +137,9 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
 		final String valueSetUri=ctx.STRING(0).getText();
 		final String operationId=ctx.STRING(1).getText();
 		try {
-			I_OpenehrTerminologyServer.getInstance(null, ctx.STRING(2).getText()).expandWithParameters(valueSetUri, operationId).forEach((DvCodedText dvCode) -> {codesList.add(dvCode.getDefiningCode().getCodeString());});
+			I_OpenehrTerminologyServer TsAdapter = I_OpenehrTerminologyServer.getInstance(null, ctx.STRING(2).getText());
+			List <DvCodedText> expansion = TsAdapter.expandWithParameters(valueSetUri, operationId);
+			expansion.forEach((DvCodedText dvCode) -> {codesList.add(dvCode.getDefiningCode().getCodeString());});
 		} catch (Exception e) {
 			throw new IllegalArgumentException("Terminology server operation failed:'"+e.getMessage()+"'");
 		}

@@ -39,7 +39,7 @@ import com.nedap.archie.rm.support.identification.TerminologyId;
  */
 @Component
 public final class FhirTerminologyServerR4AdaptorImpl
-		implements org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer <String, String> {
+		implements org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer {
 
 	private static volatile FhirTerminologyServerR4AdaptorImpl  instance = null;//thread safety is ensure in the getInstance method.
 	/**
@@ -107,11 +107,16 @@ public final class FhirTerminologyServerR4AdaptorImpl
 	
 	@Override
 	public final List<DvCodedText> expandWithParameters(final String valueSetId, String...operationParams) {
+		System.out.println("inside the expand");
+		//build URL
+		String urlTsServer = props.getTsUrl();
+		urlTsServer+=operationParams[0]+"?url="+valueSetId;
+		 System.out.println("the url to use: "+urlTsServer);
 		RestTemplate rest = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("accept","application/fhir+json");
 		HttpEntity<String> entity =  new HttpEntity<>(headers);
-		ResponseEntity<String> responseEntity = rest.exchange(valueSetId,
+		ResponseEntity<String> responseEntity = rest.exchange(urlTsServer.replace("'", ""),
 				HttpMethod.GET,
 				entity,
 				String.class);

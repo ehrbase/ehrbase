@@ -38,7 +38,7 @@ import com.nedap.archie.rm.datavalues.DvCodedText;
 public class InvokeVisitorTest {
 
 	@Autowired
-	private I_OpenehrTerminologyServer<DvCodedText, String> tsserver;
+	private I_OpenehrTerminologyServer tsserver;
 
 	@Ignore("This test runs against ontoserver sample inteance. It is deactivated until we have a test FHIR terminology server and the architecture allows to run Spring integration tests.")
 	@Test
@@ -48,7 +48,7 @@ public class InvokeVisitorTest {
 				"FROM EHR [ehr_id/value='1234'] " +
 				"CONTAINS COMPOSITION c " +
 				"CONTAINS OBSERVATION o [openEHR-EHR-OBSERVATION.blood_pressure.v1] " +
-				"WHERE c/archetype_details/template_id/value matches {'Flormidal', INVOKE(https://r4.ontoserver.csiro.au/fhir/ValueSet/942e1d78-d481-416f-bebd-5754ba4d0b69/$expand/), 'Kloralhidrat'}";
+				"WHERE c/archetype_details/template_id/value matches {'Flormidal', TERMINOLOGY('http://hl7.org/fhir/ValueSet/surface','ValueSet/$expand','org.hl7.fhir.r4'), 'Kloralhidrat'}";
 		ParseTree tree = QueryHelper.setupParseTree(aql);
 		cut.visit(tree);
 

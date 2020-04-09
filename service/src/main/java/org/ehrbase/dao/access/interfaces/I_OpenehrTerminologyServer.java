@@ -42,12 +42,8 @@ import com.nedap.archie.rm.datavalues.DvCodedText;
  */
 /***
  * @Created by Luis Marco-Ruiz on Mar 6, 2020
- *
- * @param <DvCodedText> concept type
- * @param <ID>          id type
- * @param <ID> generic type for parameters that are custom to each operation implementation.
  */
-public interface I_OpenehrTerminologyServer <ID, U> extends TerminologyServer<DvCodedText, ID, U> {
+public interface I_OpenehrTerminologyServer  extends TerminologyServer<DvCodedText, String, String> {
 
 	/**
 	 * Create new instance of the external terminology server adaptor.
@@ -59,7 +55,7 @@ public interface I_OpenehrTerminologyServer <ID, U> extends TerminologyServer<Dv
 	 * @return
 	 * @throws Exception
 	 */
-	static  <ID, U> I_OpenehrTerminologyServer <ID, U> getInstance(final FhirTsProps props,
+	static  I_OpenehrTerminologyServer  getInstance(final FhirTsProps props,
 			final String adapterId) throws Exception {
 		if (TerminologyServer.TerminologyAdapter.isAdapterSupported(adapterId)) {
 			throw new Exception("Terminology adapter not supported exception: " + adapterId);
@@ -67,8 +63,8 @@ public interface I_OpenehrTerminologyServer <ID, U> extends TerminologyServer<Dv
 		// Cast is correct because of the fixed parameterization of generics in
 		// FhirTerminologyServerAdaptorImpl
 		@SuppressWarnings("unchecked")
-		I_OpenehrTerminologyServer <ID, U>  result =  (I_OpenehrTerminologyServer <ID, U> ) FhirTerminologyServerR4AdaptorImpl
+		I_OpenehrTerminologyServer  result =   FhirTerminologyServerR4AdaptorImpl
 				.getInstance(props);
-		return  (I_OpenehrTerminologyServer<ID, U>) result;
+		return   result;
 	}
 }
