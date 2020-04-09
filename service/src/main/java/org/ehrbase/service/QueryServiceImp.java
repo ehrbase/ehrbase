@@ -109,7 +109,7 @@ public class QueryServiceImp extends BaseService implements QueryService {
             Map<String, Object> fieldMap = new LinkedHashMap<>();
             for (Field field : record.fields()) {
                 //process non-hidden variables
-                if (aqlResult.getVariables().containsValue(field.getName())) {
+                if (aqlResult.getVariables().containsValue(field.getName()) || aqlResult.getVariables().containsKey(field.getName())) {
                     if (record.getValue(field) instanceof JsonElement) {
                         fieldMap.put(field.getName(), new StructuredString((record.getValue(field)).toString(), StructuredStringFormat.JSON));
                     } else
