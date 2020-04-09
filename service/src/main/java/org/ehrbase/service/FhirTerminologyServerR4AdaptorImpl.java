@@ -38,7 +38,8 @@ import com.nedap.archie.rm.support.identification.TerminologyId;
  *@Created by Luis Marco-Ruiz on Feb 12, 2020
  */
 @Component
-public final class FhirTerminologyServerR4AdaptorImpl  implements org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer<DvCodedText, String>{
+public final class FhirTerminologyServerR4AdaptorImpl
+		implements org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer <String, String> {
 
 	private static volatile FhirTerminologyServerR4AdaptorImpl  instance = null;//thread safety is ensure in the getInstance method.
 	/**
@@ -80,6 +81,32 @@ public final class FhirTerminologyServerR4AdaptorImpl  implements org.ehrbase.da
 
 	@Override
 	public final List<DvCodedText> expand(final String valueSetId) {
+		RestTemplate rest = new RestTemplate();
+		HttpHeaders headers = new HttpHeaders();
+		headers.set("accept","application/fhir+json");
+		HttpEntity<String> entity =  new HttpEntity<>(headers);
+		ResponseEntity<String> responseEntity = rest.exchange(valueSetId,
+				HttpMethod.GET,
+				entity,
+				String.class);
+		String response = responseEntity.getBody();
+		DocumentContext jsonContext = JsonPath.parse(response);
+		List<String> codeList = jsonContext.read(props.getCodePath().replace("\\", ""));
+		List<String> systemList = jsonContext.read(props.getSystemPath());
+		List<String> displayList = jsonContext.read(props.getDisplayPath());
+		
+		List<DvCodedText> expansionList = new ArrayList<>();
+		for(int i = 0; i< codeList.size(); i++) {
+			TerminologyId termId = new TerminologyId(systemList.get(i));
+			CodePhrase codePhrase = new CodePhrase(termId, codeList.get(i));
+			DvCodedText codedText = new DvCodedText(displayList.get(i), codePhrase);
+			expansionList.add(codedText);
+		}
+		return expansionList;
+	}
+	
+	@Override
+	public final List<DvCodedText> expandWithParameters(final String valueSetId, String...operationParams) {
 		RestTemplate rest = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("accept","application/fhir+json");

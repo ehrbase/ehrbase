@@ -50,7 +50,7 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
 	private static final String COMMA = ",";
 
 
-	private I_OpenehrTerminologyServer<DvCodedText, ID> tsserver = (I_OpenehrTerminologyServer<DvCodedText, ID>) FhirTerminologyServerR4AdaptorImpl.getInstance(null);
+	//private I_OpenehrTerminologyServer<DvCodedText, ID> tsserver = (I_OpenehrTerminologyServer<DvCodedText, ID>) FhirTerminologyServerR4AdaptorImpl.getInstance(null);
 
 	private List<Object> whereExpression = new ArrayList<>();
 
@@ -133,10 +133,13 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
 		assert(ctx.OPEN_PAR().getText().equals("("));
 		assert(ctx.CLOSE_PAR().getText().equals(")"));
 		List<String> codesList = new ArrayList<>();
-		String invokeUrl = ctx.STRING(0)+""+ctx.STRING(1)+""+ctx.STRING(2);
-		tsserver.expand((ID)invokeUrl).forEach((DvCodedText dvCode) -> {codesList.add(dvCode.getDefiningCode().getCodeString());});
-
-	//	tsserver.expand((ID)ctx..URIVALUE().getText()).forEach((DvCodedText dvCode) -> {codesList.add(dvCode.getDefiningCode().getCodeString());});
+		final String valueSetUri=ctx.STRING(0).getText();
+		final String operationId=ctx.STRING(1).getText();
+		try {
+			I_OpenehrTerminologyServer.getInstance(null, ctx.STRING(2).getText()).expandWithParameters(valueSetUri, operationId).forEach((DvCodedText dvCode) -> {codesList.add(dvCode.getDefiningCode().getCodeString());});
+		} catch (Exception e) {
+			throw new IllegalArgumentException("Terminology server operation failed:'"+e.getMessage()+"'");
+		}
 		invokeExpr.addAll(codesList);
 		return invokeExpr; 
 	}

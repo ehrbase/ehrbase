@@ -20,20 +20,25 @@ package org.ehrbase.api.service;
 import java.util.EnumSet;
 import java.util.List;
 
+import com.nedap.archie.rm.datavalues.DvCodedText;
+
 /***
  *@Created by Luis Marco-Ruiz on Feb 12, 2020
  *
  * @param <T> concept type
  * @param <ID> generic id type to specify the data type used for the identifier of the concept in the terminology server of choice.
+ * @param <ID> generic type for parameters that are custom to each operation implementation.
  */
 
-public interface TerminologyServer<T, ID> {
+public interface TerminologyServer<T, ID, U> {
 /**
  * Expands the value set identified by the provided ID.
  * @param valueSetId
  * @return Returns the list of concepts of type T that conform the expansion of the value set.
  */
 	List<T> expand(ID valueSetId);
+	
+	List<T> expandWithParameters(ID valueSetId, @SuppressWarnings("unchecked") U...operationParams);//warning is ignored because the specific implementation will type the method avoiding possible heap pollution
 	
 	/**
 	 * Searches all the attributes associated with the concept that corresponds to the provided ID.
@@ -83,9 +88,9 @@ public interface TerminologyServer<T, ID> {
 			this.adapterId = adapterId;
 		}
 
-		public static boolean isAdapterSupported(TerminologyAdapter adapterToCheck) {
+		/*private static boolean isAdapterSupported(TerminologyAdapter adapterToCheck) {
 			return supportedAdapters.contains(adapterToCheck);
-		}
+		}*/
 		
 		public static boolean isAdapterSupported(String adapterToCheck) {
 			return supportedAdapters.contains(TerminologyAdapter.valueOf(adapterToCheck));
