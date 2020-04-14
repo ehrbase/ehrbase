@@ -95,7 +95,7 @@ robot -i KNOWLEDGE -e circleci -e EHRSCAPE -e obsolete -e libtest \
 
 # RUN QUERY SERVICE TESTS - PART I (empty DB)
 robot -i aqlANDempty_db -e circleci -e EHRSCAPE -e obsolete -e libtest \
-      --outputdir results/test-suites/QUERY_SERVICE \
+      --outputdir results/test-suites/QUERY_SERVICE_I \
       --noncritical not-ready \
       --flattenkeywords for \
       --flattenkeywords foritem \
@@ -106,7 +106,7 @@ robot -i aqlANDempty_db -e circleci -e EHRSCAPE -e obsolete -e libtest \
 
 # RUN QUERY SERVICE TESTS - PART II (loaded DB)
 robot -i aqlANDloaded_db -e circleci -e EHRSCAPE -e obsolete -e libtest \
-      --outputdir results/test-suites/QUERY_SERVICE \
+      --outputdir results/test-suites/QUERY_SERVICE_II \
       --noncritical not-ready \
       --flattenkeywords for \
       --flattenkeywords foritem \
