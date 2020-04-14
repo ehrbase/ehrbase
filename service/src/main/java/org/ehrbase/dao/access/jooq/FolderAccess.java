@@ -31,6 +31,7 @@ import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_FolderAccess;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
+import org.ehrbase.dao.access.util.FolderUtils;
 import org.ehrbase.jooq.binding.OtherDetailsJsonbBinder;
 import org.ehrbase.jooq.binding.SysPeriodBinder;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
@@ -38,11 +39,12 @@ import org.ehrbase.jooq.pg.tables.FolderHierarchy;
 import org.ehrbase.jooq.pg.tables.records.*;
 import org.joda.time.DateTime;
 import org.jooq.*;
-import org.openehr.schemas.v1.impl.UIDBASEDIDImpl;
+
 
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 import java.util.*;
+import java.util.Date;
 import java.util.UUID;
 
 import static org.ehrbase.jooq.pg.Tables.*;
@@ -791,6 +793,31 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
 
         // If we found entries in both tables return the sum. If there is no current entry the count will be 0
         return folderHistoryCount + folderCount;
+    }
+
+    public static Timestamp getTimestampForVersion(I_DomainAccess domainAccess, final ObjectVersionId rootFolderId, Integer version) {
+        Timestamp timestamp = new Timestamp(new Date().getTime());
+        UUID rootFolderUuid = FolderUtils.extractUuidFromObjectVersionId(rootFolderId);
+        // Get latest version number
+        int currentVersion = FolderAccess.getVersionNumberAtTime(domainAccess, rootFolderUuid, timestamp);
+
+        if (currentVersion > version) {
+            // Select number of rows from folder history record that are required
+            Result<FolderHistoryRecord> folderHistoryRecords = domainAccess
+                    .getContext()
+                    .selectFrom(FOLDER_HISTORY)
+                    .where(FOLDER_HISTORY.ID.equal(rootFolderUuid))
+                    .orderBy(FOLDER_HISTORY.SYS_TRANSACTION.desc())
+                    .limit(currentVersion - version)
+                    .fetch();
+            // Return sys_transaction timestamp of last entry if existing
+            if (folderHistoryRecords.size() > 0) {
+                timestamp = folderHistoryRecords.get(folderHistoryRecords.size() - 1).get(FOLDER_HISTORY.SYS_TRANSACTION);
+            }
+        }
+        // The timestamp now contains either the last entry found in folder history or the current time if the desired
+        // version matches or is greater than the latest.
+        return timestamp;
     }
 
     /****Getters and Setters for the FolderRecord to store****/

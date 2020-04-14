@@ -111,6 +111,19 @@ public class FolderUtils {
         return UUID.fromString(value.substring(0, index));
     }
 
+    public static Integer extractVersionNumberFromObjectVersionId(ObjectVersionId objectVersionId) {
+
+        String value = objectVersionId.getValue();
+        if (value == null) {
+            return null;
+        }
+        int index = value.lastIndexOf("::");
+        if (index < 0 || index == value.indexOf("::")) {
+            // No or only one occurrence of :: found
+            return null;
+        } return Integer.parseInt(value.substring(index + 2));
+    }
+
     public static ItemStructure parseFromJSONB(JSONB dbObject) {
         if (dbObject == null) {
             return null;

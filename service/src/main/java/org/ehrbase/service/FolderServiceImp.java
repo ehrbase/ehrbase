@@ -107,6 +107,39 @@ public class FolderServiceImp extends BaseService implements FolderService {
         return folderId;
     }
 
+    @Override
+    public Optional<FolderDto> get(ObjectVersionId folderId, String path) {
+
+        I_FolderAccess folderAccess;
+        Integer version = FolderUtils.extractVersionNumberFromObjectVersionId(folderId);
+        if (version == null) {
+            // Get the latest object
+            folderAccess = I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), folderId);
+        } else {
+            // Get timestamp for version
+            Timestamp versionTimestamp = FolderAccess.getTimestampForVersion(getDataAccess(), folderId, version);
+            folderAccess = I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), folderId, versionTimestamp);
+        }
+
+        I_FolderAccess folderAccessWithExtractedPath = extractPath(folderAccess, path);
+
+        return createDto(
+                folderAccessWithExtractedPath,
+                FolderUtils.extractVersionNumberFromObjectVersionId(folderId),
+                path == null
+        );
+    }
+
+    @Override
+    public Optional<FolderDto> getLatest(ObjectVersionId folderId, String path) {
+
+        I_FolderAccess folderAccess = I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), folderId);
+        int version = FolderAccess.getLastVersionNumber(getDataAccess(), FolderUtils.extractUuidFromObjectVersionId(folderId));
+
+        I_FolderAccess folderAccessWithExtractedPath = extractPath(folderAccess, path);
+        return createDto(folderAccessWithExtractedPath, version, path == null);
+    }
+
 
     @Override
     public Optional<FolderDto> retrieveLatest(UUID ehrId, String path) {

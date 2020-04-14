@@ -24,6 +24,7 @@ import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import org.ehrbase.dao.access.jooq.FolderHistoryAccess;
+import org.ehrbase.dao.access.util.FolderUtils;
 import org.joda.time.DateTime;
 
 import java.sql.Timestamp;
@@ -102,6 +103,21 @@ public interface I_FolderAccess extends I_SimpleCRUD {
      * @return Object_Version_Id for new root directory folder
      */
     ObjectVersionId create();
+
+    static I_FolderAccess getInstanceForExistingFolder(I_DomainAccess domainAccess, ObjectVersionId folderId){
+        return FolderAccess.retrieveInstanceForExistingFolder(
+                domainAccess,
+                FolderUtils.extractUuidFromObjectVersionId(folderId)
+        );
+    }
+
+    static I_FolderAccess getInstanceForExistingFolder(I_DomainAccess domainAccess, ObjectVersionId folderId, Timestamp timestamp) {
+        return FolderHistoryAccess.retrieveInstanceForExistingFolder(
+                domainAccess,
+                FolderUtils.extractUuidFromObjectVersionId(folderId),
+                timestamp
+        );
+    }
 
     /**
      * Additional commit method to store a new entry of folder to the database and get all of inserted sub folders

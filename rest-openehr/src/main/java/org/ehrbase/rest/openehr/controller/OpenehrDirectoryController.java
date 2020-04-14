@@ -161,7 +161,7 @@ public class OpenehrDirectoryController extends BaseController {
     public ResponseEntity<DirectoryResponseData> getFolder(
             @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
             @ApiParam(value = "EHR identifier from resource path after ehr/", required = true) @PathVariable(value = "ehr_id") UUID ehrId,
-            @ApiParam(value = "DIRECTORY identifier from resource path after directory/", required = true) @PathVariable(value = "version_uid") String versionUid,
+            @ApiParam(value = "DIRECTORY identifier from resource path after directory/", required = true) @PathVariable(value = "version_uid") ObjectVersionId versionUid,
             @ApiParam(value = "Path parameter to specify a subfolder at directory") @RequestParam(value = "path", required = false) String path
     ) {
 
@@ -169,8 +169,6 @@ public class OpenehrDirectoryController extends BaseController {
         if (path != null && !isValidPath(path)) {
             throw new IllegalArgumentException("Value for path is malformed. Expecting a unix like notation, e.g. '/episodes/a/b/c'");
         }
-        // Tries to create an UUID from versionUid and throws an IllegalArgumentException for 400 error
-        VersionUidHelper versionUidHelper = new VersionUidHelper(versionUid);
 
         // Check if EHR for the folder exists
         if (!ehrService.doesEhrExist(ehrId)) {
@@ -181,16 +179,15 @@ public class OpenehrDirectoryController extends BaseController {
         }
 
         // Get the folder entry from database
-        Optional<FolderDto> foundFolder = folderService.retrieve(
-                versionUidHelper.getUuid(),
-                versionUidHelper.getVersion(),
+        Optional<FolderDto> foundFolder = folderService.get(
+                versionUid,
                 path
         );
         if (foundFolder.isEmpty()) {
             throw new ObjectNotFoundException(
                     "folder",
                     "The FOLDER with id "
-                    + versionUidHelper.toString()
+                    + versionUid.toString()
                     + " does not exist."
             );
         }
@@ -225,7 +222,7 @@ public class OpenehrDirectoryController extends BaseController {
             @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
             @ApiParam(value = "EHR identifier from resource path after ehr/", required = true) @PathVariable(value = "ehr_id") UUID ehrId,
             @ApiParam(value = "Timestamp in extended ISO8601 format to identify version of folder.") @RequestParam(value = "version_at_time", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime versionAtTime,
-            @ApiParam(value = "Path parameter to specify a subfolder at directory") @RequestParam(value = "path", required = false) String path
+            @ApiParam(value = "Path parameter to specify a sub folder at directory") @RequestParam(value = "path", required = false) String path
     ) {
         // Check path string if they are valid
         if (path != null && !isValidPath(path)) {

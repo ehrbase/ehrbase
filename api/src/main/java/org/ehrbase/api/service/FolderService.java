@@ -44,6 +44,10 @@ public interface FolderService extends BaseService {
      */
     ObjectVersionId create(UUID ehrId, Folder content);
 
+    Optional<FolderDto> get(ObjectVersionId folderId, String path);
+
+    Optional<FolderDto> getLatest(ObjectVersionId folderID, String path);
+
     /**
      * Returns a versioned folder object by target version number. If the
      * version number is missing the latest version will be fetched from
