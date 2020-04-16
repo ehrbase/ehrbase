@@ -31,6 +31,7 @@ import org.ehrbase.aql.sql.PathResolver;
 import org.ehrbase.aql.sql.binding.I_JoinBinder;
 import org.ehrbase.aql.sql.queryImpl.value_field.NodePredicate;
 import org.ehrbase.ehr.util.LocatableHelper;
+import org.ehrbase.opt.query.I_QueryOptMetaData;
 import org.ehrbase.serialisation.CompositionSerializer;
 import org.ehrbase.service.IntrospectService;
 import org.jooq.DSLContext;
@@ -337,7 +338,9 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
                 throw new IllegalArgumentException("MetaDataCache is not initialized");
             String reducedItemPathArray = new SegmentedPath(referenceItemPathArray).reduce();
             if (reducedItemPathArray != null && !reducedItemPathArray.isEmpty()) {
-                itemType = introspectCache.getQueryOptMetaData(templateId).type(reducedItemPathArray);
+                I_QueryOptMetaData queryOptMetaData = introspectCache.getQueryOptMetaData(templateId);
+                itemCategory = queryOptMetaData.category(reducedItemPathArray);
+                itemType = queryOptMetaData.type(reducedItemPathArray);
                 if (itemType != null) {
                     String pgType = new PGType(itemPathArray).forRmType(itemType);
                     if (pgType != null)
