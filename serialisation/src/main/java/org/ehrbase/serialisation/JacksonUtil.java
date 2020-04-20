@@ -132,8 +132,8 @@ public class JacksonUtil {
     }
 
     /**
-     * Custom deserializer for {@link EhrStatus} objects. Used to default the is_modifiable and is_queryable attributes
-     * to `true`.
+     * Custom deserializer for {@link EhrStatus} objects. Used to check the is_modifiable and is_queryable attributes
+     * and throw an error if not available. Background: always defaults to the bool Java-default `false` otherwise.
      */
     public static class EhrStatusDeserializer extends StdDeserializer<EhrStatus> {
 
@@ -148,19 +148,15 @@ public class JacksonUtil {
 
             JsonNode node = p.getCodec().readTree(p);
 
-            // check for "is_modifiable", correct to default if necessary
-            if (node.has(IS_MODIFIABLE)) {
-                if (!node.get(IS_MODIFIABLE).isBoolean()) // is available but invalid value -> default to `true`
-                    ((ObjectNode) node).put(IS_MODIFIABLE, true);
-            } else  // not available at all -> default to `true`
-                ((ObjectNode) node).put(IS_MODIFIABLE, true);
+            if (!node.has(IS_MODIFIABLE)) // not available at all -> throw error
+                throw new IllegalArgumentException("Attribute missing: EHR_STATUS " + IS_MODIFIABLE);
+            else if (!node.get(IS_MODIFIABLE).isBoolean()) // not a valid boolean -> throw error
+                throw new IllegalArgumentException("Attribute invalid: EHR_STATUS " + IS_MODIFIABLE);
 
-            // check for "is_queryable", correct to default if necessary
-            if (node.has(IS_QUERYABLE)) {
-                if (!node.get(IS_QUERYABLE).isBoolean()) // is available but invalid value -> default to `true`
-                    ((ObjectNode) node).put(IS_QUERYABLE, true);
-            } else  // not available at all -> default to `true`
-                ((ObjectNode) node).put(IS_QUERYABLE, true);
+            if (!node.has(IS_QUERYABLE)) // not available at all -> throw error
+                throw new IllegalArgumentException("Attribute missing: EHR_STATUS " + IS_QUERYABLE);
+            else if (!node.get(IS_QUERYABLE).isBoolean()) // not a valid boolean -> throw error
+                throw new IllegalArgumentException("Attribute invalid: EHR_STATUS " + IS_QUERYABLE);
 
             // continue with normal deserialization
             ObjectMapper objectMapper = new ObjectMapper();
