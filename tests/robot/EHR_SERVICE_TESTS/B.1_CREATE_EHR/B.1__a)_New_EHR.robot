@@ -276,13 +276,13 @@ MF-017 - Create new EHR w/ body: valid ehr_status
 
 
 MF-018 - Create new EHR w/ body: valid ehr_status
-    [Documentation]     Covers valid case where subject is empty JSON
+    [Documentation]     Covers invalid case where subject is empty JSON
     [Tags]
     prepare new request session    JSON    Prefer=return=representation
-    ${body}=     randomize subject_id in test-data-set    valid/001_ehr_status_subject_empty.json
+    ${body}=     randomize subject_id in test-data-set    invalid/001_ehr_status_subject_empty.json
     POST /ehr    ${body}
 
-    Integer    response status    201
+    Integer    response status    400
 
 
 MF-019 - Create new EHR w/ body: valid ehr_status w/ o.d.
@@ -349,21 +349,21 @@ MF-023 - Create new EHR (POST /ehr variants)
     [Template]          create ehr from data table
 
   # SUBJECT    IS_MODIFIABLE   IS_QUERYABLE   R.CODE
-    given      ${EMPTY}        true           201
-    given      ${EMPTY}        false          201
-    given      false           ${EMPTY}       201
-    given      true            ${EMPTY}       201
+    given      ${EMPTY}        true           400
+    given      ${EMPTY}        false          400
+    given      false           ${EMPTY}       400
+    given      true            ${EMPTY}       400
     given      true            true           201
     given      true            false          201
     given      false           false          201
     given      false           true           201
 
-    given      null            null           201
-    given      "null"          "null"         201
+    given      null            null           400
+    given      "null"          "null"         400
     given      "true"          "true"         201
     given      "false"         "false"        201
-    given      1               1              201
-    given      0               0              201
+    given      1               1              400
+    given      0               0              400
 
 
 MF-024 - Create new EHR w/ empty subject (POST /ehr variants)
@@ -373,14 +373,14 @@ MF-024 - Create new EHR w/ empty subject (POST /ehr variants)
 
 
   # SUBJECT    IS_MODIFIABLE   IS_QUERYABLE   R.CODE
-    ${EMPTY}   ${EMPTY}        true           201
-    ${EMPTY}   true            ${EMPTY}       201
-    ${EMPTY}   true            true           201
-    ${EMPTY}   ${EMPTY}        false          201
-    ${EMPTY}   true            false          201
-    ${EMPTY}   false           ${EMPTY}       201
-    ${EMPTY}   false           true           201
-    ${EMPTY}   false           false          201
+    ${EMPTY}   ${EMPTY}        true           400
+    ${EMPTY}   true            ${EMPTY}       400
+    ${EMPTY}   true            true           400
+    ${EMPTY}   ${EMPTY}        false          400
+    ${EMPTY}   true            false          400
+    ${EMPTY}   false           ${EMPTY}       400
+    ${EMPTY}   false           true           400
+    ${EMPTY}   false           false          400
 
 
 MF-025 - Create new EHR w/ invalid subject (POST /ehr variants)
@@ -390,14 +390,12 @@ MF-025 - Create new EHR w/ invalid subject (POST /ehr variants)
     [Template]          create ehr from data table (invalid)
 
   # SUBJECT    IS_MODIFIABLE   IS_QUERYABLE   R.CODE
-    # TODO: remove when fixed. Issue 158
     invalid    true            true           400
     invalid    true            false          400
     invalid    false           true           400
     invalid    false           false          400
     invalid    0               1              400
 
-    # TODO: remove when fixed. Issue 157
     missing    true            true           400
     missing    true            false          400
     missing    false           true           400
@@ -409,21 +407,21 @@ MF-030 - Create new EHR w/ given ehr_id (PUT /ehr/ehr_id variants)
     [Template]          create ehr w/ given ehr_id from data table
 
   # EHR_ID  SUBJECT    IS_MODIFIABLE   IS_QUERYABLE   R.CODE
-    given   given      ${EMPTY}        true           201
-    given   given      ${EMPTY}        false          201
-    given   given      false           ${EMPTY}       201
-    given   given      true            ${EMPTY}       201
+    given   given      ${EMPTY}        true           400
+    given   given      ${EMPTY}        false          400
+    given   given      false           ${EMPTY}       400
+    given   given      true            ${EMPTY}       400
     given   given      true            true           201
     given   given      true            false          201
     given   given      false           false          201
     given   given      false           true           201
 
-    given   given      null            null           201
-    given   given      "null"          "null"         201
+    given   given      null            null           400
+    given   given      "null"          "null"         400
     given   given      "true"          "true"         201
     given   given      "false"         "false"        201
-    given   given      1               1              201
-    given   given      0               0              201
+    given   given      1               1              400
+    given   given      0               0              400
 
 
 MF-031 - Create new EHR w/ given ehr_id (PUT /ehr/ehr_id variants)
@@ -431,10 +429,10 @@ MF-031 - Create new EHR w/ given ehr_id (PUT /ehr/ehr_id variants)
     [Template]          create ehr w/ given ehr_id from data table
 
   # EHR_ID    SUBJECT    IS_MODIFIABLE   IS_QUERYABLE   R.CODE
-    given     ${EMPTY}   true            true           201
-    given     ${EMPTY}   true            false          201
-    given     ${EMPTY}   false           false          201
-    given     ${EMPTY}   false           true           201
+    given     ${EMPTY}   true            true           400
+    given     ${EMPTY}   true            false          400
+    given     ${EMPTY}   false           false          400
+    given     ${EMPTY}   false           true           400
 
 
 MF-032 - Create new EHR w/ invalid ehr_id (PUT /ehr/ehr_id variants)
@@ -624,13 +622,13 @@ MF-049 - Create new EHR w/ given ehr_id w/ body: valid ehr_status
 
 
 MF-050 - Create new EHR w/ given ehr_id w/ body: valid ehr_status
-    [Documentation]     Covers valid case where subject is empty JSON
+    [Documentation]     Covers INVALID case where subject is empty JSON
     [Tags]
     prepare new request session    JSON    Prefer=return=representation
-    ${body}=     randomize subject_id in test-data-set    valid/001_ehr_status_subject_empty.json
+    ${body}=     randomize subject_id in test-data-set    invalid/001_ehr_status_subject_empty.json
     PUT /ehr/$ehr_id    body=${body}
 
-    Integer    response status    201
+    Integer    response status    400
 
 
 MF-051 - Create new EHR w/ given ehr_id w/ body: valid ehr_status w/ o.d.
