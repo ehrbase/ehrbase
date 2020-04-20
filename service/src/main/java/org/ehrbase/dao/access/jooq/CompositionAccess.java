@@ -465,11 +465,12 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         if (compositionRecord.getId() == null)
             return Optional.empty();
         // conditional handling for persistent composition that do not have a event context
-        EventContextRecord eventContext = getContext().fetchOne(EVENT_CONTEXT, EVENT_CONTEXT.COMPOSITION_ID.eq(compositionRecord.getId()));
-        if (eventContext == null) {
+        UUID id = getContext().select(EVENT_CONTEXT.ID).from(EVENT_CONTEXT).where(EVENT_CONTEXT.COMPOSITION_ID.eq(compositionRecord.getId())).fetchOne().get(EVENT_CONTEXT.ID);
+
+        if (id == null) {
             return Optional.empty();
         }
-        return Optional.of(eventContext.getId());
+        return Optional.of(id);
     }
 
     @Override

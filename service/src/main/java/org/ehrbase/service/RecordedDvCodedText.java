@@ -20,11 +20,16 @@ package org.ehrbase.service;
 import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.DvText;
+import com.nedap.archie.rm.datavalues.TermMapping;
 import com.nedap.archie.rm.support.identification.TerminologyId;
 import org.ehrbase.jooq.pg.udt.records.CodePhraseRecord;
 import org.ehrbase.jooq.pg.udt.records.DvCodedTextRecord;
+import org.ehrbase.jooq.pg.udt.records.DvCodedTextTermMappingRecord;
 import org.jooq.Field;
 import org.jooq.Record;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * get/set a DvCodedText from/to DB
@@ -32,34 +37,57 @@ import org.jooq.Record;
 public class RecordedDvCodedText {
 
     public void toDB(Record record, Field<DvCodedTextRecord> targetField, DvCodedText dvCodedText){
+//        List<DvCodedTextTermMappingRecord> dvCodedTextTermMappingRecords = new ArrayList<>();
+//
+//        //prepare the term mappings array if any
+//        for (TermMapping termMapping: dvCodedText.getMappings()){
+//            dvCodedTextTermMappingRecords.add(
+//                    new PersistentTermMapping(termMapping).encodeAsString()
+//            );
+//        }
+
         DvCodedTextRecord dvCodedTextRecord =
                 new DvCodedTextRecord(dvCodedText.getValue(),
                         new PersistentCodePhrase(dvCodedText.getDefiningCode()).encode(),
                         dvCodedText.getFormatting(),
                         new PersistentCodePhrase(dvCodedText.getLanguage()).encode(),
-                        new PersistentCodePhrase(dvCodedText.getEncoding()).encode());
+                        new PersistentCodePhrase(dvCodedText.getEncoding()).encode(),
+                        new PersistentTermMapping().termMappingRepresentation(dvCodedText.getMappings())
+                );
 
         record.set(targetField, dvCodedTextRecord);
     }
 
     public Object fromDB(Record record, Field<DvCodedTextRecord> fromField){
+        return fromDB(record.get(fromField));
+    }
 
-        DvCodedTextRecord dvCodedTextRecord = record.get(fromField);
+    public Object fromDB(DvCodedTextRecord dvCodedTextRecord){
+        Object retObject;
 
         CodePhraseRecord codePhraseDefiningCode = dvCodedTextRecord.getDefiningCode();
         CodePhraseRecord codePhraseLanguage = dvCodedTextRecord.getLanguage();
         CodePhraseRecord codePhraseEncoding = dvCodedTextRecord.getEncoding();
 
-        if (codePhraseDefiningCode != null)
-            return new DvCodedText(dvCodedTextRecord.getValue(),
+        if (codePhraseDefiningCode != null) {
+            retObject= new DvCodedText(dvCodedTextRecord.getValue(),
                     codePhraseLanguage == null ? null : new CodePhrase(new TerminologyId(codePhraseLanguage.getTerminologyIdValue()), codePhraseLanguage.getCodeString()),
                     codePhraseEncoding == null ? null : new CodePhrase(new TerminologyId(codePhraseEncoding.getTerminologyIdValue()), codePhraseEncoding.getCodeString()),
                     new CodePhrase(new TerminologyId(codePhraseDefiningCode.getTerminologyIdValue()), codePhraseDefiningCode.getCodeString())
-                    );
-        else //assume DvText
-            return new DvText(dvCodedTextRecord.getValue(),
+            );
+        } else //assume DvText
+            retObject = new DvText(dvCodedTextRecord.getValue(),
                     codePhraseLanguage == null ? null : new CodePhrase(new TerminologyId(codePhraseLanguage.getTerminologyIdValue()), codePhraseLanguage.getCodeString()),
                     codePhraseEncoding == null ? null : new CodePhrase(new TerminologyId(codePhraseEncoding.getTerminologyIdValue()), codePhraseEncoding.getCodeString())
             );
+
+        if (dvCodedTextRecord.getTermMapping().length > 0) {
+            for (String dvCodedTextTermMappingRecord : dvCodedTextRecord.getTermMapping()) {
+                ((DvText)retObject).addMapping(new PersistentTermMapping().decode(dvCodedTextTermMappingRecord));
+            }
+        }
+
+        return retObject;
+
     }
 }

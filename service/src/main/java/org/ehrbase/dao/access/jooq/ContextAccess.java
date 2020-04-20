@@ -46,6 +46,7 @@ import org.ehrbase.dao.access.interfaces.I_PartyIdentifiedAccess;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.jooq.pg.tables.records.*;
 import org.ehrbase.serialisation.RawJson;
+import org.ehrbase.service.RecordedDvCodedText;
 import org.jooq.*;
 import org.jooq.exception.DataAccessException;
 
@@ -217,15 +218,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         DvCodedText concept;
 
         //retrieve the setting
-        UUID settingUuid = eventContextHistoryRecord.getSetting();
-
-        ConceptRecord conceptRecord = domainAccess.getContext().fetchOne(CONCEPT, CONCEPT.ID.eq(settingUuid).and(CONCEPT.LANGUAGE.eq("en")));
-
-        if (conceptRecord != null) {
-            concept = new DvCodedText(conceptRecord.getDescription(), new CodePhrase(OPENEHR_TERMINOLOGY_ID, conceptRecord.getConceptid().toString()));
-        } else {
-            concept = new DvCodedText("event", new CodePhrase(OPENEHR_TERMINOLOGY_ID, "433"));
-        }
+        concept = (DvCodedText)new RecordedDvCodedText().fromDB(eventContextHistoryRecord, EVENT_CONTEXT_HISTORY.SETTING);
 
         return new EventContext(healthCareFacility,
                 decodeDvDateTime(eventContextHistoryRecord.getStartTime(), eventContextHistoryRecord.getStartTimeTzid()),
@@ -274,16 +267,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         if (eventContext.getLocation() != null)
             eventContextRecord.setLocation(eventContext.getLocation());
 
-        //TODO: retrieveInstanceByNamedSubject program details from other context if any
-//        setting = eventContext.getSetting().getCode();
-        Integer settingCode;
-        try {
-            settingCode = Integer.parseInt(eventContext.getSetting().getDefiningCode().getCodeString());
-            // when not throwing exception continue with
-            eventContextRecord.setSetting(ConceptAccess.fetchConceptUUID(this, settingCode, "en"));
-        } catch (NumberFormatException e) {
-            // do nothing   //TODO: is treating it as optional correct? or should it be a real error case?
-        }
+        new RecordedDvCodedText().toDB(eventContextRecord, EVENT_CONTEXT.SETTING, eventContext.getSetting());
 
         if (eventContext.getParticipations() != null) {
             for (Participation participation : eventContext.getParticipations()) {
@@ -552,15 +536,8 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         DvCodedText concept;
 
         //retrieve the setting
-        UUID settingUuid = eventContextRecord.getSetting();
+        concept = (DvCodedText)new RecordedDvCodedText().fromDB(eventContextRecord, EVENT_CONTEXT.SETTING);
 
-        ConceptRecord conceptRecord = getContext().fetchOne(CONCEPT, CONCEPT.ID.eq(settingUuid).and(CONCEPT.LANGUAGE.eq("en")));
-
-        if (conceptRecord != null) {
-            concept = new DvCodedText(conceptRecord.getDescription(), new CodePhrase(OPENEHR_TERMINOLOGY_ID, conceptRecord.getConceptid().toString()));
-        } else {
-            concept = new DvCodedText("event", new CodePhrase(OPENEHR_TERMINOLOGY_ID, "433"));
-        }
         ItemStructure otherContext = null;
 
         if (eventContextRecord.getOtherContext() != null) {

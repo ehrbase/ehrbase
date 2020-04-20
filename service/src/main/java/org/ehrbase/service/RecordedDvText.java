@@ -18,9 +18,14 @@
 package org.ehrbase.service;
 
 import com.nedap.archie.rm.datavalues.DvText;
+import com.nedap.archie.rm.datavalues.TermMapping;
 import org.ehrbase.jooq.pg.udt.records.DvCodedTextRecord;
+import org.ehrbase.jooq.pg.udt.records.DvCodedTextTermMappingRecord;
 import org.jooq.Field;
 import org.jooq.Record;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class RecordedDvText {
 
@@ -29,12 +34,28 @@ public class RecordedDvText {
      */
 
     public void toDB(Record record, Field<DvCodedTextRecord> targetField, DvText dvText){
+
+//        List<DvCodedTextTermMappingRecord> dvCodedTextTermMappingRecords = new ArrayList<>();
+
+        List<String> dvCodedTextTermMappingRecords = new ArrayList<>();
+        //prepare the term mappings array if any
+        StringBuilder stringBuilder = new StringBuilder();
+
+        for (TermMapping termMapping: dvText.getMappings()){
+            stringBuilder.append(
+                    new PersistentTermMapping(termMapping).encodeAsString()
+            );
+            dvCodedTextTermMappingRecords.add(stringBuilder.toString());
+        }
+
+
         DvCodedTextRecord dvCodedTextRecord =
                 new DvCodedTextRecord(dvText.getValue(),
                         null,
                         dvText.getFormatting(),
                         new PersistentCodePhrase(dvText.getLanguage()).encode(),
-                        new PersistentCodePhrase(dvText.getEncoding()).encode());
+                        new PersistentCodePhrase(dvText.getEncoding()).encode(),
+                        dvCodedTextTermMappingRecords.toArray(new String[]{}));
 
         record.set(targetField, dvCodedTextRecord);
     }

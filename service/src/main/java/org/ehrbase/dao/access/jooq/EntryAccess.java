@@ -42,8 +42,10 @@ import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.jooq.pg.enums.EntryType;
 import org.ehrbase.jooq.pg.tables.records.EntryHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EntryRecord;
+import org.ehrbase.jooq.pg.udt.records.DvCodedTextRecord;
 import org.ehrbase.serialisation.RawJson;
 import org.ehrbase.service.IntrospectService;
+import org.ehrbase.service.RecordedDvCodedText;
 import org.jooq.*;
 import org.jooq.impl.DSL;
 
@@ -160,7 +162,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
         archetypeDetails.setTemplateId(templateId);
         archetypeDetails.setArchetypeId(new ArchetypeID(entryAccess.getArchetypeId()));
         entryAccess.composition.setArchetypeDetails(archetypeDetails);
-        entryAccess.composition.setCategory(I_ConceptAccess.fetchConceptText(entryAccess, entryAccess.getCategory()));
+        entryAccess.composition.setCategory((DvCodedText)new RecordedDvCodedText().fromDB(entryAccess.getCategory()));
     }
 
     public static List<I_EntryAccess> retrieveInstanceInCompositionVersion(I_DomainAccess domainAccess, I_CompositionAccess compositionHistoryAccess, int version) {
@@ -270,7 +272,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
     private void setCompositionFields(EntryRecord record, Composition composition) {
 
         Integer categoryId = Integer.parseInt(composition.getCategory().getDefiningCode().getCodeString());
-        record.setCategory(I_ConceptAccess.fetchConcept(this, categoryId, "en"));
+        record.setCategory(record.getCategory());
 
         if (composition.getContent() != null && !composition.getContent().isEmpty()) {
             Object node = composition.getContent().get(0);
@@ -310,7 +312,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
         entryRecord.setTemplateId(templateId);
         entryRecord.setSequence(sequence);
         entryRecord.setCompositionId(compositionId);
-
+        new RecordedDvCodedText().toDB(entryRecord, ENTRY.CATEGORY, composition.getCategory());
         setCompositionFields(entryRecord, composition);
 
         this.composition = composition;
@@ -459,7 +461,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
     }
 
     @Override
-    public UUID getCategory() {
+    public DvCodedTextRecord getCategory() {
         return entryRecord.getCategory();
     }
 
