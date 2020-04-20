@@ -46,7 +46,7 @@ public class PartyResolver extends AttributeResolver
             case "external_ref/id":
                 return new PartyRefJson(fieldResolutionContext, joinSetup).sqlField();
             case "external_ref/id/value":
-                return new PartyRefJson(fieldResolutionContext, joinSetup).forJsonPath(path).sqlField();
+                return new PartyRefJson(fieldResolutionContext, joinSetup).forJsonPath("id/value").sqlField();
             case "external_ref":
                 return new PartyRefJson(fieldResolutionContext, joinSetup).sqlField();
             case "":
