@@ -96,6 +96,13 @@ commit CONTRIBUTION - with preceding_version_uid (JSON)
                         POST /ehr/ehr_id/contribution    JSON
 
 
+commit invalid CONTRIBUTION - with preceding_version_uid (JSON)
+    [Arguments]         ${test_data_set}
+                        Set Test Variable  ${KEYWORD NAME}  COMMIT CONTRIBUTION 2 (JSON)
+                        inject preceding_version_uid into invalid test-data-set    ${test_data_set}
+                        POST /ehr/ehr_id/contribution    JSON
+
+
 check response: is positive - contribution has new version
                         Should Be Equal As Strings    ${response.status_code}    201
                         Set Test Variable    ${body}    ${response.json()}
@@ -396,6 +403,15 @@ load invalid test-data-set
 inject preceding_version_uid into valid test-data-set
     [Arguments]         ${valid_test_data_set}
     ${test_data}=       Load JSON from File    ${VALID CONTRI DATA SETS}/${valid_test_data_set}
+    ${test_data}=       Update Value To Json  ${test_data}  $..versions..preceding_version_uid.value
+                        ...                   ${version_id}
+                        Set Test Variable    ${test_data}    ${test_data}
+                        Output    ${test_data}
+
+
+inject preceding_version_uid into invalid test-data-set
+    [Arguments]         ${invalid_test_data_set}
+    ${test_data}=       Load JSON from File    ${INVALID CONTRI DATA SETS}/${invalid_test_data_set}
     ${test_data}=       Update Value To Json  ${test_data}  $..versions..preceding_version_uid.value
                         ...                   ${version_id}
                         Set Test Variable    ${test_data}    ${test_data}

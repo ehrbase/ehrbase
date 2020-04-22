@@ -16,8 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Added validation checking for other_details and ehr_status. (see: https://github.com/ehrbase/ehrbase/pull/207)
 - Supports archetype_node_id and name for EHR_STATUS (see: https://github.com/ehrbase/ehrbase/pull/207)
+- fixes bad canonical encoding for observation/data/origin (see: https://github.com/ehrbase/ehrbase/pull/213)
 - POST without accept header for ehr, composition and contribution endpoints (see: https://github.com/ehrbase/ehrbase/pull/199)
 - force a default timezone if not present for context/start_time and context/end_time if specified (https://github.com/ehrbase/ehrbase/pull/215)
+- Representation of version uid of EHR_STATUS (see: https://github.com/ehrbase/ehrbase/pull/180)
+
 
 ## [0.12.0] (alpha)
 
@@ -28,8 +31,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Contribution endpoint checks for some invalid input combinations (see: https://github.com/ehrbase/ehrbase/pull/202)
 - Fixes response code on /ehr PUT with invalid ID (see: https://github.com/ehrbase/project_management/issues/163)
 - Fixes STATUS w/ empty subject bug (see: https://github.com/ehrbase/ehrbase/pull/196)
+- Now querying on composition category returns the correct result (composition/category...)
 - Fixes storage of party self inside compositions (see: https://github.com/ehrbase/ehrbase/pull/195)
 - Added support of AQL query in the form of c/composer (see: https://github.com/ehrbase/ehrbase/pull/184)
 - Java error with UTF-8 encoding resolved (see: https://github.com/ehrbase/ehrbase/pull/173)

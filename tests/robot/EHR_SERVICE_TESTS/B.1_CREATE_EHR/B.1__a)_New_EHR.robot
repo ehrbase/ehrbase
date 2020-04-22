@@ -287,20 +287,16 @@ MF-018 - Create new EHR w/ body: valid ehr_status
 
 MF-019 - Create new EHR w/ body: valid ehr_status w/ o.d.
     [Documentation]     Covers happy path w/ "other_details" _type ITEM_TREE
-    [Tags]              refactor
+    [Tags]              161
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/002_ehr_status_with_other_details_item_tree.json
     POST /ehr    ${body}
     Integer    response status    201
 
     ${actual_ehr_status}=    Object    response body ehr_status
-
-    # comment: this converts dict to json string, without strings the compare jsons keyword doesn't work
-    #          TODO: @WLAD this have to be implemented in may jsonlib.py
-    ${actual_ehr_status}=    evaluate    json.dumps(${actual_ehr_status})    json
-    ${expected_ehr_status}=    evaluate    json.dumps(${body})    json
-    &{diff}=            compare json-strings    ${actual_ehr_status}  ${expected_ehr_status}
-                        ...    exclude_paths=$..uid
+    Set Test Variable    ${expected_ehr_status}    ${body}
+    &{diff}=            compare json-strings    ${actual_ehr_status}[0]  ${expected_ehr_status}
+                        ...    exclude_paths=root['uid']
 
         TRACE GITHUB ISSUE  161  not-ready
 
@@ -310,17 +306,21 @@ MF-019 - Create new EHR w/ body: valid ehr_status w/ o.d.
 
 MF-020 - Create new EHR w/ body: valid ehr_status w/ o.d.
     [Documentation]     Covers happy path w/ "other_details" _type ITEM_LIST
-    [Tags]
+    [Tags]              161
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/003_ehr_status_with_other_details_item_list.json
     POST /ehr    ${body}
     Integer    response status    201
 
-        # TODO: @WLAD add diff check as in MF-019
-        # after https://github.com/ehrbase/project_management/issues/161 was solved
+    ${actual_ehr_status}=    Object    response body ehr_status
+    Set Test Variable    ${expected_ehr_status}    ${body}
+
+    &{diff}=            compare json-strings    ${actual_ehr_status}[0]  ${expected_ehr_status}
+                        ...    exclude_paths=root['uid']
+    
         TRACE GITHUB ISSUE  161  not-ready
 
-    Fail  msg=Beak it til you make it!
+                        Should Be Empty    ${diff}    msg=DIFF DETECTED!
 
 
 MF-021 - Create new EHR w/ body: valid ehr_status w/ o.d.
@@ -334,7 +334,7 @@ MF-021 - Create new EHR w/ body: valid ehr_status w/ o.d.
 
 MF-022 - Create new EHR w/ body: valid ehr_status w/ o.d.
     [Documentation]     Covers happy path w/ "other_details" _type ITEM_TABLE
-    [Tags]
+    [Tags]              162
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/005_ehr_status_with_other_details_item_table.json
     POST /ehr    ${body}
@@ -635,32 +635,40 @@ MF-050 - Create new EHR w/ given ehr_id w/ body: valid ehr_status
 
 MF-051 - Create new EHR w/ given ehr_id w/ body: valid ehr_status w/ o.d.
     [Documentation]     Covers happy path w/ "other_details" _type ITEM_TREE
-    [Tags]
+    [Tags]              161
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/002_ehr_status_with_other_details_item_tree.json
     PUT /ehr/$ehr_id    body=${body}
     Integer    response status    201
 
-        # TODO: @WLAD add diff check as in MF-019
-        # after https://github.com/ehrbase/project_management/issues/161 was solved
+    ${actual_ehr_status}=    Object    response body ehr_status
+    Set Test Variable    ${expected_ehr_status}    ${body}
+
+    &{diff}=            compare json-strings    ${actual_ehr_status}[0]  ${expected_ehr_status}
+                        ...    exclude_paths=root['uid']
+
         TRACE GITHUB ISSUE  161  not-ready
 
-    Fail  msg=Beak it til you make it!
+                        Should Be Empty    ${diff}    msg=DIFF DETECTED!
 
 
 MF-052 - Create new EHR w/ given ehr_id w/ body: valid ehr_status w/ o.d.
     [Documentation]     Covers happy path w/ "other_details" _type ITEM_LIST
-    [Tags]
+    [Tags]              161
     prepare new request session    JSON
     ${body}=     randomize subject_id in test-data-set    valid/003_ehr_status_with_other_details_item_list.json
     PUT /ehr/$ehr_id    body=${body}
     Integer    response status    201
 
-        # TODO: @WLAD add diff check as in MF-019
-        # after https://github.com/ehrbase/project_management/issues/161 was solved
+    ${actual_ehr_status}=    Object    response body ehr_status
+    Set Test Variable    ${expected_ehr_status}    ${body}
+
+    &{diff}=            compare json-strings    ${actual_ehr_status}[0]  ${expected_ehr_status}
+                        ...    exclude_paths=root['uid']
+
         TRACE GITHUB ISSUE  161  not-ready
 
-    Fail  msg=Beak it til you make it!
+                        Should Be Empty    ${diff}    msg=DIFF DETECTED!
 
 
 MF-053 - Create new EHR w/ given ehr_id w/ body: valid ehr_status w/ o.d.
@@ -674,7 +682,7 @@ MF-053 - Create new EHR w/ given ehr_id w/ body: valid ehr_status w/ o.d.
 
 MF-054 - Create new EHR w/ given ehr_id w/ body: valid ehr_status w/ o.d.
     [Documentation]     Covers happy path w/ "other_details" _type ITEM_TABLE
-    [Tags]
+    [Tags]              162
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/005_ehr_status_with_other_details_item_table.json
     PUT /ehr/$ehr_id    body=${body}

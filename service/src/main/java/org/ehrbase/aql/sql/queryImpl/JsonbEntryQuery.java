@@ -31,6 +31,7 @@ import org.ehrbase.aql.sql.PathResolver;
 import org.ehrbase.aql.sql.binding.I_JoinBinder;
 import org.ehrbase.aql.sql.queryImpl.value_field.NodePredicate;
 import org.ehrbase.ehr.util.LocatableHelper;
+import org.ehrbase.opt.query.I_QueryOptMetaData;
 import org.ehrbase.serialisation.CompositionSerializer;
 import org.ehrbase.service.IntrospectService;
 import org.jooq.DSLContext;
@@ -66,7 +67,8 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
 
     //CCH 191018 EHR-163 matches trailing '/value'
     // '/name,0' is to matches path relative to the name array
-    public final static String matchNodePredicate = "(/(content|events|protocol|data|description|instruction|items|activities|activity|composition|entry|evaluation|observation|action)\\[([(0-9)|(A-Z)|(a-z)|\\-|_|\\.]*)\\])|(/value|/value,definingCode|/time|/name,0)";
+    public final static String matchNodePredicate = "(/(content|events|protocol|data|description|instruction|items|activities|activity|composition|entry|evaluation|observation|action)\\[([(0-9)|(A-Z)|(a-z)|\\-|_|\\.]*)\\])|" +
+            "(/value|/value,definingCode|/time|/name,0|/origin|/origin,/name,0|/origin,/value)";
 
     //Generic stuff
     private final static String JSONBSelector_CLOSE = "}'";
@@ -199,12 +201,7 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
                 } else {
                     jqueryPath.add(nodeId);
                 }
-//            if (StringUtils.endsWithAny(jquery, new String[]{"/value"}))
-//                //append the value key
-//                jquery += ",value";
         }
-
-//        String jquery = StringUtils.join(jqueryPath.toArray(new String[] {}));
 
         useEntry = true;
         //CHC 191018 EHR-163 '/value' for an ELEMENT will return a structure
@@ -341,7 +338,9 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
                 throw new IllegalArgumentException("MetaDataCache is not initialized");
             String reducedItemPathArray = new SegmentedPath(referenceItemPathArray).reduce();
             if (reducedItemPathArray != null && !reducedItemPathArray.isEmpty()) {
-                itemType = introspectCache.getQueryOptMetaData(templateId).type(reducedItemPathArray);
+                I_QueryOptMetaData queryOptMetaData = introspectCache.getQueryOptMetaData(templateId);
+                itemCategory = queryOptMetaData.category(reducedItemPathArray);
+                itemType = queryOptMetaData.type(reducedItemPathArray);
                 if (itemType != null) {
                     String pgType = new PGType(itemPathArray).forRmType(itemType);
                     if (pgType != null)

@@ -2,7 +2,11 @@
   "_type": "CONTRIBUTION",
   "versions": [
     {
-      "_type": "ORIGINAL_VERSION",
+	  "_type": "ORIGINAL_VERSION",
+	  "preceding_version_uid": {
+	    "_type": "OBJECT_VERSION_ID",
+	    "value": "__COMPOSITION_VERSION_UID::local.ehrbase.org::1__TO_BE_REPLACED_BY_TEST__"
+	  },
       "commit_audit": {
         "_type": "AUDIT_DETAILS",
         "system_id": "test-system-id",

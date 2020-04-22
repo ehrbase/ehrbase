@@ -84,12 +84,21 @@ public class QueryOptMetaData implements I_QueryOptMetaData {
      */
     @Override
     public String type(String path) {
+        return attributeChildValue(path, "type");
+    }
+
+    @Override
+    public String category(String path) {
+        return attributeChildValue(path, "category");
+    }
+
+    private String attributeChildValue(String path, String attribute){
         Object child = JsonPath.read(document, "$..children[?(@.aql_path == '" + path + "')]");
 
         if (child != null && child instanceof JSONArray && ((JSONArray) child).size() > 0) {
             Object childDef = ((JSONArray) child).get(0);
             if (childDef != null && childDef instanceof Map) {
-                return (String) ((Map) childDef).get("type");
+                return (String) ((Map) childDef).get(attribute);
             }
         }
 

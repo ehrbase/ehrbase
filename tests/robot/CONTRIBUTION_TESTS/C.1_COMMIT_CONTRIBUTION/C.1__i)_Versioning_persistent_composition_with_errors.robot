@@ -58,18 +58,17 @@ Force Tags    refactor
 
 *** Test Cases ***
 Alternative flow 8: commit CONTRIBUTIONS for versioning a persistent COMPOSITION, but second commit has change type creation
+    [Tags]              72
 
-    upload OPT    minimal/minimal_admin.opt
+    upload OPT    minimal_persistent/persistent_minimal.opt
 
     create EHR
 
-    commit CONTRIBUTION (JSON)    minimal/minimal_admin.contribution.json
+    commit CONTRIBUTION (JSON)    minimal_persistent/minimal_persistent.contribution.json
 
     check response: is positive - returns version id
 
-    commit CONTRIBUTION - with preceding_version_uid (JSON)    minimal/minimal_admin.contribution.creation_modification.json
-
-        TRACE GITHUB ISSUE  72  not-ready
+    commit invalid CONTRIBUTION - with preceding_version_uid (JSON)    minimal_persistent/minimal_persistent.contribution.modification.json
 
     check response: is negative indicating wrong change_type
 
