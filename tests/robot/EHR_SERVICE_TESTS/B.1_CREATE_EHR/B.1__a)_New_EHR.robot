@@ -277,10 +277,12 @@ MF-017 - Create new EHR w/ body: valid ehr_status
 
 MF-018 - Create new EHR w/ body: valid ehr_status
     [Documentation]     Covers invalid case where subject is empty JSON
-    [Tags]
+    [Tags]              154
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    invalid/001_ehr_status_subject_empty.json
     POST /ehr    ${body}
+
+        TRACE GITHUB ISSUE  154  not-ready
 
     Integer    response status    400
 
@@ -344,33 +346,42 @@ MF-022 - Create new EHR w/ body: valid ehr_status w/ o.d.
     Integer    response status    201
 
 
-MF-023 - Create new EHR (POST /ehr variants)
+MF-023 - Create new EHR (POST /ehr valid variants)
     [Tags]
     [Template]          create ehr from data table
+
+  # SUBJECT    IS_MODIFIABLE   IS_QUERYABLE   R.CODE
+    given      true            true           201
+    given      true            false          201
+    given      false           false          201
+    given      false           true           201
+
+
+MF-024 - Create new EHR (POST /ehr invalid variants)
+    [Tags]
+    [Template]          create ehr from data table (invalid)
 
   # SUBJECT    IS_MODIFIABLE   IS_QUERYABLE   R.CODE
     given      ${EMPTY}        true           400
     given      ${EMPTY}        false          400
     given      false           ${EMPTY}       400
     given      true            ${EMPTY}       400
-    given      true            true           201
-    given      true            false          201
-    given      false           false          201
-    given      false           true           201
-
     given      null            null           400
     given      "null"          "null"         400
-    given      "true"          "true"         201
-    given      "false"         "false"        201
     given      1               1              400
     given      0               0              400
+    given      "true"          "true"         400
+    given      "false"         "false"        400
 
 
-MF-024 - Create new EHR w/ empty subject (POST /ehr variants)
-    [Documentation]     Covers edge case where subject is provided but is just empty JSON.
-    [Tags]
-    [Template]          create ehr from data table
-
+MF-025 - Create new EHR w/ invalid subject (POST /ehr variants)
+    [Documentation]     Covers invalid cases where
+    ...                 1) subject is provided but is just an empty JSON: {}
+    ...                 2) subject is provided but is invalid
+    ...                 because some of it's mandatory elements are missing
+    ...                 3) subject is missing completely
+    [Tags]              154
+    [Template]          create ehr from data table (invalid)
 
   # SUBJECT    IS_MODIFIABLE   IS_QUERYABLE   R.CODE
     ${EMPTY}   ${EMPTY}        true           400
@@ -382,14 +393,6 @@ MF-024 - Create new EHR w/ empty subject (POST /ehr variants)
     ${EMPTY}   false           true           400
     ${EMPTY}   false           false          400
 
-
-MF-025 - Create new EHR w/ invalid subject (POST /ehr variants)
-    [Documentation]     Covers edge case where subject is provided but is invalid
-    ...                 because of some mandatory elements missing.
-    [Tags]
-    [Template]          create ehr from data table (invalid)
-
-  # SUBJECT    IS_MODIFIABLE   IS_QUERYABLE   R.CODE
     invalid    true            true           400
     invalid    true            false          400
     invalid    false           true           400
@@ -400,6 +403,7 @@ MF-025 - Create new EHR w/ invalid subject (POST /ehr variants)
     missing    true            false          400
     missing    false           true           400
     missing    false           false          400
+    [Teardown]      TRACE GITHUB ISSUE  154  not-ready
 
 
 MF-030 - Create new EHR w/ given ehr_id (PUT /ehr/ehr_id variants)
@@ -407,32 +411,34 @@ MF-030 - Create new EHR w/ given ehr_id (PUT /ehr/ehr_id variants)
     [Template]          create ehr w/ given ehr_id from data table
 
   # EHR_ID  SUBJECT    IS_MODIFIABLE   IS_QUERYABLE   R.CODE
-    given   given      ${EMPTY}        true           400
-    given   given      ${EMPTY}        false          400
-    given   given      false           ${EMPTY}       400
-    given   given      true            ${EMPTY}       400
     given   given      true            true           201
     given   given      true            false          201
     given   given      false           false          201
     given   given      false           true           201
 
+
+MF-031 - Create new EHR w/ given ehr_id (PUT /ehr/ehr_id invalid variants)
+    [Tags]              154
+    [Template]          create ehr w/ given ehr_id but invalid subject from data table
+
+  # EHR_ID  SUBJECT    IS_MODIFIABLE   IS_QUERYABLE   R.CODE
+    given   given      ${EMPTY}        true           400
+    given   given      ${EMPTY}        false          400
+    given   given      false           ${EMPTY}       400
+    given   given      true            ${EMPTY}       400
+
     given   given      null            null           400
     given   given      "null"          "null"         400
-    given   given      "true"          "true"         201
-    given   given      "false"         "false"        201
     given   given      1               1              400
     given   given      0               0              400
+    given   given      "true"          "true"         400
+    given   given      "false"         "false"        400
 
-
-MF-031 - Create new EHR w/ given ehr_id (PUT /ehr/ehr_id variants)
-    [Tags]
-    [Template]          create ehr w/ given ehr_id from data table
-
-  # EHR_ID    SUBJECT    IS_MODIFIABLE   IS_QUERYABLE   R.CODE
-    given     ${EMPTY}   true            true           400
-    given     ${EMPTY}   true            false          400
-    given     ${EMPTY}   false           false          400
-    given     ${EMPTY}   false           true           400
+    given   ${EMPTY}   true            true           400
+    given   ${EMPTY}   true            false          400
+    given   ${EMPTY}   false           false          400
+    given   ${EMPTY}   false           true           400
+    [Teardown]      TRACE GITHUB ISSUE  154  not-ready  subject as empty JSON {} is invalid
 
 
 MF-032 - Create new EHR w/ invalid ehr_id (PUT /ehr/ehr_id variants)
@@ -441,6 +447,7 @@ MF-032 - Create new EHR w/ invalid ehr_id (PUT /ehr/ehr_id variants)
 
   # EHR_ID    SUBJECT    IS_MODIFIABLE   IS_QUERYABLE   R.CODE
     invalid   ${EMPTY}   true            true           400
+    invalid   ${EMPTY}   false           false          400
     1234567   ${EMPTY}   ${EMPTY}        true           400
     .......   ${EMPTY}   ${EMPTY}        false          400
     0000000   ${EMPTY}   false           ${EMPTY}       400
@@ -623,10 +630,12 @@ MF-049 - Create new EHR w/ given ehr_id w/ body: valid ehr_status
 
 MF-050 - Create new EHR w/ given ehr_id w/ body: valid ehr_status
     [Documentation]     Covers INVALID case where subject is empty JSON
-    [Tags]
+    [Tags]              154
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    invalid/001_ehr_status_subject_empty.json
     PUT /ehr/$ehr_id    body=${body}
+
+        TRACE GITHUB ISSUE  154  not-ready
 
     Integer    response status    400
 
@@ -728,6 +737,18 @@ create ehr w/ given ehr_id from data table
                         ...    check response    ${status_code}    ${is_modifiable}    ${is_queryable}
 
 
+create ehr w/ given ehr_id but invalid subject from data table
+    [Arguments]         ${ehr_id}  ${subject}  ${is_modifiable}  ${is_queryable}  ${status_code}
+
+                        prepare new request session    Prefer=return=representation
+
+    ${ehr_id}=          Set Variable If    $ehr_id=="given"    ${{str(uuid.uuid4())}}    invalid_ehr_id
+    &{resp}=            Run Keywords
+                        ...    compose ehr_status    ${subject}    ${is_modifiable}    ${is_queryable}  AND
+                        ...    PUT /ehr/$ehr_id    ${ehr_id}    ${ehr_status}  AND
+                        ...    check response (invalid)    ${status_code}
+
+
 create ehr w/ invalid ehr_id from data table
     [Arguments]         ${ehr_id}  ${subject}  ${is_modifiable}  ${is_queryable}  ${status_code}
 
@@ -754,7 +775,7 @@ set ehr_status subject
     ${ehr_status}=      Load JSON From File    ${EXECDIR}/robot/_resources/test_data_sets/ehr/valid/000_ehr_status.json
                         add random subject_id to ehr_status    ${ehr_status}
 
-                        # comment: valid but empty subject
+                        # comment: INVALID because empty subject
                         Run Keyword And Return If    $subject=="${EMPTY}"
                         ...    delete subject.external_ref from ehr_status    ${ehr_status}
 
@@ -864,4 +885,4 @@ check response (invalid)
 check response (invalid ehr_id)
     [Arguments]         ${status_code}
                         Integer    response status    ${status_code}
-                        String    response body error    EHR ID format not a UUID
+                        # String    response body error    EHR ID format not a UUID
