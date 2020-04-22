@@ -72,12 +72,22 @@ tasks:
           - docker container rm -f ehrdb
           - echo ... DB server stopped.
 
+    package:
+        desc: mvn package -Dmaven.javadoc.skip=true
+        cmds:
+          - cd .. && mvn package -Dmaven.javadoc.skip=true
+
+    cpackage:
+        desc: mvn clean package -Dmaven.javadoc.skip=true
+        cmds:
+          - cd .. && mvn clean package -Dmaven.javadoc.skip=true
+
     test:
         desc: RUN SPECIFIED TESTS
         cmds:
-          # adjust this part to the needs of your current test session
+          ## adjust this part to the needs of your current test session
           - robot -v nodocker -i empty_db -e future -e circleci -e TODO -e obsolete -d results -L TRACE --noncritical not-ready robot/QUERY_SERVICE_TESTS
-          # example of "execute single test by it's test-case name" (wildcards accepted):
+          ## example of "execute single test by it's test-case name" (wildcards accepted):
           # - robot -t "MF-030 - Create new EHR*" -d results -L TRACE robot/EHR_SERVICE_TESTS
           # - spd-say "Robot is ready! Check the results!"
 
@@ -93,6 +103,6 @@ tasks:
           - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output aqledb.xml --name "QUERY empty_db"  -i empty_db  robot/QUERY_SERVICE_TESTS
           - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output aqlldb.xml --name "QUERY loaded_db" -i loaded_db robot/QUERY_SERVICE_TESTS
 
-          # consolidate results
+          ## consolidate results
           - rebot -e future -e circleci -e TODO -e obsolete -e libtest -d results -L TRACE --noncritical not-ready --name EHRbase results/xml/*.xml
           # - spd-say "Robot is ready! Check the results!"
