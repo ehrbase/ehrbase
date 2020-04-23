@@ -137,15 +137,31 @@ def ignore_type_properties(obj, path):
     `path` refers to the location of obj in the dict.
     """
     ignorable_types = [
-        # "ACTIVITY",
-        "ARCHETYPED",
         "ARCHETYPE_ID",
+        "ARCHETYPED",
         "CODE_PHRASE",
+        "DV_BOOLEAN",
         "DV_CODED_TEXT",
         "DV_COUNT",
+        "DV_DATE",
         "DV_DATE_TIME",
+        "DV_DATE_TIME",
+        "DV_DURATION",
+        "DV_EHR_URI",
+        "DV_IDENTIFIER",
+        "DV_MULTIMEDIA",
+        "DV_ORDINAL",
+        "DV_PARSABLE",
+        "DV_PROPORTION",
+        "DV_QUANTITY",
+        "DV_SCALE",
+        "DV_STATE",
         "DV_TEXT",
+        "DV_TIME",
+        "DV_URI",
+        "REFERENCE_RANGE",
         "TEMPLATE_ID",
+        "TERM_MAPPING",
         "TERMINOLOGY_ID",
     ]
     return True if "_type" in path and obj in ignorable_types else False

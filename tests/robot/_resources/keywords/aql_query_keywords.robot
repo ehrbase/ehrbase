@@ -270,11 +270,6 @@ check response (LOADED DB): returns correct content
                         Log To Console  \n/////////// EXPECTED //////////////////////////////
                         Output    ${expected result}
 
-    ## comment: RESTORE THIS IF LAST CHANGE BREAKS TO MUCH!
-    # &{diff}=            compare json-strings  ${response body}  ${expected result}
-    # ...                 report_repetition=True
-    # ...                 exclude_paths=root['meta']
-
     &{diff}             compare_jsons_ignoring_properties    ${response body}    ${expected result}
     # ...                 meta    path    foo        # comment: example of how to add additional
                                                      #          properties to be ignored
@@ -298,17 +293,6 @@ check response (LOADED DB): returns correct ordered content
                         Log To Console  \n/////////// EXPECTED //////////////////////////////
                         Output    ${expected result}
     
-    ## comment: working example
-    # ${exclude_paths}    Create List    root\\['meta'\\]    \\['columns'\\]\\[\\d+\\]\\['path'\\]
-    #                     ...            \\['_type'\\]
-    # &{diff}             compare json-strings    ${response body}    ${expected result}
-    #                     ...                     exclude_regex_paths=${exclude_paths}
-    #                     ...                     ignore_order=False
-
-    ## comment: working example
-    # &{diff}             compare_ignoring_path_and_type_properties    ${response body}    ${expected result}
-    #                     ...    ignore_order=${FALSE}
-
     # TODO: probably need to sort the expected result before comparison
     
     &{diff}             compare_jsons_ignoring_properties    ${response body}    ${expected result}
@@ -1658,3 +1642,11 @@ D/503
 #                         ...                 auth=${${SUT}.CREDENTIALS}    debug=2    verify=True
 
 #                         Set Test Variable   ${headers}    ${headers}
+
+
+# Example of how to properly escape regex expressions to use with DeepDiff lib
+#    ${exclude_paths}    Create List    root\\['meta'\\]    \\['columns'\\]\\[\\d+\\]\\['path'\\]
+#                        ...            \\['_type'\\]
+#    &{diff}             compare json-strings    ${response body}    ${expected result}
+#                        ...                     exclude_regex_paths=${exclude_paths}
+#                        ...                     ignore_order=False
