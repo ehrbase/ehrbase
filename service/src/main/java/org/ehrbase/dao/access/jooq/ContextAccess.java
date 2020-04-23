@@ -57,6 +57,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
+import java.time.temporal.UnsupportedTemporalTypeException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -311,6 +312,11 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
 
     private Timestamp toTimestamp(DvDateTime dateTime) {
         TemporalAccessor accessor = dateTime.getValue();
+        if (!accessor.isSupported(ChronoField.OFFSET_SECONDS)){
+            //set timezone at default locale
+            ZonedDateTime zonedDateTime = LocalDateTime.from(accessor).atZone(ZoneId.systemDefault());
+            accessor = zonedDateTime.toOffsetDateTime();
+        }
         long millis = accessor.getLong(ChronoField.INSTANT_SECONDS) * 1000 + accessor.getLong(ChronoField.MILLI_OF_SECOND);
 
         return new Timestamp(millis);
