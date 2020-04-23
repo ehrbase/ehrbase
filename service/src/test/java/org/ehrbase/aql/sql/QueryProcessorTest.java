@@ -327,7 +327,7 @@ public class QueryProcessorTest {
         testCases.add(new AqlTestCase(19,
                 "select c/category from EHR e [ehr_id/value = '4a7c01cf-bb1c-4d3d-8385-4ae0674befb1']" +
                         "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]",
-                "select ehr.js_concept(\"ehr\".\"entry\".\"category\")::text as \"/category\" " +
+                "select ehr.js_dv_coded_text(\"ehr\".\"entry\".\"category\")::text as \"/category\" " +
                         "from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\"" +
                         "where (\"ehr\".\"entry\".\"template_id\" = ? and (\"ehr_join\".\"id\"='4a7c01cf-bb1c-4d3d-8385-4ae0674befb1'))",
                 true));
@@ -335,7 +335,7 @@ public class QueryProcessorTest {
         testCases.add(new AqlTestCase(20,
                 "select c/category/defining_code from EHR e [ehr_id/value = '4a7c01cf-bb1c-4d3d-8385-4ae0674befb1']" +
                         "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]",
-                "select ehr.js_concept(\"ehr\".\"entry\".\"category\")::json #>>'{defining_code}' as \"/category/defining_code\" " +
+                "select ehr.js_dv_coded_text(\"ehr\".\"entry\".\"category\")::json #>>'{defining_code}' as \"/category/defining_code\" " +
                         "from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\"" +
                         "where (\"ehr\".\"entry\".\"template_id\" = ? and (\"ehr_join\".\"id\"='4a7c01cf-bb1c-4d3d-8385-4ae0674befb1'))",
                 true));
@@ -344,7 +344,7 @@ public class QueryProcessorTest {
         testCases.add(new AqlTestCase(21,
                 "select c/category/defining_code/terminology_id/value from EHR e [ehr_id/value = '4a7c01cf-bb1c-4d3d-8385-4ae0674befb1']" +
                         "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]",
-                "select ehr.js_concept(\"ehr\".\"entry\".\"category\")::json #>>'{defining_code,terminology_id,value}' as \"/category/defining_code/terminology_id/value\" " +
+                "select ehr.js_dv_coded_text(\"ehr\".\"entry\".\"category\")::json #>>'{defining_code,terminology_id,value}' as \"/category/defining_code/terminology_id/value\" " +
                         "from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\"" +
                         "where (\"ehr\".\"entry\".\"template_id\" = ? and (\"ehr_join\".\"id\"='4a7c01cf-bb1c-4d3d-8385-4ae0674befb1'))",
                 false));

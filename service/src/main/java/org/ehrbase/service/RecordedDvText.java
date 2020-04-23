@@ -20,7 +20,6 @@ package org.ehrbase.service;
 import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.datavalues.TermMapping;
 import org.ehrbase.jooq.pg.udt.records.DvCodedTextRecord;
-import org.ehrbase.jooq.pg.udt.records.DvCodedTextTermMappingRecord;
 import org.jooq.Field;
 import org.jooq.Record;
 

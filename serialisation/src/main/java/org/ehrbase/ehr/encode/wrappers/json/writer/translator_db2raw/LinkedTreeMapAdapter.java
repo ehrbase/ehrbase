@@ -308,15 +308,18 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap> implements 
                    //same as name above, this is due to usage of MultiValueMap which is backed by ArrayList
                     new ValueArrayList(writer, value, key).write();
                 } else {
-                    writer.name(jsonKey);
-                    writer.beginArray();
-                    if (isNodePredicate(key)) {
-                        ((ArrayList<Object>) value).stream()
-                                .filter(o -> Map.class.isAssignableFrom(o.getClass()))
-                                .forEach(m -> ((Map<String, Object>) m).put(I_DvTypeAdapter.ARCHETYPE_NODE_ID, archetypeNodeId));
+                    //make sure we service a non empty array list value
+                    if (!new ArrayChildren((ArrayList)value).isNull()) {
+                        writer.name(jsonKey);
+                        writer.beginArray();
+                        if (isNodePredicate(key)) {
+                            ((ArrayList<Object>) value).stream()
+                                    .filter(o -> Map.class.isAssignableFrom(o.getClass()))
+                                    .forEach(m -> ((Map<String, Object>) m).put(I_DvTypeAdapter.ARCHETYPE_NODE_ID, archetypeNodeId));
+                        }
+                        new ArrayListAdapter().write(writer, (ArrayList) value);
+                        writer.endArray();
                     }
-                    new ArrayListAdapter().write(writer, (ArrayList) value);
-                    writer.endArray();
                 }
             } else if (value instanceof LinkedTreeMap) {
                 LinkedTreeMap<String, Object> valueMap = (LinkedTreeMap<String, Object>) value;

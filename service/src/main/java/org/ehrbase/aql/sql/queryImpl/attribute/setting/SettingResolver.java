@@ -17,6 +17,7 @@
  */
 package org.ehrbase.aql.sql.queryImpl.attribute.setting;
 
+import org.ehrbase.aql.sql.queryImpl.I_QueryImpl;
 import org.ehrbase.aql.sql.queryImpl.attribute.AttributeResolver;
 import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
@@ -38,10 +39,23 @@ public class SettingResolver extends AttributeResolver
         if (path.isEmpty())
             return new EventContextJson(fieldResolutionContext, joinSetup).forJsonPath("setting").sqlField();
 
+        if (!path.equals("mappings") && path.startsWith("mappings")) {
+            path = path.substring(path.indexOf("mappings")+"mappings".length()+1);
+            //we insert a tag to indicate that the path operates on a json array
+            return new EventContextJson(fieldResolutionContext, joinSetup).forJsonPath("setting/mappings/"+ I_QueryImpl.AQL_NODE_ITERATIVE_MARKER+"/" + path).forTableField(EVENT_CONTEXT.SETTING).sqlField();
+        }
+
+
         switch (path){
             case "value":
                 return new SettingAttribute(fieldResolutionContext, joinSetup).forJsonPath(path).forTableField(EVENT_CONTEXT.SETTING).sqlField();
             case "defining_code":
+            case "formatting":
+            case "language":
+            case "encoding":
+                return new EventContextJson(fieldResolutionContext, joinSetup).forJsonPath("setting/"+path).forTableField(EVENT_CONTEXT.SETTING).sqlField();
+            case "mappings":
+                fieldResolutionContext.setJsonDatablock(true);
                 return new EventContextJson(fieldResolutionContext, joinSetup).forJsonPath("setting/"+path).forTableField(EVENT_CONTEXT.SETTING).sqlField();
             case "defining_code/terminology_id":
             case "defining_code/terminology_id/value":

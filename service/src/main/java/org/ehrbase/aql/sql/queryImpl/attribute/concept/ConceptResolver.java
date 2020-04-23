@@ -38,7 +38,15 @@ public class ConceptResolver extends AttributeResolver
 
         if (path.isEmpty())
             return new ConceptJson(fieldResolutionContext, joinSetup).forTableField(tableField).sqlField();
-        else if (Arrays.asList("value", "defining_code", "defining_code/terminology_id", "defining_code/terminology_id/value", "defining_code/code_string").contains(path)) {
+        else if (Arrays.asList("value",
+                "defining_code",
+                "defining_code/terminology_id",
+                "defining_code/terminology_id/value",
+                "defining_code/code_string",
+                "language",
+                "encoding",
+                "formatting",
+                "mappings").contains(path)) {
             Field sqlField = new ConceptJson(fieldResolutionContext, joinSetup).forJsonPath(path).forTableField(tableField).sqlField();
             if (path.equals("defining_code/terminology_id/value")||path.equals("value"))
                 fieldResolutionContext.setJsonDatablock(false);

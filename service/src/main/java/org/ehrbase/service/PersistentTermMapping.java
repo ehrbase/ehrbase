@@ -21,10 +21,19 @@ import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.TermMapping;
 import com.nedap.archie.rm.support.identification.TerminologyId;
-import org.ehrbase.jooq.pg.udt.records.DvCodedTextTermMappingRecord;
+
 
 import java.util.ArrayList;
 import java.util.List;
+
+/**
+ * since parsing of array of UDTs seems to fail with jOOQ 3.12, we are encoding term_mappings as
+ * an array for TEXT with the following format:
+ * match|purpose_value|purpose_terminology_id|purpose_code_string|target_terminology_id|target_code_string.
+ * For example:
+ * =|Erfasst|local|irgendein Purpose|SNOMED-CT|345356676789
+ * Methods encodeAsString and decode deal with the formatting
+ */
 
 public class PersistentTermMapping {
 
@@ -38,16 +47,6 @@ public class PersistentTermMapping {
         this.rmTermMapping = null;
     }
 
-
-    public DvCodedTextTermMappingRecord encode(){
-        if (rmTermMapping == null)
-            return null;
-
-        return new DvCodedTextTermMappingRecord(
-                ""+rmTermMapping.getMatch(),
-                new RecordedDvCodedTextEmbedded().toRecord(rmTermMapping.getPurpose()),
-                new PersistentCodePhrase(rmTermMapping.getTarget()).encode());
-    }
 
     public String encodeAsString(){
         if (rmTermMapping == null)
@@ -65,12 +64,6 @@ public class PersistentTermMapping {
         return stringBuilder.toString();
     }
 
-    public TermMapping decode(DvCodedTextTermMappingRecord dvCodedTextTermMappingRecord){
-        return new TermMapping(
-                new PersistentCodePhrase().decode(dvCodedTextTermMappingRecord.getTarget()),
-                dvCodedTextTermMappingRecord.getMatch().charAt(0),
-                new RecordedDvCodedTextEmbedded().fromRecord(dvCodedTextTermMappingRecord.getPurpose()));
-    }
 
     public TermMapping decode(String termMappingString){
 
@@ -87,9 +80,10 @@ public class PersistentTermMapping {
     public String[] termMappingRepresentation(List<TermMapping> termMappings){
         List<String> dvCodedTextTermMappingRecords = new ArrayList<>();
         //prepare the term mappings array if any
-        StringBuilder stringBuilder = new StringBuilder();
+
 
         for (TermMapping termMapping: termMappings){
+            StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.append(
                     new PersistentTermMapping(termMapping).encodeAsString()
             );

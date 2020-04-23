@@ -46,7 +46,7 @@ public class SettingAttribute extends EventContextAttribute {
         if (jsonPath.isPresent() && isJsonDataBlock)
             return new GenericJsonField(fieldContext, joinSetup).forJsonPath(jsonPath.get()).jsonField("EVENT_CONTEXT","ehr.js_context", EVENT_CONTEXT.ID);
 
-        Field jsonContextField = DSL.field("ehr.js_context_setting("+tableField+")::json #>>"+new GenericJsonPath(jsonPath.get()).jqueryPath());
+        Field jsonContextField = DSL.field("ehr.js_dv_coded_text("+tableField+")::json #>>"+new GenericJsonPath(jsonPath.get()).jqueryPath());
 
         return as(DSL.field(jsonContextField));
     }

@@ -44,4 +44,16 @@ public class ArrayChildren {
         }
         return false;
     }
+
+    /**
+     * check if all elements are null
+     * @return
+     */
+    public boolean isNull(){
+        for (Object entry : arrayList) {
+            if (entry != null)
+                    return false;
+        }
+        return true;
+    }
 }
