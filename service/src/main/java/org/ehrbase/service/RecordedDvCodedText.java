@@ -68,7 +68,7 @@ public class RecordedDvCodedText {
                     codePhraseEncoding == null ? null : new CodePhrase(new TerminologyId(codePhraseEncoding.getTerminologyIdValue()), codePhraseEncoding.getCodeString())
             );
 
-        if (dvCodedTextRecord.getTermMapping().length > 0) {
+        if (dvCodedTextRecord.getTermMapping() != null && dvCodedTextRecord.getTermMapping().length > 0) {
             for (String dvCodedTextTermMappingRecord : dvCodedTextRecord.getTermMapping()) {
                     ((DvText) retObject).addMapping(new PersistentTermMapping().decode(dvCodedTextTermMappingRecord));
             }
