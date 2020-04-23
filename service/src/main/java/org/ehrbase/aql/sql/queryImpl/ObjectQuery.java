@@ -34,6 +34,12 @@ public abstract class ObjectQuery {
     protected boolean jsonDataBlock = false;
     protected String itemType = null;
 
+    public String getItemCategory() {
+        return itemCategory;
+    }
+
+    protected String itemCategory = null;
+
     protected static int serial = 0; //used to alias fields for now.
 
     protected ObjectQuery(DSLContext context, PathResolver pathResolver) {
