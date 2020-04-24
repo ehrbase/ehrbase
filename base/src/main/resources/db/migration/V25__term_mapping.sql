@@ -29,6 +29,20 @@ $$
   LANGUAGE plpgsql;
 
 -- AQL service functions
+CREATE OR REPLACE FUNCTION ehr.js_dv_coded_text_inner(value TEXT, terminology_id TEXT, code_string TEXT)
+  RETURNS JSON AS
+$$
+BEGIN
+  RETURN
+    json_build_object(
+        '_type', 'DV_CODED_TEXT',
+        'value', value,
+        'defining_code', ehr.js_code_phrase(code_string, terminology_id)
+      );
+END
+$$
+  LANGUAGE plpgsql;
+
 CREATE OR REPLACE FUNCTION ehr.js_term_mappings(mappings TEXT[])
   RETURNS JSONB[] AS
 $$
