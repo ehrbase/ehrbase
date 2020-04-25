@@ -222,7 +222,7 @@ wait until openehr server is online
 openehr server is online
     prepare new request session  JSON
     REST.GET    ${HEARTBEAT_URL}
-    Integer  response status  404
+    Integer     response status    404    200
 
 
 abort test execution
@@ -352,7 +352,9 @@ database sanity check
     ...                 Is skipped when CONTROL_MODE is not manual - e.g. when SUT
     ...                 is on a remote host.
 
-    Return From Keyword If    "${CONTROL_MODE}"=="docker"    NO DB CHECK ON REMOTE SUT
+    Return From Keyword If    "${CONTROL_MODE}"=="docker"    NO DB CHECK ON DOCKERIZED SUT
+    Return From Keyword If    "${CONTROL_MODE}"=="NONE"    NO DB CHECK ON REMOTE SUT
+    Return From Keyword If    "${CONTROL_MODE}"=="API"    NO DB CHECK WHEN API USED FOR CLEAN UPS
 
     ${db_status}        Run Keyword And Return Status    Connect With DB
                         Run Keyword If    $db_status    Disconnect From Database
@@ -427,11 +429,11 @@ startup SUT
     # comment: switch to manual test environment control when "-v nodocker" cli option is used
     Run Keyword If      $NODOCKER.upper() in ["TRUE", ""]    Run Keywords
                ...      Set Global Variable    ${NODOCKER}    TRUE    AND
-               ...      Set Global Variable    ${BASEURL}    ${DEV.URL}    AND
-               ...      Set Global Variable    ${HEARTBEAT_URL}    ${DEV.HEARTBEAT}    AND
-               ...      Set Global Variable    ${AUTHORIZATION}    ${DEV.AUTH}    AND
-               ...      Set Global Variable    ${CREATING_SYSTEM_ID}    ${DEV.NODENAME}    AND
-               ...      Set Global Variable    ${CONTROL_MODE}    ${DEV.CONTROL}
+               ...      Set Global Variable    ${BASEURL}    ${${SUT}.URL}    AND
+               ...      Set Global Variable    ${HEARTBEAT_URL}    ${${SUT}.HEARTBEAT}    AND
+               ...      Set Global Variable    ${AUTHORIZATION}    ${${SUT}.AUTH}    AND
+               ...      Set Global Variable    ${CREATING_SYSTEM_ID}    ${${SUT}.NODENAME}    AND
+               ...      Set Global Variable    ${CONTROL_MODE}    ${${SUT}.CONTROL}
 
                         Log    \n\t SUT CONFIG (EHRbase v${VERSION})\n    console=true
                         # Log    \t EHRbase VERSION: ${VERSION}    console=true
@@ -445,8 +447,12 @@ startup SUT
 
     Run Keyword And Return If   "${CONTROL_MODE}"=="manual" and ${sanity_check_passed}
                           ...    warn about manual test environment start up
+    
+    Run Keyword And Return If   "${CONTROL_MODE}"=="NONE" and ${sanity_check_passed}
+                          # TODO: CREATE A DECICATED KW FOR THAT CASE
+                          ...    warn about manual test environment start up
 
-    Run Keyword And Return If   "${CONTROL_MODE}"=="manual" and not ${sanity_check_passed}
+    Run Keyword And Return If   ("${CONTROL_MODE}" in ["manual", "NONE"]) and not ${sanity_check_passed}
                           ...   abort tests due to issues with manually controlled test environment
 
     # comment: test environment controlled by Robot
@@ -457,6 +463,10 @@ startup SUT
 
 shutdown SUT
     Run Keyword And Return If   "${CONTROL_MODE}"=="manual"
+                          ...    warn about manual test environment shut down
+    
+    Run Keyword And Return If   "${CONTROL_MODE}"=="NONE"
+                          # TODO: CREATE A DECICATED KW FOR THAT CASE
                           ...    warn about manual test environment shut down
 
     stop openehr server

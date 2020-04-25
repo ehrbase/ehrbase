@@ -8,7 +8,12 @@
     - [Example Content Of Shell Script (run_local_tests.sh)](#example-content-of-shell-script-runlocaltestssh)
     - [Manually Controlled SUT](#manually-controlled-sut)
 - [Execution Control - Test Suites & Tags](#execution-control---test-suites--tags)
-- [Remote Execution](#remote-execution)
+- [Quick Guide: How to execute the tests against other systems](#quick-guide-how-to-execute-the-tests-against-other-systems)
+  - [Preconditions](#preconditions)
+  - [Customize your configuration](#customize-your-configuration)
+  - [Execute test against EHRSCAPE](#execute-test-against-ehrscape)
+    - [Run all tests at one (**not** recommended)](#run-all-tests-at-one-not-recommended)
+    - [Run single test suites, one by one (recommended)](#run-single-test-suites-one-by-one-recommended)
 - [Execution In CI/CD Pipeline](#execution-in-cicd-pipeline)
 - [Errors And Warnings](#errors-and-warnings)
 - [Auto-Generated Test Report Summary And Detailed Log](#auto-generated-test-report-summary-and-detailed-log)
@@ -17,7 +22,7 @@
 
 ## Prerequisites
 
-1) Docker, Java 11 & Maven, Python 3 & Pip are installed
+1) Docker, Java 11 & Maven, Python 3.7+ & Pip are installed
 2) Robot Framework & dependencies are installed (`pip install -r requirements.txt`)
 3) Build artefacts created (`mvn package` --> application/target/application-x.xx.x.jar)
 3) ⚠️ **No DB / no server running!**
@@ -28,16 +33,16 @@
 ## Test Environment & SUT
 
 The test environment of this project consists of three main parts
-1) EHRbase openehr server (application-*.jar)
+1) EHRbase OpenEHR server (application-*.jar)
 2) PostgreSQL database
 3) OS with Docker, Java runtime, Python runtime, Robot Framework
 
-Let's refer to the first two parts as the SUT (system under test). By default Robot Framework (RF) takes control of the SUT. That means to execute the tests locally all you have to do is to ensure your host machine meets required [prerequisites](#prerequisites). RF will take care of properly starting up, restarting and shutting down SUT as it is required for test execution. There is an option to hand over control of SUT to you, though - described in section [Manually Controlled SUT](#manually-controlled-sut).
+Let's refer to the first two parts as the SUT (system under test). The tests are implemented in a way that by default Robot Framework (RF) will take control of the SUT. That means to execute the tests locally all you have to do is to ensure your host machine meets required [prerequisites](#prerequisites). RF will take care of properly starting up, restarting and shutting down SUT as it is required for test execution. There is an option to hand over control of SUT to you, though - described in section [Manually Controlled SUT](#manually-controlled-sut).
 
 
 
 ## Local Execution (under Linux, Mac & Windows)
-In general tests are executed by 1) cd into tests/ folder and 2) call the **`robot`** command with the folder wich contains the test suites as argument. Alternatively you can use prepared shell script inside this folder.
+In general tests are executed by 1) cd into tests/ folder and 2) call the **`robot`** command with the folder wich contains the test suites as argument. Alternatively you can use prepared shell script: **run_local_tests.sh**.
 
 
 #### With Robot Command
@@ -58,13 +63,14 @@ Everything between `robot` command and the last argument are commandline option 
 ```
 # QUICK COPY/PASTE EXAMPLES TO RUN ONLY A SPECIFIC TEST-SUITE
 
-robot -i composition    -d results --noncritical not-ready -L TRACE robot/COMPOSITION_TESTS/
-robot -i contribution   -d results --noncritical not-ready -L TRACE robot/CONTRIBUTION_TESTS/
-robot -i directory      -d results --noncritical not-ready -L TRACE robot/DIRECTORY_TESTS/
-robot -i ehr_service    -d results --noncritical not-ready -L TRACE robot/EHR_SERVICE_TESTS/
-robot -i ehr_status     -d results --noncritical not-ready -L TRACE robot/EHR_STATUS_TESTS/
-robot -i knowledge      -d results --noncritical not-ready -L TRACE robot/KNOWLEDGE_TESTS/
-robot -i aql            -d results --noncritical not-ready -L TRACE robot/QUERY_SERVICE_TESTS/
+robot -i composition     -d results --noncritical not-ready -L TRACE robot/COMPOSITION_TESTS/
+robot -i contribution    -d results --noncritical not-ready -L TRACE robot/CONTRIBUTION_TESTS/
+robot -i directory       -d results --noncritical not-ready -L TRACE robot/DIRECTORY_TESTS/
+robot -i ehr_service     -d results --noncritical not-ready -L TRACE robot/EHR_SERVICE_TESTS/
+robot -i ehr_status      -d results --noncritical not-ready -L TRACE robot/EHR_STATUS_TESTS/
+robot -i knowledge       -d results --noncritical not-ready -L TRACE robot/KNOWLEDGE_TESTS/
+robot -i aqlANDempty_db  -d results --noncritical not-ready -L TRACE robot/QUERY_SERVICE_TESTS/
+robot -i aqlANDloaded_db -d results --noncritical not-ready -L TRACE robot/QUERY_SERVICE_TESTS/
 ```
 
 
@@ -109,9 +115,9 @@ In case you don't want Robot to start up and shut down server and database for y
 >
 > Test Suite Setups and Teardowns will NOT be orchestrated by Robot any more making it impossible to run ALL tests at once (i.e. with `robot robot/`) - test will simply impact each other. You will have to pass at least a test suite folder as argument or limit test selection by using tags to avoid this (see section below). More over
 > - start the server with cache DISABLED (`--cache.enabled=false`)
-> - ensure server applies to Robot's DEV configuration
+> - ensure server applies to Robot's DEV configuration (see tests/robot/_resources/suite_settings.robot)
 > - restart server and rollback/reset database properly
-> - when in doubt compare with results in CI pipeline
+> - when in doubt about your results, compare them with results in CI pipeline
 > - YOU HAVE BEEN WARNED!
 >
 > ⚠️
@@ -148,15 +154,15 @@ Robot will print proper warning in console if it can't connect to server or data
 Execution of **all** integration tests takes **about 30 minutes** (on a fast dev machine). To avoid waiting for all results you can specify exactly which test-suite or even which subset of it you want to execute. There are seven test-suites to choose from by passing proper TAG to `robot` command via the `--include` (or short `-i`) option: 
 
 
-TEST SUITE | SUPER TAG | SUB TAG(s) | EXAMPLE(s)
-:----------|:----------|:-----------|:----------
-COMPOSITION_TESTS   | composition   | json, json1, json2, <br> xml, xml1, xml2 | `robot --include composition` <br> `robot -i composition` <br> `robot -i compositionANDjson`
-CONTRIBUTION_TESTS  | contribution  | commit_contribution, <br> list_contributions, <br> has_contribution, <br> get_contribution | `robot -i contribution`
-DIRECTORY_TESTS     | directory     | create_directory, <br> update_directory, <br> get_directory, <br> delete_directory, <br> get_directory_@time, <br> ...   | `robot -i composition` <br> `robot -i create_directoryORupdate_directory`
-EHR_SERVICE_TESTS   | ehr_service   | create_ehr, update_ehr, <br> has_ehr, get_ehr, <br>  ehr_status | `robot -i ehr_service`
-EHR_STATUS_TESTS   | ehr_status   | get_ehr_status, <br> set_ehr_status, <br>  set_queryable, <br> clear_queryable, <br> set_modifiable, <br> clear_modifiable | `robot -i ehr_status`
-KNOWLEDGE_TESTS     | knowledge     | opt14 | `robot -i knowledge`
-QUERY_SERVICE_TESTS | aql           | adhoc-query, <br> stored-query, <br> register-query, <br> list-query   | `robot -i adhoc-query`
+| TEST SUITE          | SUPER TAG    | SUB TAG(s)                                                                                                                 | EXAMPLE(s)                                                                                   |
+| :------------------ | :----------- | :------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| COMPOSITION_TESTS   | composition  | json, json1, json2, <br> xml, xml1, xml2                                                                                   | `robot --include composition` <br> `robot -i composition` <br> `robot -i compositionANDjson` |
+| CONTRIBUTION_TESTS  | contribution | commit_contribution, <br> list_contributions, <br> has_contribution, <br> get_contribution                                 | `robot -i contribution`                                                                      |
+| DIRECTORY_TESTS     | directory    | create_directory, <br> update_directory, <br> get_directory, <br> delete_directory, <br> get_directory_@time, <br> ...     | `robot -i composition` <br> `robot -i create_directoryORupdate_directory`                    |
+| EHR_SERVICE_TESTS   | ehr_service  | create_ehr, update_ehr, <br> has_ehr, get_ehr, <br>  ehr_status                                                            | `robot -i ehr_service`                                                                       |
+| EHR_STATUS_TESTS    | ehr_status   | get_ehr_status, <br> set_ehr_status, <br>  set_queryable, <br> clear_queryable, <br> set_modifiable, <br> clear_modifiable | `robot -i ehr_status`                                                                        |
+| KNOWLEDGE_TESTS     | knowledge    | opt14                                                                                                                      | `robot -i knowledge`                                                                         |
+| QUERY_SERVICE_TESTS | aql          | adhoc-query, <br> stored-query, <br> register-query, <br> list-query                                                       | `robot -i adhoc-query`                                                                       |
 
 
 
@@ -168,15 +174,59 @@ robot -i ehr_serviceANDget_ehr -e future robot/EHR_SERVICE_TESTS/
 
 
 
-## Remote Execution
-> ⚠️: NOT READY - because controlling remote database via this settings is not implemented yet! 
-> 
-Add a configuration to a remote server in suite_settings.robot and point robot to it via command line switch:
-```
-robot --variable SUT:TARGET -d results robot/TEST_SUITE
+## Quick Guide: How to execute the tests against other systems
+The purpose of this guide is to demonstrate how to run the test against  your own OpenEHR system. We'll use EHRSCAPE as an example configuration. If you don't have access to EHRSCAPE you'll have to adjust related parts to your needs.
 
-# short
-robot -v sut:target -d results robot/TEST_SUITE
+###  Preconditions
+1) the following environment variables have to be available:
+  ```
+  BASIC_AUTH (basic auth string for EHRSCAPE, i.e.: export BASIC_AUTH="Basic abc...")
+  EHRSCAPE_USER
+  EHRSCAPE_PASSWORD
+  ```
+
+2) Python 3.7+ installed
+3) Test dependencies installed
+```
+cd tests
+pip install -r requirements.txt
+```
+
+### Customize your configuration
+Open **tests/robot/_resources/suite_settings.robot** and adjust the following part to your needs if you don't have access to EHRSCAPE. If you do any changes here, remember to adjust your environment variables in step 1)
+```
+&{EHRSCAPE}             URL=https://rest.ehrscape.com/rest/openehr/v1
+...                     HEARTBEAT=https://rest.ehrscape.com/
+...                     CREDENTIALS=@{scapecreds}
+...                     AUTH={"Authorization": "%{BASIC_AUTH}"}
+...                     NODENAME=piri.ehrscape.com
+...                     CONTROL=NONE
+@{scapecreds}           %{EHRSCAPE_USER}    %{EHRSCAPE_PASSWORD}
+```
+
+### Execute test against EHRSCAPE
+The only difference in contrast to normal execution is that you now want to specify that EHRSCAPE configuration from suite_settings.robot should be used. This is done by setting `SUT` variable to `EHRSCAPE` which you can achieve by passing `-v SUT:EHRSCAPE` when calling `robot`. Check examples below.
+
+#### Run all tests at one (**not** recommended)
+I don't recommend to do this, cause it may take from 30 to 60 minutes and makes it harder to analyse the results.
+```
+robot -v SUT:EHRSCAPE -e future -e circleci -e TODO -e obsolete -e libtest -d results -L TRACE --noncritical not-ready --name COMPO robot/
+```
+
+
+#### Run single test suites, one by one (recommended)
+Execute the test suite that you are interested in by copy&pasting one of the lines below, then analyse the results of that test suite.
+> Best practice is also to reset your system under test to a clear state before executing the next test suite.
+```
+robot -v SUT:EHRSCAPE -d results/composition -e future -e circleci -e TODO -e obsolete -e libtest -L TRACE --noncritical not-ready --name COMPO robot/COMPOSITION_TESTS
+robot -v SUT:EHRSCAPE -d results/contribution -e future -e circleci -e TODO -e obsolete -e libtest -L TRACE --noncritical not-ready --name CONTRI robot/CONTRIBUTION_TESTS
+robot -v SUT:EHRSCAPE -d results/directory -e future -e circleci -e TODO -e obsolete -e libtest -L TRACE --noncritical not-ready --name FOLDER robot/DIRECTORY_TESTS
+robot -v SUT:EHRSCAPE -d results/ehr_service -e future -e circleci -e TODO -e obsolete -e libtest -L TRACE --noncritical not-ready --name EHRSERVICE robot/EHR_SERVICE_TESTS
+robot -v SUT:EHRSCAPE -d results/ehr_status -e future -e circleci -e TODO -e obsolete -e libtest -L TRACE --noncritical not-ready --name EHRSTATUS robot/EHR_STATUS_TESTS
+robot -v SUT:EHRSCAPE -d results/knowledge -e future -e circleci -e TODO -e obsolete -e libtest -L TRACE --noncritical not-ready --name KNOWLEDGE robot/KNOWLEDGE_TESTS
+robot -v SUT:EHRSCAPE -d results/aql_1 -e future -e circleci -e TODO -e obsolete -e libtest -L TRACE --noncritical not-ready --name "QUERY empty_db"  -i empty_db  robot/QUERY_SERVICE_TESTS
+robot -v SUT:EHRSCAPE -d results/aql_2 -e future -e circleci -e TODO -e obsolete -e libtest -L TRACE --noncritical not-ready --name "QUERY loaded_db" -i loaded_db robot/QUERY_SERVICE_TESTS
+```
 ```
 
 
