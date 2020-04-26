@@ -227,7 +227,6 @@ robot -v SUT:EHRSCAPE -d results/knowledge -e future -e circleci -e TODO -e obso
 robot -v SUT:EHRSCAPE -d results/aql_1 -e future -e circleci -e TODO -e obsolete -e libtest -L TRACE --noncritical not-ready --name "QUERY empty_db"  -i empty_db  robot/QUERY_SERVICE_TESTS
 robot -v SUT:EHRSCAPE -d results/aql_2 -e future -e circleci -e TODO -e obsolete -e libtest -L TRACE --noncritical not-ready --name "QUERY loaded_db" -i loaded_db robot/QUERY_SERVICE_TESTS
 ```
-```
 
 
 
