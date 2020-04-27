@@ -23,10 +23,7 @@ import org.ehrbase.api.dto.QueryResultDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @JacksonXmlRootElement
 public class QueryResponseData {
@@ -54,7 +51,7 @@ public class QueryResponseData {
         this.rows = new ArrayList<>();
 
         //set the columns definitions
-        if (queryResultDto.getVariables().size() > 0 ) {
+        if (!queryResultDto.variablesIsEmpty()) {
             if (queryResultDto.getResultSet().size() > 0) {
                 //the order of the column definitions is set by the resultSet ordering
                 Map<String, Object> record = queryResultDto.getResultSet().get(0);
@@ -63,9 +60,9 @@ public class QueryResponseData {
                 for (String columnId : record.keySet()) {
                     Map<String, String> fieldMap = new HashMap<>();
 
-                    if (queryResultDto.getVariables().containsKey(columnId)) {
+                    if (queryResultDto.variablesContainsColumnId(columnId)) {
                         fieldMap.put("name", columnId);
-                        fieldMap.put("path", queryResultDto.getVariables().get(columnId));
+                        fieldMap.put("path", queryResultDto.variablesPath(columnId));
                     } else {
                         fieldMap.put("name", "#" + count);
                         fieldMap.put("path", columnId);
@@ -77,14 +74,16 @@ public class QueryResponseData {
             else {
                 //use the variable definition instead
                 int count = 0;
-                for (Map.Entry variableEntry: queryResultDto.getVariables().entrySet()){
+                Iterator<Map.Entry<String, String>> variablesIterator = queryResultDto.variablesIterator();
+                while (variablesIterator.hasNext()){
                     Map<String, String> fieldMap = new HashMap<>();
+                    Map.Entry<String, String> variableEntry = variablesIterator.next();
                     if (variableEntry.getKey() != null) {
-                        fieldMap.put("name", variableEntry.getKey().toString());
-                        fieldMap.put("path", variableEntry.getValue().toString());
+                        fieldMap.put("name", variableEntry.getKey());
+                        fieldMap.put("path", variableEntry.getValue());
                     } else {
                         fieldMap.put("name", "#" + count);
-                        fieldMap.put("path", variableEntry.getValue().toString());
+                        fieldMap.put("path", variableEntry.getValue());
                     }
                     count++;
                     columns.add(fieldMap);
