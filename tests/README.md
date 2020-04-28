@@ -2,19 +2,20 @@
 
 - [Prerequisites](#prerequisites)
 - [Test Environment & SUT](#test-environment--sut)
-- [Local Execution (under Linux, Mac & Windows)](#local-execution-under-linux-mac--windows)
+- [Test Execution (under Linux, Mac & Windows)](#test-execution-under-linux-mac--windows)
     - [With Robot Command](#with-robot-command)
     - [With Shell Script](#with-shell-script)
     - [Example Content Of Shell Script (run_local_tests.sh)](#example-content-of-shell-script-runlocaltestssh)
-    - [Manually Controlled SUT](#manually-controlled-sut)
-- [Execution Control - Test Suites & Tags](#execution-control---test-suites--tags)
-- [Quick Guide: How to execute the tests against other systems](#quick-guide-how-to-execute-the-tests-against-other-systems)
+- [Local SUT / Manually Controlled SUT](#local-sut--manually-controlled-sut)
+  - [Usage examples:](#usage-examples)
+- [Remote SUT / OR how to execute the tests against other systems](#remote-sut--or-how-to-execute-the-tests-against-other-systems)
   - [Preconditions](#preconditions)
   - [Customize your configuration](#customize-your-configuration)
   - [Execute test against EHRSCAPE](#execute-test-against-ehrscape)
     - [Run all tests at one (**not** recommended)](#run-all-tests-at-one-not-recommended)
     - [Run single test suites, one by one (recommended)](#run-single-test-suites-one-by-one-recommended)
-- [Execution In CI/CD Pipeline](#execution-in-cicd-pipeline)
+- [Execution Control - Test Suites & Tags](#execution-control---test-suites--tags)
+- [CI/CD Pipeline (on CircleCI)](#cicd-pipeline-on-circleci)
 - [Errors And Warnings](#errors-and-warnings)
 - [Auto-Generated Test Report Summary And Detailed Log](#auto-generated-test-report-summary-and-detailed-log)
 
@@ -26,7 +27,7 @@
 2) Robot Framework & dependencies are installed (`pip install -r requirements.txt`)
 3) Build artefacts created (`mvn package` --> application/target/application-x.xx.x.jar)
 3) ⚠️ **No DB / no server running!**
-4) ⚠️ ports `8080` and `5432` not used by any other application! (`netstat -tulpn`)
+4) ⚠️ ports `8080` and `5432` not used by any other application! (check it w/ `netstat -tulpn`)
 
 
 
@@ -35,18 +36,18 @@
 The test environment of this project consists of three main parts
 1) EHRbase OpenEHR server (application-*.jar)
 2) PostgreSQL database
-3) OS with Docker, Java runtime, Python runtime, Robot Framework
+3) OS with Docker, Java runtime, Python runtime, Robot Framework (generic test automation framework)
 
 Let's refer to the first two parts as the SUT (system under test). The tests are implemented in a way that by default Robot Framework (RF) will take control of the SUT. That means to execute the tests locally all you have to do is to ensure your host machine meets required [prerequisites](#prerequisites). RF will take care of properly starting up, restarting and shutting down SUT as it is required for test execution. There is an option to hand over control of SUT to you, though - described in section [Manually Controlled SUT](#manually-controlled-sut).
 
 
 
-## Local Execution (under Linux, Mac & Windows)
+## Test Execution (under Linux, Mac & Windows)
 In general tests are executed by 1) cd into tests/ folder and 2) call the **`robot`** command with the folder wich contains the test suites as argument. Alternatively you can use prepared shell script: **run_local_tests.sh**.
 
 
 #### With Robot Command
-The following examples will run all test-cases inside robot/ folder
+The following examples will run all test-cases that are inside `robot/` folder
 
 ```
 # 1) from project's root
@@ -107,22 +108,23 @@ robot --include contribution \
 ```
 
 
-#### Manually Controlled SUT
+## Local SUT / Manually Controlled SUT
 
 In case you don't want Robot to start up and shut down server and database for you - i.e. during local development iterations - there is a command line option (`-v nodocker`) to turn this off. **This option should be used with some precaution, though!**
 
 > ⚠️ 
 >
-> Test Suite Setups and Teardowns will NOT be orchestrated by Robot any more making it impossible to run ALL tests at once (i.e. with `robot robot/`) - test will simply impact each other. You will have to pass at least a test suite folder as argument or limit test selection by using tags to avoid this (see section below). More over
-> - start the server with cache DISABLED (`--cache.enabled=false`)
-> - ensure server applies to Robot's DEV configuration (see tests/robot/_resources/suite_settings.robot)
-> - restart server and rollback/reset database properly
+> Test Suite Setups and Teardowns will NOT be orchestrated by Robot any more. This can lead to issues when trying to run ALL tests at once (i.e. with `robot robot/`) - tests may impact each other and fail. Thus you will have to pass at least a test suite folder as argument or limit test selection by using tags to avoid this (see section below). Moreover
+> - you have to start the server with cache DISABLED (`--cache.enabled=false`)
+> - you have to ensure your server configuration applies to Robot's DEV configuration (see tests/robot/_resources/suite_settings.robot)
+> - you have to ensure your DB configuration applies to the one described in main README
+> - you have to restart server and rollback/reset database properly
 > - when in doubt about your results, compare them with results in CI pipeline
 > - YOU HAVE BEEN WARNED!
 >
 > ⚠️
 
-Usage examples:
+### Usage examples:
 ```
 robot --variable nodocker:true robot/TEST_SUITE_FOLDER
 
@@ -150,32 +152,8 @@ Robot will print proper warning in console if it can't connect to server or data
 
 
 
-## Execution Control - Test Suites & Tags
-Execution of **all** integration tests takes **about 30 minutes** (on a fast dev machine). To avoid waiting for all results you can specify exactly which test-suite or even which subset of it you want to execute. There are seven test-suites to choose from by passing proper TAG to `robot` command via the `--include` (or short `-i`) option: 
-
-
-| TEST SUITE          | SUPER TAG    | SUB TAG(s)                                                                                                                                                             | EXAMPLE(s)                                                                                   |
-| :------------------ | :----------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
-| COMPOSITION_TESTS   | composition  | json, json1, json2, <br> xml, xml1, xml2                                                                                                                               | `robot --include composition` <br> `robot -i composition` <br> `robot -i compositionANDjson` |
-| CONTRIBUTION_TESTS  | contribution | contribution_commit, <br> contributions_list, <br> contribution_has, <br> contribution_get                                                                             | `robot -i contribution`                                                                      |
-| DIRECTORY_TESTS     | directory    | directory_create, <br> directory_update, <br> directory_get, <br> directory_delete, <br> directory_get_@time, <br> ...                                                 | `robot -i directory` <br> `robot -i directory_createORdirectory_update`                      |
-| EHR_SERVICE_TESTS   | ehr_service  | create_ehr, update_ehr, <br> has_ehr, get_ehr, <br>  ehr_status                                                                                                        | `robot -i ehr_service`                                                                       |
-| EHR_STATUS_TESTS    | ehr_status   | ehr_status_get, <br> ehr_status_set, <br>  ehr_status_set_queryable, <br> ehr_status_clear_queryable, <br> ehr_status_set_modifiable, <br> ehr_status_clear_modifiable | `robot -i ehr_status`                                                                        |
-| KNOWLEDGE_TESTS     | knowledge    | opt14                                                                                                                                                                  | `robot -i knowledge`                                                                         |
-| QUERY_SERVICE_TESTS | aql          | aql_adhoc-query, <br> aql_stored-query, <br> aql_register-query, <br> aql_list-query                                                                                   | `robot -i adhoc-query`                                                                       |
-
-
-
-The **SUPER TAG** is meant to reference *all* tests from related test-suite. The **SUB TAGs** can be used (in combination with a SUPER TAG) to further narrow down which tests to include into execution. As you can see from the examples in the table above it is possible to combine TAGs with `AND` and `OR` operators. Tags themself are case insensitive but **the operators have to be upper case**. In addition to `--include` or `-i` option there is also an `--exclude` / `-e` option. It is possible to combine `-i` and `-e` in one call. Example below would include all test from EHR_SERVICE_TESTS folder which have the `ehr_service` **and** `get_ehr` tags and would irgnore all test which have the `future` tag.
-```bash
-robot -i ehr_serviceANDget_ehr -e future robot/EHR_SERVICE_TESTS/
-```
-[Using TAGs to include/exclude tests] from execution is very well documented in [Robot Framework's User Guide].
-
-
-
-## Quick Guide: How to execute the tests against other systems
-The purpose of this guide is to demonstrate how to run the test against  your own OpenEHR system. We'll use EHRSCAPE as an example configuration. If you don't have access to EHRSCAPE you'll have to adjust related parts to your needs.
+## Remote SUT / OR how to execute the tests against other systems
+All integration tests in this repository can be executed against other (possiblty remotely accessible) OpenEHR conform systems (other than EHRbase). Here we will demonstrate how to run the test against your own remote system. We'll use EHRSCAPE as an example configuration. If you don't have access to EHRSCAPE you'll have to adjust related parts to your needs.
 
 ###  Preconditions
 1) the following environment variables have to be available:
@@ -208,7 +186,7 @@ Open **tests/robot/_resources/suite_settings.robot** and adjust the following pa
 The only difference in contrast to normal execution is that you now want to specify that EHRSCAPE configuration from suite_settings.robot should be used. This is done by setting `SUT` variable to `EHRSCAPE` which you can achieve by passing `-v SUT:EHRSCAPE` when calling `robot`. Check examples below.
 
 #### Run all tests at one (**not** recommended)
-I don't recommend to do this, cause it may take from 30 to 60 minutes and makes it harder to analyse the results.
+This is not recommend because it may take from 30 to 60 minutes and makes it harder to analyse the results.
 ```
 robot -v SUT:EHRSCAPE -e future -e circleci -e TODO -e obsolete -e libtest -d results -L TRACE --noncritical not-ready --name COMPO robot/
 ```
@@ -225,13 +203,38 @@ robot -v SUT:EHRSCAPE -d results/ehr_service -e future -e circleci -e TODO -e ob
 robot -v SUT:EHRSCAPE -d results/ehr_status -e future -e circleci -e TODO -e obsolete -e libtest -L TRACE --noncritical not-ready --name EHRSTATUS robot/EHR_STATUS_TESTS
 robot -v SUT:EHRSCAPE -d results/knowledge -e future -e circleci -e TODO -e obsolete -e libtest -L TRACE --noncritical not-ready --name KNOWLEDGE robot/KNOWLEDGE_TESTS
 robot -v SUT:EHRSCAPE -d results/aql_1 -e future -e circleci -e TODO -e obsolete -e libtest -L TRACE --noncritical not-ready --name "QUERY empty_db"  -i empty_db  robot/QUERY_SERVICE_TESTS
-robot -v SUT:EHRSCAPE -d results/aql_2 -e future -e circleci -e TODO -e obsolete -e libtest -L TRACE --noncritical not-ready --name "QUERY loaded_db" -i loaded_db robot/QUERY_SERVICE_TESTS
+robot -v SUT:EHRSCAPE -d results/aql_2 -e future -e circleci -e TODO -e obsolete -e libtest -L TRACE --noncritical not-ready --name "QUERY SMOKE"  -i SMOKE  robot/QUERY_SERVICE_TESTS
+robot -v SUT:EHRSCAPE -d results/aql_3 -e future -e circleci -e TODO -e obsolete -e libtest -L TRACE --noncritical not-ready --name "QUERY loaded_db" -i loaded_db robot/QUERY_SERVICE_TESTS
 ```
 
 
 
-## Execution In CI/CD Pipeline
-Check out .circleci/config.yml in project root for an CircleCI example pipline whiche run Robot tests in parallel.
+## Execution Control - Test Suites & Tags
+Execution of **all** integration tests takes **about 30 minutes** (on a fast dev machine). To avoid waiting for all results you can specify exactly which test-suite or even which subset of it you want to execute. There are seven test-suites to choose from by passing proper TAG to `robot` command via the `--include` (or short `-i`) option: 
+
+
+| TEST SUITE          | SUPER TAG    | SUB TAG(s)                                                                                                                                                             | EXAMPLE(s)                                                                                   |
+| :------------------ | :----------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| COMPOSITION_TESTS   | composition  | json, json1, json2, <br> xml, xml1, xml2                                                                                                                               | `robot --include composition` <br> `robot -i composition` <br> `robot -i compositionANDjson` |
+| CONTRIBUTION_TESTS  | contribution | contribution_commit, <br> contributions_list, <br> contribution_has, <br> contribution_get                                                                             | `robot -i contribution`                                                                      |
+| DIRECTORY_TESTS     | directory    | directory_create, <br> directory_update, <br> directory_get, <br> directory_delete, <br> directory_get_@time, <br> ...                                                 | `robot -i directory` <br> `robot -i directory_createORdirectory_update`                      |
+| EHR_SERVICE_TESTS   | ehr_service  | create_ehr, update_ehr, <br> has_ehr, get_ehr, <br>  ehr_status                                                                                                        | `robot -i ehr_service`                                                                       |
+| EHR_STATUS_TESTS    | ehr_status   | ehr_status_get, <br> ehr_status_set, <br>  ehr_status_set_queryable, <br> ehr_status_clear_queryable, <br> ehr_status_set_modifiable, <br> ehr_status_clear_modifiable | `robot -i ehr_status`                                                                        |
+| KNOWLEDGE_TESTS     | knowledge    | opt14                                                                                                                                                                  | `robot -i knowledge`                                                                         |
+| QUERY_SERVICE_TESTS | aql          | aql_adhoc-query, <br> aql_stored-query, <br> aql_register-query, <br> aql_list-query                                                                                   | `robot -i adhoc-query`                                                                       |
+
+
+
+The **SUPER TAG** is meant to reference *all* tests from related test-suite. The **SUB TAGs** can be used (in combination with a SUPER TAG) to further narrow down which tests to include into execution. As you can see from the examples in the table above it is possible to combine TAGs with `AND` and `OR` operators. Tags themself are case insensitive but **the operators have to be upper case**. In addition to `--include` or `-i` option there is also an `--exclude` / `-e` option. It is possible to combine `-i` and `-e` in one call. Example below would include all test from EHR_SERVICE_TESTS folder which have the `ehr_service` **and** `get_ehr` tags and would irgnore all test which have the `future` tag.
+```bash
+robot -i ehr_serviceANDget_ehr -e future robot/EHR_SERVICE_TESTS/
+```
+[Using TAGs to include/exclude tests] from execution is very well documented in [Robot Framework's User Guide].
+
+
+
+## CI/CD Pipeline (on CircleCI)
+Check out .circleci/config.yml in project root for an CircleCI example pipline whiche runs Robot test suites in parallel.
 
 
 
