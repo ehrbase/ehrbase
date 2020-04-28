@@ -71,7 +71,7 @@ update EHR: set ehr-status modifiable
 check response of 'update EHR' (JSON)
                         Integer     response status    200
                         String    response body uid value    ${ehrstatus_uid[0:-1]}2
-                        String    response body subject external_ref id value    ${subject_Id}
+                        # String    response body subject external_ref id value    ${subject_Id}
                         String    response body _type    EHR_STATUS
 
 
@@ -206,9 +206,17 @@ create new EHR with ehr_status
     [Arguments]         ${ehr_status_object}
     [Documentation]     Creates new EHR record with a server-generated ehr_id.
     ...                 DEPENDENCY: `prepare new request session`
-    ...                 :ehr_status_object: ehr_status_as_json_string_or_file
+    ...                 :ehr_status_object: ehr_status_as_json_file
 
-    &{resp}=            REST.POST    ${baseurl}/ehr    ${ehr_status_object}
+    ${ehr_status_json}  Load JSON From File    ${ehr_status_object}
+                        Update Value To Json    ${ehr_status_json}    $.subject.external_ref.id.value
+                        ...    ${{str(uuid.uuid4())}}
+
+                        Update Value To Json    ${ehr_status_json}    $.subject.external_ref.namespace
+                        ...    namespace_${{''.join(random.choices(string.digits, k=7))}}
+
+
+    &{resp}=            REST.POST    ${baseurl}/ehr    ${ehr_status_json}
                         # Integer      response status    201  200
 
                         Set Suite Variable    ${response}    ${resp}
