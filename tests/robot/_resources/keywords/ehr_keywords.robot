@@ -247,21 +247,16 @@ create new EHR for subject_id (JSON)
                         Output Debug Info To Console
 
 
-create new EHR with other_details for subject_id (JSON)
-    [Arguments]         ${subject_id}
-    ${json_ehr}=        Load JSON From File   ${FIXTURES}/ehr/ehr_status_1_api_spec_with_other_details.json
-    ${json_ehr}=        Update Value To Json  ${json_ehr}   $.subject.external_ref.id.value   ${subject_id}                                                                                       # alternative syntax
-                        create new EHR with ehr_status    ${json_ehr}
-
-
 create new EHR with subject_id (JSON)
 
                         generate random subject_id
+    ${ehr_status_json}  Load JSON From File   ${VALID EHR DATA SETS}/000_ehr_status.json
+                        Update Value To Json  ${ehr_status_json}   $.subject.external_ref.id.value
+                        ...                   ${subject_id}
 
-    ${json_ehr}=        Load JSON From File   ${FIXTURES}/ehr/ehr_status_1_api_spec.json
-    ${json_ehr}=        Update Value To Json  ${json_ehr}   $.subject.external_ref.id.value   ${subject_id}
-
-                        create new EHR with ehr_status    ${json_ehr}
+    &{resp}=            REST.POST    ${baseurl}/ehr    ${ehr_status_json}
+                        Set Suite Variable    ${response}    ${resp}
+                        Output Debug Info To Console
 
                         extract ehr_id from response (JSON)
                         extract system_id from response (JSON)
@@ -280,19 +275,6 @@ check content of created EHR (JSON)
                         # extract system_id from response (JSON)
                         # extract subject_id from response (JSON)    # is in ehr_status
                         # extract ehr_status from response (JSON)
-
-
-# create new EHR for subject_id (XML)
-#     # generate random subject_id
-#     [Arguments]         ${subject_id}
-#     ${json_ehr}=        Load JSON From File   ${FIXTURES}/ehr/ehr_status_1_api_spec.json
-#     ${json_ehr}=        Update Value To Json  ${json_ehr}   $['subject'].['id']['value']   ${subject_id}
-#     &{headers}=         Create Dictionary     Content-Type=application/json  Prefer=return=representation
-#
-#     ${resp}=            Post Request          ${SUT}   /ehr   headers=${headers}   data=${json_ehr}
-#                         Log To Console    ${resp.request.body}
-#                         Log To Console    ${resp.content}
-#                         Should Be Equal As Strings   ${resp.status_code}   201
 
 
 retrieve EHR by ehr_id
@@ -585,13 +567,11 @@ generate random subject_id
 
 
 generate fake ehr_status
-    [Documentation]     Loads a default ehr_status JSON object from fixtures folder
+    [Documentation]     Loads a default ehr_status JSON object from test_data_sets folder
     ...                 and exposes it as Test Variable.
 
-    ${json_ehr_status}=    Load JSON From File   ${FIXTURES}/ehr/ehr_status_1_api_spec.json
-
+    ${json_ehr_status}  Load JSON From File  ${VALID EHR DATA SETS}/000_ehr_status.json
                         Set Test Variable    ${ehr_status}    ${json_ehr_status}
-
                         Output    ${ehr_status}
 
 
@@ -670,22 +650,6 @@ modify ehr_status is_modifiable to
     ${ehr_status}=      Update Value To Json  ${ehr_status}  $..is_modifiable  ${value}
                         # Output   ${ehr_status}[0]             # ehr_status.json
                         Set Test Variable    ${ehr_status}    ${ehr_status}
-
-
-set ehr_status of EHR (from fixture)
-    [Arguments]         ${fixture}
-    [Documentation]     Sets status of EHR with given `ehr_id`.
-    ...                 DEPENDENCY: `generate random ehr_id`
-
-                        Set Headers    {"Prefer": "return=representation"}
-                        Set Headers    {"Content-Type": "application/json"}
-                        Set Headers    {"If-Match": "abc1234-none-exis-ting-fa8308e1242f::1"}
-
-    &{resp}=            REST.PUT    ${baseurl}/ehr/${ehr_id}/ehr_status
-    ...                             ${FIXTURES}/ehr/${fixture}
-                        Set Test Variable    ${response}    ${resp}
-
-                        # Output Debug Info To Console
 
 
 Output Debug Info To Console
