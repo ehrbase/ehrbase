@@ -58,7 +58,6 @@ ${NODOCKER}         False
 
 ${PROJECT_ROOT}  ${EXECDIR}${/}..
 ${POM_FILE}    ${PROJECT_ROOT}${/}pom.xml
-${FIXTURES}     ${PROJECT_ROOT}/tests/robot/_resources/fixtures
 ${SMOKE_TEST_PASSED}    ${TRUE}
 
 
