@@ -149,7 +149,7 @@ public class SuperQuery {
 
     @SuppressWarnings("unchecked")
     public SelectQuery setOrderBy(List<OrderAttribute> orderAttributes, SelectQuery selectQuery){
-        return new OrderByBinder(orderAttributes, selectQuery).bind();
+        return new OrderByBinder(variableDefinitions, orderAttributes, selectQuery).bind();
     }
 
     public SelectQuery select() {

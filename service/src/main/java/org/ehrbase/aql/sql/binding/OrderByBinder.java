@@ -24,7 +24,6 @@ package org.ehrbase.aql.sql.binding;
 import org.ehrbase.aql.compiler.OrderAttribute;
 import org.apache.commons.collections4.CollectionUtils;
 import org.ehrbase.aql.definition.I_VariableDefinition;
-import org.ehrbase.aql.definition.VariableDefinition;
 import org.jooq.Record;
 import org.jooq.SelectQuery;
 import org.jooq.SortField;
@@ -32,6 +31,7 @@ import org.jooq.impl.DSL;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -42,10 +42,12 @@ public class OrderByBinder {
 
     private List<OrderAttribute> orderAttributes;
     private final SelectQuery<Record> select;
+    private final VariableDefinitions variableDefinitions;
 
-    OrderByBinder(List<OrderAttribute> orderAttributes, SelectQuery<Record> select) {
+    OrderByBinder(VariableDefinitions variableDefinitions, List<OrderAttribute> orderAttributes, SelectQuery<Record> select) {
         this.orderAttributes = orderAttributes;
         this.select = select;
+        this.variableDefinitions = variableDefinitions;
     }
 
     List<SortField<Object>> getOrderByFields() {
@@ -56,14 +58,41 @@ public class OrderByBinder {
 
         for (OrderAttribute orderAttribute : orderAttributes) {
             SortField<Object> field;
-                String fieldIdentifier = orderAttribute.getVariableDefinition().getAlias() == null ?
-                        "\"/"+orderAttribute.getVariableDefinition().getPath()+"\"" :
-                        orderAttribute.getVariableDefinition().getAlias();
+            String fieldIdentifier = null;
 
-                if (orderAttribute.getDirection() != null && orderAttribute.getDirection().equals(OrderAttribute.OrderDirection.DESC)) {
-                    field = DSL.field(fieldIdentifier).desc();
-                } else //default to ASCENDING
-                    field = DSL.field(fieldIdentifier).asc();
+            //get the corresponding variable definition
+            if (variableDefinitions != null) {
+                Iterator<I_VariableDefinition> localIterator = variableDefinitions.iterator();
+
+                while (localIterator.hasNext()) {
+                    I_VariableDefinition variableDefinition = localIterator.next();
+                    if (orderAttribute.getVariableDefinition().getPath() != null && orderAttribute.getVariableDefinition().getPath().equals(variableDefinition.getPath())) {
+                        if (variableDefinition.getAlias() != null)
+                            fieldIdentifier = variableDefinition.getAlias();
+                        else
+                            fieldIdentifier = "/" + orderAttribute.getVariableDefinition().getPath();
+                        break;
+                    }
+                    else if (orderAttribute.getVariableDefinition().getAlias() != null)
+                        fieldIdentifier = orderAttribute.getVariableDefinition().getAlias();
+                }
+
+            }
+
+            if (fieldIdentifier == null) { //hidden field
+                fieldIdentifier = orderAttribute.getVariableDefinition().getAlias() == null ?
+                    "/"+orderAttribute.getVariableDefinition().getPath() :
+                    orderAttribute.getVariableDefinition().getAlias();
+                orderAttribute.getVariableDefinition().setHidden(true);
+            }
+
+            if (!fieldIdentifier.startsWith("\""))
+                fieldIdentifier = "\""+fieldIdentifier+"\""; //by postgresql convention
+
+            if (orderAttribute.getDirection() != null && orderAttribute.getDirection().equals(OrderAttribute.OrderDirection.DESC)) {
+                field = DSL.field(fieldIdentifier).desc();
+            } else //default to ASCENDING
+                field = DSL.field(fieldIdentifier).asc();
 
             orderFields.add(field);
         }
