@@ -489,8 +489,18 @@ extract system_id from response (JSON)
 
 extract subject_id from response (JSON)
     [Documentation]     Extracts subject_id from response of preceding request.
+    ...                 This KW executes only in EHR_SERVICE test suite, it is ignored
+    ...                 in all over test suites.
 
-     ${subjectid}=      String      response body ehr_status subject external_ref id value
+            # comment:  Determine which test suite we are executing the KW in.
+            #           If actual suite is one from the ignore list, this KW is skipped.
+    ${suitestoignore}   Create List    COMPOSITION  CONTRIBUTION  DIRECTORY  EHR_STATUS  KNOWLEDGE  AQL
+                        Log    ${TEST TAGS}[0]
+    ${actualsuite}      Set Variable    ${{$TEST_TAGS[0]}}
+                        Return From Keyword If    "${actualsuite}" in ${suitestoignore}
+                        ...    We don't need the subject_id in this test suite!
+
+    ${subjectid}=       String      response body ehr_status subject external_ref id value
 
                         Log To Console    \n\tDEBUG OUTPUT - EHR_STATUS SUBJECT_ID: \n\t${subjectid}[0]
 

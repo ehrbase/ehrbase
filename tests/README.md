@@ -94,7 +94,7 @@ robot -d results --noncritical not-ready -L TRACE robot/
 
 #### Example Content Of Shell Script (run_local_tests.sh)
 ```bash
-robot --include get_contribution \
+robot --include contribution \
       --exclude TODO -e future -e obsolete -e libtest \
       --loglevel TRACE \
       --noncritical not-ready \
@@ -154,15 +154,15 @@ Robot will print proper warning in console if it can't connect to server or data
 Execution of **all** integration tests takes **about 30 minutes** (on a fast dev machine). To avoid waiting for all results you can specify exactly which test-suite or even which subset of it you want to execute. There are seven test-suites to choose from by passing proper TAG to `robot` command via the `--include` (or short `-i`) option: 
 
 
-| TEST SUITE          | SUPER TAG    | SUB TAG(s)                                                                                                                 | EXAMPLE(s)                                                                                   |
-| :------------------ | :----------- | :------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
-| COMPOSITION_TESTS   | composition  | json, json1, json2, <br> xml, xml1, xml2                                                                                   | `robot --include composition` <br> `robot -i composition` <br> `robot -i compositionANDjson` |
-| CONTRIBUTION_TESTS  | contribution | commit_contribution, <br> list_contributions, <br> has_contribution, <br> get_contribution                                 | `robot -i contribution`                                                                      |
-| DIRECTORY_TESTS     | directory    | create_directory, <br> update_directory, <br> get_directory, <br> delete_directory, <br> get_directory_@time, <br> ...     | `robot -i composition` <br> `robot -i create_directoryORupdate_directory`                    |
-| EHR_SERVICE_TESTS   | ehr_service  | create_ehr, update_ehr, <br> has_ehr, get_ehr, <br>  ehr_status                                                            | `robot -i ehr_service`                                                                       |
-| EHR_STATUS_TESTS    | ehr_status   | get_ehr_status, <br> set_ehr_status, <br>  set_queryable, <br> clear_queryable, <br> set_modifiable, <br> clear_modifiable | `robot -i ehr_status`                                                                        |
-| KNOWLEDGE_TESTS     | knowledge    | opt14                                                                                                                      | `robot -i knowledge`                                                                         |
-| QUERY_SERVICE_TESTS | aql          | adhoc-query, <br> stored-query, <br> register-query, <br> list-query                                                       | `robot -i adhoc-query`                                                                       |
+| TEST SUITE          | SUPER TAG    | SUB TAG(s)                                                                                                                                                             | EXAMPLE(s)                                                                                   |
+| :------------------ | :----------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| COMPOSITION_TESTS   | composition  | json, json1, json2, <br> xml, xml1, xml2                                                                                                                               | `robot --include composition` <br> `robot -i composition` <br> `robot -i compositionANDjson` |
+| CONTRIBUTION_TESTS  | contribution | contribution_commit, <br> contributions_list, <br> contribution_has, <br> contribution_get                                                                             | `robot -i contribution`                                                                      |
+| DIRECTORY_TESTS     | directory    | directory_create, <br> directory_update, <br> directory_get, <br> directory_delete, <br> directory_get_@time, <br> ...                                                 | `robot -i directory` <br> `robot -i directory_createORdirectory_update`                      |
+| EHR_SERVICE_TESTS   | ehr_service  | create_ehr, update_ehr, <br> has_ehr, get_ehr, <br>  ehr_status                                                                                                        | `robot -i ehr_service`                                                                       |
+| EHR_STATUS_TESTS    | ehr_status   | ehr_status_get, <br> ehr_status_set, <br>  ehr_status_set_queryable, <br> ehr_status_clear_queryable, <br> ehr_status_set_modifiable, <br> ehr_status_clear_modifiable | `robot -i ehr_status`                                                                        |
+| KNOWLEDGE_TESTS     | knowledge    | opt14                                                                                                                                                                  | `robot -i knowledge`                                                                         |
+| QUERY_SERVICE_TESTS | aql          | aql_adhoc-query, <br> aql_stored-query, <br> aql_register-query, <br> aql_list-query                                                                                   | `robot -i adhoc-query`                                                                       |
 
 
 
