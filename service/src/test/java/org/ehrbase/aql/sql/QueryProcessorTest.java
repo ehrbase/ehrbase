@@ -173,7 +173,7 @@ public class QueryProcessorTest {
                         "from (" +
                         "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') " +
                         "as \"description\" from \"ehr\".\"entry\" where \"ehr\".\"entry\".\"template_id\" = ?" +
-                        ") as \"\" order by description asc",
+                        ") as \"\" order by \"description\" asc",
                 true));
 
         // where  clause json column  from entry
