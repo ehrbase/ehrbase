@@ -91,14 +91,16 @@ class ExpressionField {
                                         throw new InternalServerException("Couldn't handle variable:" + variableDefinition.toString() + "Code error:" + e);
                                     }
                                 }
-                                else if (jsonbEntryQuery.getItemCategory().equals("ELEMENT")){
+                                else if (jsonbEntryQuery.getItemCategory().equals("ELEMENT") || jsonbEntryQuery.getItemCategory().equals("CLUSTER")){
                                     int cut = jsonbItemPath.lastIndexOf(",/value");
-                                    //we keep the path that select the json element value block, and call the formatting function
-                                    //to pass the actual value datatype into the json block
+                                    if (cut != -1)
+                                        //we keep the path that select the json element value block, and call the formatting function
+                                        //to pass the actual value datatype into the json block
+                                        field = DSL.field("(ehr.js_typed_element_value(" + jsonbItemPath.substring(0, cut) + "}')::jsonb))");
+
                                     String alias = variableDefinition.getAlias();
                                     if (alias == null)
                                         alias = new DefaultColumnId().value(variableDefinition);
-                                    field = DSL.field("(ehr.js_typed_element_value("+jsonbItemPath.substring(0, cut)+"}')::jsonb))");
                                     field = field.as(alias);
                                 }
                             }

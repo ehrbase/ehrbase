@@ -24,6 +24,7 @@ package org.ehrbase.aql.sql.binding;
 import org.ehrbase.aql.containment.IdentifierMapper;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.VariableDefinition;
+import org.ehrbase.aql.sql.WhereTemporal;
 import org.ehrbase.aql.sql.queryImpl.CompositionAttributeQuery;
 import org.ehrbase.aql.sql.queryImpl.I_QueryImpl;
 import org.ehrbase.aql.sql.queryImpl.JsonbEntryQuery;
@@ -194,7 +195,11 @@ public class WhereBinder {
                         if (new VariablePath(((I_VariableDefinition) item).getPath()).hasPredicate()) {
                             taggedStringBuilder.append(expandForCondition(encodeWhereVariable(templateId, comp_id, (I_VariableDefinition) item, true, null)));
                         } else {
-                            taggedStringBuilder.append(expandForCondition(encodeWhereVariable(templateId, comp_id, (I_VariableDefinition) item, false, null)));
+                            //check if a comparison item is a date, then force SQL if any
+                            if (new WhereTemporal(whereItems).containsTemporalItem())
+                                taggedStringBuilder.append(expandForCondition(encodeWhereVariable(templateId, comp_id, (I_VariableDefinition) item, true, null)));
+                            else
+                                taggedStringBuilder.append(expandForCondition(encodeWhereVariable(templateId, comp_id, (I_VariableDefinition) item, false, null)));
                         }
                     }
                 }
