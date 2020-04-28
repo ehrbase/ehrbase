@@ -32,8 +32,8 @@ Documentation   C.3.b) Alternative flow: Set EHR modifiable of non existing EHR
 ...                 1. Invoke the set EHR modifiable service by a random ehr_id
 ...                 2. The result should be negative and the result should include
 ...                    an error related to "EHR with ehr_id doesn't exists".
-
-Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
+Metadata        TOP_TEST_SUITE    EHR_STATUS
+Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 
 # Suite Setup  startup SUT
 # Suite Teardown  shutdown SUT

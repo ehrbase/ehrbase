@@ -23,7 +23,7 @@ Metadata    Created    2019.03.10
 
 Documentation   B.1.a) Main flow: Create new EHR
 ...             https://docs.google.com/document/d/1r_z_E8MhlNdeVZS4xecl-8KbG0JPqCzKtKMfhuL81jY/edit#heading=h.yctjt73zw72p
-
+Metadata        TOP_TEST_SUITE    EHR_SERVICE
 Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 
 # Suite Setup  startup SUT
