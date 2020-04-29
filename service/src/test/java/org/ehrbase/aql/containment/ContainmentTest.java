@@ -18,9 +18,6 @@
 
 package org.ehrbase.aql.containment;
 
-import org.ehrbase.aql.compiler.AqlExpression;
-import org.ehrbase.aql.compiler.Contains;
-import org.ehrbase.aql.compiler.Statements;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -58,28 +55,6 @@ public class ContainmentTest {
         assertThat(containment.getClassName()).isEqualTo(expected.getClassName());
         assertThat(containment.getPath()).isEqualTo(expected.getPath());
         assertThat(containment.getEnclosingContainment()).isEqualTo(expected.getEnclosingContainment());
-    }
-
-    @Test
-    public void testInterpretContainement(){
-
-        String query = "select\n" +
-                "c\n" +
-                "from EHR e\n" +
-                "contains COMPOSITION c[openEHR-EHR-COMPOSITION.report-result.v1]\n" +
-                "contains (\n" +
-                "CLUSTER f[openEHR-EHR-CLUSTER.case_identification.v0] and\n" +
-                "CLUSTER z[openEHR-EHR-CLUSTER.specimen.v1] and\n" +
-                "CLUSTER j[openEHR-EHR-CLUSTER.laboratory_test_panel.v0]\n" +
-                "contains CLUSTER g[openEHR-EHR-CLUSTER.laboratory_test_analyte.v1])\n" +
-                "where\n" +
-                "c/name/value='Virologischer Befund' and\n" +
-                "g/items[at0001]/name='Nachweis' and\n" +
-                "g/items[at0024]/name='Virus'\n";
-
-        AqlExpression aqlExpression = new AqlExpression().parse(query);
-        Contains contains = new Contains(aqlExpression.getParseTree()).process();
-        Statements statements = new Statements(aqlExpression.getParseTree(), contains.getIdentifierMapper()).process() ;
     }
 
 }
