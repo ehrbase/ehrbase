@@ -244,9 +244,9 @@ public class QueryProcessorTest {
 
         // select with function
         testCases.add(new AqlTestCase(13,
-                "select  max (d/description[at0001]/items[at0004]/value/magnitude) as max_magnitude from EHR e  contains COMPOSITION  contains ACTION d[openEHR-EHR-ACTION.immunisation_procedure.v1]",
-                "select max(\"max_magnitude\") as \"max_magnitude\" " +
-                        "from (select ((jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0004],0,/value,magnitude}'))::numeric as \"max_magnitude\" " +
+                "select  count (d/description[at0001]/items[at0004]/value/magnitude) as count_magnitude from EHR e  contains COMPOSITION  contains ACTION d[openEHR-EHR-ACTION.immunisation_procedure.v1]",
+                "select count(\"count_magnitude\") as \"count_magnitude\" " +
+                        "from (select ((jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0004],0,/value,magnitude}'))::numeric as \"count_magnitude\" " +
                         "from \"ehr\".\"entry\" " +
                         "where \"ehr\".\"entry\".\"template_id\" = ?" +
                         ") as \"\"",
@@ -352,18 +352,18 @@ public class QueryProcessorTest {
       
       
         testCases.add(new AqlTestCase(22,
-                "select max(a/description[at0001]/items[openEHR-EHR-CLUSTER.test_all_types.v1]/items[at0001]/items[at0002]/items[at0003]/value/value," +
+                "select count(a/description[at0001]/items[openEHR-EHR-CLUSTER.test_all_types.v1]/items[at0001]/items[at0002]/items[at0003]/value/value," +
                         "a/description[at0001]/items[openEHR-EHR-CLUSTER.test_all_types.v1]/items[at0001]/items[at0002]/items[at0004]/value/value)" +
                         "from EHR e " +
                         "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  " +
                         "contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]",
-                "select max(\"_FCT_ARG_0\",\"_FCT_ARG_1\") as \"max\" from (select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[openEHR-EHR-CLUSTER.test_all_types.v1],0,/items[at0001],0,/items[at0002],0,/items[at0004],0,/value,value}') as \"_FCT_ARG_1\", (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[openEHR-EHR-CLUSTER.test_all_types.v1],0,/items[at0001],0,/items[at0002],0,/items[at0003],0,/value,value}') as \"_FCT_ARG_0\" from \"ehr\".\"entry\" where \"ehr\".\"entry\".\"template_id\" = ?) as \"\"",
+                "select count(\"_FCT_ARG_0\",\"_FCT_ARG_1\") as \"count\" from (select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[openEHR-EHR-CLUSTER.test_all_types.v1],0,/items[at0001],0,/items[at0002],0,/items[at0004],0,/value,value}') as \"_FCT_ARG_1\", (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[openEHR-EHR-CLUSTER.test_all_types.v1],0,/items[at0001],0,/items[at0002],0,/items[at0003],0,/value,value}') as \"_FCT_ARG_0\" from \"ehr\".\"entry\" where \"ehr\".\"entry\".\"template_id\" = ?) as \"\"",
                 true
         ));
 
         testCases.add(new AqlTestCase(23,
-                "SELECT max(e/time_created) FROM EHR e",
-                "select max(DISTINCT \"_FCT_ARG_0\") as \"max\" from (select ehr.js_dv_date_time(\"ehr_join\".\"date_created\",\"ehr_join\".\"date_created_tzid\")::text as \"_FCT_ARG_0\" from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\") as \"\"",
+                "SELECT count(e/time_created) FROM EHR e",
+                "select count(DISTINCT \"_FCT_ARG_0\") as \"count\" from (select ehr.js_dv_date_time(\"ehr_join\".\"date_created\",\"ehr_join\".\"date_created_tzid\")::text as \"_FCT_ARG_0\" from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\") as \"\"",
                 true
         ));
 

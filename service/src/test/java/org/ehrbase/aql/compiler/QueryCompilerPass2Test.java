@@ -256,7 +256,7 @@ public class QueryCompilerPass2Test {
 
         {
             QueryCompilerPass2 cut = new QueryCompilerPass2();
-            String aql = "select max(a/context/start_time/value)  " +
+            String aql = "select count(a/context/start_time/value)  " +
                     "from EHR e  contains COMPOSITION a[openEHR-EHR-COMPOSITION.health_summary.v1] ";
             ParseTree tree = QueryHelper.setupParseTree(aql);
             walker.walk(cut, tree);

@@ -46,6 +46,8 @@ import java.util.*;
  */
 public class QueryCompilerPass2 extends AqlBaseListener {
 
+    private String[] allowedFunctions = {"COUNT"};
+
     private Logger logger = LogManager.getLogger(QueryCompilerPass2.class);
 
     private Deque<I_VariableDefinition> variableStack = new ArrayDeque<>();
@@ -83,6 +85,10 @@ public class QueryCompilerPass2 extends AqlBaseListener {
                 logger.debug("Found function");
                 AqlParser.FunctionContext functionContext = selectExprContext.stdExpression().function();
                 String name = functionContext.FUNCTION_IDENTIFIER().getText();
+
+                if (!Arrays.asList(allowedFunctions).contains(name.toUpperCase()))
+                    throw new IllegalArgumentException("Found not supported function:'"+name+"'");
+
                 List<FuncParameter> parameters = new ArrayList<>();
 
                 int serial = 0;
