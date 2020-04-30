@@ -18,9 +18,15 @@
 
 package org.ehrbase.aql.containment;
 
+import org.ehrbase.aql.compiler.AqlExpression;
+import org.ehrbase.aql.compiler.Contains;
+import org.ehrbase.aql.compiler.Statements;
+import org.ehrbase.aql.sql.binding.ContainBinder;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class ContainmentTest {
 
@@ -55,6 +61,36 @@ public class ContainmentTest {
         assertThat(containment.getClassName()).isEqualTo(expected.getClassName());
         assertThat(containment.getPath()).isEqualTo(expected.getPath());
         assertThat(containment.getEnclosingContainment()).isEqualTo(expected.getEnclosingContainment());
+    }
+
+    @Test
+    public void testInterpretContainement(){
+
+        String query = "select\n" +
+                "c\n" +
+                "from EHR e\n" +
+                "contains COMPOSITION c[openEHR-EHR-COMPOSITION.report-result.v1]\n" +
+                "contains (" +
+                "CLUSTER f[openEHR-EHR-CLUSTER.case_identification.v0] and\n" +
+                "CLUSTER z[openEHR-EHR-CLUSTER.specimen.v1] and\n" +
+                "CLUSTER j[openEHR-EHR-CLUSTER.laboratory_test_panel.v0]\n" +
+                "contains CLUSTER g[openEHR-EHR-CLUSTER.laboratory_test_analyte.v1])\n" +
+                "where\n" +
+                "c/name/value='Virologischer Befund' and\n" +
+                "g/items[at0001]/name='Nachweis' and\n" +
+                "g/items[at0024]/name='Virus'\n";
+
+        AqlExpression aqlExpression = new AqlExpression().parse(query);
+        Contains contains = new Contains(aqlExpression.getParseTree()).process();
+//        Statements statements = new Statements(aqlExpression.getParseTree(), contains.getIdentifierMapper()).process() ;
+
+        String containSQL = new ContainBinder(contains.getNestedSets()).bind();
+
+        assertThat(containSQL).isEqualToIgnoringNewLines("SELECT DISTINCT comp_id FROM ehr.containment WHERE label ~'openEHR_EHR_COMPOSITION_report_result_v1.*.openEHR_EHR_CLUSTER_laboratory_test_panel_v0.*.openEHR_EHR_CLUSTER_laboratory_test_analyte_v1' \n" +
+                "INTERSECT \n" +
+                "SELECT DISTINCT comp_id FROM ehr.containment WHERE label ~'openEHR_EHR_COMPOSITION_report_result_v1.*.openEHR_EHR_CLUSTER_case_identification_v0' \n" +
+                "INTERSECT \n" +
+                "SELECT DISTINCT comp_id FROM ehr.containment WHERE label ~'openEHR_EHR_COMPOSITION_report_result_v1.*.openEHR_EHR_CLUSTER_specimen_v1'");
     }
 
 }

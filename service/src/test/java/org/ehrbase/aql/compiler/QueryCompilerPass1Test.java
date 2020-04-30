@@ -18,10 +18,7 @@
 
 package org.ehrbase.aql.compiler;
 
-import org.ehrbase.aql.containment.Containment;
-import org.ehrbase.aql.containment.ContainmentSet;
-import org.ehrbase.aql.containment.ContainmentTest;
-import org.ehrbase.aql.containment.IdentifierMapper;
+import org.ehrbase.aql.containment.*;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.junit.Test;
@@ -211,7 +208,7 @@ public class QueryCompilerPass1Test {
             Containment expected1 = ContainmentTest.buildContainment(null, "a", "openEHR-EHR-COMPOSITION.health_summary.v1", "COMPOSITION", null);
             ContainmentTest.checkEqual(containment1, expected1);
 
-            assertThat(containmentSet.getContainmentList().get(1)).isEqualTo(ContainmentSet.OPERATOR.AND);
+            assertThat(((ContainOperator)containmentSet.getContainmentList().get(1)).getOperator()).isEqualTo("AND");
 
             Containment containment2 = (Containment) containmentSet.getContainmentList().get(2);
             Containment expected2 = ContainmentTest.buildContainment(null, "d", "openEHR-EHR-COMPOSITION.referral.v1", "COMPOSITION", null);
@@ -230,7 +227,7 @@ public class QueryCompilerPass1Test {
             ContainmentSet containmentSet = actual.get(0);
             assertThat(containmentSet.getEnclosing()).isNull();
             assertThat(containmentSet.getParentSet()).isNull();
-            assertThat(containmentSet.getContainmentList()).size().isEqualTo(4);
+            assertThat(containmentSet.getContainmentList()).size().isEqualTo(5);
 
 
             Containment containment1 = (Containment) containmentSet.getContainmentList().get(0);
@@ -238,13 +235,15 @@ public class QueryCompilerPass1Test {
             ContainmentTest.checkEqual(containment1, expected1);
 
 
-            Containment containment2 = (Containment) containmentSet.getContainmentList().get(1);
+            assertThat(((ContainOperator)containmentSet.getContainmentList().get(1)).getOperator()).isEqualTo("XOR");
+
+            Containment containment2 = (Containment) containmentSet.getContainmentList().get(2);
             Containment expected2 = ContainmentTest.buildContainment(null, "d", "openEHR-EHR-COMPOSITION.administrative_encounter.v1", "COMPOSITION", null);
             ContainmentTest.checkEqual(containment2, expected2);
 
-            assertThat(containmentSet.getContainmentList().get(2)).isEqualTo(ContainmentSet.OPERATOR.XOR);
+            assertThat(((ContainOperator)containmentSet.getContainmentList().get(3)).getOperator()).isEqualTo("XOR");
 
-            Containment containment3 = (Containment) containmentSet.getContainmentList().get(3);
+            Containment containment3 = (Containment) containmentSet.getContainmentList().get(4);
             Containment expected3 = ContainmentTest.buildContainment(null, "c", "openEHR-EHR-COMPOSITION.referral.v1", "COMPOSITION", null);
             ContainmentTest.checkEqual(containment3, expected3);
         }
@@ -268,13 +267,13 @@ public class QueryCompilerPass1Test {
             Containment expected1 = ContainmentTest.buildContainment(null, "a", "openEHR-EHR-COMPOSITION.health_summary.v1", "COMPOSITION", null);
             ContainmentTest.checkEqual(containment1, expected1);
 
-            assertThat(containmentSet.getContainmentList().get(1)).isEqualTo(ContainmentSet.OPERATOR.XOR);
+            assertThat(((ContainOperator)containmentSet.getContainmentList().get(1)).getOperator()).isEqualTo("XOR");
 
             Containment containment2 = (Containment) containmentSet.getContainmentList().get(2);
             Containment expected2 = ContainmentTest.buildContainment(null, "d", "openEHR-EHR-ACTION.immunisation_procedure.v1", "ACTION", null);
             ContainmentTest.checkEqual(containment2, expected2);
 
-            assertThat(containmentSet.getContainmentList().get(3)).isEqualTo(ContainmentSet.OPERATOR.AND);
+            assertThat(((ContainOperator)containmentSet.getContainmentList().get(3)).getOperator()).isEqualTo("AND");
 
             Containment containment3 = (Containment) containmentSet.getContainmentList().get(4);
             Containment expected3 = ContainmentTest.buildContainment(null, "c", "openEHR-EHR-COMPOSITION.referral.v1", "COMPOSITION", null);
@@ -314,7 +313,7 @@ public class QueryCompilerPass1Test {
             Containment expected12 = ContainmentTest.buildContainment(containment1, "o", "openEHR-EHR-OBSERVATION.laboratory-hba1c.v1", "OBSERVATION", null);
             ContainmentTest.checkEqual(containment2, expected12);
 
-            assertThat(containmentSet1.getContainmentList().get(1)).isEqualTo(ContainmentSet.OPERATOR.AND);
+            assertThat(((ContainOperator)containmentSet1.getContainmentList().get(1)).getOperator()).isEqualTo("AND");
 
             Containment containment3 = (Containment) containmentSet1.getContainmentList().get(2);
             Containment expected3 = ContainmentTest.buildContainment(containment1, "o1", "openEHR-EHR-OBSERVATION.laboratory-glucose.v1", "OBSERVATION", null);
@@ -339,7 +338,7 @@ public class QueryCompilerPass1Test {
             assertThat(containmentSet2.getParentSet()).isNull();
             assertThat(containmentSet2.getContainmentList()).size().isEqualTo(2);
 
-            assertThat(containmentSet2.getContainmentList().get(0)).isEqualTo(ContainmentSet.OPERATOR.OR);
+            assertThat(((ContainOperator)containmentSet2.getContainmentList().get(0)).getOperator()).isEqualTo("OR");
 
             Containment containment3 = (Containment) containmentSet2.getContainmentList().get(1);
             Containment expected3 = ContainmentTest.buildContainment(null, "c2", "openEHR-EHR-COMPOSITION.health_summary.v1", "COMPOSITION", null);
