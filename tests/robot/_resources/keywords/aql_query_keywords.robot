@@ -311,7 +311,7 @@ check response (EMPTY DB): returns correct content for
                         Log To Console  \n/////////// EXPECTED //////////////////////////////
                         Output    ${expected result}
 
-    &{diff}=            compare json-strings  ${response body}  ${expected result}  exclude_paths=root['meta']
+    &{diff}=            compare_jsons_ignoring_properties  ${response body}  ${expected result}
                         Should Be Empty  ${diff}  msg=DIFF DETECTED!
 
 

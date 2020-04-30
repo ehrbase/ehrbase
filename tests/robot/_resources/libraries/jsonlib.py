@@ -164,7 +164,16 @@ def ignore_type_properties(obj, path):
         "TERM_MAPPING",
         "TERMINOLOGY_ID",
     ]
-    return True if "_type" in path and obj in ignorable_types else False
+    # BACKUP# return True if "_type" in path and obj in ignorable_types else False
+    # Data Value (DV) is inside ELEMENT.value - those are NOT ignored
+    if "_type" in path and "value" in path and obj in ignorable_types:
+        return False
+    # DV is NOT inside ELEMENT.value - those ARE ignored
+    if "_type" in path and ("value" not in path) and obj in ignorable_types:
+        logger.debug(f"path: {path}, object: {obj}")
+        return True
+    else:
+        False
 
 
 def compare_jsons_ignoring_properties(
