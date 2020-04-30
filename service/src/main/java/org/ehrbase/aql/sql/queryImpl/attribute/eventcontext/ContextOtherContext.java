@@ -35,8 +35,9 @@ public class ContextOtherContext extends EventContextAttribute {
 
     @Override
     public Field<?> sqlField() {
-        String variablePath = fieldContext.getVariableDefinition().getPath().substring("context/other_context".length());
+        String path = new OtherContextPredicate(fieldContext.getVariableDefinition().getPath()).adjustForQuery();
 
+        String variablePath = path.substring("context/other_context".length());
 
         if (variablePath.startsWith("/"))
             variablePath = variablePath.substring(1);
