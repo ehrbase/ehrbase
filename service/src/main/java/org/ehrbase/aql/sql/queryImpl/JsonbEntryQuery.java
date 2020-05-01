@@ -278,7 +278,7 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
             String cast = "";
             //TODO: explicit template based type cast will be implemented in a later release
             //force explicit type cast for DvQuantity
-            if (variableDefinition.getPath().endsWith("magnitude"))
+            if (variableDefinition.getPath() != null && variableDefinition.getPath().endsWith("magnitude"))
                 cast = "::numeric";
 
             if (alias != null)
