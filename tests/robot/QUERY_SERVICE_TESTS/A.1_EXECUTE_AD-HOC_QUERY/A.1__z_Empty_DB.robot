@@ -102,10 +102,9 @@ A-202 Execute Ad-Hoc Query - Get EHR(s)
 
 A-202 Execute invalid Ad-Hoc Query - Get EHR(s)
     [Template]          execute invalid ad-hoc query and check result (empty DB)
-    [Tags]              200
+    [Tags]
     A/202_get_ehr_by_id_empty_db.json    WHERE variable should be a path
     A/203_get_ehr_by_id_empty_db.json    WHERE variable should be a path
-    [Teardown]          TRACE GITHUB ISSUE  200  not-ready
 
 
 A-300 Execute Ad-Hoc Query - Get EHR(s)
