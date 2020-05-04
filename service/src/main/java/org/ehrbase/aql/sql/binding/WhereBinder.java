@@ -24,7 +24,6 @@ package org.ehrbase.aql.sql.binding;
 import org.ehrbase.aql.containment.IdentifierMapper;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.VariableDefinition;
-import org.ehrbase.aql.sql.WhereTemporal;
 import org.ehrbase.aql.sql.queryImpl.CompositionAttributeQuery;
 import org.ehrbase.aql.sql.queryImpl.I_QueryImpl;
 import org.ehrbase.aql.sql.queryImpl.JsonbEntryQuery;
@@ -80,7 +79,7 @@ public class WhereBinder {
         //this allows to deploy on AWS since jsquery is not supported by this provider
         if (forceSQL || !usePgExtensions) {
             //EHR-327: also supports EHR attributes in WHERE clause
-            if (className.equals("COMPOSITION") || className.equals("EHR")) {
+            if ((className.equals("COMPOSITION") && !variableDefinition.getPath().contains("content")) || className.equals("EHR")) {
                 field = compositionAttributeQuery.whereField(templateId, comp_id, identifier, variableDefinition);
             } else { //should be removed (?)
                 //TODO: identify a method to avoid using Set Returning Function (jsonb_array_element) in WHERE (unsupported in PG10+) while still filtering values in a set
@@ -141,6 +140,7 @@ public class WhereBinder {
         TaggedStringBuilder taggedBuffer = new TaggedStringBuilder();
 
         List whereItems = whereClause;
+        boolean notExists = false;
 
         for (int cursor = 0; cursor < whereItems.size(); cursor++) {
             Object item = whereItems.get(cursor);
@@ -149,9 +149,25 @@ public class WhereBinder {
                     case "OR":
                     case "XOR":
                     case "AND":
-                    case "NOT":
                         taggedBuffer = new WhereJsQueryExpression(taggedBuffer, requiresJSQueryClosure, isFollowedBySQLConditionalOperator).closure();
                         taggedBuffer.append(" " + item + " ");
+                        break;
+
+                    case "NOT":
+                        //check if precedes 'EXISTS'
+                        if (whereItems.get(cursor + 1).toString().toUpperCase().equals("EXISTS"))
+                            notExists = true;
+                        else {
+                            taggedBuffer = new WhereJsQueryExpression(taggedBuffer, requiresJSQueryClosure, isFollowedBySQLConditionalOperator).closure();
+                            taggedBuffer.append(" " + item + " ");
+                        }
+                        break;
+
+                    case "EXISTS":
+                        //add the comparison to null after the variable expression
+                        whereItems.add(cursor + 2, notExists ? "IS " : "IS NOT ");
+                        whereItems.add(cursor + 3, "NULL");
+                        notExists = false;
                         break;
 
                     default:
@@ -196,7 +212,7 @@ public class WhereBinder {
                             taggedStringBuilder.append(expandForCondition(encodeWhereVariable(templateId, comp_id, (I_VariableDefinition) item, true, null)));
                         } else {
                             //check if a comparison item is a date, then force SQL if any
-                            if (new WhereTemporal(whereItems).containsTemporalItem())
+                            if (new WhereTemporal(whereItems).containsTemporalItem() || new WhereEvaluation(whereItems).requiresSQL())
                                 taggedStringBuilder.append(expandForCondition(encodeWhereVariable(templateId, comp_id, (I_VariableDefinition) item, true, null)));
                             else
                                 taggedStringBuilder.append(expandForCondition(encodeWhereVariable(templateId, comp_id, (I_VariableDefinition) item, false, null)));

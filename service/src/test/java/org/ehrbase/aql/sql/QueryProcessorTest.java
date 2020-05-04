@@ -349,8 +349,8 @@ public class QueryProcessorTest {
                         "from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\"" +
                         "where (\"ehr\".\"entry\".\"template_id\" = ? and (\"ehr_join\".\"id\"='4a7c01cf-bb1c-4d3d-8385-4ae0674befb1'))",
                 false));
-      
-      
+
+
         testCases.add(new AqlTestCase(22,
                 "select count(a/description[at0001]/items[openEHR-EHR-CLUSTER.test_all_types.v1]/items[at0001]/items[at0002]/items[at0003]/value/value," +
                         "a/description[at0001]/items[openEHR-EHR-CLUSTER.test_all_types.v1]/items[at0001]/items[at0002]/items[at0004]/value/value)" +
@@ -366,6 +366,26 @@ public class QueryProcessorTest {
                 "select count(DISTINCT \"_FCT_ARG_0\") as \"count\" from (select ehr.js_dv_date_time(\"ehr_join\".\"date_created\",\"ehr_join\".\"date_created_tzid\")::text as \"_FCT_ARG_0\" from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\") as \"\"",
                 true
         ));
+
+        //EXISTS
+        testCases.add(new AqlTestCase(24,
+                "select c\n" +
+                        "from EHR e\n" +
+                        "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]\n" +
+                        "WHERE NOT EXISTS c/content[openEHR-EHR-ADMIN_ENTRY.hospitalization.v0]",
+                "select ehr.js_composition(composition_join.id,'local')::text as \"c\" from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" where (\"ehr\".\"entry\".\"template_id\" = ? and (\"ehr\".\"entry\".\"entry\" #>> '{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ADMIN_ENTRY.hospitalization.v0]}'IS NULL))",
+                true
+        ));
+
+        //NOT EXISTS
+//        testCases.add(new AqlTestCase(25,
+//                "select c\n" +
+//                        "from EHR e\n" +
+//                        "contains COMPOSITION c\n" +
+//                        "WHERE NOT EXISTS u[openEHR-EHR-ADMIN_ENTRY.hospitalization.v0]",
+//                "select count(DISTINCT \"_FCT_ARG_0\") as \"count\" from (select ehr.js_dv_date_time(\"ehr_join\".\"date_created\",\"ehr_join\".\"date_created_tzid\")::text as \"_FCT_ARG_0\" from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\") as \"\"",
+//                true
+//        ));
 
         return testCases;
     }

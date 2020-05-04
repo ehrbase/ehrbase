@@ -1,4 +1,4 @@
-package org.ehrbase.aql.sql;
+package org.ehrbase.aql.sql.binding;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
