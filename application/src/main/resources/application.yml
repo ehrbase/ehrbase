@@ -15,6 +15,13 @@
 # limitations under the License.
 
 spring:
+  application:
+    name: ehrbase-client
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8081/auth/realms/ehrbase
   profiles:
     active: local
   datasource:
