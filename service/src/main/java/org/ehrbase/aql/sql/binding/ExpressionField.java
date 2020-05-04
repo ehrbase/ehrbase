@@ -77,6 +77,10 @@ class ExpressionField {
 
                     if (jsonbEntryQuery.getItemType() != null){
                         Class itemClass = ArchieRMInfoLookup.getInstance().getClass(jsonbEntryQuery.getItemType());
+
+                        if (itemClass == null && className != null) //this may occur f.e. for itemType 'MULTIPLE'. try we classname
+                            itemClass = ArchieRMInfoLookup.getInstance().getClass(className);
+
                         if (DataValue.class.isAssignableFrom(itemClass)) {
                             VariableAqlPath variableAqlPath = new VariableAqlPath(variableDefinition.getPath());
                             if (variableAqlPath.getSuffix().equals("value")){

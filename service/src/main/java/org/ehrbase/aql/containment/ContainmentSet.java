@@ -122,7 +122,7 @@ public class ContainmentSet {
                 if (item instanceof Containment)
                     sb.append(item);
                 else if (item instanceof ContainOperator) {
-                    sb.append(item);
+                    sb.append(((ContainOperator) item).getOperator());
                 } else if (item instanceof String) {
                     sb.append(item);
                 } else
