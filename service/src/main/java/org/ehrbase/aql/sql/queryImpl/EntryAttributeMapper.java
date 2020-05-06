@@ -46,6 +46,7 @@ public class EntryAttributeMapper {
     public static final String LOWER = "lower";
     public static final String UPPER = "upper";
     public static final String INTERVAL = "interval";
+    public static final String MAPPINGS = "mappings";
 
     //from Locatable
     private static String toCamelCase(String underscoreSeparated) {
@@ -107,7 +108,9 @@ public class EntryAttributeMapper {
             fields.add(2, SLASH_VALUE);
             floor = 3;
         } else if (fields.get(0).equals(NAME)) {
-            fields.add(1, "0"); //name is now formatted as /name -> array of values! Required to deal with cluster items
+            fields.add(1, "0"); //name is now formatted as /name -> array of values! Required to deal with cluster items, ditto for mappings
+        } else if (fields.size() >= 2 && fields.get(1).equals(MAPPINGS)) {
+            fields.add(2, "0"); //mappings is now formatted as /mappings -> array of values!
         } else if (fields.get(0).equals(VALUE) && fields.size() == 1) {
             //CCH 191016: removed 'shortcut' for values to allow canonical json structure return
             //fields.add(1, VALUE);

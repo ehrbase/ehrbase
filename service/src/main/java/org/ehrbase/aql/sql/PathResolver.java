@@ -23,6 +23,7 @@ package org.ehrbase.aql.sql;
 
 import org.ehrbase.aql.containment.Containment;
 import org.ehrbase.aql.containment.IdentifierMapper;
+import org.ehrbase.aql.definition.FromEhrDefinition;
 import org.ehrbase.aql.sql.binding.ContainBinder;
 import org.ehrbase.aql.sql.queryImpl.CompositionAttributeQuery;
 import org.ehrbase.aql.sql.queryImpl.JsonbEntryQuery;
@@ -105,6 +106,9 @@ public class PathResolver {
     private String lqueryExpression(String identifier) {
         Object containment = getMapper().getContainer(identifier);
 
+        if (containment instanceof FromEhrDefinition.EhrPredicate)
+            return null;
+
         if (!(containment instanceof Containment))
             throw new IllegalArgumentException("No path found for identifier:" + identifier);
 
@@ -127,6 +131,9 @@ public class PathResolver {
         for (String identifier : getMapper().identifiers()) {
             try {
                 String lquery = lqueryExpression(identifier);
+
+                if (lquery == null)
+                    continue;
 
                 if (lquery.equals("COMPOSITION%")) //composition root, path is not used
                     continue;
