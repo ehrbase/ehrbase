@@ -1,0 +1,32 @@
+{
+  "name": {
+    "value": "family group",
+    "_type": "DV_TEXT"
+  },
+  "archetype_node_id": "[openEHR-EHR-ITEM_TREE.fake.v1]",
+  "_type": "ITEM_TABLE",
+  "items": [
+    {
+
+      "archetype_node_id": "at0001",
+      "_type": "CLUSTER",
+      "items": [
+        {
+          "name": {
+            "value": "family group id",
+            "_type": "DV_TEXT"
+          },
+          "value": {
+            "id": "55175056",
+            "type": "FAMILY_GROUP_ID",
+            "issuer": "MoH",
+            "assigner": "MoH",
+            "_type": "DV_IDENTIFIER"
+          },
+          "_type": "ELEMENT",
+          "archetype_node_id": "at0001"
+        }
+      ]
+    }
+  ]
+}

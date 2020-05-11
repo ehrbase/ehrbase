@@ -50,7 +50,11 @@ public class ValueArrayList {
 
         switch (tag){
             case CompositionSerializer.TAG_NAME:
-                LinkedTreeMap nameEncoded = ((LinkedTreeMap) (value.get(0)));
+
+                LinkedTreeMap nameEncoded = (value.get(0) instanceof ArrayList) ?
+                        ((LinkedTreeMap)((ArrayList)value.get(0)).get(0)) :
+                        ((LinkedTreeMap) (value.get(0)));
+
                 if (nameEncoded.size() == 1) {
                     new DvTextNameValue(writer, nameEncoded).write();
                 }

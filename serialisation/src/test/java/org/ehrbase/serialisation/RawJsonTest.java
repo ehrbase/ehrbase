@@ -18,6 +18,7 @@
 
 package org.ehrbase.serialisation;
 
+import com.nedap.archie.rm.datastructures.ItemTable;
 import org.ehrbase.test_data.composition.CompositionTestDataCanonicalXML;
 import org.ehrbase.test_data.item_structure.ItemStruktureTestDataCanonicalJson;
 import com.nedap.archie.rm.composition.Composition;
@@ -81,6 +82,25 @@ public class RawJsonTest {
         String marshal = cut.marshal(itemTree);
 
         ItemTree actual = cut.unmarshal(marshal, ItemTree.class);
+
+        assertThat(actual).isNotNull();
+        assertThat(actual.getItems()).size().isEqualTo(3);
+    }
+
+    @Test
+    public void testUnmarshalItemStructureWithItemTable() throws IOException {
+
+        String value = new String(Files.readAllBytes(Paths.get("src/test/resources/sample_data/item_table_sample.json")));
+
+        CanonicalJson canonicalJson = new CanonicalJson();
+
+        ItemTable itemTable = canonicalJson.unmarshal(value, ItemTable.class);
+
+        RawJson cut = new RawJson();
+
+        String marshal = cut.marshal(itemTable);
+
+        ItemTable actual = cut.unmarshal(marshal, ItemTable.class);
 
         assertThat(actual).isNotNull();
         assertThat(actual.getItems()).size().isEqualTo(3);
