@@ -1160,7 +1160,7 @@ public class CompositionSerializer {
             stringObjectMap = traverse((ItemStructure) rmObject, TAG_ITEMS);
             if (((ItemStructure)rmObject).getArchetypeNodeId() != null)
                 stringObjectMap.put(CompositionSerializer.TAG_ARCHETYPE_NODE_ID, ((ItemStructure)rmObject).getArchetypeNodeId());
-            if (((ItemStructure)rmObject).getName() != null)
+            if (!stringObjectMap.containsKey(CompositionSerializer.TAG_NAME) && ((ItemStructure)rmObject).getName() != null)
                 stringObjectMap.put(CompositionSerializer.TAG_NAME, ((ItemStructure)rmObject).getName());
         }
         else
