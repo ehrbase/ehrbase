@@ -25,6 +25,7 @@ public enum CompositionTestDataCanonicalJson {
     LABORATORY_REPORT_NO_CONTENT("Laboratory report no content", "laboratory_report_no_content.json"),
     MINIMAL_ADMIN("Minimal Admin", "minimal_admin.json"),
     MINIMAL_EVAL("Minimal Evaluation", "minimal_evaluation.json"),
+    MINIMAL_EVAL_NAMED_ITEM_TREE("Minimal Evaluation modified", "minimal_evaluation_item_tree_name.json"),
     MINIMAL_INST("Minimal Instruction", "minimal_instruction.json"),
     MINIMAL_OBS("Minimal Observation", "minimal_observation.json"),
     INVALID("Invalid example", "invalid.json"),

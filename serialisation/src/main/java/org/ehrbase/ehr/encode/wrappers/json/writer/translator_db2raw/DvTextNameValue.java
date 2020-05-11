@@ -23,20 +23,19 @@ import org.ehrbase.ehr.encode.wrappers.json.I_DvTypeAdapter;
 
 import java.io.IOException;
 
-public class NameValue {
+public class DvTextNameValue implements I_NameValueHandler{
 
-    private final I_NameValueHandler handler;
+    private final JsonWriter writer;
+    private final String value;
 
-    NameValue(JsonWriter writer, String value) {
-        this.handler = new DvTextNameValue(writer, value);
+    DvTextNameValue(JsonWriter writer, String value) {
+        this.writer = writer;
+        this.value = value;
     }
 
-    NameValue(JsonWriter writer, LinkedTreeMap value) {
-        if (value.containsKey("defining_code")){
-            this.handler = new DvCodedTextNameValue(writer, value);
-        }
-        else
-            this.handler = new DvTextNameValue(writer, value);
+    DvTextNameValue(JsonWriter writer, LinkedTreeMap value) {
+        this.writer = writer;
+        this.value = value.get("value").toString();
     }
 
 
@@ -50,6 +49,12 @@ public class NameValue {
      * @throws IOException
      */
     public void write() throws IOException {
-        handler.write();
+        if (value == null || value.isEmpty())
+            return;
+        writer.name(I_DvTypeAdapter.NAME);
+        writer.beginObject();
+        writer.name(I_DvTypeAdapter.VALUE).value(value);
+        writer.name(I_DvTypeAdapter.AT_TYPE).value("DV_TEXT");
+        writer.endObject();
     }
 }

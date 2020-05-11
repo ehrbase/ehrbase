@@ -1008,6 +1008,9 @@ public class CompositionSerializer {
 
         if (retmap != null) {
             retmap.put(CompositionSerializer.TAG_CLASS, className(item)); //this will come out as an array...
+            if (!retmap.containsKey(TAG_NAME) && item.getName() != null){
+                retmap.put(TAG_NAME, mapName(item.getName()));
+            }
         }
         return retmap;
 

@@ -17,6 +17,7 @@
  */
 package org.ehrbase.ehr.encode.wrappers.json.writer.translator_db2raw;
 
+import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.stream.JsonWriter;
 import org.ehrbase.ehr.encode.wrappers.json.I_DvTypeAdapter;
 import org.ehrbase.serialisation.CompositionSerializer;
@@ -49,10 +50,14 @@ public class ValueArrayList {
 
         switch (tag){
             case CompositionSerializer.TAG_NAME:
-                Object nameDefinition = ((Map) (value.get(0))).get("value");
-                if (nameDefinition != null) {
-                    new NameValue(writer, nameDefinition.toString()).write();
+                LinkedTreeMap nameEncoded = ((LinkedTreeMap) (value.get(0)));
+                if (nameEncoded.size() == 1) {
+                    new DvTextNameValue(writer, nameEncoded).write();
                 }
+                if (nameEncoded.size() > 1){ //dvCodedText
+                    new DvCodedTextNameValue(writer, nameEncoded).write();
+                }
+
                 break;
             case CompositionSerializer.TAG_ARCHETYPE_NODE_ID:
                 writer.name(I_DvTypeAdapter.ARCHETYPE_NODE_ID).value(value.get(0).toString());
