@@ -32,6 +32,7 @@ import com.nedap.archie.rm.datavalues.quantity.datetime.DvDuration;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvTime;
 import com.nedap.archie.rm.generic.Participation;
 import com.nedap.archie.rm.generic.PartyIdentified;
+import com.nedap.archie.rm.support.identification.PartyRef;
 import org.ehrbase.ehr.encode.wrappers.json.I_DvTypeAdapter;
 import org.ehrbase.ehr.encode.wrappers.json.writer.*;
 import org.ehrbase.ehr.encode.wrappers.json.writer.translator_db2raw.ArrayListAdapter;
@@ -59,7 +60,8 @@ public class EncodeUtilArchie {
                 .registerTypeAdapter(DvCodedText.class, new DvCodedTextAdapter())
                 .registerTypeAdapter(CodePhrase.class, new CodePhraseAdapter())
                 .registerTypeAdapter(Participation.class, new ParticipationAdapter())
-                .registerTypeAdapter(PartyIdentified.class, new PartyIdentifiedAdapter());
+                .registerTypeAdapter(PartyIdentified.class, new PartyIdentifiedAdapter())
+                .registerTypeAdapter(PartyRef.class, new PartyRefAdapter());
         return builder;
     }
 

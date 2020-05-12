@@ -1,0 +1,114 @@
+{
+  "_type" : "COMPOSITION",
+  "name" : {
+    "_type" : "DV_TEXT",
+    "value" : "Bericht"
+  },
+  "archetype_details" : {
+    "archetype_id" : {
+      "value" : "openEHR-EHR-COMPOSITION.report.v1"
+    },
+    "template_id" : {
+      "value" : "Corona_Anamnese"
+    },
+    "rm_version" : "1.0.4"
+  },
+  "language" : {
+    "terminology_id" : {
+      "value" : "ISO_639-1"
+    },
+    "code_string" : "de"
+  },
+  "territory" : {
+    "terminology_id" : {
+      "value" : "ISO_3166-1"
+    },
+    "code_string" : "DE"
+  },
+  "category" : {
+    "_type" : "DV_CODED_TEXT",
+    "value" : "event",
+    "defining_code" : {
+      "terminology_id" : {
+        "value" : "openehr"
+      },
+      "code_string" : "433"
+    }
+  },
+  "composer" : {
+    "_type" : "PARTY_SELF"
+  },
+  "content" : [ {
+    "_type" : "SECTION",
+    "name" : {
+      "_type" : "DV_TEXT",
+      "value" : "Allgemeine Angaben"
+    },
+    "items" : [ {
+      "_type" : "EVALUATION",
+      "name" : {
+        "_type" : "DV_TEXT",
+        "value" : "Diagnose"
+      },
+      "language" : {
+        "terminology_id" : {
+          "value" : "ISO_639-1"
+        },
+        "code_string" : "de"
+      },
+      "encoding" : {
+        "terminology_id" : {
+          "value" : "IANA_character-sets"
+        },
+        "code_string" : "UTF-8"
+      },
+      "subject" : {
+        "_type": "PARTY_RELATED",
+        "relationship" : {
+          "_type": "DV_CODED_TEXT",
+          "value" : "someone",
+          "defining_code" : {
+            "terminology_id" : {
+              "value" : "external"
+            },
+            "code_string" : "237"
+          }
+
+        },
+        "external_ref": {
+          "_type": "PARTY_REF",
+          "id": {
+            "_type": "GENERIC_ID",
+            "value": "1",
+            "scheme": "TH-HIS-MPI"
+          },
+          "namespace": "patients",
+          "type": "PERSON"
+        }
+      },
+      "data" : {
+        "_type" : "ITEM_TREE",
+        "name" : {
+          "_type" : "DV_TEXT",
+          "value" : "Structure"
+        },
+        "items" : [ {
+          "_type" : "ELEMENT",
+          "name" : {
+            "_type" : "DV_TEXT",
+            "value" : "Name des Problems/ der Diagnose"
+          },
+          "value" : {
+            "_type" : "DV_TEXT",
+            "value" : "Freitextdiagnose"
+          },
+          "archetype_node_id" : "at0002"
+        } ],
+        "archetype_node_id" : "at0001"
+      },
+      "archetype_node_id" : "openEHR-EHR-EVALUATION.problem_diagnosis_covid.v1"
+    } ],
+    "archetype_node_id" : "openEHR-EHR-SECTION.allgemeine_angaben.v1"
+  } ],
+  "archetype_node_id" : "openEHR-EHR-COMPOSITION.report.v1"
+}

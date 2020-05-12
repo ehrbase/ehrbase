@@ -36,7 +36,10 @@ public enum CompositionTestDataCanonicalJson {
     OBS_INST("Observation+Instruction", "obs_inst.json"),
     MINIMAL_PERSISTENT("Minimal Persistent", "minimal_persistent.json"),
     NESTED("Nested", "nested.json"),
-    TIME_SERIES("Time Series", "time_series.json");
+    TIME_SERIES("Time Series", "time_series.json"),
+    SUBJECT_PARTY_IDENTIFIED("Nested subject PARTY_IDENTIFIED", "compo_with_nested_party_identified.json"),
+    SUBJECT_PARTY_SELF("Nested subject PARTY_SELF", "compo_with_nested_party_self.json"),
+    SUBJECT_PARTY_RELATED("Nested subject PARTY_RELATED", "compo_with_nested_party_related.json");
 
 
     private final String filename;
