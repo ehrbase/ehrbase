@@ -39,7 +39,8 @@ public enum CompositionTestDataCanonicalJson {
     TIME_SERIES("Time Series", "time_series.json"),
     SUBJECT_PARTY_IDENTIFIED("Nested subject PARTY_IDENTIFIED", "compo_with_nested_party_identified.json"),
     SUBJECT_PARTY_SELF("Nested subject PARTY_SELF", "compo_with_nested_party_self.json"),
-    SUBJECT_PARTY_RELATED("Nested subject PARTY_RELATED", "compo_with_nested_party_related.json");
+    SUBJECT_PARTY_RELATED("Nested subject PARTY_RELATED", "compo_with_nested_party_related.json"),
+    NESTED_PROVIDER("Nested provider PARTY_IDENTIFIED", "compo_with_nested_provider.json");
 
 
     private final String filename;

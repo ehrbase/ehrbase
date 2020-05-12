@@ -108,6 +108,7 @@ public class CompositionSerializer {
     public static final String TAG_ACTION = "/action";
     public static final String TAG_SUBJECT = "/subject";
     public static final String TAG_LANGUAGE = "/language";
+    public static final String TAG_ENCODING = "/encoding";
     public static final String TAG_ISM_TRANSITION = "/ism_transition";
     public static final String TAG_CURRENT_STATE = "/current_state";
     public static final String TAG_CAREFLOW_STEP = "/careflow_step";
@@ -725,11 +726,16 @@ public class CompositionSerializer {
             if (((Entry) item).getSubject() != null){
                 retmap.put(TAG_SUBJECT, new SubjectAttributes(((Entry) item).getSubject(), this).toMap());
             }
-//                encodeNodeAttribute(retmap, TAG_SUBJECT, ((Entry) item).getSubject(), null);
-//            if (((Entry) item).getLanguage() != null)
-//                encodeNodeAttribute(retmap, TAG_LANGUAGE, ((Entry) item).getLanguage(), null);
+            if (((Entry) item).getLanguage() != null){
+                retmap.put(TAG_LANGUAGE, ((Entry) item).getLanguage());
+            }
+            if (((Entry) item).getProvider() != null){
+                retmap.put(TAG_PROVIDER, new SubjectAttributes(((Entry) item).getProvider(), this).toMap());
+            }
+            if (((Entry) item).getEncoding() != null){
+                retmap.put(TAG_ENCODING, ((Entry) item).getEncoding());
+            }
 
-//            putEntryMetaData(retmap, (Entry) item);
         }
 
         itemStack.popStacks();

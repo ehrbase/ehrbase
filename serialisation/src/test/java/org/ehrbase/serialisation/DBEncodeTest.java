@@ -324,6 +324,27 @@ public class DBEncodeTest {
         assertEquals("PartySelf",composition2.itemsAtPath("/content[openEHR-EHR-SECTION.allgemeine_angaben.v1]/items[openEHR-EHR-EVALUATION.problem_diagnosis_covid.v1]/subject").get(0).getClass().getSimpleName());
     }
 
+    @Test
+    public void testNestedLanguage() throws IOException {
+        Composition composition = new CanonicalJson().unmarshal(IOUtils.toString(CompositionTestDataCanonicalJson.SUBJECT_PARTY_SELF.getStream(), UTF_8),Composition.class);
+
+        assertNotNull(composition);
+
+        CompositionSerializer compositionSerializerRawJson = new CompositionSerializer();
+
+        String db_encoded = compositionSerializerRawJson.dbEncode(composition);
+        assertNotNull(db_encoded);
+
+        JsonElement converted = new LightRawJsonEncoder(db_encoded).encodeContentAsJson("composition");
+
+        //see if this can be interpreted by Archie
+        Composition composition2 = new CanonicalJson().unmarshal(converted.toString(), Composition.class);
+
+        assertNotNull(composition2);
+
+        assertEquals("de",composition2.itemsAtPath("/content[openEHR-EHR-SECTION.allgemeine_angaben.v1]/items[openEHR-EHR-EVALUATION.problem_diagnosis_covid.v1]/language/code_string").get(0).toString());
+    }
+
 
     @Test
     public void testNestedLanguageSubjectPartyRelated() throws IOException {
@@ -345,6 +366,50 @@ public class DBEncodeTest {
 
         assertEquals("someone",composition2.itemsAtPath("/content[openEHR-EHR-SECTION.allgemeine_angaben.v1]/items[openEHR-EHR-EVALUATION.problem_diagnosis_covid.v1]/subject/relationship/value").get(0).toString());
     }
+
+
+    @Test
+    public void testNestedProvider() throws IOException {
+        Composition composition = new CanonicalJson().unmarshal(IOUtils.toString(CompositionTestDataCanonicalJson.NESTED_PROVIDER.getStream(), UTF_8),Composition.class);
+
+        assertNotNull(composition);
+
+        CompositionSerializer compositionSerializerRawJson = new CompositionSerializer();
+
+        String db_encoded = compositionSerializerRawJson.dbEncode(composition);
+        assertNotNull(db_encoded);
+
+        JsonElement converted = new LightRawJsonEncoder(db_encoded).encodeContentAsJson("composition");
+
+        //see if this can be interpreted by Archie
+        Composition composition2 = new CanonicalJson().unmarshal(converted.toString(), Composition.class);
+
+        assertNotNull(composition2);
+
+        assertEquals("zzzz",composition2.itemsAtPath("/content[openEHR-EHR-SECTION.allgemeine_angaben.v1]/items[openEHR-EHR-EVALUATION.problem_diagnosis_covid.v1]/provider/external_ref/id/value").get(0).toString());
+    }
+
+    @Test
+    public void testNestedEncoding() throws IOException {
+        Composition composition = new CanonicalJson().unmarshal(IOUtils.toString(CompositionTestDataCanonicalJson.SUBJECT_PARTY_SELF.getStream(), UTF_8),Composition.class);
+
+        assertNotNull(composition);
+
+        CompositionSerializer compositionSerializerRawJson = new CompositionSerializer();
+
+        String db_encoded = compositionSerializerRawJson.dbEncode(composition);
+        assertNotNull(db_encoded);
+
+        JsonElement converted = new LightRawJsonEncoder(db_encoded).encodeContentAsJson("composition");
+
+        //see if this can be interpreted by Archie
+        Composition composition2 = new CanonicalJson().unmarshal(converted.toString(), Composition.class);
+
+        assertNotNull(composition2);
+
+        assertEquals("UTF-8",composition2.itemsAtPath("/content[openEHR-EHR-SECTION.allgemeine_angaben.v1]/items[openEHR-EHR-EVALUATION.problem_diagnosis_covid.v1]/encoding/code_string").get(0).toString());
+    }
+
 
     @Test
     public void decodeOtherDetailsWithArchetypeNodeIdAndName(){
