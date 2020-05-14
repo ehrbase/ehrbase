@@ -248,46 +248,89 @@ abort test execution if this test fails
 
 
 prepare new request session
-    [Arguments]         ${format}=JSON    &{extra_headers}
+    [Arguments]         ${headers}=JSON    &{extra_headers}
     [Documentation]     Prepares request settings for RESTistance AND RequestsLibrary
-    ...                 :format: JSON (default) / XML
-    ...                 :extra_headers: optional - e.g. Prefer=return=representation
-    ...                                            e.g. If-Match={ehrstatus_uid}
-                        Log Many            ${format}  ${extra_headers}
+    ...                 :headers: valid argument values:
+    ...                     - JSON (default)
+    ...                     - XML
+    ...                     - no accept header
+    ...                     - no content header
+    ...                     - no accept header xml
+    ...                     - no accept/content headers
+    ...                     - no headers
+    ...
+    ...                 :extra_headers: optional, valid value examples: 
+    ...                     - Prefer=return=representation
+    ...                     - If-Match={ehrstatus_uid}
+    
+                        Log Many            ${headers}  ${extra_headers}
 
-                        # case: JSON
-                        Run Keyword If      $format=='JSON'    set request headers
+                        # case: JSON (DEFAULT)
+                        Run Keyword If      $headers=='JSON'    set request headers
                         ...                 content=application/json
                         ...                 accept=application/json
                         ...                 &{extra_headers}
+
                         # case: XML
-                        Run Keyword If      $format=='XML'    set request headers
+                        Run Keyword If      $headers=='XML'    set request headers
                         ...                 content=application/xml
                         ...                 accept=application/xml
                         ...                 &{extra_headers}
 
+                        # case: no Accept header, Content-Type=JSON
+                        Run Keyword If      $headers=='no accept header'    set request headers
+                        ...                 content=application/json
+                        ...                 &{extra_headers}
+
+                        # case: no Accept header, Content-Type=XML
+                        Run Keyword If      $headers=='no accept header xml'    set request headers
+                        ...                 content=application/xml
+                        ...                 &{extra_headers}
+
+                        # case: no Content-Type header
+                        Run Keyword If      $headers=='no content header'    set request headers
+                        ...                 accept=application/json
+                        ...                 &{extra_headers}
+
+                        # case: no Accept & no Content-Type header
+                        Run Keyword If      $headers=='no accept/content headers'    set request headers
+                        ...                 &{extra_headers}
+
+                        # case: no headers
+                        Run Keyword If      $headers=='no headers'    set request headers  
+
                         # case: mixed cases like JSON/XML or XML/JSON can be added here!
 
 set request headers
-    [Arguments]         ${content}=application/json  ${accept}=application/json  &{extra_headers}
+    [Arguments]         ${content}=${NONE}  ${accept}=${NONE}  &{extra_headers}
     [Documentation]     Sets the headers of a request
-    ...                 :content: application/json (default) / application/xml
-    ...                 :accept: application/json (default) / application/xml
+    ...                 :content: None (default) / application/json / application/xml
+    ...                 :accept: None (default) / application/json / application/xml
     ...                 :extra_headers: optional - e.g. Prefer=return=representation
     ...                                            e.g. If-Match={ehrstatus_uid}
+    ...
+    ...                 ATTENTIION: RESTInstance lib sets {"Content-Type": "applicable/json"}
+    ...                             and {"Accept": "application/json, */*"} by default!
+    ...                             As a workaround set them to None, null or empty - i.e.:
+    ...                             - "Content-Type=    "
+    ...                             - "Accept=    "
+
                         Log Many            ${content}  ${accept}  ${extra_headers}
+                        Run Keyword If    "${content}"=="${NONE}" and "${accept}"=="${NONE}"
+                        ...    Log To Console   \nWARNING: NO REQUEST HEADERS SET!
 
-    &{headers}=         Create Dictionary   Content-Type=${content}
-                        ...                 Accept=${accept}
+    &{headers}=         Create Dictionary     &{EMPTY}
+    
+                        Set To Dictionary    ${headers}
+                        ...                  Content-Type=${content}
+                        ...                  Accept=${accept}
+                        ...                  &{extra_headers}
 
-                        Run Keyword If      ${extra_headers}    Set To Dictionary
-                        ...                 ${headers}    &{extra_headers}
-
-    # library: RESTinstance
+    # comment: headers for RESTinstance Library
     &{headers}=         Set Headers         ${headers}
                         Set Headers         ${authorization}
 
-    # library: RequestLibrary
+    # comment: headers for RequestLibrary
                         Create Session      ${SUT}    ${${SUT}.URL}    debug=2
                         ...                 auth=${${SUT}.CREDENTIALS}    verify=True
 
@@ -332,6 +375,7 @@ do quick sanity check
 
 
 warn about manual test environment start up
+    [Tags]              robot:flatten
     Log    ${EMPTY}                                                                             level=WARN
     Log    /////////////////////////////////////////////////////////////////////                level=WARN
     Log    //${SPACE * 64}///                                                                   level=WARN
@@ -378,6 +422,8 @@ abort tests due to issues with manually controlled test environment
     abort test execution if this test fails
 
 startup SUT
+    get application version
+
     # comment: switch to manual test environment control when "-v nodocker" cli option is used
     Run Keyword If      $NODOCKER.upper() in ["TRUE", ""]    Run Keywords
                ...      Set Global Variable    ${NODOCKER}    TRUE    AND
@@ -387,7 +433,7 @@ startup SUT
                ...      Set Global Variable    ${CREATING_SYSTEM_ID}    ${DEV.NODENAME}    AND
                ...      Set Global Variable    ${CONTROL_MODE}    ${DEV.CONTROL}
 
-                        Log    \n\t SUT CONFIG\n    console=true
+                        Log    \n\t SUT CONFIG (EHRbase v${VERSION})\n    console=true
                         Log    \t BASEURL: ${BASEURL}    console=true
                         Log    \t HEARTBEAT: ${HEARTBEAT_URL}    console=true
                         Log    \t AUTH: ${AUTHORIZATION}    console=true

@@ -22,8 +22,7 @@ import json
 from robot.api import logger
 from json import JSONDecodeError
 from deepdiff import DeepDiff
-
-# from deepdiff import DeepSearch, grep
+from deepdiff import DeepSearch
 
 
 def compare_jsons(
@@ -35,7 +34,7 @@ def compare_jsons(
     ignore_string_case=False,
     ignore_type_subclasses=False,
     verbose_level=2,
-    **kwargs
+    **kwargs,
 ):
     """
     :json_1: valid JSON string \n
@@ -62,31 +61,39 @@ def compare_jsons(
         {}
     """
 
+    logger.debug("BEFORE TRY BLOCK")
     logger.debug("json_1 type: {}".format(type(json_1)))
     logger.debug("json_2 type: {}".format(type(json_2)))
 
-    try:
-        actual = json.loads(json_1)
-        expected = json.loads(json_2)
-    except (JSONDecodeError, TypeError) as error:
-        raise JsonCompareError(
-            "Only VALID JSON strings accepted! ERROR: {}".format(error)
-        )
-    
-    logger.debug("actual type: {}".format(type(actual)))
-    logger.debug("expected type: {}".format(type(expected)))
+    # if inputs are dictionaries take them as they are otherwise
+    # try to convert to a python object (dict)
+    if isinstance(json_1, dict):
+        actual = json_1
+    else:
+        try:
+            actual = json.loads(json_1)
+        except (JSONDecodeError, TypeError) as error:
+            raise JsonCompareError(f"Only VALID JSON strings accepted! ERROR: {error}")
+    if isinstance(json_2, dict):
+        expected = json_2
+    else:
+        try:
+            expected = json.loads(json_2)
+        except (JSONDecodeError, TypeError) as error:
+            raise JsonCompareError(f"Only VALID JSON strings accepted! ERROR: {error}")
+
+    logger.debug("AFTER TRY BLOCK")
+    logger.debug(f"ACTUAL: {type(actual)}")
+    logger.debug(f"EXPECTED: {type(expected)}")
+
+    logger.debug(f"EXCLUDED PATHS: {exclude_paths} - (type: {type(exclude_paths)})")
+    logger.debug(f"IGNORE ORDER: {ignore_order} - (type: {type(ignore_order)})")
     logger.debug(
-        "EXCLUDED PATHS: {}, type: {}".format(exclude_paths, type(exclude_paths))
+        f"IGNORE_STRING_CASE: {ignore_string_case} - (type: {type(ignore_string_case)})"
     )
-    logger.debug("IGNORE ORDER: {}, type: {}".format(ignore_order, type(ignore_order)))
-    logger.debug(
-        "IGNORE_STRING_CASE: {}, type: {}".format(
-            ignore_string_case, type(ignore_string_case)
-        )
-    )
-    logger.debug("IGNORE_TYPE_SUBCLASSES: {}".format(ignore_type_subclasses))
-    logger.debug("VERBOSE_LEVEL: {}".format(verbose_level))
-    logger.debug("KWARGS: {}".format(kwargs))
+    logger.debug(f"IGNORE_TYPE_SUBCLASSES: {ignore_type_subclasses}")
+    logger.debug(f"VERBOSE_LEVEL: {verbose_level}")
+    logger.debug(f"KWARGS: {kwargs}")
 
     diff = DeepDiff(
         actual,
@@ -97,10 +104,10 @@ def compare_jsons(
         ignore_string_case=ignore_string_case,
         ignore_type_subclasses=ignore_type_subclasses,
         verbose_level=verbose_level,
-        **kwargs
+        **kwargs,
     )
 
-    logger.debug("DIFF: {}".format(diff))
+    # logger.debug(f"DIFF: {diff}")
 
     changes = [
         "type_changes",
@@ -116,11 +123,85 @@ def compare_jsons(
     for change in changes:
         if change in diff:
             change_counter += 1
-            logger.debug(
-                "{}. CHANGE ({}): {}".format(change_counter, change, diff[change])
-            )
+            logger.debug(f"{change_counter}. CHANGE ({change}): \n{diff[change]}\n\n")
 
     return diff.to_dict()
+
+
+def ignore_type_properties(obj, path):
+    """
+    This is a callback function. It is used inside of `compare_jsons_ignoring_properties()`.
+    It takes the object and its path and returns a Boolean. If True is returned,
+    the object is excluded from the results, otherwise it is included.
+    `obj` refers to the value part of a key:value pair.
+    `path` refers to the location of obj in the dict.
+    """
+    ignorable_types = [
+        "ARCHETYPE_ID",
+        "ARCHETYPED",
+        "CODE_PHRASE",
+        "DV_BOOLEAN",
+        "DV_CODED_TEXT",
+        "DV_COUNT",
+        "DV_DATE",
+        "DV_DATE_TIME",
+        "DV_DATE_TIME",
+        "DV_DURATION",
+        "DV_EHR_URI",
+        "DV_IDENTIFIER",
+        "DV_MULTIMEDIA",
+        "DV_ORDINAL",
+        "DV_PARSABLE",
+        "DV_PROPORTION",
+        "DV_QUANTITY",
+        "DV_SCALE",
+        "DV_STATE",
+        "DV_TEXT",
+        "DV_TIME",
+        "DV_URI",
+        "REFERENCE_RANGE",
+        "TEMPLATE_ID",
+        "TERM_MAPPING",
+        "TERMINOLOGY_ID",
+    ]
+    # BACKUP# return True if "_type" in path and obj in ignorable_types else False
+    # Data Value (DV) is inside ELEMENT.value - those are NOT ignored
+    if "_type" in path and "value" in path and obj in ignorable_types:
+        return False
+    # DV is NOT inside ELEMENT.value - those ARE ignored
+    if "_type" in path and ("value" not in path) and obj in ignorable_types:
+        logger.debug(f"path: {path}, object: {obj}")
+        return True
+    else:
+        False
+
+
+def compare_jsons_ignoring_properties(
+    json_1, json_2, *properties, meta=True, path=True, **kwargs
+):
+    """
+    Compares JSON and ignores meta and path properties by default.
+    More properties can be added by their name and will be added
+    to ignore_regex_path as r"\['name'\] where name is the property
+    that is passed as argument.
+    """
+    ignore_properties = []
+
+    for prop in properties:
+        property = f"\['{prop}'\]"
+        ignore_properties.append(r"{}".format(property))
+    if meta:
+        ignore_properties.append(r"root\['meta'\]")
+    if path:
+        ignore_properties.append(r"\['columns'\]\[\d+\]\['path'\]")
+
+    return compare_jsons(
+        json_1,
+        json_2,
+        exclude_regex_paths=ignore_properties,
+        exclude_obj_callback=ignore_type_properties,
+        **kwargs,
+    )
 
 
 def payloads_match_exactly(json_1, json_2, ignore_order=False, **kwargs):
@@ -150,13 +231,13 @@ def payloads_match_exactly(json_1, json_2, ignore_order=False, **kwargs):
 
     diff = compare_jsons(json_1, json_2, ignore_order=ignore_order, **kwargs)
 
-    logger.debug("type(json_1): {}".format(type(json_1)))
-    logger.debug("type(json_2): {}".format(type(json_2)))
-    logger.debug("type(diff): {}".format(type(diff)))
+    logger.debug(f"type(json_1): {type(json_1)}")
+    logger.debug(f"type(json_2): {type(json_2)}")
+    logger.debug(f"type(diff): {type(diff)}")
 
     if diff != {}:
         logger.error("Payloads don't match!")
-        raise JsonCompareError("Payloads do NOT match! Differences: {}".format(diff))
+        raise JsonCompareError(f"Payloads do NOT match! Differences: {diff}")
     else:
         return True
 
@@ -201,8 +282,8 @@ def payload_is_superset_of_expected(payload, expected, **kwargs):
     #   unprocessed                ? if occurs should be handled extra
     """
 
-    logger.debug("type(payload): {}".format(type(payload)))
-    logger.debug("type(expected): {}".format(type(expected)))
+    logger.debug(f"type(payload): {type(payload)}")
+    logger.debug(f"type(expected): {type(expected)}")
 
     diff = compare_jsons(payload, expected, **kwargs)
 
@@ -231,7 +312,6 @@ def payload_is_superset_of_expected(payload, expected, **kwargs):
         "iterable_item_added",
     ]
 
-    
     if diff != {}:
         for change in changes:
             # check if change are relevant or can be ignored
@@ -245,6 +325,24 @@ def payload_is_superset_of_expected(payload, expected, **kwargs):
     else:
         logger.info("NO difference between payloads.")
         return True
+
+
+def search_in(obj, item, **kwargs):
+    if isinstance(obj, dict):
+        obj = obj
+    else:
+        try:
+            obj = json.loads(obj)
+        except (JSONDecodeError, TypeError) as error:
+            raise JsonCompareError(f"Only VALID JSON strings accepted! ERROR: {error}")
+    logger.debug(f"OBJ: {obj}")
+    logger.debug(f"ITEM: {item}")
+    logger.debug(f"KWARGS: {kwargs}")
+
+    ds = DeepSearch(obj, item, verbose_level=2, **kwargs)
+    logger.debug(f"DS: {type(ds)}")
+    print(ds)
+    return ds
 
 
 class JsonCompareError(Exception):
@@ -287,3 +385,14 @@ class JsonCompareError(Exception):
 
 # dict_ = dict(b=1, a=2, z=3, f=4, e=dict(F=1, C=2))
 # dump = json.dumps(dict_, sort_keys=True, indent=2)
+
+
+# def compare_ignoring_path_and_type_properties(json_1, json_2, **kwargs):
+#     ignore_properties = [
+#         r"root\['meta'\]",
+#         r"\['columns'\]\[\d+\]\['path'\]",
+#         r"\['_type'\]",
+#     ]
+#     return compare_jsons(
+#         json_1, json_2, exclude_regex_paths=ignore_properties, **kwargs
+#     )

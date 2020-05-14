@@ -182,10 +182,11 @@ public class OpenehrEhrStatusController extends BaseController {
 
         List<String> headerList = Arrays.asList(CONTENT_TYPE, LOCATION, ETAG, LAST_MODIFIED);   // whatever is required by REST spec
         Optional<InternalResponse<EhrStatusResponseData>> respData;   // variable to overload with more specific object if requested
+        UUID statusUid = UUID.fromString(status.getUid().getValue().split("::")[0]);
         if (Optional.ofNullable(prefer).map(i -> i.equals(RETURN_REPRESENTATION)).orElse(false)) {      // null safe way to test prefer header
-            respData = buildEhrStatusResponseData(EhrStatusResponseData::new, ehrId, UUID.fromString(status.getUid().getRoot().getValue()), version, accept, headerList);
+            respData = buildEhrStatusResponseData(EhrStatusResponseData::new, ehrId, statusUid, version, accept, headerList);
         } else {    // "minimal" is default fallback
-            respData = buildEhrStatusResponseData(EhrStatusResponseData::new, ehrId, UUID.fromString(status.getUid().getRoot().getValue()), version, accept, headerList);
+            respData = buildEhrStatusResponseData(EhrStatusResponseData::new, ehrId, statusUid, version, accept, headerList);
         }
 
         return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData()))

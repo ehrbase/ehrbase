@@ -47,6 +47,6 @@ public class GenericJsonPath {
     }
 
     private boolean isTerminalValue(List paths, int index){
-        return paths.size() == 1 || (paths.size() > 1 && index == paths.size() - 1 && paths.get(index - 1).toString().matches("value|name"));
+        return paths.size() == 1 || (paths.size() > 1 && index == paths.size() - 1 && paths.get(index - 1).toString().matches("value|name|id|terminology_id"));
     }
 }

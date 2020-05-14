@@ -18,6 +18,7 @@
 
 package org.ehrbase.aql.sql.binding;
 
+import org.ehrbase.aql.containment.ContainOperator;
 import org.ehrbase.aql.containment.ContainmentSet;
 import org.ehrbase.aql.containment.ContainmentTest;
 import org.ehrbase.aql.containment.Predicates;
@@ -52,7 +53,7 @@ public class PredicatesBinderTest {
             //represents CONTAINS COMPOSITION a [openEHR-EHR-COMPOSITION.health_summary.v1] AND COMPOSITION d [openEHR-EHR-COMPOSITION.referral.v1]
             ContainmentSet containmentSet = new ContainmentSet(1, null);
             containmentSet.add(ContainmentTest.buildContainment(null, "a", "openEHR-EHR-COMPOSITION.health_summary.v1", "COMPOSITION", null));
-            containmentSet.add(ContainmentSet.OPERATOR.AND.name());
+            containmentSet.add(new ContainOperator("AND").getOperator());
             containmentSet.add(ContainmentTest.buildContainment(null, "d", "openEHR-EHR-COMPOSITION.referral.v1", "COMPOSITION", null));
 
             PredicatesBinder cut = new PredicatesBinder();

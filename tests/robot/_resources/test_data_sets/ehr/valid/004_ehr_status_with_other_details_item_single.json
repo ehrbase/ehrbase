@@ -1,5 +1,9 @@
 {
   "_type": "EHR_STATUS",
+  "archetype_node_id": "openEHR-EHR-EHR_STATUS.generic.v1",
+  "name": {
+    "value": "EHR Status"
+  },
   "subject": {
     "external_ref": {
       "_type": "PARTY_REF",

@@ -41,12 +41,12 @@ public class OrderByBinderTest {
             OrderAttribute orderAttribute = new OrderAttribute(I_VariableDefinitionHelper.build(null, "date_created", null, false, false, false));
             orderAttribute.setDirection(OrderAttribute.OrderDirection.ASC);
 
-            OrderByBinder cut = new OrderByBinder(Collections.singletonList(orderAttribute), DSLContextHelper.buildContext().selectQuery());
+            OrderByBinder cut = new OrderByBinder(null, Collections.singletonList(orderAttribute), DSLContextHelper.buildContext().selectQuery());
             List<SortField<Object>> actual = cut.getOrderByFields();
 
             assertThat(actual).size().isEqualTo(1);
             SortField<?> sortField = actual.get(0);
-            assertThat(sortField.toString()).isEqualTo("date_created asc");
+            assertThat(sortField.toString()).isEqualTo("\"date_created\" asc");
         }
 
         //descending
@@ -55,12 +55,12 @@ public class OrderByBinderTest {
             OrderAttribute orderAttribute = new OrderAttribute(I_VariableDefinitionHelper.build(null, "date_created", null, false, false, false));
             orderAttribute.setDirection(OrderAttribute.OrderDirection.DESC);
 
-            OrderByBinder cut = new OrderByBinder(Collections.singletonList(orderAttribute), DSLContextHelper.buildContext().selectQuery());
+            OrderByBinder cut = new OrderByBinder(null, Collections.singletonList(orderAttribute), DSLContextHelper.buildContext().selectQuery());
             List<SortField<Object>> actual = cut.getOrderByFields();
 
             assertThat(actual).size().isEqualTo(1);
             SortField<?> sortField = actual.get(0);
-            assertThat(sortField.toString()).isEqualTo("date_created desc");
+            assertThat(sortField.toString()).isEqualTo("\"date_created\" desc");
         }
 
         //no direction
@@ -69,12 +69,12 @@ public class OrderByBinderTest {
             OrderAttribute orderAttribute = new OrderAttribute(I_VariableDefinitionHelper.build(null, "date_created", null, false, false, false));
 
 
-            OrderByBinder cut = new OrderByBinder(Collections.singletonList(orderAttribute), DSLContextHelper.buildContext().selectQuery());
+            OrderByBinder cut = new OrderByBinder(null, Collections.singletonList(orderAttribute), DSLContextHelper.buildContext().selectQuery());
             List<SortField<Object>> actual = cut.getOrderByFields();
 
             assertThat(actual).size().isEqualTo(1);
             SortField<?> sortField = actual.get(0);
-            assertThat(sortField.toString()).isEqualTo("date_created asc");
+            assertThat(sortField.toString()).isEqualTo("\"date_created\" asc");
         }
     }
 }

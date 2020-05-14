@@ -489,6 +489,11 @@ public class PartyIdentifiedAccess extends DataAccess implements I_PartyIdentifi
     }
 
     @Override
+    public String getPartyRefType() {
+        return partyIdentifiedRecord.getPartyRefType();
+    }
+
+    @Override
     public String[] getIdentifiersKeySet() {
         return identifiers.keySet().toArray(new String[identifiers.size()]);
     }
