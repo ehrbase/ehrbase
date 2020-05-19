@@ -36,15 +36,14 @@ import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.dao.access.interfaces.*;
+import org.ehrbase.dao.access.jooq.party.PersistedObjectId;
+import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.tables.records.*;
-import org.ehrbase.jooq.pg.udt.records.CodePhraseRecord;
-import org.ehrbase.jooq.pg.udt.records.DvCodedTextRecord;
 import org.ehrbase.serialisation.RawJson;
 import org.ehrbase.service.BaseService;
-import org.ehrbase.service.PersistentCodePhrase;
 import org.ehrbase.service.RecordedDvCodedText;
 import org.ehrbase.service.RecordedDvText;
 import org.jooq.*;
@@ -93,12 +92,6 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             ehrRecord.setId(ehrId);
         } else {
             ehrRecord.setId(UUID.randomUUID());
-        }
-
-        //check if party already has an STATUS (and therefore EHR)
-        if (I_StatusAccess.retrieveInstanceByParty(this.getDataAccess(), partyId) != null) {
-            log.warn("This party is already associated to an EHR");
-            throw new IllegalArgumentException("Party:" + partyId + " already associated to an EHR, please retrieveInstanceByNamedSubject the associated EHR for updates instead");
         }
 
         // init a new EHR_STATUS with default values to associate with this EHR
@@ -710,8 +703,6 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         setModifiable(status.isModifiable());
         setQueryable(status.isQueryable());
         setOtherDetails(status.getOtherDetails(), null);
-        String subjectId = status.getSubject().getExternalRef().getId().getValue();
-        String subjectNamespace = status.getSubject().getExternalRef().getNamespace();
 
         //Locatable stuff if present
         if (status.getArchetypeNodeId() != null)
@@ -720,7 +711,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         if (status.getName() != null)
             setName(status.getName());
 
-        UUID subjectUuid = I_PartyIdentifiedAccess.getOrCreatePartyByExternalRef(getDataAccess(), null, subjectId, BaseService.DEMOGRAPHIC, subjectNamespace, BaseService.PARTY);
+        UUID subjectUuid = new PersistedPartyProxy(getDataAccess()).getOrCreate(status.getSubject());
         setParty(subjectUuid);
     }
 
@@ -744,9 +735,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         status.setUid(new HierObjectId(statusId.toString() + "::" + getServerConfig().getNodename() + "::" +
                 I_StatusAccess.getLatestVersionNumber(this, statusId)));
 
-        I_PartyIdentifiedAccess party = I_PartyIdentifiedAccess.retrieveInstance(getDataAccess(), getParty());
-
-        PartySelf partySelf = new PartySelf(new PartyRef(new HierObjectId(party.getPartyRefValue()), party.getPartyRefNamespace(), party.getPartyRefType()));
+        PartySelf partySelf = (PartySelf)new PersistedPartyProxy(this).retrieve(getParty());
         status.setSubject(partySelf);
 
         return status;

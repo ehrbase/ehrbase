@@ -30,6 +30,7 @@ import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.*;
+import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
@@ -262,7 +263,7 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
             String scheme = System.getProperty("host.name");
             if (scheme == null)
                 scheme = "local";
-            committerId = I_PartyIdentifiedAccess.getOrCreatePartyByExternalRef(this, defaultUser, UUID.randomUUID().toString(), scheme, getServerConfig().getNodename(), "PARTY");
+            committerId = new PersistedPartyProxy(this).getOrCreate(defaultUser, UUID.randomUUID().toString(), scheme, getServerConfig().getNodename(), "PARTY");
         }
         auditDetails.setCommitter(committerId);
 
@@ -510,7 +511,7 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
     @Override
     public void setAuditDetailsValues(AuditDetails auditObject) {
         // parse
-        UUID committer = I_PartyIdentifiedAccess.getOrCreateParty(this, (PartyIdentified) auditObject.getCommitter());
+        UUID committer = new PersistedPartyProxy(this).getOrCreate(auditObject.getCommitter());
         UUID system = I_SystemAccess.createOrRetrieveInstanceId(this, null, auditObject.getSystemId());
         UUID changeType = I_ConceptAccess.fetchContributionChangeType(this, auditObject.getChangeType().getValue());
 
