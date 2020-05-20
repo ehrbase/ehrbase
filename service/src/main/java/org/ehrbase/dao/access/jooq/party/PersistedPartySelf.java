@@ -84,15 +84,17 @@ class PersistedPartySelf extends PersistedParty {
         UUID partySelfUUID = new PersistedPartyRef(domainAccess).findInDB(partyProxy.getExternalRef());
 
         if (partySelfUUID == null){
-            Record record =  domainAccess.getContext().fetchAny(PARTY_IDENTIFIED,
-                            PARTY_IDENTIFIED.PARTY_REF_VALUE.isNull()
-                            .and(PARTY_IDENTIFIED.PARTY_REF_NAMESPACE.isNull())
-                            .and(PARTY_IDENTIFIED.PARTY_REF_SCHEME.isNull())
-                            .and(PARTY_IDENTIFIED.PARTY_REF_TYPE.isNull())
-                            .and(PARTY_IDENTIFIED.PARTY_TYPE.eq(PartyType.party_self)));
+            if (partyProxy.getExternalRef() == null) { //find the generic PARTY_SELF in DB
+                Record record = domainAccess.getContext().fetchAny(PARTY_IDENTIFIED,
+                        PARTY_IDENTIFIED.PARTY_REF_VALUE.isNull()
+                                .and(PARTY_IDENTIFIED.PARTY_REF_NAMESPACE.isNull())
+                                .and(PARTY_IDENTIFIED.PARTY_REF_SCHEME.isNull())
+                                .and(PARTY_IDENTIFIED.PARTY_REF_TYPE.isNull())
+                                .and(PARTY_IDENTIFIED.PARTY_TYPE.eq(PartyType.party_self)));
 
-            if (record != null)
-                partySelfUUID = ((PartyIdentifiedRecord) record).getId();
+                if (record != null)
+                    partySelfUUID = ((PartyIdentifiedRecord) record).getId();
+            }
         }
 
         return partySelfUUID;

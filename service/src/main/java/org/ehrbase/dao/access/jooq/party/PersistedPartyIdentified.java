@@ -101,18 +101,20 @@ class PersistedPartyIdentified extends PersistedParty {
         UUID uuid = new PersistedPartyRef(domainAccess).findInDB(partyProxy.getExternalRef());
 
         if (uuid == null){
-            Record record =  domainAccess.getContext().fetchAny(PARTY_IDENTIFIED,
-                    PARTY_IDENTIFIED.PARTY_REF_VALUE.isNull()
-                            .and(PARTY_IDENTIFIED.PARTY_REF_NAMESPACE.isNull())
-                            .and(PARTY_IDENTIFIED.PARTY_REF_SCHEME.isNull())
-                            .and(PARTY_IDENTIFIED.PARTY_REF_TYPE.isNull())
-                            .and(PARTY_IDENTIFIED.NAME.eq(((PartyIdentified)partyProxy).getName()))
-                            .and(PARTY_IDENTIFIED.PARTY_TYPE.eq(PartyType.party_identified)));
+            if (partyProxy.getExternalRef() == null) { //check for the same name
+                Record record = domainAccess.getContext().fetchAny(PARTY_IDENTIFIED,
+                        PARTY_IDENTIFIED.PARTY_REF_VALUE.isNull()
+                                .and(PARTY_IDENTIFIED.PARTY_REF_NAMESPACE.isNull())
+                                .and(PARTY_IDENTIFIED.PARTY_REF_SCHEME.isNull())
+                                .and(PARTY_IDENTIFIED.PARTY_REF_TYPE.isNull())
+                                .and(PARTY_IDENTIFIED.NAME.eq(((PartyIdentified) partyProxy).getName()))
+                                .and(PARTY_IDENTIFIED.PARTY_TYPE.eq(PartyType.party_identified)));
 
-            if (record != null) {
-                uuid = ((PartyIdentifiedRecord) record).getId();
-                if (!new PartyIdentifiers(domainAccess).compare((PartyIdentifiedRecord) record, ((PartyIdentified)partyProxy).getIdentifiers()))
-                    uuid = null;
+                if (record != null) {
+                    uuid = ((PartyIdentifiedRecord) record).getId();
+                    if (!new PartyIdentifiers(domainAccess).compare((PartyIdentifiedRecord) record, ((PartyIdentified) partyProxy).getIdentifiers()))
+                        uuid = null;
+                }
             }
         }
         return uuid;

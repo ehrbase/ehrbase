@@ -29,6 +29,7 @@ import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
 import org.ehrbase.jooq.pg.udt.records.DvCodedTextRecord;
 import org.ehrbase.service.PersistentCodePhrase;
 import org.jooq.Record;
+import org.jooq.impl.DSL;
 
 import java.util.UUID;
 
@@ -36,6 +37,8 @@ import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
 
 /**
  * Manages PartyRelated persistence, in particular handles attribute 'relationship' (DvCodedText)
+ * TODO: relationship should be normalized (e.g. in another table) since the same person can play different relationship roles (mother, spouse etc.)
+ *
  */
 class PersistedPartyRelated extends PersistedParty {
 
@@ -95,20 +98,24 @@ class PersistedPartyRelated extends PersistedParty {
     public UUID findInDB(PartyProxy partyProxy) {
         UUID uuid = new PersistedPartyRef(domainAccess).findInDB(partyProxy.getExternalRef());
 
+        //see https://www.postgresql.org/docs/11/rowtypes.html for syntax on accessing specific attributes in UDT
         if (uuid == null){
-            Record record =  domainAccess.getContext().fetchAny(PARTY_IDENTIFIED,
-                    PARTY_IDENTIFIED.PARTY_REF_VALUE.isNull()
-                            .and(PARTY_IDENTIFIED.PARTY_REF_NAMESPACE.isNull())
-                            .and(PARTY_IDENTIFIED.PARTY_REF_SCHEME.isNull())
-                            .and(PARTY_IDENTIFIED.PARTY_REF_TYPE.isNull())
-                            .and(PARTY_IDENTIFIED.NAME.eq(((PartyIdentified)partyProxy).getName()))
-                            .and(PARTY_IDENTIFIED.PARTY_TYPE.eq(PartyType.party_related)));
+            if (partyProxy.getExternalRef() == null) { //check for the same name and same relationship
+                Record record = domainAccess.getContext().fetchAny(PARTY_IDENTIFIED,
+                        PARTY_IDENTIFIED.PARTY_REF_VALUE.isNull()
+                                .and(PARTY_IDENTIFIED.PARTY_REF_NAMESPACE.isNull())
+                                .and(PARTY_IDENTIFIED.PARTY_REF_SCHEME.isNull())
+                                .and(PARTY_IDENTIFIED.PARTY_REF_TYPE.isNull())
+                                .and(PARTY_IDENTIFIED.NAME.eq(((PartyIdentified) partyProxy).getName()))
+                                .and(DSL.field("("+PARTY_IDENTIFIED.RELATIONSHIP+").value").eq(relationshipAsRecord(partyProxy).getValue()))
+                                .and(PARTY_IDENTIFIED.PARTY_TYPE.eq(PartyType.party_related)));
 
-            if (record != null) {
-                uuid = ((PartyIdentifiedRecord) record).getId();
-                //check for identifiers
-                if (!new PartyIdentifiers(domainAccess).compare((PartyIdentifiedRecord) record, ((PartyRelated)partyProxy).getIdentifiers()))
-                    uuid = null;
+                if (record != null) {
+                    uuid = ((PartyIdentifiedRecord) record).getId();
+                    //check for identifiers
+                    if (!new PartyIdentifiers(domainAccess).compare((PartyIdentifiedRecord) record, ((PartyRelated) partyProxy).getIdentifiers()))
+                        uuid = null;
+                }
             }
         }
 
