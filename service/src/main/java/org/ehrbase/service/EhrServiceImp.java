@@ -237,7 +237,7 @@ public class EhrServiceImp extends BaseService implements EhrService {
 
     @Override
     public Optional<UUID> findBySubject(String subjectId, String nameSpace) {
-        UUID subjectUuid = new PersistedPartyRef(getDataAccess()).findInDB(subjectId, BaseService.DEMOGRAPHIC, nameSpace, BaseService.PARTY);
+        UUID subjectUuid = new PersistedPartyRef(getDataAccess()).findInDB(subjectId, nameSpace);
         return Optional.ofNullable(I_EhrAccess.retrieveInstanceBySubject(getDataAccess(), subjectUuid));
     }
 

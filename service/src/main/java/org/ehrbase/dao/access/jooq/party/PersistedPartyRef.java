@@ -75,8 +75,27 @@ public class PersistedPartyRef {
             return null;
     }
 
+    /**
+     * retrieve an assumed partyRef with GenericId
+     * @param value
+     * @param scheme
+     * @param namespace
+     * @param type
+     * @return
+     */
     public UUID findInDB(String value, String scheme, String namespace, String type) {
         PartyRef partyRef = new PartyRef(new GenericId(value, scheme), namespace, type);
+        return findInDB(partyRef);
+    }
+
+    /**
+     * to retrieve a subject with subject_id and namespace (REST API requirement)
+     * @param id
+     * @param namespace
+     * @return
+     */
+    public UUID findInDB(String id, String namespace) {
+        PartyRef partyRef = new PartyRef(new HierObjectId(id), namespace, "PERSON");
         return findInDB(partyRef);
     }
 }
