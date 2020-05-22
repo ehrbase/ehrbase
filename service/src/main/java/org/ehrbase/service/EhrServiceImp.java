@@ -99,7 +99,7 @@ public class EhrServiceImp extends BaseService implements EhrService {
 
         UUID subjectUuid = new PersistedPartyProxy(getDataAccess()).getOrCreate(status.getSubject());
 
-        if (!(status.getSubject() instanceof PartySelf) && I_EhrAccess.checkExist(getDataAccess(), subjectUuid))
+        if (I_EhrAccess.checkExist(getDataAccess(), subjectUuid))
             throw new StateConflictException("Specified party has already an EHR set (partyId=" + subjectUuid + ")");
 
         UUID systemId = getSystemUuid();
