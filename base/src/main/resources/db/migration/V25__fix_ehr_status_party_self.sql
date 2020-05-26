@@ -148,6 +148,75 @@ END
 $$
   LANGUAGE plpgsql;
 
+-- OBJECT_ID
+CREATE OR REPLACE FUNCTION ehr.js_canonical_generic_id(scheme TEXT, id_value TEXT)
+  RETURNS json AS
+$$
+BEGIN
+  RETURN
+    jsonb_strip_nulls(
+        jsonb_build_object(
+            '_type', 'GENERIC_ID',
+            'value', id_value,
+            'scheme', scheme
+          )
+      );
+END
+$$
+  LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION ehr.js_canonical_hier_object_id(id_value TEXT)
+  RETURNS json AS
+$$
+BEGIN
+  RETURN
+    json_build_object(
+        '_type', 'HIER_OBJECT_ID',
+        'value', id_value
+      );
+END
+$$
+  LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION ehr.js_canonical_object_version_id(id_value TEXT)
+  RETURNS json AS
+$$
+BEGIN
+  RETURN
+    json_build_object(
+        '_type', 'OBJECT_VERSION_ID',
+        'value', id_value
+      );
+END
+$$
+  LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION ehr.js_canonical_object_id(objectid_type ehr.party_ref_id_type, scheme TEXT, id_value TEXT)
+  RETURNS json AS
+$$
+BEGIN
+  RETURN (
+    SELECT
+      CASE
+        WHEN objectid_type = 'generic_id'
+          THEN
+          ehr.js_canonical_generic_id(scheme, id_value)
+        WHEN objectid_type = 'hier_object_id'
+          THEN
+          ehr.js_canonical_hier_object_id(id_value)
+        WHEN objectid_type = 'object_version_id'
+          THEN
+          ehr.js_canonical_object_version_id(id_value)
+        WHEN objectid_type = 'undefined'
+          THEN
+          NULL
+        END
+  );
+END
+$$
+  LANGUAGE plpgsql;
+
 CREATE OR REPLACE FUNCTION ehr.json_party_self(refid UUID, namespace TEXT, ref_type TEXT, scheme TEXT, id_value TEXT, objectid_type ehr.party_ref_id_type)
   RETURNS json AS
 $$
@@ -162,7 +231,7 @@ BEGIN
                 '_type', 'PARTY_REF',
                 'namespace', namespace,
                 'type', ref_type,
-                'id', ehr.js_canonical_generic_id(objectid_type, scheme, id_value)
+                'id', ehr.js_canonical_object_id(objectid_type, scheme, id_value)
               )
           )
       )
@@ -201,7 +270,7 @@ BEGIN
                 '_type', 'PARTY_REF',
                 'namespace', namespace,
                 'type', ref_type,
-                'id', ehr.js_canonical_generic_id(objectid_type, scheme, id_value)
+                'id', ehr.js_canonical_object_id(objectid_type, scheme, id_value)
               )
           )
       )
@@ -210,6 +279,8 @@ BEGIN
 end;
 $$
   language 'plpgsql';
+
+
 
 CREATE OR REPLACE FUNCTION ehr.json_party_related(name TEXT, refid UUID, namespace TEXT, ref_type TEXT, scheme TEXT, id_value TEXT, objectid_type ehr.party_ref_id_type, relationship ehr.dv_coded_text)
   RETURNS json AS
@@ -239,7 +310,7 @@ BEGIN
                 '_type', 'PARTY_REF',
                 'namespace', namespace,
                 'type', ref_type,
-                'id', ehr.js_canonical_generic_id(objectid_type, scheme, id_value)
+                'id', ehr.js_canonical_object_id(objectid_type, scheme, id_value)
               ),
             'relationship', ehr.js_dv_coded_text(relationship)
           )
