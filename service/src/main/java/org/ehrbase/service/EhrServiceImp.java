@@ -90,8 +90,7 @@ public class EhrServiceImp extends BaseService implements EhrService {
 
         if (status == null) {   // in case of new status with default values
             status = new EhrStatus();
-            PartySelf partySelf = new PartySelf(new PartyRef(new HierObjectId(UUID.randomUUID().toString()), "default", null));
-            status.setSubject(partySelf);
+            status.setSubject(new PartySelf(null));
             status.setModifiable(true);
             status.setQueryable(true);
         }
