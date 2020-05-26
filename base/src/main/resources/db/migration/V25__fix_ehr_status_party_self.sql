@@ -149,7 +149,7 @@ $$
   LANGUAGE plpgsql;
 
 -- OBJECT_ID
-DROP FUNCTION ehr.js_canonical_generic_id(text,text)
+DROP FUNCTION ehr.js_canonical_generic_id(text,text);
 
 CREATE OR REPLACE FUNCTION ehr.js_canonical_generic_id(scheme TEXT, id_value TEXT)
   RETURNS json AS
