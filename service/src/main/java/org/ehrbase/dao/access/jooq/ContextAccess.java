@@ -42,7 +42,8 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
 import org.ehrbase.dao.access.interfaces.I_ContextAccess;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
-import org.ehrbase.dao.access.interfaces.I_PartyIdentifiedAccess;
+import org.ehrbase.dao.access.jooq.party.PersistedObjectId;
+import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.jooq.pg.tables.records.*;
 import org.ehrbase.serialisation.RawJson;
@@ -56,7 +57,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
-import java.time.temporal.UnsupportedTemporalTypeException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -197,7 +197,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                         .and(PARTICIPATION_HISTORY.SYS_TRANSACTION.eq(transactionTime)))
                 .forEach(record -> {
                     //retrieve performer
-                    PartyProxy performer = I_PartyIdentifiedAccess.retrievePartyIdentified(domainAccess, record.getPerformer());
+                    PartyProxy performer = new PersistedPartyProxy(domainAccess).retrieve(record.getPerformer());
 
 
                     DvInterval<DvDateTime> startTime = new DvInterval<>(decodeDvDateTime(record.getStartTime(), record.getStartTimeTzid()), null);
@@ -240,12 +240,9 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
 
     private static PartyIdentified getPartyIdentifiedFromRecord(PartyIdentifiedRecord partyIdentifiedRecord, List<DvIdentifier> identifiers) {
         PartyIdentified healthCareFacility;
-        PartyRef partyRef;
+        PartyRef partyRef = null;
         if (partyIdentifiedRecord.getPartyRefValue() != null && partyIdentifiedRecord.getPartyRefScheme() != null) {
-            GenericId genericID = new GenericId(partyIdentifiedRecord.getPartyRefValue(), partyIdentifiedRecord.getPartyRefScheme());
-            partyRef = new PartyRef(genericID, partyIdentifiedRecord.getPartyRefNamespace(), partyIdentifiedRecord.getPartyRefType());
-        } else {
-            ObjectId objectID = new HierObjectId("ref");
+            ObjectId objectID = new PersistedObjectId().fromDB(partyIdentifiedRecord);
             partyRef = new PartyRef(objectID, partyIdentifiedRecord.getPartyRefNamespace(), partyIdentifiedRecord.getPartyRefType());
         }
         healthCareFacility = new PartyIdentified(partyRef, partyIdentifiedRecord.getName(), identifiers.isEmpty() ? null : identifiers);
@@ -266,7 +263,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
 
         //Health care facility
         if (eventContext.getHealthCareFacility() != null) {
-            UUID healthcareFacilityId = I_PartyIdentifiedAccess.getOrCreateParty(this, eventContext.getHealthCareFacility());
+            UUID healthcareFacilityId = new PersistedPartyProxy(this).getOrCreate(eventContext.getHealthCareFacility());
 
             eventContextRecord.setFacility(healthcareFacilityId);
         }
@@ -312,7 +309,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                 }
 
                 performer = (PartyIdentified) setPerformer;
-                UUID performerUuid = I_PartyIdentifiedAccess.getOrCreateParty(this, performer);
+                UUID performerUuid = new PersistedPartyProxy(this).getOrCreate(performer);
                 //set the performer
                 participationRecord.setPerformer(performerUuid);
                 participations.add(participationRecord);
@@ -530,7 +527,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         //get the participations
         getContext().fetch(PARTICIPATION, PARTICIPATION.EVENT_CONTEXT.eq(eventContextRecord.getId())).forEach(record -> {
             //retrieve performer
-            PartyProxy performer = I_PartyIdentifiedAccess.retrievePartyIdentified(this, record.getPerformer());
+            PartyProxy performer = new PersistedPartyProxy(this).retrieve(record.getPerformer());
 
             DvInterval<DvDateTime> startTime = null;
             if (record.getStartTime() != null) { //start time null value is allowed for participation

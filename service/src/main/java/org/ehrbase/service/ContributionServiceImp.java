@@ -42,6 +42,7 @@ import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.jooq.AuditDetailsAccess;
+import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -314,7 +315,7 @@ public class ContributionServiceImp extends BaseService implements ContributionS
         I_AuditDetailsAccess auditDetailsAccess = new AuditDetailsAccess(this.getDataAccess()).retrieveInstance(this.getDataAccess(), auditId);
 
         String systemId = auditDetailsAccess.getSystemId().toString();
-        PartyProxy committer = I_PartyIdentifiedAccess.retrievePartyIdentified(this.getDataAccess(), auditDetailsAccess.getCommitter());
+        PartyProxy committer = new PersistedPartyProxy(this.getDataAccess()).retrieve(auditDetailsAccess.getCommitter());
         DvDateTime timeCommitted = new DvDateTime(LocalDateTime.ofInstant(auditDetailsAccess.getTimeCommitted().toInstant(), ZoneId.of(auditDetailsAccess.getTimeCommittedTzId())));
         int changeTypeCode = I_ConceptAccess.ContributionChangeType.valueOf(auditDetailsAccess.getChangeType().getLiteral().toUpperCase()).getCode();
         // FIXME: what's the terminology ID of the official change type terminology?

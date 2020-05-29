@@ -32,6 +32,7 @@ import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.dao.access.interfaces.*;
+import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
@@ -397,13 +398,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
      * @throws IllegalArgumentException when composer in composition is not supported
      */
     private UUID seekComposerId(PartyProxy composer) {
-        if (composer instanceof PartyIdentified)
-            return I_PartyIdentifiedAccess.getOrCreateParty(this, (PartyIdentified) composer);
-        else if (composer instanceof PartySelf)
-            return I_PartyIdentifiedAccess.getOrCreatePartySelf(this);
-        else
-            throw new InternalServerException("composer of unsupported type:"+composer.getClass());
-
+        return new PersistedPartyProxy(this).getOrCreate(composer);
     }
 
     /**
