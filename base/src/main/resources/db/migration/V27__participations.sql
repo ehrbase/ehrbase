@@ -11,6 +11,7 @@ ALTER TABLE ehr.participation
 ALTER TABLE ehr.participation
   ADD COLUMN time_upper_tz TEXT;
 
+-- used to convert existing mode as a proper ehr.dv_coded_text type
 CREATE OR REPLACE FUNCTION ehr.migrate_participation_mode(mode TEXT)
   RETURNS ehr.dv_coded_text AS
 $$
@@ -40,16 +41,17 @@ ALTER TABLE ehr.participation
   ALTER COLUMN mode TYPE ehr.dv_coded_text
   USING ehr.migrate_participation_mode(mode);
 
+--
 CREATE OR REPLACE FUNCTION ehr.js_code_phrase(codephrase ehr.code_phrase)
   RETURNS JSON AS
 $$
 BEGIN
   RETURN
     json_build_object(
-        '@class', 'CODE_PHRASE',
+        '_type', 'CODE_PHRASE',
         'terminology_id',
         json_build_object(
-            '@class', 'TERMINOLOGY_ID',
+            '_type', 'TERMINOLOGY_ID',
             'value', codephrase.terminology_id_value
           ),
         'code_string', codephrase.code_string
@@ -74,7 +76,7 @@ $$
   LANGUAGE plpgsql;
 
 
-
+-- returns an array of canonical participations
 CREATE OR REPLACE FUNCTION ehr.js_participations(event_context_id UUID)
   RETURNS JSONB[] AS
 $$
@@ -124,6 +126,7 @@ END
 $$
   LANGUAGE plpgsql;
 
+-- returns a canonical representation of participations
 CREATE OR REPLACE FUNCTION ehr.js_canonical_participations(context_id UUID)
   RETURNS JSON AS
 $$
