@@ -40,7 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Java error with UTF-8 encoding resolved (see: https://github.com/ehrbase/ehrbase/pull/173)
 - AQL refactoring and fixes to support correct canonical json representation (see: https://github.com/ehrbase/ehrbase/pull/201)
 - fix terminal value test for non DataValue 'value' attribute (see: https://github.com/ehrbase/ehrbase/pull/189)
-- fix support of mandatory attributes in ENTRY specialization (see https://github.com/ehrbase/ehrbase/pull/247)
+- fix support of mandatory attributes in ENTRY specialization including rm_version (see https://github.com/ehrbase/ehrbase/pull/247)
 
 ## [0.11.0] (alpha)
 
