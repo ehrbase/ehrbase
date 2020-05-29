@@ -21,7 +21,7 @@ BEGIN
       WITH mode_split AS (
         select
           regexp_split_to_array((
-                                  (regexp_split_to_array('DvCodedText{code_string=193, terminology_id=openehr, value=not specified}','{|}'))[2]), ',')
+            (regexp_split_to_array(mode,'{|}'))[2]), ',')
             as arr
       )
       select
