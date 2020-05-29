@@ -3,7 +3,7 @@ ALTER TABLE ehr.participation
   RENAME COLUMN start_time TO time_lower;
 
 ALTER TABLE ehr.participation
-  RENAME COLUMN start_time_tz TO time_lower_tz;
+  RENAME COLUMN start_time_tzid TO time_lower_tz;
 
 ALTER TABLE ehr.participation
   ADD COLUMN time_upper TIMESTAMP WITHOUT TIME ZONE;
