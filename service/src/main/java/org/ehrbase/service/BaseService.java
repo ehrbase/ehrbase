@@ -23,8 +23,8 @@ package org.ehrbase.service;
 
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
-import org.ehrbase.dao.access.interfaces.I_PartyIdentifiedAccess;
 import org.ehrbase.dao.access.interfaces.I_SystemAccess;
+import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.ServiceDataAccess;
 import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Value;
@@ -65,7 +65,7 @@ public class BaseService {
 
     protected UUID getUserUuid() {
         //@TODO READ from Spring Security
-        return I_PartyIdentifiedAccess.getOrCreatePartyByExternalRef(getDataAccess(), null, "cbf741ff-9480-4792-8894-13fc5f818b6d", DEMOGRAPHIC, "User", PARTY);
+        return new PersistedPartyProxy(getDataAccess()).getOrCreate(null, "cbf741ff-9480-4792-8894-13fc5f818b6d", DEMOGRAPHIC, "User", PARTY);
     }
 
     public ServerConfig getServerConfig() {

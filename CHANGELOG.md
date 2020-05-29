@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - force a default timezone if not present for context/start_time and context/end_time if specified (https://github.com/ehrbase/ehrbase/pull/215)
 - Representation of version uid of EHR_STATUS (see: https://github.com/ehrbase/ehrbase/pull/180)
 - fix support of context/participations (see CR #267)
+- Refactored support of PartyProxy and ObjectId in both CRUD and AQL operations (see https://github.com/ehrbase/ehrbase/pull/248)
+
 
 
 ## [0.12.0] (alpha)

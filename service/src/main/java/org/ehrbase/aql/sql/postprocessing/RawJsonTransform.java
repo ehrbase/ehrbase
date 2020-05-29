@@ -21,10 +21,14 @@
 
 package org.ehrbase.aql.sql.postprocessing;
 
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.ehrbase.aql.sql.QuerySteps;
 import org.ehrbase.aql.sql.binding.JsonbBlockDef;
+import org.ehrbase.ehr.encode.EncodeUtilArchie;
+import org.ehrbase.ehr.encode.wrappers.json.I_DvTypeAdapter;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.ehr.encode.rawjson.LightRawJsonEncoder;
 import org.jooq.DSLContext;
@@ -32,26 +36,19 @@ import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Result;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by christian on 2/21/2017.
  */
 public class RawJsonTransform implements I_RawJsonTransform {
 
-    private final DSLContext context;
-
-    public RawJsonTransform(DSLContext context) {
-        this.context = context;
-    }
-
     @SuppressWarnings("unchecked")
-    public static void toRawJson(Result<Record> result, Collection<QuerySteps> querySteps, I_KnowledgeCache knowledgeCache) {
+    public static void toRawJson(Result<Record> result, Collection<QuerySteps> querySteps) {
+
 
         for (QuerySteps queryStep : querySteps) {
+
             if (queryStep.jsonColumnsSize() > 0) {
                 result.forEach(record -> {
                     List<JsonbBlockDef> deleteList = new ArrayList<>();
@@ -64,13 +61,26 @@ public class RawJsonTransform implements I_RawJsonTransform {
 
                         //apply the transformation
                         try {
-                            JsonElement jsonElement = new LightRawJsonEncoder(jsonbOrigin).encodeContentAsJson(jsonbBlockDef.getJsonPathRoot());
+                            JsonElement jsonElement;
+                            if (new ResultBlock(jsonbBlockDef).isCanonical()) {
+                                GsonBuilder gsonRaw = EncodeUtilArchie.getGsonBuilderInstance();
+                                JsonElement item = gsonRaw.create().toJsonTree(gsonRaw.create().fromJson(jsonbOrigin, List.class));
+                                if (item instanceof JsonArray)
+                                    jsonElement = item.getAsJsonArray();
+                                else
+                                    jsonElement = item.getAsJsonObject();
+                            }
+                            else
+                                jsonElement = new LightRawJsonEncoder(jsonbOrigin).encodeContentAsJson(jsonbBlockDef.getJsonPathRoot());
+
                             record.setValue(jsonbBlockDef.getField(), jsonElement);
+
                         } catch (Exception e) {
                             //assumes this is not a json element
                             record.setValue(jsonbBlockDef.getField(), jsonbOrigin);
                             deleteList.add(jsonbBlockDef);
                         }
+
                     }
                     for (JsonbBlockDef deleteBlock : deleteList) {
                         queryStep.getJsonColumns().remove(deleteBlock);
@@ -80,48 +90,4 @@ public class RawJsonTransform implements I_RawJsonTransform {
         }
     }
 
-
-
-
-    private static int columnIndex(List<Field> fields, String columnName) {
-        for (int i = 0; i < fields.size(); i++) {
-            Field field = fields.get(i);
-            if (field.getName().equals(columnName))
-                return i;
-        }
-        return -1;
-    }
-
-    public static Result<Record> deleteNamedColumn(Result<Record> result, String columnName) {
-
-        List<Field> fields = new ArrayList<>(Arrays.asList(result.fields()));
-        int ndx = columnIndex(fields, columnName);
-        if (ndx >= 0) {
-            fields.remove(ndx);
-            Field[] arrayField = fields.toArray(new Field[]{});
-
-            return result.into(arrayField);
-        } else
-            return result;
-    }
-
-//    public static Record cloneRecord(Record record, Collection<QuerySteps> querySteps){
-//        List<Field> fields = new ArrayList<>();
-//        List<String> jsonColumns = new ArrayList<>();
-//
-//        for (QuerySteps queryStep: querySteps) {
-//            for (JsonbBlockDef jsonbBlockDef : queryStep.getJsonColumns()) {
-//                jsonColumns.add(jsonbBlockDef.getField().getName());
-//            }
-//        }
-//
-//        fields.addAll(Arrays.asList(record.fields()));
-//
-//
-//
-//        Field[] arrayField = fields.toArray(new Field[]{});
-//
-//        Record newRecord = record.into(arrayField);
-//        return newRecord;
-//    }
 }

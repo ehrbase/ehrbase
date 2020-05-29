@@ -79,7 +79,7 @@ verify response (JSON)
                         Integer     response status         200
 
                         String    response body uid value    ${ehrstatus_uid}
-                        String    response body subject external_ref id value    ${subject_Id}
+                        # String    response body subject external_ref id value    ${subject_Id}
                         
 
 verify response (XML)
