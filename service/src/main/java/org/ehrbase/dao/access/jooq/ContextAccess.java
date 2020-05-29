@@ -34,7 +34,6 @@ import com.nedap.archie.rm.generic.PartyIdentified;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.*;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.definitions.ServerConfig;
@@ -54,14 +53,8 @@ import org.jooq.exception.DataAccessException;
 import java.sql.PreparedStatement;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoField;
-import java.time.temporal.TemporalAccessor;
-import java.time.temporal.UnsupportedTemporalTypeException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.ehrbase.jooq.pg.Tables.*;
@@ -174,13 +167,9 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                     PartyProxy performer = I_PartyIdentifiedAccess.retrievePartyIdentified(domainAccess, record.getPerformer());
 
 
-                    DvInterval<DvDateTime> startTime = new DvInterval<>(new RecordedDvDateTime().decodeDvDateTime(record.getStartTime(), record.getStartTimeTzid()), null);
-                    DvCodedText mode;
-                    try {
-                        mode = decodeDvCodedText(record.getMode());
-                    } catch (IllegalArgumentException e) {
-                        throw new InternalServerException(DB_INCONSISTENCY, e);
-                    }
+                    DvInterval<DvDateTime> startTime = convertDvIntervalDvDateTimeFromRecord(eventContextHistoryRecord);
+                    DvCodedText mode = convertModeFromRecord(eventContextHistoryRecord);
+
                     Participation participation = new Participation(performer,
                             new DvText(record.getFunction()),
                             mode,
@@ -505,28 +494,14 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
             //retrieve performer
             PartyProxy performer = I_PartyIdentifiedAccess.retrievePartyIdentified(this, record.getPerformer());
 
-            DvInterval<DvDateTime> startTime = null;
-            if (record.getTimeLower() != null) { //start time null value is allowed for participation
-                startTime = new DvInterval<>(
-                        new RecordedDvDateTime().decodeDvDateTime(record.getTimeLower(), record.getTimeLowerTz()),
-                        new RecordedDvDateTime().decodeDvDateTime(record.getTimeUpper(), record.getTimeUpperTz())
-                );
-            }
+            DvInterval<DvDateTime> dvInterval = convertDvIntervalDvDateTimeFromRecord(record);
 
-            DvCodedText mode;
-            try {
-                if (record.getMode() != null) {
-                    mode = (DvCodedText)new RecordedDvCodedText().fromDB(record, PARTICIPATION.MODE);
-                } else {
-                    mode = null;
-                }
-            } catch (IllegalArgumentException e) {
-                throw new InternalServerException(DB_INCONSISTENCY, e);
-            }
+            DvCodedText mode = convertModeFromRecord(record);
+
             Participation participation = new Participation(performer,
                     new DvText(record.getFunction()),
                     mode,
-                    startTime);
+                    dvInterval);
 
             participationList.add(participation);
         });
@@ -558,6 +533,31 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                 otherContext
         );
 
+    }
+
+    private static DvInterval<DvDateTime> convertDvIntervalDvDateTimeFromRecord(Record record){
+        DvInterval<DvDateTime> dvDateTimeDvInterval = null;
+        if (record.get(PARTICIPATION.TIME_LOWER) != null) { //start time null value is allowed for participation
+            dvDateTimeDvInterval = new DvInterval<>(
+                    new RecordedDvDateTime().decodeDvDateTime(record.get(PARTICIPATION.TIME_LOWER), record.get(PARTICIPATION.TIME_LOWER_TZ)),
+                    new RecordedDvDateTime().decodeDvDateTime(record.get(PARTICIPATION.TIME_UPPER), record.get(PARTICIPATION.TIME_UPPER_TZ))
+            );
+        }
+        return dvDateTimeDvInterval;
+    }
+
+    private static DvCodedText convertModeFromRecord(Record record){
+        DvCodedText mode;
+        try {
+            if (record.get(PARTICIPATION.MODE) != null) {
+                mode = (DvCodedText)new RecordedDvCodedText().fromDB(record, PARTICIPATION.MODE);
+            } else {
+                mode = null;
+            }
+        } catch (IllegalArgumentException e) {
+            throw new InternalServerException(DB_INCONSISTENCY, e);
+        }
+        return mode;
     }
 
     @Override

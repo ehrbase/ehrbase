@@ -11,6 +11,19 @@ ALTER TABLE ehr.participation
 ALTER TABLE ehr.participation
   ADD COLUMN time_upper_tz TEXT;
 
+-- ditto for history
+ALTER TABLE ehr.participation_history
+  RENAME COLUMN start_time TO time_lower;
+
+ALTER TABLE ehr.participation_history
+  RENAME COLUMN start_time_tzid TO time_lower_tz;
+
+ALTER TABLE ehr.participation_history
+  ADD COLUMN time_upper TIMESTAMP WITHOUT TIME ZONE;
+
+ALTER TABLE ehr.participation_history
+  ADD COLUMN time_upper_tz TEXT;
+
 -- used to convert existing mode as a proper ehr.dv_coded_text type
 CREATE OR REPLACE FUNCTION ehr.migrate_participation_mode(mode TEXT)
   RETURNS ehr.dv_coded_text AS
@@ -40,6 +53,10 @@ $$
 ALTER TABLE ehr.participation
   ALTER COLUMN mode TYPE ehr.dv_coded_text
   USING ehr.migrate_participation_mode(mode);
+
+ALTER TABLE ehr.participation_history
+  ALTER COLUMN mode TYPE ehr.dv_coded_text
+    USING ehr.migrate_participation_mode(mode);
 
 --
 CREATE OR REPLACE FUNCTION ehr.js_code_phrase(codephrase ehr.code_phrase)
