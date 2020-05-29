@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - POST without accept header for ehr, composition and contribution endpoints (see: https://github.com/ehrbase/ehrbase/pull/199)
 - force a default timezone if not present for context/start_time and context/end_time if specified (https://github.com/ehrbase/ehrbase/pull/215)
 - Representation of version uid of EHR_STATUS (see: https://github.com/ehrbase/ehrbase/pull/180)
+- Refactored support of PartyProxy and ObjectId in both CRUD and AQL operations (see https://github.com/ehrbase/ehrbase/pull/248)
 
 
 ## [0.12.0] (alpha)
