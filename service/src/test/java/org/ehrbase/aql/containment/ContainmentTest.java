@@ -72,7 +72,7 @@ public class ContainmentTest {
                 "contains COMPOSITION c[openEHR-EHR-COMPOSITION.report-result.v1]\n" +
                 "contains (" +
                 "CLUSTER f[openEHR-EHR-CLUSTER.case_identification.v0] and\n" +
-                "CLUSTER z[openEHR-EHR-CLUSTER.specimen.v1] and\n" +
+                "CLUSTER z[openEHR-EHR-CLUSTER.specimen.v1] or\n" +
                 "CLUSTER j[openEHR-EHR-CLUSTER.laboratory_test_panel.v0]\n" +
                 "contains CLUSTER g[openEHR-EHR-CLUSTER.laboratory_test_analyte.v1])\n" +
                 "where\n" +
@@ -93,29 +93,62 @@ public class ContainmentTest {
                 "SELECT DISTINCT comp_id FROM ehr.containment WHERE label ~'openEHR_EHR_COMPOSITION_report_result_v1.*.openEHR_EHR_CLUSTER_specimen_v1'");
     }
 
-//    @Test
-//    public void testInterpretContainement2(){
-//
-//        String query = "SELECT q as ErregerBEZK\n" +
-//                "from EHR e\n" +
-//                "contains COMPOSITION c\n" +
-//                "contains OBSERVATION v[openEHR-EHR-OBSERVATION.laboratory_test_result.v1]\n" +
-//                "contains ( (\n" +
-//                "CLUSTER h[openEHR-EHR-CLUSTER.laboratory_test_panel.v0] and\n" +
-//                "CLUSTER x[openEHR-EHR-CLUSTER.specimen.v0]) and\n" +
-//                "CLUSTER q[openEHR-EHR-CLUSTER.laboratory_test_analyte.v1])";
-//
-//        AqlExpression aqlExpression = new AqlExpression().parse(query);
-//        Contains contains = new Contains(aqlExpression.getParseTree()).process();
-////        Statements statements = new Statements(aqlExpression.getParseTree(), contains.getIdentifierMapper()).process() ;
-//
-//        String containSQL = new ContainBinder(contains.getNestedSets()).bind();
-//
-//        assertThat(containSQL).isEqualToIgnoringNewLines("SELECT DISTINCT comp_id FROM ehr.containment WHERE label ~'openEHR_EHR_COMPOSITION_report_result_v1.*.openEHR_EHR_CLUSTER_laboratory_test_panel_v0.*.openEHR_EHR_CLUSTER_laboratory_test_analyte_v1' \n" +
-//                "INTERSECT \n" +
-//                "SELECT DISTINCT comp_id FROM ehr.containment WHERE label ~'openEHR_EHR_COMPOSITION_report_result_v1.*.openEHR_EHR_CLUSTER_case_identification_v0' \n" +
-//                "INTERSECT \n" +
-//                "SELECT DISTINCT comp_id FROM ehr.containment WHERE label ~'openEHR_EHR_COMPOSITION_report_result_v1.*.openEHR_EHR_CLUSTER_specimen_v1'");
-//    }
+    @Test
+    public void testInterpretContainement2(){
+
+        String query = "SELECT q as ErregerBEZK\n" +
+                "from EHR e\n" +
+                "contains COMPOSITION c\n" +
+                "contains OBSERVATION v[openEHR-EHR-OBSERVATION.laboratory_test_result.v1]\n" +
+                "contains ( " +
+                "(\n" +
+                "CLUSTER h[openEHR-EHR-CLUSTER.laboratory_test_panel.v0] and\n" +
+                "CLUSTER x[openEHR-EHR-CLUSTER.specimen.v0])" +
+                " or\n" +
+                "CLUSTER q[openEHR-EHR-CLUSTER.laboratory_test_analyte.v1]" +
+                ")";
+
+        AqlExpression aqlExpression = new AqlExpression().parse(query);
+        Contains contains = new Contains(aqlExpression.getParseTree()).process();
+//        Statements statements = new Statements(aqlExpression.getParseTree(), contains.getIdentifierMapper()).process() ;
+
+        String containSQL = new ContainBinder(contains.getNestedSets()).bind();
+
+        assertThat(containSQL).isEqualToIgnoringNewLines("SELECT DISTINCT comp_id FROM ehr.containment WHERE label ~'openEHR_EHR_COMPOSITION_report_result_v1.*.openEHR_EHR_CLUSTER_laboratory_test_panel_v0.*.openEHR_EHR_CLUSTER_laboratory_test_analyte_v1' \n" +
+                "INTERSECT \n" +
+                "SELECT DISTINCT comp_id FROM ehr.containment WHERE label ~'openEHR_EHR_COMPOSITION_report_result_v1.*.openEHR_EHR_CLUSTER_case_identification_v0' \n" +
+                "INTERSECT \n" +
+                "SELECT DISTINCT comp_id FROM ehr.containment WHERE label ~'openEHR_EHR_COMPOSITION_report_result_v1.*.openEHR_EHR_CLUSTER_specimen_v1'");
+    }
+
+    @Test
+    public void testInterpretContainement3(){
+
+        String query = "    select\n" +
+                "    m/data[at0001]/items[at0004]/value/value as Beginn,\n" +
+                "    m/data[at0001]/items[at0005]/value/value as Ende,\n" +
+                "    k/items[at0048]/value/defining_code/code_string as Fachabteilung,\n" +
+                "    k/items[at0027, 'Stationskennung']/value as StationID\n" +
+                "    from EHR e\n" +
+                "    contains (\n" +
+                "                    CLUSTER f[openEHR-EHR-CLUSTER.case_identification.v0] and\n" +
+                "                    CLUSTER z[openEHR-EHR-CLUSTER.specimen.v1] and\n" +
+                "                    CLUSTER j[openEHR-EHR-CLUSTER.laboratory_test_panel.v0]\n" +
+                "                    contains CLUSTER g[openEHR-EHR-CLUSTER.laboratory_test_analyte.v1])";
+
+        AqlExpression aqlExpression = new AqlExpression().parse(query);
+        Contains contains = new Contains(aqlExpression.getParseTree()).process();
+//        Statements statements = new Statements(aqlExpression.getParseTree(), contains.getIdentifierMapper()).process() ;
+
+        String containSQL = new ContainBinder(contains.getNestedSets()).bind();
+
+        assertThat(containSQL).isEqualToIgnoringNewLines("SELECT DISTINCT comp_id FROM ehr.containment WHERE label ~'openEHR_EHR_COMPOSITION_report_result_v1.*.openEHR_EHR_CLUSTER_laboratory_test_panel_v0.*.openEHR_EHR_CLUSTER_laboratory_test_analyte_v1' \n" +
+                "INTERSECT \n" +
+                "SELECT DISTINCT comp_id FROM ehr.containment WHERE label ~'openEHR_EHR_COMPOSITION_report_result_v1.*.openEHR_EHR_CLUSTER_case_identification_v0' \n" +
+                "INTERSECT \n" +
+                "SELECT DISTINCT comp_id FROM ehr.containment WHERE label ~'openEHR_EHR_COMPOSITION_report_result_v1.*.openEHR_EHR_CLUSTER_specimen_v1'");
+    }
+
+
 
 }
