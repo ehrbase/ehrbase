@@ -123,6 +123,10 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         return this.update(transactionTime, true, true, null, old_contribution, new_contribution);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public ObjectVersionId create() {
         return new ObjectVersionId(
                 this.commit().toString()

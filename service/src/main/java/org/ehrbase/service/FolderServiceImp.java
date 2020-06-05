@@ -102,6 +102,8 @@ public class FolderServiceImp extends BaseService implements FolderService {
                 contributionAccess
         );
         ObjectVersionId folderId = folderAccess.create();
+        // Save root directory id to ehr entry
+        // TODO: Refactor to use UID
         ehrAccess.setDirectory(FolderUtils.extractUuidFromObjectVersionId(folderId));
         ehrAccess.update(getUserUuid(), getSystemUuid(), null, I_ConceptAccess.ContributionChangeType.MODIFICATION, EhrServiceImp.DESCRIPTION);
         return folderId;
@@ -115,6 +117,7 @@ public class FolderServiceImp extends BaseService implements FolderService {
         if (version == null) {
             // Get the latest object
             folderAccess = I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), folderId);
+            version = getLastVersionNumber(FolderUtils.extractUuidFromObjectVersionId(folderId));
         } else {
             // Get timestamp for version
             Timestamp versionTimestamp = FolderAccess.getTimestampForVersion(getDataAccess(), folderId, version);
@@ -125,8 +128,8 @@ public class FolderServiceImp extends BaseService implements FolderService {
 
         return createDto(
                 folderAccessWithExtractedPath,
-                FolderUtils.extractVersionNumberFromObjectVersionId(folderId),
-                path == null
+                version,
+                path == null || path.equals("/")
         );
     }
 
