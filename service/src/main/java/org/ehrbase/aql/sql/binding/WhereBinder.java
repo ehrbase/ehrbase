@@ -105,6 +105,7 @@ public class WhereBinder {
                     field = compositionAttributeQuery.whereField(templateId, comp_id, identifier, variableDefinition);
                     if (field == null)
                         return null;
+                    isFollowedBySQLConditionalOperator = true;
                     return new TaggedStringBuilder(field.toString(), I_TaggedStringBuilder.TagField.SQLQUERY);
 
                 default:
@@ -315,7 +316,7 @@ public class WhereBinder {
         if (taggedBuffer.indexOf("#>>") > 0) {
             return item;
         }
-        if (taggedBuffer.indexOf("#") > 0 && item.contains("'")) { //conventionally double quote for jsquery
+        if (!isFollowedBySQLConditionalOperator && taggedBuffer.indexOf("#") > 0 && item.contains("'")) { //conventionally double quote for jsquery
             return item.replaceAll("'", "\"");
         }
         return item;
