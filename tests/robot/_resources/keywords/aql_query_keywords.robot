@@ -70,6 +70,14 @@ execute ad-hoc query and check result (empty DB)
                         check response (EMPTY DB): returns correct content for    ${aql_payload}
 
 
+execute invalid ad-hoc query and check result (empty DB)
+    [Arguments]         ${aql_payload}    ${error_message}
+    [Documentation]     EMPTY DB
+                        execute invalid ad-hoc query    ${aql_payload}
+                        check response: is negative
+                        check response: contains error message    ${error_message}
+
+
 execute ad-hoc query and check result (loaded DB)
     [Arguments]         ${aql_payload}    ${expected}
     [Documentation]     LOADED DB
@@ -93,10 +101,24 @@ execute ad-hoc query
                         POST /query/aql    JSON
 
 
+execute invalid ad-hoc query
+    [Arguments]         ${invalid_test_data_set}
+                        Set Test Variable  ${KEYWORD NAME}  AD-HOC QUERY
+                        load invalid query test-data-set  ${invalid_test_data_set}
+                        POST /query/aql    JSON
+
+
 load valid query test-data-set
     [Arguments]        ${valid_test_data_set}
 
     ${file} =           Load JSON From File    ${VALID QUERY DATA SETS}/${valid_test_data_set}
+                        Set Test Variable      ${test_data}    ${file}
+
+
+load invalid query test-data-set
+    [Arguments]        ${invalid_test_data_set}
+
+    ${file} =           Load JSON From File    ${INVALID QUERY DATA SETS}/${invalid_test_data_set}
                         Set Test Variable      ${test_data}    ${file}
 
 
@@ -112,34 +134,6 @@ load expected results-data-set (EMPTY DB)
 
     ${file}=            Load JSON From File    ${QUERY RESULTS EMPTY DB}/${expected_result_data_set}
                         Set Test Variable      ${expected_result}    ${file}
-
-# TODO: @WLAD REMOVE - SEEMS UNUSED
-# # load expected result schema
-# #     [Arguments]         ${expected_result}
-# #                         Expect Response Body    ${QUERY RESULTS LOADED DB}/${expected_result}-schema.json
-#
-#
-# startup AQL SUT
-#     [Documentation]     used in Test Suite Setup
-#     ...                 this keyword overrides another one with same name
-#     ...                 from "generic_keywords.robot" file
-#
-#     get application version
-#     unzip file_repo_content.zip
-#     empty operational_templates folder
-#     start ehrdb
-#     start openehr server
-#
-#
-# execute AQL query
-#     [Arguments]         ${aql_query}
-#     [Documentation]     Sends given AQL query via POST request.
-#
-#     Log         DEPRECATION WARNING: @WLAD remove this KW - it's only used in old AQL-QUERY tests.
-#                 ...         level=WARN
-#
-#     REST.POST           ${url}/query    ${aql_query}
-#     Integer             response status    200
 
 
 
@@ -270,9 +264,11 @@ check response (LOADED DB): returns correct content
                         Log To Console  \n/////////// EXPECTED //////////////////////////////
                         Output    ${expected result}
 
-    &{diff}=            compare json-strings  ${response body}  ${expected result}
-    ...                 report_repetition=True
-    ...                 exclude_paths=root['meta']
+    &{diff}             compare_jsons_ignoring_properties    ${response body}    ${expected result}
+    # ...                 meta    path    foo        # comment: example of how to add additional
+                                                     #          properties to be ignored
+    ...                 report_repetition=${TRUE}
+
                         Should Be Empty  ${diff}  msg=DIFF DETECTED!
 
 
@@ -282,10 +278,23 @@ check response (LOADED DB): returns correct content
 #     &{diff}=            compare json-strings  ${response body}  ${expected result}  exclude_paths=root['meta']
 
 
-# check response (LOADED DB): returns correct ordered content for
-#     [Arguments]         ${aql_payload}
-#                         load expected results-data-set (LOADED DB)    ${aql_payload}
-#     &{diff}=            compare json-strings  ${response body}  ${expected result}  exclude_paths=root['meta']
+check response (LOADED DB): returns correct ordered content
+    [Documentation]     expected result is generated at runtime and saved as .tmp.json
+    ...                 in the same folder as the related blueprint
+    [Arguments]         ${path_to_expected_result}
+                        load expected results-data-set (LOADED DB)    ${path_to_expected_result}
+
+                        Log To Console  \n/////////// EXPECTED //////////////////////////////
+                        Output    ${expected result}
+    
+    # TODO: probably need to sort the expected result before comparison
+    
+    &{diff}             compare_jsons_ignoring_properties    ${response body}    ${expected result}
+    ...                 meta    path
+    ...                 ignore_order=${FALSE}
+    ...                 report_repetition=${TRUE}
+
+                        Should Be Empty    ${diff}    msg=DIFF DETECTED!
 
 
 check response (EMPTY DB): returns correct content for
@@ -296,8 +305,20 @@ check response (EMPTY DB): returns correct content for
                         Log To Console  \n/////////// EXPECTED //////////////////////////////
                         Output    ${expected result}
 
-    &{diff}=            compare json-strings  ${response body}  ${expected result}  exclude_paths=root['meta']
+    &{diff}=            compare_jsons_ignoring_properties  ${response body}  ${expected result}
                         Should Be Empty  ${diff}  msg=DIFF DETECTED!
+
+
+# [ NEGATIVE RESPONSE CHECKS ]
+check response: is negative
+    Should Be Equal As Strings   ${response.status_code}   400
+
+
+check response: contains error message
+    [Arguments]         ${error_message}
+                        # Log    ${response body}
+    ${body} =           Convert To String    ${response body}
+                        Should Contain    ${body}    ${error_message}    ignore_case=True
 
 
 
@@ -591,9 +612,13 @@ Commit Compo
     &{resp}=            REST.POST    ${baseurl}/ehr/${ehr_id}/composition    ${compo_file}
                         Output Debug Info To Console
                         Integer    response status    201
-    &{body}=            Output     response body
                         Set Suite Variable    ${response}    ${resp}
-   
+
+    # comment: This returns the object from response body wrapped in a list []
+    #          That's exactly what we need to inject into expected-result blueprint most of the time.
+    #          In cases where you need the oject itself use index 0 on that list: ${compo_in_list}[0]
+    @{body}=            Object     response body
+                        Set Suite Variable    ${compo_in_list}    ${body}
                         Set Suite Variable    ${compo_uid_value}    ${response.body.uid.value}
                         Set Suite Variable    ${compo_uid}    ${response.body.uid}    
                         Set Suite Variable    ${compo_name_value}    ${response.body.name.value}
@@ -626,6 +651,7 @@ Commit Compo
     ###########################################################################################
 
     B/100
+    B/102
     B/200
     B/300
     B/400
@@ -695,11 +721,6 @@ Commit Compo
     # ${B/101}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/B/101.tmp.json
     # ${B/101}=           Add Object To Json     ${B/101}    $.rows    ${response.body}
     #                     Output    ${B/101}     ${QUERY RESULTS LOADED DB}/B/101.tmp.json
-
-    # # NOT READY - order Composisions by name (GITHUB #105)
-    # ${B/102}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/B/102.tmp.json
-    # ${B/102}=           Add Object To Json     ${B/102}    $.rows    ${response.body}
-    #                     Output    ${B/102}     ${QUERY RESULTS LOADED DB}/B/102.tmp.json
 
     # # NOT READY - "TIMEWINDOW" not implemented (GITHUB #106)
     # ${B/103}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/B/103.tmp.json
@@ -1029,8 +1050,14 @@ A/603
 
 B/100
     ${B/100}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/B/100.tmp.json
-    ${B/100}=           Add Object To Json     ${B/100}    $.rows    ${response.body}
+    ${B/100}=           Add Object To Json     ${B/100}    $.rows    ${compo_in_list}
                         Output    ${B/100}     ${QUERY RESULTS LOADED DB}/B/100.tmp.json
+
+B/102
+    Return From Keyword If    (${ehr_index}>=5)    nothing to do here!
+    ${B/102}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/B/102.tmp.json
+    ${B/102}=           Add Object To Json     ${B/102}    $.rows    ${compo_in_list}
+                        Output    ${B/102}     ${QUERY RESULTS LOADED DB}/B/102.tmp.json
 
 B/200
     Return From Keyword If    not (${ehr_index}==1)    nothing to do here!
@@ -1043,67 +1070,67 @@ B/200
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/B/200.tmp.json
                         Update Value To Json   ${expected}    $.q    SELECT c FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c
                         Update Value To Json   ${expected}    $.meta._executed_aql    SELECT c FROM EHR e [ehr_id/value='${ehr_id}'] CONTAINS COMPOSITION c
-                        Add Object To Json     ${expected}    $.rows    ${response.body}
+                        Add Object To Json     ${expected}    $.rows    ${compo_in_list}
                         Output    ${expected}     ${QUERY RESULTS LOADED DB}/B/200.tmp.json
 
 B/300
     Return From Keyword If    not ("${compo_archetype_id_value}"=="openEHR-EHR-COMPOSITION.minimal.v1")    nothing to do here!
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/B/300.tmp.json
-                        Add Object To Json     ${expected}    $.rows    ${response.body}
+                        Add Object To Json     ${expected}    $.rows    ${compo_in_list}
                         Output    ${expected}     ${QUERY RESULTS LOADED DB}/B/300.tmp.json
 
 B/400
     Return From Keyword If    not ("${compo_archetype_id_value}"=="openEHR-EHR-COMPOSITION.test_all_types.v1")    nothing to do here!
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/B/400.tmp.json
-                        Add Object To Json     ${expected}    $.rows    ${response.body}
+                        Add Object To Json     ${expected}    $.rows    ${compo_in_list}
                         Output    ${expected}     ${QUERY RESULTS LOADED DB}/B/400.tmp.json
 
 B/500
     Return From Keyword If    not ("${compo_content_type}"=="OBSERVATION")    nothing to do here!
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/B/500.tmp.json
-                        Add Object To Json     ${expected}    $.rows    ${response.body}
+                        Add Object To Json     ${expected}    $.rows    ${compo_in_list}
                         Output    ${expected}     ${QUERY RESULTS LOADED DB}/B/500.tmp.json
 
 B/501
     Return From Keyword If    not ("${compo_content_type}"=="EVALUATION")    nothing to do here!
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/B/501.tmp.json
-                        Add Object To Json     ${expected}    $.rows    ${response.body}
+                        Add Object To Json     ${expected}    $.rows    ${compo_in_list}
                         Output    ${expected}     ${QUERY RESULTS LOADED DB}/B/501.tmp.json
 
 B/502
     Return From Keyword If    not ("${compo_content_type}"=="INSTRUCTION")    nothing to do here!
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/B/502.tmp.json
-                        Add Object To Json     ${expected}    $.rows    ${response.body}
+                        Add Object To Json     ${expected}    $.rows    ${compo_in_list}
                         Output    ${expected}     ${QUERY RESULTS LOADED DB}/B/502.tmp.json
 
 B/503
     Return From Keyword If    not ("${compo_content_type}"=="ACTION")    nothing to do here!
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/B/503.tmp.json
-                        Add Object To Json     ${expected}    $.rows    ${response.body}
+                        Add Object To Json     ${expected}    $.rows    ${compo_in_list}
                         Output    ${expected}     ${QUERY RESULTS LOADED DB}/B/503.tmp.json
 
 B/600
     Return From Keyword If    not ("${compo_content_archetype_node_id}"=="openEHR-EHR-OBSERVATION.minimal.v1")   nothing to do here!
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/B/600.tmp.json
-                        Add Object To Json     ${expected}    $.rows    ${response.body}
+                        Add Object To Json     ${expected}    $.rows    ${compo_in_list}
                         Output    ${expected}     ${QUERY RESULTS LOADED DB}/B/600.tmp.json
 
 B/601
     Return From Keyword If    not ("${compo_content_archetype_node_id}"=="openEHR-EHR-EVALUATION.minimal.v1")   nothing to do here!
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/B/601.tmp.json
-                        Add Object To Json     ${expected}    $.rows    ${response.body}
+                        Add Object To Json     ${expected}    $.rows    ${compo_in_list}
                         Output    ${expected}     ${QUERY RESULTS LOADED DB}/B/601.tmp.json
 
 B/602
     Return From Keyword If    not ("${compo_content_archetype_node_id}"=="openEHR-EHR-INSTRUCTION.minimal.v1")   nothing to do here!
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/B/602.tmp.json
-                        Add Object To Json     ${expected}    $.rows    ${response.body}
+                        Add Object To Json     ${expected}    $.rows    ${compo_in_list}
                         Output    ${expected}     ${QUERY RESULTS LOADED DB}/B/602.tmp.json
 
 B/603
     Return From Keyword If    not ("${compo_content_archetype_node_id}"=="openEHR-EHR-ACTION.minimal_2.v1")   nothing to do here!
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/B/603.tmp.json
-                        Add Object To Json     ${expected}    $.rows    ${response.body}
+                        Add Object To Json     ${expected}    $.rows    ${compo_in_list}
                         Output    ${expected}     ${QUERY RESULTS LOADED DB}/B/603.tmp.json
 
 B/700 701 702
@@ -1112,7 +1139,7 @@ B/700 701 702
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/${dataset}.tmp.json
     ${items}            Set Variable    ${response.body.content[0].data.events[0].data["items"]}
     ${obs_value}        Set Variable    ${items[0].value.value}
-                        Run Keyword If    "${obs_value}"=="first value"    Add Object To Json     ${expected}    $.rows    ${response.body}
+                        Run Keyword If    "${obs_value}"=="first value"    Add Object To Json     ${expected}    $.rows    ${compo_in_list}
                         Run Keyword Unless    "${obs_value}"=="first value"    Return From Keyword
                         Output    ${expected}    ${QUERY RESULTS LOADED DB}/${dataset}.tmp.json
 
@@ -1127,7 +1154,7 @@ B/800
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/B/800.tmp.json
                         Update Value To Json   ${expected}    $.q    SELECT c FROM COMPOSITION c [uid/value='${compo_uid_value}']
                         Update Value To Json   ${expected}    $.meta._executed_aql    SELECT c FROM COMPOSITION c [uid/value='${compo_uid_value}']
-                        Add Object To Json     ${expected}    $.rows    ${response.body}
+                        Add Object To Json     ${expected}    $.rows    ${compo_in_list}
                         Output    ${expected}     ${QUERY RESULTS LOADED DB}/B/800.tmp.json
 
 B/801
@@ -1139,7 +1166,7 @@ B/801
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/B/801.tmp.json
                         Update Value To Json   ${expected}    $.q    SELECT c FROM COMPOSITION c [uid/value='${compo_uid_value}']
                         Update Value To Json   ${expected}    $.meta._executed_aql    SELECT c FROM COMPOSITION c [uid/value='${compo_uid_value}']
-                        Add Object To Json     ${expected}    $.rows    ${response.body}
+                        Add Object To Json     ${expected}    $.rows    ${compo_in_list}
                         Output    ${expected}     ${QUERY RESULTS LOADED DB}/B/801.tmp.json
 
 B/802
@@ -1151,7 +1178,7 @@ B/802
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/B/802.tmp.json
                         Update Value To Json   ${expected}    $.q    SELECT c FROM COMPOSITION c WHERE c/uid/value='${compo_uid_value}'
                         Update Value To Json   ${expected}    $.meta._executed_aql    SELECT c FROM COMPOSITION c WHERE c/uid/value='${compo_uid_value}'
-                        Add Object To Json     ${expected}    $.rows    ${response.body}
+                        Add Object To Json     ${expected}    $.rows    ${compo_in_list}
                         Output    ${expected}     ${QUERY RESULTS LOADED DB}/B/802.tmp.json
 
 B/803
@@ -1163,7 +1190,7 @@ B/803
     ${expected}=        Load JSON From File    ${QUERY RESULTS LOADED DB}/B/803.tmp.json
                         Update Value To Json   ${expected}    $.q    SELECT c FROM COMPOSITION c WHERE c/uid/value='${compo_uid_value}'
                         Update Value To Json   ${expected}    $.meta._executed_aql    SELECT c FROM COMPOSITION c WHERE c/uid/value='${compo_uid_value}'
-                        Add Object To Json     ${expected}    $.rows    ${response.body}
+                        Add Object To Json     ${expected}    $.rows    ${compo_in_list}
                         Output    ${expected}     ${QUERY RESULTS LOADED DB}/B/803.tmp.json
 
 
@@ -1621,3 +1648,11 @@ D/503
 #                         ...                 auth=${${SUT}.CREDENTIALS}    debug=2    verify=True
 
 #                         Set Test Variable   ${headers}    ${headers}
+
+
+# Example of how to properly escape regex expressions to use with DeepDiff lib
+#    ${exclude_paths}    Create List    root\\['meta'\\]    \\['columns'\\]\\[\\d+\\]\\['path'\\]
+#                        ...            \\['_type'\\]
+#    &{diff}             compare json-strings    ${response body}    ${expected result}
+#                        ...                     exclude_regex_paths=${exclude_paths}
+#                        ...                     ignore_order=False

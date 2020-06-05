@@ -8,7 +8,7 @@ robotframework-databaselibrary == 1.2.4
 RESTinstance == 1.0.0
 
 docker == 4.0.2
-deepdiff == 4.0.6
+deepdiff == 4.3.2
 psycopg2-binary == 2.8.4
 
 # pyjwt

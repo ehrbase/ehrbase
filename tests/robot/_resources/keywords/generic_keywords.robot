@@ -375,6 +375,7 @@ do quick sanity check
 
 
 warn about manual test environment start up
+    [Tags]              robot:flatten
     Log    ${EMPTY}                                                                             level=WARN
     Log    /////////////////////////////////////////////////////////////////////                level=WARN
     Log    //${SPACE * 64}///                                                                   level=WARN
@@ -421,6 +422,8 @@ abort tests due to issues with manually controlled test environment
     abort test execution if this test fails
 
 startup SUT
+    get application version
+
     # comment: switch to manual test environment control when "-v nodocker" cli option is used
     Run Keyword If      $NODOCKER.upper() in ["TRUE", ""]    Run Keywords
                ...      Set Global Variable    ${NODOCKER}    TRUE    AND
@@ -430,7 +433,7 @@ startup SUT
                ...      Set Global Variable    ${CREATING_SYSTEM_ID}    ${DEV.NODENAME}    AND
                ...      Set Global Variable    ${CONTROL_MODE}    ${DEV.CONTROL}
 
-                        Log    \n\t SUT CONFIG\n    console=true
+                        Log    \n\t SUT CONFIG (EHRbase v${VERSION})\n    console=true
                         Log    \t BASEURL: ${BASEURL}    console=true
                         Log    \t HEARTBEAT: ${HEARTBEAT_URL}    console=true
                         Log    \t AUTH: ${AUTHORIZATION}    console=true

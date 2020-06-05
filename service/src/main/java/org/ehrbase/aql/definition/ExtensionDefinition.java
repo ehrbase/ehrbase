@@ -102,4 +102,9 @@ public class ExtensionDefinition implements I_VariableDefinition {
     public void setHidden(boolean hidden) {
 
     }
+
+    @Override
+    public void setAlias(String alias) {
+
+    }
 }

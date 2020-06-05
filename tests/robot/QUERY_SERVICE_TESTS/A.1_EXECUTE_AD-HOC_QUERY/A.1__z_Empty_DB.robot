@@ -101,23 +101,10 @@ A-202 Execute Ad-Hoc Query - Get EHR(s)
 
 
 A-202 Execute invalid Ad-Hoc Query - Get EHR(s)
-    [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              TODO    not-ready
-    A/202_get_ehr_by_id_empty_db.json
-    A/203_get_ehr_by_id_empty_db.json
-    [Teardown]          TRACE GITHUB ISSUE  200  not-ready  TEST NEEDS UPDATE!
-
-    # TODO: @WLAD make a new TCs for invalid query
-    # expected result for both queries is:
-    # {
-    #     "error": "WHERE variable should be a path, found:'uid'",
-    #     "status": "Bad Request"
-    # }
-    # use queries from test_data_sets/query/aql_queries_invalid !!!
-    #
-    # CHECK https://github.com/ehrbase/ehrbase/pull/149
-    # and https://github.com/ehrbase/project_management/issues/107#issuecomment-597920117
-    #     for reference!!!
+    [Template]          execute invalid ad-hoc query and check result (empty DB)
+    [Tags]
+    A/202_get_ehr_by_id_empty_db.json    WHERE variable should be a path
+    A/203_get_ehr_by_id_empty_db.json    WHERE variable should be a path
 
 
 A-300 Execute Ad-Hoc Query - Get EHR(s)
@@ -316,14 +303,14 @@ D-306 Execute Ad-Hoc Query - Get Data
     [Template]          execute ad-hoc query and check result (empty DB)
     [Tags]              data    206
     D/306_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
-    [Teardown]          TRACE GITHUB ISSUE  191  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  206  not-ready
 
 
 D-307 Execute Ad-Hoc Query - Get Data
     [Template]          execute ad-hoc query and check result (empty DB)
     [Tags]              data    206
     D/307_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
-    [Teardown]          TRACE GITHUB ISSUE  191  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  206  not-ready
 
 
 D-311 Execute Ad-Hoc Query - Get Data

@@ -46,6 +46,8 @@ import java.util.*;
  */
 public class QueryCompilerPass2 extends AqlBaseListener {
 
+    private String[] allowedFunctions = {"COUNT"};
+
     private Logger logger = LogManager.getLogger(QueryCompilerPass2.class);
 
     private Deque<I_VariableDefinition> variableStack = new ArrayDeque<>();
@@ -83,19 +85,23 @@ public class QueryCompilerPass2 extends AqlBaseListener {
                 logger.debug("Found function");
                 AqlParser.FunctionContext functionContext = selectExprContext.stdExpression().function();
                 String name = functionContext.FUNCTION_IDENTIFIER().getText();
+
+                if (!Arrays.asList(allowedFunctions).contains(name.toUpperCase()))
+                    throw new IllegalArgumentException("Found not supported function:'"+name+"'");
+
                 List<FuncParameter> parameters = new ArrayList<>();
-//            for (AqlParser.IdentifiedPathContext pathContext: functionContext.identifiedPath()){
-//                parameters.add(pathContext.getText());
-//                VariableDefinition variableDefinition = new IdentifiedPathVariable(pathContext, selectExprContext, false).definition();
-//                variableStack.push(variableDefinition);
-//            }
+
+                int serial = 0;
 
                 for (ParseTree pathTree : functionContext.children) {
                     if (pathTree instanceof AqlParser.IdentifiedPathContext) {
                         AqlParser.IdentifiedPathContext pathContext = (AqlParser.IdentifiedPathContext) pathTree;
                         VariableDefinition variableDefinition = new IdentifiedPathVariable(pathContext, selectExprContext, false).definition();
+                        //by default postgresql limits the size of column name to 63 bytes
+                        if (variableDefinition.getAlias() == null || variableDefinition.getAlias().isEmpty() || variableDefinition.getAlias().length() > 63)
+                            variableDefinition.setAlias("_FCT_ARG_"+serial++);
                         pushVariableDefinition(variableDefinition);
-                        parameters.add(new FuncParameter(FuncParameterType.VARIABLE, variableDefinition.getAlias()));
+                        parameters.add(new FuncParameter(FuncParameterType.VARIABLE, variableDefinition.getAlias() == null ? variableDefinition.getPath() : variableDefinition.getAlias()));
                     } else if (pathTree instanceof AqlParser.OperandContext) {
                         parameters.add(new FuncParameter(FuncParameterType.OPERAND, pathTree.getText()));
                     } else if (pathTree instanceof TerminalNode) {

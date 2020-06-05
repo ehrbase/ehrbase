@@ -41,8 +41,6 @@ public class ContainmentSet {
     private int operatorSlot = -1; //the last position where to insert an operator, -1 initially
 
 
-    public enum OPERATOR {AND, OR, XOR}
-
     public ContainmentSet(int serial, Containment enclosing) {
         this.serial = serial;
         this.enclosing = enclosing;
@@ -53,7 +51,7 @@ public class ContainmentSet {
     }
 
     public void add(String operator) {
-        containmentList.add(OPERATOR.valueOf(operator));
+        containmentList.add(new ContainOperator(operator));
     }
 
 
@@ -68,7 +66,7 @@ public class ContainmentSet {
     }
 
     public void setOperator(String operator) {
-        OPERATOR op = OPERATOR.valueOf(operator.trim());
+        ContainOperator op = new ContainOperator(operator.trim());
 
         if (op == null)
             throw new IllegalArgumentException("Invalid operator value:" + operator);
@@ -123,8 +121,8 @@ public class ContainmentSet {
 
                 if (item instanceof Containment)
                     sb.append(item);
-                else if (item instanceof OPERATOR) {
-                    sb.append(item);
+                else if (item instanceof ContainOperator) {
+                    sb.append(((ContainOperator) item).getOperator());
                 } else if (item instanceof String) {
                     sb.append(item);
                 } else

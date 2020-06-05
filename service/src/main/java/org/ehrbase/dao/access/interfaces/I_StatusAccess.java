@@ -20,9 +20,7 @@
  */
 package org.ehrbase.dao.access.interfaces;
 
-import com.nedap.archie.rm.changecontrol.Version;
 import com.nedap.archie.rm.datastructures.ItemStructure;
-import com.nedap.archie.rm.ehr.EhrStatus;
 import org.ehrbase.dao.access.jooq.StatusAccess;
 import org.ehrbase.jooq.pg.tables.records.StatusRecord;
 
@@ -59,7 +57,7 @@ public interface I_StatusAccess extends I_SimpleCRUD {
     }
 
     /**
-     * retrieve a status by given EHR ID
+     * retrieve latest status by given EHR ID
      *
      * @param domainAccess  SQL access
      * @param ehrId         Id of associated EHR
@@ -134,4 +132,28 @@ public interface I_StatusAccess extends I_SimpleCRUD {
      * @param description Optional description
      */
     void setAuditAndContributionAuditValues(UUID systemId, UUID committerId, String description);
+
+    /**
+     * Get latest version number of EHR_STATUS by versioned object UID.
+     * @param domainAccess access
+     * @param statusId versioned object UID
+     * @return version number
+     */
+    static Integer getLatestVersionNumber(I_DomainAccess domainAccess, UUID statusId) {
+        return StatusAccess.getLatestVersionNumber(domainAccess, statusId);
+    }
+
+    /**
+     * Get a specific version number of the associated EHR_STATUS of this instance by timestamp.
+     * General idea behind the algorithm: 'what version was the top version at moment T?'
+     * @param time Timestamp
+     * @return version number
+     */
+    int getEhrStatusVersionFromTimeStamp(Timestamp time);
+
+    /**
+     * Get initial time (or time of oldest record) of the status object of this instance.
+     * @return time as {@link Timestamp}
+     */
+    Timestamp getInitialTimeOfVersionedEhrStatus();
 }

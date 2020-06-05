@@ -97,6 +97,11 @@ public class I_VariableDefinitionHelper {
             public void setHidden(boolean hidden) {
 
             }
+
+            @Override
+            public void setAlias(String alias) {
+
+            }
         };
     }
 

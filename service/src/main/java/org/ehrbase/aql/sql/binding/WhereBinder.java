@@ -42,7 +42,7 @@ import java.util.*;
  */
 public class WhereBinder {
 
-    private static final String VALUETYPE_EXPR_VALUE = "\"value\"";
+    private static final String VALUETYPE_EXPR_VALUE = "/value,value";
     //from AQL grammar
     private static final Set<String> sqloperators = new HashSet<>(Arrays.asList("=", "!=", ">", ">=", "<", "<=", "MATCHES", "EXISTS", "NOT", "(", ")", "{", "}"));
 
@@ -79,7 +79,7 @@ public class WhereBinder {
         //this allows to deploy on AWS since jsquery is not supported by this provider
         if (forceSQL || !usePgExtensions) {
             //EHR-327: also supports EHR attributes in WHERE clause
-            if (className.equals("COMPOSITION") || className.equals("EHR")) {
+            if ((className.equals("COMPOSITION") && !variableDefinition.getPath().contains("content")) || className.equals("EHR")) {
                 field = compositionAttributeQuery.whereField(templateId, comp_id, identifier, variableDefinition);
             } else { //should be removed (?)
                 //TODO: identify a method to avoid using Set Returning Function (jsonb_array_element) in WHERE (unsupported in PG10+) while still filtering values in a set
@@ -140,6 +140,7 @@ public class WhereBinder {
         TaggedStringBuilder taggedBuffer = new TaggedStringBuilder();
 
         List whereItems = whereClause;
+        boolean notExists = false;
 
         for (int cursor = 0; cursor < whereItems.size(); cursor++) {
             Object item = whereItems.get(cursor);
@@ -148,30 +149,47 @@ public class WhereBinder {
                     case "OR":
                     case "XOR":
                     case "AND":
-                    case "NOT":
                         taggedBuffer = new WhereJsQueryExpression(taggedBuffer, requiresJSQueryClosure, isFollowedBySQLConditionalOperator).closure();
                         taggedBuffer.append(" " + item + " ");
+                        break;
+
+                    case "NOT":
+                        //check if precedes 'EXISTS'
+                        if (whereItems.get(cursor + 1).toString().toUpperCase().equals("EXISTS"))
+                            notExists = true;
+                        else {
+                            taggedBuffer = new WhereJsQueryExpression(taggedBuffer, requiresJSQueryClosure, isFollowedBySQLConditionalOperator).closure();
+                            taggedBuffer.append(" " + item + " ");
+                        }
+                        break;
+
+                    case "EXISTS":
+                        //add the comparison to null after the variable expression
+                        whereItems.add(cursor + 2, notExists ? "IS " : "IS NOT ");
+                        whereItems.add(cursor + 3, "NULL");
+                        notExists = false;
                         break;
 
                     default:
                         ISODateTime isoDateTime = new ISODateTime(((String) item).replaceAll("'", ""));
                         if (isoDateTime.isValidDateTimeExpression()) {
-                            Long timestamp = isoDateTime.toTimeStamp();
+                            Long timestamp = isoDateTime.toTimeStamp()/1000; //this to align with epoch_offset in the DB, ignore ms
                             int lastValuePos = taggedBuffer.lastIndexOf(VALUETYPE_EXPR_VALUE);
                             if (lastValuePos > 0) {
-                                taggedBuffer.replaceLast(VALUETYPE_EXPR_VALUE, "\"epoch_offset\"");
+                                taggedBuffer.replaceLast(VALUETYPE_EXPR_VALUE, "/value,epoch_offset");
                             }
-                            item = hackItem(taggedBuffer, timestamp.toString());
+                            isFollowedBySQLConditionalOperator = true;
+                            item = hackItem(taggedBuffer, timestamp.toString(), "numeric");
                             taggedBuffer.append((String) item);
                         } else {
-                            item = hackItem(taggedBuffer, (String) item);
+                            item = hackItem(taggedBuffer, (String) item, null);
                             taggedBuffer.append((String) item);
                         }
                         break;
 
                 }
             } else if (item instanceof Long) {
-                item = hackItem(taggedBuffer, item.toString());
+                item = hackItem(taggedBuffer, item.toString(), null);
                 taggedBuffer.append(item.toString());
             } else if (item instanceof I_VariableDefinition) {
                 //look ahead and check if followed by a sql operator
@@ -194,7 +212,11 @@ public class WhereBinder {
                         if (new VariablePath(((I_VariableDefinition) item).getPath()).hasPredicate()) {
                             taggedStringBuilder.append(expandForCondition(encodeWhereVariable(templateId, comp_id, (I_VariableDefinition) item, true, null)));
                         } else {
-                            taggedStringBuilder.append(expandForCondition(encodeWhereVariable(templateId, comp_id, (I_VariableDefinition) item, false, null)));
+                            //check if a comparison item is a date, then force SQL if any
+                            if (new WhereTemporal(whereItems).containsTemporalItem() || new WhereEvaluation(whereItems).requiresSQL())
+                                taggedStringBuilder.append(expandForCondition(encodeWhereVariable(templateId, comp_id, (I_VariableDefinition) item, true, null)));
+                            else
+                                taggedStringBuilder.append(expandForCondition(encodeWhereVariable(templateId, comp_id, (I_VariableDefinition) item, false, null)));
                         }
                     }
                 }
@@ -270,7 +292,22 @@ public class WhereBinder {
 
 
     //do some temporary hacking for unsupported features
-    private Object hackItem(TaggedStringBuilder taggedBuffer, String item) {
+    private Object hackItem(TaggedStringBuilder taggedBuffer, String item, String castAs) {
+        //this deals with post type casting required f.e. for date comparisons with epoch_offset
+        if (castAs != null){
+            if (isFollowedBySQLConditionalOperator) { //at the moment, only for epoch_offset
+                int variableClosure = taggedBuffer.lastIndexOf("}'");
+                if (variableClosure > 0){
+                    int variableInitial = taggedBuffer.lastIndexOf("\"ehr\".\"entry\".\"entry\" #>>");
+                    if (variableInitial > 0 && variableInitial < variableClosure){
+                        taggedBuffer.insert(variableClosure+"}'".length(), ")::"+castAs);
+                        taggedBuffer.insert(variableInitial, "(");
+                    }
+                }
+            }
+            return item;
+        }
+
         if (sqloperators.contains(item.toUpperCase()))
             return item;
         if (taggedBuffer.toString().contains(I_JoinBinder.COMPOSITION_JOIN) && item.contains("::"))

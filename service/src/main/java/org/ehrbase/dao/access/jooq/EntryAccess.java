@@ -36,6 +36,7 @@ import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.*;
+import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.query.AsyncSqlQuery;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
@@ -112,7 +113,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
 
         //build the list of parameters to recreate the composition
         Map<SystemValue, Object> values = new HashMap<>();
-        values.put(SystemValue.COMPOSER, I_PartyIdentifiedAccess.retrievePartyIdentified(domainAccess, compositionAccess.getComposerId()));
+        values.put(SystemValue.COMPOSER, new PersistedPartyProxy(domainAccess).retrieve(compositionAccess.getComposerId()));
 
         // optional handling for persistent compositions that do not have a context
         Optional<I_ContextAccess> opContextAccess = compositionAccess.getContextId().map(id -> I_ContextAccess.retrieveInstance(domainAccess, id));
@@ -173,7 +174,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
 
         //build the list of parameters to recreate the composition
         Map<SystemValue, Object> values = new HashMap<>();
-        values.put(SystemValue.COMPOSER, I_PartyIdentifiedAccess.retrievePartyIdentified(domainAccess, compositionHistoryAccess.getComposerId()));
+        values.put(SystemValue.COMPOSER, new PersistedPartyProxy(domainAccess).retrieve(compositionHistoryAccess.getComposerId()));
 
         EventContext context = I_ContextAccess.retrieveHistoricalEventContext(domainAccess, compositionHistoryAccess.getId(), compositionHistoryAccess.getSysTransaction());
         if (context == null) {//unchanged context use the current one!

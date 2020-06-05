@@ -21,12 +21,10 @@ import com.nedap.archie.rm.datavalues.DataValue;
 import com.nedap.archie.rminfo.ArchieRMInfoLookup;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.aql.definition.I_VariableDefinition;
-import org.ehrbase.aql.sql.queryImpl.CompositionAttributeQuery;
-import org.ehrbase.aql.sql.queryImpl.I_QueryImpl;
-import org.ehrbase.aql.sql.queryImpl.JsonbEntryQuery;
-import org.ehrbase.aql.sql.queryImpl.VariableAqlPath;
+import org.ehrbase.aql.sql.queryImpl.*;
 import org.ehrbase.aql.sql.queryImpl.attribute.ehr.EhrResolver;
 import org.jooq.Field;
+import org.jooq.impl.DSL;
 
 import java.util.UUID;
 
@@ -79,19 +77,38 @@ class ExpressionField {
 
                     if (jsonbEntryQuery.getItemType() != null){
                         Class itemClass = ArchieRMInfoLookup.getInstance().getClass(jsonbEntryQuery.getItemType());
+
+                        if (itemClass == null && className != null) //this may occur f.e. for itemType 'MULTIPLE'. try we classname
+                            itemClass = ArchieRMInfoLookup.getInstance().getClass(className);
+
                         if (DataValue.class.isAssignableFrom(itemClass)) {
                             VariableAqlPath variableAqlPath = new VariableAqlPath(variableDefinition.getPath());
-                            if (variableAqlPath.getSuffix().equals("value")) { //assumes this is a data value within an ELEMENT
-                                try {
-                                    I_VariableDefinition variableDefinition1 = variableDefinition.clone();
-                                    variableDefinition1.setPath(variableAqlPath.getInfix());
-                                    field = jsonbEntryQuery.makeField(template_id, comp_id, identifier, variableDefinition1, I_QueryImpl.Clause.SELECT);
-                                    jsonbItemPath = jsonbEntryQuery.getJsonbItemPath();
-                                    rootJsonKey = variableAqlPath.getSuffix();
-                                } catch (CloneNotSupportedException e){
-                                    throw new InternalServerException("Couldn't handle variable:"+variableDefinition.toString()+"Code error:"+e);
+                            if (variableAqlPath.getSuffix().equals("value")){
+                                if (className.equals("COMPOSITION")) { //assumes this is a data value within an ELEMENT
+                                    try {
+                                        I_VariableDefinition variableDefinition1 = variableDefinition.clone();
+                                        variableDefinition1.setPath(variableAqlPath.getInfix());
+                                        field = jsonbEntryQuery.makeField(template_id, comp_id, identifier, variableDefinition1, I_QueryImpl.Clause.SELECT);
+                                        jsonbItemPath = jsonbEntryQuery.getJsonbItemPath();
+                                        rootJsonKey = variableAqlPath.getSuffix();
+                                    } catch (CloneNotSupportedException e) {
+                                        throw new InternalServerException("Couldn't handle variable:" + variableDefinition.toString() + "Code error:" + e);
+                                    }
+                                }
+                                else if (jsonbEntryQuery.getItemCategory().equals("ELEMENT") || jsonbEntryQuery.getItemCategory().equals("CLUSTER")){
+                                    int cut = jsonbItemPath.lastIndexOf(",/value");
+                                    if (cut != -1)
+                                        //we keep the path that select the json element value block, and call the formatting function
+                                        //to pass the actual value datatype into the json block
+                                        field = DSL.field("(ehr.js_typed_element_value(" + jsonbItemPath.substring(0, cut) + "}')::jsonb))");
+
+                                    String alias = variableDefinition.getAlias();
+                                    if (alias == null)
+                                        alias = new DefaultColumnId().value(variableDefinition);
+                                    field = field.as(alias);
                                 }
                             }
+
                         }
                     }
                 }

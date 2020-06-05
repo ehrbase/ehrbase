@@ -18,8 +18,6 @@
 
 package org.ehrbase.service;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.google.gson.JsonElement;
 import org.ehrbase.api.definitions.QueryMode;
 import org.ehrbase.api.definitions.ServerConfig;
@@ -103,17 +101,19 @@ public class QueryServiceImp extends BaseService implements QueryService {
     private QueryResultDto formatResult(AqlResult aqlResult, String queryString, boolean explain){
         QueryResultDto dto = new QueryResultDto();
         dto.setExecutedAQL(queryString);
-        dto.setVariables(HashBiMap.create(aqlResult.getVariables()));
+        dto.setVariables(aqlResult.getVariables());
 
         List<Map<String, Object>> resultList = new ArrayList<>();
         for (Record record : aqlResult.getRecords()) {
             Map<String, Object> fieldMap = new LinkedHashMap<>();
             for (Field field : record.fields()) {
-                if (record.getValue(field) instanceof JsonElement){
-                    fieldMap.put(field.getName(), new StructuredString((record.getValue(field)).toString(), StructuredStringFormat.JSON));
+                //process non-hidden variables
+                if (aqlResult.variablesContains(field.getName())) {
+                    if (record.getValue(field) instanceof JsonElement) {
+                        fieldMap.put(field.getName(), new StructuredString((record.getValue(field)).toString(), StructuredStringFormat.JSON));
+                    } else
+                        fieldMap.put(field.getName(), record.getValue(field));
                 }
-                else
-                    fieldMap.put(field.getName(), record.getValue(field));
             }
 
             resultList.add(fieldMap);

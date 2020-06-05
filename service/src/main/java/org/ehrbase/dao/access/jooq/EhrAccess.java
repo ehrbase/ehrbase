@@ -23,14 +23,10 @@ package org.ehrbase.dao.access.jooq;
 
 import com.nedap.archie.rm.archetyped.Archetyped;
 import com.nedap.archie.rm.archetyped.Locatable;
-import com.nedap.archie.rm.changecontrol.OriginalVersion;
-import com.nedap.archie.rm.changecontrol.Version;
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.ehr.EhrStatus;
-import com.nedap.archie.rm.generic.Attestation;
-import com.nedap.archie.rm.generic.AuditDetails;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.*;
 import org.apache.commons.collections4.map.MultiValueMap;
@@ -39,17 +35,15 @@ import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
-import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.dao.access.interfaces.*;
+import org.ehrbase.dao.access.jooq.party.PersistedObjectId;
+import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.tables.records.*;
-import org.ehrbase.jooq.pg.udt.records.CodePhraseRecord;
-import org.ehrbase.jooq.pg.udt.records.DvCodedTextRecord;
 import org.ehrbase.serialisation.RawJson;
 import org.ehrbase.service.BaseService;
-import org.ehrbase.service.PersistentCodePhrase;
 import org.ehrbase.service.RecordedDvCodedText;
 import org.ehrbase.service.RecordedDvText;
 import org.jooq.*;
@@ -98,12 +92,6 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             ehrRecord.setId(ehrId);
         } else {
             ehrRecord.setId(UUID.randomUUID());
-        }
-
-        //check if party already has an STATUS (and therefore EHR)
-        if (I_StatusAccess.retrieveInstanceByParty(this.getDataAccess(), partyId) != null) {
-            log.warn("This party is already associated to an EHR");
-            throw new IllegalArgumentException("Party:" + partyId + " already associated to an EHR, please retrieveInstanceByNamedSubject the associated EHR for updates instead");
         }
 
         // init a new EHR_STATUS with default values to associate with this EHR
@@ -666,7 +654,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
 
     @Override
     public UUID getStatusId() {
-        return I_StatusAccess.retrieveInstanceByEhrId(this.getDataAccess(), this.getId()).getId();
+        return statusAccess.getId();
     }
 
     @Override
@@ -715,8 +703,6 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         setModifiable(status.isModifiable());
         setQueryable(status.isQueryable());
         setOtherDetails(status.getOtherDetails(), null);
-        String subjectId = status.getSubject().getExternalRef().getId().getValue();
-        String subjectNamespace = status.getSubject().getExternalRef().getNamespace();
 
         //Locatable stuff if present
         if (status.getArchetypeNodeId() != null)
@@ -725,11 +711,11 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         if (status.getName() != null)
             setName(status.getName());
 
-        UUID subjectUuid = I_PartyIdentifiedAccess.getOrCreatePartyByExternalRef(getDataAccess(), null, subjectId, BaseService.DEMOGRAPHIC, subjectNamespace, BaseService.PARTY);
+        UUID subjectUuid = new PersistedPartyProxy(getDataAccess()).getOrCreate(status.getSubject());
         setParty(subjectUuid);
     }
 
-    @Override
+    @Override   // get latest status
     public EhrStatus getStatus() {
         EhrStatus status = new EhrStatus();
 
@@ -745,79 +731,13 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         Object name = new RecordedDvCodedText().fromDB(getStatusAccess().getStatusRecord(), STATUS.NAME);
         status.setName(name instanceof DvText ? (DvText)name : (DvCodedText)name);
 
-        status.setUid(new HierObjectId(getStatusAccess().getStatusRecord().getId().toString()));
+        UUID statusId = getStatusAccess().getStatusRecord().getId();
+        status.setUid(new HierObjectId(statusId.toString() + "::" + getServerConfig().getNodename() + "::" +
+                I_StatusAccess.getLatestVersionNumber(this, statusId)));
 
-        I_PartyIdentifiedAccess party = I_PartyIdentifiedAccess.retrieveInstance(getDataAccess(), getParty());
-
-        PartySelf partySelf = new PartySelf(new PartyRef(new HierObjectId(party.getPartyRefValue()), party.getPartyRefNamespace(), null));
+        PartySelf partySelf = (PartySelf)new PersistedPartyProxy(this).retrieve(getParty());
         status.setSubject(partySelf);
 
         return status;
-    }
-
-    @Override
-    public Integer getLastVersionNumberOfStatus(I_DomainAccess domainAccess, UUID ehrStatusId) {
-
-        if (!hasPreviousVersionOfStatus(domainAccess, ehrStatusId))
-            return 1;
-
-        int versionCount = domainAccess.getContext().fetchCount(STATUS_HISTORY, STATUS_HISTORY.ID.eq(ehrStatusId));
-
-        return versionCount + 1;
-    }
-
-    private static boolean hasPreviousVersionOfStatus(I_DomainAccess domainAccess, UUID ehrStatusId) {
-        return domainAccess.getContext().fetchExists(STATUS_HISTORY, STATUS_HISTORY.ID.eq(ehrStatusId));
-    }
-
-    @Override
-    public int getEhrStatusVersionFromTimeStamp(Timestamp time) {
-        UUID statusUid = this.getStatusId();
-        // retrieve current version from status tables
-        I_StatusAccess retStatusAccess = I_StatusAccess.retrieveInstance(this.getDataAccess(), statusUid);
-
-        // retrieve all other versions from status_history and sort by time
-        Result result = getDataAccess().getContext().selectFrom(STATUS_HISTORY)
-                .orderBy(STATUS_HISTORY.SYS_TRANSACTION.asc())  // oldest at top, i.e. [0]
-                .fetch();
-        Collections.reverse(result); // change to latest at top ([0]) for better comparison
-
-        // see 'what version was the top version at moment T?'
-        // first: is time T after current version? then current version is result
-        if (time.after(retStatusAccess.getStatusRecord().getSysTransaction()))
-            return getLastVersionNumberOfStatus(getDataAccess(), statusUid);
-        // second: if not, which one of the historical versions matches?
-        //for (Object historyRecord : result) {
-        for (int i = 0; i < result.size(); i++) {
-            if (result.get(i) instanceof StatusHistoryRecord) {
-                // is time T after this version? then return its version number
-                if (time.after(((StatusHistoryRecord) result.get(i)).getSysTransaction()))
-                    return result.size() - i;   // reverses iterator because order was reversed above and always get non zero
-            } else {
-                throw new InternalServerException("Problem comparing timestamps of EHR_STATUS versions");
-            }
-        }
-
-        throw new ObjectNotFoundException("EHR_STATUS", "Could not find EHR_STATUS version matching given timestamp");
-    }
-
-    @Override
-    public Timestamp getInitialTimeOfVersionedEhrStatus() {
-        Result<StatusHistoryRecord> result = getDataAccess().getContext().selectFrom(STATUS_HISTORY)
-                .where(STATUS_HISTORY.EHR_ID.eq(ehrRecord.getId())) // ehrId from this EhrAccess instance
-                .orderBy(STATUS_HISTORY.SYS_TRANSACTION.asc())  // oldest at top, i.e. [0]
-                .fetch();
-
-        if (!result.isEmpty()) {
-            StatusHistoryRecord statusHistoryRecord = result.get(0); // get oldest
-            return statusHistoryRecord.getSysTransaction();
-        }
-
-        // if haven't returned above use time from latest version (already available in EhrAccess instance)
-        return getStatusAccess().getStatusRecord().getSysTransaction();
-    }
-
-    public Integer getNumberOfEhrStatusVersions() {
-        return getDataAccess().getContext().fetchCount(STATUS_HISTORY, STATUS_HISTORY.EHR_ID.eq(getStatusAccess().getStatusRecord().getEhrId())) + 1;
     }
 }

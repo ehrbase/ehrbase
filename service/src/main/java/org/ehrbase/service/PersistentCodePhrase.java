@@ -25,7 +25,7 @@ public class PersistentCodePhrase {
 
     private CodePhrase rmCodePhrase;
 
-    PersistentCodePhrase(CodePhrase rmCodePhrase) {
+    public PersistentCodePhrase(CodePhrase rmCodePhrase) {
         this.rmCodePhrase = rmCodePhrase;
     }
 

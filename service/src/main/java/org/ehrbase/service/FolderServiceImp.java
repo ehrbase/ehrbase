@@ -330,7 +330,6 @@ public class FolderServiceImp extends BaseService implements FolderService {
     private Optional<FolderDto> createDto(I_FolderAccess folderAccess, int version, boolean isRoot) {
 
         if (folderAccess == null) {
-
             return Optional.empty();
         }
 
