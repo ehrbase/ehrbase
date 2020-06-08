@@ -33,7 +33,10 @@
             <groupId>org.ehrbase.openehr</groupId>
             <artifactId>serialisation</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.ehrbase.openehr</groupId>
+            <artifactId>response-dto</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-xml</artifactId>

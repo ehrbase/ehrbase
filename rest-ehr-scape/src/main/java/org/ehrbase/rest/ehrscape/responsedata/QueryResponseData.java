@@ -18,7 +18,7 @@
 
 package org.ehrbase.rest.ehrscape.responsedata;
 
-import org.ehrbase.api.dto.QueryResultDto;
+import org.ehrbase.response.ehrscape.QueryResultDto;
 
 import java.util.List;
 import java.util.Map;

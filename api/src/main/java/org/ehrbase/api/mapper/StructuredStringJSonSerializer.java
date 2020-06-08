@@ -18,12 +18,12 @@
 
 package org.ehrbase.api.mapper;
 
-import org.ehrbase.api.definitions.StructuredString;
-import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
+import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
+import org.ehrbase.response.ehrscape.StructuredString;
 
 import java.io.IOException;
 

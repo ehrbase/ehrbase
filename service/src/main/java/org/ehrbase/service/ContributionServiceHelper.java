@@ -18,13 +18,13 @@
 
 package org.ehrbase.service;
 
-import com.nedap.archie.rm.generic.AuditDetails;
-import org.ehrbase.api.definitions.CompositionFormat;
-import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.nedap.archie.json.JacksonUtil;
 import com.nedap.archie.rm.RMObject;
 import com.nedap.archie.rm.changecontrol.Version;
+import com.nedap.archie.rm.generic.AuditDetails;
+import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
+import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.serialisation.CanonicalJson;
 
 import java.util.*;

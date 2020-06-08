@@ -151,6 +151,7 @@
         <module>opt</module>
         <module>validation</module>
         <module>terminology</module>
+        <module>response-dto</module>
     </modules>
 
 
@@ -215,6 +216,11 @@
             <dependency>
                 <groupId>org.ehrbase.openehr</groupId>
                 <artifactId>opt-1.4</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ehrbase.openehr</groupId>
+                <artifactId>response-dto</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!-- external -->
