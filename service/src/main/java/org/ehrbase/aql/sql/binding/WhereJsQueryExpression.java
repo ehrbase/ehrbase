@@ -60,10 +60,12 @@ public class WhereJsQueryExpression {
 
     public TaggedStringBuilder closure(){
         if (requiresJSQueryClosure) {
-            if (expression.toString().charAt(expression.length()-1)==')' && !isFollowedBySQLConditionalOperator)
-                expression = closeWithJsQueryTag();
-            else
-                expression.append(JsonbEntryQuery.Jsquery_CLOSE);
+            if (!isFollowedBySQLConditionalOperator) {
+                if (expression.toString().charAt(expression.length() - 1) == ')')
+                    expression = closeWithJsQueryTag();
+                else
+                    expression.append(JsonbEntryQuery.Jsquery_CLOSE);
+            }
             isFollowedBySQLConditionalOperator = false;
             requiresJSQueryClosure = false;
         }
