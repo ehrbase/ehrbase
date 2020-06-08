@@ -16,15 +16,18 @@
  * limitations under the License.
  */
 
-package org.ehrbase.api.mapper;
+package org.ehrbase.application.config;
 
-import org.ehrbase.api.definitions.StructuredString;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.nedap.archie.rm.RMObject;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.ehr.EhrStatus;
+import org.ehrbase.api.definitions.StructuredString;
+import org.ehrbase.api.mapper.StructuredStringJSonSerializer;
+import org.ehrbase.mapper.RmObjectJsonDeSerializer;
+import org.ehrbase.mapper.RmObjectJsonSerializer;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

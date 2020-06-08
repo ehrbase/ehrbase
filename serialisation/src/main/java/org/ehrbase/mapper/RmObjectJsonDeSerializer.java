@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.ehrbase.api.mapper;
+package org.ehrbase.mapper;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
