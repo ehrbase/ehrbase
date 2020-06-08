@@ -728,18 +728,20 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
      * version equals the count of entries in the folder history table plus 1.
      *
      * @param domainAccess - Database connection access context
-     * @param folderId     - UUID of the folder to check for the last version
+     * @param folderId     - ObjectVersionUid of the folder to check for the last version
      * @return Latest version number for the folder
      */
-    public static Integer getLastVersionNumber(I_DomainAccess domainAccess, UUID folderId) {
+    public static Integer getLastVersionNumber(I_DomainAccess domainAccess, ObjectVersionId folderId) {
 
-        if (!hasPreviousVersion(domainAccess, folderId)) {
+        UUID folderUuid = FolderUtils.extractUuidFromObjectVersionId(folderId);
+
+        if (!hasPreviousVersion(domainAccess, folderUuid)) {
             return 1;
         }
         // Get number of entries as the history table of folders
         int versionCount = domainAccess
                 .getContext()
-                .fetchCount(FOLDER_HISTORY, FOLDER_HISTORY.ID.eq(folderId));
+                .fetchCount(FOLDER_HISTORY, FOLDER_HISTORY.ID.eq(folderUuid));
         // Latest version will be entries plus actual entry count (always 1)
         return versionCount + 1;
     }

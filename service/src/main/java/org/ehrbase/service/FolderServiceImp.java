@@ -109,6 +109,9 @@ public class FolderServiceImp extends BaseService implements FolderService {
         return folderId;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Optional<FolderDto> get(ObjectVersionId folderId, String path) {
 
@@ -117,7 +120,7 @@ public class FolderServiceImp extends BaseService implements FolderService {
         if (version == null) {
             // Get the latest object
             folderAccess = I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), folderId);
-            version = getLastVersionNumber(FolderUtils.extractUuidFromObjectVersionId(folderId));
+            version = getLastVersionNumber(folderId);
         } else {
             // Get timestamp for version
             Timestamp versionTimestamp = FolderAccess.getTimestampForVersion(getDataAccess(), folderId, version);
@@ -133,16 +136,16 @@ public class FolderServiceImp extends BaseService implements FolderService {
         );
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public Optional<FolderDto> getLatest(ObjectVersionId folderId, String path) {
+    public Optional<FolderDto> getByTimeStamp(ObjectVersionId folderId, Timestamp timestamp, String path) {
 
-        I_FolderAccess folderAccess = I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), folderId);
-        int version = FolderAccess.getLastVersionNumber(getDataAccess(), FolderUtils.extractUuidFromObjectVersionId(folderId));
+        // Get the latest entry for folder
 
-        I_FolderAccess folderAccessWithExtractedPath = extractPath(folderAccess, path);
-        return createDto(folderAccessWithExtractedPath, version, path == null);
+
     }
-
 
     @Override
     public Optional<FolderDto> retrieveLatest(UUID ehrId, String path) {
@@ -308,7 +311,7 @@ public class FolderServiceImp extends BaseService implements FolderService {
      * {@inheritDoc}
      */
     @Override
-    public Integer getLastVersionNumber(UUID folderId) {
+    public Integer getLastVersionNumber(ObjectVersionId folderId) {
 
         return FolderAccess.getLastVersionNumber(getDataAccess(), folderId);
     }

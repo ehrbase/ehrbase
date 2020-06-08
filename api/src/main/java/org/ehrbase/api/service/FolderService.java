@@ -44,9 +44,39 @@ public interface FolderService extends BaseService {
      */
     ObjectVersionId create(UUID ehrId, Folder content);
 
+    /**
+     * Retrieves a folder from database identified by object_version_uid and
+     * extracts the given sub path of existing. If the object_version_uid does
+     * not contain a version number the latest entry will be returned. A path
+     * with common unix like root notation '/' will be treated as if there is
+     * no path specified and the full tree will be returned.
+     *
+     * @param folderId - object_version_uid for target folder
+     * @param path - Optional path to sub folder to extract
+     * @return FolderDTO for further usage in upper layers
+     */
     Optional<FolderDto> get(ObjectVersionId folderId, String path);
 
-    Optional<FolderDto> getLatest(ObjectVersionId folderID, String path);
+    /**
+     * Fetches the latest entry from database. This will be
+     * @param folderId - object_version_uid for target folder
+     * @param path - Optional path to sub folder to extract
+     * @return FolderDTO for further usage in other layers
+     */
+    Optional<FolderDto> getLatest(ObjectVersionId folderId, String path);
+
+    /**
+     * Fetches an folder entry from database identified by the root folder uid
+     * and the given timestamp. If the current version has ben modified after
+     * the given timestamp the folder will be searched inside the folder history
+     * table.
+     *
+     * @param folderId - object_version_uid for target folder
+     * @param timestamp - Timestamp of folder version to find
+     * @param path - Optional path to sub folder to extract
+     * @return FolderDTO for further usage in other layers
+     */
+    Optional<FolderDto> getByTimeStamp(ObjectVersionId folderId, Timestamp timestamp, String path);
 
     /**
      * Returns a versioned folder object by target version number. If the
@@ -122,7 +152,8 @@ public interface FolderService extends BaseService {
      * @return Version number of the latest folder entry
      * @throws ObjectNotFoundException - Folder entry does not exist
      */
-    Integer getLastVersionNumber(UUID folderId);
+    Integer getLastVersionNumber(ObjectVersionId folderId);
+
 
     /**
      * Searches for the folder version that was the current version at the

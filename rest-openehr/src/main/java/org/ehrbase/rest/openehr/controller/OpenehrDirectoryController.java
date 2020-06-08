@@ -123,7 +123,7 @@ public class OpenehrDirectoryController extends BaseController {
         );
 
         // Fetch inserted folder for response data
-        Optional<FolderDto> newFolder = this.folderService.retrieve(extractUuidFromObjectVersionId(folderId), 1, null);
+        Optional<FolderDto> newFolder = this.folderService.get(folderId, null);
 
         if (newFolder.isEmpty()) {
             throw new InternalServerException(
@@ -230,13 +230,13 @@ public class OpenehrDirectoryController extends BaseController {
         }
 
         // Get directory root entry for ehr
-        UUID rootDirectoryId = ehrService.getDirectoryId(ehrId);
+        ObjectVersionId directoyId = new ObjectVersionId(ehrService.getDirectoryId(ehrId).toString());
         final Optional<FolderDto> foundFolder;
         // Get the folder entry from database
         if (versionAtTime != null) {
-            foundFolder = folderService.retrieveByTimestamp(rootDirectoryId, Timestamp.from(versionAtTime.toInstant()), path);
+            foundFolder = folderService.getByTimeStamp(directoyId, Timestamp.from(versionAtTime.toInstant()), path);
         } else {
-            foundFolder = folderService.retrieveLatest(ehrId, path);
+            foundFolder = folderService.getLatest(directoyId, path);
         }
         if (foundFolder.isEmpty()) {
             throw new ObjectNotFoundException("folder",
@@ -298,7 +298,7 @@ public class OpenehrDirectoryController extends BaseController {
             @ApiParam(value = REQ_CONTENT_TYPE_BODY) @RequestHeader(value = CONTENT_TYPE) String contentType,
             @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
             @ApiParam(value = REQ_PREFER) @RequestHeader(value = PREFER, required = false, defaultValue = RETURN_MINIMAL) String prefer,
-            @ApiParam(value = "{preceding_version_uid}", required = true) @RequestHeader(value = IF_MATCH) String ifMatch,
+            @ApiParam(value = "{preceding_version_uid}", required = true) @RequestHeader(value = IF_MATCH) ObjectVersionId ifMatch,
             @ApiParam(value = "EHR identifier from resource path after ehr/", required = true) @PathVariable(value = "ehr_id") UUID ehrId,
             @ApiParam(value = "Update data for the target FOLDER") @RequestBody Folder folder,
             @RequestUrl String requestUrl
@@ -312,11 +312,9 @@ public class OpenehrDirectoryController extends BaseController {
             );
         }
 
-        VersionUidHelper versionUidHelper = new VersionUidHelper(ifMatch);
-        UUID folderId = versionUidHelper.getUuid();
-        int latestVersion = this.folderService.getLastVersionNumber(folderId);
+        int latestVersion = this.folderService.getLastVersionNumber(ifMatch);
 
-        if (versionUidHelper.getVersion() < latestVersion) {
+        if (Folder.getVersion() < latestVersion) {
             // Provided version is not the latest
             versionUidHelper.setVersion(latestVersion);
 
