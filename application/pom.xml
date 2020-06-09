@@ -82,7 +82,7 @@
             <artifactId>api</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.ehrbase.ehrbase_client_library</groupId>
+            <groupId>com.github.ehrbase.openEHR_SDK</groupId>
             <artifactId>serialisation</artifactId>
         </dependency>
         <dependency>

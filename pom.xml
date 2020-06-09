@@ -122,7 +122,7 @@
         <swagger.version>1.5.23</swagger.version>
         <swagger-snapshot.version>2.0.0-rc2</swagger-snapshot.version>
         <postgressql.version>42.2.5</postgressql.version>
-        <ehrbase.sdk.version>5c96184</ehrbase.sdk.version>
+        <ehrbase.sdk.version>d97d209</ehrbase.sdk.version>
         <flyway.version>6.2.0</flyway.version>
         <database.name>ehrbase</database.name>
         <database.user>ehrbase</database.user>
@@ -192,32 +192,32 @@
 
             <!-- sdk -->
             <dependency>
-                <groupId>com.github.ehrbase.ehrbase_client_library</groupId>
+                <groupId>com.github.ehrbase.openEHR_SDK</groupId>
                 <artifactId>response-dto</artifactId>
                 <version>${ehrbase.sdk.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.github.ehrbase.ehrbase_client_library</groupId>
+                <groupId>com.github.ehrbase.openEHR_SDK</groupId>
                 <artifactId>opt-1.4</artifactId>
                 <version>${ehrbase.sdk.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.github.ehrbase.ehrbase_client_library</groupId>
+                <groupId>com.github.ehrbase.openEHR_SDK</groupId>
                 <artifactId>serialisation</artifactId>
                 <version>${ehrbase.sdk.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.github.ehrbase.ehrbase_client_library</groupId>
+                <groupId>com.github.ehrbase.openEHR_SDK</groupId>
                 <artifactId>terminology</artifactId>
                 <version>${ehrbase.sdk.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.github.ehrbase.ehrbase_client_library</groupId>
+                <groupId>com.github.ehrbase.openEHR_SDK</groupId>
                 <artifactId>validation</artifactId>
                 <version>${ehrbase.sdk.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.github.ehrbase.ehrbase_client_library</groupId>
+                <groupId>com.github.ehrbase.openEHR_SDK</groupId>
                 <artifactId>test-data</artifactId>
                 <version>${ehrbase.sdk.version}</version>
                 <scope>test</scope>
