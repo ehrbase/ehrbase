@@ -43,7 +43,7 @@ import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.jooq.pg.enums.EntryType;
 import org.ehrbase.jooq.pg.tables.records.EntryHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EntryRecord;
-import org.ehrbase.serialisation.RawJson;
+import org.ehrbase.serialisation.dbencoding.RawJson;
 import org.ehrbase.service.IntrospectService;
 import org.jooq.*;
 import org.jooq.impl.DSL;

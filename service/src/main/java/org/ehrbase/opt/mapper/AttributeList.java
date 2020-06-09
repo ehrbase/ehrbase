@@ -24,7 +24,7 @@ package org.ehrbase.opt.mapper;
 
 import org.ehrbase.opt.AttributeDef;
 import org.ehrbase.opt.ValuePoint;
-import org.ehrbase.ehr.encode.wrappers.SnakeCase;
+import org.ehrbase.serialisation.util.SnakeCase;
 
 import java.util.ArrayList;
 import java.util.HashMap;

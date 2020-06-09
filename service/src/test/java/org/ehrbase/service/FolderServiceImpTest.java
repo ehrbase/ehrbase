@@ -4,7 +4,7 @@ import com.nedap.archie.rm.directory.Folder;
 import org.apache.commons.io.IOUtils;
 import org.ehrbase.response.ehrscape.StructuredString;
 import org.ehrbase.response.ehrscape.StructuredStringFormat;
-import org.ehrbase.serialisation.CanonicalJson;
+import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
 import org.ehrbase.test_data.folder.FolderTestDataCanonicalJson;
 import org.junit.Before;
 import org.junit.Ignore;

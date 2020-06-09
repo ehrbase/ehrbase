@@ -21,7 +21,7 @@ package org.ehrbase.rest.openehr.controller;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.*;
 import org.ehrbase.response.ehrscape.CompositionFormat;
-import org.ehrbase.serialisation.UnmarshalException;
+import org.ehrbase.serialisation.exception.UnmarshalException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;

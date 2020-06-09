@@ -25,7 +25,7 @@ import com.nedap.archie.rm.changecontrol.Version;
 import com.nedap.archie.rm.generic.AuditDetails;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.response.ehrscape.CompositionFormat;
-import org.ehrbase.serialisation.CanonicalJson;
+import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
 
 import java.util.*;
 

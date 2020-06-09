@@ -24,19 +24,16 @@ package org.ehrbase.aql.sql.postprocessing;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import org.ehrbase.aql.sql.QuerySteps;
 import org.ehrbase.aql.sql.binding.JsonbBlockDef;
-import org.ehrbase.ehr.encode.EncodeUtilArchie;
-import org.ehrbase.ehr.encode.wrappers.json.I_DvTypeAdapter;
-import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
-import org.ehrbase.ehr.encode.rawjson.LightRawJsonEncoder;
-import org.jooq.DSLContext;
-import org.jooq.Field;
+import org.ehrbase.serialisation.dbencoding.EncodeUtilArchie;
+import org.ehrbase.serialisation.dbencoding.rawjson.LightRawJsonEncoder;
 import org.jooq.Record;
 import org.jooq.Result;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Created by christian on 2/21/2017.

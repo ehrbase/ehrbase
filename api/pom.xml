@@ -30,11 +30,11 @@
     <artifactId>api</artifactId>
     <dependencies>
         <dependency>
-            <groupId>org.ehrbase.openehr</groupId>
+            <groupId>com.github.ehrbase.ehrbase_client_library</groupId>
             <artifactId>serialisation</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.ehrbase.openehr</groupId>
+            <groupId>com.github.ehrbase.ehrbase_client_library</groupId>
             <artifactId>response-dto</artifactId>
         </dependency>
         <dependency>
