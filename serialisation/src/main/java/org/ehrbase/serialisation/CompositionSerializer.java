@@ -1072,6 +1072,16 @@ public class CompositionSerializer {
 
             ltree.put(TAG_VALUE, valuemap);
         }
+        else if (element.getNullFlavour() != null){
+            Map<String, Object> valuemap = newPathMap();
+
+            putObject(null, element, valuemap, TAG_NULL_FLAVOUR, new ElementValue(element.getNullFlavour()).normalize());
+
+            //set path
+            encodePathItem(valuemap, null);
+
+            ltree.put(TAG_VALUE, valuemap);
+        }
 
         return ltree;
     }
