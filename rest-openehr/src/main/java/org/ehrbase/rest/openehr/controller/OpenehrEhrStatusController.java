@@ -20,7 +20,6 @@ package org.ehrbase.rest.openehr.controller;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.ehr.EhrStatus;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import io.swagger.annotations.*;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
@@ -28,8 +27,8 @@ import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.service.EhrService;
-import org.ehrbase.rest.openehr.response.EhrStatusResponseData;
-import org.ehrbase.rest.openehr.response.InternalResponse;
+import org.ehrbase.response.openehr.EhrStatusResponseData;
+import org.ehrbase.rest.openehr.util.InternalResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;

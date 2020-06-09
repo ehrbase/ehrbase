@@ -18,17 +18,6 @@
 
 package org.ehrbase.rest.ehrscape.controller;
 
-import org.ehrbase.api.definitions.CompositionFormat;
-import org.ehrbase.api.dto.EhrStatusDto;
-import org.ehrbase.api.exception.DuplicateObjectException;
-import org.ehrbase.api.exception.InvalidApiParameterException;
-import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.api.service.EhrService;
-import org.ehrbase.rest.ehrscape.controller.OperationNotesResourcesReader.ApiNotes;
-import org.ehrbase.rest.ehrscape.responsedata.Action;
-import org.ehrbase.rest.ehrscape.responsedata.EhrResponseData;
-import org.ehrbase.rest.ehrscape.responsedata.Meta;
-import org.ehrbase.rest.ehrscape.responsedata.RestHref;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.nedap.archie.rm.ehr.EhrStatus;
@@ -40,6 +29,17 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.commons.lang3.StringUtils;
+import org.ehrbase.api.exception.DuplicateObjectException;
+import org.ehrbase.api.exception.InvalidApiParameterException;
+import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.service.EhrService;
+import org.ehrbase.response.ehrscape.CompositionFormat;
+import org.ehrbase.response.ehrscape.EhrStatusDto;
+import org.ehrbase.rest.ehrscape.controller.OperationNotesResourcesReader.ApiNotes;
+import org.ehrbase.rest.ehrscape.responsedata.Action;
+import org.ehrbase.rest.ehrscape.responsedata.EhrResponseData;
+import org.ehrbase.rest.ehrscape.responsedata.Meta;
+import org.ehrbase.rest.ehrscape.responsedata.RestHref;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
