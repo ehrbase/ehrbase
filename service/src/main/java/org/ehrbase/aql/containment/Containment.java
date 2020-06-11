@@ -34,7 +34,7 @@ public class Containment {
     private String archetypeId;
     private String className;
     private String path;
-    private Containment enclosingContainment;
+    private Containment enclosingContainment; //parent containment
 
     public Containment(Containment enclosingContainment) {
         this.enclosingContainment = enclosingContainment;

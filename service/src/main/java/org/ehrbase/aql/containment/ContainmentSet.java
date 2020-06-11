@@ -23,6 +23,8 @@ package org.ehrbase.aql.containment;
 
 import org.apache.commons.collections4.set.ListOrderedSet;
 
+import java.util.List;
+
 /**
  * Define the set of containments for a CONTAINS clause
  * <p>
@@ -34,6 +36,7 @@ import org.apache.commons.collections4.set.ListOrderedSet;
  */
 public class ContainmentSet {
 
+    private String label;
     private int serial; //for debugging purpose only
     private Containment enclosing;
     private ContainmentSet parentSet;
@@ -48,6 +51,10 @@ public class ContainmentSet {
 
     public void add(Containment containment) {
         containmentList.add(containment);
+    }
+
+    public void addAll(List<Containment> containments) {
+        containmentList.addAll(containments);
     }
 
     public void add(String operator) {
@@ -100,10 +107,10 @@ public class ContainmentSet {
 
 //        operatorSlot = containmentList.size() - 1;
 
-        if (operatorSlot < 0)
-            throw new IllegalArgumentException("Cannot insert operator:" + op);
-
-        containmentList.add(operatorSlot, op);
+//        if (operatorSlot < 0)
+//            throw new IllegalArgumentException("Cannot insert operator:" + op);
+//
+//        containmentList.add(operatorSlot, op);
     }
 
     public String toString() {

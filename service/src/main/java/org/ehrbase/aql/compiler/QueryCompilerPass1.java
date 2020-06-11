@@ -32,10 +32,7 @@ import org.ehrbase.aql.definition.I_FromEntityDefinition;
 import org.ehrbase.aql.parser.AqlBaseListener;
 import org.ehrbase.aql.parser.AqlParser;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.List;
+import java.util.*;
 
 /**
  * AQL compilation pass 1<br>
@@ -54,6 +51,10 @@ public class QueryCompilerPass1 extends AqlBaseListener {
     private IdentifierMapper identifierMapper = new IdentifierMapper();
     private Containment currentContainment = null;
     private AstContainment astContainment = null;
+
+    private Map<String, ContainmentSet> containmentSetMap = new HashMap<>();
+
+    private Map<String, ContainsCheck> containmentCheckResult = new LinkedHashMap<>();
 
     private Deque<ContainmentSet> containmentStack = new ArrayDeque<>();
 
@@ -168,13 +169,14 @@ public class QueryCompilerPass1 extends AqlBaseListener {
     public void exitArchetypedClassExpr(AqlParser.ArchetypedClassExprContext archetypedClassExprContext) {
         //CHC, 160808: make classname case insensitive
         String className = archetypedClassExprContext.IDENTIFIER(0).getSymbol().getText().toUpperCase();
-
         String symbol = archetypedClassExprContext.IDENTIFIER(1).getSymbol().getText();
-
         String archetypeId = archetypedClassExprContext.ARCHETYPEID().getText();
-
         Containment containment = new Containment(className, symbol, archetypeId);
+
         identifierMapper.add(containment);
+
+        containmentSetMap.put(archetypedClassExprContext.getText(), new ExpressionEval(archetypedClassExprContext, identifierMapper).containmentSet(containment));
+
 
         //requires a CONTAINS expression!
         if (inContainedSet && containLevel > 0) {
@@ -217,6 +219,23 @@ public class QueryCompilerPass1 extends AqlBaseListener {
     @Override
     public void exitContainExpressionBool(AqlParser.ContainExpressionBoolContext containExpressionBoolContext) {
 
+        //evaluate the containment expression
+        if (containExpressionBoolContext.OPEN_PAR() != null && containExpressionBoolContext.CLOSE_PAR() != null){
+            List<Object> objects = new ArrayList<>();
+            for (ParseTree token: containExpressionBoolContext.children){
+                if (token.getText().matches("\\(|\\)"))
+                    objects.add(token.getText());
+                else if (token instanceof AqlParser.ContainsExpressionContext){
+                    AqlParser.ContainsExpressionContext containsExpressionContext = (AqlParser.ContainsExpressionContext)token;
+                    objects.add(containmentCheckResult.get(containsExpressionContext.getText()));
+                }
+            }
+            containmentCheckResult.put(containExpressionBoolContext.getText(), new ComplexContainsCheck("zz", objects));
+        }
+        else
+            containmentCheckResult.put(containExpressionBoolContext.getText(), new SimpleChainedCheck("zz", containmentSetMap.get(containExpressionBoolContext.getText())));
+
+
         if (containExpressionBoolContext.CLOSE_PAR() != null) {
             logger.debug("---- CLOSING GROUP:" + setLevel);
             setLevel--;
@@ -238,8 +257,18 @@ public class QueryCompilerPass1 extends AqlBaseListener {
 
     @Override
     public void exitContainsExpression(AqlParser.ContainsExpressionContext containsExpressionContext) {
-        if (currentContainment != null)
-            currentContainment = currentContainment.getEnclosingContainment();
+        ExpressionEval eval = new ExpressionEval(containsExpressionContext, identifierMapper);
+        //check if expression is boolean or a single contains chain
+        if (!eval.isSingleChain()) {
+
+            List<Object> developedExpression = eval.developedExpression(containmentCheckResult);
+
+            if (developedExpression.isEmpty())
+                throw new IllegalStateException("Could not develop:"+containsExpressionContext.getText());
+
+            containmentCheckResult.put(containsExpressionContext.getText(), new ComplexContainsCheck(containsExpressionContext.getText(), developedExpression));
+        }
+
 
         if (containsExpressionContext.AND() != null || containsExpressionContext.OR() != null || containsExpressionContext.XOR() != null) {
             String operator = containsExpressionContext.AND() != null ? "AND" :
