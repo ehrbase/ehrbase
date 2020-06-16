@@ -79,38 +79,6 @@ public interface FolderService extends BaseService {
     Optional<FolderDto> getByTimeStamp(ObjectVersionId folderId, Timestamp timestamp, String path);
 
     /**
-     * Returns a versioned folder object by target version number. If the
-     * version number is missing the latest version will be fetched from
-     * folder table. If the version is older than the last one from folder
-     * table the target folder will be fetched from folder_history.
-     *
-     * @param folderId - UUID of the folder to fetch
-     * @param version - Target version to fetch
-     * @param path - Path of sub folder to get
-     * @return Data transfer object to return to client
-     */
-    Optional<FolderDto> retrieve(UUID folderId, Integer version, String path);
-
-    Optional<FolderDto> retrieveLatest(UUID ehrId, String path);
-
-    /**
-     * Returns a versioned folder object which has been or is current at the
-     * given timestamp. Therefore the folder table must be queried if there is
-     * an actual folder with that uuid that has been created before the given
-     * timestamp. Otherwise the folder_history table will be queried to find
-     * a folder created after that timestamp.
-     *
-     * @param folderId - UUID of the target folder
-     * @param timestamp - Given timestamp to look for an actual folder
-     * @return - Created folder object
-     */
-    Optional<FolderDto> retrieveByTimestamp(
-            UUID folderId,
-            Timestamp timestamp,
-            String path
-    );
-
-    /**
      * Updates a target folder entry identified by the given folderId with new
      * content. The content string will be serialized from the given source
      * format.
@@ -120,7 +88,7 @@ public interface FolderService extends BaseService {
      * @param ehrId - EHR id for contribution creation
      * @return Updated folder entry
      */
-    Optional<FolderDto> update(UUID folderId, Folder update, UUID ehrId);
+    Optional<FolderDto> update(ObjectVersionId folderId, Folder update, UUID ehrId);
 
     /**
      * Marks a given folder as deleted and moves it into the history table. The
@@ -130,7 +98,7 @@ public interface FolderService extends BaseService {
      * @param folderId - Id of the target folder
      * @return Timestamp of successful delete operation
      */
-    LocalDateTime delete(UUID folderId);
+    LocalDateTime delete(ObjectVersionId folderId);
 
     /**
      * Serializes folder content from request body into a structured string

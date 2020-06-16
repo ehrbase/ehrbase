@@ -161,7 +161,7 @@ public class OpenehrDirectoryController extends BaseController {
     public ResponseEntity<DirectoryResponseData> getFolder(
             @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
             @ApiParam(value = "EHR identifier from resource path after ehr/", required = true) @PathVariable(value = "ehr_id") UUID ehrId,
-            @ApiParam(value = "DIRECTORY identifier from resource path after directory/", required = true) @PathVariable(value = "version_uid") ObjectVersionId versionUid,
+            @ApiParam(value = "DIRECTORY identifier from resource path after directory/", required = true) @PathVariable(value = "version_uid") ObjectVersionId folderId,
             @ApiParam(value = "Path parameter to specify a subfolder at directory") @RequestParam(value = "path", required = false) String path
     ) {
 
@@ -180,14 +180,14 @@ public class OpenehrDirectoryController extends BaseController {
 
         // Get the folder entry from database
         Optional<FolderDto> foundFolder = folderService.get(
-                versionUid,
+                folderId,
                 path
         );
         if (foundFolder.isEmpty()) {
             throw new ObjectNotFoundException(
                     "folder",
                     "The FOLDER with id "
-                    + versionUid.toString()
+                    + folderId.toString()
                     + " does not exist."
             );
         }
@@ -230,13 +230,13 @@ public class OpenehrDirectoryController extends BaseController {
         }
 
         // Get directory root entry for ehr
-        ObjectVersionId directoyId = new ObjectVersionId(ehrService.getDirectoryId(ehrId).toString());
+        ObjectVersionId directoryId = new ObjectVersionId(ehrService.getDirectoryId(ehrId).toString());
         final Optional<FolderDto> foundFolder;
         // Get the folder entry from database
         if (versionAtTime != null) {
-            foundFolder = folderService.getByTimeStamp(directoyId, Timestamp.from(versionAtTime.toInstant()), path);
+            foundFolder = folderService.getByTimeStamp(directoryId, Timestamp.from(versionAtTime.toInstant()), path);
         } else {
-            foundFolder = folderService.getLatest(directoyId, path);
+            foundFolder = folderService.getLatest(directoryId, path);
         }
         if (foundFolder.isEmpty()) {
             throw new ObjectNotFoundException("folder",
@@ -298,7 +298,7 @@ public class OpenehrDirectoryController extends BaseController {
             @ApiParam(value = REQ_CONTENT_TYPE_BODY) @RequestHeader(value = CONTENT_TYPE) String contentType,
             @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
             @ApiParam(value = REQ_PREFER) @RequestHeader(value = PREFER, required = false, defaultValue = RETURN_MINIMAL) String prefer,
-            @ApiParam(value = "{preceding_version_uid}", required = true) @RequestHeader(value = IF_MATCH) ObjectVersionId ifMatch,
+            @ApiParam(value = "{preceding_version_uid}", required = true) @RequestHeader(value = IF_MATCH) ObjectVersionId folderId,
             @ApiParam(value = "EHR identifier from resource path after ehr/", required = true) @PathVariable(value = "ehr_id") UUID ehrId,
             @ApiParam(value = "Update data for the target FOLDER") @RequestBody Folder folder,
             @RequestUrl String requestUrl
@@ -312,19 +312,25 @@ public class OpenehrDirectoryController extends BaseController {
             );
         }
 
-        int latestVersion = this.folderService.getLastVersionNumber(ifMatch);
+        int latestVersion = this.folderService.getLastVersionNumber(folderId);
+        Integer requestVersion = getVersionFromObjectVersionId(folderId);
 
-        if (Folder.getVersion() < latestVersion) {
-            // Provided version is not the latest
-            versionUidHelper.setVersion(latestVersion);
+        if (requestVersion != null && requestVersion < latestVersion) {
+
+            String latestVersionUidString = String.format(
+                    "%s::%s::%s",
+                    extractUuidFromObjectVersionId(folderId),
+                    this.ehrService.getServerConfig().getNodename(),
+                    latestVersion
+            );
 
             throw new PreconditionFailedException(
                     "If-Match version_uid does not match latest version.",
-                    versionUidHelper.toString(),
+                    latestVersionUidString,
                     encodePath(getBaseEnvLinkURL()
                             + "/rest/openehr/v1/ehr/"
                             + ehrId.toString()
-                            + "/directory/" + versionUidHelper.toString()
+                            + "/directory/" + latestVersionUidString
                     )
             );
         }
@@ -381,7 +387,7 @@ public class OpenehrDirectoryController extends BaseController {
             @ApiParam(value = REQ_OPENEHR_VERSION) @RequestHeader(value = "openEHR-VERSION", required = false) String openEhrVersion,
             @ApiParam(value = REQ_OPENEHR_AUDIT) @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openEhrAuditDetails,
             @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
-            @ApiParam(value = "{preceding_version_uid}", required = true) @RequestHeader(value = IF_MATCH) String ifMatch,
+            @ApiParam(value = "{preceding_version_uid}", required = true) @RequestHeader(value = IF_MATCH) ObjectVersionId folderId,
             @ApiParam(value = "EHR identifier from resource path after ehr/", required = true) @PathVariable(value = "ehr_id") String ehrIdString
     ) {
         UUID ehrId = getEhrUuid(ehrIdString);
@@ -391,26 +397,31 @@ public class OpenehrDirectoryController extends BaseController {
                     "FOLDER");
         }
 
-        VersionUidHelper versionUidHelper = new VersionUidHelper(ifMatch);
+        int latestVersion = this.folderService.getLastVersionNumber(folderId);
+        Integer requestVersion = getVersionFromObjectVersionId(folderId);
 
-        int latestVersion = this.folderService.getLastVersionNumber(versionUidHelper.getUuid());
+        if (requestVersion != null && requestVersion < latestVersion) {
 
-        if (versionUidHelper.getVersion() < latestVersion) {
             // Provided version is not the latest
-            versionUidHelper.setVersion(latestVersion);
+            String latestVersionIdString = String.format(
+                    "%s::%s::%s",
+                    extractUuidFromObjectVersionId(folderId),
+                    this.ehrService.getServerConfig().getNodename(),
+                    latestVersion
+            );
 
             throw new PreconditionFailedException(
                     "If-Match version_uid does not match latest version.",
-                    versionUidHelper.toString(),
+                    latestVersionIdString,
                     encodePath(getBaseEnvLinkURL()
                             + "/rest/openehr/v1/ehr/"
                             + ehrId.toString()
-                            + "/directory/" + versionUidHelper.toString()
+                            + "/directory/" + latestVersionIdString
                     )
             );
         }
 
-        this.folderService.delete(VersionUidHelper.extractUUID(ifMatch));
+        this.folderService.delete(folderId);
         return createDirectoryResponse(HttpMethod.DELETE, null, accept, null, ehrId);
     }
 
@@ -497,6 +508,18 @@ public class OpenehrDirectoryController extends BaseController {
             return UUID.fromString(value);
         }
         return UUID.fromString(value.substring(0, index));
+    }
+
+    private Integer getVersionFromObjectVersionId(ObjectVersionId versionId) {
+        String value = versionId.getValue();
+        if (value == null) {
+            return null;
+        }
+        int index = value.lastIndexOf("::");
+        if (index < 0 || index == value.indexOf("::")) {
+            // No or only one occurrence of :: found
+            return null;
+        } return Integer.parseInt(value.substring(index + 2));
     }
 }
 
