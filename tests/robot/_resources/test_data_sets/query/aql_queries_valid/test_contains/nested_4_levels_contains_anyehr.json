@@ -1,0 +1,5 @@
+{
+  "q": "SELECT c/uid/value, cluster2/items[at0002]/value FROM EHR e CONTAINS COMPOSITION c[openEHR-EHR-COMPOSITION.nesting.v1] CONTAINS SECTION [openEHR-EHR-SECTION.nested.v1] CONTAINS CLUSTER [openEHR-EHR-CLUSTER.nested.v1] CONTAINS CLUSTER cluster2[openEHR-EHR-CLUSTER.nested2.v1] WHERE cluster2/items[at0002]/value/magnitude > 5",
+  "offset": 0,
+  "fetch": 20
+}

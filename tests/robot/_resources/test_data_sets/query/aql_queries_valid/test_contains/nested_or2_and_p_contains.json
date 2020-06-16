@@ -1,0 +1,8 @@
+{
+  "q": "SELECT c/uid/value, cluster2/items[at0002]/value FROM EHR e[ehr_id/value=$ehr_id] CONTAINS COMPOSITION c[openEHR-EHR-COMPOSITION.nesting.v1] CONTAINS (SECTION s[openEHR-EHR-SECTION.nested.v1] OR (CLUSTER cluster2[openEHR-EHR-CLUSTER.nested2.v1] AND CLUSTER cluster[openEHR-EHR-CLUSTER.nested.v1])) WHERE cluster2/items[at0002]/value/magnitude > 5",
+  "offset": 0,
+  "fetch": 20,
+  "query_parameters": {
+    "ehr_id": "__set_by_testehr__"
+  }
+}
