@@ -18,11 +18,11 @@
 
 package org.ehrbase.api.service;
 
-import org.ehrbase.api.definitions.CompositionFormat;
 import org.ehrbase.api.definitions.OperationalTemplateFormat;
-import org.ehrbase.api.definitions.StructuredString;
-import org.ehrbase.api.dto.TemplateMetaDataDto;
-import org.ehrbase.api.dto.WebTemplate;
+import org.ehrbase.response.ehrscape.CompositionFormat;
+import org.ehrbase.response.ehrscape.StructuredString;
+import org.ehrbase.response.ehrscape.TemplateMetaDataDto;
+import org.ehrbase.response.ehrscape.WebTemplate;
 
 import java.util.List;
 

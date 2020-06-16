@@ -19,7 +19,7 @@
 package org.ehrbase.jooq.binding;
 
 import com.nedap.archie.rm.datastructures.ItemStructure;
-import org.ehrbase.serialisation.RawJson;
+import org.ehrbase.serialisation.dbencoding.RawJson;
 import org.jooq.*;
 import org.jooq.conf.ParamType;
 import org.jooq.impl.DSL;

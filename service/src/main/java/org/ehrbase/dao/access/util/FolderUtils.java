@@ -5,7 +5,7 @@ import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.dao.access.interfaces.I_FolderAccess;
-import org.ehrbase.serialisation.RawJson;
+import org.ehrbase.serialisation.dbencoding.RawJson;
 import org.jooq.JSONB;
 import org.postgresql.util.PGobject;
 

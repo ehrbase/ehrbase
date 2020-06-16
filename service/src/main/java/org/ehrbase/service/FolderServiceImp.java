@@ -23,37 +23,33 @@ import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import org.ehrbase.api.definitions.ServerConfig;
-import org.ehrbase.api.definitions.StructuredString;
-import org.ehrbase.api.definitions.StructuredStringFormat;
-import org.ehrbase.api.dto.FolderDto;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.service.FolderService;
-import org.ehrbase.api.util.VersionUidHelper;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
 import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
 import org.ehrbase.dao.access.interfaces.I_EhrAccess;
 import org.ehrbase.dao.access.interfaces.I_FolderAccess;
 import org.ehrbase.dao.access.jooq.FolderAccess;
-import org.ehrbase.dao.access.jooq.FolderHistoryAccess;
 import org.ehrbase.dao.access.util.FolderUtils;
-import org.ehrbase.serialisation.CanonicalJson;
-import org.ehrbase.serialisation.CanonicalXML;
+import org.ehrbase.response.ehrscape.FolderDto;
+import org.ehrbase.response.ehrscape.StructuredString;
+import org.ehrbase.response.ehrscape.StructuredStringFormat;
+import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
+import org.ehrbase.serialisation.xmlencoding.CanonicalXML;
 import org.joda.time.DateTime;
 import org.jooq.DSLContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 import static org.ehrbase.dao.access.util.FolderUtils.checkSiblingNameConflicts;
 
 @Service
@@ -313,17 +309,19 @@ public class FolderServiceImp extends BaseService implements FolderService {
         }
 
         Folder folder = createFolderObject(folderAccess);
-        VersionUidHelper versionUidHelper = new VersionUidHelper(
-                folderAccess.getFolderId().toString()
-                        + "::"
-                        + this.getServerConfig().getNodename()
-                        + "::" + version);
         // Set the root uid to a valid version_uid
         if (isRoot) {
-            folder.setUid(new ObjectVersionId(versionUidHelper.toString()));
+            folder.setUid(new ObjectVersionId(
+                    String.format(
+                                "%s::%s::%s",
+                                folderAccess.getFolderId().toString(),
+                                this.getServerConfig().getNodename(),
+                                version
+                            )
+            ));
         }
 
-        return Optional.of(new FolderDto(folder, versionUidHelper));
+        return Optional.of(new FolderDto(folder));
     }
 
     /**
@@ -337,7 +335,13 @@ public class FolderServiceImp extends BaseService implements FolderService {
     private Folder createFolderObject(I_FolderAccess folderAccess) {
 
         Folder result = new Folder(
-                new HierObjectId(folderAccess.getFolderId().toString() + "::" + this.getServerConfig().getNodename()),
+                new HierObjectId(
+                        String.format(
+                                "%s::%s",
+                                folderAccess.getFolderId().toString(),
+                                this.getServerConfig().getNodename()
+                        )
+                ),
                 folderAccess.getFolderArchetypeNodeId(),
                 new DvText(folderAccess.getFolderName()),
                 folderAccess.getDetails(),

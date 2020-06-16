@@ -29,7 +29,7 @@ import org.ehrbase.aql.sql.queryImpl.I_QueryImpl;
 import org.ehrbase.aql.sql.queryImpl.JsonbEntryQuery;
 import org.ehrbase.aql.sql.queryImpl.VariablePath;
 import org.ehrbase.aql.sql.queryImpl.value_field.ISODateTime;
-import org.ehrbase.serialisation.CompositionSerializer;
+import org.ehrbase.serialisation.dbencoding.CompositionSerializer;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
@@ -105,6 +105,7 @@ public class WhereBinder {
                     field = compositionAttributeQuery.whereField(templateId, comp_id, identifier, variableDefinition);
                     if (field == null)
                         return null;
+                    isFollowedBySQLConditionalOperator = true;
                     return new TaggedStringBuilder(field.toString(), I_TaggedStringBuilder.TagField.SQLQUERY);
 
                 default:
@@ -315,7 +316,7 @@ public class WhereBinder {
         if (taggedBuffer.indexOf("#>>") > 0) {
             return item;
         }
-        if (taggedBuffer.indexOf("#") > 0 && item.contains("'")) { //conventionally double quote for jsquery
+        if (!isFollowedBySQLConditionalOperator && taggedBuffer.indexOf("#") > 0 && item.contains("'")) { //conventionally double quote for jsquery
             return item.replaceAll("'", "\"");
         }
         return item;

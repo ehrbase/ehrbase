@@ -20,10 +20,10 @@ package org.ehrbase.api.service;
 
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import org.ehrbase.api.definitions.StructuredString;
-import org.ehrbase.api.definitions.StructuredStringFormat;
-import org.ehrbase.api.dto.FolderDto;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.response.ehrscape.FolderDto;
+import org.ehrbase.response.ehrscape.StructuredString;
+import org.ehrbase.response.ehrscape.StructuredStringFormat;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;

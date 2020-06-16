@@ -19,18 +19,18 @@
 package org.ehrbase.rest.openehr.controller;
 
 import io.swagger.annotations.*;
-import org.ehrbase.api.definitions.CompositionFormat;
-import org.ehrbase.api.definitions.StructuredString;
-import org.ehrbase.api.dto.CompositionDto;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.service.CompositionService;
+import org.ehrbase.response.ehrscape.CompositionDto;
+import org.ehrbase.response.ehrscape.CompositionFormat;
+import org.ehrbase.response.ehrscape.StructuredString;
+import org.ehrbase.response.openehr.CompositionResponseData;
+import org.ehrbase.response.openehr.ErrorResponseData;
+import org.ehrbase.response.openehr.VersionedCompositionResponseData;
 import org.ehrbase.rest.openehr.controller.OperationNotesResourcesReaderOpenehr.ApiNotes;
-import org.ehrbase.rest.openehr.response.CompositionResponseData;
-import org.ehrbase.rest.openehr.response.ErrorResponseData;
-import org.ehrbase.rest.openehr.response.InternalResponse;
-import org.ehrbase.rest.openehr.response.VersionedCompositionResponseData;
+import org.ehrbase.rest.openehr.util.InternalResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;

@@ -19,8 +19,8 @@
 package org.ehrbase.api.service;
 
 import org.ehrbase.api.definitions.QueryMode;
-import org.ehrbase.api.dto.QueryDefinitionResultDto;
-import org.ehrbase.api.dto.QueryResultDto;
+import org.ehrbase.response.ehrscape.QueryDefinitionResultDto;
+import org.ehrbase.response.ehrscape.QueryResultDto;
 
 import java.util.List;
 import java.util.Map;

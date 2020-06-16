@@ -21,17 +21,16 @@ package org.ehrbase.rest.openehr.controller;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import io.swagger.annotations.*;
-import org.ehrbase.api.dto.FolderDto;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.FolderService;
-import org.ehrbase.api.util.VersionUidHelper;
+import org.ehrbase.response.ehrscape.FolderDto;
+import org.ehrbase.response.openehr.DirectoryResponseData;
+import org.ehrbase.response.openehr.ErrorResponseData;
 import org.ehrbase.rest.openehr.annotation.RequestUrl;
 import org.ehrbase.rest.openehr.controller.OperationNotesResourcesReaderOpenehr.ApiNotes;
-import org.ehrbase.rest.openehr.response.DirectoryResponseData;
-import org.ehrbase.rest.openehr.response.ErrorResponseData;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -453,7 +452,7 @@ public class OpenehrDirectoryController extends BaseController {
 
         if (folderDto != null) {
 
-            String versionUid = folderDto.getVersionUidHelper().toString();
+            String versionUid = folderDto.getUid().toString();
 
             headers.setETag("\"" + versionUid + "\"");
             headers.setLocation(
