@@ -259,11 +259,12 @@ prepare new request session
     ...                     - no accept/content headers
     ...                     - no headers
     ...
-    ...                 :extra_headers: optional, valid value examples: 
+    ...                 :extra_headers: optional, valid value examples:
     ...                     - Prefer=return=representation
     ...                     - If-Match={ehrstatus_uid}
-    
-                        Log Many            ${headers}  ${extra_headers}
+
+                        # FIXME: this is doing a verbose output making the tests slower
+                        #Log Many            ${headers}  ${extra_headers}
 
                         # case: JSON (DEFAULT)
                         Run Keyword If      $headers=='JSON'    set request headers
@@ -297,7 +298,7 @@ prepare new request session
                         ...                 &{extra_headers}
 
                         # case: no headers
-                        Run Keyword If      $headers=='no headers'    set request headers  
+                        Run Keyword If      $headers=='no headers'    set request headers
 
                         # case: mixed cases like JSON/XML or XML/JSON can be added here!
 
@@ -320,7 +321,7 @@ set request headers
                         ...    Log To Console   \nWARNING: NO REQUEST HEADERS SET!
 
     &{headers}=         Create Dictionary     &{EMPTY}
-    
+
                         Set To Dictionary    ${headers}
                         ...                  Content-Type=${content}
                         ...                  Accept=${accept}
@@ -340,13 +341,13 @@ set request headers
 server sanity check
     [Documentation]     Sends a GET request to ${HEARTBEAT_URL} to check whether
     ...                 the server is up and running.
-    
+
     ${server_status}    Run Keyword And Return Status    openehr server is online
     [RETURN]            ${server_status}
 
 
 database sanity check
-    [Documentation]     Connects to local PostgreSQL DB regardless whether it was 
+    [Documentation]     Connects to local PostgreSQL DB regardless whether it was
     ...                 installed natively or dockerized. Disconnects immediately
     ...                 on success.
     ...                 Is skipped when CONTROL_MODE is not manual - e.g. when SUT

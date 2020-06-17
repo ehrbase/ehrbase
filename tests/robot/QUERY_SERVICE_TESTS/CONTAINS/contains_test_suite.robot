@@ -121,7 +121,7 @@ Execute ad-hoc query contains
 
                         # create EHR and get ehr_id
                         create EHR      JSON
-                        Log To Console    ${ehr_id}
+                        #Log To Console    ${ehr_id}
 
                         #execute ad-hoc query    ${aql_payload}
                         #load valid query test-data-set    ${valid_test_data_set}
@@ -142,10 +142,53 @@ Execute ad-hoc query contains
 *** Test Cases ***
 Ad-hoc query contains
     [Template]          Execute ad-hoc query contains
-    [Tags]
-    nested_3_levels_contains_anyehr.json
-    nested_3_levels_contains_nocompoarchid_anyehr.json
-    nested_3_levels_contains_nocompoarchid.json
+    [Tags]      not-ready    query
+    nested_or_contains_nocompoarchid.json
+    nested_4_levels_contains.json
+    nested_or3_contains.json
+    nested_4_levels_contains_nocompoarchid_anyehr.json
+    nested_or2_and_p_contains_nocompoarchid.json
+    nested_or3_contains_nocompoarchid.json
+    nested_and_contains_nocompoarchid_anyehr.json
+    nested_5_levels_contains_noarchid_2.json
+    nested_5_levels_contains_nocompoarchid.json
+    nested_6_levels_contains.json
+    nested_5_levels_contains_noarchid_1.json
+    nested_6_levels_contains_noarchid_1.json
+    nested_or_contains.json
+    nested_6_levels_contains_anyehr.json
+    nested_5_levels_contains_noarchid_3.json
+    nested_6_levels_contains_noarchid_3.json
+    nested_and3_contains_nocompoarchid_anyehr.json
+    nested_or2_and_p_contains_nocompoarchid_anyehr.json
+    nested_or2_and_contains_nocompoarchid_anyehr.json
+    nested_and_contains.json
+    nested_or2_and_contains_nocompoarchid.json
+    nested_or2_and_p_contains.json
+    nested_6_levels_contains_noarchid_2.json
+    nested_or2_and_p_contains_anyehr.json
+    nested_and3_contains_anyehr.json
     nested_3_levels_contains.json
-    nested_4_levels_contains_anyehr.json
+    nested_3_levels_contains_nocompoarchid.json
     nested_4_levels_contains_noarchid_1.json
+    nested_5_levels_contains_nocompoarchid_anyehr.json
+    nested_or2_and_contains.json
+    nested_or3_contains_anyehr.json
+    nested_4_levels_contains_nocompoarchid.json
+    nested_and_contains_anyehr.json
+    nested_3_levels_contains_anyehr.json
+    nested_6_levels_contains_nocompoarchid_anyehr.json
+    nested_5_levels_contains.json
+    nested_3_levels_contains_nocompoarchid_anyehr.json
+    nested_or3_contains_nocompoarchid_anyehr.json
+    nested_4_levels_contains_anyehr.json
+    nested_and3_contains.json
+    nested_and3_contains_nocompoarchid.json
+    nested_or2_and_contains_anyehr.json
+    nested_6_levels_contains_noarchid_4.json
+    nested_4_levels_contains_noarchid_2.json
+    nested_or_contains_nocompoarchid_anyehr.json
+    nested_5_levels_contains_anyehr.json
+    nested_6_levels_contains_nocompoarchid.json
+    nested_or_contains_anyehr.json
+    nested_and_contains_nocompoarchid.json

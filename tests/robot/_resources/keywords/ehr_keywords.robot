@@ -108,7 +108,8 @@ create new EHR
 
                         Set Suite Variable    ${response}    ${resp}
 
-                        Output Debug Info To Console  # NOTE: won't work with content-type=XML
+                        # FIXME: these logs make the tests slower
+                        #Output Debug Info To Console  # NOTE: won't work with content-type=XML
 
 
 #TODO: @WLAD  rename KW name when refactor this resource file
@@ -518,8 +519,9 @@ extract ehr_status from response (JSON)
 
     ${ehr_status}=      Object       response body ehr_status
 
-                        Log To Console    \n\tDEBUG OUTPUT - EHR_STATUS:
-                        Output       response body ehr_status
+                        # FIXME: these logs make the tests slower
+                        #Log To Console    \n\tDEBUG OUTPUT - EHR_STATUS:
+                        #Output       response body ehr_status
 
                         Set Suite Variable    ${ehr_status}     ${ehr_status}[0]
 
