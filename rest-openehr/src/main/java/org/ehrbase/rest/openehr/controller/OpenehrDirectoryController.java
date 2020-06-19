@@ -21,6 +21,7 @@ package org.ehrbase.rest.openehr.controller;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import io.swagger.annotations.*;
+import org.ehrbase.api.exception.DuplicateObjectException;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
@@ -115,6 +116,14 @@ public class OpenehrDirectoryController extends BaseController {
                     "EHR with id " + ehrId + " not found."
             );
         }
+        // Check if there is already a DIRECTORY inside this EHR
+        if (this.ehrService.getDirectoryId(ehrId) != null) {
+            throw new DuplicateObjectException(
+                    "DIRECTORY",
+                    String.format("EHR with id %s already contains a directory.", ehrId.toString())
+            );
+        }
+
         // Insert New folder
         ObjectVersionId folderId = this.folderService.create(
                 ehrId,
