@@ -771,17 +771,19 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
      * @param sysTransaction - Timestamp to get version for
      * @return - Version number that has been current at that point in time
      */
-    public static int getVersionNumberAtTime(I_DomainAccess domainAccess, final UUID rootFolderId, final Timestamp sysTransaction) {
+    public static int getVersionNumberAtTime(I_DomainAccess domainAccess, final ObjectVersionId rootFolderId, final Timestamp sysTransaction) {
+
+        UUID folderUuid = FolderUtils.extractUuidFromObjectVersionId(rootFolderId);
 
         // Check if the timestamp also includes the current folder
         int folderCount = domainAccess
                 .getContext()
-                .fetchCount(FOLDER, FOLDER.ID.equal(rootFolderId).and(FOLDER.SYS_TRANSACTION.lessOrEqual(sysTransaction)));
+                .fetchCount(FOLDER, FOLDER.ID.equal(folderUuid).and(FOLDER.SYS_TRANSACTION.lessOrEqual(sysTransaction)));
 
         // Count all history entries for the root folder
         int folderHistoryCount = domainAccess
                 .getContext()
-                .fetchCount(FOLDER_HISTORY, FOLDER_HISTORY.ID.equal(rootFolderId).and(FOLDER_HISTORY.SYS_TRANSACTION.lessOrEqual(sysTransaction)));
+                .fetchCount(FOLDER_HISTORY, FOLDER_HISTORY.ID.equal(folderUuid).and(FOLDER_HISTORY.SYS_TRANSACTION.lessOrEqual(sysTransaction)));
 
         if (folderHistoryCount <= 0) {
             // No history entries found
@@ -805,7 +807,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         Timestamp timestamp = new Timestamp(new Date().getTime());
         UUID rootFolderUuid = FolderUtils.extractUuidFromObjectVersionId(rootFolderId);
         // Get latest version number
-        int currentVersion = FolderAccess.getVersionNumberAtTime(domainAccess, rootFolderUuid, timestamp);
+        int currentVersion = FolderAccess.getVersionNumberAtTime(domainAccess, rootFolderId, timestamp);
 
         if (currentVersion > version) {
             // Select number of rows from folder history record that are required

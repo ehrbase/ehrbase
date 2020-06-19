@@ -177,6 +177,16 @@ public class OpenehrDirectoryController extends BaseController {
             );
         }
 
+        // Check if the directory is existing at the EHR
+        if (ehrService.getDirectoryId(ehrId) == null) {
+            throw new ObjectNotFoundException(
+                    "DIRECTORY",
+                    String.format(
+                            "EHR with id %s does not contain a directory. Maybe it has been deleted?", ehrId.toString()
+                    )
+            );
+        }
+
         // Get the folder entry from database
         Optional<FolderDto> foundFolder = folderService.get(
                 folderId,
@@ -184,10 +194,11 @@ public class OpenehrDirectoryController extends BaseController {
         );
         if (foundFolder.isEmpty()) {
             throw new ObjectNotFoundException(
-                    "folder",
-                    "The FOLDER with id "
-                    + folderId.toString()
-                    + " does not exist."
+                    "DIRECTORY",
+                    String.format(
+                            "Folder with id %s does not exist.",
+                            folderId.toString()
+                    )
             );
         }
 
@@ -229,7 +240,18 @@ public class OpenehrDirectoryController extends BaseController {
         }
 
         // Get directory root entry for ehr
-        ObjectVersionId directoryId = new ObjectVersionId(ehrService.getDirectoryId(ehrId).toString());
+        UUID directoryUuid = ehrService.getDirectoryId(ehrId);
+        if (directoryUuid == null) {
+            throw new ObjectNotFoundException(
+                    "DIRECTORY",
+                    String.format(
+                            "There is no directory stored for EHR with id %s. Maybe it has been deleted?",
+                            ehrId.toString()
+                    )
+            );
+        }
+        ObjectVersionId directoryId = new ObjectVersionId(directoryUuid.toString());
+
         final Optional<FolderDto> foundFolder;
         // Get the folder entry from database
         if (versionAtTime != null) {
@@ -311,6 +333,7 @@ public class OpenehrDirectoryController extends BaseController {
             );
         }
 
+        // Check if the latest version has been addressed by If-Match header
         int latestVersion = this.folderService.getLastVersionNumber(folderId);
         Integer requestVersion = getVersionFromObjectVersionId(folderId);
 
@@ -395,6 +418,15 @@ public class OpenehrDirectoryController extends BaseController {
             throw new ObjectNotFoundException("EHR with id " + ehrIdString + " not found",
                     "FOLDER");
         }
+        if (this.ehrService.getDirectoryId(ehrId) == null) {
+            throw new ObjectNotFoundException(
+                    "DIRECTORY",
+                    String.format(
+                            "EHR with id %s does not contain a directory. Maybe it has been deleted?",
+                            ehrId.toString()
+                    )
+            );
+        }
 
         int latestVersion = this.folderService.getLastVersionNumber(folderId);
         Integer requestVersion = getVersionFromObjectVersionId(folderId);
@@ -421,6 +453,7 @@ public class OpenehrDirectoryController extends BaseController {
         }
 
         this.folderService.delete(folderId);
+        this.ehrService.removeDirectory(ehrId);
         return createDirectoryResponse(HttpMethod.DELETE, null, accept, null, ehrId);
     }
 

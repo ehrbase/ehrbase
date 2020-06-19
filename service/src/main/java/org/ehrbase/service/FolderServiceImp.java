@@ -120,13 +120,9 @@ public class FolderServiceImp extends BaseService implements FolderService {
             folderAccess = I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), folderId, versionTimestamp);
         }
 
-        I_FolderAccess folderAccessWithExtractedPath = extractPath(folderAccess, path);
+        I_FolderAccess withExtractedPath = extractPath(folderAccess, path);
 
-        return createDto(
-                folderAccessWithExtractedPath,
-                version,
-                path == null || path.equals("/")
-        );
+        return createDto(withExtractedPath, version, path == null || path.equals("/"));
     }
 
     /**
@@ -135,10 +131,9 @@ public class FolderServiceImp extends BaseService implements FolderService {
     @Override
     public Optional<FolderDto> getByTimeStamp(ObjectVersionId folderId, Timestamp timestamp, String path) {
 
-
-        Optional<FolderDto> resultDto = Optional.empty();
         // Get the latest entry for folder
         I_FolderAccess latest = I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), folderId);
+        I_FolderAccess withExtractedPath;
 
         if (latest == null) {
             throw new ObjectNotFoundException(
@@ -147,16 +142,26 @@ public class FolderServiceImp extends BaseService implements FolderService {
             );
         }
 
+        Integer version = FolderUtils.extractVersionNumberFromObjectVersionId(folderId);
+
         // Check if timestamp is newer or equal than found folder
         if (timestamp.after(latest.getFolderSysTransaction()) || timestamp.equals(latest.getFolderSysTransaction())) {
-            Integer version = FolderUtils.extractVersionNumberFromObjectVersionId(folderId);
             if (version == null) {
-                version = this.getLastVersionNumber(folderId);
+                version = getLastVersionNumber(folderId);
             }
-            resultDto = this.createDto(latest, version, true);
+            withExtractedPath = extractPath(latest, path);
+        } else {
+            // Get the target timestamp version and data
+            version = getVersionNumberForTimestamp(folderId, timestamp);
+            I_FolderAccess versionAtTime = I_FolderAccess.getInstanceForExistingFolder(
+                    getDataAccess(),
+                    folderId,
+                    timestamp
+            );
+            withExtractedPath = extractPath(versionAtTime, path);
         }
 
-        return resultDto;
+        return createDto(withExtractedPath, version, path == null || path.equals("/"));
     }
 
     /**
@@ -290,7 +295,9 @@ public class FolderServiceImp extends BaseService implements FolderService {
      */
     @Override
     public Integer getVersionNumberForTimestamp(
-            UUID folderId, Timestamp timestamp) {
+            ObjectVersionId folderId,
+            Timestamp timestamp
+    ) {
 
         return FolderAccess.getVersionNumberAtTime(getDataAccess(), folderId, timestamp);
     }

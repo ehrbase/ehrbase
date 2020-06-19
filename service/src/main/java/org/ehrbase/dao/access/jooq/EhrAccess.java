@@ -403,6 +403,19 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         return ehrAccess.getStatusRecord().getParty();
     }
 
+    /**
+     * Removes the directory row value by setting it to 'NULL'. Usually his will be used after the deletion of a
+     * directories root folder.
+     *
+     * @param domainAccess - Database access
+     * @param ehrId - Target EHR id
+     * @return Setting NULL value succeeded
+     */
+    public static boolean removeDirectory(I_DomainAccess domainAccess, UUID ehrId) {
+        DSLContext ctx = domainAccess.getContext();
+        return ctx.update(EHR_).setNull(EHR_.DIRECTORY).where(EHR_.ID.eq(ehrId)).execute() > 0;
+    }
+
     @Override
     public DataAccess getDataAccess() {
         return this;

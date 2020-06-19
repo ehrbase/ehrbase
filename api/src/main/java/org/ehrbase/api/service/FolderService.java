@@ -133,5 +133,5 @@ public interface FolderService extends BaseService {
      * @return - Version number that was actual at the timestamp
      * @throws ObjectNotFoundException - Folder entry does not exist at the time
      */
-    Integer getVersionNumberForTimestamp(UUID folderId, Timestamp timestamp);
+    Integer getVersionNumberForTimestamp(ObjectVersionId folderId, Timestamp timestamp);
 }
