@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Detection of duplicate directories on EHR on POST
+- Using ObjectVersionId for DIRECTORY Controller and Service Layers
+
 ### Fixed
 
 ## [0.13.0] (beta)
