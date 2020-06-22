@@ -358,7 +358,7 @@ MF-023 - Create new EHR (POST /ehr valid variants)
 
 
 MF-024 - Create new EHR (POST /ehr invalid variants)
-    [Tags]
+    [Tags]    295
     [Template]          create ehr from data table (invalid)
 
   # SUBJECT    IS_MODIFIABLE   IS_QUERYABLE   R.CODE
@@ -372,6 +372,7 @@ MF-024 - Create new EHR (POST /ehr invalid variants)
     given      0               0              400
     given      "true"          "true"         400
     given      "false"         "false"        400
+    [Teardown]      TRACE GITHUB ISSUE  295  not-ready
 
 
 MF-025 - Create new EHR w/ invalid subject (POST /ehr variants)
