@@ -18,9 +18,9 @@
 
 package org.ehrbase.api.service;
 
-import org.ehrbase.api.definitions.CompositionFormat;
-import org.ehrbase.api.dto.ContributionDto;
 import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.response.ehrscape.CompositionFormat;
+import org.ehrbase.response.ehrscape.ContributionDto;
 
 import java.util.Optional;
 import java.util.UUID;

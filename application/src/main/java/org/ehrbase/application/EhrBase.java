@@ -19,7 +19,6 @@
 package org.ehrbase.application;
 
 import org.ehrbase.ServiceModuleConfiguration;
-import org.ehrbase.api.ApiModuleConfiguration;
 import org.ehrbase.rest.ehrscape.RestEHRScapeModuleConfiguration;
 import org.ehrbase.rest.openehr.RestOpenehrModuleConfiguration;
 import org.springframework.boot.SpringApplication;
@@ -30,7 +29,7 @@ import org.springframework.context.annotation.Import;
 @Import({ServiceModuleConfiguration.class,
         RestEHRScapeModuleConfiguration.class,
         RestOpenehrModuleConfiguration.class,
-        ApiModuleConfiguration.class})
+})
 public class EhrBase {
 
     public static void main(String[] args) {

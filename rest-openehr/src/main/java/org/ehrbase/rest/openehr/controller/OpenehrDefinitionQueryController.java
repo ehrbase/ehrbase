@@ -1,12 +1,12 @@
 package org.ehrbase.rest.openehr.controller;
 
-import org.ehrbase.api.service.QueryService;
-import org.ehrbase.rest.openehr.response.ErrorBodyPayload;
-import org.ehrbase.rest.openehr.response.QueryDefinitionListResponseData;
-import org.ehrbase.rest.openehr.response.QueryDefinitionResponseData;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.swagger.annotations.*;
+import org.ehrbase.api.service.QueryService;
+import org.ehrbase.response.openehr.ErrorBodyPayload;
+import org.ehrbase.response.openehr.QueryDefinitionListResponseData;
+import org.ehrbase.response.openehr.QueryDefinitionResponseData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

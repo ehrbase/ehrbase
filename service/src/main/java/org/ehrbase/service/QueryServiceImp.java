@@ -18,14 +18,9 @@
 
 package org.ehrbase.service;
 
-import com.google.common.collect.HashBiMap;
 import com.google.gson.JsonElement;
 import org.ehrbase.api.definitions.QueryMode;
 import org.ehrbase.api.definitions.ServerConfig;
-import org.ehrbase.api.definitions.StructuredString;
-import org.ehrbase.api.definitions.StructuredStringFormat;
-import org.ehrbase.api.dto.QueryDefinitionResultDto;
-import org.ehrbase.api.dto.QueryResultDto;
 import org.ehrbase.api.exception.GeneralRequestProcessingException;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.service.QueryService;
@@ -35,6 +30,10 @@ import org.ehrbase.dao.access.interfaces.I_EntryAccess;
 import org.ehrbase.dao.access.interfaces.I_StoredQueryAccess;
 import org.ehrbase.dao.access.jooq.AqlQueryHandler;
 import org.ehrbase.dao.access.jooq.StoredQueryAccess;
+import org.ehrbase.response.ehrscape.QueryDefinitionResultDto;
+import org.ehrbase.response.ehrscape.QueryResultDto;
+import org.ehrbase.response.ehrscape.StructuredString;
+import org.ehrbase.response.ehrscape.StructuredStringFormat;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Record;
@@ -102,14 +101,14 @@ public class QueryServiceImp extends BaseService implements QueryService {
     private QueryResultDto formatResult(AqlResult aqlResult, String queryString, boolean explain){
         QueryResultDto dto = new QueryResultDto();
         dto.setExecutedAQL(queryString);
-        dto.setVariables(HashBiMap.create(aqlResult.getVariables()));
+        dto.setVariables(aqlResult.getVariables());
 
         List<Map<String, Object>> resultList = new ArrayList<>();
         for (Record record : aqlResult.getRecords()) {
             Map<String, Object> fieldMap = new LinkedHashMap<>();
             for (Field field : record.fields()) {
                 //process non-hidden variables
-                if (aqlResult.getVariables().containsValue(field.getName()) || aqlResult.getVariables().containsKey(field.getName())) {
+                if (aqlResult.variablesContains(field.getName())) {
                     if (record.getValue(field) instanceof JsonElement) {
                         fieldMap.put(field.getName(), new StructuredString((record.getValue(field)).toString(), StructuredStringFormat.JSON));
                     } else

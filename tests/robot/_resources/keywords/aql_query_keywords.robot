@@ -70,6 +70,14 @@ execute ad-hoc query and check result (empty DB)
                         check response (EMPTY DB): returns correct content for    ${aql_payload}
 
 
+execute invalid ad-hoc query and check result (empty DB)
+    [Arguments]         ${aql_payload}    ${error_message}
+    [Documentation]     EMPTY DB
+                        execute invalid ad-hoc query    ${aql_payload}
+                        check response: is negative
+                        check response: contains error message    ${error_message}
+
+
 execute ad-hoc query and check result (loaded DB)
     [Arguments]         ${aql_payload}    ${expected}
     [Documentation]     LOADED DB
@@ -93,10 +101,24 @@ execute ad-hoc query
                         POST /query/aql    JSON
 
 
+execute invalid ad-hoc query
+    [Arguments]         ${invalid_test_data_set}
+                        Set Test Variable  ${KEYWORD NAME}  AD-HOC QUERY
+                        load invalid query test-data-set  ${invalid_test_data_set}
+                        POST /query/aql    JSON
+
+
 load valid query test-data-set
     [Arguments]        ${valid_test_data_set}
 
     ${file} =           Load JSON From File    ${VALID QUERY DATA SETS}/${valid_test_data_set}
+                        Set Test Variable      ${test_data}    ${file}
+
+
+load invalid query test-data-set
+    [Arguments]        ${invalid_test_data_set}
+
+    ${file} =           Load JSON From File    ${INVALID QUERY DATA SETS}/${invalid_test_data_set}
                         Set Test Variable      ${test_data}    ${file}
 
 
@@ -112,34 +134,6 @@ load expected results-data-set (EMPTY DB)
 
     ${file}=            Load JSON From File    ${QUERY RESULTS EMPTY DB}/${expected_result_data_set}
                         Set Test Variable      ${expected_result}    ${file}
-
-# TODO: @WLAD REMOVE - SEEMS UNUSED
-# # load expected result schema
-# #     [Arguments]         ${expected_result}
-# #                         Expect Response Body    ${QUERY RESULTS LOADED DB}/${expected_result}-schema.json
-#
-#
-# startup AQL SUT
-#     [Documentation]     used in Test Suite Setup
-#     ...                 this keyword overrides another one with same name
-#     ...                 from "generic_keywords.robot" file
-#
-#     get application version
-#     unzip file_repo_content.zip
-#     empty operational_templates folder
-#     start ehrdb
-#     start openehr server
-#
-#
-# execute AQL query
-#     [Arguments]         ${aql_query}
-#     [Documentation]     Sends given AQL query via POST request.
-#
-#     Log         DEPRECATION WARNING: @WLAD remove this KW - it's only used in old AQL-QUERY tests.
-#                 ...         level=WARN
-#
-#     REST.POST           ${url}/query    ${aql_query}
-#     Integer             response status    200
 
 
 
@@ -270,11 +264,6 @@ check response (LOADED DB): returns correct content
                         Log To Console  \n/////////// EXPECTED //////////////////////////////
                         Output    ${expected result}
 
-    ## comment: RESTORE THIS IF LAST CHANGE BREAKS TO MUCH!
-    # &{diff}=            compare json-strings  ${response body}  ${expected result}
-    # ...                 report_repetition=True
-    # ...                 exclude_paths=root['meta']
-
     &{diff}             compare_jsons_ignoring_properties    ${response body}    ${expected result}
     # ...                 meta    path    foo        # comment: example of how to add additional
                                                      #          properties to be ignored
@@ -298,17 +287,6 @@ check response (LOADED DB): returns correct ordered content
                         Log To Console  \n/////////// EXPECTED //////////////////////////////
                         Output    ${expected result}
     
-    ## comment: working example
-    # ${exclude_paths}    Create List    root\\['meta'\\]    \\['columns'\\]\\[\\d+\\]\\['path'\\]
-    #                     ...            \\['_type'\\]
-    # &{diff}             compare json-strings    ${response body}    ${expected result}
-    #                     ...                     exclude_regex_paths=${exclude_paths}
-    #                     ...                     ignore_order=False
-
-    ## comment: working example
-    # &{diff}             compare_ignoring_path_and_type_properties    ${response body}    ${expected result}
-    #                     ...    ignore_order=${FALSE}
-
     # TODO: probably need to sort the expected result before comparison
     
     &{diff}             compare_jsons_ignoring_properties    ${response body}    ${expected result}
@@ -327,8 +305,20 @@ check response (EMPTY DB): returns correct content for
                         Log To Console  \n/////////// EXPECTED //////////////////////////////
                         Output    ${expected result}
 
-    &{diff}=            compare json-strings  ${response body}  ${expected result}  exclude_paths=root['meta']
+    &{diff}=            compare_jsons_ignoring_properties  ${response body}  ${expected result}
                         Should Be Empty  ${diff}  msg=DIFF DETECTED!
+
+
+# [ NEGATIVE RESPONSE CHECKS ]
+check response: is negative
+    Should Be Equal As Strings   ${response.status_code}   400
+
+
+check response: contains error message
+    [Arguments]         ${error_message}
+                        # Log    ${response body}
+    ${body} =           Convert To String    ${response body}
+                        Should Contain    ${body}    ${error_message}    ignore_case=True
 
 
 
@@ -1658,3 +1648,11 @@ D/503
 #                         ...                 auth=${${SUT}.CREDENTIALS}    debug=2    verify=True
 
 #                         Set Test Variable   ${headers}    ${headers}
+
+
+# Example of how to properly escape regex expressions to use with DeepDiff lib
+#    ${exclude_paths}    Create List    root\\['meta'\\]    \\['columns'\\]\\[\\d+\\]\\['path'\\]
+#                        ...            \\['_type'\\]
+#    &{diff}             compare json-strings    ${response body}    ${expected result}
+#                        ...                     exclude_regex_paths=${exclude_paths}
+#                        ...                     ignore_order=False

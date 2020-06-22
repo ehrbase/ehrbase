@@ -32,6 +32,7 @@ tasks:
       - task: stopeb
       - task: stopdb
 
+<<<<<<< HEAD
   starteb:
     desc: START EHRBASE SERVER W/O CACHING (CACHE DISABLED!)
     cmds:
@@ -44,6 +45,20 @@ tasks:
       # https://github.com/go-task/task/issues/270
     env:
       DISABLE_SECURITY: true
+=======
+    starteb:
+        desc: START EHRBASE SERVER W/O CACHING (CACHE DISABLED!) and allow temple-override
+        cmds:
+          - echo ... starting EHRbase server ...
+          # - java -jar ../application/target/application-0.12.0.jar --cache.enabled=false --server.nodename=manual.execution.org > log &
+          - java -jar ../application/target/application-0.12.0.jar --cache.enabled=false --system.allow-template-overwrite=true > log &
+          - sleep 20
+          - echo ... EHRbase server started.
+          #- grep -m 1 "Started EhrBase in" <(tail -f log)   # FAIL!
+          # https://github.com/go-task/task/issues/270
+        env:
+          DISABLE_SECURITY: true
+>>>>>>> develop
 
   starteb-cache:
     desc: START EHRBASE SERVER WITH CACHE ENABLED

@@ -26,6 +26,7 @@ import com.nedap.archie.rm.generic.AuditDetails;
 import com.nedap.archie.rm.generic.PartyProxy;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.*;
+import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.tables.records.AuditDetailsRecord;
@@ -231,7 +232,7 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
     @Override
     public AuditDetails getAsAuditDetails() {
         String systemId = getSystemId().toString();
-        PartyProxy party = I_PartyIdentifiedAccess.retrievePartyIdentified(this, getCommitter());
+        PartyProxy party = new PersistedPartyProxy(this).retrieve(getCommitter());
         DvDateTime time = new DvDateTime(getTimeCommitted().toLocalDateTime());
         DvCodedText changeType = new DvCodedText(getChangeType().getName(), new CodePhrase("openehr"));
         DvText description = new DvText(getDescription());

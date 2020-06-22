@@ -20,15 +20,15 @@ package org.ehrbase.rest.openehr.controller;
 
 import com.nedap.archie.rm.directory.Folder;
 import io.swagger.annotations.*;
-import org.ehrbase.api.dto.FolderDto;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.FolderService;
+import org.ehrbase.response.ehrscape.FolderDto;
+import org.ehrbase.response.openehr.DirectoryResponseData;
+import org.ehrbase.response.openehr.ErrorResponseData;
 import org.ehrbase.rest.openehr.annotation.RequestUrl;
 import org.ehrbase.rest.openehr.controller.OperationNotesResourcesReaderOpenehr.ApiNotes;
-import org.ehrbase.rest.openehr.response.DirectoryResponseData;
-import org.ehrbase.rest.openehr.response.ErrorResponseData;
 import org.ehrbase.rest.openehr.util.VersionUidHelper;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;

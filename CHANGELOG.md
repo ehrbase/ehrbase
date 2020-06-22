@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [0.13.0] (beta)
+
+### Added
+- added support for various functions in AQL (aggregation, statistical, string etc.) (see: https://github.com/ehrbase/ehrbase/pull/223/)
 
 ### Changed
 - Update of AQL-Query test suite (see: https://github.com/ehrbase/ehrbase/pull/179)
@@ -20,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - POST without accept header for ehr, composition and contribution endpoints (see: https://github.com/ehrbase/ehrbase/pull/199)
 - force a default timezone if not present for context/start_time and context/end_time if specified (https://github.com/ehrbase/ehrbase/pull/215)
 - Representation of version uid of EHR_STATUS (see: https://github.com/ehrbase/ehrbase/pull/180)
+- Refactored support of PartyProxy and ObjectId in both CRUD and AQL operations (see https://github.com/ehrbase/ehrbase/pull/248)
 
 
 ## [0.12.0] (alpha)
@@ -123,7 +132,8 @@ Starting with the next release this file will provide a proper overview.
 - Fixed error regarding DISTINCT operator in AQL (https://github.com/ehrbase/ehrbase/issues/50)
 - Fixed null pointer exceptions that could occur in persistent compositions
 
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.12.0...HEAD
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/ehrbase/ehrbase/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/ehrbase/ehrbase/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/ehrbase/ehrbase/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/ehrbase/ehrbase/compare/v0.9.0...v0.10.0

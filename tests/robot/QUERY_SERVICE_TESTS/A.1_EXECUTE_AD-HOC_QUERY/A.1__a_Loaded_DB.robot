@@ -116,26 +116,6 @@ A-202 Execute Ad-Hoc Query - Get EHR By ID
     A/203_query.tmp.json    A/203.tmp.json    # blueprint: A/203_get_ehr_by_id.json
 
 
-A-202 Execute invalid Ad-Hoc Query - Get EHR By ID
-    [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TODO    not-ready
-    A/202_query.tmp.json    A/202.tmp.json    # blueprint: A/202_get_ehr_by_id.json
-    A/203_query.tmp.json    A/203.tmp.json    # blueprint: A/203_get_ehr_by_id.json
-
-    # TODO: @WLAD make a new TCs for invalid query
-    # expected result for both queries is:
-    # {
-    #     "error": "WHERE variable should be a path, found:'uid'",
-    #     "status": "Bad Request"
-    # }
-    # use queries from test_data_sets/query/aql_queries_invalid !!!
-    #
-    # CHECK https://github.com/ehrbase/ehrbase/pull/149
-    # and https://github.com/ehrbase/project_management/issues/107#issuecomment-597920117
-    #     for reference!!!
-    [Teardown]          TRACE GITHUB ISSUE  200  not-ready  TEST NEEDS UPDATE!
-
-
 A-300 Execute Ad-Hoc Query - Get EHRs Which Have Compositions
     [Template]          execute ad-hoc query and check result (loaded DB)
     [Tags]

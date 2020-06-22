@@ -36,6 +36,7 @@ Force Tags    create_ehr    refactor
 
 *** Test Cases ***
 Create Same EHR Twice For The Same Patient (JSON)
+    [Tags]    272    not-ready   bug
 
     prepare new request session    JSON
 
