@@ -22,8 +22,8 @@ Metadata    Author    *Wladislaw Wagner*
 Metadata    Created    2019.03.03
 
 Documentation   B.2.c) Alternative flow 2: Check has EHR with non existing EHR by ehr_id
-
-Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
+Metadata        TOP_TEST_SUITE    EHR_SERVICE
+Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 
 # Suite Setup  startup SUT
 # Suite Teardown  shutdown SUT

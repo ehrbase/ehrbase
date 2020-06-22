@@ -10,14 +10,8 @@ Documentation    Alternative flow 1: get directory on EHR with just a root direc
 ...
 ...     Postconditions:
 ...         None
-
-
-Resource    ${CURDIR}${/}../../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/generic_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/contribution_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/directory_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/template_opt1.4_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
+Metadata        TOP_TEST_SUITE    DIRECTORY
+Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
 
 #Suite Setup  startup SUT
 # Test Setup  start openehr server

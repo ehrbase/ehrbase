@@ -23,7 +23,7 @@ Metadata    Created    2019.03.10
 
 Documentation   B.1.a) Main flow: Create new EHR
 ...             https://docs.google.com/document/d/1r_z_E8MhlNdeVZS4xecl-8KbG0JPqCzKtKMfhuL81jY/edit#heading=h.yctjt73zw72p
-
+Metadata        TOP_TEST_SUITE    EHR_SERVICE
 Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 
 # Suite Setup  startup SUT
@@ -138,7 +138,7 @@ MF-005 - Create new EHR (XML, Prefer header: representation)
     # comment: check steps
     String    response body    pattern=<?xml version
     String    response body    pattern=<ehr_id><value>
-    String    response body    pattern=<ehr_status><name><value>EHR Status</value></name><uid
+    # String    response body    pattern=<ehr_status><name><value>EHR Status</value></name><uid
 
 
 MF-006 - Create new EHR w/ body: invalid ehr_status
@@ -446,12 +446,12 @@ MF-032 - Create new EHR w/ invalid ehr_id (PUT /ehr/ehr_id variants)
     [Tags]
     [Template]          create ehr w/ invalid ehr_id from data table
 
-  # EHR_ID    SUBJECT    IS_MODIFIABLE   IS_QUERYABLE   R.CODE
-    invalid   ${EMPTY}   true            true           400
-    invalid   ${EMPTY}   false           false          400
-    1234567   ${EMPTY}   ${EMPTY}        true           400
-    .......   ${EMPTY}   ${EMPTY}        false          400
-    0000000   ${EMPTY}   false           ${EMPTY}       400
+  # INVALID EHR_ID                                                SUBJECT   IS_MODIFIABLE  IS_QUERYABLE  R.CODE
+    ${{ ''.join(random.choices(string.ascii_lowercase, k=10)) }}  ${EMPTY}  true           true          400
+    ${{ ''.join(random.choices(string.ascii_lowercase, k=10)) }}  ${EMPTY}  false          false         400
+    ${{ ''.join(random.choices(string.digits, k=10)) }}           ${EMPTY}  ${EMPTY}       true          400
+    ${{ ''.join(random.choices(string.digits, k=10)) }}           ${EMPTY}  ${EMPTY}       false         400
+    0000000${{random.randint(1,1000)}}                            ${EMPTY}  false          ${EMPTY}      400
 
 
 MF-033 - Create new EHR w/ given ehr_id (w/o Prefer header)
@@ -493,7 +493,7 @@ MF-037 - Create new EHR w/ given ehr_id (XML, Prefer header: representation)
     # comment: check steps
     String    response body    pattern=<?xml version
     String    response body    pattern=<ehr_id><value>
-    String    response body    pattern=<ehr_status><name><value>EHR Status</value></name><uid
+    # String    response body    pattern=<ehr_status><name><value>EHR Status</value></name><uid
 
 
 MF-038 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
@@ -861,6 +861,8 @@ POST /ehr
 
 
 PUT /ehr/$ehr_id
+    [Documentation]     Triggers PUT /ehr/$ehr_id endpoint where $ehr_id defaults
+    ...                 to a random UUID
     [Arguments]         ${ehr_id}=${{str(uuid.uuid4())}}    ${body}=${None}
     &{response}=        REST.PUT    /ehr/${ehr_id}    ${body}
                         Output Debug Info To Console

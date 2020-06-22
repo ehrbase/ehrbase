@@ -58,7 +58,6 @@ ${NODOCKER}         False
 
 ${PROJECT_ROOT}  ${EXECDIR}${/}..
 ${POM_FILE}    ${PROJECT_ROOT}${/}pom.xml
-${FIXTURES}     ${PROJECT_ROOT}/tests/robot/_resources/fixtures
 ${SMOKE_TEST_PASSED}    ${TRUE}
 
 
@@ -107,12 +106,20 @@ ${stagecreds}           None
 ...                     CONTROL=docker
 ${preprodcreds}         None
 
+# NOTE: for this configuration to work the following environment variables
+#       have to be available:
+#       BASIC_AUTH (basic auth string for EHRSCAPE, i.e.: export BASIC_AUTH="Basic abc...")
+#       EHRSCAPE_USER
+#       EHRSCAPE_PASSWORD
+&{EHRSCAPE}             URL=https://rest.ehrscape.com/rest/openehr/v1
+...                     HEARTBEAT=https://rest.ehrscape.com/
+...                     CREDENTIALS=@{scapecreds}
+...                     AUTH={"Authorization": "%{BASIC_AUTH}"}
+...                     NODENAME=piri.ehrscape.com
+...                     CONTROL=NONE
+@{scapecreds}           %{EHRSCAPE_USER}    %{EHRSCAPE_PASSWORD}
 
-# # Basic Auth example
-# &{AIRBASE}              URL=https://domain.com/rest/openehr/v1
-# ...                     CREDENTIALS=@{aircreds}
-# ...                     AUTH={"Authorization": "Basic Auth-String"}
-# @{aircreds}             username    password
+
 
 ${BASEURL}              ${${SUT}.URL}
 ${HEARTBEAT_URL}        ${${SUT}.HEARTBEAT}
