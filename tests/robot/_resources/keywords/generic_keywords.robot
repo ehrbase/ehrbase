@@ -434,7 +434,6 @@ startup SUT
                ...      Set Global Variable    ${CONTROL_MODE}    ${DEV.CONTROL}
 
                         Log    \n\t SUT CONFIG (EHRbase v${VERSION})\n    console=true
-                        # Log    \t EHRbase VERSION: ${VERSION}    console=true
                         Log    \t BASEURL: ${BASEURL}    console=true
                         Log    \t HEARTBEAT: ${HEARTBEAT_URL}    console=true
                         Log    \t AUTH: ${AUTHORIZATION}    console=true

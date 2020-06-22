@@ -193,4 +193,22 @@ public class WhereVisitorTest {
         List<Object> whereExpression = cut.getWhereExpression();
         assertThat(whereExpression).size().isEqualTo(0);
     }
+
+    @Test
+    public void testEXISTS()
+    {
+        WhereVisitor cut = new WhereVisitor();
+        String aql = "select c\n" +
+                "from EHR e\n" +
+                "contains COMPOSITION c\n"+
+                "WHERE EXISTS c/content[openEHR-EHR-ADMIN_ENTRY.hospitalization.v0]";
+
+        ParseTree tree = QueryHelper.setupParseTree(aql);
+        cut.visit(tree);
+
+        List<Object> whereExpression = cut.getWhereExpression();
+        assertThat(whereExpression).size().isEqualTo(2);
+
+//        assertEquals(whereExpression.toString(), "[(, (, e::ehr_id/value, =, '1111', AND, e::ehr_id/value, =, '2222', ), OR, (, e::ehr_id/value, =, '333', OR, e::ehr_id/value, =, '444', ), )]");
+    }
 }

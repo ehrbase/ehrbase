@@ -18,6 +18,7 @@
 
 package org.ehrbase.aql.sql.binding;
 
+import org.ehrbase.aql.containment.ContainOperator;
 import org.ehrbase.aql.containment.Containment;
 import org.ehrbase.aql.containment.ContainmentSet;
 import org.ehrbase.aql.containment.Predicates;
@@ -44,7 +45,7 @@ class PredicatesBinder {
     }
 
     private boolean isOperator(Object object) {
-        return object instanceof ContainmentSet.OPERATOR;
+        return object instanceof ContainOperator;
     }
 
     private boolean isContainment(Object object) {
@@ -55,26 +56,26 @@ class PredicatesBinder {
         return cursor + 1 >= containmentList.size();
     }
 
-    private int resolveUnallocated(Deque<ContainmentSet.OPERATOR> operatorStack) {
+    private int resolveUnallocated(Deque<ContainOperator> operatorStack) {
 
         //check what's in stack
         if (!predicates.getAtomicPredicates().isEmpty() && !operatorStack.isEmpty()) {
-            ContainmentSet.OPERATOR operator = operatorStack.pop();
+            ContainOperator operator = operatorStack.pop();
             int cursor = predicates.getAtomicPredicates().size() - 1;
-            switch (operator) {
-                case AND:
+            switch (operator.getOperator()) {
+                case "AND":
                     Details details = predicates.getAtomicPredicates().get(cursor);
 //                        Predicates.Details details = predicates.new Details(item, null);
                     predicates.getIntersectPredicates().add(details);
                     predicates.getAtomicPredicates().remove(cursor);
                     break;
-                case OR:
+                case "OR":
                     details = predicates.getAtomicPredicates().get(cursor);
 //                        Predicates.Details details = predicates.new Details(item, null);
                     predicates.getUnionPredicates().add(details);
                     predicates.getAtomicPredicates().remove(cursor);
                     break;
-                case XOR:
+                case "XOR":
 //                        item = predicates.atomicPredicates.get(indexLast).expression;
                     details = predicates.getAtomicPredicates().get(cursor);
                     predicates.getExceptPredicates().add(details);
@@ -112,7 +113,7 @@ class PredicatesBinder {
         if (containmentSet == null)
             return null;
         this.predicates = new Predicates(containmentSet);
-        Deque<ContainmentSet.OPERATOR> operatorStack = new ArrayDeque<>();
+        Deque<ContainOperator> operatorStack = new ArrayDeque<>();
 
         StringBuilder containedPredicateLtree = new StringBuilder();
         for (int i = 0; i < containmentSet.getContainmentList().size(); i++) {
@@ -132,9 +133,9 @@ class PredicatesBinder {
 //                    containedPredicateLtree.append(RIGHT_WILDCARD);
 //                }
             } else if (isOperator(item)) {
-                ContainmentSet.OPERATOR operator = (ContainmentSet.OPERATOR) item;
-                switch (operator) {
-                    case OR:
+                ContainOperator operator = (ContainOperator) item;
+                switch (operator.getOperator()) {
+                    case "OR":
 //                        containedPredicateLtree.append("|");
 //                        break;
                         if (containedPredicateLtree.length() == 0) { //promote the atomicPredicates to intersectPredicates, it is a AND on two nested groups
@@ -145,7 +146,7 @@ class PredicatesBinder {
                         }
                         containedPredicateLtree = new StringBuilder();
                         break;
-                    case XOR:
+                    case "XOR":
                         if (containedPredicateLtree.length() == 0) { //promote the atomicPredicates to intersectPredicates, it is a AND on two nested groups
                             containedPredicateLtree = buildBooleanExpression(containedPredicateLtree, EXCEPT_EXPRESSION, predicates.getExceptPredicates(), containmentSet.getParentSet(), containmentSet.getEnclosing());
                         } else {
@@ -154,7 +155,7 @@ class PredicatesBinder {
                         }
                         containedPredicateLtree = new StringBuilder();
                         break;
-                    case AND:
+                    case "AND":
                         if (containedPredicateLtree.length() == 0) { //promote the atomicPredicates to intersectPredicates, it is a AND on two nested groups
                             containedPredicateLtree = buildBooleanExpression(containedPredicateLtree, INTERSECT_EXPRESSION, predicates.getIntersectPredicates(), containmentSet.getParentSet(), containmentSet.getEnclosing());
                         } else {

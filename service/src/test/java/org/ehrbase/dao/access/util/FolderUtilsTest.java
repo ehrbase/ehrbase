@@ -2,7 +2,7 @@ package org.ehrbase.dao.access.util;
 
 import com.nedap.archie.rm.directory.Folder;
 import org.apache.commons.io.IOUtils;
-import org.ehrbase.serialisation.CanonicalJson;
+import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
 import org.ehrbase.test_data.folder.FolderTestDataCanonicalJson;
 import org.junit.Test;
 

@@ -110,7 +110,7 @@ public class QueryProcessor extends TemplateMetaData {
 
         //if any jsonb data field transform them into raw json
         if (aqlSelectQuery.isOutputWithJson() && knowledgeCache != null) {
-            RawJsonTransform.toRawJson(result, aqlSelectQuery.getQuerySteps(), knowledgeCache);
+            RawJsonTransform.toRawJson(result, aqlSelectQuery.getQuerySteps());
 //            result = RawJsonTransform.deleteNamedColumn(result, I_RawJsonTransform.TEMPLATE_ID);
         }
 

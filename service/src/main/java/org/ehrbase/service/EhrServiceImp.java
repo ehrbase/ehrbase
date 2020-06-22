@@ -27,18 +27,23 @@ import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.ehr.VersionedEhrStatus;
 import com.nedap.archie.rm.generic.*;
-import com.nedap.archie.rm.support.identification.*;
-import org.ehrbase.api.definitions.CompositionFormat;
+import com.nedap.archie.rm.support.identification.HierObjectId;
+import com.nedap.archie.rm.support.identification.ObjectRef;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import com.nedap.archie.rm.support.identification.TerminologyId;
 import org.ehrbase.api.definitions.ServerConfig;
-import org.ehrbase.api.definitions.StructuredString;
-import org.ehrbase.api.definitions.StructuredStringFormat;
-import org.ehrbase.api.dto.EhrStatusDto;
 import org.ehrbase.api.exception.*;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.jooq.AttestationAccess;
-import org.ehrbase.serialisation.CanonicalJson;
+import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
+import org.ehrbase.dao.access.jooq.party.PersistedPartyRef;
+import org.ehrbase.response.ehrscape.CompositionFormat;
+import org.ehrbase.response.ehrscape.EhrStatusDto;
+import org.ehrbase.response.ehrscape.StructuredString;
+import org.ehrbase.response.ehrscape.StructuredStringFormat;
+import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,26 +93,19 @@ public class EhrServiceImp extends BaseService implements EhrService {
 
         if (status == null) {   // in case of new status with default values
             status = new EhrStatus();
-            PartySelf partySelf = new PartySelf(new PartyRef(new HierObjectId(UUID.randomUUID().toString()), "default", null));
-            status.setSubject(partySelf);
+            status.setSubject(new PartySelf(null));
             status.setModifiable(true);
             status.setQueryable(true);
         }
         status.setUid(new HierObjectId(UUID.randomUUID().toString()));  // server sets own new UUID in both cases (new or given status)
 
-        // subject can be empty, even in otherwise valid status object --> create new default party
-        if (status.getSubject().getExternalRef() == null)
-            status.setSubject(new PartySelf(new PartyRef(new HierObjectId(UUID.randomUUID().toString()), "default", null)));
+        UUID subjectUuid = new PersistedPartyProxy(getDataAccess()).getOrCreate(status.getSubject());
 
-        String subjectId = status.getSubject().getExternalRef().getId().getValue();
-        String subjectNamespace = status.getSubject().getExternalRef().getNamespace();
+        if (status.getSubject().getExternalRef() != null && I_EhrAccess.checkExist(getDataAccess(), subjectUuid))
+            throw new StateConflictException("Specified party has already an EHR set (partyId=" + subjectUuid + ")");
 
-        UUID subjectUuid = I_PartyIdentifiedAccess.getOrCreatePartyByExternalRef(getDataAccess(), null, subjectId, BaseService.DEMOGRAPHIC, subjectNamespace, BaseService.PARTY);
         UUID systemId = getSystemUuid();
         UUID committerId = getUserUuid();
-
-        if (I_EhrAccess.checkExist(getDataAccess(), subjectUuid))
-            throw new StateConflictException("Specified party has already an EHR set (partyId=" + subjectUuid + ")");
 
         try {   // this try block sums up a bunch of operations that can throw errors in the following
             I_EhrAccess ehrAccess = I_EhrAccess.getInstance(getDataAccess(), subjectUuid, systemId, null, null, ehrId);
@@ -128,10 +126,10 @@ public class EhrServiceImp extends BaseService implements EhrService {
                 return Optional.empty();
             }
 
-            I_PartyIdentifiedAccess party = I_PartyIdentifiedAccess.retrieveInstance(getDataAccess(), ehrAccess.getParty());
+            PartyProxy partyProxy = new PersistedPartyProxy(getDataAccess()).retrieve(ehrAccess.getParty());
 
-            statusDto.setSubjectId(party.getPartyRefValue());
-            statusDto.setSubjectNamespace(party.getPartyRefNamespace());
+            statusDto.setSubjectId(partyProxy.getExternalRef().getId().getValue());
+            statusDto.setSubjectNamespace(partyProxy.getExternalRef().getNamespace());
             statusDto.setModifiable(ehrAccess.isModifiable());
             statusDto.setQueryable(ehrAccess.isQueryable());
             statusDto.setOtherDetails(new StructuredString(new CanonicalJson().marshal(ehrAccess.getOtherDetails()), StructuredStringFormat.JSON));
@@ -241,7 +239,7 @@ public class EhrServiceImp extends BaseService implements EhrService {
 
     @Override
     public Optional<UUID> findBySubject(String subjectId, String nameSpace) {
-        UUID subjectUuid = I_PartyIdentifiedAccess.findReferencedParty(getDataAccess(), subjectId, BaseService.DEMOGRAPHIC, nameSpace, BaseService.PARTY);
+        UUID subjectUuid = new PersistedPartyRef(getDataAccess()).findInDB(subjectId, nameSpace);
         return Optional.ofNullable(I_EhrAccess.retrieveInstanceBySubject(getDataAccess(), subjectUuid));
     }
 
@@ -368,7 +366,7 @@ public class EhrServiceImp extends BaseService implements EhrService {
         I_AuditDetailsAccess commitAuditAccess = statusAccess.getAuditDetailsAccess();
 
         String systemId = commitAuditAccess.getSystemId().toString();
-        PartyProxy committer = I_PartyIdentifiedAccess.retrievePartyIdentified(getDataAccess(), commitAuditAccess.getCommitter());
+        PartyProxy committer = new PersistedPartyProxy(getDataAccess()).retrieve(commitAuditAccess.getCommitter());
         DvDateTime timeCommitted = new DvDateTime(commitAuditAccess.getTimeCommitted().toLocalDateTime());
         DvCodedText changeType = new DvCodedText(commitAuditAccess.getChangeType().getLiteral(), new CodePhrase(new TerminologyId("openehr"), "String"));
         DvText description = new DvText(commitAuditAccess.getDescription());
