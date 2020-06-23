@@ -1,4 +1,4 @@
-# Copyright (c) 2019 Vitasystems GmbH and Hannover Medical School.
+# Copyright (c) 2019 Vitasystems GmbH and Jake Smolka (Hannover Medical School).
 #
 # This file is part of Project EHRbase
 #
@@ -13,32 +13,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/ehrbase
-    username: ehrbase
-    password: ehrbase
-    tomcat:
-      maxIdle: 10
-      max-active: 50
-      max-wait: 10000
-
-server:
-  port: 8080
-  # Optional custom server nodename
-  # nodename: 'local.test.org'
-  servlet:
-    context-path: /ehrbase
-
-security:
-  authType: NONE
-
-system:
-  type: LOCAL
-
+  profiles: test
+    
 terminology_server:
   tsUrl: 'https://r4.ontoserver.csiro.au/fhir/'
-  codePath: '$["expansion"]["contains"][*]["code"]'
-  systemPath: '$["expansion"]["contains"][*]["system"]'
-  displayPath: '$["expansion"]["contains"][*]["display"]'
+  codePath: '$[\"expansion\"][\"contains\"][*][\"code\"]'
+  systemPath: '$[\"expansion\"][\"contains\"][*][\"system\"]'
+  displayPath: '$[\"expansion\"][\"contains\"][*][\"display\"]'
 
