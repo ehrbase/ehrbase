@@ -41,6 +41,7 @@ import java.util.List;
  */
 @SuppressWarnings("unchecked")
 public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
+
 	private static final String MATCHES = "MATCHES";
 	public static final String IN = " IN ";
 	private static final String OPEN_CURL = "{";
@@ -85,6 +86,16 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
 		}
 		return whereExpression;
 	}
+	
+	private void parsePathContext(AqlParser.IdentifiedPathContext identifiedPathContext){
+        if (identifiedPathContext.objectPath()==null)
+            throw new IllegalArgumentException("WHERE variable should be a path, found:'"+identifiedPathContext.getText()+"'");
+        String path = identifiedPathContext.objectPath().getText();
+        String identifier = identifiedPathContext.IDENTIFIER().getText();
+        String alias = null;
+        VariableDefinition variable = new VariableDefinition(path, alias, identifier, false);
+        whereExpression.add(variable);
+    }
 
 	@Override
 	public List<Object> visitValueListItems(AqlParser.ValueListItemsContext ctx) {
@@ -175,19 +186,15 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
                         whereExpression.add(child.getText());
                     } else if (child instanceof AqlParser.IdentifiedPathContext) {
                         AqlParser.IdentifiedPathContext identifiedPathContext = (AqlParser.IdentifiedPathContext) child;
-                        if (identifiedPathContext.objectPath()==null)
-                            throw new IllegalArgumentException("WHERE variable should be a path, found:'"+child.getText()+"'");
-                        String path = identifiedPathContext.objectPath().getText();
-                        String identifier = identifiedPathContext.IDENTIFIER().getText();
-                        String alias = null;
-                        VariableDefinition variable = new VariableDefinition(path, alias, identifier, false);
-                        whereExpression.add(variable);
+                        parsePathContext(identifiedPathContext);
                     }
                 }
             } else if (tree instanceof AqlParser.IdentifiedEqualityContext) {
                 visitIdentifiedEquality((AqlParser.IdentifiedEqualityContext) tree);
             } else if (tree instanceof AqlParser.MatchesOperandContext) {
                 visitMatchesOperand((AqlParser.MatchesOperandContext) tree);
+            } else if (tree instanceof AqlParser.IdentifiedPathContext){
+                parsePathContext((AqlParser.IdentifiedPathContext)tree);
             }
         }
 

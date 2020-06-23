@@ -28,16 +28,10 @@ Documentation   Alternative flow (AF): execute ad-hoc QUERY where DB is EMPTY
 ...
 ...     Postconditions:
 ...         None (system state is not altered)
+Metadata        TOP_TEST_SUITE    AQL
+Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
 
-Resource    ${CURDIR}${/}../../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/generic_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/aql_query_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/contribution_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/composition_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/template_opt1.4_keywords.robot
-
-Test Setup  Establish Preconditions for Scenario: EMPTY DB
+Suite Setup  Establish Preconditions for Scenario: EMPTY DB
 # Test Teardown  restore clean SUT state
 
 Force Tags    refactor    empty_db
@@ -101,23 +95,10 @@ A-202 Execute Ad-Hoc Query - Get EHR(s)
 
 
 A-202 Execute invalid Ad-Hoc Query - Get EHR(s)
-    [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              TODO    not-ready
-    A/202_get_ehr_by_id_empty_db.json
-    A/203_get_ehr_by_id_empty_db.json
-    [Teardown]          TRACE GITHUB ISSUE  200  not-ready  TEST NEEDS UPDATE!
-
-    # TODO: @WLAD make a new TCs for invalid query
-    # expected result for both queries is:
-    # {
-    #     "error": "WHERE variable should be a path, found:'uid'",
-    #     "status": "Bad Request"
-    # }
-    # use queries from test_data_sets/query/aql_queries_invalid !!!
-    #
-    # CHECK https://github.com/ehrbase/ehrbase/pull/149
-    # and https://github.com/ehrbase/project_management/issues/107#issuecomment-597920117
-    #     for reference!!!
+    [Template]          execute invalid ad-hoc query and check result (empty DB)
+    [Tags]
+    A/202_get_ehr_by_id_empty_db.json    WHERE variable should be a path
+    A/203_get_ehr_by_id_empty_db.json    WHERE variable should be a path
 
 
 A-300 Execute Ad-Hoc Query - Get EHR(s)
@@ -316,14 +297,14 @@ D-306 Execute Ad-Hoc Query - Get Data
     [Template]          execute ad-hoc query and check result (empty DB)
     [Tags]              data    206
     D/306_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
-    [Teardown]          TRACE GITHUB ISSUE  191  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  206  not-ready
 
 
 D-307 Execute Ad-Hoc Query - Get Data
     [Template]          execute ad-hoc query and check result (empty DB)
     [Tags]              data    206
     D/307_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
-    [Teardown]          TRACE GITHUB ISSUE  191  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  206  not-ready
 
 
 D-311 Execute Ad-Hoc Query - Get Data
@@ -365,7 +346,13 @@ Check DB is empty
     ...                 tables is equal to 0 (zero).
     ...                 NOTE: add more tables to check - when needed
 
+# comment:  this is just a temp/quick and dirty fix
+#           TODO @WLAD replace w/ a proper AQL query to make this KW reusable
+#           on all systems
+                        Run Keyword And Return If    "${${SUT}.CONTROL}"=="NONE"
+                        ...  Log To Console  REPLACE ME W/ PROPER KEWORD!
+
                         Connect With DB
     ${ehr_records}=     Count Rows In DB Table    ehr.ehr
                         Should Be Equal As Integers    ${ehr_records}    ${0}
-    [Teardown]          Disconnect From Database
+                        Disconnect From Database

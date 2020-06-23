@@ -6,15 +6,15 @@ import com.nedap.archie.rm.ehr.VersionedEhrStatus;
 import com.nedap.archie.rm.generic.RevisionHistory;
 import io.swagger.annotations.*;
 import org.apache.commons.lang3.StringUtils;
-import org.ehrbase.api.dto.ContributionDto;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
-import org.ehrbase.rest.openehr.response.OriginalVersionResponseData;
-import org.ehrbase.rest.openehr.response.RevisionHistoryResponseData;
-import org.ehrbase.rest.openehr.response.VersionedObjectResponseData;
+import org.ehrbase.response.ehrscape.ContributionDto;
+import org.ehrbase.response.openehr.OriginalVersionResponseData;
+import org.ehrbase.response.openehr.RevisionHistoryResponseData;
+import org.ehrbase.response.openehr.VersionedObjectResponseData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
@@ -24,7 +24,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Controller for /ehr/{ehrId}/versioned_ehr_status resource of openEHR REST API

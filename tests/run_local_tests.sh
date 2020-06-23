@@ -93,17 +93,27 @@ robot -i KNOWLEDGE -e circleci -e EHRSCAPE -e obsolete -e libtest \
       --name KNOWLEDGE \
       robot/KNOWLEDGE_TESTS/
 
-# RUN QUERY SERVICE TESTS
-robot -i AQL -e circleci -e EHRSCAPE -e obsolete -e libtest \
-      --outputdir results/test-suites/QUERY_SERVICE \
+# RUN QUERY SERVICE TESTS - PART I (empty DB)
+robot -i aqlANDempty_db -e circleci -e EHRSCAPE -e obsolete -e libtest \
+      --outputdir results/test-suites/QUERY_SERVICE_I \
       --noncritical not-ready \
       --flattenkeywords for \
       --flattenkeywords foritem \
       --flattenkeywords name:_resources.* \
       --loglevel $LOG_LEVEL \
-      --name AQL \
+      --name AQL1 \
       robot/QUERY_SERVICE_TESTS/
 
+# RUN QUERY SERVICE TESTS - PART II (loaded DB)
+robot -i aqlANDloaded_db -e circleci -e EHRSCAPE -e obsolete -e libtest \
+      --outputdir results/test-suites/QUERY_SERVICE_II \
+      --noncritical not-ready \
+      --flattenkeywords for \
+      --flattenkeywords foritem \
+      --flattenkeywords name:_resources.* \
+      --loglevel $LOG_LEVEL \
+      --name AQL2 \
+      robot/QUERY_SERVICE_TESTS/
 
 
 # POST PROCESS & MERGE OUTPUTS

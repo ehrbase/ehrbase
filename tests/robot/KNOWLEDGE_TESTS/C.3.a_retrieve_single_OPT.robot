@@ -36,9 +36,8 @@ Documentation   OPT1.4 integration tests
 ...                 2. For each template_id, the correct OPT will be returned
 ...
 ...                 Note: the retrieved OPT should be exactly the same as the uploaded one.
-
-Resource    ${CURDIR}${/}../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../_resources/keywords/template_opt1.4_keywords.robot
+Metadata        TOP_TEST_SUITE    EHR_STATUS
+Resource        ${CURDIR}${/}../_resources/suite_settings.robot
 
 # Suite Setup  startup OPT SUT
 Suite Teardown  Delete All Templates

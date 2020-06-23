@@ -19,15 +19,15 @@
 package org.ehrbase.service;
 
 import org.apache.xmlbeans.XmlOptions;
-import org.ehrbase.api.definitions.*;
-import org.ehrbase.api.dto.TemplateMetaDataDto;
-import org.ehrbase.api.dto.WebTemplate;
+import org.ehrbase.api.definitions.OperationalTemplateFormat;
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.ehrbase.opt.OptVisitor;
+import org.ehrbase.response.ehrscape.*;
 import org.jooq.DSLContext;
 import org.openehr.schemas.v1.CARCHETYPEROOT;
 import org.openehr.schemas.v1.OBJECTID;

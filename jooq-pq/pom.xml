@@ -21,7 +21,7 @@
     <parent>
         <artifactId>server</artifactId>
         <groupId>org.ehrbase.openehr</groupId>
-        <version>0.12.0</version>
+        <version>0.13.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -36,7 +36,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.ehrbase.openehr</groupId>
+            <groupId>com.github.ehrbase.openEHR_SDK</groupId>
             <artifactId>serialisation</artifactId>
         </dependency>
 
