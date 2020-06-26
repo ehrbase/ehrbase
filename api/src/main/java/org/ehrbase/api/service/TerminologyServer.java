@@ -71,7 +71,7 @@ public interface TerminologyServer<T, ID, U> {
 	}
 	
 	public enum TerminologyAdapter{
-		FHIR("hl7.org/fhir/R4"), 
+		FHIR("http://hl7.org/fhir/R4"), 
 		OCEAN("OTS.OCEANHEALTHSYSTEMS.COM"), 
 		BETTER("bts.better.care"), 
 		DTS4("dts4.apelon.com"), 
@@ -94,7 +94,7 @@ public interface TerminologyServer<T, ID, U> {
 		
 		public static boolean isAdapterSupported(String adapterToCheck) {
 			for(TerminologyAdapter ta: supportedAdapters) {
-				if(ta.name().equals(adapterToCheck))
+				if(ta.name().equalsIgnoreCase(adapterToCheck))
 				{return true;}			}
 			return false;
 		}

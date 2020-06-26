@@ -107,11 +107,9 @@ public final class FhirTerminologyServerR4AdaptorImpl
 	
 	@Override
 	public final List<DvCodedText> expandWithParameters(final String valueSetId, String...operationParams) {
-		System.out.println("inside the expand");
 		//build URL
 		String urlTsServer = props.getTsUrl();
-		urlTsServer+=operationParams[0]+"?url="+valueSetId;
-		 System.out.println("the url to use: "+urlTsServer);
+		urlTsServer+="ValueSet/$"+operationParams[0]+"?"+valueSetId;
 		RestTemplate rest = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("accept","application/fhir+json");

@@ -138,17 +138,36 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
 
 	}
 
-	@Override public List<Object> visitInvokeExpr(AqlParser.InvokeExprContext ctx) { 
+	/*
+	 * @Override public List<Object> visitInvokeExpr(AqlParser.InvokeExprContext
+	 * ctx) { List<Object> invokeExpr = new ArrayList<>();
+	 * assert(ctx.TERMINOLOGY().getText().equals("TERMINOLOGY"));
+	 * assert(ctx.OPEN_PAR().getText().equals("("));
+	 * assert(ctx.CLOSE_PAR().getText().equals(")")); List<String> codesList = new
+	 * ArrayList<>(); final String valueSetUri=ctx.STRING(0).getText(); final String
+	 * operationId=ctx.STRING(1).getText(); try { I_OpenehrTerminologyServer
+	 * TsAdapter = I_OpenehrTerminologyServer.getInstance(null,
+	 * ctx.STRING(2).getText()); List <DvCodedText> expansion =
+	 * TsAdapter.expandWithParameters(valueSetUri, operationId);
+	 * expansion.forEach((DvCodedText dvCode) ->
+	 * {codesList.add(dvCode.getDefiningCode().getCodeString());}); } catch
+	 * (Exception e) { throw new
+	 * IllegalArgumentException("Terminology server operation failed:'"+e.getMessage
+	 * ()+"'"); } invokeExpr.addAll(codesList); return invokeExpr; }
+	 */
+	@Override
+	public List<Object> visitInvokeExpr(AqlParser.InvokeExprContext ctx) { 
 		List<Object> invokeExpr = new ArrayList<>();
 		assert(ctx.TERMINOLOGY().getText().equals("TERMINOLOGY"));
 		assert(ctx.OPEN_PAR().getText().equals("("));
 		assert(ctx.CLOSE_PAR().getText().equals(")"));
 		List<String> codesList = new ArrayList<>();
-		final String valueSetUri=ctx.STRING(0).getText();
-		final String operationId=ctx.STRING(1).getText();
+		final String operationId=ctx.STRING(0).getText();
+		final String adapter = ctx.STRING(1).getText();
+		final String parametters=ctx.STRING(2).getText();
 		try {
-			I_OpenehrTerminologyServer TsAdapter = I_OpenehrTerminologyServer.getInstance(null, ctx.STRING(2).getText());
-			List <DvCodedText> expansion = TsAdapter.expandWithParameters(valueSetUri, operationId);
+			I_OpenehrTerminologyServer TsAdapter = I_OpenehrTerminologyServer.getInstance(null, adapter);
+			List <DvCodedText> expansion = TsAdapter.expandWithParameters(parametters, operationId);
 			expansion.forEach((DvCodedText dvCode) -> {codesList.add(dvCode.getDefiningCode().getCodeString());});
 		} catch (Exception e) {
 			throw new IllegalArgumentException("Terminology server operation failed:'"+e.getMessage()+"'");
