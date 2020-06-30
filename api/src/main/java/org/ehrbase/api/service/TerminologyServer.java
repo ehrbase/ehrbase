@@ -38,6 +38,11 @@ public interface TerminologyServer<T, ID, U> {
  */
 	List<T> expand(ID valueSetId);
 	
+	/**
+	 * Expands the value set identified by the provided ID.
+	 * @param valueSetId
+	 * @return Returns the list of concepts of type T that conform the expansion of the value set.
+	 */
 	List<T> expandWithParameters(ID valueSetId, @SuppressWarnings("unchecked") U...operationParams);//warning is ignored because the specific implementation will type the method avoiding possible heap pollution
 	
 	/**
@@ -53,6 +58,13 @@ public interface TerminologyServer<T, ID, U> {
 	 * @return true if the concept belongs to the specified value set.
 	 */
 	Boolean validate(T concept, ID valueSetId);
+	
+	/**
+	 * Evaluates if the concept provided as one operationParams  belongs to the value set provided as another operationParam.
+	 * @param dynamic list of parameters to perform the operation against an external terminology server.
+	 * @return true if the concept belongs to the specified value set.
+	 */
+	Boolean validate(U...operationParams);
 	/**
 	 * Evaluates if the concept B subsumes concept A.
 	 * @param concept that is subsumed by the concept in the second param.
@@ -71,7 +83,7 @@ public interface TerminologyServer<T, ID, U> {
 	}
 	
 	public enum TerminologyAdapter{
-		FHIR("http://hl7.org/fhir/R4"), 
+		FHIR("hl7.org/fhir/R4"), 
 		OCEAN("OTS.OCEANHEALTHSYSTEMS.COM"), 
 		BETTER("bts.better.care"), 
 		DTS4("dts4.apelon.com"), 
@@ -87,14 +99,10 @@ public interface TerminologyServer<T, ID, U> {
 		private TerminologyAdapter(String adapterId) {
 			this.adapterId = adapterId;
 		}
-
-		/*private static boolean isAdapterSupported(TerminologyAdapter adapterToCheck) {
-			return supportedAdapters.contains(adapterToCheck);
-		}*/
 		
 		public static boolean isAdapterSupported(String adapterToCheck) {
 			for(TerminologyAdapter ta: supportedAdapters) {
-				if(ta.name().equalsIgnoreCase(adapterToCheck))
+				if(ta.name().equals(adapterToCheck))
 				{return true;}			}
 			return false;
 		}

@@ -34,6 +34,8 @@ import com.jayway.jsonpath.JsonPath;
 import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.support.identification.TerminologyId;
+
+import net.minidev.json.JSONArray;
 /***
  *@Created by Luis Marco-Ruiz on Feb 12, 2020
  */
@@ -145,6 +147,7 @@ public final class FhirTerminologyServerR4AdaptorImpl
 	@Override
 	public final Boolean validate(final DvCodedText concept, final String valueSetId) {
 		// TODO Auto-generated method stub
+		System.out.println("inside the validate method of R4 implemetntation");
 		return null;
 	}
 
@@ -152,6 +155,24 @@ public final class FhirTerminologyServerR4AdaptorImpl
 	public final SubsumptionResult subsumes(final DvCodedText conceptA, final DvCodedText conceptB) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	@Override
+	public Boolean validate(String... operationParams) {
+		//build URL
+				String urlTsServer = props.getTsUrl();
+				urlTsServer+="ValueSet/$"+"validate-code"+"?"+operationParams[0];
+				RestTemplate rest = new RestTemplate();
+				HttpHeaders headers = new HttpHeaders();
+				headers.set("accept","application/fhir+json");
+				HttpEntity<String> entity =  new HttpEntity<>(headers);
+				ResponseEntity<String> responseEntity = rest.exchange(urlTsServer.replace("'", ""),
+						HttpMethod.GET,
+						entity,
+						String.class);
+				String response = responseEntity.getBody();
+				DocumentContext jsonContext = JsonPath.parse(response);
+				Boolean result = (Boolean) ((JSONArray)jsonContext.read("$.parameter[:1].valueBoolean")).get(0);
+				return result;
 	}
 
 }
