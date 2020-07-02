@@ -171,7 +171,7 @@ public final class FhirTerminologyServerR4AdaptorImpl
 						String.class);
 				String response = responseEntity.getBody();
 				DocumentContext jsonContext = JsonPath.parse(response);
-				Boolean result = (Boolean) ((JSONArray)jsonContext.read("$.parameter[:1].valueBoolean")).get(0);
+		Boolean result = (Boolean) ((JSONArray) jsonContext.read(props.getValidationResultPath()/* "$.parameter[:1].valueBoolean" */)).get(0);
 				return result;
 	}
 
