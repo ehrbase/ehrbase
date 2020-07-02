@@ -26,6 +26,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.I_VariableDefinitionHelper;
 import org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -40,6 +41,7 @@ public class InvokeVisitorTest {
 	/*
 	 * @Rule public WireMockRule wireMockRule = new WireMockRule(8089);
 	 */
+	@Ignore("Deactivated until we have a test terminology server")
 	@Test
 	public void shouldVisitInvokeExpressionExpandOperation() {
 		//postman request for expansion is: GET https://r4.ontoserver.csiro.au/fhir/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/surface
@@ -116,7 +118,7 @@ public class InvokeVisitorTest {
 		assertThat(whereExpression.get(28)).isEqualTo(")");
 
 	}
-	
+	@Ignore("Deactivated until we have a test terminology server")
 	@Test
 	public void shouldVisitInvokeExpressionValidateOperation() {
 		//postman request for expansion is: GET https://r4.ontoserver.csiro.au/fhir/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/surface
