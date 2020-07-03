@@ -34,6 +34,7 @@ public enum SystemValue {
     TERRITORY("territory"),
     CONTEXT("context"),
     CATEGORY("category"),
+    NAME("name"),
     UID("uid");
 
     /* field */

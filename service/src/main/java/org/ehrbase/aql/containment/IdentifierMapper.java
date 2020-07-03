@@ -25,9 +25,7 @@ import org.ehrbase.aql.definition.FromEhrDefinition;
 import org.ehrbase.aql.definition.FromForeignDataDefinition;
 import org.ehrbase.aql.sql.queryImpl.JsonbEntryQuery;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Map identifiers in an AQL expression with their container and query strategy.
@@ -93,11 +91,32 @@ public class IdentifierMapper {
         return mapped;
     }
 
+    public List<Containment> getContainments() {
+
+        List<Containment> result = new ArrayList<>();
+
+        for (Object item: mapper.values()){
+            if (item instanceof Mapper && ((Mapper)item).getContainer() instanceof Containment){
+                result.add((Containment)((Mapper)item).getContainer());
+            }
+        }
+
+        return result;
+    }
+
     public Object getContainer(String symbol) {
         Mapper mapped = mapper.get(symbol);
         if (mapped == null)
             return null;
         return mapped.getContainer();
+    }
+
+    public Containment getRootContainment(){
+        for (Map.Entry<String, Mapper> containment : mapper.entrySet()) {
+            if (containment.getValue().getContainer() instanceof Containment && ((Containment)containment.getValue().getContainer()).getClassName().equals("COMPOSITION"))
+                return (Containment) containment.getValue().getContainer();
+        }
+        return null;
     }
 
     public FromEhrDefinition.EhrPredicate getEhrContainer() {
@@ -133,7 +152,7 @@ public class IdentifierMapper {
         return mapped.getQueryStrategy();
     }
 
-    public String getPath(String symbol) {
+    public String getPath(String template, String symbol) {
         Mapper definition = mapper.get(symbol);
         if (definition == null)
             throw new IllegalArgumentException("Could not resolve identifier:" + symbol);
@@ -141,18 +160,18 @@ public class IdentifierMapper {
         Object containment = definition.getContainer();
         if (containment instanceof Containment) {
             if (containment != null) {
-                return ((Containment) containment).getPath();
+                return ((Containment) containment).getPath(template);
             }
         }
         return null;
     }
 
-    public void setPath(String symbol, String path) {
+    public void setPath(String template, String symbol, String path) {
         Mapper definition = mapper.get(symbol);
         Object containment = definition.getContainer();
         if (containment instanceof Containment) {
             if (containment != null) {
-                ((Containment) containment).setPath(path);
+                ((Containment) containment).setPath(template, path);
             }
         }
     }
@@ -203,5 +222,18 @@ public class IdentifierMapper {
             sb.append("\n");
         }
         return sb.toString();
+    }
+
+    public boolean isUseSimpleCompositionContainment() {
+        boolean useSimpleComposition = true;
+        for (Map.Entry map: mapper.entrySet()){
+            Mapper mapper1 = (Mapper)map.getValue();
+            if (mapper1.getContainer() instanceof Containment){
+                Containment containment = (Containment)mapper1.getContainer();
+                if (!containment.getClassName().toUpperCase().equals("COMPOSITION"))
+                    useSimpleComposition = false;
+            }
+        }
+        return useSimpleComposition;
     }
 }

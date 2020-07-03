@@ -31,6 +31,7 @@ import org.ehrbase.aql.sql.AqlResult;
 import org.ehrbase.aql.sql.QueryProcessor;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.support.DataAccess;
+import org.ehrbase.service.KnowledgeCacheService;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -62,7 +63,7 @@ public class AqlQueryHandler extends DataAccess {
 
     @SuppressWarnings("unchecked")
     private AqlResult execute(AqlExpression aqlExpression){
-        Contains contains = new Contains(aqlExpression.getParseTree()).process();
+        Contains contains = new Contains(aqlExpression.getParseTree(), (KnowledgeCacheService)this.getDataAccess().getIntrospectService()).process();
         Statements statements = new Statements(aqlExpression.getParseTree(), contains.getIdentifierMapper()).process() ;
 
         QueryProcessor queryProcessor = new QueryProcessor(getContext(), this.getKnowledgeManager(), this.getIntrospectService(), contains, statements, getDataAccess().getServerConfig().getNodename(), usePgExtensions);

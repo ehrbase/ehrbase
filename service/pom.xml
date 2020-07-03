@@ -47,7 +47,7 @@
             <artifactId>api</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.ehrbase.openEHR_SDK</groupId>
+            <groupId>org.ehrbase.sdk</groupId>
             <artifactId>serialisation</artifactId>
         </dependency>
         <dependency>
@@ -55,15 +55,19 @@
             <artifactId>archie</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.ehrbase.openEHR_SDK</groupId>
+            <groupId>org.ehrbase.sdk</groupId>
             <artifactId>opt-1.4</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.ehrbase.sdk</groupId>
+            <artifactId>client-library</artifactId>
         </dependency>
         <dependency>
             <groupId>org.ehrbase.openehr</groupId>
             <artifactId>jooq-pg</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.ehrbase.openEHR_SDK</groupId>
+            <groupId>org.ehrbase.sdk</groupId>
             <artifactId>validation</artifactId>
         </dependency>
         <dependency>
@@ -141,7 +145,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.ehrbase.openEHR_SDK</groupId>
+            <groupId>org.ehrbase.sdk</groupId>
             <artifactId>test-data</artifactId>
             <scope>test</scope>
         </dependency>

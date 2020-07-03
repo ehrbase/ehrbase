@@ -61,58 +61,6 @@ public class ContainmentSet {
         containmentList.add(new ContainOperator(operator));
     }
 
-
-    private boolean isContainmentInList(ListOrderedSet<Object> list, Containment containment) {
-        for (Object item : list) {
-            if (item instanceof Containment) {
-                if (((Containment) item).equals(containment))
-                    return true;
-            }
-        }
-        return false;
-    }
-
-    public void setOperator(String operator) {
-        ContainOperator op = new ContainOperator(operator.trim());
-
-        if (op == null)
-            throw new IllegalArgumentException("Invalid operator value:" + operator);
-
-//        this.operator = op;
-
-        //insert the operator in the list INFIX
-        if (operatorSlot < 0) {
-            //traverse the containment list to identify an item without an explicit containedIn in the same list
-            //CONTAINS is an operator...
-            for (int i = containmentList.size() - 1; i >= 0; i--) {
-                Object item = containmentList.get(i);
-                if (item instanceof Containment) {
-                    Containment containment = (Containment) item;
-                    if (containment.getEnclosingContainment() != null) {
-                        Containment enclosing = containment.getEnclosingContainment();
-                        if (!isContainmentInList(containmentList, enclosing)) {
-                            operatorSlot = i;
-                            break;
-                        }
-                    } else {
-                        operatorSlot = i;
-                        break;
-                    }
-                }
-
-            }
-//            operatorSlot = containmentList.size() - 1;
-        } else
-            operatorSlot -= 1;
-
-//        operatorSlot = containmentList.size() - 1;
-
-//        if (operatorSlot < 0)
-//            throw new IllegalArgumentException("Cannot insert operator:" + op);
-//
-//        containmentList.add(operatorSlot, op);
-    }
-
     public String toString() {
         StringBuffer sb = new StringBuffer();
 
