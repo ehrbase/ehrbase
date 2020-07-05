@@ -458,6 +458,7 @@ startup SUT
     # comment: switch to manual test environment control when "-v nodocker" cli option is used
     Run Keyword If      $NODOCKER.upper() in ["TRUE", ""]    Run Keywords
                ...      Set Global Variable    ${NODOCKER}    TRUE    AND
+               ...      Set Global Variable    ${SUT}    DEV    AND
                ...      Set Global Variable    ${BASEURL}    ${${SUT}.URL}    AND
                ...      Set Global Variable    ${HEARTBEAT_URL}    ${${SUT}.HEARTBEAT}    AND
                ...      Set Global Variable    ${AUTHORIZATION}    ${${SUT}.AUTH}    AND
