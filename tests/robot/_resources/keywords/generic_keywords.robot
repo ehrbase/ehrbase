@@ -188,7 +188,14 @@ start openehr server
     wait until openehr server is online
 
 
+# start server process without coverage
+#     ${result}=          Start Process  java  -jar  ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
+#                         ...                  --cache.enabled\=false
+#                         ...                  --server.nodename\=${CREATING_SYSTEM_ID}    alias=ehrserver
+#                         ...                    cwd=${PROJECT_ROOT}    stdout=stdout.txt    stderr=stderr.txt
+
 start server process without coverage
+                        Set Environment Variable    SECURITY_AUTHTYPE    ${SECURITY_AUTHTYPE}
     ${result}=          Start Process  java  -jar  ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
                         ...                  --cache.enabled\=false
                         ...                  --server.nodename\=${CREATING_SYSTEM_ID}    alias=ehrserver
@@ -461,7 +468,7 @@ startup SUT
                ...      Set Global Variable    ${SUT}    DEV    AND
                ...      Set Global Variable    ${BASEURL}    ${${SUT}.URL}    AND
                ...      Set Global Variable    ${HEARTBEAT_URL}    ${${SUT}.HEARTBEAT}    AND
-               ...      Set Global Variable    ${AUTHORIZATION}    ${${SUT}.AUTH}    AND
+               ...      Set Global Variable    ${AUTHORIZATION}    ${${SUT}.BASIC_AUTH}    AND
                ...      Set Global Variable    ${CREATING_SYSTEM_ID}    ${${SUT}.NODENAME}    AND
                ...      Set Global Variable    ${CONTROL_MODE}    ${${SUT}.CONTROL}
 

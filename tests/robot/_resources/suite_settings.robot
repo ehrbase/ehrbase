@@ -51,10 +51,11 @@ Resource   ${EXECDIR}/robot/_resources/keywords/template_opt1.4_keywords.robot
 
 *** Variables ***
 ${hip_baseurl_v1}     http://localhost:8080/ehrbase/rest/ecis/v1
-${template_id}    IDCR%20-%20Immunisation%20summary.v0
-${invalid_ehr_id}    123
+# ${template_id}    IDCR%20-%20Immunisation%20summary.v0        # TODO: @wlad rm if nothing breaks
+# ${invalid_ehr_id}    123
 ${CODE_COVERAGE}    False
 ${NODOCKER}         False
+${SECURITY_AUTHTYPE}    BASIC
 
 ${PROJECT_ROOT}  ${EXECDIR}${/}..
 ${POM_FILE}    ${PROJECT_ROOT}${/}pom.xml
@@ -69,42 +70,42 @@ ${SUT}                  TEST    # DEFAULT
 # local test environment: for development
 &{DEV}                  URL=http://localhost:8080/ehrbase/rest/openehr/v1
 ...                     HEARTBEAT=http://localhost:8080/ehrbase/
-...                     CREDENTIALS=${devcreds}
-...                     AUTH={"Authorization": "Basic ZWhyYmFzZS11c2VyOlN1cGVyU2VjcmV0UGFzc3dvcmQ="}
+...                     CREDENTIALS=@{devcreds}
+...                     BASIC_AUTH={"Authorization": "Basic ZWhyYmFzZS11c2VyOlN1cGVyU2VjcmV0UGFzc3dvcmQ="}
                         # comment: nodename is actually "CREATING_SYSTEM_ID" and can be set from cli
                         #          when starting server .jar
                         #          i.e. java -jar application.jar --server.nodename=some.foobar.baz
                         #          EHRbase's default is local.ehrbase.org
 ...                     NODENAME=local.ehrbase.org
 ...                     CONTROL=manual
-${devcreds}             None
+@{devcreds}             ehrbase-user    SuperSecretPassword
 
 # testing environment: used on CI pipeline
 &{TEST}                 URL=http://localhost:8080/ehrbase/rest/openehr/v1
 ...                     HEARTBEAT=http://localhost:8080/ehrbase/
-...                     CREDENTIALS=${testcreds}
-...                     AUTH={"Authorization": "Basic ZWhyYmFzZS11c2VyOlN1cGVyU2VjcmV0UGFzc3dvcmQ="}
+...                     CREDENTIALS=@{testcreds}
+...                     BASIC_AUTH={"Authorization": "Basic ZWhyYmFzZS11c2VyOlN1cGVyU2VjcmV0UGFzc3dvcmQ="}
 ...                     NODENAME=local.ehrbase.org
 ...                     CONTROL=docker
-${testcreds}            None
+@{testcreds}            ehrbase-user    SuperSecretPassword
 
 # staging environment
 &{STAGE}                URL=http://localhost:8080/ehrbase/rest/openehr/v1
 ...                     HEARTBEAT=http://localhost:8080/ehrbase/
-...                     CREDENTIALS=${stagecreds}
-...                     AUTH={"Authorization": "Basic ZWhyYmFzZS11c2VyOlN1cGVyU2VjcmV0UGFzc3dvcmQ="}
+...                     CREDENTIALS=@{stagecreds}
+...                     BASIC_AUTH={"Authorization": "Basic foo"}
 ...                     NODENAME=stage.ehrbase.org
 ...                     CONTROL=docker
-${stagecreds}           None
+@{stagecreds}           username    password
 
 # pre production environment
 &{PREPROD}              URL=http://localhost:8080/ehrbase/rest/openehr/v1
 ...                     HEARTBEAT=http://localhost:8080/ehrbase/
-...                     CREDENTIALS=${preprodcreds}
-...                     AUTH={"Authorization": "Basic ZWhyYmFzZS11c2VyOlN1cGVyU2VjcmV0UGFzc3dvcmQ="}
+...                     CREDENTIALS=@{preprodcreds}
+...                     BASIC_AUTH={"Authorization": "Basic bar"}
 ...                     NODENAME=preprod.ehrbase.org
 ...                     CONTROL=docker
-${preprodcreds}         None
+@{preprodcreds}         username    password
 
 # NOTE: for this configuration to work the following environment variables
 #       have to be available:
@@ -114,7 +115,7 @@ ${preprodcreds}         None
 &{EHRSCAPE}             URL=https://rest.ehrscape.com/rest/openehr/v1
 ...                     HEARTBEAT=https://rest.ehrscape.com/
 ...                     CREDENTIALS=@{scapecreds}
-...                     AUTH={"Authorization": "%{BASIC_AUTH}"}
+...                     BASIC_AUTH={"Authorization": "%{BASIC_AUTH}"}
 ...                     NODENAME=piri.ehrscape.com
 ...                     CONTROL=NONE
 @{scapecreds}           %{EHRSCAPE_USER}    %{EHRSCAPE_PASSWORD}
@@ -123,7 +124,7 @@ ${preprodcreds}         None
 
 ${BASEURL}              ${${SUT}.URL}
 ${HEARTBEAT_URL}        ${${SUT}.HEARTBEAT}
-${AUTHORIZATION}        ${${SUT}.AUTH}
+${AUTHORIZATION}        ${${SUT}.BASIC_AUTH}
 ${CREATING_SYSTEM_ID}   ${${SUT}.NODENAME}
 ${CONTROL_MODE}         ${${SUT}.CONTROL}
 
