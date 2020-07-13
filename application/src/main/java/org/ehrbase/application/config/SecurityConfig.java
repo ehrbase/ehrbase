@@ -22,27 +22,38 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 
 import java.util.Formatter;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled=true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Autowired
-    private SecurityYAMLConfig securityYAMLConfig;
+    private final SecurityYAMLConfig securityYAMLConfig;
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     private Formatter formatter = new Formatter();
+
+    public SecurityConfig(SecurityYAMLConfig securityYAMLConfig) {
+        this.securityYAMLConfig = securityYAMLConfig;
+    }
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
@@ -73,11 +84,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 logger.info("Using OAuth2 authentication.");
                 http
                         .authorizeRequests()
-                        .anyRequest().authenticated()
+                        .anyRequest().hasRole("USER")
                         .and()
                         .oauth2ResourceServer()
                         .jwt()
-                        .jwtAuthenticationConverter(new JwtGrantedAuthoritiesConverter());
+                        .jwtAuthenticationConverter(getJwtAuthenticationConverter());
                 break;
             case NONE:
             default:
@@ -93,5 +104,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    // Converter creates list of "ROLE_*" (upper case) authorities for each realm access role from JWT
+    private Converter<Jwt, AbstractAuthenticationToken> getJwtAuthenticationConverter() {
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            final Map<String, Object> realmAccess = (Map<String, Object>) jwt.getClaims().get("realm_access");
+            return ((List<String>) realmAccess.get("roles")).stream()
+                    .map(roleName -> "ROLE_" + roleName.toUpperCase())
+                    .map(SimpleGrantedAuthority::new)
+                    .collect(Collectors.toList());
+        });
+        return converter;
     }
 }
