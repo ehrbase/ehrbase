@@ -15,6 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ehrbase.application.config;
 
 import org.slf4j.Logger;
@@ -84,7 +85,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 logger.info("Using OAuth2 authentication.");
                 http
                         .authorizeRequests()
-                        .anyRequest().hasRole("USER")
+                        .antMatchers("/rest/openehr/v1/admin/**").hasRole("ADMIN")
+                        .antMatchers("/**").hasAnyRole("ADMIN", "USER")
                         .and()
                         .oauth2ResourceServer()
                         .jwt()
