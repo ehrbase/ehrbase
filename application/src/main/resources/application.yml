@@ -53,8 +53,8 @@ logging:
     net.sf.ehcache: TRACE
 
 
-terminology_server :
+terminology-server:
   tsUrl: 'https://r4.ontoserver.csiro.au/fhir/'
-  codePath: '$[\"expansion\"][\"contains\"][*][\"code\"]'
-  systemPath: '$[\"expansion\"][\"contains\"][*][\"system\"]'
-  displayPath: '$[\"expansion\"][\"contains\"][*][\"display\"]'
+  codePath: '$["expansion"]["contains"][*]["code"]'
+  systemPath: '$["expansion"]["contains"][*]["system"]'
+  displayPath: '$["expansion"]["contains"][*]["display"]'

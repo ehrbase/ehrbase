@@ -27,7 +27,7 @@ import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_ContainmentAccess;
 import org.ehrbase.dao.access.support.DataAccess;
-import org.ehrbase.ehr.encode.ItemStack;
+import org.ehrbase.serialisation.dbencoding.ItemStack;
 import org.jooq.impl.DSL;
 
 import java.sql.Timestamp;

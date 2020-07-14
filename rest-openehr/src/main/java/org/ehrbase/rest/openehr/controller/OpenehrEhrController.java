@@ -18,18 +18,18 @@
 
 package org.ehrbase.rest.openehr.controller;
 
+import com.nedap.archie.rm.ehr.EhrStatus;
+import com.nedap.archie.rm.support.identification.HierObjectId;
+import io.swagger.annotations.*;
+import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.EhrService;
+import org.ehrbase.response.openehr.EhrResponseData;
 import org.ehrbase.rest.openehr.controller.OperationNotesResourcesReaderOpenehr.ApiNotes;
-import org.ehrbase.rest.openehr.response.EhrResponseData;
-import org.ehrbase.rest.openehr.response.InternalResponse;
-import com.nedap.archie.rm.ehr.EhrStatus;
-import com.nedap.archie.rm.support.identification.HierObjectId;
-import io.swagger.annotations.*;
-import org.apache.commons.lang3.StringUtils;
+import org.ehrbase.rest.openehr.util.InternalResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;

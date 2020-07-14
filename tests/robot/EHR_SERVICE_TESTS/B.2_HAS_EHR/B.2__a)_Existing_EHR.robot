@@ -23,8 +23,8 @@ Metadata    Created    2019.03.03
 
 Documentation   B.2.a) Main flow: Check has EHR with existing EHR
 ...             https://vitasystemsgmbh.atlassian.net/wiki/spaces/ETHERCIS/pages/498532998/EHR+Test+Suite#EHRTestSuite-a.Mainflow:CheckhasEHRwithexistingEHR
-
-Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
+Metadata        TOP_TEST_SUITE    EHR_SERVICE
+Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 
 # Suite Setup  startup SUT
 # Suite Teardown  shutdown SUT

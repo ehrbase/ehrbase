@@ -21,13 +21,11 @@
 
 package org.ehrbase.aql.compiler;
 
-import org.ehrbase.aql.compiler.tsclient.OpenehrTerminologyServer;
-import org.ehrbase.aql.compiler.tsclient.TerminologyServer;
-import org.ehrbase.aql.compiler.tsclient.fhir.FhirTerminologyServerAdaptorImpl;
 import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.parser.AqlBaseVisitor;
 import org.ehrbase.aql.parser.AqlParser;
-
+import org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer;
+import org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -43,53 +41,53 @@ import java.util.List;
  */
 @SuppressWarnings("unchecked")
 public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
-    private static final String MATCHES = "MATCHES";
-    public static final String IN = " IN ";
-    private static final String OPEN_CURL = "{";
-    private static final String OPEN_PAR = "(";
-    private static final String CLOSING_CURL = "}";
-    private static final String CLOSING_PAR = ")";
-    private static final String COMMA = ",";
-    
-    private OpenehrTerminologyServer<DvCodedText, ID> tsserver = (OpenehrTerminologyServer<DvCodedText, ID>) new FhirTerminologyServerAdaptorImpl();
 
-    private List<Object> whereExpression = new ArrayList<>();
+	private static final String MATCHES = "MATCHES";
+	public static final String IN = " IN ";
+	private static final String OPEN_CURL = "{";
+	private static final String OPEN_PAR = "(";
+	private static final String CLOSING_CURL = "}";
+	private static final String CLOSING_PAR = ")";
+	private static final String COMMA = ",";
 
-    @Override
-    public List<Object> visitWhere(AqlParser.WhereContext ctx) {
-        visitIdentifiedExpr(ctx.identifiedExpr());
-        return whereExpression;
-    }
 
-    @Override
-    public List<Object> visitIdentifiedExpr(AqlParser.IdentifiedExprContext context) {
-//        List<Object> whereExpression = new ArrayList<>();
-        for (ParseTree tree : context.children) {
-            if (tree instanceof TerminalNodeImpl) {
-                String what = tree.getText().trim();
-                whereExpression.add(what);
-            } else if (tree instanceof AqlParser.IdentifiedEqualityContext) {
-                visitIdentifiedEquality((AqlParser.IdentifiedEqualityContext) tree);
-            }
-        }
+	//private I_OpenehrTerminologyServer<DvCodedText, ID> tsserver = (I_OpenehrTerminologyServer<DvCodedText, ID>) FhirTerminologyServerR4AdaptorImpl.getInstance(null);
 
-        return whereExpression;
-    }
+	private List<Object> whereExpression = new ArrayList<>();
 
-    @Override
-    public List<Object> visitMatchesOperand(AqlParser.MatchesOperandContext context) {
-        for (ParseTree tree : context.children) {
-            if (tree instanceof AqlParser.ValueListItemsContext) {
-                whereExpression.addAll(visitValueListItems((AqlParser.ValueListItemsContext) tree));
-            } else if (tree instanceof AqlParser.IdentifiedEqualityContext) {
-                visitIdentifiedEquality((AqlParser.IdentifiedEqualityContext) tree);
-            }
-        }
+	@Override
+	public List<Object> visitWhere(AqlParser.WhereContext ctx) {
+		visitIdentifiedExpr(ctx.identifiedExpr());
+		return whereExpression;
+	}
 
-        return whereExpression;
-    }
+	@Override
+	public List<Object> visitIdentifiedExpr(AqlParser.IdentifiedExprContext context) {
+		//        List<Object> whereExpression = new ArrayList<>();
+		for (ParseTree tree : context.children) {
+			if (tree instanceof TerminalNodeImpl) {
+				String what = tree.getText().trim();
+				whereExpression.add(what);
+			} else if (tree instanceof AqlParser.IdentifiedEqualityContext) {
+				visitIdentifiedEquality((AqlParser.IdentifiedEqualityContext) tree);
+			}
+		}
+		return whereExpression;
+	}
 
-    private void parsePathContext(AqlParser.IdentifiedPathContext identifiedPathContext){
+	@Override
+	public List<Object> visitMatchesOperand(AqlParser.MatchesOperandContext context) {
+		for (ParseTree tree : context.children) {
+			if (tree instanceof AqlParser.ValueListItemsContext) {
+				whereExpression.addAll(visitValueListItems((AqlParser.ValueListItemsContext) tree));
+			} else if (tree instanceof AqlParser.IdentifiedEqualityContext) {
+				visitIdentifiedEquality((AqlParser.IdentifiedEqualityContext) tree);
+			}
+		}
+		return whereExpression;
+	}
+	
+	private void parsePathContext(AqlParser.IdentifiedPathContext identifiedPathContext){
         if (identifiedPathContext.objectPath()==null)
             throw new IllegalArgumentException("WHERE variable should be a path, found:'"+identifiedPathContext.getText()+"'");
         String path = identifiedPathContext.objectPath().getText();
@@ -99,64 +97,68 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
         whereExpression.add(variable);
     }
 
-
-    @Override
-    public List<Object> visitValueListItems(AqlParser.ValueListItemsContext ctx) {
-        List<Object> operand = new ArrayList<>();
-        for (ParseTree tree : ctx.children) {
-            if (tree instanceof AqlParser.OperandContext) {
-                AqlParser.OperandContext operandContext = (AqlParser.OperandContext) tree;
-                if (operandContext.STRING() != null)
-                    operand.add(operandContext.STRING().getText());
-                else if (operandContext.BOOLEAN() != null)
-                    operand.add(operandContext.BOOLEAN().getText());
-                else if (operandContext.INTEGER() != null)
-                    operand.add(operandContext.INTEGER().getText());
-                else if (operandContext.DATE() != null)
-                    operand.add(operandContext.DATE().getText());
-                else if (operandContext.FLOAT() != null)
-                	operand.add(operandContext.FLOAT().getText());
-                else if (operandContext.invokeOperand() != null) {
-                	for(Object obj: visitInvokeOperand(operandContext.invokeOperand())) {
-                		operand.add(obj);
-                		operand.add(",");
-                	}
-                	operand.remove(operand.size()-1);
-                }else if (operandContext.PARAMETER() != null)
-                    operand.add("** unsupported operand: PARAMETER **");
-                else
-                    operand.add("** unsupported operand: " + operandContext.getText());
-                operand.add(",");
-            } else if (tree instanceof AqlParser.ValueListItemsContext) {
-                List<Object> token = visitValueListItems((AqlParser.ValueListItemsContext) tree);
-                operand.addAll(token);
-            }
-        }
-        return operand;
-    }
-    
-	
-	  @Override public List<Object> visitInvokeOperand(AqlParser.InvokeOperandContext ctx) {
-	  System.out.println("inside invoke operand");	  
-	  
-	  return visitChildren(ctx);
-	  
-	  }
-	 
-		@Override public List<Object> visitInvokeExpr(AqlParser.InvokeExprContext ctx) { 
-			List<Object> invokeExpr = new ArrayList<>();
-			assert(ctx.INVOKE().getText().equals("INVOKE"));
-			assert(ctx.OPEN_PAR().getText().equals("("));
-			assert(ctx.CLOSE_PAR().getText().equals(")"));
-			List<String> codesList = new ArrayList<>();
-			tsserver.expand((ID)ctx.URIVALUE().getText()).forEach((DvCodedText dvCode) -> {codesList.add(dvCode.getDefiningCode().getCodeString());});
-			invokeExpr.addAll(codesList);
-			return invokeExpr; 
+	@Override
+	public List<Object> visitValueListItems(AqlParser.ValueListItemsContext ctx) {
+		List<Object> operand = new ArrayList<>();
+		for (ParseTree tree : ctx.children) {
+			if (tree instanceof AqlParser.OperandContext) {
+				AqlParser.OperandContext operandContext = (AqlParser.OperandContext) tree;
+				if (operandContext.STRING() != null)
+					operand.add(operandContext.STRING().getText());
+				else if (operandContext.BOOLEAN() != null)
+					operand.add(operandContext.BOOLEAN().getText());
+				else if (operandContext.INTEGER() != null)
+					operand.add(operandContext.INTEGER().getText());
+				else if (operandContext.DATE() != null)
+					operand.add(operandContext.DATE().getText());
+				else if (operandContext.FLOAT() != null)
+					operand.add(operandContext.FLOAT().getText());
+				else if (operandContext.invokeOperand() != null) {
+					for(Object obj: visitInvokeOperand(operandContext.invokeOperand())) {
+						operand.add(obj);
+						operand.add(",");
+					}
+					operand.remove(operand.size()-1);
+				}else if (operandContext.PARAMETER() != null)
+					operand.add("** unsupported operand: PARAMETER **");
+				else
+					operand.add("** unsupported operand: " + operandContext.getText());
+				operand.add(",");
+			} else if (tree instanceof AqlParser.ValueListItemsContext) {
+				List<Object> token = visitValueListItems((AqlParser.ValueListItemsContext) tree);
+				operand.addAll(token);
+			}
 		}
+		return operand;
+	}
+
+
+	@Override public List<Object> visitInvokeOperand(AqlParser.InvokeOperandContext ctx) {	  
+		return visitChildren(ctx);
+
+	}
+
+	@Override public List<Object> visitInvokeExpr(AqlParser.InvokeExprContext ctx) { 
+		List<Object> invokeExpr = new ArrayList<>();
+		assert(ctx.TERMINOLOGY().getText().equals("TERMINOLOGY"));
+		assert(ctx.OPEN_PAR().getText().equals("("));
+		assert(ctx.CLOSE_PAR().getText().equals(")"));
+		List<String> codesList = new ArrayList<>();
+		final String valueSetUri=ctx.STRING(0).getText();
+		final String operationId=ctx.STRING(1).getText();
+		try {
+			I_OpenehrTerminologyServer TsAdapter = I_OpenehrTerminologyServer.getInstance(null, ctx.STRING(2).getText());
+			List <DvCodedText> expansion = TsAdapter.expandWithParameters(valueSetUri, operationId);
+			expansion.forEach((DvCodedText dvCode) -> {codesList.add(dvCode.getDefiningCode().getCodeString());});
+		} catch (Exception e) {
+			throw new IllegalArgumentException("Terminology server operation failed:'"+e.getMessage()+"'");
+		}
+		invokeExpr.addAll(codesList);
+		return invokeExpr; 
+	}
 
     @Override
     public List<Object> visitIdentifiedEquality(AqlParser.IdentifiedEqualityContext context) {
-//        List<Object> whereExpression = new ArrayList<>();
         boolean isMatchExpr = false;
         for (ParseTree tree : context.children) {
             if (tree instanceof TerminalNodeImpl) {
@@ -207,6 +209,4 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
 
         return whereExpression;
     }
-
-
 }

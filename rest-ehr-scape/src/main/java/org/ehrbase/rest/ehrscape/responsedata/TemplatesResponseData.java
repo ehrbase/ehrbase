@@ -19,7 +19,7 @@
 package org.ehrbase.rest.ehrscape.responsedata;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
-import org.ehrbase.api.dto.TemplateMetaDataDto;
+import org.ehrbase.response.ehrscape.TemplateMetaDataDto;
 
 import java.util.List;
 

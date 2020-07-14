@@ -29,7 +29,7 @@ import org.ehrbase.aql.sql.queryImpl.I_QueryImpl;
 import org.ehrbase.aql.sql.queryImpl.JsonbEntryQuery;
 import org.ehrbase.aql.sql.queryImpl.VariablePath;
 import org.ehrbase.aql.sql.queryImpl.value_field.ISODateTime;
-import org.ehrbase.serialisation.CompositionSerializer;
+import org.ehrbase.serialisation.dbencoding.CompositionSerializer;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
@@ -42,7 +42,7 @@ import java.util.*;
  */
 public class WhereBinder {
 
-    private static final String VALUETYPE_EXPR_VALUE = "\"value\"";
+    private static final String VALUETYPE_EXPR_VALUE = "/value,value";
     //from AQL grammar
     private static final Set<String> sqloperators = new HashSet<>(Arrays.asList("=", "!=", ">", ">=", "<", "<=", "MATCHES", "EXISTS", "NOT", "(", ")", "{", "}"));
 
@@ -105,6 +105,7 @@ public class WhereBinder {
                     field = compositionAttributeQuery.whereField(templateId, comp_id, identifier, variableDefinition);
                     if (field == null)
                         return null;
+                    isFollowedBySQLConditionalOperator = true;
                     return new TaggedStringBuilder(field.toString(), I_TaggedStringBuilder.TagField.SQLQUERY);
 
                 default:
@@ -173,22 +174,23 @@ public class WhereBinder {
                     default:
                         ISODateTime isoDateTime = new ISODateTime(((String) item).replaceAll("'", ""));
                         if (isoDateTime.isValidDateTimeExpression()) {
-                            Long timestamp = isoDateTime.toTimeStamp();
+                            Long timestamp = isoDateTime.toTimeStamp()/1000; //this to align with epoch_offset in the DB, ignore ms
                             int lastValuePos = taggedBuffer.lastIndexOf(VALUETYPE_EXPR_VALUE);
                             if (lastValuePos > 0) {
-                                taggedBuffer.replaceLast(VALUETYPE_EXPR_VALUE, "\"epoch_offset\"");
+                                taggedBuffer.replaceLast(VALUETYPE_EXPR_VALUE, "/value,epoch_offset");
                             }
-                            item = hackItem(taggedBuffer, timestamp.toString());
+                            isFollowedBySQLConditionalOperator = true;
+                            item = hackItem(taggedBuffer, timestamp.toString(), "numeric");
                             taggedBuffer.append((String) item);
                         } else {
-                            item = hackItem(taggedBuffer, (String) item);
+                            item = hackItem(taggedBuffer, (String) item, null);
                             taggedBuffer.append((String) item);
                         }
                         break;
 
                 }
             } else if (item instanceof Long) {
-                item = hackItem(taggedBuffer, item.toString());
+                item = hackItem(taggedBuffer, item.toString(), null);
                 taggedBuffer.append(item.toString());
             } else if (item instanceof I_VariableDefinition) {
                 //look ahead and check if followed by a sql operator
@@ -291,7 +293,22 @@ public class WhereBinder {
 
 
     //do some temporary hacking for unsupported features
-    private Object hackItem(TaggedStringBuilder taggedBuffer, String item) {
+    private Object hackItem(TaggedStringBuilder taggedBuffer, String item, String castAs) {
+        //this deals with post type casting required f.e. for date comparisons with epoch_offset
+        if (castAs != null){
+            if (isFollowedBySQLConditionalOperator) { //at the moment, only for epoch_offset
+                int variableClosure = taggedBuffer.lastIndexOf("}'");
+                if (variableClosure > 0){
+                    int variableInitial = taggedBuffer.lastIndexOf("\"ehr\".\"entry\".\"entry\" #>>");
+                    if (variableInitial > 0 && variableInitial < variableClosure){
+                        taggedBuffer.insert(variableClosure+"}'".length(), ")::"+castAs);
+                        taggedBuffer.insert(variableInitial, "(");
+                    }
+                }
+            }
+            return item;
+        }
+
         if (sqloperators.contains(item.toUpperCase()))
             return item;
         if (taggedBuffer.toString().contains(I_JoinBinder.COMPOSITION_JOIN) && item.contains("::"))
@@ -299,7 +316,7 @@ public class WhereBinder {
         if (taggedBuffer.indexOf("#>>") > 0) {
             return item;
         }
-        if (taggedBuffer.indexOf("#") > 0 && item.contains("'")) { //conventionally double quote for jsquery
+        if (!isFollowedBySQLConditionalOperator && taggedBuffer.indexOf("#") > 0 && item.contains("'")) { //conventionally double quote for jsquery
             return item.replaceAll("'", "\"");
         }
         return item;

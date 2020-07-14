@@ -32,7 +32,7 @@ import org.ehrbase.aql.sql.binding.I_JoinBinder;
 import org.ehrbase.aql.sql.queryImpl.value_field.NodePredicate;
 import org.ehrbase.ehr.util.LocatableHelper;
 import org.ehrbase.opt.query.I_QueryOptMetaData;
-import org.ehrbase.serialisation.CompositionSerializer;
+import org.ehrbase.serialisation.dbencoding.CompositionSerializer;
 import org.ehrbase.service.IntrospectService;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -416,8 +416,11 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
         StringBuffer jsqueryPath = new StringBuffer();
 
         for (int i = 0; i < itemPathArray.size(); i++) {
-            if (!itemPathArray.get(i).equals("#"))
+            if (!itemPathArray.get(i).equals("#") && !itemPathArray.get(i).equals("0"))
                 jsqueryPath.append("\"" + itemPathArray.get(i) + "\"");
+            else if (itemPathArray.get(i).equals("0")){ //case /name/value -> /name,0,value
+                jsqueryPath.append("#");
+            }
             else
                 jsqueryPath.append(itemPathArray.get(i));
             if (i < itemPathArray.size() - 1)

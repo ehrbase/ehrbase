@@ -35,9 +35,8 @@ Documentation   OPT1.4 integration tests
 ...                 For each invalid OPT in the data set, invoke the OPT validation service
 ...                 The result should be negative related to the "OPT is invalid",
 ...                 would be useful if the server also returns where the problems are in the OPT
-
-Resource    ${CURDIR}${/}../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../_resources/keywords/template_opt1.4_keywords.robot
+Metadata        TOP_TEST_SUITE    EHR_STATUS
+Resource        ${CURDIR}${/}../_resources/suite_settings.robot
 
 # Suite Setup  startup OPT SUT
 Suite Teardown  Delete All Templates

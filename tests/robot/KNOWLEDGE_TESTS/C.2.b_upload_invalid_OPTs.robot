@@ -35,9 +35,8 @@ Documentation   OPT1.4 integration tests
 ...                 For each invalid OPT in the data set, invoke the OPT upload service
 ...                 The result should be negative, the server rejected the OPT because it was invalid,
 ...                 would be useful if the result contains where the errors are in the uploaded OPT.
-
-Resource    ${CURDIR}${/}../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../_resources/keywords/template_opt1.4_keywords.robot
+Metadata        TOP_TEST_SUITE    EHR_STATUS
+Resource        ${CURDIR}${/}../_resources/suite_settings.robot
 
 # Suite Setup  startup OPT SUT
 Suite Teardown  Delete All Templates

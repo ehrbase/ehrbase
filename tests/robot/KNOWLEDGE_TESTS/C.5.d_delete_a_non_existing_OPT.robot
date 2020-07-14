@@ -19,11 +19,10 @@
 *** Settings ***
 Documentation   OPT integration tests
 ...
+Metadata        TOP_TEST_SUITE    EHR_STATUS
+Resource        ${CURDIR}${/}../_resources/suite_settings.robot
 
-Resource    ${CURDIR}${/}../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../_resources/keywords/template_opt1.4_keywords.robot
-
-Force Tags   OPT14    TODO
+Force Tags      OPT14    TODO
 
 
 *** Variables ***

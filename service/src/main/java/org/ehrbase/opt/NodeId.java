@@ -18,7 +18,7 @@
 
 package org.ehrbase.opt;
 
-import org.ehrbase.ehr.encode.wrappers.SnakeCase;
+import org.ehrbase.serialisation.util.SnakeCase;
 
 /**
  * Created by christian on 3/8/2018.
