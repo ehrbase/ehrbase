@@ -44,13 +44,16 @@ import java.util.stream.Collectors;
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled=true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+    // Roles, independent of auth type
+    public static final String ADMIN = "ADMIN";
+    public static final String USER = "USER";
 
     private final SecurityYAMLConfig securityYAMLConfig;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private Formatter formatter = new Formatter();
+    private final Formatter formatter = new Formatter();
 
     public SecurityConfig(SecurityYAMLConfig securityYAMLConfig) {
         this.securityYAMLConfig = securityYAMLConfig;
@@ -59,10 +62,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
 
+        // For Basic Auth: assigns specific roles to specific users. Enables conditional handling in configure()
         auth.inMemoryAuthentication()
-                .withUser(securityYAMLConfig.getAuthUser())
-                .password(passwordEncoder().encode(securityYAMLConfig.getAuthPassword()))
-                .authorities("ROLE_USER");
+                    .withUser(securityYAMLConfig.getAuthUser())
+                    .password(passwordEncoder().encode(securityYAMLConfig.getAuthPassword()))
+                    .roles(USER)
+                //.authorities("ROLE_USER");
+                .and()
+                    .withUser(securityYAMLConfig.getAuthAdminUser())
+                    .password(passwordEncoder().encode(securityYAMLConfig.getAuthAdminPassword()))
+                    .roles(ADMIN);
     }
 
     @Override
@@ -75,7 +84,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 ).toString());
                 http
                         .csrf().disable()
-                        .authorizeRequests().anyRequest().authenticated()
+                        .authorizeRequests()
+                        // Specific routes with ../admin/.. require admin role
+                        .antMatchers("/rest/openehr/v1/admin/**").hasRole(ADMIN)
+                        // Everything else is open to all users of role admin and user
+                        .antMatchers("/**").hasAnyRole(ADMIN, USER)
                         .and()
                         .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                         .and()
@@ -85,8 +98,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 logger.info("Using OAuth2 authentication.");
                 http
                         .authorizeRequests()
-                        .antMatchers("/rest/openehr/v1/admin/**").hasRole("ADMIN")
-                        .antMatchers("/**").hasAnyRole("ADMIN", "USER")
+                        // Specific routes with ../admin/.. require admin role
+                        .antMatchers("/rest/openehr/v1/admin/**").hasRole(ADMIN)
+                        // Everything else is open to all users of role admin and user
+                        .antMatchers("/**").hasAnyRole(ADMIN, USER)
                         .and()
                         .oauth2ResourceServer()
                         .jwt()

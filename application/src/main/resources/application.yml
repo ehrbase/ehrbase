@@ -34,6 +34,8 @@ security:
   authType: BASIC
   authUser: ehrbase-user
   authPassword: SuperSecretPassword
+  authAdminUser: ehrbase-admin
+  authAdminPassword: EvenMoreSecretPassword
 
 cache:
   config: '/ehcache.xml'

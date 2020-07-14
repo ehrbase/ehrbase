@@ -33,6 +33,8 @@ public class SecurityYAMLConfig {
     private AuthTypes authType;
     private String authUser;
     private String authPassword;
+    private String authAdminUser;
+    private String authAdminPassword;
 
     public AuthTypes getAuthType() {
         return authType;
@@ -56,5 +58,21 @@ public class SecurityYAMLConfig {
 
     public void setAuthPassword(String authPassword) {
         this.authPassword = authPassword;
+    }
+
+    public String getAuthAdminUser() {
+        return authAdminUser;
+    }
+
+    public void setAuthAdminUser(String authAdminUser) {
+        this.authAdminUser = authAdminUser;
+    }
+
+    public String getAuthAdminPassword() {
+        return authAdminPassword;
+    }
+
+    public void setAuthAdminPassword(String authAdminPassword) {
+        this.authAdminPassword = authAdminPassword;
     }
 }
