@@ -468,16 +468,17 @@ startup SUT
                ...      Set Global Variable    ${SUT}    DEV    AND
                ...      Set Global Variable    ${BASEURL}    ${${SUT}.URL}    AND
                ...      Set Global Variable    ${HEARTBEAT_URL}    ${${SUT}.HEARTBEAT}    AND
-               ...      Set Global Variable    ${AUTHORIZATION}    ${${SUT}.BASIC_AUTH}    AND
+               ...      Set Global Variable    ${AUTHORIZATION}    ${DEV.${SECURITY_AUTHTYPE}}    AND
                ...      Set Global Variable    ${CREATING_SYSTEM_ID}    ${${SUT}.NODENAME}    AND
                ...      Set Global Variable    ${CONTROL_MODE}    ${${SUT}.CONTROL}
 
-                        Log    \n\t SUT CONFIG (EHRbase v${VERSION})\n    console=true
-                        Log    \t BASEURL: ${BASEURL}    console=true
-                        Log    \t HEARTBEAT: ${HEARTBEAT_URL}    console=true
-                        Log    \t AUTH: ${AUTHORIZATION}    console=true
-                        Log    \t CREATING SYSTEM ID: ${CREATING_SYSTEM_ID}    console=true
-                        Log    \t CONTROL MODE: ${CONTROL_MODE}\n    console=true
+    Log    \n\t SUT: ${SUT} CONFIG | EHRbase v${VERSION}\n    console=true
+    Log    \t BASEURL: ${BASEURL}    console=true
+    Log    \t HEARTBEAT: ${HEARTBEAT_URL}    console=true
+    Log    \t AUTH_TYPE: ${SECURITY_AUTHTYPE}    console=true
+    Log    \t AUTH: ${{ $AUTHORIZATION[0:77] }} ...    console=true
+    Log    \t CREATING SYSTEM ID: ${CREATING_SYSTEM_ID}    console=true
+    Log    \t CONTROL MODE: ${CONTROL_MODE}\n    console=true
 
     ${sanity_check_passed}  ${server_status}  ${db_status}=    do quick sanity check
 

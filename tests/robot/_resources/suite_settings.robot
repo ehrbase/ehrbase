@@ -71,7 +71,8 @@ ${SUT}                  TEST    # DEFAULT
 &{DEV}                  URL=http://localhost:8080/ehrbase/rest/openehr/v1
 ...                     HEARTBEAT=http://localhost:8080/ehrbase/
 ...                     CREDENTIALS=@{devcreds}
-...                     BASIC_AUTH={"Authorization": "Basic ZWhyYmFzZS11c2VyOlN1cGVyU2VjcmV0UGFzc3dvcmQ="}
+...                     BASIC={"Authorization": "Basic ZWhyYmFzZS11c2VyOlN1cGVyU2VjcmV0UGFzc3dvcmQ="}
+...                     OAUTH2={"Authorization": "Bearer 123"}
                         # comment: nodename is actually "CREATING_SYSTEM_ID" and can be set from cli
                         #          when starting server .jar
                         #          i.e. java -jar application.jar --server.nodename=some.foobar.baz
@@ -84,7 +85,8 @@ ${SUT}                  TEST    # DEFAULT
 &{TEST}                 URL=http://localhost:8080/ehrbase/rest/openehr/v1
 ...                     HEARTBEAT=http://localhost:8080/ehrbase/
 ...                     CREDENTIALS=@{testcreds}
-...                     BASIC_AUTH={"Authorization": "Basic ZWhyYmFzZS11c2VyOlN1cGVyU2VjcmV0UGFzc3dvcmQ="}
+...                     BASIC={"Authorization": "Basic ZWhyYmFzZS11c2VyOlN1cGVyU2VjcmV0UGFzc3dvcmQ="}
+...                     OAUTH2={"Authorization": "Bearer 123"}
 ...                     NODENAME=local.ehrbase.org
 ...                     CONTROL=docker
 @{testcreds}            ehrbase-user    SuperSecretPassword
@@ -93,7 +95,8 @@ ${SUT}                  TEST    # DEFAULT
 &{STAGE}                URL=http://localhost:8080/ehrbase/rest/openehr/v1
 ...                     HEARTBEAT=http://localhost:8080/ehrbase/
 ...                     CREDENTIALS=@{stagecreds}
-...                     BASIC_AUTH={"Authorization": "Basic foo"}
+...                     BASIC={"Authorization": "Basic ZWhyYmFzZS11c2VyOlN1cGVyU2VjcmV0UGFzc3dvcmQ="}
+...                     OAUTH2={"Authorization": "Bearer 1234"}
 ...                     NODENAME=stage.ehrbase.org
 ...                     CONTROL=docker
 @{stagecreds}           username    password
@@ -102,7 +105,8 @@ ${SUT}                  TEST    # DEFAULT
 &{PREPROD}              URL=http://localhost:8080/ehrbase/rest/openehr/v1
 ...                     HEARTBEAT=http://localhost:8080/ehrbase/
 ...                     CREDENTIALS=@{preprodcreds}
-...                     BASIC_AUTH={"Authorization": "Basic bar"}
+...                     BASIC={"Authorization": "Basic ZWhyYmFzZS11c2VyOlN1cGVyU2VjcmV0UGFzc3dvcmQ="}
+...                     OAUTH2={"Authorization": "Bearer 1234"}
 ...                     NODENAME=preprod.ehrbase.org
 ...                     CONTROL=docker
 @{preprodcreds}         username    password
@@ -124,7 +128,7 @@ ${SUT}                  TEST    # DEFAULT
 
 ${BASEURL}              ${${SUT}.URL}
 ${HEARTBEAT_URL}        ${${SUT}.HEARTBEAT}
-${AUTHORIZATION}        ${${SUT}.BASIC_AUTH}
+${AUTHORIZATION}        ${${SUT}.${SECURITY_AUTHTYPE}}
 ${CREATING_SYSTEM_ID}   ${${SUT}.NODENAME}
 ${CONTROL_MODE}         ${${SUT}.CONTROL}
 
