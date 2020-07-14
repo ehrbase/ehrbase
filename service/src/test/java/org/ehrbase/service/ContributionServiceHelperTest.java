@@ -18,11 +18,11 @@
 
 package org.ehrbase.service;
 
-import org.ehrbase.api.definitions.CompositionFormat;
-import org.ehrbase.test_data.contribution.ContributionTestDataCanonicalJson;
 import com.nedap.archie.rm.RMObject;
 import com.nedap.archie.rm.changecontrol.Version;
 import org.apache.commons.io.IOUtils;
+import org.ehrbase.response.ehrscape.CompositionFormat;
+import org.ehrbase.test_data.contribution.ContributionTestDataCanonicalJson;
 import org.junit.Test;
 
 import java.io.IOException;

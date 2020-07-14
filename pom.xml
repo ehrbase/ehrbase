@@ -122,6 +122,7 @@
         <swagger.version>1.5.23</swagger.version>
         <swagger-snapshot.version>2.0.0-rc2</swagger-snapshot.version>
         <postgressql.version>42.2.5</postgressql.version>
+        <ehrbase.sdk.version>d97d209</ehrbase.sdk.version>
         <flyway.version>6.2.0</flyway.version>
         <database.name>ehrbase</database.name>
         <database.user>ehrbase</database.user>
@@ -146,11 +147,6 @@
         <module>base</module>
         <module>api</module>
         <module>jooq-pq</module>
-        <module>serialisation</module>
-        <module>test-data</module>
-        <module>opt</module>
-        <module>validation</module>
-        <module>terminology</module>
     </modules>
 
 
@@ -192,30 +188,39 @@
                 <artifactId>jooq-pg</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+
+            <!-- sdk -->
             <dependency>
-                <groupId>org.ehrbase.openehr</groupId>
-                <artifactId>serialisation</artifactId>
-                <version>${project.version}</version>
+                <groupId>com.github.ehrbase.openEHR_SDK</groupId>
+                <artifactId>response-dto</artifactId>
+                <version>${ehrbase.sdk.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.ehrbase.openehr</groupId>
-                <artifactId>validation</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr</groupId>
-                <artifactId>terminology</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr</groupId>
-                <artifactId>test-data</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr</groupId>
+                <groupId>com.github.ehrbase.openEHR_SDK</groupId>
                 <artifactId>opt-1.4</artifactId>
-                <version>${project.version}</version>
+                <version>${ehrbase.sdk.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.ehrbase.openEHR_SDK</groupId>
+                <artifactId>serialisation</artifactId>
+                <version>${ehrbase.sdk.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.ehrbase.openEHR_SDK</groupId>
+                <artifactId>terminology</artifactId>
+                <version>${ehrbase.sdk.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.ehrbase.openEHR_SDK</groupId>
+                <artifactId>validation</artifactId>
+                <version>${ehrbase.sdk.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.ehrbase.openEHR_SDK</groupId>
+                <artifactId>test-data</artifactId>
+                <version>${ehrbase.sdk.version}</version>
+                <scope>test</scope>
             </dependency>
             <!-- external -->
             <dependency>
@@ -229,13 +234,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <dependency>
-                <groupId>org.keycloak.bom</groupId>
-                <artifactId>keycloak-adapter-bom</artifactId>
-                <version>${keycloak.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
+
             <dependency>
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
@@ -342,6 +341,11 @@
                 <version>${jackson.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-jsr310</artifactId>
+                <version>2.9.10</version>
+            </dependency>
+            <dependency>
                 <groupId>de.ruedigermoeller</groupId>
                 <artifactId>fst</artifactId>
                 <version>2.40</version>
@@ -369,8 +373,20 @@
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.11</version>
+                <version>4.12</version>
             </dependency>
+            <!-- <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
+                <version>5.4.0</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.vintage</groupId>
+                <artifactId>junit-vintage-engine</artifactId>
+                <version>5.4.0</version>
+                <scope>test</scope>
+            </dependency> -->
             <dependency>
                 <groupId>org.jdom</groupId>
                 <artifactId>jdom</artifactId>
@@ -475,11 +491,6 @@
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-test</artifactId>
                 <version>${spring-security.version}</version>
-                <scope>test</scope>
-            </dependency>
-             <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-test</artifactId>
                 <scope>test</scope>
             </dependency>
         </dependencies>

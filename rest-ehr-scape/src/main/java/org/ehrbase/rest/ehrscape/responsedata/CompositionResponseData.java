@@ -18,9 +18,9 @@
 
 package org.ehrbase.rest.ehrscape.responsedata;
 
-import org.ehrbase.api.definitions.CompositionFormat;
-import org.ehrbase.api.definitions.StructuredString;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import org.ehrbase.response.ehrscape.CompositionFormat;
+import org.ehrbase.response.ehrscape.StructuredString;
 
 import java.util.UUID;
 

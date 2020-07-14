@@ -30,7 +30,7 @@ import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_FolderAccess;
 import org.ehrbase.dao.access.support.DummyDataAccess;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
-import org.ehrbase.serialisation.CanonicalJson;
+import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
 import org.ehrbase.service.KnowledgeCacheHelper;
 import org.ehrbase.test_data.folder.FolderTestDataCanonicalJson;
 import org.joda.time.DateTime;
