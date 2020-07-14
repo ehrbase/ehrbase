@@ -21,7 +21,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8081/auth/realms/ehrbase
+          #issuer-uri: http://localhost:8081/auth/realms/ehrbase  # Example issuer URI - or set via env var
+          issuer-uri:
   profiles:
     active: local
   datasource:
