@@ -167,6 +167,8 @@ public class CompositionAttributeQuery extends ObjectQuery implements I_QueryImp
     }
 
     public boolean isCompositionAttributeItemStructure(String templateId, String identifier){
+        if (variableTemplatePath(templateId, identifier) == null)
+            return false;
         return variableTemplatePath(templateId, identifier).contains("/context/other_context");
     }
 

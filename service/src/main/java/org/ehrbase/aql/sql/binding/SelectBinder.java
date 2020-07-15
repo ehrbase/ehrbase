@@ -101,8 +101,8 @@ public class SelectBinder extends TemplateMetaData implements I_SelectBinder {
 
             handleJsonDataBlock(expressionField, field, expressionField.getRootJsonKey(), expressionField.getOptionalPath());
 //            field = DSL.field(field);
-            if (field == null) {
-                throw new IllegalArgumentException("Field expression is not supported or invalid :" + variableDefinition);
+            if (field == null) { //the field cannot be resolved with containment (f.e. empty DB)
+                continue;
             }
             selectQuery.addSelect(field);
             jsonbEntryQuery.inc();
