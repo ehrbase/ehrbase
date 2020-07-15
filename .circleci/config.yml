@@ -165,6 +165,17 @@ workflows:
               ignore:
                 - release
                 - master
+      
+      - SECURITY-test:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
 
       - ROBOT-REPORT:
           context: org-global
@@ -180,6 +191,7 @@ workflows:
             - KNOWLEDGE-test
             - QUERYSERVICE-test-1
             - QUERYSERVICE-test-2
+            - SECURITY-test
           filters:
             branches:
               ignore:
@@ -345,6 +357,16 @@ workflows:
               only:
                 - /^(release\/v\d+\.\d+\.\d+|master)$/
 
+      - SECURITY-test:
+          context: org-global
+          requires:
+            - build-artifacts
+            - unit-tests
+          filters:
+            branches:
+              only:
+                - /^(release\/v\d+\.\d+\.\d+|master)$/
+
       - ROBOT-REPORT:
           context: org-global
           requires:
@@ -359,6 +381,7 @@ workflows:
             - KNOWLEDGE-test
             - QUERYSERVICE-test-1
             - QUERYSERVICE-test-2
+            - SECURITY-test
           filters:
             branches:
               only:
@@ -525,6 +548,17 @@ jobs:
           include-tags: "aql_adhoc-queryANDloaded_db"
           test-suite-path: "QUERY_SERVICE_TESTS"
           test-suite-name: "ADHOC-QUERY-2"
+  
+  SECURITY-test:
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - install-and-configure-keycloak
+      - run-robot-tests-with-oauth:
+          include-tags: "OAUTH"
+          # test-suite-path: ""
+          test-suite-name: "KEYCLOAK-OAUTH"
 
   ROBOT-REPORT:
     machine:
@@ -610,6 +644,49 @@ commands:
       - store_artifacts:
           path: ~/project/tests/results/
 
+  run-robot-tests-with-oauth:
+    description: Run selected integration tests w/ active Keycloak OAuth2 authentication
+    parameters:
+      include-tags:
+        description: Which tests to inclue by TAGs (Robot syntax applies!)
+        type: string
+      # test-suite-path:
+      #   description: Target test-suite given by it's folder name e.g. COMPOSITION_TESTS
+      #   type: string
+      test-suite-name:
+        description: Titel of generated Robot Log/Report.html
+        type: string
+    steps:
+      - configure-python-version
+      # - checkout
+      - restore-integration-tests-job-caches
+      - attach-target-folder
+      - install-python-requirements
+      - install-java-11
+      - run:
+          name: EXECUTE ROBOT COMMAND
+          no_output_timeout: 30m
+          command: |
+            cd tests
+            robot -v AUTH_TYPE:OAUTH
+                  --include << parameters.include-tags >> \
+                  --exclude TODO -e future -e obsolete -e libtest \
+                  --console dotted \
+                  --loglevel TRACE \
+                  --noncritical not-ready \
+                  --flattenkeywords for \
+                  --flattenkeywords foritem \
+                  --flattenkeywords name:_resources.* \
+                  --outputdir results/<< parameters.test-suite-name >> \
+                  --name << parameters.test-suite-name >> \
+                  robot/
+      - save-integration-tests-job-caches
+      - persist-tests-folder
+      - store_test_results:
+          path: ~/project/tests/results/
+      - store_artifacts:
+          path: ~/project/tests/results/
+
   merge-robot-outputs:
     description: Merge Robot Results from Parallel Tests
     steps:
@@ -675,6 +752,46 @@ commands:
             rm -f /tmp/openjdk-11.tar.gz
             sudo sh -c 'for bin in /usr/lib/jvm/jdk-11.0.3+7/bin/*; do update-alternatives --install /usr/bin/$(basename $bin) $(basename $bin) $bin 100; done'
             sudo sh -c 'for bin in /usr/lib/jvm/jdk-11.0.3+7/bin/*; do update-alternatives --set $(basename $bin) $bin; done'
+  
+  install-and-configure-keycloak:
+    description: Setups a Keycloak Docker instance and restores a previously exportd configuration.
+    steps:
+      - run:
+          name: Start Keycloak in a Docker container
+          command: |
+            cd tests/robot/SECURITY_TESTS/I_OAuth2_Keycloak
+            docker run -d --name keycloak \
+              -p 8081:8080 \
+              -v $(pwd)/exported-keycloak-config:/restore-keycloak-config \
+              -e KEYCLOAK_USER=admin \
+              -e KEYCLOAK_PASSWORD=admin \
+              jboss/keycloak:10.0.2
+      - run:
+          name: Restore Keycloak configuration (realm, clients, roles, users)
+          background: true
+          command: |
+            docker exec -it keycloak /opt/jboss/keycloak/bin/standalone.sh \
+              -Djboss.socket.binding.port-offset=100 \
+              -Dkeycloak.migration.action=import \
+              -Dkeycloak.migration.provider=dir \
+              -Dkeycloak.profile.feature.upload_scripts=enabled \
+              -Dkeycloak.migration.dir=/restore-keycloak-config \
+              -Dkeycloak.migration.strategy=OVERWRITE_EXISTING
+      - run:
+          name: Wait until Keycloak configuration import is complete
+          command: |
+            echo
+            echo "Wait for Keycloak to be ready"
+            echo "============================="
+            echo
+            while ! (docker container logs keycloak | fgrep -q "Keycloak 10.0.2 (WildFly Core 11.1.1.Final) started in");
+                do sleep 1;
+                # uncomment next line to see progress in terminal
+                #docker container logs --tail 3 --raw keycloak;
+                echo "... waiting for keycloak ...";
+            done
+            echo "KEYCLOAK READY"
+
   configure-python-version:
     description: Configure Python version to 3.7.0
     steps:

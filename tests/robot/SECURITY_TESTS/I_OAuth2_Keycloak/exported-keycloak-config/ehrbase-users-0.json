@@ -1,0 +1,122 @@
+{
+  "realm" : "ehrbase",
+  "users" : [ {
+    "id" : "3b7a9210-d9f3-4310-aa79-b88eb8e08b09",
+    "createdTimestamp" : 1588588613473,
+    "username" : "admin",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : false,
+    "email" : "admin@test.de",
+    "credentials" : [ {
+      "id" : "eda17845-93d2-4ca4-a793-4f009f5e8148",
+      "type" : "password",
+      "createdDate" : 1588588631886,
+      "secretData" : "{\"value\":\"wqDM/kVkpSUPA8QVPU5G6bE1vMMFf+QsDxwPY1chVfsUPaNDbEVDkoQB78f8YCt08KDCYA3xXHdiUIK3pl2U7Q==\",\"salt\":\"OYYHll34koUmS9jePHfRaQ==\"}",
+      "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\"}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "Admin", "offline_access", "uma_authorization" ],
+    "clientRoles" : {
+      "account" : [ "view-profile", "manage-account" ]
+    },
+    "notBefore" : 1594638866,
+    "groups" : [ ]
+  }, {
+    "id" : "070fcd59-685a-4e1a-af15-38fa6568e003",
+    "createdTimestamp" : 1594743152355,
+    "username" : "ehrbase",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : false,
+    "firstName" : "Ehr",
+    "lastName" : "Base",
+    "email" : "ehrbase@ehrbase.org",
+    "credentials" : [ {
+      "id" : "c30a93b6-28bf-4d3c-ac18-e27371f1d8f6",
+      "type" : "password",
+      "createdDate" : 1594743172269,
+      "secretData" : "{\"value\":\"VrR5/u/2aaWiE+YaNPBlOPnpqzyd61ilQlimh5wZXSsIjoUpye12X28ziuLSkCDLTSvqZs2D5jzqjxGef2lrtQ==\",\"salt\":\"c1q6Rl8c2cPX7Yc84HW9tg==\"}",
+      "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\"}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "user", "offline_access", "uma_authorization" ],
+    "clientRoles" : {
+      "account" : [ "view-profile", "manage-account" ]
+    },
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "b583da68-989f-4297-a89c-b437c528dd13",
+    "createdTimestamp" : 1594638968008,
+    "username" : "robot",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : false,
+    "firstName" : "Robot",
+    "lastName" : "Framework",
+    "email" : "robot@ehrbase.org",
+    "credentials" : [ {
+      "id" : "2fbcd212-8d73-4759-a9cb-676856025b97",
+      "type" : "password",
+      "createdDate" : 1594638980668,
+      "secretData" : "{\"value\":\"Qwl1HU9GCemAkydv0C4k2+/jfLww7GPU0ZpcVmmum6Ssp2dWurzZQX6Z48hWE4QdCmAPml0dqcZiRcx/dvW39A==\",\"salt\":\"u9YHI6Xa7Chq+VkZvA2cIg==\"}",
+      "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\"}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "Admin", "user", "offline_access", "uma_authorization" ],
+    "clientRoles" : {
+      "account" : [ "view-profile", "manage-account" ]
+    },
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "45db7e6b-2f4d-4379-be7c-b3311d3e6595",
+    "createdTimestamp" : 1589529727987,
+    "username" : "user",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : false,
+    "credentials" : [ {
+      "id" : "dd59a7b4-8075-4948-a238-1ee625718cff",
+      "type" : "password",
+      "createdDate" : 1589529744281,
+      "secretData" : "{\"value\":\"HvwOq6bFrSvgpYxnZ3mSK6gAgHk5T/+PSOgiCcg0VgaNerbZd/nMojRgGYPe9VBEUN21B1jli7kklaR8JTEqUA==\",\"salt\":\"mGquVHKP4zfEMyMmOH6F6w==\"}",
+      "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\"}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "user", "offline_access", "uma_authorization" ],
+    "clientRoles" : {
+      "account" : [ "view-profile", "manage-account" ]
+    },
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "d60a1805-4ad5-4c3e-9f86-68dc8787ea27",
+    "createdTimestamp" : 1588588315022,
+    "username" : "user1",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : false,
+    "email" : "user1@test.de",
+    "credentials" : [ {
+      "id" : "5cda01e3-6913-4713-98bf-5826cfd0cb8d",
+      "type" : "password",
+      "createdDate" : 1588588397299,
+      "secretData" : "{\"value\":\"Cd70G68F8sAPDuSylWI/d8g0yb20KRh3P5dZZcldYqRhid0hAA6XdmQi8AwE1RNve2tYzSLlp5KatSL82XAJsA==\",\"salt\":\"3fMyRdizLnSepmLRb2Bv8A==\"}",
+      "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\"}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "offline_access", "uma_authorization" ],
+    "clientRoles" : {
+      "account" : [ "view-profile", "manage-account" ]
+    },
+    "notBefore" : 0,
+    "groups" : [ ]
+  } ]
+}
