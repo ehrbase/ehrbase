@@ -24,6 +24,7 @@ tasks:
     desc: START SUT (NO CACHE)
     cmds:
       - task: startdb
+      - sleep 1
       - task: starteb
 
   stop:
@@ -40,11 +41,13 @@ tasks:
           cd ..
           EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
           echo "EHRbase_VERSION:" ${EHRbase_VERSION}
-          # - java -jar ../application/target/application-0.13.0.jar --cache.enabled=false --server.nodename=manual.execution.org > log &
-          SECURITY_AUTHTYPE=BASIC java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false --system.allow-template-overwrite=true > log &
+          java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false --server.nodename=manual.execution.org > log &
           grep -m 1 "Started EhrBase in" <(tail -f log)
-      env:
-        DISABLE_SECURITY: true
+          
+          # SECURITY_AUTHTYPE=BASIC java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false --system.allow-template-overwrite=true > log &
+          # SECURITY_AUTHTYPE=OAUTH SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI=http://localhost:8081/auth/realms/ehrbase java -jar application/target/application-${EHRbase_VERSION}.jar
+      # env:
+      #   DISABLE_SECURITY: true
 
   starteb-cache:
     desc: START EHRBASE SERVER WITH CACHE ENABLED
