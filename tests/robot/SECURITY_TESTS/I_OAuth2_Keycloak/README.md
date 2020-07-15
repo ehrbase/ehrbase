@@ -1,5 +1,5 @@
 A little documentation for my future me (cause I really don't want to go
-through that :f***: keycloak documentation ever again)
+through that f:rage: keycloak documentation ever again)
 
 
 RESTORE KEYCLOAK FROM PREVIOUSLY EXPORTED CONFIGURATION

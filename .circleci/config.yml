@@ -668,7 +668,7 @@ commands:
           no_output_timeout: 30m
           command: |
             cd tests
-            robot -v AUTH_TYPE:OAUTH
+            robot -v AUTH_TYPE:OAUTH \
                   --include << parameters.include-tags >> \
                   --exclude TODO -e future -e obsolete -e libtest \
                   --console dotted \
