@@ -102,11 +102,11 @@ Delete All Templates
     ...                 e.g. `java -jar ehrbase-server.jar --cache.enabled=false`
 
             # comment:  exit if 'control mode' is NONE
-                        Return From Keyword If    "${${SUT}.CONTROL}"=="NONE"
+                        Return From Keyword If    "${CONTROL_MODE}"=="NONE"
                         ...    No DB connection required!
 
             # comment:  use API if 'control mode' is API
-                        Run Keyword And Return If    "${${SUT}.CONTROL}"=="API"
+                        Run Keyword And Return If    "${CONTROL_MODE}"=="API"
                         ...  Log To Console  Using API to delete templates on the server!
 
             # comment:  use DB connection if 'control mode' is DOCKER or MANUAL
@@ -121,11 +121,11 @@ Delete All EHR Records
     ...                 e.g. `java -jar ehrbase-server.jar --cache.enabled=false`
 
             # comment:  exit if 'control mode' is NONE
-                        Return From Keyword If    "${${SUT}.CONTROL}"=="NONE"
+                        Return From Keyword If    "${CONTROL_MODE}"=="NONE"
                         ...    No DB connection required!
 
             # comment:  use API if 'control mode' is API
-                        Run Keyword And Return If    "${${SUT}.CONTROL}"=="API"
+                        Run Keyword And Return If    "${CONTROL_MODE}"=="API"
                         ...  Log To Console  Using API to delete templates on the server!
 
             # comment:  use DB connection if 'control mode' is DOCKER or MANUAL

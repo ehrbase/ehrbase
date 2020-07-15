@@ -52,15 +52,16 @@ Variables   ${EXECDIR}/robot/_resources/variables/sut_config.py
 # ${hip_baseurl_v1}     http://localhost:8080/ehrbase/rest/ecis/v1
 # ${template_id}    IDCR%20-%20Immunisation%20summary.v0        # TODO: @wlad rm if nothing breaks
 # ${invalid_ehr_id}    123
-${BASE_URL}             http://localhost:8080/ehrbase/rest/openehr/v1
-${PROJECT_ROOT}         ${EXECDIR}${/}..
-${POM_FILE}             ${PROJECT_ROOT}${/}pom.xml
+${BASE_URL}              http://localhost:8080/ehrbase/rest/openehr/v1
+${PROJECT_ROOT}          ${EXECDIR}${/}..
+${POM_FILE}              ${PROJECT_ROOT}${/}pom.xml
+${CREATING_SYSTEM_ID}    ${NODENAME}
+${SMOKE_TEST_PASSED}     ${TRUE}
 
-${SUT}                  TEST    # Switch System Under Test (SUT). Check tests/README.md for details.
-${CODE_COVERAGE}        False
-${NODOCKER}             False
-${AUTH_TYPE}            BASIC
-${SMOKE_TEST_PASSED}    ${TRUE}
+${SUT}                   TEST    # Switch System Under Test (SUT). Check tests/README.md for details.
+${CODE_COVERAGE}         False
+${NODOCKER}              False
+${AUTH_TYPE}             BASIC
 
 
 # # local test environment: for development
