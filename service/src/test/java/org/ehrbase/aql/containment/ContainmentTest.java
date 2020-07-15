@@ -133,12 +133,9 @@ public class ContainmentTest extends TestAqlBase {
                 " WHERE cluster2/items[at0002]/value/magnitude > 5";
 
         AqlExpression aqlExpression = new AqlExpression().parse(query);
-        try {
-            new Contains(aqlExpression.getParseTree(), knowledge).process();
-            fail("Untrapped non existing definition: COMPOSITION[openEHR-EHR-COMPOSITION.unknown.v1]");
-        } catch (IllegalArgumentException e){
 
-        }
+        Contains contains = new Contains(aqlExpression.getParseTree(), knowledge).process();
+        assertTrue(contains.getTemplates().isEmpty());
 
     }
 
@@ -260,11 +257,9 @@ public class ContainmentTest extends TestAqlBase {
                 "                   and CLUSTER n[openEHR-EHR-CLUSTER.case_identification.v0])";
 
 
-        try {
-            new Contains(new AqlExpression().parse(query).getParseTree(), knowledge).process();
-            fail("this shouldn't match any templates");
-        }
-        catch (Exception e){}
+        Contains contains = new Contains(new AqlExpression().parse(query).getParseTree(), knowledge).process();
+        assertTrue(contains.getTemplates().isEmpty());
+
 
         //the first query check for composition contains cluster n AND admin_entry contains cluster a
         String query1 = "SELECT u" +
@@ -277,7 +272,7 @@ public class ContainmentTest extends TestAqlBase {
                 "                   )";
 
         AqlExpression aqlExpression = new AqlExpression().parse(query1);
-        Contains contains = new Contains(aqlExpression.getParseTree(), knowledge).process();
+        contains = new Contains(aqlExpression.getParseTree(), knowledge).process();
 
         assertTrue(contains.getTemplates().contains("Patientenaufenthalt"));
      }

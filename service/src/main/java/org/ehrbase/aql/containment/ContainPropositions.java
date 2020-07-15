@@ -90,6 +90,8 @@ public class ContainPropositions {
                                     + ", as in:" + entry.getValue());
 
                     } catch (Exception e) {
+                        if (e instanceof IllegalArgumentException)
+                            return;
                         throw new IllegalArgumentException("Could not traverse cached templates:" + e);
                     }
                 }
