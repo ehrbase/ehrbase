@@ -15,6 +15,14 @@
 # limitations under the License.
 
 spring:
+  application:
+    name: ehrbase-client
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          #issuer-uri: http://localhost:8081/auth/realms/ehrbase  # Example issuer URI - or set via env var
+          issuer-uri:
   profiles:
     active: local
   datasource:
@@ -27,6 +35,8 @@ security:
   authType: BASIC
   authUser: ehrbase-user
   authPassword: SuperSecretPassword
+  authAdminUser: ehrbase-admin
+  authAdminPassword: EvenMoreSecretPassword
 
 cache:
   config: '/ehcache.xml'
