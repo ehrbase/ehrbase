@@ -124,6 +124,7 @@
         <postgressql.version>42.2.5</postgressql.version>
         <ehrbase.sdk.version>d97d209</ehrbase.sdk.version>
         <flyway.version>6.2.0</flyway.version>
+        <joda.version>2.10.6</joda.version>
         <database.name>ehrbase</database.name>
         <database.user>ehrbase</database.user>
         <database.pass>ehrbase</database.pass>
@@ -135,7 +136,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.2.4.RELEASE</version>
+        <version>2.3.1.RELEASE</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -226,13 +227,14 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-web</artifactId>
-                <version>2.2.4.RELEASE</version>
+                <version>2.3.1.RELEASE</version>
                 <exclusions>
-                    <exclusion>
-                        <groupId>ch.qos.logback</groupId>
-                        <artifactId>logback-classic</artifactId>
-                    </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-validation</artifactId>
+                <version>2.3.1.RELEASE</version>
             </dependency>
 
             <dependency>
@@ -254,21 +256,6 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-text</artifactId>
                 <version>${commons-text.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-api</artifactId>
-                <version>${log4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-core</artifactId>
-                <version>${log4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>log4j</groupId>
-                <artifactId>log4j</artifactId>
-                <version>1.2.17</version>
             </dependency>
             <dependency>
                 <groupId>org.jooq</groupId>
@@ -302,10 +289,6 @@
                 <version>${json.path.version}</version>
             </dependency>
             <dependency>
-                <!--        <groupId>com.nedap.healthcare.archie</groupId>
-                        <artifactId>archie-all</artifactId>
-                        <version>0.7.0-SNAPSHOT</version>
-                -->
                 <groupId>com.github.openEHR</groupId>
                 <artifactId>archie</artifactId>
                 <version>738152e</version>
@@ -375,18 +358,6 @@
                 <artifactId>junit</artifactId>
                 <version>4.12</version>
             </dependency>
-            <!-- <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-engine</artifactId>
-                <version>5.4.0</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.junit.vintage</groupId>
-                <artifactId>junit-vintage-engine</artifactId>
-                <version>5.4.0</version>
-                <scope>test</scope>
-            </dependency> -->
             <dependency>
                 <groupId>org.jdom</groupId>
                 <artifactId>jdom</artifactId>
@@ -468,11 +439,15 @@
                 <artifactId>spring-security-web</artifactId>
                 <version>${spring-security.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-config</artifactId>
                 <version>${spring-security.version}</version>
+            </dependency>
+            <dependency>    <!-- TODO migrate away from joda -->
+                <groupId>joda-time</groupId>
+                <artifactId>joda-time</artifactId>
+                <version>${joda.version}</version>
             </dependency>
             <!--  Test dependencies -->
             <dependency>
