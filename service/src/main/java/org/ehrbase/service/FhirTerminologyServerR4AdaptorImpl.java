@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.ehrbase.api.definitions.FhirTsProps;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -42,6 +44,8 @@ import net.minidev.json.JSONArray;
 @Component
 public final class FhirTerminologyServerR4AdaptorImpl
 		implements org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer {
+
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	private static volatile FhirTerminologyServerR4AdaptorImpl  instance = null;//thread safety is ensure in the getInstance method.
 	/**
@@ -147,7 +151,7 @@ public final class FhirTerminologyServerR4AdaptorImpl
 	@Override
 	public final Boolean validate(final DvCodedText concept, final String valueSetId) {
 		// TODO Auto-generated method stub
-		System.out.println("inside the validate method of R4 implemetntation");
+		logger.debug("inside the validate method of R4 implementation");
 		return null;
 	}
 
