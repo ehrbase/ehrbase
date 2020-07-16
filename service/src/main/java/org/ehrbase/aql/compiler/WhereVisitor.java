@@ -25,7 +25,6 @@ import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.parser.AqlBaseVisitor;
 import org.ehrbase.aql.parser.AqlParser;
 import org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer;
-import org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -138,22 +137,35 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
 
 	}
 
-	@Override public List<Object> visitInvokeExpr(AqlParser.InvokeExprContext ctx) { 
+	@Override
+	public List<Object> visitInvokeExpr(AqlParser.InvokeExprContext ctx) { 
 		List<Object> invokeExpr = new ArrayList<>();
 		assert(ctx.TERMINOLOGY().getText().equals("TERMINOLOGY"));
 		assert(ctx.OPEN_PAR().getText().equals("("));
 		assert(ctx.CLOSE_PAR().getText().equals(")"));
 		List<String> codesList = new ArrayList<>();
-		final String valueSetUri=ctx.STRING(0).getText();
-		final String operationId=ctx.STRING(1).getText();
-		try {
-			I_OpenehrTerminologyServer TsAdapter = I_OpenehrTerminologyServer.getInstance(null, ctx.STRING(2).getText());
-			List <DvCodedText> expansion = TsAdapter.expandWithParameters(valueSetUri, operationId);
-			expansion.forEach((DvCodedText dvCode) -> {codesList.add(dvCode.getDefiningCode().getCodeString());});
-		} catch (Exception e) {
-			throw new IllegalArgumentException("Terminology server operation failed:'"+e.getMessage()+"'");
+		final String operationId=ctx.STRING(0).getText();
+		final String adapter = ctx.STRING(1).getText();
+		final String parametters=ctx.STRING(2).getText();
+		if(operationId.replace("'", "").equals("expand")) {
+			try {
+				I_OpenehrTerminologyServer TsAdapter = I_OpenehrTerminologyServer.getInstance(null, adapter);
+				List <DvCodedText> expansion = TsAdapter.expandWithParameters(parametters, operationId);
+				expansion.forEach((DvCodedText dvCode) -> {codesList.add(dvCode.getDefiningCode().getCodeString());});
+				invokeExpr.addAll(codesList);
+			} catch (Exception e) {
+				throw new IllegalArgumentException("Terminology server operation failed:'"+e.getMessage()+"'");
+			}
+		}else if(operationId.replace("'", "").equals("validate")) {
+			try {
+				I_OpenehrTerminologyServer TsAdapter = I_OpenehrTerminologyServer.getInstance(null, adapter);
+				Boolean expansion = TsAdapter.validate(parametters);
+				invokeExpr.add(expansion);
+			} catch (Exception e) {
+				throw new IllegalArgumentException("Terminology server operation failed:'"+e.getMessage()+"'");
+			}
 		}
-		invokeExpr.addAll(codesList);
+		
 		return invokeExpr; 
 	}
 
