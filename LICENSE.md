@@ -53,13 +53,23 @@ Apache License, Version 2.0 (see https://www.apache.org/licenses/LICENSE-2.0):
 - Apache Commons Collections (http://commons.apache.org)
 - Apache Http (http://hc.apache.org/)
 - Apache Log4j (http://logging.apache.org)
+- Apache Velocity 1.5 (http://velocity.apache.org)
+- Apache XML Beans (http://xmlbeans.apache.org)
 - Joda-Time (http://www.joda.org/joda-time/)
+- Guava: Google Core Libraries for Java (https://github.com/google/guava/guava)
 - Gson (https://github.com/google/gson)
+- FindBugs-jsr305 (http://findbugs.sourceforge.net/)
+- Everit JSON Schema(https://github.com/everit-org/json-schema)
 - Apache Maven Surefire Report Plugin (https://maven.apache.org/components/surefire/)
 - JSR107 API and SPI (https://github.com/jsr107/jsr107spec)
 - AssertJ (https://github.com/assertj/)
+- json-io (https://github.com/jdereg/json-io)
+- JUnit Toolbox (https://github.com/MichaelTamm/junit-toolbox)
 - Spring Plugin - Metadata Extension, (https://repo.spring.io/release/org/springframework/plugin/spring-plugin-metadata/)
 - Jayway JsonPath (https://github.com/json-path/JsonPath)
+- JCTree (https://github.com/gauravsaxena81/jctree)
+- Fast-Serialization (FST) (https://github.com/RuedigerMoeller/fast-serialization)
+- XMLUnit (https://github.com/xmlunit/xmlunit)
 - Plexus Interpolation API, (http://plexus.codehaus.org/plexus-components/plexus-interpolation)
 - Plexus Common Utilities, (http://plexus.codehaus.org/plexus-utils)
 - Default Plexus Container,(https://codehaus-plexus.github.io/plexus-containers/plexus-container-default/)
@@ -81,6 +91,7 @@ Apache License, Version 2.0 (see https://www.apache.org/licenses/LICENSE-2.0):
 BSD License:
 - ANTLR 4 (http://www.antlr.org), The BSD License (see below)
 - PostgreSQL JDBC Driver - JDBC 4.2 (https://github.com/pgjdbc/pgjdbc), BSD-2-Clause (see below)
+- JScience (http://jscience.org/), JScience BSD License (see below) 
 - Temporal Tables Extension, BSD 2-Clause "Simplified" License (see below)
 		
 MIT License:
@@ -92,6 +103,7 @@ MIT License:
 	
 Others:
 - JAXB (http://jaxb.java.net), Common Development and Distribution License 1.0 (see https://opensource.org/licenses/CDDL-1.0)
+- Jdom (https://github.com/hunterhacker/jdom/), Jdom license (see below)
 - JUnit (http://junit.org), Eclipse Public License - v 1.0 (see below)
 - JSON Java (https://github.com/douglascrockford/JSON-java), The JSON License (see below)
 - Backport of JSR 166 (http://backport-jsr166.sourceforge.net/), Creative Commons Public Domain (see https://creativecommons.org/licenses/publicdomain/)
@@ -227,6 +239,88 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
+
+----
+
+JScience License:
+
+JScience - Java(TM) Tools and Libraries for the Advancement of Sciences.
+Copyright (C) 2006 - JScience (http://jscience.org/)
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice
+      and include this license agreemeent. 
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR 
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; 
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+----
+
+Jdom license:
+
+Copyright (C) 2000-2012 Jason Hunter & Brett McLaughlin.
+ All rights reserved.
+ 
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ 
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions, and the following disclaimer.
+ 
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions, and the disclaimer that follows 
+    these conditions in the documentation and/or other materials 
+    provided with the distribution.
+
+ 3. The name "JDOM" must not be used to endorse or promote products
+    derived from this software without prior written permission.  For
+    written permission, please contact <request_AT_jdom_DOT_org>.
+ 
+ 4. Products derived from this software may not be called "JDOM", nor
+    may "JDOM" appear in their name, without prior written permission
+    from the JDOM Project Management <request_AT_jdom_DOT_org>.
+ 
+ In addition, we request (but do not require) that you include in the 
+ end-user documentation provided with the redistribution and/or in the 
+ software itself an acknowledgement equivalent to the following:
+     "This product includes software developed by the
+      JDOM Project (http://www.jdom.org/)."
+ Alternatively, the acknowledgment may be graphical using the logos 
+ available at http://www.jdom.org/images/logos.
+
+ THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ DISCLAIMED.  IN NO EVENT SHALL THE JDOM AUTHORS OR THE PROJECT
+ CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ SUCH DAMAGE.
+
+ This software consists of voluntary contributions made by many 
+ individuals on behalf of the JDOM Project and was originally 
+ created by Jason Hunter <jhunter_AT_jdom_DOT_org> and
+ Brett McLaughlin <brett_AT_jdom_DOT_org>.  For more information
+ on the JDOM Project, please see <http://www.jdom.org/>. 
 
 ----
 
