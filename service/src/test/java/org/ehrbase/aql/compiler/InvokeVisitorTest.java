@@ -30,8 +30,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.nedap.archie.rm.datavalues.DvCodedText;
-
 //@RunWith(SpringRunner.class)
 //@SpringBootTest//(classes= {org.ehrbase.application.EhrBase.class})
 //@ActiveProfiles("test")
@@ -40,15 +38,19 @@ public class InvokeVisitorTest {
 	@Autowired
 	private I_OpenehrTerminologyServer tsserver;
 
-	@Ignore("This test runs against ontoserver sample inteance. It is deactivated until we have a test FHIR terminology server and the architecture allows to run Spring integration tests.")
+	/*
+	 * @Rule public WireMockRule wireMockRule = new WireMockRule(8089);
+	 */
+	@Ignore("Deactivated until we have a test terminology server")
 	@Test
-	public void shouldVisitInvokeExpression() {
+	public void shouldVisitInvokeExpressionExpandOperation() {
+		//postman request for expansion is: GET https://r4.ontoserver.csiro.au/fhir/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/surface
 		WhereVisitor cut = new WhereVisitor();
 		String aql = "SELECT o/data[at0002]/events[at0003] AS systolic " +
 				"FROM EHR [ehr_id/value='1234'] " +
 				"CONTAINS COMPOSITION c " +
 				"CONTAINS OBSERVATION o [openEHR-EHR-OBSERVATION.blood_pressure.v1] " +
-				"WHERE c/archetype_details/template_id/value matches {'Flormidal', TERMINOLOGY('http://hl7.org/fhir/ValueSet/surface','ValueSet/$expand','org.hl7.fhir.r4'), 'Kloralhidrat'}";
+				"WHERE c/archetype_details/template_id/value matches {'Flormidal', TERMINOLOGY('expand','http://hl7.org/fhir/4.0','url=http://hl7.org/fhir/ValueSet/surface'), 'Kloralhidrat'}";
 		ParseTree tree = QueryHelper.setupParseTree(aql);
 		cut.visit(tree);
 
@@ -116,4 +118,40 @@ public class InvokeVisitorTest {
 		assertThat(whereExpression.get(28)).isEqualTo(")");
 
 	}
-}
+	@Ignore("Deactivated until we have a test terminology server")
+	@Test
+	public void shouldVisitInvokeExpressionValidateOperation() {
+		//postman request for expansion is: GET https://r4.ontoserver.csiro.au/fhir/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/surface
+		WhereVisitor cut = new WhereVisitor();
+		String aql = "SELECT o/data[at0002]/events[at0003] AS systolic " +
+				"FROM EHR [ehr_id/value='1234'] " +
+				"CONTAINS COMPOSITION c " +
+				"CONTAINS OBSERVATION o [openEHR-EHR-OBSERVATION.blood_pressure.v1] " +
+				"WHERE c/archetype_details/template_id/value MATCHES {'Flormidal', TERMINOLOGY('validate','http://hl7.org/fhir/4.0','system=http://snomed.info/sct&code=122298005&url=http://snomed.info/sct?fhir_vs&display=Astrovirus RNA assay'), 'Kloralhidrat'}";
+		ParseTree tree = QueryHelper.setupParseTree(aql);
+		cut.visit(tree);
+
+		List<Object> whereExpression = cut.getWhereExpression();
+		assertThat(whereExpression).size().isEqualTo(9);
+
+		I_VariableDefinition where1 = (I_VariableDefinition) whereExpression.get(0);
+		I_VariableDefinition expected1 = I_VariableDefinitionHelper.build("archetype_details/template_id/value", null, "c", false, false, false);
+		I_VariableDefinitionHelper.checkEqualWithoutFuncParameters(where1, expected1);
+
+		assertThat(whereExpression.get(1)).isEqualTo(" IN ");
+
+		assertThat(whereExpression.get(2)).isEqualTo("(");
+
+		assertThat(whereExpression.get(3)).isEqualTo("'Flormidal'");
+
+		assertThat(whereExpression.get(4)).isEqualTo(",");
+
+		assertThat(whereExpression.get(5)).isEqualTo(true);
+
+		assertThat(whereExpression.get(6)).isEqualTo(",");
+
+		assertThat(whereExpression.get(7)).isEqualTo("'Kloralhidrat'");
+
+		assertThat(whereExpression.get(8)).isEqualTo(")");
+	}
+	}

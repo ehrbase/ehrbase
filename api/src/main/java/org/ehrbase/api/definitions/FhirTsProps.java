@@ -10,4 +10,8 @@ public interface FhirTsProps {
 	public String getDisplayPath();
 	
 	public void setDisplayPath(String displayPath);
+	
+	public String getValidationResultPath();
+	
+	public void setValidationResultPath(String validationResultPath);
 }

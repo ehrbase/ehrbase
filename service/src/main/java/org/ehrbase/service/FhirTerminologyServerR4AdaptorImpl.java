@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.ehrbase.api.definitions.FhirTsProps;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -34,12 +36,16 @@ import com.jayway.jsonpath.JsonPath;
 import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.support.identification.TerminologyId;
+
+import net.minidev.json.JSONArray;
 /***
  *@Created by Luis Marco-Ruiz on Feb 12, 2020
  */
 @Component
 public final class FhirTerminologyServerR4AdaptorImpl
 		implements org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer {
+
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	private static volatile FhirTerminologyServerR4AdaptorImpl  instance = null;//thread safety is ensure in the getInstance method.
 	/**
@@ -107,11 +113,9 @@ public final class FhirTerminologyServerR4AdaptorImpl
 	
 	@Override
 	public final List<DvCodedText> expandWithParameters(final String valueSetId, String...operationParams) {
-		System.out.println("inside the expand");
 		//build URL
 		String urlTsServer = props.getTsUrl();
-		urlTsServer+=operationParams[0]+"?url="+valueSetId;
-		 System.out.println("the url to use: "+urlTsServer);
+		urlTsServer+="ValueSet/$"+operationParams[0]+"?"+valueSetId;
 		RestTemplate rest = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("accept","application/fhir+json");
@@ -147,6 +151,7 @@ public final class FhirTerminologyServerR4AdaptorImpl
 	@Override
 	public final Boolean validate(final DvCodedText concept, final String valueSetId) {
 		// TODO Auto-generated method stub
+		logger.debug("inside the validate method of R4 implementation");
 		return null;
 	}
 
@@ -154,6 +159,24 @@ public final class FhirTerminologyServerR4AdaptorImpl
 	public final SubsumptionResult subsumes(final DvCodedText conceptA, final DvCodedText conceptB) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	@Override
+	public Boolean validate(String... operationParams) {
+		//build URL
+				String urlTsServer = props.getTsUrl();
+				urlTsServer+="ValueSet/$"+"validate-code"+"?"+operationParams[0];
+				RestTemplate rest = new RestTemplate();
+				HttpHeaders headers = new HttpHeaders();
+				headers.set("accept","application/fhir+json");
+				HttpEntity<String> entity =  new HttpEntity<>(headers);
+				ResponseEntity<String> responseEntity = rest.exchange(urlTsServer.replace("'", ""),
+						HttpMethod.GET,
+						entity,
+						String.class);
+				String response = responseEntity.getBody();
+				DocumentContext jsonContext = JsonPath.parse(response);
+		Boolean result = (Boolean) ((JSONArray) jsonContext.read(props.getValidationResultPath()/* "$.parameter[:1].valueBoolean" */)).get(0);
+				return result;
 	}
 
 }

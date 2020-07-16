@@ -22,4 +22,5 @@ terminology_server:
   codePath: '$[\"expansion\"][\"contains\"][*][\"code\"]'
   systemPath: '$[\"expansion\"][\"contains\"][*][\"system\"]'
   displayPath: '$[\"expansion\"][\"contains\"][*][\"display\"]'
+  validationResultPath: '$.parameter[:1].valueBoolean'
 
