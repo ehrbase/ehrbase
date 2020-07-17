@@ -22,8 +22,8 @@ Metadata    Author    *Wladislaw Wagner*
 Metadata    Created    2019.03.03
 
 Documentation   C.5.b) Clear EHR modifiable of non existent EHR
-
-Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
+Metadata        TOP_TEST_SUITE    EHR_STATUS
+Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 
 # Suite Setup  startup SUT
 # Suite Teardown  shutdown SUT
