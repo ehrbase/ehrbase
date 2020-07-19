@@ -57,13 +57,13 @@ EXPORT COMPLETE KEYCLOAK CONFIGURATION
 
 
 2) LOGIN AS ADMIN AND CONFIGURE KC TO YOUR NEEDS
-
-    a) create realm: ehrbase
-    b) create client: ehrbase-robot
-       IMPORTANT: make sure in client settings
-       - 'Access Type' is set to **public**
-       - 'Direct Access Grants Enabled' is set to **ON**
-    c) create user: robot w/ passwort robot
+    - a) create realm: ehrbase
+    - b) create client: ehrbase-robot
+      - IMPORTANT: make sure in client settings
+        - 'Access Type' is set to **public**
+        - 'Direct Access Grants Enabled' is set to **ON**
+      
+    - c) create user: robot w/ passwort robot
 
 
 3) EXPORT CONFIGURATION INTO MULTIPLE FILES WITHIN A DIRECTORY
