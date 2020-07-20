@@ -19,9 +19,12 @@ package org.ehrbase.rest.openehr.controller.admin;
 
 import io.swagger.annotations.*;
 import org.ehrbase.response.openehr.AdminDeleteResponseData;
+import org.ehrbase.response.openehr.AdminStatusResponseData;
 import org.ehrbase.response.openehr.AdminUpdateResponseData;
 import org.ehrbase.rest.openehr.controller.BaseController;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +37,9 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping(path = "/rest/openehr/v1/admin/template", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrAdminTemplateController extends BaseController {
+
+    @Autowired
+    AdminApiConfiguration adminApiConfiguration;
 
     @PutMapping(path = "/{template_id}", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     @ApiResponses(value = {
@@ -105,7 +111,6 @@ public class OpenehrAdminTemplateController extends BaseController {
         return ResponseEntity.ok().body(new AdminDeleteResponseData(0));
     }
 
-    @ConditionalOnProperty(prefix = "admin-api", name = "allowDeleteAll")
     @DeleteMapping(path = "/all")
     @ApiResponses(value = {
             @ApiResponse(
@@ -133,6 +138,12 @@ public class OpenehrAdminTemplateController extends BaseController {
             )
     })
     public ResponseEntity<AdminDeleteResponseData> deleteAllTemplates() {
+
+        if (!this.adminApiConfiguration.getAllowDeleteAll()) {
+            return ResponseEntity
+                    .status(HttpStatus.METHOD_NOT_ALLOWED)
+                    .build();
+        }
         return ResponseEntity.ok().body(new AdminDeleteResponseData(0));
     }
 }
