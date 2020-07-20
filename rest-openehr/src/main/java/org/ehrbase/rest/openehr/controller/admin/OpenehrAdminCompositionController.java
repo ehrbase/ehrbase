@@ -15,12 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.rest.openehr.controller;
+package org.ehrbase.rest.openehr.controller.admin;
 
 import io.swagger.annotations.*;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.response.openehr.AdminDeleteResponseData;
+import org.ehrbase.rest.openehr.controller.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -46,7 +47,7 @@ public class OpenehrAdminCompositionController extends BaseController {
         this.ehrService = ehrService;
     }
 
-    @DeleteMapping(path = "/{ehr_id}/composition/{composition_id")
+    @DeleteMapping(path = "/{ehr_id}/composition/{composition_id}")
     @ApiResponses(value = {
             @ApiResponse(
                     code = 200,

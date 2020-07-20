@@ -15,11 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.rest.openehr.controller;
+package org.ehrbase.rest.openehr.controller.admin;
 
 import io.swagger.annotations.*;
 import org.ehrbase.response.openehr.AdminDeleteResponseData;
 import org.ehrbase.response.openehr.AdminUpdateResponseData;
+import org.ehrbase.rest.openehr.controller.BaseController;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,10 +30,10 @@ import org.springframework.web.bind.annotation.*;
  */
 @Api(tags = {"Admin", "Template"})
 @RestController
-@RequestMapping(path = "/rest/openehr/v1/admin/template")
+@RequestMapping(path = "/rest/openehr/v1/admin/template", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrAdminTemplateController extends BaseController {
 
-    @PutMapping(path = "/{template_id}")
+    @PutMapping(path = "/{template_id}", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     @ApiResponses(value = {
             @ApiResponse(
                     code = 200,
@@ -59,7 +60,7 @@ public class OpenehrAdminTemplateController extends BaseController {
             )
     })
     public ResponseEntity<AdminUpdateResponseData> updateTemplate(
-            @ApiParam(value = "Taget template id to update")
+            @ApiParam(value = "Target template id to update")
             @PathVariable(value = "template_id")
                     String templateId
     ) {
@@ -94,7 +95,7 @@ public class OpenehrAdminTemplateController extends BaseController {
             )
     })
     public ResponseEntity<AdminDeleteResponseData> deleteTemplate(
-            @ApiParam(value = "Taget template id to update")
+            @ApiParam(value = "Target template id to update")
             @PathVariable(value = "template_id")
                     String templateId
     ) {
