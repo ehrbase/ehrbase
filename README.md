@@ -61,20 +61,35 @@ Replace the * with the current version, e.g. `application/target/application-0.9
 
 `java -jar application/target/application-*.jar`
 
-### Authentication
+### Authentication Types
 
-As of now EHRbase uses Basic Authentication for all resources. This means you have to send an 'Authorization' header
-set with keyword `Basic ` followed by the authentication information in Base64 encoded username and password. To
+#### 1. Basic Auth
+
+EHRbase can use Basic Authentication for all resources. This means you have to send an 'Authorization' header
+set with keyword `Basic` followed by the authentication information in Base64 encoded username and password. To
 generate the Base64 encoded username and password combination create the string after the following schema:
 `username:password`.
 
-The Basic Auth mechanism is implemented as "opt-out" and can be activated either by providing an environment variable
-`security.authType=BASIC` with the start command or by adding the value into the target application.yml file.
+The Basic Auth mechanism is implemented as "opt-in" and can be activated either by providing an environment variable
+`SECURITY_AUTHTYPE=BASIC` with the start command or by adding the value into the target application.yml file.
 
-Currently we have support one user with password which can be set via environment variables `security.authUser` and
-`security.authPassword`. By default these values are set with `ehrbase-user` and `authPassword=SuperSecretPassword`
+Currently we have support one user with password which can be set via environment variables `SECURITY_AUTHUSER` and
+`SECURITY_AUTHPASSWORD`. By default these values are set with `ehrbase-user` and `authPassword=SuperSecretPassword`
 and can be overridden by environment values. Alternatively you can set them inside the corresponding application.yml
 file.
+
+The same applies to the *admin* user, via `SECURITY_AUTHADMINUSER`, `SECURITY_AUTHADMINPASSWORD` 
+and their default values of `ehrbase-admin` and `EvenMoreSecretPassword`.
+
+#### 2. OAuth2
+
+Environment variable `SECURITY_AUTHTYPE=OAUTH` is enabling OAuth2 authentication.
+
+Additionally, setting the following variable to point to the existing OAuth2 server and realm is necessary:
+`SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI=http://localhost:8081/auth/realms/ehrbase`
+
+In the given OAuth2 server configuration the roles `user` and `admin` are expected to be configured. 
+Users should have their roles assigned accordingly.
 
 ## Running the tests
 

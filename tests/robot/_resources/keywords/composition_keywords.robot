@@ -707,8 +707,8 @@ create EHR
     ...                 Run Keywords    prepare new request session   JSON
     ...                                 Prefer=return=representation
     ...                 AND             create new EHR
-    ...                 AND             extract ehr_id from response (JSON)
-    ...                 AND             extract ehrstatus_uid (JSON)
+    # ...                 AND             extract ehr_id from response (JSON)
+    # ...                 AND             extract ehrstatus_uid (JSON)
 
     Run Keyword If      '${accept-header}'=='XML'
     ...                 Run Keywords    prepare new request session    XML

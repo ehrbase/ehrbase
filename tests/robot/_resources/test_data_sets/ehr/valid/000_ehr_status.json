@@ -11,7 +11,7 @@
         "value": "__AUTO-GENRATED-BY-TEST__",
         "scheme": "id_scheme"
       },
-      "namespace": "examples",
+      "namespace": "patients",
       "type": "PERSON"
     }
   },

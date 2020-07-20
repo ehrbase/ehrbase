@@ -16,14 +16,8 @@ Documentation    Alternative flow 1: has path on EHR with just root directory
 ...         -----+-------------------------+---------+
 ...         DS 1 | /                       | true    |
 ...         DS 2 | _any_other_random_path_ | false   |
-
-
-Resource    ${CURDIR}${/}../../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/generic_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/contribution_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/directory_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/template_opt1.4_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
+Metadata        TOP_TEST_SUITE    DIRECTORY
+Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
 
 Suite Setup    Establish Preconditions
 # Test Setup  start openehr server

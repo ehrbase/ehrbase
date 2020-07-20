@@ -10,10 +10,8 @@ Documentation   Alternative flow 2: update directory on non-existing EHR
 ...             
 ...             Postconditions:
 ...                 None.
-
-
-
-Resource    ${CURDIR}${/}../../_resources/suite_settings.robot
+Metadata        TOP_TEST_SUITE    DIRECTORY
+Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
 
 #Suite Setup  startup SUT
 # Test Setup  start openehr server

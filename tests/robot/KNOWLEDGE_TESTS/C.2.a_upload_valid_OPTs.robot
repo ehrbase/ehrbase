@@ -34,9 +34,8 @@ Documentation   OPT1.4 integration tests
 ...                 For each valid OPT in the data set, invoke the OPT upload service
 ...                 The result should be positive, the server accepted the OPT
 ...                 and it is stored as it was uploaded
-
-Resource    ${CURDIR}${/}../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../_resources/keywords/template_opt1.4_keywords.robot
+Metadata        TOP_TEST_SUITE    EHR_STATUS
+Resource        ${CURDIR}${/}../_resources/suite_settings.robot
 
 # Suite Setup  startup OPT SUT
 Suite Teardown  Delete All Templates

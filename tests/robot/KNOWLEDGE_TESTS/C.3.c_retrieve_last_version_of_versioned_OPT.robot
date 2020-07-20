@@ -35,10 +35,8 @@ Documentation   OPT1.4 integration tests
 ...                 1. Invoke the retrieve OPT service with existing template_ids
 ...                 2. For each template_id, the correct OPT will be returned,
 ...                    and will be the last version
-
-
-Resource    ${CURDIR}${/}../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../_resources/keywords/template_opt1.4_keywords.robot
+Metadata        TOP_TEST_SUITE    EHR_STATUS
+Resource        ${CURDIR}${/}../_resources/suite_settings.robot
 
 # Suite Setup  startup OPT SUT
 # Suite Teardown  Delete All Templates
