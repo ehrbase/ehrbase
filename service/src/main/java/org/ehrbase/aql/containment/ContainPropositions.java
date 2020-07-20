@@ -40,6 +40,11 @@ public class ContainPropositions {
      */
     private Set<String> templates = new HashSet<>();
 
+    /**
+     * if true, at least one of the contains identifier failed to be resolved.
+     */
+    private boolean hasUnresolvedContains = false;
+
     public ContainPropositions(IdentifierMapper identifierMapper) {
         this.identifierMapper = identifierMapper;
     }
@@ -63,6 +68,8 @@ public class ContainPropositions {
         ContainsCheck lastCheck = null;
         //iterate in-order on the map of contains proposition and keep the last one (since it will contain the result)
         for (Map.Entry<String, ContainsCheck> entry: propositionsEvalMap.entrySet()){
+            if (hasUnresolvedContains)
+                break;
             if (entry.getValue() instanceof SimpleChainedCheck){
                 String jsonQuery = ((SimpleChainedCheck) entry.getValue()).jsonPathNodeFilterExpression();
                 if (jsonQuery != null) { //case CONTAINS COMPOSITION c without any specified further containments
@@ -90,8 +97,10 @@ public class ContainPropositions {
                                     + ", as in:" + entry.getValue());
 
                     } catch (Exception e) {
-                        if (e instanceof IllegalArgumentException)
+                        if (e instanceof IllegalArgumentException) {
+                            hasUnresolvedContains = true;
                             return;
+                        }
                         throw new IllegalArgumentException("Could not traverse cached templates:" + e);
                     }
                 }
@@ -167,5 +176,13 @@ public class ContainPropositions {
      */
     public boolean isUseSimpleCompositionContainment() {
         return identifierMapper.isUseSimpleCompositionContainment();
+    }
+
+    /**
+     * indicates whether one contains couldn't be resolved (f.e. an unknown archetype node id in any templates)
+     * @return
+     */
+    public boolean hasUnresolvedContains() {
+        return hasUnresolvedContains;
     }
 }

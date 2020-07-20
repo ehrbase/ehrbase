@@ -278,6 +278,27 @@ public class ContainmentTest extends TestAqlBase {
      }
 
 
+    @Test
+    public void testContainWithUnknownContainment(){
+
+        //the first query check for composition contains admin_entry contains both cluster a AND cluster n
+        String query = "SELECT u" +
+                " FROM EHR e " +
+                "   CONTAINS COMPOSITION c " +
+                "       CONTAINS " +
+                "           (" +
+                "                   CLUSTER a[openEHR-EHR-CLUSTER.location.v1] " +
+                "                   and " +
+                "                   CLUSTER n[openEHR-EHR-CLUSTER.case_identification.v0]" +
+                "                   and " +
+                "                   CLUSTER z[openEHR-EHR-CLUSTER.unknown.v0]" +
+                "            )";
+
+
+        Contains contains = new Contains(new AqlExpression().parse(query).getParseTree(), knowledge).process();
+        assertTrue(contains.getTemplates().isEmpty());
+    }
+
 
 
 }

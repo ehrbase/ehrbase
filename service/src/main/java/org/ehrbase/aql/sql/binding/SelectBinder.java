@@ -52,7 +52,6 @@ public class SelectBinder extends TemplateMetaData implements I_SelectBinder {
     private final WhereBinder whereBinder;
 
     private boolean isWholeComposition = false;
-    private boolean usePgExtensions = true;
 
     SelectBinder(DSLContext context, IntrospectService introspectCache, PathResolver pathResolver, VariableDefinitions variableDefinitions, List whereClause, String serverNodeId) {
         super(introspectCache);
@@ -77,7 +76,7 @@ public class SelectBinder extends TemplateMetaData implements I_SelectBinder {
     /**
      * bind with path resolution depending on composition
      *
-     * @param comp_id
+     * @param template_id
      * @return
      */
     public SelectQuery<Record> bind(String template_id) {
@@ -135,12 +134,7 @@ public class SelectBinder extends TemplateMetaData implements I_SelectBinder {
         return jsonDataBlock;
     }
 
-    public boolean isWholeComposition() {
-        return isWholeComposition;
-    }
-
     public SelectBinder setUsePgExtensions(boolean usePgExtensions) {
-        this.usePgExtensions = usePgExtensions;
         whereBinder.setUsePgExtensions(usePgExtensions);
         return this;
     }

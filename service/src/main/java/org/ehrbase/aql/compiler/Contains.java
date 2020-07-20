@@ -41,6 +41,8 @@ public class Contains {
 
     private boolean useSimpleCompositionContainment = false;
 
+    private boolean hasUnresolvedContains = false;
+
     public Contains(ParseTree parseTree, KnowledgeCacheService knowledgeCache) {
         this.parseTree = parseTree;
         this.knowledgeCache = knowledgeCache;
@@ -63,13 +65,8 @@ public class Contains {
         this.templates = containPropositions.resolvedTemplates();
         this.identifierMapper = queryCompilerPass1.getIdentifierMapper();
         this.useSimpleCompositionContainment = containPropositions.isUseSimpleCompositionContainment();
+        this.hasUnresolvedContains = containPropositions.hasUnresolvedContains();
 
-
-        //bind the nested sets to SQL (it should be an configuration btw)
-//        ContainBinder containBinder = new ContainBinder(templates);
-//        this.containClause = containBinder.bind();
-
-//        useSimpleCompositionContainment = containBinder.isUseSimpleCompositionContainment();
         return this;
     }
 
@@ -85,5 +82,9 @@ public class Contains {
 
     public boolean useSimpleCompositionContains() {
         return useSimpleCompositionContainment;
+    }
+
+    public boolean hasUnresolvedContains() {
+        return hasUnresolvedContains;
     }
 }

@@ -133,7 +133,11 @@ public class QueryProcessor extends TemplateMetaData {
 //        }
 
         // build a query for each identified templates from contain expression
-        if (contains.getTemplates().isEmpty()){
+        if (contains.hasUnresolvedContains()){
+            //add a null select
+            cacheQuery.put(NIL_TEMPLATE, buildNullSelect(NIL_TEMPLATE));
+        }
+        else if (contains.getTemplates().isEmpty()){
             cacheQuery.put(NIL_TEMPLATE, buildQuerySteps(NIL_TEMPLATE));
         }
         else {
@@ -196,6 +200,17 @@ public class QueryProcessor extends TemplateMetaData {
         SelectQuery<?> select = selectBinder.bind(templateId);
         return new QuerySteps(select,
                 selectBinder.getWhereConditions(templateId, null),
+                templateId,
+                selectBinder.getCompositionAttributeQuery(),
+                selectBinder.getJsonDataBlock(), selectBinder.containsJQueryPath());
+    }
+
+    private QuerySteps buildNullSelect(String templateId) {
+        SelectBinder selectBinder = new SelectBinder(context, introspectCache, contains, statements, serverNodeId).setUsePgExtensions(usePgExtensions);
+
+        SelectQuery<?> select = selectBinder.bind(templateId);
+        return new QuerySteps(select,
+                DSL.condition("1 = 0"),
                 templateId,
                 selectBinder.getCompositionAttributeQuery(),
                 selectBinder.getJsonDataBlock(), selectBinder.containsJQueryPath());
