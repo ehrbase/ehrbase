@@ -24,3 +24,7 @@ server:
 
 system:
   type: LOCAL
+
+admin-api:
+  active: ${ADMIN_API_ACTIVE:false}
+  allowDeleteAll: ${ADMIN_API_ALLOW_DELETE_ALL:false}

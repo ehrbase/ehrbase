@@ -24,6 +24,7 @@ import org.ehrbase.response.openehr.AdminDeleteResponseData;
 import org.ehrbase.response.openehr.AdminUpdateResponseData;
 import org.ehrbase.rest.openehr.controller.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +37,7 @@ import java.util.UUID;
  * Admin API controller for EHR related endpoints. Provides methods to update and delete EHRs physically in the DB.
  */
 @Api(tags = {"Admin", "EHR"})
+@ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
 @RequestMapping(path = "/rest/openehr/v1/admin/ehr", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrAdminEhrController extends BaseController {

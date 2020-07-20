@@ -23,6 +23,7 @@ import org.ehrbase.api.service.EhrService;
 import org.ehrbase.response.openehr.AdminDeleteResponseData;
 import org.ehrbase.rest.openehr.controller.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -36,6 +37,7 @@ import java.util.UUID;
  * Admin API controller for Composition related data. Provides endpoint to remove compositions physically from database.
  */
 @Api(tags = {"Admin", "Composition"})
+@ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
 @RequestMapping(path = "/rest/openehr/v1/admin/ehr", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrAdminCompositionController extends BaseController {

@@ -24,6 +24,7 @@ import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.ResponseHeader;
 import org.ehrbase.response.openehr.AdminStatusResponseData;
 import org.ehrbase.rest.openehr.controller.BaseController;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @Api(tags = {"Admin", "Heartbeat"})
+@ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
 @RequestMapping(path = "/rest/openehr/v1/admin", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrAdminController extends BaseController {
@@ -52,6 +54,7 @@ public class OpenehrAdminController extends BaseController {
             @ApiResponse(code = 403, message = "Client has no access permission since the admin role is missing.")
     })
     public ResponseEntity<AdminStatusResponseData> getStatus() {
+
         return ResponseEntity.ok().body(
                 new AdminStatusResponseData("EHRbase Admin API available and you have permission to access it")
         );

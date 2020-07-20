@@ -24,6 +24,7 @@ import org.ehrbase.response.openehr.AdminDeleteResponseData;
 import org.ehrbase.response.openehr.AdminUpdateResponseData;
 import org.ehrbase.rest.openehr.controller.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +36,7 @@ import java.util.UUID;
  * database physically.
  */
 @Api(tags = {"Admin", "Contribution"})
+@ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
 @RequestMapping(path = "/rest/openehr/v1/admin/ehr", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrAdminContributionController extends BaseController {

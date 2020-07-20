@@ -427,6 +427,7 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
                     <additionalJOption>-Xdoclint:none</additionalJOption>
                 </configuration>
             </plugin>

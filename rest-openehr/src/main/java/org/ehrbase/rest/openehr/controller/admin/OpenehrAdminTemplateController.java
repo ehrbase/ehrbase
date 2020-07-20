@@ -21,6 +21,7 @@ import io.swagger.annotations.*;
 import org.ehrbase.response.openehr.AdminDeleteResponseData;
 import org.ehrbase.response.openehr.AdminUpdateResponseData;
 import org.ehrbase.rest.openehr.controller.BaseController;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
  * Admin API controller for Templates. Provides endpoints to update (replace) and delete templates.
  */
 @Api(tags = {"Admin", "Template"})
+@ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
 @RequestMapping(path = "/rest/openehr/v1/admin/template", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrAdminTemplateController extends BaseController {
@@ -100,6 +102,37 @@ public class OpenehrAdminTemplateController extends BaseController {
                     String templateId
     ) {
 
+        return ResponseEntity.ok().body(new AdminDeleteResponseData(0));
+    }
+
+    @ConditionalOnProperty(prefix = "admin-api", name = "allowDeleteAll")
+    @DeleteMapping(path = "/all")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    code = 200,
+                    message = "All templates have been removed successfully",
+                    responseHeaders = {
+                            @ResponseHeader(
+                                    name = CONTENT_TYPE,
+                                    description = RESP_CONTENT_TYPE_DESC,
+                                    response = MediaType.class
+                            )
+                    }
+            ),
+            @ApiResponse(
+                    code = 401,
+                    message = "Client credentials are invalid or have expired."
+            ),
+            @ApiResponse(
+                    code = 403,
+                    message = "Client has no access permission since admin role is missing."
+            ),
+            @ApiResponse(
+                    code = 404,
+                    message = "Template could not be found."
+            )
+    })
+    public ResponseEntity<AdminDeleteResponseData> deleteAllTemplates() {
         return ResponseEntity.ok().body(new AdminDeleteResponseData(0));
     }
 }

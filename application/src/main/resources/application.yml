@@ -45,6 +45,10 @@ cache:
 system:
   allow-template-overwrite: false
 
+admin-api:
+  active: ${ADMIN_API_ACTIVE:false}
+  allowDeleteAll: ${ADMIN_API_ALLOW_DELETE_ALL:false}
+
 logging:
   level:
     org.springframework: INFO
