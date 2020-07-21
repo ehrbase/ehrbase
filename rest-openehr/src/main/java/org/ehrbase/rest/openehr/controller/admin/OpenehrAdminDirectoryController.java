@@ -20,7 +20,7 @@ package org.ehrbase.rest.openehr.controller.admin;
 import io.swagger.annotations.*;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.EhrService;
-import org.ehrbase.response.openehr.AdminDeleteResponseData;
+import org.ehrbase.response.openehr.admin.AdminDeleteResponseData;
 import org.ehrbase.rest.openehr.controller.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

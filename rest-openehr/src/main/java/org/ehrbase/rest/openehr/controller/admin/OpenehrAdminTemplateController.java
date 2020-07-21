@@ -18,9 +18,9 @@
 package org.ehrbase.rest.openehr.controller.admin;
 
 import io.swagger.annotations.*;
-import org.ehrbase.response.openehr.AdminDeleteResponseData;
-import org.ehrbase.response.openehr.AdminStatusResponseData;
-import org.ehrbase.response.openehr.AdminUpdateResponseData;
+import org.ehrbase.response.openehr.admin.AdminDeleteResponseData;
+import org.ehrbase.response.openehr.admin.AdminStatusResponseData;
+import org.ehrbase.response.openehr.admin.AdminUpdateResponseData;
 import org.ehrbase.rest.openehr.controller.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -137,12 +137,14 @@ public class OpenehrAdminTemplateController extends BaseController {
                     message = "Template could not be found."
             )
     })
-    public ResponseEntity<AdminDeleteResponseData> deleteAllTemplates() {
+    public ResponseEntity<?> deleteAllTemplates() {
 
         if (!this.adminApiConfiguration.getAllowDeleteAll()) {
             return ResponseEntity
                     .status(HttpStatus.METHOD_NOT_ALLOWED)
-                    .build();
+                    .body(new AdminStatusResponseData(
+                            "Delete all resources not allowed."
+                    ));
         }
         return ResponseEntity.ok().body(new AdminDeleteResponseData(0));
     }

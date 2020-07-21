@@ -22,7 +22,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.ResponseHeader;
-import org.ehrbase.response.openehr.AdminStatusResponseData;
+import org.ehrbase.response.openehr.admin.AdminStatusResponseData;
 import org.ehrbase.rest.openehr.controller.BaseController;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
