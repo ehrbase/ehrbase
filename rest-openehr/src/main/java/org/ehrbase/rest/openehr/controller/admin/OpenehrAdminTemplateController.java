@@ -73,6 +73,8 @@ public class OpenehrAdminTemplateController extends BaseController {
                     String templateId
     ) {
 
+        // TODO: Implement endpoint functionality
+
         return ResponseEntity.ok().body(new AdminUpdateResponseData(0));
     }
 
@@ -107,6 +109,8 @@ public class OpenehrAdminTemplateController extends BaseController {
             @PathVariable(value = "template_id")
                     String templateId
     ) {
+
+        // TODO: Implement endpoint functionality
 
         return ResponseEntity.ok().body(new AdminDeleteResponseData(0));
     }
@@ -146,6 +150,9 @@ public class OpenehrAdminTemplateController extends BaseController {
                             "Delete all resources not allowed."
                     ));
         }
+
+        // TODO: Implement endpoint functionality
+
         return ResponseEntity.ok().body(new AdminDeleteResponseData(0));
     }
 }

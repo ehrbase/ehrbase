@@ -93,6 +93,8 @@ public class OpenehrAdminDirectoryController extends BaseController {
             );
         }
 
+        // TODO: Implement endpoint functionality
+
         // Directory existence check will be done during processing
 
         return ResponseEntity.ok().body(new AdminDeleteResponseData(0));

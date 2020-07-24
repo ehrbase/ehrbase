@@ -92,6 +92,8 @@ public class OpenehrAdminCompositionController extends BaseController {
             );
         }
 
+        // TODO: Implement endpoint functionality
+
         // Composition existence will be checked during deletion
 
         return ResponseEntity.ok().body(new AdminDeleteResponseData(0));

@@ -91,6 +91,8 @@ public class OpenehrAdminContributionController extends BaseController {
             );
         }
 
+        // TODO: Implement endpoint functionality
+
         // Contribution existence check will be done in services
 
         return ResponseEntity.ok().body(new AdminUpdateResponseData(0));
@@ -138,6 +140,8 @@ public class OpenehrAdminContributionController extends BaseController {
                     "Admin Contribution", String.format("EHR with id %s does not exist", ehrId)
             );
         }
+
+        // TODO: Implement endpoint functionality
 
         // Contribution existence check will be done in services
 

@@ -90,6 +90,8 @@ public class OpenehrAdminEhrController extends BaseController {
             throw new ObjectNotFoundException("Admin EHR", String.format("EHR with id %s does not exist.", ehrId));
         }
 
+        // TODO: Implement endpoint functionality
+
         return ResponseEntity.ok().body(new AdminUpdateResponseData(0));
     }
 
@@ -130,6 +132,8 @@ public class OpenehrAdminEhrController extends BaseController {
         if (!ehrService.hasEhr(ehrUuid)) {
             throw new ObjectNotFoundException("Admin EHR", String.format("EHR with id %s does not exist.", ehrId));
         }
+
+        // TODO: Implement endpoint functionality
 
         return ResponseEntity.ok().body(new AdminDeleteResponseData(0));
     }
