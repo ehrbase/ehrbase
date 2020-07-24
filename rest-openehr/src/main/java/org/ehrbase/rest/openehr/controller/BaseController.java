@@ -48,7 +48,7 @@ public abstract class BaseController {
     static final String RETURN_REPRESENTATION = "return=representation";
 
     // Fixed header identifiers
-    static final String CONTENT_TYPE = HttpHeaders.CONTENT_TYPE;
+    public static final String CONTENT_TYPE = HttpHeaders.CONTENT_TYPE;
     static final String LOCATION = HttpHeaders.LOCATION;
     static final String ETAG = HttpHeaders.ETAG;
     static final String LAST_MODIFIED = HttpHeaders.LAST_MODIFIED;
@@ -66,7 +66,7 @@ public abstract class BaseController {
     static final String REQ_ACCEPT = "Client should specify expected format";
     static final String REQ_PREFER = "May be used by clients for resource representation negotiation";
     // response headers
-    static final String RESP_CONTENT_TYPE_DESC = "Format of response";
+    public static final String RESP_CONTENT_TYPE_DESC = "Format of response";
     static final String RESP_LOCATION_DESC = "Location of resource";
     static final String RESP_ETAG_DESC = "Entity tag for resource";
     static final String RESP_LAST_MODIFIED_DESC = "Time of last modification of resource";

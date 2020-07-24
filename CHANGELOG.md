@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add admin API endpoint stubs (see: https://github.com/ehrbase/ehrbase/pull/280)
+
 ### Changed
 
 ### Fixed
@@ -16,7 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.13.0] (beta)
 
 ### Added
-- added support for various functions in AQL (aggregation, statistical, string etc.) (see: https://github.com/ehrbase/ehrbase/pull/223/)
+
+- Added support for various functions in AQL (aggregation, statistical, string etc.) (see: https://github.com/ehrbase/ehrbase/pull/223/)
 
 ### Changed
 - Update of AQL-Query test suite (see: https://github.com/ehrbase/ehrbase/pull/179)

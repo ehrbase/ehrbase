@@ -13,6 +13,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# ------------------------------------------------------------------------------
+# General How-to:
+#
+# You can set all config values here or via an corresponding environment variable which is named as the property you
+# want to set. Replace camel case (aB) as all upper case (AB), dashes (-) and low dashes (_) just get ignored adn words
+# will be in one word. Each nesting step of properties will be separated by low dash in environment variable name.
+# E.g. if you want to allow the delete all endpoints in the admin api set an environment variable like this:
+# ADMINAPI_ALLOWDELETEALL=true
+#
+# See https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-external-config-relaxed-binding-from-environment-variables
+# for official documentation on this feature.
 
 spring:
   application:
@@ -44,6 +56,10 @@ cache:
 
 system:
   allow-template-overwrite: false
+
+admin-api:
+  active: false
+  allowDeleteAll: false
 
 logging:
   level:
