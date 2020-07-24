@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Detect duplicates on POST Directory
+- Detect duplicates on POST Directory (see: https://github.com/ehrbase/ehrbase/pull/281)
 
 ## [0.13.0] (beta)
 
