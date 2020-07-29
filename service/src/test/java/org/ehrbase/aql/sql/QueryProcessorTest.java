@@ -23,6 +23,7 @@ import org.ehrbase.aql.compiler.Contains;
 import org.ehrbase.aql.compiler.Statements;
 import org.ehrbase.dao.jooq.impl.DSLContextHelper;
 import org.ehrbase.service.CacheRule;
+import org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl;
 import org.ehrbase.service.IntrospectService;
 import org.ehrbase.service.KnowledgeCacheHelper;
 import org.jooq.DSLContext;
@@ -42,6 +43,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.ehrbase.jooq.pg.Tables.CONTAINMENT;
 import static org.ehrbase.jooq.pg.Tables.ENTRY;
+import static org.mockito.Mockito.mock;
 
 public class QueryProcessorTest {
 
@@ -447,7 +449,7 @@ public class QueryProcessorTest {
                 t -> {
                     AqlExpression aqlExpression = new AqlExpression().parse(t.getQuery());
                     Contains contains = new Contains(aqlExpression.getParseTree()).process();
-                    Statements statements = new Statements(aqlExpression.getParseTree(), contains.getIdentifierMapper()).process();
+                    Statements statements = new Statements(aqlExpression.getParseTree(), contains.getIdentifierMapper(), mock(FhirTerminologyServerR4AdaptorImpl.class)).process();
 
                     QueryProcessor cut = new QueryProcessor(context, null, introspectCache, contains, statements, "local", true);
 

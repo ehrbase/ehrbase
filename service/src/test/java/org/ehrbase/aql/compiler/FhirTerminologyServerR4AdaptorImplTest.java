@@ -19,16 +19,16 @@ package org.ehrbase.aql.compiler;
  * limitations under the License.
  */
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
-
+import com.nedap.archie.rm.datavalues.DvCodedText;
 import org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer;
-import org.ehrbase.service.FhirTsPropsImpl;
+import org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl;
+import org.ehrbase.service.FhirTsProps;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.nedap.archie.rm.datavalues.DvCodedText;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 //@RunWith(SpringRunner.class)
 //@SpringBootTest//(classes= {org.ehrbase.application.EhrBase.class})
@@ -41,15 +41,15 @@ public class FhirTerminologyServerR4AdaptorImplTest {
 	@Ignore("This test runs against ontoserver sample inteance. It is deactivated until we have a test FHIR terminology server and the architecture allows to run Spring integration tests.")
 	@Test
 	public void shouldRetrieveValueSet() {
-		
-		FhirTsPropsImpl props = new FhirTsPropsImpl();
+
+		FhirTsProps props = new FhirTsProps();
 		props.setCodePath("$[\"expansion\"][\"contains\"][*][\"code\"]");
 		props.setDisplayPath("$[\"expansion\"][\"contains\"][*][\"display\"]");
 		props.setSystemPath("$[\"expansion\"][\"contains\"][*][\"system\"]");
 		props.setTsUrl("https://r4.ontoserver.csiro.au/fhir/");
 		try {
-			tsserver=I_OpenehrTerminologyServer.getInstance(props, "hl7.org/fhir/R4");
-		} catch (Exception e) {			
+			tsserver = new FhirTerminologyServerR4AdaptorImpl(props);
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
