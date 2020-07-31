@@ -43,4 +43,6 @@ public interface TemplateService extends BaseService {
     String findOperationalTemplate(String templateId, OperationalTemplateFormat format) throws RuntimeException;
 
     String create(String content);
+
+    boolean adminDeleteTemplate(String templateId);
 }

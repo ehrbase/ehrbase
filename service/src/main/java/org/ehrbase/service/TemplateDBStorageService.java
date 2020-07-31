@@ -66,6 +66,17 @@ public class TemplateDBStorageService implements TemplateStorage {
         return Optional.ofNullable(I_TemplateStoreAccess.retrieveInstanceByTemplateId(getDataAccess(), templateId).getTemplate());
     }
 
+    @Override
+    public boolean deleteTemplate(String templateId) {
+
+        I_TemplateStoreAccess templateStoreAccess =  I_TemplateStoreAccess.retrieveInstanceByTemplateId(
+                getDataAccess(),
+                templateId
+        );
+
+        return templateStoreAccess.delete() > 0;
+    }
+
     protected I_DomainAccess getDataAccess() {
         return new ServiceDataAccess(context, null, null, this.serverConfig);
     }

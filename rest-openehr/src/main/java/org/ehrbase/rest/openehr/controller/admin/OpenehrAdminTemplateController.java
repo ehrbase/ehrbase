@@ -18,6 +18,8 @@
 package org.ehrbase.rest.openehr.controller.admin;
 
 import io.swagger.annotations.*;
+import org.ehrbase.api.definitions.OperationalTemplateFormat;
+import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.response.openehr.admin.AdminDeleteResponseData;
 import org.ehrbase.response.openehr.admin.AdminStatusResponseData;
 import org.ehrbase.response.openehr.admin.AdminUpdateResponseData;
@@ -38,8 +40,16 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(path = "/rest/openehr/v1/admin/template", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrAdminTemplateController extends BaseController {
 
+    TemplateService templateService;
+
+    @Autowired
+    OpenehrAdminTemplateController(TemplateService templateService) {
+        this.templateService = templateService;
+    }
+
     @Autowired
     AdminApiConfiguration adminApiConfiguration;
+
 
     @PutMapping(path = "/{template_id}", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     @ApiResponses(value = {
@@ -105,14 +115,14 @@ public class OpenehrAdminTemplateController extends BaseController {
             )
     })
     public ResponseEntity<AdminDeleteResponseData> deleteTemplate(
-            @ApiParam(value = "Target template id to update")
+            @ApiParam(value = "Target template id to delete")
             @PathVariable(value = "template_id")
                     String templateId
     ) {
 
-        // TODO: Implement endpoint functionality
+        int deleted = this.templateService.adminDeleteTemplate(templateId) ? 1 : 0;
 
-        return ResponseEntity.ok().body(new AdminDeleteResponseData(0));
+        return ResponseEntity.ok().body(new AdminDeleteResponseData(deleted));
     }
 
     @DeleteMapping(path = "/all")

@@ -24,6 +24,8 @@ import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.exception.UnprocessableEntityException;
+import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.ehrbase.opt.OptVisitor;
@@ -39,23 +41,22 @@ import org.springframework.stereotype.Service;
 
 import javax.xml.namespace.QName;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class TemplateServiceImp extends BaseService implements TemplateService {
 
     private final KnowledgeCacheService knowledgeCacheService;
+    private final CompositionService compositionService;
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    public TemplateServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig) {
+    public TemplateServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig, CompositionService compositionService) {
         super(knowledgeCacheService, context, serverConfig);
         this.knowledgeCacheService = Objects.requireNonNull(knowledgeCacheService);
+        this.compositionService = compositionService;
     }
 
 
@@ -137,5 +138,36 @@ public class TemplateServiceImp extends BaseService implements TemplateService {
     @Override
     public String create(String content) {
         return this.knowledgeCacheService.addOperationalTemplate(content.getBytes(StandardCharsets.UTF_8));
+    }
+
+    @Override
+    public boolean adminDeleteTemplate(String templateStorageId) {
+        boolean deleted = false;
+
+        Optional<OPERATIONALTEMPLATE> opt = this.knowledgeCacheService
+                .retrieveOperationalTemplate(UUID.fromString(templateStorageId));
+
+        if (opt.isEmpty()) {
+            throw new ObjectNotFoundException("ADMIN TEMPLATE", String.format(
+                    "Operational template with id %s not found.", templateStorageId
+            ));
+        }
+
+        // Check if Operational Template is used somewhere
+        Optional<List<UUID>> compositionUuidList =
+                this.compositionService.retrieveAllForTemplate(opt.get().getTemplateId().getValue());
+
+        if (compositionUuidList.isPresent()) {
+            throw new UnprocessableEntityException(
+                    String.format(
+                            "Cannot delete used template. Compositions using this template are %s",
+                            compositionUuidList.get().toString()
+                    ));
+        }
+
+        // Delete template if not used
+
+
+        return deleted;
     }
 }

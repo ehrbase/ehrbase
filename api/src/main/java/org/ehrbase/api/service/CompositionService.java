@@ -26,6 +26,7 @@ import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.StructuredString;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -48,6 +49,14 @@ public interface CompositionService extends BaseService {
      * @return Optional of CompositionDto closest in time before timestamp
      */
     Optional<CompositionDto> retrieveByTimestamp(UUID compositionId, LocalDateTime timestamp);
+
+    /**
+     * Gets a list of compositions that use a given Operational Template id.
+     *
+     * @param templateId - Operational Template id
+     * @return - List of compositions that use the template
+     */
+    Optional<List<UUID>> retrieveAllForTemplate(String templateId);
 
     /**
      * Public serializer entry point which will be called with
@@ -185,4 +194,6 @@ public interface CompositionService extends BaseService {
      * @return True if deleted, false if not
      */
     boolean isDeleted(UUID versionedObjectId);
+
+
 }

@@ -48,4 +48,13 @@ public interface TemplateStorage {
      * @return the template @see {@link OPERATIONALTEMPLATE} or {@link Optional#empty()} if not found.
      */
     Optional<OPERATIONALTEMPLATE> readOperationaltemplate(String templateId);
+
+    /**
+     * Deletes an operational template from template storage. The template will be removed physically so ensure that
+     * there are no compositions referencing the template.
+     *
+     * @param templateId - Storage id of the template
+     * @return - Deletion was successful or not
+     */
+    boolean deleteTemplate(String templateId);
 }

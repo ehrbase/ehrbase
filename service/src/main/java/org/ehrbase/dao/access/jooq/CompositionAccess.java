@@ -242,6 +242,25 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         return compositionHistoryAccess;
     }
 
+    /**
+     * Retrieves a list of composition UUIDs that are using a given Operational template id.
+     *
+     * @param domainAccess - Database access context
+     * @param templateId - Operational Template id
+     * @return - List of UUIDs using the operational Template
+     */
+    public static List<UUID> retrieveCompositionIdsForTemplate(
+            I_DomainAccess domainAccess,
+            String templateId
+    ) {
+        return domainAccess.getContext()
+                .select()
+                .from(ENTRY)
+                .where(ENTRY.TEMPLATE_ID.eq(templateId))
+                .fetch()
+                .getValues(ENTRY.COMPOSITION_ID);
+    }
+
     public static Integer getLastVersionNumber(I_DomainAccess domainAccess, UUID compositionId) {
         // check if compositionId is valid (version count = 1) and add number of existing older versions
         if (domainAccess.getContext().fetchExists(COMPOSITION, COMPOSITION.ID.eq(compositionId))) {

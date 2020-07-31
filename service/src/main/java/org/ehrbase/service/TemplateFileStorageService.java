@@ -143,6 +143,10 @@ public class TemplateFileStorageService implements TemplateStorage {
         return Optional.ofNullable(operationaltemplate);
     }
 
+    @Override
+    public boolean deleteTemplate(String templateId) {
+        return false;
+    }
 
     boolean addKnowledgeSourcePath(String path) {
 
