@@ -160,6 +160,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
         templateId.setValue(entryAccess.getTemplateId());
         archetypeDetails.setTemplateId(templateId);
         archetypeDetails.setArchetypeId(new ArchetypeID(entryAccess.getArchetypeId()));
+        archetypeDetails.setRmVersion(entryAccess.getRmVersion());
         entryAccess.composition.setArchetypeDetails(archetypeDetails);
         entryAccess.composition.setCategory(I_ConceptAccess.fetchConceptText(entryAccess, entryAccess.getCategory()));
     }
@@ -498,6 +499,12 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
     public String getArchetypeId() {
         return entryRecord.getArchetypeId();
     }
+
+    @Override
+    public String getRmVersion() {
+        return entryRecord.getRmVersion();
+    }
+
 
     @Override
     public String getItemType() {
