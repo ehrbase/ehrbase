@@ -125,7 +125,7 @@ public class QueryProcessor extends TemplateMetaData {
         statements = new OrderByField(statements).merge();
 
         if (contains.getTemplates().isEmpty()){
-            if (contains.hasContains())
+            if (contains.hasContains() && !contains.useSimpleCompositionContains())
                 cacheQuery.put(NIL_TEMPLATE, buildNullSelect(NIL_TEMPLATE));
             else
                 cacheQuery.put(NIL_TEMPLATE, buildQuerySteps(NIL_TEMPLATE));
