@@ -37,6 +37,8 @@ import java.util.*;
  */
 public class IdentifierMapper {
 
+    public static final String SYMBOL_ALREADY_EXISTS = "Symbol already exists:";
+
     public class Mapper {
         private Class queryStrategy; //specifies the constructor to use depending on the identifier
         private Object container;
@@ -68,40 +70,22 @@ public class IdentifierMapper {
         if (definition instanceof Containment) {
             Containment containment = (Containment) definition;
             if (mapper.containsKey(containment.getSymbol()))
-                throw new IllegalArgumentException("Symbol already exists:" + containment.getSymbol());
+                throw new IllegalArgumentException(SYMBOL_ALREADY_EXISTS + containment.getSymbol());
             Mapper def = new Mapper(containment);
             mapper.put(containment.getSymbol(), def);
         } else if (definition instanceof FromEhrDefinition.EhrPredicate) {
             FromEhrDefinition.EhrPredicate ehrPredicate = (FromEhrDefinition.EhrPredicate) definition;
             if (mapper.containsKey(ehrPredicate.getField()))
-                throw new IllegalArgumentException("Symbol already exists:" + ehrPredicate.getField());
+                throw new IllegalArgumentException(SYMBOL_ALREADY_EXISTS + ehrPredicate.getField());
             Mapper def = new Mapper(ehrPredicate);
             mapper.put(ehrPredicate.getIdentifier(), def);
         } else if (definition instanceof FromForeignDataDefinition.NodePredicate) {
             FromForeignDataDefinition.NodePredicate nodePredicate = (FromForeignDataDefinition.NodePredicate) definition;
             if (mapper.containsKey(nodePredicate.getField()))
-                throw new IllegalArgumentException("Symbol already exists:" + nodePredicate.getField());
+                throw new IllegalArgumentException(SYMBOL_ALREADY_EXISTS + nodePredicate.getField());
             Mapper def = new Mapper(nodePredicate);
             mapper.put(nodePredicate.getIdentifier(), def);
         }
-    }
-
-    private Mapper get(String symbol) {
-        Mapper mapped = mapper.get(symbol);
-        return mapped;
-    }
-
-    public List<Containment> getContainments() {
-
-        List<Containment> result = new ArrayList<>();
-
-        for (Object item: mapper.values()){
-            if (item instanceof Mapper && ((Mapper)item).getContainer() instanceof Containment){
-                result.add((Containment)((Mapper)item).getContainer());
-            }
-        }
-
-        return result;
     }
 
     public Object getContainer(String symbol) {
@@ -159,9 +143,7 @@ public class IdentifierMapper {
 
         Object containment = definition.getContainer();
         if (containment instanceof Containment) {
-            if (containment != null) {
-                return ((Containment) containment).getPath(template);
-            }
+            return ((Containment) containment).getPath(template);
         }
         return null;
     }
@@ -170,9 +152,7 @@ public class IdentifierMapper {
         Mapper definition = mapper.get(symbol);
         Object containment = definition.getContainer();
         if (containment instanceof Containment) {
-            if (containment != null) {
-                ((Containment) containment).setPath(template, path);
-            }
+            ((Containment) containment).setPath(template, path);
         }
     }
 
@@ -185,10 +165,7 @@ public class IdentifierMapper {
         Mapper definition = mapper.get(symbol);
         Object containment = definition.getContainer();
         if (containment instanceof Containment) {
-
-            if (containment != null) {
-                return ((Containment) containment).getArchetypeId();
-            }
+            return ((Containment) containment).getArchetypeId();
         }
         return null;
     }
@@ -200,9 +177,7 @@ public class IdentifierMapper {
 
         Object containment = definition.getContainer();
         if (containment instanceof Containment) {
-            if (containment != null) {
                 return ((Containment) containment).getClassName();
-            }
         } else if (containment instanceof FromEhrDefinition.EhrPredicate)
             return "EHR";
 
@@ -215,7 +190,7 @@ public class IdentifierMapper {
 
     public String dump() {
 
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
 
         for (Map.Entry<String, Mapper> objectEntry : mapper.entrySet()) {
             sb.append(objectEntry.getKey() + "::" + objectEntry.getValue().toString());
@@ -230,8 +205,11 @@ public class IdentifierMapper {
             Mapper mapper1 = (Mapper)map.getValue();
             if (mapper1.getContainer() instanceof Containment){
                 Containment containment = (Containment)mapper1.getContainer();
-                if (!containment.getClassName().toUpperCase().equals("COMPOSITION"))
-                    useSimpleComposition = false;
+                //check if this containment specifies an archetype (triggering a template resolution)
+                //f.e. COMPOSITION a [openEHR-EHR-COMPOSITION.report-result.v1] contains OBSERVATION
+                if (!containment.getClassName().equalsIgnoreCase("COMPOSITION") && containment.getArchetypeId() != null && !containment.getArchetypeId().isBlank()) {
+                        useSimpleComposition = false;
+                }
             }
         }
         return useSimpleComposition;
