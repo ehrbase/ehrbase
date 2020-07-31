@@ -111,7 +111,6 @@ public class QueryProcessor extends TemplateMetaData {
         //if any jsonb data field transform them into raw json
         if (aqlSelectQuery.isOutputWithJson() && knowledgeCache != null) {
             RawJsonTransform.toRawJson(result, aqlSelectQuery.getQuerySteps());
-//            result = RawJsonTransform.deleteNamedColumn(result, I_RawJsonTransform.TEMPLATE_ID);
         }
 
         List<List<String>> explainList = buildExplain(aqlSelectQuery.getSelectQuery());
@@ -125,20 +124,11 @@ public class QueryProcessor extends TemplateMetaData {
 
         statements = new OrderByField(statements).merge();
 
-        //Do to the way the query is build it is not possible to build sql if the AQL contains only compositions which have no instances in the DB. Thus we must manual handle this case.
-//        if (contains.getTemplates().isEmpty()) {
-//            SelectQuery<Record> falseSelectQuery = context.selectQuery();
-//            falseSelectQuery.addConditions(DSL.falseCondition());
-//            return new AqlSelectQuery(falseSelectQuery, null, false);
-//        }
-
-        // build a query for each identified templates from contain expression
-        if (contains.hasUnresolvedContains()){
-            //add a null select
-            cacheQuery.put(NIL_TEMPLATE, buildNullSelect(NIL_TEMPLATE));
-        }
-        else if (contains.getTemplates().isEmpty()){
-            cacheQuery.put(NIL_TEMPLATE, buildQuerySteps(NIL_TEMPLATE));
+        if (contains.getTemplates().isEmpty()){
+            if (contains.hasContains())
+                cacheQuery.put(NIL_TEMPLATE, buildNullSelect(NIL_TEMPLATE));
+            else
+                cacheQuery.put(NIL_TEMPLATE, buildQuerySteps(NIL_TEMPLATE));
         }
         else {
             for (String templateId : contains.getTemplates()) {
@@ -171,7 +161,6 @@ public class QueryProcessor extends TemplateMetaData {
 
 
         // Add function or Distinct
-        //TODO: inject ORDER BY into the superQuery
         if (new Variables(statements.getVariables()).hasDefinedDistinct() || new Variables(statements.getVariables()).hasDefinedFunction()) {
             SuperQuery superQuery = new SuperQuery(context, statements.getVariables(), unionSetQuery);
             unionSetQuery = superQuery.select();

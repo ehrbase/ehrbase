@@ -40,8 +40,7 @@ public class Contains {
     private final KnowledgeCacheService knowledgeCache;
 
     private boolean useSimpleCompositionContainment = false;
-
-    private boolean hasUnresolvedContains = false;
+    private boolean hasContains;
 
     public Contains(ParseTree parseTree, KnowledgeCacheService knowledgeCache) {
         this.parseTree = parseTree;
@@ -65,7 +64,7 @@ public class Contains {
         this.templates = containPropositions.resolvedTemplates();
         this.identifierMapper = queryCompilerPass1.getIdentifierMapper();
         this.useSimpleCompositionContainment = containPropositions.isUseSimpleCompositionContainment();
-        this.hasUnresolvedContains = containPropositions.hasUnresolvedContains();
+        this.hasContains = containPropositions.hasContains();
 
         return this;
     }
@@ -84,7 +83,8 @@ public class Contains {
         return useSimpleCompositionContainment;
     }
 
-    public boolean hasUnresolvedContains() {
-        return hasUnresolvedContains;
+    public boolean hasContains() {
+        return hasContains;
     }
+
 }
