@@ -68,7 +68,7 @@ BEGIN
     ),
          entry_content AS (
            SELECT * FROM composition_data
-           WHERE json_content::text like '{"/content%' OR json_content = '{}'
+           WHERE json_content::text like '{"%/content%' OR json_content = '{}'
          )
     SELECT
       jsonb_strip_nulls(
