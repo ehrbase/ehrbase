@@ -167,17 +167,8 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
         //invalidate the cache for this template
         queryOptMetaDataCache.remove(UUID.fromString(template.getUid().getValue()));
+        atOptCache.remove(template.getUid().getValue());
     }
-
-    /**
-     * Invalidates cache for a given internal storage id of an operational template.
-     *
-     * @param templateStorageId - Target internal id of Operational template
-     */
-    private void invalidateCache(String templateStorageId) {
-        queryOptMetaDataCache.remove(UUID.fromString(templateStorageId));
-    }
-
 
     @Override
     public List<TemplateMetaData> listAllOperationalTemplates() {
@@ -305,10 +296,12 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     }
 
     @Override
-    public boolean deleteOperationalTemplate(String templateStorageId) {
-        boolean deleted = this.templateStorage.deleteTemplate(templateStorageId);
+    public boolean deleteOperationalTemplate(OPERATIONALTEMPLATE template) {
+        boolean deleted = this.templateStorage.deleteTemplate(template.getUid().getValue());
         if (deleted) {
-            invalidateCache(templateStorageId);
+
+            this.atOptCache.remove(template.getTemplateId().getValue());
+            this.idxCache.remove(UUID.fromString(template.getUid().getValue()));
         }
         return deleted;
     }

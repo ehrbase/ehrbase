@@ -165,6 +165,6 @@ public class TemplateServiceImp extends BaseService implements TemplateService {
         }
 
         // Delete template if not used
-        return this.knowledgeCacheService.deleteOperationalTemplate(templateStorageId);
+        return this.knowledgeCacheService.deleteOperationalTemplate(opt.get());
     }
 }

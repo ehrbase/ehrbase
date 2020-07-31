@@ -68,6 +68,6 @@ public interface I_KnowledgeCache {
      */
     Optional<OPERATIONALTEMPLATE> retrieveOperationalTemplate(UUID uuid);
 
-    boolean deleteOperationalTemplate(String templateStorageId);
+    boolean deleteOperationalTemplate(OPERATIONALTEMPLATE template);
 
 }
