@@ -142,7 +142,6 @@ public class TemplateServiceImp extends BaseService implements TemplateService {
 
     @Override
     public boolean adminDeleteTemplate(String templateStorageId) {
-        boolean deleted = false;
 
         Optional<OPERATIONALTEMPLATE> opt = this.knowledgeCacheService
                 .retrieveOperationalTemplate(UUID.fromString(templateStorageId));
@@ -166,8 +165,6 @@ public class TemplateServiceImp extends BaseService implements TemplateService {
         }
 
         // Delete template if not used
-
-
-        return deleted;
+        return this.knowledgeCacheService.deleteOperationalTemplate(templateStorageId);
     }
 }
