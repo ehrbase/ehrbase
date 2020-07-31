@@ -26,11 +26,6 @@ Documentation    COMPOSITION TEST SUITE
 ...              test documentation: https://docs.google.com/document/d/1TvSWjG-Esz-iMFJE-VLfjGH8MiI9tcHE2ilVtJMPYyQ/edit?ts=5d1e49fc
 
 Resource    ${CURDIR}${/}../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../_resources/keywords/generic_keywords.robot
-Resource    ${CURDIR}${/}../_resources/keywords/db_keywords.robot
-Resource    ${CURDIR}${/}../_resources/keywords/composition_keywords.robot
-Resource    ${CURDIR}${/}../_resources/keywords/template_opt1.4_keywords.robot
-Resource    ${CURDIR}${/}../_resources/keywords/ehr_keywords.robot
 
 Suite Setup  startup SUT
 Suite Teardown  shutdown SUT
