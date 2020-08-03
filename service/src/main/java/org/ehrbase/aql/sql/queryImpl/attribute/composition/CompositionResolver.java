@@ -17,13 +17,15 @@
  */
 package org.ehrbase.aql.sql.queryImpl.attribute.composition;
 
-import org.ehrbase.aql.sql.queryImpl.attribute.AttributePath;
-import org.ehrbase.aql.sql.queryImpl.attribute.AttributeResolver;
-import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
-import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
+import org.ehrbase.aql.sql.binding.I_JoinBinder;
+import org.ehrbase.aql.sql.queryImpl.attribute.*;
 import org.ehrbase.aql.sql.queryImpl.attribute.concept.ConceptResolver;
 import org.ehrbase.aql.sql.queryImpl.attribute.setting.SettingResolver;
 import org.jooq.Field;
+import org.jooq.JSONB;
+import org.jooq.impl.DSL;
+
+import java.util.UUID;
 
 import static org.ehrbase.jooq.pg.Tables.COMPOSITION;
 import static org.ehrbase.jooq.pg.Tables.ENTRY;
@@ -42,6 +44,15 @@ public class CompositionResolver extends AttributeResolver
 
         if (path.startsWith("category"))
             return new ConceptResolver(fieldResolutionContext, joinSetup).forTableField(ENTRY.CATEGORY).sqlField(new AttributePath("category").redux(path));
+
+        if (path.startsWith("feeder_audit")) {
+            joinSetup.setJoinComposition(true);
+            fieldResolutionContext.getVariableDefinition();
+            return DSL.field(I_JoinBinder.compositionRecordTable.field("feeder_audit", JSONB.class)
+                    + "::json #>>"
+                    + new GenericJsonPath(new AttributePath("feeder_audit").redux(path)).jqueryPath())
+                    .as(DSL.field(path)); //if missing, cannot assign the result to the respective column!
+        }
 
 
         switch (path){

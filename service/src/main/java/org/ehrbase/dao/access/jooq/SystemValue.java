@@ -34,7 +34,9 @@ public enum SystemValue {
     TERRITORY("territory"),
     CONTEXT("context"),
     CATEGORY("category"),
-    UID("uid");
+    UID("uid"),
+    FEEDER_AUDIT("feeder_audit"),
+    LINKS("links");
 
     /* field */
     private final String id;
@@ -43,7 +45,7 @@ public enum SystemValue {
     static {
         SystemValue[] list = {LANGUAGE, CHARSET, TERMINOLOGY_SERVICE,
                 MEASUREMENT_SERVICE, SUBJECT, PROVIDER, COMPOSER, TERRITORY, CONTEXT,
-                CATEGORY, UID
+                CATEGORY, UID, FEEDER_AUDIT, LINKS
         };
         idMap = new HashMap<String, SystemValue>();
         for (SystemValue value : list) {
