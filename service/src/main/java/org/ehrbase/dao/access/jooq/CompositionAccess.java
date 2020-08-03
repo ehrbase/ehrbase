@@ -246,7 +246,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
      * Retrieves a list of composition UUIDs that are using a given Operational template id.
      *
      * @param domainAccess - Database access context
-     * @param templateId - Operational Template id
+     * @param templateId - Operational Template id. e.g. "IDCR Allergies List.v0"
      * @return - List of UUIDs using the operational Template
      */
     public static List<UUID> retrieveCompositionIdsForTemplate(

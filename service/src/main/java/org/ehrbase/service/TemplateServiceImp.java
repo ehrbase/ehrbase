@@ -140,15 +140,18 @@ public class TemplateServiceImp extends BaseService implements TemplateService {
         return this.knowledgeCacheService.addOperationalTemplate(content.getBytes(StandardCharsets.UTF_8));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public boolean adminDeleteTemplate(String templateStorageId) {
+    public boolean adminDeleteTemplate(String templateId) {
 
         Optional<OPERATIONALTEMPLATE> opt = this.knowledgeCacheService
-                .retrieveOperationalTemplate(UUID.fromString(templateStorageId));
+                .retrieveOperationalTemplate(templateId);
 
         if (opt.isEmpty()) {
             throw new ObjectNotFoundException("ADMIN TEMPLATE", String.format(
-                    "Operational template with id %s not found.", templateStorageId
+                    "Operational template with id %s not found.", templateId
             ));
         }
 

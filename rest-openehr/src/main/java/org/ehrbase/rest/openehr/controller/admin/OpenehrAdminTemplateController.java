@@ -78,7 +78,7 @@ public class OpenehrAdminTemplateController extends BaseController {
             )
     })
     public ResponseEntity<AdminUpdateResponseData> updateTemplate(
-            @ApiParam(value = "Target template id to update")
+            @ApiParam(value = "Target template id to update. The value comes from the 'template_id' property.")
             @PathVariable(value = "template_id")
                     String templateId
     ) {
@@ -91,15 +91,8 @@ public class OpenehrAdminTemplateController extends BaseController {
     @DeleteMapping(path = "/{template_id}")
     @ApiResponses(value = {
             @ApiResponse(
-                    code = 200,
-                    message = "Template has been deleted successfully.",
-                    responseHeaders = {
-                            @ResponseHeader(
-                                    name = CONTENT_TYPE,
-                                    description = RESP_CONTENT_TYPE_DESC,
-                                    response = MediaType.class
-                            )
-                    }
+                    code = 202,
+                    message = "Template has been deleted successfully."
             ),
             @ApiResponse(
                     code = 401,
@@ -112,10 +105,14 @@ public class OpenehrAdminTemplateController extends BaseController {
             @ApiResponse(
                     code = 404,
                     message = "Template could not be found."
+            ),
+            @ApiResponse(
+                    code = 422,
+                    message = "The template is still used by compositions and cannot be deleted."
             )
     })
     public ResponseEntity<AdminDeleteResponseData> deleteTemplate(
-            @ApiParam(value = "Target template id to delete")
+            @ApiParam(value = "Target template id to delete. The value comes from the 'template_id' property.")
             @PathVariable(value = "template_id")
                     String templateId
     ) {
@@ -149,6 +146,10 @@ public class OpenehrAdminTemplateController extends BaseController {
             @ApiResponse(
                     code = 404,
                     message = "Template could not be found."
+            ),
+            @ApiResponse(
+                    code = 422,
+                    message = "There are templates that are used by compositions and cannot be removed."
             )
     })
     public ResponseEntity<?> deleteAllTemplates() {

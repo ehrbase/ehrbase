@@ -20,6 +20,8 @@ package org.ehrbase.service;
 
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.xmlbeans.XmlOptions;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -143,9 +145,28 @@ public class TemplateFileStorageService implements TemplateStorage {
         return Optional.ofNullable(operationaltemplate);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean deleteTemplate(String templateId) {
-        return false;
+        boolean deleted = false;
+        try {
+            File file = optFileMap.get(templateId);
+            if (!file.exists()) {
+                throw new ObjectNotFoundException(
+                        "ADMIN TEMPLATE",
+                        String.format("File with name %s does not exist.", templateId)
+                );
+            }
+            deleted = Files.deleteIfExists(file.toPath());
+            if (deleted) {
+                optFileMap.remove(templateId);
+            }
+            return deleted;
+        } catch (IOException e) {
+            throw new InternalServerException(e.getMessage());
+        }
     }
 
     boolean addKnowledgeSourcePath(String path) {

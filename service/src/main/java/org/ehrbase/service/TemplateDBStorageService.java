@@ -21,7 +21,6 @@
 package org.ehrbase.service;
 
 import org.ehrbase.api.definitions.ServerConfig;
-import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_TemplateStoreAccess;
 import org.ehrbase.dao.access.support.ServiceDataAccess;
@@ -67,6 +66,9 @@ public class TemplateDBStorageService implements TemplateStorage {
         return Optional.ofNullable(I_TemplateStoreAccess.retrieveInstanceByTemplateId(getDataAccess(), templateId).getTemplate());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean deleteTemplate(String templateId) {
 

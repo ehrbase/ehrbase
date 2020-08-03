@@ -53,7 +53,7 @@ public interface TemplateStorage {
      * Deletes an operational template from template storage. The template will be removed physically so ensure that
      * there are no compositions referencing the template.
      *
-     * @param templateId - Storage id of the template
+     * @param templateId - Template id to delete from storage, e.g. "IDCR Allergies List.v0"
      * @return - Deletion was successful or not
      */
     boolean deleteTemplate(String templateId);

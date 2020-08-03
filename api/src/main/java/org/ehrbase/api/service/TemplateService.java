@@ -44,5 +44,12 @@ public interface TemplateService extends BaseService {
 
     String create(String content);
 
+    /**
+     * Deletes a given template from storage physically. The template is no longer available. If you try to delete a
+     * template that is used in at least one Composition Entry or in one history entry the deletion will be rejected.
+     *
+     * @param templateId - Template id to delete, e.g. "IDCR Allergies List.v0"
+     * @return - Whether the template could be removed or not
+     */
     boolean adminDeleteTemplate(String templateId);
 }
