@@ -22,11 +22,13 @@
 package org.ehrbase.aql.compiler;
 
 import org.ehrbase.dao.jooq.impl.DSLContextHelper;
+import org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl;
 import org.jooq.DSLContext;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
 
 /**
  * Created by christian on 4/1/2016.
@@ -36,7 +38,6 @@ public class AqlExpressionTest {
 
 
     private DSLContext context = DSLContextHelper.buildContext();
-
 
 
     @Test
@@ -80,7 +81,7 @@ public class AqlExpressionTest {
 
         AqlExpression cut = new AqlExpression().parse(query);
 
-        Statements statements = new Statements(cut.getParseTree(), new Contains(cut.getParseTree()).process().getIdentifierMapper()).process() ;
+        Statements statements = new Statements(cut.getParseTree(), new Contains(cut.getParseTree()).process().getIdentifierMapper(), mock(FhirTerminologyServerR4AdaptorImpl.class)).process();
 
         assertThat(statements.getVariables()).isNotNull();
         assertThat(statements.getWhereClause()).isNotNull();
@@ -98,10 +99,10 @@ public class AqlExpressionTest {
         AqlExpression cut = new AqlExpression().parse(query);
 
         try {
-            new Statements(cut.getParseTree(), new Contains(cut.getParseTree()).process().getIdentifierMapper()).process();
+            new Statements(cut.getParseTree(), new Contains(cut.getParseTree()).process().getIdentifierMapper(), mock(FhirTerminologyServerR4AdaptorImpl.class)
+            ).process();
             fail("duplicate alias has not been detected");
-        }
-        catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
 
         }
     }
@@ -125,7 +126,7 @@ public class AqlExpressionTest {
 
         AqlExpression cut = new AqlExpression().parse(query);
 
-        Statements statements = new Statements(cut.getParseTree(), new Contains(cut.getParseTree()).process().getIdentifierMapper()).process();
+        Statements statements = new Statements(cut.getParseTree(), new Contains(cut.getParseTree()).process().getIdentifierMapper(), mock(FhirTerminologyServerR4AdaptorImpl.class)).process();
 
         assertThat(statements.getWhereClause()).isNotNull();
 
