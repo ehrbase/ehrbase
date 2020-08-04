@@ -200,8 +200,9 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
         values.put(SystemValue.TERRITORY, new CodePhrase(new TerminologyId("ISO_3166-1"), territory2letters));
 
         values.put(SystemValue.FEEDER_AUDIT, new FeederAuditEncoding().fromDB(compositionHistoryAccess.getFeederAudit()));
-
+        /* TODO: uncomment when LINKS is fully implemented
         values.put(SystemValue.LINKS, new LinksEncoding().fromDB(compositionHistoryAccess.getFeederAudit()));
+         */
 
         List<I_EntryAccess> content = new ArrayList<>();
 

@@ -203,9 +203,20 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
         // FIXME make jooq compliant
         String versionQuery =
-                "select row_id, in_contribution, ehr_id, language, territory, composer, sys_transaction, has_audit from \n" +
+                "select " +
+                        "row_id, " +
+                        "in_contribution, " +
+                        "ehr_id, " +
+                        "language, " +
+                        "territory, " +
+                        "composer, " +
+                        "sys_transaction, " +
+                        "has_audit," +
+                        "attestation_ref, " +
+                        "feeder_audit, " +
+                        "links from \n" +
                         "  (select ROW_NUMBER() OVER (ORDER BY sys_transaction ASC ) AS row_id, * from ehr.composition_history " +
-                        "WHERE id = ?) \n" +
+                        "       WHERE id = ?) \n" +
                         "    AS Version WHERE row_id = ?;";
 
         Connection connection = domainAccess.getConnection();
@@ -228,12 +239,15 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
                     compositionRecord1.setSysTransaction(resultSet.getTimestamp("sys_transaction"));
                     compositionRecord1.setHasAudit(UUID.fromString(resultSet.getString("has_audit")));
                     compositionRecord1.setFeederAudit(JSONB.valueOf(resultSet.getString("feeder_audit")));
+
+                    /* TODO: uncomment when links encode/decode is fully implemented
                     compositionRecord1.setLinks(JSONB.valueOf(resultSet.getString("links")));
+                     */
                     compositionHistoryAccess = new CompositionAccess(domainAccess, compositionRecord1);
                 }
             }
         } catch (SQLException e) {
-            throw new ObjectNotFoundException("composition", "Composition not found or or invalid DB content", e);
+            throw new ObjectNotFoundException("composition", "Composition not found or or invalid DB content", e.getCause());
         }
 
         if (compositionHistoryAccess != null) {
