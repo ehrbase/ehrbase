@@ -82,7 +82,7 @@ public class AqlExpressionTest extends TestAqlBase {
 
         AqlExpression cut = new AqlExpression().parse(query);
 
-        Statements statements = new Statements(cut.getParseTree(), new Contains(cut.getParseTree(), knowledge).process().getIdentifierMapper()).process() ;
+        Statements statements = new Statements(cut.getParseTree(), new Contains(cut.getParseTree(), knowledge).process().getIdentifierMapper(), mock(FhirTerminologyServerR4AdaptorImpl.class)).process();
 
         assertThat(statements.getVariables()).isNotNull();
         assertThat(statements.getWhereClause()).isNotNull();
@@ -100,7 +100,8 @@ public class AqlExpressionTest extends TestAqlBase {
         AqlExpression cut = new AqlExpression().parse(query);
 
         try {
-            new Statements(cut.getParseTree(), new Contains(cut.getParseTree(), knowledge).process().getIdentifierMapper()).process();
+            new Statements(cut.getParseTree(), new Contains(cut.getParseTree(), knowledge).process().getIdentifierMapper(), mock(FhirTerminologyServerR4AdaptorImpl.class)
+            ).process();
 
             fail("duplicate alias has not been detected");
         } catch (IllegalArgumentException e) {
@@ -127,7 +128,7 @@ public class AqlExpressionTest extends TestAqlBase {
 
         AqlExpression cut = new AqlExpression().parse(query);
 
-        Statements statements = new Statements(cut.getParseTree(), new Contains(cut.getParseTree(), knowledge).process().getIdentifierMapper()).process();
+        Statements statements = new Statements(cut.getParseTree(), new Contains(cut.getParseTree(), knowledge).process().getIdentifierMapper(), mock(FhirTerminologyServerR4AdaptorImpl.class)).process();
 
         assertThat(statements.getWhereClause()).isNotNull();
 

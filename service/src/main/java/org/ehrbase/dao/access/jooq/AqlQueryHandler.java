@@ -67,7 +67,8 @@ public class AqlQueryHandler extends DataAccess {
     @SuppressWarnings("unchecked")
     private AqlResult execute(AqlExpression aqlExpression){
         Contains contains = new Contains(aqlExpression.getParseTree(), (KnowledgeCacheService)this.getDataAccess().getIntrospectService()).process();
-        Statements statements = new Statements(aqlExpression.getParseTree(), contains.getIdentifierMapper()).process() ;
+
+        Statements statements = new Statements(aqlExpression.getParseTree(), contains.getIdentifierMapper(), tsAdapter).process();
 
         QueryProcessor queryProcessor = new QueryProcessor(getContext(), this.getKnowledgeManager(), this.getIntrospectService(), contains, statements, getDataAccess().getServerConfig().getNodename(), usePgExtensions);
 
