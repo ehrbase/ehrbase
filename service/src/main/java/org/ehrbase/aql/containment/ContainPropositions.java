@@ -108,7 +108,8 @@ public class ContainPropositions {
                             throw new IllegalStateException("Invalid expression");
                         if (operator != null){
                             if (resultSet.isEmpty())
-                                throw new IllegalStateException("Cannot apply operator on empty initial set");
+                                resultSet = SetUtils.emptySet();
+
                             Set<String> combinedSet = ((ContainsCheck) token).getTemplateIds();
                             //apply operator
                             switch (operator){
