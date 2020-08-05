@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add admin API endpoint stubs (see: https://github.com/ehrbase/ehrbase/pull/280)
+- Add support for FeederAudit in Locatable. Refactored Composition Serializer for DB encoding (see https://github.com/ehrbase/ehrbase/tree/feature/311_feeder_audit, https://github.com/ehrbase/openEHR_SDK/tree/feature/311_feeder_audit)
 
 ### Changed
 
