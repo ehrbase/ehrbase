@@ -25,6 +25,7 @@ import org.ehrbase.aql.definition.FromEhrDefinition;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.sql.binding.VariableDefinitions;
+import org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer;
 
 import java.util.List;
 
@@ -40,10 +41,12 @@ public class Statements {
 
     private Integer limitAttribute;
     private Integer offsetAttribute;
+    private I_OpenehrTerminologyServer tsAdapter;
 
-    public Statements(ParseTree parseTree, IdentifierMapper identifierMapper) {
+    public Statements(ParseTree parseTree, IdentifierMapper identifierMapper, I_OpenehrTerminologyServer tsAdapter) {
         this.parseTree = parseTree;
         this.identifierMapper = identifierMapper;
+        this.tsAdapter = tsAdapter;
     }
 
     public Statements process() {
@@ -66,7 +69,8 @@ public class Statements {
     }
 
     private List visitWhere() {
-        WhereVisitor whereVisitor = new WhereVisitor();
+
+        WhereVisitor whereVisitor = new WhereVisitor(tsAdapter);
         whereVisitor.visit(parseTree);
         return whereVisitor.getWhereExpression();
     }

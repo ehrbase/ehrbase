@@ -23,11 +23,13 @@ package org.ehrbase.aql.compiler;
 
 import org.ehrbase.aql.TestAqlBase;
 import org.ehrbase.dao.jooq.impl.DSLContextHelper;
+import org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl;
 import org.jooq.DSLContext;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
 
 /**
  * Created by christian on 4/1/2016.
@@ -37,7 +39,6 @@ public class AqlExpressionTest extends TestAqlBase {
 
 
     private DSLContext context = DSLContextHelper.buildContext();
-
 
 
     @Test
@@ -100,9 +101,9 @@ public class AqlExpressionTest extends TestAqlBase {
 
         try {
             new Statements(cut.getParseTree(), new Contains(cut.getParseTree(), knowledge).process().getIdentifierMapper()).process();
+
             fail("duplicate alias has not been detected");
-        }
-        catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
 
         }
     }

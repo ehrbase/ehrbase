@@ -20,6 +20,7 @@ package org.ehrbase.aql.sql.queryImpl.attribute.eventcontext;
 
 import org.ehrbase.aql.sql.queryImpl.attribute.*;
 import org.ehrbase.aql.sql.queryImpl.attribute.eventcontext.facility.FacilityResolver;
+import org.ehrbase.aql.sql.queryImpl.attribute.eventcontext.participations.ParticipationsJson;
 import org.ehrbase.aql.sql.queryImpl.attribute.setting.SettingResolver;
 import org.ehrbase.aql.sql.queryImpl.value_field.GenericJsonField;
 import org.jooq.Field;
@@ -38,6 +39,9 @@ public class EventContextResolver extends AttributeResolver
             return new ContextOtherContext(fieldResolutionContext, joinSetup).forTableField(NULL_FIELD).sqlField();
         }
 
+        if (path.startsWith("context/participations")) {
+            return new ParticipationsJson(fieldResolutionContext, joinSetup).forJsonPath(new AttributePath("context/participations").redux(path)).sqlField();
+        }
 
         if (path.equals("context/health_care_facility")){
             return new EventContextJson(fieldResolutionContext, joinSetup).forJsonPath("health_care_facility").sqlField();

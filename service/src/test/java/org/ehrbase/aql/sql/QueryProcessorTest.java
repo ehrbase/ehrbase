@@ -24,6 +24,7 @@ import org.ehrbase.aql.compiler.Contains;
 import org.ehrbase.aql.compiler.Statements;
 import org.ehrbase.dao.jooq.impl.DSLContextHelper;
 import org.ehrbase.service.CacheRule;
+import org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl;
 import org.ehrbase.service.IntrospectService;
 import org.ehrbase.service.KnowledgeCacheHelper;
 import org.ehrbase.service.KnowledgeCacheService;
@@ -43,6 +44,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.ehrbase.jooq.pg.Tables.ENTRY;
+import static org.mockito.Mockito.mock;
 
 public class QueryProcessorTest  {
 
@@ -400,7 +402,6 @@ public class QueryProcessorTest  {
 //        queryParser.pass2();
 //        return queryParser;
 //    }
-
 
     private String removeAlias(String s) {
         return s.replaceAll("alias_\\d+", "");

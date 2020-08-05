@@ -186,6 +186,8 @@ public interface I_EntryAccess extends I_SimpleCRUD {
 
     String getArchetypeId();
 
+    String getRmVersion();
+
     /**
      * get the Item Type as a literal<br>
      * Item type is one of

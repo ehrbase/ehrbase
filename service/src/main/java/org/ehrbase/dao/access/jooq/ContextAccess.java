@@ -36,7 +36,6 @@ import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.PartyRef;
 import com.nedap.archie.rm.support.identification.TerminologyId;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.definitions.ServerConfig;
@@ -48,6 +47,8 @@ import org.ehrbase.dao.access.jooq.party.PersistedObjectId;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.jooq.pg.tables.records.*;
+import org.ehrbase.service.RecordedDvCodedText;
+import org.ehrbase.service.RecordedDvDateTime;
 import org.ehrbase.serialisation.dbencoding.RawJson;
 import org.jooq.*;
 import org.jooq.exception.DataAccessException;
@@ -61,7 +62,6 @@ import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.ehrbase.jooq.pg.Tables.*;
@@ -72,7 +72,6 @@ import static org.ehrbase.jooq.pg.Tables.*;
 public class ContextAccess extends DataAccess implements I_ContextAccess {
 
     private static final TerminologyId OPENEHR_TERMINOLOGY_ID = new TerminologyId("openehr");
-    private final static String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZZ";
     private static final String DB_INCONSISTENCY = "DB inconsistency";
     private static Logger log = LogManager.getLogger(ContextAccess.class);
     private EventContextRecord eventContextRecord;
@@ -129,33 +128,6 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
     }
 
     /**
-     * Decodes and creates RM object instance from given {@link Timestamp} representation
-     *
-     * @param timestamp input as {@link Timestamp}
-     * @param timezone  TODO doc! what format is the timezone in?
-     * @return RM object generated from input
-     * @throws InternalServerException on failure
-     */
-    // TODO unit test - until this is done please note this method was refactored from joda to java time classes
-    private static DvDateTime decodeDvDateTime(Timestamp timestamp, String timezone) {
-        if (timestamp == null) return null;
-
-        Optional<LocalDateTime> codedLocalDateTime = Optional.empty();
-        Optional<ZonedDateTime> zonedDateTime = Optional.empty();
-
-        if (timezone != null)
-            zonedDateTime = Optional.of(timestamp.toLocalDateTime().atZone(ZoneId.of(timezone)));
-        else
-            codedLocalDateTime = Optional.of(timestamp.toLocalDateTime());
-
-        Optional<String> convertedDateTime = codedLocalDateTime.map(i -> i.format(java.time.format.DateTimeFormatter.ofPattern(DATE_FORMAT)));
-        if (convertedDateTime.isEmpty())
-            convertedDateTime = zonedDateTime.map(i -> i.format(java.time.format.DateTimeFormatter.ofPattern(DATE_FORMAT)));
-
-        return new DvDateTime(convertedDateTime.orElseThrow(() -> new InternalServerException("Decoding DvDateTime failed")));
-    }
-
-    /**
      * @throws InternalServerException on failure of decoding DvText or DvDateTime
      */
     public static EventContext retrieveHistoricalEventContext(I_DomainAccess domainAccess, UUID compositionId, Timestamp transactionTime) {
@@ -202,13 +174,9 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                     PartyProxy performer = new PersistedPartyProxy(domainAccess).retrieve(record.getPerformer());
 
 
-                    DvInterval<DvDateTime> startTime = new DvInterval<>(decodeDvDateTime(record.getStartTime(), record.getStartTimeTzid()), null);
-                    DvCodedText mode;
-                    try {
-                        mode = decodeDvCodedText(record.getMode());
-                    } catch (IllegalArgumentException e) {
-                        throw new InternalServerException(DB_INCONSISTENCY, e);
-                    }
+                    DvInterval<DvDateTime> startTime = convertDvIntervalDvDateTimeFromRecord(eventContextHistoryRecord);
+                    DvCodedText mode = convertModeFromRecord(eventContextHistoryRecord);
+
                     Participation participation = new Participation(performer,
                             new DvText(record.getFunction()),
                             mode,
@@ -231,8 +199,8 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         }
 
         return new EventContext(healthCareFacility,
-                decodeDvDateTime(eventContextHistoryRecord.getStartTime(), eventContextHistoryRecord.getStartTimeTzid()),
-                decodeDvDateTime(eventContextHistoryRecord.getEndTime(), eventContextHistoryRecord.getEndTimeTzid()),
+                new RecordedDvDateTime().decodeDvDateTime(eventContextHistoryRecord.getStartTime(), eventContextHistoryRecord.getStartTimeTzid()),
+                new RecordedDvDateTime().decodeDvDateTime(eventContextHistoryRecord.getEndTime(), eventContextHistoryRecord.getEndTimeTzid()),
                 participationList.isEmpty() ? null : participationList,
                 eventContextHistoryRecord.getLocation(),
                 concept,
@@ -255,11 +223,13 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
     @Override
     public void setRecordFields(UUID id, EventContext eventContext) {
         //@TODO get from eventContext
-        eventContextRecord.setStartTimeTzid(ZoneId.systemDefault().getId());
-        eventContextRecord.setStartTime(toTimestamp(eventContext.getStartTime()));
+        RecordedDvDateTime recordedDvDateTime = new RecordedDvDateTime(eventContext.getStartTime());
+        eventContextRecord.setStartTime(recordedDvDateTime.toTimestamp());
+        eventContextRecord.setStartTimeTzid(recordedDvDateTime.zoneId());
         if (eventContext.getEndTime() != null) {
-            eventContextRecord.setEndTime(toTimestamp(eventContext.getEndTime()));
-            eventContextRecord.setEndTimeTzid(ZoneId.systemDefault().getId());
+            recordedDvDateTime = new RecordedDvDateTime(eventContext.getEndTime());
+            eventContextRecord.setEndTime(recordedDvDateTime.toTimestamp());
+            eventContextRecord.setEndTimeTzid(recordedDvDateTime.zoneId());
         }
         eventContextRecord.setId(id != null ? id : UUID.randomUUID());
 
@@ -291,14 +261,21 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                 participationRecord.setEventContext(eventContextRecord.getId());
                 participationRecord.setFunction(participation.getFunction().getValue());
                 if (participation.getMode() != null)
-                    participationRecord.setMode(participation.getMode().toString());
+                    new RecordedDvCodedText().toDB(participationRecord, PARTICIPATION.MODE, participation.getMode());
                 if (participation.getTime() != null) {
                     DvDateTime lower = (DvDateTime) participation.getTime().getLower();
                     if (lower != null) {
-
-                        participationRecord.setStartTime(new Timestamp(lower.getValue().get(ChronoField.MILLI_OF_SECOND)));
-                        participationRecord.setStartTimeTzid(ZoneId.systemDefault().getId());
+                        recordedDvDateTime = new RecordedDvDateTime(lower);
+                        participationRecord.setTimeLower(recordedDvDateTime.toTimestamp());
+                        participationRecord.setTimeLowerTz(recordedDvDateTime.zoneId());
                     }
+                    DvDateTime upper = (DvDateTime) participation.getTime().getUpper();
+                    if (upper != null) {
+                        recordedDvDateTime = new RecordedDvDateTime(upper);
+                        participationRecord.setTimeUpper(recordedDvDateTime.toTimestamp());
+                        participationRecord.setTimeUpperTz(recordedDvDateTime.zoneId());
+                    }
+
                 }
 
                 PartyIdentified performer; //only PartyIdentified performer is supported now
@@ -325,17 +302,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         }
     }
 
-    private Timestamp toTimestamp(DvDateTime dateTime) {
-        TemporalAccessor accessor = dateTime.getValue();
-        if (!accessor.isSupported(ChronoField.OFFSET_SECONDS)){
-            //set timezone at default locale
-            ZonedDateTime zonedDateTime = LocalDateTime.from(accessor).atZone(ZoneId.systemDefault());
-            accessor = zonedDateTime.toOffsetDateTime();
-        }
-        long millis = accessor.getLong(ChronoField.INSTANT_SECONDS) * 1000 + accessor.getLong(ChronoField.MILLI_OF_SECOND);
 
-        return new Timestamp(millis);
-    }
 
     /**
      * @throws InternalServerException  when database operation or
@@ -531,25 +498,14 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
             //retrieve performer
             PartyProxy performer = new PersistedPartyProxy(this).retrieve(record.getPerformer());
 
-            DvInterval<DvDateTime> startTime = null;
-            if (record.getStartTime() != null) { //start time null value is allowed for participation
-                startTime = new DvInterval<>(decodeDvDateTime(record.getStartTime(), record.getStartTimeTzid()), null);
-            }
+            DvInterval<DvDateTime> dvInterval = convertDvIntervalDvDateTimeFromRecord(record);
 
-            DvCodedText mode;
-            try {
-                if (StringUtils.isNotBlank(record.getMode())) {
-                    mode = decodeDvCodedText(record.getMode());
-                } else {
-                    mode = null;
-                }
-            } catch (IllegalArgumentException e) {
-                throw new InternalServerException(DB_INCONSISTENCY, e);
-            }
+            DvCodedText mode = convertModeFromRecord(record);
+
             Participation participation = new Participation(performer,
                     new DvText(record.getFunction()),
                     mode,
-                    startTime);
+                    dvInterval);
 
             participationList.add(participation);
         });
@@ -573,14 +529,39 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         }
 
         return new EventContext(healthCareFacility,
-                decodeDvDateTime(eventContextRecord.getStartTime(), eventContextRecord.getStartTimeTzid()),
-                decodeDvDateTime(eventContextRecord.getEndTime(), eventContextRecord.getEndTimeTzid()),
+                new RecordedDvDateTime().decodeDvDateTime(eventContextRecord.getStartTime(), eventContextRecord.getStartTimeTzid()),
+                new RecordedDvDateTime().decodeDvDateTime(eventContextRecord.getEndTime(), eventContextRecord.getEndTimeTzid()),
                 participationList.isEmpty() ? null : participationList,
                 eventContextRecord.getLocation(),
                 concept,
                 otherContext
         );
 
+    }
+
+    private static DvInterval<DvDateTime> convertDvIntervalDvDateTimeFromRecord(Record record){
+        DvInterval<DvDateTime> dvDateTimeDvInterval = null;
+        if (record.get(PARTICIPATION.TIME_LOWER) != null) { //start time null value is allowed for participation
+            dvDateTimeDvInterval = new DvInterval<>(
+                    new RecordedDvDateTime().decodeDvDateTime(record.get(PARTICIPATION.TIME_LOWER), record.get(PARTICIPATION.TIME_LOWER_TZ)),
+                    new RecordedDvDateTime().decodeDvDateTime(record.get(PARTICIPATION.TIME_UPPER), record.get(PARTICIPATION.TIME_UPPER_TZ))
+            );
+        }
+        return dvDateTimeDvInterval;
+    }
+
+    private static DvCodedText convertModeFromRecord(Record record){
+        DvCodedText mode;
+        try {
+            if (record.get(PARTICIPATION.MODE) != null) {
+                mode = (DvCodedText)new RecordedDvCodedText().fromDB(record, PARTICIPATION.MODE);
+            } else {
+                mode = null;
+            }
+        } catch (IllegalArgumentException e) {
+            throw new InternalServerException(DB_INCONSISTENCY, e);
+        }
+        return mode;
     }
 
     @Override

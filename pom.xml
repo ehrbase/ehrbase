@@ -119,7 +119,7 @@
         <swagger.version>1.5.23</swagger.version>
         <swagger-snapshot.version>2.0.0-rc2</swagger-snapshot.version>
         <postgressql.version>42.2.5</postgressql.version>
-        <ehrbase.sdk.version>0.3.5</ehrbase.sdk.version>
+        <ehrbase.sdk.version>c8a1e04</ehrbase.sdk.version>
         <flyway.version>6.2.0</flyway.version>
         <joda.version>2.10.6</joda.version>
         <database.name>ehrbase</database.name>
@@ -432,6 +432,7 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
                     <additionalJOption>-Xdoclint:none</additionalJOption>
                 </configuration>
             </plugin>
