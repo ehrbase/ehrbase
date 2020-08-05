@@ -63,11 +63,13 @@ public class QueryServiceImp extends BaseService implements QueryService {
 
     @Value("${server.aql.use-jsquery:true}")
     private boolean usePgExtensions; //default
+    private final FhirTerminologyServerR4AdaptorImpl tsAdapter;
 
     @Autowired
-    public QueryServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig) {
+    public QueryServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig, FhirTerminologyServerR4AdaptorImpl tsAdapter) {
 
         super(knowledgeCacheService, context, serverConfig);
+        this.tsAdapter = tsAdapter;
     }
 
     @Override
@@ -130,7 +132,8 @@ public class QueryServiceImp extends BaseService implements QueryService {
 
     private QueryResultDto queryAql(String queryString, boolean explain) {
         try {
-            AqlQueryHandler queryHandler = new AqlQueryHandler(getDataAccess(), usePgExtensions);
+
+            AqlQueryHandler queryHandler = new AqlQueryHandler(getDataAccess(), usePgExtensions, tsAdapter);
             AqlResult aqlResult = queryHandler.process(queryString);
 
             return formatResult(aqlResult, queryString, explain);
@@ -145,7 +148,7 @@ public class QueryServiceImp extends BaseService implements QueryService {
 
     private QueryResultDto queryAql(String queryString, Map<String, Object> parameters, boolean explain) {
         try {
-            AqlQueryHandler queryHandler = new AqlQueryHandler(getDataAccess(), usePgExtensions);
+            AqlQueryHandler queryHandler = new AqlQueryHandler(getDataAccess(), usePgExtensions, tsAdapter);
             AqlResult aqlResult = queryHandler.process(queryString, parameters);
 
             return formatResult(aqlResult, queryString, explain);

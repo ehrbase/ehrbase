@@ -9,14 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add admin API endpoint stubs (see: https://github.com/ehrbase/ehrbase/pull/280)
+
 ### Changed
 
 ### Fixed
 
+- Detect duplicates on POST Directory (see: https://github.com/ehrbase/ehrbase/pull/281)
+
 ## [0.13.0] (beta)
 
 ### Added
-- added support for various functions in AQL (aggregation, statistical, string etc.) (see: https://github.com/ehrbase/ehrbase/pull/223/)
+
+- Added support for various functions in AQL (aggregation, statistical, string etc.) (see: https://github.com/ehrbase/ehrbase/pull/223/)
 
 ### Changed
 - Update of AQL-Query test suite (see: https://github.com/ehrbase/ehrbase/pull/179)
@@ -28,7 +33,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - POST without accept header for ehr, composition and contribution endpoints (see: https://github.com/ehrbase/ehrbase/pull/199)
 - force a default timezone if not present for context/start_time and context/end_time if specified (https://github.com/ehrbase/ehrbase/pull/215)
 - Representation of version uid of EHR_STATUS (see: https://github.com/ehrbase/ehrbase/pull/180)
+- fix support of context/participations (see CR #267)
 - Refactored support of PartyProxy and ObjectId in both CRUD and AQL operations (see https://github.com/ehrbase/ehrbase/pull/248)
+- fix support of mandatory attributes in ENTRY specialization including rm_version (see https://github.com/ehrbase/ehrbase/pull/247)
+
 
 
 ## [0.12.0] (alpha)
