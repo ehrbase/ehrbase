@@ -46,6 +46,7 @@ import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.jooq.pg.enums.EntryType;
 import org.ehrbase.jooq.pg.tables.records.EntryHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EntryRecord;
+import org.ehrbase.jooq.pg.udt.records.DvCodedTextRecord;
 import org.ehrbase.serialisation.attributes.FeederAuditAttributes;
 import org.ehrbase.serialisation.attributes.LinksAttributes;
 import org.ehrbase.serialisation.dbencoding.RawJson;
