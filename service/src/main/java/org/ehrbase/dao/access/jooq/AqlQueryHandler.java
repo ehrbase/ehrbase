@@ -30,7 +30,9 @@ import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.sql.AqlResult;
 import org.ehrbase.aql.sql.QueryProcessor;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
+import org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer;
 import org.ehrbase.dao.access.support.DataAccess;
+import org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -42,11 +44,12 @@ import java.util.Map;
 public class AqlQueryHandler extends DataAccess {
 
     private boolean usePgExtensions;
+    private I_OpenehrTerminologyServer tsAdapter;
 
-    public AqlQueryHandler(I_DomainAccess domainAccess, boolean usePgExtensions) {
+    public AqlQueryHandler(I_DomainAccess domainAccess, boolean usePgExtensions, FhirTerminologyServerR4AdaptorImpl tsAdapter) {
         super(domainAccess);
         this.usePgExtensions = usePgExtensions;
-
+        this.tsAdapter = tsAdapter;
     }
 
 
@@ -61,16 +64,18 @@ public class AqlQueryHandler extends DataAccess {
     }
 
     @SuppressWarnings("unchecked")
-    private AqlResult execute(AqlExpression aqlExpression){
+    private AqlResult execute(AqlExpression aqlExpression) {
         Contains contains = new Contains(aqlExpression.getParseTree()).process();
-        Statements statements = new Statements(aqlExpression.getParseTree(), contains.getIdentifierMapper()).process() ;
+
+        Statements statements = new Statements(aqlExpression.getParseTree(), contains.getIdentifierMapper(), tsAdapter).process();
 
         QueryProcessor queryProcessor = new QueryProcessor(getContext(), this.getKnowledgeManager(), this.getIntrospectService(), contains, statements, getDataAccess().getServerConfig().getNodename(), usePgExtensions);
 
-        AqlResult aqlResult =  queryProcessor.execute();
+        AqlResult aqlResult = queryProcessor.execute();
 
         //add the variable from statements
-        Map<String, String> variables =  new LinkedHashMap<>();;
+        Map<String, String> variables = new LinkedHashMap<>();
+        ;
         Iterator<I_VariableDefinition> iterator = statements.getVariables().iterator();
         int serial = 0;
         while (iterator.hasNext()) {
