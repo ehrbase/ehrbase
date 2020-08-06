@@ -41,6 +41,15 @@
         </dependency>
 
         <dependency>
+            <!--        <groupId>com.nedap.healthcare.archie</groupId>
+                    <artifactId>archie-all</artifactId>
+                    <version>0.7.0-SNAPSHOT</version>
+            -->
+            <groupId>com.github.openEHR</groupId>
+            <artifactId>archie</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jooq</groupId>
             <artifactId>jooq</artifactId>
         </dependency>

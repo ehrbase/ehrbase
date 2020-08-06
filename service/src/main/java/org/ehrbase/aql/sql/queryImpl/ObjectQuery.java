@@ -46,7 +46,6 @@ public abstract class ObjectQuery {
         this.context = context;
 
         this.pathResolver = pathResolver;
-
     }
 
     public void reset() {
@@ -67,5 +66,9 @@ public abstract class ObjectQuery {
 
     public boolean isJsonDataBlock() {
         return jsonDataBlock;
+    }
+
+    public String variableTemplatePath(String templateId, String identifier){
+        return pathResolver.pathOf(templateId, identifier);
     }
 }

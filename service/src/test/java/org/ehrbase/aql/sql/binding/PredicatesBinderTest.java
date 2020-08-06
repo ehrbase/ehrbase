@@ -27,49 +27,49 @@ import org.junit.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class PredicatesBinderTest {
-
-    @Test
-    public void bind() {
-
-        // Single containment
-        {
-            //represents contains COMPOSITION a[openEHR-EHR-COMPOSITION.health_summary.v1]
-            ContainmentSet containmentSet = new ContainmentSet(1, null);
-            containmentSet.add(ContainmentTest.buildContainment(null, "a", "openEHR-EHR-COMPOSITION.health_summary.v1", "COMPOSITION", null));
-
-            PredicatesBinder cut = new PredicatesBinder();
-            Predicates actual = cut.bind(containmentSet);
-            assertThat(actual.getAtomicPredicates()).size().isEqualTo(1);
-
-            Predicates.Details details1 = actual.getAtomicPredicates().get(0);
-            assertThat(details1.getExpression()).isEqualTo("openEHR_EHR_COMPOSITION_health_summary_v1");
-            assertThat(details1.getContainedIn()).isNull();
-            assertThat(details1.getInSet()).isNull();
-        }
-
-        // boolean operators
-        {
-
-            //represents CONTAINS COMPOSITION a [openEHR-EHR-COMPOSITION.health_summary.v1] AND COMPOSITION d [openEHR-EHR-COMPOSITION.referral.v1]
-            ContainmentSet containmentSet = new ContainmentSet(1, null);
-            containmentSet.add(ContainmentTest.buildContainment(null, "a", "openEHR-EHR-COMPOSITION.health_summary.v1", "COMPOSITION", null));
-            containmentSet.add(new ContainOperator("AND").getOperator());
-            containmentSet.add(ContainmentTest.buildContainment(null, "d", "openEHR-EHR-COMPOSITION.referral.v1", "COMPOSITION", null));
-
-            PredicatesBinder cut = new PredicatesBinder();
-            Predicates actual = cut.bind(containmentSet);
-            assertThat(actual.getAtomicPredicates()).size().isEqualTo(1);
-
-            Predicates.Details details1 = actual.getAtomicPredicates().get(0);
-            assertThat(details1.getExpression()).isEqualTo("openEHR_EHR_COMPOSITION_referral_v1");
-            assertThat(details1.getContainedIn()).isNull();
-            assertThat(details1.getInSet()).isNull();
-
-            assertThat(actual.getIntersectPredicates()).size().isEqualTo(1);
-            Predicates.Details details2 = actual.getIntersectPredicates().get(0);
-            assertThat(details2.getExpression()).isEqualTo("openEHR_EHR_COMPOSITION_health_summary_v1");
-            assertThat(details2.getContainedIn()).isNull();
-            assertThat(details2.getInSet()).isNull();
-        }
-    }
+//
+//    @Test
+//    public void bind() {
+//
+//        // Single containment
+//        {
+//            //represents contains COMPOSITION a[openEHR-EHR-COMPOSITION.health_summary.v1]
+//            ContainmentSet containmentSet = new ContainmentSet(1, null);
+//            containmentSet.add(ContainmentTest.buildContainment(null, "a", "openEHR-EHR-COMPOSITION.health_summary.v1", "COMPOSITION", null));
+//
+//            PredicatesBinder cut = new PredicatesBinder();
+//            Predicates actual = cut.bind(containmentSet);
+//            assertThat(actual.getAtomicPredicates()).size().isEqualTo(1);
+//
+//            Predicates.Details details1 = actual.getAtomicPredicates().get(0);
+//            assertThat(details1.getExpression()).isEqualTo("openEHR_EHR_COMPOSITION_health_summary_v1");
+//            assertThat(details1.getContainedIn()).isNull();
+//            assertThat(details1.getInSet()).isNull();
+//        }
+//
+//        // boolean operators
+//        {
+//
+//            //represents CONTAINS COMPOSITION a [openEHR-EHR-COMPOSITION.health_summary.v1] AND COMPOSITION d [openEHR-EHR-COMPOSITION.referral.v1]
+//            ContainmentSet containmentSet = new ContainmentSet(1, null);
+//            containmentSet.add(ContainmentTest.buildContainment(null, "a", "openEHR-EHR-COMPOSITION.health_summary.v1", "COMPOSITION", null));
+//            containmentSet.add(new ContainOperator("AND").getOperator());
+//            containmentSet.add(ContainmentTest.buildContainment(null, "d", "openEHR-EHR-COMPOSITION.referral.v1", "COMPOSITION", null));
+//
+//            PredicatesBinder cut = new PredicatesBinder();
+//            Predicates actual = cut.bind(containmentSet);
+//            assertThat(actual.getAtomicPredicates()).size().isEqualTo(1);
+//
+//            Predicates.Details details1 = actual.getAtomicPredicates().get(0);
+//            assertThat(details1.getExpression()).isEqualTo("openEHR_EHR_COMPOSITION_referral_v1");
+//            assertThat(details1.getContainedIn()).isNull();
+//            assertThat(details1.getInSet()).isNull();
+//
+//            assertThat(actual.getIntersectPredicates()).size().isEqualTo(1);
+//            Predicates.Details details2 = actual.getIntersectPredicates().get(0);
+//            assertThat(details2.getExpression()).isEqualTo("openEHR_EHR_COMPOSITION_health_summary_v1");
+//            assertThat(details2.getContainedIn()).isNull();
+//            assertThat(details2.getInSet()).isNull();
+//        }
+//    }
 }

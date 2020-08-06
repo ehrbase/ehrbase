@@ -22,12 +22,17 @@
 package org.ehrbase.opt;
 
 
+import com.nedap.archie.rm.generic.Participation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.xmlbeans.SchemaType;
 import org.ehrbase.opt.mapper.Boolean;
 import org.ehrbase.opt.mapper.Interval;
 import org.ehrbase.opt.mapper.*;
+import org.ehrbase.validation.constraints.wrappers.I_CArchetypeConstraintValidate;
 import org.openehr.schemas.v1.*;
+import org.openehr.schemas.v1.impl.CARCHETYPEROOTImpl;
+import org.openehr.schemas.v1.impl.CDEFINEDOBJECTImpl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,74 +55,6 @@ public class OptVisitor {
 
 
     private Map traversePrimitiveTypeObject(CPRIMITIVEOBJECT cpo) {
-
-        CPRIMITIVE cp = cpo.getItem();
-
-//        if (cp instanceof CBOOLEAN) {
-//            if (((CBOOLEAN) cp).isSetAssumedValue())
-//                return ((CBOOLEAN) cp).getAssumedValue();
-//
-//            if (((CBOOLEAN) cp).getTrueValid()) {
-//                return "true";
-//            } else {
-//                return "false";
-//            }
-//
-//        } else if (cp instanceof CSTRING) {
-//            if (((CSTRING) cp).isSetAssumedValue())
-//                return ((CSTRING) cp).getAssumedValue();
-//
-//            if (((CSTRING) cp).isSetPattern())
-//                return ((CSTRING) cp).getPattern();
-//
-//            return createString((CSTRING) cp);
-//
-//        } else if (cp instanceof CDATE) {
-//            if (((CDATE) cp).isSetAssumedValue())
-//                return ((CDATE) cp).getAssumedValue();
-//            return DEFAULT_DATE;
-//
-//        } else if (cp instanceof CTIME) {
-//            if (((CTIME) cp).isSetAssumedValue())
-//                return ((CTIME) cp).getAssumedValue();
-//            return DEFAULT_TIME;
-//
-//        } else if (cp instanceof CDATETIME) {
-//            if (((CDATETIME) cp).isSetAssumedValue())
-//                return ((CDATETIME) cp).getAssumedValue();
-//            return DEFAULT_DATE_TIME;
-//
-//        } else if (cp instanceof CINTEGER) {
-//            if (((CINTEGER) cp).isSetAssumedValue())
-//                return ((CINTEGER) cp).getAssumedValue();
-//            return new Integer(0);
-//
-//        } else if (cp instanceof CREAL) {
-//            if (((CREAL) cp).isSetAssumedValue())
-//                return new Double(((CREAL) cp).getAssumedValue());
-//
-//            return new Double(0);
-//
-//        } else if (cp instanceof CDURATION) {
-//            CDURATION cd = (CDURATION) cp;
-//            DvDuration duration = null;
-//
-//            if (cd.isSetAssumedValue()) {
-//                duration = new DvDuration(cd.getAssumedValue());
-//            } else if (cd.getRange() != null) {
-//                if (cd.getRange().getLower() != null) {
-//                    duration = new DvDuration(cd.getRange().getLower());
-//                } else if (cd.getRange().getUpper() != null) {
-//                    duration = new DvDuration(cd.getRange().getUpper());
-//                }
-//            }
-//            if (duration == null) {
-//                return DEFAULT_DURATION;
-//            } else {
-//                return duration.toString();
-//            }
-//
-//        }
         return null;
 
     }
@@ -126,18 +63,21 @@ public class OptVisitor {
     private Map traverseDomainTypeObject(CDOMAINTYPE cpo, Map<String, TermDefinition> termDef, String path) throws Exception {
 
         String name = new LocatablePath(path).attribute();
+        SchemaType type = I_CArchetypeConstraintValidate.findSchemaType(I_CArchetypeConstraintValidate.getXmlType(cpo));
 
-        if (cpo instanceof CDVQUANTITY) {
-            return new Quantity((CDVQUANTITY) cpo, termDef).toMap(name);
+        switch(type.getName().getLocalPart()) {
+            case "C_DV_QUANTITY":
+                return new Quantity((CDVQUANTITY) cpo, termDef).toMap(name);
 
-        } else if (cpo instanceof CCODEPHRASE) {
-            return new CodePhrase((CCODEPHRASE) cpo, termDef).toMap(name);
+            case "C_CODE_PHRASE":
+                return new CodePhrase((CCODEPHRASE) cpo, termDef).toMap(name);
 
-        } else if (cpo instanceof CDVORDINAL) {
-            return new Ordinal((CDVORDINAL) cpo, termDef).toMap(name);
+            case "C_DV_ORDINAL":
+                return new Ordinal((CDVORDINAL) cpo, termDef).toMap(name);
 
-        } else {
-            throw new RuntimeException("unsupported c_domain_type: " + cpo.getClass());
+            default:
+                throw new RuntimeException("unsupported c_domain_type: " + cpo.getClass());
+
         }
     }
 
@@ -168,7 +108,7 @@ public class OptVisitor {
         rootMap.put(Constants.UID, opt.getUid().getValue());
         rootMap.put(Constants.CONCEPT, opt.getConcept());
 
-        Map map = handleArchetypeRoot(opt, def, null, "");
+        Map map = handleArchetypeRoot(def, null, "");
 
         rootMap.put(Constants.TREE, map);
 //		constrainMapper.setTerminology(termTable);
@@ -177,14 +117,13 @@ public class OptVisitor {
 
 
     /**
-     * @param opt
      * @param def
      * @param name
      * @param path
      * @return
      * @throws Exception
      */
-    private Map handleArchetypeRoot(OPERATIONALTEMPLATE opt, CARCHETYPEROOT def, String name, String path) throws Exception {
+    private Map handleArchetypeRoot(CARCHETYPEROOT def, String name, String path) throws Exception {
         Map<String, Object> archetypeRootMap = new HashMap<>();
 
         Map<String, TermDefinition> termDef = new HashMap<>();
@@ -207,20 +146,19 @@ public class OptVisitor {
         log.debug("CARCHETYPEROOT path=" + path);
         termTable.put(path, termDef);
         // Load complex component
-        return handleComplexObject(opt, def, termDef, name, path);
+        return handleComplexObject(def, termDef, name, path);
     }
 
     /**
      * Load complex component
      *
-     * @param opt
      * @param ccobj
      * @param termDef
      * @param name
      * @return
      * @throws Exception
      */
-    private Map handleComplexObject(OPERATIONALTEMPLATE opt, CCOMPLEXOBJECT ccobj, Map<String, TermDefinition> termDef, String name, String path) throws Exception {
+    private Map handleComplexObject(CCOMPLEXOBJECT ccobj, Map<String, TermDefinition> termDef, String name, String path) throws Exception {
 
         Map<String, Object> nodeMap = new HashMap<>();
 
@@ -250,11 +188,17 @@ public class OptVisitor {
                 String pathloop = path + "/" + attr.getRmAttributeName();
                 COBJECT[] children = attr.getChildrenArray();
                 String attrName = attr.getRmAttributeName();
-                if (attr instanceof CSINGLEATTRIBUTE) {
+
+                //issue with getting the actual type
+                SchemaType type = I_CArchetypeConstraintValidate.findSchemaType(I_CArchetypeConstraintValidate.getXmlType(attr));
+//                attr = (CATTRIBUTE) attr.changeType(type);
+                //-----
+
+                if (type.getName().getLocalPart().equals("C_SINGLE_ATTRIBUTE")) {
                     if (children != null && children.length > 0) {
                         try {
                             for (COBJECT cobj : children) {
-                                Map cobjectMap = handleCObject(opt, cobj, termDef, attrName, pathloop);
+                                Map cobjectMap = handleCObject(cobj, termDef, attrName, pathloop);
                                 if (cobjectMap != null) {
                                     //although an item tree is an attribute, the node id should be specified (ex. data, protocol etc.)
                                     if (cobj.getRmTypeName().equals(Constants.ITEM_TREE) && !pathloop.endsWith("]")) {
@@ -270,12 +214,12 @@ public class OptVisitor {
 
                         }
                     }
-                } else if (attr instanceof CMULTIPLEATTRIBUTE) {
+                } else if (type.getName().getLocalPart().equals("C_MULTIPLE_ATTRIBUTE")) {
 
                     for (COBJECT cobj : children) {
                         try {
 
-                            Object attrValue = handleCObject(opt, cobj, termDef, attrName, pathloop);
+                            Object attrValue = handleCObject(cobj, termDef, attrName, pathloop);
 //                            log.debug("attrName=" + attrName + ": attrValue=" + attrValue);
 
                         } catch (Exception e) {
@@ -319,6 +263,9 @@ public class OptVisitor {
             nodeMap = new Count(ccobj, termDef).toMap(name);
         } else if ("DV_DURATION".equals(rmTypeName)) {
             nodeMap = new Duration(ccobj, termDef).toMap(name);
+        } else if ("PARTICIPATION".equals(rmTypeName)){
+            //TODO: handle PARTICIPATION constraint
+            nodeMap = null;
         } else if ("DV_IDENTIFIER".equals(rmTypeName)) {
             nodeMap = new ValueType(ccobj, termDef).toMap(rmTypeName, name);
         } else if ("DV_PROPORTION".equals(rmTypeName)) {
@@ -328,7 +275,7 @@ public class OptVisitor {
         } else if (rmTypeName.matches("COMPOSITION|SECTION|CLUSTER|ITEM_TREE|ACTION|INSTRUCTION|ACTIVITY|EVALUATION|OBSERVATION|SECTION|EVENT|HISTORY|EVENT_CONTEXT|ADMIN_ENTRY|POINT_EVENT|INTERVAL_EVENT")) {
             Structural structural = new Structural(rmTypeName, archetypeNodeId, path, nodeId, ccobj, termDef, childrenNodeMap);
             nodeMap = structural.toMap();
-            if ("COMPOSITION".matches(rmTypeName)) {
+            if (nodeMap != null && "COMPOSITION".matches(rmTypeName)) {
                 //check if children contains a context, if not add one
                 boolean hasContext = false;
                 for (Map<String, Object> child : (List<Map<String, Object>>) nodeMap.get(Constants.CHILDREN)) {
@@ -385,54 +332,70 @@ public class OptVisitor {
         return nodeMap;
     }
 
-    private Map handleCObject(OPERATIONALTEMPLATE opt, COBJECT cobj, Map<String, TermDefinition> termDef, String attrName, String path) throws Exception {
+    private Map handleCObject(COBJECT cobj, Map<String, TermDefinition> termDef, String attrName, String path) throws Exception {
         // if ( cobj.getOccurrences().isAvailable() ) {
-        log.debug("cobj=" + cobj.getClass() + ":" + cobj.getRmTypeName());
+//        log.debug("cobj=" + cobj.getClass() + ":" + cobj.getRmTypeName());
 
         String rmTypeName = cobj.getRmTypeName();
+        SchemaType type = I_CArchetypeConstraintValidate.findSchemaType(I_CArchetypeConstraintValidate.getXmlType(cobj));
 
-        if (cobj instanceof CARCHETYPEROOT) {
-            if (!((CARCHETYPEROOT) cobj).getArchetypeId().getValue().isEmpty()) {
-                path = path + "[" + ((CARCHETYPEROOT) cobj).getArchetypeId().getValue() + "]";
-            }
-            log.debug("CARCHETYPEROOT path=" + path);
-            return handleArchetypeRoot(opt, (CARCHETYPEROOT) cobj, attrName, path);
-        } else if (cobj instanceof CDOMAINTYPE) {
-            return traverseDomainTypeObject((CDOMAINTYPE) cobj, termDef, path);
-        } else if (cobj instanceof CCOMPLEXOBJECT) {
-            // Skip when path is /category and /context
-            if ("/category".equalsIgnoreCase(path)) {
+        switch (type.getName().getLocalPart()) {
+            case "C_ARCHETYPE_ROOT":
+               //this is to avoid class cast exception under springboot...
+                try {
+                    cobj = (CARCHETYPEROOT) cobj.changeType(type);
+                   CARCHETYPEROOT carchetyperoot = (CARCHETYPEROOT)cobj;
+                   if (!(carchetyperoot.getArchetypeId().getValue().isEmpty())) {
+                        path = path + "[" + carchetyperoot.getArchetypeId().getValue() + "]";
+                    }
+                    log.debug("CARCHETYPEROOT path=" + path);
+                    return handleArchetypeRoot(carchetyperoot, attrName, path);
+                } catch(ClassCastException e){
+                    //ignore for the time being...
+                    log.warn("class cast failed for class:"+cobj.getClass().getSimpleName());
+                    return null;
+                }
+
+            case "C_DOMAIN_TYPE":
+                return traverseDomainTypeObject((CDOMAINTYPE) cobj, termDef, path);
+            case "C_COMPLEX_OBJECT":
+                // Skip when path is /category and /context
+                if ("/category".equalsIgnoreCase(path)) {
+                    return null;
+                } else if ("/context".equalsIgnoreCase(path)) {
+                    return handleComplexObject((CCOMPLEXOBJECT) cobj, termDef, attrName, path);
+                }
+                if (!((CCOMPLEXOBJECT) cobj).getNodeId().isEmpty()) {
+                    path = path + "[" + ((CCOMPLEXOBJECT) cobj).getNodeId() + "]";
+                }
+                log.debug("CONTEXT path=" + path);
+                return handleComplexObject((CCOMPLEXOBJECT) cobj, termDef, attrName, path);
+
+            case "ARCHETYPE_SLOT":
+                if (!((ARCHETYPESLOT) cobj).getNodeId().isEmpty()) {
+                    path = path + "[" + ((ARCHETYPESLOT) cobj).getNodeId() + "]";
+                }
+                ARCHETYPESLOT slot = (ARCHETYPESLOT) cobj;
+                // slot.
+
+                // slot.getIncludes().get(0).
+                log.debug("ARCHETYPESLOT path=" + path);
                 return null;
-            } else if ("/context".equalsIgnoreCase(path)) {
-                return handleComplexObject(opt, (CCOMPLEXOBJECT) cobj, termDef, attrName, path);
-            }
-            if (!((CCOMPLEXOBJECT) cobj).getNodeId().isEmpty()) {
-                path = path + "[" + ((CCOMPLEXOBJECT) cobj).getNodeId() + "]";
-            }
-            log.debug("CONTEXT path=" + path);
-            return handleComplexObject(opt, (CCOMPLEXOBJECT) cobj, termDef, attrName, path);
-        } else if (cobj instanceof ARCHETYPESLOT) {
-            if (!((ARCHETYPESLOT) cobj).getNodeId().isEmpty()) {
-                path = path + "[" + ((ARCHETYPESLOT) cobj).getNodeId() + "]";
-            }
-            ARCHETYPESLOT slot = (ARCHETYPESLOT) cobj;
-            // slot.
+                // return handleComplexObject(opt, (CCOMPLEXOBJECT) cobj, termDef,
+                // attrName, path);
 
-            // slot.getIncludes().get(0).
-            log.debug("ARCHETYPESLOT path=" + path);
-            return null;
-            // return handleComplexObject(opt, (CCOMPLEXOBJECT) cobj, termDef,
-            // attrName, path);
-        } else if (cobj instanceof CPRIMITIVEOBJECT) {
-            return traversePrimitiveTypeObject((CPRIMITIVEOBJECT) cobj);
-        } else {
-            if (cobj.getNodeId() == null) {
-                log.debug("NodeId is null : " + cobj);
+            case "C_PRIMITIVE_OBJECT":
+                return traversePrimitiveTypeObject((CPRIMITIVEOBJECT) cobj);
+
+            default:
+                if (cobj.getNodeId() == null) {
+                    log.debug("NodeId is null : " + cobj);
+                    return null;
+                }
+                log.debug("Some value cannot process because is not CARCHETYPEROOT or CCOMPLEXOBJECT : " + cobj);
+
                 return null;
-            }
-            log.debug("Some value cannot process because is not CARCHETYPEROOT or CCOMPLEXOBJECT : " + cobj);
 
-            return null;
         }
 
     }
