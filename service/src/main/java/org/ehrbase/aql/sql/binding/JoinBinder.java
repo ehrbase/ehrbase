@@ -65,8 +65,8 @@ public class JoinBinder implements I_JoinBinder {
      * @param compositionAttributeQuery
      */
     public SelectQuery<?> addJoinClause(CompositionAttributeQuery compositionAttributeQuery) {
-//        if (isWholeComposition)
-//            return;
+        if (compositionAttributeQuery == null)
+            return selectQuery;
         if (compositionAttributeQuery.isJoinSubject()) {
             joinSubject(selectQuery, compositionAttributeQuery);
         }

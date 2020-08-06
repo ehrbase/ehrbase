@@ -32,6 +32,7 @@ import org.ehrbase.aql.sql.QueryProcessor;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer;
 import org.ehrbase.dao.access.support.DataAccess;
+import org.ehrbase.service.KnowledgeCacheService;
 import org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl;
 
 import java.util.Iterator;
@@ -64,8 +65,8 @@ public class AqlQueryHandler extends DataAccess {
     }
 
     @SuppressWarnings("unchecked")
-    private AqlResult execute(AqlExpression aqlExpression) {
-        Contains contains = new Contains(aqlExpression.getParseTree()).process();
+    private AqlResult execute(AqlExpression aqlExpression){
+        Contains contains = new Contains(aqlExpression.getParseTree(), (KnowledgeCacheService)this.getDataAccess().getIntrospectService()).process();
 
         Statements statements = new Statements(aqlExpression.getParseTree(), contains.getIdentifierMapper(), tsAdapter).process();
 

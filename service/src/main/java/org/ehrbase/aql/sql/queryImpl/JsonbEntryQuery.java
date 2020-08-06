@@ -96,13 +96,11 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
 
     private static String ENV_IGNORE_UNRESOLVED_INTROSPECT = "aql.ignoreUnresolvedIntrospect";
 
-    private String entry_root;
     //    private MetaData metaData;
     private IntrospectService introspectCache;
 
-    public JsonbEntryQuery(DSLContext context, IntrospectService introspectCache, PathResolver pathResolver, String entry_root) {
+    public JsonbEntryQuery(DSLContext context, IntrospectService introspectCache, PathResolver pathResolver) {
         super(context, pathResolver);
-        this.entry_root = entry_root;
         this.introspectCache = introspectCache;
 
         ignoreUnresolvedIntrospect = Boolean.parseBoolean(System.getProperty(ENV_IGNORE_UNRESOLVED_INTROSPECT, "false"));
@@ -256,11 +254,11 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
 
 
     @Override
-    public Field<?> makeField(String templateId, UUID compositionId, String identifier, I_VariableDefinition variableDefinition, Clause clause) {
+    public Field<?> makeField(String templateId, String identifier, I_VariableDefinition variableDefinition, Clause clause) {
 
         boolean isRootContent = false; //that is a query path on a full composition starting from the root content
 
-        if (entry_root == null) //case of (invalid) composition with null entry!
+        if (pathResolver.entryRoot(templateId) == null) //case of (invalid) composition with null entry!
             return null;
 
         String path;
@@ -269,7 +267,7 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
             isRootContent = true;
         }
         else
-            path = pathResolver.pathOf(variableDefinition.getIdentifier());
+            path = pathResolver.pathOf(templateId, variableDefinition.getIdentifier());
 
         String alias = clause.equals(Clause.WHERE) ? null : variableDefinition.getAlias();
 
@@ -289,7 +287,7 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
         }
 
         List<String> itemPathArray = new ArrayList<>();
-        itemPathArray.add(entry_root.replaceAll("'", "''"));
+        itemPathArray.add(pathResolver.entryRoot(templateId));
         if (!path.startsWith(TAG_COMPOSITION) && !isRootContent)
             itemPathArray.addAll(jqueryPath(PATH_PART.IDENTIFIER_PATH_PART, path, "0"));
         itemPathArray.addAll(jqueryPath(PATH_PART.VARIABLE_PATH_PART, variableDefinition.getPath(), "0"));
@@ -390,25 +388,17 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
     }
 
     @Override
-    public Field<?> whereField(String templateId, UUID compositionId, String identifier, I_VariableDefinition variableDefinition) {
-        String path = pathResolver.pathOf(variableDefinition.getIdentifier());
-        if (path == null) {
-            if (entry_root == null) {
-                String compositionRootArchetype = pathResolver.rootOf(variableDefinition.getIdentifier());
-                //temporary!
-                entry_root = CompositionSerializer.TAG_COMPOSITION + "[" + compositionRootArchetype + "]";
-            } else
-                throw new IllegalArgumentException("Could not find a path for identifier:" + variableDefinition.getIdentifier());
-        }
+    public Field<?> whereField(String templateId, String identifier, I_VariableDefinition variableDefinition) {
+        String path = pathResolver.pathOf(templateId, variableDefinition.getIdentifier());
 
         List<String> itemPathArray = new ArrayList<>();
 
-        if (entry_root == null) {
+        if (pathResolver.entryRoot(templateId) == null) {
             //TODO: try to resolve the entry root from the where clause (f.e. a/name/value='a name'
             throw new IllegalArgumentException("a name/value expression for composition must be specified, where clause cannot be built without");
         }
 
-        itemPathArray.add(entry_root.replaceAll("'", "''"));
+        itemPathArray.add(pathResolver.entryRoot(templateId));
         if (path != null && !path.startsWith(TAG_COMPOSITION))
             itemPathArray.addAll(jqueryPath(PATH_PART.IDENTIFIER_PATH_PART, path, "#"));
         itemPathArray.addAll(jqueryPath(PATH_PART.VARIABLE_PATH_PART, variableDefinition.getPath(), "#"));

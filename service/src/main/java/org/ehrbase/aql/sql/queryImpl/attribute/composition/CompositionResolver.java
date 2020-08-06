@@ -26,7 +26,6 @@ import org.ehrbase.aql.sql.queryImpl.attribute.concept.ConceptResolver;
 import org.ehrbase.aql.sql.queryImpl.value_field.GenericJsonField;
 import org.jooq.Field;
 import org.jooq.JSONB;
-
 import static org.ehrbase.jooq.pg.Tables.COMPOSITION;
 import static org.ehrbase.jooq.pg.Tables.ENTRY;
 
@@ -65,7 +64,7 @@ public class CompositionResolver extends AttributeResolver
             case "uid/value":
                 return new CompositionUidValue(fieldResolutionContext, joinSetup).forTableField(NULL_FIELD).sqlField();
             case "name/value":
-                return new CompositionName(fieldResolutionContext, joinSetup).forTableField(NULL_FIELD).sqlField();
+                return new GenericJsonField(fieldResolutionContext, joinSetup).forJsonPath("value").jsonField("DV_CODED_TEXT", "ehr.js_dv_coded_text",ENTRY.NAME);
             case "archetype_node_id":
                 return new SimpleCompositionAttribute(fieldResolutionContext, joinSetup).forTableField(ENTRY.ARCHETYPE_ID).sqlField();
             case "template_id":
