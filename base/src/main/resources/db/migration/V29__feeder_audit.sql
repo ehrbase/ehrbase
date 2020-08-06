@@ -9,6 +9,8 @@ ALTER TABLE ehr.composition_history
     ADD COLUMN links JSONB;
 
 -- add feeder_audit encoding
+DROP FUNCTION ehr.js_composition(uuid,text);
+
 CREATE OR REPLACE FUNCTION ehr.js_composition(UUID, server_node_id TEXT)
     RETURNS JSON AS
 $$
