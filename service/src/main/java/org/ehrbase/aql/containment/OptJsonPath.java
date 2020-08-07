@@ -24,8 +24,11 @@ import com.jayway.jsonpath.JsonPath;
 import org.ehrbase.opt.query.I_QueryOptMetaData;
 import org.ehrbase.service.KnowledgeCacheService;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * prepare and perform jsonpath queries on WebTemplates
@@ -43,7 +46,7 @@ public class OptJsonPath {
         I_QueryOptMetaData queryOptMetaData = knowledgeCache.getQueryOptMetaData(templateId);
 
         if (queryOptMetaData != null)
-            return toJson((Map)queryOptMetaData.getJsonPathVisitor());
+            return toJson((Map) queryOptMetaData.getJsonPathVisitor());
         else
             return null;
     }
@@ -54,7 +57,7 @@ public class OptJsonPath {
         return gson.toJson(map);
     }
 
-    public Map<String, Object> jsonPathEval(String json, String jsonPathExpression){
+    public Map<String, Object> jsonPathEval(String json, String jsonPathExpression) {
         DocumentContext jsonPathContext = JsonPath.parse(json);
         Object pathResult = jsonPathContext.read(JsonPath.compile(jsonPathExpression));
 
@@ -66,8 +69,30 @@ public class OptJsonPath {
             return null;
     }
 
-    public Map<String, Object> evaluate(String templateId, String jsonPathExpression){
-        //
+    public Map<String, Object> evaluate(String templateId, String jsonPathExpression) {
+        I_QueryOptMetaData queryOptMetaData = knowledgeCache.getQueryOptMetaData(templateId);
+
+        List<String> nodeIds = Arrays.stream(jsonPathExpression.split("\\.\\."))
+                .filter(s -> s.contains("@.node_id"))
+                .map(s -> s.replace("[?(@.node_id == '", "")
+                        .replace("[?(@.node_id == '", "")
+                        .replace("')]", ""))
+                .map(String::trim)
+                .collect(Collectors.toList());
+       /*
+      Arrays.asList(jsonPathExpression
+                .replace("$..", "")
+                .replace("[?(@.node_id == '", "")
+                .replace("[?(@.node_id == '", "")
+                .replace("')]", "")
+                .replace("..", " ")
+                .split(" "));
+
+        */
+        if (!queryOptMetaData.getAllNodeIds().containsAll(nodeIds)) {
+            return Collections.emptyMap();
+        }
+
         String json = representAsString(templateId);
         return jsonPathEval(json, jsonPathExpression);
     }

@@ -21,14 +21,16 @@
 
 package org.ehrbase.opt.query;
 
-import org.ehrbase.opt.OptVisitor;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import net.minidev.json.JSONArray;
+import org.ehrbase.opt.OptVisitor;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by christian on 5/7/2018.
@@ -36,9 +38,25 @@ import java.util.Map;
 public class QueryOptMetaData implements I_QueryOptMetaData {
 
     Object document;
+    Set<String> allNodeIds;
 
     private QueryOptMetaData(Object document) {
         this.document = document;
+
+
+        allNodeIds = findNames((Map<String, Object>) ((Map<String, Object>) document).get("tree"));
+    }
+
+    private Set<String> findNames(Map<String, Object> tree) {
+        Set<String> current = new HashSet<>();
+        if (tree.containsKey("node_id")) {
+            current.add(tree.get("node_id").toString());
+        }
+        if (tree.containsKey("children")) {
+            for (Object child : ((JSONArray) tree.get("children")).toArray())
+                current.addAll(findNames((Map<String, Object>) child));
+        }
+        return current;
     }
 
     /**
@@ -92,7 +110,12 @@ public class QueryOptMetaData implements I_QueryOptMetaData {
         return attributeChildValue(path, "category");
     }
 
-    private String attributeChildValue(String path, String attribute){
+    @Override
+    public Set<String> getAllNodeIds() {
+        return allNodeIds;
+    }
+
+    private String attributeChildValue(String path, String attribute) {
         Object child = JsonPath.read(document, "$..children[?(@.aql_path == '" + path + "')]");
 
         if (child != null && child instanceof JSONArray && ((JSONArray) child).size() > 0) {
