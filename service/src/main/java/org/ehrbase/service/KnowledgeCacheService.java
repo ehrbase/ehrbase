@@ -229,6 +229,8 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     public I_QueryOptMetaData getQueryOptMetaData(String templateId) {
 
         //get the matching template if any
+
+
         Optional<OPERATIONALTEMPLATE> operationaltemplate = retrieveOperationalTemplate(templateId);
 
         if (operationaltemplate.isPresent())

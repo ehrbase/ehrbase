@@ -21,6 +21,7 @@
 
 package org.ehrbase.aql.compiler;
 
+import org.ehrbase.aql.TestAqlBase;
 import org.ehrbase.dao.jooq.impl.DSLContextHelper;
 import org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl;
 import org.jooq.DSLContext;
@@ -34,7 +35,7 @@ import static org.mockito.Mockito.mock;
  * Created by christian on 4/1/2016.
  */
 
-public class AqlExpressionTest {
+public class AqlExpressionTest extends TestAqlBase {
 
 
     private DSLContext context = DSLContextHelper.buildContext();
@@ -63,11 +64,11 @@ public class AqlExpressionTest {
                 "WHERE o/data[at0001]/events[at0006]/data[at0003]/items[at0004]/value/value > 140";
 
         AqlExpression cut = new AqlExpression().parse(query);
-        Contains contains = new Contains(cut.getParseTree()).process();
+        Contains contains = new Contains(cut.getParseTree(), knowledge).process();
 
         assertThat(contains.getIdentifierMapper()).isNotNull();
-        assertThat(contains.getNestedSets()).isNotNull();
-        assertThat(contains.getContainClause()).isNotNull();
+        assertThat(contains.getTemplates()).isNotNull();
+//        assertThat(contains.getContainClause()).isNotNull();
     }
 
     @Test
@@ -81,7 +82,7 @@ public class AqlExpressionTest {
 
         AqlExpression cut = new AqlExpression().parse(query);
 
-        Statements statements = new Statements(cut.getParseTree(), new Contains(cut.getParseTree()).process().getIdentifierMapper(), mock(FhirTerminologyServerR4AdaptorImpl.class)).process();
+        Statements statements = new Statements(cut.getParseTree(), new Contains(cut.getParseTree(), knowledge).process().getIdentifierMapper(), mock(FhirTerminologyServerR4AdaptorImpl.class)).process();
 
         assertThat(statements.getVariables()).isNotNull();
         assertThat(statements.getWhereClause()).isNotNull();
@@ -99,8 +100,9 @@ public class AqlExpressionTest {
         AqlExpression cut = new AqlExpression().parse(query);
 
         try {
-            new Statements(cut.getParseTree(), new Contains(cut.getParseTree()).process().getIdentifierMapper(), mock(FhirTerminologyServerR4AdaptorImpl.class)
+            new Statements(cut.getParseTree(), new Contains(cut.getParseTree(), knowledge).process().getIdentifierMapper(), mock(FhirTerminologyServerR4AdaptorImpl.class)
             ).process();
+
             fail("duplicate alias has not been detected");
         } catch (IllegalArgumentException e) {
 
@@ -126,7 +128,7 @@ public class AqlExpressionTest {
 
         AqlExpression cut = new AqlExpression().parse(query);
 
-        Statements statements = new Statements(cut.getParseTree(), new Contains(cut.getParseTree()).process().getIdentifierMapper(), mock(FhirTerminologyServerR4AdaptorImpl.class)).process();
+        Statements statements = new Statements(cut.getParseTree(), new Contains(cut.getParseTree(), knowledge).process().getIdentifierMapper(), mock(FhirTerminologyServerR4AdaptorImpl.class)).process();
 
         assertThat(statements.getWhereClause()).isNotNull();
 

@@ -14,7 +14,7 @@ import java.util.Optional;
 
 public class RecordedDvDateTime {
 
-    private final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZZ";
+    private static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZZ";
     private DvDateTime dateTime;
 
     public RecordedDvDateTime(DvDateTime dateTime) {
@@ -61,7 +61,7 @@ public class RecordedDvDateTime {
         Optional<ZonedDateTime> zonedDateTime = Optional.empty();
 
         if (timezone != null)
-            zonedDateTime = Optional.of(timestamp.toLocalDateTime().atZone(ZoneId.of(timezone)));
+            zonedDateTime = Optional.of(timestamp.toInstant().atZone(ZoneId.of(timezone)));
         else
             codedLocalDateTime = Optional.of(timestamp.toLocalDateTime());
 

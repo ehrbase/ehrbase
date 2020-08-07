@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add admin API endpoint stubs (see: https://github.com/ehrbase/ehrbase/pull/280)
+- Change the strategy to resolve CONTAINS in AQL (https://github.com/ehrbase/ehrbase/pull/276)
 
 ### Changed
 
