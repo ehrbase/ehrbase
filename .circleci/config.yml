@@ -55,170 +55,170 @@ workflows:
                 - release
                 - master
 
-      # - COMPOSITION-tests-1:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
-      #       - run-unit-tests
-      #     filters:
-      #       branches:
-      #         ignore:
-      #           - release
-      #           - master
-      #     # post-steps:
-      #     #   - provide-test-status-report-via-slack #
+      - COMPOSITION-tests-1:
+          context: org-global
+          requires:
+            - build-artifacts
+            - run-unit-tests
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
+          # post-steps:
+          #   - provide-test-status-report-via-slack #
 
-      # - COMPOSITION-tests-2:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
-      #       - run-unit-tests
-      #     filters:
-      #       branches:
-      #         ignore:
-      #           - release
-      #           - master
+      - COMPOSITION-tests-2:
+          context: org-global
+          requires:
+            - build-artifacts
+            - run-unit-tests
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
 
-      # - COMPOSITION-tests-3:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
-      #       - run-unit-tests
-      #     filters:
-      #       branches:
-      #         ignore:
-      #           - release
-      #           - master
+      - COMPOSITION-tests-3:
+          context: org-global
+          requires:
+            - build-artifacts
+            - run-unit-tests
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
 
-      # - COMPOSITION-tests-4:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
-      #       - run-unit-tests
-      #     filters:
-      #       branches:
-      #         ignore:
-      #           - release
-      #           - master
+      - COMPOSITION-tests-4:
+          context: org-global
+          requires:
+            - build-artifacts
+            - run-unit-tests
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
 
-      # - CONTRIBUTION-test:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
-      #       - run-unit-tests
-      #     filters:
-      #       branches:
-      #         ignore:
-      #           - release
-      #           - master
+      - CONTRIBUTION-test:
+          context: org-global
+          requires:
+            - build-artifacts
+            - run-unit-tests
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
 
-      # - DIRECTORY-test:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
-      #       - run-unit-tests
-      #     filters:
-      #       branches:
-      #         ignore:
-      #           - release
-      #           - master
+      - DIRECTORY-test:
+          context: org-global
+          requires:
+            - build-artifacts
+            - run-unit-tests
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
 
-      # - EHRSERVICE-test:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
-      #       - run-unit-tests
-      #     filters:
-      #       branches:
-      #         ignore:
-      #           - release
-      #           - master
+      - EHRSERVICE-test:
+          context: org-global
+          requires:
+            - build-artifacts
+            - run-unit-tests
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
 
-      # - EHRSTATUS-test:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
-      #       - run-unit-tests
-      #     filters:
-      #       branches:
-      #         ignore:
-      #           - release
-      #           - master
+      - EHRSTATUS-test:
+          context: org-global
+          requires:
+            - build-artifacts
+            - run-unit-tests
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
 
-      # - KNOWLEDGE-test:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
-      #       - run-unit-tests
-      #     filters:
-      #       branches:
-      #         ignore:
-      #           - release
-      #           - master
+      - KNOWLEDGE-test:
+          context: org-global
+          requires:
+            - build-artifacts
+            - run-unit-tests
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
 
-      # - QUERYSERVICE-test-1:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
-      #       - run-unit-tests
-      #     filters:
-      #       branches:
-      #         ignore:
-      #           - release
-      #           - master
+      - QUERYSERVICE-test-1:
+          context: org-global
+          requires:
+            - build-artifacts
+            - run-unit-tests
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
 
-      # - QUERYSERVICE-test-2:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
-      #       - run-unit-tests
-      #     filters:
-      #       branches:
-      #         ignore:
-      #           - release
-      #           - master
+      - QUERYSERVICE-test-2:
+          context: org-global
+          requires:
+            - build-artifacts
+            - run-unit-tests
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
 
-      # - ROBOT-REPORT:
-      #     context: org-global
-      #     requires:
-      #       - COMPOSITION-tests-1
-      #       - COMPOSITION-tests-2
-      #       - COMPOSITION-tests-3
-      #       - COMPOSITION-tests-4
-      #       - CONTRIBUTION-test
-      #       - DIRECTORY-test
-      #       - EHRSERVICE-test
-      #       - EHRSTATUS-test
-      #       - KNOWLEDGE-test
-      #       - QUERYSERVICE-test-1
-      #       - QUERYSERVICE-test-2
-      #     filters:
-      #       branches:
-      #         ignore:
-      #           - release
-      #           - master
+      - ROBOT-REPORT:
+          context: org-global
+          requires:
+            - COMPOSITION-tests-1
+            - COMPOSITION-tests-2
+            - COMPOSITION-tests-3
+            - COMPOSITION-tests-4
+            - CONTRIBUTION-test
+            - DIRECTORY-test
+            - EHRSERVICE-test
+            - EHRSTATUS-test
+            - KNOWLEDGE-test
+            - QUERYSERVICE-test-1
+            - QUERYSERVICE-test-2
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
 
-      # - dependency-check:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
-      #     filters:
-      #       branches:
-      #         ignore:
-      #           - release
-      #           - master
+      - dependency-check:
+          context: org-global
+          requires:
+            - build-artifacts
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
 
-      # - sonar-analysis:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
-      #       - run-unit-tests
-      #       - dependency-check
-      #     filters:
-      #       branches:
-      #         ignore:
-      #           - release
-      #           - master
+      - sonar-analysis:
+          context: org-global
+          requires:
+            - build-artifacts
+            - run-unit-tests
+            - dependency-check
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
 
   release:
     jobs:
