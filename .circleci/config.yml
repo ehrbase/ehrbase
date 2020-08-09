@@ -730,13 +730,13 @@ commands:
           name: Start EHRbase server and run all test of SDK
           command: |
             ls -la
-            # cd ~/projects/ehrbase
+            cd ~/project    # NOTE: This is where the target folder w/ artifacts were persisted to in previous step.
             # EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
             # echo ${EHRbase_VERSION}
             # java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false > log &
             java -jar application/target/application-*.jar --cache.enabled=false > log &
             grep -m 1 "Started EhrBase in" <(tail -f log)
-            cd openEHR_SDK
+            cd ~/projects/openEHR_SDK
             jps
             mvn verify -DskipIntegrationTests=false -Dmaven.javadoc.skip=true
 
