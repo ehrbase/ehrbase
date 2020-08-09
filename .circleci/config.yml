@@ -27,6 +27,8 @@ version: 2.1
 
 
 workflows:
+
+  # WORKFLOW 1/2
   build-and-test:
     jobs:
       - build-artifacts:
@@ -60,6 +62,7 @@ workflows:
           requires:
             - build-artifacts
             - run-unit-tests
+            - run-SDK-integration-tests
           filters:
             branches:
               ignore:
@@ -73,6 +76,7 @@ workflows:
           requires:
             - build-artifacts
             - run-unit-tests
+            - run-SDK-integration-tests
           filters:
             branches:
               ignore:
@@ -84,6 +88,7 @@ workflows:
           requires:
             - build-artifacts
             - run-unit-tests
+            - run-SDK-integration-tests
           filters:
             branches:
               ignore:
@@ -95,6 +100,7 @@ workflows:
           requires:
             - build-artifacts
             - run-unit-tests
+            - run-SDK-integration-tests
           filters:
             branches:
               ignore:
@@ -106,6 +112,7 @@ workflows:
           requires:
             - build-artifacts
             - run-unit-tests
+            - run-SDK-integration-tests
           filters:
             branches:
               ignore:
@@ -117,6 +124,7 @@ workflows:
           requires:
             - build-artifacts
             - run-unit-tests
+            - run-SDK-integration-tests
           filters:
             branches:
               ignore:
@@ -128,6 +136,7 @@ workflows:
           requires:
             - build-artifacts
             - run-unit-tests
+            - run-SDK-integration-tests
           filters:
             branches:
               ignore:
@@ -139,6 +148,7 @@ workflows:
           requires:
             - build-artifacts
             - run-unit-tests
+            - run-SDK-integration-tests
           filters:
             branches:
               ignore:
@@ -150,6 +160,7 @@ workflows:
           requires:
             - build-artifacts
             - run-unit-tests
+            - run-SDK-integration-tests
           filters:
             branches:
               ignore:
@@ -161,6 +172,7 @@ workflows:
           requires:
             - build-artifacts
             - run-unit-tests
+            - run-SDK-integration-tests
           filters:
             branches:
               ignore:
@@ -172,6 +184,7 @@ workflows:
           requires:
             - build-artifacts
             - run-unit-tests
+            - run-SDK-integration-tests
           filters:
             branches:
               ignore:
@@ -220,6 +233,11 @@ workflows:
                 - release
                 - master
 
+
+
+
+
+  # WORKFLOW 2/2
   release:
     jobs:
       - build-artifacts:
@@ -245,11 +263,21 @@ workflows:
               only:
                 - /^(release\/v\d+\.\d+\.\d+|master)$/
 
+      - run-SDK-integration-tests:
+          context: org-global
+          requires:
+            - build-artifacts
+          filters:
+            branches:
+              only:
+                - /^(release\/v\d+\.\d+\.\d+|master)$/
+
       - COMPOSITION-tests-1:
           context: org-global
           requires:
             - build-artifacts
             - run-unit-tests
+            - run-SDK-integration-tests
           filters:
             branches:
               only:
@@ -262,6 +290,7 @@ workflows:
           requires:
             - build-artifacts
             - run-unit-tests
+            - run-SDK-integration-tests
           filters:
             branches:
               only:
@@ -272,6 +301,7 @@ workflows:
           requires:
             - build-artifacts
             - run-unit-tests
+            - run-SDK-integration-tests
           filters:
             branches:
               only:
@@ -282,6 +312,7 @@ workflows:
           requires:
             - build-artifacts
             - run-unit-tests
+            - run-SDK-integration-tests
           filters:
             branches:
               only:
@@ -292,6 +323,7 @@ workflows:
           requires:
             - build-artifacts
             - run-unit-tests
+            - run-SDK-integration-tests
           filters:
             branches:
               only:
@@ -302,6 +334,7 @@ workflows:
           requires:
             - build-artifacts
             - run-unit-tests
+            - run-SDK-integration-tests
           filters:
             branches:
               only:
@@ -312,6 +345,7 @@ workflows:
           requires:
             - build-artifacts
             - run-unit-tests
+            - run-SDK-integration-tests
           filters:
             branches:
               only:
@@ -322,6 +356,7 @@ workflows:
           requires:
             - build-artifacts
             - run-unit-tests
+            - run-SDK-integration-tests
           filters:
             branches:
               only:
@@ -332,6 +367,7 @@ workflows:
           requires:
             - build-artifacts
             - run-unit-tests
+            - run-SDK-integration-tests
           filters:
             branches:
               only:
@@ -342,6 +378,7 @@ workflows:
           requires:
             - build-artifacts
             - run-unit-tests
+            - run-SDK-integration-tests
           filters:
             branches:
               only:
@@ -352,6 +389,7 @@ workflows:
           requires:
             - build-artifacts
             - run-unit-tests
+            - run-SDK-integration-tests
           filters:
             branches:
               only:
