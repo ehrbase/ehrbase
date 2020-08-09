@@ -721,11 +721,6 @@ commands:
       This requires EHRbase + DB to be running during test execution.
     steps:
       - install-maven
-      # - run:
-      #     name: Maven build EHRbase
-      #     command: |
-      #       cd ~/projects/ehrbase
-      #       mvn package -Dmaven.javadoc.skip=true -Dmaven.test.skip
       - run:
           name: Start EHRbase server and run all test of SDK
           command: |
@@ -746,8 +741,8 @@ commands:
           name: Save unit test results
           command: |
             mkdir -p ~/sdk-test-results/unit-tests/
-            find openEHR_SDK/ -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/skd-test-results/unit-tests/ \;
-            find openEHR_SDK/ -type f -regex ".*/target/surefire-reports/.*txt" -exec cp {} ~/skd-test-results/unit-tests/ \;
+            find openEHR_SDK/ -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/sdk-test-results/unit-tests/ \;
+            find openEHR_SDK/ -type f -regex ".*/target/surefire-reports/.*txt" -exec cp {} ~/sdk-test-results/unit-tests/ \;
           when: always
   
 
@@ -757,8 +752,8 @@ commands:
           name: Save integration test results
           command: |
             mkdir -p ~/sdk-test-results/integration-tests/
-            find openEHR_SDK/ -type f -regex ".*/target/failsafe-reports/.*xml" -exec cp {} ~/test-results/sdk-integration-tests/ \;
-            find openEHR_SDK/ -type f -regex ".*/target/failsafe-reports/.*txt" -exec cp {} ~/test-results/sdk-integration-tests/ \;
+            find openEHR_SDK/ -type f -regex ".*/target/failsafe-reports/.*xml" -exec cp {} ~/sdk-test-results/integration-tests/ \;
+            find openEHR_SDK/ -type f -regex ".*/target/failsafe-reports/.*txt" -exec cp {} ~/sdk-test-results/integration-tests/ \;
           when: always
 
     
