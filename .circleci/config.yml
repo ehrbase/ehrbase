@@ -24,6 +24,8 @@ version: 2.1
 #   88           88        88  88     `8b   88      a8P  d8'        `8b  Y8a     a8P  88
 #   88888888888  88        88  88      `8b  88888888P"  d8'          `8b  "Y88888P"   88888888888
 
+
+
 workflows:
   build-and-test:
     jobs:
@@ -35,7 +37,7 @@ workflows:
                 - release
                 - master
 
-      - unit-tests:
+      - run-unit-tests:
           context: org-global
           filters:
             branches:
@@ -43,150 +45,7 @@ workflows:
                 - release
                 - master
 
-      - COMPOSITION-tests-1:
-          context: org-global
-          requires:
-            - build-artifacts
-            - unit-tests
-          filters:
-            branches:
-              ignore:
-                - release
-                - master
-          # post-steps:
-          #   - provide-test-status-report-via-slack #
-
-      - COMPOSITION-tests-2:
-          context: org-global
-          requires:
-            - build-artifacts
-            - unit-tests
-          filters:
-            branches:
-              ignore:
-                - release
-                - master
-
-      - COMPOSITION-tests-3:
-          context: org-global
-          requires:
-            - build-artifacts
-            - unit-tests
-          filters:
-            branches:
-              ignore:
-                - release
-                - master
-
-      - COMPOSITION-tests-4:
-          context: org-global
-          requires:
-            - build-artifacts
-            - unit-tests
-          filters:
-            branches:
-              ignore:
-                - release
-                - master
-
-      - CONTRIBUTION-test:
-          context: org-global
-          requires:
-            - build-artifacts
-            - unit-tests
-          filters:
-            branches:
-              ignore:
-                - release
-                - master
-
-      - DIRECTORY-test:
-          context: org-global
-          requires:
-            - build-artifacts
-            - unit-tests
-          filters:
-            branches:
-              ignore:
-                - release
-                - master
-
-      - EHRSERVICE-test:
-          context: org-global
-          requires:
-            - build-artifacts
-            - unit-tests
-          filters:
-            branches:
-              ignore:
-                - release
-                - master
-
-      - EHRSTATUS-test:
-          context: org-global
-          requires:
-            - build-artifacts
-            - unit-tests
-          filters:
-            branches:
-              ignore:
-                - release
-                - master
-
-      - KNOWLEDGE-test:
-          context: org-global
-          requires:
-            - build-artifacts
-            - unit-tests
-          filters:
-            branches:
-              ignore:
-                - release
-                - master
-
-      - QUERYSERVICE-test-1:
-          context: org-global
-          requires:
-            - build-artifacts
-            - unit-tests
-          filters:
-            branches:
-              ignore:
-                - release
-                - master
-
-      - QUERYSERVICE-test-2:
-          context: org-global
-          requires:
-            - build-artifacts
-            - unit-tests
-          filters:
-            branches:
-              ignore:
-                - release
-                - master
-
-      - ROBOT-REPORT:
-          context: org-global
-          requires:
-            - COMPOSITION-tests-1
-            - COMPOSITION-tests-2
-            - COMPOSITION-tests-3
-            - COMPOSITION-tests-4
-            - CONTRIBUTION-test
-            - DIRECTORY-test
-            - EHRSERVICE-test
-            - EHRSTATUS-test
-            - KNOWLEDGE-test
-            - QUERYSERVICE-test-1
-            - QUERYSERVICE-test-2
-          filters:
-            branches:
-              ignore:
-                - release
-                - master
-
-      - dependency-check:
+      - run-SDK-integration-tests:
           context: org-global
           requires:
             - build-artifacts
@@ -196,17 +55,170 @@ workflows:
                 - release
                 - master
 
-      - sonar-analysis:
-          context: org-global
-          requires:
-            - build-artifacts
-            - unit-tests
-            - dependency-check
-          filters:
-            branches:
-              ignore:
-                - release
-                - master
+      # - COMPOSITION-tests-1:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
+      #       - run-unit-tests
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - release
+      #           - master
+      #     # post-steps:
+      #     #   - provide-test-status-report-via-slack #
+
+      # - COMPOSITION-tests-2:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
+      #       - run-unit-tests
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - release
+      #           - master
+
+      # - COMPOSITION-tests-3:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
+      #       - run-unit-tests
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - release
+      #           - master
+
+      # - COMPOSITION-tests-4:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
+      #       - run-unit-tests
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - release
+      #           - master
+
+      # - CONTRIBUTION-test:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
+      #       - run-unit-tests
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - release
+      #           - master
+
+      # - DIRECTORY-test:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
+      #       - run-unit-tests
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - release
+      #           - master
+
+      # - EHRSERVICE-test:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
+      #       - run-unit-tests
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - release
+      #           - master
+
+      # - EHRSTATUS-test:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
+      #       - run-unit-tests
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - release
+      #           - master
+
+      # - KNOWLEDGE-test:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
+      #       - run-unit-tests
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - release
+      #           - master
+
+      # - QUERYSERVICE-test-1:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
+      #       - run-unit-tests
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - release
+      #           - master
+
+      # - QUERYSERVICE-test-2:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
+      #       - run-unit-tests
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - release
+      #           - master
+
+      # - ROBOT-REPORT:
+      #     context: org-global
+      #     requires:
+      #       - COMPOSITION-tests-1
+      #       - COMPOSITION-tests-2
+      #       - COMPOSITION-tests-3
+      #       - COMPOSITION-tests-4
+      #       - CONTRIBUTION-test
+      #       - DIRECTORY-test
+      #       - EHRSERVICE-test
+      #       - EHRSTATUS-test
+      #       - KNOWLEDGE-test
+      #       - QUERYSERVICE-test-1
+      #       - QUERYSERVICE-test-2
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - release
+      #           - master
+
+      # - dependency-check:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - release
+      #           - master
+
+      # - sonar-analysis:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
+      #       - run-unit-tests
+      #       - dependency-check
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - release
+      #           - master
 
   release:
     jobs:
@@ -226,7 +238,7 @@ workflows:
               only:
                 - /^(release\/v\d+\.\d+\.\d+|master)$/
 
-      - unit-tests:
+      - run-unit-tests:
           context: org-global
           filters:
             branches:
@@ -237,7 +249,7 @@ workflows:
           context: org-global
           requires:
             - build-artifacts
-            - unit-tests
+            - run-unit-tests
           filters:
             branches:
               only:
@@ -249,7 +261,7 @@ workflows:
           context: org-global
           requires:
             - build-artifacts
-            - unit-tests
+            - run-unit-tests
           filters:
             branches:
               only:
@@ -259,7 +271,7 @@ workflows:
           context: org-global
           requires:
             - build-artifacts
-            - unit-tests
+            - run-unit-tests
           filters:
             branches:
               only:
@@ -269,7 +281,7 @@ workflows:
           context: org-global
           requires:
             - build-artifacts
-            - unit-tests
+            - run-unit-tests
           filters:
             branches:
               only:
@@ -279,7 +291,7 @@ workflows:
           context: org-global
           requires:
             - build-artifacts
-            - unit-tests
+            - run-unit-tests
           filters:
             branches:
               only:
@@ -289,7 +301,7 @@ workflows:
           context: org-global
           requires:
             - build-artifacts
-            - unit-tests
+            - run-unit-tests
           filters:
             branches:
               only:
@@ -299,7 +311,7 @@ workflows:
           context: org-global
           requires:
             - build-artifacts
-            - unit-tests
+            - run-unit-tests
           filters:
             branches:
               only:
@@ -309,7 +321,7 @@ workflows:
           context: org-global
           requires:
             - build-artifacts
-            - unit-tests
+            - run-unit-tests
           filters:
             branches:
               only:
@@ -319,7 +331,7 @@ workflows:
           context: org-global
           requires:
             - build-artifacts
-            - unit-tests
+            - run-unit-tests
           filters:
             branches:
               only:
@@ -329,7 +341,7 @@ workflows:
           context: org-global
           requires:
             - build-artifacts
-            - unit-tests
+            - run-unit-tests
           filters:
             branches:
               only:
@@ -339,7 +351,7 @@ workflows:
           context: org-global
           requires:
             - build-artifacts
-            - unit-tests
+            - run-unit-tests
           filters:
             branches:
               only:
@@ -368,12 +380,21 @@ workflows:
           context: org-global
           requires:
             - build-artifacts
-            - unit-tests
+            - run-unit-tests
             - dependency-check
           filters:
             branches:
               only:
                 - /^(release\/v\d+\.\d+\.\d+|master)$/
+
+
+
+
+
+
+
+
+
 
 jobs:
   #           88    ,ad8888ba,    88888888ba    ad88888ba
@@ -412,7 +433,7 @@ jobs:
       - persist-dependency-check-results
       - save-dependency-check-job-caches
 
-  unit-tests:
+  run-unit-tests:
     machine:
       image: circleci/classic:201808-01
     steps:
@@ -426,6 +447,20 @@ jobs:
       - maven-test
       - save-unit-tests-job-caches
       - persist-unit-test-coverage
+
+  run-SDK-integration-tests:
+    description: Run openEHR_SDK's Java integration tests (w/ EHRbase + DB running).
+    executor: docker-py3-java11-postgres
+    steps:
+      - checkout
+      - attach-target-folder
+      - cache-out-sdk-m2-dependencies
+      - git-clone-sdk-repo
+      - start-ehrbase-and-run-all-sdk-tests
+      - cache-in-sdk-m2-dependencies
+      - collect-sdk-unittest-results
+      - collect-sdk-integrationtest-results
+      - save-skd-test-results
 
   COMPOSITION-tests-1:
     machine:
@@ -549,6 +584,15 @@ jobs:
       - run-sonar-analysis
       - save-sonar-analysis-job-caches
 
+
+
+
+
+
+
+
+
+
 commands:
   #     ,ad8888ba,    ,ad8888ba,    88b           d88  88b           d88         db         888b      88  88888888ba,     ad88888ba
   #    d8"'    `"8b  d8"'    `"8b   888b         d888  888b         d888        d88b        8888b     88  88      `"8b   d8"     "8b
@@ -654,6 +698,79 @@ commands:
       - store_artifacts:
           path: ~/project/tests/results/
 
+
+
+
+
+  # ///////////////////////////////////////////////////////////////////////////
+  # /// SDK COMMANDS (openEHR_SDK)                                          ///
+  # ///////////////////////////////////////////////////////////////////////////
+
+  git-clone-sdk-repo:
+    steps:
+      - run:
+          name: Git clone openEHR_SDK repo
+          command: |
+            git clone git@github.com:ehrbase/openEHR_SDK.git
+            ls -la
+
+
+  start-ehrbase-and-run-all-sdk-tests:
+    description: |
+      Executes all SDK java tests (unit and integration)
+      This requires EHRbase + DB to be running during test execution.
+    steps:
+      # - install-maven
+      # - run:
+      #     name: Maven build EHRbase
+      #     command: |
+      #       cd ~/projects/ehrbase
+      #       mvn package -Dmaven.javadoc.skip=true -Dmaven.test.skip
+      - run:
+          name: Start EHRbase server and run all test of SDK
+          command: |
+            ls -la
+            # cd ~/projects/ehrbase
+            # EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+            # echo ${EHRbase_VERSION}
+            # java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false > log &
+            java -jar application/target/application-*.jar --cache.enabled=false > log &
+            grep -m 1 "Started EhrBase in" <(tail -f log)
+            cd openEHR_SDK
+            jps
+            mvn verify -DskipIntegrationTests=false -Dmaven.javadoc.skip=true
+
+
+  collect-sdk-unittest-results:
+    steps:
+      - run:
+          name: Save unit test results
+          command: |
+            mkdir -p ~/sdk-test-results/unit-tests/
+            find openEHR_SDK/ -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/skd-test-results/unit-tests/ \;
+            find openEHR_SDK/ -type f -regex ".*/target/surefire-reports/.*txt" -exec cp {} ~/skd-test-results/unit-tests/ \;
+          when: always
+  
+
+  collect-sdk-integrationtest-results:
+    steps:
+      - run:
+          name: Save integration test results
+          command: |
+            mkdir -p ~/sdk-test-results/integration-tests/
+            find openEHR_SDK/ -type f -regex ".*/target/failsafe-reports/.*xml" -exec cp {} ~/test-results/sdk-integration-tests/ \;
+            find openEHR_SDK/ -type f -regex ".*/target/failsafe-reports/.*txt" -exec cp {} ~/test-results/sdk-integration-tests/ \;
+          when: always
+
+    
+  save-skd-test-results:
+    steps:
+      - store_test_results:
+          path: ~/sdk-test-results
+      - store_artifacts:
+          path: ~/sdk-test-results
+
+
   #                                                 88                 ad88
   #     ,d                             ,d           ""                d8"
   #     88                             88                             88
@@ -675,6 +792,15 @@ commands:
             rm -f /tmp/openjdk-11.tar.gz
             sudo sh -c 'for bin in /usr/lib/jvm/jdk-11.0.3+7/bin/*; do update-alternatives --install /usr/bin/$(basename $bin) $(basename $bin) $bin 100; done'
             sudo sh -c 'for bin in /usr/lib/jvm/jdk-11.0.3+7/bin/*; do update-alternatives --set $(basename $bin) $bin; done'
+  
+  install-maven:
+    description: Install Maven tool only if it's not already installed
+    steps:
+      - run: 
+          name: Install Maven tool
+          command: |
+            [ -f /usr/bin/mvn ] && echo "Maven is already installed." || sudo apt install maven -y
+  
   configure-python-version:
     description: Configure Python version to 3.7.0
     steps:
@@ -731,6 +857,10 @@ commands:
             java -jar ~/jacoco-0.8.2/lib/jacococli.jar dump \
               --destfile=/home/circleci/project/application/target/jacoco-it.exec
 
+
+
+
+
   #                             88
   #                             ""    ,d             ,d                             ,d
   #                                   88             88                             88
@@ -780,6 +910,10 @@ commands:
             - job-unit-tests-v1-mvn-dependencies-{{ checksum "~/project/pom.xml" }}
             - job-unit-tests-v1-mvn-dependencies
 
+
+
+
+
   #
   #
   #
@@ -798,6 +932,10 @@ commands:
           command: |
             cd ~/project
             mvn package -DskipTests
+
+
+
+
 
   #
   #
@@ -855,6 +993,10 @@ commands:
                 ~/project/vulnerability_analysis.json \
                 ~/project/sonar_issues.json \
                 application/src/main/java/org/ehrbase/application/EhrBase.java
+
+
+
+
 
   #                                                88
   #                                                88
@@ -915,6 +1057,10 @@ commands:
           paths:
             - project/sonar_issues.json
 
+
+
+
+
   #                                           88
   #                                           88
   #                                           88
@@ -924,6 +1070,21 @@ commands:
   #       "8a,   ,aa  88,    ,88  "8a,   ,aa  88       88  "8b,   ,aa
   #        `"Ybbd8"'  `"8bbdP"Y8   `"Ybbd8"'  88       88   `"Ybbd8"'
   #
+
+  cache-out-sdk-m2-dependencies:
+      steps:
+        - run:
+            name: Generate Cache Checksum for openEHR_SDK Dependencies
+            command: find openEHR_SDK/ -name 'pom.xml' | sort | xargs cat > /tmp/openEHR_SDK_maven_cache_seed
+        - restore_cache:
+            key: openEHR_SDK-
+  
+  cache-in-sdk-m2-dependencies:
+    steps:
+      - save_cache:
+          key: openEHR_SDK-{{ checksum "/tmp/openEHR_SDK_maven_cache_seed" }}
+          paths:
+          - ~/.m2
 
   save-integration-tests-job-caches:
     description: Save all caches in interation tests job
@@ -1061,14 +1222,54 @@ commands:
       - restore_cache:
           keys:
             - v1-dependency-check-
-#   ██████╗  █████╗  ██████╗██╗  ██╗██╗   ██╗██████╗
-#   ██╔══██╗██╔══██╗██╔════╝██║ ██╔╝██║   ██║██╔══██╗
-#   ██████╔╝███████║██║     █████╔╝ ██║   ██║██████╔╝
-#   ██╔══██╗██╔══██║██║     ██╔═██╗ ██║   ██║██╔═══╝
-#   ██████╔╝██║  ██║╚██████╗██║  ██╗╚██████╔╝██║
-#   ╚═════╝ ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝ ╚═════╝ ╚═╝
+
+
+
+
+
+# ///////////////////////////////////////////////////////////////////////////
+# /// CIRCLECI META                                                       ///
+# ///////////////////////////////////////////////////////////////////////////
+
+
+orbs:
+  maven: circleci/maven@1.0.1
+  openjdk-install: cloudesire/openjdk-install@1.2.3
+  sonarcloud: sonarsource/sonarcloud@1.0.2
+
+# executors:
+#   docker-python3-java11:
+#     working_directory: ~/projects
+#     docker:
+#       - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
+
+  docker-py3-java11-postgres:
+    working_directory: ~/projects
+    docker:
+      - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
+      - image: ehrbaseorg/ehrbase-postgres:10
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+
+
+
+
+
+
+
+
+
+
+# oooooooooo.        .o.         .oooooo.   oooo    oooo ooooo     ooo ooooooooo.
+# `888'   `Y8b      .888.       d8P'  `Y8b  `888   .8P'  `888'     `8' `888   `Y88.
+#  888     888     .8"888.     888           888  d8'     888       8   888   .d88'
+#  888oooo888'    .8' `888.    888           88888[       888       8   888ooo88P'
+#  888    `88b   .88ooo8888.   888           888`88b.     888       8   888
+#  888    .88P  .8'     `888.  `88b    ooo   888  `88b.   `88.    .8'   888
+# o888bood8P'  o88o     o8888o  `Y8bood8P'  o888o  o888o    `YbodP'    o888o
 #
-#   [ BACKUP ]
+# [ BACKUP ]
 
 # upload-test-status-report-to-slack:
 #   description: Uploads status report to Slack
