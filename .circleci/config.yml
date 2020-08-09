@@ -720,7 +720,7 @@ commands:
       Executes all SDK java tests (unit and integration)
       This requires EHRbase + DB to be running during test execution.
     steps:
-      # - install-maven
+      - install-maven
       # - run:
       #     name: Maven build EHRbase
       #     command: |
