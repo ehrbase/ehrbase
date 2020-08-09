@@ -1237,7 +1237,7 @@ orbs:
   openjdk-install: cloudesire/openjdk-install@1.2.3
   sonarcloud: sonarsource/sonarcloud@1.0.2
 
-# executors:
+executors:
 #   docker-python3-java11:
 #     working_directory: ~/projects
 #     docker:
