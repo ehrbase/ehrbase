@@ -454,8 +454,8 @@ jobs:
     steps:
       - checkout
       - attach-target-folder
-      - cache-out-sdk-m2-dependencies
       - git-clone-sdk-repo
+      - cache-out-sdk-m2-dependencies
       - start-ehrbase-and-run-all-sdk-tests
       - cache-in-sdk-m2-dependencies
       - collect-sdk-unittest-results
