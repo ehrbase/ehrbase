@@ -101,6 +101,8 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
     private Set<String> allTemplateId = new HashSet<>();
 
+    private Map<String, Set<String>> nodeIdsByTemplateIdMap = new HashMap<>();
+
 
     private final CacheManager cacheManager;
 
@@ -324,6 +326,12 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     }
 
     @Override
+    public boolean containsNodeIds(String templateId, Collection<String> nodeIds) {
+        Set<String> templateNodeIds = nodeIdsByTemplateIdMap.computeIfAbsent(templateId, t -> getQueryOptMetaData(t).getAllNodeIds());
+        return templateNodeIds.containsAll(nodeIds);
+    }
+
+    @Override
     public JsonPathQueryResult resolveForTemplate(String templateId, String jsonQueryExpression) {
         TemplateIdQueryTuple key = new TemplateIdQueryTuple(templateId, jsonQueryExpression);
 
@@ -334,6 +342,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
             if (!MapUtils.isEmpty(evaluate)) {
                 jsonPathQueryResult = new JsonPathQueryResult(templateId, evaluate);
             } else {
+                //dummy result since null can not be path of a cache
                 jsonPathQueryResult = new JsonPathQueryResult(null, Collections.emptyMap());
             }
             jsonPathQueryResultCache.put(key, jsonPathQueryResult);
@@ -341,7 +350,10 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
         if (jsonPathQueryResult.getTemplateId() != null) {
             return jsonPathQueryResult;
-        } else {
+        }
+        // Is dummy result
+        else {
+
             return null;
         }
 

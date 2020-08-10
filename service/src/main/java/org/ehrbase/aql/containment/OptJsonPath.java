@@ -70,8 +70,9 @@ public class OptJsonPath {
     }
 
     public Map<String, Object> evaluate(String templateId, String jsonPathExpression) {
-        I_QueryOptMetaData queryOptMetaData = knowledgeCache.getQueryOptMetaData(templateId);
 
+
+        //extract all nodeIds from the query
         List<String> nodeIds = Arrays.stream(jsonPathExpression.split("\\.\\."))
                 .filter(s -> s.contains("@.node_id"))
                 .map(s -> s.replace("[?(@.node_id == '", "")
@@ -79,22 +80,14 @@ public class OptJsonPath {
                         .replace("')]", ""))
                 .map(String::trim)
                 .collect(Collectors.toList());
-       /*
-      Arrays.asList(jsonPathExpression
-                .replace("$..", "")
-                .replace("[?(@.node_id == '", "")
-                .replace("[?(@.node_id == '", "")
-                .replace("')]", "")
-                .replace("..", " ")
-                .split(" "));
 
-        */
-        if (!queryOptMetaData.getAllNodeIds().containsAll(nodeIds)) {
+        //If the template dos not contain all nodeIds fo the query it can not be part of the query
+        if (!knowledgeCache.containsNodeIds(templateId, nodeIds)) {
             return Collections.emptyMap();
+        } else {
+            String json = representAsString(templateId);
+            return jsonPathEval(json, jsonPathExpression);
         }
-
-        String json = representAsString(templateId);
-        return jsonPathEval(json, jsonPathExpression);
     }
 
 
