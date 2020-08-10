@@ -47,19 +47,14 @@ import org.ehrbase.dao.access.jooq.party.PersistedObjectId;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.jooq.pg.tables.records.*;
+import org.ehrbase.serialisation.dbencoding.RawJson;
 import org.ehrbase.service.RecordedDvCodedText;
 import org.ehrbase.service.RecordedDvDateTime;
-import org.ehrbase.serialisation.dbencoding.RawJson;
 import org.jooq.*;
 import org.jooq.exception.DataAccessException;
 
-import java.sql.PreparedStatement;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoField;
-import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -75,11 +70,12 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
     private static final String DB_INCONSISTENCY = "DB inconsistency";
     private static Logger log = LogManager.getLogger(ContextAccess.class);
     private EventContextRecord eventContextRecord;
-    private PreparedStatement updateStatement;
     private List<ParticipationRecord> participations = new ArrayList<>();
 
     public ContextAccess(DSLContext context, ServerConfig serverConfig, EventContext eventContext) {
         super(context, null, null, serverConfig);
+        if (eventContext == null)
+            return;
         eventContextRecord = context.newRecord(EVENT_CONTEXT);
         setRecordFields(UUID.randomUUID(), eventContext);
     }
@@ -105,26 +101,6 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         eventContextRecord.setOtherContext((JSONB) records.getValue(0, I_CompositionAccess.F_CONTEXT_OTHER_CONTEXT));
 
         return contextAccess;
-    }
-
-    /**
-     * Decodes and creates RM object instance from given String representation
-     *
-     * @param codedDvCodedText input as String
-     * @return RM object generated from input
-     * @throws IllegalArgumentException when failed to parse the input
-     */
-    // TODO unit test
-    private static DvCodedText decodeDvCodedText(String codedDvCodedText) {
-        String[] tokens = codedDvCodedText.substring(codedDvCodedText.indexOf("{") + 1, codedDvCodedText.indexOf("}")).split(",");
-        if (tokens.length != 3) {
-            throw new IllegalArgumentException("failed to parse DvCodedText \'" + codedDvCodedText + "\', wrong number of tokens.");
-        } else {
-            String textValue = tokens[2].split("=")[1];
-            String codeTerminology = tokens[1].split("=")[1];
-            String codeString = tokens[0].split("=")[1];
-            return new DvCodedText(textValue, new CodePhrase(new TerminologyId(codeTerminology), codeString));
-        }
     }
 
     /**
@@ -219,10 +195,14 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         return healthCareFacility;
     }
 
-    // TODO: doc!
+
+    /**
+     * setup an EventContextRecord instance based on values from an EventContext instance
+     * @param id
+     * @param eventContext
+     */
     @Override
     public void setRecordFields(UUID id, EventContext eventContext) {
-        //@TODO get from eventContext
         RecordedDvDateTime recordedDvDateTime = new RecordedDvDateTime(eventContext.getStartTime());
         eventContextRecord.setStartTime(recordedDvDateTime.toTimestamp());
         eventContextRecord.setStartTimeTzid(recordedDvDateTime.zoneId());
@@ -244,16 +224,10 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         if (eventContext.getLocation() != null)
             eventContextRecord.setLocation(eventContext.getLocation());
 
-        //TODO: retrieveInstanceByNamedSubject program details from other context if any
-//        setting = eventContext.getSetting().getCode();
-        Integer settingCode;
-        try {
-            settingCode = Integer.parseInt(eventContext.getSetting().getDefiningCode().getCodeString());
+        Integer settingCode = Integer.parseInt(eventContext.getSetting().getDefiningCode().getCodeString());
             // when not throwing exception continue with
-            eventContextRecord.setSetting(ConceptAccess.fetchConceptUUID(this, settingCode, "en"));
-        } catch (NumberFormatException e) {
-            // do nothing   //TODO: is treating it as optional correct? or should it be a real error case?
-        }
+        eventContextRecord.setSetting(ConceptAccess.fetchConceptUUID(this, settingCode, "en"));
+
 
         if (eventContext.getParticipations() != null) {
             for (Participation participation : eventContext.getParticipations()) {
@@ -311,7 +285,6 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
     @Override
     public UUID commit(Timestamp transactionTime) {
         eventContextRecord.setSysTransaction(transactionTime);
-//        UUID uuid = UUID.randomUUID();
         InsertQuery<?> insertQuery = getContext().insertQuery(EVENT_CONTEXT);
         insertQuery.addValue(EVENT_CONTEXT.ID, eventContextRecord.getId());
         insertQuery.addValue(EVENT_CONTEXT.COMPOSITION_ID, eventContextRecord.getCompositionId());
@@ -321,7 +294,6 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         insertQuery.addValue(EVENT_CONTEXT.END_TIME_TZID, eventContextRecord.getEndTimeTzid());
         insertQuery.addValue(EVENT_CONTEXT.FACILITY, eventContextRecord.getFacility());
         insertQuery.addValue(EVENT_CONTEXT.LOCATION, eventContextRecord.getLocation());
-//        Field jsonbOtherContext = DSL.field(EVENT_CONTEXT.OTHER_CONTEXT+"::jsonb");
         if (eventContextRecord.getOtherContext() != null)
             insertQuery.addValue(EVENT_CONTEXT.OTHER_CONTEXT, eventContextRecord.getOtherContext());
         insertQuery.addValue(EVENT_CONTEXT.SETTING, eventContextRecord.getSetting());
@@ -334,10 +306,8 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
             throw new InternalServerException("Problem executing database operation", e);
         }
 
-        if (result < 1) // TODO check result for successful execution -> is '< 1' correct as condition?
+        if (result < 1)
             throw new IllegalArgumentException("Context commit failed");
-
-//        eventContextRecord.store();
 
         if (!participations.isEmpty()) {
             participations.forEach(participation -> {
@@ -385,8 +355,6 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         //ignore the temporal field since it is maintained by an external trigger!
         eventContextRecord.changed(EVENT_CONTEXT.SYS_PERIOD, false);
 
-        //TODO: still correct? original comment: "ignore other_context for the time being..."
-//        eventContextRecord.changed(EVENT_CONTEXT.OTHER_CONTEXT, false);
         eventContextRecord.setSysTransaction(transactionTime);
 
         UpdateQuery<?> updateQuery = getContext().updateQuery(EVENT_CONTEXT);
@@ -398,7 +366,6 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         updateQuery.addValue(EVENT_CONTEXT.END_TIME_TZID, eventContextRecord.getEndTimeTzid());
         updateQuery.addValue(EVENT_CONTEXT.FACILITY, eventContextRecord.getFacility());
         updateQuery.addValue(EVENT_CONTEXT.LOCATION, eventContextRecord.getLocation());
-//        Field jsonbOtherContext = DSL.field(EVENT_CONTEXT.OTHER_CONTEXT+"::jsonb");
         if (eventContextRecord.getOtherContext() != null)
             updateQuery.addValue(EVENT_CONTEXT.OTHER_CONTEXT, eventContextRecord.getOtherContext());
         updateQuery.addValue(EVENT_CONTEXT.SETTING, eventContextRecord.getSetting());
@@ -522,7 +489,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         } else {
             concept = new DvCodedText("event", new CodePhrase(OPENEHR_TERMINOLOGY_ID, "433"));
         }
-        ItemStructure otherContext = null;
+        ItemStructure<?> otherContext = null;
 
         if (eventContextRecord.getOtherContext() != null) {
             otherContext = new RawJson().unmarshal((eventContextRecord.getOtherContext().data()), ItemStructure.class);
@@ -579,6 +546,11 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
     @Override
     public UUID getId() {
         return eventContextRecord.getId();
+    }
+
+    @Override
+    public boolean isVoid() {
+        return eventContextRecord == null;
     }
 
     @Override
