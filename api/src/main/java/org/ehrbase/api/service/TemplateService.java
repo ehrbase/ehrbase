@@ -52,4 +52,14 @@ public interface TemplateService extends BaseService {
      * @return - Whether the template could be removed or not
      */
     boolean adminDeleteTemplate(String templateId);
+
+    /**
+     * Replaces a given template in the storage and updates the cache with the new template content. Will be rejected
+     * if the template has referencing Compositions.
+     *
+     * @param templateId - Tempalte id to update, e.g. "IDCR Allergies List.v0"
+     * @param content - New content to overwrite the template with
+     * @return - New template id
+     */
+    String adminUpdateTemplate(String templateId, String content);
 }

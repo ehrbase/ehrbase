@@ -170,4 +170,39 @@ public class TemplateServiceImp extends BaseService implements TemplateService {
         // Delete template if not used
         return this.knowledgeCacheService.deleteOperationalTemplate(opt.get());
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String adminUpdateTemplate(String templateId, String content) {
+
+        Optional<OPERATIONALTEMPLATE> existingTemplate =
+                this.knowledgeCacheService.retrieveOperationalTemplate(templateId);
+
+        // Check if template exists
+        if (existingTemplate.isEmpty()) {
+            throw new ObjectNotFoundException(
+                    "ADMIN TEMPLATE UPDATE",
+                    String.format("Template with id %s does not exist", templateId)
+            );
+        }
+
+        // Find referencing Compositions
+        Optional<List<UUID>> compositionsUuidList =
+                this.compositionService.retrieveAllForTemplate(templateId);
+
+        if (compositionsUuidList.isPresent()) {
+            throw new UnprocessableEntityException(
+                    String.format(
+                            "Cannot update used template with id %s. Compositions using this template are: %s",
+                            templateId,
+                            compositionsUuidList.get().toString()
+                    )
+            );
+        }
+
+        // Replace content
+        return this.knowledgeCacheService.updateOperationalTemplate(content.getBytes(StandardCharsets.UTF_8));
+    }
 }

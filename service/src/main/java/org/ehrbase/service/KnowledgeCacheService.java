@@ -112,9 +112,22 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         cacheManager.close();
     }
 
-
     @Override
     public String addOperationalTemplate(byte[] content) {
+        return addOperationalTemplate(content, false);
+    }
+
+    /**
+     * Creates a new or replaces an existing operational template. If the template does not exist it will be created.
+     * If there is already a template with the given id inside the content and either the configuration setting
+     * system.allow-template-overwrite or param overwrite is set to true the template will be replaced with the new
+     * content. Of none of these flags is set a conflict exception will be thrown.
+     *
+     * @param content - New template content to write / set
+     * @param overwrite - Allow overwrite of existing templates
+     * @return - New created template id
+     */
+    private String addOperationalTemplate(byte[] content, boolean overwrite) {
 
         InputStream inputStream = new ByteArrayInputStream(content);
 
@@ -144,8 +157,8 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         String templateId = filenameOptional.orElseThrow(() -> new InvalidApiParameterException("Invalid template input content")).getValue();
 
 
-        // pre-check: if already existing throw proper exception
-        if (!allowTemplateOverwrite && retrieveOperationalTemplate(templateId).isPresent()) {
+        // pre-check: if already existing and overwrite is forbidden throw proper exception
+        if (!allowTemplateOverwrite && !overwrite && retrieveOperationalTemplate(templateId).isPresent()) {
             throw new StateConflictException("Operational template with this template ID already exists");
         }
 
@@ -295,14 +308,28 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         return operationaltemplate;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String updateOperationalTemplate(byte[] content) {
+        return this.addOperationalTemplate(content, true);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean deleteOperationalTemplate(OPERATIONALTEMPLATE template) {
-        boolean deleted = this.templateStorage.deleteTemplate(template.getUid().getValue());
-        if (deleted) {
+        // Remove template from storage
+        boolean deleted = this.templateStorage.deleteTemplate(template.getTemplateId().getValue());
 
+        if (deleted) {
+            // Remove template from caches
             this.atOptCache.remove(template.getTemplateId().getValue());
             this.idxCache.remove(UUID.fromString(template.getUid().getValue()));
         }
+
         return deleted;
     }
 

@@ -179,11 +179,18 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
         return templateStoreAccess;
     }
 
+    /**
+     * Removes the template identified by its template_id from database and returns if the operation succeeded.
+     *
+     * @param domainAccess - Database access instance
+     * @param templateId - Target template_id, e.g. "IDCR - Problem List.v1"
+     * @return - Deletion succeeded or not
+     */
     public static boolean deleteTemplate(I_DomainAccess domainAccess, String templateId) {
 
         return domainAccess.getContext()
                 .deleteFrom(TEMPLATE_STORE)
-                .where(TEMPLATE_STORE.ID.eq(UUID.fromString(templateId)))
+                .where(TEMPLATE_STORE.TEMPLATE_ID.eq(templateId))
                 .execute() > 0;
     }
 

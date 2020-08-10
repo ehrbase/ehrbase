@@ -19,13 +19,14 @@ package org.ehrbase.rest.openehr.controller.admin;
 
 import io.swagger.annotations.*;
 import org.ehrbase.api.definitions.OperationalTemplateFormat;
+import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.response.openehr.admin.AdminDeleteResponseData;
 import org.ehrbase.response.openehr.admin.AdminStatusResponseData;
-import org.ehrbase.response.openehr.admin.AdminUpdateResponseData;
 import org.ehrbase.rest.openehr.controller.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -51,7 +52,11 @@ public class OpenehrAdminTemplateController extends BaseController {
     AdminApiConfiguration adminApiConfiguration;
 
 
-    @PutMapping(path = "/{template_id}", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    @PutMapping(
+            path = "/{template_id}",
+            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE}
+    )
     @ApiResponses(value = {
             @ApiResponse(
                     code = 200,
@@ -75,17 +80,48 @@ public class OpenehrAdminTemplateController extends BaseController {
             @ApiResponse(
                     code = 404,
                     message = "Template could not be found."
+            ),
+            @ApiResponse(
+                    code = 422,
+                    message = "Template could not be replaced since it is used in at least one Composition."
             )
     })
-    public ResponseEntity<AdminUpdateResponseData> updateTemplate(
+    public ResponseEntity<String> updateTemplate(
+            @ApiParam(value = REQ_ACCEPT)
+            @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_XML_VALUE)
+                    String accept,
+            @ApiParam(value = REQ_CONTENT_TYPE)
+            @RequestHeader(value = CONTENT_TYPE)
+                    String contentType,
             @ApiParam(value = "Target template id to update. The value comes from the 'template_id' property.")
             @PathVariable(value = "template_id")
-                    String templateId
+                    String templateId,
+            @ApiParam(value = "New template content to replace old one with")
+            @RequestBody() String content
     ) {
 
-        // TODO: Implement endpoint functionality
+        // Currently only 'application/xml' is supported. So skip if Accept or Content-Type headers specify another type
+        if (
+                !(MediaType.parseMediaType(accept).equalsTypeAndSubtype(MediaType.APPLICATION_XML)
+                && MediaType.parseMediaType(contentType).equalsTypeAndSubtype(MediaType.APPLICATION_XML))
+        ) {
+            throw new UnprocessableEntityException(
+                    String.format(
+                            "Only %s format currently supported.", MediaType.APPLICATION_XML_VALUE
+                    )
+            );
+        }
 
-        return ResponseEntity.ok().body(new AdminUpdateResponseData(0));
+        String newId = this.templateService.adminUpdateTemplate(templateId, content);
+
+        // TODO: Change after implementation of JSON parsing of templates
+        String updatedTemplate = this.templateService.findOperationalTemplate(newId, OperationalTemplateFormat.XML);
+
+        // Headers
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", MediaType.APPLICATION_XML_VALUE);
+
+        return ResponseEntity.ok().headers(headers).body(updatedTemplate);
     }
 
     @DeleteMapping(path = "/{template_id}")

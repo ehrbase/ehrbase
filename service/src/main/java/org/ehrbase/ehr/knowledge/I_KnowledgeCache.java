@@ -68,6 +68,24 @@ public interface I_KnowledgeCache {
      */
     Optional<OPERATIONALTEMPLATE> retrieveOperationalTemplate(UUID uuid);
 
+    /**
+     * Updates an operational template by overwriting the contents if called from admin API and if all prerequisites
+     * are fulfilled, i.e. the template is no longer referenced in any Composition entry. If you do not check and update
+     * a template this would result in inconsistencies and no longer deliverable Composition entries.
+     *
+     * @param content - Byte array from new data input stream
+     * @return - New added template with updated data for that template entity
+     */
+    String updateOperationalTemplate(byte[] content);
+
+    /**
+     * Deletes a given operational template physically from cache and from template storage and from cache. Should only
+     * be executed if the template is no longer referenced by any Composition. Make sure you check for references before
+     * deleting a template otherwise this causes inconsistencies and no longer deliverable Composition entries.
+     *
+     * @param template - The template instance to delete
+     * @return - Template has been deleted
+     */
     boolean deleteOperationalTemplate(OPERATIONALTEMPLATE template);
 
 }
