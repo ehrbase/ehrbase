@@ -349,7 +349,7 @@ Check DB is empty
 # comment:  this is just a temp/quick and dirty fix
 #           TODO @WLAD replace w/ a proper AQL query to make this KW reusable
 #           on all systems
-                        Run Keyword And Return If    "${${SUT}.CONTROL}"=="NONE"
+                        Run Keyword And Return If    "${CONTROL_MODE}"=="NONE"
                         ...  Log To Console  REPLACE ME W/ PROPER KEWORD!
 
                         Connect With DB
