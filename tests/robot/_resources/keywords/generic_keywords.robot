@@ -188,10 +188,19 @@ start openehr server
     wait until openehr server is online
 
 
+# start server process without coverage
+#     ${result}=          Start Process  java  -jar  ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
+#                         ...                  --cache.enabled\=false
+#                         ...                  --server.nodename\=${NODENAME}    alias=ehrserver
+#                         ...                    cwd=${PROJECT_ROOT}    stdout=stdout.txt    stderr=stderr.txt
+
 start server process without coverage
+                        Set Environment Variable    SECURITY_AUTHTYPE    ${SECURITY_AUTHTYPE}
+                        Run Keyword If    '${SECURITY_AUTHTYPE}' == 'OAUTH'    Set Environment Variable
+                        ...               SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI    ${JWT_ISSUERURI}    
     ${result}=          Start Process  java  -jar  ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
                         ...                  --cache.enabled\=false
-                        ...                  --server.nodename\=${CREATING_SYSTEM_ID}    alias=ehrserver
+                        ...                  --server.nodename\=${NODENAME}    alias=ehrserver
                         ...                    cwd=${PROJECT_ROOT}    stdout=stdout.txt    stderr=stderr.txt
 
 
@@ -199,7 +208,7 @@ start server process with coverage
     ${result}=          Start Process  java  -javaagent:${JACOCO_LIB_PATH}/jacocoagent.jar\=output\=tcpserver,address\=127.0.0.1
                         ...                  -jar    ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
                         ...                  --cache.enabled\=false
-                        ...                  --server.nodename\=${CREATING_SYSTEM_ID}    alias=ehrserver
+                        ...                  --server.nodename\=${NODENAME}    alias=ehrserver
                         ...                    cwd=${PROJECT_ROOT}    stdout=stdout.txt    stderr=stderr.txt
 
 
@@ -332,8 +341,8 @@ set request headers
                         Set Headers         ${authorization}
 
     # comment: headers for RequestLibrary
-                        Create Session      ${SUT}    ${${SUT}.URL}    debug=2
-                        ...                 auth=${${SUT}.CREDENTIALS}    verify=True
+                        Create Session      ${SUT}    ${BASEURL}    debug=2
+                        ...                 auth=${CREDENTIALS}    verify=True
 
                         Set Suite Variable   ${headers}    ${headers}
 
@@ -458,19 +467,20 @@ startup SUT
     # comment: switch to manual test environment control when "-v nodocker" cli option is used
     Run Keyword If      $NODOCKER.upper() in ["TRUE", ""]    Run Keywords
                ...      Set Global Variable    ${NODOCKER}    TRUE    AND
-               ...      Set Global Variable    ${SUT}    DEV    AND
-               ...      Set Global Variable    ${BASEURL}    ${${SUT}.URL}    AND
-               ...      Set Global Variable    ${HEARTBEAT_URL}    ${${SUT}.HEARTBEAT}    AND
-               ...      Set Global Variable    ${AUTHORIZATION}    ${${SUT}.AUTH}    AND
-               ...      Set Global Variable    ${CREATING_SYSTEM_ID}    ${${SUT}.NODENAME}    AND
-               ...      Set Global Variable    ${CONTROL_MODE}    ${${SUT}.CONTROL}
+               ...      Set Global Variable    ${SUT}    DEV    #AND
+            #    ...      Set Global Variable    ${BASEURL}    ${BASEURL}    AND
+            #    ...      Set Global Variable    ${HEARTBEAT_URL}    ${HEARTBEAT_URL}    AND
+            #    ...      Set Global Variable    ${AUTHORIZATION}    ${SECURITY_AUTHTYPE}    AND
+            #    ...      Set Global Variable    ${NODENAME}    ${NODENAME}    AND
+            #    ...      Set Global Variable    ${CONTROL_MODE}    ${CONTROL_MODE}
 
-                        Log    \n\t SUT CONFIG (EHRbase v${VERSION})\n    console=true
-                        Log    \t BASEURL: ${BASEURL}    console=true
-                        Log    \t HEARTBEAT: ${HEARTBEAT_URL}    console=true
-                        Log    \t AUTH: ${AUTHORIZATION}    console=true
-                        Log    \t CREATING SYSTEM ID: ${CREATING_SYSTEM_ID}    console=true
-                        Log    \t CONTROL MODE: ${CONTROL_MODE}\n    console=true
+    Log    \n\t SUT: ${SUT} CONFIG | EHRbase v${VERSION}\n    console=true
+    Log    \t BASEURL: ${BASEURL}    console=true
+    Log    \t HEARTBEAT: ${HEARTBEAT_URL}    console=true
+    Log    \t AUTH_TYPE: ${SECURITY_AUTHTYPE}    console=true
+    Log    \t AUTH: ${{ str($AUTHORIZATION)[0:57] }}...    console=true
+    Log    \t CREATING SYSTEM ID: ${NODENAME}    console=true
+    Log    \t CONTROL MODE: ${CONTROL_MODE}\n    console=true
 
     ${sanity_check_passed}  ${server_status}  ${db_status}=    do quick sanity check
 

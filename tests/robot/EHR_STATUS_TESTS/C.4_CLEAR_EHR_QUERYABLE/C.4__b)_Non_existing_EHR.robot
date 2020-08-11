@@ -37,6 +37,8 @@ Force Tags    refactor
 
 Clear EHR queryable of non existent EHR (with body)
 
+    prepare new request session    JSON    Prefer=return=representation
+    
     create fake EHR
 
     update ehr_status of fake EHR (with body)
