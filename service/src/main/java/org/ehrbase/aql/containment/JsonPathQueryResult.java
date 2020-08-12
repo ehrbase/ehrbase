@@ -17,6 +17,8 @@
  */
 package org.ehrbase.aql.containment;
 
+import org.apache.commons.collections4.MapUtils;
+
 import java.util.Map;
 
 /**
@@ -25,22 +27,24 @@ import java.util.Map;
  */
 public class JsonPathQueryResult {
 
-    private String template_id;
-    private String aql_path;
+    private final String templateId;
+    private final String aqlPath;
 
-    public JsonPathQueryResult(String template_id, Map<String, Object> objectMap) {
-        this.template_id = template_id;
+    public JsonPathQueryResult(String templateId, Map<String, Object> objectMap) {
+        this.templateId = templateId;
 
-        if (!objectMap.isEmpty()){
-            aql_path = (String) objectMap.get("aql_path");
+        if (!MapUtils.isEmpty(objectMap)) {
+            aqlPath = (String) objectMap.get("aql_path");
+        } else {
+            aqlPath = null;
         }
     }
 
     public String getTemplateId() {
-        return template_id;
+        return templateId;
     }
 
     public String getAqlPath() {
-        return aql_path;
+        return aqlPath;
     }
 }

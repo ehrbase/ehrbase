@@ -24,6 +24,7 @@
             <jsr107:cache name="introspectCache" template="heap-cache"/>
             <jsr107:cache name="operationaltemplateCache" template="heap-cache"/>
             <jsr107:cache name="validatorCache" template="heap-cache"/>
+            <jsr107:cache name="queryCache" template="heap-cache-query"/>
         </jsr107:defaults>
     </service>
 
@@ -33,6 +34,15 @@
         </expiry>
         <resources>
             <heap unit="entries">100</heap>
+        </resources>
+    </cache-template>
+
+    <cache-template name="heap-cache-query">
+        <expiry>
+            <none/>
+        </expiry>
+        <resources>
+            <heap unit="MB">200</heap>
         </resources>
     </cache-template>
 </config>
