@@ -212,6 +212,8 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
                 visitMatchesOperand((AqlParser.MatchesOperandContext) tree);
             } else if (tree instanceof AqlParser.IdentifiedPathContext) {
                 parsePathContext((AqlParser.IdentifiedPathContext) tree);
+            } else if (tree instanceof AqlParser.IdentifiedExprContext) {
+                visitIdentifiedExpr((AqlParser.IdentifiedExprContext)tree);
             }
         }
 
