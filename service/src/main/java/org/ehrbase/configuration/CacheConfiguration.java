@@ -18,6 +18,8 @@
 
 package org.ehrbase.configuration;
 
+import org.ehrbase.aql.containment.JsonPathQueryResult;
+import org.ehrbase.aql.containment.TemplateIdQueryTuple;
 import org.ehrbase.opt.query.I_QueryOptMetaData;
 import org.ehrbase.validation.Validator;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
@@ -40,6 +42,8 @@ public class CacheConfiguration {
     public static final String INTROSPECT_CACHE = "introspectCache";
     public static final String OPERATIONAL_TEMPLATE_CACHE = "operationaltemplateCache";
     public static final String VALIDATOR_CACHE = "validatorCache";
+    public static final String QUERY_CACHE = "queryCache";
+
     @Value("${cache.config}")
     private String configPath;
     @Value("${cache.enabled}")
@@ -59,6 +63,7 @@ public class CacheConfiguration {
         buildCache(INTROSPECT_CACHE, UUID.class, I_QueryOptMetaData.class, cacheManager, enabled);
         buildCache(OPERATIONAL_TEMPLATE_CACHE, String.class, OPERATIONALTEMPLATE.class, cacheManager, enabled);
         buildCache(VALIDATOR_CACHE, UUID.class, Validator.class, cacheManager, enabled);
+        buildCache(QUERY_CACHE, TemplateIdQueryTuple.class, JsonPathQueryResult.class, cacheManager, enabled);
         return cacheManager;
     }
 

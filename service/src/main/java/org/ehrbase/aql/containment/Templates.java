@@ -18,13 +18,11 @@
 package org.ehrbase.aql.containment;
 
 import com.jayway.jsonpath.JsonPath;
-import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.ehrbase.opt.query.QueryOptMetaData;
 import org.ehrbase.service.KnowledgeCacheService;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Process jsonpath queries on WebTemplates
@@ -48,9 +46,9 @@ public class Templates {
 
         List<JsonPathQueryResult> jsonPathQueryResults = new ArrayList<>();
         //traverse the templates and identify the ones satisfying the query
-        for (TemplateMetaData templateMetaData: knowledgeCache.listAllOperationalTemplates()){
-            JsonPathQueryResult result = resolveForTemplate(templateMetaData.getOperationaltemplate().getTemplateId().getValue(), jsonQueryExpression);
-            if (result != null){
+        for (String templateId : knowledgeCache.getAllTemplateIds()) {
+            JsonPathQueryResult result = resolveForTemplate(templateId, jsonQueryExpression);
+            if (result != null) {
                 jsonPathQueryResults.add(result);
             }
         }
@@ -63,12 +61,19 @@ public class Templates {
      * @param jsonQueryExpression
      * @return
      */
-    public JsonPathQueryResult resolveForTemplate(String templateId, String jsonQueryExpression){
+    public JsonPathQueryResult resolveForTemplate(String templateId, String jsonQueryExpression) {
+
+       /*
         Map<String, Object> results = new OptJsonPath(knowledgeCache).evaluate(templateId,jsonQueryExpression);
+        JsonPathQueryResult jsonPathQueryResult = knowledgeCache.resolveForTemplate(templateId, jsonQueryExpression);
+
         if (results != null && !results.isEmpty()){
             return  new JsonPathQueryResult(templateId, results);
         }
         return null;
+
+        */
+        return knowledgeCache.resolveForTemplate(templateId, jsonQueryExpression);
     }
 
     /**
