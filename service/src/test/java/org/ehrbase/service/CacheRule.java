@@ -18,6 +18,8 @@
 
 package org.ehrbase.service;
 
+import org.ehrbase.aql.containment.JsonPathQueryResult;
+import org.ehrbase.aql.containment.TemplateIdQueryTuple;
 import org.ehrbase.opt.query.I_QueryOptMetaData;
 import org.ehrbase.validation.Validator;
 import org.junit.rules.TestWatcher;
@@ -41,6 +43,7 @@ public class CacheRule extends TestWatcher {
         buildCache(INTROSPECT_CACHE, UUID.class, I_QueryOptMetaData.class, cacheManager, true);
         buildCache(OPERATIONAL_TEMPLATE_CACHE, String.class, OPERATIONALTEMPLATE.class, cacheManager, true);
         buildCache(VALIDATOR_CACHE, UUID.class, Validator.class, cacheManager, true);
+        buildCache(QUERY_CACHE, TemplateIdQueryTuple.class, JsonPathQueryResult.class, cacheManager, true);
     }
 
     @Override
