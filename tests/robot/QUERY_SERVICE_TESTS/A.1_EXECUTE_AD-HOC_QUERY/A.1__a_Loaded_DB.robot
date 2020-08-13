@@ -203,9 +203,9 @@ B-300 Execute Ad-Hoc Query - Get Compositions From All EHRs
 B-400 Execute Ad-Hoc Query - Get Composition(s)
     [Documentation]     Test w/ "all_types.composition.json" commit
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              234
+    [Tags]              331
     B/400_get_compositions_contains_section_with_archetype_from_all_ehrs.json    B/400.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  234  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  331  not-ready
 
 
 B-500 Execute Ad-Hoc Query - Get Composition(s)
