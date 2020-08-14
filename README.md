@@ -6,6 +6,7 @@ EHRbase is an [openEHR](openehr.org) Clinical Data Repository, providing a stand
 ##### 2020, May 14
 This release of EHRbase (v0.13.0) is the first **beta** release. Please see [EHRbase Documentation](https://ehrbase.readthedocs.io/en/latest/) for further details.
 
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. Please read these instructions carefully. See deployment for notes on how to deploy the project on a live system.
