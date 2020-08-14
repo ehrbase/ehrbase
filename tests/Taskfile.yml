@@ -24,6 +24,7 @@ tasks:
     desc: START SUT (NO CACHE)
     cmds:
       - task: startdb
+      - sleep 1
       - task: starteb
 
   stop:
@@ -35,28 +36,37 @@ tasks:
   starteb:
       desc: START EHRBASE SERVER W/O CACHING (CACHE DISABLED!) and allow temple-override
       cmds:
-        - echo ... starting EHRbase server ...
-        # - java -jar ../application/target/application-0.13.0.jar --cache.enabled=false --server.nodename=manual.execution.org > log &
-        - java -jar ../application/target/application-0.13.0.jar --cache.enabled=false --system.allow-template-overwrite=true > log &
-        # - sleep 20
-        # - echo ... EHRbase server started.
-        - grep -m 1 "Started EhrBase in" <(tail -f log)
-      env:
-        DISABLE_SECURITY: true
+        - |
+          echo ... starting EHRbase server ...
+          cd ..
+          EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+          echo "EHRbase_VERSION:" ${EHRbase_VERSION}
+          java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false --server.nodename=manual.execution.org > log &
+          grep -m 1 "Started EhrBase in" <(tail -f log)
+          
+          # SECURITY_AUTHTYPE=BASIC java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false --system.allow-template-overwrite=true > log &
+          # SECURITY_AUTHTYPE=OAUTH SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI=http://localhost:8081/auth/realms/ehrbase java -jar application/target/application-${EHRbase_VERSION}.jar
+      # env:
+      #   DISABLE_SECURITY: true
 
   starteb-cache:
     desc: START EHRBASE SERVER WITH CACHE ENABLED
     cmds:
       - echo ... staring EHRbase server ...
       - java -jar ../application/target/application-0.13.0.jar > log &
-      - sleep 20
-      - echo ... EHRbase server started.
+      # - sleep 20
+      # - echo ... EHRbase server started.
+      - grep -m 1 "Started EhrBase in" <(tail -f log)
 
   stopeb:
     desc: KILL EHRBASE SERVER
     cmds:
-      - kill -9 $(jps | grep application-0.13.0.jar | awk '{print $1}')
-      - echo ... EHRbase server stopped.
+      - |
+        cd ..
+        EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+        echo "EHRbase_VERSION:" ${EHRbase_VERSION}
+        kill -9 $(jps | grep application-${EHRbase_VERSION}.jar | awk '{print $1}')
+        echo ... EHRbase server stopped.
 
   startdb:
     desc: START POSTGRES DB DOCKER CONTAINER
@@ -85,9 +95,10 @@ tasks:
     desc: RUN SPECIFIED TESTS
     cmds:
       ## adjust this part to the needs of your current test session
-      - robot -v nodocker -i empty_db -e future -e circleci -e TODO -e obsolete -d results -L TRACE --noncritical not-ready robot/QUERY_SERVICE_TESTS
+      # - robot -v nodocker -i empty_db -e future -e circleci -e TODO -e obsolete -d results -L TRACE --noncritical not-ready robot/QUERY_SERVICE_TESTS
       ## example of "execute single test by it's test-case name" (wildcards accepted):
-      # - robot -t "MF-030 - Create new EHR*" -d results -L TRACE robot/EHR_SERVICE_TESTS
+      # - robot -v nodocker -t "MF-030 - Create new EHR*" -d results -L TRACE robot/EHR_SERVICE_TESTS
+      - robot -t "MF-030 - Create new EHR*" -d results -L TRACE robot/EHR_SERVICE_TESTS
       # - spd-say "Robot is ready! Check the results!"
 
   test-all:
