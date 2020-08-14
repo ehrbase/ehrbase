@@ -188,7 +188,7 @@ The only difference in contrast to normal execution is that you now want to spec
 #### Run all tests at one (**not** recommended)
 This is not recommend because it may take from 30 to 60 minutes and makes it harder to analyse the results.
 ```
-robot -v SUT:EHRSCAPE -e future -e circleci -e TODO -e obsolete -e libtest -d results -L TRACE --noncritical not-ready --name COMPO robot/
+robot -v SUT:EHRSCAPE -e future -e circleci -e TODO -e obsolete -e libtest -d results -L TRACE --noncritical not-ready robot/
 ```
 
 

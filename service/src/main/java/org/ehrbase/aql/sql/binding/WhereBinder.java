@@ -138,7 +138,8 @@ public class WhereBinder {
 
         TaggedStringBuilder taggedBuffer = new TaggedStringBuilder();
 
-        List whereItems = whereClause;
+        //work on a copy since Exist is destructive
+        List whereItems = new ArrayList(whereClause);
         boolean notExists = false;
 
         for (int cursor = 0; cursor < whereItems.size(); cursor++) {

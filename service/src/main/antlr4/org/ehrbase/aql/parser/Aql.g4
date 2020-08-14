@@ -127,6 +127,7 @@ identifiedEquality
         | OPEN_PAR* NOT? identifiedOperand SIMILARTO STRING CLOSE_PAR*
 //        | NOT identifiedEquality
         | OPEN_PAR* NOT? IN OPEN_PAR queryExpr CLOSE_PAR CLOSE_PAR*
+        | OPEN_PAR* NOT? OPEN_PAR identifiedExpr CLOSE_PAR CLOSE_PAR*
         | OPEN_PAR* NOT? EXISTS identifiedPath CLOSE_PAR*
         | OPEN_PAR* NOT? EXISTS identifiedExpr CLOSE_PAR*;
 
