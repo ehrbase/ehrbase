@@ -399,4 +399,12 @@ public class EhrServiceImp extends BaseService implements EhrService {
             throw new InternalServerException(e.getMessage(), e);
         }
     }
+
+    // TODO-314: check if this can be secured using @PreAuthorize to prevent it getting called from another method outside of admin scope
+    // @PreAuthorize("hasRole('ROLE_VIEWER')")
+    @Override
+    public void adminDeleteEhr(UUID ehrId) {
+        I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
+        ehrAccess.adminDeleteEhr();
+    }
 }

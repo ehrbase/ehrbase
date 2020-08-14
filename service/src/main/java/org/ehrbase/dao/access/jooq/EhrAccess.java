@@ -40,7 +40,10 @@ import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
+import org.ehrbase.jooq.pg.Routines;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
+import org.ehrbase.jooq.pg.tables.AdminDeleteEhr;
+import org.ehrbase.jooq.pg.tables.AdminDeleteEhrHistory;
 import org.ehrbase.jooq.pg.tables.records.*;
 import org.ehrbase.serialisation.dbencoding.RawJson;
 import org.ehrbase.service.RecordedDvCodedText;
@@ -742,5 +745,28 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         status.setSubject(partySelf);
 
         return status;
+    }
+
+    @Override
+    public void adminDeleteEhr() {
+        try {
+            /*AdminDeleteEhr test = Routines.adminDeleteEhr(this.getId());
+            log.debug(test.NUM);*/
+
+            int res = getContext().selectQuery(new AdminDeleteEhr().call(this.getId())).execute();
+            if (res != 1)
+                throw new InternalServerException("Admin deletion of EHR failed!");
+
+            res = getContext().selectQuery(new AdminDeleteEhrHistory().call(this.getId())).execute();
+            if (res != 1)
+                throw new InternalServerException("Admin deletion of EHR failed!");
+
+            //int test = getContext().selectQuery(AdminDeleteEhr.ADMIN_DELETE_EHR).execute();
+
+            //getContext().select(Routines.adminDeleteEhr(getContext().configuration(), this.getId()));
+            //Record<AdminDeleteEhr> test = getContext().select(org.ehrbase.jooq.pg.Routines.adminDeleteEhr(this.getId()));
+        } catch (Exception e) {
+            log.debug(e);
+        }
     }
 }

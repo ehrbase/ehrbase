@@ -261,4 +261,6 @@ public interface I_EhrAccess extends I_SimpleCRUD {
      * @return Latest EHR_STATUS
      */
     EhrStatus getStatus();
+
+    void adminDeleteEhr();
 }
