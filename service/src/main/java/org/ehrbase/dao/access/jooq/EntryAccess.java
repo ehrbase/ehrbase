@@ -22,6 +22,8 @@
 package org.ehrbase.dao.access.jooq;
 
 import com.nedap.archie.rm.archetyped.Archetyped;
+import com.nedap.archie.rm.archetyped.FeederAudit;
+import com.nedap.archie.rm.archetyped.Link;
 import com.nedap.archie.rm.archetyped.TemplateId;
 import com.nedap.archie.rm.composition.*;
 import com.nedap.archie.rm.datatypes.CodePhrase;
@@ -45,7 +47,11 @@ import org.ehrbase.jooq.pg.enums.EntryType;
 import org.ehrbase.jooq.pg.tables.records.EntryHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EntryRecord;
 import org.ehrbase.jooq.pg.udt.records.DvCodedTextRecord;
+import org.ehrbase.serialisation.attributes.FeederAuditAttributes;
+import org.ehrbase.serialisation.attributes.LinksAttributes;
 import org.ehrbase.serialisation.dbencoding.RawJson;
+import org.ehrbase.serialisation.dbencoding.rmobject.FeederAuditEncoding;
+import org.ehrbase.serialisation.dbencoding.rmobject.LinksEncoding;
 import org.ehrbase.service.IntrospectService;
 import org.ehrbase.service.RecordedDvCodedText;
 import org.ehrbase.service.RecordedDvText;
@@ -128,6 +134,11 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
 
         values.put(SystemValue.TERRITORY, new CodePhrase(new TerminologyId("ISO_3166-1"), territory2letters));
 
+        if (compositionAccess.getFeederAudit() != null)
+            values.put(SystemValue.FEEDER_AUDIT, new FeederAuditEncoding().fromDB(compositionAccess.getFeederAudit()));
+
+        if (compositionAccess.getLinks() != null)
+            values.put(SystemValue.LINKS, new LinksEncoding().fromDB(compositionAccess.getLinks()));
 
         List<I_EntryAccess> content = new ArrayList<>();
 
@@ -192,6 +203,10 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
         String territory2letters = domainAccess.getContext().fetchOne(TERRITORY, TERRITORY.CODE.eq(compositionHistoryAccess.getTerritoryCode())).getTwoletter();
         values.put(SystemValue.TERRITORY, new CodePhrase(new TerminologyId("ISO_3166-1"), territory2letters));
 
+        values.put(SystemValue.FEEDER_AUDIT, new FeederAuditEncoding().fromDB(compositionHistoryAccess.getFeederAudit()));
+        /* TODO: uncomment when LINKS is fully implemented
+        values.put(SystemValue.LINKS, new LinksEncoding().fromDB(compositionHistoryAccess.getFeederAudit()));
+         */
 
         List<I_EntryAccess> content = new ArrayList<>();
 
@@ -255,6 +270,14 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
                     break;
                 case NAME:
                     composition.setName((DvText) systemValue.getValue());
+                    break;
+
+                case FEEDER_AUDIT:
+                    composition.setFeederAudit((FeederAudit) systemValue.getValue());
+                    break;
+
+                case LINKS:
+                    composition.setLinks((List<Link>) systemValue.getValue());
                     break;
 
                 default:

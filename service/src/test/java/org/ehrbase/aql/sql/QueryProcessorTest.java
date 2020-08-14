@@ -257,6 +257,7 @@ public class QueryProcessorTest  {
 
         // Select  from unknown  composition
         // CHC: if a contains definition cannot be resolved an IllegalArgumentException is thrown
+
 //        testCases.add(new AqlTestCase(14,
 //                "select c/composer/name from EHR e " +
 //                        "contains COMPOSITION c[openEHR-EHR-COMPOSITION.unknown.v1]",
@@ -345,7 +346,7 @@ public class QueryProcessorTest  {
                         "where (\"ehr\".\"entry\".\"template_id\" = ? and (\"ehr_join\".\"id\"='4a7c01cf-bb1c-4d3d-8385-4ae0674befb1'))",
                 true));
 
-
+      
         testCases.add(new AqlTestCase(21,
                 "select c/category/defining_code/terminology_id/value from EHR e [ehr_id/value = '4a7c01cf-bb1c-4d3d-8385-4ae0674befb1']" +
                         "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]",
@@ -353,8 +354,7 @@ public class QueryProcessorTest  {
                         "from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\"" +
                         "where (\"ehr\".\"entry\".\"template_id\" = ? and (\"ehr_join\".\"id\"='4a7c01cf-bb1c-4d3d-8385-4ae0674befb1'))",
                 false));
-
-
+      
         testCases.add(new AqlTestCase(22,
                 "select count(a/description[at0001]/items[openEHR-EHR-CLUSTER.test_all_types.v1]/items[at0001]/items[at0002]/items[at0003]/value/value," +
                         "a/description[at0001]/items[openEHR-EHR-CLUSTER.test_all_types.v1]/items[at0001]/items[at0002]/items[at0004]/value/value)" +
@@ -380,6 +380,13 @@ public class QueryProcessorTest  {
                 "select ehr.js_composition(composition_join.id,'local')::text as \"c\" from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" where (\"ehr\".\"entry\".\"template_id\" = ? and (\"ehr\".\"entry\".\"entry\" #>> '{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ADMIN_ENTRY.hospitalization.v0]}'IS NULL))",
                 true
         ));
+
+
+        testCases.add(new AqlTestCase(25,
+                "select c/feeder_audit/originating_system_audit/system_id from EHR e " +
+                        "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]",
+                "select (\"composition_join\".\"feeder_audit\")::json #>>'{originating_system_audit,system_id}' as \"/feeder_audit/originating_system_audit/system_id\" from \"ehr\".\"entry\" where \"ehr\".\"entry\".\"template_id\" = ?",
+                false));
 
         //NOT EXISTS
 //        testCases.add(new AqlTestCase(25,
