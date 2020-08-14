@@ -40,7 +40,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.sql.Timestamp;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -240,7 +240,7 @@ public class OpenehrDirectoryController extends BaseController {
     public ResponseEntity<DirectoryResponseData> getFolderVersionAtTime(
             @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
             @ApiParam(value = "EHR identifier from resource path after ehr/", required = true) @PathVariable(value = "ehr_id") UUID ehrId,
-            @ApiParam(value = "Timestamp in extended ISO8601 format to identify version of folder.") @RequestParam(value = "version_at_time", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime versionAtTime,
+            @ApiParam(value = "Timestamp in extended ISO8601 format to identify version of folder.") @RequestParam(value = "version_at_time", required = false) Instant versionAtTime,
             @ApiParam(value = "Path parameter to specify a sub folder at directory") @RequestParam(value = "path", required = false) String path
     ) {
         // Check path string if they are valid
@@ -264,7 +264,11 @@ public class OpenehrDirectoryController extends BaseController {
         final Optional<FolderDto> foundFolder;
         // Get the folder entry from database
         if (versionAtTime != null) {
-            foundFolder = folderService.getByTimeStamp(directoryId, Timestamp.from(versionAtTime.toInstant()), path);
+            foundFolder = folderService.getByTimeStamp(
+                    directoryId,
+                    Timestamp.from(versionAtTime),
+                    path
+            );
         } else {
             foundFolder = folderService.getLatest(directoryId, path);
         }

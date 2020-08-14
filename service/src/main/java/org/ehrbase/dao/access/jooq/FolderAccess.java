@@ -42,7 +42,9 @@ import org.jooq.*;
 
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.Date;
 import java.util.UUID;
@@ -229,12 +231,12 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
 
     @Override
     public Boolean update() {
-        return this.update(new Timestamp(DateTime.now().getMillis()), true);
+        return this.update(Timestamp.from(Instant.now()), true);
     }
 
     @Override
     public Boolean update(Boolean force) {
-        return this.update(new Timestamp(DateTime.now().getMillis()), force);
+        return this.update(Timestamp.from(Instant.now()), force);
     }
 
     @Override
@@ -244,7 +246,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
 
     @Override
     public UUID commit() {
-        Timestamp timestamp = new Timestamp(DateTime.now().getMillis());
+        Timestamp timestamp = Timestamp.from(Instant.now());
         return this.commit(timestamp);
     }
 

@@ -18,6 +18,7 @@
 
 package org.ehrbase.application.config;
 
+import org.ehrbase.application.util.IsoDateTimeConverter;
 import org.ehrbase.application.util.StringToEnumConverter;
 import org.ehrbase.rest.openehr.annotation.RequestUrlArgumentResolver;
 import org.springframework.context.annotation.Configuration;
@@ -58,5 +59,6 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements WebMvcConfi
     @Override
     public void addFormatters(FormatterRegistry registry) {
         registry.addConverter(new StringToEnumConverter());
+        registry.addConverter(new IsoDateTimeConverter()); // Converter for version_at_time and other ISO date params
     }
 }

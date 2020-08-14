@@ -45,6 +45,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -194,7 +195,7 @@ public class FolderServiceImp extends BaseService implements FolderService {
             UUID ehrId
     ) {
 
-        DateTime timestamp = DateTime.now();
+        Timestamp timestamp = Timestamp.from(Instant.now());
 
         // Check of there are name conflicts on each folder level
         checkSiblingNameConflicts(update);
@@ -221,13 +222,13 @@ public class FolderServiceImp extends BaseService implements FolderService {
                                     FolderAccess.buildNewFolderAccessHierarchy(
                                             getDataAccess(),
                                             childFolder,
-                                            timestamp,
+                                            new DateTime(timestamp),
                                             ehrId,
                                             ((FolderAccess) folderAccess).getContributionAccess())));
         }
 
         // Send update to access layer which updates the hierarchy recursive
-        if (folderAccess.update(new Timestamp(timestamp.getMillis()))) {
+        if (folderAccess.update(timestamp)) {
 
             return createDto(folderAccess, getLastVersionNumber(folderId), true);
         } else {
