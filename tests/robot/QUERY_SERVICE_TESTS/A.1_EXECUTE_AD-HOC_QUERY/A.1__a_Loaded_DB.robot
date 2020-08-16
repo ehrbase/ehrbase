@@ -384,49 +384,43 @@ D-312 Execute Ad-HOc Query - Get Data
 D-400 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              207
+    [Tags]              
     D/400_query.tmp.json    D/400.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  207  not-ready
 
 
 D-401 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              207
+    [Tags]              
     D/401_query.tmp.json    D/401.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  207  not-ready
 
 
 D-402 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              207
+    [Tags]              
     D/402_query.tmp.json    D/402.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  207  not-ready
 
 
 D-403 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              207
+    [Tags]              
     D/403_query.tmp.json    D/403.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  207  not-ready
 
 
 D-404 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              207
+    [Tags]              
     D/404_query.tmp.json    D/404.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  207  not-ready
 
 
 D-405 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              207
+    [Tags]              
     D/405_query.tmp.json    D/405.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  207  not-ready
 
 
 D-500 Execute Ad-HOc Query - Get Data
