@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+# THIS IS A GIT (PRE COMMIT) HOOK
+
+# What is it good for?
+# It will prefix a commit messages w/ [skip ci] string if changes
+# to be commited happend in blacklisted files only to avoid triggering
+# a CI build on CircleCI. Blacklisted files are defined in the file
+# .circleciignore in project's root folder. Folder name or patterns like
+# logs/* can be used for blacklisting as well.
+
+# How to use it?
+# Copy this file into .git/hooks folder
+# And make it executable (chmod +x commit-msg)
+# That's it.
+
+# More details
+# https://circleci.com/blog/circleci-hacks-automate-the-decision-to-skip-builds-using-a-git-hook/
+# https://gist.github.com/felicianotech/12a4b38c594fcf3d3999de2c01f7d05e
+
+
+if [[ ! -a .circleciignore ]]; then
+	exit # If .circleciignore doesn't exists, just quit this Git hook
+fi
+
+# Load in every file that will be changed via this commit into an array
+changes=( `git diff --name-only --cached` )
+
+# Load the patterns we want to skip into an array
+mapfile -t blacklist < .circleciignore
+
+for i in "${blacklist[@]}"
+do
+	# Remove the current pattern from the list of changes
+	changes=( ${changes[@]/$i/} )
+	if [[ ${#changes[@]} -eq 0 ]]; then
+		# If we've exhausted the list of changes before we've finished going
+		# through patterns, that's okay, just quit the loop
+		break
+	fi
+done
+
+if [[ ${#changes[@]} -gt 0 ]]; then
+	# If there's still changes left, then we have stuff to build, leave the commit alone.
+	exit
+fi
+# Prefix the commit message with "[skip ci]"
+commitContent=$(<$1)
+echo "[skip ci] ${commitContent}" > $1

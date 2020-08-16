@@ -28,16 +28,10 @@ Documentation   Alternative flow (AF): execute ad-hoc QUERY where DB is EMPTY
 ...
 ...     Postconditions:
 ...         None (system state is not altered)
+Metadata        TOP_TEST_SUITE    AQL
+Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
 
-Resource    ${CURDIR}${/}../../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/generic_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/aql_query_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/contribution_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/composition_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/template_opt1.4_keywords.robot
-
-Test Setup  Establish Preconditions for Scenario: EMPTY DB
+Suite Setup  Establish Preconditions for Scenario: EMPTY DB
 # Test Teardown  restore clean SUT state
 
 Force Tags    refactor    empty_db
@@ -352,7 +346,13 @@ Check DB is empty
     ...                 tables is equal to 0 (zero).
     ...                 NOTE: add more tables to check - when needed
 
+# comment:  this is just a temp/quick and dirty fix
+#           TODO @WLAD replace w/ a proper AQL query to make this KW reusable
+#           on all systems
+                        Run Keyword And Return If    "${CONTROL_MODE}"=="NONE"
+                        ...  Log To Console  REPLACE ME W/ PROPER KEWORD!
+
                         Connect With DB
     ${ehr_records}=     Count Rows In DB Table    ehr.ehr
                         Should Be Equal As Integers    ${ehr_records}    ${0}
-    [Teardown]          Disconnect From Database
+                        Disconnect From Database

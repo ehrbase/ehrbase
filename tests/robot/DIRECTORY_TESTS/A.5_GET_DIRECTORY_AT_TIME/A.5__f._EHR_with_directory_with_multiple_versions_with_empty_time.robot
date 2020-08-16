@@ -11,9 +11,8 @@ Documentation    Alternative flow 5: get directory at time on EHR with directory
 ...
 ...     Postconditions:
 ...         None
-
-
-Resource    ${CURDIR}${/}../../_resources/suite_settings.robot
+Metadata        TOP_TEST_SUITE    DIRECTORY
+Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
 
 #Suite Setup  startup SUT
 # Test Setup  start openehr server

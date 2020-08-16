@@ -18,56 +18,27 @@
 
 package org.ehrbase.aql.sql;
 
-import org.ehrbase.aql.containment.Containment;
-import org.ehrbase.aql.containment.ContainmentTest;
-import org.ehrbase.aql.containment.IdentifierMapper;
-import org.ehrbase.dao.jooq.impl.DSLContextHelper;
-import org.jooq.DSLContext;
-import org.jooq.Record2;
-import org.jooq.Result;
-import org.jooq.tools.jdbc.MockResult;
+import org.ehrbase.aql.TestAqlBase;
+import org.ehrbase.aql.compiler.AqlExpression;
+import org.ehrbase.aql.compiler.Contains;
 import org.junit.Test;
 
-import java.util.UUID;
-
-import static org.ehrbase.jooq.pg.Tables.CONTAINMENT;
-import static org.ehrbase.jooq.pg.Tables.ENTRY;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class PathResolverTest {
-
-    @Test
-    public void testBuildLquery() {
-
-
-        {
-            //represents contains COMPOSITION a[openEHR-EHR-COMPOSITION.health_summary.v]
-            Containment containment = ContainmentTest.buildContainment(null, "a", "openEHR-EHR-COMPOSITION.health_summary.v1", "COMPOSITION", null);
-            String expected = PathResolver.buildLquery(containment);
-            assertThat(expected).isEqualTo("openEHR_EHR_COMPOSITION_health_summary_v1");
-        }
-
-        {
-            //represents contains COMPOSITION a[openEHR-EHR-COMPOSITION.health_summary.v]  CONTAINS ACTION d[openEHR-EHR-ACTION.immunisation_procedure.v1]
-            Containment containment1 = ContainmentTest.buildContainment(null, "a", "openEHR-EHR-COMPOSITION.health_summary.v1", "COMPOSITION", null);
-            Containment containment2 = ContainmentTest.buildContainment(containment1, "d", "openEHR-EHR-ACTION.immunisation_procedure.v1", "ACTION", null);
-
-            String actual1 = PathResolver.buildLquery(containment1);
-            assertThat(actual1).isEqualTo("openEHR_EHR_COMPOSITION_health_summary_v1");
-
-            String actual2 = PathResolver.buildLquery(containment2);
-            assertThat(actual2).isEqualTo("*.openEHR_EHR_ACTION_immunisation_procedure_v1");
-        }
-    }
+public class PathResolverTest extends TestAqlBase {
 
     @Test
     public void testResolvePaths() {
-        //represents contains COMPOSITION a[openEHR-EHR-COMPOSITION.health_summary.v]  CONTAINS ACTION d[openEHR-EHR-ACTION.immunisation_procedure.v1]
-        Containment containment1 = ContainmentTest.buildContainment(null, "a", "openEHR-EHR-COMPOSITION.health_summary.v1", "COMPOSITION", null);
-        Containment containment2 = ContainmentTest.buildContainment(containment1, "d", "openEHR-EHR-ACTION.immunisation_procedure.v1", "ACTION", null);
-        IdentifierMapper identifierMapper = new IdentifierMapper();
-        identifierMapper.add(containment1);
-        identifierMapper.add(containment2);
+        String query =
+                "select\n" +
+                    "a, d\n" +
+                    "from EHR e\n" +
+                    "contains COMPOSITION a[openEHR-EHR-COMPOSITION.health_summary.v1]" +
+                        "  CONTAINS ACTION d[openEHR-EHR-ACTION.immunisation_procedure.v1]";
+
+        AqlExpression aqlExpression = new AqlExpression().parse(query);
+        Contains contains = new Contains(aqlExpression.getParseTree(), knowledge).process();
+
 
 
         /** mocks the ehr.containment as
@@ -75,32 +46,11 @@ public class PathResolverTest {
          *   ?          | openEHR_EHR_COMPOSITION_health_summary_v1                                             |  /composition[openEHR-EHR-COMPOSITION.health_summary.v1]
          *   ?          | openEHR_EHR_COMPOSITION_health_summary_v1.openEHR_EHR_ACTION_immunisation_procedure_v1| /content[openEHR-EHR-ACTION.immunisation_procedure.v1 and name/value='Immunisation procedure']
          */
-        DSLContext context = DSLContextHelper.buildContext(ctx -> {
-            DSLContext create = DSLContextHelper.buildContext();
-            MockResult[] mock = new MockResult[1];
-            Result<Record2<String, String>> result = create.newResult(CONTAINMENT.PATH, ENTRY.TEMPLATE_ID);
-            //search for leafs
-            if (ctx.sql().contains("\"ehr\".\"containment\".\"label\"~ '*.openEHR_EHR_ACTION_immunisation_procedure_v1")) {
-                result.add(create
-                        .newRecord(CONTAINMENT.PATH, ENTRY.TEMPLATE_ID)
-                        .values("/content[openEHR-EHR-ACTION.immunisation_procedure.v1 and name/value='Immunisation procedure']", "openEHR-EHR-COMPOSITION.health_summary.v1"));
-                // search for root entry
-            } else if (ctx.sql().contains("\"ehr\".\"containment\".\"label\"~ 'openEHR_EHR_COMPOSITION_health_summary_v1")) {
-                result.add(create
-                        .newRecord(CONTAINMENT.PATH, ENTRY.TEMPLATE_ID)
-                        .values("/composition[openEHR-EHR-COMPOSITION.health_summary.v1]", "openEHR-EHR-COMPOSITION.health_summary.v1"));
-            }
-
-            mock[0] = new MockResult(1, result);
-            return mock;
-        });
-
-        PathResolver cut = new PathResolver(context, identifierMapper);
-        cut.resolvePaths("openEHR-EHR-COMPOSITION.health_summary.v1", UUID.randomUUID());
+        PathResolver cut = new PathResolver(knowledge, contains.getIdentifierMapper());
 
 
-        assertThat(cut.pathOf("d")).isEqualTo("/content[openEHR-EHR-ACTION.immunisation_procedure.v1 and name/value='Immunisation procedure']");
-        assertThat(cut.pathOf("a")).isEqualTo("/composition[openEHR-EHR-COMPOSITION.health_summary.v1]");
+        assertThat(cut.pathOf("IDCR - Immunisation summary.v0","d")).isEqualTo("/content[openEHR-EHR-ACTION.immunisation_procedure.v1]");
+        assertThat(cut.pathOf("IDCR - Immunisation summary.v0","a")).isEqualTo("/composition[openEHR-EHR-COMPOSITION.health_summary.v1]");
 
     }
 }

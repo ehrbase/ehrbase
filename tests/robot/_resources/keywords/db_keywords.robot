@@ -101,10 +101,18 @@ Delete All Templates
     ...                 Is meant to be used with EHRbase server started with disabled Cache
     ...                 e.g. `java -jar ehrbase-server.jar --cache.enabled=false`
 
+            # comment:  exit if 'control mode' is NONE
+                        Return From Keyword If    "${CONTROL_MODE}"=="NONE"
+                        ...    No DB connection required!
+
+            # comment:  use API if 'control mode' is API
+                        Run Keyword And Return If    "${CONTROL_MODE}"=="API"
+                        ...  Log To Console  Using API to delete templates on the server!
+
+            # comment:  use DB connection if 'control mode' is DOCKER or MANUAL
                         Connect With DB
                         Delete All Rows From Table    ehr.template_store
-
-    [Teardown]          Disconnect From Database
+                        Disconnect From Database
 
 
 Delete All EHR Records
@@ -112,10 +120,18 @@ Delete All EHR Records
     ...                 Is meant to be used with EHRbase server started with disabled Cache
     ...                 e.g. `java -jar ehrbase-server.jar --cache.enabled=false`
 
+            # comment:  exit if 'control mode' is NONE
+                        Return From Keyword If    "${CONTROL_MODE}"=="NONE"
+                        ...    No DB connection required!
+
+            # comment:  use API if 'control mode' is API
+                        Run Keyword And Return If    "${CONTROL_MODE}"=="API"
+                        ...  Log To Console  Using API to delete templates on the server!
+
+            # comment:  use DB connection if 'control mode' is DOCKER or MANUAL
                         Connect With DB
                         Delete All Rows From Table    ehr.ehr
-
-    [Teardown]          Disconnect From Database
+                        Disconnect From Database
 
 
 Get Information About DB Table

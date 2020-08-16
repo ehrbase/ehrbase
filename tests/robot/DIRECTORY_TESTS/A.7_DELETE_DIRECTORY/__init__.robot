@@ -1,2 +1,2 @@
 *** Settings ***
-Force Tags    delete_directory
+Force Tags    DIRECTORY_delete

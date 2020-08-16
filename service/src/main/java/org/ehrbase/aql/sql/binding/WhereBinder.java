@@ -57,8 +57,6 @@ public class WhereBinder {
     private boolean requiresJSQueryClosure = false;
     private boolean isFollowedBySQLConditionalOperator = false;
 
-    private enum Operator {OR, XOR, AND, NOT, EXISTS}
-
     private boolean usePgExtensions = true;
 
     public WhereBinder(JsonbEntryQuery jsonbEntryQuery, CompositionAttributeQuery compositionAttributeQuery, List whereClause, IdentifierMapper mapper) {
@@ -80,10 +78,10 @@ public class WhereBinder {
         if (forceSQL || !usePgExtensions) {
             //EHR-327: also supports EHR attributes in WHERE clause
             if ((className.equals("COMPOSITION") && !variableDefinition.getPath().contains("content")) || className.equals("EHR")) {
-                field = compositionAttributeQuery.whereField(templateId, comp_id, identifier, variableDefinition);
+                field = compositionAttributeQuery.whereField(templateId, identifier, variableDefinition);
             } else { //should be removed (?)
                 //TODO: identify a method to avoid using Set Returning Function (jsonb_array_element) in WHERE (unsupported in PG10+) while still filtering values in a set
-                field = jsonbEntryQuery.makeField(templateId, comp_id, identifier, variableDefinition, I_QueryImpl.Clause.WHERE);
+                field = jsonbEntryQuery.makeField(templateId, identifier, variableDefinition, I_QueryImpl.Clause.WHERE);
             }
             if (field == null)
                 return null;
@@ -93,7 +91,7 @@ public class WhereBinder {
             switch (className) {
                 case "COMPOSITION":
                     if (variableDefinition.getPath().startsWith("content")) {
-                        field = jsonbEntryQuery.whereField(templateId, comp_id, identifier, variableDefinition);
+                        field = jsonbEntryQuery.whereField(templateId, identifier, variableDefinition);
                         TaggedStringBuilder taggedStringBuilder = new TaggedStringBuilder(field.toString(), I_TaggedStringBuilder.TagField.JSQUERY);
                         if (compositionName != null && taggedStringBuilder.startWith(CompositionSerializer.TAG_COMPOSITION)) {
                             //add the composition name into the composition predicate
@@ -102,14 +100,14 @@ public class WhereBinder {
                         return taggedStringBuilder;
                     }
                 case "EHR":
-                    field = compositionAttributeQuery.whereField(templateId, comp_id, identifier, variableDefinition);
+                    field = compositionAttributeQuery.whereField(templateId, identifier, variableDefinition);
                     if (field == null)
                         return null;
                     isFollowedBySQLConditionalOperator = true;
                     return new TaggedStringBuilder(field.toString(), I_TaggedStringBuilder.TagField.SQLQUERY);
 
                 default:
-                    field = jsonbEntryQuery.whereField(templateId, comp_id, identifier, variableDefinition);
+                    field = jsonbEntryQuery.whereField(templateId, identifier, variableDefinition);
                     return new TaggedStringBuilder(field.toString(), I_TaggedStringBuilder.TagField.JSQUERY);
             }
         }
@@ -140,7 +138,8 @@ public class WhereBinder {
 
         TaggedStringBuilder taggedBuffer = new TaggedStringBuilder();
 
-        List whereItems = whereClause;
+        //work on a copy since Exist is destructive
+        List whereItems = new ArrayList(whereClause);
         boolean notExists = false;
 
         for (int cursor = 0; cursor < whereItems.size(); cursor++) {
@@ -212,9 +211,11 @@ public class WhereBinder {
                         //if the path contains node predicate expression uses a SQL syntax instead of jsquery
                         if (new VariablePath(((I_VariableDefinition) item).getPath()).hasPredicate()) {
                             taggedStringBuilder.append(expandForCondition(encodeWhereVariable(templateId, comp_id, (I_VariableDefinition) item, true, null)));
+                            isFollowedBySQLConditionalOperator = true;
+                            requiresJSQueryClosure = false;
                         } else {
                             //check if a comparison item is a date, then force SQL if any
-                            if (new WhereTemporal(whereItems).containsTemporalItem() || new WhereEvaluation(whereItems).requiresSQL())
+                            if (item instanceof  VariableDefinition && new WhereTemporal(whereItems).containsTemporalItem((VariableDefinition)item) || new WhereEvaluation(whereItems).requiresSQL())
                                 taggedStringBuilder.append(expandForCondition(encodeWhereVariable(templateId, comp_id, (I_VariableDefinition) item, true, null)));
                             else
                                 taggedStringBuilder.append(expandForCondition(encodeWhereVariable(templateId, comp_id, (I_VariableDefinition) item, false, null)));
@@ -300,7 +301,7 @@ public class WhereBinder {
                 int variableClosure = taggedBuffer.lastIndexOf("}'");
                 if (variableClosure > 0){
                     int variableInitial = taggedBuffer.lastIndexOf("\"ehr\".\"entry\".\"entry\" #>>");
-                    if (variableInitial > 0 && variableInitial < variableClosure){
+                    if (variableInitial >= 0 && variableInitial < variableClosure){
                         taggedBuffer.insert(variableClosure+"}'".length(), ")::"+castAs);
                         taggedBuffer.insert(variableInitial, "(");
                     }
@@ -313,10 +314,7 @@ public class WhereBinder {
             return item;
         if (taggedBuffer.toString().contains(I_JoinBinder.COMPOSITION_JOIN) && item.contains("::"))
             return item.split("::")[0] + "'";
-        if (taggedBuffer.indexOf("#>>") > 0) {
-            return item;
-        }
-        if (!isFollowedBySQLConditionalOperator && taggedBuffer.indexOf("#") > 0 && item.contains("'")) { //conventionally double quote for jsquery
+        if (requiresJSQueryClosure && !isFollowedBySQLConditionalOperator && taggedBuffer.indexOf("#") > 0 && item.contains("'")) { //conventionally double quote for jsquery
             return item.replaceAll("'", "\"");
         }
         return item;

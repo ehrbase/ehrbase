@@ -1,2 +1,2 @@
 *** Settings ***
-Force Tags    get_directory_@time
+Force Tags    DIRECTORY_get_@time

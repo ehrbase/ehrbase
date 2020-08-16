@@ -26,7 +26,8 @@ Library    OperatingSystem
 
 *** Variables ***
 ${README_LINK}    https://github.com/ehrbase/ehrbase/blob/develop/tests/README.md
-${MANUAL_TEST_ENV}    \#manually-controlled-sut
+${LOCAL_SUT}    \#local-sut--manually-controlled-sut
+${REMOTE_SUT}    \#remote-sut--or-how-to-execute-the-tests-against-other-systems
 
 
 
@@ -187,10 +188,19 @@ start openehr server
     wait until openehr server is online
 
 
+# start server process without coverage
+#     ${result}=          Start Process  java  -jar  ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
+#                         ...                  --cache.enabled\=false
+#                         ...                  --server.nodename\=${NODENAME}    alias=ehrserver
+#                         ...                    cwd=${PROJECT_ROOT}    stdout=stdout.txt    stderr=stderr.txt
+
 start server process without coverage
+                        Set Environment Variable    SECURITY_AUTHTYPE    ${SECURITY_AUTHTYPE}
+                        Run Keyword If    '${SECURITY_AUTHTYPE}' == 'OAUTH'    Set Environment Variable
+                        ...               SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI    ${JWT_ISSUERURI}    
     ${result}=          Start Process  java  -jar  ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
                         ...                  --cache.enabled\=false
-                        ...                  --server.nodename\=${CREATING_SYSTEM_ID}    alias=ehrserver
+                        ...                  --server.nodename\=${NODENAME}    alias=ehrserver
                         ...                    cwd=${PROJECT_ROOT}    stdout=stdout.txt    stderr=stderr.txt
 
 
@@ -198,7 +208,7 @@ start server process with coverage
     ${result}=          Start Process  java  -javaagent:${JACOCO_LIB_PATH}/jacocoagent.jar\=output\=tcpserver,address\=127.0.0.1
                         ...                  -jar    ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
                         ...                  --cache.enabled\=false
-                        ...                  --server.nodename\=${CREATING_SYSTEM_ID}    alias=ehrserver
+                        ...                  --server.nodename\=${NODENAME}    alias=ehrserver
                         ...                    cwd=${PROJECT_ROOT}    stdout=stdout.txt    stderr=stderr.txt
 
 
@@ -222,7 +232,7 @@ wait until openehr server is online
 openehr server is online
     prepare new request session  JSON
     REST.GET    ${HEARTBEAT_URL}
-    Integer  response status  404
+    Integer     response status    404    200
 
 
 abort test execution
@@ -331,8 +341,8 @@ set request headers
                         Set Headers         ${authorization}
 
     # comment: headers for RequestLibrary
-                        Create Session      ${SUT}    ${${SUT}.URL}    debug=2
-                        ...                 auth=${${SUT}.CREDENTIALS}    verify=True
+                        Create Session      ${SUT}    ${BASEURL}    debug=2
+                        ...                 auth=${CREDENTIALS}    verify=True
 
                         Set Suite Variable   ${headers}    ${headers}
 
@@ -352,7 +362,9 @@ database sanity check
     ...                 Is skipped when CONTROL_MODE is not manual - e.g. when SUT
     ...                 is on a remote host.
 
-    Return From Keyword If    "${CONTROL_MODE}"=="docker"    NO DB CHECK ON REMOTE SUT
+    Return From Keyword If    "${CONTROL_MODE}"=="docker"    ${TRUE}  # NO DB CHECK ON DOCKERIZED SUT
+    Return From Keyword If    "${CONTROL_MODE}"=="NONE"    ${TRUE}  # NO DB CHECK ON REMOTE SUT
+    Return From Keyword If    "${CONTROL_MODE}"=="API"    ${TRUE}  # NO DB CHECK WHEN API USED FOR CLEAN UPS
 
     ${db_status}        Run Keyword And Return Status    Connect With DB
                         Run Keyword If    $db_status    Disconnect From Database
@@ -386,14 +398,29 @@ warn about manual test environment start up
     Log    /////////////////////////////////////////////////////////////////////                level=WARN
     Log    ${EMPTY}                                                                             level=WARN
     Log    [ check "Manually Controlled SUT" in test README ]                                   level=WARN
-    Log    [ ${README_LINK}${MANUAL_TEST_ENV} ]                                                 level=WARN
+    Log    [ ${README_LINK}${LOCAL_SUT} ]                                                       level=WARN
     Log    ${EMPTY}                                                                             level=WARN
     Set Global Variable    ${SKIP_SHUTDOWN_WARNING}    ${FALSE}
 
 
-warn about manual test environment shut down
+warn about REMOTE test environment
+    [Tags]              robot:flatten
+    Log    ${EMPTY}                                                                             level=WARN
+    Log    /////////////////////////////////////////////////////////////////////                level=WARN
+    Log    //${SPACE * 64}///                                                                   level=WARN
+    Log    //${SPACE * 10} YOU ARE USING A REMOTE SYSTEM FOR TESTING!! ${SPACE * 9}///          level=WARN
+    Log    //${SPACE * 6} MAKE SURE TO RESET IT PROPERLY AFTER EACH TEST RUN! ${SPACE * 5}///   level=WARN
+    Log    //${SPACE * 64}///                                                                   level=WARN
+    Log    /////////////////////////////////////////////////////////////////////                level=WARN
+    Log    ${EMPTY}                                                                             level=WARN
+    Log    [ check "Remote SUT" in test README ]                                                level=WARN
+    Log    [ ${README_LINK}${REMOTE_SUT} ]                                                      level=WARN
+    Log    ${EMPTY}                                                                             level=WARN
+    Set Global Variable    ${SKIP_SHUTDOWN_WARNING}    ${FALSE}
+
+remind to restart manual test environment
     Run Keyword And Return If    ${SKIP_SHUTDOWN_WARNING}==${TRUE}    Log
-                          ...    skipping manual test env control warning due to test abortion
+                          ...    skipping SUT restart reminder due to test abortion
     Log    ${EMPTY}                                                                             level=WARN
     Log    /////////////////////////////////////////////////////////////////////                level=WARN
     Log    //${SPACE * 64}///                                                                   level=WARN
@@ -413,13 +440,26 @@ abort tests due to issues with manually controlled test environment
     Log    /////////////////////////////////////////////////////////////////////                level=WARN
     Log    ${EMPTY}                                                                             level=WARN
     Log    [ check "Manually Controlled SUT" in test README ]                                   level=WARN
-    Log    [ ${README_LINK}${MANUAL_TEST_ENV} ]                                                 level=WARN
+    Log    [ ${README_LINK}${LOCAL_SUT} ]                                                       level=WARN
     Log    ${EMPTY}                                                                             level=WARN
     Set Global Variable    ${SKIP_SHUTDOWN_WARNING}    ${TRUE}
     abort test execution    @{TEST_ENVIRONMENT_STATUS}
 
-    abort test execution  TEST_ENVIRONMENT_STATUS
-    abort test execution if this test fails
+
+abort tests due to issues with remote test environment
+    Log    ${EMPTY}                                                                             level=WARN
+    Log    /////////////////////////////////////////////////////////////////////                level=WARN
+    Log    //${SPACE * 64}///                                                                   level=WARN
+    Log    //${SPACE * 10} YOU HAVE CONFIGURED A REMOTE SYSTEM FOR TEST ${SPACE * 8}///         level=WARN
+    Log    //${SPACE * 6} BUT IT IS NOT AVAILABLE OR IS NOT SET UP PROPERLY! ${SPACE * 6}///    level=WARN
+    Log    //${SPACE * 64}///                                                                   level=WARN
+    Log    ${EMPTY}                                                                             level=WARN
+    Log    [ check "Remote SUT" in test README ]                                                level=WARN
+    Log    [ ${README_LINK}${REMOTE_SUT} ]                                                      level=WARN
+    Log    ${EMPTY}                                                                             level=WARN
+    Set Global Variable    ${SKIP_SHUTDOWN_WARNING}    ${TRUE}
+    abort test execution    @{TEST_ENVIRONMENT_STATUS}
+
 
 startup SUT
     get application version
@@ -427,28 +467,36 @@ startup SUT
     # comment: switch to manual test environment control when "-v nodocker" cli option is used
     Run Keyword If      $NODOCKER.upper() in ["TRUE", ""]    Run Keywords
                ...      Set Global Variable    ${NODOCKER}    TRUE    AND
-               ...      Set Global Variable    ${BASEURL}    ${DEV.URL}    AND
-               ...      Set Global Variable    ${HEARTBEAT_URL}    ${DEV.HEARTBEAT}    AND
-               ...      Set Global Variable    ${AUTHORIZATION}    ${DEV.AUTH}    AND
-               ...      Set Global Variable    ${CREATING_SYSTEM_ID}    ${DEV.NODENAME}    AND
-               ...      Set Global Variable    ${CONTROL_MODE}    ${DEV.CONTROL}
+               ...      Set Global Variable    ${SUT}    DEV    #AND
+            #    ...      Set Global Variable    ${BASEURL}    ${BASEURL}    AND
+            #    ...      Set Global Variable    ${HEARTBEAT_URL}    ${HEARTBEAT_URL}    AND
+            #    ...      Set Global Variable    ${AUTHORIZATION}    ${SECURITY_AUTHTYPE}    AND
+            #    ...      Set Global Variable    ${NODENAME}    ${NODENAME}    AND
+            #    ...      Set Global Variable    ${CONTROL_MODE}    ${CONTROL_MODE}
 
-                        Log    \n\t SUT CONFIG (EHRbase v${VERSION})\n    console=true
-                        Log    \t BASEURL: ${BASEURL}    console=true
-                        Log    \t HEARTBEAT: ${HEARTBEAT_URL}    console=true
-                        Log    \t AUTH: ${AUTHORIZATION}    console=true
-                        Log    \t CREATING SYSTEM ID: ${CREATING_SYSTEM_ID}    console=true
-                        Log    \t CONTROL MODE: ${CONTROL_MODE}\n    console=true
+    Log    \n\t SUT: ${SUT} CONFIG | EHRbase v${VERSION}\n    console=true
+    Log    \t BASEURL: ${BASEURL}    console=true
+    Log    \t HEARTBEAT: ${HEARTBEAT_URL}    console=true
+    Log    \t AUTH_TYPE: ${SECURITY_AUTHTYPE}    console=true
+    Log    \t AUTH: ${{ str($AUTHORIZATION)[0:57] }}...    console=true
+    Log    \t CREATING SYSTEM ID: ${NODENAME}    console=true
+    Log    \t CONTROL MODE: ${CONTROL_MODE}\n    console=true
 
     ${sanity_check_passed}  ${server_status}  ${db_status}=    do quick sanity check
 
     Run Keyword And Return If   "${CONTROL_MODE}"=="manual" and ${sanity_check_passed}
                           ...    warn about manual test environment start up
+    
+    Run Keyword And Return If    ("${CONTROL_MODE}" in ["NONE", "API"]) and ${sanity_check_passed}
+                          ...    warn about REMOTE test environment
 
     Run Keyword And Return If   "${CONTROL_MODE}"=="manual" and not ${sanity_check_passed}
-                          ...   abort tests due to issues with manually controlled test environment
+                          ...    abort tests due to issues with manually controlled test environment
 
-    # comment: test environment controlled by Robot
+    Run Keyword And Return If    ("${CONTROL_MODE}" in ["API", "NONE"]) and not ${sanity_check_passed}
+                          ...    abort tests due to issues with remote test environment
+
+    # comment: test environment controlled by Robot (CONTROL_MODE=Docker)
     get application version
     start ehrdb
     start openehr server
@@ -456,7 +504,10 @@ startup SUT
 
 shutdown SUT
     Run Keyword And Return If   "${CONTROL_MODE}"=="manual"
-                          ...    warn about manual test environment shut down
+                          ...    remind to restart manual test environment
+    
+    Run Keyword And Return If   ("${CONTROL_MODE}" in ["NONE", "API"])
+                          ...    Log    REMOTE SUT WAS USED - NO SHUTDOWN REQUIRED!
 
     stop openehr server
     stop and remove ehrdb

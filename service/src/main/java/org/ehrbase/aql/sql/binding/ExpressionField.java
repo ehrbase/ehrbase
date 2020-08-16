@@ -45,76 +45,98 @@ class ExpressionField {
         this.compositionAttributeQuery = compositionAttributeQuery;
     }
 
-    Field<?> toSql(String className, String template_id, UUID comp_id, String identifier) {
+    Field<?> toSql(String className, String template_id, String identifier) {
 
         Field<?> field;
 
         switch (className) {
             case "COMPOSITION":
-                if (variableDefinition.getPath() != null && variableDefinition.getPath().startsWith("content")) {
-                    field = jsonbEntryQuery.makeField(template_id, comp_id, identifier, variableDefinition, I_QueryImpl.Clause.SELECT);
-                    containsJsonDataBlock = jsonbEntryQuery.isJsonDataBlock();
-                    jsonbItemPath = jsonbEntryQuery.getJsonbItemPath();
-                } else {
-                    field = compositionAttributeQuery.makeField(template_id, comp_id, identifier, variableDefinition, I_QueryImpl.Clause.SELECT);
-                    containsJsonDataBlock = compositionAttributeQuery.isJsonDataBlock();
-                }
-                optionalPath = variableDefinition.getPath();
+                field = compositionAttributeToSql(template_id, identifier);
                 break;
             case "EHR":
                 if (EhrResolver.isEhrAttribute(variableDefinition.getPath()))
                     variableDefinition.setDistinct(true);
 
-                field = compositionAttributeQuery.makeField(template_id, comp_id, identifier, variableDefinition, I_QueryImpl.Clause.SELECT);
+                field = compositionAttributeQuery.makeField(template_id, identifier, variableDefinition, I_QueryImpl.Clause.SELECT);
                 containsJsonDataBlock = compositionAttributeQuery.isJsonDataBlock();
                 optionalPath = variableDefinition.getPath();
                 break;
             default:
-                field = jsonbEntryQuery.makeField(template_id, comp_id, identifier, variableDefinition, I_QueryImpl.Clause.SELECT);
-                jsonbItemPath = jsonbEntryQuery.getJsonbItemPath();
-                containsJsonDataBlock = containsJsonDataBlock | jsonbEntryQuery.isJsonDataBlock();
-                if (jsonbEntryQuery.isJsonDataBlock() ) {
-
-                    if (jsonbEntryQuery.getItemType() != null){
-                        Class itemClass = ArchieRMInfoLookup.getInstance().getClass(jsonbEntryQuery.getItemType());
-
-                        if (itemClass == null && className != null) //this may occur f.e. for itemType 'MULTIPLE'. try we classname
-                            itemClass = ArchieRMInfoLookup.getInstance().getClass(className);
-
-                        if (DataValue.class.isAssignableFrom(itemClass)) {
-                            VariableAqlPath variableAqlPath = new VariableAqlPath(variableDefinition.getPath());
-                            if (variableAqlPath.getSuffix().equals("value")){
-                                if (className.equals("COMPOSITION")) { //assumes this is a data value within an ELEMENT
-                                    try {
-                                        I_VariableDefinition variableDefinition1 = variableDefinition.clone();
-                                        variableDefinition1.setPath(variableAqlPath.getInfix());
-                                        field = jsonbEntryQuery.makeField(template_id, comp_id, identifier, variableDefinition1, I_QueryImpl.Clause.SELECT);
-                                        jsonbItemPath = jsonbEntryQuery.getJsonbItemPath();
-                                        rootJsonKey = variableAqlPath.getSuffix();
-                                    } catch (CloneNotSupportedException e) {
-                                        throw new InternalServerException("Couldn't handle variable:" + variableDefinition.toString() + "Code error:" + e);
-                                    }
-                                }
-                                else if (jsonbEntryQuery.getItemCategory().equals("ELEMENT") || jsonbEntryQuery.getItemCategory().equals("CLUSTER")){
-                                    int cut = jsonbItemPath.lastIndexOf(",/value");
-                                    if (cut != -1)
-                                        //we keep the path that select the json element value block, and call the formatting function
-                                        //to pass the actual value datatype into the json block
-                                        field = DSL.field("(ehr.js_typed_element_value(" + jsonbItemPath.substring(0, cut) + "}')::jsonb))");
-
-                                    String alias = variableDefinition.getAlias();
-                                    if (alias == null)
-                                        alias = new DefaultColumnId().value(variableDefinition);
-                                    field = field.as(alias);
-                                }
-                            }
-
-                        }
-                    }
+                if (compositionAttributeQuery.isCompositionAttributeItemStructure(template_id, variableDefinition.getIdentifier())) {
+                    String inTemplatePath = compositionAttributeQuery.variableTemplatePath(template_id, variableDefinition.getIdentifier());
+                    if (inTemplatePath.startsWith("/"))
+                        inTemplatePath = inTemplatePath.substring(1); //conventionally, composition attribute path have the leading '/' striped.
+                    variableDefinition.setPath(inTemplatePath+(variableDefinition.getPath() == null? "": "/"+variableDefinition.getPath()));
+                    field = compositionAttributeToSql(template_id, variableDefinition.getIdentifier());
                 }
+                else
+                    field = locatableItemToSql(template_id, variableDefinition.getIdentifier(), className);
                 break;
         }
 
+        return field;
+    }
+
+    private Field<?> compositionAttributeToSql(String template_id, String identifier){
+        Field<?> field;
+
+        if (variableDefinition.getPath() != null && variableDefinition.getPath().startsWith("content")) {
+            field = jsonbEntryQuery.makeField(template_id, identifier, variableDefinition, I_QueryImpl.Clause.SELECT);
+            containsJsonDataBlock = jsonbEntryQuery.isJsonDataBlock();
+            jsonbItemPath = jsonbEntryQuery.getJsonbItemPath();
+        } else {
+            field = compositionAttributeQuery.makeField(template_id, identifier, variableDefinition, I_QueryImpl.Clause.SELECT);
+            containsJsonDataBlock = compositionAttributeQuery.isJsonDataBlock();
+        }
+        optionalPath = variableDefinition.getPath();
+        return field;
+    }
+
+    private Field<?> locatableItemToSql(String template_id, String identifier, String className){
+        Field<?> field;
+
+        field = jsonbEntryQuery.makeField(template_id, identifier, variableDefinition, I_QueryImpl.Clause.SELECT);
+        jsonbItemPath = jsonbEntryQuery.getJsonbItemPath();
+        containsJsonDataBlock = containsJsonDataBlock | jsonbEntryQuery.isJsonDataBlock();
+        if (jsonbEntryQuery.isJsonDataBlock() ) {
+
+            if (jsonbEntryQuery.getItemType() != null){
+                Class itemClass = ArchieRMInfoLookup.getInstance().getClass(jsonbEntryQuery.getItemType());
+
+                if (itemClass == null && className != null) //this may occur f.e. for itemType 'MULTIPLE'. try we classname
+                    itemClass = ArchieRMInfoLookup.getInstance().getClass(className);
+
+                if (DataValue.class.isAssignableFrom(itemClass)) {
+                    VariableAqlPath variableAqlPath = new VariableAqlPath(variableDefinition.getPath());
+                    if (variableAqlPath.getSuffix().equals("value")){
+                        if (className.equals("COMPOSITION")) { //assumes this is a data value within an ELEMENT
+                            try {
+                                I_VariableDefinition variableDefinition1 = variableDefinition.clone();
+                                variableDefinition1.setPath(variableAqlPath.getInfix());
+                                field = jsonbEntryQuery.makeField(template_id, identifier, variableDefinition1, I_QueryImpl.Clause.SELECT);
+                                jsonbItemPath = jsonbEntryQuery.getJsonbItemPath();
+                                rootJsonKey = variableAqlPath.getSuffix();
+                            } catch (CloneNotSupportedException e) {
+                                throw new InternalServerException("Couldn't handle variable:" + variableDefinition.toString() + "Code error:" + e);
+                            }
+                        }
+                        else if (jsonbEntryQuery.getItemCategory().equals("ELEMENT") || jsonbEntryQuery.getItemCategory().equals("CLUSTER")){
+                            int cut = jsonbItemPath.lastIndexOf(",/value");
+                            if (cut != -1)
+                                //we keep the path that select the json element value block, and call the formatting function
+                                //to pass the actual value datatype into the json block
+                                field = DSL.field("(ehr.js_typed_element_value(" + jsonbItemPath.substring(0, cut) + "}')::jsonb))");
+
+                            String alias = variableDefinition.getAlias();
+                            if (alias == null)
+                                alias = new DefaultColumnId().value(variableDefinition);
+                            field = field.as(alias);
+                        }
+                    }
+
+                }
+            }
+        }
         return field;
     }
 

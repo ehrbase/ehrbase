@@ -1,2 +1,2 @@
 *** Settings ***
-Force Tags    create_directory
+Force Tags    DIRECTORY_create

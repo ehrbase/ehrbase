@@ -21,6 +21,8 @@
  */
 package org.ehrbase.dao.access.interfaces;
 
+import com.nedap.archie.rm.archetyped.FeederAudit;
+import com.nedap.archie.rm.archetyped.Link;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.dao.access.jooq.CompositionAccess;
@@ -28,6 +30,7 @@ import org.ehrbase.dao.access.util.ContributionDef;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.composition.EventContext;
 import org.ehrbase.jooq.pg.tables.records.*;
+import org.jooq.JSONB;
 import org.jooq.Result;
 import org.jooq.Table;
 import org.jooq.exception.DataAccessException;
@@ -385,6 +388,14 @@ public interface I_CompositionAccess extends I_SimpleCRUD {
      * @return a list of entry {@link UUID}s
      */
     List<UUID> getContentIds();
+
+    String getFeederAudit();
+
+    void setFeederAudit(FeederAudit feederAudit);
+
+    void setLinks(List<Link> links);
+
+    String getLinks();
 
     /**
      * set the event context id

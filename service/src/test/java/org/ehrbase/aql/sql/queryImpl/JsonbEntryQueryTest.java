@@ -18,14 +18,18 @@
 
 package org.ehrbase.aql.sql.queryImpl;
 
+import org.ehrbase.aql.TestAqlBase;
+import org.ehrbase.aql.compiler.AqlExpression;
+import org.ehrbase.aql.compiler.Contains;
 import org.ehrbase.aql.definition.I_VariableDefinitionHelper;
 import org.ehrbase.aql.sql.PathResolver;
+import org.ehrbase.aql.sql.QueryProcessorTest;
 import org.ehrbase.dao.jooq.impl.DSLContextHelper;
 import org.ehrbase.service.CacheRule;
 import org.ehrbase.service.IntrospectService;
 import org.ehrbase.service.KnowledgeCacheHelper;
-import org.jooq.DSLContext;
-import org.jooq.Field;
+import org.jooq.*;
+import org.jooq.impl.DSL;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -33,32 +37,37 @@ import org.junit.rules.TemporaryFolder;
 import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class JsonbEntryQueryTest {
+public class JsonbEntryQueryTest extends TestAqlBase {
 
-    @Rule
-    public TemporaryFolder testFolder = new TemporaryFolder();
 
-    @Rule
-    public CacheRule cacheRule = new CacheRule();
 
     @Test
     public void testMakeField() throws Exception {
         DSLContext context = DSLContextHelper.buildContext();
-        IntrospectService introspectCache = KnowledgeCacheHelper.buildKnowledgeCache(testFolder, cacheRule);
 
-        PathResolver pathResolver = mock(PathResolver.class);
-        when(pathResolver.pathOf("a")).thenReturn("/composition[openEHR-EHR-COMPOSITION.health_summary.v1]");
-        when(pathResolver.pathOf("d")).thenReturn("/content[openEHR-EHR-ACTION.immunisation_procedure.v1 and name/value='Immunisation procedure']");
-        String entryRoot = "/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value='Immunisation summary']";
-        JsonbEntryQuery cut = new JsonbEntryQuery(context, introspectCache, pathResolver, entryRoot);
+        String query =
+                "select\n" +
+                        "a, d\n" +
+                        "from EHR e\n" +
+                        "contains COMPOSITION a[openEHR-EHR-COMPOSITION.health_summary.v1]" +
+                        "  CONTAINS ACTION d[openEHR-EHR-ACTION.immunisation_procedure.v1]";
+
+        AqlExpression aqlExpression = new AqlExpression().parse(query);
+        Contains contains = new Contains(aqlExpression.getParseTree(), knowledge).process();
+
+        PathResolver pathResolver = new PathResolver(knowledge, contains.getIdentifierMapper());
+         String entryRoot = "/composition[openEHR-EHR-COMPOSITION.health_summary.v1]";
+        JsonbEntryQuery cut = new JsonbEntryQuery(context, knowledge, pathResolver);
 
         //CCH 191016: EHR-163 required trailing '/value' as now the query allows canonical json return
-        Field<?> actual = cut.makeField("IDCR - Immunisation summary.v0", UUID.randomUUID(), "d", I_VariableDefinitionHelper.build("description[at0001]/items[at0002]/value/value", "test", "d", false, false, false), I_QueryImpl.Clause.SELECT);
+        Field<?> actual = cut.makeField("IDCR - Immunisation summary.v0", "d", I_VariableDefinitionHelper.build("description[at0001]/items[at0002]/value/value", "test", "d", false, false, false), I_QueryImpl.Clause.SELECT);
 
-//        assertThat(actual.toString()).isEqualTo("(jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}')");
+        SelectSelectStep<? extends Record1<?>> selectQuery = DSL.select(actual);
+        assertThat(selectQuery.getQuery().toString()).isEqualTo("select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') \"test\"");
         assertThat(actual.toString()).isEqualTo("\"test\"");
     }
 

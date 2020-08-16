@@ -24,14 +24,8 @@ Documentation    Alternative flow 2: has path on EHR with given folder structure
 ...         DS 08 | /hospitalization/summary_compo_z     | true    |
 ...         DS 09 | /random_path                         | false   |
 ...         DS 10 | /foldername-w-special-chars          | true    |
-
-
-Resource    ${CURDIR}${/}../../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/generic_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/contribution_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/directory_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/template_opt1.4_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
+Metadata        TOP_TEST_SUITE    DIRECTORY
+Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
 
 Suite Setup    Establish Preconditions
 # Test Setup  start openehr server

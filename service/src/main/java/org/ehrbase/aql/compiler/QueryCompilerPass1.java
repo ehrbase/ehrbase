@@ -32,10 +32,7 @@ import org.ehrbase.aql.definition.I_FromEntityDefinition;
 import org.ehrbase.aql.parser.AqlBaseListener;
 import org.ehrbase.aql.parser.AqlParser;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.List;
+import java.util.*;
 
 /**
  * AQL compilation pass 1<br>
@@ -46,24 +43,16 @@ import java.util.List;
  */
 public class QueryCompilerPass1 extends AqlBaseListener {
     private Logger logger = LogManager.getLogger(QueryCompilerPass1.class);
-    private static int serial = 0;
-    private static int fieldId = 0;
 
+    private IdentifierMapper identifierMapper = new IdentifierMapper(); //the map of identified contained nodes
+    private Map<String, ContainmentSet> containmentSetMap = new HashMap<>(); //labelized contains sets
+    private ContainPropositions containPropositions; //ordered contain evaluation map
 
+    private AnonymousSymbol anonymousSymbol = new AnonymousSymbol();
 
-    private IdentifierMapper identifierMapper = new IdentifierMapper();
-    private Containment currentContainment = null;
-    private AstContainment astContainment = null;
-
-    private Deque<ContainmentSet> containmentStack = new ArrayDeque<>();
-
-    private ContainmentSet rootContainmentSet;
-
-    private List<ContainmentSet> closedSetList = new ArrayList<>();
-
-    private int setLevel = 0;
-    private Boolean inContainedSet = false; //reset each time we enter a group
-    private int containLevel = 0;
+    public QueryCompilerPass1() {
+        containPropositions = new ContainPropositions(identifierMapper);
+    }
 
     @Override
     public void exitFromEHR(AqlParser.FromEHRContext context) {
@@ -153,128 +142,43 @@ public class QueryCompilerPass1 extends AqlBaseListener {
     }
 
     @Override
-    public void exitStandardPredicate(AqlParser.StandardPredicateContext standardPredicateContext) {
-        logger.debug("StandardPredicate");
-    }
-
-    @Override
-    public void enterFromEHR(AqlParser.FromEHRContext context) {
-        logger.debug("ENTER FromEHR");
-    }
-
-
-
-    @Override
-    public void exitArchetypedClassExpr(AqlParser.ArchetypedClassExprContext archetypedClassExprContext) {
-        //CHC, 160808: make classname case insensitive
-        String className = archetypedClassExprContext.IDENTIFIER(0).getSymbol().getText().toUpperCase();
-
-        String symbol = archetypedClassExprContext.IDENTIFIER(1).getSymbol().getText();
-
-        String archetypeId = archetypedClassExprContext.ARCHETYPEID().getText();
-
-        Containment containment = new Containment(className, symbol, archetypeId);
-        identifierMapper.add(containment);
-
-        //requires a CONTAINS expression!
-        if (inContainedSet && containLevel > 0) {
-            containment.setEnclosingContainment(currentContainment);
-            inContainedSet = false;
-        } else
-            containment.setEnclosingContainment(currentContainment.getEnclosingContainment());
-
-        astContainment = new AtomicContainment(containment, astContainment);
-
-        if (astContainment.getEnclosing() != null) {
-            AstContainment astEnclosing = astContainment.getEnclosing();
-            if (astEnclosing instanceof AtomicContainment)
-                ((AtomicContainment) astEnclosing).setChild(astContainment);
-        }
-
-        currentContainment = addContainment(containment);
-
-        //debug stuff
-        logger.debug(containment.toString());
-        if (currentContainment.getEnclosingContainment() != null) {
-            logger.debug("<-----" + currentContainment.getEnclosingContainment().toString());
-        }
-
-    }
-
-    @Override
-    public void enterContainExpressionBool(AqlParser.ContainExpressionBoolContext containExpressionBoolContext) {
-        if (containExpressionBoolContext.OPEN_PAR() != null) {
-            setLevel++;
-            //add a new prefixcontainment on stack
-            ContainmentSet containmentSet = new ContainmentSet(serial++, currentContainment);
-
-            containmentStack.push(containmentSet);
-            logger.debug("---- START GROUP:" + setLevel + " contained in:" + currentContainment);
-            inContainedSet = true; //reset the containment sequencing
-        }
-    }
-
-    @Override
     public void exitContainExpressionBool(AqlParser.ContainExpressionBoolContext containExpressionBoolContext) {
 
-        if (containExpressionBoolContext.CLOSE_PAR() != null) {
-            logger.debug("---- CLOSING GROUP:" + setLevel);
-            setLevel--;
-            if (!containmentStack.isEmpty()) {
-                ContainmentSet closedContainmentSet = containmentStack.pop();
-                if (!containmentStack.isEmpty())
-                    closedContainmentSet.setParentSet(containmentStack.getFirst());
-                else
-                    closedContainmentSet.setParentSet(rootContainmentSet);
-//                if (!closedContainmentSet.isEmpty())
-                closedSetList.add(closedContainmentSet);
-            } else if (rootContainmentSet != null) {
-                rootContainmentSet.add(astContainment.getContainment());
-                closedSetList.add(rootContainmentSet);
-            } else
-                throw new IllegalArgumentException("Invalid condition in boolean expression parsing");
+        //evaluate the containment expression
+        if (containExpressionBoolContext.OPEN_PAR() != null && containExpressionBoolContext.CLOSE_PAR() != null){
+            List<Object> objects = new ArrayList<>();
+            for (ParseTree token: containExpressionBoolContext.children){
+                if (token.getText().matches("\\(|\\)"))
+                    objects.add(token.getText());
+                else if (token instanceof AqlParser.ContainsExpressionContext){
+                    AqlParser.ContainsExpressionContext containsExpressionContext = (AqlParser.ContainsExpressionContext)token;
+                    objects.add(containPropositions.get(containsExpressionContext.getText()));
+                }
+            }
+            containPropositions.put(containExpressionBoolContext.getText(), new ComplexContainsCheck(containExpressionBoolContext.getText(), objects));
         }
+        else if (!new ContainsExpressions(containExpressionBoolContext).isExplicitContainsClause()) {
+            SimpleChainedCheck simpleChainedCheck =  new SimpleChainedCheck(new ContainsExpressions(containExpressionBoolContext).containedItemLabel(false), containmentSetMap.get(containExpressionBoolContext.getText()));
+            containPropositions.put(containExpressionBoolContext.getText(), simpleChainedCheck);
+        }
+
     }
 
     @Override
     public void exitContainsExpression(AqlParser.ContainsExpressionContext containsExpressionContext) {
-        if (currentContainment != null)
-            currentContainment = currentContainment.getEnclosingContainment();
+        ContainsProposition proposition = new ContainsProposition(containsExpressionContext, identifierMapper);
+        //check if expression is boolean or a single contains chain
+        if (!proposition.isSingleChain()) {
 
-        if (containsExpressionContext.AND() != null || containsExpressionContext.OR() != null || containsExpressionContext.XOR() != null) {
-            String operator = containsExpressionContext.AND() != null ? "AND" :
-                    containsExpressionContext.OR() != null ? "OR" :
-                            containsExpressionContext.XOR() != null ? "XOR" : "*undef*";
+            List<Object> developedExpression = proposition.develop(containPropositions);
 
-            logger.debug(operator);
-            if (!containmentStack.isEmpty()) {
-                //get the current containment set
-                ContainmentSet current = containmentStack.getFirst();
-                if (current.size() > 0)
-                    current.setOperator(operator);
-                else {
-                    logger.debug("Orphan operator:" + operator);
-                    if (rootContainmentSet == null)
-                        rootContainmentSet = new ContainmentSet(serial++, null);
-                    rootContainmentSet.add(operator);
-                }
-            } else if (rootContainmentSet != null) {
-                rootContainmentSet.setOperator(operator);
-            }
+            if (developedExpression.isEmpty())
+                throw new IllegalStateException("Could not develop:"+containsExpressionContext.getText());
 
+            containPropositions.put(containsExpressionContext.getText(), new ComplexContainsCheck(containsExpressionContext.getText(), developedExpression));
         }
 
     }
-
-    @Override
-    public void enterContainsExpression(AqlParser.ContainsExpressionContext containsExpressionContext) {
-
-        if (currentContainment == null) {
-            currentContainment = new Containment(null);
-
-        }
-    }
-
 
     @Override
     public void exitSimpleClassExpr(AqlParser.SimpleClassExprContext simpleClassExprContext) {
@@ -282,86 +186,41 @@ public class QueryCompilerPass1 extends AqlBaseListener {
         if (!simpleClassExprContext.IDENTIFIER().isEmpty()) {
             //CHC, 160808: make classname case insensitive
             String className = simpleClassExprContext.IDENTIFIER(0).getSymbol().getText().toUpperCase();
-            String symbol;
-            if (!simpleClassExprContext.IDENTIFIER().isEmpty() && simpleClassExprContext.IDENTIFIER(1) != null)
-                symbol = simpleClassExprContext.IDENTIFIER(1).getSymbol().getText();
-            else
-                symbol = className + "_" + (++fieldId);
+            String symbol = new SimpleClassExpressionIdentifier(simpleClassExprContext).resolve();
+//            if (!simpleClassExprContext.IDENTIFIER().isEmpty() && simpleClassExprContext.IDENTIFIER(1) != null)
+//                symbol = simpleClassExprContext.IDENTIFIER(1).getSymbol().getText();
+//            else
+//                symbol = anonymousSymbol.generate(className);
 
             Containment containment = new Containment(className, symbol, "");
-            if (/* inContainedSet && */ containLevel > 0)
-                containment.setEnclosingContainment(currentContainment);
+            identifierMapper.add(containment);
+        }
+        else if (simpleClassExprContext.getChild(0) instanceof AqlParser.ArchetypedClassExprContext){
+            //CHC, 160808: make classname case insensitive
+            AqlParser.ArchetypedClassExprContext archetypedClassExprContext = (AqlParser.ArchetypedClassExprContext)simpleClassExprContext.getChild(0);
+            String className = archetypedClassExprContext.IDENTIFIER(0).getSymbol().getText().toUpperCase();
 
-            currentContainment = addContainment(containment);
-            identifierMapper.add(currentContainment);
+            String symbol =archetypedClassExprContext.IDENTIFIER(1) != null ?
+                    archetypedClassExprContext.IDENTIFIER(1).getSymbol().getText() :
+                    archetypedClassExprContext.getText().toUpperCase() ;
 
-            //debug stuff
-            logger.debug(containment.toString());
-            if (currentContainment.getEnclosingContainment() != null) {
-                logger.debug("<-----" + currentContainment.getEnclosingContainment().toString());
-            }
-            containLevel++;
+            String archetypeId = archetypedClassExprContext.ARCHETYPEID().getText();
+            Containment containment = new Containment(className, symbol, archetypeId);
+
+            identifierMapper.add(containment);
+
+            containmentSetMap.put(archetypedClassExprContext.getText(), new ContainsProposition(archetypedClassExprContext, identifierMapper).containmentSet(containment));
         }
     }
-
-    @Override
-    public void exitContains(AqlParser.ContainsContext containsContext) {
-        if (containsContext.CONTAINS() != null) {
-            logger.debug(containsContext.CONTAINS().getSymbol().getText());
-        }
-    }
-
-    @Override
-    public void enterContains(AqlParser.ContainsContext containsContext) {
-        if (containsContext.CONTAINS() != null) {
-            logger.debug("ENTER:" + containsContext.CONTAINS().getSymbol().getText());
-            if (!inContainedSet) {
-                inContainedSet = true;
-                containLevel = 0;
-            }
-        }
-    }
-
-    @Override
-    public void exitQuery(AqlParser.QueryContext queryContext) {
-        //append the root containment in the set list
-        closedSetList.add(rootContainmentSet);
-    }
-
-
-    public List<ContainmentSet> getClosedSetList() {
-        return closedSetList;
-    }
-
-
-    private Containment addContainment(Containment containment) {
-        if (!containmentStack.isEmpty()) {
-            //add this containment in the containment list at the top of the stack
-            ContainmentSet containmentSet = containmentStack.getFirst();
-            containmentSet.add(containment);
-        } else { //we are back to the root
-            if (rootContainmentSet != null)
-                rootContainmentSet.add(containment);
-            else { //no root yet
-                rootContainmentSet = new ContainmentSet(serial++, null);
-                rootContainmentSet.add(containment);
-            }
-        }
-
-        if (rootContainmentSet == null && setLevel == 0) {
-            rootContainmentSet = new ContainmentSet(serial++, null);
-            rootContainmentSet.add(containment);
-        }
-
-        containLevel++;
-
-        return containment;
-    }
-
-
+    /**
+     * returns the mapper of resolved identifiers in contains (including resolved paths
+     * @return
+     */
     public IdentifierMapper getIdentifierMapper() {
         return identifierMapper;
     }
 
-
+    public ContainPropositions containPropositions() {
+        return containPropositions;
+    }
 }

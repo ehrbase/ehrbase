@@ -18,13 +18,21 @@
 
 package org.ehrbase.rest.openehr.controller;
 
+import java.net.URI;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.regex.Pattern;
+
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import io.swagger.annotations.*;
-import org.ehrbase.api.exception.DuplicateObjectException;
+
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
+import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.FolderService;
 import org.ehrbase.response.ehrscape.FolderDto;
@@ -34,17 +42,29 @@ import org.ehrbase.rest.openehr.annotation.RequestUrl;
 import org.ehrbase.rest.openehr.controller.OperationNotesResourcesReaderOpenehr.ApiNotes;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.*;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.net.URI;
-import java.sql.Timestamp;
-import java.time.*;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.regex.Pattern;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.ResponseHeader;
 
 /**
  * Controller for openEHR /directory endpoints
@@ -116,10 +136,10 @@ public class OpenehrDirectoryController extends BaseController {
                     "EHR with id " + ehrId + " not found."
             );
         }
-        // Check if there is already a DIRECTORY inside this EHR
+
+        // Check for duplicate directories
         if (this.ehrService.getDirectoryId(ehrId) != null) {
-            throw new DuplicateObjectException(
-                    "DIRECTORY",
+            throw new StateConflictException(
                     String.format("EHR with id %s already contains a directory.", ehrId.toString())
             );
         }

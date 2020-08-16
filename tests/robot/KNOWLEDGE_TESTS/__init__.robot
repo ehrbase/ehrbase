@@ -32,7 +32,6 @@ Documentation    KNOWLEDGE TEST SUITE
 ...               3. openehr-server started
 
 Resource    ${CURDIR}${/}../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../_resources/keywords/generic_keywords.robot
 
 Suite Setup  startup SUT
 Suite Teardown  shutdown SUT

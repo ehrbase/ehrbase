@@ -21,6 +21,9 @@
 
 package org.ehrbase.aql.containment;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Container for containment definition<p>
  * This class is used to resolve a symbol in an AQL expression by associating its corresponding archetype Id,
@@ -33,12 +36,7 @@ public class Containment {
     private String symbol;
     private String archetypeId;
     private String className;
-    private String path;
-    private Containment enclosingContainment;
-
-    public Containment(Containment enclosingContainment) {
-        this.enclosingContainment = enclosingContainment;
-    }
+    private Map<String, String> path = new HashMap<>(); //path is identified by a templateId and the relative aql path within
 
     public Containment(String className, String symbol, String archetypeId) {
         this.setSymbol(symbol);
@@ -46,8 +44,8 @@ public class Containment {
         this.className = className;
     }
 
-    public void setPath(String path) {
-        this.path = path;
+    public void setPath(String template, String path) {
+        this.path.put(template, path);
     }
 
     public String getSymbol() {
@@ -58,34 +56,17 @@ public class Containment {
         return archetypeId;
     }
 
-    public String getPath() {
-        return path;
+    public String getPath(String templateId) {
+        return path.get(templateId);
     }
 
     public String getClassName() {
         return className;
     }
 
-    public Containment getEnclosingContainment() {
-        return enclosingContainment;
-    }
-
-
 
     public void setSymbol(String symbol) {
         this.symbol = symbol;
-    }
-
-    public void setArchetypeId(String archetypeId) {
-        this.archetypeId = archetypeOnly(archetypeId);
-    }
-
-    public void setClassName(String className) {
-        this.className = className;
-    }
-
-    public void setEnclosingContainment(Containment enclosingContainment) {
-        this.enclosingContainment = enclosingContainment;
     }
 
     public String toString() {
@@ -109,7 +90,7 @@ public class Containment {
         if (archetypeId != null ? !archetypeId.equals(that.archetypeId) : that.archetypeId != null) return false;
         if (className != null ? !className.equals(that.className) : that.className != null) return false;
         if (path != null ? !path.equals(that.path) : that.path != null) return false;
-        return enclosingContainment != null ? enclosingContainment.equals(that.enclosingContainment) : that.enclosingContainment == null;
+        return true;
     }
 
     @Override
@@ -118,7 +99,6 @@ public class Containment {
         result = 31 * result + (archetypeId != null ? archetypeId.hashCode() : 0);
         result = 31 * result + (className != null ? className.hashCode() : 0);
         result = 31 * result + (path != null ? path.hashCode() : 0);
-        result = 31 * result + (enclosingContainment != null ? enclosingContainment.hashCode() : 0);
         return result;
     }
 

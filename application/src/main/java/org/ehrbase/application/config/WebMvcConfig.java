@@ -24,6 +24,7 @@ import org.ehrbase.rest.openehr.annotation.RequestUrlArgumentResolver;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
@@ -60,5 +61,11 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements WebMvcConfi
     public void addFormatters(FormatterRegistry registry) {
         registry.addConverter(new StringToEnumConverter());
         registry.addConverter(new IsoDateTimeConverter()); // Converter for version_at_time and other ISO date params
+    }
+
+    // enables CORS requests from any origin to any endpoint (see: https://www.baeldung.com/spring-cors)
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**");
     }
 }

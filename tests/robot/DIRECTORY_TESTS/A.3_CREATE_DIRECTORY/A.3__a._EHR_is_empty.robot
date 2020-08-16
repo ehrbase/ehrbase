@@ -11,9 +11,8 @@ Documentation    Main flow: create directory on empty EHR
 ...
 ...     Postconditions:
 ...         The EHR ehr_id has directory
-
-
-Resource    ${CURDIR}${/}../../_resources/suite_settings.robot
+Metadata        TOP_TEST_SUITE    DIRECTORY
+Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
 
 #Suite Setup  startup SUT
 # Test Setup  start openehr server

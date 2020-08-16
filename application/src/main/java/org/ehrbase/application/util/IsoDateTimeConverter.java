@@ -17,12 +17,10 @@
  */
 package org.ehrbase.application.util;
 
-import org.joda.time.format.DateTimeParser;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 /**
@@ -39,7 +37,6 @@ public class IsoDateTimeConverter implements Converter<String, Instant> {
         }
 
         ZonedDateTime zdt = ZonedDateTime.parse(source);
-
         return zdt.toInstant();
     }
 }

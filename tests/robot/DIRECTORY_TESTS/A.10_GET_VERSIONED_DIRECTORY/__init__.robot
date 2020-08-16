@@ -1,2 +1,2 @@
 *** Settings ***
-Force Tags    get_versioned_directory
+Force Tags    DIRECTORY_get_versioned

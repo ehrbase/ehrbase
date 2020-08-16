@@ -18,15 +18,17 @@
 
 package org.ehrbase.aql.compiler;
 
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.I_VariableDefinitionHelper;
-import org.antlr.v4.runtime.tree.ParseTree;
+import org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl;
 import org.junit.Test;
 
 import java.util.List;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 public class WhereVisitorTest {
 
@@ -34,7 +36,7 @@ public class WhereVisitorTest {
     public void getWhereExpression() {
 
         {
-            WhereVisitor cut = new WhereVisitor();
+            WhereVisitor cut = new WhereVisitor(mock(FhirTerminologyServerR4AdaptorImpl.class));
             String aql = "select a  from EHR  [ehr_id/value = '26332710-16f3-4b54-aae9-4d11c141388c'] contains COMPOSITION a[openEHR-EHR-COMPOSITION.health_summary.v1]" +
                     "where a/composer/name='Tony Stark'";
             ParseTree tree = QueryHelper.setupParseTree(aql);
@@ -54,7 +56,7 @@ public class WhereVisitorTest {
         }
 
         {
-            WhereVisitor cut = new WhereVisitor();
+            WhereVisitor cut = new WhereVisitor(mock(FhirTerminologyServerR4AdaptorImpl.class));
             String aql = "SELECT o/data[at0002]/events[at0003] AS systolic " +
                     "FROM EHR [ehr_id/value='1234'] " +
                     "CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.encounter.v1] " +
@@ -77,7 +79,7 @@ public class WhereVisitorTest {
         }
 
         {
-            WhereVisitor cut = new WhereVisitor();
+            WhereVisitor cut = new WhereVisitor(mock(FhirTerminologyServerR4AdaptorImpl.class));
             String aql = "SELECT o/data[at0002]/events[at0003] AS systolic " +
                     "FROM EHR [ehr_id/value='1234'] " +
                     "CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.encounter.v1] " +
@@ -103,7 +105,7 @@ public class WhereVisitorTest {
         }
 
         {
-            WhereVisitor cut = new WhereVisitor();
+            WhereVisitor cut = new WhereVisitor(mock(FhirTerminologyServerR4AdaptorImpl.class));
             String aql = "select a  from EHR  [ehr_id/value = '26332710-16f3-4b54-aae9-4d11c141388c'] contains COMPOSITION a[openEHR-EHR-COMPOSITION.health_summary.v1]" +
                     "where a/composer/name='Tony Stark' and a/name/value='Immunisation summary'";
             ParseTree tree = QueryHelper.setupParseTree(aql);
@@ -134,7 +136,7 @@ public class WhereVisitorTest {
         }
 
         {
-            WhereVisitor cut = new WhereVisitor();
+            WhereVisitor cut = new WhereVisitor(mock(FhirTerminologyServerR4AdaptorImpl.class));
             String aql = "SELECT o/data[at0002]/events[at0003] AS systolic " +
                     "FROM EHR [ehr_id/value='1234'] " +
                     "CONTAINS COMPOSITION c " +
@@ -169,7 +171,7 @@ public class WhereVisitorTest {
     @Test
     public void testStructuredAST1()
     {
-        WhereVisitor cut = new WhereVisitor();
+        WhereVisitor cut = new WhereVisitor(mock(FhirTerminologyServerR4AdaptorImpl.class));
         String aql = "SELECT e " +
                 "FROM EHR e[ehr_id/value='1234'] " +
                 "WHERE ((e/ehr_id/value = '1111' AND e/ehr_id/value = '2222') OR (e/ehr_id/value = '333' OR e/ehr_id/value = '444')) ";
@@ -185,7 +187,7 @@ public class WhereVisitorTest {
     @Test
     public void testEmptyWhereStatement()
     {
-        WhereVisitor cut = new WhereVisitor();
+        WhereVisitor cut = new WhereVisitor(mock(FhirTerminologyServerR4AdaptorImpl.class));
         String aql = "select e/ehr_id/value from EHR e";
         ParseTree tree = QueryHelper.setupParseTree(aql);
         cut.visit(tree);
@@ -197,10 +199,10 @@ public class WhereVisitorTest {
     @Test
     public void testEXISTS()
     {
-        WhereVisitor cut = new WhereVisitor();
+        WhereVisitor cut = new WhereVisitor(mock(FhirTerminologyServerR4AdaptorImpl.class));
         String aql = "select c\n" +
                 "from EHR e\n" +
-                "contains COMPOSITION c\n"+
+                "contains COMPOSITION c\n" +
                 "WHERE EXISTS c/content[openEHR-EHR-ADMIN_ENTRY.hospitalization.v0]";
 
         ParseTree tree = QueryHelper.setupParseTree(aql);

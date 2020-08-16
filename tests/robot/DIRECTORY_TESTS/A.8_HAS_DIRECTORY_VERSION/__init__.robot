@@ -1,2 +1,2 @@
 *** Settings ***
-Force Tags    has_directory_version    future
+Force Tags    DIRECTORY_has_version    future
