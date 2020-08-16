@@ -21,6 +21,8 @@
  */
 package org.ehrbase.dao.access.jooq;
 
+import com.nedap.archie.rm.archetyped.FeederAudit;
+import com.nedap.archie.rm.archetyped.Link;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.composition.EventContext;
 import com.nedap.archie.rm.generic.PartyIdentified;
@@ -42,8 +44,11 @@ import org.ehrbase.jooq.pg.tables.records.AuditDetailsRecord;
 import org.ehrbase.jooq.pg.tables.records.CompositionHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.CompositionRecord;
 import org.ehrbase.jooq.pg.tables.records.EventContextRecord;
+import org.ehrbase.serialisation.dbencoding.rmobject.FeederAuditEncoding;
+import org.ehrbase.serialisation.dbencoding.rmobject.LinksEncoding;
 import org.ehrbase.service.IntrospectService;
 import org.jooq.DSLContext;
+import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Result;
 
@@ -101,6 +106,13 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         compositionRecord.setComposer(composerId);
         compositionRecord.setEhrId(ehrId);
 
+        //new Locatable attributes
+        if (composition.getFeederAudit() != null)
+            compositionRecord.setFeederAudit(JSONB.valueOf(new FeederAuditEncoding().toDB(composition.getFeederAudit())));
+
+        if (composition.getLinks() != null && !composition.getLinks().isEmpty())
+            compositionRecord.setLinks(JSONB.valueOf(new LinksEncoding().toDB(composition.getLinks())));
+
         //associate a contribution with this composition
         contributionAccess = I_ContributionAccess.getInstance(this, compositionRecord.getEhrId());
         contributionAccess.setState(ContributionDef.ContributionState.COMPLETE);
@@ -145,6 +157,12 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         // associate composition's own audit with this composition access instance
         auditDetailsAccess = I_AuditDetailsAccess.getInstance(getDataAccess());
 
+        //add the new locatable attributes
+        if (composition.getFeederAudit() != null)
+            compositionRecord.setFeederAudit(JSONB.valueOf(new FeederAuditEncoding().toDB(composition.getFeederAudit())));
+        if (composition.getLinks() != null)
+            compositionRecord.setFeederAudit(JSONB.valueOf(new LinksEncoding().toDB(composition.getLinks())));
+
     }
 
     /**
@@ -185,9 +203,20 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
         // FIXME make jooq compliant
         String versionQuery =
-                "select row_id, in_contribution, ehr_id, language, territory, composer, sys_transaction, has_audit from \n" +
+                "select " +
+                        "row_id, " +
+                        "in_contribution, " +
+                        "ehr_id, " +
+                        "language, " +
+                        "territory, " +
+                        "composer, " +
+                        "sys_transaction, " +
+                        "has_audit," +
+                        "attestation_ref, " +
+                        "feeder_audit, " +
+                        "links from \n" +
                         "  (select ROW_NUMBER() OVER (ORDER BY sys_transaction ASC ) AS row_id, * from ehr.composition_history " +
-                        "WHERE id = ?) \n" +
+                        "       WHERE id = ?) \n" +
                         "    AS Version WHERE row_id = ?;";
 
         Connection connection = domainAccess.getConnection();
@@ -209,11 +238,16 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
                     compositionRecord1.setComposer(UUID.fromString(resultSet.getString("composer")));
                     compositionRecord1.setSysTransaction(resultSet.getTimestamp("sys_transaction"));
                     compositionRecord1.setHasAudit(UUID.fromString(resultSet.getString("has_audit")));
+                    compositionRecord1.setFeederAudit(JSONB.valueOf(resultSet.getString("feeder_audit")));
+
+                    /* TODO: uncomment when links encode/decode is fully implemented
+                    compositionRecord1.setLinks(JSONB.valueOf(resultSet.getString("links")));
+                     */
                     compositionHistoryAccess = new CompositionAccess(domainAccess, compositionRecord1);
                 }
             }
         } catch (SQLException e) {
-            throw new ObjectNotFoundException("composition", "Composition not found or or invalid DB content", e);
+            throw new ObjectNotFoundException("composition", "Composition not found or or invalid DB content", e.getCause());
         }
 
         if (compositionHistoryAccess != null) {
@@ -507,6 +541,18 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         return compositionRecord.getId();
     }
 
+    @Override
+    public String getFeederAudit() {return compositionRecord.getFeederAudit() == null ? null : compositionRecord.getFeederAudit().toString();}
+
+    @Override
+    public String getLinks() {return compositionRecord.getLinks() == null ? null : compositionRecord.getLinks().toString();}
+
+    @Override
+    public void setFeederAudit(FeederAudit feederAudit) {compositionRecord.setFeederAudit(JSONB.valueOf(new FeederAuditEncoding().toDB(feederAudit)));}
+
+    @Override
+    public void setLinks(List<Link> links) {compositionRecord.setLinks(JSONB.valueOf(new LinksEncoding().toDB(links)));}
+
     /**
      * @throws InternalServerException on problem updating context
      */
@@ -529,7 +575,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
     @Override
     public void setCompositionRecord(CompositionHistoryRecord historyRecord) {
-        CompositionRecord compositionRecord = new CompositionRecord(
+        this.compositionRecord = new CompositionRecord(
                 historyRecord.getId(),
                 historyRecord.getEhrId(),
                 historyRecord.getInContribution(),
@@ -541,9 +587,10 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
                 null,
                 null,
                 historyRecord.getHasAudit(),
+                null,
+                null,
                 null
         );
-        this.compositionRecord = compositionRecord;
     }
 
     /**
