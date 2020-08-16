@@ -405,22 +405,25 @@ D-402 Execute Ad-HOc Query - Get Data
 D-403 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              
+    [Tags]              332
     D/403_query.tmp.json    D/403.tmp.json
+    [Teardown]          TRACE GITHUB ISSUE  332  not-ready
 
 
 D-404 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              
+    [Tags]              332
     D/404_query.tmp.json    D/404.tmp.json
+    [Teardown]          TRACE GITHUB ISSUE  332  not-ready
 
 
 D-405 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              
+    [Tags]              332
     D/405_query.tmp.json    D/405.tmp.json
+    [Teardown]          TRACE GITHUB ISSUE  332  not-ready
 
 
 D-500 Execute Ad-HOc Query - Get Data

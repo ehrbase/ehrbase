@@ -243,6 +243,16 @@ D-309 Execute Ad-HOc Query - Get Data
     [Teardown]          TRACE GITHUB ISSUE  205  not-ready
 
 
+D-403 404 405 Execute Ad-HOc Query - Get Data
+    [Documentation]     Get Data related query.
+    [Template]          execute ad-hoc query and check result (loaded DB)
+    [Tags]              332
+    D/403_query.tmp.json    D/403.tmp.json
+    D/404_query.tmp.json    D/404.tmp.json
+    D/405_query.tmp.json    D/405.tmp.json
+    [Teardown]          TRACE GITHUB ISSUE  332  not-ready
+
+
 D-312 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
