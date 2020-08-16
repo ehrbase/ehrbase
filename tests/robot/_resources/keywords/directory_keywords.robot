@@ -285,9 +285,6 @@ get DIRECTORY at version (JSON)
     ...                 identified by `ehr_id`.
 
                         Set Test Variable  ${KEYWORD NAME}  GET DIRECTORY AT VERSION (JSON)
-
-        TRACE GITHUB ISSUE  148  not-ready
-
                         GET /ehr/ehr_id/directory/version_uid    JSON
 
 
@@ -296,9 +293,6 @@ get FOLDER in DIRECTORY at version (JSON)
                         Set Test Variable  ${KEYWORD NAME}  GET FOLDER AT VERSION (JSON)
 
                         Set Test Variable    ${path}    ${path}
-
-        TRACE GITHUB ISSUE  148  not-ready
-
                         GET /ehr/ehr_id/directory/version_uid?path    JSON
 
 
@@ -472,8 +466,6 @@ PUT /ehr/ehr_id/directory
                         ...                 Prefer=return=representation
                         ...                 If-Match=${preceding_version_uid}
 
-        TRACE GITHUB ISSUE  148  not-ready
-
     ${resp}=            Put Request        ${SUT}   /ehr/${ehr_id}/directory
                         ...                 data=${test_data}
                         ...                 headers=${headers}
@@ -492,8 +484,6 @@ PUT /ehr/ehr_id/directory (w/o prefer)
 
                         prepare new request session    ${format}
                         ...                 If-Match=${preceding_version_uid}
-
-        TRACE GITHUB ISSUE  148  not-ready
 
     ${resp}=            Put Request        ${SUT}   /ehr/${ehr_id}/directory
                         ...                 data=${test_data}
@@ -596,9 +586,6 @@ GET /ehr/ehr_id/directory
 
                         Set Test Variable   ${response}    ${resp}
                         Output Debug Info:  GET /ehr/ehr_id/directory
-
-        TRACE GITHUB ISSUE  41  not-ready
-        ...               message=DISCOVERED ERROR: Get folder in directory version at time fails
 
 
 GET /ehr/ehr_id/directory?version_at_time
