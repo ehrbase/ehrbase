@@ -112,10 +112,9 @@ public interface I_FolderAccess extends I_SimpleCRUD {
     }
 
     static I_FolderAccess getInstanceForExistingFolder(I_DomainAccess domainAccess, ObjectVersionId folderId, Timestamp timestamp) {
-        return FolderHistoryAccess.retrieveInstanceForExistingFolder(
+        return FolderAccess.retrieveInstanceForExistingFolder(
                 domainAccess,
-                FolderUtils.extractUuidFromObjectVersionId(folderId),
-                timestamp
+                FolderUtils.extractUuidFromObjectVersionId(folderId)
         );
     }
 

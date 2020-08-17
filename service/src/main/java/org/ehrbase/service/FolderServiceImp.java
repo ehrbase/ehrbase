@@ -32,6 +32,7 @@ import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
 import org.ehrbase.dao.access.interfaces.I_EhrAccess;
 import org.ehrbase.dao.access.interfaces.I_FolderAccess;
 import org.ehrbase.dao.access.jooq.FolderAccess;
+import org.ehrbase.dao.access.jooq.FolderHistoryAccess;
 import org.ehrbase.dao.access.util.FolderUtils;
 import org.ehrbase.response.ehrscape.FolderDto;
 import org.ehrbase.response.ehrscape.StructuredString;
@@ -154,7 +155,7 @@ public class FolderServiceImp extends BaseService implements FolderService {
         } else {
             // Get the target timestamp version and data
             version = getVersionNumberForTimestamp(folderId, timestamp);
-            I_FolderAccess versionAtTime = I_FolderAccess.getInstanceForExistingFolder(
+            I_FolderAccess versionAtTime = FolderHistoryAccess.getInstanceForExistingFolder(
                     getDataAccess(),
                     folderId,
                     timestamp

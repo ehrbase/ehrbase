@@ -34,6 +34,7 @@ import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_FolderAccess;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
+import org.ehrbase.dao.access.util.FolderUtils;
 import org.ehrbase.jooq.binding.OtherDetailsJsonbBinder;
 import org.ehrbase.jooq.binding.SysPeriodBinder;
 import org.ehrbase.jooq.pg.tables.records.FolderRecord;
@@ -637,6 +638,18 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
         ).select().from(table(name("subfolders")));
 
         return folderSelectedRecordSub.fetch();
+    }
+
+    public static I_FolderAccess getInstanceForExistingFolder(
+            I_DomainAccess domainAccess,
+            ObjectVersionId folderId,
+            Timestamp timestamp
+    ) {
+        return FolderHistoryAccess.retrieveInstanceForExistingFolder(
+                domainAccess,
+                FolderUtils.extractUuidFromObjectVersionId(folderId),
+                timestamp
+        );
     }
 
     public static I_FolderAccess retrieveInstanceForExistingFolder(I_DomainAccess domainAccess, UUID folderId, Timestamp timestamp){
