@@ -101,6 +101,14 @@ create DIRECTORY - invalid content (JSON)
                         Should Be Equal As Strings   ${response.status_code}   400
 
 
+create the same DIRECTORY again (JSON)
+    [Arguments]         ${valid_test_data_set}
+                        Set Test Variable  ${KEYWORD NAME}  FAIL CREATING DIR 3 (JSON)
+
+                        load valid dir test-data-set    ${valid_test_data_set}
+                        POST /ehr/ehr_id/directory    JSON
+
+
 
 
 
