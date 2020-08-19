@@ -49,6 +49,7 @@ import org.ehrbase.serialisation.dbencoding.RawJson;
 import org.ehrbase.service.RecordedDvCodedText;
 import org.ehrbase.service.RecordedDvText;
 import org.jooq.DSLContext;
+import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Result;
 
@@ -750,21 +751,18 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     @Override
     public void adminDeleteEhr() {
         try {
-            /*AdminDeleteEhr test = Routines.adminDeleteEhr(this.getId());
-            log.debug(test.NUM);*/
+            // call first postgres function to start deletion of main objects, and get UUIDs for the next step
+            Result<AdminDeleteEhrRecord> adminDeleteEhr = Routines.adminDeleteEhr(getContext().configuration(), this.getId());
+            if (adminDeleteEhr.size() != 1) {
+                throw new InternalServerException("Admin deletion of EHR failed! Unexpected result.");
+            }
+            UUID statusAudit = adminDeleteEhr.get(0).getStatusAudit();
+            UUID contribAudit = adminDeleteEhr.get(0).getContribAudit();
 
-            int res = getContext().selectQuery(new AdminDeleteEhr().call(this.getId())).execute();
+            // call cleanup of auxiliary objects
+            int res = getContext().selectQuery(new AdminDeleteEhrHistory().call(this.getId(), statusAudit, contribAudit)).execute();
             if (res != 1)
                 throw new InternalServerException("Admin deletion of EHR failed!");
-
-            res = getContext().selectQuery(new AdminDeleteEhrHistory().call(this.getId())).execute();
-            if (res != 1)
-                throw new InternalServerException("Admin deletion of EHR failed!");
-
-            //int test = getContext().selectQuery(AdminDeleteEhr.ADMIN_DELETE_EHR).execute();
-
-            //getContext().select(Routines.adminDeleteEhr(getContext().configuration(), this.getId()));
-            //Record<AdminDeleteEhr> test = getContext().select(org.ehrbase.jooq.pg.Routines.adminDeleteEhr(this.getId()));
         } catch (Exception e) {
             log.debug(e);
         }
