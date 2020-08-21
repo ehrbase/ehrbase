@@ -17,10 +17,12 @@
  */
 package org.ehrbase.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.ehrbase.api.definitions.FhirTsProps;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
+import com.nedap.archie.rm.datatypes.CodePhrase;
+import com.nedap.archie.rm.datavalues.DvCodedText;
+import com.nedap.archie.rm.support.identification.TerminologyId;
+import net.minidev.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,66 +33,35 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
-import com.nedap.archie.rm.datatypes.CodePhrase;
-import com.nedap.archie.rm.datavalues.DvCodedText;
-import com.nedap.archie.rm.support.identification.TerminologyId;
+import java.util.ArrayList;
+import java.util.List;
 
-import net.minidev.json.JSONArray;
 /***
  *@Created by Luis Marco-Ruiz on Feb 12, 2020
  */
 @Component
-public final class FhirTerminologyServerR4AdaptorImpl
+public class FhirTerminologyServerR4AdaptorImpl
 		implements org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer {
 
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	private static volatile FhirTerminologyServerR4AdaptorImpl  instance = null;//thread safety is ensure in the getInstance method.
-	/**
-	 * Returns an instance of {@link org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl} with default properties or creates a new one it does not exist.
-	 * @return the instance of {@link org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl}.
-	 */
-	public static FhirTerminologyServerR4AdaptorImpl getInstance() {
-		return FhirTerminologyServerR4AdaptorImpl.getInstance(null);
-	}
-	/**
-	 * Returns an instance of {@link org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl} with the properties provided or creates a new one it does not exist.
-	 * @return the instance of {@link org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl}.
-	 */
-	public static FhirTerminologyServerR4AdaptorImpl getInstance(FhirTsProps properties) {
-		if(properties == null) {//if Spring did not do autowiring, take the default ones.
-			properties = new FhirTsPropsImpl(); 
-		}
-		if(instance == null) {
-			synchronized(FhirTerminologyServerR4AdaptorImpl.class) {
-				if(instance == null) {
-					instance = new FhirTerminologyServerR4AdaptorImpl(properties);
-				}
-			}
-		}
-		return instance;
-	}
 
-	private FhirTsPropsImpl props;
+	private FhirTsProps props;
 
 	@Autowired
-	private FhirTerminologyServerR4AdaptorImpl(FhirTsProps props2) {
+	public FhirTerminologyServerR4AdaptorImpl(FhirTsProps props) {
 		super();
-		this.props = (FhirTsPropsImpl) props2;
-		synchronized(FhirTerminologyServerR4AdaptorImpl.class) {
-			instance=this;//we need this for Spring initialization. Constructor set to private so other users rely on the getInstance method.
-		}
+		this.props = props;
+
 	}
 
 
 	@Override
-	public final List<DvCodedText> expand(final String valueSetId) {
+	public List<DvCodedText> expand(final String valueSetId) {
 		RestTemplate rest = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
-		headers.set("accept","application/fhir+json");
-		HttpEntity<String> entity =  new HttpEntity<>(headers);
+		headers.set("accept", "application/fhir+json");
+		HttpEntity<String> entity = new HttpEntity<>(headers);
 		ResponseEntity<String> responseEntity = rest.exchange(valueSetId,
 				HttpMethod.GET,
 				entity,
@@ -110,16 +81,16 @@ public final class FhirTerminologyServerR4AdaptorImpl
 		}
 		return expansionList;
 	}
-	
+
 	@Override
-	public final List<DvCodedText> expandWithParameters(final String valueSetId, String...operationParams) {
+	public List<DvCodedText> expandWithParameters(final String valueSetId, String... operationParams) {
 		//build URL
 		String urlTsServer = props.getTsUrl();
-		urlTsServer+="ValueSet/$"+operationParams[0]+"?"+valueSetId;
+		urlTsServer += "ValueSet/$" + operationParams[0] + "?" + valueSetId;
 		RestTemplate rest = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
-		headers.set("accept","application/fhir+json");
-		HttpEntity<String> entity =  new HttpEntity<>(headers);
+		headers.set("accept", "application/fhir+json");
+		HttpEntity<String> entity = new HttpEntity<>(headers);
 		ResponseEntity<String> responseEntity = rest.exchange(urlTsServer.replace("'", ""),
 				HttpMethod.GET,
 				entity,
@@ -142,31 +113,32 @@ public final class FhirTerminologyServerR4AdaptorImpl
 
 
 	@Override
-	public final DvCodedText lookUp(final String conceptId) {
+	public DvCodedText lookUp(final String conceptId) {
 		// TODO Auto-generated method stub
 		return null;
 
 	}
 
 	@Override
-	public final Boolean validate(final DvCodedText concept, final String valueSetId) {
+	public Boolean validate(final DvCodedText concept, final String valueSetId) {
 		// TODO Auto-generated method stub
 		logger.debug("inside the validate method of R4 implementation");
 		return null;
 	}
 
 	@Override
-	public final SubsumptionResult subsumes(final DvCodedText conceptA, final DvCodedText conceptB) {
+	public SubsumptionResult subsumes(final DvCodedText conceptA, final DvCodedText conceptB) {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
 	@Override
 	public Boolean validate(String... operationParams) {
 		//build URL
-				String urlTsServer = props.getTsUrl();
-				urlTsServer+="ValueSet/$"+"validate-code"+"?"+operationParams[0];
-				RestTemplate rest = new RestTemplate();
-				HttpHeaders headers = new HttpHeaders();
+		String urlTsServer = props.getTsUrl();
+		urlTsServer += "ValueSet/$" + "validate-code" + "?" + operationParams[0];
+		RestTemplate rest = new RestTemplate();
+		HttpHeaders headers = new HttpHeaders();
 				headers.set("accept","application/fhir+json");
 				HttpEntity<String> entity =  new HttpEntity<>(headers);
 				ResponseEntity<String> responseEntity = rest.exchange(urlTsServer.replace("'", ""),

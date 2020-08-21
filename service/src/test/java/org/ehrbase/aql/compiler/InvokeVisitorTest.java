@@ -18,34 +18,45 @@
 
 package org.ehrbase.aql.compiler;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
-
+import com.nedap.archie.rm.datatypes.CodePhrase;
+import com.nedap.archie.rm.datavalues.DvCodedText;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.I_VariableDefinitionHelper;
-import org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer;
-import org.junit.Ignore;
+import org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
-//@RunWith(SpringRunner.class)
-//@SpringBootTest//(classes= {org.ehrbase.application.EhrBase.class})
-//@ActiveProfiles("test")
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+
 public class InvokeVisitorTest {
 
-	@Autowired
-	private I_OpenehrTerminologyServer tsserver;
 
-	/*
-	 * @Rule public WireMockRule wireMockRule = new WireMockRule(8089);
-	 */
-	@Ignore("Deactivated until we have a test terminology server")
 	@Test
 	public void shouldVisitInvokeExpressionExpandOperation() {
 		//postman request for expansion is: GET https://r4.ontoserver.csiro.au/fhir/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/surface
-		WhereVisitor cut = new WhereVisitor();
+		FhirTerminologyServerR4AdaptorImpl mock = mock(FhirTerminologyServerR4AdaptorImpl.class);
+		when(mock.expandWithParameters(any(), any())).thenReturn(List.of(
+				new DvCodedText("Occlusal", new CodePhrase("O")),
+				new DvCodedText("Mesial", new CodePhrase("M")),
+				new DvCodedText("Distoclusal", new CodePhrase("DO")),
+				new DvCodedText("Lingual", new CodePhrase("L")),
+				new DvCodedText("Incisal", new CodePhrase("I")),
+				new DvCodedText("Ventral", new CodePhrase("V")),
+				new DvCodedText("Mesioclusodistal", new CodePhrase("MOD")),
+				new DvCodedText("Mesioclusal", new CodePhrase("MO")),
+				new DvCodedText("Distal", new CodePhrase("D")),
+				new DvCodedText("Distoincisal", new CodePhrase("DI")),
+				new DvCodedText("Buccal", new CodePhrase("B"))
+		));
+
+
+		WhereVisitor cut = new WhereVisitor(mock);
 		String aql = "SELECT o/data[at0002]/events[at0003] AS systolic " +
 				"FROM EHR [ehr_id/value='1234'] " +
 				"CONTAINS COMPOSITION c " +
@@ -69,47 +80,47 @@ public class InvokeVisitorTest {
 
 		assertThat(whereExpression.get(4)).isEqualTo(",");
 
-		assertThat(whereExpression.get(5)).isEqualTo("O");
+		assertThat(whereExpression.get(5)).isEqualTo("'O'");
 
 		assertThat(whereExpression.get(6)).isEqualTo(",");
 
-		assertThat(whereExpression.get(7)).isEqualTo("M");
+		assertThat(whereExpression.get(7)).isEqualTo("'M'");
 
 		assertThat(whereExpression.get(8)).isEqualTo(",");
 
-		assertThat(whereExpression.get(9)).isEqualTo("DO");
+		assertThat(whereExpression.get(9)).isEqualTo("'DO'");
 
 		assertThat(whereExpression.get(10)).isEqualTo(",");
 
-		assertThat(whereExpression.get(11)).isEqualTo("L");
+		assertThat(whereExpression.get(11)).isEqualTo("'L'");
 
 		assertThat(whereExpression.get(12)).isEqualTo(",");
 
-		assertThat(whereExpression.get(13)).isEqualTo("I");
+		assertThat(whereExpression.get(13)).isEqualTo("'I'");
 
 		assertThat(whereExpression.get(14)).isEqualTo(",");
 
-		assertThat(whereExpression.get(15)).isEqualTo("V");
+		assertThat(whereExpression.get(15)).isEqualTo("'V'");
 
 		assertThat(whereExpression.get(16)).isEqualTo(",");
 
-		assertThat(whereExpression.get(17)).isEqualTo("MOD");
+		assertThat(whereExpression.get(17)).isEqualTo("'MOD'");
 
 		assertThat(whereExpression.get(18)).isEqualTo(",");
 
-		assertThat(whereExpression.get(19)).isEqualTo("MO");
+		assertThat(whereExpression.get(19)).isEqualTo("'MO'");
 
 		assertThat(whereExpression.get(20)).isEqualTo(",");
 
-		assertThat(whereExpression.get(21)).isEqualTo("D");
+		assertThat(whereExpression.get(21)).isEqualTo("'D'");
 
 		assertThat(whereExpression.get(22)).isEqualTo(",");
 
-		assertThat(whereExpression.get(23)).isEqualTo("DI");
+		assertThat(whereExpression.get(23)).isEqualTo("'DI'");
 
 		assertThat(whereExpression.get(24)).isEqualTo(",");
 
-		assertThat(whereExpression.get(25)).isEqualTo("B");
+		assertThat(whereExpression.get(25)).isEqualTo("'B'");
 
 		assertThat(whereExpression.get(26)).isEqualTo(",");
 
@@ -118,11 +129,13 @@ public class InvokeVisitorTest {
 		assertThat(whereExpression.get(28)).isEqualTo(")");
 
 	}
-	@Ignore("Deactivated until we have a test terminology server")
+
 	@Test
 	public void shouldVisitInvokeExpressionValidateOperation() {
 		//postman request for expansion is: GET https://r4.ontoserver.csiro.au/fhir/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/surface
-		WhereVisitor cut = new WhereVisitor();
+		FhirTerminologyServerR4AdaptorImpl mock = mock(FhirTerminologyServerR4AdaptorImpl.class);
+		when(mock.validate(any())).thenReturn(true);
+		WhereVisitor cut = new WhereVisitor(mock);
 		String aql = "SELECT o/data[at0002]/events[at0003] AS systolic " +
 				"FROM EHR [ehr_id/value='1234'] " +
 				"CONTAINS COMPOSITION c " +
@@ -154,4 +167,4 @@ public class InvokeVisitorTest {
 
 		assertThat(whereExpression.get(8)).isEqualTo(")");
 	}
-	}
+}

@@ -1,26 +1,24 @@
 package org.ehrbase.service;
 
-import org.ehrbase.api.definitions.FhirTsProps;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
+
 /**
- * 
  * @author luis
- *
  */
 @Configuration
-@ConfigurationProperties(prefix="terminology-server")
-public class FhirTsPropsImpl implements FhirTsProps{
+@ConfigurationProperties(prefix = "terminology-server")
+public class FhirTsProps {
 	private String codePath = "$[\"expansion\"][\"contains\"][*][\"code\"]";
 	private String systemPath = "$[\"expansion\"][\"contains\"][*][\"system\"]";
 	private String displayPath = "$[\"expansion\"][\"contains\"][*][\"display\"]";
 	private String tsUrl = "https://r4.ontoserver.csiro.au/fhir/";
 	private String validationResultPath = "$.parameter[:1].valueBoolean";
-	
+
 	public String getValidationResultPath() {
 		return validationResultPath;
 	}
+
 	public void setValidationResultPath(String validationResultPath) {
 		this.validationResultPath = validationResultPath;
 	}

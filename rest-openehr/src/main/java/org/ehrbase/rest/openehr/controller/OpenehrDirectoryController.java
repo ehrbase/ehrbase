@@ -20,8 +20,10 @@ package org.ehrbase.rest.openehr.controller;
 
 import com.nedap.archie.rm.directory.Folder;
 import io.swagger.annotations.*;
+import org.ehrbase.api.exception.DuplicateObjectException;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.FolderService;
 import org.ehrbase.response.ehrscape.FolderDto;
@@ -114,6 +116,14 @@ public class OpenehrDirectoryController extends BaseController {
                     "EHR with id " + ehrId + " not found."
             );
         }
+
+        // Check for duplicate directories
+        if (this.ehrService.getDirectoryId(ehrId) != null) {
+            throw new StateConflictException(
+                    String.format("EHR with id %s already contains a directory.", ehrId.toString())
+            );
+        }
+
         // Insert New folder
         UUID folderId = this.folderService.create(
                 ehrId,

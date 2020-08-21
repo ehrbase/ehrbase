@@ -28,7 +28,6 @@ import org.ehrbase.aql.compiler.TopAttributes;
 import org.ehrbase.aql.definition.Variables;
 import org.ehrbase.aql.sql.binding.*;
 import org.ehrbase.aql.sql.postprocessing.RawJsonTransform;
-import org.ehrbase.aql.sql.queryImpl.ContainsSet;
 import org.ehrbase.aql.sql.queryImpl.TemplateMetaData;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.service.IntrospectService;
@@ -38,7 +37,6 @@ import org.jooq.impl.DSL;
 
 import java.util.*;
 
-import static org.ehrbase.jooq.pg.Tables.CONTAINMENT;
 import static org.ehrbase.jooq.pg.Tables.ENTRY;
 
 /**
@@ -57,6 +55,8 @@ import static org.ehrbase.jooq.pg.Tables.ENTRY;
  */
 @SuppressWarnings("unchecked")
 public class QueryProcessor extends TemplateMetaData {
+
+    public static final String NIL_TEMPLATE = "*";
 
     /**
      */
@@ -111,7 +111,6 @@ public class QueryProcessor extends TemplateMetaData {
         //if any jsonb data field transform them into raw json
         if (aqlSelectQuery.isOutputWithJson() && knowledgeCache != null) {
             RawJsonTransform.toRawJson(result, aqlSelectQuery.getQuerySteps());
-//            result = RawJsonTransform.deleteNamedColumn(result, I_RawJsonTransform.TEMPLATE_ID);
         }
 
         List<List<String>> explainList = buildExplain(aqlSelectQuery.getSelectQuery());
@@ -121,30 +120,21 @@ public class QueryProcessor extends TemplateMetaData {
 
     AqlSelectQuery buildAqlSelectQuery() {
 
-        // fetch all potential containment's  according  to the contains clause
-        ContainsSet containsSet = new ContainsSet(contains.getContainClause(), context);
-        Result<?> containmentRecords = containsSet.getInSet();
-
-
         Map<String, QuerySteps> cacheQuery = new HashMap<>();
 
         statements = new OrderByField(statements).merge();
 
-        //Do to the way the query is build it is not possible to build sql if the AQL contains only compositions which have no instances in the DB. Thus we must manual handle this case.
-        if (containmentRecords.isEmpty()) {
-            SelectQuery<Record> falseSelectQuery = context.selectQuery();
-            falseSelectQuery.addConditions(DSL.falseCondition());
-            return new AqlSelectQuery(falseSelectQuery, null, false);
+        if (contains.getTemplates().isEmpty()){
+            if (contains.hasContains() && !contains.useSimpleCompositionContains())
+                cacheQuery.put(NIL_TEMPLATE, buildNullSelect(NIL_TEMPLATE));
+            else
+                cacheQuery.put(NIL_TEMPLATE, buildQuerySteps(NIL_TEMPLATE));
         }
-
-
-
-        // build a query for each containment
-        containmentRecords.forEach(containmentRecord ->
-                cacheQuery.computeIfAbsent((String) containmentRecord.getValue(ENTRY.TEMPLATE_ID.getName()), templateId
-                        -> buildQuerySteps((UUID) containmentRecord.getValue(CONTAINMENT.COMP_ID.getName()), templateId, containmentRecord.getValue(ContainsSet.ENTRY_ROOT, String.class))
-                )
-        );
+        else {
+            for (String templateId : contains.getTemplates()) {
+                cacheQuery.put(templateId, buildQuerySteps(templateId));
+            }
+        }
 
         //assemble the query from the cache
         SelectQuery unionSetQuery = context.selectQuery();
@@ -152,7 +142,7 @@ public class QueryProcessor extends TemplateMetaData {
         for (QuerySteps queryStep : cacheQuery.values()) {
 
             SelectQuery select = queryStep.getSelectQuery();
-            if (!queryStep.getTemplateId().equals("*")) {
+            if (!queryStep.getTemplateId().equals(NIL_TEMPLATE)) {
                 select.addConditions(ENTRY.TEMPLATE_ID.eq(queryStep.getTemplateId()));
             }
             Condition condition = queryStep.getWhereCondition();
@@ -165,13 +155,12 @@ public class QueryProcessor extends TemplateMetaData {
                 unionSetQuery = select;
                 first = false;
             } else
-                unionSetQuery.union(select);
+                unionSetQuery.unionAll(select);
 
         }
 
 
         // Add function or Distinct
-        //TODO: inject ORDER BY into the superQuery
         if (new Variables(statements.getVariables()).hasDefinedDistinct() || new Variables(statements.getVariables()).hasDefinedFunction()) {
             SuperQuery superQuery = new SuperQuery(context, statements.getVariables(), unionSetQuery);
             unionSetQuery = superQuery.select();
@@ -194,12 +183,23 @@ public class QueryProcessor extends TemplateMetaData {
         return new AqlSelectQuery(unionSetQuery, cacheQuery.values(), cacheQuery.values().stream().anyMatch(QuerySteps::isContainsJson));
     }
 
-    private QuerySteps buildQuerySteps(UUID compId, String templateId, String entryRoot) {
-        SelectBinder selectBinder = new SelectBinder(context, introspectCache, contains, statements, serverNodeId, entryRoot).setUsePgExtensions(usePgExtensions);
+    private QuerySteps buildQuerySteps(String templateId) {
+        SelectBinder selectBinder = new SelectBinder(context, introspectCache, contains, statements, serverNodeId).setUsePgExtensions(usePgExtensions);
 
-        SelectQuery<?> select = selectBinder.bind(templateId, compId);
+        SelectQuery<?> select = selectBinder.bind(templateId);
         return new QuerySteps(select,
                 selectBinder.getWhereConditions(templateId, null),
+                templateId,
+                selectBinder.getCompositionAttributeQuery(),
+                selectBinder.getJsonDataBlock(), selectBinder.containsJQueryPath());
+    }
+
+    private QuerySteps buildNullSelect(String templateId) {
+        SelectBinder selectBinder = new SelectBinder(context, introspectCache, contains, statements, serverNodeId).setUsePgExtensions(usePgExtensions);
+
+        SelectQuery<?> select = selectBinder.bind(templateId);
+        return new QuerySteps(select,
+                DSL.condition("1 = 0"),
                 templateId,
                 selectBinder.getCompositionAttributeQuery(),
                 selectBinder.getJsonDataBlock(), selectBinder.containsJQueryPath());

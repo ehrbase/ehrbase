@@ -10,10 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add admin API endpoint stubs (see: https://github.com/ehrbase/ehrbase/pull/280)
+- Add support for FeederAudit in Locatable. Refactored Composition Serializer for DB encoding (see https://github.com/ehrbase/ehrbase/tree/feature/311_feeder_audit, https://github.com/ehrbase/openEHR_SDK/tree/feature/311_feeder_audit)
+- Change the strategy to resolve CONTAINS in AQL (https://github.com/ehrbase/ehrbase/pull/276)
 
 ### Changed
 
 ### Fixed
+
+- Detect duplicates on POST Directory (see: https://github.com/ehrbase/ehrbase/pull/281)
+- Support context-less composition (see: https://github.com/ehrbase/ehrbase/pull/288)
+- Fixed missing AQL level of parenthesis when using NOT in WHERE clause (see https://github.com/ehrbase/ehrbase/pull/293)
+- Allow duplicated paths in AQL resultsets (see: https://github.com/ehrbase/ehrbase/issues/263)
 
 ## [0.13.0] (beta)
 
@@ -31,7 +38,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - POST without accept header for ehr, composition and contribution endpoints (see: https://github.com/ehrbase/ehrbase/pull/199)
 - force a default timezone if not present for context/start_time and context/end_time if specified (https://github.com/ehrbase/ehrbase/pull/215)
 - Representation of version uid of EHR_STATUS (see: https://github.com/ehrbase/ehrbase/pull/180)
+- fix support of context/participations (see CR #267)
 - Refactored support of PartyProxy and ObjectId in both CRUD and AQL operations (see https://github.com/ehrbase/ehrbase/pull/248)
+- fix support of mandatory attributes in ENTRY specialization including rm_version (see https://github.com/ehrbase/ehrbase/pull/247)
+
 
 
 ## [0.12.0] (alpha)

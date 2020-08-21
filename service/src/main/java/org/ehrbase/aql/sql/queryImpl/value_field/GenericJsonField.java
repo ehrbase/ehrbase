@@ -1,14 +1,11 @@
 package org.ehrbase.aql.sql.queryImpl.value_field;
 
-import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
-import org.ehrbase.aql.sql.queryImpl.JsonbEntryQuery;
 import org.ehrbase.aql.sql.queryImpl.attribute.*;
 import org.jooq.Field;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 
-import java.util.List;
 import java.util.Optional;
 
 
@@ -27,10 +24,10 @@ public class GenericJsonField extends RMObjectAttribute {
         fieldContext.setRmType(rmType);
         //query the json representation of a node and cast the result as TEXT
         Field jsonContextField;
-        if (jsonPath.isPresent())
-            jsonContextField = DSL.field(plpgsqlFunction+"("+StringUtils.join(tableFields, ",")+")::json #>>"+jsonPath.get());
+        if (plpgsqlFunction != null)
+            jsonContextField = makeFunctionField(plpgsqlFunction, tableFields);
         else
-            jsonContextField = DSL.field(plpgsqlFunction+"("+StringUtils.join(tableFields, ",")+")::text");
+            jsonContextField = makeFieldToJsonbColumn(tableFields);
 
         return as(DSL.field(jsonContextField));
     }
@@ -40,14 +37,27 @@ public class GenericJsonField extends RMObjectAttribute {
         fieldContext.setRmType(rmType);
         //query the json representation of a node and cast the result as TEXT
         Field jsonContextField;
-        if (jsonPath.isPresent())
-            jsonContextField = DSL.field(plpgsqlFunction+"("+StringUtils.join(fields, ",")+")::json #>>"+jsonPath.get());
+        if (plpgsqlFunction != null)
+            jsonContextField = makeFunctionField(plpgsqlFunction, fields);
         else
-            jsonContextField = DSL.field(plpgsqlFunction+"("+StringUtils.join(fields, ",")+")::text");
-
+            jsonContextField = makeFieldToJsonbColumn(fields);
 
         return as(DSL.field(jsonContextField));
 
+    }
+
+    private Field makeFunctionField(String plpgsqlFunction, Field... fields){
+        if (jsonPath.isPresent())
+            return DSL.field(plpgsqlFunction+"("+StringUtils.join(fields, ",")+")::json #>>"+jsonPath.get());
+        else
+            return DSL.field(plpgsqlFunction+"("+StringUtils.join(fields, ",")+")::text");
+    }
+
+    private Field makeFieldToJsonbColumn(Field... fields){
+        if (jsonPath.isPresent())
+            return DSL.field("("+StringUtils.join(fields, ",")+")::json #>>"+jsonPath.get());
+        else
+            return DSL.field("("+StringUtils.join(fields, ",")+")::text");
     }
 
     @Override
@@ -69,6 +79,12 @@ public class GenericJsonField extends RMObjectAttribute {
         this.jsonPath = Optional.of(new GenericJsonPath(jsonPath).jqueryPath());
         return this;
     }
+
+    public GenericJsonField forJsonPath(String root, String jsonPath){
+        String actualPath = new AttributePath(root).redux(jsonPath);
+        return forJsonPath(actualPath);
+    }
+
 
     public GenericJsonField setJsonDataBlock(boolean jsonDataBlock) {
         this.isJsonDataBlock = jsonDataBlock;

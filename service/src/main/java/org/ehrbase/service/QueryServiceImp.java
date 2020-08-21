@@ -35,6 +35,7 @@ import org.ehrbase.response.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.response.ehrscape.QueryResultDto;
 import org.ehrbase.response.ehrscape.StructuredString;
 import org.ehrbase.response.ehrscape.StructuredStringFormat;
+import org.ehrbase.response.ehrscape.query.ResultHolder;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Record;
@@ -63,11 +64,13 @@ public class QueryServiceImp extends BaseService implements QueryService {
 
     @Value("${server.aql.use-jsquery:true}")
     private boolean usePgExtensions; //default
+    private final FhirTerminologyServerR4AdaptorImpl tsAdapter;
 
     @Autowired
-    public QueryServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig) {
+    public QueryServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig, FhirTerminologyServerR4AdaptorImpl tsAdapter) {
 
         super(knowledgeCacheService, context, serverConfig);
+        this.tsAdapter = tsAdapter;
     }
 
     @Override
@@ -105,16 +108,17 @@ public class QueryServiceImp extends BaseService implements QueryService {
         dto.setExecutedAQL(queryString);
         dto.setVariables(aqlResult.getVariables());
 
-        List<Map<String, Object>> resultList = new ArrayList<>();
+        List<ResultHolder> resultList = new ArrayList<>();
         for (Record record : aqlResult.getRecords()) {
-            Map<String, Object> fieldMap = new LinkedHashMap<>();
+            ResultHolder fieldMap = new ResultHolder();
             for (Field field : record.fields()) {
                 //process non-hidden variables
                 if (aqlResult.variablesContains(field.getName())) {
+                    //check whether to use field name or alias
                     if (record.getValue(field) instanceof JsonElement) {
-                        fieldMap.put(field.getName(), new StructuredString((record.getValue(field)).toString(), StructuredStringFormat.JSON));
+                        fieldMap.putResult(field.getName(), new StructuredString((record.getValue(field)).toString(), StructuredStringFormat.JSON));
                     } else
-                        fieldMap.put(field.getName(), record.getValue(field));
+                        fieldMap.putResult(field.getName(), record.getValue(field));
                 }
             }
 
@@ -130,7 +134,8 @@ public class QueryServiceImp extends BaseService implements QueryService {
 
     private QueryResultDto queryAql(String queryString, boolean explain) {
         try {
-            AqlQueryHandler queryHandler = new AqlQueryHandler(getDataAccess(), usePgExtensions);
+
+            AqlQueryHandler queryHandler = new AqlQueryHandler(getDataAccess(), usePgExtensions, tsAdapter);
             AqlResult aqlResult = queryHandler.process(queryString);
 
             return formatResult(aqlResult, queryString, explain);
@@ -145,7 +150,7 @@ public class QueryServiceImp extends BaseService implements QueryService {
 
     private QueryResultDto queryAql(String queryString, Map<String, Object> parameters, boolean explain) {
         try {
-            AqlQueryHandler queryHandler = new AqlQueryHandler(getDataAccess(), usePgExtensions);
+            AqlQueryHandler queryHandler = new AqlQueryHandler(getDataAccess(), usePgExtensions, tsAdapter);
             AqlResult aqlResult = queryHandler.process(queryString, parameters);
 
             return formatResult(aqlResult, queryString, explain);
@@ -171,7 +176,7 @@ public class QueryServiceImp extends BaseService implements QueryService {
 
         QueryResultDto dto = new QueryResultDto();
         dto.setExecutedAQL((String) result.get("executedAQL"));
-        dto.setResultSet((List<Map<String, Object>>) result.get("resultSet"));
+        dto.setResultSet((List<ResultHolder>) result.get("resultSet"));
         dto.setExplain((List<List<String>>) result.get("explain"));
         return dto;
     }

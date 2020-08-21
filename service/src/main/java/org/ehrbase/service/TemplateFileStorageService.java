@@ -74,7 +74,7 @@ public class TemplateFileStorageService implements TemplateStorage {
         return optPath;
     }
 
-    void setOptPath(String optPath) {
+    public void setOptPath(String optPath) {
         this.optPath = optPath;
     }
 

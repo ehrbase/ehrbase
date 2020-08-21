@@ -19,6 +19,7 @@
 package org.ehrbase.rest.ehrscape.responsedata;
 
 import org.ehrbase.response.ehrscape.QueryResultDto;
+import org.ehrbase.response.ehrscape.query.ResultHolder;
 
 import java.util.List;
 import java.util.Map;
@@ -26,7 +27,7 @@ import java.util.Map;
 public class QueryResponseData extends ActionRestResponseData {
     private String executedAQL;
     private List<List<String>> explain;
-    private List<Map<String, Object>> resultSet;
+    private List<ResultHolder> resultSet;
 
     public QueryResponseData(QueryResultDto dto) {
         executedAQL = dto.getExecutedAQL();
@@ -50,11 +51,11 @@ public class QueryResponseData extends ActionRestResponseData {
         this.explain = explain;
     }
 
-    public List<Map<String, Object>> getResultSet() {
+    public List<ResultHolder> getResultSet() {
         return resultSet;
     }
 
-    public void setResultSet(List<Map<String, Object>> resultSet) {
+    public void setResultSet(List<ResultHolder> resultSet) {
         this.resultSet = resultSet;
     }
 }

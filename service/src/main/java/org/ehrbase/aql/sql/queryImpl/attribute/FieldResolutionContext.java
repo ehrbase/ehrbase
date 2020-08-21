@@ -28,7 +28,7 @@ import java.util.UUID;
 public class FieldResolutionContext {
 
     private final String columnAlias;
-    private final UUID compositionId;
+//    private final UUID compositionId;
     private final String identifier;
     private final I_VariableDefinition variableDefinition;
     private final boolean withAlias;
@@ -41,8 +41,8 @@ public class FieldResolutionContext {
     private boolean jsonDatablock = false;
     private String rmType;
 
-    public FieldResolutionContext(DSLContext context, String serverNodeId, UUID compositionId, String identifier, I_VariableDefinition variableDefinition, I_QueryImpl.Clause clause, PathResolver pathResolver, IntrospectService introspectCache, String entry_root) {
-        this.compositionId = compositionId;
+    public FieldResolutionContext(DSLContext context, String serverNodeId, String identifier, I_VariableDefinition variableDefinition, I_QueryImpl.Clause clause, PathResolver pathResolver, IntrospectService introspectCache, String entry_root) {
+//        this.compositionId = compositionId;
         this.identifier = identifier;
         this.variableDefinition = variableDefinition;
         this.withAlias = clause.equals(I_QueryImpl.Clause.SELECT) && variableDefinition.getPath() != null;
@@ -59,9 +59,9 @@ public class FieldResolutionContext {
         return columnAlias;
     }
 
-    public UUID getCompositionId() {
-        return compositionId;
-    }
+//    public UUID getCompositionId() {
+//        return compositionId;
+//    }
 
     public String getIdentifier() {
         return identifier;
