@@ -25,9 +25,7 @@ import com.nedap.archie.rm.archetyped.FeederAudit;
 import com.nedap.archie.rm.archetyped.Link;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.composition.EventContext;
-import com.nedap.archie.rm.generic.PartyIdentified;
 import com.nedap.archie.rm.generic.PartyProxy;
-import com.nedap.archie.rm.generic.PartySelf;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.definitions.ServerConfig;
@@ -68,6 +66,7 @@ import static org.jooq.impl.DSL.max;
 public class CompositionAccess extends DataAccess implements I_CompositionAccess {
 
     private static final Logger log = LogManager.getLogger(CompositionAccess.class);
+    public static final String COMPOSITION_LITERAL = "composition";
     // List of Entry DAOs and therefore provides access to all entries of the composition
     private List<I_EntryAccess> content = new ArrayList<>();
     private CompositionRecord compositionRecord;
@@ -102,7 +101,6 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
         compositionRecord.setLanguage(seekLanguageCode(languageCode));
         compositionRecord.setActive(true);
-//        compositionRecord.setContext(eventContextId);     // TODO: is context handled somewhere else (so remove here)? or is this a TODO?
         compositionRecord.setComposer(composerId);
         compositionRecord.setEhrId(ehrId);
 
@@ -146,7 +144,6 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
         compositionRecord.setLanguage(seekLanguageCode(languageCode));
         compositionRecord.setActive(true);
-//        compositionRecord.setContext(eventContextId);     // TODO: is context handled somewhere else (so remove here)? or is this a TODO?
         compositionRecord.setComposer(composerId);
         compositionRecord.setEhrId(ehrId);
 
@@ -247,7 +244,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
                 }
             }
         } catch (SQLException e) {
-            throw new ObjectNotFoundException("composition", "Composition not found or or invalid DB content", e.getCause());
+            throw new ObjectNotFoundException(COMPOSITION_LITERAL, "Composition not found or or invalid DB content", e);
         }
 
         if (compositionHistoryAccess != null) {
@@ -385,8 +382,6 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     }
 
     public static Map<I_CompositionAccess, Integer> getVersionMapOfComposition(I_DomainAccess domainAccess, UUID compositionId) {
-        // TODO check like hasComposition or doesExist
-
         Map<I_CompositionAccess, Integer> versionMap = new HashMap<>();
 
         // create counter with highest version, to keep track of version number and allow check in the end
@@ -605,7 +600,6 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         } catch (IndexOutOfBoundsException e) {     // generalize DB exceptions
             throw new IllegalArgumentException("Handling of records failed", e);
         }
-//        compositionRecord.setTerritory((Integer)records.getValue(0, F_TERRITORY_CODE));
     }
 
     @Override
@@ -677,8 +671,10 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         if (!composition.getCategory().getDefiningCode().getCodeString().equals("431")) {
             EventContext eventContext = composition.getContext();
             I_ContextAccess contextAccess = I_ContextAccess.getInstance(this, eventContext);
-            contextAccess.setCompositionId(compositionRecord.getId());
-            contextAccess.commit(transactionTime);
+            if (!contextAccess.isVoid()) {
+                contextAccess.setCompositionId(compositionRecord.getId());
+                contextAccess.commit(transactionTime);
+            }
         }
         return compositionRecord.getId();
     }
@@ -799,7 +795,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         // update both contribution (incl its audit) and the composition's own audit
         contributionAccess.update(timestamp, committerId, systemId, null, state, contributionChangeType, description);
         auditDetailsAccess.update(systemId, committerId, contributionChangeType, description);
-        return update(timestamp, true);    // TODO is forcing necessary and if so, is it also okay?
+        return update(timestamp, true);
     }
 
     @Override
@@ -896,8 +892,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     @Override
     public Integer getVersion() {
         //default current version, no history   // FIXME
-        Integer version = 1;
-        return version;
+        return 1;
     }
 
     /**
@@ -937,7 +932,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
             domainAccess.getContext().fetchExists(COMPOSITION_HISTORY, COMPOSITION_HISTORY.ID.eq(versionedObjectId))) {
             return true;
         } else {
-            throw new ObjectNotFoundException("composition", "No composition with given ID found");
+            throw new ObjectNotFoundException(COMPOSITION_LITERAL, "No composition with given ID found");
         }
     }
 
@@ -966,9 +961,8 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
             if (audit.getChangeType().equals(ContributionChangeType.deleted))
                 return true;
         } else {
-            throw new ObjectNotFoundException("composition", "No composition with given ID found");
+            throw new ObjectNotFoundException(COMPOSITION_LITERAL, "No composition with given ID found");
         }
-        // TODO: why is this line necessary? won't compile without return or throw. but if/else above is always reaching a return/throw anyway!?
         throw new InternalServerException("Problem processing CompositionAccess.isDeleted(..)");
     }
 }
