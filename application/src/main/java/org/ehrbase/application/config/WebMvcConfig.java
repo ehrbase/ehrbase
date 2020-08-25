@@ -20,10 +20,8 @@ package org.ehrbase.application.config;
 
 import org.ehrbase.application.util.IsoDateTimeConverter;
 import org.ehrbase.application.util.StringToEnumConverter;
-import org.ehrbase.rest.openehr.annotation.RequestUrlArgumentResolver;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
-import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -40,21 +38,6 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements WebMvcConfi
     @Override
     public void configurePathMatch(PathMatchConfigurer matcher) {
         matcher.setUseSuffixPatternMatch(false);
-    }
-
-    /**
-     * Adds support for custom annotations that can be added as an
-     * implementation of HandlerMethodArgumentResolver. Currently these
-     * annotations are hold by the packager org.ehrbase.rest.openehr.annotation
-     * but can be refactored to another common used util package.
-     *
-     * @param argumentResolver - List of argument resolvers that are used for annotations
-     */
-    @Override
-    public void addArgumentResolvers(
-            List<HandlerMethodArgumentResolver> argumentResolver
-    ) {
-        argumentResolver.add(new RequestUrlArgumentResolver()); // @RequestUrl annotation
     }
 
     @Override

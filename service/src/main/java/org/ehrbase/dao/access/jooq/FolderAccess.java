@@ -548,11 +548,11 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
      *
      * @param domainAccess providing the information about the DB connection.
      * @param folder       to define a corresponding {@link I_FolderAccess} for allowing its persistence.
-     * @param dateTime     that will be set as transaction date when the {@link  com.nedap.archie.rm.directory.Folder} is persisted
+     * @param timestamp     that will be set as transaction date when the {@link  com.nedap.archie.rm.directory.Folder} is persisted
      * @param ehrId        of the {@link com.nedap.archie.rm.ehr.Ehr} that references this {@link  com.nedap.archie.rm.directory.Folder}
      * @return {@link I_FolderAccess} with the information to persist the provided {@link  com.nedap.archie.rm.directory.Folder}
      */
-    public static I_FolderAccess buildPlainFolderAccess(final I_DomainAccess domainAccess, final Folder folder, final DateTime dateTime, final UUID ehrId, final I_ContributionAccess contributionAccess) {
+    public static I_FolderAccess buildPlainFolderAccess(final I_DomainAccess domainAccess, final Folder folder, final Timestamp timestamp, final UUID ehrId, final I_ContributionAccess contributionAccess) {
 
         FolderAccess folderAccessInstance = new FolderAccess(domainAccess, ehrId, contributionAccess);
         folderAccessInstance.setEhrId(ehrId);
@@ -651,7 +651,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
             return parent.getSubfoldersList().get(current.getUid());
         }
         //create the corresponding FolderAccess for the current folder
-        folderAccess = FolderAccess.buildPlainFolderAccess(domainAccess, current, DateTime.now(), ehrId, contributionAccess);
+        folderAccess = FolderAccess.buildPlainFolderAccess(domainAccess, current, Timestamp.from(Instant.now()), ehrId, contributionAccess);
         //add to parent subfolder list
         if (parent != null) {
             parent.getSubfoldersList().put(((FolderAccess) folderAccess).getFolderRecord().getId(), folderAccess);
@@ -676,7 +676,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
      */
     public static I_FolderAccess buildNewFolderAccessHierarchy(final I_DomainAccess domainAccess,
                                                                final Folder folder,
-                                                               final DateTime timeStamp,
+                                                               final Timestamp timeStamp,
                                                                final UUID ehrId,
                                                                final I_ContributionAccess contributionAccess) {
         // Create access for the current folder

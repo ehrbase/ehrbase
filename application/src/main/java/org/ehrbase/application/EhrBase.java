@@ -23,10 +23,9 @@ import org.ehrbase.rest.ehrscape.RestEHRScapeModuleConfiguration;
 import org.ehrbase.rest.openehr.RestOpenehrModuleConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.context.annotation.Import;
 
-@SpringBootApplication(exclude = SecurityAutoConfiguration.class)
+@SpringBootApplication()
 @Import({ServiceModuleConfiguration.class,
         RestEHRScapeModuleConfiguration.class,
         RestOpenehrModuleConfiguration.class,

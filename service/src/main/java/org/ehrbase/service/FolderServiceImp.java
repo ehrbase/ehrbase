@@ -22,6 +22,7 @@ import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import io.swagger.models.auth.In;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -81,7 +82,7 @@ public class FolderServiceImp extends BaseService implements FolderService {
         checkSiblingNameConflicts(content);
 
         // Save current time which will be used as transaction time
-        DateTime currentTimeStamp = DateTime.now();
+        Timestamp currentTimeStamp = Timestamp.from(Instant.now());
 
         // Create Contribution Access
         I_ContributionAccess contributionAccess = I_ContributionAccess.getInstance(
@@ -175,7 +176,7 @@ public class FolderServiceImp extends BaseService implements FolderService {
         I_FolderAccess folderAccess = I_FolderAccess.getInstanceForExistingFolder(
                 getDataAccess(),
                 folderId,
-                new Timestamp(DateTime.now().getMillis())
+                Timestamp.from(Instant.now())
         );
         Integer version = FolderUtils.extractVersionNumberFromObjectVersionId(folderId);
 
@@ -223,7 +224,7 @@ public class FolderServiceImp extends BaseService implements FolderService {
                                     FolderAccess.buildNewFolderAccessHierarchy(
                                             getDataAccess(),
                                             childFolder,
-                                            new DateTime(timestamp),
+                                            Timestamp.from(Instant.now()),
                                             ehrId,
                                             ((FolderAccess) folderAccess).getContributionAccess())));
         }

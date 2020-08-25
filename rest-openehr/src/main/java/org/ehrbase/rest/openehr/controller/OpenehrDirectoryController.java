@@ -38,7 +38,6 @@ import org.ehrbase.api.service.FolderService;
 import org.ehrbase.response.ehrscape.FolderDto;
 import org.ehrbase.response.openehr.DirectoryResponseData;
 import org.ehrbase.response.openehr.ErrorResponseData;
-import org.ehrbase.rest.openehr.annotation.RequestUrl;
 import org.ehrbase.rest.openehr.controller.OperationNotesResourcesReaderOpenehr.ApiNotes;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -354,8 +353,7 @@ public class OpenehrDirectoryController extends BaseController {
             @ApiParam(value = REQ_PREFER) @RequestHeader(value = PREFER, required = false, defaultValue = RETURN_MINIMAL) String prefer,
             @ApiParam(value = "{preceding_version_uid}", required = true) @RequestHeader(value = IF_MATCH) ObjectVersionId folderId,
             @ApiParam(value = "EHR identifier from resource path after ehr/", required = true) @PathVariable(value = "ehr_id") UUID ehrId,
-            @ApiParam(value = "Update data for the target FOLDER") @RequestBody Folder folder,
-            @RequestUrl String requestUrl
+            @ApiParam(value = "Update data for the target FOLDER") @RequestBody Folder folder
     ) {
 
         // Check for existence of EHR record
@@ -438,7 +436,7 @@ public class OpenehrDirectoryController extends BaseController {
                     }
             )
     })
-    public ResponseEntity deleteFolder(
+    public ResponseEntity<DirectoryResponseData> deleteFolder(
             @ApiParam(value = REQ_OPENEHR_VERSION) @RequestHeader(value = "openEHR-VERSION", required = false) String openEhrVersion,
             @ApiParam(value = REQ_OPENEHR_AUDIT) @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openEhrAuditDetails,
             @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
@@ -562,6 +560,7 @@ public class OpenehrDirectoryController extends BaseController {
         return pathPattern.matcher(path).matches();
     }
 
+    // TODO: When Archie has fixed uid handling replace these method
     public UUID extractUuidFromObjectVersionId(ObjectVersionId folderId) {
 
         String value = folderId.getValue();
@@ -575,6 +574,7 @@ public class OpenehrDirectoryController extends BaseController {
         return UUID.fromString(value.substring(0, index));
     }
 
+    // TODO: When Archie has fixed uid handling replace these method
     private Integer getVersionFromObjectVersionId(ObjectVersionId versionId) {
         String value = versionId.getValue();
         if (value == null) {

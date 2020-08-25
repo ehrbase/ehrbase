@@ -621,7 +621,7 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
                                 filteredHierarchicalTable.field("parent_folder", UUID.class).eq(folderUid))).asTable();
 
 
-        SelectJoinStep<Record> folderSelectedRecordSub = domainAccess.getContext().withRecursive("subfolders").as(
+        return domainAccess.getContext().withRecursive("subfolders").as(
                 select(initial_table2.fields()).
                         from(initial_table2).
                         union(
@@ -635,9 +635,7 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
                                         leftJoin(allFolderRowsUnifiedAndFilteredIterative).
                                         on(
                                                 allFolderRowsUnifiedAndFilteredIterative.field("id", FOLDER.ID.getType()).eq(subfolderChildFolder)))
-        ).select().from(table(name("subfolders")));
-
-        return folderSelectedRecordSub.fetch();
+        ).select().from(table(name("subfolders"))).fetch();
     }
 
     public static I_FolderAccess getInstanceForExistingFolder(

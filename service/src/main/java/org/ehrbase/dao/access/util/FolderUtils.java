@@ -98,6 +98,7 @@ public class FolderUtils {
         }
     }
 
+    // TODO: Remove after Archie fixes handling of ObjectVersionIds
     public static UUID extractUuidFromObjectVersionId(ObjectVersionId folderId) {
 
         String value = folderId.getValue();
@@ -111,6 +112,7 @@ public class FolderUtils {
         return UUID.fromString(value.substring(0, index));
     }
 
+    // TODO: Remove after Archie fixes handling of ObjectVersionIds
     public static Integer extractVersionNumberFromObjectVersionId(ObjectVersionId objectVersionId) {
 
         String value = objectVersionId.getValue();
