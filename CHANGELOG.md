@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Added Junit5 support via spring-boot-starter-test (https://github.com/ehrbase/ehrbase/pull/298)
+
 ### Fixed
 
 - Detect duplicates on POST Directory (see: https://github.com/ehrbase/ehrbase/pull/281)
