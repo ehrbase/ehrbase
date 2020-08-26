@@ -22,12 +22,11 @@ package org.ehrbase.dao.access.jooq;
 
 import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.support.DataAccess;
+import org.ehrbase.dao.access.util.TransactionTime;
 import org.ehrbase.jooq.pg.tables.records.CompositionHistoryRecord;
 import org.jooq.Result;
-import org.jooq.impl.DSL;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.AbstractMap;
 import java.util.UUID;
@@ -61,7 +60,7 @@ public class CompositionHistoryAccess extends DataAccess implements I_Compositio
     @Override
     public UUID commit() {
         if (this.record.getSysTransaction() == null) {
-            this.record.setSysTransaction(Timestamp.valueOf(LocalDateTime.now()));
+            this.record.setSysTransaction(TransactionTime.millis());
             this.record.setSysPeriod(new AbstractMap.SimpleEntry<>(OffsetDateTime.now(), null));
         }
         if (record.insert() == 1)

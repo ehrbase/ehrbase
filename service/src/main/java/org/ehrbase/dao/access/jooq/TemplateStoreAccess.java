@@ -26,6 +26,7 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_TemplateStoreAccess;
 import org.ehrbase.dao.access.support.DataAccess;
+import org.ehrbase.dao.access.util.TransactionTime;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.ehrbase.jooq.pg.tables.records.TemplateStoreRecord;
 import org.jooq.Record2;
@@ -38,7 +39,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.List;
@@ -74,7 +74,7 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
 
     @Override
     public UUID commit() {
-        return commit(Timestamp.valueOf(LocalDateTime.now()));
+        return commit(TransactionTime.millis());
     }
 
     @Override
@@ -104,12 +104,12 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
 
     @Override
     public Boolean update() {
-        return update(Timestamp.valueOf(LocalDateTime.now()), false);
+        return update(TransactionTime.millis(), false);
     }
 
     @Override
     public Boolean update(Boolean force) {
-        return update(Timestamp.valueOf(LocalDateTime.now()), force);
+        return update(TransactionTime.millis(), force);
     }
 
     @Override
@@ -137,7 +137,7 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
     private static OPERATIONALTEMPLATE buildOperationaltemplate(String content) {
         InputStream inputStream = new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
 
-        org.openehr.schemas.v1.TemplateDocument document = null;
+        org.openehr.schemas.v1.TemplateDocument document;
         try {
             document = org.openehr.schemas.v1.TemplateDocument.Factory.parse(inputStream);
         } catch (XmlException | IOException e) {
