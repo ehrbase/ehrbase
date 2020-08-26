@@ -28,11 +28,11 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
-import org.ehrbase.dao.access.util.TransactionTime;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.tables.records.AuditDetailsRecord;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
@@ -94,7 +94,7 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
 
     @Override
     public UUID commit() {
-        return commit(TransactionTime.millis());
+        return commit(Timestamp.valueOf(LocalDateTime.now()));
     }
 
     @Override
@@ -131,12 +131,12 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
 
     @Override
     public Boolean update(Timestamp transactionTime) {
-        return update(TransactionTime.millis(), false);
+        return update(Timestamp.valueOf(LocalDateTime.now()), false);
     }
 
     @Override
     public Boolean update(Boolean force) {
-        return update(TransactionTime.millis(), force);
+        return update(Timestamp.valueOf(LocalDateTime.now()), force);
     }
 
     @Override

@@ -28,7 +28,6 @@ import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
-import org.ehrbase.dao.access.util.TransactionTime;
 import org.ehrbase.jooq.pg.tables.records.StatusHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.StatusRecord;
 import org.apache.logging.log4j.LogManager;
@@ -37,6 +36,7 @@ import org.jooq.DSLContext;
 import org.jooq.Result;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static org.ehrbase.jooq.pg.Tables.*;
@@ -236,7 +236,7 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
 
     @Override
     public Boolean update(Boolean force) {
-        return update(null, TransactionTime.millis(), force);
+        return update(null, Timestamp.valueOf(LocalDateTime.now()), force);
     }
 
     @Override   // root update()

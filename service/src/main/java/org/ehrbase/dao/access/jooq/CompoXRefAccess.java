@@ -27,9 +27,9 @@ import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.ehrbase.dao.access.util.TransactionTime;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 
@@ -41,7 +41,7 @@ import static org.ehrbase.jooq.pg.Tables.COMPO_XREF;
  */
 public class CompoXRefAccess extends DataAccess implements I_CompoXrefAccess {
 
-    static Logger log = LogManager.getLogger(CompoXRefAccess.class);
+    static Logger log = LogManager.getLogger(CompositionAccess.class);
 
     public CompoXRefAccess(I_DomainAccess domainAccess) {
         super(domainAccess);
@@ -68,7 +68,7 @@ public class CompoXRefAccess extends DataAccess implements I_CompoXrefAccess {
 
     @Override
     public int setLink(UUID masterUid, UUID childUid) {
-        Timestamp timestamp = TransactionTime.millis();
+        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
         return getContext()
                 .insertInto(COMPO_XREF)
                 .columns(COMPO_XREF.MASTER_UUID, COMPO_XREF.CHILD_UUID, COMPO_XREF.SYS_TRANSACTION)

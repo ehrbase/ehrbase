@@ -30,7 +30,7 @@ import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectId;
-import org.apache.commons.collections.map.MultiValueMap;
+import org.apache.commons.collections4.map.MultiValueMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.definitions.ServerConfig;
@@ -40,7 +40,6 @@ import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
-import org.ehrbase.dao.access.util.TransactionTime;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.tables.records.*;
 import org.ehrbase.serialisation.dbencoding.RawJson;
@@ -51,8 +50,12 @@ import org.jooq.Record;
 import org.jooq.Result;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.ehrbase.jooq.pg.Tables.*;
 
@@ -73,7 +76,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     private ItemStructure otherDetails = null;
     private String otherDetailsTemplateId;
 
-    private I_ContributionAccess contributionAccess; //locally referenced contribution associated to ehr transactions
+    private I_ContributionAccess contributionAccess = null; //locally referenced contribution associated to ehr transactions
 
     private I_StatusAccess statusAccess; // associated EHR_STATUS. Each EHR has 1 EHR_STATUS
 
@@ -88,8 +91,11 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         super(context, null, null, serverConfig);
 
         this.ehrRecord = context.newRecord(EHR_);
-        // checking for and executing case of custom ehr ID
-        ehrRecord.setId(Objects.requireNonNullElseGet(ehrId, UUID::randomUUID));
+        if (ehrId != null) {    // checking for and executing case of custom ehr ID
+            ehrRecord.setId(ehrId);
+        } else {
+            ehrRecord.setId(UUID.randomUUID());
+        }
 
         // init a new EHR_STATUS with default values to associate with this EHR
         this.statusAccess = new StatusAccess(this, ehrRecord.getId());
@@ -227,7 +233,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             throw new IllegalArgumentException("Version number must be > 0");
 
         EhrAccess ehrAccess = new EhrAccess(domainAccess, ehrId);  // minimal access, needs attributes to be set before returning
-        EhrRecord record;
+        Record record;
 
         // necessary anyway, but if no version is provided assume latest version (otherwise this one will be overwritten with wanted one)
         I_StatusAccess statusAccess = I_StatusAccess.retrieveInstance(domainAccess, status);
@@ -273,7 +279,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             return null;
         }
 
-        ehrAccess.ehrRecord = record;
+        ehrAccess.ehrRecord = (EhrRecord) record;
 
         ehrAccess.isNew = false;
 
@@ -287,7 +293,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         DSLContext context = domainAccess.getContext();
         EhrAccess ehrAccess = new EhrAccess(domainAccess, ehrId);
 
-        EhrRecord record;
+        Record record;
 
         try {
             record = context.selectFrom(EHR_)
@@ -303,7 +309,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             return null;
         }
 
-        ehrAccess.ehrRecord = record;
+        ehrAccess.ehrRecord = (EhrRecord) record;
         //retrieve the corresponding status
         I_StatusAccess statusAccess = I_StatusAccess.retrieveInstanceByEhrId(domainAccess, ehrAccess.ehrRecord.getId());
         ehrAccess.setStatusAccess(statusAccess);
@@ -339,7 +345,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         if (ehrAccess == null)
             throw new IllegalArgumentException("No ehr found for id:" + ehrId);
 
-        Map<String, Object> idlist = new MultiValueMap();
+        Map<String, Object> idlist = new MultiValueMap<>();
 
         //getNewFolderAccessInstance the corresponding subject Identifiers
 
@@ -400,6 +406,12 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     @Override
     public DataAccess getDataAccess() {
         return this;
+    }
+
+    private String serializeOtherDetails() {
+
+        return new RawJson().marshal(otherDetails);
+
     }
 
     @Override
@@ -484,7 +496,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
      */
     @Override
     public UUID commit(UUID committerId, UUID systemId, String description) {
-        Timestamp timestamp = TransactionTime.millis();
+        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
         // prepare EHR_STATUS audit with given values
 
         // prepare associated contribution (with contribution's audit embedded)
@@ -494,7 +506,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         contributionAccess.setAuditDetailsChangeType(I_ConceptAccess.fetchContributionChangeType(this, I_ConceptAccess.ContributionChangeType.CREATION));
 
         statusAccess.setAuditAndContributionAuditValues(systemId, committerId, description);
-
+        //statusAccess.setContributionId(contributionId);
         return commit(timestamp);
     }
 
@@ -513,7 +525,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
      */
     @Override
     public Boolean update(Timestamp transactionTime, boolean force) {
-        boolean result;
+        boolean result = false;
 
         result = statusAccess.update(otherDetails, transactionTime, force);
 
@@ -545,11 +557,12 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     @Override
     public Boolean update(Boolean force) {
         throw new InternalServerException("INTERNAL: this update is not legal");
+        //return update(Timestamp.valueOf(LocalDateTime.now()), force);
     }
 
     @Override
     public Boolean update(UUID committerId, UUID systemId, ContributionDef.ContributionState state, I_ConceptAccess.ContributionChangeType contributionChangeType, String description) {
-        Timestamp timestamp = TransactionTime.millis();
+        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
         contributionAccess.setAuditDetailsValues(committerId, systemId, description);
         contributionAccess.setState(state);
         contributionAccess.setAuditDetailsChangeType(I_ConceptAccess.fetchContributionChangeType(this, contributionChangeType));
@@ -571,7 +584,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
      */
     @Override
     public UUID reload() {
-        EhrRecord record;
+        Record record;
 
         try {
             record = getContext().selectFrom(EHR_)
@@ -587,7 +600,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             return null;
         }
 
-        ehrRecord = record;
+        ehrRecord = (EhrRecord) record;
         //retrieve the corresponding status
         I_StatusAccess retStatusAccess = I_StatusAccess.retrieveInstanceByEhrId(this.getDataAccess(), ehrRecord.getId());
         setStatusAccess(retStatusAccess);
