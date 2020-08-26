@@ -23,6 +23,7 @@ import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,7 +40,6 @@ import org.ehrbase.jooq.binding.SysPeriodBinder;
 import org.ehrbase.jooq.pg.tables.records.FolderRecord;
 import org.ehrbase.jooq.pg.tables.records.ObjectRefRecord;
 import org.jooq.*;
-import org.postgresql.util.PGobject;
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 import java.util.*;
@@ -87,6 +87,9 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
     }
 
     /*************Data Access and modification methods*****************/
+
+    @Override
+    public ObjectVersionId create() { return null; }
 
     @Override
     public Boolean update(Timestamp transactionTime) {
@@ -510,10 +513,14 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
     /**
      * Retrieves a table with all the information to rebuild the directory related to the folders that have at least one child. If the folderUid provider corresponds to a leave folder then the result will be empty.
      * @param folderUid The top folder UID of the directory or subdirectory that will be retrieved as a table.
-     * @param timestamp The timestamp which used to determine which version to retrieve. The method will use the closest version available before or equal to the timestamp provided.
+     * @param ts The timestamp which used to determine which version to retrieve. The method will use the closest version available before or equal to the timestamp provided.
      * @return A table with all the information related to the hierarchy joint to the information of each of the folders that have some child.
      */
-    private static Result<Record> buildUnionOfFolderHierarchiesTable(UUID folderUid, Timestamp timestamp, I_DomainAccess domainAccess){
+    private static Result<Record> buildUnionOfFolderHierarchiesTable(UUID folderUid, Timestamp ts, I_DomainAccess domainAccess){
+
+        // TODO: Quick fix for timestamp precision problems with Java and Postgres Timestamps
+        // TODO: See this issue: https://github.com/ehrbase/ehrbase/issues/291
+        Timestamp timestamp = Timestamp.from(ts.toInstant().plusMillis(1));
 
         Table<?> united_hierarchies_table1 = table(
                 select()
@@ -614,12 +621,12 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
                                 filteredHierarchicalTable.field("parent_folder", UUID.class).eq(folderUid))).asTable();
 
 
-        Result<Record> folderSelectedRecordSub = domainAccess.getContext().withRecursive("subfolders").as(
+        return domainAccess.getContext().withRecursive("subfolders").as(
                 select(initial_table2.fields()).
                         from(initial_table2).
                         union(
                                 (select(ArrayUtils.addAll(filteredHierarchicalTable.fields(), allFolderRowsUnifiedAndFilteredIterative.fields())).
-                                		from(filteredHierarchicalTable).
+                                        from(filteredHierarchicalTable).
                                         innerJoin("subfolders").
                                         on(
                                                 filteredHierarchicalTable.field("parent_folder", FOLDER_HIERARCHY.PARENT_FOLDER.getType()).
@@ -629,8 +636,18 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
                                         on(
                                                 allFolderRowsUnifiedAndFilteredIterative.field("id", FOLDER.ID.getType()).eq(subfolderChildFolder)))
         ).select().from(table(name("subfolders"))).fetch();
+    }
 
-        return folderSelectedRecordSub;
+    public static I_FolderAccess getInstanceForExistingFolder(
+            I_DomainAccess domainAccess,
+            ObjectVersionId folderId,
+            Timestamp timestamp
+    ) {
+        return FolderHistoryAccess.retrieveInstanceForExistingFolder(
+                domainAccess,
+                FolderUtils.extractUuidFromObjectVersionId(folderId),
+                timestamp
+        );
     }
 
     public static I_FolderAccess retrieveInstanceForExistingFolder(I_DomainAccess domainAccess, UUID folderId, Timestamp timestamp){
