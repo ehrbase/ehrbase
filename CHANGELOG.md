@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support context-less composition (see: https://github.com/ehrbase/ehrbase/pull/288)
 - Fixed missing AQL level of parenthesis when using NOT in WHERE clause (see https://github.com/ehrbase/ehrbase/pull/293)
 - Allow duplicated paths in AQL resultsets (see: https://github.com/ehrbase/ehrbase/issues/263)
+- Transaction timestamps are now truncated to ms (see: https://github.com/ehrbase/ehrbase/pull/299)
 
 ## [0.13.0] (beta)
 
