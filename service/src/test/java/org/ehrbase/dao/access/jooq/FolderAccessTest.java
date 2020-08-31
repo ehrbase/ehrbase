@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -434,7 +435,7 @@ public class FolderAccessTest {
         I_FolderAccess folderAccess = FolderAccess.buildNewFolderAccessHierarchy(
                 testDomainAccess,
                 folder,
-                DateTime.now(),
+                Timestamp.from(Instant.now()),
                 ehrId,
                 contributionAccess
         );
@@ -457,7 +458,7 @@ public class FolderAccessTest {
         I_FolderAccess folderAccess= FolderAccess.buildNewFolderAccessHierarchy(
                 testDomainAccess,
                 folder,
-                DateTime.now(),
+                Timestamp.from(Instant.now()),
                 ehrId,
                 contributionAccess
         );

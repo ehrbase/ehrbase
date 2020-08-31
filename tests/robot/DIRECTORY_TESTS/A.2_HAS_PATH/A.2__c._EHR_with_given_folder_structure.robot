@@ -94,9 +94,6 @@ DS-09 - retrieving non-existing (random) path
 
 DS-10 - has path with special characters
     [Tags]
-
-        TRACE GITHUB ISSUE  TODO  not-ready
-
     get FOLDER in DIRECTORY at version (JSON)    /foldername-w-special-chars
     validate GET-@version response - 200 retrieved    foldername-w-special-chars
 

@@ -31,9 +31,11 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.util.UriUtils;
 
 import javax.servlet.http.HttpServletRequest;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -207,6 +209,13 @@ public abstract class BaseController {
         return new ResponseEntity<>(error, status);
     }
 
+    protected ResponseEntity<Map<String, String>> createErrorResponse(String message, HttpStatus status, HttpHeaders headers) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", message);
+        error.put("status", status.getReasonPhrase());
+        return new ResponseEntity<>(error, headers, status);
+    }
+
     /**
      * Extracts the UUID base from a versioned UID. Or, if
      *
@@ -318,6 +327,23 @@ public abstract class BaseController {
         return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
+    /**
+     * Handler for parsing input string parameters to specific type (e.g. time string that cannot be parsed into
+     * Instant since it is not a valid ISO 6801 date time string
+     *
+     * @param req - Request 
+     * @param e - Exception thrown from converter
+     * @return ResponseEntity<Map<String, String>> as BAD_REQUEST - 400
+     */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String, String>> restErrorHandler(HttpServletRequest req, MethodArgumentTypeMismatchException e) {
+        return createErrorResponse(String.format(
+                "Value %s for parameter %s is not valid.",
+                e.getValue(),
+                e.getName()
+        ), HttpStatus.BAD_REQUEST);
+    }
+
     // 401 Unauthorized is created automatically by framework
 
 
@@ -358,7 +384,15 @@ public abstract class BaseController {
      */
     @ExceptionHandler(PreconditionFailedException.class)
     public ResponseEntity<Map<String, String>> restErrorHandler(PreconditionFailedException e) {
-        return createErrorResponse(e.getMessage(), HttpStatus.PRECONDITION_FAILED);
+
+        if (e.getUrl() == null || e.getCurrentVersionUid() == null) {
+            return createErrorResponse(e.getMessage(), HttpStatus.PRECONDITION_FAILED);
+        } else {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setETag("\"" + e.getCurrentVersionUid() + "\"");
+            headers.setLocation(URI.create(e.getUrl()));
+            return createErrorResponse(e.getMessage(), HttpStatus.PRECONDITION_FAILED, headers);
+        }
     }
 
     /**

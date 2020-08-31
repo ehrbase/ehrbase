@@ -119,6 +119,10 @@
             <artifactId>test-data</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.ehrbase.openehr</groupId>
+            <artifactId>rest-openehr</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

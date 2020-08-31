@@ -19,6 +19,7 @@
 package org.ehrbase.api.service;
 
 import com.nedap.archie.rm.directory.Folder;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.response.ehrscape.FolderDto;
 import org.ehrbase.response.ehrscape.StructuredString;
@@ -41,52 +42,53 @@ public interface FolderService extends BaseService {
      * @param content - {@link com.nedap.archie.rm.directory.Folder} to persist
      * @return UUID of the new created Folder from database
      */
-    UUID create(UUID ehrId, Folder content);
+    ObjectVersionId create(UUID ehrId, Folder content);
 
     /**
-     * Returns a versioned folder object by target version number. If the
-     * version number is missing the latest version will be fetched from
-     * folder table. If the version is older than the last one from folder
-     * table the target folder will be fetched from folder_history.
+     * Retrieves a folder from database identified by object_version_uid and
+     * extracts the given sub path of existing. If the object_version_uid does
+     * not contain a version number the latest entry will be returned. A path
+     * with common unix like root notation '/' will be treated as if there is
+     * no path specified and the full tree will be returned.
      *
-     * @param folderId - UUID of the folder to fetch
-     * @param version - Target version to fetch
-     * @param path - Path of sub folder to get
-     * @return Data transfer object to return to client
+     * @param folderId - object_version_uid for target folder
+     * @param path - Optional path to sub folder to extract
+     * @return FolderDTO for further usage in upper layers
      */
-    Optional<FolderDto> retrieve(UUID folderId, Integer version, String path);
-
-    Optional<FolderDto> retrieveLatest(UUID ehrId, String path);
+    Optional<FolderDto> get(ObjectVersionId folderId, String path);
 
     /**
-     * Returns a versioned folder object which has been or is current at the
-     * given timestamp. Therefore the folder table must be queried if there is
-     * an actual folder with that uuid that has been created before the given
-     * timestamp. Otherwise the folder_history table will be queried to find
-     * a folder created after that timestamp.
-     *
-     * @param folderId - UUID of the target folder
-     * @param timestamp - Given timestamp to look for an actual folder
-     * @return - Created folder object
+     * Fetches the latest entry from database. This will be
+     * @param folderId - object_version_uid for target folder
+     * @param path - Optional path to sub folder to extract
+     * @return FolderDTO for further usage in other layers
      */
-    Optional<FolderDto> retrieveByTimestamp(
-            UUID folderId,
-            Timestamp timestamp,
-            String path
-    );
+    Optional<FolderDto> getLatest(ObjectVersionId folderId, String path);
+
+    /**
+     * Fetches an folder entry from database identified by the root folder uid
+     * and the given timestamp. If the current version has ben modified after
+     * the given timestamp the folder will be searched inside the folder history
+     * table.
+     *
+     * @param folderId - object_version_uid for target folder
+     * @param timestamp - Timestamp of folder version to find
+     * @param path - Optional path to sub folder to extract
+     * @return FolderDTO for further usage in other layers
+     */
+    Optional<FolderDto> getByTimeStamp(ObjectVersionId folderId, Timestamp timestamp, String path);
 
     /**
      * Updates a target folder entry identified by the given folderId with new
      * content. The content string will be serialized from the given source
      * format.
-     * TODO: Copy from CompositionService. Must be designed for folder
      *
-     * @param folderId - Id of the target folder
+     * @param folderId - Full version_uid for folder including system id and version
      * @param update - Update content from request body
      * @param ehrId - EHR id for contribution creation
      * @return Updated folder entry
      */
-    Optional<FolderDto> update(UUID folderId, Folder update, UUID ehrId);
+    Optional<FolderDto> update(ObjectVersionId folderId, Folder update, UUID ehrId);
 
     /**
      * Marks a given folder as deleted and moves it into the history table. The
@@ -96,7 +98,7 @@ public interface FolderService extends BaseService {
      * @param folderId - Id of the target folder
      * @return Timestamp of successful delete operation
      */
-    LocalDateTime delete(UUID folderId);
+    LocalDateTime delete(ObjectVersionId folderId);
 
     /**
      * Serializes folder content from request body into a structured string
@@ -118,7 +120,8 @@ public interface FolderService extends BaseService {
      * @return Version number of the latest folder entry
      * @throws ObjectNotFoundException - Folder entry does not exist
      */
-    Integer getLastVersionNumber(UUID folderId);
+    Integer getLastVersionNumber(ObjectVersionId folderId);
+
 
     /**
      * Searches for the folder version that was the current version at the
@@ -130,5 +133,5 @@ public interface FolderService extends BaseService {
      * @return - Version number that was actual at the timestamp
      * @throws ObjectNotFoundException - Folder entry does not exist at the time
      */
-    Integer getVersionNumberForTimestamp(UUID folderId, LocalDateTime timestamp);
+    Integer getVersionNumberForTimestamp(ObjectVersionId folderId, Timestamp timestamp);
 }

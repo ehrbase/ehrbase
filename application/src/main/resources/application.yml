@@ -43,6 +43,9 @@ spring:
   flyway:
     schemas: ehr
 
+  jackson:
+    default-property-inclusion: NON_NULL
+
 security:
   authType: BASIC
   authUser: ehrbase-user
