@@ -18,11 +18,13 @@
 
 package org.ehrbase.dao.access.interfaces;
 
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import org.ehrbase.dao.access.jooq.FolderAccess;
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import org.ehrbase.dao.access.jooq.FolderHistoryAccess;
+import org.ehrbase.dao.access.util.FolderUtils;
 import org.joda.time.DateTime;
 
 import java.sql.Timestamp;
@@ -92,6 +94,28 @@ public interface I_FolderAccess extends I_SimpleCRUD {
 
     static I_FolderAccess retrieveInstanceForExistingFolder(I_DomainAccess domainAccess, UUID folderId, Timestamp timestamp){
         return FolderHistoryAccess.retrieveInstanceForExistingFolder(domainAccess, folderId, timestamp);
+    }
+
+    /**
+     * Creates a new directory object with a given structure and returns a valid Object_Version_Id containing the given
+     * system identifier and version part.
+     *
+     * @return Object_Version_Id for new root directory folder
+     */
+    ObjectVersionId create();
+
+    static I_FolderAccess getInstanceForExistingFolder(I_DomainAccess domainAccess, ObjectVersionId folderId){
+        return FolderAccess.retrieveInstanceForExistingFolder(
+                domainAccess,
+                FolderUtils.extractUuidFromObjectVersionId(folderId)
+        );
+    }
+
+    static I_FolderAccess getInstanceForExistingFolder(I_DomainAccess domainAccess, ObjectVersionId folderId, Timestamp timestamp) {
+        return FolderAccess.retrieveInstanceForExistingFolder(
+                domainAccess,
+                FolderUtils.extractUuidFromObjectVersionId(folderId)
+        );
     }
 
     /**

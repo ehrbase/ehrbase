@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Detection of duplicate directories on EHR on POST
+- Using ObjectVersionId for DIRECTORY Controller and Service Layers (see: https://github.com/ehrbase/ehrbase/pull/297)
 - Added Junit5 support via spring-boot-starter-test (https://github.com/ehrbase/ehrbase/pull/298)
 
 ### Fixed
@@ -23,7 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support context-less composition (see: https://github.com/ehrbase/ehrbase/pull/288)
 - Fixed missing AQL level of parenthesis when using NOT in WHERE clause (see https://github.com/ehrbase/ehrbase/pull/293)
 - Allow duplicated paths in AQL resultsets (see: https://github.com/ehrbase/ehrbase/issues/263)
-- Transaction timestamps are now truncated to millisecs (see: https://github.com/ehrbase/ehrbase/pull/299)
+- Transaction timestamps are now truncated to ms (see: https://github.com/ehrbase/ehrbase/pull/299)
+
 
 ## [0.13.0] (beta)
 
@@ -32,19 +35,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added support for various functions in AQL (aggregation, statistical, string etc.) (see: https://github.com/ehrbase/ehrbase/pull/223/)
 
 ### Changed
+
+#### DIRECTORY
+
+- PreconditionFailed error response contains proper ETag and Location headers (see: https://github.com/ehrbase/ehrbase/pull/183)
+
+#### Robot Tests
+
 - Update of AQL-Query test suite (see: https://github.com/ehrbase/ehrbase/pull/179)
 
 ### Fixed
+
+
+- force a default timezone if not present for context/start_time and context/end_time if specified (https://github.com/ehrbase/ehrbase/pull/215)
+- Representation of version uid of EHR_STATUS (see: https://github.com/ehrbase/ehrbase/pull/180)
+- Refactored support of PartyProxy and ObjectId in both CRUD and AQL operations (see https://github.com/ehrbase/ehrbase/pull/248)
+- - fix support of mandatory attributes in ENTRY specialization including rm_version (see https://github.com/ehrbase/ehrbase/pull/247)
+
+#### DIRECTORY
+
+- Directory IDs from input path or If-Match header must now be in version_uid format (see https://github.com/ehrbase/ehrbase/pull/183)
+- Folder IDs inside body are now parsed correctly (see: https://github.com/ehrbase/ehrbase/pull/183)
+- PreconditionFailed error response contains proper ETag and Location headers (see: https://github.com/ehrbase/ehrbase/pull/183)
+
+
+#### Robot Tests
+
 - Added validation checking for other_details and ehr_status. (see: https://github.com/ehrbase/ehrbase/pull/207)
 - Supports archetype_node_id and name for EHR_STATUS (see: https://github.com/ehrbase/ehrbase/pull/207)
 - fixes bad canonical encoding for observation/data/origin (see: https://github.com/ehrbase/ehrbase/pull/213)
 - POST without accept header for ehr, composition and contribution endpoints (see: https://github.com/ehrbase/ehrbase/pull/199)
-- force a default timezone if not present for context/start_time and context/end_time if specified (https://github.com/ehrbase/ehrbase/pull/215)
-- Representation of version uid of EHR_STATUS (see: https://github.com/ehrbase/ehrbase/pull/180)
-- fix support of context/participations (see CR #267)
-- Refactored support of PartyProxy and ObjectId in both CRUD and AQL operations (see https://github.com/ehrbase/ehrbase/pull/248)
-- fix support of mandatory attributes in ENTRY specialization including rm_version (see https://github.com/ehrbase/ehrbase/pull/247)
-
 
 
 ## [0.12.0] (alpha)
@@ -65,6 +85,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Java error with UTF-8 encoding resolved (see: https://github.com/ehrbase/ehrbase/pull/173)
 - AQL refactoring and fixes to support correct canonical json representation (see: https://github.com/ehrbase/ehrbase/pull/201)
 - fix terminal value test for non DataValue 'value' attribute (see: https://github.com/ehrbase/ehrbase/pull/189)
+
+
 
 ## [0.11.0] (alpha)
 
