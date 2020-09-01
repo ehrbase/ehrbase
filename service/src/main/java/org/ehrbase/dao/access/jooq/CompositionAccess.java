@@ -38,10 +38,7 @@ import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
-import org.ehrbase.jooq.pg.tables.records.AuditDetailsRecord;
-import org.ehrbase.jooq.pg.tables.records.CompositionHistoryRecord;
-import org.ehrbase.jooq.pg.tables.records.CompositionRecord;
-import org.ehrbase.jooq.pg.tables.records.EventContextRecord;
+import org.ehrbase.jooq.pg.tables.records.*;
 import org.ehrbase.serialisation.dbencoding.rmobject.FeederAuditEncoding;
 import org.ehrbase.serialisation.dbencoding.rmobject.LinksEncoding;
 import org.ehrbase.service.IntrospectService;
@@ -55,8 +52,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.ehrbase.jooq.pg.Tables.*;
-import static org.jooq.impl.DSL.count;
-import static org.jooq.impl.DSL.max;
+import static org.jooq.impl.DSL.*;
 
 /**
  * operations on the static part of Compositions (eg. non archetyped attributes)
@@ -285,9 +281,32 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
             String templateId
     ) {
         return domainAccess.getContext()
-                .select()
-                .from(ENTRY)
+                .selectFrom(ENTRY)
                 .where(ENTRY.TEMPLATE_ID.eq(templateId))
+                .fetch()
+                .getValues(ENTRY.COMPOSITION_ID);
+    }
+
+    /**
+     * Retrieves a list of composition UUIDs that are using a given Operational template id.
+     *
+     * @param domainAccess - Database access context
+     * @param templateIds - Operational Template ids to check
+     * @return - List of UUIDs using the operational Templates
+     */
+    public static List<UUID> retrieveCompositionIdsForTemplates(
+            I_DomainAccess domainAccess,
+            List<String> templateIds
+    ) {
+        return domainAccess.getContext()
+                .select(ENTRY.COMPOSITION_ID)
+                .from(ENTRY)
+                .where(ENTRY.TEMPLATE_ID.in(templateIds))
+                .union(
+                        select(ENTRY_HISTORY.COMPOSITION_ID)
+                        .from(ENTRY_HISTORY)
+                        .where(ENTRY_HISTORY.TEMPLATE_ID.in(templateIds))
+                )
                 .fetch()
                 .getValues(ENTRY.COMPOSITION_ID);
     }

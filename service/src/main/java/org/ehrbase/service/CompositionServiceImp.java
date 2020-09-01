@@ -118,7 +118,18 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
             logger.error(e.getMessage());
             throw new InternalServerException(e);
         }
+    }
 
+    @Override
+    public Optional<List<UUID>> retrieveAllForTemplates(List<String> templateIds) {
+        List<UUID> compositionUuidList = I_CompositionAccess.retrieveCompositionIdsForTemplates(
+                getDataAccess(),
+                templateIds
+        );
+        if (compositionUuidList.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(compositionUuidList);
     }
 
     // Helper function to create returnable DTO

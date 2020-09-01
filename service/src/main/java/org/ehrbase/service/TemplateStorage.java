@@ -57,4 +57,11 @@ public interface TemplateStorage {
      * @return - Deletion was successful or not
      */
     boolean deleteTemplate(String templateId);
+
+    /**
+     * Removes all templates from template storage and returns the number of deleted entries.
+     *
+     * @return - Count of deleted templates
+     */
+    int adminDeleteAllTemplates(List<TemplateMetaData> templateMetaDataList);
 }

@@ -27,8 +27,8 @@ import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_TemplateStoreAccess;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
+import org.ehrbase.jooq.pg.Routines;
 import org.ehrbase.jooq.pg.tables.records.TemplateStoreRecord;
-import org.jooq.Record1;
 import org.jooq.Record2;
 import org.jooq.Result;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
@@ -192,6 +192,17 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
                 .deleteFrom(TEMPLATE_STORE)
                 .where(TEMPLATE_STORE.TEMPLATE_ID.eq(templateId))
                 .execute() > 0;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public static int adminDeleteAllTemplates(I_DomainAccess domainAccess) {
+        try {
+            return Routines.adminDeleteTemplates(domainAccess.getContext().configuration());
+        } catch (Exception e) {
+            throw new InternalServerException(e.getMessage());
+        }
     }
 
     private static TemplateMetaData buildMetadata(Record2<String, Timestamp> r) {

@@ -55,6 +55,8 @@ import org.ehrbase.aql.containment.JsonPathQueryResult;
 import org.ehrbase.aql.containment.OptJsonPath;
 import org.ehrbase.aql.containment.TemplateIdQueryTuple;
 import org.ehrbase.configuration.CacheConfiguration;
+import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
+import org.ehrbase.dao.access.interfaces.I_EntryAccess;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.ehrbase.opt.OptVisitor;
@@ -119,7 +121,10 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     private boolean allowTemplateOverwrite;
 
     @Autowired
-    public KnowledgeCacheService(@Qualifier("templateDBStorageService") TemplateStorage templateStorage, CacheManager cacheManager) {
+    public KnowledgeCacheService(
+            @Qualifier("templateDBStorageService") TemplateStorage templateStorage,
+            CacheManager cacheManager
+            ) {
         this.templateStorage = templateStorage;
         this.cacheManager = cacheManager;
 
@@ -369,6 +374,22 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
             this.atOptCache.remove(template.getTemplateId().getValue());
             this.idxCache.remove(UUID.fromString(template.getUid().getValue()));
         }
+
+        return deleted;
+    }
+
+    public int deleteAllOperationalTemplates() {
+        // Get all operational templates
+        List<TemplateMetaData> templateList = this.templateStorage.listAllOperationalTemplates();
+        // If list is empty no deletion required
+        if (templateList.isEmpty()) {
+            return 0;
+        }
+        int deleted = this.templateStorage.adminDeleteAllTemplates(templateList);
+
+        // Clear cache
+        this.atOptCache.clear();
+        this.idxCache.clear();
 
         return deleted;
     }

@@ -208,6 +208,17 @@ public interface I_CompositionAccess extends I_SimpleCRUD {
     }
 
     /**
+     * Retrieves a list of composition UUIDs that are using a given Operational template id.
+     *
+     * @param domainAccess - Database access context
+     * @param templateIds - Operational Template ids to check
+     * @return - List of UUIDs using the operational Templates
+     */
+    static List<UUID> retrieveCompositionIdsForTemplates(I_DomainAccess domainAccess, List<String> templateIds) {
+        return CompositionAccess.retrieveCompositionIdsForTemplates(domainAccess, templateIds);
+    }
+
+    /**
      * check if a composition has a previous version in history
      *
      * @param domainAccess

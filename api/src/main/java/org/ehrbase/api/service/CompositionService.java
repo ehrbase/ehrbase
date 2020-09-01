@@ -58,6 +58,8 @@ public interface CompositionService extends BaseService {
      */
     Optional<List<UUID>> retrieveAllForTemplate(String templateId);
 
+    Optional<List<UUID>> retrieveAllForTemplates(List<String> templateIds);
+
     /**
      * Public serializer entry point which will be called with
      * composition dto fetched from database and the
@@ -194,6 +196,5 @@ public interface CompositionService extends BaseService {
      * @return True if deleted, false if not
      */
     boolean isDeleted(UUID versionedObjectId);
-
 
 }

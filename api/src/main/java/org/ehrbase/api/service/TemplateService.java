@@ -62,4 +62,13 @@ public interface TemplateService extends BaseService {
      * @return - New template id
      */
     String adminUpdateTemplate(String templateId, String content);
+
+    /**
+     * Deletes all templates from target template storage and returns the number of deleted templates. If any template
+     * is referenced by at least one Composition the deletion will be rejected and no template will be removed.
+     *
+     * @return - Number of deleted templates
+     */
+    int adminDeleteAllTemplates();
+    
 }

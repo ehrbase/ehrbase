@@ -169,6 +169,18 @@ public class TemplateFileStorageService implements TemplateStorage {
         }
     }
 
+    @Override
+    public int adminDeleteAllTemplates(List<TemplateMetaData> templateMetaDataList) {
+        optFileMap.forEach((filename, file) -> {
+            try {
+                Files.deleteIfExists(file.toPath());
+            } catch (IOException e) {
+                throw new InternalServerException(e.getMessage());
+            }
+        });
+        return templateMetaDataList.size();
+    }
+
     boolean addKnowledgeSourcePath(String path) {
 
         if (path == null) return false;
@@ -218,6 +230,4 @@ public class TemplateFileStorageService implements TemplateStorage {
         //load it in the cache
         optFileMap.put(filename, path.toFile());
     }
-
-
 }

@@ -43,6 +43,7 @@ import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.query.AsyncSqlQuery;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
+import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.ehrbase.jooq.pg.enums.EntryType;
 import org.ehrbase.jooq.pg.tables.records.EntryHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EntryRecord;
@@ -60,6 +61,7 @@ import org.jooq.impl.DSL;
 
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.ehrbase.jooq.pg.Tables.*;
 
@@ -468,6 +470,21 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
             return entryRecord.delete();
 
         return 0;
+    }
+
+    public static boolean areTemplateIdsUsed(I_DomainAccess domainAccess, List<TemplateMetaData> templateIds) {
+
+        // Get a list of template ids
+        List<String> ids = templateIds.stream()
+                .map(idEntry -> idEntry.getOperationaltemplate().getTemplateId().toString())
+                .collect(Collectors.toList());
+
+        Result<EntryRecord> entries =  domainAccess.getContext()
+                .selectFrom(ENTRY)
+                .where(ENTRY.TEMPLATE_ID.in(ids.toString()))
+                .fetch();
+
+        return entries.isNotEmpty();
     }
 
     @Override

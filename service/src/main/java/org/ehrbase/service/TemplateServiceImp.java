@@ -205,4 +205,30 @@ public class TemplateServiceImp extends BaseService implements TemplateService {
         // Replace content
         return this.knowledgeCacheService.updateOperationalTemplate(content.getBytes(StandardCharsets.UTF_8));
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int adminDeleteAllTemplates() {
+
+        List<String> templateIds = this.getAllTemplates()
+                .stream()
+                .map(TemplateMetaDataDto::getTemplateId)
+                .collect(Collectors.toList());
+
+        Optional<List<UUID>> compositionsUuidList =
+                this.compositionService.retrieveAllForTemplates(templateIds);
+
+        if (compositionsUuidList.isEmpty()) {
+            return this.knowledgeCacheService.deleteAllOperationalTemplates();
+        } else {
+            throw new UnprocessableEntityException(
+                    String.format(
+                            "Cannot remove all templates since there are Compositions using templates:%s",
+                            compositionsUuidList.get().toString()
+                    )
+            );
+        }
+    }
 }

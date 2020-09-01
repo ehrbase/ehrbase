@@ -75,6 +75,11 @@ public class TemplateDBStorageService implements TemplateStorage {
         return I_TemplateStoreAccess.deleteTemplate(getDataAccess(), templateId);
     }
 
+    @Override
+    public int adminDeleteAllTemplates(List<TemplateMetaData> templateMetaDataList) {
+        return I_TemplateStoreAccess.adminDeleteAllTemplates(getDataAccess());
+    }
+
     protected I_DomainAccess getDataAccess() {
         return new ServiceDataAccess(context, null, null, this.serverConfig);
     }

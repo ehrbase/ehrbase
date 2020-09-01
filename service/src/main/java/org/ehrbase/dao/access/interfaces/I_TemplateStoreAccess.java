@@ -51,4 +51,8 @@ public interface I_TemplateStoreAccess extends I_SimpleCRUD {
     static boolean deleteTemplate(I_DomainAccess domainAccess, String templateId) {
         return TemplateStoreAccess.deleteTemplate(domainAccess, templateId);
     }
+
+    static int adminDeleteAllTemplates(I_DomainAccess domainAccess) {
+        return TemplateStoreAccess.adminDeleteAllTemplates(domainAccess);
+    };
 }

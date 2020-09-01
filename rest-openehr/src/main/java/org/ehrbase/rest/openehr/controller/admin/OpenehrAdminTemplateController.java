@@ -198,8 +198,8 @@ public class OpenehrAdminTemplateController extends BaseController {
                     ));
         }
 
-        // TODO: Implement endpoint functionality
+        int deleted = this.templateService.adminDeleteAllTemplates();
 
-        return ResponseEntity.ok().body(new AdminDeleteResponseData(0));
+        return ResponseEntity.ok().body(new AdminDeleteResponseData(deleted));
     }
 }
