@@ -20,7 +20,10 @@ package org.ehrbase.dao.access.jooq;
 
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.directory.Folder;
-import com.nedap.archie.rm.support.identification.*;
+import com.nedap.archie.rm.support.identification.ObjectId;
+import com.nedap.archie.rm.support.identification.ObjectRef;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import com.nedap.archie.rm.support.identification.UIDBasedId;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -36,21 +39,43 @@ import org.ehrbase.jooq.binding.OtherDetailsJsonbBinder;
 import org.ehrbase.jooq.binding.SysPeriodBinder;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.tables.FolderHierarchy;
-import org.ehrbase.jooq.pg.tables.records.*;
+import org.ehrbase.jooq.pg.tables.records.FolderHierarchyRecord;
+import org.ehrbase.jooq.pg.tables.records.FolderHistoryRecord;
+import org.ehrbase.jooq.pg.tables.records.FolderItemsRecord;
+import org.ehrbase.jooq.pg.tables.records.FolderRecord;
+import org.ehrbase.jooq.pg.tables.records.ObjectRefRecord;
 import org.joda.time.DateTime;
-import org.jooq.*;
-
+import org.jooq.DSLContext;
+import org.jooq.Field;
+import org.jooq.JSONB;
+import org.jooq.Record;
+import org.jooq.Record1;
+import org.jooq.Record13;
+import org.jooq.Record8;
+import org.jooq.Result;
+import org.jooq.Table;
 
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.UUID;
 
-import static org.ehrbase.jooq.pg.Tables.*;
-import static org.jooq.impl.DSL.*;
+import static org.ehrbase.jooq.pg.Tables.CONTRIBUTION;
+import static org.ehrbase.jooq.pg.Tables.FOLDER;
+import static org.ehrbase.jooq.pg.Tables.FOLDER_HIERARCHY;
+import static org.ehrbase.jooq.pg.Tables.FOLDER_HISTORY;
+import static org.ehrbase.jooq.pg.Tables.FOLDER_ITEMS;
+import static org.ehrbase.jooq.pg.Tables.OBJECT_REF;
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.name;
+import static org.jooq.impl.DSL.select;
+import static org.jooq.impl.DSL.table;
 
 /***
  *@Created by Luis Marco-Ruiz on Jun 13, 2019
@@ -558,7 +583,15 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         folderAccessInstance.setEhrId(ehrId);
         // In case of creation we have no folderId since it will be created from DB
         if (folder.getUid() != null) {
-            folderAccessInstance.setFolderId(UUID.fromString(folder.getUid().getValue()));
+            UIDBasedId uid = folder.getUid();
+            int i = uid.getValue().indexOf("::");
+            String uidString;
+            if (i < 0) {
+                uidString = uid.getValue();
+            } else {
+                uidString = uid.getValue().substring(0, i);
+            }
+            folderAccessInstance.setFolderId(UUID.fromString(uidString));
         }
         folderAccessInstance.setInContribution(folderAccessInstance.getContributionAccess().getId());
         folderAccessInstance.setFolderName(folder.getName().getValue());
