@@ -160,7 +160,7 @@ terminal. And the DB data is saved in `application/.pgdata` for easier access.
 
 
 
-## CI/CD (CircleCI pipeline)
+## Continuous Integration (CI/CD with CircleCI)
 EHRbase uses CircleCI for continuous integration and deployment. The CI pipeline consists of the following workflows:
 
 ### workflow 1/3 - build-and-test
@@ -196,26 +196,26 @@ EHRbase uses CircleCI for continuous integration and deployment. The CI pipeline
   - run EHRbase's (robot) integration tests
   
   
-  ```
-  HOW TO USE WORKFLOW 3/3?
-  =========================
+```
+HOW TO USE WORKFLOW 3/3
+=======================
 
-  1. create TWO branches following the naming convention `sync/[issue-id]_some-desciption`
-     in both repositories (EHRbase and openEHR_SDK) with exact the same name:
+1. create TWO branches following the naming convention `sync/[issue-id]_some-desciption`
+   in both repositories (EHRbase and openEHR_SDK) with exact the same name:
 
-    - ehrbase repo       --> i.e.    sync/123_example-issue
-    - openehr_sdk repo   --> i.e.    sync/123_example-issue
+  - ehrbase repo       --> i.e.    sync/123_example-issue
+  - openehr_sdk repo   --> i.e.    sync/123_example-issue
 
-  2. apply your code changes
-  3. push to openehr_sdk repo (NO CI will be triggered)
-  4. push to ehrbase repo (CI will trigger this workflow)
-  5. create TWO PRs (one in EHRbase, one in openEHR_SDK)
-  6. merge BOTH PRs considering below notes:
-    - make sure both PRs are reviewed and ready to be merged
-      at the same time!
-    - make sure to sync both PRs w/ develop before merging!
-    - MERGE BOTH PRs AT THE SAME TIME!
-  ```
+2. apply your code changes
+3. push to openehr_sdk repo (NO CI will be triggered)
+4. push to ehrbase repo (CI will trigger this workflow)
+5. create TWO PRs (one in EHRbase, one in openEHR_SDK)
+6. merge BOTH PRs considering below notes:
+  - make sure both PRs are reviewed and ready to be merged
+    at the same time!
+  - make sure to sync both PRs w/ develop before merging!
+  - MERGE BOTH PRs AT THE SAME TIME!
+```
 
 ## License
 
