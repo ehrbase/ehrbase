@@ -6,8 +6,9 @@ Documentation    Alternative flow 1: create directory on EHR with directory
 ...
 ...     Flow:
 ...         1. Invoke the create directory service for the ehr_id
-...         2. The service should return an error, related to the EHR directory
-...            already existin
+...            w/ same directory name that already exists.
+...         2. The service should return an error, 
+...            related to already existing EHR directory
 ...
 ...     Postconditions:
 ...         None
@@ -29,9 +30,7 @@ Alternative flow 1: create directory on EHR with directory
     create EHR
 
     create DIRECTORY (JSON)    subfolders_in_directory.json
-
     validate POST response - 201 created directory
 
-    create DIRECTORY (JSON)    subfolders_in_directory.json
-
+    create the same DIRECTORY again (JSON)    subfolders_in_directory.json
     validate POST response - 409 folder already exists

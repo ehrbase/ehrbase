@@ -20,9 +20,7 @@ package org.ehrbase.dao.access.jooq;
 
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.directory.Folder;
-import com.nedap.archie.rm.support.identification.ObjectId;
-import com.nedap.archie.rm.support.identification.ObjectRef;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import com.nedap.archie.rm.support.identification.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,18 +36,18 @@ import org.ehrbase.jooq.binding.OtherDetailsJsonbBinder;
 import org.ehrbase.jooq.binding.SysPeriodBinder;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.tables.FolderHierarchy;
-import org.ehrbase.jooq.pg.tables.records.FolderHierarchyRecord;
-import org.ehrbase.jooq.pg.tables.records.FolderItemsRecord;
-import org.ehrbase.jooq.pg.tables.records.FolderRecord;
-import org.ehrbase.jooq.pg.tables.records.ObjectRefRecord;
+import org.ehrbase.jooq.pg.tables.records.*;
 import org.joda.time.DateTime;
 import org.jooq.*;
-import org.jooq.impl.DSL;
-import org.postgresql.util.PGobject;
+
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
+import java.util.Date;
+import java.util.UUID;
 
 import static org.ehrbase.jooq.pg.Tables.*;
 import static org.jooq.impl.DSL.*;
@@ -125,6 +123,18 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         this.delete(folderRecord.getId());
 
         return this.update(transactionTime, true, true, null, old_contribution, new_contribution);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ObjectVersionId create() {
+        return new ObjectVersionId(
+                this.commit().toString()
+                + "::" + getServerConfig().getNodename()
+                + "::1"
+        );
     }
 
     private Boolean update(final Timestamp transactionTime,
@@ -221,12 +231,12 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
 
     @Override
     public Boolean update() {
-        return this.update(new Timestamp(DateTime.now().getMillis()), true);
+        return this.update(Timestamp.from(Instant.now()), true);
     }
 
     @Override
     public Boolean update(Boolean force) {
-        return this.update(new Timestamp(DateTime.now().getMillis()), force);
+        return this.update(Timestamp.from(Instant.now()), force);
     }
 
     @Override
@@ -236,7 +246,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
 
     @Override
     public UUID commit() {
-        Timestamp timestamp = new Timestamp(DateTime.now().getMillis());
+        Timestamp timestamp = Timestamp.from(Instant.now());
         return this.commit(timestamp);
     }
 
@@ -538,11 +548,11 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
      *
      * @param domainAccess providing the information about the DB connection.
      * @param folder       to define a corresponding {@link I_FolderAccess} for allowing its persistence.
-     * @param dateTime     that will be set as transaction date when the {@link  com.nedap.archie.rm.directory.Folder} is persisted
+     * @param timestamp     that will be set as transaction date when the {@link  com.nedap.archie.rm.directory.Folder} is persisted
      * @param ehrId        of the {@link com.nedap.archie.rm.ehr.Ehr} that references this {@link  com.nedap.archie.rm.directory.Folder}
      * @return {@link I_FolderAccess} with the information to persist the provided {@link  com.nedap.archie.rm.directory.Folder}
      */
-    public static I_FolderAccess buildPlainFolderAccess(final I_DomainAccess domainAccess, final Folder folder, final DateTime dateTime, final UUID ehrId, final I_ContributionAccess contributionAccess) {
+    public static I_FolderAccess buildPlainFolderAccess(final I_DomainAccess domainAccess, final Folder folder, final Timestamp timestamp, final UUID ehrId, final I_ContributionAccess contributionAccess) {
 
         FolderAccess folderAccessInstance = new FolderAccess(domainAccess, ehrId, contributionAccess);
         folderAccessInstance.setEhrId(ehrId);
@@ -641,7 +651,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
             return parent.getSubfoldersList().get(current.getUid());
         }
         //create the corresponding FolderAccess for the current folder
-        folderAccess = FolderAccess.buildPlainFolderAccess(domainAccess, current, DateTime.now(), ehrId, contributionAccess);
+        folderAccess = FolderAccess.buildPlainFolderAccess(domainAccess, current, Timestamp.from(Instant.now()), ehrId, contributionAccess);
         //add to parent subfolder list
         if (parent != null) {
             parent.getSubfoldersList().put(((FolderAccess) folderAccess).getFolderRecord().getId(), folderAccess);
@@ -666,7 +676,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
      */
     public static I_FolderAccess buildNewFolderAccessHierarchy(final I_DomainAccess domainAccess,
                                                                final Folder folder,
-                                                               final DateTime timeStamp,
+                                                               final Timestamp timeStamp,
                                                                final UUID ehrId,
                                                                final I_ContributionAccess contributionAccess) {
         // Create access for the current folder
@@ -720,18 +730,20 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
      * version equals the count of entries in the folder history table plus 1.
      *
      * @param domainAccess - Database connection access context
-     * @param folderId     - UUID of the folder to check for the last version
+     * @param folderId     - ObjectVersionUid of the folder to check for the last version
      * @return Latest version number for the folder
      */
-    public static Integer getLastVersionNumber(I_DomainAccess domainAccess, UUID folderId) {
+    public static Integer getLastVersionNumber(I_DomainAccess domainAccess, ObjectVersionId folderId) {
 
-        if (!hasPreviousVersion(domainAccess, folderId)) {
+        UUID folderUuid = FolderUtils.extractUuidFromObjectVersionId(folderId);
+
+        if (!hasPreviousVersion(domainAccess, folderUuid)) {
             return 1;
         }
         // Get number of entries as the history table of folders
         int versionCount = domainAccess
                 .getContext()
-                .fetchCount(FOLDER_HISTORY, FOLDER_HISTORY.ID.eq(folderId));
+                .fetchCount(FOLDER_HISTORY, FOLDER_HISTORY.ID.eq(folderUuid));
         // Latest version will be entries plus actual entry count (always 1)
         return versionCount + 1;
     }
@@ -749,6 +761,73 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         return domainAccess
                 .getContext()
                 .fetchExists(FOLDER_HISTORY, FOLDER_HISTORY.ID.eq(folderId));
+    }
+
+    /**
+     * Evaluates the version for a folder at a given timestamp by counting all rows from folder history with root
+     * folder id and a sys_period timestamp before or at given timestamp value as also from the current folder entry
+     * if the sys_period provided is also newer than the sys_period of the current folder.
+     *
+     * @param domainAccess - Database access instance
+     * @param rootFolderId - Root folder id
+     * @param sysTransaction - Timestamp to get version for
+     * @return - Version number that has been current at that point in time
+     */
+    public static int getVersionNumberAtTime(I_DomainAccess domainAccess, final ObjectVersionId rootFolderId, final Timestamp sysTransaction) {
+
+        UUID folderUuid = FolderUtils.extractUuidFromObjectVersionId(rootFolderId);
+
+        // Check if the timestamp also includes the current folder
+        int folderCount = domainAccess
+                .getContext()
+                .fetchCount(FOLDER, FOLDER.ID.equal(folderUuid).and(FOLDER.SYS_TRANSACTION.lessOrEqual(sysTransaction)));
+
+        // Count all history entries for the root folder
+        int folderHistoryCount = domainAccess
+                .getContext()
+                .fetchCount(FOLDER_HISTORY, FOLDER_HISTORY.ID.equal(folderUuid).and(FOLDER_HISTORY.SYS_TRANSACTION.lessOrEqual(sysTransaction)));
+
+        if (folderHistoryCount <= 0) {
+            // No history entries found
+
+            if (folderCount <= 0) {
+                // Also no current entries
+                throw new ObjectNotFoundException(
+                        "directory",
+                        "No folder found for " + rootFolderId + " at time " + sysTransaction.toLocalDateTime().toString()
+                );
+            }
+
+            return folderCount;
+        }
+
+        // If we found entries in both tables return the sum. If there is no current entry the count will be 0
+        return folderHistoryCount + folderCount;
+    }
+
+    public static Timestamp getTimestampForVersion(I_DomainAccess domainAccess, final ObjectVersionId rootFolderId, Integer version) {
+        Timestamp timestamp = new Timestamp(new Date().getTime());
+        UUID rootFolderUuid = FolderUtils.extractUuidFromObjectVersionId(rootFolderId);
+        // Get latest version number
+        int currentVersion = FolderAccess.getVersionNumberAtTime(domainAccess, rootFolderId, timestamp);
+
+        if (currentVersion > version) {
+            // Select number of rows from folder history record that are required
+            Result<FolderHistoryRecord> folderHistoryRecords = domainAccess
+                    .getContext()
+                    .selectFrom(FOLDER_HISTORY)
+                    .where(FOLDER_HISTORY.ID.equal(rootFolderUuid))
+                    .orderBy(FOLDER_HISTORY.SYS_TRANSACTION.desc())
+                    .limit(currentVersion - version)
+                    .fetch();
+            // Return sys_transaction timestamp of last entry if existing
+            if (folderHistoryRecords.size() > 0) {
+                timestamp = folderHistoryRecords.get(folderHistoryRecords.size() - 1).get(FOLDER_HISTORY.SYS_TRANSACTION);
+            }
+        }
+        // The timestamp now contains either the last entry found in folder history or the current time if the desired
+        // version matches or is greater than the latest.
+        return timestamp;
     }
 
     /****Getters and Setters for the FolderRecord to store****/

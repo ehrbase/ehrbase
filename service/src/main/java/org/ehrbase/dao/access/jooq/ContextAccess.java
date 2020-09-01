@@ -46,6 +46,7 @@ import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedObjectId;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
+import org.ehrbase.dao.access.util.TransactionTime;
 import org.ehrbase.jooq.pg.tables.records.*;
 import org.ehrbase.serialisation.dbencoding.RawJson;
 import org.ehrbase.service.RecordedDvCodedText;
@@ -54,7 +55,6 @@ import org.jooq.*;
 import org.jooq.exception.DataAccessException;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -327,7 +327,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
      */
     @Override
     public UUID commit() {
-        return commit(Timestamp.valueOf(LocalDateTime.now()));
+        return commit(TransactionTime.millis());
     }
 
     /**
@@ -372,7 +372,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         updateQuery.addValue(EVENT_CONTEXT.SYS_TRANSACTION, eventContextRecord.getSysTransaction());
         updateQuery.addConditions(EVENT_CONTEXT.ID.eq(getId()));
 
-        Boolean result;
+        boolean result;
         try {
             result = updateQuery.execute() > 0;
         } catch (DataAccessException e) {   // generalize DB exceptions

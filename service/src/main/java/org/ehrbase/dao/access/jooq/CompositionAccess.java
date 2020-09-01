@@ -35,6 +35,7 @@ import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
+import org.ehrbase.dao.access.util.TransactionTime;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
@@ -48,7 +49,6 @@ import org.jooq.Record;
 import org.jooq.Result;
 
 import java.sql.*;
-import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.ehrbase.jooq.pg.Tables.*;
@@ -593,7 +593,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     public void setContextCompositionId(UUID contextId) {
         I_ContextAccess contextAccess = I_ContextAccess.retrieveInstance(this, contextId);
         contextAccess.setCompositionId(compositionRecord.getId());
-        contextAccess.update(Timestamp.valueOf(LocalDateTime.now()));
+        contextAccess.update(TransactionTime.millis());
     }
 
     @Override
@@ -729,7 +729,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
     @Override
     public UUID commit(UUID committerId, UUID systemId, String description) {
-        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp timestamp = TransactionTime.millis();
         // prepare contribution with given values
         contributionAccess.setDataType(ContributionDataType.composition);
         contributionAccess.setState(ContributionDef.ContributionState.COMPLETE);
@@ -750,7 +750,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         auditDetailsAccess.setCommitter(committerId);
         auditDetailsAccess.setDescription(description);
 
-        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp timestamp = TransactionTime.millis();
         return commit(timestamp);
     }
 
@@ -811,7 +811,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
     @Override
     public Boolean update() {
-        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp timestamp = TransactionTime.millis();
         // update both contribution (incl its audit) and the composition's own audit
         contributionAccess.update(timestamp, null, null, null, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
         auditDetailsAccess.update(null, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
@@ -820,7 +820,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
     @Override
     public Boolean update(Boolean force) {
-        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp timestamp = TransactionTime.millis();
         // update both contribution (incl its audit) and the composition's own audit
         contributionAccess.update(timestamp, null, null, null, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
         auditDetailsAccess.update(null, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
@@ -829,7 +829,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
     @Override
     public Boolean update(UUID committerId, UUID systemId, ContributionDef.ContributionState state, I_ConceptAccess.ContributionChangeType contributionChangeType, String description) {
-        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp timestamp = TransactionTime.millis();
         // update both contribution (incl its audit) and the composition's own audit
         contributionAccess.update(timestamp, committerId, systemId, null, state, contributionChangeType, description);
         auditDetailsAccess.update(systemId, committerId, contributionChangeType, description);
@@ -838,7 +838,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
     @Override
     public Boolean updateWithCustomContribution(UUID committerId, UUID systemId, I_ConceptAccess.ContributionChangeType contributionChangeType, String description) {
-        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp timestamp = TransactionTime.millis();
 
         // update only the audit, so it shows the modification change type. a new custom contribution is set beforehand.
         // TODO: db-wise, this way a new audit "version" will be created which is (openEHR-)semantically wrong. but safe and processable anyway. so need to change that or is it okay?
@@ -864,7 +864,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
         // create new contribution for this deletion action (with embedded contribution.audit handling)
         contributionAccess = I_ContributionAccess.getInstance(getDataAccess(), contributionAccess.getEhrId()); // overwrite old contribution with new one
-        UUID contrib = contributionAccess.commit(Timestamp.valueOf(LocalDateTime.now()), committerId, systemId, null, ContributionDef.ContributionState.COMPLETE, I_ConceptAccess.ContributionChangeType.DELETED, description);
+        UUID contrib = contributionAccess.commit(TransactionTime.millis(), committerId, systemId, null, ContributionDef.ContributionState.COMPLETE, I_ConceptAccess.ContributionChangeType.DELETED, description);
 
         // create new, BUT already moved to _history, version documenting the deletion
         createAndCommitNewDeletedVersionAsHistory(delAuditId, contrib);

@@ -26,7 +26,6 @@ Force Tags
 Alternative flow 3: get directory at time on EHR with directory with empty time
 
     create EHR
-
+    create DIRECTORY (JSON)    empty_directory.json
     get DIRECTORY at time (JSON)    ${EMPTY}
-
     validate GET-version@time response - 200 retrieved

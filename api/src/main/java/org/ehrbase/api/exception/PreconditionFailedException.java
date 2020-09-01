@@ -25,11 +25,35 @@ package org.ehrbase.api.exception;
  */
 public class PreconditionFailedException  extends RuntimeException  {
 
+    private final String currentVersionUid;
+    private final String url;
+
     public PreconditionFailedException(String message) {
         super(message);
+
+        this.currentVersionUid = null;
+        this.url = null;
     }
 
     public PreconditionFailedException(String message, Throwable cause) {
         super(message, cause);
+
+        this.currentVersionUid = null;
+        this.url = null;
+    }
+
+    public PreconditionFailedException(String message, String currentVersionUid, String url) {
+        super(message);
+
+        this.currentVersionUid = currentVersionUid;
+        this.url = url;
+    }
+
+    public String getCurrentVersionUid() {
+        return currentVersionUid;
+    }
+
+    public String getUrl() {
+        return url;
     }
 }
