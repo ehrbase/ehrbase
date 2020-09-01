@@ -523,7 +523,6 @@ jobs:
     steps:
       - checkout
       - restore-packaged-ehrbase-jar
-      - start-ehrbase-server
       - run-robot-tests:
           include-tags: "compositionANDjson1"
           test-suite-path: "COMPOSITION_TESTS"
@@ -534,7 +533,6 @@ jobs:
     steps:
       - checkout
       - restore-packaged-ehrbase-jar
-      - start-ehrbase-server
       - run-robot-tests:
           include-tags: "compositionANDjson2"
           test-suite-path: "COMPOSITION_TESTS"
@@ -545,7 +543,6 @@ jobs:
     steps:
       - checkout
       - restore-packaged-ehrbase-jar
-      - start-ehrbase-server
       - run-robot-tests:
           include-tags: "compositionANDxml1"
           test-suite-path: "COMPOSITION_TESTS"
@@ -556,7 +553,6 @@ jobs:
     steps:
       - checkout
       - restore-packaged-ehrbase-jar
-      - start-ehrbase-server
       - run-robot-tests:
           include-tags: "compositionANDxml2"
           test-suite-path: "COMPOSITION_TESTS"
@@ -567,7 +563,6 @@ jobs:
     steps:
       - checkout
       - restore-packaged-ehrbase-jar
-      - start-ehrbase-server
       - run-robot-tests:
           include-tags: "CONTRIBUTION"
           test-suite-path: "CONTRIBUTION_TESTS"
@@ -578,7 +573,6 @@ jobs:
     steps:
       - checkout
       - restore-packaged-ehrbase-jar
-      - start-ehrbase-server
       - run-robot-tests:
           include-tags: "directory"
           test-suite-path: "DIRECTORY_TESTS"
@@ -589,7 +583,6 @@ jobs:
     steps:
       - checkout
       - restore-packaged-ehrbase-jar
-      - start-ehrbase-server
       - run-robot-tests:
           include-tags: "EHR_SERVICE"
           test-suite-path: "EHR_SERVICE_TESTS"
@@ -600,7 +593,6 @@ jobs:
     steps:
       - checkout
       - restore-packaged-ehrbase-jar
-      - start-ehrbase-server
       - run-robot-tests:
           include-tags: "EHR_STATUS"
           test-suite-path: "EHR_STATUS_TESTS"
@@ -611,7 +603,6 @@ jobs:
     steps:
       - checkout
       - restore-packaged-ehrbase-jar
-      - start-ehrbase-server
       - run-robot-tests:
           include-tags: "KNOWLEDGE"
           test-suite-path: "KNOWLEDGE_TESTS"
@@ -622,7 +613,6 @@ jobs:
     steps:
       - checkout
       - restore-packaged-ehrbase-jar
-      - start-ehrbase-server
       - run-robot-tests:
           include-tags: "aql_adhoc-queryANDempty_db"
           test-suite-path: "QUERY_SERVICE_TESTS"
@@ -633,7 +623,6 @@ jobs:
     steps:
       - checkout
       - restore-packaged-ehrbase-jar
-      - start-ehrbase-server
       - run-robot-tests:
           include-tags: "aql_adhoc-queryANDloaded_db"
           test-suite-path: "QUERY_SERVICE_TESTS"
@@ -710,16 +699,23 @@ commands:
         type: string
     steps:
       # - cache-out-python-requirements
+      - install-maven
       - install-python3-requirements
-      - run: jps
+      # - run: jps
+      # - run:
+      #     name: Wait until EHRbase server is ready
+      #     command: |
+      #       grep -m 1 "Started EhrBase in" <(tail -f log)
       - run:
-          name: Wait until EHRbase server is ready
-          command: |
-            grep -m 1 "Started EhrBase in" <(tail -f log)
-      - run:
-          name: EXECUTE ROBOT COMMAND
+          name: START EHRBASE SERVER AND EXECUTE ROBOT TESTS
           no_output_timeout: 30m
           command: |
+            ls -la
+            EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+            echo ${EHRbase_VERSION}
+            java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false > log &
+            grep -m 1 "Started EhrBase in" <(tail -f log)
+            jps
             cd ~/projects/tests
             robot --include << parameters.include-tags >> \
                   --exclude TODO -e future -e obsolete -e libtest \
@@ -1037,13 +1033,15 @@ commands:
     steps:
       - install-maven
       - run:
-          name: Start EHRbase server
+          name: Start EHRbase server and wait for it to be ready
           background: true
           command: |
             ls -la
             EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
             echo ${EHRbase_VERSION}
-            java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false > log
+            java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false > log &
+            grep -m 1 "Started EhrBase in" <(tail -f log)
+            jps
 
 
   cache-in-ehrbase-m2-dependencies-syncbranch:
