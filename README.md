@@ -8,7 +8,7 @@ This release of EHRbase (v0.13.0) is the first **beta** release. Please see [EHR
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. Please read these instructions carefully. See deployment for notes on how to deploy the project on a live system.
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. Please read these instructions carefully. See [deployment](#deployment) for notes on how to deploy the project on a live system.
 
 ### Prerequisites
 
@@ -164,7 +164,7 @@ terminal. And the DB data is saved in `application/.pgdata` for easier access.
 EHRbase uses CircleCI for continuous integration and deployment. The CI pipeline consists of the following workflows:
 
 ### workflow 1/3 - build-and-test
-- trigger: commit to any branch (except - `release/v*`, master`, `sync/*`, `feature/sync/*`)
+- trigger: commit to any branch (except - `release/v*`, `master`, `sync/*`, `feature/sync/*`)
 - jobs:
   - build artifacts
   - run unit tests
@@ -185,7 +185,7 @@ EHRbase uses CircleCI for continuous integration and deployment. The CI pipeline
 
 ### workflow 3/3 - synced-feature-check
 
-This is a special workflow to catch errors that can occur when code changes introduced to EHRbase AND openEHR_SDK repository are related in a way that they have to be tested together and otherwise can't be catched in workflow 1 or 2. 
+:warning: This is a special workflow to catch errors that can occur when code changes introduced to EHRbase AND openEHR_SDK repository are related in a way that they have to be tested together and otherwise can't be catched in workflow 1 or 2. 
 
 - trigger: commit to `sync/*` branch
 - jobs:
@@ -195,11 +195,13 @@ This is a special workflow to catch errors that can occur when code changes intr
   - run SDK's (java) integration tests
   - run EHRbase's (robot) integration tests
   
+  
   ```
   HOW TO USE WORKFLOW 3/3?
   =========================
 
-  1. create TWO branches following the naming convention `sync/[issue-id]_some-desciption` in both repositories (EHRbase and openEHR_SDK) with exact the same name:
+  1. create TWO branches following the naming convention `sync/[issue-id]_some-desciption`
+     in both repositories (EHRbase and openEHR_SDK) with exact the same name:
 
     - ehrbase repo       --> i.e.    sync/123_example-issue
     - openehr_sdk repo   --> i.e.    sync/123_example-issue
