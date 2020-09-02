@@ -400,6 +400,25 @@ public class EhrServiceImp extends BaseService implements EhrService {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean removeDirectory(UUID ehrId) {
+        try {
+            return I_EhrAccess.removeDirectory(getDataAccess(), ehrId);
+        } catch (Exception e) {
+            logger.error(
+                    String.format(
+                            "Could not remove directory from EHR with id %s.\nReason: %s",
+                            ehrId.toString(),
+                            e.getMessage()
+                    )
+            );
+            throw new InternalServerException(e.getMessage(), e);
+        }
+    }
+
     // TODO-314: check if this can be secured using @PreAuthorize to prevent it getting called from another method outside of admin scope
     // @PreAuthorize("hasRole('ROLE_VIEWER')")
     @Override

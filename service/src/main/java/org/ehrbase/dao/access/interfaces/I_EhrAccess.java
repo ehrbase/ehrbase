@@ -161,6 +161,18 @@ public interface I_EhrAccess extends I_SimpleCRUD {
         return EhrAccess.getCompositionList(domainAccess, ehrId);
     }
 
+    /**
+     * Removes the directory row value by setting it to 'NULL'. Usually his will be used after the deletion of a
+     * directories root folder.
+     *
+     * @param domainAccess - Database access
+     * @param ehrId - Target EHR id
+     * @return Setting NULL value succeeded
+     */
+    static boolean removeDirectory(I_DomainAccess domainAccess, UUID ehrId){
+        return EhrAccess.removeDirectory(domainAccess, ehrId);
+    }
+
     void setModifiable(Boolean modifiable);
 
     void setArchetypeNodeId(String archetypeNodeId);

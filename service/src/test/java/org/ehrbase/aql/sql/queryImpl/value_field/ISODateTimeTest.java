@@ -30,11 +30,11 @@ import org.junit.Test;
 /**
  * Created by christian on 1/8/2018.
  */
-@Ignore
+//@Ignore
 public class ISODateTimeTest extends TestCase {
 
     @Test
-    @Ignore
+//    @Ignore
     public void testValidISO8601DateTime() {
         assertTrue(new ISODateTime("2012-11-10T10:40:01Z").isValidDateTimeExpression());
         assertTrue(new ISODateTime("2012-11-10T10:40:01+09:00").isValidDateTimeExpression());

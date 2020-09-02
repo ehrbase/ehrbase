@@ -137,6 +137,15 @@ public interface EhrService extends BaseService {
     UUID getDirectoryId(UUID ehrId);
 
     /**
+     * Removes the directory information from EHR table entry after deletion of the corresponding folder from
+     * folders table. If there were no such folder it will return a successful deletion.
+     *
+     * @param ehrId - Target EHR id
+     * @return Directory entry is now 'null'
+     */
+    boolean removeDirectory(UUID ehrId);
+
+    /**
      * Admin method to delete an EHR from the DB. See EHRbase Admin API specification for details.
      * @param ehrId EHR to delete
      */

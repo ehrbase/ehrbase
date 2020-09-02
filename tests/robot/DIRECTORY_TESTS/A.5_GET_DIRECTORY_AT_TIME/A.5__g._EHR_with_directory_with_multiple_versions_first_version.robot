@@ -20,7 +20,7 @@ Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags
+Force Tags    229
 
 
 
@@ -34,5 +34,7 @@ Alternative flow 6: get directory at time on EHR with directory with multiple ve
     update DIRECTORY (JSON)    subfolders_in_directory_with_details_items.json
 
     get DIRECTORY at time (JSON)    ${time_of_first_version}
+
+        TRACE GITHUB ISSUE  229  not-ready
 
     validate GET-version@time response - 200 retrieved

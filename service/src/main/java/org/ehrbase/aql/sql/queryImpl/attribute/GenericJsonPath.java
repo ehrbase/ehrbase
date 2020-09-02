@@ -1,6 +1,7 @@
 package org.ehrbase.aql.sql.queryImpl.attribute;
 
 import com.google.common.collect.Lists;
+import org.ehrbase.serialisation.dbencoding.wrappers.json.I_DvTypeAdapter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,6 +48,12 @@ public class GenericJsonPath {
     }
 
     private boolean isTerminalValue(List paths, int index){
-        return paths.size() == 1 || (paths.size() > 1 && index == paths.size() - 1 && paths.get(index - 1).toString().matches("value|name|id|terminology_id"));
+        return paths.size() == 1
+                || (paths.size() > 1
+                        && index == paths.size() - 1
+                        && paths.get(index).toString().matches("value|name|id|terminology_id")
+                        //check if this 'terminal attribute' is actually a node attribute
+                        //match node predicate regexp starts with '/' which is not the case when splitting the path
+                        && !paths.get(index - 1).toString().matches(I_DvTypeAdapter.matchNodePredicate.substring(1)));
     }
 }
