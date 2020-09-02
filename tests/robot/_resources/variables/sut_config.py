@@ -34,10 +34,10 @@ DEV_CONFIG = {
     "SUT": "DEV",
     "BASEURL": "http://localhost:8080/ehrbase/rest/openehr/v1",
     "HEARTBEAT_URL": "http://localhost:8080/ehrbase/",
-    "CREDENTIALS": ["ehrbase-user", "SuperSecretPassword"],
+    "CREDENTIALS": ["ehrbase-admin", "EvenMoreSecretPassword"],
     "SECURITY_AUTHTYPE": "BASIC",
     "AUTHORIZATION": {
-        "Authorization": "Basic ZWhyYmFzZS11c2VyOlN1cGVyU2VjcmV0UGFzc3dvcmQ="
+        "Authorization": "Basic ZWhyYmFzZS1hZG1pbjpFdmVuTW9yZVNlY3JldFBhc3N3b3Jk"
     },
     # NOTE: nodename is actually "CREATING_SYSTEM_ID"
     #       and can be set from cli when starting server .jar, i.e.:
@@ -67,10 +67,10 @@ TEST_CONFIG = {
     "SUT": "TEST",
     "BASEURL": "http://localhost:8080/ehrbase/rest/openehr/v1",
     "HEARTBEAT_URL": "http://localhost:8080/ehrbase/",
-    "CREDENTIALS": ["ehrbase-user", "SuperSecretPassword"],
+    "CREDENTIALS": ["ehrbase-admin", "EvenMoreSecretPassword"],
     "SECURITY_AUTHTYPE": "BASIC",
     "AUTHORIZATION": {
-        "Authorization": "Basic ZWhyYmFzZS11c2VyOlN1cGVyU2VjcmV0UGFzc3dvcmQ="
+        "Authorization": "Basic ZWhyYmFzZS1hZG1pbjpFdmVuTW9yZVNlY3JldFBhc3N3b3Jk"
     },
     "NODENAME": "local.ehrbase.org",  # alias CREATING_SYSTEM_ID
     "CONTROL_MODE": "docker",
