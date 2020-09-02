@@ -129,12 +129,7 @@ public class OpenehrDirectoryController extends BaseController {
     ) {
 
         // Check for existence of EHR record
-        if (!this.ehrService.doesEhrExist(ehrId)) {
-            throw new ObjectNotFoundException(
-                    "ehr",
-                    "EHR with id " + ehrId + " not found."
-            );
-        }
+        checkEhrExists(ehrId);
 
         // Check for duplicate directories
         if (this.ehrService.getDirectoryId(ehrId) != null) {
@@ -198,22 +193,8 @@ public class OpenehrDirectoryController extends BaseController {
         }
 
         // Check if EHR for the folder exists
-        if (!ehrService.doesEhrExist(ehrId)) {
-            throw new ObjectNotFoundException(
-                    "ehr",
-                    "EHR with id " + ehrId + " not found."
-            );
-        }
-
-        // Check if the directory is existing at the EHR
-        if (ehrService.getDirectoryId(ehrId) == null) {
-            throw new ObjectNotFoundException(
-                    "DIRECTORY",
-                    String.format(
-                            "EHR with id %s does not contain a directory. Maybe it has been deleted?", ehrId.toString()
-                    )
-            );
-        }
+        checkEhrExists(ehrId);
+        checkEhrExists(ehrId);
 
         // Get the folder entry from database
         Optional<FolderDto> foundFolder = folderService.get(
@@ -266,6 +247,9 @@ public class OpenehrDirectoryController extends BaseController {
         if (path != null && !isValidPath(path)) {
             throw new IllegalArgumentException("Value for path is malformed. Expecting a unix like notation, e.g. '/episodes/a/b/c'");
         }
+
+        // Check ehr exists
+        checkEhrExists(ehrId);
 
         // Get directory root entry for ehr
         UUID directoryUuid = ehrService.getDirectoryId(ehrId);
@@ -356,37 +340,12 @@ public class OpenehrDirectoryController extends BaseController {
             @ApiParam(value = "Update data for the target FOLDER") @RequestBody Folder folder
     ) {
 
-        // Check for existence of EHR record
-        if (!this.ehrService.doesEhrExist(ehrId)) {
-            throw new ObjectNotFoundException(
-                    "ehr",
-                    "EHR with id " + ehrId + " not found"
-            );
-        }
+        // Check if directory is set and ehr exists
+        checkEhrExists(ehrId);
+        checkDirectoryExists(ehrId);
 
-        // Check if the latest version has been addressed by If-Match header
-        int latestVersion = this.folderService.getLastVersionNumber(folderId);
-        Integer requestVersion = getVersionFromObjectVersionId(folderId);
-
-        if (requestVersion != null && requestVersion < latestVersion) {
-
-            String latestVersionUidString = String.format(
-                    "%s::%s::%s",
-                    extractUuidFromObjectVersionId(folderId),
-                    this.ehrService.getServerConfig().getNodename(),
-                    latestVersion
-            );
-
-            throw new PreconditionFailedException(
-                    "If-Match version_uid does not match latest version.",
-                    latestVersionUidString,
-                    encodePath(getBaseEnvLinkURL()
-                            + "/rest/openehr/v1/ehr/"
-                            + ehrId.toString()
-                            + "/directory/" + latestVersionUidString
-                    )
-            );
-        }
+        // Check version conflicts and throw precondition failed exception if not
+        checkDirectoryVersionConflicts(folderId, ehrId);
 
         // Update folder and get new version
         Optional<FolderDto> updatedFolder = this.folderService.update(
@@ -445,43 +404,12 @@ public class OpenehrDirectoryController extends BaseController {
     ) {
         UUID ehrId = getEhrUuid(ehrIdString);
 
-        if (!this.ehrService.doesEhrExist(ehrId)) {
-            throw new ObjectNotFoundException("EHR with id " + ehrIdString + " not found",
-                    "FOLDER");
-        }
-        if (this.ehrService.getDirectoryId(ehrId) == null) {
-            throw new ObjectNotFoundException(
-                    "DIRECTORY",
-                    String.format(
-                            "EHR with id %s does not contain a directory. Maybe it has been deleted?",
-                            ehrId.toString()
-                    )
-            );
-        }
+        // Check if directory is set and ehr exists
+        checkEhrExists(ehrId);
+        checkDirectoryExists(ehrId);
 
-        int latestVersion = this.folderService.getLastVersionNumber(folderId);
-        Integer requestVersion = getVersionFromObjectVersionId(folderId);
-
-        if (requestVersion != null && requestVersion < latestVersion) {
-
-            // Provided version is not the latest
-            String latestVersionIdString = String.format(
-                    "%s::%s::%s",
-                    extractUuidFromObjectVersionId(folderId),
-                    this.ehrService.getServerConfig().getNodename(),
-                    latestVersion
-            );
-
-            throw new PreconditionFailedException(
-                    "If-Match version_uid does not match latest version.",
-                    latestVersionIdString,
-                    encodePath(getBaseEnvLinkURL()
-                            + "/rest/openehr/v1/ehr/"
-                            + ehrId.toString()
-                            + "/directory/" + latestVersionIdString
-                    )
-            );
-        }
+        // Check version conflicts and throw precondition failed exception if not
+        checkDirectoryVersionConflicts(folderId, ehrId);
 
         this.folderService.delete(folderId);
         this.ehrService.removeDirectory(ehrId);
@@ -560,31 +488,53 @@ public class OpenehrDirectoryController extends BaseController {
         return pathPattern.matcher(path).matches();
     }
 
-    // TODO: When Archie has fixed uid handling replace these method
-    public UUID extractUuidFromObjectVersionId(ObjectVersionId folderId) {
-
-        String value = folderId.getValue();
-        if (value == null) {
-            return null;
+    private void checkEhrExists(UUID ehrId) {
+        if (!this.ehrService.doesEhrExist(ehrId)) {
+            throw new ObjectNotFoundException(
+                    "DIRECTORY",
+                    String.format("EHR with id %s not found", ehrId.toString())
+            );
         }
-        int index = value.indexOf("::");
-        if (index < 0) {
-            return UUID.fromString(value);
-        }
-        return UUID.fromString(value.substring(0, index));
     }
 
-    // TODO: When Archie has fixed uid handling replace these method
-    private Integer getVersionFromObjectVersionId(ObjectVersionId versionId) {
-        String value = versionId.getValue();
-        if (value == null) {
-            return null;
+    private void checkDirectoryExists(UUID ehrId) {
+
+        if (this.ehrService.getDirectoryId(ehrId) == null) {
+            throw new PreconditionFailedException(
+                    String.format(
+                            "EHR with id %s does not contain a directory. Maybe it has been deleted?",
+                            ehrId.toString()
+                    )
+            );
         }
-        int index = value.lastIndexOf("::");
-        if (index < 0 || index == value.indexOf("::")) {
-            // No or only one occurrence of :: found
-            return null;
-        } return Integer.parseInt(value.substring(index + 2));
+    }
+
+    private void checkDirectoryVersionConflicts(ObjectVersionId requestedFolderId, UUID ehrId) {
+
+        UUID directoryUuid = this.ehrService.getDirectoryId(ehrId);
+
+        int latestVersion = this.folderService.getLastVersionNumber(new ObjectVersionId(directoryUuid.toString()));
+        // TODO: Change column 'directory' in EHR to String with ObjectVersionId
+        String directoryId = String.format(
+                "%s::%s::%d",
+                directoryUuid.toString(),
+                this.ehrService.getServerConfig().getNodename(),
+                latestVersion
+        );
+
+
+        if (requestedFolderId != null && !requestedFolderId.toString().equals(directoryId)) {
+
+            throw new PreconditionFailedException(
+                    "If-Match version_uid does not match latest version.",
+                    directoryId,
+                    encodePath(getBaseEnvLinkURL()
+                            + "/rest/openehr/v1/ehr/"
+                            + ehrId.toString()
+                            + "/directory/" + directoryId
+                    )
+            );
+        }
     }
 }
 
