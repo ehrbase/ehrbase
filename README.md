@@ -8,7 +8,7 @@ This release of EHRbase (v0.13.0) is the first **beta** release. Please see [EHR
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. Please read these instructions carefully. See deployment for notes on how to deploy the project on a live system.
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. Please read these instructions carefully. See [deployment](#deployment) for notes on how to deploy the project on a live system.
 
 ### Prerequisites
 
@@ -128,15 +128,15 @@ To run the built container image use the following command:
 
 Adopt the parameters by your needs. The following parameters for `-e` must be set to start the EHRbase container:
 
-| Parameter   | Usage                                                    | Example                                   |
-| ----------- | -------------------------------------------------------- | ----------------------------------------- |
-| DB_URL      | Database URL. Must point to the running database server. | jdbc:postgresql://ehrdb:5432/ehrbase      |
-| DB_USER     | Database user configured for the ehr schema.             | ehrbase                                   |
-| DB_PASS     | Password for the database user                           | ehrbase                                   |
-| AUTH_TYPE   | Set HTTP security method                                 | BASIC                                      |
-| AUTH_USER   | Username for Basic Auth                                  | myuser                                    |
-| AUTH_PASSWORD | Password for Basic Auth                                | myPassword432                             |
-| SYSTEM_NAME | Name for the local system                                | local.ehrbase.org                         |
+| Parameter     | Usage                                                    | Example                              |
+| ------------- | -------------------------------------------------------- | ------------------------------------ |
+| DB_URL        | Database URL. Must point to the running database server. | jdbc:postgresql://ehrdb:5432/ehrbase |
+| DB_USER       | Database user configured for the ehr schema.             | ehrbase                              |
+| DB_PASS       | Password for the database user                           | ehrbase                              |
+| AUTH_TYPE     | Set HTTP security method                                 | BASIC                                |
+| AUTH_USER     | Username for Basic Auth                                  | myuser                               |
+| AUTH_PASSWORD | Password for Basic Auth                                  | myPassword432                        |
+| SYSTEM_NAME   | Name for the local system                                | local.ehrbase.org                    |
 
 ### Pre-build Docker Image
 
@@ -158,6 +158,64 @@ terminal. And the DB data is saved in `application/.pgdata` for easier access.
 
 * [Maven](https://maven.apache.org/) - Dependency Management
 
+
+
+## Continuous Integration (CI/CD with CircleCI)
+EHRbase uses CircleCI for continuous integration and deployment. The CI pipeline consists of the following workflows:
+
+### workflow 1/3 - build-and-test
+- trigger: commit to any branch (except - `release/v*`, `master`, `sync/*`, `feature/sync/*`)
+- jobs:
+  - build artifacts
+  - run unit tests
+  - run sdk integraiton tests
+  - run robot integration tests
+  - perform sonarcloud analysis and OWASP dependency check
+
+### workflow 2/3 - release
+- trigger: commit to `release/v` or `master` branch
+- jobs:
+  - build artifacts
+  - run unit tests
+  - run sdk integraiton tests
+  - run robot integration tests
+  - perform sonarcloud analysis and OWASP dependency check
+  - TODO: deploy to Maven Central
+  - TODO: deploy to Docker Hub
+
+### workflow 3/3 - synced-feature-check
+
+:warning: This is a special workflow to catch errors that can occur when code changes introduced to EHRbase AND openEHR_SDK repository are related in a way that they have to be tested together and otherwise can't be catched in workflow 1 or 2. 
+
+- trigger: commit to `sync/*` branch
+- jobs:
+  - pull, build, and test SDK from `sync/*` branch of openEHR_SDK repo
+  - build and test ehrbase (w/ SDK installed in previous step)
+  - start ehrbase server (from .jar packaged in previous step)
+  - run SDK's (java) integration tests
+  - run EHRbase's (robot) integration tests
+  
+  
+```
+HOW TO USE WORKFLOW 3/3
+=======================
+
+1. create TWO branches following the naming convention `sync/[issue-id]_some-desciption`
+   in both repositories (EHRbase and openEHR_SDK) with exact the same name:
+
+  - ehrbase repo       --> i.e.    sync/123_example-issue
+  - openehr_sdk repo   --> i.e.    sync/123_example-issue
+
+2. apply your code changes
+3. push to openehr_sdk repo (NO CI will be triggered)
+4. push to ehrbase repo (CI will trigger this workflow)
+5. create TWO PRs (one in EHRbase, one in openEHR_SDK)
+6. merge BOTH PRs considering below notes:
+  - make sure both PRs are reviewed and ready to be merged
+    at the same time!
+  - make sure to sync both PRs w/ develop before merging!
+  - MERGE BOTH PRs AT THE SAME TIME!
+```
 
 ## License
 
