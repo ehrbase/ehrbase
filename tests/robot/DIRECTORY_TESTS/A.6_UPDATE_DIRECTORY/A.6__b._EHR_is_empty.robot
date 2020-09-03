@@ -24,8 +24,8 @@ Force Tags    refactor
 
 *** Test Cases ***
 Alternative flow 1: update directory on empty EHR
-    [Tags]            
+    [Tags]          
 
     create EHR
     update DIRECTORY - ehr w/o directory (JSON)    update/2_add_subfolders.json
-    validate PUT response - 404 unknown directory
+    validate PUT response - 412 precondition failed

@@ -24,12 +24,8 @@ Force Tags
 
 *** Test Cases ***
 Main flow: get directory on empty EHR
-    [Tags]              228
+    [Tags]              
 
     create EHR
-
     get DIRECTORY (JSON)
-
-    TRACE GITHUB ISSUE  228  not-ready
-
     validate GET-version@time response - 404 unknown folder-version@time
