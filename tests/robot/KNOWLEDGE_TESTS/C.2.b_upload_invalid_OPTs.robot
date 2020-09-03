@@ -56,30 +56,6 @@ Empty File
     empty_file/empty_xml_template.opt
 
 
-Invalid Template ID
-    [Documentation]     Different issues with template_id.
-    ...                 invalid_1:
-    ...                     with template_id tag but value tag w/o text
-    ...                     <template_id><value></value></template_id>
-    ...                 invalid_2:
-    ...                     with template_id tag but w/o value tag
-    ...                     <template_id></template_id>
-    ...                 invalid_3:
-    ...                     no template_id tag at all
-    ...                 invalid_4:
-    ...                     a template_id tag with text, w/o value tag
-    ...                     <template_id>bullfrog</template_id>
-    [Template]          upload invalid OPT
-    [Tags]              invalid_template_id
-
-    removed_template_id/minimal_admin_invalid_1.opt
-    removed_template_id/minimal_admin_invalid_2.opt
-    removed_template_id/minimal_admin_invalid_3.opt
-    removed_template_id/minimal_admin_invalid_4.opt
-
-    [Teardown]  TRACE GITHUB ISSUE  119  not-ready
-
-
 Removed Mandatory Elements
     [Documentation]     Issues with missing elements.
     ...                 Mandatory, optional or combination of it.
