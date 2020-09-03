@@ -1,5 +1,6 @@
 *** Settings ***
-Documentation    Alternative flow 5: get directory at time on EHR with directory with multiple versions with empty time
+Documentation    Alternative flow 5: get directory at time on EHR with directory
+...              with multiple versions with empty time
 ...
 ...     Preconditions:
 ...         An EHR with ehr_id exists and has directory with two versions.
@@ -29,7 +30,7 @@ Alternative flow 5: get directory at time on EHR with directory with multiple ve
 
     create DIRECTORY (JSON)    empty_directory.json
 
-    update DIRECTORY (JSON)    subfolders_in_directory_with_details_items.json
+    update DIRECTORY (JSON)    update/2_add_subfolders.json
 
     get DIRECTORY at time (JSON)    ${EMPTY}
 

@@ -58,13 +58,13 @@ create DIRECTORY (JSON)
                         capture point in time    of_first_version
 
 
-create DIRECTORY -w/o- (JSON)
+create DIRECTORY JSON) - w/o Prefer header
     [Arguments]         ${valid_test_data_set}
                         Set Test Variable  ${KEYWORD NAME}  CREATE DIRECTORY NO BODY (JSON)
 
                         load valid dir test-data-set    ${valid_test_data_set}
 
-                        POST /ehr/ehr_id/directory (w/o)    JSON
+                        POST /ehr/ehr_id/directory (w/ headers)    JSON
 
 
 create DIRECTORY (XML)
@@ -101,6 +101,14 @@ create DIRECTORY - invalid content (JSON)
                         Should Be Equal As Strings   ${response.status_code}   400
 
 
+create the same DIRECTORY again (JSON)
+    [Arguments]         ${valid_test_data_set}
+                        Set Test Variable  ${KEYWORD NAME}  FAIL CREATING DIR 3 (JSON)
+
+                        load valid dir test-data-set    ${valid_test_data_set}
+                        POST /ehr/ehr_id/directory    JSON
+
+
 
 
 
@@ -127,6 +135,17 @@ update DIRECTORY (JSON)
                         Set Suite Variable  ${folder_uid}  ${response.json()['uid']['value']}
                         Set Suite Variable  ${version_uid}  ${response.json()['uid']['value']}
                         Set Suite Variable  ${preceding_version_uid}  ${version_uid}
+
+                        capture point in time    of_updated_version
+
+
+update DIRECTORY (JSON) - w/o Prefer header
+    [Arguments]         ${valid_test_data_set}
+                        Set Test Variable  ${KEYWORD NAME}  UPDATE DIRECTORY 2 (JSON)
+
+                        load valid dir test-data-set    ${valid_test_data_set}
+
+                        PUT /ehr/ehr_id/directory (w/ headers)    JSON
 
                         capture point in time    of_updated_version
 
@@ -285,6 +304,7 @@ get DIRECTORY at version (JSON)
     ...                 identified by `ehr_id`.
 
                         Set Test Variable  ${KEYWORD NAME}  GET DIRECTORY AT VERSION (JSON)
+
                         GET /ehr/ehr_id/directory/version_uid    JSON
 
 
@@ -293,6 +313,7 @@ get FOLDER in DIRECTORY at version (JSON)
                         Set Test Variable  ${KEYWORD NAME}  GET FOLDER AT VERSION (JSON)
 
                         Set Test Variable    ${path}    ${path}
+
                         GET /ehr/ehr_id/directory/version_uid?path    JSON
 
 
@@ -406,12 +427,12 @@ get FOLDER in DIRECTORY at version - fake version_uid/path (JSON)
 # [ HTTP POST ]
 
 POST /ehr/ehr_id/directory
-    [Arguments]         ${format}
+    [Arguments]         ${headers}
     [Documentation]     Executes HTTP method POST on /ehr/ehr_id/directory endpoint
     ...                 DEPENDENCY: the following variables in test level scope:
     ...                 `\${ehr_id}`, `\${test_data}`
 
-                        prepare new request session    ${format}
+                        prepare new request session    ${headers}
                         ...                 Prefer=return=representation
 
     ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/directory
@@ -422,15 +443,14 @@ POST /ehr/ehr_id/directory
                         Output Debug Info:  POST /ehr/ehr_id/directory
 
 
-POST /ehr/ehr_id/directory (w/o)
-    [Arguments]         ${format}
+POST /ehr/ehr_id/directory (w/ headers)
+    [Arguments]         ${headers}
     [Documentation]     Executes HTTP method POST on /ehr/ehr_id/directory endpoint
-    ...                 WITHOUT (w/o) Prefer=return=representation header
+    ...                 WITH modifiable headers. I.e. w/o headers at all.
     ...                 DEPENDENCY: the following variables in test level scope:
     ...                 `\${ehr_id}`, `\${test_data}`
 
-                        prepare new request session    ${format}
-                        ...                 Prefer=return=representation
+                        prepare new request session    ${headers}
 
     ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/directory
                         ...                 data=${test_data}
@@ -474,15 +494,16 @@ PUT /ehr/ehr_id/directory
                         Output Debug Info:  PUT /ehr/ehr_id/directory
 
 
-PUT /ehr/ehr_id/directory (w/o prefer)
+PUT /ehr/ehr_id/directory (w/ headers)
     [Documentation]     Executes HTTP method PUT on /ehr/ehr_id/directory endpoint
-    ...                 WITHOUT (w/o) Prefer=return=representation header
+    ...                 WITH modifialbe header. i.e. Prefer=return=minimal or w/o any
+    ...                 headers at all.
     ...                 DEPENDENCY: the following variables in test level scope:
     ...                 `\${ehr_id}`, ${preceding_version_uid}, `\${test_data}`
 
-    [Arguments]         ${format}
+    [Arguments]         ${headers}
 
-                        prepare new request session    ${format}
+                        prepare new request session    ${headers}
                         ...                 If-Match=${preceding_version_uid}
 
     ${resp}=            Put Request        ${SUT}   /ehr/${ehr_id}/directory
@@ -597,9 +618,6 @@ GET /ehr/ehr_id/directory?version_at_time
 
                         prepare new request session    ${format}
 
-        TRACE GITHUB ISSUE  41  not-ready
-        ...               message=DISCOVERED ERROR: Get folder in directory version at time fails
-
     ${resp}=            Get Request         ${SUT}   /ehr/${ehr_id}/directory?version_at_time=${version_at_time}
                         ...                 headers=${headers}
 
@@ -616,9 +634,6 @@ GET /ehr/ehr_id/directory?path
 
                         prepare new request session    ${format}
 
-        TRACE GITHUB ISSUE  41  not-ready
-        ...               message=DISCOVERED ERROR: Get folder in directory version at time fails
-
     ${resp}=            Get Request         ${SUT}   /ehr/${ehr_id}/directory?paht=${path}
                         ...                 headers=${headers}
 
@@ -634,9 +649,6 @@ GET /ehr/ehr_id/directory?version_at_time&path
     [Arguments]         ${format}
 
                         prepare new request session    ${format}
-
-        TRACE GITHUB ISSUE  41  not-ready
-        ...               message=DISCOVERED ERROR: Get folder in directory version at time fails
 
     ${resp}=            Get Request         ${SUT}   /ehr/${ehr_id}/directory?version_at_time=${version_at_time}&paht=${path}
                         ...                 headers=${headers}
@@ -668,21 +680,9 @@ validate POST response - 201 created directory
     ...                 Request was send with `Prefer=return=representation`.
 
                         Should Be Equal As Strings    ${response.status_code}    201
-                        #TODO:  Should Be Equal       ${response.json()['status']}    OK / Created
-
-                        Dictionary Should Contain Key    ${response.json()}    uid
-                        Dictionary Should Contain Key    ${response.json()}    folders
-                        # Dictionary Should Contain Item    ${response.json()['folders']}    _type  FOLDER
-
-                        Dictionary Should Contain Key    ${response.headers}    Location
-                        #TODO: value of Location as per API spec:
-                        #      Location: {baseUrl}/ehr/$ehr_id/directory/version_uid
-                        #      where the last part is version_uid
-                        #      version_uid format: 8849182c-82ad-4088-a07f-48ead4180515::openEHRSys.example.com::1
-                        Dictionary Should Contain Key    ${response.headers}    ETag
-
-        TRACE GITHUB ISSUE  148  not-ready
-
+                        Dictionary Should Contain Key     ${response.json()}     uid
+                        Dictionary Should Contain Key     ${response.headers}    Location
+                        Dictionary Should Contain Key     ${response.headers}    ETag
                         Dictionary Should Contain Item    ${response.headers}    ETag  "${version_uid}"
 
 
@@ -693,10 +693,10 @@ validate POST response (w/o) - 201 created directory
                         Should Be Equal As Strings    ${response.status_code}    201
 
                         Log    ${response.json()['status']}
-                        #TODO:  Should Be Equal          ${response.json()['status']}    OK / Created
-                        Dictionary Should Contain Key    ${response.headers}    Location
-                        Dictionary Should Contain Key    ${response.headers}    ETag
-                        # TODO: Dictionary Should Contain Item    ${response.headers}    ETag  ${version_uid}
+
+                        Dictionary Should Contain Key     ${response.headers}    Location
+                        Dictionary Should Contain Key     ${response.headers}    ETag
+                        Dictionary Should Contain Item    ${response.headers}    ETag  "${version_uid}"
 
 
 validate POST response - 400 invalid ehr_id
@@ -734,8 +734,6 @@ validate POST response - 404 unknown ehr_id
 validate POST response - 409 folder already exists
     [Documentation]     CASE: EHR with `ehr_id` already has a directory FOLDER.
     ...                 NOTE: @PABLO this is not (yet) in the SPEC
-
-        TRACE GITHUB ISSUE  NO-ISSUI-ID  not-ready
 
                         Should Be Equal As Strings    ${response.status_code}    409
 
@@ -875,13 +873,9 @@ validate GET-@version response - 200 retrieved
     [Arguments]         ${folder_name}
 
                         Should Be Equal As Strings    ${response.status_code}    200
-
-                        #TODO:  Should Be Equal    ${response.json()['status']}    OK / Retrieved
-
                         Dictionary Should Contain Key    ${response.json()}    uid
-                        Dictionary Should Contain Key    ${response.json()}    folders
                         Dictionary Should Contain Item    ${response.json()['name']}    value    ${folder_name}
-                        # Dictionary Should Contain Item    ${response.json()['folder']}    _type  FOLDER
+
 
 
 validate GET-@version response - 400 bad request
@@ -934,24 +928,14 @@ validate GET response - 200 retrieved
     ...                 without the optional URI parameters `version_at_time` and `path`.
 
                         Should Be Equal As Strings    ${response.status_code}    200
-
-                        #TODO:  Should Be Equal    ${response.json()['status']}    OK / Retrieved
-
                         Dictionary Should Contain Key    ${response.json()}    uid
-                        Dictionary Should Contain Key    ${response.json()}    folders
-                        # Dictionary Should Contain Item    ${response.json()['folder']}    _type  FOLDER
 
 
 validate GET-version@time response - 200 retrieved
     [Documentation]     CASE: requested directory FOLDER is successfully retrieved.
 
                         Should Be Equal As Strings    ${response.status_code}    200
-
-                        #TODO:  Should Be Equal    ${response.json()['status']}    OK / Retrieved
-
                         Dictionary Should Contain Key    ${response.json()}    uid
-                        Dictionary Should Contain Key    ${response.json()}    folders
-                        # Dictionary Should Contain Item    ${response.json()['folder']}    _type  FOLDER
 
 
 validate GET-version@time response - 204 folder has been deleted

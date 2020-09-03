@@ -111,11 +111,10 @@
         <assertj.core>3.11.1</assertj.core>
         <json.path.version>2.4.0</json.path.version>
         <jooq.version>3.12.3</jooq.version>
-        <jackson.version>2.10.2</jackson.version>
+        <jackson.version>2.10.3</jackson.version>
         <keycloak.version>4.0.0.Final</keycloak.version>
         <springfox.version>2.9.2</springfox.version>
         <springfox-snapshot.version>3.0.0-SNAPSHOT</springfox-snapshot.version>
-        <spring-security.version>5.2.1.RELEASE</spring-security.version>
         <swagger.version>1.5.23</swagger.version>
         <swagger-snapshot.version>2.0.0-rc2</swagger-snapshot.version>
         <postgressql.version>42.2.5</postgressql.version>
@@ -127,6 +126,7 @@
         <database.pass>ehrbase</database.pass>
         <database.port>5432</database.port>
         <database.host>localhost</database.host>
+        <spring-boot.version>2.2.6.RELEASE</spring-boot.version>
     </properties>
 
     <!-- Spring Boot starter parent is taking over most parts of the dependency management -->
@@ -134,7 +134,8 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>2.3.1.RELEASE</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/>
+        <!-- lookup parent from repository -->
     </parent>
 
     <modules>
@@ -242,7 +243,13 @@
                 <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
                 <version>2.2.4.RELEASE</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.keycloak.bom</groupId>
+                <artifactId>keycloak-adapter-bom</artifactId>
+                <version>${keycloak.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
@@ -305,11 +312,6 @@
                 <version>1.5</version>
             </dependency>
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.12</version>
-            </dependency>
-            <dependency>
                 <groupId>io.springfox</groupId>
                 <artifactId>springfox-swagger2</artifactId>
                 <version>${springfox.version}</version>
@@ -353,6 +355,8 @@
                 <version>1.3.2</version>
             </dependency>
 
+
+            <!--  Test dependencies -->
             <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-web</artifactId>
@@ -363,17 +367,10 @@
                 <artifactId>spring-security-config</artifactId>
                 <version>${spring-security.version}</version>
             </dependency>
-            <dependency>    <!-- TODO migrate away from joda -->
+            <dependency>                <!-- TODO migrate away from joda -->
                 <groupId>joda-time</groupId>
                 <artifactId>joda-time</artifactId>
                 <version>${joda.version}</version>
-            </dependency>
-            <!--  Test dependencies -->
-            <dependency>
-                <groupId>org.assertj</groupId>
-                <artifactId>assertj-core</artifactId>
-                <version>${assertj.core}</version>
-                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -384,6 +381,14 @@
             <groupId>javax.annotation</groupId>
             <artifactId>javax.annotation-api</artifactId>
             <version>1.3.2</version>
+        </dependency>
+        <!-- Test Dependencies -->
+        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-test -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <version>${spring-boot.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
