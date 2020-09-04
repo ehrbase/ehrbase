@@ -68,7 +68,15 @@ check ehr admin delete table counts
                         Should Be Equal As Integers    ${status_records}    ${0}
     ${status_h_records}=  Count Rows In DB Table    ehr.status_history
                         Should Be Equal As Integers    ${status_h_records}  ${0}
-    ${contr_records}=   Count Rows In DB Table    ehr.status
+    ${contr_records}=   Count Rows In DB Table    ehr.contribution
                         Should Be Equal As Integers    ${contr_records}     ${0}
-    ${contr_records}=   Count Rows In DB Table    ehr.status
-                        Should Be Equal As Integers    ${contr_records}     ${0}
+    ${contr_h_records}=   Count Rows In DB Table    ehr.contribution_history
+                        Should Be Equal As Integers    ${contr_h_records}     ${0}
+    ${audit_records}=   Count Rows In DB Table    ehr.audit_details
+                        Should Be Equal As Integers    ${audit_records}     ${0}
+    ${access_records}=   Count Rows In DB Table    ehr.access
+                        Should Be Equal As Integers    ${access_records}     ${0}
+    ${system_records}=   Count Rows In DB Table    ehr.system
+                        Should Be Equal As Integers    ${system_records}     ${0}
+    #${party_records}=   Count Rows In DB Table    ehr.party_identified
+    #                    Should Be Equal As Integers    ${party_records}     ${0}
