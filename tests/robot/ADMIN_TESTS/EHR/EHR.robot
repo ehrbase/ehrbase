@@ -30,10 +30,10 @@ Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 
 ADMIN - Delete EHR
                         start ehrbase
-                        # Init
+                        # pre check
                         Connect With DB
-    ${ehr_records}=     Count Rows In DB Table    ehr.ehr
-                        Should Be Equal As Integers    ${ehr_records}    ${0}
+                        check ehr admin delete table counts
+                        # preparing and provisioning
                         prepare new request session    JSON    Prefer=return=representation
                         create supernew ehr
                         Set Test Variable  ${ehr_id}  ${response.body.ehr_id.value}
@@ -41,9 +41,8 @@ ADMIN - Delete EHR
                         # Execute admin delete EHR
                         admin delete ehr
                         Log To Console  ${response}
-                        # Test with count rows again
-    ${ehr_records}=     Count Rows In DB Table    ehr.ehr
-                        Should Be Equal As Integers    ${ehr_records}    ${0}
+                        # Test with count rows again - post check
+                        check ehr admin delete table counts
 
 *** Keywords ***
 
@@ -60,3 +59,16 @@ admin delete ehr
     &{resp}=            REST.DELETE    ${baseurl}/admin/ehr/${ehr_id}
                         Set Test Variable    ${response}    ${resp}
                         Output Debug Info To Console
+
+check ehr admin delete table counts
+
+    ${ehr_records}=     Count Rows In DB Table    ehr.ehr
+                        Should Be Equal As Integers    ${ehr_records}       ${0}
+    ${status_records}=  Count Rows In DB Table    ehr.status
+                        Should Be Equal As Integers    ${status_records}    ${0}
+    ${status_h_records}=  Count Rows In DB Table    ehr.status_history
+                        Should Be Equal As Integers    ${status_h_records}  ${0}
+    ${contr_records}=   Count Rows In DB Table    ehr.status
+                        Should Be Equal As Integers    ${contr_records}     ${0}
+    ${contr_records}=   Count Rows In DB Table    ehr.status
+                        Should Be Equal As Integers    ${contr_records}     ${0}
