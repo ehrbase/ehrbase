@@ -124,6 +124,11 @@ workflows:
           requires:
             - build-artifacts
 
+      - ADMIN-test:
+          context: org-global
+          requires:
+            - build-artifacts
+
       - ROBOT-TEST-REPORT:
           context: org-global
           requires:
@@ -139,6 +144,7 @@ workflows:
             - QUERYSERVICE-test-1
             - QUERYSERVICE-test-2
             - SECURITY-test
+            - ADMIN-test
 
       - sonar-analysis:
           context: org-global
@@ -158,6 +164,7 @@ workflows:
             - QUERYSERVICE-test-1
             - QUERYSERVICE-test-2
             - SECURITY-test
+            - ADMIN-test
 
 
 
@@ -252,6 +259,11 @@ workflows:
           requires:
             - build-artifacts
 
+      - ADMIN-test:
+          context: org-global
+          requires:
+            - build-artifacts
+
       - ROBOT-TEST-REPORT:
           context: org-global
           requires:
@@ -267,6 +279,7 @@ workflows:
             - QUERYSERVICE-test-1
             - QUERYSERVICE-test-2
             - SECURITY-test
+            - ADMIN-test
 
       - sonar-analysis:
           context: org-global
@@ -286,6 +299,7 @@ workflows:
             - QUERYSERVICE-test-1
             - QUERYSERVICE-test-2
             - SECURITY-test
+            - ADMIN-test
 
 
 
@@ -395,6 +409,10 @@ workflows:
           context: org-global
           requires:
             - build package ehrbase with locally installed sdk
+      - ADMIN-test:
+          context: org-global
+          requires:
+            - build package ehrbase with locally installed sdk
       - ROBOT-TEST-REPORT:
           context: org-global
           requires:
@@ -410,6 +428,7 @@ workflows:
             - QUERYSERVICE-test-1
             - QUERYSERVICE-test-2
             - SECURITY-test
+            - ADMIN-test
 
 
 
@@ -639,6 +658,16 @@ jobs:
           # test-suite-path: ""
           test-suite-name: "KEYCLOAK-OAUTH"
 
+  ADMIN-test:
+    executor: docker-py3-java11-postgres
+    steps:
+      - checkout
+      - restore-packaged-ehrbase-jar
+      - run-robot-admin-tests:
+          include-tags: "adminANDehr_service"
+          test-suite-path: "ADMIN_TESTS"
+          test-suite-name: "ADMIN"
+
   ROBOT-TEST-REPORT:
     executor: docker-python3-java11
     steps:
@@ -775,6 +804,59 @@ commands:
           path: ~/projects/tests/results/
       - store_artifacts:
           path: ~/projects/tests/results/
+
+
+  run-robot-admin-tests:
+    description: Run integration tests written in Robot Framework
+    parameters:
+      include-tags:
+        description: Which tests to inclue by TAGs (Robot syntax applies!)
+        type: string
+      test-suite-path:
+        description: Target test-suite given by it's folder name e.g. COMPOSITION_TESTS
+        type: string
+      test-suite-name:
+        description: Titel of generated Robot Log/Report.html
+        type: string
+    steps:
+      # - cache-out-python-requirements
+      - install-maven
+      - install-python3-requirements
+      # - run: jps
+      # - run:
+      #     name: Wait until EHRbase server is ready
+      #     command: |
+      #       grep -m 1 "Started EhrBase in" <(tail -f log)
+      - run:
+          name: START EHRBASE SERVER AND EXECUTE ROBOT TESTS
+          no_output_timeout: 30m
+          command: |
+            ls -la
+            EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+            echo ${EHRbase_VERSION}
+            java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false > log &
+            grep -m 1 "Started EhrBase in" <(tail -f log)
+            jps
+            cd ~/projects/tests
+            robot --include << parameters.include-tags >> \
+                  --exclude TODO -e future -e obsolete -e libtest \
+                  --console dotted \
+                  --loglevel TRACE \
+                  --noncritical not-ready \
+                  --flattenkeywords for \
+                  --flattenkeywords foritem \
+                  --flattenkeywords name:_resources.* \
+                  --outputdir results/<< parameters.test-suite-name >> \
+                  --name << parameters.test-suite-name >> \
+                  -v SUT:ADMIN-TEST \
+                  robot/<< parameters.test-suite-path >>/
+      # - cache-in-python-requirements
+      - save-test-results-folder
+      - store_test_results:
+          path: ~/projects/tests/results/
+      - store_artifacts:
+          path: ~/projects/tests/results/
+        
 
 
   save-test-results-folder:
