@@ -25,6 +25,8 @@ import org.ehrbase.aql.sql.queryImpl.*;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
+import java.util.Objects;
+
 /**
  * evaluate the SQL expression for locatables in the ITEM_STRUCTURE: OBSERVATION, INSTRUCTION, CLUSTER etc.
  * NB. At the moment, direct resolution of ELEMENT is not supported.
@@ -45,12 +47,12 @@ public class LocatableItem {
         this.clause = clause;
     }
 
-    public Field<?> toSql(String template_id, I_VariableDefinition variableDefinition, String className){
+    public Field<?> toSql(String templateId, I_VariableDefinition variableDefinition, String className){
         Field<?> field;
 
-        field = jsonbEntryQuery.makeField(template_id, variableDefinition.getIdentifier(), variableDefinition, I_QueryImpl.Clause.SELECT);
+        field = jsonbEntryQuery.makeField(templateId, variableDefinition.getIdentifier(), variableDefinition, I_QueryImpl.Clause.SELECT);
         jsonbItemPath = jsonbEntryQuery.getJsonbItemPath();
-        containsJsonDataBlock = containsJsonDataBlock | jsonbEntryQuery.isJsonDataBlock();
+        containsJsonDataBlock |= jsonbEntryQuery.isJsonDataBlock();
         if (jsonbEntryQuery.isJsonDataBlock() ) {
 
             if (jsonbEntryQuery.getItemType() != null){
@@ -62,11 +64,11 @@ public class LocatableItem {
                 if (DataValue.class.isAssignableFrom(itemClass)) {
                     VariableAqlPath variableAqlPath = new VariableAqlPath(variableDefinition.getPath());
                     if (variableAqlPath.getSuffix().equals("value")){
-                        if (className.equals("COMPOSITION")) { //assumes this is a data value within an ELEMENT
+                        if (Objects.equals(className, "COMPOSITION")) { //assumes this is a data value within an ELEMENT
                             try {
                                 I_VariableDefinition variableDefinition1 = variableDefinition.clone();
                                 variableDefinition1.setPath(variableAqlPath.getInfix());
-                                field = jsonbEntryQuery.makeField(template_id, variableDefinition.getIdentifier(), variableDefinition1, I_QueryImpl.Clause.SELECT);
+                                field = jsonbEntryQuery.makeField(templateId, variableDefinition.getIdentifier(), variableDefinition1, I_QueryImpl.Clause.SELECT);
                                 jsonbItemPath = jsonbEntryQuery.getJsonbItemPath();
                                 rootJsonKey = variableAqlPath.getSuffix();
                             } catch (CloneNotSupportedException e) {
