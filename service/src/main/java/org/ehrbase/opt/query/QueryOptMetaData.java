@@ -34,6 +34,7 @@ import java.util.Set;
 
 /**
  * Created by christian on 5/7/2018.
+ * TODO: a lot of caching should be done there
  */
 public class QueryOptMetaData implements I_QueryOptMetaData {
 
@@ -91,6 +92,7 @@ public class QueryOptMetaData implements I_QueryOptMetaData {
      */
     @Override
     public List upperNotBounded() {
+        //TODO: potentially time consuming, should be cached as it depends on immutable templates
         return JsonPath.read(document, "$..children[?(@.max == -1)]");
     }
 
