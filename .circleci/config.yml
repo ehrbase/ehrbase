@@ -666,8 +666,9 @@ jobs:
       - restore-packaged-ehrbase-jar
       - run-robot-tests:
           sut: "SUT:DEV -v AUTH_TYPE:OAUTH"
+          security-auth-type: OAUTH
           include-tags: "OAUTH"
-          test-suite-path: ""
+          # test-suite-path: ""
           test-suite-name: "KEYCLOAK-OAUTH"
         
   ADMIN-test:
@@ -732,22 +733,41 @@ commands:
     description: Run integration tests written in Robot Framework
     parameters:
       sut:
-        description: SUT / System Under Test Config [DEV, ADMIN-DEV, TEST, ADMIN-TEST, ...]
-        type: string
+        description: SUT - System Under Test Config
+        enum: ["SUT:DEV", "SUT:DEV -v AUTH_TYPE:OAUTH", "SUT:ADMIN-DEV", "SUT:TEST", "SUT:ADMIN-TEST"]
         default: "SUT:DEV"
+        type: enum
+        
       admin-api-active:
-        description: Sets environment variable ADMINAPI_ACTIVE [TRUE, FALSE] before starting ehrbase
-        type: string
+        description: Sets ADMINAPI_ACTIVE env variable
         default: "FALSE"
+        type: string
+        
+      security-auth-type:
+        description: Sets SECURITY_AUTHTYPE env variable
+        enum: ["BASIC", "OAUTH"]
+        default: "BASIC"
+        type: enum
+
+      security-oauth-url:
+        description: Sets SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI ENV variable
+        default: http://localhost:8081/auth/realms/ehrbase
+        type: string
+
       include-tags:
         description: Which tests to inclue by TAGs (Robot syntax applies!)
         type: string
+
       test-suite-path:
         description: Target test-suite given by it's folder name e.g. COMPOSITION_TESTS
         type: string
+        default: ""
+
       test-suite-name:
         description: Titel of generated Robot Log/Report.html
         type: string
+
+
     steps:
       # - cache-out-python-requirements
       - install-maven
@@ -760,11 +780,15 @@ commands:
       - run:
           name: START EHRBASE SERVER AND EXECUTE ROBOT TESTS
           no_output_timeout: 30m
+          environment:
+            ADMINAPI_ACTIVE: << parameters.admin-api-active >>
+            SECURITY_AUTHTYPE: << parameters.security-auth-type >>
+            SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI: << parameters.security-oauth-url >>
           command: |
             ls -la
             EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
             echo ${EHRbase_VERSION}
-            ADMINAPI_ACTIVE=<< parameters.admin-api-active >> java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false > log &
+            java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false > log &
             grep -m 1 "Started EhrBase in" <(tail -f log)
             jps
             cd ~/projects/tests
@@ -779,7 +803,7 @@ commands:
                   --outputdir results/<< parameters.test-suite-name >> \
                   --name << parameters.test-suite-name >> \
                   -v << parameters.sut >> \
-                  robot/<< parameters.test-suite-path >>/
+                  robot/<< parameters.test-suite-path >>
       # - cache-in-python-requirements
       - save-test-results-folder
       - store_test_results:
