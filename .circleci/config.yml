@@ -734,7 +734,7 @@ commands:
     parameters:
       sut:
         description: SUT - System Under Test Config
-        enum: ["SUT:DEV", "SUT:DEV -v AUTH_TYPE:OAUTH", "SUT:ADMIN-DEV", "SUT:TEST", "SUT:ADMIN-TEST"]
+        enum: ["SUT:DEV", "SUT:DEV -v AUTH_TYPE:OAUTH", "SUT:ADMIN-DEV", "SUT:TEST", "SUT:TEST -v AUTH_TYPE:OAUTH", "SUT:ADMIN-TEST"]
         default: "SUT:DEV"
         type: enum
         
