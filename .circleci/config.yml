@@ -57,94 +57,94 @@ workflows:
   #         requires:
   #           - build-artifacts
         
-  #     - dependency-check:
-  #         context: org-global
-  #         requires:
-  #           - build-artifacts
+      - dependency-check:
+          context: org-global
+          requires:
+            - build-artifacts
 
-  #     - COMPOSITION-tests-1:
-  #         context: org-global
-  #         requires:
-  #           - build-artifacts
-  #         # post-steps:
-  #         #   - provide-test-status-report-via-slack #
+      - COMPOSITION-tests-1:
+          context: org-global
+          requires:
+            - build-artifacts
+          # post-steps:
+          #   - provide-test-status-report-via-slack #
 
-  #     - COMPOSITION-tests-2:
-  #         context: org-global
-  #         requires:
-  #           - build-artifacts
+      - COMPOSITION-tests-2:
+          context: org-global
+          requires:
+            - build-artifacts
 
-  #     - COMPOSITION-tests-3:
-  #         context: org-global
-  #         requires:
-  #           - build-artifacts
+      - COMPOSITION-tests-3:
+          context: org-global
+          requires:
+            - build-artifacts
 
-  #     - COMPOSITION-tests-4:
-  #         context: org-global
-  #         requires:
-  #           - build-artifacts
+      - COMPOSITION-tests-4:
+          context: org-global
+          requires:
+            - build-artifacts
 
-  #     - CONTRIBUTION-test:
-  #         context: org-global
-  #         requires:
-  #           - build-artifacts
+      - CONTRIBUTION-test:
+          context: org-global
+          requires:
+            - build-artifacts
 
-  #     - DIRECTORY-test:
-  #         context: org-global
-  #         requires:
-  #           - build-artifacts
+      - DIRECTORY-test:
+          context: org-global
+          requires:
+            - build-artifacts
 
-  #     - EHRSERVICE-test:
-  #         context: org-global
-  #         requires:
-  #           - build-artifacts
+      - EHRSERVICE-test:
+          context: org-global
+          requires:
+            - build-artifacts
 
-  #     - EHRSTATUS-test:
-  #         context: org-global
-  #         requires:
-  #           - build-artifacts
+      - EHRSTATUS-test:
+          context: org-global
+          requires:
+            - build-artifacts
 
-  #     - KNOWLEDGE-test:
-  #         context: org-global
-  #         requires:
-  #           - build-artifacts
+      - KNOWLEDGE-test:
+          context: org-global
+          requires:
+            - build-artifacts
 
-  #     - QUERYSERVICE-test-1:
-  #         context: org-global
-  #         requires:
-  #           - build-artifacts
+      - QUERYSERVICE-test-1:
+          context: org-global
+          requires:
+            - build-artifacts
 
-  #     - QUERYSERVICE-test-2:
-  #         context: org-global
-  #         requires:
-  #           - build-artifacts
+      - QUERYSERVICE-test-2:
+          context: org-global
+          requires:
+            - build-artifacts
       
-  #     - SECURITY-test:
-  #         context: org-global
-  #         requires:
-  #           - build-artifacts
+      - SECURITY-test:
+          context: org-global
+          requires:
+            - build-artifacts
 
-  #     - ADMIN-test:
-  #         context: org-global
-  #         requires:
-  #           - build-artifacts
+      - ADMIN-test:
+          context: org-global
+          requires:
+            - build-artifacts
 
-  #     - ROBOT-TEST-REPORT:
-  #         context: org-global
-  #         requires:
-  #           - COMPOSITION-tests-1
-  #           - COMPOSITION-tests-2
-  #           - COMPOSITION-tests-3
-  #           - COMPOSITION-tests-4
-  #           - CONTRIBUTION-test
-  #           - DIRECTORY-test
-  #           - EHRSERVICE-test
-  #           - EHRSTATUS-test
-  #           - KNOWLEDGE-test
-  #           - QUERYSERVICE-test-1
-  #           - QUERYSERVICE-test-2
-  #           - SECURITY-test
-  #           - ADMIN-test
+      - ROBOT-TEST-REPORT:
+          context: org-global
+          requires:
+            - COMPOSITION-tests-1
+            - COMPOSITION-tests-2
+            - COMPOSITION-tests-3
+            - COMPOSITION-tests-4
+            - CONTRIBUTION-test
+            - DIRECTORY-test
+            - EHRSERVICE-test
+            - EHRSTATUS-test
+            - KNOWLEDGE-test
+            - QUERYSERVICE-test-1
+            - QUERYSERVICE-test-2
+            - SECURITY-test
+            - ADMIN-test
 
   #     - sonar-analysis:
   #         context: org-global
@@ -170,94 +170,94 @@ workflows:
 
 
 
-  # # WORKFLOW 2/3
-  # release:
-  #   jobs:
-  #     - build-artifacts:
-  #         context: org-global
-  #         filters:
-  #           branches:
-  #             only:
-  #               - /^(release\/v\d+\.\d+\.\d+|master)$/
+  # WORKFLOW 2/3
+  release:
+    jobs:
+      - build-artifacts:
+          context: org-global
+          filters:
+            branches:
+              only:
+                - /^(release\/v\d+\.\d+\.\d+|master)$/
 
-  #     - run-unit-tests:
-  #         context: org-global
-  #         filters:
-  #           branches:
-  #             only:
-  #               - /^(release\/v\d+\.\d+\.\d+|master)$/
+      - run-unit-tests:
+          context: org-global
+          filters:
+            branches:
+              only:
+                - /^(release\/v\d+\.\d+\.\d+|master)$/
 
-  #     - run-SDK-integration-tests:
-  #         context: org-global
-  #         requires:
-  #           - build-artifacts
+      - run-SDK-integration-tests:
+          context: org-global
+          requires:
+            - build-artifacts
 
-  #     - dependency-check:
-  #         context: org-global
-  #         requires:
-  #           - build-artifacts
+      - dependency-check:
+          context: org-global
+          requires:
+            - build-artifacts
 
-  #     - COMPOSITION-tests-1:
-  #         context: org-global
-  #         requires:
-  #           - build-artifacts
-  #         # post-steps:
-  #         #   - provide-test-status-report-via-slack #
+      - COMPOSITION-tests-1:
+          context: org-global
+          requires:
+            - build-artifacts
+          # post-steps:
+          #   - provide-test-status-report-via-slack #
 
-  #     - COMPOSITION-tests-2:
-  #         context: org-global
-  #         requires:
-  #           - build-artifacts
+      - COMPOSITION-tests-2:
+          context: org-global
+          requires:
+            - build-artifacts
 
-  #     - COMPOSITION-tests-3:
-  #         context: org-global
-  #         requires:
-  #           - build-artifacts
+      - COMPOSITION-tests-3:
+          context: org-global
+          requires:
+            - build-artifacts
 
-  #     - COMPOSITION-tests-4:
-  #         context: org-global
-  #         requires:
-  #           - build-artifacts
+      - COMPOSITION-tests-4:
+          context: org-global
+          requires:
+            - build-artifacts
 
-  #     - CONTRIBUTION-test:
-  #         context: org-global
-  #         requires:
-  #           - build-artifacts
+      - CONTRIBUTION-test:
+          context: org-global
+          requires:
+            - build-artifacts
 
-  #     - DIRECTORY-test:
-  #         context: org-global
-  #         requires:
-  #           - build-artifacts
+      - DIRECTORY-test:
+          context: org-global
+          requires:
+            - build-artifacts
 
-  #     - EHRSERVICE-test:
-  #         context: org-global
-  #         requires:
-  #           - build-artifacts
+      - EHRSERVICE-test:
+          context: org-global
+          requires:
+            - build-artifacts
 
-  #     - EHRSTATUS-test:
-  #         context: org-global
-  #         requires:
-  #           - build-artifacts
+      - EHRSTATUS-test:
+          context: org-global
+          requires:
+            - build-artifacts
 
-  #     - KNOWLEDGE-test:
-  #         context: org-global
-  #         requires:
-  #           - build-artifacts
+      - KNOWLEDGE-test:
+          context: org-global
+          requires:
+            - build-artifacts
 
-  #     - QUERYSERVICE-test-1:
-  #         context: org-global
-  #         requires:
-  #           - build-artifacts
+      - QUERYSERVICE-test-1:
+          context: org-global
+          requires:
+            - build-artifacts
 
-  #     - QUERYSERVICE-test-2:
-  #         context: org-global
-  #         requires:
-  #           - build-artifacts
+      - QUERYSERVICE-test-2:
+          context: org-global
+          requires:
+            - build-artifacts
 
-  #     - SECURITY-test:
-  #         context: org-global
-  #         requires:
-  #           - build-artifacts
+      - SECURITY-test:
+          context: org-global
+          requires:
+            - build-artifacts
 
       - ADMIN-test:
           context: org-global
@@ -267,18 +267,18 @@ workflows:
       - ROBOT-TEST-REPORT:
           context: org-global
           requires:
-            # - COMPOSITION-tests-1
-            # - COMPOSITION-tests-2
-            # - COMPOSITION-tests-3
-            # - COMPOSITION-tests-4
-            # - CONTRIBUTION-test
-            # - DIRECTORY-test
-            # - EHRSERVICE-test
-            # - EHRSTATUS-test
-            # - KNOWLEDGE-test
-            # - QUERYSERVICE-test-1
-            # - QUERYSERVICE-test-2
-            # - SECURITY-test
+            - COMPOSITION-tests-1
+            - COMPOSITION-tests-2
+            - COMPOSITION-tests-3
+            - COMPOSITION-tests-4
+            - CONTRIBUTION-test
+            - DIRECTORY-test
+            - EHRSERVICE-test
+            - EHRSTATUS-test
+            - KNOWLEDGE-test
+            - QUERYSERVICE-test-1
+            - QUERYSERVICE-test-2
+            - SECURITY-test
             - ADMIN-test
 
       # - sonar-analysis:
@@ -724,7 +724,7 @@ commands:
         type: string
         default: "SUT:TEST"
       admin-api-active:
-        description: Sets environment variable ADMINAPI_ACTIVE [TRUE, FALSE]
+        description: Sets environment variable ADMINAPI_ACTIVE [TRUE, FALSE] before starting ehrbase
         type: string
         default: "FALSE"
       include-tags:
