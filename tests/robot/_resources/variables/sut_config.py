@@ -82,8 +82,8 @@ ADMIN_DEV_CONFIG = {
         "grant_type": "password",
     },
     "JWT_ISSUERURI": KC_JWT_ISSUERURI,
-    "OAUTH_NAME": "Ehr Base",
-    "OAUTH_EMAIL": "ehrbase@ehrbase.org",
+    "OAUTH_NAME": "Admin Ehr Base",
+    "OAUTH_EMAIL": "admin-ehrbase@ehrbase.org",
     "ACCESS_TOKEN": None,
     "KEYCLOAK_URL": KEYCLOAK_URL,
     "KC_AUTH_URL": KC_AUTH_URL,
@@ -140,8 +140,8 @@ ADMIN_TEST_CONFIG = {
         "grant_type": "password",
     },
     "JWT_ISSUERURI": KC_JWT_ISSUERURI,
-    "OAUTH_NAME": "Robot Framework",
-    "OAUTH_EMAIL": "robot@ehrbase.org",
+    "OAUTH_NAME": "Admin Robot Framework",
+    "OAUTH_EMAIL": "admin-robot@ehrbase.org",
     "ACCESS_TOKEN": None,
     "KEYCLOAK_URL": KEYCLOAK_URL,
     "KC_AUTH_URL": KC_AUTH_URL,
@@ -213,7 +213,7 @@ def get_variables(sut="TEST", auth_type="BASIC", nodocker="NEIN!"):
             "POST",
             KC_ACCESS_TOKEN_URL,
             headers=HEADER,
-            data=DEV_CONFIG["OAUTH_ACCESS_GRANT"],
+            data=ADMIN_DEV_CONFIG["OAUTH_ACCESS_GRANT"],
         ).json()["access_token"]
         ADMIN_DEV_CONFIG["AUTHORIZATION"] = {
             "Authorization": "Bearer " + ADMIN_DEV_CONFIG["ACCESS_TOKEN"]

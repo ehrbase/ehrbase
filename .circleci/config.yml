@@ -665,6 +665,7 @@ jobs:
       - restore-packaged-ehrbase-jar
       - run-robot-tests:
           sut: "SUT:ADMIN-DEV"
+          admin-api-active: "TRUE"
           include-tags: "adminANDehr_service"
           test-suite-path: "ADMIN_TESTS"
           test-suite-name: "ADMIN"
@@ -722,6 +723,10 @@ commands:
         description: SUT / System Under Test Config [DEV, ADMIN-DEV, TEST, ADMIN-TEST, ...]
         type: string
         default: "SUT:TEST"
+      admin-api-active:
+        description: Sets environment variable ADMINAPI_ACTIVE [TRUE, FALSE]
+        type: string
+        default: "FALSE"
       include-tags:
         description: Which tests to inclue by TAGs (Robot syntax applies!)
         type: string
@@ -747,7 +752,7 @@ commands:
             ls -la
             EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
             echo ${EHRbase_VERSION}
-            java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false > log &
+            ADMINAPI_ACTIVE=<< parameters.admin-api-active >> java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false > log &
             grep -m 1 "Started EhrBase in" <(tail -f log)
             jps
             cd ~/projects/tests
