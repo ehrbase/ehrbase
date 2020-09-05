@@ -722,7 +722,7 @@ commands:
       sut:
         description: SUT / System Under Test Config [DEV, ADMIN-DEV, TEST, ADMIN-TEST, ...]
         type: string
-        default: "SUT:TEST"
+        default: "SUT:DEV"
       admin-api-active:
         description: Sets environment variable ADMINAPI_ACTIVE [TRUE, FALSE] before starting ehrbase
         type: string
