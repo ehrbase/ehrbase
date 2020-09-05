@@ -785,6 +785,9 @@ commands:
             SECURITY_AUTHTYPE: << parameters.security-auth-type >>
             SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI: << parameters.security-oauth-url >>
           command: |
+            echo $ADMINAPI_ACTIVE
+            echo $SECURITY_AUTHTYPE
+            echo $SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI
             ls -la
             EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
             echo ${EHRbase_VERSION}
