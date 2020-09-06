@@ -660,6 +660,8 @@ jobs:
 
   SECURITY-test:
     executor: machine-ubuntu-2004
+    environment:
+      SUT: TEST
     steps:
       - checkout
       - install-and-configure-keycloak
@@ -785,14 +787,17 @@ commands:
             SECURITY_AUTHTYPE: << parameters.security-auth-type >>
             SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI: << parameters.security-oauth-url >>
           command: |
-            echo $ADMINAPI_ACTIVE
-            echo $SECURITY_AUTHTYPE
-            echo $SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI
+            echo "SUT: $SUT"
+            echo "ADMINAPI_ACTIVE: $ADMINAPI_ACTIVE"
+            echo "SECURITY_AUTHTYPE: $SECURITY_AUTHTYPE"
+            echo "OAUTH_RESRCSERVER_URL: $SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI"
             ls -la
-            EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
-            echo ${EHRbase_VERSION}
-            java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false > log &
-            grep -m 1 "Started EhrBase in" <(tail -f log)
+            if [ "${SUT}" != "TEST" ]; then
+              EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+              echo ${EHRbase_VERSION}
+              java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false > log &
+              tail -f log | grep -m 1 "Started EhrBase in"
+            fi
             jps
             cd ~/projects/tests
             robot --include << parameters.include-tags >> \
