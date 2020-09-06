@@ -646,17 +646,6 @@ jobs:
           include-tags: "aql_adhoc-queryANDloaded_db"
           test-suite-path: "QUERY_SERVICE_TESTS"
           test-suite-name: "ADHOC-QUERY-2"
-  
-  # SECURITY-test:
-  #   executor: machine-ubuntu-2004
-  #   steps:
-  #     - checkout
-  #     - install-and-configure-keycloak
-  #     - restore-packaged-ehrbase-jar
-  #     - run-robot-tests-with-oauth:
-  #         include-tags: "OAUTH"
-  #         # test-suite-path: ""
-  #         test-suite-name: "KEYCLOAK-OAUTH"
 
   SECURITY-test:
     executor: machine-ubuntu-2004
@@ -732,7 +721,6 @@ commands:
   #
 
 
-  # USE THIS COMMAND W/ DOCKER EXECUTOR ONLY!!! 
   run-robot-tests:
     description: Run integration tests written in Robot Framework
     parameters:
@@ -741,22 +729,6 @@ commands:
         enum: ["SUT:DEV", "SUT:DEV -v AUTH_TYPE:OAUTH", "SUT:ADMIN-DEV", "SUT:TEST", "SUT:TEST -v AUTH_TYPE:OAUTH", "SUT:ADMIN-TEST"]
         default: "SUT:DEV"
         type: enum
-        
-      # admin-api-active:
-      #   description: Sets ADMINAPI_ACTIVE env variable
-      #   default: "FALSE"
-      #   type: string
-        
-      # security-auth-type:
-      #   description: Sets SECURITY_AUTHTYPE env variable
-      #   enum: ["BASIC", "OAUTH"]
-      #   default: "BASIC"
-      #   type: enum
-
-      # security-oauth-url:
-      #   description: Sets SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI ENV variable
-      #   default: http://localhost:8081/auth/realms/ehrbase
-      #   type: string
 
       include-tags:
         description: Which tests to inclue by TAGs (Robot syntax applies!)
@@ -770,7 +742,6 @@ commands:
       test-suite-name:
         description: Titel of generated Robot Log/Report.html
         type: string
-
 
     steps:
       # - cache-out-python-requirements
@@ -824,47 +795,7 @@ commands:
           path: ~/projects/tests/results/
       - store_artifacts:
           path: ~/projects/tests/results/
-
-
-  # run-robot-tests-with-oauth:
-  #   description: Run selected integration tests w/ active Keycloak OAuth2 authentication
-  #   parameters:
-  #     include-tags:
-  #       description: Which tests to inclue by TAGs (Robot syntax applies!)
-  #       type: string
-  #     # test-suite-path:
-  #     #   description: Target test-suite given by it's folder name e.g. COMPOSITION_TESTS
-  #     #   type: string
-  #     test-suite-name:
-  #       description: Titel of generated Robot Log/Report.html
-  #       type: string
-  #   steps:
-  #     - restore-integration-tests-job-caches
-  #     - install-python3-requirements
-  #     - run:
-  #         name: EXECUTE ROBOT COMMAND
-  #         no_output_timeout: 30m
-  #         command: |
-  #           cd tests
-  #           robot -v AUTH_TYPE:OAUTH \
-  #                 --include << parameters.include-tags >> \
-  #                 --exclude TODO -e future -e obsolete -e libtest \
-  #                 --console dotted \
-  #                 --loglevel TRACE \
-  #                 --noncritical not-ready \
-  #                 --flattenkeywords for \
-  #                 --flattenkeywords foritem \
-  #                 --flattenkeywords name:_resources.* \
-  #                 --outputdir results/<< parameters.test-suite-name >> \
-  #                 --name << parameters.test-suite-name >> \
-  #                 robot/
-  #     - save-integration-tests-job-caches
-  #     - save-test-results-folder
-  #     - store_test_results:
-  #         path: ~/projects/tests/results/
-  #     - store_artifacts:
-  #         path: ~/projects/tests/results/        
-
+  
 
   save-test-results-folder:
     description: Persist Robot tests folder to workspace
@@ -1720,14 +1651,15 @@ executors:
     working_directory: ~/projects
     docker:
       # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
-      - image: circleci/python:3.8.5-node-browsers
+      # - image: circleci/python:3.8.5-node-browsers
+      - image: circleci/python:3.8.5-buster-node-browsers
 
   docker-py3-java11-postgres:
     working_directory: ~/projects
     docker:
       # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
-      - image: circleci/python:3.8.5-node-browsers
-      # - image:  circleci/python:3.8.5-node-browsers
+      # - image: circleci/python:3.8.5-node-browsers
+      - image:  circleci/python:3.8.5-buster-node-browsers
       - image: ehrbaseorg/ehrbase-postgres:10
         environment:
           POSTGRES_USER: postgres
