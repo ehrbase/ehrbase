@@ -124,10 +124,10 @@ workflows:
           requires:
             - build-artifacts
 
-      # - ADMIN-test:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
+      - ADMIN-test:
+          context: org-global
+          requires:
+            - build-artifacts
 
       - ROBOT-TEST-REPORT:
           context: org-global
@@ -144,7 +144,7 @@ workflows:
             # - QUERYSERVICE-test-1
             # - QUERYSERVICE-test-2
             - SECURITY-test
-            # - ADMIN-test
+            - ADMIN-test
 
       # - sonar-analysis:
       #     context: org-global
