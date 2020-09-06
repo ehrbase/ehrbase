@@ -42,25 +42,25 @@ workflows:
                 - /sync\/.*/
                 - /feature/sync\/.*/
 
-      # - run-unit-tests:
-      #     context: org-global
-      #     filters:
-      #       branches:
-      #         ignore:
-      #           - /release\/.*/
-      #           - master
-      #           - /sync\/.*/
-      #           - /feature/sync\/.*/
+      - run-unit-tests:
+          context: org-global
+          filters:
+            branches:
+              ignore:
+                - /release\/.*/
+                - master
+                - /sync\/.*/
+                - /feature/sync\/.*/
       
-      # - run-SDK-integration-tests:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
+      - run-SDK-integration-tests:
+          context: org-global
+          requires:
+            - build-artifacts
         
-      # - dependency-check:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
+      - dependency-check:
+          context: org-global
+          requires:
+            - build-artifacts
 
       - COMPOSITION-tests-1:
           context: org-global
@@ -146,25 +146,25 @@ workflows:
             - SECURITY-test
             - ADMIN-test
 
-      # - sonar-analysis:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
-      #       - run-unit-tests
-      #       - dependency-check
-      #       - COMPOSITION-tests-1
-      #       - COMPOSITION-tests-2
-      #       - COMPOSITION-tests-3
-      #       - COMPOSITION-tests-4
-      #       - CONTRIBUTION-test
-      #       - DIRECTORY-test
-      #       - EHRSERVICE-test
-      #       - EHRSTATUS-test
-      #       - KNOWLEDGE-test
-      #       - QUERYSERVICE-test-1
-      #       - QUERYSERVICE-test-2
-      #       - SECURITY-test
-      #       - ADMIN-test
+      - sonar-analysis:
+          context: org-global
+          requires:
+            - build-artifacts
+            - run-unit-tests
+            - dependency-check
+            - COMPOSITION-tests-1
+            - COMPOSITION-tests-2
+            - COMPOSITION-tests-3
+            - COMPOSITION-tests-4
+            - CONTRIBUTION-test
+            - DIRECTORY-test
+            - EHRSERVICE-test
+            - EHRSTATUS-test
+            - KNOWLEDGE-test
+            - QUERYSERVICE-test-1
+            - QUERYSERVICE-test-2
+            - SECURITY-test
+            - ADMIN-test
 
 
 
@@ -1651,15 +1651,15 @@ executors:
     working_directory: ~/projects
     docker:
       # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
-      # - image: circleci/python:3.8.5-node-browsers
-      - image: circleci/python:3.8.5-buster-node-browsers
+      # - image: circleci/python:3.8.5-buster-node-browsers
+      - image: circleci/python:3.8.5-node-browsers
 
   docker-py3-java11-postgres:
     working_directory: ~/projects
     docker:
       # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
-      # - image: circleci/python:3.8.5-node-browsers
-      - image:  circleci/python:3.8.5-buster-node-browsers
+      # - image:  circleci/python:3.8.5-buster-node-browsers
+      - image: circleci/python:3.8.5-node-browsers
       - image: ehrbaseorg/ehrbase-postgres:10
         environment:
           POSTGRES_USER: postgres
