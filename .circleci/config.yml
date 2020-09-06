@@ -795,8 +795,16 @@ commands:
             if [ "${SUT}" != "TEST" ]; then
               EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
               echo ${EHRbase_VERSION}
-              java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false > log &
-              tail -f log | grep -m 1 "Started EhrBase in"
+              java -jar "application/target/application-${EHRbase_VERSION}.jar" \
+                  --cache.enabled=false >log & app_pid=$!
+              if ! tail -f log | timeout 30s grep -m 1 "Started EhrBase in"; then
+                echo "WARNING: Did not see a startup message even after waiting 30s" >&2
+                if kill -0 "$app_pid"; then
+                  echo "...although EHRbase is still running" >&2
+                else
+                  echo "...and EHRbase did not successfully start" >&2
+                fi
+              fi
             fi
             jps
             cd ~/projects/tests
