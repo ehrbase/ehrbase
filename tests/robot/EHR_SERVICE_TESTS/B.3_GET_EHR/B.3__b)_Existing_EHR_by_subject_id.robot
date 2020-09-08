@@ -34,7 +34,6 @@ Force Tags
 
 *** Test Cases ***
 Get existing EHR by subject_id
-    [Tags]    272    not-ready   bug
 
     prepare new request session    JSON    Prefer=return=representation
 

@@ -71,7 +71,6 @@ update EHR: set ehr-status modifiable
 check response of 'update EHR' (JSON)
                         Integer     response status    200
                         String    response body uid value    ${ehrstatus_uid[0:-1]}2
-                        # String    response body subject external_ref id value    ${subject_Id}
 
                         # TODO: @WLAD check Github Issue #272
                         # String    response body subject external_ref id value    ${subject_Id}
@@ -503,7 +502,7 @@ extract subject_id from response (JSON)
                         Return From Keyword If    "${actualsuite}" not in "EHR_SERVICE"
                         ...    subject_id is only needed in EHR_SERVICE test suite!
 
-    Pass Execution    TEMP SOLUTION    broken_test    not-ready
+    # Pass Execution    TEMP SOLUTION    broken_test    not-ready
 
     #TODO: @WLAD check Github Issue #272
     #      refactor this KW or it's usage in all test suites!
