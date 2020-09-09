@@ -1,8 +1,9 @@
 package org.ehrbase.aql.containment;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public class TemplateIdQueryTuple {
+public class TemplateIdQueryTuple implements Serializable {
 
     private final String templateId;
     private final String jsonQueryExpression;
