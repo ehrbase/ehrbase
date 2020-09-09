@@ -55,7 +55,15 @@ import javax.cache.CacheManager;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -95,9 +103,10 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     private Cache<String, OPERATIONALTEMPLATE> atOptCache;
     private final Cache<UUID, I_QueryOptMetaData> queryOptMetaDataCache;
 
-    //index
-    //template index with UUID (not used so far...)
-    private Map<UUID, String> idxCache = new ConcurrentHashMap<>();
+    //index uuid to templateId
+    private Map<UUID, String> idxCacheUuidToTemplateId = new ConcurrentHashMap<>();
+    //index templateId to uuid
+    private Map<String, UUID> idxCacheTemplateIdToUuid = new ConcurrentHashMap<>();
 
     private Set<String> allTemplateId = new HashSet<>();
 
@@ -122,6 +131,8 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     @PostConstruct
     public void init() {
         allTemplateId = listAllOperationalTemplates().stream().map(TemplateMetaData::getOperationaltemplate).map(OPERATIONALTEMPLATE::getTemplateId).map(OBJECTID::getValue).collect(Collectors.toSet());
+        listAllOperationalTemplates().stream().map(TemplateMetaData::getOperationaltemplate)
+                .forEach(this::putIntoCache);
     }
 
     @PreDestroy
@@ -175,12 +186,21 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
         invalidateCache(template);
 
-        atOptCache.put(templateId, template);
-        idxCache.put(UUID.fromString(template.getUid().getValue()), templateId);
-        allTemplateId.add(templateId);
+        putIntoCache(template);
+
 
         //retrieve the template Id for this new entry
         return template.getTemplateId().getValue();
+    }
+
+    private void putIntoCache(OPERATIONALTEMPLATE template) {
+        atOptCache.put(template.getTemplateId().getValue(), template);
+        idxCacheUuidToTemplateId.put(UUID.fromString(template.getUid().getValue()), template.getTemplateId().getValue());
+        idxCacheTemplateIdToUuid.put(template.getTemplateId().getValue(), UUID.fromString(template.getUid().getValue()));
+        allTemplateId.add(template.getTemplateId().getValue());
+
+        //forces calculation
+        getQueryOptMetaData(template.getTemplateId().getValue());
     }
 
 
@@ -225,18 +245,32 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     }
 
     private String findTemplateIdByUuid(UUID uuid) {
-        String key = idxCache.get(uuid);
+        String templateId = idxCacheUuidToTemplateId.get(uuid);
 
-        if (key == null) {
-            key = listAllOperationalTemplates()
+        if (templateId == null) {
+            templateId = listAllOperationalTemplates()
                     .stream()
                     .filter(t -> t.getErrorList().isEmpty())
                     .filter(t -> t.getOperationaltemplate().getUid().getValue().equals(uuid.toString()))
                     .map(t -> t.getOperationaltemplate().getTemplateId().getValue())
                     .findFirst()
                     .orElse(null);
+            idxCacheUuidToTemplateId.put(uuid, templateId);
         }
-        return key;
+
+        return templateId;
+    }
+
+    private UUID findUuidByTemplateId(String templateId) {
+        UUID uuid = idxCacheTemplateIdToUuid.get(templateId);
+        if (uuid == null) {
+            uuid = UUID.fromString(retrieveOperationalTemplate(templateId)
+                    .orElseThrow()
+                    .getUid()
+                    .getValue());
+            idxCacheTemplateIdToUuid.put(templateId, uuid);
+        }
+        return uuid;
     }
 
 
@@ -256,27 +290,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     @Override
     public I_QueryOptMetaData getQueryOptMetaData(String templateId) {
 
-        //get the matching template if any
-
-
-        Optional<OPERATIONALTEMPLATE> operationaltemplate = retrieveOperationalTemplate(templateId);
-
-        if (operationaltemplate.isPresent())
-            return getQueryOptMetaData(UUID.fromString(operationaltemplate.get().getUid().getValue()));
-        else {
-
-            Optional<OPERATIONALTEMPLATE> cachedOpt = Optional.empty();
-            try {
-                cachedOpt = retrieveOperationalTemplate(templateId);
-            } catch (Exception e) {
-                log.warn(e.getMessage(), e);
-            }
-            if (cachedOpt.isPresent()) {
-                UUID uuid = UUID.fromString(cachedOpt.get().getUid().getValue());
-                return getQueryOptMetaData(uuid);
-            } else
-                throw new IllegalArgumentException("Could not retrieve  knowledgeCacheService.getKnowledgeCache() cache for template id:" + templateId);
-        }
+        return getQueryOptMetaData(findUuidByTemplateId(templateId));
     }
 
     private I_QueryOptMetaData buildAndCacheQueryOptMetaData(UUID uuid) {
@@ -320,7 +334,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         OPERATIONALTEMPLATE operationaltemplate = templateStorage.readOperationaltemplate(filename).orElse(null);
         if (operationaltemplate != null) {
             atOptCache.put(filename, operationaltemplate);      // manual putting into cache (actual opt cache and then id cache)
-            idxCache.put(UUID.fromString(operationaltemplate.getUid().getValue()), filename);
+            idxCacheUuidToTemplateId.put(UUID.fromString(operationaltemplate.getUid().getValue()), filename);
         }
         return operationaltemplate;
     }
