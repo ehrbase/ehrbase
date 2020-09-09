@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add admin API endpoint stubs (see: https://github.com/ehrbase/ehrbase/pull/280)
 - Add support for FeederAudit in Locatable. Refactored Composition Serializer for DB encoding (see https://github.com/ehrbase/ehrbase/tree/feature/311_feeder_audit, https://github.com/ehrbase/openEHR_SDK/tree/feature/311_feeder_audit)
 - Change the strategy to resolve CONTAINS in AQL (https://github.com/ehrbase/ehrbase/pull/276)
+- Persist caches to java.io.tmpdir  (see: https://github.com/ehrbase/ehrbase/pull/308)
 
 ### Changed
 
@@ -26,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed missing AQL level of parenthesis when using NOT in WHERE clause (see https://github.com/ehrbase/ehrbase/pull/293)
 - Allow duplicated paths in AQL resultsets (see: https://github.com/ehrbase/ehrbase/issues/263)
 - Transaction timestamps are now truncated to ms (see: https://github.com/ehrbase/ehrbase/pull/299)
+- Change response code on not found directory to 412 if not found (see: https://github.com/ehrbase/ehrbase/pull/304)
 
 
 ## [0.13.0] (beta)
