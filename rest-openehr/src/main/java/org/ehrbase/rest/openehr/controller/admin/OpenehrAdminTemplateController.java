@@ -112,10 +112,7 @@ public class OpenehrAdminTemplateController extends BaseController {
             );
         }
 
-        String newId = this.templateService.adminUpdateTemplate(templateId, content);
-
-        // TODO: Change after implementation of JSON parsing of templates
-        String updatedTemplate = this.templateService.findOperationalTemplate(newId, OperationalTemplateFormat.XML);
+        String updatedTemplate = this.templateService.adminUpdateTemplate(templateId, content);
 
         // Headers
         HttpHeaders headers = new HttpHeaders();

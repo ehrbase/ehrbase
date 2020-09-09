@@ -48,11 +48,15 @@ public interface I_TemplateStoreAccess extends I_SimpleCRUD {
         return TemplateStoreAccess.fetchAll(domainAccess);
     }
 
+    static String adminUpdateTemplate(I_DomainAccess domainAccess, OPERATIONALTEMPLATE template) {
+        return TemplateStoreAccess.adminUpdateTemplate(domainAccess, template);
+    }
+
     static boolean deleteTemplate(I_DomainAccess domainAccess, String templateId) {
         return TemplateStoreAccess.deleteTemplate(domainAccess, templateId);
     }
 
     static int adminDeleteAllTemplates(I_DomainAccess domainAccess) {
         return TemplateStoreAccess.adminDeleteAllTemplates(domainAccess);
-    };
+    }
 }

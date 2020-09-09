@@ -149,6 +149,38 @@ public class TemplateFileStorageService implements TemplateStorage {
      * {@inheritDoc}
      */
     @Override
+    public String adminUpdateTemplate(OPERATIONALTEMPLATE template) {
+
+        try {
+            File file = optFileMap.get(template.getTemplateId().getValue());
+            if (!file.exists()) {
+                throw new ObjectNotFoundException(
+                        "ADMIN TEMPLATE STORE FILESYSTEM",
+                        String.format(
+                                "File with name %s does not exist", template.getTemplateId()
+                        )
+                );
+            }
+
+            // Remove old content
+            Files.delete(file.toPath());
+            optFileMap.remove(template.getTemplateId().getValue());
+
+            // Save new content
+            XmlOptions opts = new XmlOptions();
+            opts.setSaveSyntheticDocumentElement(new QName("http://schemas.openehr.org/v1", "template"));
+            saveTemplateFile(template.getTemplateId().getValue(), template.xmlText(opts).getBytes(StandardCharsets.UTF_8));
+
+            return template.xmlText(opts);
+        } catch (IOException e) {
+            throw new InternalServerException(e.getMessage());
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public boolean deleteTemplate(String templateId) {
         boolean deleted = false;
         try {

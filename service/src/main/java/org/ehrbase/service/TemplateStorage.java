@@ -50,6 +50,15 @@ public interface TemplateStorage {
     Optional<OPERATIONALTEMPLATE> readOperationaltemplate(String templateId);
 
     /**
+     * Replaces the content of an existing template with the same id as in the provided template with the new
+     * content from provided one. Check that the old template is no longer referenced to avoid data inconsistencies
+     *
+     * @param template - Template with new data and id of target to be replaced
+     * @return - XML content of the updated template
+     */
+    String adminUpdateTemplate(OPERATIONALTEMPLATE template);
+
+    /**
      * Deletes an operational template from template storage. The template will be removed physically so ensure that
      * there are no compositions referencing the template.
      *

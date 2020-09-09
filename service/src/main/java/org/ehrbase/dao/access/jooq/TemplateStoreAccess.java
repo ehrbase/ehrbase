@@ -23,12 +23,14 @@ package org.ehrbase.dao.access.jooq;
 import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlOptions;
 import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_TemplateStoreAccess;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.TransactionTime;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.ehrbase.jooq.pg.Routines;
+import org.ehrbase.jooq.pg.tables.records.AdminGetTemplateUsageRecord;
 import org.ehrbase.jooq.pg.tables.records.TemplateStoreRecord;
 import org.jooq.Record2;
 import org.jooq.Result;
@@ -180,6 +182,51 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
     }
 
     /**
+     * Replaces the old content of a template with the new provided content in the database storage. The target template
+     * id must be provided within the new template. This is a destructive operation thus the old template will be
+     * checked against Compositions if there are any usages of the template to avoid data inconsistencies.
+     *
+     * @param domainAccess - Database connection context
+     * @param template - New template data to store
+     * @return - Updated template XML content
+     */
+    public static String adminUpdateTemplate(I_DomainAccess domainAccess, OPERATIONALTEMPLATE template) {
+
+        // Check if template is used anymore
+        Result<AdminGetTemplateUsageRecord> usingCompositions = Routines.adminGetTemplateUsage(
+                domainAccess.getContext().configuration(),
+                template.getTemplateId().getValue()
+        );
+
+        if (usingCompositions.isNotEmpty()) {
+            // There are compositions using this template -> Return list of uuids
+            throw new UnprocessableEntityException(
+                    String.format(
+                            "Cannot delete template %s since the following compositions are still using it %s",
+                            template.getTemplateId().getValue(),
+                            usingCompositions.toString()
+                    )
+            );
+        } else {
+
+
+
+            XmlOptions opts = new XmlOptions();
+            opts.setSaveSyntheticDocumentElement(new QName("http://schemas.openehr.org/v1", "template"));
+
+            TemplateStoreRecord tsr = new TemplateStoreRecord();
+            tsr.setContent(template.xmlText(opts));
+
+            // Replace template with db function
+            return Routines.adminUpdateTemplate(
+                    domainAccess.getContext().configuration(),
+                    template.getTemplateId().getValue(),
+                    template.xmlText(opts)
+            );
+        }
+    }
+
+    /**
      * Removes the template identified by its template_id from database and returns if the operation succeeded.
      *
      * @param domainAccess - Database access instance
@@ -188,10 +235,31 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
      */
     public static boolean deleteTemplate(I_DomainAccess domainAccess, String templateId) {
 
-        return domainAccess.getContext()
-                .deleteFrom(TEMPLATE_STORE)
-                .where(TEMPLATE_STORE.TEMPLATE_ID.eq(templateId))
-                .execute() > 0;
+        try {
+            // Check if template is used in any composition
+            Result<AdminGetTemplateUsageRecord> usingCompositions = Routines.adminGetTemplateUsage(
+                    domainAccess.getContext().configuration(),
+                    templateId
+            );
+            if (usingCompositions.isNotEmpty()) {
+                // There are compositions using this template -> Return list of uuids
+                throw new UnprocessableEntityException(
+                        String.format(
+                                "Cannot delete template %s since the following compositions are still using it %s",
+                                templateId,
+                                usingCompositions.toString()
+                        )
+                );
+            } else {
+                // Template no longer used -> Delete
+                return domainAccess.getContext()
+                        .deleteFrom(TEMPLATE_STORE)
+                        .where(TEMPLATE_STORE.TEMPLATE_ID.eq(templateId))
+                        .execute() > 0;
+            }
+        } catch (Exception e) {
+            throw new InternalServerException(e.getMessage());
+        }
     }
 
     /**

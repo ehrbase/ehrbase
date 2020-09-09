@@ -96,30 +96,6 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
         return getCompositionDto(compositionAccess);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Optional<List<UUID>> retrieveAllForTemplate(String templateId) {
-        List<UUID> compositionUuidList;
-        try {
-            // Get all compositions using the template
-            compositionUuidList = I_CompositionAccess.retrieveCompositionIdsForTemplate(
-                    getDataAccess(),
-                    templateId
-            );
-
-            if (compositionUuidList.isEmpty()) {
-                return Optional.empty();
-            }
-            return Optional.of(compositionUuidList);
-
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            throw new InternalServerException(e);
-        }
-    }
-
     @Override
     public Optional<List<UUID>> retrieveAllForTemplates(List<String> templateIds) {
         List<UUID> compositionUuidList = I_CompositionAccess.retrieveCompositionIdsForTemplates(

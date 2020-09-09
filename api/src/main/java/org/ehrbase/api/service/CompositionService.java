@@ -50,14 +50,6 @@ public interface CompositionService extends BaseService {
      */
     Optional<CompositionDto> retrieveByTimestamp(UUID compositionId, LocalDateTime timestamp);
 
-    /**
-     * Gets a list of compositions that use a given Operational Template id.
-     *
-     * @param templateId - Operational Template id
-     * @return - List of compositions that use the template
-     */
-    Optional<List<UUID>> retrieveAllForTemplate(String templateId);
-
     Optional<List<UUID>> retrieveAllForTemplates(List<String> templateIds);
 
     /**

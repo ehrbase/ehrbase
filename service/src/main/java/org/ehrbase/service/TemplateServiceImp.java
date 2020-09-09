@@ -155,18 +155,6 @@ public class TemplateServiceImp extends BaseService implements TemplateService {
             ));
         }
 
-        // Check if Operational Template is used somewhere
-        Optional<List<UUID>> compositionUuidList =
-                this.compositionService.retrieveAllForTemplate(opt.get().getTemplateId().getValue());
-
-        if (compositionUuidList.isPresent()) {
-            throw new UnprocessableEntityException(
-                    String.format(
-                            "Cannot delete used template. Compositions using this template are %s",
-                            compositionUuidList.get().toString()
-                    ));
-        }
-
         // Delete template if not used
         return this.knowledgeCacheService.deleteOperationalTemplate(opt.get());
     }
@@ -188,22 +176,8 @@ public class TemplateServiceImp extends BaseService implements TemplateService {
             );
         }
 
-        // Find referencing Compositions
-        Optional<List<UUID>> compositionsUuidList =
-                this.compositionService.retrieveAllForTemplate(templateId);
-
-        if (compositionsUuidList.isPresent()) {
-            throw new UnprocessableEntityException(
-                    String.format(
-                            "Cannot update used template with id %s. Compositions using this template are: %s",
-                            templateId,
-                            compositionsUuidList.get().toString()
-                    )
-            );
-        }
-
         // Replace content
-        return this.knowledgeCacheService.updateOperationalTemplate(content.getBytes(StandardCharsets.UTF_8));
+        return this.knowledgeCacheService.adminUpdateOperationalTemplate(content.getBytes(StandardCharsets.UTF_8));
     }
 
     /**

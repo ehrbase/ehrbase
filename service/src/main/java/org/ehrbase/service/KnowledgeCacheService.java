@@ -165,33 +165,11 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
      */
     private String addOperationalTemplate(byte[] content, boolean overwrite) {
 
-        InputStream inputStream = new ByteArrayInputStream(content);
-
-        TemplateDocument document;
-        try {
-            document = TemplateDocument.Factory.parse(inputStream);
-        } catch (XmlException | IOException e) {
-            throw new InvalidApiParameterException(e.getMessage());
-        }
-        OPERATIONALTEMPLATE template = document.getTemplate();
-
-        if (template == null) {
-            throw new InvalidApiParameterException("Could not parse input template");
-        }
-
-        if (template.getConcept() == null || template.getConcept().isEmpty())
-            throw new IllegalArgumentException("Supplied template has nil or empty concept");
-
-        if (template.getDefinition() == null || template.getDefinition().isNil())
-            throw new IllegalArgumentException("Supplied template has nil or empty definition");
-
-        if (template.getDescription() == null || !template.getDescription().validate())
-            throw new IllegalArgumentException("Supplied template has nil or empty description");
+        OPERATIONALTEMPLATE template = parseTemplate(content);
 
         //get the filename from the template template Id
         Optional<TEMPLATEID> filenameOptional = Optional.ofNullable(template.getTemplateId());
         String templateId = filenameOptional.orElseThrow(() -> new InvalidApiParameterException("Invalid template input content")).getValue();
-
 
         // pre-check: if already existing and overwrite is forbidden throw proper exception
         if (!allowTemplateOverwrite && !overwrite && retrieveOperationalTemplate(templateId).isPresent()) {
@@ -199,7 +177,6 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         }
 
         templateStorage.storeTemplate(template);
-
 
         invalidateCache(template);
 
@@ -209,6 +186,26 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
         //retrieve the template Id for this new entry
         return template.getTemplateId().getValue();
+    }
+
+    public String adminUpdateOperationalTemplate(byte[] content) {
+
+        OPERATIONALTEMPLATE template = parseTemplate(content);
+
+        String templateId = Optional.ofNullable(
+                template.getTemplateId())
+                .orElseThrow(() -> new InvalidApiParameterException("Invalid template input content"))
+                .getValue();
+
+        // Replace template
+        templateStorage.adminUpdateTemplate(template);
+
+        // Refresh template caches
+        invalidateCache(template);
+        atOptCache.replace(templateId, template);
+        idxCache.replace(UUID.fromString(template.getUid().getValue()), templateId);
+
+        return template.xmlText();
     }
 
 
@@ -431,5 +428,39 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     @Override
     public I_KnowledgeCache getKnowledge() {
         return this;
+    }
+
+    /**
+     * Check an input byte array for a template if it is a valid template and generate a new template instance for it.
+     *
+     * @param templateContent - Byte array with template content
+     * @return - New instance of an OPT
+     */
+    private OPERATIONALTEMPLATE parseTemplate(byte[] templateContent) {
+
+        InputStream inputStream = new ByteArrayInputStream(templateContent);
+
+        TemplateDocument document;
+        try {
+            document = TemplateDocument.Factory.parse(inputStream);
+        } catch (XmlException | IOException e) {
+            throw new InvalidApiParameterException(e.getMessage());
+        }
+        OPERATIONALTEMPLATE template = document.getTemplate();
+
+        if (template == null) {
+            throw new InvalidApiParameterException("Could not parse input template");
+        }
+
+        if (template.getConcept() == null || template.getConcept().isEmpty())
+            throw new IllegalArgumentException("Supplied template has nil or empty concept");
+
+        if (template.getDefinition() == null || template.getDefinition().isNil())
+            throw new IllegalArgumentException("Supplied template has nil or empty definition");
+
+        if (template.getDescription() == null || !template.getDescription().validate())
+            throw new IllegalArgumentException("Supplied template has nil or empty description");
+
+        return template;
     }
 }
