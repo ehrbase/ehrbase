@@ -18,7 +18,7 @@ Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags   229
+Force Tags   353
 
 
 
@@ -26,9 +26,8 @@ Force Tags   229
 Main flow: get directory at time on empty EHR
 
     create EHR
-
     get DIRECTORY at current time (JSON)
 
-        TRACE GITHUB ISSUE  229  not-ready
+        TRACE GITHUB ISSUE  353  not-ready
 
     validate GET-version@time response - 404 unknown folder-version@time

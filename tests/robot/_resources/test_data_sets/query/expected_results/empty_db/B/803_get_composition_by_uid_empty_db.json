@@ -2,7 +2,7 @@
   "meta": {
     "_type": "RESULTSET",
     "_created": "2019-10-18T18:12:29.282Z",
-    "_executed_aql": "SELECT c FROM COMPOSITION c WHERE c/uid/value=__MODIFY_COMPOSITION_UID_1__"
+    "_executed_aql": "SELECT c FROM COMPOSITION c WHERE c/uid/value=73ed44af-778a-4b8c-aa0d-5b46342d84ec::node.name.com::1"
   },
   "q": "SELECT c FROM COMPOSITION c WHERE c/uid/value=$uid",
   "columns": [
@@ -11,6 +11,5 @@
       "path": "/"
     }
   ],
-  "rows": [
-  ]
+  "rows": []
 }

@@ -735,8 +735,6 @@ validate POST response - 409 folder already exists
     [Documentation]     CASE: EHR with `ehr_id` already has a directory FOLDER.
     ...                 NOTE: @PABLO this is not (yet) in the SPEC
 
-        TRACE GITHUB ISSUE  231  not-ready
-
                         Should Be Equal As Strings    ${response.status_code}    409
 
                         #TODO:  Should Be Equal    ${response.json()['status']}    Not Found
