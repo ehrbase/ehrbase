@@ -30,6 +30,14 @@ server:
   servlet:
     context-path: /ehrbase
 
+  aqlConfig:
+    # if true, WHERE clause is using jsquery, false uses SQL only
+    useJsQuery: false
+    # ignore unbounded item in path starting with one of
+    ignoreIterativeNodeList: 'activities,content'
+    # how many embedded jsonb_array_elements(..) are acceptable? Recommended == 1
+    iterationScanDepth: 1
+
 security:
   authType: NONE
 

@@ -38,7 +38,7 @@ public class NodeNameValuePredicate {
         String predicate = nodePredicate.predicate();
         jqueryPath.add(new NodePredicate(nodeId).removeNameValuePredicate());
         //encode it to prepare for plpgsql function call: marker followed by the name/value predicate
-        jqueryPath.add(I_QueryImpl.AQL_NODE_NAME_PREDICATE_MARKER);
+        jqueryPath.add(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER);
         jqueryPath.add(predicate);
 
         return jqueryPath;
