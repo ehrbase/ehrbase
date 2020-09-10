@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Detection of duplicate directories on EHR on POST
 - Using ObjectVersionId for DIRECTORY Controller and Service Layers (see: https://github.com/ehrbase/ehrbase/pull/297)
 - Added Junit5 support via spring-boot-starter-test (https://github.com/ehrbase/ehrbase/pull/298)
+- Enable cartesian products on embedded arrays in JSONB (see https://github.com/ehrbase/ehrbase/pull/309)
 
 ### Fixed
 
