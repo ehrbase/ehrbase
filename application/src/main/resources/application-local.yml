@@ -35,8 +35,8 @@ server:
     useJsQuery: false
     # ignore unbounded item in path starting with one of
     ignoreIterativeNodeList: 'activities,content'
-    # how many embedded jsonb_array_elements(..) are acceptable? Recommended == 1
-    iterationScanDepth: 1
+    # how many embedded jsonb_array_elements(..) are acceptable? Recommended == 2
+    iterationScanDepth: 2
 
 security:
   authType: NONE
