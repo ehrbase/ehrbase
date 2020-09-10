@@ -22,11 +22,14 @@
  */
 package org.ehrbase.service;
 
+import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.MoreExecutors;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.StateConflictException;
+import org.ehrbase.aql.containment.JsonPathQueryBuilder;
 import org.ehrbase.aql.containment.JsonPathQueryResult;
 import org.ehrbase.aql.containment.OptJsonPath;
 import org.ehrbase.aql.containment.TemplateIdQueryTuple;
@@ -55,6 +58,7 @@ import javax.cache.CacheManager;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -65,6 +69,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -133,6 +141,13 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         allTemplateId = listAllOperationalTemplates().stream().map(TemplateMetaData::getOperationaltemplate).map(OPERATIONALTEMPLATE::getTemplateId).map(OBJECTID::getValue).collect(Collectors.toSet());
         listAllOperationalTemplates().stream().map(TemplateMetaData::getOperationaltemplate)
                 .forEach(this::putIntoCache);
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
+        ExecutorService executorService =
+                MoreExecutors.getExitingExecutorService(executor,
+                        100, TimeUnit.MILLISECONDS);
+        executor.submit(() ->
+                allTemplateId.forEach(this::precalculateQuerys));
+
     }
 
     @PreDestroy
@@ -188,19 +203,36 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
         putIntoCache(template);
 
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
+        ExecutorService executorService =
+                MoreExecutors.getExitingExecutorService(executor,
+                        100, TimeUnit.MILLISECONDS);
+        executor.submit(() -> precalculateQuerys(templateId));
+
 
         //retrieve the template Id for this new entry
         return template.getTemplateId().getValue();
     }
 
     private void putIntoCache(OPERATIONALTEMPLATE template) {
-        atOptCache.put(template.getTemplateId().getValue(), template);
-        idxCacheUuidToTemplateId.put(UUID.fromString(template.getUid().getValue()), template.getTemplateId().getValue());
-        idxCacheTemplateIdToUuid.put(template.getTemplateId().getValue(), UUID.fromString(template.getUid().getValue()));
-        allTemplateId.add(template.getTemplateId().getValue());
+        String templateId = template.getTemplateId().getValue();
+        atOptCache.put(templateId, template);
+        idxCacheUuidToTemplateId.put(UUID.fromString(template.getUid().getValue()), templateId);
+        idxCacheTemplateIdToUuid.put(templateId, UUID.fromString(template.getUid().getValue()));
+        allTemplateId.add(templateId);
 
-        //forces calculation
-        getQueryOptMetaData(template.getTemplateId().getValue());
+        getQueryOptMetaData(templateId);
+    }
+
+    private void precalculateQuerys(String templateId) {
+        I_QueryOptMetaData queryOptMetaData = getQueryOptMetaData(templateId);
+
+        Sets.powerSet(queryOptMetaData.getContainmentSet())
+                .stream()
+                .filter(s -> !s.isEmpty())
+                .map(s -> new JsonPathQueryBuilder(new ArrayList<>(s)))
+                .map(JsonPathQueryBuilder::assemble)
+                .forEach(s -> resolveForTemplate(templateId, s));
     }
 
 
@@ -350,6 +382,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         TemplateIdQueryTuple key = new TemplateIdQueryTuple(templateId, jsonQueryExpression);
 
         JsonPathQueryResult jsonPathQueryResult = jsonPathQueryResultCache.get(key);
+
 
         if (jsonPathQueryResult == null) {
             Map<String, Object> evaluate = new OptJsonPath(this).evaluate(templateId, jsonQueryExpression);

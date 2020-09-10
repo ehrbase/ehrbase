@@ -24,7 +24,11 @@ package org.ehrbase.opt.mapper;
 
 import org.ehrbase.opt.TermDefinition;
 import org.ehrbase.opt.ValuePoint;
-import org.openehr.schemas.v1.*;
+import org.openehr.schemas.v1.CATTRIBUTE;
+import org.openehr.schemas.v1.CCOMPLEXOBJECT;
+import org.openehr.schemas.v1.CDVORDINAL;
+import org.openehr.schemas.v1.CDVQUANTITY;
+import org.openehr.schemas.v1.COBJECT;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -72,7 +76,13 @@ public class Interval {
                     putInnerType(constraintsMap, cobject, Constants.UPPER);
                     //get the type
                     valuePoints.add(Constants.UPPER);
-                    valuePoints.add((String) ((Map) constraintsMap.get(Constants.UPPER)).get(Constants.TYPE));
+                    try {
+
+
+                        valuePoints.add((String) ((Map) constraintsMap.get(Constants.UPPER)).get(Constants.TYPE));
+                    } catch (Exception e) {
+                        throw e;
+                    }
 //                    if (childObject == null)
 //                        childObject = cobject;
                 }
@@ -105,22 +115,23 @@ public class Interval {
     }
 
     private void putInnerType(Map<String, Object> map, COBJECT cobject, String attributeName) {
-        if (cobject.getRmTypeName().equals("DV_QUANTITY")) {
+        String rmTypeName = cobject.getRmTypeName();
+        if (rmTypeName.equals("DV_QUANTITY")) {
             //get the range and set it in constraints
             map.put(attributeName, new Quantity((CDVQUANTITY) cobject, termDef).toMap(attributeName));
-        } else if (cobject.getRmTypeName().equals("DV_COUNT")) {
+        } else if (rmTypeName.equals("DV_COUNT")) {
             //get the range and set it in constraints
             map.put(attributeName, new Count((CCOMPLEXOBJECT) cobject, termDef).toMap(attributeName));
-        } else if (cobject.getRmTypeName().equals("DV_DATE") || cobject.getRmTypeName().equals("DV_DATE_TIME") || cobject.getRmTypeName().equals("DV_TIME")) {
+        } else if (rmTypeName.equals("DV_DATE") || rmTypeName.equals("DV_DATE_TIME") || rmTypeName.equals("DV_TIME")) {
             //get the range and set it in constraints
-            map.put(attributeName, new ValueType((CCOMPLEXOBJECT) cobject, termDef).toMap(cobject.getRmTypeName(), attributeName));
-        } else if (cobject.getRmTypeName().equals("DV_DURATION")) {
+            map.put(attributeName, new ValueType((CCOMPLEXOBJECT) cobject, termDef).toMap(rmTypeName, attributeName));
+        } else if (rmTypeName.equals("DV_DURATION")) {
             //get the range and set it in constraints
             map.put(attributeName, new Duration((CCOMPLEXOBJECT) cobject, termDef).toMap(attributeName));
-        } else if (cobject.getRmTypeName().equals("DV_ORDINAL")) {
+        } else if (rmTypeName.equals("DV_ORDINAL")) {
             //get the range and set it in constraints
             map.put(attributeName, new Ordinal((CDVORDINAL) cobject, termDef).toMap(attributeName));
-        } else if (cobject.getRmTypeName().equals("DV_PROPORTION")) {
+        } else if (rmTypeName.equals("DV_PROPORTION")) {
             //get the range and set it in constraints
             map.put(attributeName, new Proportion((CCOMPLEXOBJECT) cobject, termDef).toMap(attributeName));
         }

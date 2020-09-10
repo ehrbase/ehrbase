@@ -18,6 +18,8 @@
 
 package org.ehrbase.opt.query;
 
+import org.ehrbase.aql.containment.Containment;
+
 import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
@@ -26,6 +28,8 @@ import java.util.Set;
  * Created by christian on 5/14/2018.
  */
 public interface I_QueryOptMetaData extends Serializable {
+    Set<Containment> getContainmentSet();
+
     List upperNotBounded();
 
     String type(String path);

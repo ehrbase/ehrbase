@@ -24,13 +24,17 @@ package org.ehrbase.opt.query;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import net.minidev.json.JSONArray;
+import org.apache.commons.lang3.StringUtils;
+import org.ehrbase.aql.containment.Containment;
 import org.ehrbase.opt.OptVisitor;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by christian on 5/7/2018.
@@ -38,7 +42,7 @@ import java.util.Set;
 public class QueryOptMetaData implements I_QueryOptMetaData {
 
     Object document;
-    Set<String> allNodeIds;
+    private final Set<String> allNodeIds;
 
     private QueryOptMetaData(Object document) {
         this.document = document;
@@ -58,6 +62,26 @@ public class QueryOptMetaData implements I_QueryOptMetaData {
         }
         return current;
     }
+
+    @Override
+    public Set<Containment> getContainmentSet() {
+
+        return allNodeIds.stream()
+                .map(this::buildContainment)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toSet());
+    }
+
+    private Optional<Containment> buildContainment(String nodeId) {
+        String className = StringUtils.substringBetween(nodeId, "openEHR-EHR-", ".");
+        if (StringUtils.isNotBlank(className)) {
+            return Optional.of(new Containment(className, "dummy", nodeId));
+        } else {
+            return Optional.empty();
+        }
+    }
+
 
     /**
      * prepare a document for querying
