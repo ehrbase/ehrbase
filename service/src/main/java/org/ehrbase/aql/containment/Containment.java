@@ -21,6 +21,7 @@
 
 package org.ehrbase.aql.containment;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,7 +32,7 @@ import java.util.Map;
  * </p>
  * Created by christian on 4/4/2016.
  */
-public class Containment {
+public class Containment implements Serializable {
 
     private String symbol;
     private String archetypeId;

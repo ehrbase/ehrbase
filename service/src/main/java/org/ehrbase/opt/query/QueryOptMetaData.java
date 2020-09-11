@@ -30,6 +30,7 @@ import org.ehrbase.opt.OptVisitor;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -41,6 +42,7 @@ import java.util.stream.Collectors;
  */
 public class QueryOptMetaData implements I_QueryOptMetaData {
 
+    private final Set<Set<Containment>> containments;
     Object document;
     private final Set<String> allNodeIds;
 
@@ -49,6 +51,7 @@ public class QueryOptMetaData implements I_QueryOptMetaData {
 
 
         allNodeIds = findNames((Map<String, Object>) ((Map<String, Object>) document).get("tree"));
+        containments = findSets((Map<String, Object>) ((Map<String, Object>) document).get("tree"));
     }
 
     private Set<String> findNames(Map<String, Object> tree) {
@@ -63,14 +66,40 @@ public class QueryOptMetaData implements I_QueryOptMetaData {
         return current;
     }
 
-    @Override
-    public Set<Containment> getContainmentSet() {
+    private Set<Set<Containment>> findSets(Map<String, Object> tree) {
+        Set<Set<Containment>> containments = new LinkedHashSet<>();
 
-        return allNodeIds.stream()
-                .map(this::buildContainment)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toSet());
+        if (tree.containsKey("node_id") && buildContainment(tree.get("node_id").toString()).isPresent()) {
+            Containment containment = buildContainment(tree.get("node_id").toString()).get();
+
+            Set<Containment> root = new LinkedHashSet<>(Set.of(containment));
+            containments.add(root);
+
+            if (tree.containsKey("children")) {
+                for (Object child : ((JSONArray) tree.get("children")).toArray()) {
+                    Set<Set<Containment>> subSets = findSets((Map<String, Object>) child);
+
+                    containments.addAll(subSets);
+
+                    containments.addAll(subSets.stream()
+                            .map(s -> {
+                                Set<Containment> list = new LinkedHashSet<>(Set.of(containment));
+                                list.addAll(s);
+                                return list;
+                            })
+                            .collect(Collectors.toSet()));
+
+                }
+            }
+        }
+
+        return containments;
+    }
+
+    @Override
+    public Set<Set<Containment>> getContainmentSet() {
+
+        return containments;
     }
 
     private Optional<Containment> buildContainment(String nodeId) {

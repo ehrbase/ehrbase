@@ -28,7 +28,7 @@ import java.util.Set;
  * Created by christian on 5/14/2018.
  */
 public interface I_QueryOptMetaData extends Serializable {
-    Set<Containment> getContainmentSet();
+    Set<Set<Containment>> getContainmentSet();
 
     List upperNotBounded();
 

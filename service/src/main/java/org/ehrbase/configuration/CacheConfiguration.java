@@ -23,7 +23,7 @@ import org.ehrbase.aql.containment.TemplateIdQueryTuple;
 import org.ehrbase.opt.query.I_QueryOptMetaData;
 import org.ehrbase.validation.Validator;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -37,6 +37,7 @@ import java.net.URISyntaxException;
 import java.util.UUID;
 
 @Configuration
+@ConfigurationProperties(prefix = "cache")
 public class CacheConfiguration {
 
     public static final String INTROSPECT_CACHE = "introspectCache";
@@ -44,26 +45,58 @@ public class CacheConfiguration {
     public static final String VALIDATOR_CACHE = "validatorCache";
     public static final String QUERY_CACHE = "queryCache";
 
-    @Value("${cache.config}")
-    private String configPath;
-    @Value("${cache.enabled}")
-    private boolean enabled;
 
+    private String configPath;
+    private boolean enabled;
+    private boolean preBuildQueries;
+    private int preBuildQueriesDepth;
+
+    public String getConfigPath() {
+        return configPath;
+    }
+
+    public void setConfigPath(String configPath) {
+        this.configPath = configPath;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public boolean isPreBuildQueries() {
+        return preBuildQueries;
+    }
+
+    public void setPreBuildQueries(boolean preBuildQueries) {
+        this.preBuildQueries = preBuildQueries;
+    }
+
+    public int getPreBuildQueriesDepth() {
+        return preBuildQueriesDepth;
+    }
+
+    public void setPreBuildQueriesDepth(int preBuildQueriesDepth) {
+        this.preBuildQueriesDepth = preBuildQueriesDepth;
+    }
 
     @Bean
-    public CacheManager cacheManagerCustomizer() throws URISyntaxException {
+    public static CacheManager cacheManagerCustomizer(CacheConfiguration cacheProperties) throws URISyntaxException {
         CachingProvider cachingProvider = Caching.getCachingProvider();
         final CacheManager cacheManager;
-        if (enabled) {
-            cacheManager = cachingProvider.getCacheManager(getClass().getResource(configPath).toURI(),
-                    getClass().getClassLoader());
+        if (cacheProperties.isEnabled()) {
+            cacheManager = cachingProvider.getCacheManager(CacheConfiguration.class.getResource(cacheProperties.getConfigPath()).toURI(),
+                    CacheConfiguration.class.getClassLoader());
         } else {
             cacheManager = cachingProvider.getCacheManager();
         }
-        buildCache(INTROSPECT_CACHE, UUID.class, I_QueryOptMetaData.class, cacheManager, enabled);
-        buildCache(OPERATIONAL_TEMPLATE_CACHE, String.class, OPERATIONALTEMPLATE.class, cacheManager, enabled);
-        buildCache(VALIDATOR_CACHE, UUID.class, Validator.class, cacheManager, enabled);
-        buildCache(QUERY_CACHE, TemplateIdQueryTuple.class, JsonPathQueryResult.class, cacheManager, enabled);
+        buildCache(INTROSPECT_CACHE, UUID.class, I_QueryOptMetaData.class, cacheManager, cacheProperties.isEnabled());
+        buildCache(OPERATIONAL_TEMPLATE_CACHE, String.class, OPERATIONALTEMPLATE.class, cacheManager, cacheProperties.isEnabled());
+        buildCache(VALIDATOR_CACHE, UUID.class, Validator.class, cacheManager, cacheProperties.isEnabled());
+        buildCache(QUERY_CACHE, TemplateIdQueryTuple.class, JsonPathQueryResult.class, cacheManager, cacheProperties.isEnabled());
         return cacheManager;
     }
 

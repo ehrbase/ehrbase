@@ -54,8 +54,12 @@ security:
   authAdminPassword: EvenMoreSecretPassword
 
 cache:
-  config: '/ehcache.xml'
+  config-path: '/ehcache.xml'
   enabled: true
+  pre-build-queries: true
+  pre-build-queries-depth: 4
+
+
 
 system:
   allow-template-overwrite: false

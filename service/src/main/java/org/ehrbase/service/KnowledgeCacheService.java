@@ -22,7 +22,6 @@
  */
 package org.ehrbase.service;
 
-import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.MoreExecutors;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.xmlbeans.XmlException;
@@ -58,7 +57,6 @@ import javax.cache.CacheManager;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -122,31 +120,37 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
 
     private final CacheManager cacheManager;
+    private final CacheConfiguration cacheConfiguration;
 
     @Value("${system.allow-template-overwrite:false}")
     private boolean allowTemplateOverwrite;
 
     @Autowired
-    public KnowledgeCacheService(@Qualifier("templateDBStorageService") TemplateStorage templateStorage, CacheManager cacheManager) {
+    public KnowledgeCacheService(@Qualifier("templateDBStorageService") TemplateStorage templateStorage, CacheManager cacheManager, CacheConfiguration cacheConfiguration) {
         this.templateStorage = templateStorage;
         this.cacheManager = cacheManager;
 
         atOptCache = cacheManager.getCache(OPERATIONAL_TEMPLATE_CACHE, String.class, OPERATIONALTEMPLATE.class);
         queryOptMetaDataCache = cacheManager.getCache(CacheConfiguration.INTROSPECT_CACHE, UUID.class, I_QueryOptMetaData.class);
         jsonPathQueryResultCache = cacheManager.getCache(QUERY_CACHE, TemplateIdQueryTuple.class, JsonPathQueryResult.class);
+        this.cacheConfiguration = cacheConfiguration;
     }
 
     @PostConstruct
     public void init() {
         allTemplateId = listAllOperationalTemplates().stream().map(TemplateMetaData::getOperationaltemplate).map(OPERATIONALTEMPLATE::getTemplateId).map(OBJECTID::getValue).collect(Collectors.toSet());
-        listAllOperationalTemplates().stream().map(TemplateMetaData::getOperationaltemplate)
-                .forEach(this::putIntoCache);
-        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
-        ExecutorService executorService =
-                MoreExecutors.getExitingExecutorService(executor,
-                        100, TimeUnit.MILLISECONDS);
-        executor.submit(() ->
-                allTemplateId.forEach(this::precalculateQuerys));
+        listAllOperationalTemplates().stream().map(TemplateMetaData::getOperationaltemplate).forEach(this::putIntoCache);
+
+
+        if (cacheConfiguration.isPreBuildQueries()) {
+            ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
+            ExecutorService executorService =
+                    MoreExecutors.getExitingExecutorService(executor,
+                            100, TimeUnit.MILLISECONDS);
+
+            executor.submit(() ->
+                    allTemplateId.forEach(this::precalculateQuerys));
+        }
 
     }
 
@@ -202,13 +206,14 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         invalidateCache(template);
 
         putIntoCache(template);
+        if (cacheConfiguration.isPreBuildQueries()) {
+            ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
+            ExecutorService executorService =
+                    MoreExecutors.getExitingExecutorService(executor,
+                            100, TimeUnit.MILLISECONDS);
 
-        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
-        ExecutorService executorService =
-                MoreExecutors.getExitingExecutorService(executor,
-                        100, TimeUnit.MILLISECONDS);
-        executor.submit(() -> precalculateQuerys(templateId));
-
+            executor.submit(() -> precalculateQuerys(templateId));
+        }
 
         //retrieve the template Id for this new entry
         return template.getTemplateId().getValue();
@@ -227,10 +232,11 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     private void precalculateQuerys(String templateId) {
         I_QueryOptMetaData queryOptMetaData = getQueryOptMetaData(templateId);
 
-        Sets.powerSet(queryOptMetaData.getContainmentSet())
+        queryOptMetaData.getContainmentSet()
                 .stream()
                 .filter(s -> !s.isEmpty())
-                .map(s -> new JsonPathQueryBuilder(new ArrayList<>(s)))
+                .filter(s -> s.size() <= cacheConfiguration.getPreBuildQueriesDepth())
+                .map(s -> new JsonPathQueryBuilder((List) s))
                 .map(JsonPathQueryBuilder::assemble)
                 .forEach(s -> resolveForTemplate(templateId, s));
     }
