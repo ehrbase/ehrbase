@@ -62,3 +62,19 @@ BEGIN
 	DELETE FROM ehr.template_store ts WHERE ts.id NOTNULL;
 	RETURN deleted;
 END;$$ LANGUAGE plpgsql;
+
+-- ====================================================================
+-- Author: Axel Siebert (axel.siebert@vitagroup.ag)
+-- Create date: 2020-09-11
+-- Description: Removes one dedicated template from database
+-- Returns: Number of deleted rows
+-- =====================================================================
+DROP FUNCTION IF EXISTS ehr.admin_delete_template;
+
+CREATE OR REPLACE FUNCTION ehr.admin_delete_template(target_id TEXT)
+RETURNS integer
+AS $$
+BEGIN
+	DELETE FROM ehr.template_store ts WHERE ts.template_id = target_id;
+	RETURN 1;
+END;$$ LANGUAGE plpgsql;

@@ -252,10 +252,10 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
                 );
             } else {
                 // Template no longer used -> Delete
-                return domainAccess.getContext()
-                        .deleteFrom(TEMPLATE_STORE)
-                        .where(TEMPLATE_STORE.TEMPLATE_ID.eq(templateId))
-                        .execute() > 0;
+                return Routines.adminDeleteTemplate(
+                        domainAccess.getContext().configuration(),
+                        templateId
+                ) > 0;
             }
         } catch (Exception e) {
             throw new InternalServerException(e.getMessage());
@@ -267,7 +267,7 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
      */
     public static int adminDeleteAllTemplates(I_DomainAccess domainAccess) {
         try {
-            return Routines.adminDeleteTemplates(domainAccess.getContext().configuration());
+            return Routines.adminDeleteAllTemplates(domainAccess.getContext().configuration());
         } catch (Exception e) {
             throw new InternalServerException(e.getMessage());
         }
