@@ -25,6 +25,7 @@ package org.ehrbase.aql.sql.binding;
 import org.ehrbase.aql.compiler.OrderAttribute;
 import org.ehrbase.aql.definition.*;
 import org.ehrbase.aql.sql.queryImpl.DefaultColumnId;
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.SelectQuery;
@@ -43,8 +44,8 @@ public class SuperQuery {
     private SelectQuery query;
     private DSLContext context;
 
-    public SuperQuery(DSLContext context, VariableDefinitions variableDefinitions, SelectQuery query) {
-        this.context = context;
+    public SuperQuery(I_DomainAccess domainAccess, VariableDefinitions variableDefinitions, SelectQuery query) {
+        this.context = domainAccess.getContext();
         this.variableDefinitions = variableDefinitions;
         this.query = query;
     }

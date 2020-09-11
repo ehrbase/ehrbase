@@ -29,6 +29,7 @@ import org.ehrbase.aql.definition.Variables;
 import org.ehrbase.aql.sql.binding.*;
 import org.ehrbase.aql.sql.postprocessing.RawJsonTransform;
 import org.ehrbase.aql.sql.queryImpl.TemplateMetaData;
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.service.IntrospectService;
 import org.jooq.*;
@@ -85,21 +86,19 @@ public class QueryProcessor extends TemplateMetaData {
         }
     }
 
-    private final DSLContext context;
+    private final I_DomainAccess domainAccess;
     private final I_KnowledgeCache knowledgeCache;
     private final Contains contains;
     private Statements statements;
     private final String serverNodeId;
-    private final Boolean usePgExtensions;
 
-    public QueryProcessor(DSLContext context, I_KnowledgeCache knowledgeCache, IntrospectService introspectCache, Contains contains, Statements statements, String serverNodeId, boolean usePgExtensions) {
+    public QueryProcessor(I_DomainAccess domainAccess, I_KnowledgeCache knowledgeCache, IntrospectService introspectCache, Contains contains, Statements statements, String serverNodeId) {
         super(introspectCache);
-        this.context = context;
+        this.domainAccess = domainAccess;
         this.knowledgeCache = knowledgeCache;
         this.contains = contains;
         this.statements = statements;
         this.serverNodeId = serverNodeId;
-        this.usePgExtensions = usePgExtensions; //false->jsquery is not used in WHERE clause
     }
 
 
@@ -137,7 +136,7 @@ public class QueryProcessor extends TemplateMetaData {
         }
 
         //assemble the query from the cache
-        SelectQuery unionSetQuery = context.selectQuery();
+        SelectQuery unionSetQuery = domainAccess.getContext().selectQuery();
         boolean first = true;
         for (QuerySteps queryStep : cacheQuery.values()) {
 
@@ -162,14 +161,14 @@ public class QueryProcessor extends TemplateMetaData {
 
         // Add function or Distinct
         if (new Variables(statements.getVariables()).hasDefinedDistinct() || new Variables(statements.getVariables()).hasDefinedFunction()) {
-            SuperQuery superQuery = new SuperQuery(context, statements.getVariables(), unionSetQuery);
+            SuperQuery superQuery = new SuperQuery(domainAccess, statements.getVariables(), unionSetQuery);
             unionSetQuery = superQuery.select();
             if (statements.getOrderAttributes() != null && !statements.getOrderAttributes().isEmpty()){
                 unionSetQuery = superQuery.setOrderBy(statements.getOrderAttributes(), unionSetQuery);
             }
         }
         else if (statements.getOrderAttributes() != null && !statements.getOrderAttributes().isEmpty()) {
-            unionSetQuery = new SuperQuery(context, statements.getVariables(), unionSetQuery).selectOrderBy(statements.getOrderAttributes());
+            unionSetQuery = new SuperQuery(domainAccess, statements.getVariables(), unionSetQuery).selectOrderBy(statements.getOrderAttributes());
         }
 
         // Add Top , Limit or Offset; Top and Limit can not be both present.
@@ -184,18 +183,18 @@ public class QueryProcessor extends TemplateMetaData {
     }
 
     private QuerySteps buildQuerySteps(String templateId) {
-        SelectBinder selectBinder = new SelectBinder(context, introspectCache, contains, statements, serverNodeId).setUsePgExtensions(usePgExtensions);
+        SelectBinder selectBinder = new SelectBinder(domainAccess, introspectCache, contains, statements, serverNodeId);
 
         SelectQuery<?> select = selectBinder.bind(templateId);
         return new QuerySteps(select,
-                selectBinder.getWhereConditions(templateId, null),
+                selectBinder.getWhereConditions(templateId),
                 templateId,
                 selectBinder.getCompositionAttributeQuery(),
                 selectBinder.getJsonDataBlock(), selectBinder.containsJQueryPath());
     }
 
     private QuerySteps buildNullSelect(String templateId) {
-        SelectBinder selectBinder = new SelectBinder(context, introspectCache, contains, statements, serverNodeId).setUsePgExtensions(usePgExtensions);
+        SelectBinder selectBinder = new SelectBinder(domainAccess, introspectCache, contains, statements, serverNodeId);
 
         SelectQuery<?> select = selectBinder.bind(templateId);
         return new QuerySteps(select,
@@ -219,7 +218,7 @@ public class QueryProcessor extends TemplateMetaData {
     private List<List<String>> buildExplain(Select<?> select) {
         List<List<String>> explainList = new ArrayList<>();
 
-        DSLContext pretty = DSL.using(context.dialect(), new Settings().withRenderFormatted(true));
+        DSLContext pretty = DSL.using(domainAccess.getContext().dialect(), new Settings().withRenderFormatted(true));
         String sql = pretty.render(select);
         List<String> details = new ArrayList<>();
         details.add(sql);
