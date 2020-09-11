@@ -22,7 +22,12 @@ import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.ehr.util.LocatableHelper;
 import org.ehrbase.service.IntrospectService;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import static org.ehrbase.aql.sql.queryImpl.IterativeNodeConstants.ENV_AQL_ARRAY_DEPTH;
 import static org.ehrbase.aql.sql.queryImpl.IterativeNodeConstants.ENV_AQL_ARRAY_IGNORE_NODE;
@@ -51,9 +56,7 @@ public class IterativeNode implements I_IterativeNode {
      */
     public Integer[] iterativeAt(List<String> segmentedPath) {
 
-        int marked = 0; //exit loop when counter > depth
-
-        List<Integer> retarray = new ArrayList<>();
+        SortedSet<Integer> retarray = new TreeSet<>();
 
         if (unbounded.isEmpty()) {
             retarray.add(-1);
@@ -83,14 +86,13 @@ public class IterativeNode implements I_IterativeNode {
                 if (path.startsWith(aqlPath)) {
                     int pos = aqlPathInJsonbArray(aqlPathSegments, segmentedPath);
                     retarray.add(pos);
-                    if (++marked >= depth)
+                    if (retarray.size() >= depth)
                         break;
                 }
 
             }
         }
 
-        retarray.sort(Comparator.<Integer>naturalOrder());
 
         return retarray.toArray(new Integer[0]);
     }

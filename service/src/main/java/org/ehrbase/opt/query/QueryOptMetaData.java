@@ -94,6 +94,11 @@ public class QueryOptMetaData implements I_QueryOptMetaData {
         return JsonPath.read(document, "$..children[?(@.max == -1)]");
     }
 
+    @Override
+    public List multiValued() {
+        return JsonPath.read(document, "$..children[?(@.max != 1)]");
+    }
+
     /**
      * get the type of the node identified with path
      *
