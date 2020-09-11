@@ -32,6 +32,8 @@ public interface I_QueryOptMetaData extends Serializable {
 
     List upperNotBounded();
 
+    List multiValued();
+
     String type(String path);
 
     String category(String path);

@@ -72,6 +72,18 @@ logging:
     org.jooq: INFO
     net.sf.ehcache: TRACE
 
+server:
+  # Optional custom server nodename
+  # nodename: 'local.test.org'
+
+  aqlConfig:
+    # if true, WHERE clause is using jsquery, false uses SQL only
+    useJsQuery: false
+    # ignore unbounded item in path starting with one of
+    ignoreIterativeNodeList: 'activities,content'
+    # how many embedded jsonb_array_elements(..) are acceptable? Recommended == 2
+    iterationScanDepth: 2
+
 
 terminology-server:
   tsUrl: 'https://r4.ontoserver.csiro.au/fhir/'
