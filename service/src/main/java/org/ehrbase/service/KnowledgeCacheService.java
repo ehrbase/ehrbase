@@ -24,10 +24,12 @@ package org.ehrbase.service;
 
 import com.google.common.util.concurrent.MoreExecutors;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.StateConflictException;
+import org.ehrbase.aql.containment.Containment;
 import org.ehrbase.aql.containment.JsonPathQueryBuilder;
 import org.ehrbase.aql.containment.JsonPathQueryResult;
 import org.ehrbase.aql.containment.OptJsonPath;
@@ -116,7 +118,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
     private Set<String> allTemplateId = new HashSet<>();
 
-    private Map<String, Set<String>> nodeIdsByTemplateIdMap = new HashMap<>();
+    private Map<String, Map<String, List<Containment>>> nodeIdsByTemplateIdMap = new HashMap<>();
 
 
     private final CacheManager cacheManager;
@@ -379,8 +381,25 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
     @Override
     public boolean containsNodeIds(String templateId, Collection<String> nodeIds) {
-        Set<String> templateNodeIds = nodeIdsByTemplateIdMap.computeIfAbsent(templateId, t -> getQueryOptMetaData(t).getAllNodeIds());
-        return templateNodeIds.containsAll(nodeIds);
+        Map<String, List<Containment>> containmentMap = nodeIdsByTemplateIdMap.computeIfAbsent(templateId, t -> getQueryOptMetaData(t).getAllNodeIds().stream().collect(Collectors.groupingBy(Containment::getClassName)));
+
+        return nodeIds.stream()
+                .allMatch(
+                        nodeId -> {
+                            String className = StringUtils.substringBetween(nodeId, "openEHR-EHR-", ".");
+                            if (StringUtils.isBlank(className)) {
+                                className = nodeId;
+                            }
+                            List<Containment> containmentList = containmentMap.get(className);
+                            if (containmentList == null) {
+                                return false;
+                            } else {
+                                return nodeId.equals(className) || containmentList.stream().map(Containment::getArchetypeId).anyMatch(a -> a.equals(nodeId));
+                            }
+                        }
+                );
+
+
     }
 
     @Override

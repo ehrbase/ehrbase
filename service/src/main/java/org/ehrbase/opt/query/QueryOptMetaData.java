@@ -42,36 +42,26 @@ import java.util.stream.Collectors;
  */
 public class QueryOptMetaData implements I_QueryOptMetaData {
 
-    private final Set<Set<Containment>> containments;
+    private final Set<Set<Containment>> containmentSets;
     Object document;
-    private final Set<String> allNodeIds;
+    private final Set<Containment> allNodeIds;
 
     private QueryOptMetaData(Object document) {
         this.document = document;
 
 
-        allNodeIds = findNames((Map<String, Object>) ((Map<String, Object>) document).get("tree"));
-        containments = findSets((Map<String, Object>) ((Map<String, Object>) document).get("tree"));
+        allNodeIds = new HashSet<>();
+        containmentSets = findSets((Map<String, Object>) ((Map<String, Object>) document).get("tree"));
     }
 
-    private Set<String> findNames(Map<String, Object> tree) {
-        Set<String> current = new HashSet<>();
-        if (tree.containsKey("node_id")) {
-            current.add(tree.get("node_id").toString());
-        }
-        if (tree.containsKey("children")) {
-            for (Object child : ((JSONArray) tree.get("children")).toArray())
-                current.addAll(findNames((Map<String, Object>) child));
-        }
-        return current;
-    }
 
     private Set<Set<Containment>> findSets(Map<String, Object> tree) {
         Set<Set<Containment>> containments = new LinkedHashSet<>();
 
         if (tree.containsKey("node_id") && buildContainment(tree.get("node_id").toString()).isPresent()) {
-            Containment containment = buildContainment(tree.get("node_id").toString()).get();
 
+            Containment containment = buildContainment(tree.get("node_id").toString()).get();
+            allNodeIds.add(containment);
             Set<Containment> root = new LinkedHashSet<>(Set.of(containment));
             containments.add(root);
 
@@ -99,7 +89,7 @@ public class QueryOptMetaData implements I_QueryOptMetaData {
     @Override
     public Set<Set<Containment>> getContainmentSet() {
 
-        return containments;
+        return containmentSets;
     }
 
     private Optional<Containment> buildContainment(String nodeId) {
@@ -169,7 +159,7 @@ public class QueryOptMetaData implements I_QueryOptMetaData {
     }
 
     @Override
-    public Set<String> getAllNodeIds() {
+    public Set<Containment> getAllNodeIds() {
         return allNodeIds;
     }
 

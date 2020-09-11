@@ -38,7 +38,7 @@ public interface I_QueryOptMetaData extends Serializable {
 
     String category(String path);
 
-    Set<String> getAllNodeIds();
+    Set<Containment> getAllNodeIds();
 
     List nodeByFieldValue(String field, String value);
 
