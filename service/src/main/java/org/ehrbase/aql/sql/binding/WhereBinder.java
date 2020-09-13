@@ -118,8 +118,14 @@ public class WhereBinder {
                     return new TaggedStringBuilder(field.toString(), I_TaggedStringBuilder.TagField.SQLQUERY);
 
                 default:
-                    field = jsonbEntryQuery.whereField(templateId, identifier, variableDefinition);
-                    return new TaggedStringBuilder(field.toString(), I_TaggedStringBuilder.TagField.JSQUERY);
+                    if (compositionAttributeQuery.isCompositionAttributeItemStructure(templateId, identifier)){
+                        field = new ContextualAttribute(compositionAttributeQuery, jsonbEntryQuery, I_QueryImpl.Clause.WHERE).toSql(templateId, variableDefinition);
+                        return new TaggedStringBuilder(field.toString(), I_TaggedStringBuilder.TagField.SQLQUERY);
+                    }
+                    else {
+                        field = jsonbEntryQuery.whereField(templateId, identifier, variableDefinition);
+                        return new TaggedStringBuilder(field.toString(), I_TaggedStringBuilder.TagField.JSQUERY);
+                    }
             }
             throw new IllegalStateException("Unhandled class name:"+className);
         }

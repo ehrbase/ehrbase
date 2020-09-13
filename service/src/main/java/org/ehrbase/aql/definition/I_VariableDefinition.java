@@ -54,4 +54,6 @@ public interface I_VariableDefinition extends Cloneable {
     void setHidden(boolean hidden);
 
     void setAlias(String alias);
+
+    String toString();
 }

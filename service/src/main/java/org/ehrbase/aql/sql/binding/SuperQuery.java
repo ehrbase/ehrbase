@@ -51,13 +51,15 @@ public class SuperQuery {
     }
 
     @SuppressWarnings( "deprecation" )
-    private List<Field> selectFields() {
+    private List<Field> selectDistinctFields() {
 
         List<Field> fields = new ArrayList<>();
         Iterator<I_VariableDefinition> iterator = variableDefinitions.iterator();
 
         while (iterator.hasNext()) {
             I_VariableDefinition variableDefinition = iterator.next();
+            if (!variableDefinition.isDistinct())
+                continue;
             if (variableDefinition instanceof FunctionDefinition){
                 StringBuilder stringBuilder = new StringBuilder();
                 for (FuncParameter funcParameter: ((FunctionDefinition) variableDefinition).getParameters()){
@@ -82,7 +84,7 @@ public class SuperQuery {
     @SuppressWarnings("unchecked")
     private SelectQuery selectDistinct(SelectQuery selectQuery) {
 
-        List<Field> fields = selectFields();
+        List<Field> fields = selectDistinctFields();
 
         selectQuery.addDistinctOn(fields);
 
