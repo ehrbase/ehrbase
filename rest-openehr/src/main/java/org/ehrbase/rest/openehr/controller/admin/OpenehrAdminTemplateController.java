@@ -54,8 +54,8 @@ public class OpenehrAdminTemplateController extends BaseController {
 
     @PutMapping(
             path = "/{template_id}",
-            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
-            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE}
+            consumes = {MediaType.APPLICATION_XML_VALUE},
+            produces = {MediaType.APPLICATION_XML_VALUE}
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -99,18 +99,6 @@ public class OpenehrAdminTemplateController extends BaseController {
             @ApiParam(value = "New template content to replace old one with")
             @RequestBody() String content
     ) {
-
-        // Currently only 'application/xml' is supported. So skip if Accept or Content-Type headers specify another type
-        if (
-                !(MediaType.parseMediaType(accept).equalsTypeAndSubtype(MediaType.APPLICATION_XML)
-                && MediaType.parseMediaType(contentType).equalsTypeAndSubtype(MediaType.APPLICATION_XML))
-        ) {
-            throw new UnprocessableEntityException(
-                    String.format(
-                            "Only %s format currently supported.", MediaType.APPLICATION_XML_VALUE
-                    )
-            );
-        }
 
         String updatedTemplate = this.templateService.adminUpdateTemplate(templateId, content);
 
