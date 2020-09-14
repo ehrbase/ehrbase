@@ -45,7 +45,7 @@ public class AqlQueryHandlerTest {
             MockResult[] mock = new MockResult[1];
             mock[0] = new MockResult(0, null);
             return mock;
-        }), testFolder, cacheRule), true, mock(FhirTerminologyServerR4AdaptorImpl.class));
+        }), testFolder, cacheRule), mock(FhirTerminologyServerR4AdaptorImpl.class));
         AqlResult aqlResult = cut.process("select e/ehr_id/value from EHR e LIMIT 10 OFFSET 5");
         assertThat(aqlResult.getExplain().get(0)).hasSize(3).contains("10", "5");
         assertThat(aqlResult.getExplain().get(0).get(0).replaceAll("alias_\\d+", "")).isEqualToIgnoringWhitespace(

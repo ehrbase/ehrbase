@@ -25,6 +25,7 @@ package org.ehrbase.aql.sql.binding;
 import org.ehrbase.aql.compiler.OrderAttribute;
 import org.ehrbase.aql.definition.*;
 import org.ehrbase.aql.sql.queryImpl.DefaultColumnId;
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.SelectQuery;
@@ -43,20 +44,22 @@ public class SuperQuery {
     private SelectQuery query;
     private DSLContext context;
 
-    public SuperQuery(DSLContext context, VariableDefinitions variableDefinitions, SelectQuery query) {
-        this.context = context;
+    public SuperQuery(I_DomainAccess domainAccess, VariableDefinitions variableDefinitions, SelectQuery query) {
+        this.context = domainAccess.getContext();
         this.variableDefinitions = variableDefinitions;
         this.query = query;
     }
 
     @SuppressWarnings( "deprecation" )
-    private List<Field> selectFields() {
+    private List<Field> selectDistinctFields() {
 
         List<Field> fields = new ArrayList<>();
         Iterator<I_VariableDefinition> iterator = variableDefinitions.iterator();
 
         while (iterator.hasNext()) {
             I_VariableDefinition variableDefinition = iterator.next();
+            if (!variableDefinition.isDistinct())
+                continue;
             if (variableDefinition instanceof FunctionDefinition){
                 StringBuilder stringBuilder = new StringBuilder();
                 for (FuncParameter funcParameter: ((FunctionDefinition) variableDefinition).getParameters()){
@@ -81,7 +84,7 @@ public class SuperQuery {
     @SuppressWarnings("unchecked")
     private SelectQuery selectDistinct(SelectQuery selectQuery) {
 
-        List<Field> fields = selectFields();
+        List<Field> fields = selectDistinctFields();
 
         selectQuery.addDistinctOn(fields);
 
