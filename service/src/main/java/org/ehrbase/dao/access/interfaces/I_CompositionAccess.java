@@ -30,7 +30,6 @@ import org.ehrbase.dao.access.util.ContributionDef;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.composition.EventContext;
 import org.ehrbase.jooq.pg.tables.records.*;
-import org.jooq.JSONB;
 import org.jooq.Result;
 import org.jooq.Table;
 import org.jooq.exception.DataAccessException;
@@ -194,17 +193,6 @@ public interface I_CompositionAccess extends I_SimpleCRUD {
      */
     static Map<I_CompositionAccess, Integer> retrieveInstancesInContribution(I_DomainAccess domainAccess, UUID contributionId) {
         return CompositionAccess.retrieveCompositionsInContribution(domainAccess, contributionId);
-    }
-
-    /**
-     * Retrieves a list of composition UUIDs that are using a given Operational template id.
-     *
-     * @param domainAccess - Database access context
-     * @param templateIds - Operational Template ids to check
-     * @return - List of UUIDs using the operational Templates
-     */
-    static List<UUID> retrieveCompositionIdsForTemplates(I_DomainAccess domainAccess, List<String> templateIds) {
-        return CompositionAccess.retrieveCompositionIdsForTemplates(domainAccess, templateIds);
     }
 
     /**

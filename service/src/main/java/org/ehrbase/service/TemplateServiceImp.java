@@ -24,7 +24,6 @@ import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
@@ -131,7 +130,7 @@ public class TemplateServiceImp extends BaseService implements TemplateService {
             throw new InvalidApiParameterException("Requested operational template type not supported");
         }
         XmlOptions opts = new XmlOptions();
-        opts.setSaveSyntheticDocumentElement(new QName("http://schemas.openehr.org/v1","template"));
+        opts.setSaveSyntheticDocumentElement(new QName("http://schemas.openehr.org/v1", "template"));
         return operationaltemplate.map(o -> o.xmlText(opts)).orElseThrow(() -> new InternalServerException("Failure while retrieving operational template"));
     }
 
@@ -185,24 +184,6 @@ public class TemplateServiceImp extends BaseService implements TemplateService {
      */
     @Override
     public int adminDeleteAllTemplates() {
-
-        List<String> templateIds = this.getAllTemplates()
-                .stream()
-                .map(TemplateMetaDataDto::getTemplateId)
-                .collect(Collectors.toList());
-
-        Optional<List<UUID>> compositionsUuidList =
-                this.compositionService.retrieveAllForTemplates(templateIds);
-
-        if (compositionsUuidList.isEmpty()) {
-            return this.knowledgeCacheService.deleteAllOperationalTemplates();
-        } else {
-            throw new UnprocessableEntityException(
-                    String.format(
-                            "Cannot remove all templates since there are Compositions using templates:%s",
-                            compositionsUuidList.get().toString()
-                    )
-            );
-        }
+        return this.knowledgeCacheService.deleteAllOperationalTemplates();
     }
 }

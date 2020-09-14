@@ -174,13 +174,6 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
 
     }
 
-    public static I_TemplateStoreAccess retrieveInstanceByInternalId(I_DomainAccess domainAccess, String templateId) {
-        TemplateStoreAccess templateStoreAccess = new TemplateStoreAccess(domainAccess);
-        templateStoreAccess.templateStoreRecord = domainAccess.getContext()
-                .fetchOne(TEMPLATE_STORE, TEMPLATE_STORE.ID.eq(UUID.fromString(templateId)));
-        return templateStoreAccess;
-    }
-
     /**
      * Replaces the old content of a template with the new provided content in the database storage. The target template
      * id must be provided within the new template. This is a destructive operation thus the old template will be
@@ -235,30 +228,26 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
      */
     public static boolean deleteTemplate(I_DomainAccess domainAccess, String templateId) {
 
-        try {
-            // Check if template is used in any composition
-            Result<AdminGetTemplateUsageRecord> usingCompositions = Routines.adminGetTemplateUsage(
+        // Check if template is used in any composition
+        Result<AdminGetTemplateUsageRecord> usingCompositions = Routines.adminGetTemplateUsage(
+                domainAccess.getContext().configuration(),
+                templateId
+        );
+        if (usingCompositions.isNotEmpty()) {
+            // There are compositions using this template -> Return list of uuids
+            throw new UnprocessableEntityException(
+                    String.format(
+                            "Cannot delete template %s since the following compositions are still using it %s",
+                            templateId,
+                            usingCompositions.toString()
+                    )
+            );
+        } else {
+            // Template no longer used -> Delete
+            return Routines.adminDeleteTemplate(
                     domainAccess.getContext().configuration(),
                     templateId
-            );
-            if (usingCompositions.isNotEmpty()) {
-                // There are compositions using this template -> Return list of uuids
-                throw new UnprocessableEntityException(
-                        String.format(
-                                "Cannot delete template %s since the following compositions are still using it %s",
-                                templateId,
-                                usingCompositions.toString()
-                        )
-                );
-            } else {
-                // Template no longer used -> Delete
-                return Routines.adminDeleteTemplate(
-                        domainAccess.getContext().configuration(),
-                        templateId
-                ) > 0;
-            }
-        } catch (Exception e) {
-            throw new InternalServerException(e.getMessage());
+            ) > 0;
         }
     }
 
@@ -266,11 +255,8 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
      * {@inheritDoc}
      */
     public static int adminDeleteAllTemplates(I_DomainAccess domainAccess) {
-        try {
-            return Routines.adminDeleteAllTemplates(domainAccess.getContext().configuration());
-        } catch (Exception e) {
-            throw new InternalServerException(e.getMessage());
-        }
+
+        return Routines.adminDeleteAllTemplates(domainAccess.getContext().configuration());
     }
 
     private static TemplateMetaData buildMetadata(Record2<String, Timestamp> r) {

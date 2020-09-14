@@ -26,7 +26,6 @@ import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.StructuredString;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -49,8 +48,6 @@ public interface CompositionService extends BaseService {
      * @return Optional of CompositionDto closest in time before timestamp
      */
     Optional<CompositionDto> retrieveByTimestamp(UUID compositionId, LocalDateTime timestamp);
-
-    Optional<List<UUID>> retrieveAllForTemplates(List<String> templateIds);
 
     /**
      * Public serializer entry point which will be called with

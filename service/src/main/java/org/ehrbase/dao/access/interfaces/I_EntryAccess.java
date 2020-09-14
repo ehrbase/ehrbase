@@ -24,7 +24,6 @@ package org.ehrbase.dao.access.interfaces;
 import com.nedap.archie.rm.composition.Composition;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.jooq.EntryAccess;
-import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.jooq.JSONB;
 
 import java.util.List;
@@ -103,10 +102,6 @@ public interface I_EntryAccess extends I_SimpleCRUD {
      */
     static Map<String, Object> queryJSON(I_DomainAccess domainAccess, String query) {
         return EntryAccess.queryJSON(domainAccess, query);
-    }
-
-    static boolean areTemplateIdsUsed(I_DomainAccess domainAccess, List<TemplateMetaData> templateMetaDataList){
-        return EntryAccess.areTemplateIdsUsed(domainAccess, templateMetaDataList);
     }
 
     /**

@@ -55,8 +55,6 @@ import org.ehrbase.aql.containment.JsonPathQueryResult;
 import org.ehrbase.aql.containment.OptJsonPath;
 import org.ehrbase.aql.containment.TemplateIdQueryTuple;
 import org.ehrbase.configuration.CacheConfiguration;
-import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
-import org.ehrbase.dao.access.interfaces.I_EntryAccess;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.ehrbase.opt.OptVisitor;
@@ -348,14 +346,6 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
             idxCache.put(UUID.fromString(operationaltemplate.getUid().getValue()), filename);
         }
         return operationaltemplate;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String updateOperationalTemplate(byte[] content) {
-        return this.addOperationalTemplate(content, true);
     }
 
     /**

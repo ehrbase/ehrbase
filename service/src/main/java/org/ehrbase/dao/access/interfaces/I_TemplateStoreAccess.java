@@ -40,10 +40,6 @@ public interface I_TemplateStoreAccess extends I_SimpleCRUD {
         return TemplateStoreAccess.retrieveInstanceByTemplateId(domainAccess, templateId);
     }
 
-    static I_TemplateStoreAccess retrieveInstanceByInternalId(I_DomainAccess domainAccess, String templateId) {
-        return TemplateStoreAccess.retrieveInstanceByInternalId(domainAccess, templateId);
-    }
-
     static List<TemplateMetaData> fetchAll(I_DomainAccess domainAccess) {
         return TemplateStoreAccess.fetchAll(domainAccess);
     }

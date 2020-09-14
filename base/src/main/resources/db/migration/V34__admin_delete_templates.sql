@@ -15,7 +15,12 @@ BEGIN
 	RETURN query
 		SELECT e.composition_id
 		FROM ehr.entry e
-		WHERE e.template_id = target_id;
+		WHERE e.template_id = target_id
+		UNION (
+		    SELECT eh.composition_id
+		    FROM ehr.entry_history eh
+		    WHERE eh.template_id = target_id
+		);
 END;$$ LANGUAGE plpgsql;
 
 -- ====================================================================
