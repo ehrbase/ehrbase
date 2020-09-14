@@ -23,14 +23,16 @@ import org.ehrbase.aql.compiler.AqlExpression;
 import org.ehrbase.aql.compiler.Contains;
 import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class ContainmentTest extends TestAqlBase {
 
 
     @Test
-    public void testInterpretContainement(){
+    public void testInterpretContainement() {
 
         String query = "select\n" +
                 "c\n" +
@@ -52,7 +54,7 @@ public class ContainmentTest extends TestAqlBase {
     }
 
     @Test
-    public void testInterpretContainement2(){
+    public void testInterpretContainement2() {
 
         String query = "SELECT q as ErregerBEZK\n" +
                 "from EHR e\n" +
@@ -72,7 +74,7 @@ public class ContainmentTest extends TestAqlBase {
     }
 
     @Test
-    public void testInterpretContainement3(){
+    public void testInterpretContainement3() {
 
         String query = "    select\n" +
                 "    m/data[at0001]/items[at0004]/value/value as Beginn,\n" +
@@ -93,7 +95,7 @@ public class ContainmentTest extends TestAqlBase {
 
 
     @Test
-    public void testInterpretContainement_testehr_ested_5_levels_contains(){
+    public void testInterpretContainement_testehr_ested_5_levels_contains() {
 
         String query = "SELECT c/uid/value, cluster2/items[at0002]/value" +
                 " FROM EHR e[ehr_id/value=$ehr_id]" +
@@ -111,7 +113,7 @@ public class ContainmentTest extends TestAqlBase {
     }
 
     @Test
-    public void testInterpretContainementSingleComposition(){
+    public void testInterpretContainementSingleComposition() {
 
         String query = "SELECT c/uid/value, cluster2/items[at0002]/value" +
                 " FROM EHR e[ehr_id/value=$ehr_id]" +
@@ -125,7 +127,7 @@ public class ContainmentTest extends TestAqlBase {
     }
 
     @Test
-    public void testInterpretContainementRejectNonExistingCompositionNodeId(){
+    public void testInterpretContainementRejectNonExistingCompositionNodeId() {
 
         String query = "SELECT c/uid/value, cluster2/items[at0002]/value" +
                 " FROM EHR e[ehr_id/value=$ehr_id]" +
@@ -140,7 +142,7 @@ public class ContainmentTest extends TestAqlBase {
     }
 
     @Test
-    public void testInterpretContainementSingleCompositionTraversal(){
+    public void testInterpretContainementSingleCompositionTraversal() {
 
         String query = "SELECT c/uid/value,\n" +
                 "   o/data[at0001]/events[at0002]/data[at0003]/items[at0078.2]/value/magnitude\n" +
@@ -156,7 +158,7 @@ public class ContainmentTest extends TestAqlBase {
     }
 
     @Test
-    public void testFullPathResolution(){
+    public void testFullPathResolution() {
 
         String query = "SELECT e, o" +
                 " FROM EHR e" +
@@ -170,12 +172,12 @@ public class ContainmentTest extends TestAqlBase {
         assertTrue(contains.getTemplates().contains("Patientenaufenthalt"));
 
         //check that *both* o and l have resolved path
-        assertEquals("/content[openEHR-EHR-ADMIN_ENTRY.hospitalization.v0]", ((Containment)contains.getIdentifierMapper().getContainer("o")).getPath("Patientenaufenthalt"));
-        assertNotNull("/content[openEHR-EHR-ADMIN_ENTRY.hospitalization.v0]/data[at0001]/items[openEHR-EHR-CLUSTER.location.v1]", ((Containment)contains.getIdentifierMapper().getContainer("l")).getPath("Patientenaufenthalt"));
+        assertEquals("/content[openEHR-EHR-ADMIN_ENTRY.hospitalization.v0]", ((Containment) contains.getIdentifierMapper().getContainer("o")).getPath("Patientenaufenthalt"));
+        assertNotNull("/content[openEHR-EHR-ADMIN_ENTRY.hospitalization.v0]/data[at0001]/items[openEHR-EHR-CLUSTER.location.v1]", ((Containment) contains.getIdentifierMapper().getContainer("l")).getPath("Patientenaufenthalt"));
     }
 
     @Test
-    public void testFullPathResolution2(){
+    public void testFullPathResolution2() {
 
         String query = "SELECT e, o" +
                 " FROM EHR e" +
@@ -189,11 +191,11 @@ public class ContainmentTest extends TestAqlBase {
         assertTrue(contains.getTemplates().contains("Patientenaufenthalt"));
 
         //check that *both* o and l have resolved path
-        assertNotNull("/content[openEHR-EHR-ADMIN_ENTRY.hospitalization.v0]/data[at0001]/items[openEHR-EHR-CLUSTER.location.v1]", ((Containment)contains.getIdentifierMapper().getContainer("l")).getPath("Patientenaufenthalt"));
+        assertNotNull("/content[openEHR-EHR-ADMIN_ENTRY.hospitalization.v0]/data[at0001]/items[openEHR-EHR-CLUSTER.location.v1]", ((Containment) contains.getIdentifierMapper().getContainer("l")).getPath("Patientenaufenthalt"));
     }
 
     @Test
-    public void testFullPathResolution3(){
+    public void testFullPathResolution3() {
 
         String query = "SELECT e, o" +
                 " FROM EHR e" +
@@ -211,7 +213,7 @@ public class ContainmentTest extends TestAqlBase {
     //successful but wrong template/path for location...
     //TODO: fix resolution of incomplete simpleclassexpression
     @Test
-    public void testFullPathResolution3_1(){
+    public void testFullPathResolution3_1() {
 
         String query = "SELECT e, o" +
                 " FROM EHR e" +
@@ -227,7 +229,7 @@ public class ContainmentTest extends TestAqlBase {
     }
 
     @Test
-    public void testFullPathResolution4(){
+    public void testFullPathResolution4() {
 
         String query = "SELECT e, o" +
                 " FROM EHR e" +
@@ -245,7 +247,7 @@ public class ContainmentTest extends TestAqlBase {
     }
 
     @Test
-    public void testContainNotCommutative(){
+    public void testContainNotCommutative() {
 
         //the first query check for composition contains admin_entry contains both cluster a AND cluster n
         String query = "SELECT u" +
@@ -275,11 +277,11 @@ public class ContainmentTest extends TestAqlBase {
         contains = new Contains(aqlExpression.getParseTree(), knowledge).process();
 
         assertTrue(contains.getTemplates().contains("Patientenaufenthalt"));
-     }
+    }
 
 
     @Test
-    public void testContainWithUnknownContainment(){
+    public void testContainWithUnknownContainment() {
 
         //the first query check for composition contains admin_entry contains both cluster a AND cluster n
         String query = "SELECT u" +
@@ -298,7 +300,6 @@ public class ContainmentTest extends TestAqlBase {
         Contains contains = new Contains(new AqlExpression().parse(query).getParseTree(), knowledge).process();
         assertTrue(contains.getTemplates().isEmpty());
     }
-
 
 
 }

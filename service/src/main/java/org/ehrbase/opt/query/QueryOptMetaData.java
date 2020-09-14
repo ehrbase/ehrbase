@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 public class QueryOptMetaData implements I_QueryOptMetaData {
 
     private final Set<Set<Containment>> containmentSets;
-    Object document;
+    private Object document;
     private final Set<Containment> allNodeIds;
 
     private QueryOptMetaData(Object document) {
