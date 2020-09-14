@@ -18,8 +18,6 @@
 package org.ehrbase.rest.openehr.controller.admin;
 
 import io.swagger.annotations.*;
-import org.ehrbase.api.definitions.OperationalTemplateFormat;
-import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.response.openehr.admin.AdminDeleteResponseData;
 import org.ehrbase.response.openehr.admin.AdminStatusResponseData;
