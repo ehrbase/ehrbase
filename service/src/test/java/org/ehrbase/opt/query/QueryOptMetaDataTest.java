@@ -18,14 +18,19 @@
 
 package org.ehrbase.opt.query;
 
+import org.assertj.core.groups.Tuple;
+import org.ehrbase.aql.containment.Containment;
 import org.ehrbase.test_data.operationaltemplate.OperationalTemplateTestData;
 import org.junit.Test;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.openehr.schemas.v1.TemplateDocument;
 
+import java.io.FileInputStream;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -34,7 +39,6 @@ import static org.junit.Assert.assertNotNull;
  */
 
 public class QueryOptMetaDataTest {
-
 
 
     @Test
@@ -91,6 +95,23 @@ public class QueryOptMetaDataTest {
         List result = queryOptMetaData.nodeFieldRegexp("name", "/PROBLEM.*/i");
 
         assertEquals(3, result.size());
+    }
+
+    @Test
+    public void testGetAllNodeIds() throws Exception {
+        Optional<OPERATIONALTEMPLATE> operationaltemplate = Optional.ofNullable(TemplateDocument.Factory.parse(new FileInputStream("./src/test/resources/knowledge/operational_templates/Patientenaufenthalt.opt")).getTemplate());
+
+        QueryOptMetaData queryOptMetaData = QueryOptMetaData.initialize(operationaltemplate.orElseThrow(Exception::new));
+
+        Set<Containment> actual = queryOptMetaData.getAllNodeIds();
+
+        assertThat(actual).extracting(Containment::getArchetypeId, Containment::getClassName).containsExactlyInAnyOrder(
+                new Tuple("openEHR-EHR-COMPOSITION.event_summary.v0", "COMPOSITION"),
+                new Tuple("openEHR-EHR-CLUSTER.device.v1", "CLUSTER"),
+                new Tuple("openEHR-EHR-CLUSTER.location.v1", "CLUSTER"),
+                new Tuple("openEHR-EHR-ADMIN_ENTRY.hospitalization.v0", "ADMIN_ENTRY"),
+                new Tuple("openEHR-EHR-CLUSTER.case_identification.v0", "CLUSTER")
+        );
     }
 
 }

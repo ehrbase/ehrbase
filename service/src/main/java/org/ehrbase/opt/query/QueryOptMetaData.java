@@ -57,29 +57,33 @@ public class QueryOptMetaData implements I_QueryOptMetaData {
 
     private Set<Set<Containment>> findSets(Map<String, Object> tree) {
         Set<Set<Containment>> containments = new LinkedHashSet<>();
-
+        final Containment currentContainment;
         if (tree.containsKey("node_id") && buildContainment(tree.get("node_id").toString()).isPresent()) {
 
-            Containment containment = buildContainment(tree.get("node_id").toString()).get();
-            allNodeIds.add(containment);
-            Set<Containment> root = new LinkedHashSet<>(Set.of(containment));
-            containments.add(root);
 
-            if (tree.containsKey("children")) {
-                for (Object child : ((JSONArray) tree.get("children")).toArray()) {
-                    Set<Set<Containment>> subSets = findSets((Map<String, Object>) child);
+            currentContainment = buildContainment(tree.get("node_id").toString()).get();
+            allNodeIds.add(currentContainment);
 
-                    containments.addAll(subSets);
+            containments.add(new LinkedHashSet<Containment>(Set.of(currentContainment)));
 
+        } else {
+            currentContainment = null;
+        }
+        if (tree.containsKey("children")) {
+            for (Object child : ((JSONArray) tree.get("children")).toArray()) {
+                Set<Set<Containment>> subSets = findSets((Map<String, Object>) child);
+
+                containments.addAll(subSets);
+                if (currentContainment != null) {
                     containments.addAll(subSets.stream()
                             .map(s -> {
-                                Set<Containment> list = new LinkedHashSet<>(Set.of(containment));
+                                Set<Containment> list = new LinkedHashSet<>(Set.of(currentContainment));
                                 list.addAll(s);
                                 return list;
                             })
                             .collect(Collectors.toSet()));
-
                 }
+
             }
         }
 
