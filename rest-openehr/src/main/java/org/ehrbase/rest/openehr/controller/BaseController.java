@@ -54,7 +54,7 @@ public abstract class BaseController {
     static final String LOCATION = HttpHeaders.LOCATION;
     static final String ETAG = HttpHeaders.ETAG;
     static final String LAST_MODIFIED = HttpHeaders.LAST_MODIFIED;
-    static final String ACCEPT = HttpHeaders.ACCEPT;
+    public static final String ACCEPT = HttpHeaders.ACCEPT;
     static final String PREFER = "PREFER";
     static final String IF_MATCH = HttpHeaders.IF_MATCH;
     static final String IF_NONE_MATCH = HttpHeaders.IF_NONE_MATCH;
@@ -63,9 +63,9 @@ public abstract class BaseController {
     // request headers
     static final String REQ_OPENEHR_VERSION = "Optional custom request header for versioning";
     static final String REQ_OPENEHR_AUDIT = "Optional custom request header for auditing";
-    static final String REQ_CONTENT_TYPE = "Client may request content format";
-    static final String REQ_CONTENT_TYPE_BODY = "Format of transferred body";
-    static final String REQ_ACCEPT = "Client should specify expected format";
+    public static final String REQ_CONTENT_TYPE = "Client may request content format";
+    public static final String REQ_CONTENT_TYPE_BODY = "Format of transferred body";
+    public static final String REQ_ACCEPT = "Client should specify expected format";
     static final String REQ_PREFER = "May be used by clients for resource representation negotiation";
     // response headers
     public static final String RESP_CONTENT_TYPE_DESC = "Format of response";

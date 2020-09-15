@@ -20,6 +20,8 @@ package org.ehrbase.service;
 
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.xmlbeans.XmlOptions;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -143,6 +145,73 @@ public class TemplateFileStorageService implements TemplateStorage {
         return Optional.ofNullable(operationaltemplate);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String adminUpdateTemplate(OPERATIONALTEMPLATE template) {
+
+        try {
+            File file = optFileMap.get(template.getTemplateId().getValue());
+            if (!file.exists()) {
+                throw new ObjectNotFoundException(
+                        "ADMIN TEMPLATE STORE FILESYSTEM",
+                        String.format(
+                                "File with name %s does not exist", template.getTemplateId()
+                        )
+                );
+            }
+
+            // Remove old content
+            Files.delete(file.toPath());
+            optFileMap.remove(template.getTemplateId().getValue());
+
+            // Save new content
+            XmlOptions opts = new XmlOptions();
+            opts.setSaveSyntheticDocumentElement(new QName("http://schemas.openehr.org/v1", "template"));
+            saveTemplateFile(template.getTemplateId().getValue(), template.xmlText(opts).getBytes(StandardCharsets.UTF_8));
+
+            return template.xmlText(opts);
+        } catch (IOException e) {
+            throw new InternalServerException(e.getMessage());
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean deleteTemplate(String templateId) {
+        boolean deleted = false;
+        try {
+            File file = optFileMap.get(templateId);
+            if (!file.exists()) {
+                throw new ObjectNotFoundException(
+                        "ADMIN TEMPLATE",
+                        String.format("File with name %s does not exist.", templateId)
+                );
+            }
+            deleted = Files.deleteIfExists(file.toPath());
+            if (deleted) {
+                optFileMap.remove(templateId);
+            }
+            return deleted;
+        } catch (IOException e) {
+            throw new InternalServerException(e.getMessage());
+        }
+    }
+
+    @Override
+    public int adminDeleteAllTemplates(List<TemplateMetaData> templateMetaDataList) {
+        optFileMap.forEach((filename, file) -> {
+            try {
+                Files.deleteIfExists(file.toPath());
+            } catch (IOException e) {
+                throw new InternalServerException(e.getMessage());
+            }
+        });
+        return templateMetaDataList.size();
+    }
 
     boolean addKnowledgeSourcePath(String path) {
 
@@ -193,6 +262,4 @@ public class TemplateFileStorageService implements TemplateStorage {
         //load it in the cache
         optFileMap.put(filename, path.toFile());
     }
-
-
 }

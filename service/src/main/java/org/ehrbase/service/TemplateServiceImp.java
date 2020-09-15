@@ -24,6 +24,7 @@ import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.ehrbase.opt.OptVisitor;
@@ -39,23 +40,22 @@ import org.springframework.stereotype.Service;
 
 import javax.xml.namespace.QName;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class TemplateServiceImp extends BaseService implements TemplateService {
 
     private final KnowledgeCacheService knowledgeCacheService;
+    private final CompositionService compositionService;
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    public TemplateServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig) {
+    public TemplateServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig, CompositionService compositionService) {
         super(knowledgeCacheService, context, serverConfig);
         this.knowledgeCacheService = Objects.requireNonNull(knowledgeCacheService);
+        this.compositionService = compositionService;
     }
 
 
@@ -130,12 +130,60 @@ public class TemplateServiceImp extends BaseService implements TemplateService {
             throw new InvalidApiParameterException("Requested operational template type not supported");
         }
         XmlOptions opts = new XmlOptions();
-        opts.setSaveSyntheticDocumentElement(new QName("http://schemas.openehr.org/v1","template"));
+        opts.setSaveSyntheticDocumentElement(new QName("http://schemas.openehr.org/v1", "template"));
         return operationaltemplate.map(o -> o.xmlText(opts)).orElseThrow(() -> new InternalServerException("Failure while retrieving operational template"));
     }
 
     @Override
     public String create(String content) {
         return this.knowledgeCacheService.addOperationalTemplate(content.getBytes(StandardCharsets.UTF_8));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean adminDeleteTemplate(String templateId) {
+
+        Optional<OPERATIONALTEMPLATE> opt = this.knowledgeCacheService
+                .retrieveOperationalTemplate(templateId);
+
+        if (opt.isEmpty()) {
+            throw new ObjectNotFoundException("ADMIN TEMPLATE", String.format(
+                    "Operational template with id %s not found.", templateId
+            ));
+        }
+
+        // Delete template if not used
+        return this.knowledgeCacheService.deleteOperationalTemplate(opt.get());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String adminUpdateTemplate(String templateId, String content) {
+
+        Optional<OPERATIONALTEMPLATE> existingTemplate =
+                this.knowledgeCacheService.retrieveOperationalTemplate(templateId);
+
+        // Check if template exists
+        if (existingTemplate.isEmpty()) {
+            throw new ObjectNotFoundException(
+                    "ADMIN TEMPLATE UPDATE",
+                    String.format("Template with id %s does not exist", templateId)
+            );
+        }
+
+        // Replace content
+        return this.knowledgeCacheService.adminUpdateOperationalTemplate(content.getBytes(StandardCharsets.UTF_8));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int adminDeleteAllTemplates() {
+        return this.knowledgeCacheService.deleteAllOperationalTemplates();
     }
 }

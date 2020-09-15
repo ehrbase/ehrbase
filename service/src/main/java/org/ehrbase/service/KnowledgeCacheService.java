@@ -22,6 +22,30 @@
  */
 package org.ehrbase.service;
 
+import static org.ehrbase.configuration.CacheConfiguration.OPERATIONAL_TEMPLATE_CACHE;
+import static org.ehrbase.configuration.CacheConfiguration.QUERY_CACHE;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.cache.Cache;
+import javax.cache.CacheManager;
+
 import org.apache.commons.collections4.MapUtils;
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.exception.InternalServerException;
@@ -47,21 +71,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.cache.Cache;
-import javax.cache.CacheManager;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import static org.ehrbase.configuration.CacheConfiguration.OPERATIONAL_TEMPLATE_CACHE;
-import static org.ehrbase.configuration.CacheConfiguration.QUERY_CACHE;
 
 /**
  * Look up and caching for archetypes, openEHR showTemplates and Operational Templates. Search in path defined as
@@ -110,7 +119,10 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     private boolean allowTemplateOverwrite;
 
     @Autowired
-    public KnowledgeCacheService(@Qualifier("templateDBStorageService") TemplateStorage templateStorage, CacheManager cacheManager) {
+    public KnowledgeCacheService(
+            @Qualifier("templateDBStorageService") TemplateStorage templateStorage,
+            CacheManager cacheManager
+            ) {
         this.templateStorage = templateStorage;
         this.cacheManager = cacheManager;
 
@@ -136,42 +148,33 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
     @Override
     public String addOperationalTemplate(byte[] content) {
+        return addOperationalTemplate(content, false);
+    }
 
-        InputStream inputStream = new ByteArrayInputStream(content);
+    /**
+     * Creates a new or replaces an existing operational template. If the template does not exist it will be created.
+     * If there is already a template with the given id inside the content and either the configuration setting
+     * system.allow-template-overwrite or param overwrite is set to true the template will be replaced with the new
+     * content. Of none of these flags is set a conflict exception will be thrown.
+     *
+     * @param content - New template content to write / set
+     * @param overwrite - Allow overwrite of existing templates
+     * @return - New created template id
+     */
+    private String addOperationalTemplate(byte[] content, boolean overwrite) {
 
-        TemplateDocument document;
-        try {
-            document = TemplateDocument.Factory.parse(inputStream);
-        } catch (XmlException | IOException e) {
-            throw new InvalidApiParameterException(e.getMessage());
-        }
-        OPERATIONALTEMPLATE template = document.getTemplate();
-
-        if (template == null) {
-            throw new InvalidApiParameterException("Could not parse input template");
-        }
-
-        if (template.getConcept() == null || template.getConcept().isEmpty())
-            throw new IllegalArgumentException("Supplied template has nil or empty concept");
-
-        if (template.getDefinition() == null || template.getDefinition().isNil())
-            throw new IllegalArgumentException("Supplied template has nil or empty definition");
-
-        if (template.getDescription() == null || !template.getDescription().validate())
-            throw new IllegalArgumentException("Supplied template has nil or empty description");
+        OPERATIONALTEMPLATE template = parseTemplate(content);
 
         //get the filename from the template template Id
         Optional<TEMPLATEID> filenameOptional = Optional.ofNullable(template.getTemplateId());
         String templateId = filenameOptional.orElseThrow(() -> new InvalidApiParameterException("Invalid template input content")).getValue();
 
-
-        // pre-check: if already existing throw proper exception
-        if (!allowTemplateOverwrite && retrieveOperationalTemplate(templateId).isPresent()) {
+        // pre-check: if already existing and overwrite is forbidden throw proper exception
+        if (!allowTemplateOverwrite && !overwrite && retrieveOperationalTemplate(templateId).isPresent()) {
             throw new StateConflictException("Operational template with this template ID already exists");
         }
 
         templateStorage.storeTemplate(template);
-
 
         invalidateCache(template);
 
@@ -183,12 +186,33 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         return template.getTemplateId().getValue();
     }
 
+    public String adminUpdateOperationalTemplate(byte[] content) {
+
+        OPERATIONALTEMPLATE template = parseTemplate(content);
+
+        String templateId = Optional.ofNullable(
+                template.getTemplateId())
+                .orElseThrow(() -> new InvalidApiParameterException("Invalid template input content"))
+                .getValue();
+
+        // Replace template
+        templateStorage.adminUpdateTemplate(template);
+
+        // Refresh template caches
+        invalidateCache(template);
+        atOptCache.replace(templateId, template);
+        idxCache.replace(UUID.fromString(template.getUid().getValue()), templateId);
+
+        return template.xmlText();
+    }
+
 
     // invalidates some derived caches like the queryOptMetaDataCache which depend on the template
     private void invalidateCache(OPERATIONALTEMPLATE template) {
 
         //invalidate the cache for this template
         queryOptMetaDataCache.remove(UUID.fromString(template.getUid().getValue()));
+        atOptCache.remove(template.getUid().getValue());
         Set<TemplateIdQueryTuple> collect = StreamSupport.stream(jsonPathQueryResultCache.spliterator(), true)
                 .map(Cache.Entry::getKey)
 
@@ -196,7 +220,6 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
                 .collect(Collectors.toSet());
         jsonPathQueryResultCache.removeAll(collect);
     }
-
 
     @Override
     public List<TemplateMetaData> listAllOperationalTemplates() {
@@ -325,6 +348,39 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         return operationaltemplate;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean deleteOperationalTemplate(OPERATIONALTEMPLATE template) {
+        // Remove template from storage
+        boolean deleted = this.templateStorage.deleteTemplate(template.getTemplateId().getValue());
+
+        if (deleted) {
+            // Remove template from caches
+            this.atOptCache.remove(template.getTemplateId().getValue());
+            this.idxCache.remove(UUID.fromString(template.getUid().getValue()));
+        }
+
+        return deleted;
+    }
+
+    public int deleteAllOperationalTemplates() {
+        // Get all operational templates
+        List<TemplateMetaData> templateList = this.templateStorage.listAllOperationalTemplates();
+        // If list is empty no deletion required
+        if (templateList.isEmpty()) {
+            return 0;
+        }
+        int deleted = this.templateStorage.adminDeleteAllTemplates(templateList);
+
+        // Clear cache
+        this.atOptCache.clear();
+        this.idxCache.clear();
+
+        return deleted;
+    }
+    
     @Override
     public boolean containsNodeIds(String templateId, Collection<String> nodeIds) {
         Set<String> templateNodeIds = nodeIdsByTemplateIdMap.computeIfAbsent(templateId, t -> getQueryOptMetaData(t).getAllNodeIds());
@@ -362,5 +418,39 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     @Override
     public I_KnowledgeCache getKnowledge() {
         return this;
+    }
+
+    /**
+     * Check an input byte array for a template if it is a valid template and generate a new template instance for it.
+     *
+     * @param templateContent - Byte array with template content
+     * @return - New instance of an OPT
+     */
+    private OPERATIONALTEMPLATE parseTemplate(byte[] templateContent) {
+
+        InputStream inputStream = new ByteArrayInputStream(templateContent);
+
+        TemplateDocument document;
+        try {
+            document = TemplateDocument.Factory.parse(inputStream);
+        } catch (XmlException | IOException e) {
+            throw new InvalidApiParameterException(e.getMessage());
+        }
+        OPERATIONALTEMPLATE template = document.getTemplate();
+
+        if (template == null) {
+            throw new InvalidApiParameterException("Could not parse input template");
+        }
+
+        if (template.getConcept() == null || template.getConcept().isEmpty())
+            throw new IllegalArgumentException("Supplied template has nil or empty concept");
+
+        if (template.getDefinition() == null || template.getDefinition().isNil())
+            throw new IllegalArgumentException("Supplied template has nil or empty definition");
+
+        if (template.getDescription() == null || !template.getDescription().validate())
+            throw new IllegalArgumentException("Supplied template has nil or empty description");
+
+        return template;
     }
 }

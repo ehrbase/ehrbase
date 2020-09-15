@@ -185,4 +185,5 @@ public interface CompositionService extends BaseService {
      * @return True if deleted, false if not
      */
     boolean isDeleted(UUID versionedObjectId);
+
 }
