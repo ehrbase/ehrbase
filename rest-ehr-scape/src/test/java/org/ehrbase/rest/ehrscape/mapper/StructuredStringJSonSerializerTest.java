@@ -18,14 +18,14 @@
 
 package org.ehrbase.rest.ehrscape.mapper;
 
-import org.ehrbase.api.definitions.StructuredString;
-import org.ehrbase.api.definitions.StructuredStringFormat;
-import org.ehrbase.api.mapper.StructuredStringJSonSerializer;
-import org.ehrbase.rest.ehrscape.responsedata.CompositionResponseData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import org.ehrbase.api.mapper.StructuredStringJSonSerializer;
+import org.ehrbase.response.ehrscape.StructuredString;
+import org.ehrbase.response.ehrscape.StructuredStringFormat;
+import org.ehrbase.rest.ehrscape.responsedata.CompositionResponseData;
 import org.junit.Assert;
 import org.junit.Test;
 

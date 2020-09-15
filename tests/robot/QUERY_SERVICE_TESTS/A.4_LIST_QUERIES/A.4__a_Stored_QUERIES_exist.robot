@@ -19,17 +19,8 @@
 *** Settings ***
 Documentation   QUERY SERVICE Integration Tests
 ...
-
-
-
-Resource    ${CURDIR}${/}../../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/generic_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/aql_query_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/contribution_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/composition_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/template_opt1.4_keywords.robot
-
+Metadata        TOP_TEST_SUITE    AQL
+Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
 
 # Test Setup  start openehr server
 # Test Teardown  restore clean SUT state

@@ -20,6 +20,7 @@ package org.ehrbase.opt.query;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by christian on 5/14/2018.
@@ -27,9 +28,13 @@ import java.util.List;
 public interface I_QueryOptMetaData extends Serializable {
     List upperNotBounded();
 
+    List multiValued();
+
     String type(String path);
 
     String category(String path);
+
+    Set<String> getAllNodeIds();
 
     List nodeByFieldValue(String field, String value);
 

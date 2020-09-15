@@ -26,12 +26,13 @@ import com.nedap.archie.rm.generic.AuditDetails;
 import com.nedap.archie.rm.generic.PartyProxy;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.*;
+import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
+import org.ehrbase.dao.access.util.TransactionTime;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.tables.records.AuditDetailsRecord;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
@@ -93,7 +94,7 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
 
     @Override
     public UUID commit() {
-        return commit(Timestamp.valueOf(LocalDateTime.now()));
+        return commit(TransactionTime.millis());
     }
 
     @Override
@@ -130,12 +131,12 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
 
     @Override
     public Boolean update(Timestamp transactionTime) {
-        return update(Timestamp.valueOf(LocalDateTime.now()), false);
+        return update(TransactionTime.millis(), false);
     }
 
     @Override
     public Boolean update(Boolean force) {
-        return update(Timestamp.valueOf(LocalDateTime.now()), force);
+        return update(TransactionTime.millis(), force);
     }
 
     @Override
@@ -231,7 +232,7 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
     @Override
     public AuditDetails getAsAuditDetails() {
         String systemId = getSystemId().toString();
-        PartyProxy party = I_PartyIdentifiedAccess.retrievePartyIdentified(this, getCommitter());
+        PartyProxy party = new PersistedPartyProxy(this).retrieve(getCommitter());
         DvDateTime time = new DvDateTime(getTimeCommitted().toLocalDateTime());
         DvCodedText changeType = new DvCodedText(getChangeType().getName(), new CodePhrase("openehr"));
         DvText description = new DvText(getDescription());

@@ -22,6 +22,7 @@
 package org.ehrbase.aql.sql.queryImpl;
 
 import org.ehrbase.aql.sql.PathResolver;
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.jooq.DSLContext;
 
 /**
@@ -29,7 +30,7 @@ import org.jooq.DSLContext;
  */
 public abstract class ObjectQuery {
 
-    protected DSLContext context;
+    protected I_DomainAccess domainAccess;
     protected PathResolver pathResolver;
     protected boolean jsonDataBlock = false;
     protected String itemType = null;
@@ -42,11 +43,10 @@ public abstract class ObjectQuery {
 
     protected static int serial = 0; //used to alias fields for now.
 
-    protected ObjectQuery(DSLContext context, PathResolver pathResolver) {
-        this.context = context;
+    protected ObjectQuery(I_DomainAccess domainAccess, PathResolver pathResolver) {
+        this.domainAccess = domainAccess;
 
         this.pathResolver = pathResolver;
-
     }
 
     public void reset() {
@@ -67,5 +67,13 @@ public abstract class ObjectQuery {
 
     public boolean isJsonDataBlock() {
         return jsonDataBlock;
+    }
+
+    public String variableTemplatePath(String templateId, String identifier){
+        return pathResolver.pathOf(templateId, identifier);
+    }
+
+    public DSLContext getContext(){
+        return domainAccess.getContext();
     }
 }

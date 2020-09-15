@@ -1,13 +1,20 @@
 package org.ehrbase.aql.containment;
 
+/**
+ * identified CONTAINS logical operators
+ */
 public class ContainOperator {
 
-    private enum OPERATOR {AND, OR, XOR}
+    public enum OPERATOR {AND, OR, XOR, NOT}
 
     private OPERATOR operator;
 
     public ContainOperator(String operator) {
-        this.operator = OPERATOR.valueOf(operator);
+        this.operator = OPERATOR.valueOf(operator.toUpperCase());
+    }
+
+    public OPERATOR operator(){
+        return operator;
     }
 
     public String getOperator() {

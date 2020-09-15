@@ -127,6 +127,7 @@ identifiedEquality
         | OPEN_PAR* NOT? identifiedOperand SIMILARTO STRING CLOSE_PAR*
 //        | NOT identifiedEquality
         | OPEN_PAR* NOT? IN OPEN_PAR queryExpr CLOSE_PAR CLOSE_PAR*
+        | OPEN_PAR* NOT? OPEN_PAR identifiedExpr CLOSE_PAR CLOSE_PAR*
         | OPEN_PAR* NOT? EXISTS identifiedPath CLOSE_PAR*
         | OPEN_PAR* NOT? EXISTS identifiedExpr CLOSE_PAR*;
 
@@ -218,7 +219,7 @@ invokeOperand
         	: invokeExpr;
 
 invokeExpr
-                : INVOKE OPEN_PAR URIVALUE CLOSE_PAR ;
+                : TERMINOLOGY OPEN_PAR STRING COMMA STRING COMMA STRING CLOSE_PAR ;
 
 objectPath
         : pathPart (SLASH pathPart)*;
@@ -258,7 +259,7 @@ XOR : X O R ;
 NOT : N O T ;
 IN : I N ;
 MATCHES : M A T C H E S ;
-INVOKE : I N V O K E ;
+TERMINOLOGY : T E R M I N O L O G Y ;
 LIKE : L I K E ;
 ILIKE : I L I K E ;
 SIMILARTO: S I M I L A R ' ' T O;

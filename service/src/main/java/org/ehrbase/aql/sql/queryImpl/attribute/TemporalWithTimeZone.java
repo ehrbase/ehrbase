@@ -31,7 +31,7 @@ public class TemporalWithTimeZone extends SimpleEventContextAttribute {
     }
 
     public Field<?> sqlField() {
-        return as(DSL.field("timezone(COALESCE(" + timeZoneField + "::text,'UTC')," + tableField + "::timestamp)"));
+        return as(DSL.field("ehr.js_dv_date_time("+tableField+"::timestamptz, COALESCE("+timeZoneField+"::text,'UTC'))::json #>>'{value}'"));
     }
 
     public TemporalWithTimeZone useTimeZone(TableField tableField){

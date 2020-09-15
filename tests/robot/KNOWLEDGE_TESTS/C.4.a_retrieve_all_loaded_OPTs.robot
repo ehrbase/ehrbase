@@ -36,9 +36,8 @@ Documentation   OPT1.4 integration tests
 ...                 2. All the loaded OPTs should be returned, if there are versions of any OPTs,
 ...                    only the last version is retrieved
 ...                    (NOTE: versioning is not applicable for ADL 1.4)
-
-Resource    ${CURDIR}${/}../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../_resources/keywords/template_opt1.4_keywords.robot
+Metadata        TOP_TEST_SUITE    EHR_STATUS
+Resource        ${CURDIR}${/}../_resources/suite_settings.robot
 
 # Suite Setup  startup OPT SUT
 Suite Teardown  Delete All Templates

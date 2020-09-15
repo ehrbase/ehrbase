@@ -18,27 +18,34 @@
 
 package org.ehrbase.aql.sql.queryImpl;
 
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.ehr.util.LocatableHelper;
 import org.ehrbase.service.IntrospectService;
 
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+import static org.ehrbase.aql.sql.queryImpl.IterativeNodeConstants.ENV_AQL_ARRAY_DEPTH;
+import static org.ehrbase.aql.sql.queryImpl.IterativeNodeConstants.ENV_AQL_ARRAY_IGNORE_NODE;
 
 /**
  * Created by christian on 5/9/2018.
  */
 public class IterativeNode implements I_IterativeNode {
 
-    private final List<String> ignoreIterativeNode; //f.e. '/content' '/events' etc.
+    private List<String> ignoreIterativeNode; //f.e. '/content' '/events' etc.
     private final List<Map> unbounded;
-    private final int depth;
+    private Integer depth;
+    private final I_DomainAccess domainAccess;
 
-    public IterativeNode(String templateId, IntrospectService introspectCache, List<String> ignoreIterativeNode, int depth) throws Exception {
-        this.ignoreIterativeNode = ignoreIterativeNode;
+    public IterativeNode(I_DomainAccess domainAccess, String templateId, IntrospectService introspectCache) {
+        this.domainAccess = domainAccess;
         unbounded = introspectCache.getQueryOptMetaData(templateId).upperNotBounded();
-        this.depth = depth;
+        initAqlRuntimeParameters();
     }
 
     /**
@@ -47,27 +54,25 @@ public class IterativeNode implements I_IterativeNode {
      * @param segmentedPath
      * @return
      */
-    public Integer[] iterativeAt(List<String> segmentedPath) throws Exception {
+    public Integer[] iterativeAt(List<String> segmentedPath) {
 
-        int marked = 0; //exit loop when counter > depth
+        SortedSet<Integer> retarray = new TreeSet<>();
 
-        List<Integer> retarray = new ArrayList<>();
-
-        if (unbounded.size() == 0) {
+        if (unbounded.isEmpty()) {
             retarray.add(-1);
         } else {
             String path = "/" + String.join("/", compact(segmentedPath));
 
             for (int i = unbounded.size() - 1; i >= 0; i--) {
                 Map mapEntry = unbounded.get(i);
-                String aql_path = (String) mapEntry.get("aql_path");
+                String aqlPath = (String) mapEntry.get("aql_path");
                 //check if this path is not excluded
-                List<String> aqlPathSegments = LocatableHelper.dividePathIntoSegments(aql_path);
+                List<String> aqlPathSegments = LocatableHelper.dividePathIntoSegments(aqlPath);
 
                 boolean ignoreThisAqlPath = false;
-                if (ignoreIterativeNode != null && ignoreIterativeNode.size() > 0) {
+                if (ignoreIterativeNode != null && !ignoreIterativeNode.isEmpty()) {
                     for (String ignoreItemRegex : ignoreIterativeNode) {
-                        if (aqlPathSegments.get(aqlPathSegments.size() - 1).matches(ignoreItemRegex)) {
+                        if (aqlPathSegments.get(aqlPathSegments.size() - 1).matches("^"+ignoreItemRegex+".*")) {
                             ignoreThisAqlPath = true;
                             break;
                         }
@@ -78,28 +83,27 @@ public class IterativeNode implements I_IterativeNode {
                 if (ignoreThisAqlPath)
                     continue;
 
-                if (path.startsWith(aql_path)) {
+                if (path.startsWith(aqlPath)) {
                     int pos = aqlPathInJsonbArray(aqlPathSegments, segmentedPath);
                     retarray.add(pos);
-                    if (++marked >= depth)
+                    if (retarray.size() >= depth)
                         break;
                 }
 
             }
         }
 
-        retarray.sort(Comparator.<Integer>naturalOrder());
 
         return retarray.toArray(new Integer[0]);
     }
 
-    public List<String> clipInIterativeMarker(List<String> segmentedPath, Integer[] clipPos) throws Exception {
+    public List<String> clipInIterativeMarker(List<String> segmentedPath, Integer[] clipPos) {
 
         List<String> resultingPath = new ArrayList<>();
         resultingPath.addAll(segmentedPath);
 
         for (Integer pos : clipPos) {
-            resultingPath.set(pos, I_QueryImpl.AQL_NODE_ITERATIVE_MARKER);
+            resultingPath.set(pos, QueryImplConstants.AQL_NODE_ITERATIVE_MARKER);
         }
         return resultingPath;
 
@@ -120,7 +124,8 @@ public class IterativeNode implements I_IterativeNode {
                 //not an index, add into the list
                 if (!item.startsWith("/composition")) {
                     if (item.startsWith("/")) {
-                        //skip structure containers
+                        //skip structure containers that are specific to DB encoding (that is: /events/events[openEHR...])
+                        //this also applies to /activities
                         if (!item.equals("/events") && !item.equals("/activities")) {
                             resultPath.add(item.substring(1));
                         }
@@ -166,6 +171,25 @@ public class IterativeNode implements I_IterativeNode {
             }
         }
         return retval;
+    }
+
+    private void initAqlRuntimeParameters(){
+        ignoreIterativeNode = new ArrayList<>();
+        if (System.getenv(ENV_AQL_ARRAY_IGNORE_NODE) != null) {
+            ignoreIterativeNode = Arrays.asList(System.getenv(ENV_AQL_ARRAY_IGNORE_NODE).split(","));
+        } else if (domainAccess.getServerConfig().getAqlIterationSkipList() != null && !domainAccess.getServerConfig().getAqlIterationSkipList().isBlank()){
+            Arrays.asList(domainAccess.getServerConfig().getAqlIterationSkipList().split(",")).stream().forEach(ignoreIterativeNode::add);
+        }
+        else
+            ignoreIterativeNode = Arrays.asList("^/content.*", "^/events.*");
+
+        if (System.getenv(ENV_AQL_ARRAY_DEPTH) != null) {
+            depth = Integer.parseInt(System.getenv(ENV_AQL_ARRAY_DEPTH));
+        }
+        else if (domainAccess.getServerConfig().getAqlDepth() != null)
+            depth = domainAccess.getServerConfig().getAqlDepth();
+        else
+            depth = 1;
     }
 
 }

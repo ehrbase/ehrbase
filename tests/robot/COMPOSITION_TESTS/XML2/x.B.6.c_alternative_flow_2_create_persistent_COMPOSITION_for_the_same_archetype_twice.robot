@@ -18,27 +18,19 @@
 
 *** Settings ***
 Documentation   Composition Integration Tests
+Metadata        TOP_TEST_SUITE    COMPOSITION
+Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
 
-Resource    ${CURDIR}${/}../../_resources/keywords/composition_keywords.robot
-
-# Resource    ${CURDIR}${/}../_resources/suite_settings.robot
-# Resource    ${CURDIR}${/}../_resources/keywords/generic_keywords.robot
-# Resource    ${CURDIR}${/}../_resources/keywords/template_opt1.4_keywords.robot
-# Resource    ${CURDIR}${/}../_resources/keywords/ehr_keywords.robot
-
-
-
-Force Tags    XML
+Force Tags      XML
 
 
 
 *** Test Cases ***
 Alternative flow 2 create persistent COMPOSITION for the same archetype twice
+    [Tags]        125    future
 
     upload OPT    minimal_persistent/persistent_minimal.opt
-
     create EHR    XML
-
     commit composition (XML)    minimal_persistent/persistent_minimal.composition.extdatetime.xml
 
     # comment: Another commit for the same persistent archetype/template to the same EHR

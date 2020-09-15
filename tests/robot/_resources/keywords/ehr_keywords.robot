@@ -71,7 +71,10 @@ update EHR: set ehr-status modifiable
 check response of 'update EHR' (JSON)
                         Integer     response status    200
                         String    response body uid value    ${ehrstatus_uid[0:-1]}2
-                        String    response body subject external_ref id value    ${subject_Id}
+
+                        # TODO: @WLAD check Github Issue #272
+                        # String    response body subject external_ref id value    ${subject_Id}
+
                         String    response body _type    EHR_STATUS
 
 
@@ -96,7 +99,10 @@ create new EHR
 
                         extract ehr_id from response (JSON)
                         extract system_id from response (JSON)
-                        extract subject_id from response (JSON)
+
+                        # TODO: @WLAD check Github Issue #272
+                        # extract subject_id from response (JSON)
+
                         extract ehr_status from response (JSON)
                         extract ehrstatus_uid (JSON)
 
@@ -206,9 +212,17 @@ create new EHR with ehr_status
     [Arguments]         ${ehr_status_object}
     [Documentation]     Creates new EHR record with a server-generated ehr_id.
     ...                 DEPENDENCY: `prepare new request session`
-    ...                 :ehr_status_object: ehr_status_as_json_string_or_file
+    ...                 :ehr_status_object: ehr_status_as_json_file
 
-    &{resp}=            REST.POST    ${baseurl}/ehr    ${ehr_status_object}
+    ${ehr_status_json}  Load JSON From File    ${ehr_status_object}
+                        Update Value To Json    ${ehr_status_json}    $.subject.external_ref.id.value
+                        ...    ${{str(uuid.uuid4())}}
+
+                        Update Value To Json    ${ehr_status_json}    $.subject.external_ref.namespace
+                        ...    namespace_${{''.join(random.choices(string.digits, k=7))}}
+
+
+    &{resp}=            REST.POST    ${baseurl}/ehr    ${ehr_status_json}
                         # Integer      response status    201  200
 
                         Set Suite Variable    ${response}    ${resp}
@@ -230,30 +244,25 @@ create new EHR by ID
 
 create new EHR for subject_id (JSON)
     [Arguments]         ${subject_id}
-    ${json_ehr}=        Load JSON From File   ${FIXTURES}/ehr/ehr_status_1_api_spec.json
-    ${json_ehr}=        Update Value To Json  ${json_ehr}   $.subject.external_ref.id.value   ${subject_id}
+    ${ehr_status_json}  Load JSON From File   ${VALID EHR DATA SETS}/000_ehr_status.json
+                        Update Value To Json  ${ehr_status_json}   $.subject.external_ref.id.value
+                        ...                   ${subject_id}
 
-    # same as the line above / # alternative syntax
-    # ${json_ehr}=        Update Value To Json  ${json_ehr}   $['subject']['external_ref']['id']['value']   ${subject_id}
-
-                        create new EHR with ehr_status    ${json_ehr}
-
-
-create new EHR with other_details for subject_id (JSON)
-    [Arguments]         ${subject_id}
-    ${json_ehr}=        Load JSON From File   ${FIXTURES}/ehr/ehr_status_1_api_spec_with_other_details.json
-    ${json_ehr}=        Update Value To Json  ${json_ehr}   $.subject.external_ref.id.value   ${subject_id}                                                                                       # alternative syntax
-                        create new EHR with ehr_status    ${json_ehr}
+    &{resp}=            REST.POST    ${baseurl}/ehr    ${ehr_status_json}
+                        Set Suite Variable    ${response}    ${resp}
+                        Output Debug Info To Console
 
 
 create new EHR with subject_id (JSON)
 
                         generate random subject_id
+    ${ehr_status_json}  Load JSON From File   ${VALID EHR DATA SETS}/000_ehr_status.json
+                        Update Value To Json  ${ehr_status_json}   $.subject.external_ref.id.value
+                        ...                   ${subject_id}
 
-    ${json_ehr}=        Load JSON From File   ${FIXTURES}/ehr/ehr_status_1_api_spec.json
-    ${json_ehr}=        Update Value To Json  ${json_ehr}   $.subject.external_ref.id.value   ${subject_id}
-
-                        create new EHR with ehr_status    ${json_ehr}
+    &{resp}=            REST.POST    ${baseurl}/ehr    ${ehr_status_json}
+                        Set Suite Variable    ${response}    ${resp}
+                        Output Debug Info To Console
 
                         extract ehr_id from response (JSON)
                         extract system_id from response (JSON)
@@ -265,26 +274,16 @@ check content of created EHR (JSON)
 
                         String    response body ehr_id value                    ${ehr_id}
                         String    response body system_id value                 ${system_id}
-                        String    response body ehr_status subject external_ref id value    ${subject_Id}
+
+                        # TODO: @WLAD check Github issue #272
+                        # String    response body ehr_status subject external_ref id value    ${subject_Id}
+
                         Object    response body ehr_status                      ${ehr_status}
 
                         # extract ehr_id from response (JSON)
                         # extract system_id from response (JSON)
                         # extract subject_id from response (JSON)    # is in ehr_status
                         # extract ehr_status from response (JSON)
-
-
-# create new EHR for subject_id (XML)
-#     # generate random subject_id
-#     [Arguments]         ${subject_id}
-#     ${json_ehr}=        Load JSON From File   ${FIXTURES}/ehr/ehr_status_1_api_spec.json
-#     ${json_ehr}=        Update Value To Json  ${json_ehr}   $['subject'].['id']['value']   ${subject_id}
-#     &{headers}=         Create Dictionary     Content-Type=application/json  Prefer=return=representation
-#
-#     ${resp}=            Post Request          ${SUT}   /ehr   headers=${headers}   data=${json_ehr}
-#                         Log To Console    ${resp.request.body}
-#                         Log To Console    ${resp.content}
-#                         Should Be Equal As Strings   ${resp.status_code}   201
 
 
 retrieve EHR by ehr_id
@@ -321,7 +320,10 @@ check content of retrieved EHR (JSON)
     #         |<---    actual data                 --->|<--- expected data --->|
     String    response body ehr_id value                    ${ehr_id}
     String    response body system_id value                 ${system_id}
-    String    response body ehr_status subject external_ref id value    ${subject_Id}
+
+    # TODO: @Wlad check Github Issue #272
+    # String    response body ehr_status subject external_ref id value    ${subject_Id}
+
     Object    response body ehr_status                      ${ehr_status}
     # Boolean   response body ehr_status is_queryable         ${TRUE}           # is already checked
     # Boolean   response body ehr_status is_modifiable        ${TRUE}           # in ehr_status
@@ -489,12 +491,25 @@ extract system_id from response (JSON)
 
 extract subject_id from response (JSON)
     [Documentation]     Extracts subject_id from response of preceding request.
+    ...                 This KW executes only in EHR_SERVICE test suite, it is ignored
+    ...                 in all over test suites.
 
-     ${subjectid}=      String      response body ehr_status subject external_ref id value
+            # comment:  Determine which test suite we are executing the KW in (based on SUITE METADATA).
+            #           If test suite is one of COMPOSITION, CONTRIBUTION, DIRECTORY, EHR_STATUS, KNOWLEDGE or AQL
+            #           skipp this KW completely. 
+                        Log    ${SUITE METADATA['TOP_TEST_SUITE']}
+    ${actualsuite}      Get From Dictionary    ${SUITE METADATA}    TOP_TEST_SUITE
+                        Return From Keyword If    "${actualsuite}" not in "EHR_SERVICE"
+                        ...    subject_id is only needed in EHR_SERVICE test suite!
 
-                        Log To Console    \n\tDEBUG OUTPUT - EHR_STATUS SUBJECT_ID: \n\t${subjectid}[0]
+    # Pass Execution    TEMP SOLUTION    broken_test    not-ready
 
-                        Set Suite Variable    ${subject_id}    ${subjectid}[0]
+    #TODO: @WLAD check Github Issue #272
+    #      refactor this KW or it's usage in all test suites!
+
+    #  ${subjectid}=      String      response body ehr_status subject external_ref id value
+    #                     Log To Console    \n\tDEBUG OUTPUT - EHR_STATUS SUBJECT_ID: \n\t${subjectid}[0]
+    #                     Set Suite Variable    ${subject_id}    ${subjectid}[0]
 
 
 extract ehr_status from response (JSON)
@@ -567,13 +582,11 @@ generate random subject_id
 
 
 generate fake ehr_status
-    [Documentation]     Loads a default ehr_status JSON object from fixtures folder
+    [Documentation]     Loads a default ehr_status JSON object from test_data_sets folder
     ...                 and exposes it as Test Variable.
 
-    ${json_ehr_status}=    Load JSON From File   ${FIXTURES}/ehr/ehr_status_1_api_spec.json
-
+    ${json_ehr_status}  Load JSON From File  ${VALID EHR DATA SETS}/000_ehr_status.json
                         Set Test Variable    ${ehr_status}    ${json_ehr_status}
-
                         Output    ${ehr_status}
 
 
@@ -652,22 +665,6 @@ modify ehr_status is_modifiable to
     ${ehr_status}=      Update Value To Json  ${ehr_status}  $..is_modifiable  ${value}
                         # Output   ${ehr_status}[0]             # ehr_status.json
                         Set Test Variable    ${ehr_status}    ${ehr_status}
-
-
-set ehr_status of EHR (from fixture)
-    [Arguments]         ${fixture}
-    [Documentation]     Sets status of EHR with given `ehr_id`.
-    ...                 DEPENDENCY: `generate random ehr_id`
-
-                        Set Headers    {"Prefer": "return=representation"}
-                        Set Headers    {"Content-Type": "application/json"}
-                        Set Headers    {"If-Match": "abc1234-none-exis-ting-fa8308e1242f::1"}
-
-    &{resp}=            REST.PUT    ${baseurl}/ehr/${ehr_id}/ehr_status
-    ...                             ${FIXTURES}/ehr/${fixture}
-                        Set Test Variable    ${response}    ${resp}
-
-                        # Output Debug Info To Console
 
 
 Output Debug Info To Console
@@ -762,9 +759,6 @@ Output Debug Info To Console
 #
 #                             Output    ${ehr_status}
 
-# extract ehrId XML
-#     Set Test Variable    ${ehr_id}    ${response.body.ehr_id}
-
 # verify ehrStatus queryable
 #     [Arguments]   ${is_queryable}
 #     ${QUERYALBE}=  Run Keyword If  "${is_queryable}"==""  Set Test Variable    ${is_queryable}    ${TRUE}
@@ -806,79 +800,20 @@ Output Debug Info To Console
 #     [Arguments]    ${action}
 #     Should Be Equal As Strings    ${action}    ${response.body['action']}
 
-# there is no EHR record
-#     Log    Believe me - there is no record yet cause we started DB in a brand new docker container!
 
 
-# #   ███████╗██╗  ██╗██████╗ ███████╗ ██████╗ █████╗ ██████╗ ███████╗
-# #   ██╔════╝██║  ██║██╔══██╗██╔════╝██╔════╝██╔══██╗██╔══██╗██╔════╝
-# #   █████╗  ███████║██████╔╝███████╗██║     ███████║██████╔╝█████╗
-# #   ██╔══╝  ██╔══██║██╔══██╗╚════██║██║     ██╔══██║██╔═══╝ ██╔══╝
-# #   ███████╗██║  ██║██║  ██║███████║╚██████╗██║  ██║██║     ███████╗
-# #   ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝╚═╝  ╚═╝╚═╝     ╚══════╝
-# #
-# #   [ EHRSCAPE API SPECIFIC KEYWORDS ]
+# Determine which test suite we are executing a KW in (based on TEST TAGS)
+#     # comment:          If actual suite is one from the ignore list, this KW is skipped.
+#     # NOTE: THIS DOES NOT WORK WHEN KW IS EXECUTED INSIDE SUTE SETUP, cause TEST TAGS are
+#     #       NOT available in SETUPs
 #
-#
-# extract ehr_id from response (JSON EHRSCAPE)
-#     [Documentation]     Extracts ehr_id from response of executed request.
-#     ...                 DEPENDENCY: `create new EHR`
-#
-#     ${ehr_id}=          String       response body ehr_id value
-#                         # NOTE: RESTinstance returns ehr_id as a string IN A LIST
-#                         #       Use index [0] to get string only
-#                         Set Test Variable    ${ehr_id}     ${ehr_id}[0]
-#                         Output   ${ehr_id}
-#
-#
-# extract ehr_status from response (JSON EHRSCAPE)
-#     [Documentation]     Extracts ehr_status from response of last request.
-#     ...                 DEPENDENCY: `create new EHR`
-#
-#     ${ehr_status}=      Object       response body ehr_status
-#                         # Output       response body ehr_status
-#                         Set Test Variable    ${ehr_status}     ${ehr_status}[0]
-#
-#
-# extract ehrstatus_uid (JSON EHRSCAPE)
-#     [Documentation]     Extracts uid of ehr_status from response of last request.
-#     ...                 DEPENDENCY: `create new EHR`
-#
-#     ${ehrstatus_uid}=   String       response body ehr_status uid value
-#                         Output       response body ehr_status uid value
-#                         # NOTE: RESTinstance returns uid as a string IN A LIST
-#                         #       e.g. ['uid-123-xxx']
-#                         #       Thus to get string only get item a index [0]
-#                         Set Test Variable    ${ehrstatus_uid}   ${ehrstatus_uid}[0]
-#
-#
-# extract ehr_id from response (XML EHRSCAPE)
-#     [Documentation]     Extracts `ehr_id` from response with content-type=xml
-#     ...                 DEPENDENCY: `create new EHR`
-#
-#             Log         DEPRECATION WARNING: @WLAD remove dat sh** when API-mess ends.
-#             ...         level=WARN
-#
-#     ${xml}=             Parse Xml    ${response.body}
-#     ${ehr_id}=          Get Element Text    ${xml}    xpath=ehr_id/value
-#                         Set Test Variable   ${ehr_id}       ${ehr_id}
-#
-#
-# extract system_id from response (JSON EHRSCAPE)
-#     [Documentation]     Extracts `system_id` from response of executed request.
-#     ...                 DEPENDENCY: `create new EHR`
-#
-#             Log         DEPRECATION WARNING: @WLAD remove dat sh** when API-mess ends.
-#             ...         level=WARN
-#
-#     ${system_id}        String       response body systemId
-#                         Set Test Variable    ${system_id}   ${system_id}[0]
-#
-#
-# extract system_id from response (XML EHRSCAPE)
-#     [Documentation]     Extracts `system_id` from response with content-type=xml
-#     ...                 DEPENDENCY: `create new EHR`
-#
-#     ${xml}=             Parse Xml    ${response.body}
-#     ${system_id}=       Get Element Text    ${xml}    xpath=systemId
-#                         Set Test Variable   ${system_id}    ${system_id}
+#     ${suitestoignore}   Create List    COMPOSITION  CONTRIBUTION  DIRECTORY  EHR_STATUS  KNOWLEDGE  AQL
+#                         Log    ${TEST TAGS}[0]
+#     ${actualsuite}      Set Variable    ${{$TEST_TAGS[0]}}
+#                         Return From Keyword If    "${actualsuite}" in ${suitestoignore}
+#                         ...    We don't need the subject_id in this test suite!
+
+
+# Alternative JSHON PATH syntax for use w/ "Update Value To Json" KW
+#     Update Value To Json    ${json}   $.subject.external_ref.id.value    ${subject_id}
+#     Update Value To Json    ${json}   $['subject']['external_ref']['id']['value']   ${subject_id}

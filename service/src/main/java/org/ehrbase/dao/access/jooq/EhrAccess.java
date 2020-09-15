@@ -28,32 +28,31 @@ import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.PartySelf;
-import com.nedap.archie.rm.support.identification.*;
-import org.apache.commons.collections4.map.MultiValueMap;
+import com.nedap.archie.rm.support.identification.HierObjectId;
+import com.nedap.archie.rm.support.identification.ObjectId;
+import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.dao.access.interfaces.*;
+import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
+import org.ehrbase.dao.access.util.TransactionTime;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.tables.records.*;
-import org.ehrbase.jooq.pg.udt.records.CodePhraseRecord;
-import org.ehrbase.jooq.pg.udt.records.DvCodedTextRecord;
-import org.ehrbase.serialisation.RawJson;
-import org.ehrbase.service.BaseService;
-import org.ehrbase.service.PersistentCodePhrase;
+import org.ehrbase.serialisation.dbencoding.RawJson;
 import org.ehrbase.service.RecordedDvCodedText;
 import org.ehrbase.service.RecordedDvText;
-import org.jooq.*;
+import org.jooq.DSLContext;
+import org.jooq.Record;
+import org.jooq.Result;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.*;
-import java.util.UUID;
 
 import static org.ehrbase.jooq.pg.Tables.*;
 
@@ -74,7 +73,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     private ItemStructure otherDetails = null;
     private String otherDetailsTemplateId;
 
-    private I_ContributionAccess contributionAccess = null; //locally referenced contribution associated to ehr transactions
+    private I_ContributionAccess contributionAccess; //locally referenced contribution associated to ehr transactions
 
     private I_StatusAccess statusAccess; // associated EHR_STATUS. Each EHR has 1 EHR_STATUS
 
@@ -89,17 +88,8 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         super(context, null, null, serverConfig);
 
         this.ehrRecord = context.newRecord(EHR_);
-        if (ehrId != null) {    // checking for and executing case of custom ehr ID
-            ehrRecord.setId(ehrId);
-        } else {
-            ehrRecord.setId(UUID.randomUUID());
-        }
-
-        //check if party already has an STATUS (and therefore EHR)
-        if (I_StatusAccess.retrieveInstanceByParty(this.getDataAccess(), partyId) != null) {
-            log.warn("This party is already associated to an EHR");
-            throw new IllegalArgumentException("Party:" + partyId + " already associated to an EHR, please retrieveInstanceByNamedSubject the associated EHR for updates instead");
-        }
+        // checking for and executing case of custom ehr ID
+        ehrRecord.setId(Objects.requireNonNullElseGet(ehrId, UUID::randomUUID));
 
         // init a new EHR_STATUS with default values to associate with this EHR
         this.statusAccess = new StatusAccess(this, ehrRecord.getId());
@@ -237,7 +227,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             throw new IllegalArgumentException("Version number must be > 0");
 
         EhrAccess ehrAccess = new EhrAccess(domainAccess, ehrId);  // minimal access, needs attributes to be set before returning
-        Record record;
+        EhrRecord record;
 
         // necessary anyway, but if no version is provided assume latest version (otherwise this one will be overwritten with wanted one)
         I_StatusAccess statusAccess = I_StatusAccess.retrieveInstance(domainAccess, status);
@@ -283,7 +273,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             return null;
         }
 
-        ehrAccess.ehrRecord = (EhrRecord) record;
+        ehrAccess.ehrRecord = record;
 
         ehrAccess.isNew = false;
 
@@ -297,7 +287,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         DSLContext context = domainAccess.getContext();
         EhrAccess ehrAccess = new EhrAccess(domainAccess, ehrId);
 
-        Record record;
+        EhrRecord record;
 
         try {
             record = context.selectFrom(EHR_)
@@ -313,7 +303,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             return null;
         }
 
-        ehrAccess.ehrRecord = (EhrRecord) record;
+        ehrAccess.ehrRecord = record;
         //retrieve the corresponding status
         I_StatusAccess statusAccess = I_StatusAccess.retrieveInstanceByEhrId(domainAccess, ehrAccess.ehrRecord.getId());
         ehrAccess.setStatusAccess(statusAccess);
@@ -349,7 +339,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         if (ehrAccess == null)
             throw new IllegalArgumentException("No ehr found for id:" + ehrId);
 
-        Map<String, Object> idlist = new MultiValueMap<>();
+        Map<String, Object> idlist = new MultiValueMap();
 
         //getNewFolderAccessInstance the corresponding subject Identifiers
 
@@ -407,15 +397,22 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         return ehrAccess.getStatusRecord().getParty();
     }
 
+    /**
+     * Removes the directory row value by setting it to 'NULL'. Usually his will be used after the deletion of a
+     * directories root folder.
+     *
+     * @param domainAccess - Database access
+     * @param ehrId - Target EHR id
+     * @return Setting NULL value succeeded
+     */
+    public static boolean removeDirectory(I_DomainAccess domainAccess, UUID ehrId) {
+        DSLContext ctx = domainAccess.getContext();
+        return ctx.update(EHR_).setNull(EHR_.DIRECTORY).where(EHR_.ID.eq(ehrId)).execute() > 0;
+    }
+
     @Override
     public DataAccess getDataAccess() {
         return this;
-    }
-
-    private String serializeOtherDetails() {
-
-        return new RawJson().marshal(otherDetails);
-
     }
 
     @Override
@@ -500,7 +497,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
      */
     @Override
     public UUID commit(UUID committerId, UUID systemId, String description) {
-        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp timestamp = TransactionTime.millis();
         // prepare EHR_STATUS audit with given values
 
         // prepare associated contribution (with contribution's audit embedded)
@@ -510,7 +507,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         contributionAccess.setAuditDetailsChangeType(I_ConceptAccess.fetchContributionChangeType(this, I_ConceptAccess.ContributionChangeType.CREATION));
 
         statusAccess.setAuditAndContributionAuditValues(systemId, committerId, description);
-        //statusAccess.setContributionId(contributionId);
+
         return commit(timestamp);
     }
 
@@ -529,7 +526,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
      */
     @Override
     public Boolean update(Timestamp transactionTime, boolean force) {
-        boolean result = false;
+        boolean result;
 
         result = statusAccess.update(otherDetails, transactionTime, force);
 
@@ -561,12 +558,11 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     @Override
     public Boolean update(Boolean force) {
         throw new InternalServerException("INTERNAL: this update is not legal");
-        //return update(Timestamp.valueOf(LocalDateTime.now()), force);
     }
 
     @Override
     public Boolean update(UUID committerId, UUID systemId, ContributionDef.ContributionState state, I_ConceptAccess.ContributionChangeType contributionChangeType, String description) {
-        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp timestamp = TransactionTime.millis();
         contributionAccess.setAuditDetailsValues(committerId, systemId, description);
         contributionAccess.setState(state);
         contributionAccess.setAuditDetailsChangeType(I_ConceptAccess.fetchContributionChangeType(this, contributionChangeType));
@@ -588,7 +584,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
      */
     @Override
     public UUID reload() {
-        Record record;
+        EhrRecord record;
 
         try {
             record = getContext().selectFrom(EHR_)
@@ -604,7 +600,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             return null;
         }
 
-        ehrRecord = (EhrRecord) record;
+        ehrRecord = record;
         //retrieve the corresponding status
         I_StatusAccess retStatusAccess = I_StatusAccess.retrieveInstanceByEhrId(this.getDataAccess(), ehrRecord.getId());
         setStatusAccess(retStatusAccess);
@@ -710,8 +706,6 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         setModifiable(status.isModifiable());
         setQueryable(status.isQueryable());
         setOtherDetails(status.getOtherDetails(), null);
-        String subjectId = status.getSubject().getExternalRef().getId().getValue();
-        String subjectNamespace = status.getSubject().getExternalRef().getNamespace();
 
         //Locatable stuff if present
         if (status.getArchetypeNodeId() != null)
@@ -720,7 +714,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         if (status.getName() != null)
             setName(status.getName());
 
-        UUID subjectUuid = I_PartyIdentifiedAccess.getOrCreatePartyByExternalRef(getDataAccess(), null, subjectId, BaseService.DEMOGRAPHIC, subjectNamespace, BaseService.PARTY);
+        UUID subjectUuid = new PersistedPartyProxy(getDataAccess()).getOrCreate(status.getSubject());
         setParty(subjectUuid);
     }
 
@@ -744,9 +738,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         status.setUid(new HierObjectId(statusId.toString() + "::" + getServerConfig().getNodename() + "::" +
                 I_StatusAccess.getLatestVersionNumber(this, statusId)));
 
-        I_PartyIdentifiedAccess party = I_PartyIdentifiedAccess.retrieveInstance(getDataAccess(), getParty());
-
-        PartySelf partySelf = new PartySelf(new PartyRef(new HierObjectId(party.getPartyRefValue()), party.getPartyRefNamespace(), party.getPartyRefType()));
+        PartySelf partySelf = (PartySelf)new PersistedPartyProxy(this).retrieve(getParty());
         status.setSubject(partySelf);
 
         return status;

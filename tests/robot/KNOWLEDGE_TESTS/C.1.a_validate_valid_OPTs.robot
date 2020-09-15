@@ -34,9 +34,8 @@ Documentation   OPT1.4 integration tests
 ...             Flow:
 ...                 For each valid OPT in the data set, invoke the OPT validation service
 ...                 The result should be positive and the server's response should be related to "OPT is valid".
-
-Resource    ${CURDIR}${/}../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../_resources/keywords/template_opt1.4_keywords.robot
+Metadata        TOP_TEST_SUITE    EHR_STATUS
+Resource        ${CURDIR}${/}../_resources/suite_settings.robot
 
 # Suite Setup  startup OPT SUT
 Suite Teardown  Delete All Templates

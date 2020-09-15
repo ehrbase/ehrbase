@@ -21,27 +21,21 @@
 
 package org.ehrbase.aql.sql.binding;
 
-import com.nedap.archie.rm.datavalues.DataValue;
-import com.nedap.archie.rminfo.ArchieRMInfoLookup;
-import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.aql.compiler.Contains;
 import org.ehrbase.aql.compiler.Statements;
 import org.ehrbase.aql.containment.IdentifierMapper;
 import org.ehrbase.aql.definition.I_VariableDefinition;
-import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
-import org.ehrbase.aql.sql.postprocessing.I_RawJsonTransform;
-import org.ehrbase.aql.sql.queryImpl.*;
-import org.ehrbase.aql.sql.queryImpl.attribute.ehr.EhrResolver;
+import org.ehrbase.aql.sql.queryImpl.CompositionAttributeQuery;
+import org.ehrbase.aql.sql.queryImpl.JsonbEntryQuery;
+import org.ehrbase.aql.sql.queryImpl.TemplateMetaData;
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.service.IntrospectService;
-import org.ehrbase.validation.constraints.util.SnakeToCamel;
+import org.ehrbase.service.KnowledgeCacheService;
 import org.jooq.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
-
-import static org.ehrbase.jooq.pg.Tables.ENTRY;
 
 /**
  * Bind the abstract representation of a SELECT clause into a SQL expression
@@ -57,38 +51,33 @@ public class SelectBinder extends TemplateMetaData implements I_SelectBinder {
     private final DSLContext context;
     private final WhereBinder whereBinder;
 
-    private boolean isWholeComposition = false;
-    private boolean usePgExtensions = true;
-
-    SelectBinder(DSLContext context, IntrospectService introspectCache, PathResolver pathResolver, VariableDefinitions variableDefinitions, List whereClause, String serverNodeId, String entry_root) {
+    SelectBinder(I_DomainAccess domainAccess, IntrospectService introspectCache, PathResolver pathResolver, VariableDefinitions variableDefinitions, List whereClause, String serverNodeId) {
         super(introspectCache);
-        this.context = context;
+        this.context = domainAccess.getContext();
         this.pathResolver = pathResolver;
 
         this.variableDefinitions = variableDefinitions;
-        this.jsonbEntryQuery = new JsonbEntryQuery(context, introspectCache, pathResolver, entry_root);
-        this.compositionAttributeQuery = new CompositionAttributeQuery(context, pathResolver, serverNodeId, entry_root, introspectCache);
-        this.whereBinder = new WhereBinder(jsonbEntryQuery, compositionAttributeQuery, whereClause, pathResolver.getMapper());
+        this.jsonbEntryQuery = new JsonbEntryQuery(domainAccess, introspectCache, pathResolver);
+        this.compositionAttributeQuery = new CompositionAttributeQuery(domainAccess, pathResolver, serverNodeId, introspectCache);
+        this.whereBinder = new WhereBinder(domainAccess, jsonbEntryQuery, compositionAttributeQuery, whereClause, pathResolver.getMapper());
     }
 
-    private SelectBinder(DSLContext context, IntrospectService introspectCache, IdentifierMapper mapper, VariableDefinitions variableDefinitions, List whereClause, String serverNodeId, String entry_root) {
-        this(context, introspectCache, new PathResolver(context, mapper), variableDefinitions, whereClause, serverNodeId, entry_root);
+    private SelectBinder(I_DomainAccess domainAccess, IntrospectService introspectCache, IdentifierMapper mapper, VariableDefinitions variableDefinitions, List whereClause, String serverNodeId) {
+        this(domainAccess, introspectCache, new PathResolver((KnowledgeCacheService)introspectCache, mapper), variableDefinitions, whereClause, serverNodeId);
     }
 
-    public SelectBinder(DSLContext context, IntrospectService introspectCache, Contains contains, Statements statements, String serverNodeId, String entry_root) {
-        this(context, introspectCache, contains.getIdentifierMapper(), statements.getVariables(), statements.getWhereClause(), serverNodeId, entry_root);
+    public SelectBinder(I_DomainAccess domainAccess, IntrospectService introspectCache, Contains contains, Statements statements, String serverNodeId) {
+        this(domainAccess, introspectCache, contains.getIdentifierMapper(), statements.getVariables(), statements.getWhereClause(), serverNodeId);
     }
 
 
     /**
      * bind with path resolution depending on composition
      *
-     * @param comp_id
+     * @param template_id
      * @return
      */
-    public SelectQuery<Record> bind(String template_id, UUID comp_id) {
-        pathResolver.resolvePaths(template_id, comp_id);
-
+    public SelectQuery<Record> bind(String template_id) {
         jsonbEntryQuery.reset();
 
         SelectQuery<Record> selectQuery = context.selectQuery();
@@ -103,12 +92,12 @@ public class SelectBinder extends TemplateMetaData implements I_SelectBinder {
 
             ExpressionField expressionField = new ExpressionField(variableDefinition, jsonbEntryQuery, compositionAttributeQuery);
 
-            Field<?> field = expressionField.toSql(className, template_id, comp_id, identifier);
+            Field<?> field = expressionField.toSql(className, template_id, identifier);
 
             handleJsonDataBlock(expressionField, field, expressionField.getRootJsonKey(), expressionField.getOptionalPath());
-//            field = DSL.field(field);
-            if (field == null) {
-                throw new IllegalArgumentException("Field expression is not supported or invalid :" + variableDefinition);
+
+            if (field == null) { //the field cannot be resolved with containment (f.e. empty DB)
+                continue;
             }
             selectQuery.addSelect(field);
             jsonbEntryQuery.inc();
@@ -123,9 +112,9 @@ public class SelectBinder extends TemplateMetaData implements I_SelectBinder {
     }
 
 
-    public Condition getWhereConditions(String templateId, UUID comp_id) {
+    public Condition getWhereConditions(String templateId) {
 
-        return whereBinder.bind(templateId, comp_id);
+        return whereBinder.bind(templateId);
     }
 
     public boolean containsJQueryPath() {
@@ -139,16 +128,6 @@ public class SelectBinder extends TemplateMetaData implements I_SelectBinder {
 
     public List<JsonbBlockDef> getJsonDataBlock() {
         return jsonDataBlock;
-    }
-
-    public boolean isWholeComposition() {
-        return isWholeComposition;
-    }
-
-    public SelectBinder setUsePgExtensions(boolean usePgExtensions) {
-        this.usePgExtensions = usePgExtensions;
-        whereBinder.setUsePgExtensions(usePgExtensions);
-        return this;
     }
 
 }

@@ -6,19 +6,14 @@ Documentation    Alternative flow 1: create directory on EHR with directory
 ...
 ...     Flow:
 ...         1. Invoke the create directory service for the ehr_id
-...         2. The service should return an error, related to the EHR directory
-...            already existin
+...            w/ same directory name that already exists.
+...         2. The service should return an error, 
+...            related to already existing EHR directory
 ...
 ...     Postconditions:
 ...         None
-
-
-Resource    ${CURDIR}${/}../../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/generic_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/contribution_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/directory_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/template_opt1.4_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
+Metadata        TOP_TEST_SUITE    DIRECTORY
+Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
 
 #Suite Setup  startup SUT
 # Test Setup  start openehr server
@@ -35,9 +30,7 @@ Alternative flow 1: create directory on EHR with directory
     create EHR
 
     create DIRECTORY (JSON)    subfolders_in_directory.json
-
     validate POST response - 201 created directory
 
-    create DIRECTORY (JSON)    subfolders_in_directory.json
-
+    create the same DIRECTORY again (JSON)    subfolders_in_directory.json
     validate POST response - 409 folder already exists

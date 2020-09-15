@@ -18,18 +18,18 @@
 
 package org.ehrbase.rest.openehr.controller;
 
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import org.ehrbase.api.definitions.CompositionFormat;
-import org.ehrbase.api.dto.ContributionDto;
-import org.ehrbase.api.exception.NotAcceptableException;
-import org.ehrbase.api.service.ContributionService;
-import org.ehrbase.rest.openehr.response.CompositionResponseData;
-import org.ehrbase.rest.openehr.response.ContributionResponseData;
-import org.ehrbase.rest.openehr.response.ErrorResponseData;
-import org.ehrbase.rest.openehr.response.InternalResponse;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import io.swagger.annotations.*;
+import org.ehrbase.api.exception.NotAcceptableException;
+import org.ehrbase.api.service.ContributionService;
+import org.ehrbase.response.ehrscape.CompositionFormat;
+import org.ehrbase.response.ehrscape.ContributionDto;
+import org.ehrbase.response.openehr.CompositionResponseData;
+import org.ehrbase.response.openehr.ContributionResponseData;
+import org.ehrbase.response.openehr.ErrorResponseData;
+import org.ehrbase.rest.openehr.util.InternalResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;

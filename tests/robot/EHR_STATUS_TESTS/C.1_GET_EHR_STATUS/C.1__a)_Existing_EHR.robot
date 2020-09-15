@@ -37,9 +37,8 @@ Documentation   C.1.a) Main flow: Get status of an existing EHR
 ...                    a) has or not a subject_id
 ...                    b) has correct value for is_modifiable
 ...                    c) has correct value for is_queryable
-
-
-Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
+Metadata        TOP_TEST_SUITE    EHR_STATUS
+Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 
 # Suite Setup  startup SUT
 # Suite Teardown  shutdown SUT
@@ -79,7 +78,7 @@ verify response (JSON)
                         Integer     response status         200
 
                         String    response body uid value    ${ehrstatus_uid}
-                        String    response body subject external_ref id value    ${subject_Id}
+                        # String    response body subject external_ref id value    ${subject_Id}
                         
 
 verify response (XML)

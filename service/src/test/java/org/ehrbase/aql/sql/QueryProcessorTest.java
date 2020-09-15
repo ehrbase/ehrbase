@@ -18,13 +18,16 @@
 
 package org.ehrbase.aql.sql;
 
+import org.ehrbase.aql.TestAqlBase;
 import org.ehrbase.aql.compiler.AqlExpression;
 import org.ehrbase.aql.compiler.Contains;
 import org.ehrbase.aql.compiler.Statements;
 import org.ehrbase.dao.jooq.impl.DSLContextHelper;
 import org.ehrbase.service.CacheRule;
+import org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl;
 import org.ehrbase.service.IntrospectService;
 import org.ehrbase.service.KnowledgeCacheHelper;
+import org.ehrbase.service.KnowledgeCacheService;
 import org.jooq.DSLContext;
 import org.jooq.Record2;
 import org.jooq.Record4;
@@ -40,10 +43,10 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.ehrbase.jooq.pg.Tables.CONTAINMENT;
 import static org.ehrbase.jooq.pg.Tables.ENTRY;
+import static org.mockito.Mockito.mock;
 
-public class QueryProcessorTest {
+public class QueryProcessorTest  {
 
 
     public static class AqlTestCase {
@@ -158,7 +161,7 @@ public class QueryProcessorTest {
         testCases.add(new AqlTestCase(5,
                 "select a/description[at0001]/items[at0002]/value/value from EHR e " +
                         "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]",
-                "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') as \"/description[at0001]/items[at0002]/value/value\" " +
+                "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') as \"/description[at0001]/items[at0002]/value/value\" " +
                         "from \"ehr\".\"entry\" " +
                         "where \"ehr\".\"entry\".\"template_id\" = ?",
                 true));
@@ -171,7 +174,7 @@ public class QueryProcessorTest {
                         "order by description ASC",
                 "select \"\".\"description\" " +
                         "from (" +
-                        "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') " +
+                        "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') " +
                         "as \"description\" from \"ehr\".\"entry\" where \"ehr\".\"entry\".\"template_id\" = ?" +
                         ") as \"\" order by \"description\" asc",
                 true));
@@ -182,10 +185,10 @@ public class QueryProcessorTest {
                         "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  " +
                         "contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]" +
                         "where a/description[at0001]/items[at0002]/value/value = 'Hepatitis A'",
-                "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') as \"/description[at0001]/items[at0002]/value/value\" " +
+                "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') as \"/description[at0001]/items[at0002]/value/value\" " +
                         "from \"ehr\".\"entry\" " +
                         "where (\"ehr\".\"entry\".\"template_id\" = ? " +
-                        "and (\"ehr\".\"entry\".\"entry\" @@ '\"/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary'']\".\"/content[openEHR-EHR-ACTION.immunisation_procedure.v1]\".#.\"/description[at0001]\".\"/items[at0002]\".#.\"/value\".\"value\"=\"Hepatitis A\" '::jsquery))",
+                        "and (\"ehr\".\"entry\".\"entry\" @@ '\"/composition[openEHR-EHR-COMPOSITION.health_summary.v1]\".\"/content[openEHR-EHR-ACTION.immunisation_procedure.v1]\".#.\"/description[at0001]\".\"/items[at0002]\".#.\"/value\".\"value\"=\"Hepatitis A\" '::jsquery))",
                 true));
 
         // select full composition
@@ -201,7 +204,7 @@ public class QueryProcessorTest {
                 "select a from EHR e " +
                         "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  " +
                         "contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]",
-                "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{}') as \"a\"" +
+                "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{}') as \"a\"" +
                         "from \"ehr\".\"entry\" where \"ehr\".\"entry\".\"template_id\" = ?",
                 true));
 
@@ -239,26 +242,28 @@ public class QueryProcessorTest {
                         "select \"ehr_join\".\"id\" as \"/ehr_id/value\" from \"ehr\".\"entry\" " +
                         "right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" " +
                         "right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\" " +
-                        "where (\"ehr\".\"entry\".\"template_id\" = ? and (\"ehr\".\"entry\".\"entry\" #>> '{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1],0,/description[at0001],/items[at0002],0,/value,value}' IN ('Hepatitis A','Hepatitis B')))) as \"\"",
+                        "where (\"ehr\".\"entry\".\"template_id\" = ? and (\"ehr\".\"entry\".\"entry\" #>> '{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1],0,/description[at0001],/items[at0002],0,/value,value}' IN ('Hepatitis A','Hepatitis B')))) as \"\"",
                 true));
 
         // select with function
         testCases.add(new AqlTestCase(13,
                 "select  count (d/description[at0001]/items[at0004]/value/magnitude) as count_magnitude from EHR e  contains COMPOSITION  contains ACTION d[openEHR-EHR-ACTION.immunisation_procedure.v1]",
                 "select count(\"count_magnitude\") as \"count_magnitude\" " +
-                        "from (select ((jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0004],0,/value,magnitude}'))::numeric as \"count_magnitude\" " +
+                        "from (select ((jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0004],0,/value,magnitude}'))::numeric as \"count_magnitude\" " +
                         "from \"ehr\".\"entry\" " +
                         "where \"ehr\".\"entry\".\"template_id\" = ?" +
                         ") as \"\"",
                 true));
 
         // Select  from unknown  composition
-        testCases.add(new AqlTestCase(14,
-                "select c/composer/name from EHR e " +
-                        "contains COMPOSITION c[openEHR-EHR-COMPOSITION.unknown.v1]",
-                //Do to the way the query is build it is not possible to build sql if the AQL contains only compositions which have no instances in the DB. Thus we must manual handle this case.
-                "select 1 where 1 = 0",
-                false));
+        // CHC: if a contains definition cannot be resolved an IllegalArgumentException is thrown
+
+//        testCases.add(new AqlTestCase(14,
+//                "select c/composer/name from EHR e " +
+//                        "contains COMPOSITION c[openEHR-EHR-COMPOSITION.unknown.v1]",
+//                //Do to the way the query is build it is not possible to build sql if the AQL contains only compositions which have no instances in the DB. Thus we must manual handle this case.
+//                "select 1 where 1 = 0",
+//                false));
 
         //WHERE clause from node predicate
         testCases.add(new AqlTestCase(15,
@@ -288,12 +293,12 @@ public class QueryProcessorTest {
                         " a/description[at0001]/items[at0001]/items[at0002]/items[at0003]/value/value = true" +
                         ")",
                 "select " +
-                        "(jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[openEHR-EHR-CLUSTER.test_all_types.v1],0,/items[at0001],0,/items[at0002],0,/items[at0003],0,/value,value}') as \"/description[at0001]/items[openEHR-EHR-CLUSTER.test_all_types.v1]/items[at0001]/items[at0002]/items[at0003]/value/value\" from \"ehr\".\"entry\" where (\"ehr\".\"entry\".\"template_id\" = ? and (\"ehr\".\"entry\".\"entry\" @@ '\"/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary'']\".\"/content[openEHR-EHR-ACTION.immunisation_procedure.v1]\".#.\"/description[at0001]\".\"/items[at0001]\".#.\"/items[at0002]\".#.\"/items[at0003]\".#.\"/value\".\"value\"=true '::jsquery " +
+                        "(jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[openEHR-EHR-CLUSTER.test_all_types.v1],0,/items[at0001],0,/items[at0002],0,/items[at0003],0,/value,value}') as \"/description[at0001]/items[openEHR-EHR-CLUSTER.test_all_types.v1]/items[at0001]/items[at0002]/items[at0003]/value/value\" from \"ehr\".\"entry\" where (\"ehr\".\"entry\".\"template_id\" = ? and (\"ehr\".\"entry\".\"entry\" @@ '\"/composition[openEHR-EHR-COMPOSITION.health_summary.v1]\".\"/content[openEHR-EHR-ACTION.immunisation_procedure.v1]\".#.\"/description[at0001]\".\"/items[at0001]\".#.\"/items[at0002]\".#.\"/items[at0003]\".#.\"/value\".\"value\"=true '::jsquery " +
                         "OR " +
                         "(" +
-                        "\"ehr\".\"entry\".\"entry\" @@ '\"/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary'']\".\"/content[openEHR-EHR-ACTION.immunisation_procedure.v1]\".#.\"/description[at0001]\".\"/items[at0001]\".#.\"/items[at0002]\".#.\"/items[at0003]\".#.\"/value\".\"value\"=true '::jsquery " +
+                        "\"ehr\".\"entry\".\"entry\" @@ '\"/composition[openEHR-EHR-COMPOSITION.health_summary.v1]\".\"/content[openEHR-EHR-ACTION.immunisation_procedure.v1]\".#.\"/description[at0001]\".\"/items[at0001]\".#.\"/items[at0002]\".#.\"/items[at0003]\".#.\"/value\".\"value\"=true '::jsquery " +
                         "AND " +
-                        "\"ehr\".\"entry\".\"entry\" @@ '\"/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary'']\".\"/content[openEHR-EHR-ACTION.immunisation_procedure.v1]\".#.\"/description[at0001]\".\"/items[at0001]\".#.\"/items[at0002]\".#.\"/items[at0003]\".#.\"/value\".\"value\"=true'::jsquery" +
+                        "\"ehr\".\"entry\".\"entry\" @@ '\"/composition[openEHR-EHR-COMPOSITION.health_summary.v1]\".\"/content[openEHR-EHR-ACTION.immunisation_procedure.v1]\".#.\"/description[at0001]\".\"/items[at0001]\".#.\"/items[at0002]\".#.\"/items[at0003]\".#.\"/value\".\"value\"=true'::jsquery" +
                         ")" +
                         ")" +
                         ")",
@@ -305,7 +310,7 @@ public class QueryProcessorTest {
                 "select a from EHR e [ehr_id/value = '4a7c01cf-bb1c-4d3d-8385-4ae0674befb1']" +
                         "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  " +
                         "contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]",
-                "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{}') as \"a\" " +
+                "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{}') as \"a\" " +
                         "from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\" " +
                         "where (\"ehr\".\"entry\".\"template_id\" = ? " +
                         "and (\"ehr_join\".\"id\"='4a7c01cf-bb1c-4d3d-8385-4ae0674befb1'))",
@@ -317,7 +322,7 @@ public class QueryProcessorTest {
                         "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  " +
                         "contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1] " +
                         "where c/template_id='openEHR-EHR-COMPOSITION.health_summary.v1'",
-                "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{}') as \"a\" " +
+                "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{}') as \"a\" " +
                         "from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\" " +
                         "where (\"ehr\".\"entry\".\"template_id\" = ? " +
                         "and (\"ehr\".\"entry\".\"template_id\"='openEHR-EHR-COMPOSITION.health_summary.v1' " +
@@ -341,7 +346,7 @@ public class QueryProcessorTest {
                         "where (\"ehr\".\"entry\".\"template_id\" = ? and (\"ehr_join\".\"id\"='4a7c01cf-bb1c-4d3d-8385-4ae0674befb1'))",
                 true));
 
-
+      
         testCases.add(new AqlTestCase(21,
                 "select c/category/defining_code/terminology_id/value from EHR e [ehr_id/value = '4a7c01cf-bb1c-4d3d-8385-4ae0674befb1']" +
                         "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]",
@@ -349,15 +354,14 @@ public class QueryProcessorTest {
                         "from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\"" +
                         "where (\"ehr\".\"entry\".\"template_id\" = ? and (\"ehr_join\".\"id\"='4a7c01cf-bb1c-4d3d-8385-4ae0674befb1'))",
                 false));
-
-
+      
         testCases.add(new AqlTestCase(22,
                 "select count(a/description[at0001]/items[openEHR-EHR-CLUSTER.test_all_types.v1]/items[at0001]/items[at0002]/items[at0003]/value/value," +
                         "a/description[at0001]/items[openEHR-EHR-CLUSTER.test_all_types.v1]/items[at0001]/items[at0002]/items[at0004]/value/value)" +
                         "from EHR e " +
                         "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  " +
                         "contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]",
-                "select count(\"_FCT_ARG_0\",\"_FCT_ARG_1\") as \"count\" from (select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[openEHR-EHR-CLUSTER.test_all_types.v1],0,/items[at0001],0,/items[at0002],0,/items[at0004],0,/value,value}') as \"_FCT_ARG_1\", (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[openEHR-EHR-CLUSTER.test_all_types.v1],0,/items[at0001],0,/items[at0002],0,/items[at0003],0,/value,value}') as \"_FCT_ARG_0\" from \"ehr\".\"entry\" where \"ehr\".\"entry\".\"template_id\" = ?) as \"\"",
+                "select count(\"_FCT_ARG_0\",\"_FCT_ARG_1\") as \"count\" from (select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[openEHR-EHR-CLUSTER.test_all_types.v1],0,/items[at0001],0,/items[at0002],0,/items[at0004],0,/value,value}') as \"_FCT_ARG_1\", (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[openEHR-EHR-CLUSTER.test_all_types.v1],0,/items[at0001],0,/items[at0002],0,/items[at0003],0,/value,value}') as \"_FCT_ARG_0\" from \"ehr\".\"entry\" where \"ehr\".\"entry\".\"template_id\" = ?) as \"\"",
                 true
         ));
 
@@ -373,9 +377,16 @@ public class QueryProcessorTest {
                         "from EHR e\n" +
                         "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]\n" +
                         "WHERE NOT EXISTS c/content[openEHR-EHR-ADMIN_ENTRY.hospitalization.v0]",
-                "select ehr.js_composition(composition_join.id,'local')::text as \"c\" from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" where (\"ehr\".\"entry\".\"template_id\" = ? and (\"ehr\".\"entry\".\"entry\" #>> '{/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value=''Immunisation summary''],/content[openEHR-EHR-ADMIN_ENTRY.hospitalization.v0]}'IS NULL))",
+                "select ehr.js_composition(composition_join.id,'local')::text as \"c\" from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" where (\"ehr\".\"entry\".\"template_id\" = ? and (\"ehr\".\"entry\".\"entry\" #>> '{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ADMIN_ENTRY.hospitalization.v0]}'IS NULL))",
                 true
         ));
+
+
+        testCases.add(new AqlTestCase(25,
+                "select c/feeder_audit/originating_system_audit/system_id from EHR e " +
+                        "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]",
+                "select (\"composition_join\".\"feeder_audit\")::json #>>'{originating_system_audit,system_id}' as \"/feeder_audit/originating_system_audit/system_id\" from \"ehr\".\"entry\" where \"ehr\".\"entry\".\"template_id\" = ?",
+                false));
 
         //NOT EXISTS
 //        testCases.add(new AqlTestCase(25,
@@ -398,68 +409,6 @@ public class QueryProcessorTest {
 //        queryParser.pass2();
 //        return queryParser;
 //    }
-
-    /**
-     * mocks the sql query such that there simulate a table  ehr.containment as
-     * comp_id    |   label                                                                               |   path
-     * ?          | openEHR_EHR_COMPOSITION_health_summary_v1                                             |  /composition[openEHR-EHR-COMPOSITION.health_summary.v1]
-     * ?          | openEHR_EHR_COMPOSITION_health_summary_v1.openEHR_EHR_ACTION_immunisation_procedure_v1| /content[openEHR-EHR-ACTION.immunisation_procedure.v1 and name/value='Immunisation procedure']
-     */
-    @Test
-    @SuppressWarnings("deprecation")
-    public void testBuildAqlSelectQuery() throws Exception {
-        IntrospectService introspectCache = KnowledgeCacheHelper.buildKnowledgeCache(testFolder, cacheRule);
-
-        DSLContext context = DSLContextHelper.buildContext(ctx -> {
-            DSLContext create = DSLContextHelper.buildContext();
-            MockResult[] mock = new MockResult[1];
-
-            //search for leafs
-            if (ctx.sql().contains("entry_root")) {
-
-                Result<Record4<String, UUID, Object, Object>> result = create.newResult(ENTRY.TEMPLATE_ID, CONTAINMENT.COMP_ID, CONTAINMENT.LABEL, DSL.field("entry_root"));
-                //If AqlTestCase 13 then return empty results
-                if (!ctx.sql().contains("unknown")) {
-                    result.add(create.newRecord(ENTRY.TEMPLATE_ID, CONTAINMENT.COMP_ID, CONTAINMENT.LABEL, DSL.field("entry_root")).values("IDCR - Immunisation summary.v0", UUID.fromString("8a33ca66-705d-4115-9483-52c3350f2135"), "openEHR_EHR_COMPOSITION_health_summary_v1.openEHR_EHR_ACTION_immunisation_procedure_v1", "/composition[openEHR-EHR-COMPOSITION.health_summary.v1 and name/value='Immunisation summary']"));
-                }
-                mock[0] = new MockResult(1, result);
-            } else if (ctx.sql().contains("\"ehr\".\"containment\".\"label\"~ '*.openEHR_EHR_ACTION_immunisation_procedure_v1")) {
-                Result<Record2<String, String>> result = create.newResult(CONTAINMENT.PATH, ENTRY.TEMPLATE_ID);
-                result.add(create
-                        .newRecord(CONTAINMENT.PATH, ENTRY.TEMPLATE_ID)
-                        .values("/content[openEHR-EHR-ACTION.immunisation_procedure.v1 and name/value='Immunisation procedure']", "openEHR-EHR-COMPOSITION.health_summary.v1"));
-                mock[0] = new MockResult(1, result);
-                // search for root entry
-            } else if (ctx.sql().contains("\"ehr\".\"containment\".\"label\"~ 'openEHR_EHR_COMPOSITION_health_summary_v1")) {
-                Result<Record2<String, String>> result = create.newResult(CONTAINMENT.PATH, ENTRY.TEMPLATE_ID);
-                result.add(create
-                        .newRecord(CONTAINMENT.PATH, ENTRY.TEMPLATE_ID)
-                        .values("/composition[openEHR-EHR-COMPOSITION.health_summary.v1]", "openEHR-EHR-COMPOSITION.health_summary.v1"));
-                mock[0] = new MockResult(1, result);
-            }
-
-            return mock;
-        });
-
-//        QueryProcessor cut = new QueryProcessor(context, null, introspectCache, containInterpreter, statementInterpreter, getServerNodeId());
-
-        buildAqlTestCase().stream().forEach(
-                t -> {
-                    AqlExpression aqlExpression = new AqlExpression().parse(t.getQuery());
-                    Contains contains = new Contains(aqlExpression.getParseTree()).process();
-                    Statements statements = new Statements(aqlExpression.getParseTree(), contains.getIdentifierMapper()).process();
-
-                    QueryProcessor cut = new QueryProcessor(context, null, introspectCache, contains, statements, "local", true);
-
-                    QueryProcessor.AqlSelectQuery actual = cut.buildAqlSelectQuery();
-                    // check that generated sql is expected sql
-                    assertThat(removeAlias(actual.getSelectQuery().getSQL())).as(String.format("Test Case %d", t.getId())).isEqualToIgnoringWhitespace(removeAlias(t.getExpectedSql()));
-                    //check if
-                    assertThat(actual.isOutputWithJson()).as(String.format("Test Case %d", t.getId())).isEqualTo(t.isOutputWithJson());
-
-                });
-
-    }
 
     private String removeAlias(String s) {
         return s.replaceAll("alias_\\d+", "");

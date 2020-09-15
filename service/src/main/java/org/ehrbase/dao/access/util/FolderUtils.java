@@ -2,15 +2,17 @@ package org.ehrbase.dao.access.util;
 
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.directory.Folder;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.dao.access.interfaces.I_FolderAccess;
-import org.ehrbase.serialisation.RawJson;
+import org.ehrbase.serialisation.dbencoding.RawJson;
 import org.jooq.JSONB;
 import org.postgresql.util.PGobject;
 
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 public class FolderUtils {
 
@@ -94,6 +96,34 @@ public class FolderUtils {
                 }
             });
         }
+    }
+
+    // TODO: Remove after Archie fixes handling of ObjectVersionIds
+    public static UUID extractUuidFromObjectVersionId(ObjectVersionId folderId) {
+
+        String value = folderId.getValue();
+        if (value == null) {
+            return null;
+        }
+        int index = value.indexOf("::");
+        if (index < 0) {
+            return UUID.fromString(value);
+        }
+        return UUID.fromString(value.substring(0, index));
+    }
+
+    // TODO: Remove after Archie fixes handling of ObjectVersionIds
+    public static Integer extractVersionNumberFromObjectVersionId(ObjectVersionId objectVersionId) {
+
+        String value = objectVersionId.getValue();
+        if (value == null) {
+            return null;
+        }
+        int index = value.lastIndexOf("::");
+        if (index < 0 || index == value.indexOf("::")) {
+            // No or only one occurrence of :: found
+            return null;
+        } return Integer.parseInt(value.substring(index + 2));
     }
 
     public static ItemStructure parseFromJSONB(JSONB dbObject) {

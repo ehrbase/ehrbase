@@ -88,7 +88,11 @@ public interface I_ContextAccess extends I_SimpleCRUD {
         return ContextAccess.retrieveHistoricalEventContext(domainAccess, id, transactionTime);
     }
 
-    // TODO: doc!
+    /**
+     * set the record fields from its corresponding EventContext instance
+     * @param id
+     * @param eventContext
+     */
     void setRecordFields(UUID id, EventContext eventContext);
 
     /**
@@ -107,4 +111,6 @@ public interface I_ContextAccess extends I_SimpleCRUD {
     void setCompositionId(UUID compositionId);
 
     UUID getId();
+
+    boolean isVoid();
 }

@@ -22,16 +22,15 @@
 package org.ehrbase.dao.access.jooq;
 
 import com.nedap.archie.rm.generic.AuditDetails;
-import com.nedap.archie.rm.generic.PartyIdentified;
-import com.nedap.archie.rm.generic.PartyProxy;
-import com.nedap.archie.rm.support.identification.PartyRef;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.*;
+import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
+import org.ehrbase.dao.access.util.TransactionTime;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.enums.ContributionState;
@@ -40,9 +39,7 @@ import org.ehrbase.jooq.pg.tables.records.ContributionRecord;
 import org.ehrbase.service.IntrospectService;
 import org.jooq.DSLContext;
 
-import java.net.UnknownHostException;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.ehrbase.jooq.pg.Tables.*;
@@ -52,8 +49,7 @@ import static org.ehrbase.jooq.pg.Tables.*;
  */
 public class ContributionAccess extends DataAccess implements I_ContributionAccess {
 
-    private final String signature = "$system$"; //used to sign a contribution during commit
-    Logger log = LogManager.getLogger(CompositionAccess.class);
+    Logger log = LogManager.getLogger(ContributionAccess.class);
     private ContributionRecord contributionRecord;
     private Map<UUID, I_CompositionAccess> compositions = new HashMap<>();
     private I_AuditDetailsAccess auditDetails; // audit associated with this contribution
@@ -176,10 +172,6 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
             log.warn("Contribution state has not been set");
         }
 
-
-//        if (compositions.isEmpty())
-//            log.warn("Contribution does not contain any composition...");
-
         contributionRecord.setSysTransaction(transactionTime);
         contributionRecord.setEhrId(this.getEhrId());
         if (contributionRecord.insert() == 0)
@@ -197,7 +189,7 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
 
     @Override
     public UUID commit() {
-        return commit(Timestamp.valueOf(LocalDateTime.now()));
+        return commit(TransactionTime.millis());
     }
 
     /**
@@ -207,19 +199,13 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
     public UUID commit(Timestamp transactionTime, ContributionDataType contributionType, ContributionDef.ContributionState state) {
 
         if (transactionTime == null) {
-            transactionTime = Timestamp.valueOf(LocalDateTime.now());
+            transactionTime = TransactionTime.millis();
         }
 
         //set contribution attributes
-        if (contributionType == null)
-            setContributionDataType(ContributionDataType.other);
-        else
-            setContributionDataType(contributionType);
+        setContributionDataType(Objects.requireNonNullElse(contributionType, ContributionDataType.other));
 
-        if (state != null)
-            setState(state);
-        else
-            setState(ContributionDef.ContributionState.COMPLETE);
+        setState(Objects.requireNonNullElse(state, ContributionDef.ContributionState.COMPLETE));
 
         return commit(transactionTime);
     }
@@ -234,35 +220,23 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
         this.auditDetails = I_AuditDetailsAccess.getInstance(this.getDataAccess());
 
         if (transactionTime == null) {
-            transactionTime = Timestamp.valueOf(LocalDateTime.now());
+            transactionTime = TransactionTime.millis();
         }
 
         //set contribution attributes
-        if (contributionType == null)
-            setContributionDataType(ContributionDataType.other);
-        else
-            setContributionDataType(contributionType);
+        setContributionDataType(Objects.requireNonNullElse(contributionType, ContributionDataType.other));
 
-        if (state != null)
-            setState(state);
-        else
-            setState(ContributionDef.ContributionState.COMPLETE);
+        setState(Objects.requireNonNullElse(state, ContributionDef.ContributionState.COMPLETE));
 
         // audit attributes
         if (committerId == null) {
             //get current user from JVM
             String defaultUser = System.getProperty("user.name");
             //check for that user in the DB
-            java.net.InetAddress localMachine;
-            try {
-                localMachine = java.net.InetAddress.getLocalHost();
-            } catch (UnknownHostException e) {
-                throw new InternalServerException("Problem while getting information about server", e);
-            }
             String scheme = System.getProperty("host.name");
             if (scheme == null)
                 scheme = "local";
-            committerId = I_PartyIdentifiedAccess.getOrCreatePartyByExternalRef(this, defaultUser, UUID.randomUUID().toString(), scheme, getServerConfig().getNodename(), "PARTY");
+            committerId = new PersistedPartyProxy(this).getOrCreate(defaultUser, UUID.randomUUID().toString(), scheme, getServerConfig().getNodename(), "PARTY");
         }
         auditDetails.setCommitter(committerId);
 
@@ -350,7 +324,7 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
         compositions.put(compositionAccess.getId(), compositionAccess);
         log.info("Updated composition with id:" + compositionAccess.getId());
         contributionRecord.changed(true);
-        update(Timestamp.valueOf(LocalDateTime.now()));
+        update(TransactionTime.millis());
     }
 
     @Override
@@ -361,10 +335,6 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
     @Override
     public Boolean update(Timestamp transactionTime, boolean force) {
         boolean updated = false;
-
-//        if (contributionRecord.getState() == ContributionState.incomplete){
-//            log.warn("Contribution state has not been set");
-//        }
 
         if (force || contributionRecord.changed()) {
 
@@ -400,12 +370,12 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
 
     @Override
     public Boolean update() {
-        return update(Timestamp.valueOf(LocalDateTime.now()));
+        return update(TransactionTime.millis());
     }
 
     @Override
     public Boolean update(Boolean force) {
-        return update(Timestamp.valueOf(LocalDateTime.now()));
+        return update(TransactionTime.millis());
     }
 
     @Override
@@ -415,36 +385,6 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
         count += contributionRecord.delete();
 
         return count;
-    }
-
-    private void deleteRemovedCompositions(Collection<UUID> removed) {
-        if (removed.isEmpty())
-            return;
-
-        for (UUID uuid : removed) {
-            getContext().delete(COMPOSITION).where(COMPOSITION.ID.eq(uuid));
-            log.debug("Deleted composition:" + uuid);
-        }
-    }
-
-    private void commitAddedCompositions(Collection<UUID> added, Timestamp transactionTime) {
-        if (added.isEmpty())
-            return;
-
-        for (UUID uuid : added) {
-            compositions.get(uuid).commit(transactionTime);
-            log.debug("Committed composition:" + uuid);
-        }
-    }
-
-    private void updateChangedCompositions(Collection<UUID> updated, Timestamp transactionTime, boolean force) {
-        if (updated.isEmpty())
-            return;
-
-        for (UUID uuid : updated) {
-            compositions.get(uuid).update(transactionTime, force);
-            log.debug("Updated composition:" + uuid);
-        }
     }
 
     /**
@@ -510,7 +450,7 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
     @Override
     public void setAuditDetailsValues(AuditDetails auditObject) {
         // parse
-        UUID committer = I_PartyIdentifiedAccess.getOrCreateParty(this, (PartyIdentified) auditObject.getCommitter());
+        UUID committer = new PersistedPartyProxy(this).getOrCreate(auditObject.getCommitter());
         UUID system = I_SystemAccess.createOrRetrieveInstanceId(this, null, auditObject.getSystemId());
         UUID changeType = I_ConceptAccess.fetchContributionChangeType(this, auditObject.getChangeType().getValue());
 

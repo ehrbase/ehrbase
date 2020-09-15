@@ -163,6 +163,7 @@ def ignore_type_properties(obj, path):
         "TEMPLATE_ID",
         "TERM_MAPPING",
         "TERMINOLOGY_ID",
+        "HISTORY",
     ]
     # BACKUP# return True if "_type" in path and obj in ignorable_types else False
     # Data Value (DV) is inside ELEMENT.value - those are NOT ignored

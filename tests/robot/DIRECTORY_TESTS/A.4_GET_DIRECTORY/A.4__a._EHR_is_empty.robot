@@ -10,14 +10,8 @@ Documentation    Main flow: get directory on empty EHR
 ...
 ...     Postconditions:
 ...         None
-
-
-Resource    ${CURDIR}${/}../../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/generic_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/contribution_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/directory_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/template_opt1.4_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
+Metadata        TOP_TEST_SUITE    DIRECTORY
+Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
 
 #Suite Setup  startup SUT
 # Test Setup  start openehr server
@@ -30,9 +24,8 @@ Force Tags
 
 *** Test Cases ***
 Main flow: get directory on empty EHR
+    [Tags]              
 
     create EHR
-
     get DIRECTORY (JSON)
-
     validate GET-version@time response - 404 unknown folder-version@time

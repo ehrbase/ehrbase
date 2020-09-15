@@ -35,9 +35,8 @@ Documentation   OPT1.4 integration tests
 ...                 For each invalid OPT in the data set, invoke the OPT upload service
 ...                 The result should be negative, the server rejected the OPT because it was invalid,
 ...                 would be useful if the result contains where the errors are in the uploaded OPT.
-
-Resource    ${CURDIR}${/}../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../_resources/keywords/template_opt1.4_keywords.robot
+Metadata        TOP_TEST_SUITE    EHR_STATUS
+Resource        ${CURDIR}${/}../_resources/suite_settings.robot
 
 # Suite Setup  startup OPT SUT
 Suite Teardown  Delete All Templates
@@ -55,30 +54,6 @@ Empty File
     empty_file/empty_file.opt
     empty_file/empty_xml.opt
     empty_file/empty_xml_template.opt
-
-
-Invalid Template ID
-    [Documentation]     Different issues with template_id.
-    ...                 invalid_1:
-    ...                     with template_id tag but value tag w/o text
-    ...                     <template_id><value></value></template_id>
-    ...                 invalid_2:
-    ...                     with template_id tag but w/o value tag
-    ...                     <template_id></template_id>
-    ...                 invalid_3:
-    ...                     no template_id tag at all
-    ...                 invalid_4:
-    ...                     a template_id tag with text, w/o value tag
-    ...                     <template_id>bullfrog</template_id>
-    [Template]          upload invalid OPT
-    [Tags]              invalid_template_id
-
-    removed_template_id/minimal_admin_invalid_1.opt
-    removed_template_id/minimal_admin_invalid_2.opt
-    removed_template_id/minimal_admin_invalid_3.opt
-    removed_template_id/minimal_admin_invalid_4.opt
-
-    [Teardown]  TRACE GITHUB ISSUE  119  not-ready
 
 
 Removed Mandatory Elements

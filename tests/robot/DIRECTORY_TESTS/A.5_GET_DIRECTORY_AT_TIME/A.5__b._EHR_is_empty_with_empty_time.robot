@@ -10,14 +10,8 @@ Documentation    Alternative flow 1: get directory at time on empty EHR with emp
 ...
 ...     Postconditions:
 ...         None
-
-
-Resource    ${CURDIR}${/}../../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/generic_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/contribution_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/directory_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/template_opt1.4_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
+Metadata        TOP_TEST_SUITE    DIRECTORY
+Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
 
 #Suite Setup  startup SUT
 # Test Setup  start openehr server
@@ -30,9 +24,8 @@ Force Tags
 
 *** Test Cases ***
 Alternative flow 1: get directory at time on empty EHR with empty time
+    [Tags]              
 
     create EHR
-
     get DIRECTORY at time (JSON)    ${EMPTY}
-
     validate GET-version@time response - 404 unknown folder-version@time

@@ -67,6 +67,21 @@ public class KnowledgeCacheHelper {
             public void setNodename(String nodename) {
 
             }
+
+            @Override
+            public String getAqlIterationSkipList() {
+                return "/events,/activities,/content";
+            }
+
+            @Override
+            public Integer getAqlDepth() {
+                return 1;
+            }
+
+            @Override
+            public Boolean getUseJsQuery() {
+                return false;
+            }
         };
     }
 

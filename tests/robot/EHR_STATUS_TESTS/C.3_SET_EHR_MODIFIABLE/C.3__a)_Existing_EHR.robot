@@ -33,8 +33,8 @@ Documentation   C.3.a) Main flow: Set EHR modifiable of an existing EHR
 ...                 1. For the existing EHR, invoke the set EHR modifiable service
 ...                 2. The result should be positive and the corresponding
 ...                    EHR_STATUS.is_queryable should be `true`
-
-Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
+Metadata        TOP_TEST_SUITE    EHR_STATUS
+Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 
 # Suite Setup  startup SUT
 # Suite Teardown  shutdown SUT

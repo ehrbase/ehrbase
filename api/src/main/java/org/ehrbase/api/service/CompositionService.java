@@ -18,12 +18,12 @@
 
 package org.ehrbase.api.service;
 
-import org.ehrbase.api.definitions.CompositionFormat;
-import org.ehrbase.api.definitions.StructuredString;
-import org.ehrbase.api.dto.CompositionDto;
-import org.ehrbase.api.exception.InternalServerException;
 import com.nedap.archie.rm.composition.Composition;
+import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.response.ehrscape.CompositionDto;
+import org.ehrbase.response.ehrscape.CompositionFormat;
+import org.ehrbase.response.ehrscape.StructuredString;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -185,4 +185,5 @@ public interface CompositionService extends BaseService {
      * @return True if deleted, false if not
      */
     boolean isDeleted(UUID versionedObjectId);
+
 }

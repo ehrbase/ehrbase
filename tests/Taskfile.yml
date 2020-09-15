@@ -1,108 +1,118 @@
-version: '2'
+version: "2"
 # HOW TO USE ME
 #   - installation: https://taskfile.dev/#/installation
 #   - usage:        https://taskfile.dev/#/usage
 #   - code:         https://github.com/go-task/task
 
-# silent: true
+silent: true
 
 tasks:
-    default:
-        desc: RESTART SUT
-        cmds:
-          - task: restart
+  default:
+    desc: RESTART SUT
+    cmds:
+      - task: restart
 
-    restart:
-        desc: RESTART SUT
-        cmds:
-          - echo restarting EHRbase testlab ...
-          - task: stop
-          - task: start
-          - echo EHRbase testlab restarted.
+  restart:
+    desc: RESTART SUT
+    cmds:
+      - echo restarting EHRbase testlab ...
+      - task: stop
+      - task: start
+      - echo EHRbase testlab restarted.
 
-    start:
-        desc: START SUT (NO CACHE)
-        cmds:
-          - task: startdb
-          - task: starteb
+  start:
+    desc: START SUT (NO CACHE)
+    cmds:
+      - task: startdb
+      - sleep 1
+      - task: starteb
 
-    stop:
-        desc: STOP SUT
-        cmds:
-          - task: stopeb
-          - task: stopdb
+  stop:
+    desc: STOP SUT
+    cmds:
+      - task: stopeb
+      - task: stopdb
 
-    starteb:
-        desc: START EHRBASE SERVER W/O CACHING (CACHE DISABLED!) and allow temple-override
-        cmds:
-          - echo ... starting EHRbase server ...
-          # - java -jar ../application/target/application-0.12.0.jar --cache.enabled=false --server.nodename=manual.execution.org > log &
-          - java -jar ../application/target/application-0.12.0.jar --cache.enabled=false --system.allow-template-overwrite=true > log &
-          - sleep 20
-          - echo ... EHRbase server started.
-          #- grep -m 1 "Started EhrBase in" <(tail -f log)   # FAIL!
-          # https://github.com/go-task/task/issues/270
-        env:
-          DISABLE_SECURITY: true
+  starteb:
+      desc: START EHRBASE SERVER W/O CACHING (CACHE DISABLED!) and allow temple-override
+      cmds:
+        - |
+          echo ... starting EHRbase server ...
+          cd ..
+          EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+          echo "EHRbase_VERSION:" ${EHRbase_VERSION}
+          java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false --server.nodename=manual.execution.org > log &
+          grep -m 1 "Started EhrBase in" <(tail -f log)
+          
+          # SECURITY_AUTHTYPE=BASIC java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false --system.allow-template-overwrite=true > log &
+          # SECURITY_AUTHTYPE=OAUTH SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI=http://localhost:8081/auth/realms/ehrbase java -jar application/target/application-${EHRbase_VERSION}.jar
+      # env:
+      #   DISABLE_SECURITY: true
 
-    starteb-cache:
-        desc: START EHRBASE SERVER WITH CACHE ENABLED
-        cmds:
-          - echo ... staring EHRbase server ...
-          - java -jar ../application/target/application-0.12.0.jar > log &
-          - sleep 20
-          - echo ... EHRbase server started.
+  starteb-cache:
+    desc: START EHRBASE SERVER WITH CACHE ENABLED
+    cmds:
+      - echo ... staring EHRbase server ...
+      - java -jar ../application/target/application-0.13.0.jar > log &
+      # - sleep 20
+      # - echo ... EHRbase server started.
+      - grep -m 1 "Started EhrBase in" <(tail -f log)
 
-    stopeb:
-        desc: KILL EHRBASE SERVER
-        cmds:
-          - kill -9 $(jps | grep application-0.12.0.jar | awk '{print $1}')
-          - echo ... EHRbase server stopped.
+  stopeb:
+    desc: KILL EHRBASE SERVER
+    cmds:
+      - |
+        cd ..
+        EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+        echo "EHRbase_VERSION:" ${EHRbase_VERSION}
+        kill -9 $(jps | grep application-${EHRbase_VERSION}.jar | awk '{print $1}')
+        echo ... EHRbase server stopped.
 
-    startdb:
-        desc: START POSTGRES DB DOCKER CONTAINER
-        cmds:
-          - echo ... starting DB server ...
-          - docker run --name ehrdb -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e DISABLE_SECURITY=true -d -p 5432:5432 ehrbaseorg/ehrbase-database-docker:11.5
-          - echo ... DB server started.
+  startdb:
+    desc: START POSTGRES DB DOCKER CONTAINER
+    cmds:
+      - echo ... starting DB server ...
+      - docker run --name ehrdb -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e DISABLE_SECURITY=true -d -p 5432:5432 ehrbaseorg/ehrbase-database-docker:11.5
+      - echo ... DB server started.
 
-    stopdb:
-        desc: KILL POSTGRES DB DOCKER CONTAINER
-        cmds:
-          - docker container rm -f ehrdb
-          - echo ... DB server stopped.
+  stopdb:
+    desc: KILL POSTGRES DB DOCKER CONTAINER
+    cmds:
+      - docker container rm -f ehrdb
+      - echo ... DB server stopped.
 
-    package:
-        desc: mvn package -Dmaven.javadoc.skip=true
-        cmds:
-          - cd .. && mvn package -Dmaven.javadoc.skip=true
+  package:
+    desc: mvn package -Dmaven.javadoc.skip=true
+    cmds:
+      - cd .. && mvn package -Dmaven.javadoc.skip=true
 
-    cpackage:
-        desc: mvn clean package -Dmaven.javadoc.skip=true
-        cmds:
-          - cd .. && mvn clean package -Dmaven.javadoc.skip=true
+  cpackage:
+    desc: mvn clean package -Dmaven.javadoc.skip=true
+    cmds:
+      - cd .. && mvn clean package -Dmaven.javadoc.skip=true
 
-    test:
-        desc: RUN SPECIFIED TESTS
-        cmds:
-          ## adjust this part to the needs of your current test session
-          - robot -v nodocker -i empty_db -e future -e circleci -e TODO -e obsolete -d results -L TRACE --noncritical not-ready robot/QUERY_SERVICE_TESTS
-          ## example of "execute single test by it's test-case name" (wildcards accepted):
-          # - robot -t "MF-030 - Create new EHR*" -d results -L TRACE robot/EHR_SERVICE_TESTS
-          # - spd-say "Robot is ready! Check the results!"
+  test:
+    desc: RUN SPECIFIED TESTS
+    cmds:
+      ## adjust this part to the needs of your current test session
+      # - robot -v nodocker -i empty_db -e future -e circleci -e TODO -e obsolete -d results -L TRACE --noncritical not-ready robot/QUERY_SERVICE_TESTS
+      ## example of "execute single test by it's test-case name" (wildcards accepted):
+      # - robot -v nodocker -t "MF-030 - Create new EHR*" -d results -L TRACE robot/EHR_SERVICE_TESTS
+      - robot -t "MF-030 - Create new EHR*" -d results -L TRACE robot/EHR_SERVICE_TESTS
+      # - spd-say "Robot is ready! Check the results!"
 
-    test-all:
-        desc: RUN ALL ROBOT TESTS
-        cmds:
-          - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output compop.xml --name COMPO robot/COMPOSITION_TESTS
-          - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output contri.xml --name CONTRI robot/CONTRIBUTION_TESTS
-          - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output folder.xml --name FOLDER robot/DIRECTORY_TESTS
-          - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output ehrser.xml --name EHRSERVICE robot/EHR_SERVICE_TESTS
-          - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output ehrsta.xml --name EHRSTATUS robot/EHR_STATUS_TESTS
-          - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output knowld.xml --name KNOWLEDGE robot/KNOWLEDGE_TESTS
-          - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output aqledb.xml --name "QUERY empty_db"  -i empty_db  robot/QUERY_SERVICE_TESTS
-          - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output aqlldb.xml --name "QUERY loaded_db" -i loaded_db robot/QUERY_SERVICE_TESTS
+  test-all:
+    desc: RUN ALL ROBOT TESTS
+    cmds:
+      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output compop.xml --name COMPO robot/COMPOSITION_TESTS
+      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output contri.xml --name CONTRI robot/CONTRIBUTION_TESTS
+      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output folder.xml --name FOLDER robot/DIRECTORY_TESTS
+      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output ehrser.xml --name EHRSERVICE robot/EHR_SERVICE_TESTS
+      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output ehrsta.xml --name EHRSTATUS robot/EHR_STATUS_TESTS
+      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output knowld.xml --name KNOWLEDGE robot/KNOWLEDGE_TESTS
+      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output aqledb.xml --name "QUERY empty_db"  -i empty_db  robot/QUERY_SERVICE_TESTS
+      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output aqlldb.xml --name "QUERY loaded_db" -i loaded_db robot/QUERY_SERVICE_TESTS
 
-          ## consolidate results
-          - rebot -e future -e circleci -e TODO -e obsolete -e libtest -d results -L TRACE --noncritical not-ready --name EHRbase results/xml/*.xml
-          # - spd-say "Robot is ready! Check the results!"
+      ## consolidate results
+      - rebot -e future -e circleci -e TODO -e obsolete -e libtest -d results -L TRACE --noncritical not-ready --name EHRbase results/xml/*.xml
+      # - spd-say "Robot is ready! Check the results!"

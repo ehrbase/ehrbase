@@ -21,25 +21,20 @@
 
 package org.ehrbase.aql.sql.queryImpl;
 
-import org.ehrbase.aql.definition.FromEhrDefinition;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
 import org.ehrbase.aql.sql.binding.I_JoinBinder;
-import org.ehrbase.aql.sql.queryImpl.attribute.*;
+import org.ehrbase.aql.sql.queryImpl.attribute.AttributePath;
+import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
+import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
 import org.ehrbase.aql.sql.queryImpl.attribute.composer.ComposerResolver;
 import org.ehrbase.aql.sql.queryImpl.attribute.composition.CompositionResolver;
 import org.ehrbase.aql.sql.queryImpl.attribute.composition.FullCompositionJson;
 import org.ehrbase.aql.sql.queryImpl.attribute.ehr.EhrResolver;
 import org.ehrbase.aql.sql.queryImpl.attribute.eventcontext.EventContextResolver;
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.service.IntrospectService;
-import org.jooq.DSLContext;
 import org.jooq.Field;
-import org.jooq.TableField;
-import org.jooq.impl.DSL;
-
-import java.util.UUID;
-
-import static org.ehrbase.jooq.pg.Tables.*;
 
 /**
  * map an AQL datavalue expression into a SQL field
@@ -51,33 +46,30 @@ public class CompositionAttributeQuery extends ObjectQuery implements I_QueryImp
     private String serverNodeId;
 
     protected JoinSetup joinSetup = new JoinSetup(); //used to pass join metadata to perform binding
-    private final String entry_root;
-    //    private MetaData metaData;
+
     private final IntrospectService introspectCache;
 
 
-    public CompositionAttributeQuery(DSLContext context, PathResolver pathResolver, String serverNodeId, String entry_root, IntrospectService introspectCache) {
-        super(context, pathResolver);
+    public CompositionAttributeQuery(I_DomainAccess domainAccess, PathResolver pathResolver, String serverNodeId, IntrospectService introspectCache) {
+        super(domainAccess, pathResolver);
         this.serverNodeId = serverNodeId;
-        this.entry_root = entry_root;
         this.introspectCache = introspectCache;
     }
 
     @Override
-    public Field<?> makeField(String templateId, UUID compositionId, String identifier, I_VariableDefinition variableDefinition, Clause clause) {
+    public Field<?> makeField(String templateId, String identifier, I_VariableDefinition variableDefinition, Clause clause) {
         //resolve composition attributes and/or context
         String columnAlias = variableDefinition.getPath();
         jsonDataBlock = false;
         FieldResolutionContext fieldResolutionContext =
-                new FieldResolutionContext(context,
+                new FieldResolutionContext(domainAccess.getContext(),
                         serverNodeId,
-                        compositionId,
                         identifier,
                         variableDefinition,
                         clause,
                         pathResolver,
                         introspectCache,
-                        entry_root);
+                        pathResolver.entryRoot(templateId));
 
         Field retField;
 
@@ -93,7 +85,7 @@ public class CompositionAttributeQuery extends ObjectQuery implements I_QueryImp
         } else {
             if (pathResolver.classNameOf(variableDefinition.getIdentifier()).equals("EHR")) {
                 retField = new EhrResolver(fieldResolutionContext, joinSetup).sqlField(columnAlias);
-            } else if (pathResolver.classNameOf(variableDefinition.getIdentifier()).equals("COMPOSITION")) {
+            } else if (pathResolver.classNameOf(variableDefinition.getIdentifier()).equals("COMPOSITION")||isCompositionAttributeItemStructure(templateId, variableDefinition.getIdentifier())) {
                 if (columnAlias.startsWith("composer"))
                     retField = new ComposerResolver(fieldResolutionContext, joinSetup).sqlField(new AttributePath("composer").redux(columnAlias));
                 else if (columnAlias.startsWith("context"))
@@ -109,8 +101,8 @@ public class CompositionAttributeQuery extends ObjectQuery implements I_QueryImp
     }
 
     @Override
-    public Field<?> whereField(String templateId, UUID compositionId, String identifier, I_VariableDefinition variableDefinition) {
-        return makeField(templateId, compositionId, identifier, variableDefinition, Clause.WHERE);
+    public Field<?> whereField(String templateId,String identifier, I_VariableDefinition variableDefinition) {
+        return makeField(templateId, identifier, variableDefinition, Clause.WHERE);
     }
 
     public boolean isJoinComposition() {
@@ -168,4 +160,12 @@ public class CompositionAttributeQuery extends ObjectQuery implements I_QueryImp
     public boolean useFromEntry() {
         return pathResolver.hasPathExpression();
     }
+
+    public boolean isCompositionAttributeItemStructure(String templateId, String identifier){
+        if (variableTemplatePath(templateId, identifier) == null)
+            return false;
+        return variableTemplatePath(templateId, identifier).contains("/context/other_context");
+    }
+
+
 }

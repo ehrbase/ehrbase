@@ -28,14 +28,8 @@ Documentation   Main flow: execute ad-hoc QUERY where data exists
 ...
 ...     Postconditions:
 ...         None (system state is not altered)
-
-Resource    ${CURDIR}${/}../../_resources/suite_settings.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/generic_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/aql_query_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/ehr_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/contribution_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/composition_keywords.robot
-Resource    ${CURDIR}${/}../../_resources/keywords/template_opt1.4_keywords.robot
+Metadata        TOP_TEST_SUITE    AQL
+Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
 
 Suite Setup    Establish Preconditions
 # Test Setup  Establish Preconditions
@@ -82,7 +76,7 @@ A-103 Execute Ad-Hoc Query - Get EHRs
 
 A-105 Execute Ad-Hoc Query - Get EHRs
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              
+    [Tags]              TODO       
     A/105_get_ehrs.json    A/105.tmp.json
     A/106_get_ehrs.json    A/106.tmp.json
     [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
@@ -156,9 +150,9 @@ A-600 Execute Ad-Hoc Query - Get EHRs Which Have Compositions
 
 B-100 Execute Ad-Hoc Query - Get Compositions From All EHRs
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TBD
+    [Tags]              235
     B/100_get_compositions_from_all_ehrs.json    B/100.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  TBD  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  235  not-ready
 
 
 B-101 Execute Ad-Hoc Query - Get Compositions (filtered: top 5)
@@ -194,66 +188,66 @@ B-105 Get Compositions (filtered: top 5, ordered by: start_time DESC)
 
 B-200 Execute Ad-Hoc Query - Get Compositions From All EHRs
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TBD
+    [Tags]              355
     B/200_query.tmp.json    B/200.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  TBD  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  355  not-ready
 
 
 B-300 Execute Ad-Hoc Query - Get Compositions From All EHRs
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TBD
+    [Tags]              355
     B/300_get_compositions_with_archetype_from_all_ehrs.json    B/300.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  TBD  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  355  not-ready
 
 
 B-400 Execute Ad-Hoc Query - Get Composition(s)
     [Documentation]     Test w/ "all_types.composition.json" commit
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              234
+    [Tags]              331
     B/400_get_compositions_contains_section_with_archetype_from_all_ehrs.json    B/400.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  234  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  331  not-ready
 
 
 B-500 Execute Ad-Hoc Query - Get Composition(s)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TBD
+    [Tags]              355
     B/500_get_compositions_by_contains_entry_of_type_from_all_ehrs.json    B/500.tmp.json
     B/501_get_compositions_by_contains_entry_of_type_from_all_ehrs.json    B/501.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  TBD  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  355  not-ready
 
 
 B-502 Execute Ad-Hoc Query - Get Composition(s)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TBD
+    [Tags]              355
     B/502_get_compositions_by_contains_entry_of_type_from_all_ehrs.json    B/502.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  TBD  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  355  not-ready
 
 
 B-503 Execute Ad-Hoc Query - Get Composition(s)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TBD
+    [Tags]              355
     B/503_get_compositions_by_contains_entry_of_type_from_all_ehrs.json    B/503.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  TBD  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  355  not-ready
 
 
 B-600 Execute Ad-Hoc Query - Get Composition(s)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TBD
+    [Tags]              TODO
     B/600_get_compositions_by_contains_entry_with_archetype_from_all_ehrs.json    B/600.tmp.json
     B/601_get_compositions_by_contains_entry_with_archetype_from_all_ehrs.json    B/601.tmp.json
     B/602_get_compositions_by_contains_entry_with_archetype_from_all_ehrs.json    B/602.tmp.json
     B/603_get_compositions_by_contains_entry_with_archetype_from_all_ehrs.json    B/603.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  TBD  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
 
 
 
 B-700 Execute Ad-Hoc Query - Get Composition(s)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TBD
+    [Tags]              TODO
     B/700_get_compositions_by_contains_entry_with_archetype_and_condition_from_all_ehrs.json    B/700.tmp.json
     B/701_get_compositions_by_contains_entry_with_archetype_and_condition_from_all_ehrs.json    B/701.tmp.json
     B/702_get_compositions_by_contains_entry_with_archetype_and_condition_from_all_ehrs.json    B/702.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  TBD  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
 
 
 B-800 Execute Ad-Hoc Query - Get Compositions By UID
@@ -270,10 +264,10 @@ B-802 Execute Ad-Hoc Query - Get Compositions By UID
     [Documentation]     B/802: SELECT c FROM COMPOSITION c WHERE c/uid/value='123::node.name.com::1'
     ...                 B/803: SELECT c FROM COMPOSITION c WHERE c/uid/value=$uid
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TBD
+    [Tags]              TODO
     B/802_query.tmp.json    B/802.tmp.json
     B/803_query.tmp.json    B/803.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  TBD  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
 
 
 D-200 Execute Ad-HOc Query - Get Data
@@ -390,49 +384,46 @@ D-312 Execute Ad-HOc Query - Get Data
 D-400 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              207
+    [Tags]              
     D/400_query.tmp.json    D/400.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  207  not-ready
 
 
 D-401 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              207
+    [Tags]              
     D/401_query.tmp.json    D/401.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  207  not-ready
 
 
 D-402 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              207
+    [Tags]              
     D/402_query.tmp.json    D/402.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  207  not-ready
 
 
 D-403 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              207
+    [Tags]              332
     D/403_query.tmp.json    D/403.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  207  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  332  not-ready
 
 
 D-404 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              207
+    [Tags]              332
     D/404_query.tmp.json    D/404.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  207  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  332  not-ready
 
 
 D-405 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              207
+    [Tags]              332
     D/405_query.tmp.json    D/405.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  207  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  332  not-ready
 
 
 D-500 Execute Ad-HOc Query - Get Data

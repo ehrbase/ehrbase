@@ -19,14 +19,13 @@
 package org.ehrbase.api.service;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
-import com.nedap.archie.rm.changecontrol.Version;
+import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.ehr.VersionedEhrStatus;
 import com.nedap.archie.rm.generic.RevisionHistory;
-import org.ehrbase.api.definitions.CompositionFormat;
-import org.ehrbase.api.dto.EhrStatusDto;
 import org.ehrbase.api.exception.DuplicateObjectException;
-import com.nedap.archie.rm.ehr.EhrStatus;
 import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.response.ehrscape.CompositionFormat;
+import org.ehrbase.response.ehrscape.EhrStatusDto;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -136,5 +135,14 @@ public interface EhrService extends BaseService {
      * @return UUID of the root directory if existing
      */
     UUID getDirectoryId(UUID ehrId);
+
+    /**
+     * Removes the directory information from EHR table entry after deletion of the corresponding folder from
+     * folders table. If there were no such folder it will return a successful deletion.
+     *
+     * @param ehrId - Target EHR id
+     * @return Directory entry is now 'null'
+     */
+    boolean removeDirectory(UUID ehrId);
 
 }

@@ -30,7 +30,7 @@ import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_FolderAccess;
 import org.ehrbase.dao.access.support.DummyDataAccess;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
-import org.ehrbase.serialisation.CanonicalJson;
+import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
 import org.ehrbase.service.KnowledgeCacheHelper;
 import org.ehrbase.test_data.folder.FolderTestDataCanonicalJson;
 import org.joda.time.DateTime;
@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -434,7 +435,7 @@ public class FolderAccessTest {
         I_FolderAccess folderAccess = FolderAccess.buildNewFolderAccessHierarchy(
                 testDomainAccess,
                 folder,
-                DateTime.now(),
+                Timestamp.from(Instant.now()),
                 ehrId,
                 contributionAccess
         );
@@ -457,7 +458,7 @@ public class FolderAccessTest {
         I_FolderAccess folderAccess= FolderAccess.buildNewFolderAccessHierarchy(
                 testDomainAccess,
                 folder,
-                DateTime.now(),
+                Timestamp.from(Instant.now()),
                 ehrId,
                 contributionAccess
         );

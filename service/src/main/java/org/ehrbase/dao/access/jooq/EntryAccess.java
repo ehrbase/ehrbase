@@ -22,10 +22,13 @@
 package org.ehrbase.dao.access.jooq;
 
 import com.nedap.archie.rm.archetyped.Archetyped;
+import com.nedap.archie.rm.archetyped.FeederAudit;
+import com.nedap.archie.rm.archetyped.Link;
 import com.nedap.archie.rm.archetyped.TemplateId;
 import com.nedap.archie.rm.composition.*;
 import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
+import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.ArchetypeID;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
@@ -36,14 +39,19 @@ import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.*;
+import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.query.AsyncSqlQuery;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.jooq.pg.enums.EntryType;
 import org.ehrbase.jooq.pg.tables.records.EntryHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EntryRecord;
-import org.ehrbase.serialisation.RawJson;
+import org.ehrbase.jooq.pg.udt.records.DvCodedTextRecord;
+import org.ehrbase.serialisation.dbencoding.RawJson;
+import org.ehrbase.serialisation.dbencoding.rmobject.FeederAuditEncoding;
+import org.ehrbase.serialisation.dbencoding.rmobject.LinksEncoding;
 import org.ehrbase.service.IntrospectService;
+import org.ehrbase.service.RecordedDvText;
 import org.jooq.*;
 import org.jooq.impl.DSL;
 
@@ -63,7 +71,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
     public static final String DB_INCONSISTENCY = "DB inconsistency:";
 
     private EntryRecord entryRecord;
-    private I_ContainmentAccess containmentAccess;
+//    private I_ContainmentAccess containmentAccess;
 
     private Composition composition;
 
@@ -112,7 +120,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
 
         //build the list of parameters to recreate the composition
         Map<SystemValue, Object> values = new HashMap<>();
-        values.put(SystemValue.COMPOSER, I_PartyIdentifiedAccess.retrievePartyIdentified(domainAccess, compositionAccess.getComposerId()));
+        values.put(SystemValue.COMPOSER, new PersistedPartyProxy(domainAccess).retrieve(compositionAccess.getComposerId()));
 
         // optional handling for persistent compositions that do not have a context
         Optional<I_ContextAccess> opContextAccess = compositionAccess.getContextId().map(id -> I_ContextAccess.retrieveInstance(domainAccess, id));
@@ -123,6 +131,11 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
 
         values.put(SystemValue.TERRITORY, new CodePhrase(new TerminologyId("ISO_3166-1"), territory2letters));
 
+        if (compositionAccess.getFeederAudit() != null)
+            values.put(SystemValue.FEEDER_AUDIT, new FeederAuditEncoding().fromDB(compositionAccess.getFeederAudit()));
+
+        if (compositionAccess.getLinks() != null)
+            values.put(SystemValue.LINKS, new LinksEncoding().fromDB(compositionAccess.getLinks()));
 
         List<I_EntryAccess> content = new ArrayList<>();
 
@@ -159,6 +172,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
         templateId.setValue(entryAccess.getTemplateId());
         archetypeDetails.setTemplateId(templateId);
         archetypeDetails.setArchetypeId(new ArchetypeID(entryAccess.getArchetypeId()));
+        archetypeDetails.setRmVersion(entryAccess.getRmVersion());
         entryAccess.composition.setArchetypeDetails(archetypeDetails);
         entryAccess.composition.setCategory(I_ConceptAccess.fetchConceptText(entryAccess, entryAccess.getCategory()));
     }
@@ -173,7 +187,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
 
         //build the list of parameters to recreate the composition
         Map<SystemValue, Object> values = new HashMap<>();
-        values.put(SystemValue.COMPOSER, I_PartyIdentifiedAccess.retrievePartyIdentified(domainAccess, compositionHistoryAccess.getComposerId()));
+        values.put(SystemValue.COMPOSER, new PersistedPartyProxy(domainAccess).retrieve(compositionHistoryAccess.getComposerId()));
 
         EventContext context = I_ContextAccess.retrieveHistoricalEventContext(domainAccess, compositionHistoryAccess.getId(), compositionHistoryAccess.getSysTransaction());
         if (context == null) {//unchanged context use the current one!
@@ -186,6 +200,10 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
         String territory2letters = domainAccess.getContext().fetchOne(TERRITORY, TERRITORY.CODE.eq(compositionHistoryAccess.getTerritoryCode())).getTwoletter();
         values.put(SystemValue.TERRITORY, new CodePhrase(new TerminologyId("ISO_3166-1"), territory2letters));
 
+        values.put(SystemValue.FEEDER_AUDIT, new FeederAuditEncoding().fromDB(compositionHistoryAccess.getFeederAudit()));
+        /* TODO: uncomment when LINKS is fully implemented
+        values.put(SystemValue.LINKS, new LinksEncoding().fromDB(compositionHistoryAccess.getFeederAudit()));
+         */
 
         List<I_EntryAccess> content = new ArrayList<>();
 
@@ -247,6 +265,17 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
                 case CONTEXT:
                     composition.setContext((EventContext) systemValue.getValue());
                     break;
+                case NAME:
+                    composition.setName((DvText) systemValue.getValue());
+                    break;
+
+                case FEEDER_AUDIT:
+                    composition.setFeederAudit((FeederAudit) systemValue.getValue());
+                    break;
+
+                case LINKS:
+                    composition.setLinks((List<Link>) systemValue.getValue());
+                    break;
 
                 default:
                     throw new IllegalArgumentException("Could not handle composition attribute:" + systemValue.getKey());
@@ -290,7 +319,6 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
 
         RawJson rawJson = new RawJson();
         record.setEntry(JSONB.valueOf(rawJson.marshal(composition)));
-        containmentAccess = new ContainmentAccess(getDataAccess(), record.getId(), record.getArchetypeId(), rawJson.getLtreeMap(), true);
     }
 
     /**
@@ -313,6 +341,8 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
 
         setCompositionFields(entryRecord, composition);
 
+        setCompositionName(composition.getName());
+
         this.composition = composition;
     }
 
@@ -324,31 +354,18 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
     @Override
     public UUID commit(Timestamp transactionTime) {
 
-        //--------------- TODO: WIP refactoring it in jooq
-        /*InsertQuery<?> insertQuery = context.insertQuery(ENTRY);
-        insertQuery.addValue(ENTRY.SEQUENCE, entryRecord.getSequence());
-        insertQuery.addValue(ENTRY.COMPOSITION_ID, entryRecord.getCompositionId());
-        insertQuery.addValue(ENTRY.TEMPLATE_ID, entryRecord.getTemplateId());
-        insertQuery.addValue(ENTRY.ITEM_TYPE, entryRecord.getItemType());
-        insertQuery.addValue(ENTRY.ARCHETYPE_ID, entryRecord.getArchetypeId());
-        insertQuery.addValue(ENTRY.CATEGORY, entryRecord.getCategory());
-        insertQuery.addValue(ENTRY.ENTRY_, DSL.val(getEntryJson() + "::jsonb"));
-        insertQuery.addValue(ENTRY.SYS_TRANSACTION, transactionTime);
-
-        int result;
-        try {
-            result = insertQuery.execute();
-        } catch (DataAccessException e) {
-            throw new InternalServerException("Problem executing database operation", e);
-        }
-
-        if (result < 1) // TODO check result for successful execution -> is '< 1' correct as condition?
-            throw new InternalServerException("Entry commit failed");*/
-        //------------- END --------------------
-
-        //use jOOQ!
+        //use jOOQ
         Record result = getContext()
-                .insertInto(ENTRY, ENTRY.SEQUENCE, ENTRY.COMPOSITION_ID, ENTRY.TEMPLATE_ID, ENTRY.ITEM_TYPE, ENTRY.ARCHETYPE_ID, ENTRY.CATEGORY, ENTRY.ENTRY_, ENTRY.SYS_TRANSACTION)
+                .insertInto(ENTRY,
+                        ENTRY.SEQUENCE,
+                        ENTRY.COMPOSITION_ID,
+                        ENTRY.TEMPLATE_ID,
+                        ENTRY.ITEM_TYPE,
+                        ENTRY.ARCHETYPE_ID,
+                        ENTRY.CATEGORY,
+                        ENTRY.ENTRY_,
+                        ENTRY.SYS_TRANSACTION,
+                        ENTRY.NAME)
                 .values(DSL.val(getSequence()),
                         DSL.val(getCompositionId()),
                         DSL.val(getTemplateId()),
@@ -356,14 +373,15 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
                         DSL.val(getArchetypeId()),
                         DSL.val(getCategory()),
                         DSL.val(getEntryJson()),
-                        DSL.val(transactionTime))
+                        DSL.val(transactionTime),
+                        DSL.val(getCompositionName()))
                 .returning(ENTRY.ID)
                 .fetchOne();
 
-        if (containmentAccess != null) {
-            containmentAccess.setCompositionId(entryRecord.getCompositionId());
-            containmentAccess.update();
-        }
+//        if (containmentAccess != null) {
+//            containmentAccess.setCompositionId(entryRecord.getCompositionId());
+//            containmentAccess.update();
+//        }
 
         return result.getValue(ENTRY.ID);
         //return entryRecord.getId(); // TODO: part of WIP refactoring from above
@@ -406,15 +424,16 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
         updateQuery.addValue(ENTRY.CATEGORY, DSL.field(DSL.val(getCategory())));
         updateQuery.addValue(ENTRY.ENTRY_, DSL.field(DSL.val(getEntryJson())));
         updateQuery.addValue(ENTRY.SYS_TRANSACTION, DSL.field(DSL.val(transactionTime)));
+        updateQuery.addValue(ENTRY.NAME, DSL.field(DSL.val(getCompositionName())));
         updateQuery.addConditions(ENTRY.ID.eq(getId()));
 
 
         log.debug("Update done...");
 
-        if (containmentAccess != null) {
-            containmentAccess.setCompositionId(entryRecord.getCompositionId());
-            containmentAccess.update();
-        }
+//        if (containmentAccess != null) {
+//            containmentAccess.setCompositionId(entryRecord.getCompositionId());
+//            containmentAccess.update();
+//        }
 
         return updateQuery.execute() > 0;
     }
@@ -463,6 +482,14 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
         return entryRecord.getCategory();
     }
 
+    public DvCodedTextRecord getCompositionName() {
+        return entryRecord.getName();
+    }
+
+    public void setCompositionName(DvText compositionName){
+        new RecordedDvText().toDB(entryRecord, ENTRY.NAME, compositionName);
+    }
+
     @Override
     public UUID getCompositionId() {
         return entryRecord.getCompositionId();
@@ -497,6 +524,12 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
     public String getArchetypeId() {
         return entryRecord.getArchetypeId();
     }
+
+    @Override
+    public String getRmVersion() {
+        return entryRecord.getRmVersion();
+    }
+
 
     @Override
     public String getItemType() {

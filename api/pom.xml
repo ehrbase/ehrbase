@@ -30,12 +30,12 @@
     <artifactId>api</artifactId>
     <dependencies>
         <dependency>
-            <groupId>org.ehrbase.openehr</groupId>
+            <groupId>com.github.ehrbase.openEHR_SDK</groupId>
             <artifactId>serialisation</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
+            <groupId>com.github.ehrbase.openEHR_SDK</groupId>
+            <artifactId>response-dto</artifactId>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -56,6 +56,15 @@
         <dependency>
             <groupId>io.swagger</groupId>
             <artifactId>swagger-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
         </dependency>
 
     </dependencies>
