@@ -21,18 +21,14 @@
 
 package org.ehrbase.opt.query;
 
-import com.jayway.jsonpath.Configuration;
-import com.jayway.jsonpath.JsonPath;
-import net.minidev.json.JSONArray;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.aql.containment.Containment;
-import org.ehrbase.opt.OptVisitor;
+import org.ehrbase.webtemplate.OPTParser;
+import org.ehrbase.webtemplate.WebTemplate;
+import org.ehrbase.webtemplate.WebTemplateNode;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
-import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -42,50 +38,52 @@ import java.util.stream.Collectors;
  */
 public class QueryOptMetaData implements I_QueryOptMetaData {
 
-    private final Set<Set<Containment>> containmentSets;
-    private Object document;
-    private final Set<Containment> allNodeIds;
 
-    private QueryOptMetaData(Object document) {
-        this.document = document;
+    private WebTemplate webTemplate;
 
 
-        allNodeIds = new HashSet<>();
-        containmentSets = findSets((Map<String, Object>) ((Map<String, Object>) document).get("tree"));
+    private QueryOptMetaData(WebTemplate webTemplate) {
+
+        this.webTemplate = webTemplate;
+
     }
 
+    @Override
+    public WebTemplate getWebTemplate() {
+        return webTemplate;
+    }
 
-    private Set<Set<Containment>> findSets(Map<String, Object> tree) {
+    private Set<Set<Containment>> findSets(WebTemplateNode tree) {
         Set<Set<Containment>> containments = new LinkedHashSet<>();
         final Containment currentContainment;
-        if (tree.containsKey("node_id") && buildContainment(tree.get("node_id").toString()).isPresent()) {
+        if (buildContainment(tree.getNodeId()).isPresent()) {
 
 
-            currentContainment = buildContainment(tree.get("node_id").toString()).get();
-            allNodeIds.add(currentContainment);
+            currentContainment = buildContainment(tree.getNodeId()).get();
 
-            containments.add(new LinkedHashSet<Containment>(Set.of(currentContainment)));
+
+            containments.add(new LinkedHashSet<>(Set.of(currentContainment)));
 
         } else {
             currentContainment = null;
         }
-        if (tree.containsKey("children")) {
-            for (Object child : ((JSONArray) tree.get("children")).toArray()) {
-                Set<Set<Containment>> subSets = findSets((Map<String, Object>) child);
 
-                containments.addAll(subSets);
-                if (currentContainment != null) {
-                    containments.addAll(subSets.stream()
-                            .map(s -> {
-                                Set<Containment> list = new LinkedHashSet<>(Set.of(currentContainment));
-                                list.addAll(s);
-                                return list;
-                            })
-                            .collect(Collectors.toSet()));
+        for (WebTemplateNode child : tree.getChildren()) {
+            Set<Set<Containment>> subSets = findSets(child);
+
+            containments.addAll(subSets);
+            if (currentContainment != null) {
+                containments.addAll(subSets.stream()
+                        .map(s -> {
+                            Set<Containment> list = new LinkedHashSet<>(Set.of(currentContainment));
+                            list.addAll(s);
+                            return list;
+                        })
+                        .collect(Collectors.toSet()));
                 }
 
             }
-        }
+
 
         return containments;
     }
@@ -93,7 +91,7 @@ public class QueryOptMetaData implements I_QueryOptMetaData {
     @Override
     public Set<Set<Containment>> getContainmentSet() {
 
-        return containmentSets;
+        return findSets(webTemplate.getTree());
     }
 
     private Optional<Containment> buildContainment(String nodeId) {
@@ -112,104 +110,27 @@ public class QueryOptMetaData implements I_QueryOptMetaData {
      * @return
      */
     public static QueryOptMetaData initialize(OPERATIONALTEMPLATE operationaltemplate) throws Exception {
-        Map map = new OptVisitor().traverse(operationaltemplate);
-        Object document = Configuration.defaultConfiguration().jsonProvider().parse(new MapJson(map).toJson());
-        return new QueryOptMetaData(document);
+
+        return new QueryOptMetaData(new OPTParser(operationaltemplate).parse());
     }
 
     public static I_QueryOptMetaData getInstance(OPERATIONALTEMPLATE operationaltemplate) throws Exception {
         return initialize(operationaltemplate);
     }
 
-    public static I_QueryOptMetaData getInstance(String visitor) throws Exception {
-        Object document = Configuration.defaultConfiguration().jsonProvider().parse(visitor);
-        return new QueryOptMetaData(document);
-    }
-
-    public static I_QueryOptMetaData getInstance(Object visitor) throws Exception {
-        return new QueryOptMetaData(visitor);
-    }
 
 
-    /**
-     * returns all path for which upper limit is unbounded.
-     *
-     * @return
-     */
-    @Override
-    public List upperNotBounded() {
-        return JsonPath.read(document, "$..children[?(@.max == -1)]");
-    }
-
-    @Override
-    public List multiValued() {
-        return JsonPath.read(document, "$..children[?(@.max != 1)]");
-    }
-
-    /**
-     * get the type of the node identified with path
-     *
-     * @param path
-     * @return
-     */
-    @Override
-    public String type(String path) {
-        return attributeChildValue(path, "type");
-    }
-
-    @Override
-    public String category(String path) {
-        return attributeChildValue(path, "category");
-    }
-
-    @Override
-    public Set<Containment> getAllNodeIds() {
-        return allNodeIds;
-    }
-
-    private String attributeChildValue(String path, String attribute) {
-        Object child = JsonPath.read(document, "$..children[?(@.aql_path == '" + path + "')]");
-
-        if (child != null && child instanceof JSONArray && ((JSONArray) child).size() > 0) {
-            Object childDef = ((JSONArray) child).get(0);
-            if (childDef != null && childDef instanceof Map) {
-                return (String) ((Map) childDef).get(attribute);
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * return the list of node with name == 'name'
-     *
-     * @param value
-     * @return
-     */
-    @Override
-    public List nodeByFieldValue(String field, String value) {
-        return JsonPath.read(document, "$..children[?(@." + field + " == '" + value + "')]");
-    }
 
 
-    @Override
-    public List nodeFieldRegexp(String field, String regexp) {
-        return JsonPath.read(document, "$..children[?(@." + field + " =~ " + regexp + ")]");
-    }
 
-    @Override
-    public Object getJsonPathVisitor() {
-        return document;
-    }
 
-    @Override
-    public String getTemplateConcept() {
-        return (String) ((Map) document).get("concept");
-    }
 
-    @Override
-    public String getTemplateId() {
-        return (String) ((Map) document).get("template_id");
-    }
+
+
+
+
+
+
+
 
 }

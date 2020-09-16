@@ -25,6 +25,8 @@
             <jsr107:cache name="operationaltemplateCache" template="template-cache"/>
             <jsr107:cache name="validatorCache" template="template-cache"/>
             <jsr107:cache name="queryCache" template="query-cache"/>
+            <jsr107:cache name="fieldsCache" template="query-cache"/>
+            <jsr107:cache name="multivaluedCache" template="query-cache"/>
         </jsr107:defaults>
     </service>
     <persistence directory="${java.io.tmpdir}"/>

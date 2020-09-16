@@ -19,34 +19,18 @@
 package org.ehrbase.opt.query;
 
 import org.ehrbase.aql.containment.Containment;
+import org.ehrbase.webtemplate.WebTemplate;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Set;
 
 /**
  * Created by christian on 5/14/2018.
  */
 public interface I_QueryOptMetaData extends Serializable {
+    WebTemplate getWebTemplate();
+
     Set<Set<Containment>> getContainmentSet();
 
-    List upperNotBounded();
 
-    List multiValued();
-
-    String type(String path);
-
-    String category(String path);
-
-    Set<Containment> getAllNodeIds();
-
-    List nodeByFieldValue(String field, String value);
-
-    List nodeFieldRegexp(String field, String regexp);
-
-    Object getJsonPathVisitor();
-
-    String getTemplateConcept();
-
-    String getTemplateId();
 }

@@ -56,7 +56,7 @@ security:
 cache:
   config-path: '/ehcache.xml'
   enabled: true
-  pre-build-queries: true
+  pre-build-queries: false
   pre-build-queries-depth: 4
 
 

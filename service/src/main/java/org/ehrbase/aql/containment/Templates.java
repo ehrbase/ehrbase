@@ -17,7 +17,6 @@
  */
 package org.ehrbase.aql.containment;
 
-import com.jayway.jsonpath.JsonPath;
 import org.ehrbase.opt.query.QueryOptMetaData;
 import org.ehrbase.service.KnowledgeCacheService;
 
@@ -84,7 +83,7 @@ public class Templates {
     public String rootArchetypeNodeId(String templateId) {
         try {
             QueryOptMetaData queryOptMetaData = QueryOptMetaData.initialize(knowledgeCache.retrieveOperationalTemplate(templateId).get());
-            return JsonPath.read(queryOptMetaData.getJsonPathVisitor(), "$['tree']['node_id']").toString();
+            return queryOptMetaData.getWebTemplate().getTree().getNodeId();
         } catch (Exception e) {
             throw new IllegalStateException("Could not retrieve template meta data:" + e);
         }

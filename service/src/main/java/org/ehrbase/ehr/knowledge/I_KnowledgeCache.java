@@ -28,7 +28,10 @@ import org.ehrbase.aql.containment.JsonPathQueryResult;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 public interface I_KnowledgeCache {
 
@@ -69,15 +72,6 @@ public interface I_KnowledgeCache {
      * @see org.openehr.schemas.v1.OPERATIONALTEMPLATE
      */
     Optional<OPERATIONALTEMPLATE> retrieveOperationalTemplate(UUID uuid);
-
-    /**
-     * Checks whether the template contains all nodeIds
-     *
-     * @param templateId
-     * @param nodeIds
-     * @return
-     */
-    boolean containsNodeIds(String templateId, Collection<String> nodeIds);
 
 
     JsonPathQueryResult resolveForTemplate(String templateId, String jsonQueryExpression);
