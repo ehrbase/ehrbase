@@ -173,6 +173,10 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
     @Override
     public String addOperationalTemplate(byte[] content) {
+        return addOperationalTemplateIntern(content, false);
+    }
+
+    public String addOperationalTemplateIntern(byte[] content, boolean overwrite) {
 
         InputStream inputStream = new ByteArrayInputStream(content);
 
@@ -203,7 +207,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
 
         // pre-check: if already existing throw proper exception
-        if (!allowTemplateOverwrite && retrieveOperationalTemplate(templateId).isPresent()) {
+        if (!allowTemplateOverwrite && !overwrite && retrieveOperationalTemplate(templateId).isPresent()) {
             throw new StateConflictException("Operational template with this template ID already exists");
         }
 
@@ -247,7 +251,10 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
     }
 
+    public String adminUpdateOperationalTemplate(byte[] content) {
 
+        return addOperationalTemplateIntern(content, true);
+    }
 
     // invalidates some derived caches like the queryOptMetaDataCache which depend on the template
     private void invalidateCache(OPERATIONALTEMPLATE template) {
@@ -287,6 +294,22 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         }
 
         return retrieveOperationalTemplate(key);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean deleteOperationalTemplate(OPERATIONALTEMPLATE template) {
+        // Remove template from storage
+        boolean deleted = this.templateStorage.deleteTemplate(template.getTemplateId().getValue());
+
+        if (deleted) {
+            // Remove template from caches
+            invalidateCache(template);
+        }
+
+        return deleted;
     }
 
     private String findTemplateIdByUuid(UUID uuid) {
@@ -383,6 +406,23 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         return operationaltemplate;
     }
 
+    public int deleteAllOperationalTemplates() {
+        // Get all operational templates
+        List<TemplateMetaData> templateList = this.templateStorage.listAllOperationalTemplates();
+        // If list is empty no deletion required
+        if (templateList.isEmpty()) {
+            return 0;
+        }
+        int deleted = 0;
+        for (TemplateMetaData metaData : templateList) {
+
+            if (deleteOperationalTemplate(metaData.getOperationaltemplate())) {
+                deleted++;
+            }
+        }
+
+        return deleted;
+    }
 
     @Override
     public JsonPathQueryResult resolveForTemplate(String templateId, String jsonQueryExpression) {
@@ -493,4 +533,6 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     public I_KnowledgeCache getKnowledge() {
         return this;
     }
+
+
 }
