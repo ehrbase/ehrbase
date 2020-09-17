@@ -57,7 +57,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -120,8 +119,6 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     private Map<String, UUID> idxCacheTemplateIdToUuid = new ConcurrentHashMap<>();
 
     private Set<String> allTemplateId = new HashSet<>();
-
-
 
 
     private final CacheManager cacheManager;
@@ -424,23 +421,9 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         return deleted;
     }
 
+
     @Override
-    public JsonPathQueryResult resolveForTemplate(String templateId, String jsonQueryExpression) {
-
-        List<NodeId> nodeIds = Arrays.stream(jsonQueryExpression.split("\\.\\."))
-                .filter(s -> s.contains("@.node_id"))
-                .map(s -> s.replace("[?(@.node_id == '", "")
-                        .replace("[?(@.node_id == '", "")
-                        .replace("')]", ""))
-                .map(String::trim)
-                .map(NodeId::new)
-                .collect(Collectors.toList());
-        return resolveForTemplate(templateId, nodeIds);
-
-    }
-
-
-    private JsonPathQueryResult resolveForTemplate(String templateId, Collection<NodeId> nodeIds) {
+    public JsonPathQueryResult resolveForTemplate(String templateId, Collection<NodeId> nodeIds) {
         TemplateIdQueryTuple key = new TemplateIdQueryTuple(templateId, nodeIds);
 
         JsonPathQueryResult jsonPathQueryResult = jsonPathQueryResultCache.get(key);
@@ -452,7 +435,17 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
             webTemplateNodeList.add(webTemplate.getTree());
             for (NodeId nodeId : nodeIds) {
                 webTemplateNodeList = webTemplateNodeList.stream()
-                        .map(n -> n.findMatching(f -> f.getNodeId() != null && nodeId.equals(new NodeId(f.getNodeId()))))
+                        .map(n -> n.findMatching(f -> {
+                            if (f.getNodeId() == null) {
+                                return false;
+                            }
+                            // compere only classname
+                            else if (nodeId.getNodeId() == null) {
+                                return nodeId.getClassName().equals(new NodeId(f.getNodeId()).getClassName());
+                            } else {
+                                return nodeId.equals(new NodeId(f.getNodeId()));
+                            }
+                        }))
                         .flatMap(List::stream)
                         .collect(Collectors.toList());
             }

@@ -19,6 +19,7 @@ package org.ehrbase.aql.containment;
 
 import org.ehrbase.opt.query.QueryOptMetaData;
 import org.ehrbase.service.KnowledgeCacheService;
+import org.ehrbase.webtemplate.NodeId;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,10 +37,11 @@ public class Templates {
 
     /**
      * build the results for a jsonpath query applied to all defined templates in the KnowledgeCacheService
+     *
      * @param jsonQueryExpression
      * @return
      */
-    public List<JsonPathQueryResult> resolve(String jsonQueryExpression) {
+    public List<JsonPathQueryResult> resolve(List<NodeId> jsonQueryExpression) {
         if (jsonQueryExpression == null)
             return null;
 
@@ -56,11 +58,12 @@ public class Templates {
 
     /**
      * build the results for a jsonpath query applied to a defined templates in the KnowledgeCacheService
+     *
      * @param templateId
      * @param jsonQueryExpression
      * @return
      */
-    public JsonPathQueryResult resolveForTemplate(String templateId, String jsonQueryExpression) {
+    public JsonPathQueryResult resolveForTemplate(String templateId, List<NodeId> jsonQueryExpression) {
 
        /*
         Map<String, Object> results = new OptJsonPath(knowledgeCache).evaluate(templateId,jsonQueryExpression);

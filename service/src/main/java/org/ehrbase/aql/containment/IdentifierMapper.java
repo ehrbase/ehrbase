@@ -25,7 +25,9 @@ import org.ehrbase.aql.definition.FromEhrDefinition;
 import org.ehrbase.aql.definition.FromForeignDataDefinition;
 import org.ehrbase.aql.sql.queryImpl.JsonbEntryQuery;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Map identifiers in an AQL expression with their container and query strategy.
@@ -100,7 +102,7 @@ public class IdentifierMapper {
             if (containment.getValue().getContainer() instanceof Containment && ((Containment)containment.getValue().getContainer()).getClassName().equals("COMPOSITION"))
                 return (Containment) containment.getValue().getContainer();
         }
-        return null;
+        return new Containment("COMPOSITION", "", "");
     }
 
     public FromEhrDefinition.EhrPredicate getEhrContainer() {
