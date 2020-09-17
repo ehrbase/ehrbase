@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 
 /**
  * Created by christian on 5/7/2018.
+ * TODO: a lot of caching should be done there
  */
 public class QueryOptMetaData implements I_QueryOptMetaData {
 
@@ -117,7 +118,6 @@ public class QueryOptMetaData implements I_QueryOptMetaData {
     public static I_QueryOptMetaData getInstance(OPERATIONALTEMPLATE operationaltemplate) throws Exception {
         return initialize(operationaltemplate);
     }
-
 
 
 

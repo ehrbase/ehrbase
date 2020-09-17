@@ -20,6 +20,7 @@ package org.ehrbase.aql.sql.binding;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.VariableDefinition;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -67,5 +68,19 @@ public class VariableDefinitions implements Iterator<I_VariableDefinition>{
                 return variableDefinition.isDistinct();
         }
         return false;
+    }
+
+    public VariableDefinitions clone(){
+        List<I_VariableDefinition> variableDefinitionClone = new ArrayList<>();
+
+        for (I_VariableDefinition variableDefinition: variableDefinitionList){
+            try {
+                variableDefinitionClone.add(variableDefinition.clone());
+            } catch (CloneNotSupportedException e){
+                throw new IllegalStateException("Internal error, clone failed:"+e);
+            }
+        }
+
+        return new VariableDefinitions(variableDefinitionClone);
     }
 }

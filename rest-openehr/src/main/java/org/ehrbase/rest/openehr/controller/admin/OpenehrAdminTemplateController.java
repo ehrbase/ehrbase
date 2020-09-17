@@ -18,12 +18,13 @@
 package org.ehrbase.rest.openehr.controller.admin;
 
 import io.swagger.annotations.*;
+import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.response.openehr.admin.AdminDeleteResponseData;
 import org.ehrbase.response.openehr.admin.AdminStatusResponseData;
-import org.ehrbase.response.openehr.admin.AdminUpdateResponseData;
 import org.ehrbase.rest.openehr.controller.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -38,10 +39,22 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(path = "/rest/openehr/v1/admin/template", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrAdminTemplateController extends BaseController {
 
+    TemplateService templateService;
+
+    @Autowired
+    OpenehrAdminTemplateController(TemplateService templateService) {
+        this.templateService = templateService;
+    }
+
     @Autowired
     AdminApiConfiguration adminApiConfiguration;
 
-    @PutMapping(path = "/{template_id}", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+
+    @PutMapping(
+            path = "/{template_id}",
+            consumes = {MediaType.APPLICATION_XML_VALUE},
+            produces = {MediaType.APPLICATION_XML_VALUE}
+    )
     @ApiResponses(value = {
             @ApiResponse(
                     code = 200,
@@ -65,31 +78,40 @@ public class OpenehrAdminTemplateController extends BaseController {
             @ApiResponse(
                     code = 404,
                     message = "Template could not be found."
+            ),
+            @ApiResponse(
+                    code = 422,
+                    message = "Template could not be replaced since it is used in at least one Composition."
             )
     })
-    public ResponseEntity<AdminUpdateResponseData> updateTemplate(
-            @ApiParam(value = "Target template id to update")
+    public ResponseEntity<String> updateTemplate(
+            @ApiParam(value = REQ_ACCEPT)
+            @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_XML_VALUE)
+                    String accept,
+            @ApiParam(value = REQ_CONTENT_TYPE)
+            @RequestHeader(value = CONTENT_TYPE)
+                    String contentType,
+            @ApiParam(value = "Target template id to update. The value comes from the 'template_id' property.")
             @PathVariable(value = "template_id")
-                    String templateId
+                    String templateId,
+            @ApiParam(value = "New template content to replace old one with")
+            @RequestBody() String content
     ) {
 
-        // TODO: Implement endpoint functionality
+        String updatedTemplate = this.templateService.adminUpdateTemplate(templateId, content);
 
-        return ResponseEntity.ok().body(new AdminUpdateResponseData(0));
+        // Headers
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", MediaType.APPLICATION_XML_VALUE);
+
+        return ResponseEntity.ok().headers(headers).body(updatedTemplate);
     }
 
     @DeleteMapping(path = "/{template_id}")
     @ApiResponses(value = {
             @ApiResponse(
-                    code = 200,
-                    message = "Template has been deleted successfully.",
-                    responseHeaders = {
-                            @ResponseHeader(
-                                    name = CONTENT_TYPE,
-                                    description = RESP_CONTENT_TYPE_DESC,
-                                    response = MediaType.class
-                            )
-                    }
+                    code = 202,
+                    message = "Template has been deleted successfully."
             ),
             @ApiResponse(
                     code = 401,
@@ -102,17 +124,21 @@ public class OpenehrAdminTemplateController extends BaseController {
             @ApiResponse(
                     code = 404,
                     message = "Template could not be found."
+            ),
+            @ApiResponse(
+                    code = 422,
+                    message = "The template is still used by compositions and cannot be deleted."
             )
     })
     public ResponseEntity<AdminDeleteResponseData> deleteTemplate(
-            @ApiParam(value = "Target template id to update")
+            @ApiParam(value = "Target template id to delete. The value comes from the 'template_id' property.")
             @PathVariable(value = "template_id")
                     String templateId
     ) {
 
-        // TODO: Implement endpoint functionality
+        int deleted = this.templateService.adminDeleteTemplate(templateId) ? 1 : 0;
 
-        return ResponseEntity.ok().body(new AdminDeleteResponseData(0));
+        return ResponseEntity.ok().body(new AdminDeleteResponseData(deleted));
     }
 
     @DeleteMapping(path = "/all")
@@ -139,6 +165,10 @@ public class OpenehrAdminTemplateController extends BaseController {
             @ApiResponse(
                     code = 404,
                     message = "Template could not be found."
+            ),
+            @ApiResponse(
+                    code = 422,
+                    message = "There are templates that are used by compositions and cannot be removed."
             )
     })
     public ResponseEntity<?> deleteAllTemplates() {
@@ -151,8 +181,8 @@ public class OpenehrAdminTemplateController extends BaseController {
                     ));
         }
 
-        // TODO: Implement endpoint functionality
+        int deleted = this.templateService.adminDeleteAllTemplates();
 
-        return ResponseEntity.ok().body(new AdminDeleteResponseData(0));
+        return ResponseEntity.ok().body(new AdminDeleteResponseData(deleted));
     }
 }

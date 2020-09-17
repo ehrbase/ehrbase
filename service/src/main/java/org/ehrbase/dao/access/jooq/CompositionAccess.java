@@ -39,10 +39,7 @@ import org.ehrbase.dao.access.util.TransactionTime;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
-import org.ehrbase.jooq.pg.tables.records.AuditDetailsRecord;
-import org.ehrbase.jooq.pg.tables.records.CompositionHistoryRecord;
-import org.ehrbase.jooq.pg.tables.records.CompositionRecord;
-import org.ehrbase.jooq.pg.tables.records.EventContextRecord;
+import org.ehrbase.jooq.pg.tables.records.*;
 import org.ehrbase.serialisation.dbencoding.rmobject.FeederAuditEncoding;
 import org.ehrbase.serialisation.dbencoding.rmobject.LinksEncoding;
 import org.ehrbase.service.IntrospectService;
@@ -55,8 +52,7 @@ import java.sql.*;
 import java.util.*;
 
 import static org.ehrbase.jooq.pg.Tables.*;
-import static org.jooq.impl.DSL.count;
-import static org.jooq.impl.DSL.max;
+import static org.jooq.impl.DSL.*;
 
 /**
  * operations on the static part of Compositions (eg. non archetyped attributes)
