@@ -93,6 +93,12 @@ public class Statements {
     }
 
     public VariableDefinitions getVariables() {
+        boolean containsNonEhrVariable = variables.stream().map(v -> v.getIdentifier()).map(s -> identifierMapper.getContainer(s)).anyMatch(c -> !c.getClass().isAssignableFrom(FromEhrDefinition.EhrPredicate.class));
+        // Force distinct If only contains ehr variables
+        //FIXME https://github.com/ehrbase/project_management/issues/375
+        if (!containsNonEhrVariable) {
+            variables.forEach(v -> v.setDistinct(true));
+        }
         return new VariableDefinitions(variables);
     }
 
