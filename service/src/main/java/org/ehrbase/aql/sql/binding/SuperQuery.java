@@ -23,7 +23,10 @@
 package org.ehrbase.aql.sql.binding;
 
 import org.ehrbase.aql.compiler.OrderAttribute;
-import org.ehrbase.aql.definition.*;
+import org.ehrbase.aql.definition.FuncParameter;
+import org.ehrbase.aql.definition.FunctionDefinition;
+import org.ehrbase.aql.definition.I_VariableDefinition;
+import org.ehrbase.aql.definition.Variables;
 import org.ehrbase.aql.sql.queryImpl.DefaultColumnId;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.jooq.DSLContext;
@@ -58,11 +61,12 @@ public class SuperQuery {
 
         while (iterator.hasNext()) {
             I_VariableDefinition variableDefinition = iterator.next();
-            if (!variableDefinition.isDistinct())
+            if (!variableDefinition.isDistinct()) {
                 continue;
-            if (variableDefinition instanceof FunctionDefinition){
+            }
+            if (variableDefinition instanceof FunctionDefinition) {
                 StringBuilder stringBuilder = new StringBuilder();
-                for (FuncParameter funcParameter: ((FunctionDefinition) variableDefinition).getParameters()){
+                for (FuncParameter funcParameter : ((FunctionDefinition) variableDefinition).getParameters()) {
                     stringBuilder.append(funcParameter.getValue());
                 }
                 fields.add(DSL.fieldByName(stringBuilder.toString()));
