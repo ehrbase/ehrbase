@@ -25,6 +25,7 @@ import org.ehrbase.aql.definition.FromEhrDefinition;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.sql.binding.VariableDefinitions;
+import org.ehrbase.aql.sql.queryImpl.attribute.ehr.EhrResolver;
 import org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer;
 
 import java.util.List;
@@ -93,10 +94,13 @@ public class Statements {
     }
 
     public VariableDefinitions getVariables() {
-        boolean containsNonEhrVariable = variables.stream().map(v -> v.getIdentifier()).map(s -> identifierMapper.getContainer(s)).anyMatch(c -> !c.getClass().isAssignableFrom(FromEhrDefinition.EhrPredicate.class));
+        boolean containsNonEhrVariable = variables.stream().map(I_VariableDefinition::getIdentifier).map(s -> identifierMapper.getContainer(s)).anyMatch(c -> !c.getClass().isAssignableFrom(FromEhrDefinition.EhrPredicate.class));
+        boolean containsOnlyEhrAttributes = variables.stream().filter(v -> identifierMapper.getContainer(v.getIdentifier()).getClass().isAssignableFrom(FromEhrDefinition.EhrPredicate.class))
+                .allMatch(v -> EhrResolver.isEhrAttribute(v.getPath()));
+
         // Force distinct If only contains ehr variables
         //FIXME https://github.com/ehrbase/project_management/issues/375
-        if (!containsNonEhrVariable) {
+        if (!containsNonEhrVariable && containsOnlyEhrAttributes) {
             variables.forEach(v -> v.setDistinct(true));
         }
         return new VariableDefinitions(variables);

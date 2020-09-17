@@ -63,10 +63,7 @@ class ExpressionField {
                 break;
             // EHR attributes
             case "EHR":
-               /*
-                if (EhrResolver.isEhrAttribute(variableDefinition.getPath()))
-                    variableDefinition.setDistinct(true);
-*/
+
                 field = compositionAttributeQuery.makeField(template_id, identifier, variableDefinition, I_QueryImpl.Clause.SELECT);
                 containsJsonDataBlock = compositionAttributeQuery.isJsonDataBlock();
                 optionalPath = variableDefinition.getPath();
