@@ -24,6 +24,7 @@ import org.ehrbase.dao.jooq.impl.DSLContextHelper;
 import org.ehrbase.service.CacheRule;
 import org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl;
 import org.jooq.tools.jdbc.MockResult;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -40,6 +41,7 @@ public class AqlQueryHandlerTest {
     public CacheRule cacheRule = new CacheRule();
 
     @Test
+    @Ignore("see https://github.com/ehrbase/project_management/issues/375")
     public void process() throws Exception {
         AqlQueryHandler cut = new AqlQueryHandler(I_DomainAccessTest.buildDomainAccess(DSLContextHelper.buildContext(ctx -> {
             MockResult[] mock = new MockResult[1];

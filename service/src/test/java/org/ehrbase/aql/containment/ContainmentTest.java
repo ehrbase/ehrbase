@@ -210,23 +210,6 @@ public class ContainmentTest extends TestAqlBase {
 
     }
 
-    //successful but wrong template/path for location...
-    //TODO: fix resolution of incomplete simpleclassexpression
-    @Test
-    public void testFullPathResolution3_1() {
-
-        String query = "SELECT e, o" +
-                " FROM EHR e" +
-                " CONTAINS COMPOSITION" +
-                "      CONTAINS ADMIN_ENTRY" +
-                "           CONTAINS location [openEHR-EHR-CLUSTER.location.v1]";
-
-        AqlExpression aqlExpression = new AqlExpression().parse(query);
-        Contains contains = new Contains(aqlExpression.getParseTree(), knowledge).process();
-
-        assertTrue(contains.getTemplates().contains("Patientenaufenthalt"));
-
-    }
 
     @Test
     public void testFullPathResolution4() {
@@ -235,13 +218,11 @@ public class ContainmentTest extends TestAqlBase {
                 " FROM EHR e" +
                 " CONTAINS COMPOSITION" +
                 "      CONTAINS ADMIN_ENTRY" +
-                "           CONTAINS CLUSTER";
+                "           CONTAINS OBSERVATION";
 
         AqlExpression aqlExpression = new AqlExpression().parse(query);
         Contains contains = new Contains(aqlExpression.getParseTree(), knowledge).process();
 
-        //The result is empty as the processor doesn't handle a meaningless contains clause
-        //or perhaps should it?
         assertTrue(!contains.getTemplates().contains("Patientenaufenthalt"));
 
     }
