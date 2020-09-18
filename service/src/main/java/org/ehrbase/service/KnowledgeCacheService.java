@@ -456,6 +456,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
             webTemplateNodeList.stream().map(n -> n.getAqlPath(false)).forEach(uniquePaths::add);
             if (uniquePaths.size() == 1) {
                 aql = uniquePaths.iterator().next();
+                //FIXME see https://github.com/ehrbase/project_management/issues/377
             } else if (webTemplateNodeList.size() > 1) {
                 aql = uniquePaths.iterator().next();
                 log.warn(String.format("Aql Path not unique for template %s and path %s ", templateId, nodeIds));
