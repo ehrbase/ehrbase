@@ -27,8 +27,10 @@ import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
-import org.ehrbase.opt.OptVisitor;
-import org.ehrbase.response.ehrscape.*;
+import org.ehrbase.response.ehrscape.CompositionFormat;
+import org.ehrbase.response.ehrscape.StructuredString;
+import org.ehrbase.response.ehrscape.StructuredStringFormat;
+import org.ehrbase.response.ehrscape.TemplateMetaDataDto;
 import org.jooq.DSLContext;
 import org.openehr.schemas.v1.CARCHETYPEROOT;
 import org.openehr.schemas.v1.OBJECTID;
@@ -40,7 +42,9 @@ import org.springframework.stereotype.Service;
 
 import javax.xml.namespace.QName;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -89,27 +93,21 @@ public class TemplateServiceImp extends BaseService implements TemplateService {
     }
 
     @Override
-    public WebTemplate findTemplate(String templateId) {
+    public org.ehrbase.webtemplate.WebTemplate findTemplate(String templateId) {
 
-        Map<String, Object> retObj;
+        org.ehrbase.webtemplate.WebTemplate webTemplate;
         try {
             Optional<OPERATIONALTEMPLATE> operationaltemplate = this.knowledgeCacheService.retrieveOperationalTemplate(templateId);
 
 
-            retObj = new OptVisitor().traverse(operationaltemplate.orElseThrow(() -> new ObjectNotFoundException("template", "Template with the specified id does not exist")));
+            webTemplate = this.knowledgeCacheService.getQueryOptMetaData(templateId);
 
         } catch (NullPointerException e) {
             throw new ObjectNotFoundException("template", "Template with the specified id does not exist", e);
         } catch (Exception e) {
             throw new InternalServerException("Could not generate web template, reason:" + e);
         }
-        WebTemplate webTemplate = new WebTemplate();
-        webTemplate.setUid(retObj.get("uid").toString());
-        webTemplate.setLanguages((List<String>) retObj.get("languages"));
-        webTemplate.setConcept(retObj.get("concept").toString());
-        webTemplate.setTree((Map<String, Object>) retObj.get("tree"));
-        webTemplate.setTemplateId(retObj.get("uid").toString());
-        webTemplate.setDefaultLanguage(retObj.get("default_language").toString());
+
         return webTemplate;
     }
 

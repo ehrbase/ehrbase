@@ -17,7 +17,6 @@
  */
 package org.ehrbase.aql.containment;
 
-import org.ehrbase.opt.query.QueryOptMetaData;
 import org.ehrbase.service.KnowledgeCacheService;
 import org.ehrbase.webtemplate.NodeId;
 
@@ -85,8 +84,8 @@ public class Templates {
      */
     public String rootArchetypeNodeId(String templateId) {
         try {
-            QueryOptMetaData queryOptMetaData = QueryOptMetaData.initialize(knowledgeCache.retrieveOperationalTemplate(templateId).get());
-            return queryOptMetaData.getWebTemplate().getTree().getNodeId();
+            return knowledgeCache.getQueryOptMetaData(templateId).getTree().getNodeId();
+
         } catch (Exception e) {
             throw new IllegalStateException("Could not retrieve template meta data:" + e);
         }

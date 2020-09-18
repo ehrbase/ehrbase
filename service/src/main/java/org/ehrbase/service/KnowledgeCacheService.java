@@ -64,6 +64,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -451,10 +452,12 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
             }
 
             final String aql;
-            if (webTemplateNodeList.size() == 1) {
-                aql = webTemplateNodeList.get(0).getAqlPath();
+            Set<String> uniquePaths = new TreeSet<>();
+            webTemplateNodeList.stream().map(n -> n.getAqlPath(false)).forEach(uniquePaths::add);
+            if (uniquePaths.size() == 1) {
+                aql = uniquePaths.iterator().next();
             } else if (webTemplateNodeList.size() > 1) {
-                aql = webTemplateNodeList.get(0).getAqlPath();
+                aql = uniquePaths.iterator().next();
                 log.warn(String.format("Aql Path not unique for template %s and path %s ", templateId, nodeIds));
             } else {
                 aql = null;
@@ -516,7 +519,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     public List<String> multiValued(String templateId) {
         List<String> list = multivaluedCache.get(templateId);
         if (list == null) {
-            list = getQueryOptMetaData(templateId).multiValued().stream().map(WebTemplateNode::getAqlPath).collect(Collectors.toList());
+            list = getQueryOptMetaData(templateId).multiValued().stream().map(webTemplateNode -> webTemplateNode.getAqlPath(false)).collect(Collectors.toList());
             multivaluedCache.put(templateId, list);
         }
         return list;
