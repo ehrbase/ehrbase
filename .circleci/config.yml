@@ -1378,7 +1378,7 @@ commands:
           command: |
             mkdir -p ~/downloads
             cd ~/downloads
-            [ -e dependency-check-5.2.2-release.zip ] || wget https://dl.bintray.com/jeremy-long/owasp/dependency-check-5.2.2-release.zip
+            [ -e dependency-check-5.2.2-release.zip ] || wget https://dl.bintray.com/jeremy-long/owasp/dependency-check-6.0.1-release.zip
             mkdir -p ~/dependency_check
             unzip -uo dependency-check*.zip -d ~
       - run:
