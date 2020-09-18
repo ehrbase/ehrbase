@@ -20,8 +20,13 @@ package org.ehrbase.aql.containment;
 import com.nedap.archie.rminfo.ArchieRMInfoLookup;
 import org.apache.commons.collections4.SetUtils;
 import org.ehrbase.service.KnowledgeCacheService;
+import org.ehrbase.webtemplate.NodeId;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Handles and evaluation contain proposition:
@@ -64,7 +69,7 @@ public class ContainPropositions {
         //iterate in-order on the map of contains proposition and keep the last one (since it will contain the result)
         for (Map.Entry<String, ContainsCheck> entry: propositionsEvalMap.entrySet()){
             if (entry.getValue() instanceof SimpleChainedCheck){
-                String jsonQuery = ((SimpleChainedCheck) entry.getValue()).jsonPathNodeFilterExpression();
+                List<NodeId> jsonQuery = ((SimpleChainedCheck) entry.getValue()).jsonPathNodeFilterExpression();
                 if (jsonQuery != null) { //case CONTAINS COMPOSITION c without any specified further containments
                     try {
                         //perform the json path query on all available templates

@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Change the strategy to resolve CONTAINS in AQL (https://github.com/ehrbase/ehrbase/pull/276)
 - Add admin template API functionality (see: https://github.com/ehrbase/ehrbase/pull/301)
 - Persist caches to java.io.tmpdir  (see: https://github.com/ehrbase/ehrbase/pull/308)
+- Precalculate containment tree from OPT template (see https://github.com/ehrbase/ehrbase/pull/312) 
 
 ### Changed
 
@@ -21,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Using ObjectVersionId for DIRECTORY Controller and Service Layers (see: https://github.com/ehrbase/ehrbase/pull/297)
 - Added Junit5 support via spring-boot-starter-test (https://github.com/ehrbase/ehrbase/pull/298)
 - Enable cartesian products on embedded arrays in JSONB (see https://github.com/ehrbase/ehrbase/pull/309)
+- Use new OPT-Parser from sdk (see https://github.com/ehrbase/ehrbase/pull/314)
 
 ### Fixed
 

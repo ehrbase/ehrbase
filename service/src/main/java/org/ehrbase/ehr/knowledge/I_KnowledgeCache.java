@@ -21,18 +21,19 @@
  */
 package org.ehrbase.ehr.knowledge;
 
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.InvalidApiParameterException;
+import org.ehrbase.api.exception.StateConflictException;
+import org.ehrbase.aql.containment.JsonPathQueryResult;
+import org.ehrbase.webtemplate.NodeId;
+import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-
-import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.api.exception.InvalidApiParameterException;
-import org.ehrbase.api.exception.StateConflictException;
-import org.ehrbase.aql.containment.JsonPathQueryResult;
-import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
 public interface I_KnowledgeCache {
 
@@ -74,14 +75,6 @@ public interface I_KnowledgeCache {
      */
     Optional<OPERATIONALTEMPLATE> retrieveOperationalTemplate(UUID uuid);
 
-    /** 
-     * Checks whether the template contains all nodeIds
-     *
-     * @param templateId
-     * @param nodeIds
-     * @return
-     */
-    boolean containsNodeIds(String templateId, Collection<String> nodeIds);
 
     /**
      * Deletes a given operational template physically from cache and from template storage and from cache. Should only
@@ -93,5 +86,5 @@ public interface I_KnowledgeCache {
      */
     boolean deleteOperationalTemplate(OPERATIONALTEMPLATE template);
 
-    JsonPathQueryResult resolveForTemplate(String templateId, String jsonQueryExpression);
+    JsonPathQueryResult resolveForTemplate(String templateId, Collection<NodeId> jsonQueryExpression);
 }

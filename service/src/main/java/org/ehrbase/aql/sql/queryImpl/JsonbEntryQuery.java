@@ -32,15 +32,19 @@ import org.ehrbase.aql.sql.binding.I_JoinBinder;
 import org.ehrbase.aql.sql.queryImpl.value_field.NodePredicate;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.ehr.util.LocatableHelper;
-import org.ehrbase.opt.query.I_QueryOptMetaData;
 import org.ehrbase.serialisation.dbencoding.CompositionSerializer;
 import org.ehrbase.service.IntrospectService;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
-import static org.ehrbase.jooq.pg.Tables.*;
+import static org.ehrbase.jooq.pg.Tables.ENTRY;
+import static org.ehrbase.jooq.pg.Tables.EVENT_CONTEXT;
+import static org.ehrbase.jooq.pg.Tables.STATUS;
 
 /**
  * Generate an SQL field corresponding to a JSONB data value query
@@ -318,9 +322,10 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
                 throw new IllegalArgumentException("MetaDataCache is not initialized");
             String reducedItemPathArray = new SegmentedPath(referenceItemPathArray).reduce();
             if (reducedItemPathArray != null && !reducedItemPathArray.isEmpty()) {
-                I_QueryOptMetaData queryOptMetaData = introspectCache.getQueryOptMetaData(templateId);
-                itemCategory = queryOptMetaData.category(reducedItemPathArray);
-                itemType = queryOptMetaData.type(reducedItemPathArray);
+                ItemInfo info = introspectCache.getInfo(templateId, reducedItemPathArray);
+
+                itemType = info.getItemType();
+                itemCategory = info.getItemCategory();
                 if (itemType != null) {
                     String pgType = new PGType(itemPathArray).forRmType(itemType);
                     if (pgType != null)

@@ -25,7 +25,6 @@ import org.ehrbase.service.IntrospectService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -38,13 +37,13 @@ import static org.ehrbase.aql.sql.queryImpl.IterativeNodeConstants.ENV_AQL_ARRAY
 public class IterativeNode implements I_IterativeNode {
 
     private List<String> ignoreIterativeNode; //f.e. '/content' '/events' etc.
-    private final List<Map> unbounded;
+    private final List<String> unbounded;
     private Integer depth;
     private final I_DomainAccess domainAccess;
 
     public IterativeNode(I_DomainAccess domainAccess, String templateId, IntrospectService introspectCache) {
         this.domainAccess = domainAccess;
-        unbounded = introspectCache.getQueryOptMetaData(templateId).upperNotBounded();
+        unbounded = introspectCache.multiValued(templateId);
         initAqlRuntimeParameters();
     }
 
@@ -64,15 +63,15 @@ public class IterativeNode implements I_IterativeNode {
             String path = "/" + String.join("/", compact(segmentedPath));
 
             for (int i = unbounded.size() - 1; i >= 0; i--) {
-                Map mapEntry = unbounded.get(i);
-                String aqlPath = (String) mapEntry.get("aql_path");
+                String aqlPath = unbounded.get(i);
+
                 //check if this path is not excluded
                 List<String> aqlPathSegments = LocatableHelper.dividePathIntoSegments(aqlPath);
 
                 boolean ignoreThisAqlPath = false;
                 if (ignoreIterativeNode != null && !ignoreIterativeNode.isEmpty()) {
                     for (String ignoreItemRegex : ignoreIterativeNode) {
-                        if (aqlPathSegments.get(aqlPathSegments.size() - 1).matches("^"+ignoreItemRegex+".*")) {
+                        if (aqlPathSegments.get(aqlPathSegments.size() - 1).matches("^" + ignoreItemRegex + ".*")) {
                             ignoreThisAqlPath = true;
                             break;
                         }

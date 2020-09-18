@@ -21,13 +21,15 @@ import com.nedap.archie.rm.datavalues.DataValue;
 import com.nedap.archie.rminfo.ArchieRMInfoLookup;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.aql.definition.I_VariableDefinition;
-import org.ehrbase.aql.sql.queryImpl.*;
-import org.ehrbase.aql.sql.queryImpl.attribute.ehr.EhrResolver;
+import org.ehrbase.aql.sql.queryImpl.CompositionAttributeQuery;
+import org.ehrbase.aql.sql.queryImpl.DefaultColumnId;
+import org.ehrbase.aql.sql.queryImpl.I_QueryImpl;
+import org.ehrbase.aql.sql.queryImpl.JsonbEntryQuery;
+import org.ehrbase.aql.sql.queryImpl.VariableAqlPath;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 import java.util.Objects;
-import java.util.UUID;
 
 class ExpressionField {
 
@@ -61,8 +63,6 @@ class ExpressionField {
                 break;
             // EHR attributes
             case "EHR":
-                if (EhrResolver.isEhrAttribute(variableDefinition.getPath()))
-                    variableDefinition.setDistinct(true);
 
                 field = compositionAttributeQuery.makeField(template_id, identifier, variableDefinition, I_QueryImpl.Clause.SELECT);
                 containsJsonDataBlock = compositionAttributeQuery.isJsonDataBlock();

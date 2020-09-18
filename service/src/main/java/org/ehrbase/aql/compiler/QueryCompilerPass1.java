@@ -25,14 +25,26 @@ package org.ehrbase.aql.compiler;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.ehrbase.aql.containment.*;
+import org.ehrbase.aql.containment.AnonymousSymbol;
+import org.ehrbase.aql.containment.ComplexContainsCheck;
+import org.ehrbase.aql.containment.ContainPropositions;
+import org.ehrbase.aql.containment.Containment;
+import org.ehrbase.aql.containment.ContainmentSet;
+import org.ehrbase.aql.containment.ContainsExpressions;
+import org.ehrbase.aql.containment.ContainsProposition;
+import org.ehrbase.aql.containment.IdentifierMapper;
+import org.ehrbase.aql.containment.SimpleChainedCheck;
+import org.ehrbase.aql.containment.SimpleClassExpressionIdentifier;
 import org.ehrbase.aql.definition.FromEhrDefinition;
 import org.ehrbase.aql.definition.FromForeignDataDefinition;
 import org.ehrbase.aql.definition.I_FromEntityDefinition;
 import org.ehrbase.aql.parser.AqlBaseListener;
 import org.ehrbase.aql.parser.AqlParser;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * AQL compilation pass 1<br>
@@ -194,6 +206,8 @@ public class QueryCompilerPass1 extends AqlBaseListener {
 
             Containment containment = new Containment(className, symbol, "");
             identifierMapper.add(containment);
+            containmentSetMap.put(simpleClassExprContext.getText(), new ContainsProposition(simpleClassExprContext, identifierMapper).containmentSet(containment));
+
         }
         else if (simpleClassExprContext.getChild(0) instanceof AqlParser.ArchetypedClassExprContext){
             //CHC, 160808: make classname case insensitive

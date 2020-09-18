@@ -30,6 +30,12 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-jdbc</artifactId>
         </dependency>
@@ -60,6 +66,10 @@
         <dependency>
             <groupId>com.github.ehrbase.openEHR_SDK</groupId>
             <artifactId>validation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.ehrbase.openEHR_SDK</groupId>
+            <artifactId>web-template</artifactId>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
