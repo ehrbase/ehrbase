@@ -43,6 +43,7 @@ import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.jooq.pg.Routines;
 import org.ehrbase.dao.access.util.TransactionTime;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
+import org.ehrbase.jooq.pg.tables.AdminDeleteAudit;
 import org.ehrbase.jooq.pg.tables.AdminDeleteEhr;
 import org.ehrbase.jooq.pg.tables.AdminDeleteEhrHistory;
 import org.ehrbase.jooq.pg.tables.records.*;
@@ -753,18 +754,33 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         try {
             // call first postgres function to start deletion of main objects, and get UUIDs for the next step
             Result<AdminDeleteEhrRecord> adminDeleteEhr = Routines.adminDeleteEhr(getContext().configuration(), this.getId());
-            if (adminDeleteEhr.size() != 1) {
+            if (adminDeleteEhr.isEmpty()) {
                 throw new InternalServerException("Admin deletion of EHR failed! Unexpected result.");
             }
-            UUID statusAudit = adminDeleteEhr.get(0).getStatusAudit();
-            UUID contribAudit = adminDeleteEhr.get(0).getContribAudit();
 
-            // call cleanup of auxiliary objects
-            int res = getContext().selectQuery(new AdminDeleteEhrHistory().call(this.getId(), statusAudit, contribAudit)).execute();
-            if (res != 1)
-                throw new InternalServerException("Admin deletion of EHR failed!");
+            // TODO-314: add deletion of composition and connected objects. Right now AdminDeleteEhrHistory below fails if compo is available,
+            // so needs to be deleted beforehand. Questions is which linked objection (audit etc.) need to be deleted in what order.
+
+            // adminDeleteEhr returns all linked audits and statuses - go through and delete them
+            adminDeleteEhr.forEach(response -> {
+                UUID statusAudit = response.getStatusAudit();
+                UUID contribAudit = response.getContribAudit();
+
+                // call cleanup of auxiliary objects
+                int res = getContext().selectQuery(new AdminDeleteEhrHistory().call(this.getId())).execute();
+                if (res != 1)
+                    throw new InternalServerException("Admin deletion of EHR failed!");
+
+                res = getContext().selectQuery(new AdminDeleteAudit().call(statusAudit)).execute();
+                if (res != 1)
+                    throw new InternalServerException("Admin deletion of Status Audit failed!");
+
+                res = getContext().selectQuery(new AdminDeleteAudit().call(contribAudit)).execute();
+                if (res != 1)
+                    throw new InternalServerException("Admin deletion of Contribution Audit failed!");
+            });
         } catch (Exception e) {
-            log.debug(e);
+            log.error(e);   // TODO-314: is this how errors here should be handled in the end?
         }
     }
 }
