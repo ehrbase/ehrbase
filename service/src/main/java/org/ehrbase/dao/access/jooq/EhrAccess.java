@@ -43,9 +43,7 @@ import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.jooq.pg.Routines;
 import org.ehrbase.dao.access.util.TransactionTime;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
-import org.ehrbase.jooq.pg.tables.AdminDeleteAudit;
-import org.ehrbase.jooq.pg.tables.AdminDeleteEhr;
-import org.ehrbase.jooq.pg.tables.AdminDeleteEhrHistory;
+import org.ehrbase.jooq.pg.tables.*;
 import org.ehrbase.jooq.pg.tables.records.*;
 import org.ehrbase.serialisation.dbencoding.RawJson;
 import org.ehrbase.service.RecordedDvCodedText;
@@ -752,6 +750,9 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     @Override
     public void adminDeleteEhr() {
         try {
+            Result<AdminGetLinkedCompositionsRecord> linkedCompositions = Routines.adminGetLinkedCompositions(getContext().configuration(), this.getId());
+            Result<AdminGetLinkedContributionsRecord> linkedContributions = Routines.adminGetLinkedContributions(getContext().configuration(), this.getId());
+
             // call first postgres function to start deletion of main objects, and get UUIDs for the next step
             Result<AdminDeleteEhrRecord> adminDeleteEhr = Routines.adminDeleteEhr(getContext().configuration(), this.getId());
             if (adminDeleteEhr.isEmpty()) {
@@ -764,23 +765,36 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             // adminDeleteEhr returns all linked audits and statuses - go through and delete them
             adminDeleteEhr.forEach(response -> {
                 UUID statusAudit = response.getStatusAudit();
-                UUID contribAudit = response.getContribAudit();
 
                 // call cleanup of auxiliary objects
                 int res = getContext().selectQuery(new AdminDeleteEhrHistory().call(this.getId())).execute();
                 if (res != 1)
                     throw new InternalServerException("Admin deletion of EHR failed!");
 
+                // delete status audit
                 res = getContext().selectQuery(new AdminDeleteAudit().call(statusAudit)).execute();
                 if (res != 1)
                     throw new InternalServerException("Admin deletion of Status Audit failed!");
 
-                res = getContext().selectQuery(new AdminDeleteAudit().call(contribAudit)).execute();
-                if (res != 1)
-                    throw new InternalServerException("Admin deletion of Contribution Audit failed!");
+                linkedContributions.forEach(contrib -> {
+                    // TODO-314: invoke delete contrib, which return other info like audit to handle separate, like with del_compo()
+                    // del contrib
+                    Routines.adminDeleteContribution(getContext().configuration(), contrib.getContribution());
+                    // no check on the response, because 0..* deletions is valid here
+                    // try to delete audit, too
+                    int resp = getContext().selectQuery(new AdminDeleteAudit().call(contrib.getAudit())).execute();
+                    if (resp != 1)
+                        throw new InternalServerException("Admin deletion of Status Audit failed!");
+                });
+
+                linkedCompositions.forEach(compo -> {   // TODO: does this need to be on top?
+                    // TODO-314: invoke delete compo - and following misc del calls
+                    Result<AdminDeleteCompositionRecord> delCompo = Routines.adminDeleteComposition(getContext().configuration(), compo.getComposition());
+                    log.info(delCompo);
+                });
             });
         } catch (Exception e) {
-            log.error(e);   // TODO-314: is this how errors here should be handled in the end?
+            log.error(e);   // TODO-314: remove general catching here when done (shadows errors from above)
         }
     }
 }

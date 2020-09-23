@@ -46,7 +46,7 @@ $$ LANGUAGE plpgsql
 
 -- function to delete a single composition and all linked lower tier entities
 CREATE OR REPLACE FUNCTION ehr.admin_delete_composition(compo_id_input UUID)
-RETURNS TABLE (num integer) AS $$
+RETURNS TABLE (num integer, contribution UUID, composer UUID, audit UUID, attestation UUID) AS $$
     BEGIN
         RETURN QUERY WITH linked_entries(id) AS ( -- get linked ENTRY entities
                 SELECT id, category FROM ehr.entry WHERE composition_id = compo_id_input
@@ -54,35 +54,41 @@ RETURNS TABLE (num integer) AS $$
             linked_events(id) AS ( -- get linked EVENT_CONTEXT entities
                 SELECT id, facility, setting FROM ehr.event_context WHERE composition_id = compo_id_input
             ),
+            linked_misc(contrib, composer, audit, attestation) AS (
+                SELECT in_contribution, composer, has_audit, attestation_ref FROM ehr.composition WHERE id = compo_id_input
+            ),
             -- TODO-314: delete all linked entities, like audit and contribution, here too
-            -- delete composition
-            delete_contribution AS (
+            -- delete composition itself
+            delete_composition AS (
                 DELETE FROM ehr.composition WHERE id = compo_id_input
             )
-            SELECT 1;
+            SELECT 1, linked_misc.contrib, linked_misc.composer, linked_misc.audit, linked_misc.attestation FROM linked_misc;
+    END;
+$$ LANGUAGE plpgsql
+    RETURNS NULL ON NULL INPUT;
+
+-- function to delete a single contribution and all linked lower tier entities
+CREATE OR REPLACE FUNCTION ehr.admin_delete_contribution(contrib_id_input UUID)
+RETURNS TABLE (num integer, audit UUID) AS $$
+    BEGIN
+        RETURN QUERY WITH linked_misc(audit) AS (
+                SELECT has_audit FROM ehr.contribution WHERE id = contrib_id_input
+            ),
+            -- TODO-314: delete all linked entities here too
+            -- delete contribution itself
+            delete_composition AS (
+                DELETE FROM ehr.contribution WHERE id = contrib_id_input
+            )
+            SELECT 1, linked_misc.audit FROM linked_misc;
     END;
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
 
 CREATE OR REPLACE FUNCTION ehr.admin_delete_ehr(ehr_id_input UUID)
-RETURNS TABLE (num integer, contrib_audit UUID, status_audit UUID) AS $$
+RETURNS TABLE (num integer, /*contrib_audit UUID,*/ status_audit UUID/*, composition UUID*/) AS $$
     BEGIN
-        RETURN QUERY WITH linked_status(id) AS ( -- get linked STATUS parameters
-                SELECT id, has_audit/*, in_contribution*/ FROM ehr.status WHERE ehr_id = ehr_id_input
-            ),
-            linked_contrib(id) AS ( -- get linked CONTRIBUTION parameters
-                SELECT id, has_audit FROM ehr.contribution WHERE ehr_id = ehr_id_input
-            ),
-            /*linked_compo(id) AS ( -- get linked COMPOSITION   TODO: block temporary disabled
-                SELECT id, has_audit FROM ehr.composition WHERE ehr_id = ehr_id_input
-            ),
-            -- delete contribution linked to status
-            delete_composition AS (
-                SELECT func.num FROM (SELECT id from linked_compo) as input, LATERAL ehr.admin_delete_composition(input.id) as func
-            ),*/
-            -- delete contribution linked to status
-            delete_contribution AS (
-                DELETE FROM ehr.contribution WHERE ehr_id = ehr_id_input
+        RETURN QUERY WITH linked_status(has_audit) AS ( -- get linked STATUS parameters
+                SELECT has_audit FROM ehr.status WHERE ehr_id = ehr_id_input
             ),
             -- delete the EHR itself
             delete_ehr AS (
@@ -93,25 +99,55 @@ RETURNS TABLE (num integer, contrib_audit UUID, status_audit UUID) AS $$
             delete_status AS (
                 DELETE FROM ehr.status WHERE ehr_id = ehr_id_input
             )
-            SELECT 1, linked_status.has_audit, linked_contrib.has_audit FROM linked_status, linked_contrib;
+            SELECT 1, linked_status.has_audit FROM linked_status;
     END;
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
 
+-- necessary as own function, because the former transaction needs to be done to populate the *_history table
 CREATE OR REPLACE FUNCTION ehr.admin_delete_ehr_history(ehr_id_input UUID)
 RETURNS TABLE (num integer) AS $$
     BEGIN
         RETURN QUERY WITH
-            -- delete status_history, status itself is deleted through cascading
+            -- delete status_history
             -- TODO: delete party
             delete_status_history AS (
                 DELETE FROM ehr.status_history WHERE ehr_id = ehr_id_input
             ),
             delete_contribution_history AS (
                 DELETE FROM ehr.contribution_history WHERE ehr_id = ehr_id_input
+            ),
+            delete_composition_history AS (
+                DELETE FROM ehr.composition_history WHERE ehr_id = ehr_id_input
             )
 
             SELECT 1;
+    END;
+$$ LANGUAGE plpgsql
+    RETURNS NULL ON NULL INPUT;
+
+CREATE OR REPLACE FUNCTION ehr.admin_get_linked_contributions(ehr_id_input UUID)
+RETURNS TABLE (contribution UUID, audit UUID) AS $$
+    BEGIN
+        RETURN QUERY WITH
+            linked_contrib(id, audit) AS ( -- get linked CONTRIBUTION parameters
+                SELECT id, has_audit FROM ehr.contribution WHERE ehr_id = ehr_id_input
+            )
+
+            SELECT * FROM linked_contrib;
+    END;
+$$ LANGUAGE plpgsql
+    RETURNS NULL ON NULL INPUT;
+
+CREATE OR REPLACE FUNCTION ehr.admin_get_linked_compositions(ehr_id_input UUID)
+RETURNS TABLE (composition UUID ) AS $$
+    BEGIN
+        RETURN QUERY WITH
+            linked_compo(id) AS ( -- get linked CONTRIBUTION parameters
+                SELECT id FROM ehr.composition WHERE ehr_id = ehr_id_input
+            )
+
+            SELECT * FROM linked_compo;
     END;
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;

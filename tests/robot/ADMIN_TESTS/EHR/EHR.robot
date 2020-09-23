@@ -80,3 +80,7 @@ check ehr admin delete table counts
                         Should Be Equal As Integers    ${system_records}     ${0}
     #${party_records}=   Count Rows In DB Table    ehr.party_identified
     #                    Should Be Equal As Integers    ${party_records}     ${0}
+    ${compo_records}=   Count Rows In DB Table    ehr.composition
+                        Should Be Equal As Integers    ${compo_records}     ${0}
+    ${compo_h_records}=  Count Rows In DB Table    ehr.composition_history
+                        Should Be Equal As Integers    ${compo_h_records}     ${0}
