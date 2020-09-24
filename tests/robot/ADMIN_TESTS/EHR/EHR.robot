@@ -28,6 +28,8 @@ Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 
 *** Test Cases ***
 
+# Suite doesn't handle SUT statup and shutdown, so each test needs to do it! (Allows completely new systems for each test)
+
 ADMIN - Delete EHR
                         start ehrbase
                         # pre check
@@ -43,6 +45,27 @@ ADMIN - Delete EHR
                         Log To Console  ${response}
                         # Test with count rows again - post check
                         check ehr admin delete table counts
+                        generic_keywords.shutdown SUT
+
+ADMIN - Delete EHR with composition
+                        start ehrbase
+                        # pre check
+                        Connect With DB
+                        check ehr admin delete table counts
+                        # preparing and provisioning
+                        upload OPT    minimal/minimal_observation.opt
+                        prepare new request session    JSON    Prefer=return=representation
+                        create supernew ehr
+                        Set Test Variable  ${ehr_id}  ${response.body.ehr_id.value}
+                        ehr_keywords.validate POST response - 201 created ehr
+                        commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.xml
+                        # Execute admin delete EHR
+                        admin delete ehr
+                        Log To Console  ${response}
+                        # Test with count rows again - post check
+                        check ehr admin delete table counts
+                        generic_keywords.shutdown SUT
+
 
 *** Keywords ***
 

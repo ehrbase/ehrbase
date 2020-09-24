@@ -753,26 +753,30 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             Result<AdminGetLinkedCompositionsRecord> linkedCompositions = Routines.adminGetLinkedCompositions(getContext().configuration(), this.getId());
             Result<AdminGetLinkedContributionsRecord> linkedContributions = Routines.adminGetLinkedContributions(getContext().configuration(), this.getId());
 
+            // handling of existing composition
+            linkedCompositions.forEach(compo -> {
+                Result<AdminDeleteCompositionRecord> delCompo = Routines.adminDeleteComposition(getContext().configuration(), compo.getComposition());
+                // for each deleted compo delete auxiliary objects
+                delCompo.forEach(del -> {
+                    int resp = getContext().selectQuery(new AdminDeleteAudit().call(del.getAudit())).execute();
+                    if (resp != 1)
+                        throw new InternalServerException("Admin deletion of Composition Audit failed!");
+                    // TODO-314: more?
+                });
+            });
+
             // call first postgres function to start deletion of main objects, and get UUIDs for the next step
             Result<AdminDeleteEhrRecord> adminDeleteEhr = Routines.adminDeleteEhr(getContext().configuration(), this.getId());
             if (adminDeleteEhr.isEmpty()) {
                 throw new InternalServerException("Admin deletion of EHR failed! Unexpected result.");
             }
 
-            // TODO-314: add deletion of composition and connected objects. Right now AdminDeleteEhrHistory below fails if compo is available,
-            // so needs to be deleted beforehand. Questions is which linked objection (audit etc.) need to be deleted in what order.
-
             // adminDeleteEhr returns all linked audits and statuses - go through and delete them
             adminDeleteEhr.forEach(response -> {
                 UUID statusAudit = response.getStatusAudit();
 
-                // call cleanup of auxiliary objects
-                int res = getContext().selectQuery(new AdminDeleteEhrHistory().call(this.getId())).execute();
-                if (res != 1)
-                    throw new InternalServerException("Admin deletion of EHR failed!");
-
                 // delete status audit
-                res = getContext().selectQuery(new AdminDeleteAudit().call(statusAudit)).execute();
+                int res = getContext().selectQuery(new AdminDeleteAudit().call(statusAudit)).execute();
                 if (res != 1)
                     throw new InternalServerException("Admin deletion of Status Audit failed!");
 
@@ -787,11 +791,10 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
                         throw new InternalServerException("Admin deletion of Status Audit failed!");
                 });
 
-                linkedCompositions.forEach(compo -> {   // TODO: does this need to be on top?
-                    // TODO-314: invoke delete compo - and following misc del calls
-                    Result<AdminDeleteCompositionRecord> delCompo = Routines.adminDeleteComposition(getContext().configuration(), compo.getComposition());
-                    log.info(delCompo);
-                });
+                // final cleanup of auxiliary objects
+                res = getContext().selectQuery(new AdminDeleteEhrHistory().call(this.getId())).execute();
+                if (res != 1)
+                    throw new InternalServerException("Admin deletion of EHR failed!");
             });
         } catch (Exception e) {
             log.error(e);   // TODO-314: remove general catching here when done (shadows errors from above)

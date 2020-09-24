@@ -46,15 +46,15 @@ $$ LANGUAGE plpgsql
 
 -- function to delete a single composition and all linked lower tier entities
 CREATE OR REPLACE FUNCTION ehr.admin_delete_composition(compo_id_input UUID)
-RETURNS TABLE (num integer, contribution UUID, composer UUID, audit UUID, attestation UUID) AS $$
+RETURNS TABLE (num integer, contribution UUID, party UUID, audit UUID, attestation UUID) AS $$
     BEGIN
         RETURN QUERY WITH linked_entries(id) AS ( -- get linked ENTRY entities
-                SELECT id, category FROM ehr.entry WHERE composition_id = compo_id_input
+                SELECT id FROM ehr.entry WHERE composition_id = compo_id_input
             ),
             linked_events(id) AS ( -- get linked EVENT_CONTEXT entities
-                SELECT id, facility, setting FROM ehr.event_context WHERE composition_id = compo_id_input
+                SELECT id, facility FROM ehr.event_context WHERE composition_id = compo_id_input
             ),
-            linked_misc(contrib, composer, audit, attestation) AS (
+            linked_misc(contrib, party, audit, attestation) AS (
                 SELECT in_contribution, composer, has_audit, attestation_ref FROM ehr.composition WHERE id = compo_id_input
             ),
             -- TODO-314: delete all linked entities, like audit and contribution, here too
@@ -62,7 +62,7 @@ RETURNS TABLE (num integer, contribution UUID, composer UUID, audit UUID, attest
             delete_composition AS (
                 DELETE FROM ehr.composition WHERE id = compo_id_input
             )
-            SELECT 1, linked_misc.contrib, linked_misc.composer, linked_misc.audit, linked_misc.attestation FROM linked_misc;
+            SELECT 1, linked_misc.contrib, linked_misc.party, linked_misc.audit, linked_misc.attestation FROM linked_misc;
     END;
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
