@@ -484,4 +484,6 @@ public interface I_CompositionAccess extends I_SimpleCRUD {
     static boolean isDeleted(I_DomainAccess domainAccess, UUID versionedObjectId) {
         return CompositionAccess.isDeleted(domainAccess, versionedObjectId);
     }
+
+    void adminDelete();
 }

@@ -185,4 +185,10 @@ public interface CompositionService extends BaseService {
      * @return True if deleted, false if not
      */
     boolean isDeleted(UUID versionedObjectId);
+
+    /**
+     * Admin method to delete a Composition from the DB. See EHRbase Admin API specification for details.
+     * @param compositionId Composition to delete
+     */
+    void adminDelete(UUID compositionId);
 }

@@ -410,5 +410,11 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
     public boolean isDeleted(UUID versionedObjectId) {
         return I_CompositionAccess.isDeleted(this.getDataAccess(), versionedObjectId);
     }
+
+    @Override
+    public void adminDelete(UUID compositionId) {
+        I_CompositionAccess compositionAccess = I_CompositionAccess.retrieveInstance(getDataAccess(), compositionId);
+        compositionAccess.adminDelete();
+    }
 }
 
