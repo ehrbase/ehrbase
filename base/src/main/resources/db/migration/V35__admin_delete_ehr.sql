@@ -44,25 +44,53 @@ END;
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
 
--- function to delete a single composition and all linked lower tier entities
+-- function to delete a single composition, incl. their entries, event_contexts
 CREATE OR REPLACE FUNCTION ehr.admin_delete_composition(compo_id_input UUID)
 RETURNS TABLE (num integer, contribution UUID, party UUID, audit UUID, attestation UUID) AS $$
     BEGIN
         RETURN QUERY WITH linked_entries(id) AS ( -- get linked ENTRY entities
                 SELECT id FROM ehr.entry WHERE composition_id = compo_id_input
             ),
-            linked_events(id) AS ( -- get linked EVENT_CONTEXT entities
+            linked_events(id) AS ( -- get linked EVENT_CONTEXT entities  -- TODO-314: handle events party (facility) too
                 SELECT id, facility FROM ehr.event_context WHERE composition_id = compo_id_input
+            ),
+            linked_participations_for_events(id) AS ( -- get linked EVENT_CONTEXT entities  -- TODO-314: handle party (performer) too
+                SELECT id, performer FROM ehr.participation WHERE event_context IN (SELECT linked_events.id  FROM linked_events)
             ),
             linked_misc(contrib, party, audit, attestation) AS (
                 SELECT in_contribution, composer, has_audit, attestation_ref FROM ehr.composition WHERE id = compo_id_input
             ),
-            -- TODO-314: delete all linked entities, like audit and contribution, here too
+            delete_entries AS (
+                DELETE FROM ehr.entry WHERE ehr.entry.id IN (SELECT linked_entries.id  FROM linked_entries)
+            ),
+            delete_participation AS (
+                DELETE FROM ehr.participation WHERE ehr.participation.id IN (SELECT linked_participations_for_events.id  FROM linked_participations_for_events)
+            ),
+            delete_event_contexts AS (
+                DELETE FROM ehr.event_context WHERE ehr.event_context.id IN (SELECT linked_events.id  FROM linked_events)
+            ),
             -- delete composition itself
             delete_composition AS (
                 DELETE FROM ehr.composition WHERE id = compo_id_input
             )
             SELECT 1, linked_misc.contrib, linked_misc.party, linked_misc.audit, linked_misc.attestation FROM linked_misc;
+    END;
+$$ LANGUAGE plpgsql
+    RETURNS NULL ON NULL INPUT;
+
+-- necessary as own function, because the former transaction needs to be done to populate the *_history table
+CREATE OR REPLACE FUNCTION ehr.admin_delete_composition_history(compo_input UUID)
+RETURNS TABLE (num integer) AS $$
+    BEGIN
+        RETURN QUERY WITH            
+            delete_entry_history AS (
+                DELETE FROM ehr.entry_history WHERE composition_id = compo_input
+            ),
+            delete_composition_history AS (
+                DELETE FROM ehr.composition_history WHERE id = compo_input
+            )
+
+            SELECT 1;
     END;
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
@@ -116,9 +144,6 @@ RETURNS TABLE (num integer) AS $$
             ),
             delete_contribution_history AS (
                 DELETE FROM ehr.contribution_history WHERE ehr_id = ehr_id_input
-            ),
-            delete_composition_history AS (
-                DELETE FROM ehr.composition_history WHERE ehr_id = ehr_id_input
             )
 
             SELECT 1;

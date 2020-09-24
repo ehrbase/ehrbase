@@ -66,6 +66,26 @@ ADMIN - Delete EHR with composition
                         check ehr admin delete table counts
                         generic_keywords.shutdown SUT
 
+ADMIN - Delete EHR with two compositions
+                        start ehrbase
+                        # pre check
+                        Connect With DB
+                        check ehr admin delete table counts
+                        # preparing and provisioning
+                        upload OPT    minimal/minimal_observation.opt
+                        prepare new request session    JSON    Prefer=return=representation
+                        create supernew ehr
+                        Set Test Variable  ${ehr_id}  ${response.body.ehr_id.value}
+                        ehr_keywords.validate POST response - 201 created ehr
+                        commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.xml
+                        commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.xml
+                        # Execute admin delete EHR
+                        admin delete ehr
+                        Log To Console  ${response}
+                        # Test with count rows again - post check
+                        check ehr admin delete table counts
+                        generic_keywords.shutdown SUT
+
 
 *** Keywords ***
 
@@ -107,3 +127,11 @@ check ehr admin delete table counts
                         Should Be Equal As Integers    ${compo_records}     ${0}
     ${compo_h_records}=  Count Rows In DB Table    ehr.composition_history
                         Should Be Equal As Integers    ${compo_h_records}     ${0}
+    ${entry_records}=   Count Rows In DB Table    ehr.entry
+                        Should Be Equal As Integers    ${entry_records}     ${0}
+    ${entry_h_records}=  Count Rows In DB Table    ehr.entry_history
+                        Should Be Equal As Integers    ${entry_h_records}     ${0}
+    ${event_context_records}=   Count Rows In DB Table    ehr.event_context
+                        Should Be Equal As Integers    ${event_context_records}     ${0}
+    ${entry_participation_records}=   Count Rows In DB Table    ehr.participation
+                        Should Be Equal As Integers    ${entry_participation_records}     ${0}

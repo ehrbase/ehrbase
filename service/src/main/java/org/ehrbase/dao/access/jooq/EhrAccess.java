@@ -763,6 +763,11 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
                         throw new InternalServerException("Admin deletion of Composition Audit failed!");
                     // TODO-314: more?
                 });
+
+                // cleanup of composition auxiliary objects
+                int res = getContext().selectQuery(new AdminDeleteCompositionHistory().call(compo.getComposition())).execute();
+                if (res != 1)
+                    throw new InternalServerException("Admin deletion of Composition auxiliary objects failed!");
             });
 
             // call first postgres function to start deletion of main objects, and get UUIDs for the next step
