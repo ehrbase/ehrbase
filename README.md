@@ -7,6 +7,10 @@ EHRbase is an [openEHR](openehr.org) Clinical Data Repository, providing a stand
 This release of EHRbase (v0.13.0) is the first **beta** release. Please see [EHRbase Documentation](https://ehrbase.readthedocs.io/en/latest/) for further details.
 
 
+## 📝 Documentation
+[EHRbase Documentation](https://ehrbase.readthedocs.io/en/latest/) is build with Sphinx and hosted on [Read the Docs](https://readthedocs.org/).
+
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. Please read these instructions carefully. See [deployment](#deployment) for notes on how to deploy the project on a live system.
@@ -113,110 +117,12 @@ cd tests
  2. Browse to Swagger UI --> http://localhost:8080/ehrbase/swagger-ui.html
 
 
-## Docker
-
-### Locally Build Docker Image
-
-First build the application as described in [Installing](#Installing)
-
-To create a Docker image run the following command and provide the correct build output file name created in the previous step, e.g. application-0.10.0.jar for version 0.10.0.
-
-`docker build -f application/Dockerfile --build-arg JAR_FILE=application-*.jar -t ehrbaseorg/ehrbase:latest .`
-
-To run the built container image use the following command:
-
-`docker run --name ehrbase --network ehrbase-net -d -p 8080:8080 -e DB_URL=jdbc:postgresql://ehrdb:5432/ehrbase -e DB_USER=ehrbase -e DB_PASS=ehrbase -e SYSTEM_NAME=local.ehrbase.org ehrbaseorg/ehrbase`.
-
-Adopt the parameters by your needs. The following parameters for `-e` must be set to start the EHRbase container:
-
-| Parameter     | Usage                                                    | Example                              |
-| ------------- | -------------------------------------------------------- | ------------------------------------ |
-| DB_URL        | Database URL. Must point to the running database server. | jdbc:postgresql://ehrdb:5432/ehrbase |
-| DB_USER       | Database user configured for the ehr schema.             | ehrbase                              |
-| DB_PASS       | Password for the database user                           | ehrbase                              |
-| AUTH_TYPE     | Set HTTP security method                                 | BASIC                                |
-| AUTH_USER     | Username for Basic Auth                                  | myuser                               |
-| AUTH_PASSWORD | Password for Basic Auth                                  | myPassword432                        |
-| SYSTEM_NAME   | Name for the local system                                | local.ehrbase.org                    |
-
-### Pre-build Docker Image
-
-See: https://hub.docker.com/r/ehrbaseorg/ehrbase
-
-There is also a preconfigured `docker-compose.yml` file, which sets up and starts the necessary database and EHRbase 
-application with, for instance:
-
-```shell script
-cd application
-docker-compose up
-```
-
-Notes: It is not necessary to have the whole repository on your machine, just copy the `docker-compose.yml` file to
-a local working directory and run it. Using the `-d` argument starts both containers detached, without blocking the 
-terminal. And the DB data is saved in `application/.pgdata` for easier access.
 
 ## Built With
 
 * [Maven](https://maven.apache.org/) - Dependency Management
 
 
-
-## Continuous Integration (CI/CD with CircleCI)
-EHRbase uses CircleCI for continuous integration and deployment. The CI pipeline consists of the following workflows:
-
-### workflow 1/3 - build-and-test
-- trigger: commit to any branch (except - `release/v*`, `master`, `sync/*`, `feature/sync/*`)
-- jobs:
-  - build artifacts
-  - run unit tests
-  - run sdk integraiton tests
-  - run robot integration tests
-  - perform sonarcloud analysis and OWASP dependency check
-
-### workflow 2/3 - release
-- trigger: commit to `release/v` or `master` branch
-- jobs:
-  - build artifacts
-  - run unit tests
-  - run sdk integraiton tests
-  - run robot integration tests
-  - perform sonarcloud analysis and OWASP dependency check
-  - TODO: deploy to Maven Central
-  - TODO: deploy to Docker Hub
-
-### workflow 3/3 - synced-feature-check
-
-:warning: This is a special workflow to catch errors that can occur when code changes introduced to EHRbase AND openEHR_SDK repository are related in a way that they have to be tested together and otherwise can't be catched in workflow 1 or 2. 
-
-- trigger: commit to `sync/*` branch
-- jobs:
-  - pull, build, and test SDK from `sync/*` branch of openEHR_SDK repo
-  - build and test ehrbase (w/ SDK installed in previous step)
-  - start ehrbase server (from .jar packaged in previous step)
-  - run SDK's (java) integration tests
-  - run EHRbase's (robot) integration tests
-  
-  
-```
-HOW TO USE WORKFLOW 3/3
-=======================
-
-1. create TWO branches following the naming convention `sync/[issue-id]_some-desciption`
-   in both repositories (EHRbase and openEHR_SDK) with exact the same name:
-
-  - ehrbase repo       --> i.e.    sync/123_example-issue
-  - openehr_sdk repo   --> i.e.    sync/123_example-issue
-
-2. apply your code changes
-3. push to openehr_sdk repo (NO CI will be triggered)
-4. push to ehrbase repo (CI will trigger this workflow)
-5. create TWO PRs (one in EHRbase, one in openEHR_SDK)
-6. merge BOTH PRs considering below notes:
-  - make sure both PRs are reviewed and ready to be merged
-    at the same time!
-  - make sure to sync both PRs w/ develop before merging!
-  - MERGE BOTH PRs AT THE SAME TIME!
-```
 
 ## License
 

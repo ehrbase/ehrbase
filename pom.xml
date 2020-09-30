@@ -134,7 +134,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>2.3.1.RELEASE</version>
-        <relativePath/>
+        <relativePath />
         <!-- lookup parent from repository -->
     </parent>
 
@@ -213,6 +213,11 @@
             <dependency>
                 <groupId>com.github.ehrbase.openEHR_SDK</groupId>
                 <artifactId>validation</artifactId>
+                <version>${ehrbase.sdk.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.ehrbase.openEHR_SDK</groupId>
+                <artifactId>web-template</artifactId>
                 <version>${ehrbase.sdk.version}</version>
             </dependency>
             <dependency>
@@ -367,7 +372,8 @@
                 <artifactId>spring-security-config</artifactId>
                 <version>${spring-security.version}</version>
             </dependency>
-            <dependency>                <!-- TODO migrate away from joda -->
+            <dependency>
+                <!-- TODO migrate away from joda -->
                 <groupId>joda-time</groupId>
                 <artifactId>joda-time</artifactId>
                 <version>${joda.version}</version>

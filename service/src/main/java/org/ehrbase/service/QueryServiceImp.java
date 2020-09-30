@@ -62,8 +62,6 @@ import java.util.Map;
 public class QueryServiceImp extends BaseService implements QueryService {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    @Value("${server.aql.use-jsquery:true}")
-    private boolean usePgExtensions; //default
     private final FhirTerminologyServerR4AdaptorImpl tsAdapter;
 
     @Autowired
@@ -135,7 +133,7 @@ public class QueryServiceImp extends BaseService implements QueryService {
     private QueryResultDto queryAql(String queryString, boolean explain) {
         try {
 
-            AqlQueryHandler queryHandler = new AqlQueryHandler(getDataAccess(), usePgExtensions, tsAdapter);
+            AqlQueryHandler queryHandler = new AqlQueryHandler(getDataAccess(), tsAdapter);
             AqlResult aqlResult = queryHandler.process(queryString);
 
             return formatResult(aqlResult, queryString, explain);
@@ -150,7 +148,7 @@ public class QueryServiceImp extends BaseService implements QueryService {
 
     private QueryResultDto queryAql(String queryString, Map<String, Object> parameters, boolean explain) {
         try {
-            AqlQueryHandler queryHandler = new AqlQueryHandler(getDataAccess(), usePgExtensions, tsAdapter);
+            AqlQueryHandler queryHandler = new AqlQueryHandler(getDataAccess(), tsAdapter);
             AqlResult aqlResult = queryHandler.process(queryString, parameters);
 
             return formatResult(aqlResult, queryString, explain);
@@ -184,7 +182,6 @@ public class QueryServiceImp extends BaseService implements QueryService {
     //=== DEFINITION: manage stored queries
     @Override
     public List<QueryDefinitionResultDto> retrieveStoredQueries(String fullyQualifiedName){
-//        StoredQueryQualifiedName storedQueryQualifiedName = new StoredQueryQualifiedName(fullyQualifiedName);
 
         List<QueryDefinitionResultDto> resultDtos = new ArrayList<>();
         try {

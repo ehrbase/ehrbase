@@ -41,6 +41,11 @@ public class JsonPathQueryResult implements Serializable {
         }
     }
 
+    public JsonPathQueryResult(String templateId, String aqlPath) {
+        this.templateId = templateId;
+        this.aqlPath = aqlPath;
+    }
+
     public String getTemplateId() {
         return templateId;
     }

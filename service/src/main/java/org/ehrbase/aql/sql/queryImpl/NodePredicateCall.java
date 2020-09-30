@@ -41,7 +41,7 @@ public class NodePredicateCall {
         List<String> resultList = new ArrayList<>();
         resultList.addAll(patchItemArray(itemPathArray));
 
-        while (resultList.contains(I_QueryImpl.AQL_NODE_NAME_PREDICATE_MARKER)) {
+        while (resultList.contains(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER)) {
             resultList = resolveNodePredicateCall(resultList);
         }
 
@@ -52,18 +52,18 @@ public class NodePredicateCall {
     private List<String> resolveNodePredicateCall(List<String> itemPathArray) {
 
         List<String> resultList = new ArrayList<>();
-        int startList = 0;
+        int startList;
 
         //check if the list contains an entry with AQL_NODE_NAME_PREDICATE_MARKER
-        if (itemPathArray.contains(I_QueryImpl.AQL_NODE_NAME_PREDICATE_MARKER)) {
-            StringBuffer expression = new StringBuffer();
-            int markerPos = itemPathArray.indexOf(I_QueryImpl.AQL_NODE_NAME_PREDICATE_MARKER);
+        if (itemPathArray.contains(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER)) {
+            StringBuilder expression = new StringBuilder();
+            int markerPos = itemPathArray.indexOf(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER);
             //prepare the function call
-            expression.append(I_QueryImpl.AQL_NODE_NAME_PREDICATE_FUNCTION);
+            expression.append(QueryImplConstants.AQL_NODE_NAME_PREDICATE_FUNCTION);
             expression.append("(");
             //check if the table clause is already in the sequence in a nested call to aql_node_name_predicate
             //TODO: better test really...
-            if (!itemPathArray.get(0).startsWith(I_QueryImpl.AQL_NODE_NAME_PREDICATE_FUNCTION)) {
+            if (!itemPathArray.get(0).startsWith(QueryImplConstants.AQL_NODE_NAME_PREDICATE_FUNCTION)) {
                 expression.append(ENTRY.ENTRY_);
                 startList = 0;
             } else {
@@ -82,9 +82,9 @@ public class NodePredicateCall {
 
             //Locate end tag (end of array or next marker)
             int endPos;
-            if (itemPathArray.subList(markerPos + 1, itemPathArray.size()).contains(I_QueryImpl.AQL_NODE_NAME_PREDICATE_MARKER)) {
+            if (itemPathArray.subList(markerPos + 1, itemPathArray.size()).contains(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER)) {
                 resultList.add(expression.toString());
-                endPos = markerPos + itemPathArray.subList(markerPos + 1, itemPathArray.size()).indexOf(I_QueryImpl.AQL_NODE_NAME_PREDICATE_MARKER) - 1;
+                endPos = markerPos + itemPathArray.subList(markerPos + 1, itemPathArray.size()).indexOf(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER) - 1;
                 resultList.addAll(itemPathArray.subList(endPos, itemPathArray.size()));
             } else {
                 expression.append("#>>");
@@ -113,7 +113,7 @@ public class NodePredicateCall {
         List<String> items = new ArrayList<>();
 
         for (String item : itemPathArray) {
-            if (item.equals(I_QueryImpl.AQL_NODE_ITERATIVE_MARKER))
+            if (item.equals(QueryImplConstants.AQL_NODE_ITERATIVE_MARKER))
                 items.add("0");
             else
                 items.add(item);

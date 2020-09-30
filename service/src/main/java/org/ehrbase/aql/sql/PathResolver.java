@@ -21,12 +21,12 @@
 
 package org.ehrbase.aql.sql;
 
-import org.ehrbase.aql.containment.Containment;
-import org.ehrbase.aql.containment.IdentifierMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.ehrbase.aql.containment.Containment;
+import org.ehrbase.aql.containment.IdentifierMapper;
 import org.ehrbase.aql.containment.Templates;
-import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.service.KnowledgeCacheService;
 
 import static org.ehrbase.aql.sql.QueryProcessor.NIL_TEMPLATE;
@@ -109,10 +109,10 @@ public class PathResolver {
 
     public String pathOf(String templateId, String identifier) {
         String result =  getMapper().getPath(templateId, identifier);
-        if (result == null && getMapper().getClassName(identifier).equals("COMPOSITION")){
+        if (StringUtils.isBlank(result) && getMapper().getClassName(identifier).equals("COMPOSITION")) {
             //assemble a fake path for composition
             StringBuilder stringBuilder = new StringBuilder();
-            Containment containment = (Containment)getMapper().getContainer(identifier);
+            Containment containment = (Containment) getMapper().getContainer(identifier);
             stringBuilder.append("/composition[");
             stringBuilder.append(containment.getArchetypeId());
             stringBuilder.append("]");

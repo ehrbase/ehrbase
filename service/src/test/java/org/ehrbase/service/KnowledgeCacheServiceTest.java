@@ -19,8 +19,10 @@
 package org.ehrbase.service;
 
 import org.apache.commons.io.IOUtils;
+import org.ehrbase.configuration.CacheConfiguration;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.ehrbase.opt.query.TemplateTestData;
+import org.ehrbase.test_data.operationaltemplate.OperationalTemplateTestData;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -60,6 +62,26 @@ public class KnowledgeCacheServiceTest {
         assertThat(knowledge.getQueryOptMetaData("IDCR - Immunisation summary.v0")).isNotNull();
     }
 
+    @Test
+    public void testQueryType() throws Exception {
+        KnowledgeCacheService knowledge = buildKnowledgeCache(testFolder, cacheRule);
+        knowledge.addOperationalTemplate(IOUtils.toByteArray(OperationalTemplateTestData.IDCR_PROBLEM_LIST.getStream()));
+
+
+        assertThat(knowledge.getInfo(OperationalTemplateTestData.IDCR_PROBLEM_LIST.getTemplateId(), "/content[openEHR-EHR-SECTION.problems_issues_rcp.v1]/items[openEHR-EHR-EVALUATION.problem_diagnosis.v1]/data[at0001]/items[at0012]").getItemType())
+                .isEqualTo("DV_TEXT");
+    }
+
+    @Test
+    public void testQueryType2() throws Exception {
+        KnowledgeCacheService knowledge = buildKnowledgeCache(testFolder, cacheRule);
+        knowledge.addOperationalTemplate(IOUtils.toByteArray(OperationalTemplateTestData.BLOOD_PRESSURE_SIMPLE.getStream()));
+
+
+        assertThat(knowledge.getInfo(OperationalTemplateTestData.BLOOD_PRESSURE_SIMPLE.getTemplateId(), "/content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0004]").getItemType())
+                .isEqualTo("DV_QUANTITY");
+    }
+
 
     public static KnowledgeCacheService buildKnowledgeCache(TemporaryFolder folder, CacheRule cacheRule) throws Exception {
 
@@ -69,7 +91,7 @@ public class KnowledgeCacheServiceTest {
         TemplateFileStorageService templateFileStorageService = new TemplateFileStorageService();
         templateFileStorageService.setOptPath(operationalTemplatesemplates.getPath());
 
-        return new KnowledgeCacheService(templateFileStorageService, cacheRule.cacheManager);
+        return new KnowledgeCacheService(templateFileStorageService, cacheRule.cacheManager, new CacheConfiguration());
     }
 
 

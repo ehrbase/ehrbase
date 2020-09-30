@@ -52,8 +52,7 @@ import java.sql.*;
 import java.util.*;
 
 import static org.ehrbase.jooq.pg.Tables.*;
-import static org.jooq.impl.DSL.count;
-import static org.jooq.impl.DSL.max;
+import static org.jooq.impl.DSL.*;
 
 /**
  * operations on the static part of Compositions (eg. non archetyped attributes)

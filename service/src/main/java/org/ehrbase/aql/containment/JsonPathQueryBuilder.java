@@ -18,7 +18,10 @@
 package org.ehrbase.aql.containment;
 
 import org.apache.commons.collections.iterators.ReverseListIterator;
+import org.apache.commons.lang3.StringUtils;
+import org.ehrbase.webtemplate.NodeId;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -30,43 +33,21 @@ public class JsonPathQueryBuilder {
     private Iterator<Object> reverseListIterator;
 
     public JsonPathQueryBuilder(List<Object> containmentList) {
-        this.reverseListIterator = new ReverseListIterator(containmentList);;
+        this.reverseListIterator = new ReverseListIterator(containmentList);
+        ;
     }
 
-    /**
-     * return the jsonpath expression depending on the containment definition:
-     * 1. if the archetype node id is defined use equals node_id (CONTAINS CLUSTER c[openEHR-EHR-CLUSTER.location.v1])
-     * 2. if not, use a regexp based on the class name (CONTAINS CLUSTER c)
-     * @return
-     */
-    public String assemble(){
-        StringBuilder stringBuilder = new StringBuilder();
 
-        stringBuilder.append("$");
-        while (reverseListIterator.hasNext()){
+    public List<NodeId> assemble() {
+        List<NodeId> nodeIdList = new ArrayList<>();
+        while (reverseListIterator.hasNext()) {
             Object containment = reverseListIterator.next();
-            if (containment instanceof Containment){
-                if (!((Containment) containment).getArchetypeId().isBlank()) {
-                    stringBuilder.append("..");
-                    stringBuilder.append("[?(@.node_id == ");
-                    stringBuilder.append("'");
-                    stringBuilder.append(((Containment) containment).getArchetypeId());
-                    stringBuilder.append("'");
-                    //closing the bracket condition
-                    stringBuilder.append(")]");
-                }
-                else {
-                    //use the type checking if no archetype node id is specified
-                    stringBuilder.append("..");
-                    stringBuilder.append("[?(@.type == ");
-                    stringBuilder.append("'");
-                    stringBuilder.append(((Containment) containment).getClassName().toUpperCase());
-                    stringBuilder.append("'");
-                    //closing the bracket condition
-                    stringBuilder.append(")]");
-                }
+            if (containment instanceof Containment) {
+                String archetypeId = ((Containment) containment).getArchetypeId();
+                NodeId nodeId = new NodeId(((Containment) containment).getClassName(), StringUtils.isNotBlank(archetypeId) ? archetypeId : null);
+                nodeIdList.add(nodeId);
             }
         }
-        return stringBuilder.toString();
+        return nodeIdList;
     }
 }

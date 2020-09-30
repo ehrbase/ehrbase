@@ -9,4 +9,11 @@ public interface ServerConfig {
     String getNodename();
 
     void setNodename(String nodename);
+
+    String getAqlIterationSkipList();
+
+    Integer getAqlDepth();
+
+    Boolean getUseJsQuery();
+
 }

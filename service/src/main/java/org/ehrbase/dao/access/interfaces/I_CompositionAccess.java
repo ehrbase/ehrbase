@@ -30,7 +30,6 @@ import org.ehrbase.dao.access.util.ContributionDef;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.composition.EventContext;
 import org.ehrbase.jooq.pg.tables.records.*;
-import org.jooq.JSONB;
 import org.jooq.Result;
 import org.jooq.Table;
 import org.jooq.exception.DataAccessException;
