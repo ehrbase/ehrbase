@@ -132,6 +132,7 @@ RETURNS TABLE (num integer, /*contrib_audit UUID,*/ status_audit UUID/*, composi
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
 
+-- Deletes *_history entries for a given EHR - used after invoking the "normal" deletion
 -- necessary as own function, because the former transaction needs to be done to populate the *_history table
 CREATE OR REPLACE FUNCTION ehr.admin_delete_ehr_history(ehr_id_input UUID)
 RETURNS TABLE (num integer) AS $$
@@ -151,6 +152,7 @@ RETURNS TABLE (num integer) AS $$
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
 
+-- Get a set of contributions (as UUID) that are linked with the given EHR
 CREATE OR REPLACE FUNCTION ehr.admin_get_linked_contributions(ehr_id_input UUID)
 RETURNS TABLE (contribution UUID, audit UUID) AS $$
     BEGIN
@@ -164,12 +166,27 @@ RETURNS TABLE (contribution UUID, audit UUID) AS $$
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
 
+-- Get a set of compositions (as UUID) that are linked with the given EHR
 CREATE OR REPLACE FUNCTION ehr.admin_get_linked_compositions(ehr_id_input UUID)
 RETURNS TABLE (composition UUID ) AS $$
     BEGIN
         RETURN QUERY WITH
             linked_compo(id) AS ( -- get linked CONTRIBUTION parameters
                 SELECT id FROM ehr.composition WHERE ehr_id = ehr_id_input
+            )
+
+            SELECT * FROM linked_compo;
+    END;
+$$ LANGUAGE plpgsql
+    RETURNS NULL ON NULL INPUT;
+
+-- Get a set of linked child compositions for the given (master) composition
+CREATE OR REPLACE FUNCTION ehr.admin_get_child_compositions(compo_id_input UUID)
+RETURNS TABLE (composition UUID ) AS $$
+    BEGIN
+        RETURN QUERY WITH
+            linked_compo(child) AS ( -- get linked CONTRIBUTION parameters
+                SELECT child_uuid FROM ehr.compo_xref WHERE master_uuid = compo_id_input
             )
 
             SELECT * FROM linked_compo;

@@ -750,25 +750,13 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     @Override
     public void adminDeleteEhr() {
         try {
+            AdminApiUtils adminApi = new AdminApiUtils(getContext());
+
             Result<AdminGetLinkedCompositionsRecord> linkedCompositions = Routines.adminGetLinkedCompositions(getContext().configuration(), this.getId());
             Result<AdminGetLinkedContributionsRecord> linkedContributions = Routines.adminGetLinkedContributions(getContext().configuration(), this.getId());
 
             // handling of existing composition
-            linkedCompositions.forEach(compo -> {
-                Result<AdminDeleteCompositionRecord> delCompo = Routines.adminDeleteComposition(getContext().configuration(), compo.getComposition());
-                // for each deleted compo delete auxiliary objects
-                delCompo.forEach(del -> {
-                    int resp = getContext().selectQuery(new AdminDeleteAudit().call(del.getAudit())).execute();
-                    if (resp != 1)
-                        throw new InternalServerException("Admin deletion of Composition Audit failed!");
-                    // TODO-314: more?
-                });
-
-                // cleanup of composition auxiliary objects
-                int res = getContext().selectQuery(new AdminDeleteCompositionHistory().call(compo.getComposition())).execute();
-                if (res != 1)
-                    throw new InternalServerException("Admin deletion of Composition auxiliary objects failed!");
-            });
+            linkedCompositions.forEach(compo -> adminApi.deleteComposition(compo.getComposition()));
 
             // call first postgres function to start deletion of main objects, and get UUIDs for the next step
             Result<AdminDeleteEhrRecord> adminDeleteEhr = Routines.adminDeleteEhr(getContext().configuration(), this.getId());

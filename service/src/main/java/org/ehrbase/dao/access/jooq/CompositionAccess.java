@@ -37,11 +37,8 @@ import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.dao.access.util.TransactionTime;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
-import org.ehrbase.jooq.pg.Routines;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
-import org.ehrbase.jooq.pg.tables.AdminDeleteAudit;
-import org.ehrbase.jooq.pg.tables.AdminDeleteCompositionHistory;
 import org.ehrbase.jooq.pg.tables.records.*;
 import org.ehrbase.serialisation.dbencoding.rmobject.FeederAuditEncoding;
 import org.ehrbase.serialisation.dbencoding.rmobject.LinksEncoding;
@@ -966,21 +963,9 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         throw new InternalServerException("Problem processing CompositionAccess.isDeleted(..)");
     }
 
-    // TODO-314: not done. check with "delete ehr" later on what the current state here should be like.
     @Override
     public void adminDelete() {
-        Result<AdminDeleteCompositionRecord> delCompo = Routines.adminDeleteComposition(getContext().configuration(), this.getId());
-        // for each deleted compo delete auxiliary objects
-        delCompo.forEach(del -> {
-            int resp = getContext().selectQuery(new AdminDeleteAudit().call(del.getAudit())).execute();
-            if (resp != 1)
-                throw new InternalServerException("Admin deletion of Composition Audit failed!");
-            // TODO-314: more?
-        });
-
-        // cleanup of composition auxiliary objects
-        int res = getContext().selectQuery(new AdminDeleteCompositionHistory().call(this.getId())).execute();
-        if (res != 1)
-            throw new InternalServerException("Admin deletion of Composition auxiliary objects failed!");
+        AdminApiUtils adminApi = new AdminApiUtils(getContext());
+        adminApi.deleteComposition(this.getId());
     }
 }
