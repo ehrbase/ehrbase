@@ -25,96 +25,100 @@ Metadata    Created    2020.09.01
 Metadata        TOP_TEST_SUITE    ADMIN_EHR
 Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 
+Test Setup     startup SUT
+Test Teardown  shutdown SUT
+
+
 
 *** Test Cases ***
 
-# Suite doesn't handle SUT statup and shutdown, so each test needs to do it! (Allows completely new systems for each test)
-
 ADMIN - Delete EHR
-                        start ehrbase
-                        # pre check
-                        Connect With DB
-                        check ehr admin delete table counts
-                        # preparing and provisioning
-                        prepare new request session    JSON    Prefer=return=representation
-                        create supernew ehr
-                        Set Test Variable  ${ehr_id}  ${response.body.ehr_id.value}
-                        ehr_keywords.validate POST response - 201 created ehr
-                        # Execute admin delete EHR
-                        admin delete ehr
-                        Log To Console  ${response}
-                        # Test with count rows again - post check
-                        check ehr admin delete table counts
-                        generic_keywords.shutdown SUT
+    # comment: pre check
+    Connect With DB
+    check ehr admin delete table counts
+
+    # comment: preparing and provisioning
+    prepare new request session    JSON    Prefer=return=representation
+    create supernew ehr
+    Set Test Variable  ${ehr_id}  ${response.body.ehr_id.value}
+    ehr_keywords.validate POST response - 201 created ehr
+
+    # comment: Execute admin delete EHR
+    admin delete ehr
+    Log To Console  ${response}
+
+    # comment: Test with count rows again - post check
+    check ehr admin delete table counts
+
 
 ADMIN - Delete EHR with composition
-                        start ehrbase
-                        # pre check
-                        Connect With DB
-                        check ehr admin delete table counts
-                        # preparing and provisioning
-                        upload OPT    minimal/minimal_observation.opt
-                        prepare new request session    JSON    Prefer=return=representation
-                        create supernew ehr
-                        Set Test Variable  ${ehr_id}  ${response.body.ehr_id.value}
-                        ehr_keywords.validate POST response - 201 created ehr
-                        commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.xml
-                        # Execute admin delete EHR
-                        admin delete ehr
-                        Log To Console  ${response}
-                        # Test with count rows again - post check
-                        check ehr admin delete table counts
-                        generic_keywords.shutdown SUT
+    # pre check
+    Connect With DB
+    check ehr admin delete table counts
+    # preparing and provisioning
+    upload OPT    minimal/minimal_observation.opt
+    prepare new request session    JSON    Prefer=return=representation
+    create supernew ehr
+    Set Test Variable  ${ehr_id}  ${response.body.ehr_id.value}
+    ehr_keywords.validate POST response - 201 created ehr
+    commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.xml
+    # Execute admin delete EHR
+    admin delete ehr
+    Log To Console  ${response}
+    # Test with count rows again - post check
+    check ehr admin delete table counts
+
 
 ADMIN - Delete EHR with two compositions
-                        start ehrbase
-                        # pre check
-                        Connect With DB
-                        check ehr admin delete table counts
-                        # preparing and provisioning
-                        upload OPT    minimal/minimal_observation.opt
-                        prepare new request session    JSON    Prefer=return=representation
-                        create supernew ehr
-                        Set Test Variable  ${ehr_id}  ${response.body.ehr_id.value}
-                        ehr_keywords.validate POST response - 201 created ehr
-                        commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.xml
-                        commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.xml
-                        # Execute admin delete EHR
-                        admin delete ehr
-                        Log To Console  ${response}
-                        # Test with count rows again - post check
-                        check ehr admin delete table counts
-                        generic_keywords.shutdown SUT
+    # pre check
+    Connect With DB
+    check ehr admin delete table counts
+    # preparing and provisioning
+    upload OPT    minimal/minimal_observation.opt
+    prepare new request session    JSON    Prefer=return=representation
+    create supernew ehr
+    Set Test Variable  ${ehr_id}  ${response.body.ehr_id.value}
+    ehr_keywords.validate POST response - 201 created ehr
+    commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.xml
+    commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.xml
+    # Execute admin delete EHR
+    admin delete ehr
+    Log To Console  ${response}
+    # Test with count rows again - post check
+    check ehr admin delete table counts
+
+
 
 ################## COMPOSITION ########################
 
 ADMIN - Delete Composition
-                        start ehrbase
-                        # pre check
-                        Connect With DB
-                        check composition admin delete table counts
-                        # preparing and provisioning
-                        upload OPT    minimal/minimal_observation.opt
-                        prepare new request session    JSON    Prefer=return=representation
-                        create supernew ehr
-                        Set Test Variable  ${ehr_id}  ${response.body.ehr_id.value}
-                        ehr_keywords.validate POST response - 201 created ehr
-                        commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.xml
-                        # Execute admin delete EHR
-                        admin delete composition
-                        Log To Console  ${response}
-                        # Test with count rows again - post check
-                        check composition admin delete table counts
-                        generic_keywords.shutdown SUT
+    # pre check
+    Connect With DB
+    check composition admin delete table counts
+    # preparing and provisioning
+    upload OPT    minimal/minimal_observation.opt
+    prepare new request session    JSON    Prefer=return=representation
+    create supernew ehr
+    Set Test Variable  ${ehr_id}  ${response.body.ehr_id.value}
+    ehr_keywords.validate POST response - 201 created ehr
+    commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.xml
+    # Execute admin delete EHR
+    admin delete composition
+    Log To Console  ${response}
+    # Test with count rows again - post check
+    check composition admin delete table counts
+
 
 
 *** Keywords ***
 
-start ehrbase
+startup SUT
+    [Documentation]     Overrides `generic_keywords.startup SUT` keyword
+    ...                 to add some ENVs required by this test suite.
 
-                        Set Environment Variable  ADMINAPI_ACTIVE   true
-                        Set Environment Variable  SYSTEM_ALLOWTEMPLATEOVERWRITE   true
-                        generic_keywords.startup SUT
+    Set Environment Variable    ADMINAPI_ACTIVE    true
+    Set Environment Variable    SYSTEM_ALLOWTEMPLATEOVERWRITE    true
+    generic_keywords.startup SUT
 
 
 admin delete ehr

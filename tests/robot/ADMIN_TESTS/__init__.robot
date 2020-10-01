@@ -26,7 +26,4 @@ Documentation    https://docs.google.com/document/d/1r_z_E8MhlNdeVZS4xecl-8KbG0J
 
 Resource   ${EXECDIR}/robot/_resources/suite_settings.robot
 
-#Suite Setup    startup SUT
-#Suite Teardown    shutdown SUT
-
 Force Tags    admin    ehr_service
