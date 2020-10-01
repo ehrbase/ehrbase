@@ -7,8 +7,7 @@
 .pgdata
 CHANGELOG.md
 LICENSE.md
-Notice .md
+Notice.md
 README.md
 sonar-project.properties
-
 tests
