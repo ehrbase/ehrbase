@@ -113,7 +113,7 @@ ADMIN - Delete Composition
 start ehrbase
 
                         Set Environment Variable  ADMINAPI_ACTIVE   true
-                        Set Environment Variable  SYSTEM_ALLOW_TEMPLATE_OVERWRITE  true
+                        Set Environment Variable  SYSTEM_ALLOWTEMPLATEOVERWRITE   true
                         generic_keywords.startup SUT
 
 

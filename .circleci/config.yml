@@ -57,10 +57,10 @@ workflows:
           requires:
             - build-artifacts
         
-      - dependency-check:
-          context: org-global
-          requires:
-            - build-artifacts
+      # - dependency-check:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
 
       - COMPOSITION-tests-1:
           context: org-global
@@ -192,10 +192,10 @@ workflows:
           requires:
             - build-artifacts
 
-      - dependency-check:
-          context: org-global
-          requires:
-            - build-artifacts
+      # - dependency-check:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
 
       - COMPOSITION-tests-1:
           context: org-global
@@ -501,16 +501,16 @@ jobs:
       - save-packaged-ehrbase-jar
       - save-build-artifacts-job-caches
 
-  dependency-check:
-    executor: docker-python3-java11
-    steps:
-      - checkout
-      - install-maven
-      - restore-packaged-ehrbase-jar
-      - restore-dependency-check-job-caches
-      - run-dependency-check
-      - persist-dependency-check-results
-      - save-dependency-check-job-caches
+  # dependency-check:
+  #   executor: docker-python3-java11
+  #   steps:
+  #     - checkout
+  #     - install-maven
+  #     - restore-packaged-ehrbase-jar
+  #     - restore-dependency-check-job-caches
+  #     - run-dependency-check
+  #     - persist-dependency-check-results
+  #     - save-dependency-check-job-caches
 
   run-unit-tests:
     executor: docker-py3-java11-postgres
@@ -1390,32 +1390,32 @@ commands:
             -Dsonar.branch.target=$(~/projects/.circleci/get_target_branch.sh) \
             -Dsonar.projectVersion=$(~/projects/.circleci/verify_and_return_version.sh)
 
-  run-dependency-check:
-    description: Run dependency vulnerability analysis
-    steps:
-      - run:
-          name: Install dependency check
-          command: |
-            mkdir -p ~/downloads
-            cd ~/downloads
-            [ -e dependency-check-5.2.2-release.zip ] || wget https://dl.bintray.com/jeremy-long/owasp/dependency-check-6.0.1-release.zip
-            mkdir -p ~/dependency_check
-            unzip -uo dependency-check*.zip -d ~
-      - run:
-          name: Run dependency vulnerability analysis
-          command: |
-            cd ~/projects
-            ~/dependency-check/bin/dependency-check.sh \
-                --project "EHRBase" --format JSON \
-                -o vulnerability_analysis.json --scan .
-      - run:
-          name: Convert vulnerability analysis to sonar issues
-          command: |
-            # pyenv global 3.7.0
-            python3 ~/projects/.circleci/convert_vulnerability_analysis.py \
-                ~/projects/vulnerability_analysis.json \
-                ~/projects/sonar_issues.json \
-                application/src/main/java/org/ehrbase/application/EhrBase.java
+  # run-dependency-check:
+  #   description: Run dependency vulnerability analysis
+  #   steps:
+  #     - run:
+  #         name: Install dependency check
+  #         command: |
+  #           mkdir -p ~/downloads
+  #           cd ~/downloads
+  #           [ -e dependency-check-5.2.2-release.zip ] || wget https://dl.bintray.com/jeremy-long/owasp/dependency-check-6.0.1-release.zip
+  #           mkdir -p ~/dependency_check
+  #           unzip -uo dependency-check*.zip -d ~
+  #     - run:
+  #         name: Run dependency vulnerability analysis
+  #         command: |
+  #           cd ~/projects
+  #           ~/dependency-check/bin/dependency-check.sh \
+  #               --project "EHRBase" --format JSON \
+  #               -o vulnerability_analysis.json --scan .
+  #     - run:
+  #         name: Convert vulnerability analysis to sonar issues
+  #         command: |
+  #           # pyenv global 3.7.0
+  #           python3 ~/projects/.circleci/convert_vulnerability_analysis.py \
+  #               ~/projects/vulnerability_analysis.json \
+  #               ~/projects/sonar_issues.json \
+  #               application/src/main/java/org/ehrbase/application/EhrBase.java
 
 
 
