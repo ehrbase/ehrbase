@@ -6,41 +6,83 @@
 -- generic function to delete audit, incl. system, if appropriate TODO: and party
 CREATE OR REPLACE FUNCTION ehr.admin_delete_audit(audit_input UUID)
     RETURNS TABLE (num integer) AS $$
-BEGIN
-    RETURN QUERY WITH
-                     -- extract info about referenced system, before deleting audit
-                     scope_system(system_id) AS ( -- get current scope's system ID
-                         SELECT ehr.audit_details.system_id
-                         FROM ehr.audit_details
-                         WHERE id = audit_input
-                         GROUP BY ehr.audit_details.system_id
-                     ),
-                     -- extract info about referenced audits, before deleting audit
-                     systems_audits(system_id, audit_id) AS ( -- get table of audits and their system ID
-                         SELECT ehr.system.id AS system_id, ehr.audit_details.id AS audit_id
-                         FROM ehr.audit_details, ehr.system
-                         WHERE ehr.system.id = ehr.audit_details.system_id
-                     ),
-                     -- delete audit linked to status and contribution
-                     -- TODO: delete party
-                     delete_audit_details AS (
-                         DELETE FROM ehr.audit_details WHERE id = audit_input
-                     ),
-                     count_audits_for_system(system_id, amount) AS (   -- count amount of audits referencing the system ID, which is referenced in this scope
-                         SELECT system_id, COUNT(systems_audits.audit_id)
-                         FROM systems_audits
-                         WHERE systems_audits.system_id IN (SELECT scope_system.system_id FROM scope_system)
-                         GROUP BY system_id
-                     ),
-                     -- delete system, if no other audit references it
-                     delete_system AS (
-                         DELETE FROM ehr.system WHERE (ehr.system.id IN (SELECT scope_system.system_id FROM scope_system))
-                             -- info gathered above needs to indicate only no reference (i.e. empty table result)
-                             AND (NOT EXISTS (SELECT count_audits_for_system.amount FROM count_audits_for_system WHERE count_audits_for_system.amount > 1))
-                     )
+    BEGIN
+        RETURN QUERY WITH
+            -- extract info about referenced system, before deleting audit
+            scope_system(system_id) AS ( -- get current scope's system ID
+                SELECT ehr.audit_details.system_id
+                FROM ehr.audit_details
+                WHERE id = audit_input
+                GROUP BY ehr.audit_details.system_id
+            ),
+            -- extract info about referenced audits, before deleting audit
+            systems_audits(system_id, audit_id) AS ( -- get table of audits and their system ID
+                SELECT ehr.system.id AS system_id, ehr.audit_details.id AS audit_id
+                FROM ehr.audit_details, ehr.system
+                WHERE ehr.system.id = ehr.audit_details.system_id
+            ),
+            -- delete audit linked to status and contribution
+            -- TODO: delete party
+            delete_audit_details AS (
+                DELETE FROM ehr.audit_details WHERE id = audit_input
+            ),
+            count_audits_for_system(system_id, amount) AS (   -- count amount of audits referencing the system ID, which is referenced in this scope
+                SELECT system_id, COUNT(systems_audits.audit_id)
+                FROM systems_audits
+                WHERE systems_audits.system_id IN (SELECT scope_system.system_id FROM scope_system)
+                GROUP BY system_id
+            ),
+            -- delete system, if no other audit references it
+            delete_system AS (
+                DELETE FROM ehr.system WHERE (ehr.system.id IN (SELECT scope_system.system_id FROM scope_system))
+                    -- info gathered above needs to indicate only no reference (i.e. empty table result)
+                    AND (NOT EXISTS (SELECT count_audits_for_system.amount FROM count_audits_for_system WHERE count_audits_for_system.amount > 1))
+            )
 
-                 SELECT 1;
-END;
+            SELECT 1;
+    END;
+$$ LANGUAGE plpgsql
+    RETURNS NULL ON NULL INPUT;
+
+-- generic function to delete attestation by given attestation_ref ID
+-- returns all linked audits for further deletion
+CREATE OR REPLACE FUNCTION ehr.admin_delete_attestation(attest_ref_input UUID)
+    RETURNS TABLE (audit UUID) AS $$
+    BEGIN
+        RETURN QUERY WITH
+            -- extract info about referenced audit
+            linked_audit(id) AS (
+                SELECT ehr.attestation.has_audit
+                FROM ehr.attestation
+                WHERE reference = attest_ref_input
+            ),
+            -- extract info about attestation linked by the given reference
+            linked_attestation(id) AS (
+                SELECT ehr.attestation.id
+                FROM ehr.attestation
+                WHERE reference = attest_ref_input
+            ),
+            -- extract info about attested_view linked by the extracted attestations
+            linked_attested_view(id) AS (
+                SELECT ehr.attested_view.id
+                FROM ehr.attested_view
+                WHERE attestation_id IN (SELECT linked_attestation.id FROM linked_attestation)
+            ),
+            -- delete attested_view
+            delete_audit_details AS (
+                DELETE FROM ehr.attested_view WHERE id IN (SELECT linked_attested_view.id FROM linked_attested_view)
+            ),
+            -- delete attestation
+            delete_audit_details AS (
+                DELETE FROM ehr.attestation WHERE id IN (SELECT linked_attestation.id FROM linked_attestation)
+            ),
+            -- delete attestation
+            delete_audit_details AS (
+                DELETE FROM ehr.attestation_ref WHERE id = attest_ref_input
+            )
+
+            SELECT linked_audit.id FROM linked_audit;
+    END;
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
 

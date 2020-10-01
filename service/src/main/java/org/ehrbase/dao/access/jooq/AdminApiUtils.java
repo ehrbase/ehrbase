@@ -4,6 +4,7 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.jooq.pg.Routines;
 import org.ehrbase.jooq.pg.tables.AdminDeleteAudit;
 import org.ehrbase.jooq.pg.tables.AdminDeleteCompositionHistory;
+import org.ehrbase.jooq.pg.tables.records.AdminDeleteAttestationRecord;
 import org.ehrbase.jooq.pg.tables.records.AdminDeleteCompositionRecord;
 import org.ehrbase.jooq.pg.tables.records.AdminGetChildCompositionsRecord;
 import org.jooq.DSLContext;
@@ -50,6 +51,15 @@ public class AdminApiUtils {
             int resp = ctx.selectQuery(new AdminDeleteAudit().call(del.getAudit())).execute();
             if (resp != 1)
                 throw new InternalServerException("Admin deletion of Composition Audit failed!");
+            // invoke deletion of attestation, if available
+            if (del.getAttestation() != null) {
+                Result<AdminDeleteAttestationRecord> delAttest = Routines.adminDeleteAttestation(ctx.configuration(), del.getAttestation());
+                delAttest.forEach(attest -> {
+                    int res = ctx.selectQuery(new AdminDeleteAudit().call(attest.getAudit())).execute();
+                    if (res != 1)
+                        throw new InternalServerException("Admin deletion of Attestation Audit failed!");
+                });
+            }
             // TODO-314: more?
         });
     }
