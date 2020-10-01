@@ -57,7 +57,7 @@ workflows:
           requires:
             - build-artifacts
         
-      # - dependency-check:
+      # - dependency-check:     # TODO-383: fix dep check
       #     context: org-global
       #     requires:
       #       - build-artifacts
@@ -151,7 +151,7 @@ workflows:
           requires:
             - build-artifacts
             - run-unit-tests
-            - dependency-check
+            #- dependency-check   # TODO-383: fix dep check
             - COMPOSITION-tests-1
             - COMPOSITION-tests-2
             - COMPOSITION-tests-3
@@ -192,7 +192,7 @@ workflows:
           requires:
             - build-artifacts
 
-      # - dependency-check:
+      # - dependency-check:     # TODO-383: fix dep check
       #     context: org-global
       #     requires:
       #       - build-artifacts
@@ -286,7 +286,7 @@ workflows:
           requires:
             - build-artifacts
             - run-unit-tests
-            - dependency-check
+            #- dependency-check   # TODO-383: fix dep check
             - COMPOSITION-tests-1
             - COMPOSITION-tests-2
             - COMPOSITION-tests-3
@@ -501,7 +501,7 @@ jobs:
       - save-packaged-ehrbase-jar
       - save-build-artifacts-job-caches
 
-  # dependency-check:
+  # dependency-check:       # TODO-383: fix dep check
   #   executor: docker-python3-java11
   #   steps:
   #     - checkout
@@ -1390,7 +1390,7 @@ commands:
             -Dsonar.branch.target=$(~/projects/.circleci/get_target_branch.sh) \
             -Dsonar.projectVersion=$(~/projects/.circleci/verify_and_return_version.sh)
 
-  # run-dependency-check:
+  # run-dependency-check:     # TODO-383: fix dep check
   #   description: Run dependency vulnerability analysis
   #   steps:
   #     - run:
@@ -1534,27 +1534,27 @@ commands:
       - restore_cache:
           keys: google-chrome-incl-webdriver-
 
-  save-dependency-check-job-caches:
-    description: Save all caches in dependency check job
-    steps:
-      - save_cache:
-          key: job-dependency-check-v1-download-5.2.2
-          paths:
-            - ~/downloads
-      - save_cache:
-          key: job-dependency-check-v1-installation-and-database-{{ epoch }}
-          paths:
-            - ~/dependency-check
+  # save-dependency-check-job-caches:       # TODO-383: fix dep check
+  #   description: Save all caches in dependency check job
+  #   steps:
+  #     - save_cache:
+  #         key: job-dependency-check-v1-download-5.2.2
+  #         paths:
+  #           - ~/downloads
+  #     - save_cache:
+  #         key: job-dependency-check-v1-installation-and-database-{{ epoch }}
+  #         paths:
+  #           - ~/dependency-check
 
-  restore-dependency-check-job-caches:
-    description: Restore all caches in dependency check job
-    steps:
-      - restore_cache:
-          keys:
-            - job-dependency-check-v1-download-5.2.2
-      - restore_cache:
-          keys:
-            - job-dependency-check-v1-installation-and-database
+  # restore-dependency-check-job-caches:      # TODO-383: fix dep check
+  #   description: Restore all caches in dependency check job
+  #   steps:
+  #     - restore_cache:
+  #         keys:
+  #           - job-dependency-check-v1-download-5.2.2
+  #     - restore_cache:
+  #         keys:
+  #           - job-dependency-check-v1-installation-and-database
 
   save-build-artifacts-job-caches:
     description: Save all caches in building artifacts job
@@ -1616,10 +1616,10 @@ commands:
             - ~/.m2/repository
           key: v1-mvn-dependencies-{{ checksum "pom.xml" }}
 
-      - save_cache:
-          paths:
-            - ~/dependency-check
-          key: v1-dependency-check-{{ epoch }}
+      # - save_cache:     # TODO-383: fix dep check
+      #     paths:
+      #       - ~/dependency-check
+      #     key: v1-dependency-check-{{ epoch }}
 
   restore-caches:
     description: Restore all caches
@@ -1628,9 +1628,9 @@ commands:
           keys:
             - v1-mvn-dependencies-{{ checksum "pom.xml" }}
             - v1-mvn-dependencies-
-      - restore_cache:
-          keys:
-            - v1-dependency-check-
+      # - restore_cache:    # TODO-383: fix dep check
+      #     keys:
+      #       - v1-dependency-check-
 
 
 
