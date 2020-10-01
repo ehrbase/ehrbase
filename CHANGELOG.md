@@ -159,7 +159,7 @@ Starting with the next release this file will provide a proper overview.
 - Spring configuration allows setting the System ID
 - Validation of openEHR Terminology (openEHR terminology codes are tested against an internal terminology service)
 
-###Fixed
+### Fixed
 
 - Order of columns in AQL result sets are now reliably preserved (https://github.com/ehrbase/ehrbase/issues/37)
 - Some projection issues for EHR attributes have been resolved in AQL
@@ -179,7 +179,7 @@ Starting with the next release this file will provide a proper overview.
 - Spring configuration allows setting the System ID
 - Validation of openEHR Terminology (openEHR terminology codes are tested against an internal terminology service)
 
-###Fixed
+### Fixed
 
 - Order of columns in AQL result sets are now reliably preserved (https://github.com/ehrbase/ehrbase/issues/37)
 - Some projection issues for EHR attributes have been resolved in AQL
