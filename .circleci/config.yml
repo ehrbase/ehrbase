@@ -690,8 +690,10 @@ jobs:
       - checkout
       - attach_workspace:
           at: /home/circleci
+      - sonarcloud/scan:
+          cache_version: 1       # NOTE: increment this value to force cache rebuild
       # - restore-sonar-analysis-job-caches
-      - run-sonar-analysis
+      # - run-sonar-analysis
       # - save-sonar-analysis-job-caches
 
 
@@ -1408,14 +1410,6 @@ commands:
   #           -Dsonar.branch.name=$CIRCLE_BRANCH \
   #           -Dsonar.branch.target=$(~/projects/.circleci/get_target_branch.sh) \
   #           -Dsonar.projectVersion=$(~/projects/.circleci/verify_and_return_version.sh)
-
-
-  run-sonar-analysis:
-    description: Run Sonar analysis
-    steps:
-      - sonarcloud/scan:
-        cache_version: 1       # NOTE: increment this value to force cache rebuild
-
 
   run-dependency-check:
     description: Run dependency vulnerability analysis
