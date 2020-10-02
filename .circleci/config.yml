@@ -1375,7 +1375,7 @@ commands:
           name: Package Maven app
           command: |
             cd ~/projects
-            mvn package -DskipTests
+            mvn package     # -DskipTests
 
 
 
