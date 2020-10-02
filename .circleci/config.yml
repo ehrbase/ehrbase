@@ -52,112 +52,118 @@ workflows:
                 - /sync\/.*/
                 - /feature/sync\/.*/
       
-      - run-SDK-integration-tests:
-          context: org-global
-          requires:
-            - build-artifacts
+      # - run-SDK-integration-tests:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
         
-      - dependency-check:
-          context: org-global
-          requires:
-            - build-artifacts
+      # - dependency-check:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
 
-      - COMPOSITION-tests-1:
-          context: org-global
-          requires:
-            - build-artifacts
-          # post-steps:
-          #   - provide-test-status-report-via-slack #
+      # - COMPOSITION-tests-1:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
+      #     # post-steps:
+      #     #   - provide-test-status-report-via-slack #
 
-      - COMPOSITION-tests-2:
-          context: org-global
-          requires:
-            - build-artifacts
+      # - COMPOSITION-tests-2:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
 
-      - COMPOSITION-tests-3:
-          context: org-global
-          requires:
-            - build-artifacts
+      # - COMPOSITION-tests-3:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
 
-      - COMPOSITION-tests-4:
-          context: org-global
-          requires:
-            - build-artifacts
+      # - COMPOSITION-tests-4:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
 
-      - CONTRIBUTION-test:
-          context: org-global
-          requires:
-            - build-artifacts
+      # - CONTRIBUTION-test:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
 
-      - DIRECTORY-test:
-          context: org-global
-          requires:
-            - build-artifacts
+      # - DIRECTORY-test:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
 
-      - EHRSERVICE-test:
-          context: org-global
-          requires:
-            - build-artifacts
+      # - EHRSERVICE-test:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
 
-      - EHRSTATUS-test:
-          context: org-global
-          requires:
-            - build-artifacts
+      # - EHRSTATUS-test:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
 
-      - KNOWLEDGE-test:
-          context: org-global
-          requires:
-            - build-artifacts
+      # - KNOWLEDGE-test:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
 
-      - QUERYSERVICE-test-1:
-          context: org-global
-          requires:
-            - build-artifacts
+      # - QUERYSERVICE-test-1:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
 
-      - QUERYSERVICE-test-2:
-          context: org-global
-          requires:
-            - build-artifacts
+      # - QUERYSERVICE-test-2:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
       
-      - SECURITY-test:
-          context: org-global
-          requires:
-            - build-artifacts
+      # - SECURITY-test:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
 
-      - ROBOT-TEST-REPORT:
-          context: org-global
-          requires:
-            - COMPOSITION-tests-1
-            - COMPOSITION-tests-2
-            - COMPOSITION-tests-3
-            - COMPOSITION-tests-4
-            - CONTRIBUTION-test
-            - DIRECTORY-test
-            - EHRSERVICE-test
-            - EHRSTATUS-test
-            - KNOWLEDGE-test
-            - QUERYSERVICE-test-1
-            - QUERYSERVICE-test-2
-            - SECURITY-test
+      # - ROBOT-TEST-REPORT:
+      #     context: org-global
+      #     requires:
+      #       - COMPOSITION-tests-1
+      #       - COMPOSITION-tests-2
+      #       - COMPOSITION-tests-3
+      #       - COMPOSITION-tests-4
+      #       - CONTRIBUTION-test
+      #       - DIRECTORY-test
+      #       - EHRSERVICE-test
+      #       - EHRSTATUS-test
+      #       - KNOWLEDGE-test
+      #       - QUERYSERVICE-test-1
+      #       - QUERYSERVICE-test-2
+      #       - SECURITY-test
+
+      # - sonar-analysis:
+      #     context: org-global
+      #     requires:
+      #       - build-artifacts
+      #       - run-unit-tests
+      #       - dependency-check
+      #       - COMPOSITION-tests-1
+      #       - COMPOSITION-tests-2
+      #       - COMPOSITION-tests-3
+      #       - COMPOSITION-tests-4
+      #       - CONTRIBUTION-test
+      #       - DIRECTORY-test
+      #       - EHRSERVICE-test
+      #       - EHRSTATUS-test
+      #       - KNOWLEDGE-test
+      #       - QUERYSERVICE-test-1
+      #       - QUERYSERVICE-test-2
+      #       - SECURITY-test
 
       - sonar-analysis:
           context: org-global
           requires:
             - build-artifacts
-            - run-unit-tests
-            - dependency-check
-            - COMPOSITION-tests-1
-            - COMPOSITION-tests-2
-            - COMPOSITION-tests-3
-            - COMPOSITION-tests-4
-            - CONTRIBUTION-test
-            - DIRECTORY-test
-            - EHRSERVICE-test
-            - EHRSTATUS-test
-            - KNOWLEDGE-test
-            - QUERYSERVICE-test-1
-            - QUERYSERVICE-test-2
-            - SECURITY-test
+            # - run-unit-tests
 
 
 
@@ -427,6 +433,39 @@ jobs:
 
 
 
+  # run-code-analysis:
+  #   description: |
+  #     Runs code analysis w/ SonarCloud via CircleCI Orb provided by sonarsource team.
+  #     Orb documentation: https://circleci.com/orbs/registry/orb/sonarsource/sonarcloud
+  #     Scanner configuration happens in file sonar-project.properties in project's root folder.
+  #   executor: docker-py3-java11-postgres
+  #   steps:
+  #     - checkout
+  #     - install-maven
+  #     # - cache-out-sdk-m2-dependencies
+  #     # build-sdk
+  #     - git-clone-sdk-repo
+  #     - cache-out-sdk-m2-dependencies-sync-branch
+  #     - maven-install-sdk
+  #     - cache-in-sdk-m2-dependencies-sync-branch
+  #     - save-local-sdk-installation
+  #     - collect-sdk-unittest-results
+  #     - save-skd-test-results
+      
+
+  #     - git-clone-ehrbase-repo
+  #     - cache-out-ehrbase-m2-dependencies
+  #     - force-ehrbase-build-to-use-local-sdk-version
+  #     - start-ehrbase-and-run-all-tests-of-sdk
+  #     - cache-in-ehrbase-m2-dependencies      
+  #     - cache-in-sdk-m2-dependencies
+  #     - collect-sdk-unittest-results
+  #     - collect-sdk-integrationtest-results
+  #     - save-skd-test-results
+  #     - save-jacoco-coverage-report
+  #     - sonarcloud/scan:
+  #         cache_version: 1       # NOTE: increment this value to force cache rebuild
+
   pull build install sdk from sync-branch:
     # executor: machine-ubuntu-2004
     executor: docker-python3-java11
@@ -651,9 +690,9 @@ jobs:
       - checkout
       - attach_workspace:
           at: /home/circleci
-      - restore-sonar-analysis-job-caches
+      # - restore-sonar-analysis-job-caches
       - run-sonar-analysis
-      - save-sonar-analysis-job-caches
+      # - save-sonar-analysis-job-caches
 
 
 
@@ -1350,25 +1389,33 @@ commands:
   #   `"YbbdP"'   `"YbbdP"'   88       88  `"8bbdP"Y8  88
   #
 
+  # run-sonar-analysis:
+  #   description: Run Sonar analysis
+  #   steps:
+  #     - run:
+  #         name: Install sonar scanner
+  #         command: |
+  #           mkdir -p ~/downloads
+  #           cd ~/downloads
+  #           [ -e sonar-scanner-cli-4.2.0.1873-linux.zip ] || wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.2.0.1873-linux.zip
+  #           unzip -uo sonar-scanner-cli-4.2.0.1873-linux.zip -d ~
+  #     - run:
+  #         name: Excecute Sonar analysis
+  #         command: |
+  #           chmod 744 ~/projects/.circleci/*.sh
+  #           ~/sonar-scanner-4.2.0.1873-linux/bin/sonar-scanner \
+  #           -Dsonar.login=$SONAR_TOKEN \
+  #           -Dsonar.branch.name=$CIRCLE_BRANCH \
+  #           -Dsonar.branch.target=$(~/projects/.circleci/get_target_branch.sh) \
+  #           -Dsonar.projectVersion=$(~/projects/.circleci/verify_and_return_version.sh)
+
+
   run-sonar-analysis:
     description: Run Sonar analysis
     steps:
-      - run:
-          name: Install sonar scanner
-          command: |
-            mkdir -p ~/downloads
-            cd ~/downloads
-            [ -e sonar-scanner-cli-4.2.0.1873-linux.zip ] || wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.2.0.1873-linux.zip
-            unzip -uo sonar-scanner-cli-4.2.0.1873-linux.zip -d ~
-      - run:
-          name: Excecute Sonar analysis
-          command: |
-            chmod 744 ~/projects/.circleci/*.sh
-            ~/sonar-scanner-4.2.0.1873-linux/bin/sonar-scanner \
-            -Dsonar.login=$SONAR_TOKEN \
-            -Dsonar.branch.name=$CIRCLE_BRANCH \
-            -Dsonar.branch.target=$(~/projects/.circleci/get_target_branch.sh) \
-            -Dsonar.projectVersion=$(~/projects/.circleci/verify_and_return_version.sh)
+      - sonarcloud/scan:
+        cache_version: 1       # NOTE: increment this value to force cache rebuild
+
 
   run-dependency-check:
     description: Run dependency vulnerability analysis
