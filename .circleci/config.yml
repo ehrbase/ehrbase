@@ -162,7 +162,7 @@ workflows:
       - sonar-analysis:
           context: org-global
           requires:
-            - build-artifacts
+            # - build-artifacts
             - run-SDK-integration-tests
             # - run-unit-tests
 
@@ -1001,7 +1001,7 @@ commands:
               sleep 1
             done;
             echo "Jacoco execution data found!"
-            cp test-coverage/target/jacoco-sdk-it-coverage.exec ~/coverage
+            cp /home/circleci/projects/test-coverage/target/jacoco-sdk-it-coverage.exec ~/coverage
 
 
   collect-sdk-it-coverage:
