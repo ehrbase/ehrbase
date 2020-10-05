@@ -996,6 +996,12 @@ commands:
             mvn verify -DskipIntegrationTests=false -Dmaven.javadoc.skip=true
             java -jar ~/jacoco/lib/jacococli.jar dump \
               --destfile=/home/circleci/projects/test-coverage/target/jacoco-sdk-it-coverage.exec
+            until [ -f test-coverage/target/jacoco-sdk-it-coverage.exec ]
+            do
+              sleep 1
+              echo "Waiting for jacoco execution data file"
+            done
+            echo "Jacoco execution data found!"
             cp test-coverage/target/jacoco-sdk-it-coverage.exec ~/coverage
 
 
