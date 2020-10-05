@@ -1385,6 +1385,11 @@ commands:
             [ -e jacoco-0.8.6.zip ] || wget https://repo1.maven.org/maven2/org/jacoco/jacoco/0.8.6/jacoco-0.8.6.zip
             mkdir -p ~/jacoco
             unzip -uo jacoco-0.8.6.zip -d ~/jacoco
+      - persist_to_workspace:
+          name: Persist Jacoco Download (~/jacoco)
+          root: /home/circleci
+          paths:
+            - jacoco
 
 
 
