@@ -1195,7 +1195,13 @@ commands:
       - persist_to_workspace:
           root: /home/circleci
           paths:
+            - projects/api/target
             - projects/application/target
+            - projects/base/target
+            - projects/jooq-pq/target
+            - projects/rest-ehr-scape/target
+            - projects/rest-openehr/target
+            - projects/service/target
 
  
   restore-packaged-ehrbase-jar:
