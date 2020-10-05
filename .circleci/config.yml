@@ -994,6 +994,9 @@ commands:
             cd ~/projects/openEHR_SDK
             jps
             mvn verify -DskipIntegrationTests=false -Dmaven.javadoc.skip=true
+            java -jar ~/jacoco/lib/jacococli.jar dump \
+              --destfile=/home/circleci/projects/test-coverage/target/jacoco-sdk-it-coverage.exec
+            cp test-coverage/target/jacoco-sdk-it-coverage.exec ~/coverage
 
 
   collect-sdk-it-coverage:
@@ -1002,9 +1005,10 @@ commands:
       - run:
           name: Collect coverage from SDK integration tests
           command: |
-            java -jar ~/jacoco/lib/jacococli.jar dump \
-              --destfile=/home/circleci/projects/test-coverage/target/jacoco-sdk-it-coverage.exec
-            cp test-coverage/target/jacoco-sdk-it-coverage.exec ~/coverage
+            # java -jar ~/jacoco/lib/jacococli.jar dump \
+            #   --destfile=/home/circleci/projects/test-coverage/target/jacoco-sdk-it-coverage.exec
+            # cp test-coverage/target/jacoco-sdk-it-coverage.exec ~/coverage
+            ifconfig
       - persist_to_workspace:
           root: /home/circleci
           paths:
@@ -1012,7 +1016,7 @@ commands:
 
   
   generate-sdk-it-coverage-report:
-    description: Generates human readable reports from jacoco.exec files
+    description: Generates human readable reports from jacoco-sdk-it-coverage.exec
     steps:
       - run:
           name: Generate SDK IT Coverage Report
