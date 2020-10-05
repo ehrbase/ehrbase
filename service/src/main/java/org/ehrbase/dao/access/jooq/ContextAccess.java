@@ -66,7 +66,6 @@ import static org.ehrbase.jooq.pg.Tables.*;
  */
 public class ContextAccess extends DataAccess implements I_ContextAccess {
 
-    private static final TerminologyId OPENEHR_TERMINOLOGY_ID = new TerminologyId("openehr");
     private static final String DB_INCONSISTENCY = "DB inconsistency";
     private static Logger log = LogManager.getLogger(ContextAccess.class);
     private EventContextRecord eventContextRecord;
@@ -98,6 +97,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         eventContextRecord.setEndTime((Timestamp) records.getValue(0, I_CompositionAccess.F_CONTEXT_END_TIME));
         eventContextRecord.setEndTimeTzid((String) records.getValue(0, I_CompositionAccess.F_CONTEXT_END_TIME_TZID));
         eventContextRecord.setLocation((String) records.getValue(0, I_CompositionAccess.F_CONTEXT_LOCATION));
+//        eventContextRecord.setSetting(records.getValue(0, I_CompositionAccess.F_CONTEXT_SETTING));
         eventContextRecord.setOtherContext((JSONB) records.getValue(0, I_CompositionAccess.F_CONTEXT_OTHER_CONTEXT));
 
         return contextAccess;
@@ -161,25 +161,14 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                     participationList.add(participation);
                 });
 
-        DvCodedText concept;
-
-        //retrieve the setting
-        UUID settingUuid = eventContextHistoryRecord.getSetting();
-
-        ConceptRecord conceptRecord = domainAccess.getContext().fetchOne(CONCEPT, CONCEPT.ID.eq(settingUuid).and(CONCEPT.LANGUAGE.eq("en")));
-
-        if (conceptRecord != null) {
-            concept = new DvCodedText(conceptRecord.getDescription(), new CodePhrase(OPENEHR_TERMINOLOGY_ID, conceptRecord.getConceptid().toString()));
-        } else {
-            concept = new DvCodedText("event", new CodePhrase(OPENEHR_TERMINOLOGY_ID, "433"));
-        }
+        DvCodedText setting = (DvCodedText)new RecordedDvCodedText().fromDB(eventContextHistoryRecord, EVENT_CONTEXT_HISTORY.SETTING);
 
         return new EventContext(healthCareFacility,
                 new RecordedDvDateTime().decodeDvDateTime(eventContextHistoryRecord.getStartTime(), eventContextHistoryRecord.getStartTimeTzid()),
                 new RecordedDvDateTime().decodeDvDateTime(eventContextHistoryRecord.getEndTime(), eventContextHistoryRecord.getEndTimeTzid()),
                 participationList.isEmpty() ? null : participationList,
                 eventContextHistoryRecord.getLocation(),
-                concept,
+                setting,
                 null);
 
     }
@@ -224,10 +213,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         if (eventContext.getLocation() != null)
             eventContextRecord.setLocation(eventContext.getLocation());
 
-        Integer settingCode = Integer.parseInt(eventContext.getSetting().getDefiningCode().getCodeString());
-            // when not throwing exception continue with
-        eventContextRecord.setSetting(ConceptAccess.fetchConceptUUID(this, settingCode, "en"));
-
+        new RecordedDvCodedText().toDB(eventContextRecord, EVENT_CONTEXT.SETTING, eventContext.getSetting());
 
         if (eventContext.getParticipations() != null) {
             for (Participation participation : eventContext.getParticipations()) {
@@ -477,18 +463,8 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
             participationList.add(participation);
         });
 
-        DvCodedText concept;
+        DvCodedText concept = (DvCodedText)new RecordedDvCodedText().fromDB(eventContextRecord, EVENT_CONTEXT.SETTING);
 
-        //retrieve the setting
-        UUID settingUuid = eventContextRecord.getSetting();
-
-        ConceptRecord conceptRecord = getContext().fetchOne(CONCEPT, CONCEPT.ID.eq(settingUuid).and(CONCEPT.LANGUAGE.eq("en")));
-
-        if (conceptRecord != null) {
-            concept = new DvCodedText(conceptRecord.getDescription(), new CodePhrase(OPENEHR_TERMINOLOGY_ID, conceptRecord.getConceptid().toString()));
-        } else {
-            concept = new DvCodedText("event", new CodePhrase(OPENEHR_TERMINOLOGY_ID, "433"));
-        }
         ItemStructure<?> otherContext = null;
 
         if (eventContextRecord.getOtherContext() != null) {
