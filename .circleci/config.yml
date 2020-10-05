@@ -1202,6 +1202,7 @@ commands:
             - projects/rest-ehr-scape/target
             - projects/rest-openehr/target
             - projects/service/target
+            - projects/test-coverage/target
 
  
   restore-packaged-ehrbase-jar:
