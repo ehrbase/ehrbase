@@ -1001,7 +1001,8 @@ commands:
               sleep 1
             done;
             echo "Jacoco execution data found!"
-            cp /home/circleci/projects/test-coverage/target/jacoco-sdk-it-coverage.exec ~/coverage
+            mkdir ~/coverage
+            cp /home/circleci/projects/test-coverage/target/jacoco-sdk-it-coverage.exec ~/coverage/
 
 
   collect-sdk-it-coverage:
@@ -1015,6 +1016,7 @@ commands:
             # cp test-coverage/target/jacoco-sdk-it-coverage.exec ~/coverage
             ifconfig
       - persist_to_workspace:
+          name: Persist coverage from SDK integration tests (~/coverage/jacoco-sdk-it-coverage.exec)
           root: /home/circleci
           paths:
             - coverage/jacoco-sdk-it-coverage.exec
