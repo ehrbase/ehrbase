@@ -42,20 +42,20 @@ workflows:
                 - /sync\/.*/
                 - /feature/sync\/.*/
 
-      - run-unit-tests:
-          context: org-global
-          filters:
-            branches:
-              ignore:
-                - /release\/.*/
-                - master
-                - /sync\/.*/
-                - /feature/sync\/.*/
-      
-      # - run-SDK-integration-tests:
+      # - run-unit-tests:
       #     context: org-global
-      #     requires:
-      #       - build-artifacts
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - /release\/.*/
+      #           - master
+      #           - /sync\/.*/
+      #           - /feature/sync\/.*/
+      
+      - run-SDK-integration-tests:
+          context: org-global
+          requires:
+            - build-artifacts
         
       # - dependency-check:
       #     context: org-global
@@ -163,6 +163,7 @@ workflows:
           context: org-global
           requires:
             - build-artifacts
+            - run-SDK-integration-tests
             # - run-unit-tests
 
 
@@ -520,6 +521,8 @@ jobs:
       - maven-package
       - save-packaged-ehrbase-jar
       - save-build-artifacts-job-caches
+      - collect-ehrbase-unittest-results
+      - save-ehrbase-test-results
 
   dependency-check:
     executor: docker-python3-java11
@@ -549,10 +552,13 @@ jobs:
     steps:
       - checkout
       - attach-target-folder
+      - setup-jacoco-distribution
       - git-clone-sdk-repo
       - cache-out-sdk-m2-dependencies
       - start-ehrbase-and-run-all-sdk-tests
       - cache-in-sdk-m2-dependencies
+      - collect-sdk-it-coverage
+      - generate-sdk-it-coverage-report
       - collect-sdk-unittest-results
       - collect-sdk-integrationtest-results
       - save-skd-test-results
@@ -690,6 +696,34 @@ jobs:
       - checkout
       - attach_workspace:
           at: /home/circleci
+      - run:
+          name: Merge Jacoco .exec files
+          command: |
+            java -jar ~/jacoco/lib/jacococli.jar merge ./*/target/jacoco*.exec \
+                 --destfile test-coverage/jacoco-all-tests-coverage.exec
+      - run:
+          name: Generate coverage report from jacoco-all-tests-coverage.exec
+          command: |
+            java -jar ~/jacoco/lib/jacococli.jar report test-coverage/jacoco-all-tests-coverage.exec \
+              --classfiles api/target/classes/ \
+              --classfiles application/target/classes/ \
+              --classfiles base/target/classes/ \
+              --classfiles jooq-pq/target/classes/ \
+              --classfiles rest-ehr-scape/target/classes/ \
+              --classfiles rest-openehr/target/classes/ \
+              --classfiles service/target/classes/ \
+              --sourcefiles api/src/main/java/ \
+              --sourcefiles application/src/main/java/ \
+              --sourcefiles base/src/main/java/ \
+              --sourcefiles jooq-pq/src/main/java/ \
+              --sourcefiles rest-ehr-scape/src/main/java/ \
+              --sourcefiles rest-openehr/src/main/java/ \
+              --sourcefiles service/src/main/java/ \
+              --html test-coverage/overall-coverage-report \
+              --name "EHRbase Code Coverage w/ All Tests (Unit, SDK, Robot)"
+      - store_artifacts:
+          path:  ~/projects/test-coverage/overall-coverage-report
+            
       - sonarcloud/scan:
           cache_version: 1       # NOTE: increment this value to force cache rebuild
       # - restore-sonar-analysis-job-caches
@@ -954,11 +988,54 @@ commands:
             EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
             echo ${EHRbase_VERSION}
             cd ~/projects    # NOTE: This is where the target folder w/ artifacts were persisted to in previous step.
-            java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false > log &
+            java -javaagent:~/jacoco/lib/jacocoagent.jar=output=tcpserver,address=127.0.0.1 \
+                 -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false > log &
             grep -m 1 "Started EhrBase in" <(tail -f log)
             cd ~/projects/openEHR_SDK
             jps
             mvn verify -DskipIntegrationTests=false -Dmaven.javadoc.skip=true
+
+
+  collect-sdk-it-coverage:
+    description: Collect EHRbase code coverage with SDK integration tests
+    steps:
+      - run:
+          name: Collect coverage from SDK integration tests
+          command: |
+            java -jar ~/jacoco/lib/jacococli.jar dump \
+              --destfile=/home/circleci/projects/test-coverage/target/jacoco-sdk-it-coverage.exec
+            cp test-coverage/target/jacoco-sdk-it-coverage.exec ~/coverage
+      - persist_to_workspace:
+          root: /home/circleci
+          paths:
+            - coverage/jacoco-sdk-it-coverage.exec
+
+  
+  generate-sdk-it-coverage-report:
+    description: Generates human readable reports from jacoco.exec files
+    steps:
+      - run:
+          name: Generate SDK IT Coverage Report
+          command: |
+            java -jar ~/jacoco/lib/jacococli.jar report test-coverage/target/jacoco-sdk-it-coverage.exec \
+              --classfiles api/target/classes/ \
+              --classfiles application/target/classes/ \
+              --classfiles base/target/classes/ \
+              --classfiles jooq-pq/target/classes/ \
+              --classfiles rest-ehr-scape/target/classes/ \
+              --classfiles rest-openehr/target/classes/ \
+              --classfiles service/target/classes/ \
+              --sourcefiles api/src/main/java/ \
+              --sourcefiles application/src/main/java/ \
+              --sourcefiles base/src/main/java/ \
+              --sourcefiles jooq-pq/src/main/java/ \
+              --sourcefiles rest-ehr-scape/src/main/java/ \
+              --sourcefiles rest-openehr/src/main/java/ \
+              --sourcefiles service/src/main/java/ \
+              --html test-coverage/sdk-it-coverage-report \
+              --name "EHRbase Code Coverage w/ SDK Integration Tests"
+      - store_artifacts:
+          path:  ~/projects/test-coverage/sdk-it-coverage-report
 
 
   save-local-sdk-installation:
@@ -1281,25 +1358,16 @@ commands:
             unzip ~/projects/.circleci/file_repo_content.zip -d ~/projects
 
   setup-jacoco-distribution:
-    description: Download and unzip Jacoco distribution
+    description: Download and unzip Jacoco Code Coverage Tool
     steps:
       - run:
-          name: Download and unzip Jacoco disribution
+          name: Download and unzip Jacoco
           command: |
             mkdir -p ~/download
             cd ~/download
-            [ -e jacoco-0.8.2.zip ] || wget https://repo1.maven.org/maven2/org/jacoco/jacoco/0.8.2/jacoco-0.8.2.zip
-            mkdir -p ~/jacoco-0.8.2
-            unzip -uo jacoco-0.8.2.zip -d ~/jacoco-0.8.2
-
-  collect-integration-coverage:
-    description: Collect integration test coverage
-    steps:
-      - run:
-          name: Collect integration test coverage
-          command: |
-            java -jar ~/jacoco-0.8.2/lib/jacococli.jar dump \
-              --destfile=/home/circleci/projects/application/target/jacoco-it.exec
+            [ -e jacoco-0.8.6.zip ] || wget https://repo1.maven.org/maven2/org/jacoco/jacoco/0.8.6/jacoco-0.8.6.zip
+            mkdir -p ~/jacoco
+            unzip -uo jacoco-0.8.6.zip -d ~/jacoco
 
 
 
