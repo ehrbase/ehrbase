@@ -988,7 +988,7 @@ commands:
             EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
             echo ${EHRbase_VERSION}
             cd ~/projects    # NOTE: This is where the target folder w/ artifacts were persisted to in previous step.
-            java -javaagent:~/jacoco/lib/jacocoagent.jar=output=tcpserver,address=127.0.0.1 \
+            java -javaagent:/home/circleci/jacoco/lib/jacocoagent.jar=output=tcpserver,address=127.0.0.1 \
                  -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false > log &
             grep -m 1 "Started EhrBase in" <(tail -f log)
             cd ~/projects/openEHR_SDK
