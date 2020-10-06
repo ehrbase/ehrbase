@@ -1001,25 +1001,17 @@ commands:
               sleep 1
             done;
             echo "Jacoco execution data found!"
-            mkdir ~/coverage
-            cp /home/circleci/projects/test-coverage/target/jacoco-sdk-it-coverage.exec ~/coverage/
 
 
   collect-sdk-it-coverage:
-    description: Collect EHRbase code coverage with SDK integration tests
+    description: Persists coverage execution data from SDK integration tests
     steps:
-      - run:
-          name: Collect coverage from SDK integration tests
-          command: |
-            # java -jar ~/jacoco/lib/jacococli.jar dump \
-            #   --destfile=/home/circleci/projects/test-coverage/target/jacoco-sdk-it-coverage.exec
-            # cp test-coverage/target/jacoco-sdk-it-coverage.exec ~/coverage
-            ifconfig
+      - run: echo Collect Code Coverage From SDK Integration Tests
       - persist_to_workspace:
-          name: Persist coverage from SDK integration tests (~/coverage/jacoco-sdk-it-coverage.exec)
+          name: Persist coverage data (projects/test-coverage/target/jacoco-sdk-it-coverage.exec)
           root: /home/circleci
           paths:
-            - coverage/jacoco-sdk-it-coverage.exec
+            - projects/test-coverage/target/jacoco-sdk-it-coverage.exec
 
   
   generate-sdk-it-coverage-report:
