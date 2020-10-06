@@ -62,83 +62,83 @@ workflows:
       #     requires:
       #       - build-artifacts
 
-      # - COMPOSITION-tests-1:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
-      #     # post-steps:
-      #     #   - provide-test-status-report-via-slack #
+      - COMPOSITION-tests-1:
+          context: org-global
+          requires:
+            - build-artifacts
+          # post-steps:
+          #   - provide-test-status-report-via-slack #
 
-      # - COMPOSITION-tests-2:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
+      - COMPOSITION-tests-2:
+          context: org-global
+          requires:
+            - build-artifacts
 
-      # - COMPOSITION-tests-3:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
+      - COMPOSITION-tests-3:
+          context: org-global
+          requires:
+            - build-artifacts
 
-      # - COMPOSITION-tests-4:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
+      - COMPOSITION-tests-4:
+          context: org-global
+          requires:
+            - build-artifacts
 
-      # - CONTRIBUTION-test:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
+      - CONTRIBUTION-test:
+          context: org-global
+          requires:
+            - build-artifacts
 
-      # - DIRECTORY-test:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
+      - DIRECTORY-test:
+          context: org-global
+          requires:
+            - build-artifacts
 
-      # - EHRSERVICE-test:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
+      - EHRSERVICE-test:
+          context: org-global
+          requires:
+            - build-artifacts
 
-      # - EHRSTATUS-test:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
+      - EHRSTATUS-test:
+          context: org-global
+          requires:
+            - build-artifacts
 
-      # - KNOWLEDGE-test:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
+      - KNOWLEDGE-test:
+          context: org-global
+          requires:
+            - build-artifacts
 
-      # - QUERYSERVICE-test-1:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
+      - QUERYSERVICE-test-1:
+          context: org-global
+          requires:
+            - build-artifacts
 
-      # - QUERYSERVICE-test-2:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
+      - QUERYSERVICE-test-2:
+          context: org-global
+          requires:
+            - build-artifacts
       
-      # - SECURITY-test:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
+      - SECURITY-test:
+          context: org-global
+          requires:
+            - build-artifacts
 
-      # - ROBOT-TEST-REPORT:
-      #     context: org-global
-      #     requires:
-      #       - COMPOSITION-tests-1
-      #       - COMPOSITION-tests-2
-      #       - COMPOSITION-tests-3
-      #       - COMPOSITION-tests-4
-      #       - CONTRIBUTION-test
-      #       - DIRECTORY-test
-      #       - EHRSERVICE-test
-      #       - EHRSTATUS-test
-      #       - KNOWLEDGE-test
-      #       - QUERYSERVICE-test-1
-      #       - QUERYSERVICE-test-2
-      #       - SECURITY-test
+      - ROBOT-TEST-REPORT:
+          context: org-global
+          requires:
+            - COMPOSITION-tests-1
+            - COMPOSITION-tests-2
+            - COMPOSITION-tests-3
+            - COMPOSITION-tests-4
+            - CONTRIBUTION-test
+            - DIRECTORY-test
+            - EHRSERVICE-test
+            - EHRSTATUS-test
+            - KNOWLEDGE-test
+            - QUERYSERVICE-test-1
+            - QUERYSERVICE-test-2
+            - SECURITY-test
 
       # - sonar-analysis:
       #     context: org-global
@@ -164,7 +164,19 @@ workflows:
           requires:
             # - build-artifacts
             - run-SDK-integration-tests
-            # - run-unit-tests
+            # TODO: reactivate this after
+            # - COMPOSITION-tests-1
+            # - COMPOSITION-tests-2
+            # - COMPOSITION-tests-3
+            # - COMPOSITION-tests-4
+            # - CONTRIBUTION-test
+            # - DIRECTORY-test
+            # - EHRSERVICE-test
+            # - EHRSTATUS-test
+            # - KNOWLEDGE-test
+            # - QUERYSERVICE-test-1
+            # - QUERYSERVICE-test-2
+            # - SECURITY-test
 
 
 
@@ -432,40 +444,6 @@ jobs:
   #   88,   ,d88   Y8a.    .a8P   88      a8P  Y8a     a8P
   #    "Y8888P"     `"Y8888Y"'    88888888P"    "Y88888P"
 
-
-
-  # run-code-analysis:
-  #   description: |
-  #     Runs code analysis w/ SonarCloud via CircleCI Orb provided by sonarsource team.
-  #     Orb documentation: https://circleci.com/orbs/registry/orb/sonarsource/sonarcloud
-  #     Scanner configuration happens in file sonar-project.properties in project's root folder.
-  #   executor: docker-py3-java11-postgres
-  #   steps:
-  #     - checkout
-  #     - install-maven
-  #     # - cache-out-sdk-m2-dependencies
-  #     # build-sdk
-  #     - git-clone-sdk-repo
-  #     - cache-out-sdk-m2-dependencies-sync-branch
-  #     - maven-install-sdk
-  #     - cache-in-sdk-m2-dependencies-sync-branch
-  #     - save-local-sdk-installation
-  #     - collect-sdk-unittest-results
-  #     - save-skd-test-results
-      
-
-  #     - git-clone-ehrbase-repo
-  #     - cache-out-ehrbase-m2-dependencies
-  #     - force-ehrbase-build-to-use-local-sdk-version
-  #     - start-ehrbase-and-run-all-tests-of-sdk
-  #     - cache-in-ehrbase-m2-dependencies      
-  #     - cache-in-sdk-m2-dependencies
-  #     - collect-sdk-unittest-results
-  #     - collect-sdk-integrationtest-results
-  #     - save-skd-test-results
-  #     - save-jacoco-coverage-report
-  #     - sonarcloud/scan:
-  #         cache_version: 1       # NOTE: increment this value to force cache rebuild
 
   pull build install sdk from sync-branch:
     # executor: machine-ubuntu-2004
