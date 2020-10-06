@@ -704,6 +704,7 @@ jobs:
       - run:
           name: Generate coverage report from jacoco-all-tests-coverage.exec
           command: |
+            mkdir -p test-coverage/overall-coverage-report
             java -jar ~/jacoco/lib/jacococli.jar report test-coverage/jacoco-all-tests-coverage.exec \
               --classfiles api/target/classes/ \
               --classfiles application/target/classes/ \
@@ -1021,6 +1022,7 @@ commands:
       - run:
           name: Generate SDK IT Coverage Report
           command: |
+            mkdir -p test-coverage/sdk-it-coverage-report
             java -jar ~/jacoco/lib/jacococli.jar report test-coverage/target/jacoco-sdk-it-coverage.exec \
               --classfiles api/target/classes/ \
               --classfiles application/target/classes/ \
