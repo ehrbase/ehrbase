@@ -32,7 +32,7 @@ workflows:
   # WORKFLOW 1/3
   build-and-test:
     jobs:
-      - build-artifacts:
+      - build-ehrbase:
           context: org-global
           filters:
             branches:
@@ -41,88 +41,73 @@ workflows:
                 - master
                 - /sync\/.*/
                 - /feature/sync\/.*/
-
-      # - run-unit-tests:
-      #     context: org-global
-      #     filters:
-      #       branches:
-      #         ignore:
-      #           - /release\/.*/
-      #           - master
-      #           - /sync\/.*/
-      #           - /feature/sync\/.*/
       
       - run-SDK-integration-tests:
           context: org-global
           requires:
-            - build-artifacts
-        
-      # - dependency-check:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
+            - build-ehrbase
 
       - COMPOSITION-tests-1:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
           # post-steps:
           #   - provide-test-status-report-via-slack #
 
       - COMPOSITION-tests-2:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
 
       - COMPOSITION-tests-3:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
 
       - COMPOSITION-tests-4:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
 
       - CONTRIBUTION-test:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
 
       - DIRECTORY-test:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
 
       - EHRSERVICE-test:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
 
       - EHRSTATUS-test:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
 
       - KNOWLEDGE-test:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
 
       - QUERYSERVICE-test-1:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
 
       - QUERYSERVICE-test-2:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
       
       - SECURITY-test:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
 
       - ROBOT-TEST-REPORT:
           context: org-global
@@ -140,31 +125,12 @@ workflows:
             - QUERYSERVICE-test-2
             - SECURITY-test
 
-      # - sonar-analysis:
-      #     context: org-global
-      #     requires:
-      #       - build-artifacts
-      #       - run-unit-tests
-      #       - dependency-check
-      #       - COMPOSITION-tests-1
-      #       - COMPOSITION-tests-2
-      #       - COMPOSITION-tests-3
-      #       - COMPOSITION-tests-4
-      #       - CONTRIBUTION-test
-      #       - DIRECTORY-test
-      #       - EHRSERVICE-test
-      #       - EHRSTATUS-test
-      #       - KNOWLEDGE-test
-      #       - QUERYSERVICE-test-1
-      #       - QUERYSERVICE-test-2
-      #       - SECURITY-test
-
       - sonar-analysis:
           context: org-global
           requires:
-            # - build-artifacts
             - run-SDK-integration-tests
-            # TODO: reactivate this after
+            # TODO: reactivate this after https://github.com/ehrbase/ehrbase/issues/330
+            #       resolved
             # - COMPOSITION-tests-1
             # - COMPOSITION-tests-2
             # - COMPOSITION-tests-3
@@ -185,14 +151,7 @@ workflows:
   # WORKFLOW 2/3
   release:
     jobs:
-      - build-artifacts:
-          context: org-global
-          filters:
-            branches:
-              only:
-                - /^(release\/v\d+\.\d+\.\d+|master)$/
-
-      - run-unit-tests:
+      - build-ehrbase:
           context: org-global
           filters:
             branches:
@@ -202,74 +161,69 @@ workflows:
       - run-SDK-integration-tests:
           context: org-global
           requires:
-            - build-artifacts
-
-      - dependency-check:
-          context: org-global
-          requires:
-            - build-artifacts
+            - build-ehrbase
 
       - COMPOSITION-tests-1:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
           # post-steps:
           #   - provide-test-status-report-via-slack #
 
       - COMPOSITION-tests-2:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
 
       - COMPOSITION-tests-3:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
 
       - COMPOSITION-tests-4:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
 
       - CONTRIBUTION-test:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
 
       - DIRECTORY-test:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
 
       - EHRSERVICE-test:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
 
       - EHRSTATUS-test:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
 
       - KNOWLEDGE-test:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
 
       - QUERYSERVICE-test-1:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
 
       - QUERYSERVICE-test-2:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
 
       - SECURITY-test:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
 
       - ROBOT-TEST-REPORT:
           context: org-global
@@ -290,21 +244,21 @@ workflows:
       - sonar-analysis:
           context: org-global
           requires:
-            - build-artifacts
-            - run-unit-tests
-            - dependency-check
-            - COMPOSITION-tests-1
-            - COMPOSITION-tests-2
-            - COMPOSITION-tests-3
-            - COMPOSITION-tests-4
-            - CONTRIBUTION-test
-            - DIRECTORY-test
-            - EHRSERVICE-test
-            - EHRSTATUS-test
-            - KNOWLEDGE-test
-            - QUERYSERVICE-test-1
-            - QUERYSERVICE-test-2
-            - SECURITY-test
+            - run-SDK-integration-tests
+            # TODO: reactivate this after https://github.com/ehrbase/ehrbase/issues/330
+            #       resolved
+            # - COMPOSITION-tests-1
+            # - COMPOSITION-tests-2
+            # - COMPOSITION-tests-3
+            # - COMPOSITION-tests-4
+            # - CONTRIBUTION-test
+            # - DIRECTORY-test
+            # - EHRSERVICE-test
+            # - EHRSTATUS-test
+            # - KNOWLEDGE-test
+            # - QUERYSERVICE-test-1
+            # - QUERYSERVICE-test-2
+            # - SECURITY-test
 
 
 
@@ -490,39 +444,18 @@ jobs:
       - save-skd-test-results
 
 
-  build-artifacts:
+  build-ehrbase:
     executor: docker-py3-java11-postgres
     steps:
       - checkout
       - install-maven
-      - restore-build-artifacts-job-caches
+      - restore-build-ehrbase-job-caches
       - maven-package
       - save-packaged-ehrbase-jar
-      - save-build-artifacts-job-caches
+      - save-build-ehrbase-job-caches
       - collect-ehrbase-unittest-results
       - save-ehrbase-test-results
 
-  dependency-check:
-    executor: docker-python3-java11
-    steps:
-      - checkout
-      - install-maven
-      - restore-packaged-ehrbase-jar
-      - restore-dependency-check-job-caches
-      - run-dependency-check
-      - persist-dependency-check-results
-      - save-dependency-check-job-caches
-
-  run-unit-tests:
-    executor: docker-py3-java11-postgres
-    steps:
-      - checkout
-      - install-maven
-      - restore-packaged-ehrbase-jar
-      - restore-unit-tests-job-caches
-      - maven-test
-      - save-unit-tests-job-caches
-      - persist-unit-test-coverage
 
   run-SDK-integration-tests:
     description: Run openEHR_SDK's Java integration tests (w/ EHRbase + DB running).
@@ -540,6 +473,7 @@ jobs:
       - collect-sdk-unittest-results
       - collect-sdk-integrationtest-results
       - save-skd-test-results
+  
   
   COMPOSITION-tests-1:
     executor: docker-py3-java11-postgres
@@ -662,6 +596,7 @@ jobs:
           # test-suite-path: ""
           test-suite-name: "KEYCLOAK-OAUTH"
 
+
   ROBOT-TEST-REPORT:
     executor: docker-python3-java11
     steps:
@@ -706,9 +641,6 @@ jobs:
             
       - sonarcloud/scan:
           cache_version: 1       # NOTE: increment this value to force cache rebuild
-      # - restore-sonar-analysis-job-caches
-      # - run-sonar-analysis
-      # - save-sonar-analysis-job-caches
 
 
 
@@ -1446,65 +1378,6 @@ commands:
 
 
 
-  #
-  #
-  #
-  #   ,adPPYba,   ,adPPYba,   8b,dPPYba,   ,adPPYYba,  8b,dPPYba,
-  #   I8[    ""  a8"     "8a  88P'   `"8a  ""     `Y8  88P'   "Y8
-  #    `"Y8ba,   8b       d8  88       88  ,adPPPPP88  88
-  #   aa    ]8I  "8a,   ,a8"  88       88  88,    ,88  88
-  #   `"YbbdP"'   `"YbbdP"'   88       88  `"8bbdP"Y8  88
-  #
-
-  # run-sonar-analysis:
-  #   description: Run Sonar analysis
-  #   steps:
-  #     - run:
-  #         name: Install sonar scanner
-  #         command: |
-  #           mkdir -p ~/downloads
-  #           cd ~/downloads
-  #           [ -e sonar-scanner-cli-4.2.0.1873-linux.zip ] || wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.2.0.1873-linux.zip
-  #           unzip -uo sonar-scanner-cli-4.2.0.1873-linux.zip -d ~
-  #     - run:
-  #         name: Excecute Sonar analysis
-  #         command: |
-  #           chmod 744 ~/projects/.circleci/*.sh
-  #           ~/sonar-scanner-4.2.0.1873-linux/bin/sonar-scanner \
-  #           -Dsonar.login=$SONAR_TOKEN \
-  #           -Dsonar.branch.name=$CIRCLE_BRANCH \
-  #           -Dsonar.branch.target=$(~/projects/.circleci/get_target_branch.sh) \
-  #           -Dsonar.projectVersion=$(~/projects/.circleci/verify_and_return_version.sh)
-
-  run-dependency-check:
-    description: Run dependency vulnerability analysis
-    steps:
-      - run:
-          name: Install dependency check
-          command: |
-            mkdir -p ~/downloads
-            cd ~/downloads
-            [ -e dependency-check-5.2.2-release.zip ] || wget https://dl.bintray.com/jeremy-long/owasp/dependency-check-6.0.1-release.zip
-            mkdir -p ~/dependency_check
-            unzip -uo dependency-check*.zip -d ~
-      - run:
-          name: Run dependency vulnerability analysis
-          command: |
-            cd ~/projects
-            ~/dependency-check/bin/dependency-check.sh \
-                --project "EHRBase" --format JSON \
-                -o vulnerability_analysis.json --scan .
-      - run:
-          name: Convert vulnerability analysis to sonar issues
-          command: |
-            # pyenv global 3.7.0
-            python3 ~/projects/.circleci/convert_vulnerability_analysis.py \
-                ~/projects/vulnerability_analysis.json \
-                ~/projects/sonar_issues.json \
-                application/src/main/java/org/ehrbase/application/EhrBase.java
-
-
-
 
 
   #                                                88
@@ -1558,13 +1431,13 @@ commands:
       - attach_workspace:
           at: /home/circleci
 
-  persist-dependency-check-results:
-    description: Persist dependency check results
-    steps:
-      - persist_to_workspace:
-          root: /home/circleci
-          paths:
-            - projects/sonar_issues.json
+  # persist-dependency-check-results:
+  #   description: Persist dependency check results
+  #   steps:
+  #     - persist_to_workspace:
+  #         root: /home/circleci
+  #         paths:
+  #           - projects/sonar_issues.json
 
 
 
@@ -1620,43 +1493,21 @@ commands:
       - restore_cache:
           keys: google-chrome-incl-webdriver-
 
-  save-dependency-check-job-caches:
-    description: Save all caches in dependency check job
-    steps:
-      - save_cache:
-          key: job-dependency-check-v1-download-5.2.2
-          paths:
-            - ~/downloads
-      - save_cache:
-          key: job-dependency-check-v1-installation-and-database-{{ epoch }}
-          paths:
-            - ~/dependency-check
-
-  restore-dependency-check-job-caches:
-    description: Restore all caches in dependency check job
-    steps:
-      - restore_cache:
-          keys:
-            - job-dependency-check-v1-download-5.2.2
-      - restore_cache:
-          keys:
-            - job-dependency-check-v1-installation-and-database
-
-  save-build-artifacts-job-caches:
+  save-build-ehrbase-job-caches:
     description: Save all caches in building artifacts job
     steps:
       - save_cache:
-          key: job-build-artifacts-v1-mvn-dependencies-{{ checksum "~/projects/pom.xml" }}
+          key: job-build-ehrbase-v1-mvn-dependencies-{{ checksum "~/projects/pom.xml" }}
           paths:
             - ~/.m2/repository
 
-  restore-build-artifacts-job-caches:
+  restore-build-ehrbase-job-caches:
     description: Restore all caches in building artifacts job
     steps:
       - restore_cache:
           keys:
-            - job-build-artifacts-v1-mvn-dependencies-{{ checksum "~/projects/pom.xml" }}
-            - job-build-artifacts-v1-mvn-dependencies
+            - job-build-ehrbase-v1-mvn-dependencies-{{ checksum "~/projects/pom.xml" }}
+            - job-build-ehrbase-v1-mvn-dependencies
 
   save-sonar-analysis-job-caches:
     description: Save all caches in dependency check job
@@ -1702,11 +1553,6 @@ commands:
             - ~/.m2/repository
           key: v1-mvn-dependencies-{{ checksum "pom.xml" }}
 
-      - save_cache:
-          paths:
-            - ~/dependency-check
-          key: v1-dependency-check-{{ epoch }}
-
   restore-caches:
     description: Restore all caches
     steps:
@@ -1714,9 +1560,6 @@ commands:
           keys:
             - v1-mvn-dependencies-{{ checksum "pom.xml" }}
             - v1-mvn-dependencies-
-      - restore_cache:
-          keys:
-            - v1-dependency-check-
 
 
 
@@ -1736,12 +1579,16 @@ executors:
   docker-python3-java11:
     working_directory: ~/projects
     docker:
-      - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
+      # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
+      # - image: circleci/python:3.8.5-buster-node-browsers
+      - image: circleci/python:3.8.5-node-browsers
 
   docker-py3-java11-postgres:
     working_directory: ~/projects
     docker:
-      - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
+      # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
+      # - image:  circleci/python:3.8.5-buster-node-browsers
+      - image: circleci/python:3.8.5-node-browsers
       - image: ehrbaseorg/ehrbase-postgres:10
         environment:
           POSTGRES_USER: postgres
