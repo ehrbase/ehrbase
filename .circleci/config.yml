@@ -720,6 +720,7 @@ jobs:
               --sourcefiles rest-openehr/src/main/java/ \
               --sourcefiles service/src/main/java/ \
               --html test-coverage/overall-coverage-report \
+              --xml test-coverage/overall-coverage-report/jacoco.xml \
               --name "EHRbase Code Coverage w/ All Tests (Unit, SDK, Robot)"
       - store_artifacts:
           path:  ~/projects/test-coverage/overall-coverage-report
@@ -1036,6 +1037,7 @@ commands:
               --sourcefiles rest-openehr/src/main/java/ \
               --sourcefiles service/src/main/java/ \
               --html test-coverage/sdk-it-coverage-report \
+              --xml test-coverage/sdk-it-coverage-report/jacoco.xml \
               --name "EHRbase Code Coverage w/ SDK Integration Tests"
       - store_artifacts:
           path:  ~/projects/test-coverage/sdk-it-coverage-report
