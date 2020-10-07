@@ -59,30 +59,30 @@ workflows:
           requires:
             - build-ehrbase
 
-      # - COMPOSITION-tests-3:
-      #     context: org-global
-      #     requires:
-      #       - build-ehrbase
+      - COMPOSITION-tests-3:
+          context: org-global
+          requires:
+            - build-ehrbase
 
-      # - COMPOSITION-tests-4:
-      #     context: org-global
-      #     requires:
-      #       - build-ehrbase
+      - COMPOSITION-tests-4:
+          context: org-global
+          requires:
+            - build-ehrbase
 
-      # - CONTRIBUTION-test:
-      #     context: org-global
-      #     requires:
-      #       - build-ehrbase
+      - CONTRIBUTION-test:
+          context: org-global
+          requires:
+            - build-ehrbase
 
-      # - DIRECTORY-test:
-      #     context: org-global
-      #     requires:
-      #       - build-ehrbase
+      - DIRECTORY-test:
+          context: org-global
+          requires:
+            - build-ehrbase
 
-      # - EHRSERVICE-test:
-      #     context: org-global
-      #     requires:
-      #       - build-ehrbase
+      - EHRSERVICE-test:
+          context: org-global
+          requires:
+            - build-ehrbase
 
       # - EHRSTATUS-test:
       #     context: org-global
