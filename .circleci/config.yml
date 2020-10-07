@@ -84,15 +84,15 @@ workflows:
           requires:
             - build-ehrbase
 
-      # - EHRSTATUS-test:
-      #     context: org-global
-      #     requires:
-      #       - build-ehrbase
+      - EHRSTATUS-test:
+          context: org-global
+          requires:
+            - build-ehrbase
 
-      # - KNOWLEDGE-test:
-      #     context: org-global
-      #     requires:
-      #       - build-ehrbase
+      - KNOWLEDGE-test:
+          context: org-global
+          requires:
+            - build-ehrbase
 
       - QUERYSERVICE-test-1:
           context: org-global
@@ -104,10 +104,10 @@ workflows:
           requires:
             - build-ehrbase
       
-      # - SECURITY-test:
-      #     context: org-global
-      #     requires:
-      #       - build-ehrbase
+      - SECURITY-test:
+          context: org-global
+          requires:
+            - build-ehrbase
 
       # - ROBOT-TEST-REPORT:
       #     context: org-global
@@ -579,21 +579,21 @@ jobs:
     executor: docker-py3-java11-postgres
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
-      - run-robot-tests:
-          include-tags: "EHR_STATUS"
-          test-suite-path: "EHR_STATUS_TESTS"
-          test-suite-name: "EHR_STATUS"
+      # - restore-packaged-ehrbase-jar
+      # - run-robot-tests:
+      #     include-tags: "EHR_STATUS"
+      #     test-suite-path: "EHR_STATUS_TESTS"
+      #     test-suite-name: "EHR_STATUS"
 
   KNOWLEDGE-test:
     executor: docker-py3-java11-postgres
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
-      - run-robot-tests:
-          include-tags: "KNOWLEDGE"
-          test-suite-path: "KNOWLEDGE_TESTS"
-          test-suite-name: "KNOWLEDGE"
+      # - restore-packaged-ehrbase-jar
+      # - run-robot-tests:
+      #     include-tags: "KNOWLEDGE"
+      #     test-suite-path: "KNOWLEDGE_TESTS"
+      #     test-suite-name: "KNOWLEDGE"
 
   QUERYSERVICE-test-1:
     # executor: docker-py3-java11-postgres
@@ -622,12 +622,12 @@ jobs:
     executor: machine-ubuntu-2004
     steps:
       - checkout
-      - install-and-configure-keycloak
-      - restore-packaged-ehrbase-jar
-      - run-robot-tests-with-oauth:
-          include-tags: "OAUTH"
-          # test-suite-path: ""
-          test-suite-name: "KEYCLOAK-OAUTH"
+      # - install-and-configure-keycloak
+      # - restore-packaged-ehrbase-jar
+      # - run-robot-tests-with-oauth:
+      #     include-tags: "OAUTH"
+      #     # test-suite-path: ""
+      #     test-suite-name: "KEYCLOAK-OAUTH"
 
 
   ROBOT-TEST-REPORT:
