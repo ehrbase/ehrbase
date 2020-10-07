@@ -99,10 +99,10 @@ workflows:
           requires:
             - build-ehrbase
 
-      # - QUERYSERVICE-test-2:
-      #     context: org-global
-      #     requires:
-      #       - build-ehrbase
+      - QUERYSERVICE-test-2:
+          context: org-global
+          requires:
+            - build-ehrbase
       
       # - SECURITY-test:
       #     context: org-global
@@ -612,11 +612,11 @@ jobs:
     executor: docker-py3-java11-postgres
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
-      - run-robot-tests:
-          include-tags: "aql_adhoc-queryANDloaded_db"
-          test-suite-path: "QUERY_SERVICE_TESTS"
-          test-suite-name: "ADHOC-QUERY-2"
+      # - restore-packaged-ehrbase-jar
+      # - run-robot-tests:
+      #     include-tags: "aql_adhoc-queryANDloaded_db"
+      #     test-suite-path: "QUERY_SERVICE_TESTS"
+      #     test-suite-name: "ADHOC-QUERY-2"
   
   SECURITY-test:
     executor: machine-ubuntu-2004
