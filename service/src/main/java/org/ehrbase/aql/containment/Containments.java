@@ -18,6 +18,7 @@
 package org.ehrbase.aql.containment;
 
 import org.ehrbase.service.KnowledgeCacheService;
+import org.ehrbase.webtemplate.NodeId;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,7 +65,7 @@ public class Containments {
                if (containment.getPath(templateId) == null) {
                    List sublist = containmentList.subList(i, containmentList.size());
                    //build the jsonpath expression up to this containment
-                   String jsonQuery = new JsonPathQueryBuilder(sublist).assemble();
+                   List<NodeId> jsonQuery = new JsonPathQueryBuilder(sublist).assemble();
                    //get the path for this template
                    JsonPathQueryResult jsonPathQueryResult = new Templates(knowledgeCacheService).resolveForTemplate(templateId, jsonQuery);
                    if (jsonPathQueryResult != null) {

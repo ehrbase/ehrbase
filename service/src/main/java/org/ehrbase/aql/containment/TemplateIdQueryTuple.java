@@ -1,13 +1,17 @@
 package org.ehrbase.aql.containment;
 
+import org.ehrbase.webtemplate.NodeId;
+
+import java.io.Serializable;
+import java.util.Collection;
 import java.util.Objects;
 
-public class TemplateIdQueryTuple {
+public class TemplateIdQueryTuple implements Serializable {
 
     private final String templateId;
-    private final String jsonQueryExpression;
+    private final Collection<NodeId> jsonQueryExpression;
 
-    public TemplateIdQueryTuple(String templateId, String jsonQueryExpression) {
+    public TemplateIdQueryTuple(String templateId, Collection<NodeId> jsonQueryExpression) {
 
         this.templateId = templateId;
         this.jsonQueryExpression = jsonQueryExpression;
@@ -17,7 +21,7 @@ public class TemplateIdQueryTuple {
         return templateId;
     }
 
-    public String getJsonQueryExpression() {
+    public Collection<NodeId> getJsonQueryExpression() {
         return jsonQueryExpression;
     }
 

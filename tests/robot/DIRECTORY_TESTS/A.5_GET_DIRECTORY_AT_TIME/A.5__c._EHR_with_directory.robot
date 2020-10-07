@@ -18,7 +18,7 @@ Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags
+Force Tags   353
 
 
 
@@ -26,9 +26,9 @@ Force Tags
 Alternative flow 2: get directory at time on EHR with directory
 
     create EHR
-
     create DIRECTORY (JSON)    subfolders_in_directory.json
-
     get DIRECTORY at current time (JSON)
+
+        TRACE GITHUB ISSUE  353  not-ready
 
     validate GET-version@time response - 200 retrieved

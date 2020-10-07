@@ -399,4 +399,23 @@ public class EhrServiceImp extends BaseService implements EhrService {
             throw new InternalServerException(e.getMessage(), e);
         }
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean removeDirectory(UUID ehrId) {
+        try {
+            return I_EhrAccess.removeDirectory(getDataAccess(), ehrId);
+        } catch (Exception e) {
+            logger.error(
+                    String.format(
+                            "Could not remove directory from EHR with id %s.\nReason: %s",
+                            ehrId.toString(),
+                            e.getMessage()
+                    )
+            );
+            throw new InternalServerException(e.getMessage(), e);
+        }
+    }
 }

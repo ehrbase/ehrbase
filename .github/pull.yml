@@ -1,0 +1,8 @@
+version: "1"
+rules:
+  - base: master
+    upstream: ehrbase:master
+    mergeMethod: hardreset
+  - base: develop
+    upstream: ehrbase:develop
+    mergeMethod: hardreset

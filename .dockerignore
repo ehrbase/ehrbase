@@ -1,0 +1,13 @@
+.git
+.gitattributes
+.gitignore
+.circleci
+.circleciignore
+.dockerignore
+.pgdata
+CHANGELOG.md
+LICENSE.md
+Notice.md
+README.md
+sonar-project.properties
+tests

@@ -25,10 +25,15 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.aql.containment.JsonPathQueryResult;
+import org.ehrbase.webtemplate.NodeId;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 public interface I_KnowledgeCache {
 
@@ -70,15 +75,16 @@ public interface I_KnowledgeCache {
      */
     Optional<OPERATIONALTEMPLATE> retrieveOperationalTemplate(UUID uuid);
 
+
     /**
-     * Checks whether the template contains all nodeIds
+     * Deletes a given operational template physically from cache and from template storage and from cache. Should only
+     * be executed if the template is no longer referenced by any Composition. Make sure you check for references before
+     * deleting a template otherwise this causes inconsistencies and no longer deliverable Composition entries.
      *
-     * @param templateId
-     * @param nodeIds
-     * @return
+     * @param template - The template instance to delete
+     * @return - Template has been deleted
      */
-    boolean containsNodeIds(String templateId, Collection<String> nodeIds);
+    boolean deleteOperationalTemplate(OPERATIONALTEMPLATE template);
 
-
-    JsonPathQueryResult resolveForTemplate(String templateId, String jsonQueryExpression);
+    JsonPathQueryResult resolveForTemplate(String templateId, Collection<NodeId> jsonQueryExpression);
 }

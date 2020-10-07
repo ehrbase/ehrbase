@@ -18,9 +18,10 @@
 
 package org.ehrbase.service;
 
-import org.ehrbase.api.definitions.ServerConfig;
-import org.ehrbase.opt.query.TemplateTestData;
 import org.apache.commons.io.IOUtils;
+import org.ehrbase.api.definitions.ServerConfig;
+import org.ehrbase.configuration.CacheConfiguration;
+import org.ehrbase.opt.query.TemplateTestData;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
@@ -41,7 +42,7 @@ public class KnowledgeCacheHelper {
 
         templateFileStorageService.setOptPath(operationalTemplatesemplates.getPath());
 
-        KnowledgeCacheService knowledgeCacheService = new KnowledgeCacheService(templateFileStorageService, cacheRule.cacheManager);
+        KnowledgeCacheService knowledgeCacheService = new KnowledgeCacheService(templateFileStorageService, cacheRule.cacheManager, new CacheConfiguration());
         knowledgeCacheService.addOperationalTemplate(IOUtils.toByteArray(TemplateTestData.IMMUNISATION_SUMMARY.getStream()));
         return knowledgeCacheService;
     }
@@ -66,6 +67,21 @@ public class KnowledgeCacheHelper {
             @Override
             public void setNodename(String nodename) {
 
+            }
+
+            @Override
+            public String getAqlIterationSkipList() {
+                return "/events,/activities,/content";
+            }
+
+            @Override
+            public Integer getAqlDepth() {
+                return 1;
+            }
+
+            @Override
+            public Boolean getUseJsQuery() {
+                return false;
             }
         };
     }

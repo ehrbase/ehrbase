@@ -24,9 +24,8 @@ Force Tags
 
 *** Test Cases ***
 Alternative flow 1: get directory at time on empty EHR with empty time
+    [Tags]              
 
     create EHR
-
     get DIRECTORY at time (JSON)    ${EMPTY}
-
     validate GET-version@time response - 404 unknown folder-version@time

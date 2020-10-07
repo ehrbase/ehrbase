@@ -25,9 +25,7 @@ import com.nedap.archie.rm.archetyped.FeederAudit;
 import com.nedap.archie.rm.archetyped.Link;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.composition.EventContext;
-import com.nedap.archie.rm.generic.PartyIdentified;
 import com.nedap.archie.rm.generic.PartyProxy;
-import com.nedap.archie.rm.generic.PartySelf;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.definitions.ServerConfig;
@@ -37,13 +35,11 @@ import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
+import org.ehrbase.dao.access.util.TransactionTime;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
-import org.ehrbase.jooq.pg.tables.records.AuditDetailsRecord;
-import org.ehrbase.jooq.pg.tables.records.CompositionHistoryRecord;
-import org.ehrbase.jooq.pg.tables.records.CompositionRecord;
-import org.ehrbase.jooq.pg.tables.records.EventContextRecord;
+import org.ehrbase.jooq.pg.tables.records.*;
 import org.ehrbase.serialisation.dbencoding.rmobject.FeederAuditEncoding;
 import org.ehrbase.serialisation.dbencoding.rmobject.LinksEncoding;
 import org.ehrbase.service.IntrospectService;
@@ -53,12 +49,10 @@ import org.jooq.Record;
 import org.jooq.Result;
 
 import java.sql.*;
-import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.ehrbase.jooq.pg.Tables.*;
-import static org.jooq.impl.DSL.count;
-import static org.jooq.impl.DSL.max;
+import static org.jooq.impl.DSL.*;
 
 /**
  * operations on the static part of Compositions (eg. non archetyped attributes)
@@ -68,6 +62,7 @@ import static org.jooq.impl.DSL.max;
 public class CompositionAccess extends DataAccess implements I_CompositionAccess {
 
     private static final Logger log = LogManager.getLogger(CompositionAccess.class);
+    public static final String COMPOSITION_LITERAL = "composition";
     // List of Entry DAOs and therefore provides access to all entries of the composition
     private List<I_EntryAccess> content = new ArrayList<>();
     private CompositionRecord compositionRecord;
@@ -102,7 +97,6 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
         compositionRecord.setLanguage(seekLanguageCode(languageCode));
         compositionRecord.setActive(true);
-//        compositionRecord.setContext(eventContextId);     // TODO: is context handled somewhere else (so remove here)? or is this a TODO?
         compositionRecord.setComposer(composerId);
         compositionRecord.setEhrId(ehrId);
 
@@ -146,7 +140,6 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
         compositionRecord.setLanguage(seekLanguageCode(languageCode));
         compositionRecord.setActive(true);
-//        compositionRecord.setContext(eventContextId);     // TODO: is context handled somewhere else (so remove here)? or is this a TODO?
         compositionRecord.setComposer(composerId);
         compositionRecord.setEhrId(ehrId);
 
@@ -247,7 +240,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
                 }
             }
         } catch (SQLException e) {
-            throw new ObjectNotFoundException("composition", "Composition not found or or invalid DB content", e.getCause());
+            throw new ObjectNotFoundException(COMPOSITION_LITERAL, "Composition not found or or invalid DB content", e);
         }
 
         if (compositionHistoryAccess != null) {
@@ -385,8 +378,6 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     }
 
     public static Map<I_CompositionAccess, Integer> getVersionMapOfComposition(I_DomainAccess domainAccess, UUID compositionId) {
-        // TODO check like hasComposition or doesExist
-
         Map<I_CompositionAccess, Integer> versionMap = new HashMap<>();
 
         // create counter with highest version, to keep track of version number and allow check in the end
@@ -560,7 +551,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     public void setContextCompositionId(UUID contextId) {
         I_ContextAccess contextAccess = I_ContextAccess.retrieveInstance(this, contextId);
         contextAccess.setCompositionId(compositionRecord.getId());
-        contextAccess.update(Timestamp.valueOf(LocalDateTime.now()));
+        contextAccess.update(TransactionTime.millis());
     }
 
     @Override
@@ -605,7 +596,6 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         } catch (IndexOutOfBoundsException e) {     // generalize DB exceptions
             throw new IllegalArgumentException("Handling of records failed", e);
         }
-//        compositionRecord.setTerritory((Integer)records.getValue(0, F_TERRITORY_CODE));
     }
 
     @Override
@@ -677,8 +667,10 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         if (!composition.getCategory().getDefiningCode().getCodeString().equals("431")) {
             EventContext eventContext = composition.getContext();
             I_ContextAccess contextAccess = I_ContextAccess.getInstance(this, eventContext);
-            contextAccess.setCompositionId(compositionRecord.getId());
-            contextAccess.commit(transactionTime);
+            if (!contextAccess.isVoid()) {
+                contextAccess.setCompositionId(compositionRecord.getId());
+                contextAccess.commit(transactionTime);
+            }
         }
         return compositionRecord.getId();
     }
@@ -695,7 +687,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
     @Override
     public UUID commit(UUID committerId, UUID systemId, String description) {
-        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp timestamp = TransactionTime.millis();
         // prepare contribution with given values
         contributionAccess.setDataType(ContributionDataType.composition);
         contributionAccess.setState(ContributionDef.ContributionState.COMPLETE);
@@ -716,7 +708,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         auditDetailsAccess.setCommitter(committerId);
         auditDetailsAccess.setDescription(description);
 
-        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp timestamp = TransactionTime.millis();
         return commit(timestamp);
     }
 
@@ -777,7 +769,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
     @Override
     public Boolean update() {
-        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp timestamp = TransactionTime.millis();
         // update both contribution (incl its audit) and the composition's own audit
         contributionAccess.update(timestamp, null, null, null, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
         auditDetailsAccess.update(null, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
@@ -786,7 +778,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
     @Override
     public Boolean update(Boolean force) {
-        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp timestamp = TransactionTime.millis();
         // update both contribution (incl its audit) and the composition's own audit
         contributionAccess.update(timestamp, null, null, null, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
         auditDetailsAccess.update(null, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
@@ -795,16 +787,16 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
     @Override
     public Boolean update(UUID committerId, UUID systemId, ContributionDef.ContributionState state, I_ConceptAccess.ContributionChangeType contributionChangeType, String description) {
-        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp timestamp = TransactionTime.millis();
         // update both contribution (incl its audit) and the composition's own audit
         contributionAccess.update(timestamp, committerId, systemId, null, state, contributionChangeType, description);
         auditDetailsAccess.update(systemId, committerId, contributionChangeType, description);
-        return update(timestamp, true);    // TODO is forcing necessary and if so, is it also okay?
+        return update(timestamp, true);
     }
 
     @Override
     public Boolean updateWithCustomContribution(UUID committerId, UUID systemId, I_ConceptAccess.ContributionChangeType contributionChangeType, String description) {
-        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp timestamp = TransactionTime.millis();
 
         // update only the audit, so it shows the modification change type. a new custom contribution is set beforehand.
         // TODO: db-wise, this way a new audit "version" will be created which is (openEHR-)semantically wrong. but safe and processable anyway. so need to change that or is it okay?
@@ -830,7 +822,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
         // create new contribution for this deletion action (with embedded contribution.audit handling)
         contributionAccess = I_ContributionAccess.getInstance(getDataAccess(), contributionAccess.getEhrId()); // overwrite old contribution with new one
-        UUID contrib = contributionAccess.commit(Timestamp.valueOf(LocalDateTime.now()), committerId, systemId, null, ContributionDef.ContributionState.COMPLETE, I_ConceptAccess.ContributionChangeType.DELETED, description);
+        UUID contrib = contributionAccess.commit(TransactionTime.millis(), committerId, systemId, null, ContributionDef.ContributionState.COMPLETE, I_ConceptAccess.ContributionChangeType.DELETED, description);
 
         // create new, BUT already moved to _history, version documenting the deletion
         createAndCommitNewDeletedVersionAsHistory(delAuditId, contrib);
@@ -896,8 +888,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     @Override
     public Integer getVersion() {
         //default current version, no history   // FIXME
-        Integer version = 1;
-        return version;
+        return 1;
     }
 
     /**
@@ -937,7 +928,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
             domainAccess.getContext().fetchExists(COMPOSITION_HISTORY, COMPOSITION_HISTORY.ID.eq(versionedObjectId))) {
             return true;
         } else {
-            throw new ObjectNotFoundException("composition", "No composition with given ID found");
+            throw new ObjectNotFoundException(COMPOSITION_LITERAL, "No composition with given ID found");
         }
     }
 
@@ -966,9 +957,8 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
             if (audit.getChangeType().equals(ContributionChangeType.deleted))
                 return true;
         } else {
-            throw new ObjectNotFoundException("composition", "No composition with given ID found");
+            throw new ObjectNotFoundException(COMPOSITION_LITERAL, "No composition with given ID found");
         }
-        // TODO: why is this line necessary? won't compile without return or throw. but if/else above is always reaching a return/throw anyway!?
         throw new InternalServerException("Problem processing CompositionAccess.isDeleted(..)");
     }
 }

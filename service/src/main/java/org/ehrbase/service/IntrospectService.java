@@ -18,15 +18,21 @@
 
 package org.ehrbase.service;
 
+import org.ehrbase.aql.sql.queryImpl.ItemInfo;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
-import org.ehrbase.opt.query.I_QueryOptMetaData;
+import org.ehrbase.webtemplate.WebTemplate;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface IntrospectService {
-    I_QueryOptMetaData getQueryOptMetaData(UUID uuid);
+    WebTemplate getQueryOptMetaData(UUID uuid);
 
-    I_QueryOptMetaData getQueryOptMetaData(String templateId);
+    WebTemplate getQueryOptMetaData(String templateId);
+
+    List<String> multiValued(String templateId);
 
     I_KnowledgeCache getKnowledge();
+
+    ItemInfo getInfo(String templateId, String aql);
 }

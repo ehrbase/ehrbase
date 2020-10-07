@@ -24,9 +24,8 @@ Force Tags
 
 *** Test Cases ***
 Main flow: get directory on empty EHR
+    [Tags]              
 
     create EHR
-
     get DIRECTORY (JSON)
-
     validate GET-version@time response - 404 unknown folder-version@time

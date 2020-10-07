@@ -18,7 +18,7 @@ Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags
+Force Tags    353
 
 
 
@@ -26,11 +26,10 @@ Force Tags
 Alternative flow 4: get directory at time on EHR with directory with multiple versions
 
     create EHR
-
     create DIRECTORY (JSON)    empty_directory.json
-
     update DIRECTORY (JSON)    subfolders_in_directory_with_details_items.json
-
     get DIRECTORY at current time (JSON)
+
+        TRACE GITHUB ISSUE  353  not-ready
     
     validate GET-version@time response - 200 retrieved

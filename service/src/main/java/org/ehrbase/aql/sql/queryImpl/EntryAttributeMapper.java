@@ -37,6 +37,8 @@ public class EntryAttributeMapper {
 
     public static final String ISM_TRANSITION = "ism_transition";
     public static final String NAME = "name";
+    public static final String TIME = "time";
+    public static final String ORIGIN = "origin";
     public static final String OTHER_PARTICIPATIONS = "other_participations";
     public static final String SLASH_VALUE = "/value";
     public static final String VALUE = "value";
@@ -53,7 +55,7 @@ public class EntryAttributeMapper {
             return underscoreSeparated;
         }
         StringTokenizer tokens = new StringTokenizer(underscoreSeparated, "_");
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         while (tokens.hasMoreTokens()) {
             String word = tokens.nextToken();
             if (buf.length() == 0) {
@@ -108,23 +110,22 @@ public class EntryAttributeMapper {
             floor = 3;
         } else if (fields.get(0).equals(NAME)) {
             fields.add(1, "0"); //name is now formatted as /name -> array of values! Required to deal with cluster items
-        } else if (fields.get(0).equals(VALUE) && fields.size() == 1) {
-            //CCH 191016: removed 'shortcut' for values to allow canonical json structure return
-            //fields.add(1, VALUE);
+        } else if (fields.get(0).equals(TIME) || fields.get(0).equals(ORIGIN)) {
+            if (fields.size() > 1 && fields.get(1).equals(VALUE)) {
+                fields.add(VALUE); //time is formatted with 2 values: string value and epoch_offset
+                fields.set(1, SLASH_VALUE);
+            }
         } else { //this deals with the "/value,value"
             Integer match = firstOccurence(0, fields, VALUE);
-//            Integer match = fields.stream().filter(m -> m.equals("value"));
+
             if (match != null) { //deals with "/value/value"
                 Integer ndxInterval;
-                if (match == 0 && fields.size() == 2 && fields.get(1).equals(VALUE)) {
-//                    fields.add(1, "/value");
-                    ;
-                }
+
                 //TODO traverse to find an interval spec and insert "interval"
-                else if ((ndxInterval = intervalValueIndex(fields)) > 0) { //interval
+                if ((ndxInterval = intervalValueIndex(fields)) > 0) { //interval
                     fields.add(ndxInterval, INTERVAL);
                 } else if (match != 0) {
-                    //deals with name/value (name value is contained into a list conventionally
+                    //deals with name/value (name value is contained into a list conventionally)
                     if (match > 1 && fields.get(match - 1).equals("name"))
                         fields.set(match, VALUE);
                     else

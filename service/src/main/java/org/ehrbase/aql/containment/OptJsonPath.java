@@ -21,14 +21,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
-import org.ehrbase.opt.query.I_QueryOptMetaData;
 import org.ehrbase.service.KnowledgeCacheService;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * prepare and perform jsonpath queries on WebTemplates
@@ -42,14 +38,7 @@ public class OptJsonPath {
     }
 
 
-    public String representAsString(String templateId) throws IllegalStateException {
-        I_QueryOptMetaData queryOptMetaData = knowledgeCache.getQueryOptMetaData(templateId);
 
-        if (queryOptMetaData != null)
-            return toJson((Map) queryOptMetaData.getJsonPathVisitor());
-        else
-            return null;
-    }
 
     private String toJson(Map<String, Object> map) {
         GsonBuilder builder = new GsonBuilder();
@@ -69,26 +58,7 @@ public class OptJsonPath {
             return null;
     }
 
-    public Map<String, Object> evaluate(String templateId, String jsonPathExpression) {
 
-
-        //extract all nodeIds from the query
-        List<String> nodeIds = Arrays.stream(jsonPathExpression.split("\\.\\."))
-                .filter(s -> s.contains("@.node_id"))
-                .map(s -> s.replace("[?(@.node_id == '", "")
-                        .replace("[?(@.node_id == '", "")
-                        .replace("')]", ""))
-                .map(String::trim)
-                .collect(Collectors.toList());
-
-        //If the template dos not contain all nodeIds fo the query it can not be part of the query
-        if (!knowledgeCache.containsNodeIds(templateId, nodeIds)) {
-            return Collections.emptyMap();
-        } else {
-            String json = representAsString(templateId);
-            return jsonPathEval(json, jsonPathExpression);
-        }
-    }
 
 
 }

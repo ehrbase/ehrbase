@@ -19,13 +19,14 @@ package org.ehrbase.aql.containment;
 
 import org.apache.commons.collections4.MapUtils;
 
+import java.io.Serializable;
 import java.util.Map;
 
 /**
  * wrap the result of a jsonpath query
  * This is required since the result is generally a Map of multiple objects
  */
-public class JsonPathQueryResult {
+public class JsonPathQueryResult implements Serializable {
 
     private final String templateId;
     private final String aqlPath;
@@ -38,6 +39,11 @@ public class JsonPathQueryResult {
         } else {
             aqlPath = null;
         }
+    }
+
+    public JsonPathQueryResult(String templateId, String aqlPath) {
+        this.templateId = templateId;
+        this.aqlPath = aqlPath;
     }
 
     public String getTemplateId() {

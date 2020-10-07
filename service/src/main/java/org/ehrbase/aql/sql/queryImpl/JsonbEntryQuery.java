@@ -30,17 +30,21 @@ import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
 import org.ehrbase.aql.sql.binding.I_JoinBinder;
 import org.ehrbase.aql.sql.queryImpl.value_field.NodePredicate;
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.ehr.util.LocatableHelper;
-import org.ehrbase.opt.query.I_QueryOptMetaData;
 import org.ehrbase.serialisation.dbencoding.CompositionSerializer;
 import org.ehrbase.service.IntrospectService;
-import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
-import static org.ehrbase.jooq.pg.Tables.*;
+import static org.ehrbase.jooq.pg.Tables.ENTRY;
+import static org.ehrbase.jooq.pg.Tables.EVENT_CONTEXT;
+import static org.ehrbase.jooq.pg.Tables.STATUS;
 
 /**
  * Generate an SQL field corresponding to a JSONB data value query
@@ -73,11 +77,8 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
     //Generic stuff
     private final static String JSONBSelector_CLOSE = "}'";
     public final static String Jsquery_CLOSE = " '::jsquery";
-    private static final String namedItemPrefix = " and name/value='";
     public static final String TAG_COMPOSITION = "/composition";
     public static final String TAG_CONTENT = "/content";
-
-    private static boolean useEntry = false;
 
     private String jsonbItemPath;
 
@@ -99,10 +100,9 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
     //    private MetaData metaData;
     private IntrospectService introspectCache;
 
-    public JsonbEntryQuery(DSLContext context, IntrospectService introspectCache, PathResolver pathResolver) {
-        super(context, pathResolver);
+    public JsonbEntryQuery(I_DomainAccess domainAccess, IntrospectService introspectCache, PathResolver pathResolver) {
+        super(domainAccess, pathResolver);
         this.introspectCache = introspectCache;
-
         ignoreUnresolvedIntrospect = Boolean.parseBoolean(System.getProperty(ENV_IGNORE_UNRESOLVED_INTROSPECT, "false"));
     }
 
@@ -133,7 +133,7 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
     public List<String> jqueryPath(PATH_PART path_part, String path, String defaultIndex) {
         //CHC 160607: this offset (1 or 0) was required due to a bug in generating the containment table
         //from a PL/pgSQL script. this is no more required
-//        int offset = (path_part == PATH_PART.IDENTIFIER_PATH_PART ? 1 : 0);
+
         if (path == null) { //partial path
             jsonDataBlock = true;
             return new ArrayList<>();
@@ -178,17 +178,16 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
             }
         }
 
-//        String jquery = StringUtils.removeEnd(jqueryPath.toString(), ",");
         if (path_part.equals(PATH_PART.VARIABLE_PATH_PART)) {
-            StringBuffer stringBuffer = new StringBuffer();
+            StringBuilder stringBuilder = new StringBuilder();
             for (int i = jqueryPath.size() - 1; i >= 0; i--) {
                 if (jqueryPath.get(i).matches("[0-9]*|#") || jqueryPath.get(i).contains("[at"))
                     break;
                 String item = jqueryPath.remove(i);
-                stringBuffer.insert(0, item);
+                stringBuilder.insert(0, item);
             }
-            nodeId = EntryAttributeMapper.map(stringBuffer.toString());
-            if (nodeId != null)
+            nodeId = EntryAttributeMapper.map(stringBuilder.toString());
+            if (nodeId != null) {
                 if (defaultIndex.equals("#")) { //jsquery
                     if (nodeId.contains(",")) {
                         String[] parts = nodeId.split(",");
@@ -199,9 +198,9 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
                 } else {
                     jqueryPath.add(nodeId);
                 }
+            }
         }
 
-        useEntry = true;
         //CHC 191018 EHR-163 '/value' for an ELEMENT will return a structure
         if (path_part.equals(PATH_PART.VARIABLE_PATH_PART) && jqueryPath.get(jqueryPath.size() - 1).matches(matchNodePredicate)) {
             jsonDataBlock = true;
@@ -248,7 +247,6 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
             fieldPathItem = DSL.field(itemPath, String.class);
 
         containsJqueryPath = true;
-        useEntry = true;
         return fieldPathItem;
     }
 
@@ -283,7 +281,6 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
                 return DSL.field(DSL.val((String) null) + cast).as(variableDefinition.getAlias());
             else
                 return DSL.field(DSL.val((String) null) + cast);
-//            throw new IllegalArgumentException("Could not resolve path for identifier:" + variableDefinition.getIdentifier());
         }
 
         List<String> itemPathArray = new ArrayList<>();
@@ -295,18 +292,7 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
         //EHR-327: do not use array expression in WHERE clause
         if (clause.equals(Clause.SELECT)) {
             try {
-                String[] ignoreIterativeOnRegexp;
-                if (System.getenv(ENV_AQL_ARRAY_IGNORE_NODE) != null) {
-                    ignoreIterativeOnRegexp = System.getenv(ENV_AQL_ARRAY_IGNORE_NODE).split(",");
-                } else
-                    ignoreIterativeOnRegexp = new String[]{"^/content.*", "^/events.*"};
-
-                int depth = 1;
-                if (System.getenv(ENV_AQL_ARRAY_DEPTH) != null) {
-                    depth = Integer.parseInt(System.getenv(ENV_AQL_ARRAY_DEPTH));
-                }
-
-                IterativeNode iterativeNode = new IterativeNode(templateId, introspectCache, Arrays.asList(ignoreIterativeOnRegexp), depth);
+                IterativeNode iterativeNode = new IterativeNode(domainAccess, templateId, introspectCache);
                 Integer[] pos = iterativeNode.iterativeAt(itemPathArray);
                 itemPathArray = iterativeNode.clipInIterativeMarker(itemPathArray, pos);
             } catch (Exception e) {
@@ -318,16 +304,16 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
 
         List<String> referenceItemPathArray = new ArrayList<>();
         referenceItemPathArray.addAll(itemPathArray);
-        Collections.replaceAll(referenceItemPathArray, AQL_NODE_ITERATIVE_MARKER, "0");
+        Collections.replaceAll(referenceItemPathArray, QueryImplConstants.AQL_NODE_ITERATIVE_MARKER, "0");
 
-        if (itemPathArray.contains(AQL_NODE_NAME_PREDICATE_MARKER))
+        if (itemPathArray.contains(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER))
             itemPathArray = new NodePredicateCall(itemPathArray).resolve();
-        else if (itemPathArray.contains(AQL_NODE_ITERATIVE_MARKER))
-            itemPathArray = new JsonbFunctionCall(itemPathArray, AQL_NODE_ITERATIVE_MARKER, AQL_NODE_ITERATIVE_FUNCTION).resolve();
+        else if (itemPathArray.contains(QueryImplConstants.AQL_NODE_ITERATIVE_MARKER))
+            itemPathArray = new JsonbFunctionCall(itemPathArray, QueryImplConstants.AQL_NODE_ITERATIVE_MARKER, QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION).resolve();
 
         String itemPath = StringUtils.join(itemPathArray.toArray(new String[]{}), ",");
 
-        if (!itemPath.startsWith(AQL_NODE_NAME_PREDICATE_FUNCTION) && !itemPath.contains(AQL_NODE_ITERATIVE_FUNCTION))
+        if (!itemPath.startsWith(QueryImplConstants.AQL_NODE_NAME_PREDICATE_FUNCTION) && !itemPath.contains(QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION))
             itemPath = wrapQuery(itemPath, JSONBSelector_COMPOSITION_OPEN, JSONBSelector_CLOSE);
 
         //type casting from introspected data value type
@@ -336,9 +322,10 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
                 throw new IllegalArgumentException("MetaDataCache is not initialized");
             String reducedItemPathArray = new SegmentedPath(referenceItemPathArray).reduce();
             if (reducedItemPathArray != null && !reducedItemPathArray.isEmpty()) {
-                I_QueryOptMetaData queryOptMetaData = introspectCache.getQueryOptMetaData(templateId);
-                itemCategory = queryOptMetaData.category(reducedItemPathArray);
-                itemType = queryOptMetaData.type(reducedItemPathArray);
+                ItemInfo info = introspectCache.getInfo(templateId, reducedItemPathArray);
+
+                itemType = info.getItemType();
+                itemCategory = info.getItemCategory();
                 if (itemType != null) {
                     String pgType = new PGType(itemPathArray).forRmType(itemType);
                     if (pgType != null)
@@ -356,7 +343,7 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
         }
 
 
-        Field<?> fieldPathItem = null;
+        Field<?> fieldPathItem;
         if (clause.equals(Clause.SELECT)) {
             if (alias != null && StringUtils.isNotEmpty(alias))
                 fieldPathItem = DSL.field(itemPath, String.class).as(alias);
@@ -368,7 +355,6 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
             fieldPathItem = DSL.field(itemPath, String.class);
 
         containsJqueryPath = true;
-        useEntry = true;
 
         if (isJsonDataBlock()) {
             jsonbItemPath = toAqlPath(itemPathArray);
@@ -403,7 +389,7 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
             itemPathArray.addAll(jqueryPath(PATH_PART.IDENTIFIER_PATH_PART, path, "#"));
         itemPathArray.addAll(jqueryPath(PATH_PART.VARIABLE_PATH_PART, variableDefinition.getPath(), "#"));
 
-        StringBuffer jsqueryPath = new StringBuffer();
+        StringBuilder jsqueryPath = new StringBuilder();
 
         for (int i = 0; i < itemPathArray.size(); i++) {
             if (!itemPathArray.get(i).equals("#") && !itemPathArray.get(i).equals("0"))
@@ -416,13 +402,10 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
             if (i < itemPathArray.size() - 1)
                 jsqueryPath.append(".");
         }
-//        String itemPath = StringUtils.join(itemPathArray.toArray(new String[] {}), ".");
 
-//        itemPath = wrapQuery(itemPath, Jsquery_COMPOSITION_OPEN, Jsquery_CLOSE);
         Field<?> fieldPathItem = DSL.field(jsqueryPath.toString(), String.class);
 
         containsJqueryPath = true;
-        useEntry = true;
         return fieldPathItem;
     }
 
@@ -436,9 +419,7 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
                 if (i - 1 >= 0) {
                     itemPathArray.set(i - 1, index.toString());
                 }
-                //remove to the name/value short cut part...
-//                String nodeIdTrimmed = nodeId.split(",")[0] + "]";
-//                itemPathArray.set(i, nodeIdTrimmed);
+
                 itemPathArray.set(i, nodeId);
             }
         }

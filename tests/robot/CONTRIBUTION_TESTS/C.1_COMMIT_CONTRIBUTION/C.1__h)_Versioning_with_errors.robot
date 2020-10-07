@@ -40,7 +40,7 @@ Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags    refactor
+Force Tags    refactor    future
 
 
 
@@ -48,11 +48,8 @@ Force Tags    refactor
 Alternative flow 7: commit CONTRIBUTIONS for versioning, but second commit contains errors
 
     upload OPT    minimal/minimal_admin.opt
-
     create EHR
-
     commit CONTRIBUTION (JSON)    minimal/minimal_admin.contribution.json
-
     check response: is positive - returns version id
 
     commit CONTRIBUTION - with preceding_version_uid (JSON)    minimal/minimal_admin.contribution.modification.incomplete.json

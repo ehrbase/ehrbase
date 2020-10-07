@@ -135,11 +135,10 @@ A-600 Execute Ad-Hoc Query - Get EHR(s)
 
 B-100 Execute Ad-Hoc Query - Get Composition(s)
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              199
+    [Tags]              
     B/100_get_compositions_from_all_ehrs.json
     B/101_get_compositions_top_5.json
     B/102_get_compositions_orderby_name.json
-    [Teardown]          TRACE GITHUB ISSUE  199  not-ready
 
 
 B-103 Execute Ad-Hoc Query - Get Composition(s)
@@ -150,52 +149,46 @@ B-103 Execute Ad-Hoc Query - Get Composition(s)
 
 B-200 Execute Ad-Hoc Query - Get Composition(s)
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              199
+    [Tags]              
     B/200_get_compositions_from_ehr_by_id_empty_db.json
-    [Teardown]          TRACE GITHUB ISSUE  199  not-ready
 
 
 B-300 Execute Ad-Hoc Query - Get Composition(s)
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              199
+    [Tags]              
     B/300_get_compositions_with_archetype_from_all_ehrs.json
-    [Teardown]          TRACE GITHUB ISSUE  199  not-ready
 
 
 B-400 Execute Ad-Hoc Query - Get Composition(s)
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              199
+    [Tags]              
     B/400_get_compositions_contains_section_with_archetype_from_all_ehrs.json
-    [Teardown]          TRACE GITHUB ISSUE  199  not-ready
 
 
 B-500 Execute Ad-Hoc Query - Get Composition(s)
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              199
+    [Tags]              
     B/500_get_compositions_by_contains_entry_of_type_from_all_ehrs.json
     B/501_get_compositions_by_contains_entry_of_type_from_all_ehrs.json
     B/502_get_compositions_by_contains_entry_of_type_from_all_ehrs.json
     B/503_get_compositions_by_contains_entry_of_type_from_all_ehrs.json
-    [Teardown]          TRACE GITHUB ISSUE  199  not-ready
 
 
 B-600 Execute Ad-Hoc Query - Get Composition(s)
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              199
+    [Tags]              
     B/600_get_compositions_by_contains_entry_with_archetype_from_all_ehrs.json
     B/601_get_compositions_by_contains_entry_with_archetype_from_all_ehrs.json
     B/602_get_compositions_by_contains_entry_with_archetype_from_all_ehrs.json
     B/603_get_compositions_by_contains_entry_with_archetype_from_all_ehrs.json
-    [Teardown]          TRACE GITHUB ISSUE  199  not-ready
 
 
 B-700 Execute Ad-Hoc Query - Get Composition(s)
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              199
+    [Tags]              
     B/700_get_compositions_by_contains_entry_with_archetype_and_condition_from_all_ehrs.json
     B/701_get_compositions_by_contains_entry_with_archetype_and_condition_from_all_ehrs.json
     B/702_get_compositions_by_contains_entry_with_archetype_and_condition_from_all_ehrs.json
-    [Teardown]          TRACE GITHUB ISSUE  199  not-ready
 
 
 B-800 Execute Ad-Hoc Query - Get Composition(s)
@@ -208,10 +201,9 @@ B-800 Execute Ad-Hoc Query - Get Composition(s)
 
 B-802 Execute Ad-Hoc Query - Get Composition(s)
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              199
+    [Tags]              
     B/802_get_composition_by_uid_empty_db.json
     B/803_get_composition_by_uid_empty_db.json
-    [Teardown]          TRACE GITHUB ISSUE  199  not-ready
 
 
 C-100 Execute Ad-Hoc Query - Get Entrie(s)

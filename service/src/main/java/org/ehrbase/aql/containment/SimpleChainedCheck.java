@@ -17,6 +17,10 @@
  */
 package org.ehrbase.aql.containment;
 
+import org.ehrbase.webtemplate.NodeId;
+
+import java.util.List;
+
 /**
  * Definition of a 'simple' chained CONTAINS
  */
@@ -29,7 +33,7 @@ public class SimpleChainedCheck extends ContainsCheck {
         this.containmentSet = containmentSet;
     }
 
-    public String jsonPathNodeFilterExpression(){
+    public List<NodeId> jsonPathNodeFilterExpression() {
         if (containmentSet == null || containmentSet.getContainmentList().isEmpty())
             return null;
 
