@@ -1654,7 +1654,8 @@ orbs:
                 while true; do
                   get_job_status
                   if [[ "$job_status" == "running" || "$job_status" == "failed" || "$job_status" == "canceled" || "$job_status" == "" ]]; then
-                    echo "Its finally my turn. exiting"
+                    echo job $job_number has status $job_status.
+                    echo "So, it's finally my turn. exiting"
                     exit 0
                   else
                     echo "Looks like the other guy ($job_number) is still not done ($job_status)."
