@@ -1599,7 +1599,7 @@ orbs:
             description: |
               The max wait time in seconds a job should wait for before killing itself.
             type: string
-            default: "1800"
+            default: "300"
           kill-gracefully:
             description: If true and time exceeds max wait time, completes and lets future steps continue
             type: string
@@ -1607,7 +1607,7 @@ orbs:
           sleep-time-between-checks:
             description: How long to sleep between checks.
             type: string
-            default: "30"
+            default: "1"
           run-on-branch:
             description: |
               The branches to actually wait on. By default this waits on all branches. If set to anything but
