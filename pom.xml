@@ -26,6 +26,17 @@
     <description>EHRbase is a Free, Libre, Open Source openEHR Clinical Data Repository</description>
     <url>https://ehrbase.org</url>
 
+    <modules>
+        <module>service</module>
+        <module>rest-ehr-scape</module>
+        <module>rest-openehr</module>
+        <module>application</module>
+        <module>base</module>
+        <module>api</module>
+        <module>jooq-pq</module>
+        <module>test-coverage</module>
+    </modules>
+
     <licenses>
         <license>
             <name>The Apache License, Version 2.0</name>
@@ -127,6 +138,13 @@
         <database.port>5432</database.port>
         <database.host>localhost</database.host>
         <spring-boot.version>2.2.6.RELEASE</spring-boot.version>
+        <jacoco.version>0.8.6</jacoco.version>
+        <surefire.version>3.0.0-M5</surefire.version>
+        <failsafe.version>3.0.0-M5</failsafe.version>
+
+        <skipIntegrationTests>true</skipIntegrationTests>
+        <include.tests>**/*Test.java</include.tests>
+        <test.profile>unit</test.profile>
     </properties>
 
     <!-- Spring Boot starter parent is taking over most parts of the dependency management -->
@@ -137,17 +155,6 @@
         <relativePath />
         <!-- lookup parent from repository -->
     </parent>
-
-    <modules>
-        <module>service</module>
-        <module>rest-ehr-scape</module>
-        <module>rest-openehr</module>
-        <module>application</module>
-        <module>base</module>
-        <module>api</module>
-        <module>jooq-pq</module>
-    </modules>
-
 
     <dependencyManagement>
         <dependencies>
@@ -401,6 +408,116 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+
+                <executions>
+
+                    <!-- SET ARG LINE PROPERTY FOR SUREFIRE -->
+                    <execution>
+                        <id>agent for unit tests</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <propertyName>surefireArgLine</propertyName>
+                        </configuration>
+                    </execution>
+
+                    <!-- SET ARG LINE PROPERTY FOR FAILSAFE -->
+                    <execution>
+                        <id>agent for integration tests</id>
+                        <goals>
+                            <goal>prepare-agent-integration</goal>
+                        </goals>
+                        <configuration>
+                            <propertyName>failsafeArgLine</propertyName>
+                        </configuration>
+                    </execution>
+
+                </executions>
+            </plugin>
+
+            <plugin>
+                <!-- HANDLES JUNIT UNIT TESTS -->
+                <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-surefire-plugin -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefire.version}</version>
+
+                <!-- TODO: CAN THIS BE REMOVED? SEEMS TO HAVE NO IMPACT ON TEST EXECUTION. -->
+                <!-- MOREOVER TEST WITH DB ACCESS SHOULD BE INTEGRATION NOT UNIT TESTS! -->
+                <!-- <configuration>
+                    <useSystemClassLoader>false</useSystemClassLoader>
+                    <systemPropertyVariables>
+                        <test.db.host>${database.host}</test.db.host>
+                        <test.db.port>${database.port}</test.db.port>
+                        <test.db.name>${database.name}</test.db.name>
+                        <test.db.user>${database.user}</test.db.user>
+                        <test.db.password>${database.pass}</test.db.password>
+                    </systemPropertyVariables>
+                </configuration> -->
+
+                <configuration>
+                    <skipTests>true</skipTests>
+                    <!-- SETS THE VM ARGUMENT LINE USED WHEN UNIT TESTS ARE RUN. -->
+                    <argLine>${surefireArgLine}</argLine>
+                </configuration>
+
+                <executions>
+
+                    <execution>
+                        <id>${test.profile} tests</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <skipTests>false</skipTests>
+                            <includes>
+                                <include>${include.tests}</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+
+                </executions>
+            </plugin>
+
+            <plugin>
+                <!-- HANDLES JUNIT INTEGRATION TESTS -->
+                <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-failsafe-plugin -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>${failsafe.version}</version>
+
+                <configuration>
+                    <skipITs>${skipIntegrationTests}</skipITs>
+                </configuration>
+
+                <executions>
+
+                    <execution>
+                        <id>integration-test</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                        <configuration>
+                            <!-- SETS THE VM ARGUMENT LINE USED WHEN INTEGRATION TESTS ARE RUN. -->
+                            <argLine>${failsafeArgLine}</argLine>
+
+                            <includes>
+                                <include>**/*IT.java</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+
+                </executions>
+            </plugin>
+
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
                 <version>2.7</version>
@@ -551,26 +668,38 @@
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
                 </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.19</version>
-                    <configuration>
-                        <useSystemClassLoader>false</useSystemClassLoader>
-                        <systemPropertyVariables>
-                            <test.db.host>${database.host}</test.db.host>
-                            <test.db.port>${database.port}</test.db.port>
-                            <test.db.name>${database.name}</test.db.name>
-                            <test.db.user>${database.user}</test.db.user>
-                            <test.db.password>${database.pass}</test.db.password>
-                        </systemPropertyVariables>
-                    </configuration>
-                </plugin>
             </plugins>
         </pluginManagement>
     </build>
 
     <profiles>
+        <!-- RUN UNIT TESTS ONLY -->
+        <profile>
+            <id>fast</id>
+            <properties>
+                <include.tests>**/*Test.java</include.tests>
+                <test.profile>unit</test.profile>
+            </properties>
+        </profile>
+
+        <!-- RUN INTEGRATION TESTS ONLY -->
+        <profile>
+            <id>slow</id>
+            <properties>
+                <include.tests>**/*IT.java</include.tests>
+                <test.profile>integration</test.profile>
+            </properties>
+        </profile>
+
+        <!-- RUN ALL JAVA TESTS (UNIT & INTEGRATION) -->
+        <profile>
+            <id>full</id>
+            <properties>
+                <include.tests>**/*</include.tests>
+                <test.profile>all</test.profile>
+            </properties>
+        </profile>
+
         <profile>
             <id>ossrh</id>
             <properties>
