@@ -42,10 +42,10 @@ workflows:
                 - /sync\/.*/
                 - /feature/sync\/.*/
       
-      - run-SDK-integration-tests:
-          context: org-global
-          requires:
-            - build-ehrbase
+      # - run-SDK-integration-tests:
+      #     context: org-global
+      #     requires:
+      #       - build-ehrbase
 
       - COMPOSITION-tests-1:
           context: org-global
@@ -59,90 +59,90 @@ workflows:
           requires:
             - build-ehrbase
 
-      - COMPOSITION-tests-3:
-          context: org-global
-          requires:
-            - build-ehrbase
+      # - COMPOSITION-tests-3:
+      #     context: org-global
+      #     requires:
+      #       - build-ehrbase
 
-      - COMPOSITION-tests-4:
-          context: org-global
-          requires:
-            - build-ehrbase
+      # - COMPOSITION-tests-4:
+      #     context: org-global
+      #     requires:
+      #       - build-ehrbase
 
-      - CONTRIBUTION-test:
-          context: org-global
-          requires:
-            - build-ehrbase
+      # - CONTRIBUTION-test:
+      #     context: org-global
+      #     requires:
+      #       - build-ehrbase
 
-      - DIRECTORY-test:
-          context: org-global
-          requires:
-            - build-ehrbase
+      # - DIRECTORY-test:
+      #     context: org-global
+      #     requires:
+      #       - build-ehrbase
 
-      - EHRSERVICE-test:
-          context: org-global
-          requires:
-            - build-ehrbase
+      # - EHRSERVICE-test:
+      #     context: org-global
+      #     requires:
+      #       - build-ehrbase
 
-      - EHRSTATUS-test:
-          context: org-global
-          requires:
-            - build-ehrbase
+      # - EHRSTATUS-test:
+      #     context: org-global
+      #     requires:
+      #       - build-ehrbase
 
-      - KNOWLEDGE-test:
-          context: org-global
-          requires:
-            - build-ehrbase
+      # - KNOWLEDGE-test:
+      #     context: org-global
+      #     requires:
+      #       - build-ehrbase
 
       - QUERYSERVICE-test-1:
           context: org-global
           requires:
             - build-ehrbase
 
-      - QUERYSERVICE-test-2:
-          context: org-global
-          requires:
-            - build-ehrbase
+      # - QUERYSERVICE-test-2:
+      #     context: org-global
+      #     requires:
+      #       - build-ehrbase
       
-      - SECURITY-test:
-          context: org-global
-          requires:
-            - build-ehrbase
+      # - SECURITY-test:
+      #     context: org-global
+      #     requires:
+      #       - build-ehrbase
 
-      - ROBOT-TEST-REPORT:
-          context: org-global
-          requires:
-            - COMPOSITION-tests-1
-            - COMPOSITION-tests-2
-            - COMPOSITION-tests-3
-            - COMPOSITION-tests-4
-            - CONTRIBUTION-test
-            - DIRECTORY-test
-            - EHRSERVICE-test
-            - EHRSTATUS-test
-            - KNOWLEDGE-test
-            - QUERYSERVICE-test-1
-            - QUERYSERVICE-test-2
-            - SECURITY-test
+      # - ROBOT-TEST-REPORT:
+      #     context: org-global
+      #     requires:
+      #       - COMPOSITION-tests-1
+      #       - COMPOSITION-tests-2
+      #       - COMPOSITION-tests-3
+      #       - COMPOSITION-tests-4
+      #       - CONTRIBUTION-test
+      #       - DIRECTORY-test
+      #       - EHRSERVICE-test
+      #       - EHRSTATUS-test
+      #       - KNOWLEDGE-test
+      #       - QUERYSERVICE-test-1
+      #       - QUERYSERVICE-test-2
+      #       - SECURITY-test
 
-      - sonar-analysis:
-          context: org-global
-          requires:
-            - run-SDK-integration-tests
-            # TODO: reactivate this after https://github.com/ehrbase/ehrbase/issues/330
-            #       resolved
-            # - COMPOSITION-tests-1
-            # - COMPOSITION-tests-2
-            # - COMPOSITION-tests-3
-            # - COMPOSITION-tests-4
-            # - CONTRIBUTION-test
-            # - DIRECTORY-test
-            # - EHRSERVICE-test
-            # - EHRSTATUS-test
-            # - KNOWLEDGE-test
-            # - QUERYSERVICE-test-1
-            # - QUERYSERVICE-test-2
-            # - SECURITY-test
+      # - sonar-analysis:
+      #     context: org-global
+      #     requires:
+      #       - run-SDK-integration-tests
+      #       # TODO: reactivate this after https://github.com/ehrbase/ehrbase/issues/330
+      #       #       resolved
+      #       # - COMPOSITION-tests-1
+      #       # - COMPOSITION-tests-2
+      #       # - COMPOSITION-tests-3
+      #       # - COMPOSITION-tests-4
+      #       # - CONTRIBUTION-test
+      #       # - DIRECTORY-test
+      #       # - EHRSERVICE-test
+      #       # - EHRSTATUS-test
+      #       # - KNOWLEDGE-test
+      #       # - QUERYSERVICE-test-1
+      #       # - QUERYSERVICE-test-2
+      #       # - SECURITY-test
 
 
 
@@ -448,13 +448,14 @@ jobs:
     executor: docker-py3-java11-postgres
     steps:
       - checkout
-      - install-maven
-      - restore-build-ehrbase-job-caches
-      - maven-package
-      - save-packaged-ehrbase-jar
-      - save-build-ehrbase-job-caches
-      - collect-ehrbase-unittest-results
-      - save-ehrbase-test-results
+      - run: echo MOCKED JOB 1
+      # - install-maven
+      # - restore-build-ehrbase-job-caches
+      # - maven-package
+      # - save-packaged-ehrbase-jar
+      # - save-build-ehrbase-job-caches
+      # - collect-ehrbase-unittest-results
+      # - save-ehrbase-test-results
 
 
   run-SDK-integration-tests:
@@ -478,22 +479,28 @@ jobs:
   COMPOSITION-tests-1:
     executor: docker-py3-java11-postgres
     steps:
+      - wait/for_running_job:
+          job-name: "QUERYSERVICE-test-1"
       - checkout
-      - restore-packaged-ehrbase-jar
-      - run-robot-tests:
-          include-tags: "compositionANDjson1"
-          test-suite-path: "COMPOSITION_TESTS"
-          test-suite-name: "COMPOSITION_1"
+      - run: echo MOCKED JOB 2
+      # - restore-packaged-ehrbase-jar
+      # - run-robot-tests:
+      #     include-tags: "compositionANDjson1"
+      #     test-suite-path: "COMPOSITION_TESTS"
+      #     test-suite-name: "COMPOSITION_1"
 
   COMPOSITION-tests-2:
     executor: docker-py3-java11-postgres
     steps:
+      - wait/for_running_job:
+          job-name: "QUERYSERVICE-test-1"
       - checkout
-      - restore-packaged-ehrbase-jar
-      - run-robot-tests:
-          include-tags: "compositionANDjson2"
-          test-suite-path: "COMPOSITION_TESTS"
-          test-suite-name: "COMPOSITION_2"
+      - run: echo MOCKED JOB 3
+      # - restore-packaged-ehrbase-jar
+      # - run-robot-tests:
+      #     include-tags: "compositionANDjson2"
+      #     test-suite-path: "COMPOSITION_TESTS"
+      #     test-suite-name: "COMPOSITION_2"
 
   COMPOSITION-tests-3:
     executor: docker-py3-java11-postgres
@@ -569,11 +576,13 @@ jobs:
     executor: docker-py3-java11-postgres
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
-      - run-robot-tests:
-          include-tags: "aql_adhoc-queryANDempty_db"
-          test-suite-path: "QUERY_SERVICE_TESTS"
-          test-suite-name: "ADHOC-QUERY-1"
+      - run: echo MOCKED JOB 4
+      - run: sleep 10
+      # - restore-packaged-ehrbase-jar
+      # - run-robot-tests:
+      #     include-tags: "aql_adhoc-queryANDempty_db"
+      #     test-suite-path: "QUERY_SERVICE_TESTS"
+      #     test-suite-name: "ADHOC-QUERY-1"
 
   QUERYSERVICE-test-2:
     executor: docker-py3-java11-postgres
@@ -1574,6 +1583,96 @@ orbs:
   maven: circleci/maven@1.0.1
   openjdk-install: cloudesire/openjdk-install@1.2.3
   sonarcloud: sonarsource/sonarcloud@1.0.2
+  wait:
+    commands:
+      for_running_job:
+        description: |
+          This command waits for specified job in this workflow to get in RUNNING state. Since right now 
+          Circle CI doesnt let you queue up jobs irrespective of whether they fail or not. This is a
+          faux queue where the command stalls till the other job gets in RUNNING state.
+
+        parameters:
+          job-name:
+            description: The job on which to wait. If job not found continue immediately
+            type: string
+          max-wait-time:
+            description: |
+              The max wait time in seconds a job should wait for before killing itself.
+            type: string
+            default: "1800"
+          kill-gracefully:
+            description: If true and time exceeds max wait time, completes and lets future steps continue
+            type: string
+            default: "true"
+          sleep-time-between-checks:
+            description: How long to sleep between checks.
+            type: string
+            default: "30"
+          run-on-branch:
+            description: |
+              The branches to actually wait on. By default this waits on all branches. If set to anything but
+              '*' the wait will run only on the specified branch
+            type: string
+            default: "*"
+
+        steps:
+          - run:
+              name: Swissknife - Wait for job (with RUNNING status) in workflow
+              command: |
+                if [ -z "$BASH" ]; then
+                  echo Bash not installed.
+                  exit 1
+                fi
+                hash jq 2>/dev/null || { echo >&2 "jq is not installed.  Aborting."; exit 1; }
+                if [[ "$CIRCLE_TOKEN" == "" ]]; then
+                  echo "CIRCLE_TOKEN not set. Set a token to access the circle API in the env var CIRCLE_TOKEN";
+                  exit 1;
+                fi
+
+                if [[ "<< parameters.run-on-branch >>" != "*" && "<< parameters.run-on-branch >>" != "$CIRCLE_BRANCH" ]]; then
+                  echo "Chosen to run only on << parameters.run-on-branch >> and currently we are on $CIRCLE_BRANCH, exiting";
+                  exit 0;
+                fi
+
+                api_endpoint="api/v2/workflow/${CIRCLE_WORKFLOW_ID}/job"
+
+                mkdir -p /tmp/swissknife
+
+                # This is a global variable used to get return value for get_job_status
+                job_status=""
+                job_number=""
+
+                get_job_status() {
+                  wf_url="https://circleci.com/$api_endpoint?circle-token=${CIRCLE_TOKEN}"
+                  curl -f -s $wf_url > /tmp/swissknife/wf_$CIRCLE_WORKFLOW_ID.json
+                  job_status=$(jq -r '.items[] | select(.name=="<< parameters.job-name >>") | .status' /tmp/swissknife/wf_$CIRCLE_WORKFLOW_ID.json)
+                  job_number=$(jq -r '.items[] | select(.name=="<< parameters.job-name >>") | .job_number' /tmp/swissknife/wf_$CIRCLE_WORKFLOW_ID.json)
+                }
+
+                current_wait_time=0
+
+                while true; do
+                  get_job_status
+                  if [[ "$job_status" == "running" || "$job_status" == "failed" || "$job_status" == "canceled" || "$job_status" == "" ]]; then
+                    echo "Its finally my turn. exiting"
+                    exit 0
+                  else
+                    echo "Looks like the other guy ($job_number) is still not done ($job_status)."
+                    echo "Going to sleep for << parameters.sleep-time-between-checks >>"
+                    sleep << parameters.sleep-time-between-checks >>
+                    current_wait_time=$(( current_wait_time + << parameters.sleep-time-between-checks >> ))
+                  fi
+
+                  if (( $current_wait_time > << parameters.max-wait-time >> )); then
+                    if [[ "<< parameters.kill-gracefully >>" == "true" ]]; then
+                      echo "Proceeding with future steps";
+                      exit 0;
+                    else
+                      echo "Failing job by exiting forcefully";
+                      exit 1;
+                    fi
+                  fi
+                done
 
 executors:
   docker-python3-java11:
