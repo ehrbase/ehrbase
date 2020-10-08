@@ -47,15 +47,15 @@ workflows:
           requires:
             - build-ehrbase
 
-      - x:
-          requires:
-            - build-ehrbase
+      # - x:
+      #     requires:
+      #       - build-ehrbase
 
       - COMPOSITION-tests-1:
           context: org-global
           requires:
             - build-ehrbase
-            - x
+            - QUERYSERVICE-test-1
           # post-steps:
           #   - provide-test-status-report-via-slack #
 
@@ -63,55 +63,54 @@ workflows:
           context: org-global
           requires:
             - build-ehrbase
-            - x
+            - QUERYSERVICE-test-1
 
       - COMPOSITION-tests-3:
           context: org-global
           requires:
             - build-ehrbase
-            - x
+            - QUERYSERVICE-test-1
 
       - COMPOSITION-tests-4:
           context: org-global
           requires:
             - build-ehrbase
-            - x
+            - QUERYSERVICE-test-1
 
       - CONTRIBUTION-test:
           context: org-global
           requires:
             - build-ehrbase
-            - x
+            - QUERYSERVICE-test-1
 
       - DIRECTORY-test:
           context: org-global
           requires:
             - build-ehrbase
-            - x
+            - QUERYSERVICE-test-1
 
       - EHRSERVICE-test:
           context: org-global
           requires:
             - build-ehrbase
-            - x
+            - QUERYSERVICE-test-1
 
       - EHRSTATUS-test:
           context: org-global
           requires:
             - build-ehrbase
-            - x
+            - QUERYSERVICE-test-1
 
       - KNOWLEDGE-test:
           context: org-global
           requires:
             - build-ehrbase
-            - x
+            - QUERYSERVICE-test-1
 
       - QUERYSERVICE-test-1:
           context: org-global
           requires:
             - build-ehrbase
-            - x
 
       - QUERYSERVICE-test-2:
           context: org-global
@@ -122,7 +121,7 @@ workflows:
           context: org-global
           requires:
             - build-ehrbase
-            - x
+            - QUERYSERVICE-test-1
 
       - ROBOT-TEST-REPORT:
           context: org-global
