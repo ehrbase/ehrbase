@@ -119,21 +119,21 @@ workflows:
             - build-ehrbase
             - QUERYSERVICE-test-2
 
-      # - ROBOT-TEST-REPORT:
-      #     context: org-global
-      #     requires:
-      #       - COMPOSITION-tests-1
-      #       - COMPOSITION-tests-2
-      #       - COMPOSITION-tests-3
-      #       - COMPOSITION-tests-4
-      #       - CONTRIBUTION-test
-      #       - DIRECTORY-test
-      #       - EHRSERVICE-test
-      #       - EHRSTATUS-test
-      #       - KNOWLEDGE-test
-      #       - QUERYSERVICE-test-1
-      #       - QUERYSERVICE-test-2
-      #       - SECURITY-test
+      - ROBOT-TEST-REPORT:
+          context: org-global
+          requires:
+            - COMPOSITION-tests-1
+            - COMPOSITION-tests-2
+            - COMPOSITION-tests-3
+            - COMPOSITION-tests-4
+            - CONTRIBUTION-test
+            - DIRECTORY-test
+            - EHRSERVICE-test
+            - EHRSTATUS-test
+            - KNOWLEDGE-test
+            - QUERYSERVICE-test-1
+            - QUERYSERVICE-test-2
+            - SECURITY-test
 
       # - sonar-analysis:
       #     context: org-global
@@ -752,6 +752,7 @@ commands:
                   --flattenkeywords foritem \
                   --flattenkeywords name:_resources.* \
                   --outputdir results/<< parameters.test-suite-name >> \
+                  --timestampoutputs \
                   --name << parameters.test-suite-name >> \
                   -v nodocker \
                   robot/<< parameters.test-suite-path >>/
