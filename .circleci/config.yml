@@ -47,11 +47,15 @@ workflows:
           requires:
             - build-ehrbase
 
+      - x:
+          requires:
+            - build-ehrbase
+
       - COMPOSITION-tests-1:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-1
+            - x
           # post-steps:
           #   - provide-test-status-report-via-slack #
 
@@ -59,54 +63,55 @@ workflows:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-1
+            - x
 
       - COMPOSITION-tests-3:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-1
+            - x
 
       - COMPOSITION-tests-4:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-1
+            - x
 
       - CONTRIBUTION-test:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-1
+            - x
 
       - DIRECTORY-test:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-1
+            - x
 
       - EHRSERVICE-test:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-1
+            - x
 
       - EHRSTATUS-test:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-1
+            - x
 
       - KNOWLEDGE-test:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-1
+            - x
 
       - QUERYSERVICE-test-1:
           context: org-global
           requires:
             - build-ehrbase
+            - x
 
       - QUERYSERVICE-test-2:
           context: org-global
@@ -117,7 +122,7 @@ workflows:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-1
+            - x
 
       - ROBOT-TEST-REPORT:
           context: org-global
@@ -418,6 +423,11 @@ jobs:
   #   88,   ,d88   Y8a.    .a8P   88      a8P  Y8a     a8P
   #    "Y8888P"     `"Y8888Y"'    88888888P"    "Y88888P"
 
+
+  x:
+    executor: docker-base
+    steps:
+      - run: echo DUMMY
 
   pull build install sdk from sync-branch:
     # executor: machine-ubuntu-2004
@@ -772,6 +782,7 @@ commands:
                   --flattenkeywords foritem \
                   --flattenkeywords name:_resources.* \
                   --outputdir results/<< parameters.test-suite-name >> \
+                  --timestampoutputs \
                   --name << parameters.test-suite-name >> \
                   -v << parameters.sut >> \
                   robot/<< parameters.test-suite-path >>
@@ -1595,6 +1606,14 @@ orbs:
   sonarcloud: sonarsource/sonarcloud@1.0.2
 
 executors:
+  # https://hub.docker.com/u/cimg (circleci next-gen docker images)
+  # https://hub.docker.com/u/circleci (they call them legacy but they are still maintained)
+
+  docker-base:
+    working_directory: ~/projects
+    docker:
+      - cimg/base:stable
+
   docker-python3-java11:
     working_directory: ~/projects
     docker:
