@@ -1612,7 +1612,7 @@ executors:
   docker-base:
     working_directory: ~/projects
     docker:
-      - cimg/base:stable
+      - image: cimg/base:stable
 
   docker-python3-java11:
     working_directory: ~/projects
