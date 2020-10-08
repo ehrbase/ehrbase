@@ -42,10 +42,10 @@ workflows:
                 - /sync\/.*/
                 - /feature/sync\/.*/
       
-      # - run-SDK-integration-tests:
-      #     context: org-global
-      #     requires:
-      #       - build-ehrbase
+      - run-SDK-integration-tests:
+          context: org-global
+          requires:
+            - build-ehrbase
 
       - COMPOSITION-tests-1:
           context: org-global
@@ -465,18 +465,18 @@ jobs:
 
 
   build-ehrbase:
-    # executor: docker-py3-java11-postgres
-    executor: machine-ubuntu-2004
+    executor: docker-py3-java11-postgres
+    # executor: machine-ubuntu-2004
     steps:
       - run: echo MOCKED JOB 1
-      # - checkout
-      # - install-maven
-      # - restore-build-ehrbase-job-caches
-      # - maven-package
-      # - save-packaged-ehrbase-jar
-      # - save-build-ehrbase-job-caches
-      # - collect-ehrbase-unittest-results
-      # - save-ehrbase-test-results
+      - checkout
+      - install-maven
+      - restore-build-ehrbase-job-caches
+      - maven-package
+      - save-packaged-ehrbase-jar
+      - save-build-ehrbase-job-caches
+      - collect-ehrbase-unittest-results
+      - save-ehrbase-test-results
 
 
   run-SDK-integration-tests:
@@ -498,142 +498,136 @@ jobs:
   
   
   COMPOSITION-tests-1:
-    # executor: docker-py3-java11-postgres
-    executor: machine-ubuntu-2004
+    executor: docker-py3-java11-postgres
+    # executor: machine-ubuntu-2004
     steps:
-      - run: echo MOCKED JOB 2
-      # - checkout
-      # - restore-packaged-ehrbase-jar
-      # - run-robot-tests:
-      #     include-tags: "compositionANDjson1"
-      #     test-suite-path: "COMPOSITION_TESTS"
-      #     test-suite-name: "COMPOSITION_1"
+      - checkout
+      - restore-packaged-ehrbase-jar
+      - run-robot-tests:
+          include-tags: "compositionANDjson1"
+          test-suite-path: "COMPOSITION_TESTS"
+          test-suite-name: "COMPOSITION_1"
 
   COMPOSITION-tests-2:
-    # executor: docker-py3-java11-postgres
-    executor: machine-ubuntu-2004
+    executor: docker-py3-java11-postgres
+    # executor: machine-ubuntu-2004
     steps:
       - run: echo MOCKED JOB 3
-      # - checkout
-      # - restore-packaged-ehrbase-jar
-      # - run-robot-tests:
-      #     include-tags: "compositionANDjson2"
-      #     test-suite-path: "COMPOSITION_TESTS"
-      #     test-suite-name: "COMPOSITION_2"
+      - checkout
+      - restore-packaged-ehrbase-jar
+      - run-robot-tests:
+          include-tags: "compositionANDjson2"
+          test-suite-path: "COMPOSITION_TESTS"
+          test-suite-name: "COMPOSITION_2"
 
   COMPOSITION-tests-3:
-    # executor: docker-py3-java11-postgres
-    executor: machine-ubuntu-2004
-    steps:
-      - run: echo MOCKED JOB 2
-      # - checkout
-      # - restore-packaged-ehrbase-jar
-      # - run-robot-tests:
-      #     include-tags: "compositionANDxml1"
-      #     test-suite-path: "COMPOSITION_TESTS"
-      #     test-suite-name: "COMPOSITION_3"
+    executor: docker-py3-java11-postgres
+    # executor: machine-ubuntu-2004
+    steps:      
+      - checkout
+      - restore-packaged-ehrbase-jar
+      - run-robot-tests:
+          include-tags: "compositionANDxml1"
+          test-suite-path: "COMPOSITION_TESTS"
+          test-suite-name: "COMPOSITION_3"
 
   COMPOSITION-tests-4:
-    # executor: docker-py3-java11-postgres
-    executor: machine-ubuntu-2004
+    executor: docker-py3-java11-postgres
+    # executor: machine-ubuntu-2004
     steps:
-      - run: echo MOCKED JOB 2
-      # - checkout
-      # - restore-packaged-ehrbase-jar
-      # - run-robot-tests:
-      #     include-tags: "compositionANDxml2"
-      #     test-suite-path: "COMPOSITION_TESTS"
-      #     test-suite-name: "COMPOSITION_4"
+      - checkout
+      - restore-packaged-ehrbase-jar
+      - run-robot-tests:
+          include-tags: "compositionANDxml2"
+          test-suite-path: "COMPOSITION_TESTS"
+          test-suite-name: "COMPOSITION_4"
 
   CONTRIBUTION-test:
-    # executor: docker-py3-java11-postgres
-    executor: machine-ubuntu-2004
+    executor: docker-py3-java11-postgres
+    # executor: machine-ubuntu-2004
     steps:
-      - run: echo MOCKED JOB 2
-      # - checkout
-      # - restore-packaged-ehrbase-jar
-      # - run-robot-tests:
-      #     include-tags: "CONTRIBUTION"
-      #     test-suite-path: "CONTRIBUTION_TESTS"
-      #     test-suite-name: "CONTRIBUTION"
+      - checkout
+      - restore-packaged-ehrbase-jar
+      - run-robot-tests:
+          include-tags: "CONTRIBUTION"
+          test-suite-path: "CONTRIBUTION_TESTS"
+          test-suite-name: "CONTRIBUTION"
 
   DIRECTORY-test:
-    # executor: docker-py3-java11-postgres
-    executor: machine-ubuntu-2004
+    executor: docker-py3-java11-postgres
+    # executor: machine-ubuntu-2004
     steps:
-      - run: echo MOCKED JOB 2
-      # - checkout
-      # - restore-packaged-ehrbase-jar
-      # - run-robot-tests:
-      #     include-tags: "directory"
-      #     test-suite-path: "DIRECTORY_TESTS"
-      #     test-suite-name: "DIRECTORY"
+      - checkout
+      - restore-packaged-ehrbase-jar
+      - run-robot-tests:
+          include-tags: "directory"
+          test-suite-path: "DIRECTORY_TESTS"
+          test-suite-name: "DIRECTORY"
 
   EHRSERVICE-test:
-    # executor: docker-py3-java11-postgres
-    executor: machine-ubuntu-2004
+    executor: docker-py3-java11-postgres
+    # executor: machine-ubuntu-2004
     steps:
-      - run: echo MOCKED JOB 2
-      # - checkout
-      # - restore-packaged-ehrbase-jar
-      # - run-robot-tests:
-      #     include-tags: "EHR_SERVICE"
-      #     test-suite-path: "EHR_SERVICE_TESTS"
-      #     test-suite-name: "EHR_SERVICE"
+      - checkout
+      - restore-packaged-ehrbase-jar
+      - run-robot-tests:
+          include-tags: "EHR_SERVICE"
+          test-suite-path: "EHR_SERVICE_TESTS"
+          test-suite-name: "EHR_SERVICE"
 
   EHRSTATUS-test:
     executor: docker-py3-java11-postgres
     steps:
       - checkout
-      # - restore-packaged-ehrbase-jar
-      # - run-robot-tests:
-      #     include-tags: "EHR_STATUS"
-      #     test-suite-path: "EHR_STATUS_TESTS"
-      #     test-suite-name: "EHR_STATUS"
+      - restore-packaged-ehrbase-jar
+      - run-robot-tests:
+          include-tags: "EHR_STATUS"
+          test-suite-path: "EHR_STATUS_TESTS"
+          test-suite-name: "EHR_STATUS"
 
   KNOWLEDGE-test:
     executor: docker-py3-java11-postgres
     steps:
       - checkout
-      # - restore-packaged-ehrbase-jar
-      # - run-robot-tests:
-      #     include-tags: "KNOWLEDGE"
-      #     test-suite-path: "KNOWLEDGE_TESTS"
-      #     test-suite-name: "KNOWLEDGE"
+      - restore-packaged-ehrbase-jar
+      - run-robot-tests:
+          include-tags: "KNOWLEDGE"
+          test-suite-path: "KNOWLEDGE_TESTS"
+          test-suite-name: "KNOWLEDGE"
 
   QUERYSERVICE-test-1:
-    # executor: docker-py3-java11-postgres
-    executor: machine-ubuntu-2004
+    executor: docker-py3-java11-postgres
+    # executor: machine-ubuntu-2004
     steps:
       - checkout
       - run: echo MOCKED JOB 4
       - run: sleep 180
-      # - restore-packaged-ehrbase-jar
-      # - run-robot-tests:
-      #     include-tags: "aql_adhoc-queryANDempty_db"
-      #     test-suite-path: "QUERY_SERVICE_TESTS"
-      #     test-suite-name: "ADHOC-QUERY-1"
+      - restore-packaged-ehrbase-jar
+      - run-robot-tests:
+          include-tags: "aql_adhoc-queryANDempty_db"
+          test-suite-path: "QUERY_SERVICE_TESTS"
+          test-suite-name: "ADHOC-QUERY-1"
 
   QUERYSERVICE-test-2:
     executor: docker-py3-java11-postgres
     steps:
       - checkout
-      # - restore-packaged-ehrbase-jar
-      # - run-robot-tests:
-      #     include-tags: "aql_adhoc-queryANDloaded_db"
-      #     test-suite-path: "QUERY_SERVICE_TESTS"
-      #     test-suite-name: "ADHOC-QUERY-2"
+      - restore-packaged-ehrbase-jar
+      - run-robot-tests:
+          include-tags: "aql_adhoc-queryANDloaded_db"
+          test-suite-path: "QUERY_SERVICE_TESTS"
+          test-suite-name: "ADHOC-QUERY-2"
   
   SECURITY-test:
     executor: machine-ubuntu-2004
     steps:
       - checkout
-      # - install-and-configure-keycloak
-      # - restore-packaged-ehrbase-jar
-      # - run-robot-tests-with-oauth:
-      #     include-tags: "OAUTH"
-      #     # test-suite-path: ""
-      #     test-suite-name: "KEYCLOAK-OAUTH"
+      - install-and-configure-keycloak
+      - restore-packaged-ehrbase-jar
+      - run-robot-tests-with-oauth:
+          include-tags: "OAUTH"
+          # test-suite-path: ""
+          test-suite-name: "KEYCLOAK-OAUTH"
 
 
   ROBOT-TEST-REPORT:
@@ -794,6 +788,7 @@ commands:
                   --flattenkeywords foritem \
                   --flattenkeywords name:_resources.* \
                   --outputdir results/<< parameters.test-suite-name >> \
+                  --timestampoutputs \
                   --name << parameters.test-suite-name >> \
                   robot/
       - save-integration-tests-job-caches
