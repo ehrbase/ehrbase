@@ -598,28 +598,31 @@ jobs:
           test-suite-name: "KNOWLEDGE"
 
   QUERYSERVICE-test-1:
-    executor: docker-py3-java11-postgres
-    # executor: machine-ubuntu-2004
+    # executor: docker-py3-java11-postgres
+    executor: machine-ubuntu-2004
+    environment:
+      SUT: TEST
     steps:
       - checkout
       # - restore-packaged-ehrbase-jar
       - restore_cache:
           keys:
             - expected-results-loaded-db-v1
-      - run: find tests/robot/_resources/test_data_sets/query/expected_results/loaded_db/ -type f | sort | xargs cat > expected-results-loaded_db-seed
+      - run: find tests/robot/_resources/test_data_sets/query/expected_results/empty_db/ -type f | sort | xargs cat > expected-results-loaded_db-seed
       - run: sha256sum expected-results-loaded_db-seed
       - cache-out-ehrbase-workspace       # USE FOR PIPELINE DEBUGGING ONLY
       - run-robot-tests:
+          sut: "SUT:TEST"
           include-tags: "aql_adhoc-queryANDempty_db"
           test-suite-path: "QUERY_SERVICE_TESTS"
           test-suite-name: "ADHOC-QUERY-1"
       - run: docker exec -i ehrdb pg_dump --username postgres ehrbase > ./dump.sql
-      - run: find tests/robot/_resources/test_data_sets/query/expected_results/loaded_db/ -type f | sort | xargs cat > expected-results-loaded_db-seed
+      - run: find tests/robot/_resources/test_data_sets/query/expected_results/empty_db/ -type f | sort | xargs cat > expected-results-loaded_db-seed
       - run: sha256sum expected-results-loaded_db-seed
       - save_cache:
           key: expected-results-loaded-db-v1-{{ checksum "expected-results-loaded_db-seed" }}
           paths:
-            - tests/robot/_resources/test_data_sets/query/expected_results/loaded_db/
+            - tests/robot/_resources/test_data_sets/query/expected_results/empty_db/
   
 
   QUERYSERVICE-test-2:
