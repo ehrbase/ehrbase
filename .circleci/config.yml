@@ -470,14 +470,15 @@ jobs:
     steps:
       - run: echo MOCKED JOB 1
       - checkout
-      - install-maven
-      - restore-build-ehrbase-job-caches
-      - maven-package
-      - save-packaged-ehrbase-jar
-      - save-build-ehrbase-job-caches
-      - collect-ehrbase-unittest-results
-      - save-ehrbase-test-results
-      - cache-in-ehrbase-workspace    # USE FOR PIPELINE DEBUGGING ONLY
+      # - install-maven
+      # - restore-build-ehrbase-job-caches
+      # - maven-package
+      # - save-packaged-ehrbase-jar
+      # - save-build-ehrbase-job-caches
+      # - collect-ehrbase-unittest-results
+      # - save-ehrbase-test-results
+      - cache-out-ehrbase-workspace   # USE FOR PIPELINE DEBUGGING ONLY
+      # - cache-in-ehrbase-workspace    # USE FOR PIPELINE DEBUGGING ONLY
 
 
   run-SDK-integration-tests:
@@ -852,7 +853,7 @@ commands:
       - save-test-results-folder:
           suite-results-folder-name: "0"
       - store_test_results:
-          path: ~/projects/tests/results/robot-tests
+          path: ~/projects/tests/results/
       - store_artifacts:
           path: ~/projects/tests/results/
 
