@@ -787,7 +787,8 @@ commands:
                   -v << parameters.sut >> \
                   robot/<< parameters.test-suite-path >>
       # - cache-in-python-requirements
-      - save-test-results-folder
+      - save-test-results-folder:
+          suite-results-folder-name: << parameters.test-suite-name >>
       - store_test_results:
           path: ~/projects/tests/results/
       - store_artifacts:
@@ -796,6 +797,10 @@ commands:
 
   save-test-results-folder:
     description: Persist Robot tests folder to workspace
+    parameters:
+      suite-results-folder-name:
+        description: Titel of generated Robot Outputs
+        type: string
     steps:
       - run:
           name: PERSIST ROBOT TEST RESULTS
@@ -804,7 +809,7 @@ commands:
       - persist_to_workspace:
           root: /home/circleci
           paths:
-            - projects/tests/results
+            - projects/tests/results/<< parameters.suite-results-folder-name >>
 
 
   restore-test-results-folder:
@@ -827,7 +832,7 @@ commands:
             cd tests
 
             # Create Log/Report with ALL DETAILS
-            rebot --outputdir results \
+            rebot --outputdir results/0 \
                   --name EHRbase \
                   --exclude TODO -e future -e obsolete -e libtest \
                   --removekeywords for \
@@ -845,16 +850,17 @@ commands:
             cd tests
 
             # Create JUNIT report from merged results
-            rebot --outputdir results \
+            rebot --outputdir results/robot-tests \
                   --exclude TODO -e future -e obsolete -e libtest \
                   --noncritical not-ready \
                   --xunit junit-output.xml --xunitskipnoncritical \
                   --log NONE \
                   --report NONE \
                   results/EHRbase-output.xml
-      - save-test-results-folder
+      - save-test-results-folder:
+          suite-results-folder-name: "0"
       - store_test_results:
-          path: ~/projects/tests/results/
+          path: ~/projects/tests/results/robot-tests
       - store_artifacts:
           path: ~/projects/tests/results/
 
