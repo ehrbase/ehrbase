@@ -42,102 +42,98 @@ workflows:
                 - /sync\/.*/
                 - /feature/sync\/.*/
       
-      - run-SDK-integration-tests:
-          context: org-global
-          requires:
-            - build-ehrbase
-
-      # - x:
+      # - run-SDK-integration-tests:
+      #     context: org-global
       #     requires:
       #       - build-ehrbase
 
-      - COMPOSITION-tests-1:
-          context: org-global
-          requires:
-            - build-ehrbase
-            - QUERYSERVICE-test-1
-          # post-steps:
-          #   - provide-test-status-report-via-slack #
+      # - COMPOSITION-tests-1:
+      #     context: org-global
+      #     requires:
+      #       - build-ehrbase
+      #       - QUERYSERVICE-test-1
+      #     # post-steps:
+      #     #   - provide-test-status-report-via-slack #
 
-      - COMPOSITION-tests-2:
-          context: org-global
-          requires:
-            - build-ehrbase
-            - QUERYSERVICE-test-1
+      # - COMPOSITION-tests-2:
+      #     context: org-global
+      #     requires:
+      #       - build-ehrbase
+      #       - QUERYSERVICE-test-1
 
-      - COMPOSITION-tests-3:
-          context: org-global
-          requires:
-            - build-ehrbase
-            - QUERYSERVICE-test-1
+      # - COMPOSITION-tests-3:
+      #     context: org-global
+      #     requires:
+      #       - build-ehrbase
+      #       - QUERYSERVICE-test-1
 
-      - COMPOSITION-tests-4:
-          context: org-global
-          requires:
-            - build-ehrbase
-            - QUERYSERVICE-test-1
+      # - COMPOSITION-tests-4:
+      #     context: org-global
+      #     requires:
+      #       - build-ehrbase
+      #       - QUERYSERVICE-test-1
 
-      - CONTRIBUTION-test:
-          context: org-global
-          requires:
-            - build-ehrbase
-            - QUERYSERVICE-test-1
+      # - CONTRIBUTION-test:
+      #     context: org-global
+      #     requires:
+      #       - build-ehrbase
+      #       - QUERYSERVICE-test-1
 
-      - DIRECTORY-test:
-          context: org-global
-          requires:
-            - build-ehrbase
-            - QUERYSERVICE-test-1
+      # - DIRECTORY-test:
+      #     context: org-global
+      #     requires:
+      #       - build-ehrbase
+      #       - QUERYSERVICE-test-1
 
-      - EHRSERVICE-test:
-          context: org-global
-          requires:
-            - build-ehrbase
-            - QUERYSERVICE-test-1
+      # - EHRSERVICE-test:
+      #     context: org-global
+      #     requires:
+      #       - build-ehrbase
+      #       - QUERYSERVICE-test-1
 
-      - EHRSTATUS-test:
-          context: org-global
-          requires:
-            - build-ehrbase
-            - QUERYSERVICE-test-1
+      # - EHRSTATUS-test:
+      #     context: org-global
+      #     requires:
+      #       - build-ehrbase
+      #       - QUERYSERVICE-test-1
 
-      - KNOWLEDGE-test:
-          context: org-global
-          requires:
-            - build-ehrbase
-            - QUERYSERVICE-test-1
+      # - KNOWLEDGE-test:
+      #     context: org-global
+      #     requires:
+      #       - build-ehrbase
+      #       - QUERYSERVICE-test-1
 
       - QUERYSERVICE-test-1:
           context: org-global
           requires:
             - build-ehrbase
 
-      - QUERYSERVICE-test-2:
-          context: org-global
-          requires:
-            - build-ehrbase
+      # - QUERYSERVICE-test-2:
+      #     context: org-global
+      #     requires:
+      #       - build-ehrbase
       
-      - SECURITY-test:
-          context: org-global
-          requires:
-            - build-ehrbase
-            - QUERYSERVICE-test-1
+      # - SECURITY-test:
+      #     context: org-global
+      #     requires:
+      #       - build-ehrbase
+      #       - QUERYSERVICE-test-1
 
       - ROBOT-TEST-REPORT:
           context: org-global
           requires:
-            - COMPOSITION-tests-1
-            - COMPOSITION-tests-2
-            - COMPOSITION-tests-3
-            - COMPOSITION-tests-4
-            - CONTRIBUTION-test
-            - DIRECTORY-test
-            - EHRSERVICE-test
-            - EHRSTATUS-test
-            - KNOWLEDGE-test
+            # - COMPOSITION-tests-1
+            # - COMPOSITION-tests-2
+            # - COMPOSITION-tests-3
+            # - COMPOSITION-tests-4
+            # - CONTRIBUTION-test
+            # - DIRECTORY-test
+            # - EHRSERVICE-test
+            # - EHRSTATUS-test
+            # - KNOWLEDGE-test
             - QUERYSERVICE-test-1
-            - QUERYSERVICE-test-2
-            - SECURITY-test
+            # - QUERYSERVICE-test-2
+            # - SECURITY-test
 
       # - sonar-analysis:
       #     context: org-global
@@ -423,11 +419,6 @@ jobs:
   #    "Y8888P"     `"Y8888Y"'    88888888P"    "Y88888P"
 
 
-  x:
-    executor: docker-base
-    steps:
-      - run: echo DUMMY
-
   pull build install sdk from sync-branch:
     # executor: machine-ubuntu-2004
     executor: docker-python3-java11
@@ -486,6 +477,7 @@ jobs:
       - save-build-ehrbase-job-caches
       - collect-ehrbase-unittest-results
       - save-ehrbase-test-results
+      -cache-in-ehrbase-workspace    # USE FOR PIPELINE DEBUGGING ONLY
 
 
   run-SDK-integration-tests:
@@ -609,7 +601,8 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      # - restore-packaged-ehrbase-jar
+      - cache-out-ehrbase-workspace       # USE FOR PIPELINE DEBUGGING ONLY
       - run-robot-tests:
           include-tags: "aql_adhoc-queryANDempty_db"
           test-suite-path: "QUERY_SERVICE_TESTS"
@@ -855,7 +848,7 @@ commands:
                   --xunit junit-output.xml --xunitskipnoncritical \
                   --log NONE \
                   --report NONE \
-                  results/EHRbase-output.xml
+                  results/0/EHRbase-output.xml
       - save-test-results-folder:
           suite-results-folder-name: "0"
       - store_test_results:
@@ -1169,6 +1162,20 @@ commands:
           path: ~/ehrbase-test-results
       - store_artifacts:
           path: ~/ehrbase-test-results
+
+  
+  # WARNING: don't use these two steps in production
+  #          use them for pipeline debugging only!
+  cache-in-ehrbase-workspace:
+    steps:
+      - save_cache:
+          key: ehrbase-workspace-cache-v1
+          paths:
+            - application/target
+  cache-out-ehrbase-workspace:
+    steps:
+      - restore_cache:
+          key: ehrbase-workspace-cache-v1
 
 
 
