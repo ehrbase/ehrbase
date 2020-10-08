@@ -2,11 +2,9 @@ package org.ehrbase.dao.access.jooq;
 
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.jooq.pg.Routines;
-import org.ehrbase.jooq.pg.tables.AdminDeleteAudit;
 import org.ehrbase.jooq.pg.tables.AdminDeleteCompositionHistory;
-import org.ehrbase.jooq.pg.tables.records.AdminDeleteAttestationRecord;
-import org.ehrbase.jooq.pg.tables.records.AdminDeleteCompositionRecord;
-import org.ehrbase.jooq.pg.tables.records.AdminGetChildCompositionsRecord;
+import org.ehrbase.jooq.pg.tables.AdminDeleteParty;
+import org.ehrbase.jooq.pg.tables.records.*;
 import org.jooq.DSLContext;
 import org.jooq.Result;
 
@@ -45,21 +43,22 @@ public class AdminApiUtils {
      * @param id Composition
      */
     private void internalDeleteComposition(UUID id) {
+        // delete event_context and its participation first
+        Result<AdminDeleteEventContextForCompoRecord> parties = Routines.adminDeleteEventContextForCompo(ctx.configuration(), id);
+        // delete linked party, if not referenced somewhere else
+        parties.forEach(party -> ctx.selectQuery(new AdminDeleteParty().call(party.getParty())).execute());
+
         Result<AdminDeleteCompositionRecord> delCompo = Routines.adminDeleteComposition(ctx.configuration(), id);
         // for each deleted compo delete auxiliary objects
         delCompo.forEach(del -> {
-            int resp = ctx.selectQuery(new AdminDeleteAudit().call(del.getAudit())).execute();
-            if (resp != 1)
-                throw new InternalServerException("Admin deletion of Composition Audit failed!");
+            deleteAudit(del.getAudit(), "Composition");
             // invoke deletion of attestation, if available
             if (del.getAttestation() != null) {
                 Result<AdminDeleteAttestationRecord> delAttest = Routines.adminDeleteAttestation(ctx.configuration(), del.getAttestation());
-                delAttest.forEach(attest -> {
-                    int res = ctx.selectQuery(new AdminDeleteAudit().call(attest.getAudit())).execute();
-                    if (res != 1)
-                        throw new InternalServerException("Admin deletion of Attestation Audit failed!");
-                });
+                delAttest.forEach(attest -> deleteAudit(attest.getAudit(), "Attestation"));
             }
+            // delete linked party, if not referenced somewhere else
+            ctx.selectQuery(new AdminDeleteParty().call(del.getParty())).execute();
             // TODO-314: more?
         });
     }
@@ -69,7 +68,7 @@ public class AdminApiUtils {
      * @param id Composition
      */
     public void deleteComposition(UUID id) {
-        // TODO-314: call admin_get_child_compositions and invoke the following for them first, incl. checking for their children recursively
+        // first handle possible children of the given composition
         List<UUID> childrenIds = new LinkedList<>();
         getAndAddChildren(id, childrenIds);
         childrenIds.forEach(this::internalDeleteComposition);
@@ -83,5 +82,19 @@ public class AdminApiUtils {
             throw new InternalServerException("Admin deletion of Composition auxiliary objects failed!");
 
         // TODO-314: handle own contributions, so this can be used from deleteEHR and deleteCompo
+    }
+
+    /**
+     * Admin deletion of the given Audit
+     * @param id Audit
+     * @param context Object context to build error message, e.g. "Composition" for the audit of a Composition
+     */
+    public void deleteAudit(UUID id, String context) {
+        Result<AdminDeleteAuditRecord> delAudit = Routines.adminDeleteAudit(ctx.configuration(), id);
+        if (delAudit.size() != 1)
+            throw new InternalServerException("Admin deletion of " + context + " Audit failed!");
+        // delete linked party, if not referenced somewhere else
+        delAudit.forEach(audit -> ctx.selectQuery(new AdminDeleteParty().call(audit.getParty())).execute());
+
     }
 }

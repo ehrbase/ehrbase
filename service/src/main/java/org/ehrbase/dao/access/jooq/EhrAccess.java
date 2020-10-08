@@ -769,25 +769,24 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
                 UUID statusAudit = response.getStatusAudit();
 
                 // delete status audit
-                int res = getContext().selectQuery(new AdminDeleteAudit().call(statusAudit)).execute();
-                if (res != 1)
-                    throw new InternalServerException("Admin deletion of Status Audit failed!");
+                adminApi.deleteAudit(statusAudit, "Status");
 
                 linkedContributions.forEach(contrib -> {
                     // TODO-314: invoke delete contrib, which return other info like audit to handle separate, like with del_compo()
                     // del contrib
                     Routines.adminDeleteContribution(getContext().configuration(), contrib.getContribution());
-                    // no check on the response, because 0..* deletions is valid here
+                    // no check on the response, because 0..* deletions are valid here
                     // try to delete audit, too
-                    int resp = getContext().selectQuery(new AdminDeleteAudit().call(contrib.getAudit())).execute();
-                    if (resp != 1)
-                        throw new InternalServerException("Admin deletion of Status Audit failed!");
+                    adminApi.deleteAudit(contrib.getAudit(), "Contribution");
                 });
 
                 // final cleanup of auxiliary objects
-                res = getContext().selectQuery(new AdminDeleteEhrHistory().call(this.getId())).execute();
+                int res = getContext().selectQuery(new AdminDeleteEhrHistory().call(this.getId())).execute();
                 if (res != 1)
                     throw new InternalServerException("Admin deletion of EHR failed!");
+
+                // delete linked party, if not referenced somewhere else
+                getContext().selectQuery(new AdminDeleteParty().call(response.getStatusParty())).execute();
             });
         } catch (Exception e) {
             log.error(e);   // TODO-314: remove general catching here when done (shadows errors from above)

@@ -3,9 +3,10 @@
 
 -- TODO: check multiple times if function below are separated smart
 
--- generic function to delete audit, incl. system, if appropriate TODO: and party
+-- generic function to delete audit, incl. system, if not referenced somewhere else
+-- need to delete party with returned id
 CREATE OR REPLACE FUNCTION ehr.admin_delete_audit(audit_input UUID)
-    RETURNS TABLE (num integer) AS $$
+    RETURNS TABLE (num integer, party UUID) AS $$
     BEGIN
         RETURN QUERY WITH
             -- extract info about referenced system, before deleting audit
@@ -21,11 +22,13 @@ CREATE OR REPLACE FUNCTION ehr.admin_delete_audit(audit_input UUID)
                 FROM ehr.audit_details, ehr.system
                 WHERE ehr.system.id = ehr.audit_details.system_id
             ),
-            -- delete audit linked to status and contribution
-            -- TODO: delete party
+            linked_party(id) AS (   -- remember linked party before deletion
+                SELECT ehr.audit_details.committer FROM ehr.audit_details WHERE id = audit_input
+            ),
             delete_audit_details AS (
                 DELETE FROM ehr.audit_details WHERE id = audit_input
             ),
+            -- handle system entry
             count_audits_for_system(system_id, amount) AS (   -- count amount of audits referencing the system ID, which is referenced in this scope
                 SELECT system_id, COUNT(systems_audits.audit_id)
                 FROM systems_audits
@@ -39,10 +42,71 @@ CREATE OR REPLACE FUNCTION ehr.admin_delete_audit(audit_input UUID)
                     AND (NOT EXISTS (SELECT count_audits_for_system.amount FROM count_audits_for_system WHERE count_audits_for_system.amount > 1))
             )
 
-            SELECT 1;
+            SELECT 1, linked_party.id FROM linked_party;
     END;
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
+
+-- generic function to delete party_identified, if not referenced somewhere else - execute after deleting the object referencing this party
+CREATE OR REPLACE FUNCTION ehr.admin_delete_party(party_input UUID)
+    RETURNS TABLE (num integer) AS $$
+    BEGIN 
+		RETURN QUERY (
+			WITH
+            -- extract info about where this party is referenced in the rest of the DB
+			-- will result in one entry containing the given party ID, or no entry, if not referenced anywhere else
+            scope_party(party_id) AS (
+                SELECT ehr.composition.composer
+				FROM ehr.composition
+                WHERE (composition.composer = party_input)
+				
+				UNION
+				
+				SELECT ehr.audit_details.committer
+                FROM ehr.audit_details
+                WHERE (audit_details.committer = party_input)
+				
+				UNION
+				
+				SELECT ehr.status.party
+                FROM ehr.status
+                WHERE (status.party = party_input)
+				
+				UNION
+				
+				SELECT ehr.participation.performer
+                FROM ehr.participation
+                WHERE (participation.performer = party_input)
+				
+				UNION
+				
+				SELECT ehr.identifier.party
+                FROM ehr.identifier
+                WHERE (identifier.party = party_input)
+
+                UNION
+                
+                SELECT ehr.event_context.facility
+                FROM ehr.event_context
+                WHERE (event_context.facility = party_input)
+            ),
+
+            -- TODO: delete in IDENTIFIER too if not referenced anywhere else? (remove IDENTIFIER check above then)
+       		
+			delete_func AS (
+				DELETE FROM ehr.party_identified WHERE (ehr.party_identified.id = party_input)
+				AND (NOT EXISTS (SELECT * FROM scope_party)) -- does not exists if no other reference exists
+				RETURNING *
+				)
+			SELECT COUNT(*)::integer FROM delete_func
+			 
+		);
+
+        
+    END
+$$ LANGUAGE plpgsql
+    RETURNS NULL ON NULL INPUT;
+
 
 -- generic function to delete attestation by given attestation_ref ID
 -- returns all linked audits for further deletion
@@ -69,15 +133,15 @@ CREATE OR REPLACE FUNCTION ehr.admin_delete_attestation(attest_ref_input UUID)
                 WHERE attestation_id IN (SELECT linked_attestation.id FROM linked_attestation)
             ),
             -- delete attested_view
-            delete_audit_details AS (
+            delete_attested_view AS (
                 DELETE FROM ehr.attested_view WHERE id IN (SELECT linked_attested_view.id FROM linked_attested_view)
             ),
             -- delete attestation
-            delete_audit_details AS (
+            delete_attestation AS (
                 DELETE FROM ehr.attestation WHERE id IN (SELECT linked_attestation.id FROM linked_attestation)
             ),
-            -- delete attestation
-            delete_audit_details AS (
+            -- delete attestation_ref
+            delete_attestation_ref AS (
                 DELETE FROM ehr.attestation_ref WHERE id = attest_ref_input
             )
 
@@ -86,31 +150,58 @@ CREATE OR REPLACE FUNCTION ehr.admin_delete_attestation(attest_ref_input UUID)
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
 
--- function to delete a single composition, incl. their entries, event_contexts
-CREATE OR REPLACE FUNCTION ehr.admin_delete_composition(compo_id_input UUID)
-RETURNS TABLE (num integer, contribution UUID, party UUID, audit UUID, attestation UUID) AS $$
+-- function to delete event_contexts and participations for a composition and return their parties (event_context.facility and participation.performer)
+CREATE OR REPLACE FUNCTION ehr.admin_delete_event_context_for_compo(compo_id_input UUID)
+RETURNS TABLE (num integer, party UUID) AS $$
     BEGIN
-        RETURN QUERY WITH linked_entries(id) AS ( -- get linked ENTRY entities
-                SELECT id FROM ehr.entry WHERE composition_id = compo_id_input
-            ),
-            linked_events(id) AS ( -- get linked EVENT_CONTEXT entities  -- TODO-314: handle events party (facility) too
+        RETURN QUERY WITH 
+            linked_events(id) AS ( -- get linked EVENT_CONTEXT entities -- 0..1  -- TODO-314: handle events party (facility) too
                 SELECT id, facility FROM ehr.event_context WHERE composition_id = compo_id_input
             ),
-            linked_participations_for_events(id) AS ( -- get linked EVENT_CONTEXT entities  -- TODO-314: handle party (performer) too
+            linked_participations_for_events(id) AS ( -- get linked EVENT_CONTEXT entities -- for 0..1 events, each with * participations  -- TODO-314: handle party (performer) too
                 SELECT id, performer FROM ehr.participation WHERE event_context IN (SELECT linked_events.id  FROM linked_events)
             ),
-            linked_misc(contrib, party, audit, attestation) AS (
-                SELECT in_contribution, composer, has_audit, attestation_ref FROM ehr.composition WHERE id = compo_id_input
-            ),
-            delete_entries AS (
-                DELETE FROM ehr.entry WHERE ehr.entry.id IN (SELECT linked_entries.id  FROM linked_entries)
+            parties(id) AS (
+                SELECT facility FROM linked_events
+                UNION
+                SELECT performer FROM linked_participations_for_events
             ),
             delete_participation AS (
                 DELETE FROM ehr.participation WHERE ehr.participation.id IN (SELECT linked_participations_for_events.id  FROM linked_participations_for_events)
             ),
             delete_event_contexts AS (
                 DELETE FROM ehr.event_context WHERE ehr.event_context.id IN (SELECT linked_events.id  FROM linked_events)
+            )
+            SELECT 1, parties.id FROM parties;
+    END;
+$$ LANGUAGE plpgsql
+    RETURNS NULL ON NULL INPUT;
+
+-- function to delete a single composition, incl. their entries
+CREATE OR REPLACE FUNCTION ehr.admin_delete_composition(compo_id_input UUID)
+RETURNS TABLE (num integer, contribution UUID, party UUID, audit UUID, attestation UUID) AS $$
+    BEGIN
+        RETURN QUERY WITH linked_entries(id) AS ( -- get linked ENTRY entities
+                SELECT id FROM ehr.entry WHERE composition_id = compo_id_input
             ),
+            /* linked_events(id) AS ( -- get linked EVENT_CONTEXT entities -- 0..1  -- TODO-314: handle events party (facility) too
+                SELECT id, facility FROM ehr.event_context WHERE composition_id = compo_id_input
+            ),
+            linked_participations_for_events(id) AS ( -- get linked EVENT_CONTEXT entities -- for 0..1 events, each with * participations  -- TODO-314: handle party (performer) too
+                SELECT id, performer FROM ehr.participation WHERE event_context IN (SELECT linked_events.id  FROM linked_events)
+            ), */
+            linked_misc(contrib, party, audit, attestation) AS (
+                SELECT in_contribution, composer, has_audit, attestation_ref FROM ehr.composition WHERE id = compo_id_input
+            ),
+            delete_entries AS (
+                DELETE FROM ehr.entry WHERE ehr.entry.id IN (SELECT linked_entries.id  FROM linked_entries)
+            ),
+            /* delete_participation AS (
+                DELETE FROM ehr.participation WHERE ehr.participation.id IN (SELECT linked_participations_for_events.id  FROM linked_participations_for_events)
+            ),
+            delete_event_contexts AS (
+                DELETE FROM ehr.event_context WHERE ehr.event_context.id IN (SELECT linked_events.id  FROM linked_events)
+            ), */
             -- delete composition itself
             delete_composition AS (
                 DELETE FROM ehr.composition WHERE id = compo_id_input
@@ -154,8 +245,10 @@ RETURNS TABLE (num integer, audit UUID) AS $$
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
 
+-- TODO: DOC
+-- Needs separate deletion of returned audit.
 CREATE OR REPLACE FUNCTION ehr.admin_delete_ehr(ehr_id_input UUID)
-RETURNS TABLE (num integer, /*contrib_audit UUID,*/ status_audit UUID/*, composition UUID*/) AS $$
+RETURNS TABLE (num integer, status_audit UUID, status_party UUID) AS $$
     BEGIN
         RETURN QUERY WITH linked_status(has_audit) AS ( -- get linked STATUS parameters
                 SELECT has_audit FROM ehr.status WHERE ehr_id = ehr_id_input
@@ -164,12 +257,19 @@ RETURNS TABLE (num integer, /*contrib_audit UUID,*/ status_audit UUID/*, composi
             delete_ehr AS (
                 DELETE FROM ehr.ehr WHERE id = ehr_id_input
             ),
+            linked_party(id) AS (   -- formally always one
+                SELECT party FROM ehr.status WHERE ehr_id = ehr_id_input
+            ),
             -- Note: not handling the system referenced by EHR, because there is always at least one audit referencing it, too. See audit handling below.
             -- delete status
             delete_status AS (
                 DELETE FROM ehr.status WHERE ehr_id = ehr_id_input
             )
-            SELECT 1, linked_status.has_audit FROM linked_status;
+            
+            -- TODO: this would invoke the deletion of party from within this function, but it won't work because the transaction of deletion (ehr, status) is not finished and not valid. so the deletion of party fails, as it is still referenced somewhere.
+            --SELECT ehr.admin_delete_party((SELECT linked_party.id FROM linked_party)), linked_status.has_audit FROM linked_status, linked_party;
+
+            SELECT 1, linked_status.has_audit, linked_party.id FROM linked_status, linked_party;
     END;
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
