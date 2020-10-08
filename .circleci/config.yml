@@ -600,8 +600,6 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - run: echo MOCKED JOB 4
-      - run: sleep 180
       - restore-packaged-ehrbase-jar
       - run-robot-tests:
           include-tags: "aql_adhoc-queryANDempty_db"
@@ -620,11 +618,16 @@ jobs:
   
   SECURITY-test:
     executor: machine-ubuntu-2004
+    environment:
+      SUT: TEST
+      SECURITY_AUTHTYPE: OAUTH
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI: "http://localhost:8081/auth/realms/ehrbase"
     steps:
       - checkout
       - install-and-configure-keycloak
       - restore-packaged-ehrbase-jar
-      - run-robot-tests-with-oauth:
+      - run-robot-tests:
+          sut: "SUT:TEST -v AUTH_TYPE:OAUTH"
           include-tags: "OAUTH"
           # test-suite-path: ""
           test-suite-name: "KEYCLOAK-OAUTH"
@@ -704,19 +707,28 @@ commands:
   #
 
 
-  # USE THIS COMMAND W/ DOCKER EXECUTOR ONLY!!! 
   run-robot-tests:
     description: Run integration tests written in Robot Framework
     parameters:
+      sut:
+        description: SUT - System Under Test Config
+        enum: ["SUT:DEV", "SUT:DEV -v AUTH_TYPE:OAUTH", "SUT:ADMIN-DEV", "SUT:TEST", "SUT:TEST -v AUTH_TYPE:OAUTH", "SUT:ADMIN-TEST"]
+        default: "SUT:DEV"
+        type: enum
+
       include-tags:
         description: Which tests to inclue by TAGs (Robot syntax applies!)
         type: string
+
       test-suite-path:
         description: Target test-suite given by it's folder name e.g. COMPOSITION_TESTS
         type: string
+        default: ""
+
       test-suite-name:
         description: Titel of generated Robot Log/Report.html
         type: string
+
     steps:
       # - cache-out-python-requirements
       - install-maven
@@ -730,11 +742,25 @@ commands:
           name: START EHRBASE SERVER AND EXECUTE ROBOT TESTS
           no_output_timeout: 30m
           command: |
+            echo "SUT: $SUT"
+            echo "ADMINAPI_ACTIVE: $ADMINAPI_ACTIVE"
+            echo "SECURITY_AUTHTYPE: $SECURITY_AUTHTYPE"
+            echo "OAUTH_RESRCSERVER_URL: $SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI"
             ls -la
-            EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
-            echo ${EHRbase_VERSION}
-            java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false > log &
-            grep -m 1 "Started EhrBase in" <(tail -f log)
+            if [ "${SUT}" != "TEST" ]; then
+              EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+              echo ${EHRbase_VERSION}
+              java -jar "application/target/application-${EHRbase_VERSION}.jar" \
+                  --cache.enabled=false >log & app_pid=$!
+              if ! tail -f log | timeout 30s grep -m 1 "Started EhrBase in"; then
+                echo "WARNING: Did not see a startup message even after waiting 30s" >&2
+                if kill -0 "$app_pid"; then
+                  echo "...although EHRbase is still running" >&2
+                else
+                  echo "...and EHRbase did not successfully start" >&2
+                fi
+              fi
+            fi
             jps
             cd ~/projects/tests
             robot --include << parameters.include-tags >> \
@@ -746,52 +772,10 @@ commands:
                   --flattenkeywords foritem \
                   --flattenkeywords name:_resources.* \
                   --outputdir results/<< parameters.test-suite-name >> \
-                  --timestampoutputs \
                   --name << parameters.test-suite-name >> \
-                  -v nodocker \
-                  robot/<< parameters.test-suite-path >>/
+                  -v << parameters.sut >> \
+                  robot/<< parameters.test-suite-path >>
       # - cache-in-python-requirements
-      - save-test-results-folder
-      - store_test_results:
-          path: ~/projects/tests/results/
-      - store_artifacts:
-          path: ~/projects/tests/results/
-
-
-  run-robot-tests-with-oauth:
-    description: Run selected integration tests w/ active Keycloak OAuth2 authentication
-    parameters:
-      include-tags:
-        description: Which tests to inclue by TAGs (Robot syntax applies!)
-        type: string
-      # test-suite-path:
-      #   description: Target test-suite given by it's folder name e.g. COMPOSITION_TESTS
-      #   type: string
-      test-suite-name:
-        description: Titel of generated Robot Log/Report.html
-        type: string
-    steps:
-      - restore-integration-tests-job-caches
-      - install-python3-requirements
-      - run:
-          name: EXECUTE ROBOT COMMAND
-          no_output_timeout: 30m
-          command: |
-            cd tests
-            robot -v AUTH_TYPE:OAUTH \
-                  --include << parameters.include-tags >> \
-                  --exclude TODO -e future -e obsolete -e libtest \
-                  --console dotted \
-                  --loglevel TRACE \
-                  --noncritical not-ready \
-                  --flattenkeywords for \
-                  --flattenkeywords foritem \
-                  --flattenkeywords name:_resources.* \
-                  --outputdir results/<< parameters.test-suite-name >> \
-                  --timestampoutputs \
-                  --name << parameters.test-suite-name >> \
-                  robot/
-      - save-integration-tests-job-caches
       - save-test-results-folder
       - store_test_results:
           path: ~/projects/tests/results/
