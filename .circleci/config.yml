@@ -167,6 +167,7 @@ workflows:
           context: org-global
           requires:
             - build-ehrbase
+            - QUERYSERVICE-test-2
           # post-steps:
           #   - provide-test-status-report-via-slack #
 
@@ -174,41 +175,49 @@ workflows:
           context: org-global
           requires:
             - build-ehrbase
+            - QUERYSERVICE-test-2
 
       - COMPOSITION-tests-3:
           context: org-global
           requires:
             - build-ehrbase
+            - QUERYSERVICE-test-2
 
       - COMPOSITION-tests-4:
           context: org-global
           requires:
             - build-ehrbase
+            - QUERYSERVICE-test-2
 
       - CONTRIBUTION-test:
           context: org-global
           requires:
             - build-ehrbase
+            - QUERYSERVICE-test-2
 
       - DIRECTORY-test:
           context: org-global
           requires:
             - build-ehrbase
+            - QUERYSERVICE-test-2
 
       - EHRSERVICE-test:
           context: org-global
           requires:
             - build-ehrbase
+            - QUERYSERVICE-test-2
 
       - EHRSTATUS-test:
           context: org-global
           requires:
             - build-ehrbase
+            - QUERYSERVICE-test-2
 
       - KNOWLEDGE-test:
           context: org-global
           requires:
             - build-ehrbase
+            - QUERYSERVICE-test-2
 
       - QUERYSERVICE-test-1:
           context: org-global
@@ -224,6 +233,7 @@ workflows:
           context: org-global
           requires:
             - build-ehrbase
+            - QUERYSERVICE-test-2
 
       - ROBOT-TEST-REPORT:
           context: org-global
@@ -481,8 +491,6 @@ jobs:
     # executor: docker-py3-java11-postgres
     executor: machine-ubuntu-2004
     steps:
-      - wait/for_running_job:
-          job-name: "QUERYSERVICE-test-1"
       - run: echo MOCKED JOB 2
       # - checkout
       # - restore-packaged-ehrbase-jar
@@ -495,8 +503,6 @@ jobs:
     # executor: docker-py3-java11-postgres
     executor: machine-ubuntu-2004
     steps:
-      - wait/for_running_job:
-          job-name: "QUERYSERVICE-test-1"
       - run: echo MOCKED JOB 3
       # - checkout
       # - restore-packaged-ehrbase-jar
@@ -509,8 +515,6 @@ jobs:
     # executor: docker-py3-java11-postgres
     executor: machine-ubuntu-2004
     steps:
-      - wait/for_running_job:
-          job-name: "QUERYSERVICE-test-1"
       - run: echo MOCKED JOB 2
       # - checkout
       # - restore-packaged-ehrbase-jar
@@ -523,8 +527,6 @@ jobs:
     # executor: docker-py3-java11-postgres
     executor: machine-ubuntu-2004
     steps:
-      - wait/for_running_job:
-          job-name: "QUERYSERVICE-test-1"
       - run: echo MOCKED JOB 2
       # - checkout
       # - restore-packaged-ehrbase-jar
@@ -537,8 +539,6 @@ jobs:
     # executor: docker-py3-java11-postgres
     executor: machine-ubuntu-2004
     steps:
-      - wait/for_running_job:
-          job-name: "QUERYSERVICE-test-1"
       - run: echo MOCKED JOB 2
       # - checkout
       # - restore-packaged-ehrbase-jar
@@ -551,8 +551,6 @@ jobs:
     # executor: docker-py3-java11-postgres
     executor: machine-ubuntu-2004
     steps:
-      - wait/for_running_job:
-          job-name: "QUERYSERVICE-test-1"
       - run: echo MOCKED JOB 2
       # - checkout
       # - restore-packaged-ehrbase-jar
@@ -565,8 +563,6 @@ jobs:
     # executor: docker-py3-java11-postgres
     executor: machine-ubuntu-2004
     steps:
-      - wait/for_running_job:
-          job-name: "QUERYSERVICE-test-1"
       - run: echo MOCKED JOB 2
       # - checkout
       # - restore-packaged-ehrbase-jar
@@ -1607,97 +1603,6 @@ orbs:
   maven: circleci/maven@1.0.1
   openjdk-install: cloudesire/openjdk-install@1.2.3
   sonarcloud: sonarsource/sonarcloud@1.0.2
-  wait:
-    commands:
-      for_running_job:
-        description: |
-          This command waits for specified job in this workflow to get in RUNNING state. Since right now 
-          Circle CI doesnt let you queue up jobs irrespective of whether they fail or not. This is a
-          faux queue where the command stalls till the other job gets in RUNNING state.
-
-        parameters:
-          job-name:
-            description: The job on which to wait. If job not found continue immediately
-            type: string
-          max-wait-time:
-            description: |
-              The max wait time in seconds a job should wait for before killing itself.
-            type: string
-            default: "300"
-          kill-gracefully:
-            description: If true and time exceeds max wait time, completes and lets future steps continue
-            type: string
-            default: "true"
-          sleep-time-between-checks:
-            description: How long to sleep between checks.
-            type: string
-            default: "1"
-          run-on-branch:
-            description: |
-              The branches to actually wait on. By default this waits on all branches. If set to anything but
-              '*' the wait will run only on the specified branch
-            type: string
-            default: "*"
-
-        steps:
-          - run:
-              name: Swissknife - Wait for job (with RUNNING status) in workflow
-              command: |
-                if [ -z "$BASH" ]; then
-                  echo Bash not installed.
-                  exit 1
-                fi
-                hash jq 2>/dev/null || { echo >&2 "jq is not installed.  Aborting."; exit 1; }
-                if [[ "$CIRCLE_TOKEN" == "" ]]; then
-                  echo "CIRCLE_TOKEN not set. Set a token to access the circle API in the env var CIRCLE_TOKEN";
-                  exit 1;
-                fi
-
-                if [[ "<< parameters.run-on-branch >>" != "*" && "<< parameters.run-on-branch >>" != "$CIRCLE_BRANCH" ]]; then
-                  echo "Chosen to run only on << parameters.run-on-branch >> and currently we are on $CIRCLE_BRANCH, exiting";
-                  exit 0;
-                fi
-
-                api_endpoint="api/v2/workflow/${CIRCLE_WORKFLOW_ID}/job"
-
-                mkdir -p /tmp/swissknife
-
-                # This is a global variable used to get return value for get_job_status
-                job_status=""
-                job_number=""
-
-                get_job_status() {
-                  wf_url="https://circleci.com/$api_endpoint?circle-token=${CIRCLE_TOKEN}"
-                  curl -f -s $wf_url > /tmp/swissknife/wf_$CIRCLE_WORKFLOW_ID.json
-                  job_status=$(jq -r '.items[] | select(.name=="<< parameters.job-name >>") | .status' /tmp/swissknife/wf_$CIRCLE_WORKFLOW_ID.json)
-                  job_number=$(jq -r '.items[] | select(.name=="<< parameters.job-name >>") | .job_number' /tmp/swissknife/wf_$CIRCLE_WORKFLOW_ID.json)
-                }
-
-                current_wait_time=0
-
-                while true; do
-                  get_job_status
-                  if [[ "$job_status" == "running" || "$job_status" == "failed" || "$job_status" == "canceled" || "$job_status" == "" ]]; then
-                    echo job $job_number has status $job_status.
-                    echo "So, it's finally my turn. exiting"
-                    exit 0
-                  else
-                    echo "Looks like the other guy ($job_number) is still not done ($job_status)."
-                    echo "Going to sleep for << parameters.sleep-time-between-checks >>"
-                    sleep << parameters.sleep-time-between-checks >>
-                    current_wait_time=$(( current_wait_time + << parameters.sleep-time-between-checks >> ))
-                  fi
-
-                  if (( $current_wait_time > << parameters.max-wait-time >> )); then
-                    if [[ "<< parameters.kill-gracefully >>" == "true" ]]; then
-                      echo "Proceeding with future steps";
-                      exit 0;
-                    else
-                      echo "Failing job by exiting forcefully";
-                      exit 1;
-                    fi
-                  fi
-                done
 
 executors:
   docker-python3-java11:
