@@ -477,7 +477,7 @@ jobs:
       - save-build-ehrbase-job-caches
       - collect-ehrbase-unittest-results
       - save-ehrbase-test-results
-      -cache-in-ehrbase-workspace    # USE FOR PIPELINE DEBUGGING ONLY
+      - cache-in-ehrbase-workspace    # USE FOR PIPELINE DEBUGGING ONLY
 
 
   run-SDK-integration-tests:
