@@ -351,7 +351,7 @@ Check DB is empty
                         Disconnect From Database
 
 dump db
-    ${result}=          Run Process     docker    exec    -i ehrdb    pg_dump
+    ${result}=          Run Process     docker    exec    -i    ehrdb    pg_dump
                         ...    --username    postgres    ehrbase    >    ./dump.sql
                         ...    stderr=STDERR
                         ...    stdout=STDOUT
