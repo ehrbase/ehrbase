@@ -17,19 +17,11 @@
  */
 package org.ehrbase.aql.sql.binding;
 
-import com.nedap.archie.rm.datavalues.DataValue;
-import com.nedap.archie.rminfo.ArchieRMInfoLookup;
-import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.sql.queryImpl.CompositionAttributeQuery;
-import org.ehrbase.aql.sql.queryImpl.DefaultColumnId;
 import org.ehrbase.aql.sql.queryImpl.I_QueryImpl;
 import org.ehrbase.aql.sql.queryImpl.JsonbEntryQuery;
-import org.ehrbase.aql.sql.queryImpl.VariableAqlPath;
 import org.jooq.Field;
-import org.jooq.impl.DSL;
-
-import java.util.Objects;
 
 class ExpressionField {
 
@@ -48,7 +40,7 @@ class ExpressionField {
         this.compositionAttributeQuery = compositionAttributeQuery;
     }
 
-    Field<?> toSql(String className, String template_id, String identifier) {
+    Field<?> toSql(String className, String templateId, String identifier) {
 
         Field<?> field;
 
@@ -56,7 +48,7 @@ class ExpressionField {
             //COMPOSITION attributes
             case "COMPOSITION":
                 CompositionAttribute compositionAttribute = new CompositionAttribute(compositionAttributeQuery, jsonbEntryQuery, I_QueryImpl.Clause.SELECT);
-                field = compositionAttribute.toSql(variableDefinition, template_id, identifier);
+                field = compositionAttribute.toSql(variableDefinition, templateId, identifier);
                 jsonbItemPath = compositionAttribute.getJsonbItemPath();
                 containsJsonDataBlock = compositionAttribute.isContainsJsonDataBlock();
                 optionalPath = compositionAttribute.getOptionalPath();
@@ -64,16 +56,16 @@ class ExpressionField {
             // EHR attributes
             case "EHR":
 
-                field = compositionAttributeQuery.makeField(template_id, identifier, variableDefinition, I_QueryImpl.Clause.SELECT);
+                field = compositionAttributeQuery.makeField(templateId, identifier, variableDefinition, I_QueryImpl.Clause.SELECT);
                 containsJsonDataBlock = compositionAttributeQuery.isJsonDataBlock();
                 optionalPath = variableDefinition.getPath();
                 break;
             // other, f.e. CLUSTER, ADMIN_ENTRY, OBSERVATION etc.
             default:
                 // other_details f.e.
-                if (compositionAttributeQuery.isCompositionAttributeItemStructure(template_id, variableDefinition.getIdentifier())) {
+                if (compositionAttributeQuery.isCompositionAttributeItemStructure(templateId, variableDefinition.getIdentifier())) {
                     ContextualAttribute contextualAttribute = new ContextualAttribute(compositionAttributeQuery, jsonbEntryQuery, I_QueryImpl.Clause.SELECT);
-                    field = contextualAttribute.toSql(template_id, variableDefinition);
+                    field = contextualAttribute.toSql(templateId, variableDefinition);
                     jsonbItemPath = contextualAttribute.getJsonbItemPath();
                     containsJsonDataBlock = contextualAttribute.isContainsJsonDataBlock();
                     optionalPath = contextualAttribute.getOptionalPath();
@@ -81,9 +73,9 @@ class ExpressionField {
                 else {
                     // all other that are supported as simpleClassExpr (most common resolution)
                     LocatableItem locatableItem = new LocatableItem(compositionAttributeQuery, jsonbEntryQuery, I_QueryImpl.Clause.SELECT);
-                    field = locatableItem.toSql(template_id, variableDefinition, className);
+                    field = locatableItem.toSql(templateId, variableDefinition, className);
                     jsonbItemPath = locatableItem.getJsonbItemPath();
-                    containsJsonDataBlock = containsJsonDataBlock | locatableItem.isContainsJsonDataBlock();
+                    containsJsonDataBlock |= locatableItem.isContainsJsonDataBlock();
                     optionalPath = locatableItem.getOptionalPath();
                     rootJsonKey = locatableItem.getRootJsonKey();
                     jsonbItemPath = locatableItem.getJsonbItemPath();
