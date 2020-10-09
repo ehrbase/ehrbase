@@ -92,7 +92,7 @@ class ExpressionField {
         }
 
         //this takes care of formatting the json result as only the "value" part (e.g. not "value":{"value":...})
-        if (jsonbItemPath.endsWith("/origin")||jsonbItemPath.endsWith("/time")){
+        if (jsonbItemPath != null && (jsonbItemPath.endsWith("/origin")||jsonbItemPath.endsWith("/time"))){
             rootJsonKey = "value";
         }
 
