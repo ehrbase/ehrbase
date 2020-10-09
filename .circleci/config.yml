@@ -32,15 +32,15 @@ workflows:
   # WORKFLOW 1/3
   build-and-test:
     jobs:
-      - build-ehrbase:
-          context: org-global
-          filters:
-            branches:
-              ignore:
-                - /release\/.*/
-                - master
-                - /sync\/.*/
-                - /feature/sync\/.*/
+      # - build-ehrbase:
+      #     context: org-global
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - /release\/.*/
+      #           - master
+      #           - /sync\/.*/
+      #           - /feature/sync\/.*/
       
       # - run-SDK-integration-tests:
       #     context: org-global
@@ -105,8 +105,8 @@ workflows:
 
       - QUERYSERVICE-test-1:
           context: org-global
-          requires:
-            - build-ehrbase
+          # requires:
+          #   - build-ehrbase
 
       # - QUERYSERVICE-test-2:
       #     context: org-global
@@ -616,7 +616,7 @@ jobs:
           include-tags: "aql_adhoc-queryANDempty_db"
           test-suite-path: "QUERY_SERVICE_TESTS"
           test-suite-name: "ADHOC-QUERY-1"
-      - run: docker exec -i ehrdb pg_dump --username postgres ehrbase > ./dump.sql
+      # - run: docker exec -i ehrdb pg_dump --username postgres ehrbase > ./dump.sql
       - run: find tests/robot/_resources/test_data_sets/query/expected_results/empty_db/ -type f | sort | xargs cat > expected-results-loaded_db-seed
       - run: sha256sum expected-results-loaded_db-seed
       - save_cache:
