@@ -136,7 +136,8 @@ workflows:
             # - EHRSERVICE-test
             # - EHRSTATUS-test
             # - KNOWLEDGE-test
-            - QUERYSERVICE-test-1
+            # - QUERYSERVICE-test-1
+            - QUERYSERVICE-smoke
             # - QUERYSERVICE-test-2
             # - SECURITY-test
 
