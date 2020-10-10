@@ -647,6 +647,7 @@ jobs:
             - ehrbasedb-dump-v1
       - run: find tests/robot/_resources/test_data_sets/query/expected_results/loaded_db/ -type f | sort | xargs cat > /tmp/expected-results-loaded_db-seed
       - run: sha256sum /tmp/expected-results-loaded_db-seed
+      - run: DATA_CHANGED=True && export DATA_CHANGED
       # - run:
       #     name: DECIDE WHETHER TO SET DATA_CHANGED ENV OR NOT
       #     command: |
