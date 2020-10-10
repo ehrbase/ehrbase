@@ -31,7 +31,7 @@ Documentation   Main flow: execute ad-hoc QUERY where data exists
 Metadata        TOP_TEST_SUITE    AQL
 Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
 
-Suite Setup    Establish Preconditions
+Suite Setup    aql_query_keywords.Establish Preconditions
 # Test Setup  Establish Preconditions
 # Test Teardown  restore clean SUT state
 # Suite Teardown    Run Keywords    Clean DB    # Delete Temp Result-Data-Sets

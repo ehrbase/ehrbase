@@ -33,7 +33,6 @@ Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
 
 Suite Setup  Establish Preconditions for Scenario: EMPTY DB
 # Test Teardown  restore clean SUT state
-Suite Teardown    dump db
 
 Force Tags    refactor    empty_db
 
@@ -349,13 +348,3 @@ Check DB is empty
     ${ehr_records}=     Count Rows In DB Table    ehr.ehr
                         Should Be Equal As Integers    ${ehr_records}    ${0}
                         Disconnect From Database
-
-dump db
-    ${result}=          Run Process     docker    exec    -i    ehrdb
-                        ...    pg_dump --username postgres ehrbase
-                        ...    >    ./dump.sql
-                        ...    stderr=STDERR
-                        ...    stdout=STDOUT
-                        log to console    ${result.stdout}
-                        log to console    ${result.stderr}
-                        log many    ${result.stdout}    ${result.stderr}

@@ -103,7 +103,12 @@ workflows:
       #       - build-ehrbase
       #       - QUERYSERVICE-test-1
 
-      - QUERYSERVICE-test-1:
+      # - QUERYSERVICE-test-1:
+      #     context: org-global
+      #     requires:
+      #       - build-ehrbase
+      
+      - QUERYSERVICE-smoke:
           context: org-global
           # requires:
           #   - build-ehrbase
@@ -623,6 +628,46 @@ jobs:
           key: expected-results-loaded-db-v1-{{ checksum "expected-results-loaded_db-seed" }}
           paths:
             - tests/robot/_resources/test_data_sets/query/expected_results/empty_db/
+  
+
+  QUERYSERVICE-smoke:
+    # executor: docker-py3-java11-postgres
+    executor: machine-ubuntu-2004
+    environment:
+      SUT: TEST
+    steps:
+      - checkout
+      # - restore-packaged-ehrbase-jar
+      - restore_cache:
+          keys:
+            - expected-results-loaded-db-v1
+      - restore_cache:
+          keys:
+            - ehrbasedb-dump-v1
+      - run: find tests/robot/_resources/test_data_sets/query/expected_results/loaded_db/ -type f | sort | xargs cat > /tmp/expected-results-loaded_db-seed
+      - run: sha256sum /tmp/expected-results-loaded_db-seed
+      # - run:
+      #     name: DECIDE WHETHER TO SET DATA_CHANGED ENV OR NOT
+      #     command: |
+      #       ACTUAL_HASH="$(sha256sum /tmp/expected-results-loaded_db-seed | cat)"
+      #       EXPECTED_HASH="f5ee5a9a55c50687dafc3c3acff66089759f1577d7a5dd71aff6e60793ce91c2  /tmp/expected-results-loaded_db-seed"
+      #       [ "$ACTUAL_HASH" = "$EXPECTED_HASH" ] && echo "Expected results have NOT changed! No need to regenerate test-data!" || DATA_CHANGED=True && export DATA_CHANGED
+      - cache-out-ehrbase-workspace       # USE FOR PIPELINE DEBUGGING ONLY
+      - run-robot-tests:
+          sut: "SUT:TEST"
+          include-tags: "SMOKE"
+          test-suite-path: "QUERY_SERVICE_TESTS"
+          test-suite-name: "ADHOC-QUERY-SMOKE"
+      - run: find tests/robot/_resources/test_data_sets/query/expected_results/loaded_db/ -type f | sort | xargs cat > /tmp/expected-results-loaded_db-seed_2
+      - run: sha256sum expected-results-loaded_db-seed_2
+      - save_cache:
+          key: expected-results-loaded-db-v1-{{ checksum "/tmp/expected-results-loaded_db-seed" }}
+          paths:
+            - tests/robot/_resources/test_data_sets/query/expected_results/loaded_db/
+      - save_cache:
+          key: ehrbasedb-dump-v1-{{ checksum "/tmp/ehrbasedb_dump.sql" }}
+          paths:
+            - /tmp/ehrbasedb_dump.sql
   
 
   QUERYSERVICE-test-2:
