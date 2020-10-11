@@ -630,7 +630,7 @@ jobs:
           keys:
             - ehrbasedb-dump-v1
       # COMMENT: USE THE NEXT LINE ONLY TO FORCE TEST-DATA REGENERATION! Otherwise comment it out!
-      - run: echo "Expected result data-sets changed. Regenerate!" > /tmp/DATA_CHANGED_NOTICE
+      # - run: echo "Expected result data-sets changed. Regenerate!" > /tmp/DATA_CHANGED_NOTICE
       - run: 
           name: CHECK HASH OF EXPECTED-RESULT DATA-SETS
           command: |

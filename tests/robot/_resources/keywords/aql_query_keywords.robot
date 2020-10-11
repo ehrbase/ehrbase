@@ -187,7 +187,7 @@ POST /query/aql
     # UNCOMMENT NEXT BLOCK FOR DEBUGGING (BETTER OUTPUT IN CONSOLE)
     # TODO: rm/comment it out when test stable
                         Log To Console  \n//////////// ACTUAL //////////////////////////////
-                        # Output    ${response.json()}
+                        Output    ${response.json()}
 
 
 POST /query/{qualified_query_name}/{version}
@@ -267,7 +267,7 @@ check response (LOADED DB): returns correct content
                         load expected results-data-set (LOADED DB)    ${path_to_expected}
 
                         Log To Console  \n/////////// EXPECTED //////////////////////////////
-                        # Output    ${expected result}
+                        Output    ${expected result}
 
     &{diff}             compare_jsons_ignoring_properties    ${response body}    ${expected result}
     # ...                 meta    path    foo        # comment: example of how to add additional
@@ -290,7 +290,7 @@ check response (LOADED DB): returns correct ordered content
                         load expected results-data-set (LOADED DB)    ${path_to_expected_result}
 
                         Log To Console  \n/////////// EXPECTED //////////////////////////////
-                        # Output    ${expected result}
+                        Output    ${expected result}
     
     # TODO: probably need to sort the expected result before comparison
     
@@ -308,7 +308,7 @@ check response (EMPTY DB): returns correct content for
                         load expected results-data-set (EMPTY DB)    ${aql_payload}
                         
                         Log To Console  \n/////////// EXPECTED //////////////////////////////
-                        # Output    ${expected result}
+                        Output    ${expected result}
 
     &{diff}=            compare_jsons_ignoring_properties  ${response body}  ${expected result}
                         Should Be Empty  ${diff}  msg=DIFF DETECTED!
