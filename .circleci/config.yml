@@ -625,12 +625,12 @@ jobs:
       # - restore-packaged-ehrbase-jar
       - restore_cache:
           keys:
-            - expected-results-loaded-db-v3
+            - expected-results-loaded-db-v4
       - restore_cache:
           keys:
             - ehrbasedb-dump-v1
       # COMMENT: USE THE NEXT LINE ONLY TO FORCE TEST-DATA REGENERATION! Otherwise comment it out!
-      # - run: echo "Expected result data-sets changed. Regenerate!" > /tmp/DATA_CHANGED_NOTICE
+      - run: echo "Expected result data-sets changed. Regenerate!" > /tmp/DATA_CHANGED_NOTICE
       - run: 
           name: CHECK HASH OF EXPECTED-RESULT DATA-SETS
           command: |
@@ -657,7 +657,7 @@ jobs:
             find tests/robot/_resources/test_data_sets/query/expected_results/loaded_db/ -type f | sort | xargs cat > /tmp/dummy-seed
             sha256sum /tmp/dummy-seed
       - save_cache:
-          key: expected-results-loaded-db-v3-{{ checksum "/tmp/expected-results-loaded_db-seed" }}
+          key: expected-results-loaded-db-v4-{{ checksum "/tmp/expected-results-loaded_db-seed" }}
           paths:
             - tests/robot/_resources/test_data_sets/query/expected_results/loaded_db/
       - save_cache:
