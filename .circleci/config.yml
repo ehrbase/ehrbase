@@ -647,13 +647,12 @@ jobs:
             - ehrbasedb-dump-v1
       - run: find tests/robot/_resources/test_data_sets/query/expected_results/loaded_db/ -type f | sort | xargs cat > /tmp/expected-results-loaded_db-seed
       - run: sha256sum /tmp/expected-results-loaded_db-seed
-      - run: echo "Expected result data-set have changed. Test data have to be regenerated" > /tmp/DATA_CHANGED_NOTICE
-      # - run:
-      #     name: DECIDE WHETHER TO SET DATA_CHANGED ENV OR NOT
-      #     command: |
-      #       ACTUAL_HASH="$(sha256sum /tmp/expected-results-loaded_db-seed | cat)"
-      #       EXPECTED_HASH="f5ee5a9a55c50687dafc3c3acff66089759f1577d7a5dd71aff6e60793ce91c2  /tmp/expected-results-loaded_db-seed"
-      #       [ "$ACTUAL_HASH" = "$EXPECTED_HASH" ] && echo "Expected results have NOT changed! No need to regenerate test-data!" || echo "Expected result data-set have changed. Test data have to be regenerated" > /tmp/DATA_CHANGED_NOTICE
+      - run:
+          name: DECIDE WHETHER TO SET DATA_CHANGED ENV OR NOT
+          command: |
+            ACTUAL_HASH="$(sha256sum /tmp/expected-results-loaded_db-seed | cat)"
+            EXPECTED_HASH="f5ee5a9a55c50687dafc3c3acff66089759f1577d7a5dd71aff6e60793ce91c2  /tmp/expected-results-loaded_db-seed"
+            [ "$ACTUAL_HASH" = "$EXPECTED_HASH" ] && echo "Expected results unchanged!  Don't regenerate test-data!" || echo "Expected result data-sets changed. Regenerate!" > /tmp/DATA_CHANGED_NOTICE
       - cache-out-ehrbase-workspace       # USE FOR PIPELINE DEBUGGING ONLY
       - run-robot-tests:
           sut: "SUT:TEST"
