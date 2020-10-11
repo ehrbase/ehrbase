@@ -108,15 +108,15 @@ workflows:
       #     requires:
       #       - build-ehrbase
       
-      # - QUERYSERVICE-smoke:
-      #     context: org-global
-      #     requires:
-      #       - build-ehrbase
-
-      - QUERYSERVICE-test-2:
+      - QUERYSERVICE-smoke:
           context: org-global
           # requires:
           #   - build-ehrbase
+
+      # - QUERYSERVICE-test-2:
+      #     context: org-global
+      #     requires:
+      #       - build-ehrbase
       
       # - SECURITY-test:
       #     context: org-global
@@ -615,8 +615,7 @@ jobs:
           test-suite-name: "ADHOC-QUERY-1"
   
 
-  # QUERYSERVICE-smoke:
-  QUERYSERVICE-test-2:
+  QUERYSERVICE-smoke:
     # executor: docker-py3-java11-postgres
     executor: machine-ubuntu-2004
     environment:
