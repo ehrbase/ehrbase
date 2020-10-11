@@ -608,7 +608,6 @@ jobs:
       - checkout
       - restore-packaged-ehrbase-jar
       - run-robot-tests:
-          sut: "SUT:TEST"
           include-tags: "aql_adhoc-queryANDempty_db"
           test-suite-path: "QUERY_SERVICE_TESTS"
           test-suite-name: "ADHOC-QUERY-1"
