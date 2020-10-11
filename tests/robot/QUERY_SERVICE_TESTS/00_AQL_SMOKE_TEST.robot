@@ -366,7 +366,7 @@ D/503
 
 Establish Preconditions
     # comment: WHEN TEST-DATA HAS NOT CHANGED RESTORE DB FROM DUMP AND SKIP REST OF THIS KW!
-    ${data-changed}     Run Keyword And Return Status    Environment Variable Should Be Set    DATA_CHANGED
+    ${data-changed}     Run Keyword And Return Status    File Should Exist    /tmp/DATA_CHANGED_NOTICE
                         Run Keyword And Return If    not ${data-changed}    db_keywords.restore db from dump
 
                         # Run Keyword And Return If    not ${data-changed}

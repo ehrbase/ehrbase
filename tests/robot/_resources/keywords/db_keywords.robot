@@ -162,7 +162,7 @@ Count Rows In DB Table
 
 dump db
 
-    ${redump_required}  Run Keyword And Return Status    Environment Variable Should Be Set    DATA_CHANGED
+    ${redump_required}  Run Keyword And Return Status    File Should Exist    /tmp/DATA_CHANGED_NOTICE
                         Return From Keyword If    not ${redump_required}    DUMP DB REQIRED(?): ${redump_required}
 
     ${result}=          Run Process
