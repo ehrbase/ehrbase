@@ -161,6 +161,7 @@ Count Rows In DB Table
 
 
 dump db
+    [Documentation]     Dumps ehrbase DB from PostrgeSQL Docker container to a file /tmp/ehrbasedb_dump.sql
     ${redump_required}  Run Keyword And Return Status    File Should Exist    /tmp/DATA_CHANGED_NOTICE
                         Return From Keyword If    not ${redump_required}    DUMP DB REQIRED(?): ${redump_required}
     
@@ -176,6 +177,7 @@ dump db
 
 
 restore db from dump
+    [Documentation]     Restores ehrbase DB inside PostgreSQL container from dump.sql file.
     Log To Console      RESTORING DB FROM DUMP FILE
     Run Process         docker exec -i ehrdb psql ehrbase --username postgres < /tmp/ehrbasedb_dump.sql
                         ...    shell=true

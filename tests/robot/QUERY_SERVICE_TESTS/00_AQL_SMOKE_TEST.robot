@@ -429,7 +429,7 @@ Preconditions (PART 2) - Generate Test-Data and Expected-Results (MINIMAL SET)
 
 
 
-    # TODO: DELETE THIS @WLAD
+    # TODO: @WLAD MAKE SMOKE SUITE WORKS PROPERLY WITH THIS PART MOVE TO TCs, then DELETE THIS!!
     # # COMMENT: QUERY EXECUTION
     # #////////////////////////////////////////////////////////////////
     # #//                                                           ///
