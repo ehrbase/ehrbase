@@ -23,9 +23,7 @@ ${compo data sets}    ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/quer
 AQL LOADED DB SMOKE TEST - Preconditions
     [Tags]    SMOKE
 
-        Establish Preconditions
-        # Preconditions (PART 1) - Load Blueprints of Queries and Expected-Results
-        # Preconditions (PART 2) - Generate Test-Data and Expected-Results (MINIMAL SET)
+    Establish Preconditions
 
     [Teardown]    Set Smoke Test Status
 

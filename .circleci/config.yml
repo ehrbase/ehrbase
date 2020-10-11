@@ -32,101 +32,120 @@ workflows:
   # WORKFLOW 1/3
   build-and-test:
     jobs:
-      # - build-ehrbase:
-      #     context: org-global
-      #     filters:
-      #       branches:
-      #         ignore:
-      #           - /release\/.*/
-      #           - master
-      #           - /sync\/.*/
-      #           - /feature/sync\/.*/
-      
-      # - run-SDK-integration-tests:
-      #     context: org-global
-      #     requires:
-      #       - build-ehrbase
-
-      # - COMPOSITION-tests-1:
-      #     context: org-global
-      #     requires:
-      #       - build-ehrbase
-      #       - QUERYSERVICE-test-1
-      #     # post-steps:
-      #     #   - provide-test-status-report-via-slack #
-
-      # - COMPOSITION-tests-2:
-      #     context: org-global
-      #     requires:
-      #       - build-ehrbase
-      #       - QUERYSERVICE-test-1
-
-      # - COMPOSITION-tests-3:
-      #     context: org-global
-      #     requires:
-      #       - build-ehrbase
-      #       - QUERYSERVICE-test-1
-
-      # - COMPOSITION-tests-4:
-      #     context: org-global
-      #     requires:
-      #       - build-ehrbase
-      #       - QUERYSERVICE-test-1
-
-      # - CONTRIBUTION-test:
-      #     context: org-global
-      #     requires:
-      #       - build-ehrbase
-      #       - QUERYSERVICE-test-1
-
-      # - DIRECTORY-test:
-      #     context: org-global
-      #     requires:
-      #       - build-ehrbase
-      #       - QUERYSERVICE-test-1
-
-      # - EHRSERVICE-test:
-      #     context: org-global
-      #     requires:
-      #       - build-ehrbase
-      #       - QUERYSERVICE-test-1
-
-      # - EHRSTATUS-test:
-      #     context: org-global
-      #     requires:
-      #       - build-ehrbase
-      #       - QUERYSERVICE-test-1
-
-      # - KNOWLEDGE-test:
-      #     context: org-global
-      #     requires:
-      #       - build-ehrbase
-      #       - QUERYSERVICE-test-1
-
-      # - QUERYSERVICE-test-1:
-      #     context: org-global
-      #     requires:
-      #       - build-ehrbase
-      
-      - QUERYSERVICE-smoke:
+      - build-ehrbase:
           context: org-global
-          # requires:
-          #   - build-ehrbase
-
-      # - QUERYSERVICE-test-2:
-      #     context: org-global
-      #     requires:
-      #       - build-ehrbase
+          filters:
+            branches:
+              ignore:
+                - /release\/.*/
+                - master
+                - /sync\/.*/
+                - /feature/sync\/.*/
       
-      # - SECURITY-test:
+      - run-SDK-integration-tests:
+          context: org-global
+          requires:
+            - build-ehrbase
+
+      - COMPOSITION-tests-1:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+          # post-steps:
+          #   - provide-test-status-report-via-slack #
+
+      - COMPOSITION-tests-2:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
+      - COMPOSITION-tests-3:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
+      - COMPOSITION-tests-4:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
+      - CONTRIBUTION-test:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
+      - DIRECTORY-test:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
+      - EHRSERVICE-test:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
+      - EHRSTATUS-test:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
+      - KNOWLEDGE-test:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
+      - QUERYSERVICE-test-1:
+          context: org-global
+          requires:
+            - build-ehrbase
+      
+      # - QUERYSERVICE-smoke:
       #     context: org-global
-      #     requires:
-      #       - build-ehrbase
-      #       - QUERYSERVICE-test-1
+      #     # requires:
+      #     #   - build-ehrbase
+
+      - QUERYSERVICE-test-2:
+          context: org-global
+          requires:
+            - build-ehrbase
+      
+      - SECURITY-test:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
 
       - ROBOT-TEST-REPORT:
           context: org-global
           requires:
+            - COMPOSITION-tests-1
+            - COMPOSITION-tests-2
+            - COMPOSITION-tests-3
+            - COMPOSITION-tests-4
+            - CONTRIBUTION-test
+            - DIRECTORY-test
+            - EHRSERVICE-test
+            - EHRSTATUS-test
+            - KNOWLEDGE-test
+            - QUERYSERVICE-test-1
+            - QUERYSERVICE-test-2
+            - SECURITY-test
+
+      - sonar-analysis:
+          context: org-global
+          requires:
+            - run-SDK-integration-tests
+            # TODO: reactivate this after https://github.com/ehrbase/ehrbase/issues/330
+            #       resolved
             # - COMPOSITION-tests-1
             # - COMPOSITION-tests-2
             # - COMPOSITION-tests-3
@@ -137,28 +156,8 @@ workflows:
             # - EHRSTATUS-test
             # - KNOWLEDGE-test
             # - QUERYSERVICE-test-1
-            - QUERYSERVICE-smoke
             # - QUERYSERVICE-test-2
             # - SECURITY-test
-
-      # - sonar-analysis:
-      #     context: org-global
-      #     requires:
-      #       - run-SDK-integration-tests
-      #       # TODO: reactivate this after https://github.com/ehrbase/ehrbase/issues/330
-      #       #       resolved
-      #       # - COMPOSITION-tests-1
-      #       # - COMPOSITION-tests-2
-      #       # - COMPOSITION-tests-3
-      #       # - COMPOSITION-tests-4
-      #       # - CONTRIBUTION-test
-      #       # - DIRECTORY-test
-      #       # - EHRSERVICE-test
-      #       # - EHRSTATUS-test
-      #       # - KNOWLEDGE-test
-      #       # - QUERYSERVICE-test-1
-      #       # - QUERYSERVICE-test-2
-      #       # - SECURITY-test
 
 
 
@@ -471,20 +470,20 @@ jobs:
 
 
   build-ehrbase:
-    # executor: docker-py3-java11-postgres
-    executor: machine-ubuntu-2004
+    executor: docker-py3-java11-postgres
+    # executor: machine-ubuntu-2004
     steps:
       - checkout
-      # - install-maven
-      # - restore-build-ehrbase-job-caches
-      # - maven-package
-      # - save-packaged-ehrbase-jar
-      # - save-build-ehrbase-job-caches
-      # - collect-ehrbase-unittest-results
-      # - save-ehrbase-test-results
-      - run: echo MOCKED JOB 1          # USE FOR PIPELINE DEBUGGING ONLY
-      - cache-out-ehrbase-workspace     # USE FOR PIPELINE DEBUGGING ONLY
-      # - cache-in-ehrbase-workspace    # USE FOR PIPELINE DEBUGGING ONLY
+      - install-maven
+      - restore-build-ehrbase-job-caches
+      - maven-package
+      - save-packaged-ehrbase-jar
+      - save-build-ehrbase-job-caches
+      - collect-ehrbase-unittest-results
+      - save-ehrbase-test-results
+      # - run: echo MOCKED JOB 1          # USE FOR PIPELINE DEBUGGING ONLY
+      # - cache-out-ehrbase-workspace     # USE FOR PIPELINE DEBUGGING ONLY
+      # - cache-in-ehrbase-workspace     # USE FOR PIPELINE DEBUGGING ONLY
 
 
   run-SDK-integration-tests:
@@ -615,15 +614,15 @@ jobs:
           test-suite-name: "ADHOC-QUERY-1"
   
 
-  QUERYSERVICE-smoke:
+  QUERYSERVICE-test-2:
     # executor: docker-py3-java11-postgres
     executor: machine-ubuntu-2004
     environment:
       SUT: TEST
     steps:
       - checkout
-      # - restore-packaged-ehrbase-jar
-      - cache-out-ehrbase-workspace       # USE FOR PIPELINE DEBUGGING ONLY
+      - restore-packaged-ehrbase-jar
+      # - cache-out-ehrbase-workspace       # USE FOR PIPELINE DEBUGGING ONLY
       - restore_cache:
           keys:
             - expected-results-loaded-db-v5
@@ -673,15 +672,15 @@ jobs:
             - /tmp/ehrbasedb_dump.sql
   
 
-  QUERYSERVICE-test-2:
-    executor: docker-py3-java11-postgres
-    steps:
-      - checkout
-      - restore-packaged-ehrbase-jar
-      - run-robot-tests:
-          include-tags: "aql_adhoc-queryANDloaded_db"
-          test-suite-path: "QUERY_SERVICE_TESTS"
-          test-suite-name: "ADHOC-QUERY-2"
+  # QUERYSERVICE-test-2:
+  #   executor: docker-py3-java11-postgres
+  #   steps:
+  #     - checkout
+  #     - restore-packaged-ehrbase-jar
+  #     - run-robot-tests:
+  #         include-tags: "aql_adhoc-queryANDloaded_db"
+  #         test-suite-path: "QUERY_SERVICE_TESTS"
+  #         test-suite-name: "ADHOC-QUERY-2"
   
   SECURITY-test:
     executor: machine-ubuntu-2004
