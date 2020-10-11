@@ -641,7 +641,7 @@ jobs:
       # - restore-packaged-ehrbase-jar
       - restore_cache:
           keys:
-            - expected-results-loaded-db-v1
+            - expected-results-loaded-db-v2
       - restore_cache:
           keys:
             - ehrbasedb-dump-v1
@@ -661,9 +661,9 @@ jobs:
           test-suite-path: "QUERY_SERVICE_TESTS"
           test-suite-name: "ADHOC-QUERY-SMOKE"
       - run: find tests/robot/_resources/test_data_sets/query/expected_results/loaded_db/ -type f | sort | xargs cat > /tmp/expected-results-loaded_db-seed_2
-      - run: sha256sum expected-results-loaded_db-seed_2
+      - run: sha256sum /tmp/expected-results-loaded_db-seed_2
       - save_cache:
-          key: expected-results-loaded-db-v1-{{ checksum "/tmp/expected-results-loaded_db-seed" }}
+          key: expected-results-loaded-db-v2-{{ checksum "/tmp/expected-results-loaded_db-seed" }}
           paths:
             - tests/robot/_resources/test_data_sets/query/expected_results/loaded_db/
       - save_cache:
