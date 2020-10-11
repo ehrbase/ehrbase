@@ -57,13 +57,11 @@ Set Smoke Test Status
 
 
 Establish Preconditions
-    # comment: SKIP PRECONDITIONS WHEN DB DUMP FILE EXISTS!
-    #          RESTORE DB FROM DUMP AND EXIT FROM THIS KW!
-    ${dump exists}      Run Keyword And Return Status    File Should Exist    /tmp/ehrbasedb_dump.sql
-                        Run Keyword And Return If    ${dump exists}
-                        ...    db_keywords.restore db from dump
-    
-    # comment: WHEN DB DUMP DOES NOT EXIST DO THIS!
+    # comment: WHEN TEST-DATA HAS NOT CHANGED RESTORE DB FROM DUMP AND SKIP REST OF THIS KW!
+    ${data-changed}     Run Keyword And Return Status    File Should Exist    /tmp/DATA_CHANGED_NOTICE
+                        Run Keyword And Return If    not ${data-changed}    db_keywords.restore db from dump
+   
+    # comment: WHEN DATA_CHANGED ENV EXIST DO THIS!
     Preconditions (PART 1) - Load Blueprints of Queries and Expected-Results
     Preconditions (PART 2) - Generate Test-Data and Expected-Results
 

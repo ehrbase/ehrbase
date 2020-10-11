@@ -108,15 +108,15 @@ workflows:
       #     requires:
       #       - build-ehrbase
       
-      - QUERYSERVICE-smoke:
-          context: org-global
-          # requires:
-          #   - build-ehrbase
-
-      # - QUERYSERVICE-test-2:
+      # - QUERYSERVICE-smoke:
       #     context: org-global
       #     requires:
       #       - build-ehrbase
+
+      - QUERYSERVICE-test-2:
+          context: org-global
+          # requires:
+          #   - build-ehrbase
       
       # - SECURITY-test:
       #     context: org-global
@@ -604,34 +604,19 @@ jobs:
           test-suite-name: "KNOWLEDGE"
 
   QUERYSERVICE-test-1:
-    # executor: docker-py3-java11-postgres
-    executor: machine-ubuntu-2004
-    environment:
-      SUT: TEST
+    executor: docker-py3-java11-postgres
     steps:
       - checkout
-      # - restore-packaged-ehrbase-jar
-      - restore_cache:
-          keys:
-            - expected-results-loaded-db-v1
-      - run: find tests/robot/_resources/test_data_sets/query/expected_results/empty_db/ -type f | sort | xargs cat > expected-results-loaded_db-seed
-      - run: sha256sum expected-results-loaded_db-seed
-      - cache-out-ehrbase-workspace       # USE FOR PIPELINE DEBUGGING ONLY
+      - restore-packaged-ehrbase-jar
       - run-robot-tests:
           sut: "SUT:TEST"
           include-tags: "aql_adhoc-queryANDempty_db"
           test-suite-path: "QUERY_SERVICE_TESTS"
           test-suite-name: "ADHOC-QUERY-1"
-      # - run: docker exec -i ehrdb pg_dump --username postgres ehrbase > ./dump.sql
-      - run: find tests/robot/_resources/test_data_sets/query/expected_results/empty_db/ -type f | sort | xargs cat > expected-results-loaded_db-seed
-      - run: sha256sum expected-results-loaded_db-seed
-      - save_cache:
-          key: expected-results-loaded-db-v1-{{ checksum "expected-results-loaded_db-seed" }}
-          paths:
-            - tests/robot/_resources/test_data_sets/query/expected_results/empty_db/
   
 
-  QUERYSERVICE-smoke:
+  # QUERYSERVICE-smoke:
+  QUERYSERVICE-test-2:
     # executor: docker-py3-java11-postgres
     executor: machine-ubuntu-2004
     environment:
@@ -645,7 +630,8 @@ jobs:
       - restore_cache:
           keys:
             - ehrbasedb-dump-v1
-      # - run: echo "Expected result data-sets changed. Regenerate!" > /tmp/DATA_CHANGED_NOTICE
+      # COMMENT: USE THE NEXT LINE ONLY TO FORCE TEST-DATA REGENERATION!
+      - run: echo "Expected result data-sets changed. Regenerate!" > /tmp/DATA_CHANGED_NOTICE
       - run: 
           name: CHECK HASH OF EXPECTED-RESULT DATA-SETS
           command: |
@@ -660,9 +646,12 @@ jobs:
       - cache-out-ehrbase-workspace       # USE FOR PIPELINE DEBUGGING ONLY
       - run-robot-tests:
           sut: "SUT:TEST"
-          include-tags: "SMOKE"
+          # include-tags: "SMOKE"
+          # test-suite-path: "QUERY_SERVICE_TESTS"
+          # test-suite-name: "ADHOC-QUERY-SMOKE"
+          include-tags: "aql_adhoc-queryANDloaded_db"
           test-suite-path: "QUERY_SERVICE_TESTS"
-          test-suite-name: "ADHOC-QUERY-SMOKE"
+          test-suite-name: "ADHOC-QUERY-2"
       - run: 
           name: CHECK HASH AFTER TEST-DATA GENERATION
           command: |

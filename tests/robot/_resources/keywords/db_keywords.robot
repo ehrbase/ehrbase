@@ -161,10 +161,10 @@ Count Rows In DB Table
 
 
 dump db
-
     ${redump_required}  Run Keyword And Return Status    File Should Exist    /tmp/DATA_CHANGED_NOTICE
                         Return From Keyword If    not ${redump_required}    DUMP DB REQIRED(?): ${redump_required}
-
+    
+    Log To Console      WRITING DB DUMP TO FILE /tmp/ehrbasedb_dump.sql
     ${result}=          Run Process
     ...                 docker exec ehrdb pg_dump ehrbase --username postgres --if-exists --clean > /tmp/ehrbasedb_dump.sql
                         ...    shell=true
@@ -176,14 +176,7 @@ dump db
 
 
 restore db from dump
-    # ${data-changed}     Run Keyword And Return Status    Environment Variable Should Be Set    DATA_CHANGED
-    #                     Return From Keyword If    ${data-changed}    EXPECTED RESULTS CHANGED(?): ${data-changed}
-
-    # # comment: next line for loacl test only
-    # ${dump exists}      Run Keyword And Return Status    File Should Exist    /tmp/ehrbasedb_dump.sql
-
     Log To Console      RESTORING DB FROM DUMP FILE
-
     Run Process         docker exec -i ehrdb psql ehrbase --username postgres < /tmp/ehrbasedb_dump.sql
                         ...    shell=true
                         ...    stderr=DBRESTORE_STDERR
