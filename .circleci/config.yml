@@ -641,12 +641,15 @@ jobs:
       # - restore-packaged-ehrbase-jar
       - restore_cache:
           keys:
-            - expected-results-loaded-db-v2
+            - expected-results-loaded-db-v3
       - restore_cache:
           keys:
             - ehrbasedb-dump-v1
-      - run: find tests/robot/_resources/test_data_sets/query/expected_results/loaded_db/ -type f | sort | xargs cat > /tmp/expected-results-loaded_db-seed
-      - run: sha256sum /tmp/expected-results-loaded_db-seed
+      - run: 
+          name: CHECK HASH OF EXPECTED-RESULT DATA-SETS
+          command: |
+            find tests/robot/_resources/test_data_sets/query/expected_results/loaded_db/ -type f ! -name *.tmp.json | sort | xargs cat > /tmp/expected-results-loaded_db-seed
+            sha256sum /tmp/expected-results-loaded_db-seed
       - run:
           name: DECIDE WHETHER TO SET DATA_CHANGED ENV OR NOT
           command: |
@@ -659,10 +662,13 @@ jobs:
           include-tags: "SMOKE"
           test-suite-path: "QUERY_SERVICE_TESTS"
           test-suite-name: "ADHOC-QUERY-SMOKE"
-      - run: find tests/robot/_resources/test_data_sets/query/expected_results/loaded_db/ -type f | sort | xargs cat > /tmp/expected-results-loaded_db-seed_2
-      - run: sha256sum /tmp/expected-results-loaded_db-seed_2
+      - run: 
+          name: CHECK HASH AFTER TEST-DATA GENERATION
+          command: |
+            find tests/robot/_resources/test_data_sets/query/expected_results/loaded_db/ -type f | sort | xargs cat > /tmp/dummy-seed
+            sha256sum /tmp/dummy-seed
       - save_cache:
-          key: expected-results-loaded-db-v2-{{ checksum "/tmp/expected-results-loaded_db-seed" }}
+          key: expected-results-loaded-db-v3-{{ checksum "/tmp/expected-results-loaded_db-seed" }}
           paths:
             - tests/robot/_resources/test_data_sets/query/expected_results/loaded_db/
       - save_cache:
