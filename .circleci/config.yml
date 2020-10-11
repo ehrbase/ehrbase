@@ -638,7 +638,7 @@ jobs:
           keys:
             - ehrbasedb-dump-v2
       # COMMENT: USE THE NEXT LINE ONLY TO FORCE TEST-DATA REGENERATION! Otherwise comment it out!
-      # - run: echo "Expected result data-sets changed. Regenerate!" > /tmp/DATA_CHANGED_NOTICE
+      - run: echo "Expected result data-sets changed. Regenerate!" > /tmp/DATA_CHANGED_NOTICE
       - run: 
           name: CHECK IF EXPECTED-RESULT TEMPLATES HAVE CHANGED AND REGENERATE TEST-DATA IF NEEDED
           command: |
@@ -659,6 +659,7 @@ jobs:
           key: expected-results-loaded-db-v4-{{ checksum "/tmp/expected-results-loaded_db-seed" }}
           paths:
             - tests/robot/_resources/test_data_sets/query/expected_results/loaded_db/
+            - tests/robot/_resources/test_data_sets/query/aql_queries_valid/
       - run:
           name: list files after save of cache
           command: |
