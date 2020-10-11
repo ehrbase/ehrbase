@@ -645,7 +645,7 @@ jobs:
       - restore_cache:
           keys:
             - ehrbasedb-dump-v1
-      - run: echo "Expected result data-sets changed. Regenerate!" > /tmp/DATA_CHANGED_NOTICE
+      # - run: echo "Expected result data-sets changed. Regenerate!" > /tmp/DATA_CHANGED_NOTICE
       - run: 
           name: CHECK HASH OF EXPECTED-RESULT DATA-SETS
           command: |
