@@ -623,26 +623,30 @@ jobs:
     steps:
       - checkout
       # - restore-packaged-ehrbase-jar
+      - cache-out-ehrbase-workspace       # USE FOR PIPELINE DEBUGGING ONLY
       - restore_cache:
           keys:
             - expected-results-loaded-db-v4
+      - run:
+          name: list files after restore of cache
+          command: |
+            ls -la tests/robot/_resources/test_data_sets/query/aql_queries_valid/A/
+            ls -la tests/robot/_resources/test_data_sets/query/aql_queries_valid/B/
+            ls -la tests/robot/_resources/test_data_sets/query/aql_queries_valid/C/
+            ls -la tests/robot/_resources/test_data_sets/query/aql_queries_valid/D/
       - restore_cache:
           keys:
-            - ehrbasedb-dump-v1
+            - ehrbasedb-dump-v2
       # COMMENT: USE THE NEXT LINE ONLY TO FORCE TEST-DATA REGENERATION! Otherwise comment it out!
       # - run: echo "Expected result data-sets changed. Regenerate!" > /tmp/DATA_CHANGED_NOTICE
       - run: 
-          name: CHECK HASH OF EXPECTED-RESULT DATA-SETS
+          name: CHECK IF EXPECTED-RESULT TEMPLATES HAVE CHANGED AND REGENERATE TEST-DATA IF NEEDED
           command: |
             find tests/robot/_resources/test_data_sets/query/expected_results/loaded_db/ -type f ! -name *.tmp.json | sort | xargs cat > /tmp/expected-results-loaded_db-seed
             sha256sum /tmp/expected-results-loaded_db-seed
-      - run:
-          name: DECIDE WHETHER TO SET DATA_CHANGED ENV OR NOT
-          command: |
             ACTUAL_HASH="$(sha256sum /tmp/expected-results-loaded_db-seed | cat)"
             EXPECTED_HASH="f5ee5a9a55c50687dafc3c3acff66089759f1577d7a5dd71aff6e60793ce91c2  /tmp/expected-results-loaded_db-seed"
             [ "$ACTUAL_HASH" = "$EXPECTED_HASH" ] && echo "Expected results unchanged!  Don't regenerate test-data!" || echo "Expected result data-sets changed. Regenerate!" > /tmp/DATA_CHANGED_NOTICE
-      - cache-out-ehrbase-workspace       # USE FOR PIPELINE DEBUGGING ONLY
       - run-robot-tests:
           sut: "SUT:TEST"
           # include-tags: "SMOKE"
@@ -651,17 +655,19 @@ jobs:
           include-tags: "aql_adhoc-queryANDloaded_db"
           test-suite-path: "QUERY_SERVICE_TESTS"
           test-suite-name: "ADHOC-QUERY-2"
-      - run: 
-          name: CHECK HASH AFTER TEST-DATA GENERATION
-          command: |
-            find tests/robot/_resources/test_data_sets/query/expected_results/loaded_db/ -type f | sort | xargs cat > /tmp/dummy-seed
-            sha256sum /tmp/dummy-seed
       - save_cache:
           key: expected-results-loaded-db-v4-{{ checksum "/tmp/expected-results-loaded_db-seed" }}
           paths:
             - tests/robot/_resources/test_data_sets/query/expected_results/loaded_db/
+      - run:
+          name: list files after save of cache
+          command: |
+            ls -la tests/robot/_resources/test_data_sets/query/aql_queries_valid/A/
+            ls -la tests/robot/_resources/test_data_sets/query/aql_queries_valid/B/
+            ls -la tests/robot/_resources/test_data_sets/query/aql_queries_valid/C/
+            ls -la tests/robot/_resources/test_data_sets/query/aql_queries_valid/D/
       - save_cache:
-          key: ehrbasedb-dump-v1-{{ checksum "/tmp/ehrbasedb_dump.sql" }}
+          key: ehrbasedb-dump-v2-{{ checksum "/tmp/ehrbasedb_dump.sql" }}
           paths:
             - /tmp/ehrbasedb_dump.sql
   
