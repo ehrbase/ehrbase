@@ -97,4 +97,20 @@ public class AdminApiUtils {
         delAudit.forEach(audit -> ctx.selectQuery(new AdminDeleteParty().call(audit.getParty())).execute());
 
     }
+
+    /**
+     * Admin deletion of the given Contribution
+     * @param id Contribution
+     * @param audit Audit ID, optional
+     */
+    public void deleteContribution(UUID id, UUID audit) {
+        // del contrib
+        Result<AdminDeleteContributionRecord> rec = Routines.adminDeleteContribution(ctx.configuration(), id);
+        // and its audit (depending of how this is called, either get audit ID from response, or from parameter)
+        if (rec.isNotEmpty()) {
+            rec.forEach(del -> deleteAudit(del.getAudit(), "Contribution"));
+        } else if (audit != null) {
+            deleteAudit(audit, "Contribution");
+        }
+    }
 }

@@ -327,4 +327,10 @@ public class ContributionServiceImp extends BaseService implements ContributionS
 
         return new AuditDetails(systemId, committer, timeCommitted, changeType, description);
     }
+
+    @Override
+    public void adminDelete(UUID contributionId) {
+        I_ContributionAccess contributionAccess = I_ContributionAccess.retrieveInstance(getDataAccess(), contributionId);
+        contributionAccess.adminDelete();
+    }
 }

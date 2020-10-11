@@ -255,4 +255,6 @@ public interface I_ContributionAccess extends I_SimpleCRUD {
     void setHasAuditDetails(UUID auditId);
 
     UUID getHasAuditDetails();
+
+    void adminDelete();
 }

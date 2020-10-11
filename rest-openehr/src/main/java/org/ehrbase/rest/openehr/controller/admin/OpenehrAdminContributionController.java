@@ -19,6 +19,7 @@ package org.ehrbase.rest.openehr.controller.admin;
 
 import io.swagger.annotations.*;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.response.openehr.admin.AdminDeleteResponseData;
 import org.ehrbase.response.openehr.admin.AdminUpdateResponseData;
@@ -42,10 +43,12 @@ import java.util.UUID;
 public class OpenehrAdminContributionController extends BaseController {
 
     private final EhrService ehrService;
+    private final ContributionService contributionService;
 
     @Autowired
-    public OpenehrAdminContributionController(EhrService ehrService) {
+    public OpenehrAdminContributionController(EhrService ehrService, ContributionService contributionService) {
         this.ehrService = ehrService;
+        this.contributionService = contributionService;
     }
 
     @PutMapping(path = "/{ehr_id}/contribution/{contribution_id}", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
@@ -141,7 +144,10 @@ public class OpenehrAdminContributionController extends BaseController {
             );
         }
 
+        UUID contributionUUID = UUID.fromString(contributionId);
+
         // TODO: Implement endpoint functionality
+        contributionService.adminDelete(contributionUUID);
 
         // Contribution existence check will be done in services
 

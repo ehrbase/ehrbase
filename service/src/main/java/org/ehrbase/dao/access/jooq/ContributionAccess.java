@@ -32,12 +32,15 @@ import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.dao.access.util.TransactionTime;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
+import org.ehrbase.jooq.pg.Routines;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.enums.ContributionState;
-import org.ehrbase.jooq.pg.tables.records.ContributionHistoryRecord;
-import org.ehrbase.jooq.pg.tables.records.ContributionRecord;
+import org.ehrbase.jooq.pg.tables.AdminDeleteParty;
+import org.ehrbase.jooq.pg.tables.AdminDeleteStatusHistory;
+import org.ehrbase.jooq.pg.tables.records.*;
 import org.ehrbase.service.IntrospectService;
 import org.jooq.DSLContext;
+import org.jooq.Result;
 
 import java.sql.Timestamp;
 import java.util.*;
@@ -539,5 +542,42 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
     @Override
     public UUID getHasAuditDetails() {
         return contributionRecord.getHasAudit();
+    }
+
+    @Override
+    public void adminDelete() {
+        AdminApiUtils adminApi = new AdminApiUtils(getContext());
+
+        // retrieve info on all linked versioned_objects
+        Result<AdminGetLinkedCompositionsForContribRecord> linkedCompositions = Routines.adminGetLinkedCompositionsForContrib(getContext().configuration(), this.getId());
+        Result<AdminGetLinkedStatusForContribRecord> linkedStatus = Routines.adminGetLinkedStatusForContrib(getContext().configuration(), this.getId());
+
+        // handling of linked composition
+        linkedCompositions.forEach(compo -> adminApi.deleteComposition(compo.getComposition()));
+
+        // handling of linked status
+        linkedStatus.forEach(status -> {
+            Result<AdminDeleteStatusRecord> delStatus = Routines.adminDeleteStatus(getContext().configuration(), status.getStatus());
+            if (delStatus.isEmpty()) {
+                throw new InternalServerException("Admin deletion of Status failed! Unexpected result.");
+            }
+            // handle auxiliary objects
+            delStatus.forEach(id -> {
+                // delete status audit
+                adminApi.deleteAudit(id.getStatusAudit(), "Status");
+
+                // clear history
+                int res = getContext().selectQuery(new AdminDeleteStatusHistory().call(status.getStatus())).execute();
+                if (res != 1)
+                    throw new InternalServerException("Admin deletion of Status failed!");
+
+                // delete linked party, if not referenced somewhere else
+                getContext().selectQuery(new AdminDeleteParty().call(id.getStatusParty())).execute();
+            });
+
+        });
+
+        // delete contribution itself
+        adminApi.deleteContribution(this.getId(), null);
     }
 }

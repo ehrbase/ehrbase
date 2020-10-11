@@ -758,7 +758,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             // handling of existing composition
             linkedCompositions.forEach(compo -> adminApi.deleteComposition(compo.getComposition()));
 
-            // call first postgres function to start deletion of main objects, and get UUIDs for the next step
+            // delete EHR itself
             Result<AdminDeleteEhrRecord> adminDeleteEhr = Routines.adminDeleteEhr(getContext().configuration(), this.getId());
             if (adminDeleteEhr.isEmpty()) {
                 throw new InternalServerException("Admin deletion of EHR failed! Unexpected result.");
@@ -771,14 +771,8 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
                 // delete status audit
                 adminApi.deleteAudit(statusAudit, "Status");
 
-                linkedContributions.forEach(contrib -> {
-                    // TODO-314: invoke delete contrib, which return other info like audit to handle separate, like with del_compo()
-                    // del contrib
-                    Routines.adminDeleteContribution(getContext().configuration(), contrib.getContribution());
-                    // no check on the response, because 0..* deletions are valid here
-                    // try to delete audit, too
-                    adminApi.deleteAudit(contrib.getAudit(), "Contribution");
-                });
+                // delete linked contributions
+                linkedContributions.forEach(contrib -> adminApi.deleteContribution(contrib.getContribution(), contrib.getAudit()));
 
                 // final cleanup of auxiliary objects
                 int res = getContext().selectQuery(new AdminDeleteEhrHistory().call(this.getId())).execute();

@@ -88,28 +88,6 @@ ADMIN - Delete EHR with two compositions
     check ehr admin delete table counts
 
 
-
-################## COMPOSITION ########################
-
-ADMIN - Delete Composition
-    # pre check
-    Connect With DB
-    check composition admin delete table counts
-    # preparing and provisioning
-    upload OPT    minimal/minimal_observation.opt
-    prepare new request session    JSON    Prefer=return=representation
-    create supernew ehr
-    Set Test Variable  ${ehr_id}  ${response.body.ehr_id.value}
-    ehr_keywords.validate POST response - 201 created ehr
-    commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.xml
-    # Execute admin delete EHR
-    admin delete composition
-    Log To Console  ${response}
-    # Test with count rows again - post check
-    check composition admin delete table counts
-
-
-
 *** Keywords ***
 
 startup SUT
@@ -129,13 +107,6 @@ admin delete ehr
                         Set Test Variable    ${response}    ${resp}
                         Output Debug Info To Console
 
-admin delete composition
-    [Documentation]     Admin delete of Composition.
-    ...                 Needs `${versioned_object_uid}` var from e.g. `commit composition (JSON)` KW.
-
-    &{resp}=            REST.DELETE    ${baseurl}/admin/ehr/${ehr_id}/composition/${versioned_object_uid}
-                        Set Test Variable    ${response}    ${resp}
-                        Output Debug Info To Console
 
 check ehr admin delete table counts
 
@@ -157,33 +128,6 @@ check ehr admin delete table counts
                         Should Be Equal As Integers    ${system_records}     ${0}
     ${party_records}=   Count Rows In DB Table    ehr.party_identified
                         Should Be Equal As Integers    ${party_records}     ${0}
-    ${compo_records}=   Count Rows In DB Table    ehr.composition
-                        Should Be Equal As Integers    ${compo_records}     ${0}
-    ${compo_h_records}=  Count Rows In DB Table    ehr.composition_history
-                        Should Be Equal As Integers    ${compo_h_records}     ${0}
-    ${entry_records}=   Count Rows In DB Table    ehr.entry
-                        Should Be Equal As Integers    ${entry_records}     ${0}
-    ${entry_h_records}=  Count Rows In DB Table    ehr.entry_history
-                        Should Be Equal As Integers    ${entry_h_records}     ${0}
-    ${event_context_records}=   Count Rows In DB Table    ehr.event_context
-                        Should Be Equal As Integers    ${event_context_records}     ${0}
-    ${entry_participation_records}=   Count Rows In DB Table    ehr.participation
-                        Should Be Equal As Integers    ${entry_participation_records}     ${0}
-
-
-check composition admin delete table counts
-
-    # TODO: could the target number of rows calculated, e.g. new audits = old - 1 ?
-    # ${contr_records}=   Count Rows In DB Table    ehr.contribution
-    #                     Should Be Equal As Integers    ${contr_records}     ${0}
-    # ${contr_h_records}=   Count Rows In DB Table    ehr.contribution_history
-    #                     Should Be Equal As Integers    ${contr_h_records}     ${0}
-    # ${audit_records}=   Count Rows In DB Table    ehr.audit_details
-    #                     Should Be Equal As Integers    ${audit_records}     ${0}
-    # ${system_records}=   Count Rows In DB Table    ehr.system
-    #                     Should Be Equal As Integers    ${system_records}     ${0}
-    #${party_records}=   Count Rows In DB Table    ehr.party_identified
-    #                    Should Be Equal As Integers    ${party_records}     ${0}
     ${compo_records}=   Count Rows In DB Table    ehr.composition
                         Should Be Equal As Integers    ${compo_records}     ${0}
     ${compo_h_records}=  Count Rows In DB Table    ehr.composition_history
