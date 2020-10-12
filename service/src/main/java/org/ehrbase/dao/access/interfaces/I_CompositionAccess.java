@@ -484,5 +484,8 @@ public interface I_CompositionAccess extends I_SimpleCRUD {
         return CompositionAccess.isDeleted(domainAccess, versionedObjectId);
     }
 
+    /**
+     * Invoke physical deletion.
+     */
     void adminDelete();
 }

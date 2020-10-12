@@ -104,6 +104,7 @@ admin delete ehr
     ...                 DEPENDENCY: `prepare new request session`
 
     &{resp}=            REST.DELETE    ${baseurl}/admin/ehr/${ehr_id}
+                        Should Be Equal As Strings   ${resp.status}   204
                         Set Test Variable    ${response}    ${resp}
                         Output Debug Info To Console
 

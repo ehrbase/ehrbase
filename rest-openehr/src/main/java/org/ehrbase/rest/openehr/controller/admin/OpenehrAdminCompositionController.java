@@ -98,10 +98,8 @@ public class OpenehrAdminCompositionController extends BaseController {
 
         UUID compositionUid = UUID.fromString(compositionId);
 
-        // TODO: Implement endpoint functionality
-        // TODO: Composition existence will be checked during deletion
         compositionService.adminDelete(compositionUid);
 
-        return ResponseEntity.ok().body(new AdminDeleteResponseData(0));
+        return ResponseEntity.noContent().build();
     }
 }

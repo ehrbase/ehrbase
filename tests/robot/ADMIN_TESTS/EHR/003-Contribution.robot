@@ -67,6 +67,7 @@ admin delete contribution
     ...                 Needs `${contribution_uid}` var from e.g. `commit CONTRIBUTION (JSON)` KW.
 
     &{resp}=            REST.DELETE    ${baseurl}/admin/ehr/${ehr_id}/contribution/${contribution_uid}
+                        Should Be Equal As Strings   ${resp.status}   204
                         Set Test Variable    ${response}    ${resp}
                         Output Debug Info To Console
 

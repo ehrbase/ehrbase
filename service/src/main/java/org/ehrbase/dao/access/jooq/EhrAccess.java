@@ -749,41 +749,38 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
 
     @Override
     public void adminDeleteEhr() {
-        try {
-            AdminApiUtils adminApi = new AdminApiUtils(getContext());
+        AdminApiUtils adminApi = new AdminApiUtils(getContext());
 
-            Result<AdminGetLinkedCompositionsRecord> linkedCompositions = Routines.adminGetLinkedCompositions(getContext().configuration(), this.getId());
-            Result<AdminGetLinkedContributionsRecord> linkedContributions = Routines.adminGetLinkedContributions(getContext().configuration(), this.getId());
+        // retrieve linked entities
+        Result<AdminGetLinkedCompositionsRecord> linkedCompositions = Routines.adminGetLinkedCompositions(getContext().configuration(), this.getId());
+        Result<AdminGetLinkedContributionsRecord> linkedContributions = Routines.adminGetLinkedContributions(getContext().configuration(), this.getId());
 
-            // handling of existing composition
-            linkedCompositions.forEach(compo -> adminApi.deleteComposition(compo.getComposition()));
+        // handling of existing composition
+        linkedCompositions.forEach(compo -> adminApi.deleteComposition(compo.getComposition()));
 
-            // delete EHR itself
-            Result<AdminDeleteEhrRecord> adminDeleteEhr = Routines.adminDeleteEhr(getContext().configuration(), this.getId());
-            if (adminDeleteEhr.isEmpty()) {
-                throw new InternalServerException("Admin deletion of EHR failed! Unexpected result.");
-            }
-
-            // adminDeleteEhr returns all linked audits and statuses - go through and delete them
-            adminDeleteEhr.forEach(response -> {
-                UUID statusAudit = response.getStatusAudit();
-
-                // delete status audit
-                adminApi.deleteAudit(statusAudit, "Status");
-
-                // delete linked contributions
-                linkedContributions.forEach(contrib -> adminApi.deleteContribution(contrib.getContribution(), contrib.getAudit()));
-
-                // final cleanup of auxiliary objects
-                int res = getContext().selectQuery(new AdminDeleteEhrHistory().call(this.getId())).execute();
-                if (res != 1)
-                    throw new InternalServerException("Admin deletion of EHR failed!");
-
-                // delete linked party, if not referenced somewhere else
-                getContext().selectQuery(new AdminDeleteParty().call(response.getStatusParty())).execute();
-            });
-        } catch (Exception e) {
-            log.error(e);   // TODO-314: remove general catching here when done (shadows errors from above)
+        // delete EHR itself
+        Result<AdminDeleteEhrRecord> adminDeleteEhr = Routines.adminDeleteEhr(getContext().configuration(), this.getId());
+        if (adminDeleteEhr.isEmpty()) {
+            throw new InternalServerException("Admin deletion of EHR failed! Unexpected result.");
         }
+
+        // adminDeleteEhr returns all linked contributions, audits and statuses - go through and delete them
+        adminDeleteEhr.forEach(response -> {
+            UUID statusAudit = response.getStatusAudit();
+
+            // delete status audit
+            adminApi.deleteAudit(statusAudit, "Status");
+
+            // delete linked contributions
+            linkedContributions.forEach(contrib -> adminApi.deleteContribution(contrib.getContribution(), contrib.getAudit()));
+
+            // final cleanup of auxiliary objects
+            int res = getContext().selectQuery(new AdminDeleteEhrHistory().call(this.getId())).execute();
+            if (res != 1)
+                throw new InternalServerException("Admin deletion of EHR failed!");
+
+            // delete linked party, if not referenced somewhere else
+            getContext().selectQuery(new AdminDeleteParty().call(response.getStatusParty())).execute();
+        });
     }
 }

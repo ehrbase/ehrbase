@@ -411,6 +411,8 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
         return I_CompositionAccess.isDeleted(this.getDataAccess(), versionedObjectId);
     }
 
+    // TODO-314: check if this can be secured using @PreAuthorize to prevent it getting called from another method outside of admin scope
+    // @PreAuthorize("hasRole('ROLE_VIEWER')")
     @Override
     public void adminDelete(UUID compositionId) {
         I_CompositionAccess compositionAccess = I_CompositionAccess.retrieveInstance(getDataAccess(), compositionId);

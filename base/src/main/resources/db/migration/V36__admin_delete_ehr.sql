@@ -1,10 +1,17 @@
--- physically delete an EHR and all linked entities
+-- ====================================================================
+-- Author: Jake Smolka
+-- Create date: 2020-09-22
+-- Description: Admin API functions for physically deletion of objects.
+-- =====================================================================
 
 
--- TODO: check multiple times if function below are separated smart
-
--- generic function to delete audit, incl. system, if not referenced somewhere else
--- need to delete party with returned id
+-- ====================================================================
+-- Description: Function to delete an audit, incl. system, if not referenced somewhere else.
+-- Parameters:
+--    @audit_input - UUID of target audit
+-- Returns: '1' and linked party UUID
+-- Requires: Afterwards deletion of returned party.
+-- =====================================================================
 CREATE OR REPLACE FUNCTION ehr.admin_delete_audit(audit_input UUID)
     RETURNS TABLE (num integer, party UUID) AS $$
     BEGIN
@@ -47,7 +54,13 @@ CREATE OR REPLACE FUNCTION ehr.admin_delete_audit(audit_input UUID)
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
 
--- generic function to delete party_identified, if not referenced somewhere else - execute after deleting the object referencing this party
+
+-- ====================================================================
+-- Description: Function to delete a party_identified, if not referenced somewhere else - execute after deleting the object referencing this party.
+-- Parameters:
+--    @party_input - UUID of target party
+-- Returns: '1'
+-- =====================================================================
 CREATE OR REPLACE FUNCTION ehr.admin_delete_party(party_input UUID)
     RETURNS TABLE (num integer) AS $$
     BEGIN 
@@ -108,8 +121,13 @@ $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
 
 
--- generic function to delete attestation by given attestation_ref ID
--- returns all linked audits for further deletion
+-- ====================================================================
+-- Description: Function to delete an attestation.
+-- Parameters:
+--    @attest_ref_input - UUID of target attestation
+-- Returns: linked audit UUID
+-- Requires: Afterwards deletion of returned audit.
+-- =====================================================================
 CREATE OR REPLACE FUNCTION ehr.admin_delete_attestation(attest_ref_input UUID)
     RETURNS TABLE (audit UUID) AS $$
     BEGIN
@@ -150,7 +168,14 @@ CREATE OR REPLACE FUNCTION ehr.admin_delete_attestation(attest_ref_input UUID)
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
 
--- function to delete event_contexts and participations for a composition and return their parties (event_context.facility and participation.performer)
+
+-- ====================================================================
+-- Description: Function to delete event_contexts and participations for a composition and return their parties (event_context.facility and participation.performer).
+-- Parameters:
+--    @compo_id_input - UUID of super composition
+-- Returns: '1' and linked party UUID
+-- Requires: Afterwards deletion of returned party.
+-- =====================================================================
 CREATE OR REPLACE FUNCTION ehr.admin_delete_event_context_for_compo(compo_id_input UUID)
 RETURNS TABLE (num integer, party UUID) AS $$
     BEGIN
@@ -177,7 +202,14 @@ RETURNS TABLE (num integer, party UUID) AS $$
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
 
--- function to delete a single composition, incl. their entries
+
+-- ====================================================================
+-- Description: Function to delete a single composition, incl. their entries.
+-- Parameters:
+--    @compo_id_input - UUID of target composition
+-- Returns: '1' and linked contribution, party, audit and attestation UUID
+-- Requires: Afterwards deletion of returned entities.
+-- =====================================================================
 CREATE OR REPLACE FUNCTION ehr.admin_delete_composition(compo_id_input UUID)
 RETURNS TABLE (num integer, contribution UUID, party UUID, audit UUID, attestation UUID) AS $$
     BEGIN
@@ -199,7 +231,14 @@ RETURNS TABLE (num integer, contribution UUID, party UUID, audit UUID, attestati
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
 
--- necessary as own function, because the former transaction needs to be done to populate the *_history table
+
+-- ====================================================================
+-- Description: Function to delete a single Composition's history, in entries' history.
+-- Necessary as own function, because the former transaction needs to be done to populate the *_history table.
+-- Parameters:
+--    @compo_input - UUID of target composition
+-- Returns: '1'
+-- =====================================================================
 CREATE OR REPLACE FUNCTION ehr.admin_delete_composition_history(compo_input UUID)
 RETURNS TABLE (num integer) AS $$
     BEGIN
@@ -216,7 +255,14 @@ RETURNS TABLE (num integer) AS $$
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
 
--- function to delete a single contribution and all linked lower tier entities
+
+-- ====================================================================
+-- Description: Function to delete a single Contribution.
+-- Parameters:
+--    @contrib_id_input - UUID of target contribution
+-- Returns: '1' and linked audit UUID
+-- Requires: Afterwards deletion of returned audit.
+-- =====================================================================
 CREATE OR REPLACE FUNCTION ehr.admin_delete_contribution(contrib_id_input UUID)
 RETURNS TABLE (num integer, audit UUID) AS $$
     BEGIN
@@ -233,8 +279,14 @@ RETURNS TABLE (num integer, audit UUID) AS $$
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
 
--- TODO: DOC
--- Needs separate deletion of returned audit and party.
+
+-- ====================================================================
+-- Description: Function to delete an EHR, incl. Status.
+-- Parameters:
+--    @ehr_id_input - UUID of target EHR
+-- Returns: '1' and linked audit, party UUID
+-- Requires: Afterwards deletion of returned audit and party.
+-- =====================================================================
 CREATE OR REPLACE FUNCTION ehr.admin_delete_ehr(ehr_id_input UUID)
 RETURNS TABLE (num integer, status_audit UUID, status_party UUID) AS $$
     BEGIN
@@ -262,8 +314,14 @@ RETURNS TABLE (num integer, status_audit UUID, status_party UUID) AS $$
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
 
--- Deletes *_history entries for a given EHR - used after invoking the "normal" deletion
--- necessary as own function, because the former transaction needs to be done to populate the *_history table
+
+-- ====================================================================
+-- Description: Function to delete a single EHR's history, meaning the Status' and Contribution's history.
+-- Necessary as own function, because the former transaction needs to be done to populate the *_history table.
+-- Parameters:
+--    @ehr_id_input - UUID of target EHR
+-- Returns: '1'
+-- =====================================================================
 CREATE OR REPLACE FUNCTION ehr.admin_delete_ehr_history(ehr_id_input UUID)
 RETURNS TABLE (num integer) AS $$
     BEGIN
@@ -281,8 +339,14 @@ RETURNS TABLE (num integer) AS $$
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
 
--- TODO: DOC
--- Needs separate deletion of returned audit and party.
+
+-- ====================================================================
+-- Description: Function to delete a Status.
+-- Parameters:
+--    @status_id_input - UUID of target Status
+-- Returns: '1' and linked audit, party UUID
+-- Requires: Afterwards deletion of returned audit and party.
+-- =====================================================================
 CREATE OR REPLACE FUNCTION ehr.admin_delete_status(status_id_input UUID)
 RETURNS TABLE (num integer, status_audit UUID, status_party UUID) AS $$
     BEGIN
@@ -300,8 +364,14 @@ RETURNS TABLE (num integer, status_audit UUID, status_party UUID) AS $$
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
 
--- Deletes *_history entries for a given Status - used after invoking the "normal" deletion
--- necessary as own function, because the former transaction needs to be done to populate the *_history table
+
+-- ====================================================================
+-- Description: Function to delete a single Status' history.
+-- Necessary as own function, because the former transaction needs to be done to populate the *_history table.
+-- Parameters:
+--    @status_id_input - UUID of target status
+-- Returns: '1'
+-- =====================================================================
 CREATE OR REPLACE FUNCTION ehr.admin_delete_status_history(status_id_input UUID)
 RETURNS TABLE (num integer) AS $$
     BEGIN
@@ -316,7 +386,13 @@ RETURNS TABLE (num integer) AS $$
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
 
--- Get a set of contributions (as UUID) that are linked with the given EHR
+
+-- ====================================================================
+-- Description: Function to get linked Contributions for an EHR.
+-- Parameters:
+--    @ehr_id_input - UUID of target EHR
+-- Returns: Linked contributions and audits UUIDs
+-- =====================================================================
 CREATE OR REPLACE FUNCTION ehr.admin_get_linked_contributions(ehr_id_input UUID)
 RETURNS TABLE (contribution UUID, audit UUID) AS $$
     BEGIN
@@ -330,7 +406,13 @@ RETURNS TABLE (contribution UUID, audit UUID) AS $$
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
 
--- Get a set of compositions (as UUID) that are linked with the given EHR
+
+-- ====================================================================
+-- Description: Function to get linked Compositions for an EHR.
+-- Parameters:
+--    @ehr_id_input - UUID of target EHR
+-- Returns: Linked compositions UUIDs
+-- =====================================================================
 CREATE OR REPLACE FUNCTION ehr.admin_get_linked_compositions(ehr_id_input UUID)
 RETURNS TABLE (composition UUID ) AS $$
     BEGIN
@@ -344,7 +426,13 @@ RETURNS TABLE (composition UUID ) AS $$
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
 
--- Get a set of linked child compositions for the given (master) composition
+
+-- ====================================================================
+-- Description: Function to get linked children of a Compositions.
+-- Parameters:
+--    @compo_id_input - UUID of target Composition
+-- Returns: Linked compositions UUIDs
+-- =====================================================================
 CREATE OR REPLACE FUNCTION ehr.admin_get_child_compositions(compo_id_input UUID)
 RETURNS TABLE (composition UUID ) AS $$
     BEGIN
@@ -358,7 +446,13 @@ RETURNS TABLE (composition UUID ) AS $$
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
 
--- Get a set of compositions (as UUID) that are linked with the given Contribution
+
+-- ====================================================================
+-- Description: Function to get linked Compositions for a Contribution.
+-- Parameters:
+--    @contrib_id_input - UUID of target Contribution
+-- Returns: Linked compositions UUIDs
+-- =====================================================================
 CREATE OR REPLACE FUNCTION ehr.admin_get_linked_compositions_for_contrib(contrib_id_input UUID)
 RETURNS TABLE (composition UUID ) AS $$
     BEGIN
@@ -372,7 +466,13 @@ RETURNS TABLE (composition UUID ) AS $$
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
 
--- Get a set of status' (as UUID) that are linked with the given Contribution
+
+-- ====================================================================
+-- Description: Function to get linked Status for a Contribution.
+-- Parameters:
+--    @contrib_id_input - UUID of target Contribution
+-- Returns: Linked status UUIDs
+-- =====================================================================
 CREATE OR REPLACE FUNCTION ehr.admin_get_linked_status_for_contrib(contrib_id_input UUID)
 RETURNS TABLE (status UUID ) AS $$
     BEGIN

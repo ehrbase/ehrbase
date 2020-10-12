@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Util class to offer reusable methods in the scope of the Admin API.
+ */
 public class AdminApiUtils {
 
     DSLContext ctx;
@@ -21,7 +24,7 @@ public class AdminApiUtils {
         this.ctx = Objects.requireNonNull(ctx);
     }
 
-    // TODO: Test when the compo_xref feature comes available.
+    // TODO: Test when the general compo_xref feature comes available in EHRbase.
     /**
      * Recursively makes a list of all children for a given Composition (for Compositions that have others linked).
      * @param id Composition
@@ -59,7 +62,6 @@ public class AdminApiUtils {
             }
             // delete linked party, if not referenced somewhere else
             ctx.selectQuery(new AdminDeleteParty().call(del.getParty())).execute();
-            // TODO-314: more?
         });
     }
 
@@ -80,8 +82,6 @@ public class AdminApiUtils {
         int res = ctx.selectQuery(new AdminDeleteCompositionHistory().call(id)).execute();
         if (res != 1)
             throw new InternalServerException("Admin deletion of Composition auxiliary objects failed!");
-
-        // TODO-314: handle own contributions, so this can be used from deleteEHR and deleteCompo
     }
 
     /**
@@ -104,9 +104,9 @@ public class AdminApiUtils {
      * @param audit Audit ID, optional
      */
     public void deleteContribution(UUID id, UUID audit) {
-        // del contrib
+        // delete contribution
         Result<AdminDeleteContributionRecord> rec = Routines.adminDeleteContribution(ctx.configuration(), id);
-        // and its audit (depending of how this is called, either get audit ID from response, or from parameter)
+        // and its audit (depending of how this is called, either get audit ID from parameter or from response)
         if (rec.isNotEmpty()) {
             rec.forEach(del -> deleteAudit(del.getAudit(), "Contribution"));
         } else if (audit != null) {

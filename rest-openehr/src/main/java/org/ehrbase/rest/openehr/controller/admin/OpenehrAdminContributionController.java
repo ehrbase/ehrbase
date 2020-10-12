@@ -146,11 +146,8 @@ public class OpenehrAdminContributionController extends BaseController {
 
         UUID contributionUUID = UUID.fromString(contributionId);
 
-        // TODO: Implement endpoint functionality
         contributionService.adminDelete(contributionUUID);
 
-        // Contribution existence check will be done in services
-
-        return ResponseEntity.ok().body(new AdminDeleteResponseData(0));
+        return ResponseEntity.noContent().build();
     }
 }

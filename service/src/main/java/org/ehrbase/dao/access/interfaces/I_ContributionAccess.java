@@ -256,5 +256,8 @@ public interface I_ContributionAccess extends I_SimpleCRUD {
 
     UUID getHasAuditDetails();
 
+    /**
+     * Invoke physical deletion.
+     */
     void adminDelete();
 }

@@ -274,5 +274,8 @@ public interface I_EhrAccess extends I_SimpleCRUD {
      */
     EhrStatus getStatus();
 
+    /**
+     * Invoke physical deletion.
+     */
     void adminDeleteEhr();
 }
