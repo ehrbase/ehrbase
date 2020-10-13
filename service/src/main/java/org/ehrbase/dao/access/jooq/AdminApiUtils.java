@@ -8,8 +8,6 @@ import org.ehrbase.jooq.pg.tables.records.*;
 import org.jooq.DSLContext;
 import org.jooq.Result;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -22,23 +20,6 @@ public class AdminApiUtils {
 
     public AdminApiUtils(DSLContext ctx) {
         this.ctx = Objects.requireNonNull(ctx);
-    }
-
-    // TODO: Test when the general compo_xref feature comes available in EHRbase.
-    /**
-     * Recursively makes a list of all children for a given Composition (for Compositions that have others linked).
-     * @param id Composition
-     * @param childrenIds List of children.
-     */
-    private void getAndAddChildren(UUID id, List<UUID> childrenIds) {
-        Result<AdminGetChildCompositionsRecord> children = Routines.adminGetChildCompositions(ctx.configuration(), id);
-        if (children.isNotEmpty()) {
-            children.forEach(child -> {
-                // recursive call
-                getAndAddChildren(id, childrenIds);
-                childrenIds.add(child.getComposition());
-            });
-        }
     }
 
     /**
@@ -70,11 +51,6 @@ public class AdminApiUtils {
      * @param id Composition
      */
     public void deleteComposition(UUID id) {
-        // first handle possible children of the given composition
-        List<UUID> childrenIds = new LinkedList<>();
-        getAndAddChildren(id, childrenIds);
-        childrenIds.forEach(this::internalDeleteComposition);
-
         // actual deletion of the composition
         internalDeleteComposition(id);
 

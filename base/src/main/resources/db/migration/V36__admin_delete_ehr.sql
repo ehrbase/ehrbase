@@ -428,26 +428,6 @@ $$ LANGUAGE plpgsql
 
 
 -- ====================================================================
--- Description: Function to get linked children of a Compositions.
--- Parameters:
---    @compo_id_input - UUID of target Composition
--- Returns: Linked compositions UUIDs
--- =====================================================================
-CREATE OR REPLACE FUNCTION ehr.admin_get_child_compositions(compo_id_input UUID)
-RETURNS TABLE (composition UUID ) AS $$
-    BEGIN
-        RETURN QUERY WITH
-            linked_compo(child) AS ( -- get linked CONTRIBUTION parameters
-                SELECT child_uuid FROM ehr.compo_xref WHERE master_uuid = compo_id_input
-            )
-
-            SELECT * FROM linked_compo;
-    END;
-$$ LANGUAGE plpgsql
-    RETURNS NULL ON NULL INPUT;
-
-
--- ====================================================================
 -- Description: Function to get linked Compositions for a Contribution.
 -- Parameters:
 --    @contrib_id_input - UUID of target Contribution
