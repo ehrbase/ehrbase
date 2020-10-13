@@ -51,6 +51,7 @@ import org.ehrbase.jooq.pg.tables.records.*;
 import org.ehrbase.serialisation.dbencoding.RawJson;
 import org.ehrbase.service.RecordedDvCodedText;
 import org.ehrbase.service.RecordedDvDateTime;
+import org.ehrbase.service.RecordedDvText;
 import org.jooq.*;
 import org.jooq.exception.DataAccessException;
 
@@ -154,7 +155,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                     DvCodedText mode = convertModeFromRecord(eventContextHistoryRecord);
 
                     Participation participation = new Participation(performer,
-                            new DvText(record.getFunction()),
+                            (DvText) new RecordedDvCodedText().fromDB(record, PARTICIPATION.FUNCTION),
                             mode,
                             startTime);
 
@@ -233,7 +234,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
             for (Participation participation : eventContext.getParticipations()) {
                 ParticipationRecord participationRecord = getContext().newRecord(PARTICIPATION);
                 participationRecord.setEventContext(eventContextRecord.getId());
-                participationRecord.setFunction(participation.getFunction().getValue());
+                new RecordedDvText().toDB(participationRecord, PARTICIPATION.FUNCTION, participation.getFunction());
                 if (participation.getMode() != null)
                     new RecordedDvCodedText().toDB(participationRecord, PARTICIPATION.MODE, participation.getMode());
                 if (participation.getTime() != null) {
@@ -470,7 +471,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
             DvCodedText mode = convertModeFromRecord(record);
 
             Participation participation = new Participation(performer,
-                    new DvText(record.getFunction()),
+                    (DvText) new RecordedDvCodedText().fromDB(record, PARTICIPATION.FUNCTION),
                     mode,
                     dvInterval);
 
