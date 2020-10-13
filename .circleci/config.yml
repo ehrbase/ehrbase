@@ -672,7 +672,7 @@ jobs:
       - checkout
       - restore-packaged-ehrbase-jar
       - run-robot-tests:
-          sut: "SUT:ADMIN-DEV"
+          sut: "SUT:ADMIN-TEST"
           include-tags: "adminANDehr_service"
           test-suite-path: "ADMIN_TESTS"
           test-suite-name: "ADMIN"
