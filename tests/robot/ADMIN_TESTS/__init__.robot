@@ -1,4 +1,4 @@
-# Copyright (c) 2019 Wladislaw Wagner (Vitasystems GmbH), Pablo Pazos (Hannover Medical School).
+# Copyright (c) 2020 Jake Smolka (Hannover Medical School), Wladislaw Wagner (Vitasystems GmbH).
 #
 # This file is part of Project EHRbase
 #
@@ -22,8 +22,12 @@ Metadata    Author    *Wladislaw Wagner*
 Metadata    Created    2019.02.26
 Metadata    Updated    2020.01.30
 
-Documentation    https://docs.google.com/document/d/1r_z_E8MhlNdeVZS4xecl-8KbG0JPqCzKtKMfhuL81jY/edit#heading=h.fkdj6wod6hv2
+Documentation       Admin API REST tests
+...                 How to run these tests locally
+...                 ==============================
+...
+...                 robot -v SUT:ADMIN-TEST -d results/ -L TRACE -i admin robot/ADMIN_TESTS/
 
 Resource   ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Force Tags    admin    ehr_service
+Force Tags    admin

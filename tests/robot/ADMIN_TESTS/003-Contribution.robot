@@ -25,8 +25,10 @@ Metadata    Created    2020.09.01
 Metadata        TOP_TEST_SUITE    ADMIN_EHR
 Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Test Setup     startup SUT
-Test Teardown  shutdown SUT
+Suite Setup     startup SUT
+Suite Teardown  shutdown SUT
+
+Force Tags     contribution
 
 
 

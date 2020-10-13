@@ -664,7 +664,8 @@ jobs:
           test-suite-name: "KEYCLOAK-OAUTH"
         
   ADMIN-test:
-    executor: docker-py3-java11-postgres
+    # executor: docker-py3-java11-postgres
+    executor: machine-ubuntu-2004
     environment:
       ADMINAPI_ACTIVE: "TRUE"
       SYSTEM_ALLOWTEMPLATEOVERWRITE: "TRUE"
@@ -673,7 +674,7 @@ jobs:
       - restore-packaged-ehrbase-jar
       - run-robot-tests:
           sut: "SUT:ADMIN-TEST"
-          include-tags: "adminANDehr_service"
+          include-tags: "admin"
           test-suite-path: "ADMIN_TESTS"
           test-suite-name: "ADMIN"
 
