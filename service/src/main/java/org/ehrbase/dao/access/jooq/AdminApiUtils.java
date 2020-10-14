@@ -37,17 +37,17 @@ public class AdminApiUtils {
         // for each deleted compo delete auxiliary objects
         delCompo.forEach(del -> {
             // invoke deletion of audit
-            deleteAudit(del.getAudit(), "Composition");
+            deleteAudit(del.getAudit(), "Composition", false);
             // invoke deletion of attestation, if available
             if (del.getAttestation() != null) {
                 Result<AdminDeleteAttestationRecord> delAttest = Routines.adminDeleteAttestation(ctx.configuration(), del.getAttestation());
-                delAttest.forEach(attest -> deleteAudit(attest.getAudit(), "Attestation"));
+                delAttest.forEach(attest -> deleteAudit(attest.getAudit(), "Attestation", false));
             }
             // delete linked party, if not referenced somewhere else (logic inside DB function)
             ctx.selectQuery(new AdminDeleteParty().call(del.getParty())).execute();
 
             // delete contribution
-            deleteContribution(del.getContribution(), null);
+            deleteContribution(del.getContribution(), null, false);
         });
     }
 
@@ -69,10 +69,11 @@ public class AdminApiUtils {
      * Admin deletion of the given Audit
      * @param id Audit
      * @param context Object context to build error message, e.g. "Composition" for the audit of a Composition
+     * @param resultCanBeEmpty Config parameter to disable check of result, in case the object is deleted already (for broader scopes, like EHR itself)
      */
-    public void deleteAudit(UUID id, String context) {
+    public void deleteAudit(UUID id, String context, Boolean resultCanBeEmpty) {
         Result<AdminDeleteAuditRecord> delAudit = Routines.adminDeleteAudit(ctx.configuration(), id);
-        if (delAudit.size() != 1)
+        if (resultCanBeEmpty.equals(false) && delAudit.size() != 1)
             throw new InternalServerException("Admin deletion of " + context + " Audit failed!");
         // delete linked party, if not referenced somewhere else
         delAudit.forEach(audit -> ctx.selectQuery(new AdminDeleteParty().call(audit.getParty())).execute());
@@ -83,15 +84,16 @@ public class AdminApiUtils {
      * Admin deletion of the given Contribution
      * @param id Contribution
      * @param audit Audit ID, optional
+     * @param resultCanBeEmpty Config parameter to disable check of result, in case the object is deleted already (for broader scopes, like EHR itself)
      */
-    public void deleteContribution(UUID id, UUID audit) {
+    public void deleteContribution(UUID id, UUID audit, Boolean resultCanBeEmpty) {
         // delete contribution
         Result<AdminDeleteContributionRecord> rec = Routines.adminDeleteContribution(ctx.configuration(), id);
         // and its audit (depending of how this is called, either get audit ID from parameter or from response)
         if (rec.isNotEmpty()) {
-            rec.forEach(del -> deleteAudit(del.getAudit(), "Contribution"));
+            rec.forEach(del -> deleteAudit(del.getAudit(), "Contribution", resultCanBeEmpty));
         } else if (audit != null) {
-            deleteAudit(audit, "Contribution");
+            deleteAudit(audit, "Contribution", resultCanBeEmpty);
         }
     }
 }

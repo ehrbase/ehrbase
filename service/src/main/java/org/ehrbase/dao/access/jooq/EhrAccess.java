@@ -769,10 +769,10 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             UUID statusAudit = response.getStatusAudit();
 
             // delete status audit
-            adminApi.deleteAudit(statusAudit, "Status");
+            adminApi.deleteAudit(statusAudit, "Status", false);
 
             // delete linked contributions
-            linkedContributions.forEach(contrib -> adminApi.deleteContribution(contrib.getContribution(), contrib.getAudit()));
+            linkedContributions.forEach(contrib -> adminApi.deleteContribution(contrib.getContribution(), contrib.getAudit(), true));
 
             // final cleanup of auxiliary objects
             int res = getContext().selectQuery(new AdminDeleteEhrHistory().call(this.getId())).execute();

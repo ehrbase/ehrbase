@@ -564,7 +564,7 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
             // handle auxiliary objects
             delStatus.forEach(id -> {
                 // delete status audit
-                adminApi.deleteAudit(id.getStatusAudit(), "Status");
+                adminApi.deleteAudit(id.getStatusAudit(), "Status", false);
 
                 // clear history
                 int res = getContext().selectQuery(new AdminDeleteStatusHistory().call(status.getStatus())).execute();
@@ -578,6 +578,6 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
         });
 
         // delete contribution itself
-        adminApi.deleteContribution(this.getId(), null);
+        adminApi.deleteContribution(this.getId(), null, false);
     }
 }
