@@ -109,7 +109,7 @@ check contribution admin delete table counts
     ${audit_records}=   Count Rows In DB Table    ehr.audit_details
                         Should Be Equal As Integers    ${audit_records}     ${2}    # from creation of the EHR (1 for status, 1 for the wrapping contribution)
     ${system_records}=   Count Rows In DB Table    ehr.system
-                        Should Be Equal As Integers    ${system_records}     ${1}   # from the creation of the EHR
+                        Should Be Equal As Integers    ${system_records}     ${1}   # from creation of the EHR
     ${party_records}=   Count Rows In DB Table    ehr.party_identified
                         Should Be Equal As Integers    ${party_records}     ${2}    # from creation of the EHR
     ${compo_records}=   Count Rows In DB Table    ehr.composition

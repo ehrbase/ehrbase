@@ -32,17 +32,22 @@ public class AdminApiUtils {
         // delete linked party, if not referenced somewhere else
         parties.forEach(party -> ctx.selectQuery(new AdminDeleteParty().call(party.getParty())).execute());
 
+        // deletion of composition itself
         Result<AdminDeleteCompositionRecord> delCompo = Routines.adminDeleteComposition(ctx.configuration(), id);
         // for each deleted compo delete auxiliary objects
         delCompo.forEach(del -> {
+            // invoke deletion of audit
             deleteAudit(del.getAudit(), "Composition");
             // invoke deletion of attestation, if available
             if (del.getAttestation() != null) {
                 Result<AdminDeleteAttestationRecord> delAttest = Routines.adminDeleteAttestation(ctx.configuration(), del.getAttestation());
                 delAttest.forEach(attest -> deleteAudit(attest.getAudit(), "Attestation"));
             }
-            // delete linked party, if not referenced somewhere else
+            // delete linked party, if not referenced somewhere else (logic inside DB function)
             ctx.selectQuery(new AdminDeleteParty().call(del.getParty())).execute();
+
+            // delete contribution
+            deleteContribution(del.getContribution(), null);
         });
     }
 

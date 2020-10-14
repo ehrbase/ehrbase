@@ -103,8 +103,6 @@ CREATE OR REPLACE FUNCTION ehr.admin_delete_party(party_input UUID)
                 FROM ehr.event_context
                 WHERE (event_context.facility = party_input)
             ),
-
-            -- TODO: delete in IDENTIFIER too if not referenced anywhere else? (remove IDENTIFIER check above then)
        		
 			delete_func AS (
 				DELETE FROM ehr.party_identified WHERE (ehr.party_identified.id = party_input)
@@ -269,7 +267,6 @@ RETURNS TABLE (num integer, audit UUID) AS $$
         RETURN QUERY WITH linked_misc(audit) AS (
                 SELECT has_audit FROM ehr.contribution WHERE id = contrib_id_input
             ),
-            -- TODO-314: delete all linked entities here too
             -- delete contribution itself
             delete_composition AS (
                 DELETE FROM ehr.contribution WHERE id = contrib_id_input
@@ -305,9 +302,6 @@ RETURNS TABLE (num integer, status_audit UUID, status_party UUID) AS $$
             delete_status AS (
                 DELETE FROM ehr.status WHERE ehr_id = ehr_id_input
             )
-            
-            -- TODO: this would invoke the deletion of party from within this function, but it won't work because the transaction of deletion (ehr, status) is not finished and not valid. so the deletion of party fails, as it is still referenced somewhere.
-            --SELECT ehr.admin_delete_party((SELECT linked_party.id FROM linked_party)), linked_status.has_audit FROM linked_status, linked_party;
 
             SELECT 1, linked_status.has_audit, linked_party.id FROM linked_status, linked_party;
     END;

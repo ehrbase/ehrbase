@@ -1,5 +1,3 @@
--- TODO-314: todo
-
 -- fix bug 320: syncing history table with main table
 ALTER TABLE ehr.contribution_history
     DROP COLUMN system_id,

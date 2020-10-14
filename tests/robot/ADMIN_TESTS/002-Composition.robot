@@ -37,7 +37,7 @@ Force Tags     composition
 ADMIN - Delete Composition
     # pre check
     Connect With DB
-    check composition admin delete table counts
+    check composition admin delete table counts initially
     # preparing and provisioning
     upload OPT    minimal/minimal_observation.opt
     prepare new request session    JSON    Prefer=return=representation
@@ -74,19 +74,43 @@ admin delete composition
                         Output Debug Info To Console
 
 
+check composition admin delete table counts initially
+
+    ${contr_records}=   Count Rows In DB Table    ehr.contribution
+                        Should Be Equal As Integers    ${contr_records}     ${0}
+    ${contr_h_records}=   Count Rows In DB Table    ehr.contribution_history
+                        Should Be Equal As Integers    ${contr_h_records}     ${0}
+    ${audit_records}=   Count Rows In DB Table    ehr.audit_details
+                        Should Be Equal As Integers    ${audit_records}     ${0}
+    ${system_records}=   Count Rows In DB Table    ehr.system
+                        Should Be Equal As Integers    ${system_records}     ${0}
+    ${party_records}=   Count Rows In DB Table    ehr.party_identified
+                        Should Be Equal As Integers    ${party_records}     ${0}
+    ${compo_records}=   Count Rows In DB Table    ehr.composition
+                        Should Be Equal As Integers    ${compo_records}     ${0}
+    ${compo_h_records}=  Count Rows In DB Table    ehr.composition_history
+                        Should Be Equal As Integers    ${compo_h_records}     ${0}
+    ${entry_records}=   Count Rows In DB Table    ehr.entry
+                        Should Be Equal As Integers    ${entry_records}     ${0}
+    ${entry_h_records}=  Count Rows In DB Table    ehr.entry_history
+                        Should Be Equal As Integers    ${entry_h_records}     ${0}
+    ${event_context_records}=   Count Rows In DB Table    ehr.event_context
+                        Should Be Equal As Integers    ${event_context_records}     ${0}
+    ${entry_participation_records}=   Count Rows In DB Table    ehr.participation
+                        Should Be Equal As Integers    ${entry_participation_records}     ${0}
+
 check composition admin delete table counts
 
-    # TODO: could the target number of rows calculated, e.g. new audits = old - 1 ?
-    # ${contr_records}=   Count Rows In DB Table    ehr.contribution
-    #                     Should Be Equal As Integers    ${contr_records}     ${0}
-    # ${contr_h_records}=   Count Rows In DB Table    ehr.contribution_history
-    #                     Should Be Equal As Integers    ${contr_h_records}     ${0}
-    # ${audit_records}=   Count Rows In DB Table    ehr.audit_details
-    #                     Should Be Equal As Integers    ${audit_records}     ${0}
-    # ${system_records}=   Count Rows In DB Table    ehr.system
-    #                     Should Be Equal As Integers    ${system_records}     ${0}
-    #${party_records}=   Count Rows In DB Table    ehr.party_identified
-    #                    Should Be Equal As Integers    ${party_records}     ${0}
+    ${contr_records}=   Count Rows In DB Table    ehr.contribution
+                        Should Be Equal As Integers    ${contr_records}     ${1}    # from creation of the EHR, which will not be deleted
+    ${contr_h_records}=   Count Rows In DB Table    ehr.contribution_history
+                        Should Be Equal As Integers    ${contr_h_records}     ${0}
+    ${audit_records}=   Count Rows In DB Table    ehr.audit_details
+                        Should Be Equal As Integers    ${audit_records}     ${2}    # from creation of the EHR (1 for status, 1 for the wrapping contribution)
+    ${system_records}=   Count Rows In DB Table    ehr.system
+                        Should Be Equal As Integers    ${system_records}     ${1}   # from creation of the EHR
+    ${party_records}=   Count Rows In DB Table    ehr.party_identified
+                        Should Be Equal As Integers    ${party_records}     ${2}    # from creation of the EHR
     ${compo_records}=   Count Rows In DB Table    ehr.composition
                         Should Be Equal As Integers    ${compo_records}     ${0}
     ${compo_h_records}=  Count Rows In DB Table    ehr.composition_history
