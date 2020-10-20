@@ -158,3 +158,28 @@ Count Rows In DB Table
 
 # check https://github.com/franz-see/Robotframework-Database-Library/blob/master/test/PostgreSQL_DB_Tests.robot
 # for more examples
+
+
+dump db
+    [Documentation]     Dumps ehrbase DB from PostrgeSQL Docker container to a file /tmp/ehrbasedb_dump.sql
+    ${redump_required}  Run Keyword And Return Status    File Should Exist    /tmp/DATA_CHANGED_NOTICE
+                        Return From Keyword If    not ${redump_required}    DUMP DB REQIRED(?): ${redump_required}
+    
+    Log To Console      WRITING DB DUMP TO FILE /tmp/ehrbasedb_dump.sql
+    ${result}=          Run Process
+    ...                 docker exec ehrdb pg_dump ehrbase --username postgres --if-exists --clean > /tmp/ehrbasedb_dump.sql
+                        ...    shell=true
+                        ...    stderr=DBDUMP_STDERR
+                        ...    stdout=DBSTDOUT
+                        
+    log to console      ${result.stdout}
+    log to console      ${result.stderr}
+
+
+restore db from dump
+    [Documentation]     Restores ehrbase DB inside PostgreSQL container from dump.sql file.
+    Log To Console      RESTORING DB FROM DUMP FILE
+    Run Process         docker exec -i ehrdb psql ehrbase --username postgres < /tmp/ehrbasedb_dump.sql
+                        ...    shell=true
+                        ...    stderr=DBRESTORE_STDERR
+                        ...    stdout=DBRESTORE_STDOUT
