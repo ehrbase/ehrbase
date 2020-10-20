@@ -29,19 +29,19 @@ ENV MUSL_LOCPATH="/usr/share/i18n/locales/musl"
 # remove sources and compile artifacts
 # lastly remove dev dependencies again
 RUN apk --no-cache add libintl && \
-	apk --no-cache --virtual .locale_build add cmake make musl-dev gcc gettext-dev git && \
-	git clone https://gitlab.com/rilian-la-te/musl-locales && \
-	cd musl-locales && cmake -DLOCALE_PROFILE=OFF -DCMAKE_INSTALL_PREFIX:PATH=/usr . && make && make install && \
-	cd .. && rm -r musl-locales && \
-	apk del .locale_build
+  apk --no-cache --virtual .locale_build add cmake make musl-dev gcc gettext-dev git && \
+  git clone https://gitlab.com/rilian-la-te/musl-locales && \
+  cd musl-locales && cmake -DLOCALE_PROFILE=OFF -DCMAKE_INSTALL_PREFIX:PATH=/usr . && make && make install && \
+  cd .. && rm -r musl-locales && \
+  apk del .locale_build
 
 # Copy init scripts to init directory
 COPY .docker_scripts/create-ehrbase-user.sh /docker-entrypoint-initdb.d/
 
 # Initialize basic database cluster
 RUN sh -c "/usr/local/bin/docker-entrypoint.sh postgres & " && \
-    sleep 20 && \
-    echo "Database initialized"
+  sleep 20 && \
+  echo "Database initialized"
 
 # Allow connections from all adresses & Listen to all interfaces
 RUN echo "host  all  all   0.0.0.0/0  scram-sha-256" >> ${PGDATA}/pg_hba.conf
@@ -49,10 +49,10 @@ RUN echo "listen_addresses='*'" >> ${PGDATA}/postgresql.conf
 
 # Install python and dependencies
 RUN apk add --update postgresql-dev \
-                     build-base \
-                     git \
-                     flex \
-                     bison
+  build-base \
+  git \
+  flex \
+  bison
 
 # Install temporary_tables plugin
 COPY .docker_scripts/install-temporal-tables.sh .
@@ -99,6 +99,7 @@ COPY ./jooq-pq/pom.xml ./jooq-pq/pom.xml
 COPY ./rest-ehr-scape/pom.xml ./rest-ehr-scape/pom.xml
 COPY ./rest-openehr/pom.xml ./rest-openehr/pom.xml
 COPY ./service/pom.xml ./service/pom.xml
+COPY ./test-coverage/pom.xml ./test-coverage/pom.xml 
 COPY ./api/src ./api/src
 COPY ./application/src ./application/src
 COPY ./base/src ./base/src
@@ -107,9 +108,9 @@ COPY ./rest-ehr-scape/src ./rest-ehr-scape/src
 COPY ./rest-openehr/src ./rest-openehr/src
 COPY ./service/src ./service/src
 RUN mvn compile dependency:go-offline \
-    -Dflyway.skip=true \
-    -Djooq.codegen.skip=true \
-    -Dmaven.main.skip
+  -Dflyway.skip=true \
+  -Djooq.codegen.skip=true \
+  -Dmaven.main.skip
 
 # COMPILE EHRBASE
 RUN su - postgres -c "pg_ctl -D ${PGDATA} -w start" \
