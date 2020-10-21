@@ -28,7 +28,7 @@ Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 Suite Setup     startup SUT
 Suite Teardown  shutdown SUT
 
-Force Tags     contribution
+Force Tags     directory
 
 
 
@@ -72,7 +72,8 @@ admin delete directory
 
 
     &{resp}=            REST.DELETE    ${baseurl}/admin/ehr/${ehr_id}/directory/${folder_versioned_uid}
-                        Should Be Equal As Strings   ${resp.status}   204
+                        # Should Be Equal As Strings   ${resp.status}   204
+                        Integer    response status   204
                         Set Test Variable    ${response}    ${resp}
                         Output Debug Info To Console
 
