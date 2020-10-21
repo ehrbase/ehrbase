@@ -421,6 +421,11 @@ RETURNS TABLE (contribution UUID, child UUID) AS $$
                 
                 SELECT DISTINCT in_contribution FROM linked_children
             ),
+            remove_directory AS (
+                UPDATE ehr.ehr -- remove link to ehr and then actually delete the folder
+                SET directory = NULL
+                WHERE directory = folder_id_input
+            ),
             delete_folders AS (
                 DELETE FROM ehr.folder WHERE (id = folder_id_input) OR (id IN (SELECT linked_children.child_folder FROM linked_children))
             ),

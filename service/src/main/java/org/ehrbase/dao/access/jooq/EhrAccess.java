@@ -755,6 +755,11 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         Result<AdminGetLinkedCompositionsRecord> linkedCompositions = Routines.adminGetLinkedCompositions(getContext().configuration(), this.getId());
         Result<AdminGetLinkedContributionsRecord> linkedContributions = Routines.adminGetLinkedContributions(getContext().configuration(), this.getId());
 
+        // remove linked directory folder
+        // TODO: get linked folders from "folder" attribute, once this RM 1.1.0 attribute is implemented
+        if (getDirectoryId() != null)
+            adminApi.deleteFolder(getDirectoryId(), false); // contribs will be deleted by EHR later
+
         // handling of existing composition
         linkedCompositions.forEach(compo -> adminApi.deleteComposition(compo.getComposition()));
 

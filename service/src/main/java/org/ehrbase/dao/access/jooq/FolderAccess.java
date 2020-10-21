@@ -1016,28 +1016,8 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
 
     @Override
     public void adminDeleteFolder() {
-        Result<AdminDeleteFolderRecord> records = Routines.adminDeleteFolder(getContext().configuration(), this.getFolderId());
-
-        // folders are used to clean folder history tables later
-        HashSet<UUID> folders = new HashSet<>();
-        // contributions are used to clean object_ref_history table later
-        HashSet<UUID> contribs = new HashSet<>();
-
-        // initially add this scope's root folder ID
-        folders.add(this.getFolderId());
-
-        // add all other IDs to their sets, if available
-        records.forEach(rec -> {
-            folders.add(rec.getChild());
-            contribs.add(rec.getContribution());
-        });
-
-        // invoke both *_HISTORY cleaning functions
-        folders.forEach(folder -> getContext().selectQuery(new AdminDeleteFolderHistory().call(folder)).execute());
-        contribs.forEach(contrib -> getContext().selectQuery(new AdminDeleteFolderObjRefHistory().call(contrib)).execute());
-
-        // invoke contribution deletion
         AdminApiUtils adminApi = new AdminApiUtils(getContext());
-        contribs.forEach(contrib -> adminApi.deleteContribution(contrib, null, false));
+
+        adminApi.deleteFolder(this.getFolderId(), true);
     }
 }
