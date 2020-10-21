@@ -503,6 +503,7 @@ startup SUT
 
 
 shutdown SUT
+    dump db
     Run Keyword And Return If   "${CONTROL_MODE}"=="manual"
                           ...    remind to restart manual test environment
     
