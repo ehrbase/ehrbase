@@ -159,4 +159,9 @@ public interface I_FolderAccess extends I_SimpleCRUD {
     AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime> getFolderSysPeriod();
 
     void setFolderSysPeriod(AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime> folderSysPeriod);
+
+    /**
+     * Invoke physical deletion.
+     */
+    void adminDeleteFolder();
 }

@@ -382,6 +382,113 @@ $$ LANGUAGE plpgsql
 
 
 -- ====================================================================
+-- Description: Function to delete a Folder.
+-- Parameters:
+--    @folder_id_input - UUID of target Folder
+-- Returns: linked contribution, folder children UUIDs
+-- Requires: Afterwards deletion of all _HISTORY tables with the returned contributions and children.
+-- =====================================================================
+CREATE OR REPLACE FUNCTION ehr.admin_delete_folder(folder_id_input UUID)
+RETURNS TABLE (contribution UUID, child UUID) AS $$
+    BEGIN
+        RETURN QUERY WITH 
+            -- order to delete things:
+            -- all folders (scope's parent + children) itself from FOLDER, order shouldn't matter
+            -- all their FOLDER_HIERARCHY entries
+            -- all FOLDER_ITEMS matching FOLDER.IDs
+            -- all OBJECT_REF mentioned in FOLDER_ITEMS
+            -- all CONTRIBUTIONs (1..*) collected along the way above
+            -- AFTERWARDS and separate: deletion of all matching *_HISTORY table entries
+            
+            linked_children AS (
+                SELECT child_folder, in_contribution FROM ehr.folder_hierarchy WHERE parent_folder = folder_id_input
+            ),
+            linked_object_ref AS (
+                SELECT DISTINCT object_ref_id FROM ehr.folder_items WHERE (folder_id = folder_id_input) OR (folder_id IN (SELECT linked_children.child_folder FROM linked_children))
+            ),
+            linked_contribution AS (
+                SELECT DISTINCT in_contribution FROM ehr.folder WHERE (id = folder_id_input) OR (id IN (SELECT linked_children.child_folder FROM linked_children))
+                
+                UNION
+                
+                SELECT DISTINCT in_contribution FROM ehr.folder_items WHERE (folder_id = folder_id_input) OR (folder_id IN (SELECT linked_children.child_folder FROM linked_children))
+                
+                UNION
+                
+                SELECT DISTINCT in_contribution FROM ehr.object_ref WHERE id IN (SELECT linked_object_ref.object_ref_id FROM linked_object_ref)
+                
+                UNION
+                
+                SELECT DISTINCT in_contribution FROM linked_children
+            ),
+            delete_folders AS (
+                DELETE FROM ehr.folder WHERE (id = folder_id_input) OR (id IN (SELECT linked_children.child_folder FROM linked_children))
+            ),
+            delete_hierarchy AS (
+                DELETE FROM ehr.folder_hierarchy WHERE parent_folder = folder_id_input
+            ),
+            delete_items AS (
+                DELETE FROM ehr.folder_items WHERE (folder_id = folder_id_input) OR (folder_id IN (SELECT linked_children.child_folder FROM linked_children))
+            ),
+            delete_object_ref AS (
+                DELETE FROM ehr.object_ref WHERE id IN (SELECT linked_object_ref.object_ref_id FROM linked_object_ref)
+            )
+            -- returning contribution IDs to delete separate; same with children IDs, as *_HISTORY tables of ID sets ((original input folder + children), and obj_ref via their contribs) needs to be deleted separate, too.
+            SELECT DISTINCT linked_contribution.in_contribution, linked_children.child_folder FROM linked_contribution, linked_children;
+        END;
+$$ LANGUAGE plpgsql
+    RETURNS NULL ON NULL INPUT;
+
+
+-- ====================================================================
+-- Description: Function to delete some Folder history.
+-- Necessary as own function, because the former transaction needs to be done to populate the *_history table.
+-- Parameters:
+--    @folder_id_input - UUID of target Folder
+-- Returns: '1'
+-- =====================================================================
+CREATE OR REPLACE FUNCTION ehr.admin_delete_folder_history(folder_id_input UUID)
+RETURNS TABLE (num integer) AS $$
+    BEGIN
+        RETURN QUERY WITH
+            delete_folders AS (
+                DELETE FROM ehr.folder_history WHERE id = folder_id_input
+            ),
+            delete_hierarchy AS (
+                DELETE FROM ehr.folder_hierarchy_history WHERE parent_folder = folder_id_input
+            ),
+            delete_items AS (
+                DELETE FROM ehr.folder_items_history WHERE folder_id = folder_id_input
+            )
+
+            SELECT 1;
+    END;
+$$ LANGUAGE plpgsql
+    RETURNS NULL ON NULL INPUT;
+
+
+-- ====================================================================
+-- Description: Function to delete the rest of the Folder history.
+-- Necessary as own function, because the former transaction needs to be done to populate the *_history table.
+-- Parameters:
+--    @contribution_id_input - UUID of target contribution, to find the correct object_ref
+-- Returns: '1'
+-- =====================================================================
+CREATE OR REPLACE FUNCTION ehr.admin_delete_folder_obj_ref_history(contribution_id_input UUID)
+RETURNS TABLE (num integer) AS $$
+    BEGIN
+        RETURN QUERY WITH
+            delete_object_ref AS (
+                DELETE FROM ehr.object_ref_history WHERE in_contribution = contribution_id_input
+            )
+
+            SELECT 1;
+    END;
+$$ LANGUAGE plpgsql
+    RETURNS NULL ON NULL INPUT;
+
+
+-- ====================================================================
 -- Description: Function to get linked Contributions for an EHR.
 -- Parameters:
 --    @ehr_id_input - UUID of target EHR

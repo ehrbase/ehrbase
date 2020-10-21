@@ -440,7 +440,8 @@ POST /ehr/ehr_id/directory
                         ...                 headers=${headers}
 
                         Set Suite Variable   ${response}    ${resp}
-                        Output Debug Info:  POST /ehr/ehr_id/directory
+                        Output Debug Info To Console    # TODO-314: does this make sense? Other one failed locally, but not on CI?!
+                        #Output Debug Info:  POST /ehr/ehr_id/directory
 
 
 POST /ehr/ehr_id/directory (w/ headers)
