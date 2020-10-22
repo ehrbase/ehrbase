@@ -79,6 +79,7 @@ class ExpressionField {
                     optionalPath = locatableItem.getOptionalPath();
                     rootJsonKey = locatableItem.getRootJsonKey();
                     jsonbItemPath = locatableItem.getJsonbItemPath();
+                    locatableItem.setUseEntry();
                 }
                 break;
         }

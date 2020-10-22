@@ -46,26 +46,32 @@ public class EhrResolver extends AttributeResolver
         else if (path.startsWith("system_id"))
             return new SystemResolver(fieldResolutionContext, joinSetup).sqlField(new AttributePath("system_id").redux(path));
 
+        joinSetup.setJoinEhr(true);
+
         switch (path){
             case "ehr_id":
-                joinSetup.setJoinEhr(true);
                 return new GenericJsonField(fieldResolutionContext, joinSetup).jsonField("HIER_OBJECT_ID", "ehr.js_canonical_hier_object_id", I_JoinBinder.ehrRecordTable.field(EHR_.ID));
             case "ehr_id/value":
                 return new EhrIdValue(fieldResolutionContext, joinSetup).forTableField(NULL_FIELD).sqlField();
             case "time_created":
-                joinSetup.setJoinEhr(true);
                 return new GenericJsonField(fieldResolutionContext, joinSetup)
                         .jsonField("DV_DATE_TIME", "ehr.js_dv_date_time", I_JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED), I_JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED_TZID));
             case "time_created/value":
-                joinSetup.setJoinEhr(true);
                 return new FormattedField(fieldResolutionContext, joinSetup)
                         .usingToJson("timestamp with time zone","||", I_JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED), I_JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED_TZID));
+            default:
+                return new FullEhrJson(fieldResolutionContext, joinSetup)
+                        .forJsonPath(path).sqlField();
+
 
         }
-        throw new IllegalArgumentException("Unresolved ehr attribute path:"+path);
+//        throw new IllegalArgumentException("Unresolved ehr attribute path:"+path);
     }
 
     public static boolean isEhrAttribute(String path){
+        if (path == null)
+            return false;
+
         if (path.startsWith("ehr_status") || path.startsWith("system_id"))
             return true;
         else

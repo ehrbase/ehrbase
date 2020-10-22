@@ -34,6 +34,8 @@ public class JoinSetup {
     private boolean joinSystem = false;
     private boolean containsEhrStatus = false;
 
+    private boolean useEntry = false;
+
     protected Table partyJoinRef; //this table reference is used by forTableField() it indicates on which table the join is to be done
 
     public boolean isJoinComposition() {
@@ -114,5 +116,13 @@ public class JoinSetup {
 
     public boolean isJoinSystem() {
         return joinSystem;
+    }
+
+    public void setUseEntry(boolean useEntry) {
+        this.useEntry = useEntry;
+    }
+
+    public boolean isUseEntry() {
+        return useEntry;
     }
 }
