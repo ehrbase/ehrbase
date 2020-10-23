@@ -19,7 +19,7 @@
 package org.ehrbase.rest.ehrscape.responsedata;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
-import org.ehrbase.webtemplate.WebTemplate;
+import org.ehrbase.webtemplate.model.WebTemplate;
 
 
 @JacksonXmlRootElement
