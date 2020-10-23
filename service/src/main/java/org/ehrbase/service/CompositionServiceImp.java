@@ -176,7 +176,7 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
 
     @Override
     public UUID create(UUID ehrId, String content, CompositionFormat format, String templateId, UUID linkUid) {
-        return create(ehrId, content, format);
+        return create(ehrId, content, format, templateId);
     }
 
     @Override
