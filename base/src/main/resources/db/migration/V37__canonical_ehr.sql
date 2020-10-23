@@ -77,14 +77,15 @@ BEGIN
     RETURN (
         select "folder_join"."id" || '::' || server_id || '::' || 1
             + COALESCE(
-                      (select count(*)
-                       from "ehr"."folder_history"
-                       where "folder_join"."id" = "ehr"."folder_history"."id"
-                       group by "ehr"."folder_history"."id")
-                      , 0) as "uid/value"
+                  (select count(*)
+                   from "ehr"."folder_history"
+                   where folder_uid = "ehr"."folder_history"."id"
+                   group by "ehr"."folder_history"."id")
+              , 0) as "uid/value"
         from "ehr"."entry"
                  right outer join "ehr"."folder" as "folder_join"
                                   on "folder_join"."id" = folder_uid
+        limit 1
     );
 END
 $$
