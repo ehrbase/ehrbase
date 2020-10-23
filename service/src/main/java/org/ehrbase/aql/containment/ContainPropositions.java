@@ -20,7 +20,7 @@ package org.ehrbase.aql.containment;
 import com.nedap.archie.rminfo.ArchieRMInfoLookup;
 import org.apache.commons.collections4.SetUtils;
 import org.ehrbase.service.KnowledgeCacheService;
-import org.ehrbase.webtemplate.NodeId;
+import org.ehrbase.webtemplate.parser.NodeId;
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;
