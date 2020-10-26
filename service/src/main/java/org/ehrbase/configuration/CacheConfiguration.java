@@ -23,7 +23,7 @@ import org.ehrbase.aql.containment.TemplateIdAqlTuple;
 import org.ehrbase.aql.containment.TemplateIdQueryTuple;
 import org.ehrbase.aql.sql.queryImpl.ItemInfo;
 import org.ehrbase.validation.Validator;
-import org.ehrbase.webtemplate.WebTemplate;
+import org.ehrbase.webtemplate.model.WebTemplate;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;

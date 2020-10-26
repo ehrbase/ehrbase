@@ -1,6 +1,6 @@
 package org.ehrbase.aql.containment;
 
-import org.ehrbase.webtemplate.NodeId;
+import org.ehrbase.webtemplate.parser.NodeId;
 
 import java.io.Serializable;
 import java.util.Collection;
