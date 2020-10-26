@@ -108,7 +108,7 @@ public class JoinBinder implements I_JoinBinder {
     private boolean noJoinRequired(CompositionAttributeQuery compositionAttributeQuery){
         return (compositionAttributeQuery.isJoinComposer() ? 2 : 0) +
                 (compositionAttributeQuery.isJoinEventContext() ? 1 : 0) +
-                (compositionAttributeQuery.isJoinComposition() ? 1 : 0) +
+                (compositionAttributeQuery.isJoinComposition() ? 2 : 0) +
                 (compositionAttributeQuery.isJoinContextFacility() ? 2 : 0) +
                 (compositionAttributeQuery.isJoinEhr() ? 1 : 0) +
                 (compositionAttributeQuery.isJoinEhrStatus() ? 2 : 0) +

@@ -57,6 +57,7 @@ BEGIN
                                                                        (('openehr', ehr.map_change_type_to_codestring(audit_details.change_type::TEXT))::ehr.code_phrase),
                                                                        NULL,
                                                                        NULL,
+                                                                       NULL,
                                                                        NULL)::ehr.dv_coded_text),
                             'description', ehr.js_dv_text(audit_details.description),
                             'committer', ehr.js_canonical_party_identified(audit_details.committer)
