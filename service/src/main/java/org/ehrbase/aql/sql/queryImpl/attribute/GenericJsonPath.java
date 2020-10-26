@@ -51,7 +51,7 @@ public class GenericJsonPath {
         return paths.size() == 1
                 || (paths.size() > 1
                         && index == paths.size() - 1
-                        && paths.get(index).toString().matches("value|name|id|terminology_id")
+                        && paths.get(index).toString().matches("value|name|terminology_id|purpose|target")
                         //check if this 'terminal attribute' is actually a node attribute
                         //match node predicate regexp starts with '/' which is not the case when splitting the path
                         && !paths.get(index - 1).toString().matches(I_DvTypeAdapter.matchNodePredicate.substring(1)));

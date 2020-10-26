@@ -72,13 +72,16 @@ tasks:
     desc: START POSTGRES DB DOCKER CONTAINER
     cmds:
       - echo ... starting DB server ...
-      - docker run --name ehrdb -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e DISABLE_SECURITY=true -d -p 5432:5432 ehrbaseorg/ehrbase-database-docker:11.5
+      # - docker run --name ehrdb -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e DISABLE_SECURITY=true -d -p 5432:5432 ehrbaseorg/ehrbase-database-docker:11.5
+      - docker run --name ehrdb -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e DISABLE_SECURITY=true -d -p 5432:5432 ehrbaseorg/ehrbase-postgres:latest
+      # - docker run --name ehrdb -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e DISABLE_SECURITY=true -d -p 5432:5432 postgres:11.5-alpine
       - echo ... DB server started.
 
   stopdb:
     desc: KILL POSTGRES DB DOCKER CONTAINER
     cmds:
       - docker container rm -f ehrdb
+      - rm -rf /tmp/file/*
       - echo ... DB server stopped.
 
   package:
@@ -116,3 +119,13 @@ tasks:
       ## consolidate results
       - rebot -e future -e circleci -e TODO -e obsolete -e libtest -d results -L TRACE --noncritical not-ready --name EHRbase results/xml/*.xml
       # - spd-say "Robot is ready! Check the results!"
+  
+  clean-aql:
+    desc: "CLEAN UP: rm $(find robot/_resources/test_data_sets/query/expected_results/loaded_db/ -name *.tmp.json)"
+    cmds:
+      - rm $(find robot/_resources/test_data_sets/query/expected_results/loaded_db/ -name *.tmp.json)
+
+  clean-db-dump:
+    desc: "CLEAN UP: rm /tmp/ehrbasedb_dump.sql"
+    cmds:
+      - rm /tmp/ehrbasedb_dump.sql

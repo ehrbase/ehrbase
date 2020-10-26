@@ -48,6 +48,7 @@ public class EntryAttributeMapper {
     public static final String LOWER = "lower";
     public static final String UPPER = "upper";
     public static final String INTERVAL = "interval";
+    public static final String MAPPINGS = "mappings";
 
     //from Locatable
     private static String toCamelCase(String underscoreSeparated) {
@@ -110,7 +111,9 @@ public class EntryAttributeMapper {
             floor = 3;
         } else if (fields.get(0).equals(NAME)) {
             fields.add(1, "0"); //name is now formatted as /name -> array of values! Required to deal with cluster items
-        } else if (fields.get(0).equals(TIME) || fields.get(0).equals(ORIGIN)) {
+        } else if (fields.size() >= 2 && fields.get(1).equals(MAPPINGS)) {
+            fields.add(2, "0"); //mappings is now formatted as /mappings -> array of values!
+        }else if (fields.get(0).equals(TIME) || fields.get(0).equals(ORIGIN)) {
             if (fields.size() > 1 && fields.get(1).equals(VALUE)) {
                 fields.add(VALUE); //time is formatted with 2 values: string value and epoch_offset
                 fields.set(1, SLASH_VALUE);

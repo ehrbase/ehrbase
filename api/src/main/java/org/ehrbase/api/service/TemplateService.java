@@ -22,7 +22,6 @@ import org.ehrbase.api.definitions.OperationalTemplateFormat;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.StructuredString;
 import org.ehrbase.response.ehrscape.TemplateMetaDataDto;
-import org.ehrbase.webtemplate.model.WebTemplate;
 
 import java.util.List;
 
@@ -31,8 +30,7 @@ public interface TemplateService extends BaseService {
 
     StructuredString buildExample(String templateId, CompositionFormat format);
 
-
-    WebTemplate findTemplate(String templateId);
+    org.ehrbase.webtemplate.model.WebTemplate findTemplate(String templateId);
 
     /**
      * Finds and returns the given operational template as string represented in requested format.

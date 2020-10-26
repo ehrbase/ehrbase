@@ -31,7 +31,7 @@ Documentation   Main flow: execute ad-hoc QUERY where data exists
 Metadata        TOP_TEST_SUITE    AQL
 Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
 
-Suite Setup    Establish Preconditions
+Suite Setup    aql_query_keywords.Establish Preconditions
 # Test Setup  Establish Preconditions
 # Test Teardown  restore clean SUT state
 # Suite Teardown    Run Keywords    Clean DB    # Delete Temp Result-Data-Sets
@@ -141,11 +141,12 @@ A-500 Execute Ad-Hoc Query - Get EHRs Which Have Compositions
 
 A-600 Execute Ad-Hoc Query - Get EHRs Which Have Compositions
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]
+    [Tags]              340
     A/600_get_ehrs_by_contains_composition_contains_entry_with_archetype.json    A/600.tmp.json
     A/601_get_ehrs_by_contains_composition_contains_entry_with_archetype.json    A/601.tmp.json
     A/602_get_ehrs_by_contains_composition_contains_entry_with_archetype.json    A/602.tmp.json
     A/603_get_ehrs_by_contains_composition_contains_entry_with_archetype.json    A/603.tmp.json
+    [Teardown]          TRACE GITHUB ISSUE  340  not-ready
 
 
 B-100 Execute Ad-Hoc Query - Get Compositions From All EHRs

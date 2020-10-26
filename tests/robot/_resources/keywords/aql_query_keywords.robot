@@ -57,6 +57,11 @@ Set Smoke Test Status
 
 
 Establish Preconditions
+    # comment: WHEN TEST-DATA HAS NOT CHANGED RESTORE DB FROM DUMP AND SKIP REST OF THIS KW!
+    ${data-changed}     Run Keyword And Return Status    File Should Exist    /tmp/DATA_CHANGED_NOTICE
+                        Run Keyword And Return If    not ${data-changed}    db_keywords.restore db from dump
+   
+    # comment: WHEN DATA_CHANGED ENV EXIST DO THIS!
     Preconditions (PART 1) - Load Blueprints of Queries and Expected-Results
     Preconditions (PART 2) - Generate Test-Data and Expected-Results
 
@@ -610,7 +615,7 @@ Commit Compo
                         # Set Suite Variable    ${ehr_index}    ${ehr_index}    # TODO: @WLAD REMOVE
 
     &{resp}=            REST.POST    ${baseurl}/ehr/${ehr_id}/composition    ${compo_file}
-                        Output Debug Info To Console
+                        # Output Debug Info To Console
                         Integer    response status    201
                         Set Suite Variable    ${response}    ${resp}
 
