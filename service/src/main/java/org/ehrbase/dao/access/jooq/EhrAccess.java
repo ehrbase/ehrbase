@@ -783,9 +783,6 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             int res = getContext().selectQuery(new AdminDeleteEhrHistory().call(this.getId())).execute();
             if (res != 1)
                 throw new InternalServerException("Admin deletion of EHR failed!");
-
-            // delete linked party, if not referenced somewhere else
-            getContext().selectQuery(new AdminDeleteParty().call(response.getStatusParty())).execute();
         });
     }
 }

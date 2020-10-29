@@ -34,87 +34,13 @@ CREATE OR REPLACE FUNCTION ehr.admin_delete_audit(audit_input UUID)
             ),
             delete_audit_details AS (
                 DELETE FROM ehr.audit_details WHERE id = audit_input
-            ),
-            -- handle system entry
-            count_audits_for_system(system_id, amount) AS (   -- count amount of audits referencing the system ID, which is referenced in this scope
-                SELECT system_id, COUNT(systems_audits.audit_id)
-                FROM systems_audits
-                WHERE systems_audits.system_id IN (SELECT scope_system.system_id FROM scope_system)
-                GROUP BY system_id
-            ),
-            -- delete system, if no other audit references it
-            delete_system AS (
-                DELETE FROM ehr.system WHERE (ehr.system.id IN (SELECT scope_system.system_id FROM scope_system))
-                    -- info gathered above needs to indicate only no reference (i.e. empty table result)
-                    AND (NOT EXISTS (SELECT count_audits_for_system.amount FROM count_audits_for_system WHERE count_audits_for_system.amount > 1))
             )
 
             SELECT 1, linked_party.id FROM linked_party;
+
+            -- logging:
+            RAISE NOTICE 'Admin deletion - Type: % - ID: % - Time: %', 'AUDIT_DETAILS', audit_input, now();
     END;
-$$ LANGUAGE plpgsql
-    RETURNS NULL ON NULL INPUT;
-
-
--- ====================================================================
--- Description: Function to delete a party_identified, if not referenced somewhere else - execute after deleting the object referencing this party.
--- Parameters:
---    @party_input - UUID of target party
--- Returns: '1'
--- =====================================================================
-CREATE OR REPLACE FUNCTION ehr.admin_delete_party(party_input UUID)
-    RETURNS TABLE (num integer) AS $$
-    BEGIN 
-		RETURN QUERY (
-			WITH
-            -- extract info about where this party is referenced in the rest of the DB
-			-- will result in one entry containing the given party ID, or no entry, if not referenced anywhere else
-            scope_party(party_id) AS (
-                SELECT ehr.composition.composer
-				FROM ehr.composition
-                WHERE (composition.composer = party_input)
-				
-				UNION
-				
-				SELECT ehr.audit_details.committer
-                FROM ehr.audit_details
-                WHERE (audit_details.committer = party_input)
-				
-				UNION
-				
-				SELECT ehr.status.party
-                FROM ehr.status
-                WHERE (status.party = party_input)
-				
-				UNION
-				
-				SELECT ehr.participation.performer
-                FROM ehr.participation
-                WHERE (participation.performer = party_input)
-				
-				UNION
-				
-				SELECT ehr.identifier.party
-                FROM ehr.identifier
-                WHERE (identifier.party = party_input)
-
-                UNION
-                
-                SELECT ehr.event_context.facility
-                FROM ehr.event_context
-                WHERE (event_context.facility = party_input)
-            ),
-       		
-			delete_func AS (
-				DELETE FROM ehr.party_identified WHERE (ehr.party_identified.id = party_input)
-				AND (NOT EXISTS (SELECT * FROM scope_party)) -- does not exists if no other reference exists
-				RETURNING *
-				)
-			SELECT COUNT(*)::integer FROM delete_func
-			 
-		);
-
-        
-    END
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
 
@@ -128,6 +54,8 @@ $$ LANGUAGE plpgsql
 -- =====================================================================
 CREATE OR REPLACE FUNCTION ehr.admin_delete_attestation(attest_ref_input UUID)
     RETURNS TABLE (audit UUID) AS $$
+    DECLARE
+        results RECORD;
     BEGIN
         RETURN QUERY WITH
             -- extract info about referenced audit
@@ -162,6 +90,36 @@ CREATE OR REPLACE FUNCTION ehr.admin_delete_attestation(attest_ref_input UUID)
             )
 
             SELECT linked_audit.id FROM linked_audit;
+
+            -- logging:
+
+            -- looping query is reconstructed from above CTEs, because they can't be reused here
+            FOR results IN (
+                SELECT ehr.attested_view.id
+                FROM ehr.attested_view
+                WHERE attestation_id IN (
+                    SELECT a.id FROM (
+                        SELECT ehr.attestation.id
+                        FROM ehr.attestation
+                        WHERE reference = attest_ref_input)
+                        AS a
+                    )
+                )
+            LOOP
+                RAISE NOTICE 'Admin deletion - Type: % - ID: % - Time: %', 'ATTESTED_VIEW', results.id, now();
+            END LOOP;
+
+            -- looping query is reconstructed from above CTEs, because they can't be reused here
+            FOR results IN (
+                SELECT ehr.attestation.id
+                FROM ehr.attestation
+                WHERE reference = attest_ref_input)
+            LOOP
+                RAISE NOTICE 'Admin deletion - Type: % - ID: % - Time: %', 'ATTESTATION', results.id, now();
+            END LOOP;
+
+            RAISE NOTICE 'Admin deletion - Type: % - ID: % - Time: %', 'ATTESTATION_REF', attest_ref_input, now();
+
     END;
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
@@ -176,6 +134,8 @@ $$ LANGUAGE plpgsql
 -- =====================================================================
 CREATE OR REPLACE FUNCTION ehr.admin_delete_event_context_for_compo(compo_id_input UUID)
 RETURNS TABLE (num integer, party UUID) AS $$
+    DECLARE
+        results RECORD;
     BEGIN
         RETURN QUERY WITH 
             linked_events(id) AS ( -- get linked EVENT_CONTEXT entities -- 0..1
@@ -196,6 +156,30 @@ RETURNS TABLE (num integer, party UUID) AS $$
                 DELETE FROM ehr.event_context WHERE ehr.event_context.id IN (SELECT linked_events.id  FROM linked_events)
             )
             SELECT 1, parties.id FROM parties;
+
+            -- logging:
+
+            -- looping query is reconstructed from above CTEs, because they can't be reused here
+            FOR results IN (
+                SELECT b.id  FROM (
+                    SELECT id, performer FROM ehr.participation WHERE event_context IN (SELECT a.id  FROM (
+                            SELECT id, facility FROM ehr.event_context WHERE composition_id = compo_id_input
+                        ) AS a )
+                    ) AS b
+            )
+            LOOP
+                RAISE NOTICE 'Admin deletion - Type: % - ID: % - Time: %', 'PARTICIPATION', results.id, now();
+            END LOOP;
+
+            -- looping query is reconstructed from above CTEs, because they can't be reused here
+            FOR results IN (
+                SELECT id, facility 
+                FROM ehr.event_context 
+                WHERE composition_id = compo_id_input)
+            LOOP
+                RAISE NOTICE 'Admin deletion - Type: % - ID: % - Time: %', 'EVENT_CONTEXT', results.id, now();
+            END LOOP;
+
     END;
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
@@ -210,6 +194,8 @@ $$ LANGUAGE plpgsql
 -- =====================================================================
 CREATE OR REPLACE FUNCTION ehr.admin_delete_composition(compo_id_input UUID)
 RETURNS TABLE (num integer, contribution UUID, party UUID, audit UUID, attestation UUID) AS $$
+    DECLARE
+        results RECORD;
     BEGIN
         RETURN QUERY WITH linked_entries(id) AS ( -- get linked ENTRY entities
                 SELECT id FROM ehr.entry WHERE composition_id = compo_id_input
@@ -225,6 +211,20 @@ RETURNS TABLE (num integer, contribution UUID, party UUID, audit UUID, attestati
                 DELETE FROM ehr.composition WHERE id = compo_id_input
             )
             SELECT 1, linked_misc.contrib, linked_misc.party, linked_misc.audit, linked_misc.attestation FROM linked_misc;
+
+            -- logging:
+
+            -- looping query is reconstructed from above CTEs, because they can't be reused here
+            FOR results IN (
+                SELECT a.id  
+                FROM (
+                    SELECT id FROM ehr.entry WHERE composition_id = compo_id_input
+                ) AS a )
+            LOOP
+                RAISE NOTICE 'Admin deletion - Type: % - ID: % - Time: %', 'ENTRY', results.id, now();
+            END LOOP;
+
+            RAISE NOTICE 'Admin deletion - Type: % - ID: % - Time: %', 'COMPOSITION', compo_id_input, now();
     END;
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
@@ -249,6 +249,10 @@ RETURNS TABLE (num integer) AS $$
             )
 
             SELECT 1;
+
+            -- logging:
+            RAISE NOTICE 'Admin deletion - Type: % - Linked to COMPOSITION ID: % - Time: %', 'entry_history', compo_input, now();
+            RAISE NOTICE 'Admin deletion - Type: % - ID: % - Time: %', 'COMPOSITION_HISTORY', compo_input, now();
     END;
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
@@ -272,6 +276,9 @@ RETURNS TABLE (num integer, audit UUID) AS $$
                 DELETE FROM ehr.contribution WHERE id = contrib_id_input
             )
             SELECT 1, linked_misc.audit FROM linked_misc;
+
+            -- logging:
+            RAISE NOTICE 'Admin deletion - Type: % - ID: % - Time: %', 'CONTRIBUTION', contrib_id_input, now();
     END;
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
@@ -304,6 +311,10 @@ RETURNS TABLE (num integer, status_audit UUID, status_party UUID) AS $$
             )
 
             SELECT 1, linked_status.has_audit, linked_party.id FROM linked_status, linked_party;
+
+            -- logging:
+            RAISE NOTICE 'Admin deletion - Type: % - ID: % - Time: %', 'EHR', ehr_id_input, now();
+            RAISE NOTICE 'Admin deletion - Type: % - Linked to EHR ID: % - Time: %', 'STATUS', ehr_id_input, now();
     END;
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
@@ -329,6 +340,10 @@ RETURNS TABLE (num integer) AS $$
             )
 
             SELECT 1;
+
+            -- logging:
+            RAISE NOTICE 'Admin deletion - Type: % - Linked to EHR ID: % - Time: %', 'STATUS_HISTORY', ehr_id_input, now();
+            RAISE NOTICE 'Admin deletion - Type: % - Linked to EHR ID: % - Time: %', 'CONTRIBUTION_HISTORY', ehr_id_input, now();
     END;
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
@@ -354,6 +369,9 @@ RETURNS TABLE (num integer, status_audit UUID, status_party UUID) AS $$
             )
 
             SELECT 1, linked_misc.has_audit, linked_misc.party FROM linked_misc;
+
+            -- logging:
+            RAISE NOTICE 'Admin deletion - Type: % - ID: % - Time: %', 'STATUS', status_id_input, now();
     END;
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
@@ -376,6 +394,9 @@ RETURNS TABLE (num integer) AS $$
             )
 
             SELECT 1;
+
+            -- logging:
+            RAISE NOTICE 'Admin deletion - Type: % - Linked to STATUS ID: % - Time: %', 'STATUS_HISTORY', status_id_input, now();
     END;
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
@@ -390,6 +411,8 @@ $$ LANGUAGE plpgsql
 -- =====================================================================
 CREATE OR REPLACE FUNCTION ehr.admin_delete_folder(folder_id_input UUID)
 RETURNS TABLE (contribution UUID, child UUID) AS $$
+    DECLARE
+        results RECORD;
     BEGIN
         RETURN QUERY WITH 
             -- order to delete things:
@@ -440,6 +463,42 @@ RETURNS TABLE (contribution UUID, child UUID) AS $$
             )
             -- returning contribution IDs to delete separate; same with children IDs, as *_HISTORY tables of ID sets ((original input folder + children), and obj_ref via their contribs) needs to be deleted separate, too.
             SELECT DISTINCT linked_contribution.in_contribution, linked_children.child_folder FROM linked_contribution, linked_children;
+
+            -- logging:
+
+            RAISE NOTICE 'Admin deletion - Type: % - ID: % - Time: %', 'FOLDER', folder_id_input, now();
+            -- looping query is reconstructed from above CTEs, because they can't be reused here
+            FOR results IN (
+                SELECT a.child_folder FROM (
+                    SELECT child_folder, in_contribution FROM ehr.folder_hierarchy WHERE parent_folder = folder_id_input
+                ) AS a )
+            LOOP
+                RAISE NOTICE 'Admin deletion - Type: % - ID: % - Time: %', 'FOLDER', results.child_folder, now();
+            END LOOP;
+
+            RAISE NOTICE 'Admin deletion - Type: % - Linked to FOLDER ID: % - Time: %', 'FOLDER_HIERARCHY', folder_id_input, now();
+
+            RAISE NOTICE 'Admin deletion - Type: % - Linked to FOLDER ID: % - Time: %', 'FOLDER_ITEMS', folder_id_input, now();
+            -- looping query is reconstructed from above CTEs, because they can't be reused here
+            FOR results IN (
+                SELECT a.child_folder FROM (
+                    SELECT child_folder, in_contribution FROM ehr.folder_hierarchy WHERE parent_folder = folder_id_input
+                ) AS a )
+            LOOP
+                RAISE NOTICE 'Admin deletion - Type: % - Linked to FOLDER ID: % - Time: %', 'FOLDER_ITEMS', results.child_folder, now();
+            END LOOP;
+
+            -- looping query is reconstructed from above CTEs, because they can't be reused here
+            FOR results IN (
+                SELECT a.object_ref_id FROM (
+                    SELECT DISTINCT object_ref_id FROM ehr.folder_items WHERE (folder_id = folder_id_input) OR (folder_id IN (SELECT b.child_folder FROM (
+                        SELECT child_folder, in_contribution FROM ehr.folder_hierarchy WHERE parent_folder = folder_id_input
+                    ) AS b ))
+                ) AS a
+            )
+            LOOP
+                RAISE NOTICE 'Admin deletion - Type: % - Linked to FOLDER ID: % - Time: %', 'OBJECT_REF', results.object_ref_id, now();
+            END LOOP;
         END;
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
@@ -467,6 +526,11 @@ RETURNS TABLE (num integer) AS $$
             )
 
             SELECT 1;
+
+            -- logging:
+            RAISE NOTICE 'Admin deletion - Type: % - Linked to FOLDER ID: % - Time: %', 'FOLDER_HISTORY', folder_id_input, now();
+            RAISE NOTICE 'Admin deletion - Type: % - Linked to FOLDER ID: % - Time: %', 'FOLDER_HIERARCHY_HISTORY', folder_id_input, now();
+            RAISE NOTICE 'Admin deletion - Type: % - Linked to FOLDER ID: % - Time: %', 'FOLDER_ITEMS_HISTORY', folder_id_input, now();
     END;
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
@@ -488,6 +552,9 @@ RETURNS TABLE (num integer) AS $$
             )
 
             SELECT 1;
+
+            -- logging:
+            RAISE NOTICE 'Admin deletion - Type: % - Linked to CONTRIBUTION ID: % - Time: %', 'OBJECT_REF_HISTORY', contribution_id_input, now();
     END;
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;

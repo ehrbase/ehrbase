@@ -86,10 +86,6 @@ check directory admin delete table counts initially
                         Should Be Equal As Integers    ${contr_h_records}     ${0}
     ${audit_records}=   Count Rows In DB Table    ehr.audit_details
                         Should Be Equal As Integers    ${audit_records}     ${0}
-    ${system_records}=   Count Rows In DB Table    ehr.system
-                        Should Be Equal As Integers    ${system_records}     ${0}
-    ${party_records}=   Count Rows In DB Table    ehr.party_identified
-                        Should Be Equal As Integers    ${party_records}     ${0}
     ${compo_records}=   Count Rows In DB Table    ehr.composition
                         Should Be Equal As Integers    ${compo_records}     ${0}
     ${compo_h_records}=  Count Rows In DB Table    ehr.composition_history
@@ -120,10 +116,6 @@ check directory admin delete table counts
                         Should Be Equal As Integers    ${contr_h_records}     ${0}
     ${audit_records}=   Count Rows In DB Table    ehr.audit_details
                         Should Be Equal As Integers    ${audit_records}     ${2}    # from creation of the EHR (1 for status, 1 for the wrapping contribution)
-    ${system_records}=   Count Rows In DB Table    ehr.system
-                        Should Be Equal As Integers    ${system_records}     ${1}   # from creation of the EHR
-    ${party_records}=   Count Rows In DB Table    ehr.party_identified
-                        Should Be Equal As Integers    ${party_records}     ${2}    # from creation of the EHR
     ${compo_records}=   Count Rows In DB Table    ehr.composition
                         Should Be Equal As Integers    ${compo_records}     ${0}
     ${compo_h_records}=  Count Rows In DB Table    ehr.composition_history

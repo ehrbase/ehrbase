@@ -35,7 +35,6 @@ import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.jooq.pg.Routines;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.enums.ContributionState;
-import org.ehrbase.jooq.pg.tables.AdminDeleteParty;
 import org.ehrbase.jooq.pg.tables.AdminDeleteStatusHistory;
 import org.ehrbase.jooq.pg.tables.records.*;
 import org.ehrbase.service.IntrospectService;
@@ -570,9 +569,6 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
                 int res = getContext().selectQuery(new AdminDeleteStatusHistory().call(status.getStatus())).execute();
                 if (res != 1)
                     throw new InternalServerException("Admin deletion of Status failed!");
-
-                // delete linked party, if not referenced somewhere else
-                getContext().selectQuery(new AdminDeleteParty().call(id.getStatusParty())).execute();
             });
 
         });

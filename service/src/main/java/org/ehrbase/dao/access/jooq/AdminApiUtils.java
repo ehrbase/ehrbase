@@ -5,7 +5,6 @@ import org.ehrbase.jooq.pg.Routines;
 import org.ehrbase.jooq.pg.tables.AdminDeleteCompositionHistory;
 import org.ehrbase.jooq.pg.tables.AdminDeleteFolderHistory;
 import org.ehrbase.jooq.pg.tables.AdminDeleteFolderObjRefHistory;
-import org.ehrbase.jooq.pg.tables.AdminDeleteParty;
 import org.ehrbase.jooq.pg.tables.records.*;
 import org.jooq.DSLContext;
 import org.jooq.Result;
@@ -31,9 +30,7 @@ public class AdminApiUtils {
      */
     private void internalDeleteComposition(UUID id) {
         // delete event_context and its participation first
-        Result<AdminDeleteEventContextForCompoRecord> parties = Routines.adminDeleteEventContextForCompo(ctx.configuration(), id);
-        // delete linked party, if not referenced somewhere else
-        parties.forEach(party -> ctx.selectQuery(new AdminDeleteParty().call(party.getParty())).execute());
+        Routines.adminDeleteEventContextForCompo(ctx.configuration(), id);
 
         // deletion of composition itself
         Result<AdminDeleteCompositionRecord> delCompo = Routines.adminDeleteComposition(ctx.configuration(), id);
@@ -46,8 +43,6 @@ public class AdminApiUtils {
                 Result<AdminDeleteAttestationRecord> delAttest = Routines.adminDeleteAttestation(ctx.configuration(), del.getAttestation());
                 delAttest.forEach(attest -> deleteAudit(attest.getAudit(), "Attestation", false));
             }
-            // delete linked party, if not referenced somewhere else (logic inside DB function)
-            ctx.selectQuery(new AdminDeleteParty().call(del.getParty())).execute();
 
             // delete contribution
             deleteContribution(del.getContribution(), null, false);
@@ -78,8 +73,6 @@ public class AdminApiUtils {
         Result<AdminDeleteAuditRecord> delAudit = Routines.adminDeleteAudit(ctx.configuration(), id);
         if (resultCanBeEmpty.equals(false) && delAudit.size() != 1)
             throw new InternalServerException("Admin deletion of " + context + " Audit failed!");
-        // delete linked party, if not referenced somewhere else
-        delAudit.forEach(audit -> ctx.selectQuery(new AdminDeleteParty().call(audit.getParty())).execute());
 
     }
 
