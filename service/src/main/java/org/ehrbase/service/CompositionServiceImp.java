@@ -23,7 +23,12 @@ package org.ehrbase.service;
 
 import com.nedap.archie.rm.composition.Composition;
 import org.ehrbase.api.definitions.ServerConfig;
-import org.ehrbase.api.exception.*;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.InvalidApiParameterException;
+import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
+import org.ehrbase.api.exception.UnprocessableEntityException;
+import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.ValidationService;
@@ -36,9 +41,14 @@ import org.ehrbase.response.ehrscape.CompositionDto;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.StructuredString;
 import org.ehrbase.response.ehrscape.StructuredStringFormat;
+import org.ehrbase.serialisation.flatencoding.FlatFormat;
+import org.ehrbase.serialisation.flatencoding.FlatJasonProvider;
 import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
 import org.ehrbase.serialisation.xmlencoding.CanonicalXML;
+import org.ehrbase.webtemplate.model.WebTemplate;
+import org.ehrbase.webtemplate.templateprovider.TemplateProvider;
 import org.jooq.DSLContext;
+import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +71,7 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private boolean supportCompositionXRef = false;
     private final ValidationService validationService;
+    private final KnowledgeCacheService knowledgeCacheService;
     private final EhrService ehrService;
 
     @Autowired
@@ -69,6 +80,8 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
         super(knowledgeCacheService, context, serverConfig);
         this.validationService = validationService;
         this.ehrService = ehrService;
+        this.knowledgeCacheService = knowledgeCacheService;
+
     }
 
     @Override
@@ -128,6 +141,19 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
             case JSON:
                 compositionString = new StructuredString(new CanonicalJson().marshal(composition.getComposition()), StructuredStringFormat.JSON);
                 break;
+            case FLAT:
+                compositionString = new StructuredString(new FlatJasonProvider(new TemplateProvider() {
+                    @Override
+                    public Optional<OPERATIONALTEMPLATE> find(String s) {
+                        return knowledgeCacheService.retrieveOperationalTemplate(s);
+                    }
+
+                    @Override
+                    public Optional<WebTemplate> buildIntrospect(String templateId) {
+                        return Optional.ofNullable(knowledgeCacheService.getQueryOptMetaData(templateId));
+                    }
+                }).buildFlatJson(FlatFormat.SIM_SDT, composition.getTemplateId()).marshal(composition.getComposition()), StructuredStringFormat.JSON);
+                break;
 
             default:
                 throw new UnexpectedSwitchCaseException(format);
@@ -135,17 +161,23 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
         return compositionString;
     }
 
-    @Override
-    public UUID create(UUID ehrId, String content, CompositionFormat format) {
 
-        final Composition composition = buildComposition(content, format);
+    public UUID create(UUID ehrId, String content, CompositionFormat format, String templateId) {
+
+        final Composition composition = buildComposition(content, format, templateId);
 
         return internalCreate(ehrId, composition, null);
     }
 
     @Override
+    public UUID create(UUID ehrId, String content, CompositionFormat format) {
+
+        return create(ehrId, content, format, null);
+    }
+
+    @Override
     public UUID create(UUID ehrId, String content, CompositionFormat format, String templateId, UUID linkUid) {
-        return create(ehrId, content, format);
+        return create(ehrId, content, format, templateId);
     }
 
     @Override
@@ -204,7 +236,7 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
         return compositionId;
     }
 
-    private Composition buildComposition(String content, CompositionFormat format) {
+    private Composition buildComposition(String content, CompositionFormat format, String templateId) {
         final Composition composition;
         switch (format) {
             case XML:
@@ -212,6 +244,19 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
                 break;
             case JSON:
                 composition = new CanonicalJson().unmarshal(content, Composition.class);
+                break;
+            case FLAT:
+                composition = new FlatJasonProvider(new TemplateProvider() {
+                    @Override
+                    public Optional<OPERATIONALTEMPLATE> find(String s) {
+                        return knowledgeCacheService.retrieveOperationalTemplate(s);
+                    }
+
+                    @Override
+                    public Optional<WebTemplate> buildIntrospect(String templateId) {
+                        return Optional.ofNullable(knowledgeCacheService.getQueryOptMetaData(templateId));
+                    }
+                }).buildFlatJson(FlatFormat.SIM_SDT, templateId).unmarshal(content);
                 break;
             default:
                 throw new UnexpectedSwitchCaseException(format);
@@ -227,7 +272,7 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
     @Override
     public String update(UUID compositionId, CompositionFormat format, String content, String templateId) {
 
-        Composition composition = buildComposition(content, format);
+        Composition composition = buildComposition(content, format, templateId);
 
         // call internalUpdate with null as contributionId to create a new ad-hoc contribution
         return internalUpdate(compositionId, composition, null);
@@ -393,7 +438,7 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
     @Override
     public String getUidFromInputComposition(String content, CompositionFormat format) throws IllegalArgumentException, InternalServerException, UnexpectedSwitchCaseException {
 
-        Composition composition = buildComposition(content, format);
+        Composition composition = buildComposition(content, format, null);
         if (composition.getUid() == null) {
             return null;
         } else {

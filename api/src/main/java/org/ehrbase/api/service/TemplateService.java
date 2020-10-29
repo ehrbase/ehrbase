@@ -30,7 +30,7 @@ public interface TemplateService extends BaseService {
 
     StructuredString buildExample(String templateId, CompositionFormat format);
 
-    org.ehrbase.webtemplate.WebTemplate findTemplate(String templateId);
+    org.ehrbase.webtemplate.model.WebTemplate findTemplate(String templateId);
 
     /**
      * Finds and returns the given operational template as string represented in requested format.

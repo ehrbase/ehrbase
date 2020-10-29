@@ -23,11 +23,23 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.response.ehrscape.CompositionFormat;
-import org.ehrbase.rest.ehrscape.responsedata.*;
+import org.ehrbase.rest.ehrscape.responsedata.Action;
+import org.ehrbase.rest.ehrscape.responsedata.Meta;
+import org.ehrbase.rest.ehrscape.responsedata.RestHref;
+import org.ehrbase.rest.ehrscape.responsedata.TemplateExampleResponseData;
+import org.ehrbase.rest.ehrscape.responsedata.TemplateResponseData;
+import org.ehrbase.rest.ehrscape.responsedata.TemplatesResponseData;
+import org.ehrbase.webtemplate.filter.Filter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Objects;
 
@@ -82,7 +94,7 @@ public class TemplateController extends BaseController {
     @ApiOperation(value = "Get a template by templateId")
     public ResponseEntity<TemplateResponseData> getTemplate(@PathVariable(value = "templateId") String templateId) {
         TemplateResponseData responseData = new TemplateResponseData();
-        responseData.setWebTemplate(templateService.findTemplate(templateId));
+        responseData.setWebTemplate(new Filter().filter(templateService.findTemplate(templateId)));
         responseData.setAction(Action.RETRIEVE);
         RestHref url = new RestHref();
         url.setUrl(getBaseEnvLinkURL() + "/rest/ecis/v1/template" + templateId + "/");

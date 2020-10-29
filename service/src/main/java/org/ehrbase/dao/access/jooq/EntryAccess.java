@@ -51,6 +51,7 @@ import org.ehrbase.serialisation.dbencoding.RawJson;
 import org.ehrbase.serialisation.dbencoding.rmobject.FeederAuditEncoding;
 import org.ehrbase.serialisation.dbencoding.rmobject.LinksEncoding;
 import org.ehrbase.service.IntrospectService;
+import org.ehrbase.service.RecordedDvCodedText;
 import org.ehrbase.service.RecordedDvText;
 import org.jooq.*;
 import org.jooq.impl.DSL;
@@ -154,9 +155,10 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
 
                 // continuing optional handling for persistent compositions
                 opContextAccess.map(I_ContextAccess::mapRmEventContext).ifPresent(ec -> values.put(SystemValue.CONTEXT, ec));
-
+                values.put(SystemValue.CATEGORY, new RecordedDvCodedText().fromDB(record, ENTRY.CATEGORY));
                 setCompositionAttributes(entryAccess.composition, values);
                 buildArchetypeDetails(entryAccess);
+
                 content.add(entryAccess);
             }
         } catch (Exception e) {
@@ -174,7 +176,6 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
         archetypeDetails.setArchetypeId(new ArchetypeID(entryAccess.getArchetypeId()));
         archetypeDetails.setRmVersion(entryAccess.getRmVersion());
         entryAccess.composition.setArchetypeDetails(archetypeDetails);
-        entryAccess.composition.setCategory(I_ConceptAccess.fetchConceptText(entryAccess, entryAccess.getCategory()));
     }
 
     public static List<I_EntryAccess> retrieveInstanceInCompositionVersion(I_DomainAccess domainAccess, I_CompositionAccess compositionHistoryAccess, int version) {
@@ -299,7 +300,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
     private void setCompositionFields(EntryRecord record, Composition composition) {
 
         Integer categoryId = Integer.parseInt(composition.getCategory().getDefiningCode().getCodeString());
-        record.setCategory(I_ConceptAccess.fetchConcept(this, categoryId, "en"));
+        record.setCategory(record.getCategory());
 
         if (composition.getContent() != null && !composition.getContent().isEmpty()) {
             Object node = composition.getContent().get(0);
@@ -338,7 +339,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
         entryRecord.setTemplateId(templateId);
         entryRecord.setSequence(sequence);
         entryRecord.setCompositionId(compositionId);
-
+        new RecordedDvCodedText().toDB(entryRecord, ENTRY.CATEGORY, composition.getCategory());
         setCompositionFields(entryRecord, composition);
 
         setCompositionName(composition.getName());
@@ -478,7 +479,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
     }
 
     @Override
-    public UUID getCategory() {
+    public DvCodedTextRecord getCategory() {
         return entryRecord.getCategory();
     }
 

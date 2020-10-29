@@ -34,7 +34,8 @@ public class RecordedDvText {
                         null,
                         dvText.getFormatting(),
                         new PersistentCodePhrase(dvText.getLanguage()).encode(),
-                        new PersistentCodePhrase(dvText.getEncoding()).encode());
+                        new PersistentCodePhrase(dvText.getEncoding()).encode(),
+                        new PersistentTermMapping().termMappingRepresentation(dvText.getMappings()));
 
         record.set(targetField, dvCodedTextRecord);
     }
