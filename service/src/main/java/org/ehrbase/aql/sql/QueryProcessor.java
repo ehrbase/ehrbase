@@ -141,14 +141,16 @@ public class QueryProcessor extends TemplateMetaData {
         for (QuerySteps queryStep : cacheQuery.values()) {
 
             SelectQuery select = queryStep.getSelectQuery();
+
+            select.addFrom(ENTRY);
+            select = new JoinBinder(domainAccess, select, false).addJoinClause(queryStep.getCompositionAttributeQuery());
+
             if (!queryStep.getTemplateId().equals(NIL_TEMPLATE)) {
                 select.addConditions(ENTRY.TEMPLATE_ID.eq(queryStep.getTemplateId()));
             }
             Condition condition = queryStep.getWhereCondition();
             if (condition != null)
                 select.addConditions(Operator.AND, condition);
-            select.addFrom(ENTRY);
-            select = new JoinBinder(select, false).addJoinClause(queryStep.getCompositionAttributeQuery());
 
             if (first) {
                 unionSetQuery = select;

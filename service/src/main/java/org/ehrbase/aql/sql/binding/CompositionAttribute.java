@@ -49,6 +49,7 @@ public class CompositionAttribute {
             field = jsonbEntryQuery.makeField(template_id, identifier, variableDefinition, clause);
             containsJsonDataBlock = jsonbEntryQuery.isJsonDataBlock();
             jsonbItemPath = jsonbEntryQuery.getJsonbItemPath();
+            compositionAttributeQuery.setUseEntry(true);
         } else {
             field = compositionAttributeQuery.makeField(template_id, identifier, variableDefinition, clause);
             containsJsonDataBlock = compositionAttributeQuery.isJsonDataBlock();

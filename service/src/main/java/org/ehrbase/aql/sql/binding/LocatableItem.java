@@ -112,4 +112,8 @@ public class LocatableItem {
     public String getRootJsonKey() {
         return rootJsonKey;
     }
+
+    public void setUseEntry() {
+        compositionAttributeQuery.setUseEntry(true);
+    }
 }
