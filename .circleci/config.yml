@@ -124,6 +124,11 @@ workflows:
             - build-ehrbase
             - QUERYSERVICE-test-1
 
+      - ADMIN-test:
+          context: org-global
+          requires:
+            - build-ehrbase
+
       - ROBOT-TEST-REPORT:
           context: org-global
           requires:
@@ -139,6 +144,7 @@ workflows:
             - QUERYSERVICE-test-1
             - QUERYSERVICE-test-2
             - SECURITY-test
+            - ADMIN-test
 
       - sonar-analysis:
           context: org-global
@@ -248,7 +254,11 @@ workflows:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-2
+
+      - ADMIN-test:
+          context: org-global
+          requires:
+            - build-ehrbase
 
       - ROBOT-TEST-REPORT:
           context: org-global
@@ -265,6 +275,7 @@ workflows:
             - QUERYSERVICE-test-1
             - QUERYSERVICE-test-2
             - SECURITY-test
+            - ADMIN-test
 
       - sonar-analysis:
           context: org-global
@@ -393,6 +404,10 @@ workflows:
           context: org-global
           requires:
             - build package ehrbase with locally installed sdk
+      - ADMIN-test:
+          context: org-global
+          requires:
+            - build package ehrbase with locally installed sdk
       - ROBOT-TEST-REPORT:
           context: org-global
           requires:
@@ -408,6 +423,7 @@ workflows:
             - QUERYSERVICE-test-1
             - QUERYSERVICE-test-2
             - SECURITY-test
+            - ADMIN-test
 
 
 
@@ -670,16 +686,6 @@ jobs:
           paths:
             - /tmp/ehrbasedb_dump.sql
   
-
-  # QUERYSERVICE-test-2:
-  #   executor: docker-py3-java11-postgres
-  #   steps:
-  #     - checkout
-  #     - restore-packaged-ehrbase-jar
-  #     - run-robot-tests:
-  #         include-tags: "aql_adhoc-queryANDloaded_db"
-  #         test-suite-path: "QUERY_SERVICE_TESTS"
-  #         test-suite-name: "ADHOC-QUERY-2"
   
   SECURITY-test:
     executor: machine-ubuntu-2004
@@ -696,6 +702,21 @@ jobs:
           include-tags: "OAUTH"
           # test-suite-path: ""
           test-suite-name: "KEYCLOAK-OAUTH"
+        
+  ADMIN-test:
+    # executor: docker-py3-java11-postgres
+    executor: machine-ubuntu-2004
+    environment:
+      ADMINAPI_ACTIVE: "TRUE"
+      SYSTEM_ALLOWTEMPLATEOVERWRITE: "TRUE"
+    steps:
+      - checkout
+      - restore-packaged-ehrbase-jar
+      - run-robot-tests:
+          sut: "SUT:ADMIN-TEST"
+          include-tags: "admin"
+          test-suite-path: "ADMIN_TESTS"
+          test-suite-name: "ADMIN"
 
 
   ROBOT-TEST-REPORT:
@@ -848,7 +869,6 @@ commands:
           path: ~/projects/tests/results/
       - store_artifacts:
           path: ~/projects/tests/results/
-
 
   save-test-results-folder:
     description: Persist Robot tests folder to workspace

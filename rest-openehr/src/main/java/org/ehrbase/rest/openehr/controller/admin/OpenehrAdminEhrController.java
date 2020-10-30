@@ -98,15 +98,8 @@ public class OpenehrAdminEhrController extends BaseController {
     @DeleteMapping(path = "/{ehr_id}")
     @ApiResponses(value = {
             @ApiResponse(
-                    code = 200,
-                    message = "EHR has been deleted successfully",
-                    responseHeaders = {
-                            @ResponseHeader(
-                                    name = CONTENT_TYPE,
-                                    description = RESP_CONTENT_TYPE_DESC,
-                                    response = MediaType.class
-                            )
-                    }
+                    code = 204,
+                    message = "EHR has been deleted successfully"
             ),
             @ApiResponse(
                     code = 401,
@@ -133,8 +126,8 @@ public class OpenehrAdminEhrController extends BaseController {
             throw new ObjectNotFoundException("Admin EHR", String.format("EHR with id %s does not exist.", ehrId));
         }
 
-        // TODO: Implement endpoint functionality
+        ehrService.adminDeleteEhr(ehrUuid);
 
-        return ResponseEntity.ok().body(new AdminDeleteResponseData(0));
+        return ResponseEntity.noContent().build();
     }
 }

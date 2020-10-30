@@ -37,13 +37,12 @@ import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.dao.access.util.FolderUtils;
 import org.ehrbase.jooq.binding.OtherDetailsJsonbBinder;
 import org.ehrbase.jooq.binding.SysPeriodBinder;
+import org.ehrbase.jooq.pg.Routines;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
+import org.ehrbase.jooq.pg.tables.AdminDeleteFolderHistory;
+import org.ehrbase.jooq.pg.tables.AdminDeleteFolderObjRefHistory;
 import org.ehrbase.jooq.pg.tables.FolderHierarchy;
-import org.ehrbase.jooq.pg.tables.records.FolderHierarchyRecord;
-import org.ehrbase.jooq.pg.tables.records.FolderHistoryRecord;
-import org.ehrbase.jooq.pg.tables.records.FolderItemsRecord;
-import org.ehrbase.jooq.pg.tables.records.FolderRecord;
-import org.ehrbase.jooq.pg.tables.records.ObjectRefRecord;
+import org.ehrbase.jooq.pg.tables.records.*;
 import org.joda.time.DateTime;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -58,13 +57,7 @@ import org.jooq.Table;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.UUID;
+import java.util.*;
 
 import static org.ehrbase.jooq.pg.Tables.CONTRIBUTION;
 import static org.ehrbase.jooq.pg.Tables.FOLDER;
@@ -1019,5 +1012,12 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         public ObjectRefId(final String value) {
             super(value);
         }
+    }
+
+    @Override
+    public void adminDeleteFolder() {
+        AdminApiUtils adminApi = new AdminApiUtils(getContext());
+
+        adminApi.deleteFolder(this.getFolderId(), true);
     }
 }

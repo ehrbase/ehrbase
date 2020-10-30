@@ -41,6 +41,7 @@ import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
 import org.ehrbase.serialisation.xmlencoding.CanonicalXML;
 import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -398,5 +399,12 @@ public class FolderServiceImp extends BaseService implements FolderService {
         }
 
         return folderAccess;
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Override
+    public void adminDeleteFolder(UUID folderId) {
+        I_FolderAccess folderAccess = I_FolderAccess.retrieveInstanceForExistingFolder(getDataAccess(), folderId);
+        folderAccess.adminDeleteFolder();
     }
 }

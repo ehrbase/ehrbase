@@ -20,6 +20,7 @@ package org.ehrbase.rest.openehr.controller.admin;
 import io.swagger.annotations.*;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.EhrService;
+import org.ehrbase.api.service.FolderService;
 import org.ehrbase.response.openehr.admin.AdminDeleteResponseData;
 import org.ehrbase.rest.openehr.controller.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,10 +44,12 @@ import java.util.UUID;
 public class OpenehrAdminDirectoryController extends BaseController {
 
     private final EhrService ehrService;
+    private final FolderService folderService;
 
     @Autowired
-    public OpenehrAdminDirectoryController(EhrService ehrService) {
+    public OpenehrAdminDirectoryController(EhrService ehrService, FolderService folderService) {
         this.ehrService = ehrService;
+        this.folderService = folderService;
     }
 
     @DeleteMapping(path = "/{ehr_id}/directory/{directory_id}")
@@ -93,10 +96,9 @@ public class OpenehrAdminDirectoryController extends BaseController {
             );
         }
 
-        // TODO: Implement endpoint functionality
+        UUID folderUid = UUID.fromString(directoryId);
+        folderService.adminDeleteFolder(folderUid);
 
-        // Directory existence check will be done during processing
-
-        return ResponseEntity.ok().body(new AdminDeleteResponseData(0));
+        return ResponseEntity.noContent().build();
     }
 }

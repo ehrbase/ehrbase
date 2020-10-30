@@ -134,4 +134,10 @@ public interface FolderService extends BaseService {
      * @throws ObjectNotFoundException - Folder entry does not exist at the time
      */
     Integer getVersionNumberForTimestamp(ObjectVersionId folderId, Timestamp timestamp);
+
+    /**
+     * Admin method to delete a Folder from the DB. See EHRbase Admin API specification for details.
+     * @param folderId Folder to delete
+     */
+    void adminDeleteFolder(UUID folderId);
 }

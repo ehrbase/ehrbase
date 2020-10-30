@@ -57,4 +57,10 @@ public interface ContributionService extends BaseService {
      * @throws InternalServerException when DB is inconsistent
      */
     UUID commitContribution(UUID ehrId, String content, CompositionFormat format);
+
+    /**
+     * Admin method to delete a Contribution from the DB. See EHRbase Admin API specification for details.
+     * @param contributionId Contribution to delete
+     */
+    void adminDelete(UUID contributionId);
 }

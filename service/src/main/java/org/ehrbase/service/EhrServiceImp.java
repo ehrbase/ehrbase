@@ -48,6 +48,7 @@ import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -417,5 +418,12 @@ public class EhrServiceImp extends BaseService implements EhrService {
             );
             throw new InternalServerException(e.getMessage(), e);
         }
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Override
+    public void adminDeleteEhr(UUID ehrId) {
+        I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
+        ehrAccess.adminDeleteEhr();
     }
 }

@@ -961,4 +961,10 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         }
         throw new InternalServerException("Problem processing CompositionAccess.isDeleted(..)");
     }
+
+    @Override
+    public void adminDelete() {
+        AdminApiUtils adminApi = new AdminApiUtils(getContext());
+        adminApi.deleteComposition(this.getId());
+    }
 }

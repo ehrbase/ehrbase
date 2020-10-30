@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Adds Admin API endpoints: Del EHR, Del Composition and Del Contribution (see: https://github.com/ehrbase/ehrbase/pull/344)
 
 ### Changed
 - support AQL querying on full EHR (f.e. SELECT e) (see )

@@ -52,6 +52,7 @@ import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -454,6 +455,13 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
     @Override
     public boolean isDeleted(UUID versionedObjectId) {
         return I_CompositionAccess.isDeleted(this.getDataAccess(), versionedObjectId);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Override
+    public void adminDelete(UUID compositionId) {
+        I_CompositionAccess compositionAccess = I_CompositionAccess.retrieveInstance(getDataAccess(), compositionId);
+        compositionAccess.adminDelete();
     }
 }
 

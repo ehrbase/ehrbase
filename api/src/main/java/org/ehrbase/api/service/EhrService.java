@@ -145,4 +145,10 @@ public interface EhrService extends BaseService {
      */
     boolean removeDirectory(UUID ehrId);
 
+    /**
+     * Admin method to delete an EHR from the DB. See EHRbase Admin API specification for details.
+     * @param ehrId EHR to delete
+     */
+    void adminDeleteEhr(UUID ehrId);
+
 }

@@ -692,4 +692,9 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
         }
         return folderAccess;
     }
+
+    @Override
+    public void adminDeleteFolder() {
+        // needed because the interface declares it, but the ACTUAL admin delete handling is done at non-history level
+    }
 }
