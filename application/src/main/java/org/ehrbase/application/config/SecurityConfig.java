@@ -117,7 +117,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 logger.warn("To enable security set security.authType to BASIC or OAUTH in yaml properties file.");
                 http
                         .cors()
-                        .configurationSource(corsConfigurationSource())
                         .and()
                         .csrf().disable()
                         .authorizeRequests().anyRequest().permitAll();
