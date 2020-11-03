@@ -117,12 +117,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 logger.warn("To enable security set security.authType to BASIC or OAUTH in yaml properties file.");
                 http
                         .cors()
+                        .configurationSource(corsConfigurationSource())
                         .and()
                         .csrf().disable()
                         .authorizeRequests().anyRequest().permitAll();
                 break;
         }
     }
+
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -151,7 +154,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         configuration.setAllowedMethods(Arrays.asList("GET","POST", "PUT", "DELETE", "HEAD", "OPTIONS"));
         // Exposed headers that can be read by clients. Includes also all safe-listed headers
         // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Expose-Headers
-        configuration.setExposedHeaders(Collections.singletonList("WWW-Authenticate"));
+        configuration.setExposedHeaders(Arrays.asList(
+                "Access-Control-Allow-Methods",
+                "Access-Control-Allow-Origin",
+                "ETag",
+                "Content-Type",
+                "Last-Modified",
+                "Location",
+                "WWW-Authenticate"
+        ));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         // Apply for all paths
