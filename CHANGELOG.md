@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added Junit5 support via spring-boot-starter-test (https://github.com/ehrbase/ehrbase/pull/298)
 - Enable cartesian products on embedded arrays in JSONB (see https://github.com/ehrbase/ehrbase/pull/309)
 - Use new OPT-Parser from sdk (see https://github.com/ehrbase/ehrbase/pull/314)
+- Add CORS config to enable clients to detect auth method (see https://github.com/ehrbase/ehrbase/pull/354).
 
 ### Fixed
 

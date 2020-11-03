@@ -26,7 +26,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -36,10 +35,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Formatter;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Configuration
@@ -83,6 +83,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         "Username: %s Password: %s", securityYAMLConfig.getAuthUser(), securityYAMLConfig.getAuthPassword()
                 ).toString());
                 http
+                        .cors()
+                        .and()
                         .csrf().disable()
                         .authorizeRequests()
                         // Specific routes with ../admin/.. require admin role
@@ -97,6 +99,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             case OAUTH:
                 logger.info("Using OAuth2 authentication.");
                 http
+                        .cors()
+                        .and()
                         .authorizeRequests()
                         // Specific routes with ../admin/.. require admin role
                         .antMatchers("/rest/openehr/v1/admin/**").hasRole(ADMIN)
@@ -112,11 +116,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 logger.warn("Authentication disabled!");
                 logger.warn("To enable security set security.authType to BASIC or OAUTH in yaml properties file.");
                 http
+                        .cors()
+                        .and()
                         .csrf().disable()
                         .authorizeRequests().anyRequest().permitAll();
                 break;
         }
     }
+
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -134,5 +142,30 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .collect(Collectors.toList());
         });
         return converter;
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        // Allow all origins to access EHRbase
+        configuration.setAllowedOrigins(Collections.singletonList("*"));
+        // Allowed HTTP methods
+        configuration.setAllowedMethods(Arrays.asList("GET","POST", "PUT", "DELETE", "HEAD", "OPTIONS"));
+        // Exposed headers that can be read by clients. Includes also all safe-listed headers
+        // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Expose-Headers
+        configuration.setExposedHeaders(Arrays.asList(
+                "Access-Control-Allow-Methods",
+                "Access-Control-Allow-Origin",
+                "ETag",
+                "Content-Type",
+                "Last-Modified",
+                "Location",
+                "WWW-Authenticate"
+        ));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        // Apply for all paths
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }
