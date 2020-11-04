@@ -100,7 +100,7 @@ public class FolderServiceImp extends BaseService implements FolderService {
         // Save root directory id to ehr entry
         // TODO: Refactor to use UID
         ehrAccess.setDirectory(FolderUtils.extractUuidFromObjectVersionId(folderId));
-        ehrAccess.update(getUserUuid(), getSystemUuid(), null, I_ConceptAccess.ContributionChangeType.MODIFICATION, EhrServiceImp.DESCRIPTION);
+        ehrAccess.update(getUserUuid(), getSystemUuid(), null, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, EhrServiceImp.DESCRIPTION);
         return folderId;
     }
 

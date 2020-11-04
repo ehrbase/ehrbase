@@ -25,22 +25,17 @@ import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
+import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.AuditDetails;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import com.nedap.archie.rm.support.identification.TerminologyId;
 import org.ehrbase.api.definitions.ServerConfig;
-import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.api.exception.InvalidApiParameterException;
-import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
+import org.ehrbase.api.exception.*;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
-import org.ehrbase.dao.access.interfaces.I_AuditDetailsAccess;
-import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
-import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
-import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
+import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.jooq.AuditDetailsAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.response.ehrscape.CompositionDto;
@@ -63,6 +58,7 @@ import java.util.*;
 public class ContributionServiceImp extends BaseService implements ContributionService {
     // the version list in a contribution adds an type tag to each item, so the specific object is distinguishable
     public static final String TYPE_COMPOSITION = "COMPOSITION";
+    public static final String TYPE_EHRSTATUS = "EHR_STATUS";
     public static final String TYPE_FOLDER = "FOLDER"; // TODO use when implemented as contribution-able. also add more constants for other types when implemented
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -71,7 +67,7 @@ public class ContributionServiceImp extends BaseService implements ContributionS
     private final EhrService ehrService;
 
     enum SupportedClasses {
-        COMPOSITION //, FOLDER, etc.  TODO: add more class names when supported
+        COMPOSITION, EHRSTATUS //, FOLDER, etc.  TODO: add more class names when supported
     }
 
     @Autowired
@@ -99,7 +95,7 @@ public class ContributionServiceImp extends BaseService implements ContributionS
         // doesn't exist on empty result, too
         if (contributionAccess == null)
             return false;
-        
+
         // with both pre-checks about only checking of contribution is part of EHR is left
         return contributionAccess.getEhrId().equals(ehrId);
     }
@@ -148,10 +144,18 @@ public class ContributionServiceImp extends BaseService implements ContributionS
                 }
 
                 // switch to allow acting depending on exact type
-                SupportedClasses versionClass = SupportedClasses.valueOf(versionRmObject.getClass().getSimpleName().toUpperCase());
+                SupportedClasses versionClass;
+                try {
+                    versionClass = SupportedClasses.valueOf(versionRmObject.getClass().getSimpleName().toUpperCase());
+                } catch (Exception e) {
+                    throw new InvalidApiParameterException("Invalid version object in contribution. " + versionRmObject.getClass().getSimpleName().toUpperCase() + " not supported.");
+                }
                 switch (versionClass) {
                     case COMPOSITION:
                         processCompositionVersion(ehrId, contributionId, version, (Composition) versionRmObject);
+                        break;
+                    case EHRSTATUS:
+                        processEhrStatusVersion(ehrId, contributionId, version, (EhrStatus) versionRmObject);
                         break;
                     // TODO: add other version types with their own case when needed
                     default:
@@ -183,16 +187,54 @@ public class ContributionServiceImp extends BaseService implements ContributionS
         switch (changeType) {
             case CREATION:
                 // call creation of a new composition with given input
-                /*UUID compositionId =*/ compositionService.create(ehrId, versionRmObject, contributionId);
+                compositionService.create(ehrId, versionRmObject, contributionId);
                 break;
             case AMENDMENT: // triggers the same processing as modification
             case MODIFICATION:
                 // call modification of the given composition
-                /*String versionUid =*/ compositionService.update(getVersionedUidFromVersion(version), versionRmObject, contributionId);
+                compositionService.update(getVersionedUidFromVersion(version), versionRmObject, contributionId);
                 break;
             case DELETED:   // case of deletion change type, but request also has payload (TODO: should that be even allowed? specification-wise it's not forbidden)
-                /*LocalDateTime localDateTime =*/ compositionService.delete(getVersionedUidFromVersion(version), contributionId);
+                compositionService.delete(getVersionedUidFromVersion(version), contributionId);
                 break;
+            case SYNTHESIS:     // TODO
+            case UNKNOWN:       // TODO
+            default:    // TODO keep as long as above has TODOs. Check of valid change type is done in checkContributionRules
+                throw new UnexpectedSwitchCaseException(changeType);
+        }
+    }
+
+    /**
+     * Helper function to process a version of composition type
+     * @param ehrId ID of given EHR scope
+     * @param contributionId Top level contribution this version is part of
+     * @param version The version wrapper object
+     * @param versionRmObject The actual EhrStatus payload
+     * @throws IllegalArgumentException when input is missing precedingVersionUid in case of modification
+     */
+    private void processEhrStatusVersion(UUID ehrId, UUID contributionId, Version version, EhrStatus versionRmObject) {
+        // access audit and extract method, e.g. CREATION
+        I_ConceptAccess.ContributionChangeType changeType = I_ConceptAccess.ContributionChangeType.valueOf(version.getCommitAudit().getChangeType().getValue().toUpperCase());
+
+        checkContributionRules(version, changeType);    // evaluate and check contribution rules
+
+        switch (changeType) {
+            case CREATION:
+                // call creation of a new status with given input
+                // TODO-396: not implemented as REST endpoint, so no service available. Does that even make sense?
+                break;
+            case AMENDMENT: // triggers the same processing as modification
+            case MODIFICATION:
+                // If-Match header check
+                String latestVersionUid = ehrService.getLatestVersionUidOfStatus(ehrId);
+                if (!latestVersionUid.equals(version.getPrecedingVersionUid().toString()))
+                    throw new PreconditionFailedException("Given preceding_version_uid for EHR_STATUS object does not match latest existing version");
+                // call modification of the given status
+                ehrService.updateStatus(ehrId, versionRmObject, contributionId);
+                break;
+            case DELETED:   // case of deletion change type, but request also has payload (TODO: should that be even allowed? specification-wise it's not forbidden)
+                // TODO-396: not implemented as REST endpoint, so no service available. Apart from comment above, is that even valid to delete a status? Deleting the whole versioned object (wrapper) is most likely illegal.
+                //break;
             case SYNTHESIS:     // TODO
             case UNKNOWN:       // TODO
             default:    // TODO keep as long as above has TODOs. Check of valid change type is done in checkContributionRules
@@ -256,6 +298,7 @@ public class ContributionServiceImp extends BaseService implements ContributionS
                     // TODO last "try catch" in line needs to rethrow for real, as then no matching object would have been found
                     throw new ObjectNotFoundException(I_CompositionAccess.class.getName(), "Couldn't find object matching id: " + objectUid); // TODO: type is technically wrong, if more than one type gets tested
                 }
+                // TODO-396: add status. where exactly here?
                 break;
             case SYNTHESIS:     // TODO
             case UNKNOWN:       // TODO
@@ -300,6 +343,10 @@ public class ContributionServiceImp extends BaseService implements ContributionS
         Map<I_CompositionAccess, Integer> compositions = I_CompositionAccess.retrieveInstancesInContribution(this.getDataAccess(), contribution);
         // for each fetched composition: add it to the return map and add the composition type tag - ignoring the access obj
         compositions.forEach((k, v) -> objRefs.put(k.getId() + "::" + getServerConfig().getNodename() + "::" + v, TYPE_COMPOSITION));
+
+        // query for statuses
+        Map<I_StatusAccess, Integer> statuses = I_StatusAccess.retrieveInstanceByContribution(this.getDataAccess(), contribution);
+        statuses.forEach((k, v) -> objRefs.put(k.getId() + "::" + getServerConfig().getNodename() + "::" + v, TYPE_EHRSTATUS));
 
         // TODO query for folders
 

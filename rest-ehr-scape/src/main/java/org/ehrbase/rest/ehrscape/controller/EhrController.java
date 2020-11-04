@@ -143,7 +143,7 @@ public class EhrController extends BaseController {
                                                         @ApiParam(value = "EHR status.", required = true) @RequestBody() String ehrStatus,
                                                         @ApiParam(value = "Sets the response type") @RequestHeader(value = "Content-Type", required = false) String contentType) {
 
-        ehrService.updateStatus(ehrId, extractEhrStatus(ehrStatus));
+        ehrService.updateStatus(ehrId, extractEhrStatus(ehrStatus), null);
         return Optional.ofNullable(ehrId).flatMap(i -> buildEhrResponseData(i, Action.UPDATE, contentType)).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
