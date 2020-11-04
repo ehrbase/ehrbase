@@ -81,7 +81,7 @@ public class FullEhrJson extends EhrAttribute {
         if (fieldContext.isWithAlias())
             return aliased(DSL.field(jsonFullEhr));
         else
-            return DSL.field(jsonFullEhr).as(fieldContext.getIdentifier());
+            return defaultAliased(jsonFullEhr);
     }
 
     @Override
