@@ -164,6 +164,18 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         cacheManager.close();
     }
 
+
+    private <T, S> S getFromCache(T key, Cache<T, S> cache) {
+        try {
+            return cache.get(key);
+        } catch (RuntimeException e) {
+            // Tread errors in cache as miss;
+            cache.remove(key);
+            log.debug(String.format("Removed invalid value from cache: %s", cache.getName()), e);
+            return null;
+        }
+    }
+
     @Override
     public Set<String> getAllTemplateIds() {
         return allTemplateId;
@@ -277,7 +289,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     @Override
     public Optional<OPERATIONALTEMPLATE> retrieveOperationalTemplate(String key) {
         log.debug("retrieveOperationalTemplate({})", key);
-        OPERATIONALTEMPLATE template = atOptCache.get(key);
+        OPERATIONALTEMPLATE template = getFromCache(key, atOptCache);
         if (template == null) {     // null if not in cache already, which triggers the following retrieval and putting into cache
             template = getOperationaltemplateFromFileStorage(key);
         }
@@ -346,7 +358,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         final WebTemplate retval;
 
         if (webTemplateCache.containsKey(uuid))
-            retval = webTemplateCache.get(uuid);
+            retval = getFromCache(uuid, webTemplateCache);
         else {
             retval = buildAndCacheQueryOptMetaData(uuid);
         }
@@ -427,7 +439,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     public JsonPathQueryResult resolveForTemplate(String templateId, Collection<NodeId> nodeIds) {
         TemplateIdQueryTuple key = new TemplateIdQueryTuple(templateId, nodeIds);
 
-        JsonPathQueryResult jsonPathQueryResult = jsonPathQueryResultCache.get(key);
+        JsonPathQueryResult jsonPathQueryResult = getFromCache(key, jsonPathQueryResultCache);
         if (jsonPathQueryResult == null) {
 
 
@@ -485,7 +497,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     @Override
     public ItemInfo getInfo(String templateId, String aql) {
         TemplateIdAqlTuple key = new TemplateIdAqlTuple(templateId, aql);
-        ItemInfo itemInfo = fieldCache.get(key);
+        ItemInfo itemInfo = getFromCache(key, fieldCache);
         if (itemInfo == null) {
 
             WebTemplate webTemplate = getQueryOptMetaData(templateId);
@@ -518,7 +530,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
     @Override
     public List<String> multiValued(String templateId) {
-        List<String> list = multivaluedCache.get(templateId);
+        List<String> list = getFromCache(templateId, multivaluedCache);
         if (list == null) {
             list = getQueryOptMetaData(templateId).multiValued().stream().map(webTemplateNode -> webTemplateNode.getAqlPath(false)).collect(Collectors.toList());
             multivaluedCache.put(templateId, list);

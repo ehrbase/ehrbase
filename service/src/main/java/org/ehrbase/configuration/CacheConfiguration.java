@@ -117,6 +117,7 @@ public class CacheConfiguration {
         if (!enabled) {
             config.setExpiryPolicyFactory(CreatedExpiryPolicy.factoryOf(Duration.ZERO));
         }
+
         cacheManager.createCache(cacheName, config);
     }
 }
