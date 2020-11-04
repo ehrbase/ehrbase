@@ -191,6 +191,13 @@ public class ContributionServiceImp extends BaseService implements ContributionS
                 break;
             case AMENDMENT: // triggers the same processing as modification
             case MODIFICATION:
+                // preceding_version_uid check
+                Integer latestVersion = compositionService.getLastVersionNumber(getVersionedUidFromVersion(version));
+                String id = version.getPrecedingVersionUid().toString();
+                // remove version number after "::" and add queried version number to compare with given one
+                String actualPreceding = id.substring(0, id.lastIndexOf("::") + 2).concat(latestVersion.toString());
+                if (!actualPreceding.equals(version.getPrecedingVersionUid().toString()))
+                    throw new PreconditionFailedException("Given preceding_version_uid for EHR_STATUS object does not match latest existing version");
                 // call modification of the given composition
                 compositionService.update(getVersionedUidFromVersion(version), versionRmObject, contributionId);
                 break;
@@ -222,10 +229,11 @@ public class ContributionServiceImp extends BaseService implements ContributionS
             case CREATION:
                 // call creation of a new status with given input
                 // TODO-396: not implemented as REST endpoint, so no service available. Does that even make sense?
-                break;
+                throw new InvalidApiParameterException("Invalid change type. EHR_STATUS can't be manually created.");
+                //break; // TODO-396: remove
             case AMENDMENT: // triggers the same processing as modification
             case MODIFICATION:
-                // If-Match header check
+                // preceding_version_uid check
                 String latestVersionUid = ehrService.getLatestVersionUidOfStatus(ehrId);
                 if (!latestVersionUid.equals(version.getPrecedingVersionUid().toString()))
                     throw new PreconditionFailedException("Given preceding_version_uid for EHR_STATUS object does not match latest existing version");
@@ -234,6 +242,7 @@ public class ContributionServiceImp extends BaseService implements ContributionS
                 break;
             case DELETED:   // case of deletion change type, but request also has payload (TODO: should that be even allowed? specification-wise it's not forbidden)
                 // TODO-396: not implemented as REST endpoint, so no service available. Apart from comment above, is that even valid to delete a status? Deleting the whole versioned object (wrapper) is most likely illegal.
+                throw new InvalidApiParameterException("Invalid change type. EHR_STATUS can't be deleted.");
                 //break;
             case SYNTHESIS:     // TODO
             case UNKNOWN:       // TODO
@@ -292,13 +301,22 @@ public class ContributionServiceImp extends BaseService implements ContributionS
                 try {
                     // throw exception to signal no matching composition was found
                     CompositionDto compo = compositionService.retrieve(objectUid, null).orElseThrow(Exception::new);
-                    compositionService.delete(compo.getUuid());
-                } catch (Exception e) { // given version ID is not of type composition - ignoring the exception because it is expected
-                    // TODO add nested try-catchs for more supported types, for instance folder, when their contribution support gets implemented
-                    // TODO last "try catch" in line needs to rethrow for real, as then no matching object would have been found
-                    throw new ObjectNotFoundException(I_CompositionAccess.class.getName(), "Couldn't find object matching id: " + objectUid); // TODO: type is technically wrong, if more than one type gets tested
+                    compositionService.delete(compo.getUuid(), contributionId);
+                } catch (Exception e) { // given version ID is not of type composition - ignoring the exception because it is expected possible outcome
+                    try {
+                        // TODO-396: add folder handling
+                    } catch (Exception ee) { // given version ID is not of type folder - ignoring the exception because it is expected possible outcome
+                        // current end of going through supported types - last step is checking for EHR_STATUS and throwing specific error
+                        ehrService.getEhrStatus(ehrId).ifPresent(st -> {
+                            if (st.getUid().equals(version.getPrecedingVersionUid()))
+                                throw new InvalidApiParameterException("Invalid change type. EHR_STATUS can't be deleted.");
+                        });
+
+                        // TODO add nested try-catchs for more supported types, for instance folder, when their contribution support gets implemented
+                        // TODO last "try catch" in line needs to rethrow for real, as then no matching object would have been found
+                        throw new ObjectNotFoundException(I_CompositionAccess.class.getName(), "Couldn't find object matching id: " + objectUid); // TODO: type is technically wrong, if more than one type gets tested
+                    }
                 }
-                // TODO-396: add status. where exactly here?
                 break;
             case SYNTHESIS:     // TODO
             case UNKNOWN:       // TODO
