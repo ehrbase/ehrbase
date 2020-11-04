@@ -60,6 +60,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -111,7 +112,6 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     private final Cache<String, OPERATIONALTEMPLATE> atOptCache;
     private final Cache<UUID, WebTemplate> webTemplateCache;
     private final Cache<TemplateIdAqlTuple, ItemInfo> fieldCache;
-
     private final Cache<String, List> multivaluedCache;
 
     //index uuid to templateId
@@ -143,9 +143,49 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
     @PostConstruct
     public void init() {
-        allTemplateId = listAllOperationalTemplates().stream().map(TemplateMetaData::getOperationaltemplate).map(OPERATIONALTEMPLATE::getTemplateId).map(OBJECTID::getValue).collect(Collectors.toSet());
-        listAllOperationalTemplates().stream().map(TemplateMetaData::getOperationaltemplate).forEach(this::putIntoCache);
+        allTemplateId = new HashSet<>();
 
+
+
+
+        for (TemplateMetaData metaData : listAllOperationalTemplates()) {
+            OPERATIONALTEMPLATE operationaltemplate = metaData.getOperationaltemplate();
+
+
+            String value = "";
+            try {
+                value = Optional.ofNullable(operationaltemplate).map(OPERATIONALTEMPLATE::getTemplateId).map(OBJECTID::getValue).orElseThrow();
+                putIntoCache(operationaltemplate);
+                allTemplateId.add(value);
+
+            } catch (RuntimeException e) {
+                log.error("Invalidate template : {}", value);
+            }
+        }
+
+
+        // If the template was manually removed from db invalidate the cache.
+        Set<String> templateIdInCache = new HashSet<>();
+        Iterator<Cache.Entry<UUID, WebTemplate>> iterator = webTemplateCache.iterator();
+
+
+        while (iterator.hasNext()) {
+            try {
+                Optional.ofNullable(iterator.next()).map(Cache.Entry::getValue).map(WebTemplate::getTemplateId).ifPresent(templateIdInCache::add);
+            } catch (RuntimeException e) {
+                //NOP
+            }
+
+        }
+        templateIdInCache.removeAll(allTemplateId);
+
+        if (!templateIdInCache.isEmpty()) {
+            webTemplateCache.clear();
+            jsonPathQueryResultCache.clear();
+            atOptCache.clear();
+            fieldCache.clear();
+            multivaluedCache.clear();
+        }
 
         if (cacheConfiguration.isPreBuildQueries()) {
             ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
@@ -153,8 +193,16 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
                     MoreExecutors.getExitingExecutorService(executor,
                             100, TimeUnit.MILLISECONDS);
 
-            executor.submit(() ->
-                    allTemplateId.forEach(this::precalculateQuerys));
+            executor.submit(() -> {
+
+                for (String s : allTemplateId) {
+                    try {
+                        precalculateQuerys(s);
+                    } catch (RuntimeException e) {
+                        log.error("Invalidate template : {}", s);
+                    }
+                }
+            });
         }
 
     }
@@ -393,6 +441,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         try {
             visitor = new OPTParser(operationaltemplate).parse();
         } catch (Exception e) {
+            log.error("Invalidate template {}",operationaltemplate.getTemplateId().getValue());
             throw new InternalServerException(e.getMessage(), e);
         }
 
