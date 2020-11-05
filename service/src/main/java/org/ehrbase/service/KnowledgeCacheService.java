@@ -24,7 +24,6 @@ package org.ehrbase.service;
 
 import com.google.common.util.concurrent.MoreExecutors;
 import org.apache.xmlbeans.XmlException;
-import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.aql.containment.JsonPathQueryResult;
@@ -48,7 +47,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
@@ -101,7 +99,7 @@ import static org.ehrbase.configuration.CacheConfiguration.QUERY_CACHE;
  * @author C. Chevalley
  */
 @Service
-@Transactional(propagation = Propagation.REQUIRES_NEW)
+@Transactional
 public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectService {
 
 
@@ -333,6 +331,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     private void invalidateCache(OPERATIONALTEMPLATE template) {
 
         //invalidate the cache for this template
+        allTemplateId.remove(template.getTemplateId().getValue());
         webTemplateCache.remove(UUID.fromString(template.getUid().getValue()));
         atOptCache.remove(template.getTemplateId().getValue());
 
@@ -455,8 +454,8 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         try {
             visitor = new OPTParser(operationaltemplate).parse();
         } catch (Exception e) {
-            log.error("Invalidate template {}", operationaltemplate.getTemplateId().getValue());
-            throw new InternalServerException(e.getMessage(), e);
+            log.error("Invalid template {}", operationaltemplate.getTemplateId().getValue(), e);
+            throw new IllegalArgumentException(String.format("Invalid template: %s", e.getMessage()));
         }
 
         webTemplateCache.put(UUID.fromString(operationaltemplate.getUid().getValue()), visitor);

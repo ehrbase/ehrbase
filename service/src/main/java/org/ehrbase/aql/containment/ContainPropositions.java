@@ -94,9 +94,6 @@ public class ContainPropositions {
                                     + entry.getKey()
                                     + ", as in:" + entry.getValue());
 
-                    } catch (IllegalArgumentException e) {
-                        //this is for an unresolved template id
-                            continue;
                     } catch (Exception e) {
                         throw new IllegalArgumentException("Could not traverse cached templates:" + e);
                     }
