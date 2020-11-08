@@ -130,7 +130,7 @@
         <swagger-snapshot.version>2.0.0-rc2</swagger-snapshot.version>
         <postgressql.version>42.2.5</postgressql.version>
         <ehrbase.sdk.version>ab5b9da</ehrbase.sdk.version>
-        <flyway.version>6.2.0</flyway.version>
+        <flyway.version>6.5.7</flyway.version>
         <joda.version>2.10.6</joda.version>
         <database.name>ehrbase</database.name>
         <database.user>ehrbase</database.user>
@@ -152,7 +152,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>2.3.1.RELEASE</version>
-        <relativePath />
+        <relativePath/>
         <!-- lookup parent from repository -->
     </parent>
 
@@ -573,7 +573,7 @@
                     <artifactId>dockerfile-maven-plugin</artifactId>
                     <version>1.4.13</version>
                     <configuration>
-                        <dockerConfigFile></dockerConfigFile>
+                        <dockerConfigFile/>
                     </configuration>
                 </plugin>
                 <plugin>
