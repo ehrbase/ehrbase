@@ -71,7 +71,14 @@ public class FolderServiceImp extends BaseService implements FolderService {
      */
     @Override
     public ObjectVersionId create(UUID ehrId, Folder content) {
+        return create(ehrId, content, null);
+    }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ObjectVersionId create(UUID ehrId, Folder content, UUID contribution) {
         I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
         if (ehrAccess == null) {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
@@ -83,10 +90,13 @@ public class FolderServiceImp extends BaseService implements FolderService {
         // Save current time which will be used as transaction time
         Timestamp currentTimeStamp = Timestamp.from(Instant.now());
 
-        // Create Contribution Access
-        I_ContributionAccess contributionAccess = I_ContributionAccess.getInstance(
-                getDataAccess(),
-                ehrId);
+        // Contribution handling - create new one or retrieve existing, if ID is given
+        I_ContributionAccess contributionAccess;
+        if (contribution == null) {
+            contributionAccess = I_ContributionAccess.getInstance(getDataAccess(), ehrId);
+        } else {
+            contributionAccess = I_ContributionAccess.retrieveInstance(getDataAccess(), contribution);
+        }
 
         // Get first FolderAccess instance
         I_FolderAccess folderAccess = FolderAccess.buildNewFolderAccessHierarchy(
@@ -96,7 +106,7 @@ public class FolderServiceImp extends BaseService implements FolderService {
                 ehrId,
                 contributionAccess
         );
-        ObjectVersionId folderId = folderAccess.create();
+        ObjectVersionId folderId = folderAccess.create(contribution);
         // Save root directory id to ehr entry
         // TODO: Refactor to use UID
         ehrAccess.setDirectory(FolderUtils.extractUuidFromObjectVersionId(folderId));
@@ -195,6 +205,19 @@ public class FolderServiceImp extends BaseService implements FolderService {
             Folder update,
             UUID ehrId
     ) {
+        return update(folderId, update, ehrId, null);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Optional<FolderDto> update(
+            ObjectVersionId folderId,
+            Folder update,
+            UUID ehrId,
+            UUID contribution
+    ) {
 
         Timestamp timestamp = Timestamp.from(Instant.now());
 
@@ -229,11 +252,9 @@ public class FolderServiceImp extends BaseService implements FolderService {
         }
 
         // Send update to access layer which updates the hierarchy recursive
-        if (folderAccess.update(timestamp)) {
-
+        if (folderAccess.update(timestamp, false, contribution).equals(true)) {
             return createDto(folderAccess, getLastVersionNumber(folderId), true);
         } else {
-
             return Optional.empty();
         }
     }
