@@ -37,6 +37,8 @@ import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.service.IntrospectService;
 import org.jooq.Field;
 
+import static org.ehrbase.aql.sql.QueryProcessor.NIL_TEMPLATE;
+
 /**
  * map an AQL datavalue expression into a SQL field
  * <p>
@@ -73,6 +75,9 @@ public class CompositionAttributeQuery extends ObjectQuery implements I_QueryImp
                         pathResolver.entryRoot(templateId));
 
         Field retField;
+
+        if (!templateId.equals(NIL_TEMPLATE))
+            joinSetup.setUseEntry(true);
 
         if (columnAlias == null) {
             if (clause.equals(Clause.SELECT)) {
