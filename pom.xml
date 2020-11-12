@@ -253,7 +253,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
-                <version>2.2.4.RELEASE</version>
+                <version>2.3.4.RELEASE</version>
             </dependency>
             <dependency>
                 <groupId>org.keycloak.bom</groupId>
