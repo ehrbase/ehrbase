@@ -126,7 +126,7 @@
         <keycloak.version>4.0.0.Final</keycloak.version>
         <springfox.version>2.9.2</springfox.version>
         <springfox-snapshot.version>3.0.0-SNAPSHOT</springfox-snapshot.version>
-        <swagger.version>1.5.23</swagger.version>
+        <swagger.version>1.6.2</swagger.version>
         <swagger-snapshot.version>2.0.0-rc2</swagger-snapshot.version>
         <postgressql.version>42.2.5</postgressql.version>
         <ehrbase.sdk.version>ab5b9da</ehrbase.sdk.version>
