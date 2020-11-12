@@ -22,6 +22,7 @@ import com.nedap.archie.rm.changecontrol.Contribution;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.datavalues.DvText;
+import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.Attestation;
@@ -74,7 +75,7 @@ public class SwaggerConfig extends WebMvcConfigurerAdapter {
 
         // Add classes from ReferenceModel to be ignored if causing errors
         Class[] classesToIgnore = {EhrStatus.class, Folder.class, PartySelf.class, ItemStructure.class, DvText.class,
-        Contribution.class, AuditDetails.class, Attestation.class, Composition.class};
+                Contribution.class, AuditDetails.class, Attestation.class, Composition.class, DvDateTime.class};
 
         return new Docket(DocumentationType.SWAGGER_2).groupName("openEHR API")
                 //.host("http://localhost:8080")
