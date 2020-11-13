@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Adds Admin API endpoints: Del EHR, Del Composition and Del Contribution (see: https://github.com/ehrbase/ehrbase/pull/344)
 
+- Add ATNA logging configuration capabilities (see https://github.com/ehrbase/ehrbase/pull/355)
+
 ### Changed
 - support AQL querying on full EHR (f.e. SELECT e) (see )
 
@@ -35,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added Junit5 support via spring-boot-starter-test (https://github.com/ehrbase/ehrbase/pull/298)
 - Enable cartesian products on embedded arrays in JSONB (see https://github.com/ehrbase/ehrbase/pull/309)
 - Use new OPT-Parser from sdk (see https://github.com/ehrbase/ehrbase/pull/314)
+- Add CORS config to enable clients to detect auth method (see https://github.com/ehrbase/ehrbase/pull/354).
 
 ### Fixed
 
