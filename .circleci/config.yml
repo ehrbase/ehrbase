@@ -980,9 +980,6 @@ commands:
           name: INSTALL SDK
           command: |
             cd ~/projects/openEHR_SDK
-            # SDK_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
-            # echo $SDK_VERSION > ~/projects/SDK_VERSION
-            # cat ~/projects/SDK_VERSION
             mvn install -Dmaven.javadoc.skip=true -Djacoco.skip=true -Dmaven.test.skip
 
 
@@ -1170,8 +1167,10 @@ commands:
             SDK_VERSION=$(cat ~/projects/openEHR_SDK/SDK_VERSION)
             echo $SDK_VERSION
             # cd ~/projects
-            # xmlstarlet edit --inplace -N my=http://maven.apache.org/POM/4.0.0 -u my:project/my:version -v $SDK_VERSION pom.xml
             xmlstarlet edit --inplace -u project/properties/ehrbase.sdk.version -v $SDK_VERSION pom.xml
+      - run:
+          name: Show EHRbase's pom
+          command: cat pom.xml
 
             
   build-and-test-ehrbase:
