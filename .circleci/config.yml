@@ -954,6 +954,13 @@ commands:
           command: |
             git clone git@github.com:ehrbase/openEHR_SDK.git
             ls -la
+      - run:
+          name: Save the version number of locally installed SDK into a file
+          command: |
+            cd openEHR_SDK
+            SDK_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+            echo $SDK_VERSION > SDK_VERSION
+            cat SDK_VERSION
   
 
   git-checkout-sdk-sync-branch:
@@ -961,9 +968,9 @@ commands:
       - run:
           name: CHECKOUT SDK SYNC/BRANCH
           command: |
-            echo BRANCH NAME TO CHECKOUT: $BRANCH_NAME
+            echo BRANCH NAME TO CHECKOUT: $CIRCLE_BRANCH
             cd ~/projects/openEHR_SDK
-            git checkout $BRANCH_NAME
+            git checkout $CIRCLE_BRANCH
   
 
   maven-install-sdk:
@@ -1164,7 +1171,7 @@ commands:
             # cd ~/projects
             # xmlstarlet edit --inplace -N my=http://maven.apache.org/POM/4.0.0 -u my:project/my:version -v $SDK_VERSION pom.xml
             xmlstarlet edit --inplace -u project/properties/ehrbase.sdk.version -v $SDK_VERSION pom.xml
-            
+
             
   build-and-test-ehrbase:
     steps:
