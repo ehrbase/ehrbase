@@ -954,13 +954,6 @@ commands:
           command: |
             git clone git@github.com:ehrbase/openEHR_SDK.git
             ls -la
-      - run:
-          name: Save the version number of locally installed SDK into a file
-          command: |
-            cd openEHR_SDK
-            SDK_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
-            echo $SDK_VERSION > SDK_VERSION
-            cat SDK_VERSION
   
 
   git-checkout-sdk-sync-branch:
@@ -975,14 +968,22 @@ commands:
 
   maven-install-sdk:
     steps:
+       - run:
+          name: Save the version number of locally installed SDK into a file
+          command: |
+            cd ~/projects/openEHR_SDK
+            mvn build-helper:parse-version versions:set -DnewVersion=\${project.version}-LOCAL versions:commit
+            SDK_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+            echo $SDK_VERSION > SDK_VERSION
+            cat SDK_VERSION
       - run:
           name: INSTALL SDK
           command: |
             cd ~/projects/openEHR_SDK
-            SDK_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
-            echo $SDK_VERSION > ~/projects/SDK_VERSION
-            cat ~/projects/SDK_VERSION
-            mvn clean install -Dmaven.javadoc.skip=true   # -Dmaven.test.skip
+            # SDK_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+            # echo $SDK_VERSION > ~/projects/SDK_VERSION
+            # cat ~/projects/SDK_VERSION
+            mvn install -Dmaven.javadoc.skip=true -Djacoco.skip=true -Dmaven.test.skip
 
 
   start-ehrbase-and-run-java-integration-sdk-tests:
