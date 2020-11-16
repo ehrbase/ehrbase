@@ -968,7 +968,7 @@ commands:
 
   maven-install-sdk:
     steps:
-       - run:
+      - run:
           name: Save the version number of locally installed SDK into a file
           command: |
             cd ~/projects/openEHR_SDK
