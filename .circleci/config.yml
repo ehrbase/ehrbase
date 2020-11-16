@@ -1086,7 +1086,7 @@ commands:
       steps:
         - run:
             name: Generate Cache Checksum for openEHR_SDK Dependencies
-            command: find openEHR_SDK/ -name 'pom.xml' | sort | xargs cat > /tmp/openEHR_SDK_maven_cache_seed
+            command: find openEHR_SDK/ -type f -name *.java | sort | xargs cat > /tmp/openEHR_SDK_maven_cache_seed
         - restore_cache:
             key: openEHR_SDK-
 
@@ -1103,7 +1103,7 @@ commands:
       steps:
         - run:
             name: Generate Cache Checksum for openEHR_SDK Dependencies
-            command: find openEHR_SDK/ -name 'pom.xml' | sort | xargs cat > /tmp/openEHR_SDK_syncbranch_maven_cache_seed
+            command: find openEHR_SDK/ -type f -name *.java | sort | xargs cat > /tmp/openEHR_SDK_syncbranch_maven_cache_seed
         - restore_cache:
             key: openEHR_SDK-syncbranch-v1-
 
@@ -1159,11 +1159,12 @@ commands:
       - run:
           name: Adjust SDK version number in EHRbase's pom
           command: |
-            SDK_VERSION=$(cat ~/projects/SDK_VERSION)
+            SDK_VERSION=$(cat ~/projects/openEHR_SDK/SDK_VERSION)
             echo $SDK_VERSION
             # cd ~/projects
-            xmlstarlet edit --inplace -N my=http://maven.apache.org/POM/4.0.0 -u my:project/my:version -v $SDK_VERSION pom.xml
-
+            # xmlstarlet edit --inplace -N my=http://maven.apache.org/POM/4.0.0 -u my:project/my:version -v $SDK_VERSION pom.xml
+            xmlstarlet edit --inplace -u project/properties/ehrbase.sdk.version -v $SDK_VERSION pom.xml
+            
             
   build-and-test-ehrbase:
     steps:
@@ -1193,9 +1194,9 @@ commands:
   cache-in-ehrbase-m2-dependencies-syncbranch:
     steps:
       - save_cache:
-          key: EHRbase-sychbranch-v1-{{ checksum "/tmp/EHRbase_syncbranch_maven_cache_seed" }}
+          key: EHRbase-sychbranch-v2-{{ checksum "/tmp/EHRbase_syncbranch_maven_cache_seed" }}
           paths:
-            - ~/.m2
+            - ~/.m2/repository/org/ehrbase/openehr/
 
 
   cache-out-ehrbase-m2-dependencies-syncbranch:
@@ -1204,7 +1205,7 @@ commands:
           name: Generate Cache Checksum for EHRbase Dependencies
           command: find ~/projects -name 'pom.xml' | sort | xargs cat > /tmp/EHRbase_syncbranch_maven_cache_seed
       - restore_cache:
-          key: EHRbase-sychbranch-v1-
+          key: EHRbase-sychbranch-v2
 
 
   save-packaged-ehrbase-jar:
