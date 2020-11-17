@@ -558,7 +558,7 @@ Create EHR Record On The Server
         # this is how it should look like:
         # ${time_created_obj}  Object    response body time_created
         # ${time_created}     String    response body time_created value
-    ${time_created}=    String    response body time_created
+    ${time_created}=    String    response body time_created value
                         Set Suite Variable    ${time_created}    ${time_created}
 
     ${system_id_obj}=   Object    response body system_id
