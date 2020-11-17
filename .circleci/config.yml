@@ -961,21 +961,26 @@ commands:
       - run:
           name: CHECKOUT SDK SYNC/BRANCH
           command: |
-            echo BRANCH NAME TO CHECKOUT: $BRANCH_NAME
+            echo BRANCH NAME TO CHECKOUT: $CIRCLE_BRANCH
             cd ~/projects/openEHR_SDK
-            git checkout $BRANCH_NAME
+            git checkout $CIRCLE_BRANCH
   
 
   maven-install-sdk:
     steps:
       - run:
+          name: Save the version number of locally installed SDK into a file
+          command: |
+            cd ~/projects/openEHR_SDK
+            mvn build-helper:parse-version versions:set -DnewVersion=\${project.version}-LOCAL versions:commit
+            SDK_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+            echo $SDK_VERSION > SDK_VERSION
+            cat SDK_VERSION
+      - run:
           name: INSTALL SDK
           command: |
             cd ~/projects/openEHR_SDK
-            SDK_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
-            echo $SDK_VERSION > ~/projects/SDK_VERSION
-            cat ~/projects/SDK_VERSION
-            mvn clean install -Dmaven.javadoc.skip=true   # -Dmaven.test.skip
+            mvn install -Dmaven.javadoc.skip=true -Djacoco.skip=true -Dmaven.test.skip
 
 
   start-ehrbase-and-run-java-integration-sdk-tests:
@@ -1086,7 +1091,7 @@ commands:
       steps:
         - run:
             name: Generate Cache Checksum for openEHR_SDK Dependencies
-            command: find openEHR_SDK/ -name 'pom.xml' | sort | xargs cat > /tmp/openEHR_SDK_maven_cache_seed
+            command: find openEHR_SDK/ -type f -name *.java | sort | xargs cat > /tmp/openEHR_SDK_maven_cache_seed
         - restore_cache:
             key: openEHR_SDK-
 
@@ -1103,7 +1108,7 @@ commands:
       steps:
         - run:
             name: Generate Cache Checksum for openEHR_SDK Dependencies
-            command: find openEHR_SDK/ -name 'pom.xml' | sort | xargs cat > /tmp/openEHR_SDK_syncbranch_maven_cache_seed
+            command: find openEHR_SDK/ -type f -name *.java | sort | xargs cat > /tmp/openEHR_SDK_syncbranch_maven_cache_seed
         - restore_cache:
             key: openEHR_SDK-syncbranch-v1-
 
@@ -1159,10 +1164,13 @@ commands:
       - run:
           name: Adjust SDK version number in EHRbase's pom
           command: |
-            SDK_VERSION=$(cat ~/projects/SDK_VERSION)
+            SDK_VERSION=$(cat ~/projects/openEHR_SDK/SDK_VERSION)
             echo $SDK_VERSION
             # cd ~/projects
-            xmlstarlet edit --inplace -N my=http://maven.apache.org/POM/4.0.0 -u my:project/my:version -v $SDK_VERSION pom.xml
+            xmlstarlet edit --inplace -u project/properties/ehrbase.sdk.version -v $SDK_VERSION pom.xml
+      - run:
+          name: Show EHRbase's pom
+          command: cat pom.xml
 
             
   build-and-test-ehrbase:
@@ -1193,9 +1201,9 @@ commands:
   cache-in-ehrbase-m2-dependencies-syncbranch:
     steps:
       - save_cache:
-          key: EHRbase-sychbranch-v1-{{ checksum "/tmp/EHRbase_syncbranch_maven_cache_seed" }}
+          key: EHRbase-sychbranch-v2-{{ checksum "/tmp/EHRbase_syncbranch_maven_cache_seed" }}
           paths:
-            - ~/.m2
+            - ~/.m2/repository/org/ehrbase/openehr/
 
 
   cache-out-ehrbase-m2-dependencies-syncbranch:
@@ -1204,7 +1212,7 @@ commands:
           name: Generate Cache Checksum for EHRbase Dependencies
           command: find ~/projects -name 'pom.xml' | sort | xargs cat > /tmp/EHRbase_syncbranch_maven_cache_seed
       - restore_cache:
-          key: EHRbase-sychbranch-v1-
+          key: EHRbase-sychbranch-v2
 
 
   save-packaged-ehrbase-jar:
