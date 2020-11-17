@@ -94,8 +94,8 @@ public class Statements {
     }
 
     public VariableDefinitions getVariables() {
-        boolean containsNonEhrVariable = variables.stream().map(I_VariableDefinition::getIdentifier).map(s -> identifierMapper.getContainer(s)).anyMatch(c -> !c.getClass().isAssignableFrom(FromEhrDefinition.EhrPredicate.class));
-        boolean containsOnlyEhrAttributes = variables.stream().filter(v -> identifierMapper.getContainer(v.getIdentifier()).getClass().isAssignableFrom(FromEhrDefinition.EhrPredicate.class))
+        boolean containsNonEhrVariable = variables.stream().map(I_VariableDefinition::getIdentifier).map(s -> identifierMapper.getContainer(s)).anyMatch(c -> c != null && !c.getClass().isAssignableFrom(FromEhrDefinition.EhrPredicate.class));
+        boolean containsOnlyEhrAttributes = variables.stream().filter(v -> identifierMapper.getContainer(v.getIdentifier()) != null && identifierMapper.getContainer(v.getIdentifier()).getClass().isAssignableFrom(FromEhrDefinition.EhrPredicate.class))
                 .allMatch(v -> EhrResolver.isEhrAttribute(v.getPath()));
 
         // Force distinct If only contains ehr variables
