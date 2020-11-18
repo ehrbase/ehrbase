@@ -20,18 +20,13 @@ package org.ehrbase.dao.access.jooq;
 
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.directory.Folder;
-import com.nedap.archie.rm.support.identification.ObjectId;
-import com.nedap.archie.rm.support.identification.ObjectRef;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import com.nedap.archie.rm.support.identification.UIDBasedId;
+import com.nedap.archie.rm.support.identification.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
-import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
-import org.ehrbase.dao.access.interfaces.I_DomainAccess;
-import org.ehrbase.dao.access.interfaces.I_FolderAccess;
+import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.dao.access.util.FolderUtils;
@@ -58,13 +53,10 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.*;
+import java.util.UUID;
 
-import static org.ehrbase.jooq.pg.Tables.CONTRIBUTION;
-import static org.ehrbase.jooq.pg.Tables.FOLDER;
-import static org.ehrbase.jooq.pg.Tables.FOLDER_HIERARCHY;
-import static org.ehrbase.jooq.pg.Tables.FOLDER_HISTORY;
-import static org.ehrbase.jooq.pg.Tables.FOLDER_ITEMS;
-import static org.ehrbase.jooq.pg.Tables.OBJECT_REF;
+import static org.ehrbase.jooq.pg.Tables.*;
+import static org.ehrbase.jooq.pg.Tables.COMPOSITION_HISTORY;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.name;
 import static org.jooq.impl.DSL.select;
@@ -119,40 +111,59 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
 
     @Override
     public Boolean update(final Timestamp transactionTime, final boolean force) {
+        return update(transactionTime, force, null);
+    }
+
+    @Override
+    public Boolean update(final Timestamp transactionTime, final boolean force, UUID contribution) {
         /*create new contribution*/
-        UUID old_contribution = this.folderRecord.getInContribution();
-        UUID new_contribution = this.folderRecord.getInContribution();
+        UUID oldContribution = this.folderRecord.getInContribution();
+        UUID newContribution;
 
-        UUID ehrId = this.contributionAccess.getEhrId();
-        /*save the EHR id from old_contribution since it will be the same as this is an update operation*/
-        if (this.contributionAccess.getEhrId() == null) {
-            final Record1<UUID> result1 = getContext().select(CONTRIBUTION.EHR_ID).from(CONTRIBUTION).where(CONTRIBUTION.ID.eq(old_contribution)).fetch().get(0);
-            ehrId = result1.value1();
+        // if no custom contribution is provided create a new one, otherwise use given one
+        if (contribution == null) {
+            UUID contributionAccessEhrId = this.contributionAccess.getEhrId();
+            /*save the EHR id from oldContribution since it will be the same as this is an update operation*/
+            if (this.contributionAccess.getEhrId() == null) {
+                final Record1<UUID> result1 = getContext().select(CONTRIBUTION.EHR_ID).from(CONTRIBUTION).where(CONTRIBUTION.ID.eq(oldContribution)).fetch().get(0);
+                contributionAccessEhrId = result1.value1();
+            }
+            this.contributionAccess.setEhrId(contributionAccessEhrId);
+
+            this.contributionAccess.commit(transactionTime, null, null, ContributionDataType.folder, ContributionDef.ContributionState.COMPLETE, I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
+            this.getFolderRecord().setInContribution(this.contributionAccess.getId());
+        } else {
+            this.getFolderRecord().setInContribution(contribution);
         }
-        this.contributionAccess.setEhrId(ehrId);
 
-        this.contributionAccess.commit(transactionTime, null, null, ContributionDataType.folder, ContributionDef.ContributionState.COMPLETE, I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
-        this.getFolderRecord().setInContribution(this.contributionAccess.getId());
-        new_contribution = folderRecord.getInContribution();
+        newContribution = folderRecord.getInContribution();
 
         // Delete so folder can be overwritten
         // This will also delete items since cascading the delete to the items table as well as
-        // all FolderHierarchy entires
+        // all FolderHierarchy entries
         this.delete(folderRecord.getId());
 
-        return this.update(transactionTime, true, true, null, old_contribution, new_contribution);
+        return this.update(transactionTime, force, true, null, oldContribution, newContribution);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public ObjectVersionId create() {
-        return new ObjectVersionId(
-                this.commit().toString()
-                + "::" + getServerConfig().getNodename()
-                + "::1"
-        );
+    public ObjectVersionId create(UUID customContribution) {
+        if (customContribution == null) {
+            return new ObjectVersionId(
+                    this.commit().toString()
+                            + "::" + getServerConfig().getNodename()
+                            + "::1"
+            );
+        } else {
+            this.contributionAccess = I_ContributionAccess.retrieveInstance(getDataAccess(), customContribution);
+            return new ObjectVersionId((this.commit(Timestamp.from(Instant.now()), this.contributionAccess.getContributionId()).toString()
+                    + "::" + getServerConfig().getNodename()
+                    + "::1"
+            ));
+        }
     }
 
     private Boolean update(final Timestamp transactionTime,
@@ -375,6 +386,87 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
     }
 
     /**
+     * Retrieve a set of all folders from a given contribution.
+     * @param domainAccess Domain access object
+     * @param contribution Given contribution ID to check for
+     * @param nodeName Nodename (e.g. "[...]::NODENAME::[...]") from the service layer, which is not accessible in the access layer
+     * @return Set of version ID of matching folders
+     */
+    public static Set<ObjectVersionId> retrieveFolderVersionIdsInContribution(I_DomainAccess domainAccess, UUID contribution, String nodeName) {
+        Set<UUID> folders = new HashSet<>();   // Set, because of unique values
+        // add all folders having a link to given contribution
+        domainAccess.getContext().select(FOLDER.ID).from(FOLDER).where(FOLDER.IN_CONTRIBUTION.eq(contribution)).fetch()
+                .forEach(rec -> folders.add(rec.value1()));
+        // and older versions or deleted ones, too
+        domainAccess.getContext().select(FOLDER_HISTORY.ID).from(FOLDER_HISTORY).where(FOLDER_HISTORY.IN_CONTRIBUTION.eq(contribution)).fetch()
+                .forEach(rec -> folders.add(rec.value1()));
+
+        // get whole "version map" of each matching folder and do fine-grain check for matching contribution
+        // precondition: each UUID in `folders` set is unique, so for each the "version map" is only created once below
+        // (meta: can't do that as jooq query, because the specific version number isn't stored in DB)
+        Set<ObjectVersionId> result = new HashSet<>();
+
+        for (UUID folderId : folders) {
+            Map<Record, Integer> map = getVersionMapOfFolder(domainAccess, folderId);
+            // fine-grained contribution ID check
+            for (Map.Entry<Record, Integer> entry : map.entrySet()) {
+                // record can be of type FolderRecord or FolderHistoryRecord
+                if (entry.getKey().getClass().equals(FolderRecord.class)) {
+                    FolderRecord rec = (FolderRecord) entry.getKey();
+                    if (rec.getInContribution().equals(contribution))
+                        // set version ID
+                        result.add(new ObjectVersionId(rec.getId().toString() + "::" + nodeName + "::" + entry.getValue()));
+                } else if (entry.getKey().getClass().equals(FolderHistoryRecord.class)) {
+                    FolderHistoryRecord rec = (FolderHistoryRecord) entry.getKey();
+                    if (rec.getInContribution().equals(contribution))
+                        // set version ID
+                        result.add(new ObjectVersionId(rec.getId().toString() + "::" + nodeName + "::" + entry.getValue()));
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Helper to create a Map, which contains a record and the version number, for each version of a versioned object.
+     * @param domainAccess Domain access object
+     * @param folderId Given versioned object folder ID
+     * @return Map with a record and the version number, for each version of the versioned object folder with the given ID
+     */
+    private static Map<Record, Integer> getVersionMapOfFolder(I_DomainAccess domainAccess, UUID folderId) {
+        Map<Record, Integer> versionMap = new HashMap<>();
+
+        // create counter with highest version, to keep track of version number and allow check in the end
+        Integer versionCounter = getLastVersionNumber(domainAccess, folderId);
+
+        // fetch matching entry
+        FolderRecord record = domainAccess.getContext().fetchOne(FOLDER, FOLDER.ID.eq(folderId));
+        if (record != null) {
+            versionMap.put(record, versionCounter);
+
+            versionCounter--;
+        }
+
+        // if composition was removed (i.e. from "COMPOSITION" table) *or* other versions are existing
+        Result<FolderHistoryRecord> historyRecords = domainAccess.getContext()
+                .selectFrom(FOLDER_HISTORY)
+                .where(FOLDER_HISTORY.ID.eq(folderId))
+                .orderBy(FOLDER_HISTORY.SYS_TRANSACTION.desc())
+                .fetch();
+
+        for (FolderHistoryRecord historyRecord : historyRecords) {
+            versionMap.put(historyRecord, versionCounter);
+            versionCounter--;
+        }
+
+        if (versionCounter != 0)
+            throw new InternalServerException("Version Map generation failed");
+
+        return versionMap;
+    }
+
+    /**
      * Builds the {@link I_FolderAccess} for persisting the {@link  com.nedap.archie.rm.directory.Folder} provided as param.
      *
      * @param domainAccess providing the information about the DB connection.
@@ -399,7 +491,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
             throw new IllegalArgumentException("The folder UID provided for performing a delete operation cannot be null.");
         }
 
-        /**SQL code for the recursive call generated inside the delete that retrieves children iteratively.
+        /* SQL code for the recursive call generated inside the delete that retrieves children iteratively.
          * WITH RECURSIVE subfolders AS (
          * 		SELECT parent_folder, child_folder, in_contribution, sys_transaction
          * 		FROM ehr.folder_hierarchy
@@ -763,6 +855,12 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
 
         UUID folderUuid = FolderUtils.extractUuidFromObjectVersionId(folderId);
 
+        return getLastVersionNumber(domainAccess, folderUuid);
+    }
+
+    // whole ObjectVersionId is just not necessary for DB query, so this works on access layer (without info like the nodeName), too.
+    private static Integer getLastVersionNumber(I_DomainAccess domainAccess, UUID folderUuid) {
+
         if (!hasPreviousVersion(domainAccess, folderUuid)) {
             return 1;
         }
@@ -773,6 +871,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         // Latest version will be entries plus actual entry count (always 1)
         return versionCount + 1;
     }
+
 
     /**
      * Checks if there are existing entries for given folder uuid at the folder
