@@ -358,7 +358,7 @@ workflows:
         NOTE: at this point 'synced build' should be running on both CIs
 
       5. create TWO PRs (one in ehrbase, one in openehr_sdk)
-      6. merge bot PRs (WARNING):
+      6. merge both PRs (WARNING):
 
       ///////////////////////////////////////////////////////////////////////
       ///                                                                 ///
