@@ -66,11 +66,12 @@ public interface EhrService extends BaseService {
      * Update the EHR_STATUS linked to the given EHR
      * @param ehrId ID of linked EHR
      * @param status input EHR_STATUS
+     * @param contribution Optional ID of custom contribution. Can be null.
      * @return {@link Optional<EhrStatus>} containing the updated status on success
      * @throws org.ehrbase.api.exception.ObjectNotFoundException when given ehrId cannot be found
      * @throws org.ehrbase.api.exception.InvalidApiParameterException when given status is invalid, e.g. not a valid openEHR RM object
      */
-    Optional<EhrStatus> updateStatus(UUID ehrId, EhrStatus status);
+    Optional<EhrStatus> updateStatus(UUID ehrId, EhrStatus status, UUID contribution);
 
     Optional<UUID> findBySubject(String subjectId, String nameSpace);
 

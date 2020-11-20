@@ -9,8 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Adds Admin API endpoints: Del EHR, Del Composition and Del Contribution (see: https://github.com/ehrbase/ehrbase/pull/344)
-
 - Add ATNA logging configuration capabilities (see https://github.com/ehrbase/ehrbase/pull/355)
+- Support for EHR_STATUS and (partial) FOLDER version objects in contributions (see: https://github.com/ehrbase/ehrbase/pull/372)
 
 ### Changed
 - support AQL querying on full EHR (f.e. SELECT e) (see )

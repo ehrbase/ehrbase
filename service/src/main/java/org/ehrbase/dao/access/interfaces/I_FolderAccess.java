@@ -29,10 +29,7 @@ import org.joda.time.DateTime;
 
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
-import java.util.AbstractMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 
 /***
@@ -100,9 +97,10 @@ public interface I_FolderAccess extends I_SimpleCRUD {
      * Creates a new directory object with a given structure and returns a valid Object_Version_Id containing the given
      * system identifier and version part.
      *
+     * @param customContribution Optional ID of a custom contribution to use, instead of creating a new one. Can be null
      * @return Object_Version_Id for new root directory folder
      */
-    ObjectVersionId create();
+    ObjectVersionId create(UUID customContribution);
 
     static I_FolderAccess getInstanceForExistingFolder(I_DomainAccess domainAccess, ObjectVersionId folderId){
         return FolderAccess.retrieveInstanceForExistingFolder(
@@ -119,6 +117,17 @@ public interface I_FolderAccess extends I_SimpleCRUD {
     }
 
     /**
+     * Retrieves the version IDs of all folders, which are linked to the given contribution.
+     * @param domainAccess DB access
+     * @param contribution Given contribution to query for
+     * @param nodeName Node name to build version ID with (access layer doesn't have access to this info)
+     * @return Set of {@link ObjectVersionId} for linked folders
+     */
+    static Set<ObjectVersionId> retrieveFolderVersionIdsInContribution(I_DomainAccess domainAccess, UUID contribution, String nodeName) {
+        return FolderAccess.retrieveFolderVersionIdsInContribution(domainAccess, contribution, nodeName);
+    }
+
+    /**
      * Additional commit method to store a new entry of folder to the database and get all of inserted sub folders
      * connected by one contribution which has been created before.
      *
@@ -127,6 +136,15 @@ public interface I_FolderAccess extends I_SimpleCRUD {
      * @return UUID of the new created root folder
      */
     UUID commit(Timestamp transactionTime, UUID contributionId);
+
+    /**
+     * Overloaded update method to allow setting a custom contribution.
+     * @param transactionTime Timestamp
+     * @param force Optional to force the update
+     * @param contribution Optional (can be set null) custom contribution to use for this update
+     * @return success
+     */
+    Boolean update(final Timestamp transactionTime, final boolean force, UUID contribution);
 
     UUID getFolderId();
 
