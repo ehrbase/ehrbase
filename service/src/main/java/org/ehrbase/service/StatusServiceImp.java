@@ -22,6 +22,7 @@ import org.ehrbase.api.service.StatusService;
 import org.ehrbase.dao.access.interfaces.I_DatabaseStatusAccess;
 import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +31,9 @@ import java.lang.management.ManagementFactory;
 @Service
 @Transactional
 public class StatusServiceImp extends BaseService implements StatusService {
+
+    @Autowired
+    private BuildProperties buildProperties;
 
     @Autowired
     public StatusServiceImp(
@@ -71,5 +75,29 @@ public class StatusServiceImp extends BaseService implements StatusService {
     @Override
     public String getDatabaseInformation() {
         return I_DatabaseStatusAccess.retrieveDatabaseVersion(getDataAccess());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getEhrbaseVersion() {
+        return this.buildProperties.getVersion();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getArchieVersion() {
+        return this.buildProperties.get("archie.version");
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getOpenEHR_SDK_Version() {
+        return this.buildProperties.get("openEHR_SDK.version");
     }
 }

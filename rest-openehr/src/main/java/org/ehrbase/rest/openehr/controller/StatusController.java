@@ -73,6 +73,12 @@ public class StatusController extends BaseController {
         responseData.setOsVersion(this.statusService.getOperatingSystemInformation());
         // Database server version
         responseData.setPostgresVersion(this.statusService.getDatabaseInformation());
+        // EHRbase version
+        responseData.setEhrbaseVersion(this.statusService.getEhrbaseVersion());
+        // Client SDK Version
+        responseData.setOpenEhrSdkVersion(this.statusService.getOpenEHR_SDK_Version());
+        // Archie version
+        responseData.setArchieVersion(this.statusService.getArchieVersion());
 
         return ResponseEntity.ok(responseData);
     }

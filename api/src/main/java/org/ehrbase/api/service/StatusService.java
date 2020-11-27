@@ -48,4 +48,25 @@ public interface StatusService extends BaseService {
      * @return Database information
      */
     String getDatabaseInformation();
+
+    /**
+     * Returns current version of EHRbase build that is running.
+     *
+     * @return Current EHRbase version
+     */
+    String getEhrbaseVersion();
+
+    /**
+     * Returns current version of archie which has been used to build the running EHRbase instance.
+     *
+     * @return Current used Archie version
+     */
+    String getArchieVersion();
+
+    /**
+     * Returns the current version of openEHR_SDK which has been used to build the running EHRbase instance.
+     *
+     * @return Current used openEHR_SDK version
+     */
+    String getOpenEHR_SDK_Version();
 }
