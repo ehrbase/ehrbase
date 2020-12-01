@@ -56,12 +56,19 @@ Set Smoke Test Status
     Set Global Variable    ${SMOKE_TEST_PASSED}    ${SMOKE_TEST_PASSED}
 
 
+CircleCI Cache Restored
+    ${cache_exists}     Run Keywords
+    ...                 Run Keyword And Return Status    File Should Exist    ${EXECDIR}/robot/_resources/test_data_sets/query/expected_results/loaded_db/A/100.tmp.json    AND
+    ...                 Run Keyword And Return Status    File Should Exist    ${EXECDIR}/robot/_resources/test_data_sets/query/expected_results/loaded_db/D/503.tmp.json
+    [Return]            ${cache_exists}
+
 Establish Preconditions
     # comment: WHEN TEST-DATA HAS NOT CHANGED RESTORE DB FROM DUMP AND SKIP REST OF THIS KW!
     ${data-changed}     Run Keyword And Return Status    File Should Exist    /tmp/DATA_CHANGED_NOTICE
-                        Run Keyword And Return If    not ${data-changed}    db_keywords.restore db from dump
+    ${cache-exist}      Run Keyword And Return Status    CircleCI Cache Restored
+                        Run Keyword And Return If    not ${data-changed} and ${cache-exist}    db_keywords.restore db from dump
    
-    # comment: WHEN DATA_CHANGED ENV EXIST DO THIS!
+    # comment: WHEN /tmp/DATA_CHANGED_NOTICE FILE EXIST DO THIS!
     Preconditions (PART 1) - Load Blueprints of Queries and Expected-Results
     Preconditions (PART 2) - Generate Test-Data and Expected-Results
 
