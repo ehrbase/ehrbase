@@ -43,7 +43,7 @@ DEV_CONFIG = {
     #       and can be set from cli when starting server .jar, i.e.:
     #       `java -jar application.jar --server.nodename=some.foobar.baz`
     #       EHRbase's default is local.ehrbase.org
-    "NODENAME": "local.ehrbase.org",    # CREATING_SYSTEM_ID
+    "NODENAME": "manual.execution.org",  # CREATING_SYSTEM_ID
     "CONTROL_MODE": "manual",
     "OAUTH_ACCESS_GRANT": {
         "client_id": "ehrbase-client",
@@ -72,13 +72,13 @@ ADMIN_DEV_CONFIG = {
     "AUTHORIZATION": {
         "Authorization": "Basic ZWhyYmFzZS1hZG1pbjpFdmVuTW9yZVNlY3JldFBhc3N3b3Jk"
     },
-    "NODENAME": "local.ehrbase.org",    # CREATING_SYSTEM_ID
+    "NODENAME": "local.ehrbase.org",  # CREATING_SYSTEM_ID
     "CONTROL_MODE": "manual",
     "OAUTH_ACCESS_GRANT": {
         "client_id": "ehrbase-client",
         "scope": "openid",
-        "username": "admin-robot",      # TODO: recreate exported-keycloak-config to have this user!
-        "password": "admin-robot",      #       check README.md in SECURITY_TESTS folder for how to
+        "username": "admin-robot",  # TODO: recreate exported-keycloak-config to have this user!
+        "password": "admin-robot",  #       check README.md in SECURITY_TESTS folder for how to
         "grant_type": "password",
     },
     "JWT_ISSUERURI": KC_JWT_ISSUERURI,
@@ -101,7 +101,7 @@ TEST_CONFIG = {
     "AUTHORIZATION": {
         "Authorization": "Basic ZWhyYmFzZS11c2VyOlN1cGVyU2VjcmV0UGFzc3dvcmQ="
     },
-    "NODENAME": "local.ehrbase.org",    # alias CREATING_SYSTEM_ID
+    "NODENAME": "local.ehrbase.org",  # alias CREATING_SYSTEM_ID
     "CONTROL_MODE": "docker",
     "OAUTH_ACCESS_GRANT": {
         "client_id": "ehrbase-robot",
@@ -130,13 +130,13 @@ ADMIN_TEST_CONFIG = {
     "AUTHORIZATION": {
         "Authorization": "Basic ZWhyYmFzZS1hZG1pbjpFdmVuTW9yZVNlY3JldFBhc3N3b3Jk"
     },
-    "NODENAME": "local.ehrbase.org",    # alias CREATING_SYSTEM_ID
+    "NODENAME": "local.ehrbase.org",  # alias CREATING_SYSTEM_ID
     "CONTROL_MODE": "docker",
     "OAUTH_ACCESS_GRANT": {
         "client_id": "ehrbase-robot",
         "scope": "openid",
-        "username": "admin-robot",      # TODO: recreate exported-keycloak-config to have this user!
-        "password": "admin-robot",      #       check README.md in SECURITY_TESTS folder for how to
+        "username": "admin-robot",  # TODO: recreate exported-keycloak-config to have this user!
+        "password": "admin-robot",  #       check README.md in SECURITY_TESTS folder for how to
         "grant_type": "password",
     },
     "JWT_ISSUERURI": KC_JWT_ISSUERURI,
@@ -253,20 +253,16 @@ def get_variables(sut="TEST", auth_type="BASIC", nodocker="NEIN!"):
         return ADMIN_TEST_CONFIG
 
     # DEV CONFIG W/ BASIC AUTH
-    if (
-        sut == "DEV"
-        or (nodocker.upper() in ["TRUE", ""])
-       ):
+    if sut == "DEV" or (nodocker.upper() in ["TRUE", ""]):
         return DEV_CONFIG
 
     # if nodocker.upper() in ["TRUE", ""]:
     #     return DEV_CONFIG
 
     # ADMIN-DEV CONFIG W/ BASIC AUTH
-    if (
-        sut == "ADMIN-DEV"
-        or (sut == "ADMIN-DEV" and (nodocker.upper() in ["TRUE", ""]))
-       ):
+    if sut == "ADMIN-DEV" or (
+        sut == "ADMIN-DEV" and (nodocker.upper() in ["TRUE", ""])
+    ):
         return ADMIN_DEV_CONFIG
 
     # TEST CONFIG W/ BASIC AUTH

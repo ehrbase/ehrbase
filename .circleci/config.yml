@@ -837,7 +837,8 @@ commands:
               EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
               echo ${EHRbase_VERSION}
               java -jar "application/target/application-${EHRbase_VERSION}.jar" \
-                  --cache.enabled=false >log & app_pid=$!
+                   --system.allow-template-overwrite=true \
+                   --cache.enabled=true >log & app_pid=$!
               if ! tail -f log | timeout 30s grep -m 1 "Started EhrBase in"; then
                 echo "WARNING: Did not see a startup message even after waiting 30s" >&2
                 if kill -0 "$app_pid"; then
@@ -1753,8 +1754,6 @@ executors:
       image: ubuntu-1604:202007-01
 
 
-  # NOTE: this is a preview image, will be released officially in September 2020
-  #       don't use before that, cause can get breaking changes
   machine-ubuntu-2004:
     description: |
       Ubuntu 20.04 VM (machine executor)

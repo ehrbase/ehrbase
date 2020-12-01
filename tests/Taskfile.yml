@@ -41,7 +41,10 @@ tasks:
           cd ..
           EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
           echo "EHRbase_VERSION:" ${EHRbase_VERSION}
-          java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=true --server.nodename=manual.execution.org > log &
+          java -jar application/target/application-${EHRbase_VERSION}.jar \
+               --cache.enabled=true \
+               --system.allow-template-overwrite=true \
+               --server.nodename=manual.execution.org > log &
           grep -m 1 "Started EhrBase in" <(tail -f log)
           
           # SECURITY_AUTHTYPE=BASIC java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false --system.allow-template-overwrite=true > log &
