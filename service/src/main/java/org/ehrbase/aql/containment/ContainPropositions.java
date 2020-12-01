@@ -17,10 +17,9 @@
  */
 package org.ehrbase.aql.containment;
 
-import com.nedap.archie.rminfo.ArchieRMInfoLookup;
 import org.apache.commons.collections4.SetUtils;
 import org.ehrbase.service.KnowledgeCacheService;
-import org.ehrbase.webtemplate.NodeId;
+import org.ehrbase.webtemplate.parser.NodeId;
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -89,14 +88,7 @@ public class ContainPropositions {
                                 }
                             }
 
-                        } else if (ArchieRMInfoLookup.getInstance().getClass(entry.getValue().getSymbol()) == null) //if true, this is a valid class item
-                            throw new IllegalArgumentException("Containment definition does not exist in any defined template, Could not resolve:"
-                                    + entry.getKey()
-                                    + ", as in:" + entry.getValue());
-
-                    } catch (IllegalArgumentException e) {
-                        //this is for an unresolved template id
-                            continue;
+                        }
                     } catch (Exception e) {
                         throw new IllegalArgumentException("Could not traverse cached templates:" + e);
                     }

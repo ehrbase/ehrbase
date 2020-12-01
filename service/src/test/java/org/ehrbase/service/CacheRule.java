@@ -23,7 +23,7 @@ import org.ehrbase.aql.containment.TemplateIdAqlTuple;
 import org.ehrbase.aql.containment.TemplateIdQueryTuple;
 import org.ehrbase.aql.sql.queryImpl.ItemInfo;
 import org.ehrbase.validation.Validator;
-import org.ehrbase.webtemplate.WebTemplate;
+import org.ehrbase.webtemplate.model.WebTemplate;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;

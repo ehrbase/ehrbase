@@ -80,6 +80,7 @@ public interface I_CompositionAccess extends I_SimpleCRUD {
     String F_CONTEXT_END_TIME = "context_end_time";
     String F_CONTEXT_END_TIME_TZID = "context_end_time_tzid";
     String F_CONTEXT_LOCATION = "context_location";
+    String F_CONTEXT_SETTING = "context_setting";
     String F_CONTEXT_OTHER_CONTEXT = "context_other_context";
     String F_FACILITY_NAME = "facility_name";
     String F_FACILITY_REF_VALUE = "facility_ref_value";
@@ -483,4 +484,9 @@ public interface I_CompositionAccess extends I_SimpleCRUD {
     static boolean isDeleted(I_DomainAccess domainAccess, UUID versionedObjectId) {
         return CompositionAccess.isDeleted(domainAccess, versionedObjectId);
     }
+
+    /**
+     * Invoke physical deletion.
+     */
+    void adminDelete();
 }

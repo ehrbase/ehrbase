@@ -22,12 +22,12 @@
 package org.ehrbase.aql.sql.binding;
 
 import org.ehrbase.aql.sql.queryImpl.CompositionAttributeQuery;
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
-import org.jooq.JoinType;
-import org.jooq.SelectQuery;
-import org.jooq.Table;
+import org.jooq.*;
 import org.jooq.impl.DSL;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.ehrbase.jooq.pg.Tables.*;
@@ -50,7 +50,10 @@ public class JoinBinder implements I_JoinBinder {
 
     SelectQuery<?> selectQuery;
 
-    public JoinBinder(SelectQuery<?> selectQuery, boolean isWholeComposition) {
+    I_DomainAccess domainAccess;
+
+    public JoinBinder(I_DomainAccess domainAccess,  SelectQuery<?> selectQuery, boolean isWholeComposition) {
+        this.domainAccess = domainAccess;
         this.selectQuery = selectQuery;
         this.isWholeComposition = isWholeComposition;
     }
@@ -65,34 +68,70 @@ public class JoinBinder implements I_JoinBinder {
      * @param compositionAttributeQuery
      */
     public SelectQuery<?> addJoinClause(CompositionAttributeQuery compositionAttributeQuery) {
+
         if (compositionAttributeQuery == null)
             return selectQuery;
-        if (compositionAttributeQuery.isJoinSubject()) {
-            joinSubject(selectQuery, compositionAttributeQuery);
+
+        if (!compositionAttributeQuery.isUseEntry()  && noJoinRequired(compositionAttributeQuery)){
+            selectQuery = simpleFromClause(selectQuery, compositionAttributeQuery);
         }
-        if (compositionAttributeQuery.isJoinComposition()) {
-            joinComposition(selectQuery, compositionAttributeQuery);
-        }
-        if (compositionAttributeQuery.isJoinEventContext()) {
-            joinEventContext(selectQuery, compositionAttributeQuery);
-        }
-        if (compositionAttributeQuery.isJoinContextFacility()) {
-            joinContextFacility(selectQuery, compositionAttributeQuery);
-        }
-        if (compositionAttributeQuery.isJoinComposer()) {
-            joinComposer(selectQuery, compositionAttributeQuery);
-        }
-        if (compositionAttributeQuery.isJoinEhr()) {
-            joinEhr(selectQuery, compositionAttributeQuery);
-        }
-        if (compositionAttributeQuery.isJoinSystem()) {
-            joinSystem(selectQuery, compositionAttributeQuery);
-        }
-        if (compositionAttributeQuery.isJoinEhrStatus() || compositionAttributeQuery.containsEhrStatus()) {
-            joinEhrStatus(selectQuery, compositionAttributeQuery);
+        else {
+            if (compositionAttributeQuery.isJoinSubject()) {
+                joinSubject(selectQuery, compositionAttributeQuery);
+            }
+            if (compositionAttributeQuery.isJoinComposition()) {
+                joinComposition(selectQuery, compositionAttributeQuery);
+            }
+            if (compositionAttributeQuery.isJoinEventContext()) {
+                joinEventContext(selectQuery, compositionAttributeQuery);
+            }
+            if (compositionAttributeQuery.isJoinContextFacility()) {
+                joinContextFacility(selectQuery, compositionAttributeQuery);
+            }
+            if (compositionAttributeQuery.isJoinComposer()) {
+                joinComposer(selectQuery, compositionAttributeQuery);
+            }
+            if (compositionAttributeQuery.isJoinEhr()) {
+                joinEhr(selectQuery, compositionAttributeQuery);
+            }
+            if (compositionAttributeQuery.isJoinSystem()) {
+                joinSystem(selectQuery, compositionAttributeQuery);
+            }
+            if (compositionAttributeQuery.isJoinEhrStatus() || compositionAttributeQuery.containsEhrStatus()) {
+                joinEhrStatus(selectQuery, compositionAttributeQuery);
+            }
         }
 
         return selectQuery;
+    }
+
+    private boolean noJoinRequired(CompositionAttributeQuery compositionAttributeQuery){
+        return (compositionAttributeQuery.isJoinComposer() ? 2 : 0) +
+                (compositionAttributeQuery.isJoinEventContext() ? 1 : 0) +
+                (compositionAttributeQuery.isJoinComposition() ? 2 : 0) +
+                (compositionAttributeQuery.isJoinContextFacility() ? 2 : 0) +
+                (compositionAttributeQuery.isJoinEhr() ? 1 : 0) +
+                (compositionAttributeQuery.isJoinEhrStatus() ? 2 : 0) +
+                (compositionAttributeQuery.isJoinSubject() ? 2 : 0) +
+                (compositionAttributeQuery.isJoinSystem() ? 1 : 0) == 1;
+    }
+
+    private SelectQuery<?> simpleFromClause(SelectQuery<?> selectQuery, CompositionAttributeQuery compositionAttributeQuery) {
+
+        List<Field<?>> selectFields = selectQuery.getSelect();
+        SelectQuery<?> selectQuery1 = domainAccess.getContext().selectQuery();
+        selectQuery1.addSelect(selectFields);
+
+        if (compositionAttributeQuery.isJoinEhr()){
+            selectQuery1.addFrom(EHR_.as(EHR_JOIN));
+        }
+        else if (compositionAttributeQuery.isJoinComposition()){
+            selectQuery1.addFrom(COMPOSITION.as(COMPOSITION_JOIN));
+        }
+        else if (compositionAttributeQuery.isJoinSystem()){
+            selectQuery1.addFrom(SYSTEM.as(SYSTEM_JOIN));
+        }
+        return selectQuery1;
     }
 
     private void joinComposition(SelectQuery<?> selectQuery, CompositionAttributeQuery compositionAttributeQuery) {

@@ -32,17 +32,7 @@ workflows:
   # WORKFLOW 1/3
   build-and-test:
     jobs:
-      - build-artifacts:
-          context: org-global
-          filters:
-            branches:
-              ignore:
-                - /release\/.*/
-                - master
-                - /sync\/.*/
-                - /feature/sync\/.*/
-
-      - run-unit-tests:
+      - build-ehrbase:
           context: org-global
           filters:
             branches:
@@ -55,74 +45,89 @@ workflows:
       - run-SDK-integration-tests:
           context: org-global
           requires:
-            - build-artifacts
-        
-      - dependency-check:
-          context: org-global
-          requires:
-            - build-artifacts
+            - build-ehrbase
 
       - COMPOSITION-tests-1:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
+            - QUERYSERVICE-test-1
           # post-steps:
           #   - provide-test-status-report-via-slack #
 
       - COMPOSITION-tests-2:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
+            - QUERYSERVICE-test-1
 
       - COMPOSITION-tests-3:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
+            - QUERYSERVICE-test-1
 
       - COMPOSITION-tests-4:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
+            - QUERYSERVICE-test-1
 
       - CONTRIBUTION-test:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
+            - QUERYSERVICE-test-1
 
       - DIRECTORY-test:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
+            - QUERYSERVICE-test-1
 
       - EHRSERVICE-test:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
+            - QUERYSERVICE-test-1
 
       - EHRSTATUS-test:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
+            - QUERYSERVICE-test-1
 
       - KNOWLEDGE-test:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
+            - QUERYSERVICE-test-1
 
       - QUERYSERVICE-test-1:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
+      
+      # - QUERYSERVICE-smoke:
+      #     context: org-global
+      #     # requires:
+      #     #   - build-ehrbase
 
       - QUERYSERVICE-test-2:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
       
       - SECURITY-test:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
+      - ADMIN-test:
+          context: org-global
+          requires:
+            - build-ehrbase
 
       - ROBOT-TEST-REPORT:
           context: org-global
@@ -139,25 +144,26 @@ workflows:
             - QUERYSERVICE-test-1
             - QUERYSERVICE-test-2
             - SECURITY-test
+            - ADMIN-test
 
       - sonar-analysis:
           context: org-global
           requires:
-            - build-artifacts
-            - run-unit-tests
-            - dependency-check
-            - COMPOSITION-tests-1
-            - COMPOSITION-tests-2
-            - COMPOSITION-tests-3
-            - COMPOSITION-tests-4
-            - CONTRIBUTION-test
-            - DIRECTORY-test
-            - EHRSERVICE-test
-            - EHRSTATUS-test
-            - KNOWLEDGE-test
-            - QUERYSERVICE-test-1
-            - QUERYSERVICE-test-2
-            - SECURITY-test
+            - run-SDK-integration-tests
+            # TODO: reactivate this after https://github.com/ehrbase/ehrbase/issues/330
+            #       resolved
+            # - COMPOSITION-tests-1
+            # - COMPOSITION-tests-2
+            # - COMPOSITION-tests-3
+            # - COMPOSITION-tests-4
+            # - CONTRIBUTION-test
+            # - DIRECTORY-test
+            # - EHRSERVICE-test
+            # - EHRSTATUS-test
+            # - KNOWLEDGE-test
+            # - QUERYSERVICE-test-1
+            # - QUERYSERVICE-test-2
+            # - SECURITY-test
 
 
 
@@ -166,14 +172,7 @@ workflows:
   # WORKFLOW 2/3
   release:
     jobs:
-      - build-artifacts:
-          context: org-global
-          filters:
-            branches:
-              only:
-                - /^(release\/v\d+\.\d+\.\d+|master)$/
-
-      - run-unit-tests:
+      - build-ehrbase:
           context: org-global
           filters:
             branches:
@@ -183,74 +182,83 @@ workflows:
       - run-SDK-integration-tests:
           context: org-global
           requires:
-            - build-artifacts
-
-      - dependency-check:
-          context: org-global
-          requires:
-            - build-artifacts
+            - build-ehrbase
 
       - COMPOSITION-tests-1:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
+            - QUERYSERVICE-test-2
           # post-steps:
           #   - provide-test-status-report-via-slack #
 
       - COMPOSITION-tests-2:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
+            - QUERYSERVICE-test-2
 
       - COMPOSITION-tests-3:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
+            - QUERYSERVICE-test-2
 
       - COMPOSITION-tests-4:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
+            - QUERYSERVICE-test-2
 
       - CONTRIBUTION-test:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
+            - QUERYSERVICE-test-2
 
       - DIRECTORY-test:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
+            - QUERYSERVICE-test-2
 
       - EHRSERVICE-test:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
+            - QUERYSERVICE-test-2
 
       - EHRSTATUS-test:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
+            - QUERYSERVICE-test-2
 
       - KNOWLEDGE-test:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
+            - QUERYSERVICE-test-2
 
       - QUERYSERVICE-test-1:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
 
       - QUERYSERVICE-test-2:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
 
       - SECURITY-test:
           context: org-global
           requires:
-            - build-artifacts
+            - build-ehrbase
+
+      - ADMIN-test:
+          context: org-global
+          requires:
+            - build-ehrbase
 
       - ROBOT-TEST-REPORT:
           context: org-global
@@ -267,25 +275,26 @@ workflows:
             - QUERYSERVICE-test-1
             - QUERYSERVICE-test-2
             - SECURITY-test
+            - ADMIN-test
 
       - sonar-analysis:
           context: org-global
           requires:
-            - build-artifacts
-            - run-unit-tests
-            - dependency-check
-            - COMPOSITION-tests-1
-            - COMPOSITION-tests-2
-            - COMPOSITION-tests-3
-            - COMPOSITION-tests-4
-            - CONTRIBUTION-test
-            - DIRECTORY-test
-            - EHRSERVICE-test
-            - EHRSTATUS-test
-            - KNOWLEDGE-test
-            - QUERYSERVICE-test-1
-            - QUERYSERVICE-test-2
-            - SECURITY-test
+            - run-SDK-integration-tests
+            # TODO: reactivate this after https://github.com/ehrbase/ehrbase/issues/330
+            #       resolved
+            # - COMPOSITION-tests-1
+            # - COMPOSITION-tests-2
+            # - COMPOSITION-tests-3
+            # - COMPOSITION-tests-4
+            # - CONTRIBUTION-test
+            # - DIRECTORY-test
+            # - EHRSERVICE-test
+            # - EHRSTATUS-test
+            # - KNOWLEDGE-test
+            # - QUERYSERVICE-test-1
+            # - QUERYSERVICE-test-2
+            # - SECURITY-test
 
 
 
@@ -395,6 +404,10 @@ workflows:
           context: org-global
           requires:
             - build package ehrbase with locally installed sdk
+      - ADMIN-test:
+          context: org-global
+          requires:
+            - build package ehrbase with locally installed sdk
       - ROBOT-TEST-REPORT:
           context: org-global
           requires:
@@ -410,6 +423,7 @@ workflows:
             - QUERYSERVICE-test-1
             - QUERYSERVICE-test-2
             - SECURITY-test
+            - ADMIN-test
 
 
 
@@ -424,7 +438,6 @@ jobs:
   #           88  Y8,        ,8P  88      `8b          `8b
   #   88,   ,d88   Y8a.    .a8P   88      a8P  Y8a     a8P
   #    "Y8888P"     `"Y8888Y"'    88888888P"    "Y88888P"
-
 
 
   pull build install sdk from sync-branch:
@@ -472,37 +485,22 @@ jobs:
       - save-skd-test-results
 
 
-  build-artifacts:
+  build-ehrbase:
     executor: docker-py3-java11-postgres
+    # executor: machine-ubuntu-2004
     steps:
       - checkout
       - install-maven
-      - restore-build-artifacts-job-caches
+      - restore-build-ehrbase-job-caches
       - maven-package
       - save-packaged-ehrbase-jar
-      - save-build-artifacts-job-caches
+      - save-build-ehrbase-job-caches
+      - collect-ehrbase-unittest-results
+      - save-ehrbase-test-results
+      # - run: echo MOCKED JOB 1          # USE FOR PIPELINE DEBUGGING ONLY
+      # - cache-out-ehrbase-workspace     # USE FOR PIPELINE DEBUGGING ONLY
+      # - cache-in-ehrbase-workspace     # USE FOR PIPELINE DEBUGGING ONLY
 
-  dependency-check:
-    executor: docker-python3-java11
-    steps:
-      - checkout
-      - install-maven
-      - restore-packaged-ehrbase-jar
-      - restore-dependency-check-job-caches
-      - run-dependency-check
-      - persist-dependency-check-results
-      - save-dependency-check-job-caches
-
-  run-unit-tests:
-    executor: docker-py3-java11-postgres
-    steps:
-      - checkout
-      - install-maven
-      - restore-packaged-ehrbase-jar
-      - restore-unit-tests-job-caches
-      - maven-test
-      - save-unit-tests-job-caches
-      - persist-unit-test-coverage
 
   run-SDK-integration-tests:
     description: Run openEHR_SDK's Java integration tests (w/ EHRbase + DB running).
@@ -510,16 +508,21 @@ jobs:
     steps:
       - checkout
       - attach-target-folder
+      - setup-jacoco-distribution
       - git-clone-sdk-repo
       - cache-out-sdk-m2-dependencies
       - start-ehrbase-and-run-all-sdk-tests
       - cache-in-sdk-m2-dependencies
+      - collect-sdk-it-coverage
+      - generate-sdk-it-coverage-report
       - collect-sdk-unittest-results
       - collect-sdk-integrationtest-results
       - save-skd-test-results
   
+  
   COMPOSITION-tests-1:
     executor: docker-py3-java11-postgres
+    # executor: machine-ubuntu-2004
     steps:
       - checkout
       - restore-packaged-ehrbase-jar
@@ -530,7 +533,9 @@ jobs:
 
   COMPOSITION-tests-2:
     executor: docker-py3-java11-postgres
+    # executor: machine-ubuntu-2004
     steps:
+      - run: echo MOCKED JOB 3
       - checkout
       - restore-packaged-ehrbase-jar
       - run-robot-tests:
@@ -540,7 +545,8 @@ jobs:
 
   COMPOSITION-tests-3:
     executor: docker-py3-java11-postgres
-    steps:
+    # executor: machine-ubuntu-2004
+    steps:      
       - checkout
       - restore-packaged-ehrbase-jar
       - run-robot-tests:
@@ -550,6 +556,7 @@ jobs:
 
   COMPOSITION-tests-4:
     executor: docker-py3-java11-postgres
+    # executor: machine-ubuntu-2004
     steps:
       - checkout
       - restore-packaged-ehrbase-jar
@@ -560,6 +567,7 @@ jobs:
 
   CONTRIBUTION-test:
     executor: docker-py3-java11-postgres
+    # executor: machine-ubuntu-2004
     steps:
       - checkout
       - restore-packaged-ehrbase-jar
@@ -570,6 +578,7 @@ jobs:
 
   DIRECTORY-test:
     executor: docker-py3-java11-postgres
+    # executor: machine-ubuntu-2004
     steps:
       - checkout
       - restore-packaged-ehrbase-jar
@@ -580,6 +589,7 @@ jobs:
 
   EHRSERVICE-test:
     executor: docker-py3-java11-postgres
+    # executor: machine-ubuntu-2004
     steps:
       - checkout
       - restore-packaged-ehrbase-jar
@@ -617,27 +627,97 @@ jobs:
           include-tags: "aql_adhoc-queryANDempty_db"
           test-suite-path: "QUERY_SERVICE_TESTS"
           test-suite-name: "ADHOC-QUERY-1"
+  
 
   QUERYSERVICE-test-2:
-    executor: docker-py3-java11-postgres
+    # executor: docker-py3-java11-postgres
+    executor: machine-ubuntu-2004
+    environment:
+      SUT: TEST
     steps:
       - checkout
       - restore-packaged-ehrbase-jar
+      # - cache-out-ehrbase-workspace       # USE FOR PIPELINE DEBUGGING ONLY
+      - restore_cache:
+          keys:
+            - expected-results-loaded-db-v7
+      - run:
+          name: list files after restore of cache
+          command: |
+            ls -la tests/robot/_resources/test_data_sets/query/aql_queries_valid/A/
+            ls -la tests/robot/_resources/test_data_sets/query/aql_queries_valid/B/
+            ls -la tests/robot/_resources/test_data_sets/query/aql_queries_valid/C/
+            ls -la tests/robot/_resources/test_data_sets/query/aql_queries_valid/D/
+      - restore_cache:
+          keys:
+            - ehrbasedb-dump-v7
+      # COMMENT: USE THE NEXT LINE ONLY TO FORCE TEST-DATA REGENERATION! Otherwise comment it out!
+      # - run: echo "FORCE GENERATION OF TEST-DATA AND EXPECTED RESULTS!" > /tmp/DATA_CHANGED_NOTICE
+      - run: 
+          name: CHECK IF EXPECTED-RESULT TEMPLATES HAVE CHANGED AND REGENERATE TEST-DATA IF NEEDED
+          command: |
+            find tests/robot/_resources/test_data_sets/query/expected_results/loaded_db/ -type f ! -name *.tmp.json | sort | xargs cat > /tmp/expected-results-loaded_db-seed
+            sha256sum /tmp/expected-results-loaded_db-seed
+            ACTUAL_HASH="$(sha256sum /tmp/expected-results-loaded_db-seed | cat)"
+            EXPECTED_HASH="f5ee5a9a55c50687dafc3c3acff66089759f1577d7a5dd71aff6e60793ce91c2  /tmp/expected-results-loaded_db-seed"
+            [ "$ACTUAL_HASH" = "$EXPECTED_HASH" ] && echo "Expected results unchanged!  Don't regenerate test-data!" || echo "Expected result data-sets changed. Regenerate!" > /tmp/DATA_CHANGED_NOTICE
       - run-robot-tests:
+          sut: "SUT:TEST"
+          # include-tags: "SMOKE"
+          # test-suite-path: "QUERY_SERVICE_TESTS"
+          # test-suite-name: "ADHOC-QUERY-SMOKE"
           include-tags: "aql_adhoc-queryANDloaded_db"
           test-suite-path: "QUERY_SERVICE_TESTS"
           test-suite-name: "ADHOC-QUERY-2"
+      - save_cache:
+          key: expected-results-loaded-db-v7-{{ checksum "/tmp/expected-results-loaded_db-seed" }}
+          paths:
+            - tests/robot/_resources/test_data_sets/query/expected_results/loaded_db/
+            - tests/robot/_resources/test_data_sets/query/aql_queries_valid/
+      - run:
+          name: list files after save of cache
+          command: |
+            ls -la tests/robot/_resources/test_data_sets/query/aql_queries_valid/A/
+            ls -la tests/robot/_resources/test_data_sets/query/aql_queries_valid/B/
+            ls -la tests/robot/_resources/test_data_sets/query/aql_queries_valid/C/
+            ls -la tests/robot/_resources/test_data_sets/query/aql_queries_valid/D/
+      - save_cache:
+          key: ehrbasedb-dump-v7-{{ checksum "/tmp/ehrbasedb_dump.sql" }}
+          paths:
+            - /tmp/ehrbasedb_dump.sql
+  
   
   SECURITY-test:
     executor: machine-ubuntu-2004
+    environment:
+      SUT: TEST
+      SECURITY_AUTHTYPE: OAUTH
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI: "http://localhost:8081/auth/realms/ehrbase"
     steps:
       - checkout
       - install-and-configure-keycloak
       - restore-packaged-ehrbase-jar
-      - run-robot-tests-with-oauth:
+      - run-robot-tests:
+          sut: "SUT:TEST -v AUTH_TYPE:OAUTH"
           include-tags: "OAUTH"
           # test-suite-path: ""
           test-suite-name: "KEYCLOAK-OAUTH"
+        
+  ADMIN-test:
+    # executor: docker-py3-java11-postgres
+    executor: machine-ubuntu-2004
+    environment:
+      ADMINAPI_ACTIVE: "TRUE"
+      SYSTEM_ALLOWTEMPLATEOVERWRITE: "TRUE"
+    steps:
+      - checkout
+      - restore-packaged-ehrbase-jar
+      - run-robot-tests:
+          sut: "SUT:ADMIN-TEST"
+          include-tags: "admin"
+          test-suite-path: "ADMIN_TESTS"
+          test-suite-name: "ADMIN"
+
 
   ROBOT-TEST-REPORT:
     executor: docker-python3-java11
@@ -651,9 +731,38 @@ jobs:
       - checkout
       - attach_workspace:
           at: /home/circleci
-      - restore-sonar-analysis-job-caches
-      - run-sonar-analysis
-      - save-sonar-analysis-job-caches
+      - run:
+          name: Merge Jacoco .exec files
+          command: |
+            java -jar ~/jacoco/lib/jacococli.jar merge ./*/target/jacoco*.exec \
+                 --destfile test-coverage/jacoco-all-tests-coverage.exec
+      - run:
+          name: Generate coverage report from jacoco-all-tests-coverage.exec
+          command: |
+            mkdir -p test-coverage/overall-coverage-report
+            java -jar ~/jacoco/lib/jacococli.jar report test-coverage/jacoco-all-tests-coverage.exec \
+              --classfiles api/target/classes/ \
+              --classfiles application/target/classes/ \
+              --classfiles base/target/classes/ \
+              --classfiles jooq-pq/target/classes/ \
+              --classfiles rest-ehr-scape/target/classes/ \
+              --classfiles rest-openehr/target/classes/ \
+              --classfiles service/target/classes/ \
+              --sourcefiles api/src/main/java/ \
+              --sourcefiles application/src/main/java/ \
+              --sourcefiles base/src/main/java/ \
+              --sourcefiles jooq-pq/src/main/java/ \
+              --sourcefiles rest-ehr-scape/src/main/java/ \
+              --sourcefiles rest-openehr/src/main/java/ \
+              --sourcefiles service/src/main/java/ \
+              --html test-coverage/overall-coverage-report \
+              --xml test-coverage/overall-coverage-report/jacoco.xml \
+              --name "EHRbase Code Coverage w/ All Tests (Unit, SDK, Robot)"
+      - store_artifacts:
+          path:  ~/projects/test-coverage/overall-coverage-report
+            
+      - sonarcloud/scan:
+          cache_version: 1       # NOTE: increment this value to force cache rebuild
 
 
 
@@ -684,19 +793,28 @@ commands:
   #
 
 
-  # USE THIS COMMAND W/ DOCKER EXECUTOR ONLY!!! 
   run-robot-tests:
     description: Run integration tests written in Robot Framework
     parameters:
+      sut:
+        description: SUT - System Under Test Config
+        enum: ["SUT:DEV", "SUT:DEV -v AUTH_TYPE:OAUTH", "SUT:ADMIN-DEV", "SUT:TEST", "SUT:TEST -v AUTH_TYPE:OAUTH", "SUT:ADMIN-TEST"]
+        default: "SUT:DEV"
+        type: enum
+
       include-tags:
         description: Which tests to inclue by TAGs (Robot syntax applies!)
         type: string
+
       test-suite-path:
         description: Target test-suite given by it's folder name e.g. COMPOSITION_TESTS
         type: string
+        default: ""
+
       test-suite-name:
         description: Titel of generated Robot Log/Report.html
         type: string
+
     steps:
       # - cache-out-python-requirements
       - install-maven
@@ -710,11 +828,25 @@ commands:
           name: START EHRBASE SERVER AND EXECUTE ROBOT TESTS
           no_output_timeout: 30m
           command: |
+            echo "SUT: $SUT"
+            echo "ADMINAPI_ACTIVE: $ADMINAPI_ACTIVE"
+            echo "SECURITY_AUTHTYPE: $SECURITY_AUTHTYPE"
+            echo "OAUTH_RESRCSERVER_URL: $SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI"
             ls -la
-            EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
-            echo ${EHRbase_VERSION}
-            java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=true > log &
-            grep -m 1 "Started EhrBase in" <(tail -f log)
+            if [ "${SUT}" != "TEST" ]; then
+              EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+              echo ${EHRbase_VERSION}
+              java -jar "application/target/application-${EHRbase_VERSION}.jar" \
+                  --cache.enabled=false >log & app_pid=$!
+              if ! tail -f log | timeout 30s grep -m 1 "Started EhrBase in"; then
+                echo "WARNING: Did not see a startup message even after waiting 30s" >&2
+                if kill -0 "$app_pid"; then
+                  echo "...although EHRbase is still running" >&2
+                else
+                  echo "...and EHRbase did not successfully start" >&2
+                fi
+              fi
+            fi
             jps
             cd ~/projects/tests
             robot --include << parameters.include-tags >> \
@@ -726,59 +858,24 @@ commands:
                   --flattenkeywords foritem \
                   --flattenkeywords name:_resources.* \
                   --outputdir results/<< parameters.test-suite-name >> \
+                  --timestampoutputs \
                   --name << parameters.test-suite-name >> \
-                  -v nodocker \
-                  robot/<< parameters.test-suite-path >>/
+                  -v << parameters.sut >> \
+                  robot/<< parameters.test-suite-path >>
       # - cache-in-python-requirements
-      - save-test-results-folder
+      - save-test-results-folder:
+          suite-results-folder-name: << parameters.test-suite-name >>
       - store_test_results:
           path: ~/projects/tests/results/
       - store_artifacts:
           path: ~/projects/tests/results/
-
-
-  run-robot-tests-with-oauth:
-    description: Run selected integration tests w/ active Keycloak OAuth2 authentication
-    parameters:
-      include-tags:
-        description: Which tests to inclue by TAGs (Robot syntax applies!)
-        type: string
-      # test-suite-path:
-      #   description: Target test-suite given by it's folder name e.g. COMPOSITION_TESTS
-      #   type: string
-      test-suite-name:
-        description: Titel of generated Robot Log/Report.html
-        type: string
-    steps:
-      - restore-integration-tests-job-caches
-      - install-python3-requirements
-      - run:
-          name: EXECUTE ROBOT COMMAND
-          no_output_timeout: 30m
-          command: |
-            cd tests
-            robot -v AUTH_TYPE:OAUTH \
-                  --include << parameters.include-tags >> \
-                  --exclude TODO -e future -e obsolete -e libtest \
-                  --console dotted \
-                  --loglevel TRACE \
-                  --noncritical not-ready \
-                  --flattenkeywords for \
-                  --flattenkeywords foritem \
-                  --flattenkeywords name:_resources.* \
-                  --outputdir results/<< parameters.test-suite-name >> \
-                  --name << parameters.test-suite-name >> \
-                  robot/
-      - save-integration-tests-job-caches
-      - save-test-results-folder
-      - store_test_results:
-          path: ~/projects/tests/results/
-      - store_artifacts:
-          path: ~/projects/tests/results/
-
 
   save-test-results-folder:
     description: Persist Robot tests folder to workspace
+    parameters:
+      suite-results-folder-name:
+        description: Titel of generated Robot Outputs
+        type: string
     steps:
       - run:
           name: PERSIST ROBOT TEST RESULTS
@@ -787,7 +884,7 @@ commands:
       - persist_to_workspace:
           root: /home/circleci
           paths:
-            - projects/tests/results
+            - projects/tests/results/<< parameters.suite-results-folder-name >>
 
 
   restore-test-results-folder:
@@ -810,7 +907,7 @@ commands:
             cd tests
 
             # Create Log/Report with ALL DETAILS
-            rebot --outputdir results \
+            rebot --outputdir results/0 \
                   --name EHRbase \
                   --exclude TODO -e future -e obsolete -e libtest \
                   --removekeywords for \
@@ -828,14 +925,15 @@ commands:
             cd tests
 
             # Create JUNIT report from merged results
-            rebot --outputdir results \
+            rebot --outputdir results/robot-tests \
                   --exclude TODO -e future -e obsolete -e libtest \
                   --noncritical not-ready \
                   --xunit junit-output.xml --xunitskipnoncritical \
                   --log NONE \
                   --report NONE \
-                  results/EHRbase-output.xml
-      - save-test-results-folder
+                  results/0/EHRbase-output.xml
+      - save-test-results-folder:
+          suite-results-folder-name: "0"
       - store_test_results:
           path: ~/projects/tests/results/
       - store_artifacts:
@@ -863,21 +961,26 @@ commands:
       - run:
           name: CHECKOUT SDK SYNC/BRANCH
           command: |
-            echo BRANCH NAME TO CHECKOUT: $BRANCH_NAME
+            echo BRANCH NAME TO CHECKOUT: $CIRCLE_BRANCH
             cd ~/projects/openEHR_SDK
-            git checkout $BRANCH_NAME
+            git checkout $CIRCLE_BRANCH
   
 
   maven-install-sdk:
     steps:
       - run:
+          name: Save the version number of locally installed SDK into a file
+          command: |
+            cd ~/projects/openEHR_SDK
+            mvn build-helper:parse-version versions:set -DnewVersion=\${project.version}-LOCAL versions:commit
+            SDK_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+            echo $SDK_VERSION > SDK_VERSION
+            cat SDK_VERSION
+      - run:
           name: INSTALL SDK
           command: |
             cd ~/projects/openEHR_SDK
-            SDK_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
-            echo $SDK_VERSION > ~/projects/SDK_VERSION
-            cat ~/projects/SDK_VERSION
-            mvn clean install -Dmaven.javadoc.skip=true   # -Dmaven.test.skip
+            mvn install -Dmaven.javadoc.skip=true -Djacoco.skip=true -Dmaven.test.skip
 
 
   start-ehrbase-and-run-java-integration-sdk-tests:
@@ -913,11 +1016,59 @@ commands:
             EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
             echo ${EHRbase_VERSION}
             cd ~/projects    # NOTE: This is where the target folder w/ artifacts were persisted to in previous step.
-            java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=true > log &
+            java -javaagent:/home/circleci/jacoco/lib/jacocoagent.jar=output=tcpserver,address=127.0.0.1 \
+                 -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=true > log &
             grep -m 1 "Started EhrBase in" <(tail -f log)
             cd ~/projects/openEHR_SDK
             jps
             mvn verify -DskipIntegrationTests=false -Dmaven.javadoc.skip=true
+            java -jar ~/jacoco/lib/jacococli.jar dump \
+              --destfile=/home/circleci/projects/test-coverage/target/jacoco-sdk-it-coverage.exec
+            while [ ! -f /home/circleci/projects/test-coverage/target/jacoco-sdk-it-coverage.exec ];
+              do echo "Waiting for jacoco execution data file";
+              sleep 1
+            done;
+            echo "Jacoco execution data found!"
+
+
+  collect-sdk-it-coverage:
+    description: Persists coverage execution data from SDK integration tests
+    steps:
+      - run: echo Collect Code Coverage From SDK Integration Tests
+      - persist_to_workspace:
+          name: Persist coverage data (projects/test-coverage/target/jacoco-sdk-it-coverage.exec)
+          root: /home/circleci
+          paths:
+            - projects/test-coverage/target/jacoco-sdk-it-coverage.exec
+
+  
+  generate-sdk-it-coverage-report:
+    description: Generates human readable reports from jacoco-sdk-it-coverage.exec
+    steps:
+      - run:
+          name: Generate SDK IT Coverage Report
+          command: |
+            mkdir -p test-coverage/sdk-it-coverage-report
+            java -jar ~/jacoco/lib/jacococli.jar report test-coverage/target/jacoco-sdk-it-coverage.exec \
+              --classfiles api/target/classes/ \
+              --classfiles application/target/classes/ \
+              --classfiles base/target/classes/ \
+              --classfiles jooq-pq/target/classes/ \
+              --classfiles rest-ehr-scape/target/classes/ \
+              --classfiles rest-openehr/target/classes/ \
+              --classfiles service/target/classes/ \
+              --sourcefiles api/src/main/java/ \
+              --sourcefiles application/src/main/java/ \
+              --sourcefiles base/src/main/java/ \
+              --sourcefiles jooq-pq/src/main/java/ \
+              --sourcefiles rest-ehr-scape/src/main/java/ \
+              --sourcefiles rest-openehr/src/main/java/ \
+              --sourcefiles service/src/main/java/ \
+              --html test-coverage/sdk-it-coverage-report \
+              --xml test-coverage/sdk-it-coverage-report/jacoco.xml \
+              --name "EHRbase Code Coverage w/ SDK Integration Tests"
+      - store_artifacts:
+          path:  ~/projects/test-coverage/sdk-it-coverage-report
 
 
   save-local-sdk-installation:
@@ -940,7 +1091,7 @@ commands:
       steps:
         - run:
             name: Generate Cache Checksum for openEHR_SDK Dependencies
-            command: find openEHR_SDK/ -name 'pom.xml' | sort | xargs cat > /tmp/openEHR_SDK_maven_cache_seed
+            command: find openEHR_SDK/ -type f -name *.java | sort | xargs cat > /tmp/openEHR_SDK_maven_cache_seed
         - restore_cache:
             key: openEHR_SDK-
 
@@ -957,7 +1108,7 @@ commands:
       steps:
         - run:
             name: Generate Cache Checksum for openEHR_SDK Dependencies
-            command: find openEHR_SDK/ -name 'pom.xml' | sort | xargs cat > /tmp/openEHR_SDK_syncbranch_maven_cache_seed
+            command: find openEHR_SDK/ -type f -name *.java | sort | xargs cat > /tmp/openEHR_SDK_syncbranch_maven_cache_seed
         - restore_cache:
             key: openEHR_SDK-syncbranch-v1-
 
@@ -1013,10 +1164,13 @@ commands:
       - run:
           name: Adjust SDK version number in EHRbase's pom
           command: |
-            SDK_VERSION=$(cat ~/projects/SDK_VERSION)
+            SDK_VERSION=$(cat ~/projects/openEHR_SDK/SDK_VERSION)
             echo $SDK_VERSION
             # cd ~/projects
-            xmlstarlet edit --inplace -N my=http://maven.apache.org/POM/4.0.0 -u my:project/my:version -v $SDK_VERSION pom.xml
+            xmlstarlet edit --inplace -u project/properties/ehrbase.sdk.version -v $SDK_VERSION pom.xml
+      - run:
+          name: Show EHRbase's pom
+          command: cat pom.xml
 
             
   build-and-test-ehrbase:
@@ -1047,9 +1201,9 @@ commands:
   cache-in-ehrbase-m2-dependencies-syncbranch:
     steps:
       - save_cache:
-          key: EHRbase-sychbranch-v1-{{ checksum "/tmp/EHRbase_syncbranch_maven_cache_seed" }}
+          key: EHRbase-sychbranch-v2-{{ checksum "/tmp/EHRbase_syncbranch_maven_cache_seed" }}
           paths:
-            - ~/.m2
+            - ~/.m2/repository/org/ehrbase/openehr/
 
 
   cache-out-ehrbase-m2-dependencies-syncbranch:
@@ -1058,7 +1212,7 @@ commands:
           name: Generate Cache Checksum for EHRbase Dependencies
           command: find ~/projects -name 'pom.xml' | sort | xargs cat > /tmp/EHRbase_syncbranch_maven_cache_seed
       - restore_cache:
-          key: EHRbase-sychbranch-v1-
+          key: EHRbase-sychbranch-v2
 
 
   save-packaged-ehrbase-jar:
@@ -1066,7 +1220,14 @@ commands:
       - persist_to_workspace:
           root: /home/circleci
           paths:
+            - projects/api/target
             - projects/application/target
+            - projects/base/target
+            - projects/jooq-pq/target
+            - projects/rest-ehr-scape/target
+            - projects/rest-openehr/target
+            - projects/service/target
+            - projects/test-coverage/target
 
  
   restore-packaged-ehrbase-jar:
@@ -1092,6 +1253,20 @@ commands:
           path: ~/ehrbase-test-results
       - store_artifacts:
           path: ~/ehrbase-test-results
+
+  
+  # WARNING: don't use these two steps in production
+  #          use them for pipeline debugging only!
+  cache-in-ehrbase-workspace:
+    steps:
+      - save_cache:
+          key: ehrbase-workspace-cache-v1
+          paths:
+            - application/target
+  cache-out-ehrbase-workspace:
+    steps:
+      - restore_cache:
+          key: ehrbase-workspace-cache-v1
 
 
 
@@ -1240,25 +1415,21 @@ commands:
             unzip ~/projects/.circleci/file_repo_content.zip -d ~/projects
 
   setup-jacoco-distribution:
-    description: Download and unzip Jacoco distribution
+    description: Download and unzip Jacoco Code Coverage Tool
     steps:
       - run:
-          name: Download and unzip Jacoco disribution
+          name: Download and unzip Jacoco
           command: |
             mkdir -p ~/download
             cd ~/download
-            [ -e jacoco-0.8.2.zip ] || wget https://repo1.maven.org/maven2/org/jacoco/jacoco/0.8.2/jacoco-0.8.2.zip
-            mkdir -p ~/jacoco-0.8.2
-            unzip -uo jacoco-0.8.2.zip -d ~/jacoco-0.8.2
-
-  collect-integration-coverage:
-    description: Collect integration test coverage
-    steps:
-      - run:
-          name: Collect integration test coverage
-          command: |
-            java -jar ~/jacoco-0.8.2/lib/jacococli.jar dump \
-              --destfile=/home/circleci/projects/application/target/jacoco-it.exec
+            [ -e jacoco-0.8.6.zip ] || wget https://repo1.maven.org/maven2/org/jacoco/jacoco/0.8.6/jacoco-0.8.6.zip
+            mkdir -p ~/jacoco
+            unzip -uo jacoco-0.8.6.zip -d ~/jacoco
+      - persist_to_workspace:
+          name: Persist Jacoco Download (~/jacoco)
+          root: /home/circleci
+          paths:
+            - jacoco
 
 
 
@@ -1334,68 +1505,9 @@ commands:
           name: Package Maven app
           command: |
             cd ~/projects
-            mvn package -DskipTests
+            mvn package     # -DskipTests
 
 
-
-
-
-  #
-  #
-  #
-  #   ,adPPYba,   ,adPPYba,   8b,dPPYba,   ,adPPYYba,  8b,dPPYba,
-  #   I8[    ""  a8"     "8a  88P'   `"8a  ""     `Y8  88P'   "Y8
-  #    `"Y8ba,   8b       d8  88       88  ,adPPPPP88  88
-  #   aa    ]8I  "8a,   ,a8"  88       88  88,    ,88  88
-  #   `"YbbdP"'   `"YbbdP"'   88       88  `"8bbdP"Y8  88
-  #
-
-  run-sonar-analysis:
-    description: Run Sonar analysis
-    steps:
-      - run:
-          name: Install sonar scanner
-          command: |
-            mkdir -p ~/downloads
-            cd ~/downloads
-            [ -e sonar-scanner-cli-4.2.0.1873-linux.zip ] || wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.2.0.1873-linux.zip
-            unzip -uo sonar-scanner-cli-4.2.0.1873-linux.zip -d ~
-      - run:
-          name: Excecute Sonar analysis
-          command: |
-            chmod 744 ~/projects/.circleci/*.sh
-            ~/sonar-scanner-4.2.0.1873-linux/bin/sonar-scanner \
-            -Dsonar.login=$SONAR_TOKEN \
-            -Dsonar.branch.name=$CIRCLE_BRANCH \
-            -Dsonar.branch.target=$(~/projects/.circleci/get_target_branch.sh) \
-            -Dsonar.projectVersion=$(~/projects/.circleci/verify_and_return_version.sh)
-
-  run-dependency-check:
-    description: Run dependency vulnerability analysis
-    steps:
-      - run:
-          name: Install dependency check
-          command: |
-            mkdir -p ~/downloads
-            cd ~/downloads
-            [ -e dependency-check-5.2.2-release.zip ] || wget https://dl.bintray.com/jeremy-long/owasp/dependency-check-6.0.1-release.zip
-            mkdir -p ~/dependency_check
-            unzip -uo dependency-check*.zip -d ~
-      - run:
-          name: Run dependency vulnerability analysis
-          command: |
-            cd ~/projects
-            ~/dependency-check/bin/dependency-check.sh \
-                --project "EHRBase" --format JSON \
-                -o vulnerability_analysis.json --scan .
-      - run:
-          name: Convert vulnerability analysis to sonar issues
-          command: |
-            # pyenv global 3.7.0
-            python3 ~/projects/.circleci/convert_vulnerability_analysis.py \
-                ~/projects/vulnerability_analysis.json \
-                ~/projects/sonar_issues.json \
-                application/src/main/java/org/ehrbase/application/EhrBase.java
 
 
 
@@ -1452,13 +1564,13 @@ commands:
       - attach_workspace:
           at: /home/circleci
 
-  persist-dependency-check-results:
-    description: Persist dependency check results
-    steps:
-      - persist_to_workspace:
-          root: /home/circleci
-          paths:
-            - projects/sonar_issues.json
+  # persist-dependency-check-results:
+  #   description: Persist dependency check results
+  #   steps:
+  #     - persist_to_workspace:
+  #         root: /home/circleci
+  #         paths:
+  #           - projects/sonar_issues.json
 
 
 
@@ -1514,43 +1626,21 @@ commands:
       - restore_cache:
           keys: google-chrome-incl-webdriver-
 
-  save-dependency-check-job-caches:
-    description: Save all caches in dependency check job
-    steps:
-      - save_cache:
-          key: job-dependency-check-v1-download-5.2.2
-          paths:
-            - ~/downloads
-      - save_cache:
-          key: job-dependency-check-v1-installation-and-database-{{ epoch }}
-          paths:
-            - ~/dependency-check
-
-  restore-dependency-check-job-caches:
-    description: Restore all caches in dependency check job
-    steps:
-      - restore_cache:
-          keys:
-            - job-dependency-check-v1-download-5.2.2
-      - restore_cache:
-          keys:
-            - job-dependency-check-v1-installation-and-database
-
-  save-build-artifacts-job-caches:
+  save-build-ehrbase-job-caches:
     description: Save all caches in building artifacts job
     steps:
       - save_cache:
-          key: job-build-artifacts-v1-mvn-dependencies-{{ checksum "~/projects/pom.xml" }}
+          key: job-build-ehrbase-v1-mvn-dependencies-{{ checksum "~/projects/pom.xml" }}
           paths:
             - ~/.m2/repository
 
-  restore-build-artifacts-job-caches:
+  restore-build-ehrbase-job-caches:
     description: Restore all caches in building artifacts job
     steps:
       - restore_cache:
           keys:
-            - job-build-artifacts-v1-mvn-dependencies-{{ checksum "~/projects/pom.xml" }}
-            - job-build-artifacts-v1-mvn-dependencies
+            - job-build-ehrbase-v1-mvn-dependencies-{{ checksum "~/projects/pom.xml" }}
+            - job-build-ehrbase-v1-mvn-dependencies
 
   save-sonar-analysis-job-caches:
     description: Save all caches in dependency check job
@@ -1596,11 +1686,6 @@ commands:
             - ~/.m2/repository
           key: v1-mvn-dependencies-{{ checksum "pom.xml" }}
 
-      - save_cache:
-          paths:
-            - ~/dependency-check
-          key: v1-dependency-check-{{ epoch }}
-
   restore-caches:
     description: Restore all caches
     steps:
@@ -1608,9 +1693,6 @@ commands:
           keys:
             - v1-mvn-dependencies-{{ checksum "pom.xml" }}
             - v1-mvn-dependencies-
-      - restore_cache:
-          keys:
-            - v1-dependency-check-
 
 
 
@@ -1627,15 +1709,27 @@ orbs:
   sonarcloud: sonarsource/sonarcloud@1.0.2
 
 executors:
+  # https://hub.docker.com/u/cimg (circleci next-gen docker images)
+  # https://hub.docker.com/u/circleci (they call them legacy but they are still maintained)
+
+  docker-base:
+    working_directory: ~/projects
+    docker:
+      - image: cimg/base:stable
+
   docker-python3-java11:
     working_directory: ~/projects
     docker:
-      - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
+      # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
+      # - image: circleci/python:3.8.5-buster-node-browsers
+      - image: circleci/python:3.8.5-node-browsers
 
   docker-py3-java11-postgres:
     working_directory: ~/projects
     docker:
-      - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
+      # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
+      # - image:  circleci/python:3.8.5-buster-node-browsers
+      - image: circleci/python:3.8.5-node-browsers
       - image: ehrbaseorg/ehrbase-postgres:10
         environment:
           POSTGRES_USER: postgres

@@ -24,6 +24,7 @@ package org.ehrbase.dao.access.interfaces;
 import com.nedap.archie.rm.composition.Composition;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.jooq.EntryAccess;
+import org.ehrbase.jooq.pg.udt.records.DvCodedTextRecord;
 import org.jooq.JSONB;
 
 import java.util.List;
@@ -128,13 +129,11 @@ public interface I_EntryAccess extends I_SimpleCRUD {
 
     /**
      * get the entry category record id<br>
-     * Category entry is a concept identified by a code and language in
-     * the concept table. The concept is always identified for the English
-     * language ('en')
+     * Category attribute is a DvCodedText
      *
-     * @return {@link UUID} of category concept
+     * @return {@link org.ehrbase.jooq.pg.udt.DvCodedText} of category concept
      */
-    UUID getCategory();
+    DvCodedTextRecord getCategory();
 
     /**
      * get the composition Id owning this entry

@@ -28,6 +28,7 @@ import org.ehrbase.jooq.pg.enums.PartyType;
 import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
 import org.ehrbase.jooq.pg.udt.records.DvCodedTextRecord;
 import org.ehrbase.service.PersistentCodePhrase;
+import org.ehrbase.service.PersistentTermMapping;
 import org.jooq.Record;
 import org.jooq.impl.DSL;
 
@@ -129,6 +130,8 @@ class PersistedPartyRelated extends PersistedParty {
         return new DvCodedTextRecord(relationship.getValue(),
                         new PersistentCodePhrase(relationship.getDefiningCode()).encode(), relationship.getFormatting(),
                         new PersistentCodePhrase(relationship.getLanguage()).encode(),
-                        new PersistentCodePhrase(relationship.getEncoding()).encode());
+                        new PersistentCodePhrase(relationship.getEncoding()).encode(),
+                        new PersistentTermMapping().termMappingRepresentation(relationship.getMappings()));
+
     }
 }

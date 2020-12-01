@@ -1,6 +1,7 @@
 package org.ehrbase.aql.sql.queryImpl.value_field;
 
 import org.apache.commons.lang3.StringUtils;
+import org.ehrbase.aql.sql.queryImpl.QueryImplConstants;
 import org.ehrbase.aql.sql.queryImpl.attribute.*;
 import org.jooq.Field;
 import org.jooq.TableField;
@@ -23,11 +24,25 @@ public class GenericJsonField extends RMObjectAttribute {
         fieldContext.setJsonDatablock(isJsonDataBlock);
         fieldContext.setRmType(rmType);
         //query the json representation of a node and cast the result as TEXT
+        StringBuilder sqlExpression = new StringBuilder();
+
         Field jsonContextField;
-        if (plpgsqlFunction != null)
-            jsonContextField = makeFunctionField(plpgsqlFunction, tableFields);
+
+        if (jsonPath.isPresent())
+            sqlExpression.append(plpgsqlFunction+"("+StringUtils.join(tableFields, ",")+")::json #>>"+jsonPath.get());
         else
-            jsonContextField = makeFieldToJsonbColumn(tableFields);
+            sqlExpression.append(plpgsqlFunction+"("+StringUtils.join(tableFields, ",")+")::text");
+
+        String iterativeMarker = ","+ QueryImplConstants.AQL_NODE_ITERATIVE_MARKER+",";
+
+        //this wrap the expression into a json select array call (jsonb_array_elements(...))
+        if (sqlExpression.indexOf(iterativeMarker) > -1) {
+            sqlExpression.replace(sqlExpression.indexOf(iterativeMarker), sqlExpression.indexOf(iterativeMarker)+iterativeMarker.length(), "}')::jsonb)#>>'{");
+            sqlExpression.insert(0, " jsonb_array_elements((");
+        }
+
+        jsonContextField = DSL.field(sqlExpression.toString());
+
 
         return as(DSL.field(jsonContextField));
     }

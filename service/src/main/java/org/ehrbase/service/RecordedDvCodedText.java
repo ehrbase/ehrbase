@@ -37,12 +37,14 @@ public class RecordedDvCodedText {
                         new PersistentCodePhrase(dvCodedText.getDefiningCode()).encode(),
                         dvCodedText.getFormatting(),
                         new PersistentCodePhrase(dvCodedText.getLanguage()).encode(),
-                        new PersistentCodePhrase(dvCodedText.getEncoding()).encode());
+                        new PersistentCodePhrase(dvCodedText.getEncoding()).encode(),
+                        new PersistentTermMapping().termMappingRepresentation(dvCodedText.getMappings()));
 
         record.set(targetField, dvCodedTextRecord);
     }
 
     public Object fromDB(Record record, Field<DvCodedTextRecord> fromField){
+        Object retObject;
 
         DvCodedTextRecord dvCodedTextRecord = record.get(fromField);
 
@@ -51,15 +53,23 @@ public class RecordedDvCodedText {
         CodePhraseRecord codePhraseEncoding = dvCodedTextRecord.getEncoding();
 
         if (codePhraseDefiningCode != null)
-            return new DvCodedText(dvCodedTextRecord.getValue(),
+            retObject =  new DvCodedText(dvCodedTextRecord.getValue(),
                     codePhraseLanguage == null ? null : new CodePhrase(new TerminologyId(codePhraseLanguage.getTerminologyIdValue()), codePhraseLanguage.getCodeString()),
                     codePhraseEncoding == null ? null : new CodePhrase(new TerminologyId(codePhraseEncoding.getTerminologyIdValue()), codePhraseEncoding.getCodeString()),
                     new CodePhrase(new TerminologyId(codePhraseDefiningCode.getTerminologyIdValue()), codePhraseDefiningCode.getCodeString())
                     );
         else //assume DvText
-            return new DvText(dvCodedTextRecord.getValue(),
+            retObject =  new DvText(dvCodedTextRecord.getValue(),
                     codePhraseLanguage == null ? null : new CodePhrase(new TerminologyId(codePhraseLanguage.getTerminologyIdValue()), codePhraseLanguage.getCodeString()),
                     codePhraseEncoding == null ? null : new CodePhrase(new TerminologyId(codePhraseEncoding.getTerminologyIdValue()), codePhraseEncoding.getCodeString())
             );
+
+        if (dvCodedTextRecord.getTermMapping() != null && dvCodedTextRecord.getTermMapping().length > 0) {
+            for (String dvCodedTextTermMappingRecord : dvCodedTextRecord.getTermMapping()) {
+                ((DvText) retObject).addMapping(new PersistentTermMapping().decode(dvCodedTextTermMappingRecord));
+            }
+        }
+
+        return retObject;
     }
 }

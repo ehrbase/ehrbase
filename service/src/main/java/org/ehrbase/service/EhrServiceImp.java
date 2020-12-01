@@ -48,6 +48,7 @@ import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -194,7 +195,7 @@ public class EhrServiceImp extends BaseService implements EhrService {
     }
 
     @Override
-    public Optional<EhrStatus> updateStatus(UUID ehrId, EhrStatus status) {
+    public Optional<EhrStatus> updateStatus(UUID ehrId, EhrStatus status, UUID contributionId) {
 
         try {
             validationService.check(status);
@@ -231,7 +232,7 @@ public class EhrServiceImp extends BaseService implements EhrService {
         }
 
         // execute actual update and check for success
-        if (ehrAccess.update(getUserUuid(), getSystemUuid(), null, I_ConceptAccess.ContributionChangeType.MODIFICATION, DESCRIPTION).equals(false))
+        if (ehrAccess.update(getUserUuid(), getSystemUuid(), contributionId, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, DESCRIPTION).equals(false))
             throw new InternalServerException("Problem updating EHR_STATUS"); //unexpected problem. expected ones are thrown inside of update()
 
         return getEhrStatus(ehrId);
@@ -417,5 +418,12 @@ public class EhrServiceImp extends BaseService implements EhrService {
             );
             throw new InternalServerException(e.getMessage(), e);
         }
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Override
+    public void adminDeleteEhr(UUID ehrId) {
+        I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
+        ehrAccess.adminDeleteEhr();
     }
 }

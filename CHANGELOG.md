@@ -8,8 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Adds Admin API endpoints: Del EHR, Del Composition and Del Contribution (see: https://github.com/ehrbase/ehrbase/pull/344)
+- Add ATNA logging configuration capabilities (see https://github.com/ehrbase/ehrbase/pull/355)
+- Support for EHR_STATUS and (partial) FOLDER version objects in contributions (see: https://github.com/ehrbase/ehrbase/pull/372)
 
 ### Changed
+- support AQL querying on full EHR (f.e. SELECT e) (see )
 
 ### Fixed
 
@@ -33,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added Junit5 support via spring-boot-starter-test (https://github.com/ehrbase/ehrbase/pull/298)
 - Enable cartesian products on embedded arrays in JSONB (see https://github.com/ehrbase/ehrbase/pull/309)
 - Use new OPT-Parser from sdk (see https://github.com/ehrbase/ehrbase/pull/314)
+- Add CORS config to enable clients to detect auth method (see https://github.com/ehrbase/ehrbase/pull/354).
 
 ### Fixed
 
@@ -186,7 +191,8 @@ Starting with the next release this file will provide a proper overview.
 - Fixed error regarding DISTINCT operator in AQL (https://github.com/ehrbase/ehrbase/issues/50)
 - Fixed null pointer exceptions that could occur in persistent compositions
 
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.13.0...HEAD
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.14.0...HEAD
+[0.14.0]: https://github.com/ehrbase/ehrbase/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/ehrbase/ehrbase/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/ehrbase/ehrbase/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/ehrbase/ehrbase/compare/v0.10.0...v0.11.0

@@ -31,10 +31,13 @@ import org.ehrbase.aql.sql.queryImpl.attribute.composer.ComposerResolver;
 import org.ehrbase.aql.sql.queryImpl.attribute.composition.CompositionResolver;
 import org.ehrbase.aql.sql.queryImpl.attribute.composition.FullCompositionJson;
 import org.ehrbase.aql.sql.queryImpl.attribute.ehr.EhrResolver;
+import org.ehrbase.aql.sql.queryImpl.attribute.ehr.FullEhrJson;
 import org.ehrbase.aql.sql.queryImpl.attribute.eventcontext.EventContextResolver;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.service.IntrospectService;
 import org.jooq.Field;
+
+import static org.ehrbase.aql.sql.QueryProcessor.NIL_TEMPLATE;
 
 /**
  * map an AQL datavalue expression into a SQL field
@@ -73,12 +76,17 @@ public class CompositionAttributeQuery extends ObjectQuery implements I_QueryImp
 
         Field retField;
 
+        if (!templateId.equals(NIL_TEMPLATE))
+            joinSetup.setUseEntry(true);
+
         if (columnAlias == null) {
             if (clause.equals(Clause.SELECT)) {
                 if (pathResolver.classNameOf(variableDefinition.getIdentifier()).equals("COMPOSITION"))
                     retField = new FullCompositionJson(fieldResolutionContext, joinSetup).sqlField();
+                else if (pathResolver.classNameOf(variableDefinition.getIdentifier()).equals("EHR"))
+                    retField = new FullEhrJson(fieldResolutionContext, joinSetup).sqlField();
                 else
-                    throw new IllegalArgumentException("Only full composition canonical json is supported at this stage, found class:" + pathResolver.classNameOf(variableDefinition.getIdentifier()));
+                    throw new IllegalArgumentException("Canonical json is not supported at this stage for this Entity, found class:" + pathResolver.classNameOf(variableDefinition.getIdentifier()));
             }
             else
                 retField = null;
@@ -168,4 +176,11 @@ public class CompositionAttributeQuery extends ObjectQuery implements I_QueryImp
     }
 
 
+    public void setUseEntry(boolean b) {
+        joinSetup.setUseEntry(b);
+    }
+
+    public boolean isUseEntry(){
+        return joinSetup.isUseEntry();
+    }
 }

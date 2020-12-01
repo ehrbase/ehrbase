@@ -192,13 +192,14 @@ public interface I_EhrAccess extends I_SimpleCRUD {
      * Updates the whole EHR access in the DB, e.g. to update the status. Embeds contribution and audit handling.
      * @param committerId ID of committer
      * @param systemId ID of committing system
+     * @param contributionId Optional custom contribution ID, can be null
      * @param state State of contribution
      * @param contributionChangeType Change type of contribution
      * @param description Description field
      * @return True for success
      * @throws InvalidApiParameterException when marshalling of EHR_STATUS / OTHER_DETAILS failed
      */
-    Boolean update(UUID committerId, UUID systemId, ContributionDef.ContributionState state, I_ConceptAccess.ContributionChangeType contributionChangeType, String description);
+    Boolean update(UUID committerId, UUID systemId, UUID contributionId, ContributionDef.ContributionState state, I_ConceptAccess.ContributionChangeType contributionChangeType, String description);
 
     /**
      * set access id
@@ -273,4 +274,9 @@ public interface I_EhrAccess extends I_SimpleCRUD {
      * @return Latest EHR_STATUS
      */
     EhrStatus getStatus();
+
+    /**
+     * Invoke physical deletion.
+     */
+    void adminDeleteEhr();
 }

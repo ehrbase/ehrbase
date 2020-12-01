@@ -40,13 +40,16 @@ import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
+import org.ehrbase.jooq.pg.Routines;
 import org.ehrbase.dao.access.util.TransactionTime;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
+import org.ehrbase.jooq.pg.tables.*;
 import org.ehrbase.jooq.pg.tables.records.*;
 import org.ehrbase.serialisation.dbencoding.RawJson;
 import org.ehrbase.service.RecordedDvCodedText;
 import org.ehrbase.service.RecordedDvText;
 import org.jooq.DSLContext;
+import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Result;
 
@@ -528,6 +531,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     public Boolean update(Timestamp transactionTime, boolean force) {
         boolean result;
 
+        statusAccess.setContributionAccess(this.contributionAccess);
         result = statusAccess.update(otherDetails, transactionTime, force);
 
         if (force || ehrRecord.changed()) {
@@ -561,12 +565,29 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     }
 
     @Override
-    public Boolean update(UUID committerId, UUID systemId, ContributionDef.ContributionState state, I_ConceptAccess.ContributionChangeType contributionChangeType, String description) {
+    public Boolean update(UUID committerId, UUID systemId, UUID contributionId, ContributionDef.ContributionState state, I_ConceptAccess.ContributionChangeType contributionChangeType, String description) {
         Timestamp timestamp = TransactionTime.millis();
-        contributionAccess.setAuditDetailsValues(committerId, systemId, description);
-        contributionAccess.setState(state);
-        contributionAccess.setAuditDetailsChangeType(I_ConceptAccess.fetchContributionChangeType(this, contributionChangeType));
+        // If custom contribution ID is provided use it, otherwise reuse already linked one
+        if (contributionId != null) {
+            I_ContributionAccess access = I_ContributionAccess.retrieveInstance(this.getDataAccess(), contributionId);
+            if (access != null) {
+                provisionContributionAccess(access, committerId, systemId, description, state, contributionChangeType);
+                this.contributionAccess = access;
+            } else
+                throw new InternalServerException("Can't update status with invalid contribution ID.");
+        } else {
+            provisionContributionAccess(contributionAccess, committerId, systemId, description, state, contributionChangeType);
+        }
         return update(timestamp);
+    }
+
+    /**
+     * Helper to provision a contribution access object with several data items.
+     */
+    private void provisionContributionAccess(I_ContributionAccess access, UUID committerId, UUID systemId, String description, ContributionDef.ContributionState state, I_ConceptAccess.ContributionChangeType contributionChangeType) {
+        access.setAuditDetailsValues(committerId, systemId, description);
+        access.setState(state);
+        access.setAuditDetailsChangeType(I_ConceptAccess.fetchContributionChangeType(this, contributionChangeType));
     }
 
     /**
@@ -742,5 +763,44 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         status.setSubject(partySelf);
 
         return status;
+    }
+
+    @Override
+    public void adminDeleteEhr() {
+        AdminApiUtils adminApi = new AdminApiUtils(getContext());
+
+        // retrieve linked entities
+        Result<AdminGetLinkedCompositionsRecord> linkedCompositions = Routines.adminGetLinkedCompositions(getContext().configuration(), this.getId());
+        Result<AdminGetLinkedContributionsRecord> linkedContributions = Routines.adminGetLinkedContributions(getContext().configuration(), this.getId());
+
+        // remove linked directory folder
+        // TODO: get linked folders from "folder" attribute, once this RM 1.1.0 attribute is implemented
+        if (getDirectoryId() != null)
+            adminApi.deleteFolder(getDirectoryId(), false); // contribs will be deleted by EHR later
+
+        // handling of existing composition
+        linkedCompositions.forEach(compo -> adminApi.deleteComposition(compo.getComposition()));
+
+        // delete EHR itself
+        Result<AdminDeleteEhrRecord> adminDeleteEhr = Routines.adminDeleteEhr(getContext().configuration(), this.getId());
+        if (adminDeleteEhr.isEmpty()) {
+            throw new InternalServerException("Admin deletion of EHR failed! Unexpected result.");
+        }
+
+        // adminDeleteEhr returns all linked contributions, audits and statuses - go through and delete them
+        adminDeleteEhr.forEach(response -> {
+            UUID statusAudit = response.getStatusAudit();
+
+            // delete status audit
+            adminApi.deleteAudit(statusAudit, "Status", false);
+
+            // delete linked contributions
+            linkedContributions.forEach(contrib -> adminApi.deleteContribution(contrib.getContribution(), contrib.getAudit(), true));
+
+            // final cleanup of auxiliary objects
+            int res = getContext().selectQuery(new AdminDeleteEhrHistory().call(this.getId())).execute();
+            if (res != 1)
+                throw new InternalServerException("Admin deletion of EHR failed!");
+        });
     }
 }

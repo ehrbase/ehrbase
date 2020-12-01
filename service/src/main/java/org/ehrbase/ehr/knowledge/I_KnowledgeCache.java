@@ -25,7 +25,7 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.aql.containment.JsonPathQueryResult;
-import org.ehrbase.webtemplate.NodeId;
+import org.ehrbase.webtemplate.parser.NodeId;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
 import java.io.IOException;
