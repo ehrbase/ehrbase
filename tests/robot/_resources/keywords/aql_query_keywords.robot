@@ -62,9 +62,6 @@ CircleCI Cache Restored
     ${exp_results_2}    Run Keyword And Return Status    File Should Exist    ${EXECDIR}/robot/_resources/test_data_sets/query/expected_results/loaded_db/D/503.tmp.json
     ${cache_exists}     Set Variable If    ${db_cache_exists} and ${exp_results_1} and ${exp_results_2}    ${TRUE}    ${FALSE}
                         Set Global Variable    ${CACHE_EXISTS}    ${cache_exists}
-
-    # ...                 Run Keyword And Return Status    File Should Exist    ${EXECDIR}/robot/_resources/test_data_sets/query/expected_results/loaded_db/A/100.tmp.json
-    # ...                 Run Keyword And Return Status    File Should Exist    ${EXECDIR}/robot/_resources/test_data_sets/query/expected_results/loaded_db/D/503.tmp.json
     
     [Return]            ${cache_exists}
 
@@ -79,7 +76,7 @@ Establish Preconditions
     #          false           false             no             yes         
 
     ${data-changed}     Run Keyword And Return Status    File Should Exist    /tmp/DATA_CHANGED_NOTICE
-    ${cache-exist}      Run Keyword And Return Status    CircleCI Cache Restored
+    ${cache-exist}      CircleCI Cache Restored
                         Run Keyword And Return If    not ${data-changed} and ${cache-exist}    db_keywords.restore db from dump
 
     # comment: determines whether to (re)dump DB at the end of the test based on previous conditions

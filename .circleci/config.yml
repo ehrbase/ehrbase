@@ -617,6 +617,7 @@ jobs:
           include-tags: "KNOWLEDGE"
           test-suite-path: "KNOWLEDGE_TESTS"
           test-suite-name: "KNOWLEDGE"
+          allow-template-overwrite: false
 
   QUERYSERVICE-test-1:
     executor: docker-py3-java11-postgres
@@ -808,6 +809,11 @@ commands:
           `java -jar application.jar --server.nodename=local.ehrbase.org`
         default: "circleci.ehrbase.org"
         type: string
+      
+      allow-template-overwrite:
+        description:  Sets EHRbase's cli option `--system.allow-template-overwrite=true`
+        default: true
+        type: boolean
 
       include-tags:
         description: Which tests to inclue by TAGs (Robot syntax applies!)
@@ -844,7 +850,7 @@ commands:
               EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
               echo ${EHRbase_VERSION}
               java -jar "application/target/application-${EHRbase_VERSION}.jar" \
-                   --system.allow-template-overwrite=true \
+                   --system.allow-template-overwrite=<< parameters.allow-template-overwrite >> \
                    --server.nodename=<< parameters.nodename >> \
                    --cache.enabled=true >log & app_pid=$!
               if ! tail -f log | timeout 30s grep -m 1 "Started EhrBase in"; then
