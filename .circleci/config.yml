@@ -877,6 +877,7 @@ commands:
                   --name << parameters.test-suite-name >> \
                   -v SUT:<< parameters.sut >> \
                   -v NODENAME:<< parameters.nodename >> \
+                  -v ALLOW-TEMPLATE-OVERWRITE:<< parameters.allow-template-overwrite >> \
                   robot/<< parameters.test-suite-path >>
       # - cache-in-python-requirements
       - save-test-results-folder:
