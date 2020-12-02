@@ -69,7 +69,7 @@ Establish Preconditions
     # comment: WHEN TEST-DATA HAS NOT CHANGED RESTORE DB FROM DUMP (IF CACHE EXISTS) AND SKIP REST OF THIS KW!
     #          below trueth table applies
     #
-    #          Date Changed    Cache Restored    Restore DB!    (Re)Dump DB!
+    #          Data Changed    Cache Restored    Restore DB!    (Re)Dump DB!
     #          true            true              no             yes         
     #          true            false             no             yes         
     #          false           true              yes            no          
