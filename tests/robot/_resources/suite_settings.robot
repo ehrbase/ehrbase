@@ -62,6 +62,7 @@ ${SUT}                   TEST    # Switch System Under Test (SUT). Check tests/R
 ${CODE_COVERAGE}         False
 ${NODOCKER}              False
 ${AUTH_TYPE}             BASIC
+${REDUMP_REQUIRED}       ${FALSE}
 
 
 # # local test environment: for development
