@@ -504,7 +504,10 @@ startup SUT
 
 
 shutdown SUT
-    dump db
+    [Documentation]     Cleans up and shuts down test environment 
+
+    Run Keyword If    ${REDUMP_REQUIRED}    db_keywords.dump_db
+    
     Run Keyword And Return If   "${CONTROL_MODE}"=="manual"
                           ...    remind to restart manual test environment
     
