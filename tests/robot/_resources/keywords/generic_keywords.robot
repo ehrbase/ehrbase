@@ -200,7 +200,7 @@ start server process without coverage
                         ...               SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI    ${JWT_ISSUERURI}    
     ${result}=          Start Process  java  -jar  ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
                         ...                  --cache.enabled\=true
-                        ...                  --system.allow-template-overwrite\=true
+                        ...                  --system.allow-template-overwrite\=${ALLOW-TEMPLATE-OVERWRITE}
                         ...                  --server.nodename\=${NODENAME}    alias=ehrserver
                         ...                    cwd=${PROJECT_ROOT}    stdout=stdout.txt    stderr=stderr.txt
 

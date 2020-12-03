@@ -618,6 +618,7 @@ jobs:
           test-suite-path: "KNOWLEDGE_TESTS"
           test-suite-name: "KNOWLEDGE"
           allow-template-overwrite: false
+          cache-enabled: false
 
   QUERYSERVICE-test-1:
     executor: docker-py3-java11-postgres
@@ -815,6 +816,11 @@ commands:
         default: true
         type: boolean
 
+      cache-enabled:
+        description: Sets EHRbase's cli option `--cache.enabled=true`
+        default: true
+        type: boolean
+
       include-tags:
         description: Which tests to inclue by TAGs (Robot syntax applies!)
         type: string
@@ -852,7 +858,7 @@ commands:
               java -jar "application/target/application-${EHRbase_VERSION}.jar" \
                    --system.allow-template-overwrite=<< parameters.allow-template-overwrite >> \
                    --server.nodename=<< parameters.nodename >> \
-                   --cache.enabled=true >log & app_pid=$!
+                   --cache.enabled=<< parameters.cache-enabled >> > log & app_pid=$!
               if ! tail -f log | timeout 30s grep -m 1 "Started EhrBase in"; then
                 echo "WARNING: Did not see a startup message even after waiting 30s" >&2
                 if kill -0 "$app_pid"; then
