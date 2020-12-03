@@ -18,7 +18,7 @@ Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags    353
+Force Tags    353    not-ready
 
 
 

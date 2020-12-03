@@ -632,6 +632,7 @@ TRACE GITHUB ISSUE
                     ...    level=${loglevel}    html=True
 
                     Set Tags    bug    GITHUB ISSUE ${GITHUB_ISSUE}
+                    Skip if    '${not-ready}'=='not-ready'    Skipped because test or feature not ready
                     Run Keyword If    '${not-ready}'=='not-ready'    Set Tags    not-ready
 
 
