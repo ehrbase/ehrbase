@@ -922,7 +922,7 @@ commands:
     steps:
       - run:
           command: |
-            pip install robotframework
+            pip install robotframework==v4.0b1
       - run:
           name: POST PROCESS & MERGE TEST RESULTS
           when: always
