@@ -871,10 +871,10 @@ commands:
             jps
             cd ~/projects/tests
             robot --include << parameters.include-tags >> \
-                  --exclude TODO -e future -e obsolete -e libtest \
+                  --skip TODO --skip future -e obsolete -e libtest \
                   --console dotted \
                   --loglevel TRACE \
-                  --noncritical not-ready \
+                  --skiponfailure not-ready \
                   --flattenkeywords for \
                   --flattenkeywords foritem \
                   --flattenkeywords name:_resources.* \
