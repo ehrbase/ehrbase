@@ -932,7 +932,7 @@ commands:
             # Create Log/Report with ALL DETAILS
             rebot --outputdir results/0 \
                   --name EHRbase \
-                  --skip TODO --skip future -e obsolete -e libtest \
+                  -e obsolete -e libtest \
                   --removekeywords for \
                   --removekeywords wuks \
                   --loglevel TRACE \
@@ -948,7 +948,7 @@ commands:
 
             # Create JUNIT report from merged results
             rebot --outputdir results/robot-tests \
-                  --skip TODO --skip future -e obsolete -e libtest \
+                  -e obsolete -e libtest \
                   --xunit junit-output.xml --xunitskipnoncritical \
                   --log NONE \
                   --report NONE \
