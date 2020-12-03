@@ -932,11 +932,10 @@ commands:
             # Create Log/Report with ALL DETAILS
             rebot --outputdir results/0 \
                   --name EHRbase \
-                  --exclude TODO -e future -e obsolete -e libtest \
+                  --skip TODO --skip future -e obsolete -e libtest \
                   --removekeywords for \
                   --removekeywords wuks \
                   --loglevel TRACE \
-                  --noncritical not-ready \
                   --output EHRbase-output.xml \
                   --log EHRbase-log.html \
                   --report EHRbase-report.html \
