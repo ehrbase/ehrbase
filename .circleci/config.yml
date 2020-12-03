@@ -948,8 +948,7 @@ commands:
 
             # Create JUNIT report from merged results
             rebot --outputdir results/robot-tests \
-                  --exclude TODO -e future -e obsolete -e libtest \
-                  --noncritical not-ready \
+                  --skip TODO --skip future -e obsolete -e libtest \
                   --xunit junit-output.xml --xunitskipnoncritical \
                   --log NONE \
                   --report NONE \
