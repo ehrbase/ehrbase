@@ -617,6 +617,8 @@ jobs:
           include-tags: "KNOWLEDGE"
           test-suite-path: "KNOWLEDGE_TESTS"
           test-suite-name: "KNOWLEDGE"
+          allow-template-overwrite: false
+          cache-enabled: false
 
   QUERYSERVICE-test-1:
     executor: docker-py3-java11-postgres
@@ -662,7 +664,7 @@ jobs:
             EXPECTED_HASH="f5ee5a9a55c50687dafc3c3acff66089759f1577d7a5dd71aff6e60793ce91c2  /tmp/expected-results-loaded_db-seed"
             [ "$ACTUAL_HASH" = "$EXPECTED_HASH" ] && echo "Expected results unchanged!  Don't regenerate test-data!" || echo "Expected result data-sets changed. Regenerate!" > /tmp/DATA_CHANGED_NOTICE
       - run-robot-tests:
-          sut: "SUT:TEST"
+          sut: "TEST"
           # include-tags: "SMOKE"
           # test-suite-path: "QUERY_SERVICE_TESTS"
           # test-suite-name: "ADHOC-QUERY-SMOKE"
@@ -698,7 +700,7 @@ jobs:
       - install-and-configure-keycloak
       - restore-packaged-ehrbase-jar
       - run-robot-tests:
-          sut: "SUT:TEST -v AUTH_TYPE:OAUTH"
+          sut: "TEST -v AUTH_TYPE:OAUTH"
           include-tags: "OAUTH"
           # test-suite-path: ""
           test-suite-name: "KEYCLOAK-OAUTH"
@@ -713,7 +715,7 @@ jobs:
       - checkout
       - restore-packaged-ehrbase-jar
       - run-robot-tests:
-          sut: "SUT:ADMIN-TEST"
+          sut: "ADMIN-TEST"
           include-tags: "admin"
           test-suite-path: "ADMIN_TESTS"
           test-suite-name: "ADMIN"
@@ -798,9 +800,26 @@ commands:
     parameters:
       sut:
         description: SUT - System Under Test Config
-        enum: ["SUT:DEV", "SUT:DEV -v AUTH_TYPE:OAUTH", "SUT:ADMIN-DEV", "SUT:TEST", "SUT:TEST -v AUTH_TYPE:OAUTH", "SUT:ADMIN-TEST"]
-        default: "SUT:DEV"
+        enum: ["DEV", "DEV -v AUTH_TYPE:OAUTH", "ADMIN-DEV", "TEST", "TEST -v AUTH_TYPE:OAUTH", "ADMIN-TEST"]
+        default: "DEV"
         type: enum
+      
+      nodename:
+        description: | 
+          EHRbase's "CREATING_SYSTEM_ID". It can be set from cli when starting server .jar, i.e.:
+          `java -jar application.jar --server.nodename=local.ehrbase.org`
+        default: "circleci.ehrbase.org"
+        type: string
+      
+      allow-template-overwrite:
+        description:  Sets EHRbase's cli option `--system.allow-template-overwrite=true`
+        default: true
+        type: boolean
+
+      cache-enabled:
+        description: Sets EHRbase's cli option `--cache.enabled=true`
+        default: true
+        type: boolean
 
       include-tags:
         description: Which tests to inclue by TAGs (Robot syntax applies!)
@@ -808,8 +827,8 @@ commands:
 
       test-suite-path:
         description: Target test-suite given by it's folder name e.g. COMPOSITION_TESTS
-        type: string
         default: ""
+        type: string
 
       test-suite-name:
         description: Titel of generated Robot Log/Report.html
@@ -837,7 +856,9 @@ commands:
               EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
               echo ${EHRbase_VERSION}
               java -jar "application/target/application-${EHRbase_VERSION}.jar" \
-                  --cache.enabled=false >log & app_pid=$!
+                   --system.allow-template-overwrite=<< parameters.allow-template-overwrite >> \
+                   --server.nodename=<< parameters.nodename >> \
+                   --cache.enabled=<< parameters.cache-enabled >> > log & app_pid=$!
               if ! tail -f log | timeout 30s grep -m 1 "Started EhrBase in"; then
                 echo "WARNING: Did not see a startup message even after waiting 30s" >&2
                 if kill -0 "$app_pid"; then
@@ -860,7 +881,9 @@ commands:
                   --outputdir results/<< parameters.test-suite-name >> \
                   --timestampoutputs \
                   --name << parameters.test-suite-name >> \
-                  -v << parameters.sut >> \
+                  -v SUT:<< parameters.sut >> \
+                  -v NODENAME:<< parameters.nodename >> \
+                  -v ALLOW-TEMPLATE-OVERWRITE:<< parameters.allow-template-overwrite >> \
                   robot/<< parameters.test-suite-path >>
       # - cache-in-python-requirements
       - save-test-results-folder:
@@ -961,21 +984,26 @@ commands:
       - run:
           name: CHECKOUT SDK SYNC/BRANCH
           command: |
-            echo BRANCH NAME TO CHECKOUT: $BRANCH_NAME
+            echo BRANCH NAME TO CHECKOUT: $CIRCLE_BRANCH
             cd ~/projects/openEHR_SDK
-            git checkout $BRANCH_NAME
+            git checkout $CIRCLE_BRANCH
   
 
   maven-install-sdk:
     steps:
       - run:
+          name: Save the version number of locally installed SDK into a file
+          command: |
+            cd ~/projects/openEHR_SDK
+            mvn build-helper:parse-version versions:set -DnewVersion=\${project.version}-LOCAL versions:commit
+            SDK_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+            echo $SDK_VERSION > SDK_VERSION
+            cat SDK_VERSION
+      - run:
           name: INSTALL SDK
           command: |
             cd ~/projects/openEHR_SDK
-            SDK_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
-            echo $SDK_VERSION > ~/projects/SDK_VERSION
-            cat ~/projects/SDK_VERSION
-            mvn clean install -Dmaven.javadoc.skip=true   # -Dmaven.test.skip
+            mvn install -Dmaven.javadoc.skip=true -Djacoco.skip=true -Dmaven.test.skip
 
 
   start-ehrbase-and-run-java-integration-sdk-tests:
@@ -990,7 +1018,7 @@ commands:
             cd ~/projects
             EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
             echo ${EHRbase_VERSION}
-            java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false > log &
+            java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=true > log &
             grep -m 1 "Started EhrBase in" <(tail -f log)
             cd ~/projects/openEHR_SDK
             jps
@@ -1012,7 +1040,7 @@ commands:
             echo ${EHRbase_VERSION}
             cd ~/projects    # NOTE: This is where the target folder w/ artifacts were persisted to in previous step.
             java -javaagent:/home/circleci/jacoco/lib/jacocoagent.jar=output=tcpserver,address=127.0.0.1 \
-                 -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false > log &
+                 -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=true > log &
             grep -m 1 "Started EhrBase in" <(tail -f log)
             cd ~/projects/openEHR_SDK
             jps
@@ -1086,7 +1114,7 @@ commands:
       steps:
         - run:
             name: Generate Cache Checksum for openEHR_SDK Dependencies
-            command: find openEHR_SDK/ -name 'pom.xml' | sort | xargs cat > /tmp/openEHR_SDK_maven_cache_seed
+            command: find openEHR_SDK/ -type f -name *.java | sort | xargs cat > /tmp/openEHR_SDK_maven_cache_seed
         - restore_cache:
             key: openEHR_SDK-
 
@@ -1103,7 +1131,7 @@ commands:
       steps:
         - run:
             name: Generate Cache Checksum for openEHR_SDK Dependencies
-            command: find openEHR_SDK/ -name 'pom.xml' | sort | xargs cat > /tmp/openEHR_SDK_syncbranch_maven_cache_seed
+            command: find openEHR_SDK/ -type f -name *.java | sort | xargs cat > /tmp/openEHR_SDK_syncbranch_maven_cache_seed
         - restore_cache:
             key: openEHR_SDK-syncbranch-v1-
 
@@ -1159,10 +1187,13 @@ commands:
       - run:
           name: Adjust SDK version number in EHRbase's pom
           command: |
-            SDK_VERSION=$(cat ~/projects/SDK_VERSION)
+            SDK_VERSION=$(cat ~/projects/openEHR_SDK/SDK_VERSION)
             echo $SDK_VERSION
             # cd ~/projects
-            xmlstarlet edit --inplace -N my=http://maven.apache.org/POM/4.0.0 -u my:project/my:version -v $SDK_VERSION pom.xml
+            xmlstarlet edit --inplace -u project/properties/ehrbase.sdk.version -v $SDK_VERSION pom.xml
+      - run:
+          name: Show EHRbase's pom
+          command: cat pom.xml
 
             
   build-and-test-ehrbase:
@@ -1185,7 +1216,7 @@ commands:
             ls -la
             EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
             echo ${EHRbase_VERSION}
-            java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false > log &
+            java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=true > log &
             grep -m 1 "Started EhrBase in" <(tail -f log)
             jps
 
@@ -1193,9 +1224,9 @@ commands:
   cache-in-ehrbase-m2-dependencies-syncbranch:
     steps:
       - save_cache:
-          key: EHRbase-sychbranch-v1-{{ checksum "/tmp/EHRbase_syncbranch_maven_cache_seed" }}
+          key: EHRbase-sychbranch-v2-{{ checksum "/tmp/EHRbase_syncbranch_maven_cache_seed" }}
           paths:
-            - ~/.m2
+            - ~/.m2/repository/org/ehrbase/openehr/
 
 
   cache-out-ehrbase-m2-dependencies-syncbranch:
@@ -1204,7 +1235,7 @@ commands:
           name: Generate Cache Checksum for EHRbase Dependencies
           command: find ~/projects -name 'pom.xml' | sort | xargs cat > /tmp/EHRbase_syncbranch_maven_cache_seed
       - restore_cache:
-          key: EHRbase-sychbranch-v1-
+          key: EHRbase-sychbranch-v2
 
 
   save-packaged-ehrbase-jar:
@@ -1745,8 +1776,6 @@ executors:
       image: ubuntu-1604:202007-01
 
 
-  # NOTE: this is a preview image, will be released officially in September 2020
-  #       don't use before that, cause can get breaking changes
   machine-ubuntu-2004:
     description: |
       Ubuntu 20.04 VM (machine executor)

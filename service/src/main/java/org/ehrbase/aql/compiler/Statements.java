@@ -125,4 +125,8 @@ public class Statements {
     public void put(I_VariableDefinition variableDefinition) {
         variables.add(variableDefinition);
     }
+
+    public String getParsedExpression(){
+        return parseTree.getText();
+    }
 }

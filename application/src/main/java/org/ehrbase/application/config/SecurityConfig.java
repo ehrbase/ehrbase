@@ -82,6 +82,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 logger.info(formatter.format(
                         "Username: %s Password: %s", securityYAMLConfig.getAuthUser(), securityYAMLConfig.getAuthPassword()
                 ).toString());
+
                 http
                         .cors()
                         .and()
@@ -147,10 +148,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
+
+        configuration.applyPermitDefaultValues();
         // Allow all origins to access EHRbase
         configuration.setAllowedOrigins(Collections.singletonList("*"));
         // Allowed HTTP methods
         configuration.setAllowedMethods(Arrays.asList("GET","POST", "PUT", "DELETE", "HEAD", "OPTIONS"));
+        // Allow credentials to be transmitted
+        configuration.setAllowCredentials(true);
         // Exposed headers that can be read by clients. Includes also all safe-listed headers
         // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Expose-Headers
         configuration.setExposedHeaders(Arrays.asList(

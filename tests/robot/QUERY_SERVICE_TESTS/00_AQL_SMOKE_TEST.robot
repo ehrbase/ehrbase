@@ -147,30 +147,6 @@ A-101 Execute Ad-Hoc Query - Get EHRs
     [Teardown]          TRACE GITHUB ISSUE  205  not-ready
 
 
-A-300 Execute Ad-Hoc Query - Get EHRs Which Have Compositions
-    [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              368
-    A/300_get_ehrs_by_contains_any_composition.json               A/300.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  368  not-ready
-
-
-A-400 Execute Ad-Hoc Query - Get EHRs Which Have Compositions
-    [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              368
-    A/400_get_ehrs_by_contains_composition_with_archetype.json    A/400.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  368  not-ready
-
-
-A-500 Execute Ad-Hoc Query - Get EHRs Which Have Compositions
-    [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              368 
-    A/500_get_ehrs_by_contains_composition_contains_entry_of_type.json    A/500.tmp.json
-    A/501_get_ehrs_by_contains_composition_contains_entry_of_type.json    A/501.tmp.json  
-    A/502_get_ehrs_by_contains_composition_contains_entry_of_type.json    A/502.tmp.json
-    A/503_get_ehrs_by_contains_composition_contains_entry_of_type.json    A/503.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  368  not-ready
-
-
 B-100 Execute Ad-Hoc Query - Get Compositions From All EHRs
     [Template]          execute ad-hoc query and check result (loaded DB)
     [Tags]              235

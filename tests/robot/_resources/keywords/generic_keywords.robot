@@ -199,7 +199,8 @@ start server process without coverage
                         Run Keyword If    '${SECURITY_AUTHTYPE}' == 'OAUTH'    Set Environment Variable
                         ...               SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI    ${JWT_ISSUERURI}    
     ${result}=          Start Process  java  -jar  ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
-                        ...                  --cache.enabled\=false
+                        ...                  --cache.enabled\=true
+                        ...                  --system.allow-template-overwrite\=${ALLOW-TEMPLATE-OVERWRITE}
                         ...                  --server.nodename\=${NODENAME}    alias=ehrserver
                         ...                    cwd=${PROJECT_ROOT}    stdout=stdout.txt    stderr=stderr.txt
 
@@ -497,13 +498,16 @@ startup SUT
                           ...    abort tests due to issues with remote test environment
 
     # comment: test environment controlled by Robot (CONTROL_MODE=Docker)
-    get application version
+    # get application version
     start ehrdb
     start openehr server
 
 
 shutdown SUT
-    dump db
+    [Documentation]     Cleans up and shuts down test environment 
+
+    Run Keyword If    ${REDUMP_REQUIRED}    db_keywords.dump_db
+    
     Run Keyword And Return If   "${CONTROL_MODE}"=="manual"
                           ...    remind to restart manual test environment
     
