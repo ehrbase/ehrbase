@@ -5,7 +5,6 @@ labels: bug
 ---
 
 
-
 ## Test Case/s To Reproduce Issue
 
 ```
@@ -34,9 +33,9 @@ QUERY_SERVICE_TESTS
 
 ## Actual Result
 
-foo
+<!-- foo -->
 
 
 ## Expected Result
 
-bar
+<!-- bar -->
