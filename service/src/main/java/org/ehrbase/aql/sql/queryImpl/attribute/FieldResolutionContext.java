@@ -31,7 +31,7 @@ public class FieldResolutionContext {
 //    private final UUID compositionId;
     private final String identifier;
     private final I_VariableDefinition variableDefinition;
-    private final boolean withAlias;
+    private boolean withAlias;
     private final I_QueryImpl.Clause clause;
     private final DSLContext context;
     private final String serverNodeId;
@@ -113,5 +113,9 @@ public class FieldResolutionContext {
 
     public void setJsonDatablock(boolean jsonDatablock) {
         this.jsonDatablock = jsonDatablock;
+    }
+
+    public void setWithAlias(boolean b) {
+        withAlias = b;
     }
 }
