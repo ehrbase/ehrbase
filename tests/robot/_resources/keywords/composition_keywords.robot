@@ -493,14 +493,14 @@ get composition - latest version
 check content of compositions latest version (JSON)
     [Documentation]     DEPENDENCY: `get composition - latest version` keyword
                         Should Be Equal As Strings   ${response.status_code}   200
-                        Set Test Variable     ${version_uid_latest}    ${resp.json()['uid']['value']}
+                        Set Test Variable     ${version_uid_latest}    ${response.json()['uid']['value']}
 
                         # comment: Check the latest version uid is equal to the second committed compo uid
                         Should Be Equal       ${version_uid_latest}    ${composition_uid_v2}
 
                         # comment: check content of the latest version is equal to the content committed on the second compo
                         # should be the content in the 2nd committed compo "modified value"
-                        Set Test Variable     ${text}    ${resp.json()['data']['content'][0]['data']['events'][0]['data']['items'][0]['value']['value']}
+                        Set Test Variable     ${text}    ${response.json()['data']['content'][0]['data']['events'][0]['data']['items'][0]['value']['value']}
                         Should Be Equal       ${text}    modified value
 
 
