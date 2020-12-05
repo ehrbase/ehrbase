@@ -122,7 +122,7 @@
         <archie.version>738152e</archie.version>
         <assertj.core>3.11.1</assertj.core>
         <json.path.version>2.4.0</json.path.version>
-        <jooq.version>3.12.3</jooq.version>
+        <jooq.version>3.14.3</jooq.version>
         <jackson.version>2.11.2</jackson.version>
         <keycloak.version>4.0.0.Final</keycloak.version>
         <springfox.version>2.9.2</springfox.version>
