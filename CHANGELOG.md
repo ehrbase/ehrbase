@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add ATNA logging configuration capabilities (see https://github.com/ehrbase/ehrbase/pull/355)
 - Support for EHR_STATUS and (partial) FOLDER version objects in contributions (see: https://github.com/ehrbase/ehrbase/pull/372)
 - Add status endpoint to retrieve version information on running EHRbase instance and for heartbeat checks. (see: https://github.com/ehrbase/ehrbase/pull/393)
+- Add /status/info endpoint using actuator for basic info on running app
+- Add /status/health endpoint for kubernetes liveness and readiness probes
+- Add /status/env endpoint for environment information
+- Add /status/metrics endpoint for detailed metrics on specific topics (db connection, http requests, etc.)
+- Add /status/prometheus endpoint for prometheus metrics
 
 ### Changed
 - support AQL querying on full EHR (f.e. SELECT e) (see )
