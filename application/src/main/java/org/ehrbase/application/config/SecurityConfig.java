@@ -53,7 +53,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final SecurityYAMLConfig securityYAMLConfig;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final Formatter formatter = new Formatter();
+    private static final String LOG_SEPARATOR = "-------------------";
 
     public SecurityConfig(SecurityYAMLConfig securityYAMLConfig) {
         this.securityYAMLConfig = securityYAMLConfig;
@@ -64,32 +64,44 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         // For Basic Auth: assigns specific roles to specific users. Enables conditional handling in configure()
         auth.inMemoryAuthentication()
-                    .withUser(securityYAMLConfig.getAuthUser())
-                    .password(passwordEncoder().encode(securityYAMLConfig.getAuthPassword()))
-                    .roles(USER)
+                .withUser(securityYAMLConfig.getAuthUser())
+                .password(passwordEncoder().encode(securityYAMLConfig.getAuthPassword()))
+                .roles(USER)
                 //.authorities("ROLE_USER");
                 .and()
-                    .withUser(securityYAMLConfig.getAuthAdminUser())
-                    .password(passwordEncoder().encode(securityYAMLConfig.getAuthAdminPassword()))
-                    .roles(ADMIN);
+                .withUser(securityYAMLConfig.getAuthAdminUser())
+                .password(passwordEncoder().encode(securityYAMLConfig.getAuthAdminPassword()))
+                .roles(ADMIN);
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         switch (securityYAMLConfig.getAuthType()) {
             case BASIC:
+                logger.info(LOG_SEPARATOR);
                 logger.info("Using basic authentication.");
-                logger.info(formatter.format(
-                        "Username: %s Password: %s", securityYAMLConfig.getAuthUser(), securityYAMLConfig.getAuthPassword()
-                ).toString());
+                logger.info(String.format(
+                        "User-Username: %s", securityYAMLConfig.getAuthUser()
+                ));
+                logger.info(String.format(
+                        "User-Password: %s", securityYAMLConfig.getAuthPassword()
+                ));
+                logger.info(LOG_SEPARATOR);
+                logger.info(String.format(
+                        "Admin-Username: %s", securityYAMLConfig.getAuthAdminUser()
+                ));
+                logger.info(String.format(
+                        "Admin-Password: %s", securityYAMLConfig.getAuthAdminPassword()
+                ));
+                logger.info(LOG_SEPARATOR);
 
                 http
                         .cors()
                         .and()
                         .csrf().disable()
                         .authorizeRequests()
-                        // Specific routes with ../admin/.. require admin role
-                        .antMatchers("/rest/openehr/v1/admin/**").hasRole(ADMIN)
+                        // Specific routes with ../admin/.. and actuator /status/.. endpoints require admin role
+                        .antMatchers("/rest/openehr/v1/admin/**", "/status/**").hasRole(ADMIN)
                         // Everything else is open to all users of role admin and user
                         .antMatchers("/**").hasAnyRole(ADMIN, USER)
                         .and()
@@ -98,13 +110,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         .httpBasic();
                 break;
             case OAUTH:
+                logger.info(LOG_SEPARATOR);
                 logger.info("Using OAuth2 authentication.");
+                logger.info(LOG_SEPARATOR);
+                logger.info(String.format(
+                        "Using issuer URI: %s", securityYAMLConfig.getOauth2IssuerUri()
+                ));
+                logger.info(LOG_SEPARATOR);
                 http
                         .cors()
                         .and()
                         .authorizeRequests()
-                        // Specific routes with ../admin/.. require admin role
-                        .antMatchers("/rest/openehr/v1/admin/**").hasRole(ADMIN)
+                        // Specific routes with ../admin/.. and actuator /status/.. endpoints require admin role
+                        .antMatchers("/rest/openehr/v1/admin/**", "/status/**").hasRole(ADMIN)
                         // Everything else is open to all users of role admin and user
                         .antMatchers("/**").hasAnyRole(ADMIN, USER)
                         .and()
@@ -124,7 +142,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 break;
         }
     }
-
 
 
     @Bean
@@ -153,7 +170,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         // Allow all origins to access EHRbase
         configuration.setAllowedOrigins(Collections.singletonList("*"));
         // Allowed HTTP methods
-        configuration.setAllowedMethods(Arrays.asList("GET","POST", "PUT", "DELETE", "HEAD", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"));
         // Allow credentials to be transmitted
         configuration.setAllowCredentials(true);
         // Exposed headers that can be read by clients. Includes also all safe-listed headers
