@@ -17,6 +17,7 @@
  */
 package org.ehrbase.application.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -35,6 +36,8 @@ public class SecurityYAMLConfig {
     private String authPassword;
     private String authAdminUser;
     private String authAdminPassword;
+    @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
+    private String oauth2IssuerUri;
 
     public AuthTypes getAuthType() {
         return authType;
@@ -74,5 +77,13 @@ public class SecurityYAMLConfig {
 
     public void setAuthAdminPassword(String authAdminPassword) {
         this.authAdminPassword = authAdminPassword;
+    }
+
+    public String getOauth2IssuerUri() {
+        return oauth2IssuerUri;
+    }
+
+    public void setOauth2IssuerUri(String oauth2IssuerUri) {
+        this.oauth2IssuerUri = oauth2IssuerUri;
     }
 }
