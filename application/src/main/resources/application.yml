@@ -109,14 +109,11 @@ management:
     # Env endpoint - Shows information on environment of EHRbase
     env:
       # Enable / disable env endpoint
-      enabled: true
+      enabled: false
     # Health endpoint - Shows information on system status
     health:
       # Enable / disable health endpoint
-      enabled: true
-      probes:
-        # Will be enabled automatic if running on kubernetes. Activate here for local testing
-        enabled: true
+      enabled: false
       # Show components in health endpoint. Can be "never", "when-authorized" or "always"
       show-components: 'when-authorized'
       # Show details in health endpoint. Can be "never", "when-authorized" or "always"
@@ -128,15 +125,15 @@ management:
     # Info endpoint - Shows information on the application as build infor, etc.
     info:
       # Enable / disable info endpoint
-      enabled: true
+      enabled: false
     # Metrics endpoint - Shows several metrics on running EHRbase
     metrics:
       # Enable / disable metrics endpoint
-      enabled: true
+      enabled: false
     # Prometheus metric endpoint - Special metrics format to display in microservice observer solutions
     prometheus:
       # Enable / disable prometheus endpoint
-      enabled: true
+      enabled: false
   # Metrics settings
   metrics:
     export:
