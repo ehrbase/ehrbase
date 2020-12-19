@@ -17,6 +17,8 @@
  */
 package org.ehrbase.aql.sql.queryImpl.attribute.ehr;
 
+import static org.ehrbase.jooq.pg.Tables.EHR_;
+
 import org.ehrbase.aql.sql.binding.I_JoinBinder;
 import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryImpl.attribute.I_RMObjectAttribute;
@@ -25,44 +27,45 @@ import org.jooq.Field;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 
-import static org.ehrbase.jooq.pg.Tables.EHR_;
-
 public class EhrIdValue extends EhrAttribute {
 
-    public EhrIdValue(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
-        super(fieldContext, joinSetup);
-    }
+  public EhrIdValue(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
+    super(fieldContext, joinSetup);
+  }
 
-    @Override
-    public Field<?> sqlField(){
-        ehrSetup.setContainsEhrId(true);
-        ehrSetup.setEhrIdAlias(effectiveAlias());
-        if (fieldContext.getPathResolver().hasPathExpression()) {
-            joinSetup.setJoinEhr(true);
-            if (fieldContext.isWithAlias()) {
-                Field<?> select = aliased(DSL.field("{0}", I_JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
-                return select;
-            } else
-                return defaultAliased(DSL.field(I_JoinBinder.ehrRecordTable.field(I_JoinBinder.ehrRecordTable.field(EHR_.ID.getName()))));
-        } else if (!joinSetup.isContainsEhrStatus()) {
-            joinSetup.setJoinEhr(true);
-            if (fieldContext.isWithAlias()) {
-                Field<?> select = aliased(DSL.field("{0}", I_JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
-                return select;
-            } else
-                return defaultAliased(DSL.field(I_JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
-        } else {
-            if (fieldContext.isWithAlias()) {
-                Field<?> select = aliased(DSL.field("{0}", I_JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
-                return select;
-            } else
-                return defaultAliased(DSL.field(I_JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
-        }
+  @Override
+  public Field<?> sqlField() {
+    ehrSetup.setContainsEhrId(true);
+    ehrSetup.setEhrIdAlias(effectiveAlias());
+    if (fieldContext.getPathResolver().hasPathExpression()) {
+      joinSetup.setJoinEhr(true);
+      if (fieldContext.isWithAlias()) {
+        Field<?> select =
+            aliased(DSL.field("{0}", I_JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
+        return select;
+      } else
+        return defaultAliased(
+            DSL.field(
+                I_JoinBinder.ehrRecordTable.field(
+                    I_JoinBinder.ehrRecordTable.field(EHR_.ID.getName()))));
+    } else if (!joinSetup.isContainsEhrStatus()) {
+      joinSetup.setJoinEhr(true);
+      if (fieldContext.isWithAlias()) {
+        Field<?> select =
+            aliased(DSL.field("{0}", I_JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
+        return select;
+      } else return defaultAliased(DSL.field(I_JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
+    } else {
+      if (fieldContext.isWithAlias()) {
+        Field<?> select =
+            aliased(DSL.field("{0}", I_JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
+        return select;
+      } else return defaultAliased(DSL.field(I_JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
     }
+  }
 
-    @Override
-    public I_RMObjectAttribute forTableField(TableField tableField) {
-        return this;
-    }
-
+  @Override
+  public I_RMObjectAttribute forTableField(TableField tableField) {
+    return this;
+  }
 }

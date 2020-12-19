@@ -17,50 +17,50 @@
  */
 package org.ehrbase.aql.sql.queryImpl.attribute.eventcontext.participations;
 
+import static org.ehrbase.jooq.pg.tables.EventContext.EVENT_CONTEXT;
+
+import java.util.Optional;
 import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryImpl.attribute.I_RMObjectAttribute;
 import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
 import org.ehrbase.aql.sql.queryImpl.attribute.eventcontext.EventContextAttribute;
-import org.ehrbase.aql.sql.queryImpl.attribute.eventcontext.EventContextJson;
 import org.ehrbase.aql.sql.queryImpl.value_field.GenericJsonField;
 import org.jooq.Field;
 import org.jooq.TableField;
 
-import java.util.Optional;
-
-import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
-import static org.ehrbase.jooq.pg.tables.EventContext.EVENT_CONTEXT;
-
 public class ParticipationsJson extends EventContextAttribute {
 
-    protected Optional<String> jsonPath = Optional.empty();
+  protected Optional<String> jsonPath = Optional.empty();
 
-    public ParticipationsJson(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
-        super(fieldContext, joinSetup);
+  public ParticipationsJson(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
+    super(fieldContext, joinSetup);
+  }
+
+  // TODO: participations is actually an ARRAY. GenericJsonField needs to support querying on Json
+  // array
+  @Override
+  public Field<?> sqlField() {
+    fieldContext.setJsonDatablock(true);
+    if (jsonPath.isPresent())
+      return new GenericJsonField(fieldContext, joinSetup)
+          .forJsonPath(jsonPath.get())
+          .jsonField("PARTICIPATION", "ehr.js_participations", EVENT_CONTEXT.ID);
+    else
+      return new GenericJsonField(fieldContext, joinSetup)
+          .jsonField("PARTICIPATION", "ehr.js_canonical_participations", EVENT_CONTEXT.ID);
+  }
+
+  @Override
+  public I_RMObjectAttribute forTableField(TableField tableField) {
+    return this;
+  }
+
+  public ParticipationsJson forJsonPath(String jsonPath) {
+    if (jsonPath == null || jsonPath.isEmpty()) {
+      this.jsonPath = Optional.empty();
+      return this;
     }
-
-    //TODO: participations is actually an ARRAY. GenericJsonField needs to support querying on Json array
-    @Override
-    public Field<?> sqlField() {
-        fieldContext.setJsonDatablock(true);
-        if (jsonPath.isPresent())
-            return new GenericJsonField(fieldContext, joinSetup).forJsonPath(jsonPath.get()).jsonField("PARTICIPATION","ehr.js_participations", EVENT_CONTEXT.ID);
-        else
-            return new GenericJsonField(fieldContext, joinSetup).jsonField("PARTICIPATION","ehr.js_canonical_participations", EVENT_CONTEXT.ID);
-    }
-
-    @Override
-    public I_RMObjectAttribute forTableField(TableField tableField) {
-        return this;
-    }
-
-    public ParticipationsJson forJsonPath(String jsonPath){
-        if (jsonPath == null || jsonPath.isEmpty()) {
-            this.jsonPath = Optional.empty();
-            return this;
-        }
-        this.jsonPath = Optional.of(jsonPath);
-        return this;
-    }
-
+    this.jsonPath = Optional.of(jsonPath);
+    return this;
+  }
 }

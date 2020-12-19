@@ -17,24 +17,23 @@
  */
 package org.ehrbase.aql.sql.queryImpl.attribute.ehr.ehrstatus.subject;
 
+import static org.ehrbase.aql.sql.binding.I_JoinBinder.subjectRef;
+
 import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
 import org.ehrbase.aql.sql.queryImpl.attribute.partyref.PartyResolver;
 import org.jooq.Field;
 
-import static org.ehrbase.aql.sql.binding.I_JoinBinder.subjectRef;
+public class SubjectResolver extends PartyResolver {
 
-public class SubjectResolver extends PartyResolver
-{
+  public SubjectResolver(FieldResolutionContext fieldResolutionContext, JoinSetup joinSetup) {
+    super(fieldResolutionContext, joinSetup);
+  }
 
-    public SubjectResolver(FieldResolutionContext fieldResolutionContext, JoinSetup joinSetup) {
-        super(fieldResolutionContext, joinSetup);
-    }
+  public Field<?> sqlField(String path) {
+    joinSetup.setPartyJoinRef(subjectRef);
+    joinSetup.setJoinSubject(true);
 
-    public Field<?> sqlField(String path){
-        joinSetup.setPartyJoinRef(subjectRef);
-        joinSetup.setJoinSubject(true);
-
-        return super.sqlField(path);
-    }
+    return super.sqlField(path);
+  }
 }

@@ -17,17 +17,15 @@
  */
 package org.ehrbase.aql.sql.queryImpl.attribute.eventcontext;
 
-/**
- * maintain context for EHR attribute and querying
- */
+/** maintain context for EHR attribute and querying */
 public class ContextSetup {
-    private boolean containsOtherContext = false;
+  private boolean containsOtherContext = false;
 
-    public boolean isContainsOtherContext() {
-        return containsOtherContext;
-    }
+  public boolean isContainsOtherContext() {
+    return containsOtherContext;
+  }
 
-    public void setContainsOtherContext(boolean containsOtherContext) {
-        this.containsOtherContext = containsOtherContext;
-    }
+  public void setContainsOtherContext(boolean containsOtherContext) {
+    this.containsOtherContext = containsOtherContext;
+  }
 }

@@ -26,45 +26,38 @@ import org.jooq.Field;
 
 public abstract class RMObjectAttribute implements I_RMObjectAttribute, I_JoinBinder {
 
-    protected FilterSetup filterSetup = new FilterSetup();
-    protected CompositionIdFieldSetup compositionIdFieldSetup = new CompositionIdFieldSetup();
-    protected EhrSetup ehrSetup = new EhrSetup();
+  protected FilterSetup filterSetup = new FilterSetup();
+  protected CompositionIdFieldSetup compositionIdFieldSetup = new CompositionIdFieldSetup();
+  protected EhrSetup ehrSetup = new EhrSetup();
 
-    protected final JoinSetup joinSetup;
-    protected final FieldResolutionContext fieldContext;
+  protected final JoinSetup joinSetup;
+  protected final FieldResolutionContext fieldContext;
 
+  protected RMObjectAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
+    this.fieldContext = fieldContext;
+    this.joinSetup = joinSetup;
+  }
 
-    protected RMObjectAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
-        this.fieldContext = fieldContext;
-        this.joinSetup = joinSetup;
+  protected Field<?> as(Field field) {
+    if (fieldContext.isWithAlias()) return aliased(field);
+    else {
+      if (!fieldContext.getClause().equals(I_QueryImpl.Clause.WHERE)) return defaultAliased(field);
+      else return field;
     }
+  }
 
-    protected Field<?> as(Field field){
-        if (fieldContext.isWithAlias())
-            return aliased(field);
-        else {
-            if (!fieldContext.getClause().equals(I_QueryImpl.Clause.WHERE))
-                return defaultAliased(field);
-            else
-                return field;
-        }
-    }
+  protected Field<?> aliased(Field field) {
+    return field.as(effectiveAlias());
+  }
 
-    protected Field<?> aliased(Field field){
-        return field.as(effectiveAlias());
-    }
+  protected String effectiveAlias() {
+    return (fieldContext.getVariableDefinition().getAlias() == null)
+        ? "/" + fieldContext.getColumnAlias()
+        : fieldContext.getVariableDefinition().getAlias();
+  }
 
-    protected String effectiveAlias(){
-        return (fieldContext.getVariableDefinition().getAlias() == null)
-                ? "/"+fieldContext.getColumnAlias()
-                : fieldContext.getVariableDefinition().getAlias();
-    }
-
-    protected Field<?> defaultAliased(Field field){
-        if (fieldContext.getClause().equals(I_QueryImpl.Clause.WHERE))
-            return field;
-        else
-            return field.as(new DefaultColumnId().value(fieldContext.getVariableDefinition()));
-    }
-
+  protected Field<?> defaultAliased(Field field) {
+    if (fieldContext.getClause().equals(I_QueryImpl.Clause.WHERE)) return field;
+    else return field.as(new DefaultColumnId().value(fieldContext.getVariableDefinition()));
+  }
 }

@@ -26,20 +26,20 @@ import org.jooq.impl.DSL;
 
 public class SimplePartyRefAttribute extends PartyRefAttribute {
 
-    protected Field tableField;
+  protected Field tableField;
 
-    public SimplePartyRefAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
-        super(fieldContext, joinSetup);
-    }
+  public SimplePartyRefAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
+    super(fieldContext, joinSetup);
+  }
 
-    @Override
-    public Field<?> sqlField() {
-        return as(DSL.field(tableField));
-    }
+  @Override
+  public Field<?> sqlField() {
+    return as(DSL.field(tableField));
+  }
 
-    @Override
-    public I_RMObjectAttribute forTableField(TableField tableField) {
-        this.tableField = joinSetup.getPartyJoinRef().field(tableField);
-        return this;
-    }
+  @Override
+  public I_RMObjectAttribute forTableField(TableField tableField) {
+    this.tableField = joinSetup.getPartyJoinRef().field(tableField);
+    return this;
+  }
 }

@@ -24,30 +24,34 @@ import org.jooq.impl.DSL;
 
 public class TemporalWithTimeZone extends SimpleEventContextAttribute {
 
-    private Field timeZoneField;
+  private Field timeZoneField;
 
-    public TemporalWithTimeZone(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
-        super(fieldContext, joinSetup);
+  public TemporalWithTimeZone(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
+    super(fieldContext, joinSetup);
+  }
+
+  public Field<?> sqlField() {
+    return as(
+        DSL.field(
+            "ehr.js_dv_date_time("
+                + tableField
+                + "::timestamptz, COALESCE("
+                + timeZoneField
+                + "::text,'UTC'))::json #>>'{value}'"));
+  }
+
+  public TemporalWithTimeZone useTimeZone(TableField tableField) {
+    this.timeZoneField = tableField;
+    return this;
+  }
+
+  @Override
+  public I_RMObjectAttribute forTableField(TableField tableField) {
+    this.tableField = tableField;
+    if (timeZoneField == null) {
+      String tzFieldName = tableField.getName().toUpperCase() + "_TZID"; // conventionally
+      timeZoneField = DSL.field(tableField.getTable().getName() + "." + tzFieldName);
     }
-
-    public Field<?> sqlField() {
-        return as(DSL.field("ehr.js_dv_date_time("+tableField+"::timestamptz, COALESCE("+timeZoneField+"::text,'UTC'))::json #>>'{value}'"));
-    }
-
-    public TemporalWithTimeZone useTimeZone(TableField tableField){
-        this.timeZoneField = tableField;
-        return this;
-    }
-
-    @Override
-    public I_RMObjectAttribute forTableField(TableField tableField) {
-        this.tableField = tableField;
-        if (timeZoneField == null){
-            String tzFieldName = tableField.getName().toUpperCase()+"_TZID"; //conventionally
-            timeZoneField = DSL.field(tableField.getTable().getName()+"."+tzFieldName);
-        }
-        return this;
-    }
-
-
+    return this;
+  }
 }

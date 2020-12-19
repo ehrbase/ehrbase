@@ -28,20 +28,20 @@ import org.jooq.impl.DSL;
 
 public class SystemAttribute extends RMObjectAttribute {
 
-    protected TableField tableField;
+  protected TableField tableField;
 
-    public SystemAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
-        super(fieldContext, joinSetup);
-    }
+  public SystemAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
+    super(fieldContext, joinSetup);
+  }
 
-    @Override
-    public Field<?> sqlField() {
-        return as(DSL.field(I_JoinBinder.systemRecordTable.getName()+"."+tableField.getName()));
-    }
+  @Override
+  public Field<?> sqlField() {
+    return as(DSL.field(I_JoinBinder.systemRecordTable.getName() + "." + tableField.getName()));
+  }
 
-    @Override
-    public I_RMObjectAttribute forTableField(TableField tableField) {
-        this.tableField = tableField;
-        return this;
-    }
+  @Override
+  public I_RMObjectAttribute forTableField(TableField tableField) {
+    this.tableField = tableField;
+    return this;
+  }
 }

@@ -21,5 +21,5 @@ import org.jooq.TableField;
 
 public interface RMAttributeResolver {
 
-    TableField NULL_FIELD = null;
+  TableField NULL_FIELD = null;
 }

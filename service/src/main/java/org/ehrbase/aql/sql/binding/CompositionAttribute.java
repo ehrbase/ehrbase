@@ -24,49 +24,55 @@ import org.ehrbase.aql.sql.queryImpl.JsonbEntryQuery;
 import org.jooq.Field;
 
 /**
- * convert a select or where AQL field into its SQL equivalent for a composition attribute.
- * This applies to standard attributes f.e. c/name/value etc.
+ * convert a select or where AQL field into its SQL equivalent for a composition attribute. This
+ * applies to standard attributes f.e. c/name/value etc.
  */
 public class CompositionAttribute {
 
-    private final CompositionAttributeQuery compositionAttributeQuery;
-    private final JsonbEntryQuery jsonbEntryQuery;
-    private final I_QueryImpl.Clause clause;
-    private boolean containsJsonDataBlock;
-    private String jsonbItemPath;
-    private String optionalPath;
+  private final CompositionAttributeQuery compositionAttributeQuery;
+  private final JsonbEntryQuery jsonbEntryQuery;
+  private final I_QueryImpl.Clause clause;
+  private boolean containsJsonDataBlock;
+  private String jsonbItemPath;
+  private String optionalPath;
 
-    public CompositionAttribute(CompositionAttributeQuery compositionAttributeQuery, JsonbEntryQuery jsonbEntryQuery, I_QueryImpl.Clause clause) {
-        this.compositionAttributeQuery = compositionAttributeQuery;
-        this.jsonbEntryQuery = jsonbEntryQuery;
-        this.clause = clause;
+  public CompositionAttribute(
+      CompositionAttributeQuery compositionAttributeQuery,
+      JsonbEntryQuery jsonbEntryQuery,
+      I_QueryImpl.Clause clause) {
+    this.compositionAttributeQuery = compositionAttributeQuery;
+    this.jsonbEntryQuery = jsonbEntryQuery;
+    this.clause = clause;
+  }
+
+  public Field<?> toSql(
+      I_VariableDefinition variableDefinition, String template_id, String identifier) {
+    Field<?> field;
+
+    if (variableDefinition.getPath() != null
+        && variableDefinition.getPath().startsWith("content")) {
+      field = jsonbEntryQuery.makeField(template_id, identifier, variableDefinition, clause);
+      containsJsonDataBlock = jsonbEntryQuery.isJsonDataBlock();
+      jsonbItemPath = jsonbEntryQuery.getJsonbItemPath();
+      compositionAttributeQuery.setUseEntry(true);
+    } else {
+      field =
+          compositionAttributeQuery.makeField(template_id, identifier, variableDefinition, clause);
+      containsJsonDataBlock = compositionAttributeQuery.isJsonDataBlock();
     }
+    optionalPath = variableDefinition.getPath();
+    return field;
+  }
 
-    public Field<?> toSql(I_VariableDefinition variableDefinition, String template_id, String identifier){
-        Field<?> field;
+  public boolean isContainsJsonDataBlock() {
+    return containsJsonDataBlock;
+  }
 
-        if (variableDefinition.getPath() != null && variableDefinition.getPath().startsWith("content")) {
-            field = jsonbEntryQuery.makeField(template_id, identifier, variableDefinition, clause);
-            containsJsonDataBlock = jsonbEntryQuery.isJsonDataBlock();
-            jsonbItemPath = jsonbEntryQuery.getJsonbItemPath();
-            compositionAttributeQuery.setUseEntry(true);
-        } else {
-            field = compositionAttributeQuery.makeField(template_id, identifier, variableDefinition, clause);
-            containsJsonDataBlock = compositionAttributeQuery.isJsonDataBlock();
-        }
-        optionalPath = variableDefinition.getPath();
-        return field;
-    }
+  public String getJsonbItemPath() {
+    return jsonbItemPath;
+  }
 
-    public boolean isContainsJsonDataBlock() {
-        return containsJsonDataBlock;
-    }
-
-    public String getJsonbItemPath() {
-        return jsonbItemPath;
-    }
-
-    public String getOptionalPath() {
-        return optionalPath;
-    }
+  public String getOptionalPath() {
+    return optionalPath;
+  }
 }

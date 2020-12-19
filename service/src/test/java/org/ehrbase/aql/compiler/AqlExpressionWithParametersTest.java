@@ -18,143 +18,154 @@
 
 package org.ehrbase.aql.compiler;
 
-import org.junit.Test;
+import static org.junit.Assert.*;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-
-import static org.junit.Assert.*;
+import org.junit.Test;
 
 public class AqlExpressionWithParametersTest {
 
-    @Test
-    public void testParseAql() {
+  @Test
+  public void testParseAql() {
 
-        Map<String, Object> map = new HashMap<>();
+    Map<String, Object> map = new HashMap<>();
 
-        map.put("nameValue1", "nameValue1");
-        map.put("nameValue2", "nameValue2");
-        map.put("max_value", 123);
-        map.put("another_value", 456);
-        map.put("another_value", 456);
-        map.put("ehrId", UUID.fromString("f002a367-52ad-4bee-aa14-67627db677ad"));
+    map.put("nameValue1", "nameValue1");
+    map.put("nameValue2", "nameValue2");
+    map.put("max_value", 123);
+    map.put("another_value", 456);
+    map.put("another_value", 456);
+    map.put("ehrId", UUID.fromString("f002a367-52ad-4bee-aa14-67627db677ad"));
 
-        String expectedSubstituted = "select\n" +
-                "   o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0005, 'nameValue1']/value/magnitude as diastolic,\n" +
-                "   o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0004, 'nameValue2']/value/magnitude as systolic\n" +
-                "from EHR e[ehr_id/value='f002a367-52ad-4bee-aa14-67627db677ad']\n" +
-                "  contains COMPOSITION a\n" +
-                "    contains OBSERVATION o_bp[openEHR-EHR-OBSERVATION.blood_pressure.v1]\n" +
-                "where o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0005]/value/magnitude < 123\n" +
-                "   and o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0004]/value/magnitude > 456";
+    String expectedSubstituted =
+        "select\n"
+            + "   o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0005, 'nameValue1']/value/magnitude as diastolic,\n"
+            + "   o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0004, 'nameValue2']/value/magnitude as systolic\n"
+            + "from EHR e[ehr_id/value='f002a367-52ad-4bee-aa14-67627db677ad']\n"
+            + "  contains COMPOSITION a\n"
+            + "    contains OBSERVATION o_bp[openEHR-EHR-OBSERVATION.blood_pressure.v1]\n"
+            + "where o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0005]/value/magnitude < 123\n"
+            + "   and o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0004]/value/magnitude > 456";
 
-        String aql = "select\n" +
-                "   o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0005, $nameValue1]/value/magnitude as diastolic,\n" +
-                "   o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0004, $nameValue2]/value/magnitude as systolic\n" +
-                "from EHR e[ehr_id/value=$ehrId]\n" +
-                "  contains COMPOSITION a\n" +
-                "    contains OBSERVATION o_bp[openEHR-EHR-OBSERVATION.blood_pressure.v1]\n" +
-                "where o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0005]/value/magnitude < $max_value\n" +
-                "   and o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0004]/value/magnitude > $another_value";
+    String aql =
+        "select\n"
+            + "   o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0005, $nameValue1]/value/magnitude as diastolic,\n"
+            + "   o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0004, $nameValue2]/value/magnitude as systolic\n"
+            + "from EHR e[ehr_id/value=$ehrId]\n"
+            + "  contains COMPOSITION a\n"
+            + "    contains OBSERVATION o_bp[openEHR-EHR-OBSERVATION.blood_pressure.v1]\n"
+            + "where o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0005]/value/magnitude < $max_value\n"
+            + "   and o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0004]/value/magnitude > $another_value";
 
-        String aqlExpression = new AqlExpressionWithParameters().substitute(aql, map);
+    String aqlExpression = new AqlExpressionWithParameters().substitute(aql, map);
 
-        assertEquals(expectedSubstituted, aqlExpression);
+    assertEquals(expectedSubstituted, aqlExpression);
+  }
+
+  @Test
+  public void testParseMissingValue() {
+
+    Map<String, Object> map = new HashMap<>();
+
+    map.put("nameValue1", "nameValue1");
+    //        map.put("nameValue2", "nameValue2");
+    map.put("max_value", 123);
+    map.put("another_value", 456);
+    map.put("ehrId", UUID.fromString("f002a367-52ad-4bee-aa14-67627db677ad"));
+
+    String aql =
+        "select\n"
+            + "   o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0005, '$nameValue1']/value/magnitude as diastolic,\n"
+            + "   o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0004, '$nameValue2']/value/magnitude as systolic\n"
+            + "from EHR e[ehr_id/value='$ehrId']\n"
+            + "  contains COMPOSITION a\n"
+            + "    contains OBSERVATION o_bp[openEHR-EHR-OBSERVATION.blood_pressure.v1]\n"
+            + "where o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0005]/value/magnitude < $max_value\n"
+            + "   and o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0004]/value/magnitude > $another_value";
+
+    try {
+      String aqlExpression = new AqlExpressionWithParameters().substitute(aql, map);
+      fail("Missing parameter hasn't been detected");
+    } catch (IllegalArgumentException e) {
+      System.out.println(e);
     }
+  }
 
-    @Test
-    public void testParseMissingValue() {
+  @Test
+  public void testParameter1() {
+    Map<String, Object> map = new HashMap<>();
+    map.put("name-Value-1", "nameValue1");
 
-        Map<String, Object> map = new HashMap<>();
+    assertEquals(
+        "'nameValue1'", new AqlExpressionWithParameters().substitute("$name-Value-1", map));
+  }
 
-        map.put("nameValue1", "nameValue1");
-//        map.put("nameValue2", "nameValue2");
-        map.put("max_value", 123);
-        map.put("another_value", 456);
-        map.put("ehrId", UUID.fromString("f002a367-52ad-4bee-aa14-67627db677ad"));
+  @Test
+  public void testParameter2() {
+    Map<String, Object> map = new HashMap<>();
+    map.put("name_Value_1", "nameValue1");
 
-        String aql = "select\n" +
-                "   o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0005, '$nameValue1']/value/magnitude as diastolic,\n" +
-                "   o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0004, '$nameValue2']/value/magnitude as systolic\n" +
-                "from EHR e[ehr_id/value='$ehrId']\n" +
-                "  contains COMPOSITION a\n" +
-                "    contains OBSERVATION o_bp[openEHR-EHR-OBSERVATION.blood_pressure.v1]\n" +
-                "where o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0005]/value/magnitude < $max_value\n" +
-                "   and o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0004]/value/magnitude > $another_value";
+    assertEquals(
+        "'nameValue1'", new AqlExpressionWithParameters().substitute("$name_Value_1", map));
+  }
 
-        try {
-            String aqlExpression = new AqlExpressionWithParameters().substitute(aql, map);
-            fail("Missing parameter hasn't been detected");
-        } catch (IllegalArgumentException e){
-            System.out.println(e);
-        }
-    }
+  @Test
+  public void testParameter3() {
+    Map<String, Object> map = new HashMap<>();
+    map.put("value", 1234);
 
-    @Test
-    public void testParameter1(){
-        Map<String, Object> map = new HashMap<>();
-        map.put("name-Value-1", "nameValue1");
+    assertEquals("1234", new AqlExpressionWithParameters().substitute("$value", map));
+  }
 
-        assertEquals("'nameValue1'", new AqlExpressionWithParameters().substitute("$name-Value-1", map));
-    }
+  @Test
+  public void testParameter4() {
+    Map<String, Object> map = new HashMap<>();
+    map.put("terminologyId", "openehr");
 
-    @Test
-    public void testParameter2(){
-        Map<String, Object> map = new HashMap<>();
-        map.put("name_Value_1", "nameValue1");
+    assertEquals(
+        "[at0002 and value/defining_code/terminology_id/value='openehr']",
+        new AqlExpressionWithParameters()
+            .substitute(
+                "[at0002 and value/defining_code/terminology_id/value=$terminologyId]", map));
+  }
 
-        assertEquals("'nameValue1'", new AqlExpressionWithParameters().substitute("$name_Value_1", map));
-    }
+  @Test
+  public void testJsonParameters() {
 
-    @Test
-    public void testParameter3(){
-        Map<String, Object> map = new HashMap<>();
-        map.put("value", 1234);
+    // from
+    // https://specifications.openehr.org/releases/ITS-REST/latest/query.html#query-execute-query-get
+    String jsonParameters =
+        " {"
+            + " \"q\": \"SELECT c FROM EHR e[ehr_id/value=$ehr_id] CONTAINS COMPOSITION c[openEHR-EHR-COMPOSITION.encounter.v1] CONTAINS OBSERVATION obs[openEHR-EHR-OBSERVATION.blood_pressure.v1] WHERE obs/data[at0001]/events[at0006]/data[at0003]/items[at0004]/value/magnitude >= $systolic_bp\",\n"
+            + "  \"offset\": 0,\n"
+            + "  \"fetch\": 10,"
+            + " \"query-parameters\": {\n"
+            + "    \"nameValue1\": \"nameValue1\","
+            + "    \"nameValue2\": \"nameValue2\","
+            + "    \"ehr_id\": \"f002a367-52ad-4bee-aa14-67627db677ad\",\n"
+            + "    \"diastolic_bp\": 80,\n"
+            + "    \"systolic_bp\": 140\n"
+            + "  }"
+            + "}";
 
-        assertEquals("1234", new AqlExpressionWithParameters().substitute("$value", map));
-    }
+    String expectedSubstituted =
+        "(query (queryExpr (select select (selectExpr (identifiedPath o_bp / (objectPath (pathPart data (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0001))) ])) / (pathPart events (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0006))) ])) / (pathPart data (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0003))) ])) / (pathPart items (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0005 , 'nameValue1'))) ])) / (pathPart value) / (pathPart magnitude))) as diastolic , (selectExpr (identifiedPath o_bp / (objectPath (pathPart data (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0001))) ])) / (pathPart events (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0006))) ])) / (pathPart data (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0003))) ])) / (pathPart items (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0004 , 'nameValue2'))) ])) / (pathPart value) / (pathPart magnitude))) as systolic))) (from from (fromEHR EHR e (standardPredicate [ (predicateExpr (predicateAnd (predicateEquality (predicateOperand (objectPath (pathPart ehr_id) / (pathPart value))) = (predicateOperand (operand 'f002a367-52ad-4bee-aa14-67627db677ad'))))) ])) contains (containsExpression (containExpressionBool (contains (simpleClassExpr COMPOSITION a) contains (containsExpression (containExpressionBool (contains (simpleClassExpr (archetypedClassExpr OBSERVATION o_bp [ openEHR-EHR-OBSERVATION.blood_pressure.v1 ]))))))))) (where where (identifiedExpr (identifiedEquality (identifiedOperand (identifiedPath o_bp / (objectPath (pathPart data (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0001))) ])) / (pathPart events (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0006))) ])) / (pathPart data (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0003))) ])) / (pathPart items (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0005))) ])) / (pathPart value) / (pathPart magnitude)))) < (identifiedOperand (operand 80.0))) and (identifiedEquality (identifiedOperand (identifiedPath o_bp / (objectPath (pathPart data (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0001))) ])) / (pathPart events (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0006))) ])) / (pathPart data (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0003))) ])) / (pathPart items (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0004))) ])) / (pathPart value) / (pathPart magnitude)))) > (identifiedOperand (operand 140.0))))) <EOF>))";
 
+    String aql =
+        "select\n"
+            + "   o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0005, $nameValue1]/value/magnitude as diastolic,\n"
+            + "   o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0004, $nameValue2]/value/magnitude as systolic\n"
+            + "from EHR e[ehr_id/value=$ehr_id]\n"
+            + "  contains COMPOSITION a\n"
+            + "    contains OBSERVATION o_bp[openEHR-EHR-OBSERVATION.blood_pressure.v1]\n"
+            + "where o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0005]/value/magnitude < $diastolic_bp\n"
+            + "   and o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0004]/value/magnitude > $systolic_bp";
 
-    @Test
-    public void testParameter4(){
-        Map<String, Object> map = new HashMap<>();
-        map.put("terminologyId", "openehr");
+    AqlExpressionWithParameters aqlExpression =
+        new AqlExpressionWithParameters().parse(aql, jsonParameters);
 
-        assertEquals("[at0002 and value/defining_code/terminology_id/value='openehr']", new AqlExpressionWithParameters().substitute("[at0002 and value/defining_code/terminology_id/value=$terminologyId]", map));
-    }
-
-    @Test
-    public void testJsonParameters(){
-
-        //from https://specifications.openehr.org/releases/ITS-REST/latest/query.html#query-execute-query-get
-        String jsonParameters =
-                " {" +
-                " \"q\": \"SELECT c FROM EHR e[ehr_id/value=$ehr_id] CONTAINS COMPOSITION c[openEHR-EHR-COMPOSITION.encounter.v1] CONTAINS OBSERVATION obs[openEHR-EHR-OBSERVATION.blood_pressure.v1] WHERE obs/data[at0001]/events[at0006]/data[at0003]/items[at0004]/value/magnitude >= $systolic_bp\",\n" +
-                "  \"offset\": 0,\n" +
-                "  \"fetch\": 10," +
-                " \"query-parameters\": {\n" +
-                "    \"nameValue1\": \"nameValue1\"," +
-                "    \"nameValue2\": \"nameValue2\"," +
-                "    \"ehr_id\": \"f002a367-52ad-4bee-aa14-67627db677ad\",\n" +
-                "    \"diastolic_bp\": 80,\n" +
-                "    \"systolic_bp\": 140\n" +
-                "  }" +
-                "}";
-
-        String expectedSubstituted = "(query (queryExpr (select select (selectExpr (identifiedPath o_bp / (objectPath (pathPart data (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0001))) ])) / (pathPart events (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0006))) ])) / (pathPart data (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0003))) ])) / (pathPart items (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0005 , 'nameValue1'))) ])) / (pathPart value) / (pathPart magnitude))) as diastolic , (selectExpr (identifiedPath o_bp / (objectPath (pathPart data (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0001))) ])) / (pathPart events (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0006))) ])) / (pathPart data (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0003))) ])) / (pathPart items (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0004 , 'nameValue2'))) ])) / (pathPart value) / (pathPart magnitude))) as systolic))) (from from (fromEHR EHR e (standardPredicate [ (predicateExpr (predicateAnd (predicateEquality (predicateOperand (objectPath (pathPart ehr_id) / (pathPart value))) = (predicateOperand (operand 'f002a367-52ad-4bee-aa14-67627db677ad'))))) ])) contains (containsExpression (containExpressionBool (contains (simpleClassExpr COMPOSITION a) contains (containsExpression (containExpressionBool (contains (simpleClassExpr (archetypedClassExpr OBSERVATION o_bp [ openEHR-EHR-OBSERVATION.blood_pressure.v1 ]))))))))) (where where (identifiedExpr (identifiedEquality (identifiedOperand (identifiedPath o_bp / (objectPath (pathPart data (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0001))) ])) / (pathPart events (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0006))) ])) / (pathPart data (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0003))) ])) / (pathPart items (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0005))) ])) / (pathPart value) / (pathPart magnitude)))) < (identifiedOperand (operand 80.0))) and (identifiedEquality (identifiedOperand (identifiedPath o_bp / (objectPath (pathPart data (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0001))) ])) / (pathPart events (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0006))) ])) / (pathPart data (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0003))) ])) / (pathPart items (predicate [ (nodePredicateOr (nodePredicateAnd (nodePredicateComparable at0004))) ])) / (pathPart value) / (pathPart magnitude)))) > (identifiedOperand (operand 140.0))))) <EOF>))";
-
-        String aql = "select\n" +
-                "   o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0005, $nameValue1]/value/magnitude as diastolic,\n" +
-                "   o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0004, $nameValue2]/value/magnitude as systolic\n" +
-                "from EHR e[ehr_id/value=$ehr_id]\n" +
-                "  contains COMPOSITION a\n" +
-                "    contains OBSERVATION o_bp[openEHR-EHR-OBSERVATION.blood_pressure.v1]\n" +
-                "where o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0005]/value/magnitude < $diastolic_bp\n" +
-                "   and o_bp/data[at0001]/events[at0006]/data[at0003]/items[at0004]/value/magnitude > $systolic_bp";
-
-        AqlExpressionWithParameters aqlExpression = new AqlExpressionWithParameters().parse(aql, jsonParameters);
-
-        assertEquals(expectedSubstituted, aqlExpression.dump());
-    }
+    assertEquals(expectedSubstituted, aqlExpression.dump());
+  }
 }

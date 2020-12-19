@@ -17,6 +17,8 @@
  */
 package org.ehrbase.aql.sql.queryImpl.attribute.partyref;
 
+import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
+
 import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryImpl.attribute.I_RMObjectAttribute;
 import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
@@ -24,22 +26,22 @@ import org.ehrbase.aql.sql.queryImpl.value_field.GenericJsonField;
 import org.jooq.Field;
 import org.jooq.TableField;
 
-import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
-
 public class PartyIdentifiedJson extends GenericJsonField {
 
-    PartyIdentifiedJson(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
-        super(fieldContext, joinSetup);
-    }
+  PartyIdentifiedJson(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
+    super(fieldContext, joinSetup);
+  }
 
-    @Override
-    public Field<?> sqlField() {
-        return super.jsonField("PARTY_IDENTIFIED","ehr.js_canonical_party_identified", joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.ID));
-    }
+  @Override
+  public Field<?> sqlField() {
+    return super.jsonField(
+        "PARTY_IDENTIFIED",
+        "ehr.js_canonical_party_identified",
+        joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.ID));
+  }
 
-    @Override
-    public I_RMObjectAttribute forTableField(TableField tableField) {
-        return this;
-    }
-
+  @Override
+  public I_RMObjectAttribute forTableField(TableField tableField) {
+    return this;
+  }
 }

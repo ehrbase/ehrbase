@@ -17,49 +17,57 @@
  */
 package org.ehrbase.aql.sql.queryImpl.attribute.concept;
 
+import java.util.Arrays;
 import org.ehrbase.aql.sql.queryImpl.QueryImplConstants;
 import org.ehrbase.aql.sql.queryImpl.attribute.AttributeResolver;
 import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
-import org.ehrbase.aql.sql.queryImpl.attribute.eventcontext.EventContextJson;
 import org.jooq.Field;
 import org.jooq.TableField;
 
-import java.util.Arrays;
+public class ConceptResolver extends AttributeResolver {
 
-import static org.ehrbase.jooq.pg.tables.EventContext.EVENT_CONTEXT;
+  TableField tableField;
 
-public class ConceptResolver extends AttributeResolver
-{
+  public ConceptResolver(FieldResolutionContext fieldResolutionContext, JoinSetup joinSetup) {
+    super(fieldResolutionContext, joinSetup);
+  }
 
-    TableField tableField;
+  public Field<?> sqlField(String path) {
 
-    public ConceptResolver(FieldResolutionContext fieldResolutionContext, JoinSetup joinSetup) {
-        super(fieldResolutionContext, joinSetup);
-    }
+    if (path.isEmpty())
+      return new ConceptJson(fieldResolutionContext, joinSetup)
+          .forTableField(tableField)
+          .sqlField();
 
-    public Field<?> sqlField(String path){
+    if (!path.equals("mappings") && path.startsWith("mappings")) {
+      path = path.substring(path.indexOf("mappings") + "mappings".length() + 1);
+      // we insert a tag to indicate that the path operates on a json array
+      return new ConceptJson(fieldResolutionContext, joinSetup)
+          .forJsonPath("mappings/" + QueryImplConstants.AQL_NODE_ITERATIVE_MARKER + "/" + path)
+          .forTableField(tableField)
+          .sqlField();
+    } else if (Arrays.asList(
+            "value",
+            "mappings",
+            "defining_code",
+            "defining_code/terminology_id",
+            "defining_code/terminology_id/value",
+            "defining_code/code_string")
+        .contains(path)) {
+      Field sqlField =
+          new ConceptJson(fieldResolutionContext, joinSetup)
+              .forJsonPath(path)
+              .forTableField(tableField)
+              .sqlField();
+      if (path.equals("defining_code/terminology_id/value") || path.equals("value"))
+        fieldResolutionContext.setJsonDatablock(false);
+      return sqlField;
+    } else throw new IllegalArgumentException("Unresolved concept attribute path:" + path);
+  }
 
-        if (path.isEmpty())
-            return new ConceptJson(fieldResolutionContext, joinSetup).forTableField(tableField).sqlField();
-
-        if (!path.equals("mappings") && path.startsWith("mappings")) {
-            path = path.substring(path.indexOf("mappings")+"mappings".length()+1);
-            //we insert a tag to indicate that the path operates on a json array
-            return new ConceptJson(fieldResolutionContext, joinSetup).forJsonPath("mappings/"+ QueryImplConstants.AQL_NODE_ITERATIVE_MARKER+"/" + path).forTableField(tableField).sqlField();
-        }
-        else if (Arrays.asList("value", "mappings", "defining_code", "defining_code/terminology_id", "defining_code/terminology_id/value", "defining_code/code_string").contains(path)) {
-            Field sqlField = new ConceptJson(fieldResolutionContext, joinSetup).forJsonPath(path).forTableField(tableField).sqlField();
-            if (path.equals("defining_code/terminology_id/value")||path.equals("value"))
-                fieldResolutionContext.setJsonDatablock(false);
-            return sqlField;
-        }
-        else
-            throw new IllegalArgumentException("Unresolved concept attribute path:"+path);
-    }
-
-    public ConceptResolver forTableField(TableField tableField) {
-        this.tableField = tableField;
-        return this;
-    }
+  public ConceptResolver forTableField(TableField tableField) {
+    this.tableField = tableField;
+    return this;
+  }
 }

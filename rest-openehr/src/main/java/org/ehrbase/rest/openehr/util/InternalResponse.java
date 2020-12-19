@@ -21,32 +21,35 @@ package org.ehrbase.rest.openehr.util;
 import org.springframework.http.HttpHeaders;
 
 /**
- * Wrapper class to allow internal creation of response data classes with access to their headers, necessary to build different responses based on the response data.
+ * Wrapper class to allow internal creation of response data classes with access to their headers,
+ * necessary to build different responses based on the response data.
  *
  * @param <T>
  */
-public class InternalResponse<T /*implements ResponseData*/> {  // TODO might needs to be changed to one more general layer, e.g. ResponseData class
-    T responseData;
-    HttpHeaders headers;
+public class InternalResponse<
+    T /*implements ResponseData*/> { // TODO might needs to be changed to one more general layer,
+  // e.g. ResponseData class
+  T responseData;
+  HttpHeaders headers;
 
-    public InternalResponse(T responseData, HttpHeaders headers) {
-        this.responseData = responseData;
-        this.headers = headers;
-    }
+  public InternalResponse(T responseData, HttpHeaders headers) {
+    this.responseData = responseData;
+    this.headers = headers;
+  }
 
-    public T getResponseData() {
-        return responseData;
-    }
+  public T getResponseData() {
+    return responseData;
+  }
 
-    public void setResponseData(T responseData) {
-        this.responseData = responseData;
-    }
+  public void setResponseData(T responseData) {
+    this.responseData = responseData;
+  }
 
-    public HttpHeaders getHeaders() {
-        return headers;
-    }
+  public HttpHeaders getHeaders() {
+    return headers;
+  }
 
-    public void setHeaders(HttpHeaders headers) {
-        this.headers = headers;
-    }
+  public void setHeaders(HttpHeaders headers) {
+    this.headers = headers;
+  }
 }

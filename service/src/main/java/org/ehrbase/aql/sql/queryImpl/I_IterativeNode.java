@@ -18,9 +18,5 @@
 
 package org.ehrbase.aql.sql.queryImpl;
 
-/**
- * Created by christian on 5/17/2018.
- */
-public interface I_IterativeNode {
-
-}
+/** Created by christian on 5/17/2018. */
+public interface I_IterativeNode {}

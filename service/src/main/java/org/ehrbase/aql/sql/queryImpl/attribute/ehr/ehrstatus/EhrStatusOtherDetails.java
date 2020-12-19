@@ -17,8 +17,6 @@
  */
 package org.ehrbase.aql.sql.queryImpl.attribute.ehr.ehrstatus;
 
-
-import org.ehrbase.aql.sql.queryImpl.JsonbEntryQuery;
 import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryImpl.attribute.I_RMObjectAttribute;
 import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
@@ -27,22 +25,27 @@ import org.jooq.TableField;
 
 public class EhrStatusOtherDetails extends EhrStatusAttribute {
 
-    public EhrStatusOtherDetails(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
-        super(fieldContext, joinSetup);
-        joinSetup.setContainsEhrStatus(true);
-    }
+  public EhrStatusOtherDetails(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
+    super(fieldContext, joinSetup);
+    joinSetup.setContainsEhrStatus(true);
+  }
 
-    @Override
-    public Field<?> sqlField(){
-        String variablePath = fieldContext.getVariableDefinition().getPath().substring("ehr_status/other_details".length());
-        if (variablePath.startsWith("/"))
-            variablePath = variablePath.substring(1);
+  @Override
+  public Field<?> sqlField() {
+    String variablePath =
+        fieldContext
+            .getVariableDefinition()
+            .getPath()
+            .substring("ehr_status/other_details".length());
+    if (variablePath.startsWith("/")) variablePath = variablePath.substring(1);
 
-        return new EhrStatusJson(fieldContext, joinSetup).forJsonPath("other_details/"+variablePath).sqlField();
-    }
+    return new EhrStatusJson(fieldContext, joinSetup)
+        .forJsonPath("other_details/" + variablePath)
+        .sqlField();
+  }
 
-    @Override
-    public I_RMObjectAttribute forTableField(TableField tableField) {
-        return this;
-    }
+  @Override
+  public I_RMObjectAttribute forTableField(TableField tableField) {
+    return this;
+  }
 }

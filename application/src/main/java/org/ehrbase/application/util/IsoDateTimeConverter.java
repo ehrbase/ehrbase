@@ -17,26 +17,25 @@
  */
 package org.ehrbase.application.util;
 
+import java.time.Instant;
+import java.time.ZonedDateTime;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
-import java.time.ZonedDateTime;
-
 /**
- * IsoDateTimeConverter for parsing input ISO 6801 Date strings into a ZonedDateTime that contains the DateTime value
- * parsed into UTC time.
+ * IsoDateTimeConverter for parsing input ISO 6801 Date strings into a ZonedDateTime that contains
+ * the DateTime value parsed into UTC time.
  */
 @Component
 public class IsoDateTimeConverter implements Converter<String, Instant> {
 
-    @Override
-    public Instant convert(final String source) {
-        if (source.isEmpty()) {
-            return null;
-        }
-
-        ZonedDateTime zdt = ZonedDateTime.parse(source);
-        return zdt.toInstant();
+  @Override
+  public Instant convert(final String source) {
+    if (source.isEmpty()) {
+      return null;
     }
+
+    ZonedDateTime zdt = ZonedDateTime.parse(source);
+    return zdt.toInstant();
+  }
 }

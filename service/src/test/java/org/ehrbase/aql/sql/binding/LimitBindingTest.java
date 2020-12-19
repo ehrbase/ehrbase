@@ -18,50 +18,45 @@
 
 package org.ehrbase.aql.sql.binding;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 import org.ehrbase.dao.jooq.impl.DSLContextHelper;
 import org.jooq.DSLContext;
 import org.jooq.SelectQuery;
 import org.junit.Test;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-
 public class LimitBindingTest {
 
-    @Test
-    public void testBind() {
-        DSLContext context = DSLContextHelper.buildContext();
+  @Test
+  public void testBind() {
+    DSLContext context = DSLContextHelper.buildContext();
 
-        // no offset and limit
-        {
-            LimitBinding cut = new LimitBinding(null, null, context.selectQuery());
-            SelectQuery actual = cut.bind();
-            assertThat(actual.toString()).isEqualTo("select 1");
-        }
-
-        //only  limit
-        {
-            LimitBinding cut = new LimitBinding(1, null, context.selectQuery());
-            SelectQuery actual = cut.bind();
-            assertThat(actual.toString()).isEqualTo("select 1\n" +
-                    "limit 1");
-        }
-
-        // only offset
-        {
-            LimitBinding cut = new LimitBinding(null, 1, context.selectQuery());
-            SelectQuery actual = cut.bind();
-            assertThat(actual.toString()).isEqualTo("select 1\n" +
-                    "limit 0\n" +
-                    "offset 1");
-        }
-
-        //offset and limit
-        {
-            LimitBinding cut = new LimitBinding(1, 1, context.selectQuery());
-            SelectQuery actual = cut.bind();
-            assertThat(actual.toString()).isEqualTo("select 1\n" +
-                    "limit 1\n" +
-                    "offset 1");
-        }
+    // no offset and limit
+    {
+      LimitBinding cut = new LimitBinding(null, null, context.selectQuery());
+      SelectQuery actual = cut.bind();
+      assertThat(actual.toString()).isEqualTo("select 1");
     }
+
+    // only  limit
+    {
+      LimitBinding cut = new LimitBinding(1, null, context.selectQuery());
+      SelectQuery actual = cut.bind();
+      assertThat(actual.toString()).isEqualTo("select 1\n" + "limit 1");
+    }
+
+    // only offset
+    {
+      LimitBinding cut = new LimitBinding(null, 1, context.selectQuery());
+      SelectQuery actual = cut.bind();
+      assertThat(actual.toString()).isEqualTo("select 1\n" + "limit 0\n" + "offset 1");
+    }
+
+    // offset and limit
+    {
+      LimitBinding cut = new LimitBinding(1, 1, context.selectQuery());
+      SelectQuery actual = cut.bind();
+      assertThat(actual.toString()).isEqualTo("select 1\n" + "limit 1\n" + "offset 1");
+    }
+  }
 }

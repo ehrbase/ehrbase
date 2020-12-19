@@ -24,13 +24,13 @@ import org.ehrbase.response.ehrscape.StructuredString;
 @JacksonXmlRootElement
 public class TemplateExampleResponseData extends ActionRestResponseData {
 
-    private StructuredString composition;
+  private StructuredString composition;
 
-    public StructuredString getComposition() {
-        return composition;
-    }
+  public StructuredString getComposition() {
+    return composition;
+  }
 
-    public void setComposition(StructuredString composition) {
-        this.composition = composition;
-    }
+  public void setComposition(StructuredString composition) {
+    this.composition = composition;
+  }
 }

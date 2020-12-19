@@ -18,27 +18,26 @@
 
 package org.ehrbase.aql.compiler;
 
-import org.ehrbase.aql.parser.AqlLexer;
-import org.ehrbase.aql.parser.AqlParser;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.ehrbase.aql.parser.AqlLexer;
+import org.ehrbase.aql.parser.AqlParser;
 
 public class QueryHelper {
-    private QueryHelper() {
-    }
+  private QueryHelper() {}
 
-    public static ParseTree setupParseTree(String aql) {
-        AqlLexer aqlLexer = new AqlLexer(new ANTLRInputStream(aql));
-        CommonTokenStream commonTokenStream = new CommonTokenStream(aqlLexer);
-        AqlParser aqlParser = new AqlParser(commonTokenStream);
+  public static ParseTree setupParseTree(String aql) {
+    AqlLexer aqlLexer = new AqlLexer(new ANTLRInputStream(aql));
+    CommonTokenStream commonTokenStream = new CommonTokenStream(aqlLexer);
+    AqlParser aqlParser = new AqlParser(commonTokenStream);
 
-        //define our own error listener (default one just display a message on System.err
-        aqlLexer.removeErrorListeners();
-        aqlLexer.addErrorListener(AqlErrorHandler.INSTANCE);
-        aqlParser.removeErrorListeners();
-        aqlParser.addErrorListener(AqlErrorHandler.INSTANCE);
+    // define our own error listener (default one just display a message on System.err
+    aqlLexer.removeErrorListeners();
+    aqlLexer.addErrorListener(AqlErrorHandler.INSTANCE);
+    aqlParser.removeErrorListeners();
+    aqlParser.addErrorListener(AqlErrorHandler.INSTANCE);
 
-        return aqlParser.query();
-    }
+    return aqlParser.query();
+  }
 }

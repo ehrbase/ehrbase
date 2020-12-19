@@ -17,54 +17,70 @@
  */
 package org.ehrbase.aql.sql.queryImpl.attribute.setting;
 
+import static org.ehrbase.jooq.pg.tables.EventContext.EVENT_CONTEXT;
+
 import org.ehrbase.aql.sql.queryImpl.QueryImplConstants;
 import org.ehrbase.aql.sql.queryImpl.attribute.AttributeResolver;
 import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
 import org.ehrbase.aql.sql.queryImpl.attribute.eventcontext.EventContextJson;
-import org.ehrbase.aql.sql.queryImpl.value_field.GenericJsonField;
 import org.jooq.Field;
 
-import static org.ehrbase.jooq.pg.tables.EventContext.EVENT_CONTEXT;
+public class SettingResolver extends AttributeResolver {
 
-public class SettingResolver extends AttributeResolver
-{
+  public SettingResolver(FieldResolutionContext fieldResolutionContext, JoinSetup joinSetup) {
+    super(fieldResolutionContext, joinSetup);
+  }
 
-    public SettingResolver(FieldResolutionContext fieldResolutionContext, JoinSetup joinSetup) {
-        super(fieldResolutionContext, joinSetup);
+  public Field<?> sqlField(String path) {
+
+    if (path.isEmpty())
+      return new EventContextJson(fieldResolutionContext, joinSetup)
+          .forJsonPath("setting")
+          .sqlField();
+
+    if (!path.equals("mappings") && path.startsWith("mappings")) {
+      path = path.substring(path.indexOf("mappings") + "mappings".length() + 1);
+      // we insert a tag to indicate that the path operates on a json array
+      return new EventContextJson(fieldResolutionContext, joinSetup)
+          .forJsonPath(
+              "setting/mappings/" + QueryImplConstants.AQL_NODE_ITERATIVE_MARKER + "/" + path)
+          .forTableField(EVENT_CONTEXT.SETTING)
+          .sqlField();
     }
 
-    public Field<?> sqlField(String path){
-
-        if (path.isEmpty())
-            return new EventContextJson(fieldResolutionContext, joinSetup).forJsonPath("setting").sqlField();
-
-
-        if (!path.equals("mappings") && path.startsWith("mappings")) {
-            path = path.substring(path.indexOf("mappings")+"mappings".length()+1);
-            //we insert a tag to indicate that the path operates on a json array
-            return new EventContextJson(fieldResolutionContext, joinSetup).forJsonPath("setting/mappings/"+ QueryImplConstants.AQL_NODE_ITERATIVE_MARKER+"/" + path).forTableField(EVENT_CONTEXT.SETTING).sqlField();
-        }
-
-        switch (path){
-            case "value":
-                return new SettingAttribute(fieldResolutionContext, joinSetup).forJsonPath(path).forTableField(EVENT_CONTEXT.SETTING).sqlField();
-            case "defining_code":
-            case "formatting":
-            case "language":
-            case "encoding":
-                return new EventContextJson(fieldResolutionContext, joinSetup).forJsonPath("setting/"+path).forTableField(EVENT_CONTEXT.SETTING).sqlField();
-            case "mappings":
-                fieldResolutionContext.setJsonDatablock(true);
-                return new EventContextJson(fieldResolutionContext, joinSetup).forJsonPath("setting/"+path).forTableField(EVENT_CONTEXT.SETTING).sqlField();
-            case "defining_code/terminology_id":
-            case "defining_code/terminology_id/value":
-                return new SettingAttribute(fieldResolutionContext, joinSetup).forJsonPath(path).forTableField(EVENT_CONTEXT.SETTING).sqlField();
-            case "defining_code/code_string":
-                return new SettingAttribute(fieldResolutionContext, joinSetup).forJsonPath(path).forTableField(EVENT_CONTEXT.SETTING).sqlField();
-
-
-        }
-        throw new IllegalArgumentException("Unresolved context/facility attribute path:"+path);
+    switch (path) {
+      case "value":
+        return new SettingAttribute(fieldResolutionContext, joinSetup)
+            .forJsonPath(path)
+            .forTableField(EVENT_CONTEXT.SETTING)
+            .sqlField();
+      case "defining_code":
+      case "formatting":
+      case "language":
+      case "encoding":
+        return new EventContextJson(fieldResolutionContext, joinSetup)
+            .forJsonPath("setting/" + path)
+            .forTableField(EVENT_CONTEXT.SETTING)
+            .sqlField();
+      case "mappings":
+        fieldResolutionContext.setJsonDatablock(true);
+        return new EventContextJson(fieldResolutionContext, joinSetup)
+            .forJsonPath("setting/" + path)
+            .forTableField(EVENT_CONTEXT.SETTING)
+            .sqlField();
+      case "defining_code/terminology_id":
+      case "defining_code/terminology_id/value":
+        return new SettingAttribute(fieldResolutionContext, joinSetup)
+            .forJsonPath(path)
+            .forTableField(EVENT_CONTEXT.SETTING)
+            .sqlField();
+      case "defining_code/code_string":
+        return new SettingAttribute(fieldResolutionContext, joinSetup)
+            .forJsonPath(path)
+            .forTableField(EVENT_CONTEXT.SETTING)
+            .sqlField();
     }
+    throw new IllegalArgumentException("Unresolved context/facility attribute path:" + path);
+  }
 }

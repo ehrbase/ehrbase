@@ -19,21 +19,21 @@
 package org.ehrbase.api.exception;
 
 /**
- * Project-custom exception that allows outbound APIs to react on backend problems. Shall be thrown to invoke
- * status 500 "Internal Server Error" or whatever is appropriate.
- * All exceptions not covered by offered exceptions in this package. Should include internal error message.
+ * Project-custom exception that allows outbound APIs to react on backend problems. Shall be thrown
+ * to invoke status 500 "Internal Server Error" or whatever is appropriate. All exceptions not
+ * covered by offered exceptions in this package. Should include internal error message.
  */
 public class InternalServerException extends RuntimeException {
 
-    public InternalServerException(String message) {
-        super(message);
-    }
+  public InternalServerException(String message) {
+    super(message);
+  }
 
-    public InternalServerException(String message, Exception cause) {
-        super(message, cause);
-    }
+  public InternalServerException(String message, Exception cause) {
+    super(message, cause);
+  }
 
-    public InternalServerException(Exception cause) {
-        super(cause);
-    }
+  public InternalServerException(Exception cause) {
+    super(cause);
+  }
 }

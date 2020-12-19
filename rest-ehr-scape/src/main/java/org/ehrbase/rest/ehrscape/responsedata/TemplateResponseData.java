@@ -21,17 +21,16 @@ package org.ehrbase.rest.ehrscape.responsedata;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import org.ehrbase.webtemplate.model.WebTemplate;
 
-
 @JacksonXmlRootElement
 public class TemplateResponseData extends ActionRestResponseData {
 
-    private WebTemplate webTemplate;
+  private WebTemplate webTemplate;
 
-    public WebTemplate getWebTemplate() {
-        return webTemplate;
-    }
+  public WebTemplate getWebTemplate() {
+    return webTemplate;
+  }
 
-    public void setWebTemplate(WebTemplate webTemplate) {
-        this.webTemplate = webTemplate;
-    }
+  public void setWebTemplate(WebTemplate webTemplate) {
+    this.webTemplate = webTemplate;
+  }
 }

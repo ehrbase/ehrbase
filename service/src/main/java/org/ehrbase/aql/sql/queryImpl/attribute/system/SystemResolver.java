@@ -17,6 +17,9 @@
  */
 package org.ehrbase.aql.sql.queryImpl.attribute.system;
 
+import static org.ehrbase.jooq.pg.Tables.EHR_;
+import static org.ehrbase.jooq.pg.tables.System.SYSTEM;
+
 import org.ehrbase.aql.sql.binding.I_JoinBinder;
 import org.ehrbase.aql.sql.queryImpl.attribute.AttributeResolver;
 import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
@@ -24,30 +27,37 @@ import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
 import org.ehrbase.aql.sql.queryImpl.value_field.GenericJsonField;
 import org.jooq.Field;
 
-import static org.ehrbase.jooq.pg.Tables.EHR_;
-import static org.ehrbase.jooq.pg.tables.System.SYSTEM;
+public class SystemResolver extends AttributeResolver {
 
-public class SystemResolver extends AttributeResolver
-{
+  public SystemResolver(FieldResolutionContext fieldResolutionContext, JoinSetup joinSetup) {
+    super(fieldResolutionContext, joinSetup);
+    joinSetup.setJoinSystem(true);
+    joinSetup.setJoinEhr(true);
+  }
 
-    public SystemResolver(FieldResolutionContext fieldResolutionContext, JoinSetup joinSetup) {
-        super(fieldResolutionContext, joinSetup);
-        joinSetup.setJoinSystem(true);
-        joinSetup.setJoinEhr(true);
+  public Field<?> sqlField(String path) {
+
+    if (path.isEmpty()) {
+      return new GenericJsonField(fieldResolutionContext, joinSetup)
+          .jsonField(
+              "HIER_OBJECT_ID",
+              "ehr.js_canonical_hier_object_id",
+              I_JoinBinder.ehrRecordTable.field(EHR_.SYSTEM_ID));
     }
 
-    public Field<?> sqlField(String path){
-
-        if (path.isEmpty()){
-            return new GenericJsonField(fieldResolutionContext, joinSetup).jsonField("HIER_OBJECT_ID", "ehr.js_canonical_hier_object_id", I_JoinBinder.ehrRecordTable.field(EHR_.SYSTEM_ID));
-        }
-
-        switch (path){
-            case "value":
-                return new GenericJsonField(fieldResolutionContext, joinSetup).forJsonPath("value").jsonField("HIER_OBJECT_ID", "ehr.js_canonical_hier_object_id", I_JoinBinder.ehrRecordTable.field(EHR_.SYSTEM_ID));
-            case "description":
-                return new SystemAttribute(fieldResolutionContext, joinSetup).forTableField(SYSTEM.DESCRIPTION).sqlField();
-        }
-        throw new IllegalArgumentException("Unresolved system attribute path:"+path);
+    switch (path) {
+      case "value":
+        return new GenericJsonField(fieldResolutionContext, joinSetup)
+            .forJsonPath("value")
+            .jsonField(
+                "HIER_OBJECT_ID",
+                "ehr.js_canonical_hier_object_id",
+                I_JoinBinder.ehrRecordTable.field(EHR_.SYSTEM_ID));
+      case "description":
+        return new SystemAttribute(fieldResolutionContext, joinSetup)
+            .forTableField(SYSTEM.DESCRIPTION)
+            .sqlField();
     }
+    throw new IllegalArgumentException("Unresolved system attribute path:" + path);
+  }
 }

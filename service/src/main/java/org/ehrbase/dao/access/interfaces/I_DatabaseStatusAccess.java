@@ -21,7 +21,7 @@ import org.ehrbase.dao.access.jooq.DatabaseStatusAccess;
 
 public interface I_DatabaseStatusAccess {
 
-    static String retrieveDatabaseVersion(I_DomainAccess domainAccess) {
-        return DatabaseStatusAccess.getDatabaseVersion(domainAccess);
-    }
+  static String retrieveDatabaseVersion(I_DomainAccess domainAccess) {
+    return DatabaseStatusAccess.getDatabaseVersion(domainAccess);
+  }
 }

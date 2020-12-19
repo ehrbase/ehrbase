@@ -19,97 +19,108 @@
 package org.ehrbase.dao.access.interfaces;
 
 import com.nedap.archie.rm.generic.AuditDetails;
+import java.sql.Timestamp;
+import java.util.UUID;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.jooq.AuditDetailsAccess;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.tables.records.AuditDetailsRecord;
 
-import java.sql.Timestamp;
-import java.util.UUID;
-
 public interface I_AuditDetailsAccess extends I_SimpleCRUD {
 
-    /**
-     * get a new minimal AuditDetails access layer instance
-     *
-     * @param dataAccess      general data access
-     * @return new access instance
-     */
-    static I_AuditDetailsAccess getInstance(I_DomainAccess dataAccess) {
-        return new AuditDetailsAccess(dataAccess);
-    }
+  /**
+   * get a new minimal AuditDetails access layer instance
+   *
+   * @param dataAccess general data access
+   * @return new access instance
+   */
+  static I_AuditDetailsAccess getInstance(I_DomainAccess dataAccess) {
+    return new AuditDetailsAccess(dataAccess);
+  }
 
-    /**
-     * get a new AuditDetails access layer instance
-     *
-     * @param dataAccess    general data access
-     * @param systemId      system on which this is initiated
-     * @param committer     committer ID (Party Identified)
-     * @param changeType    audit change type, indicating creation, modification and so on
-     * @param description
-     * @return new access instance
-     * @throws InternalServerException if creating or retrieving system failed
-     */
-    static I_AuditDetailsAccess getInstance(I_DomainAccess dataAccess, UUID systemId, UUID committer, I_ConceptAccess.ContributionChangeType changeType, String description) {
-        return new AuditDetailsAccess(dataAccess, systemId, committer, changeType, description);
-    }
+  /**
+   * get a new AuditDetails access layer instance
+   *
+   * @param dataAccess general data access
+   * @param systemId system on which this is initiated
+   * @param committer committer ID (Party Identified)
+   * @param changeType audit change type, indicating creation, modification and so on
+   * @param description
+   * @return new access instance
+   * @throws InternalServerException if creating or retrieving system failed
+   */
+  static I_AuditDetailsAccess getInstance(
+      I_DomainAccess dataAccess,
+      UUID systemId,
+      UUID committer,
+      I_ConceptAccess.ContributionChangeType changeType,
+      String description) {
+    return new AuditDetailsAccess(dataAccess, systemId, committer, changeType, description);
+  }
 
-    /**
-     * Retrieve a specific audit instance via UUID
-     * @param dataAccess    general data access
-     * @param auditId ID of audit to retrieve
-     * @return access to instance
-     * @throws InternalServerException when retrieval failed
-     */
-    I_AuditDetailsAccess retrieveInstance(I_DomainAccess dataAccess, UUID auditId);
+  /**
+   * Retrieve a specific audit instance via UUID
+   *
+   * @param dataAccess general data access
+   * @param auditId ID of audit to retrieve
+   * @return access to instance
+   * @throws InternalServerException when retrieval failed
+   */
+  I_AuditDetailsAccess retrieveInstance(I_DomainAccess dataAccess, UUID auditId);
 
-    /**
-     * Convenience commit, that sets values on an empty/minimal {@link AuditDetailsAccess} before committing. Assumes creation as change type.
-     * @param systemId      system on which this is initiated
-     * @param committerId   committer ID (Party Identified)
-     * @param description   optional description
-     * @return ID of created audit DB entry
-     * @throws IllegalArgumentException when systemId or committerId aren't set
-     */
-    UUID commit(UUID systemId, UUID committerId, String description);
+  /**
+   * Convenience commit, that sets values on an empty/minimal {@link AuditDetailsAccess} before
+   * committing. Assumes creation as change type.
+   *
+   * @param systemId system on which this is initiated
+   * @param committerId committer ID (Party Identified)
+   * @param description optional description
+   * @return ID of created audit DB entry
+   * @throws IllegalArgumentException when systemId or committerId aren't set
+   */
+  UUID commit(UUID systemId, UUID committerId, String description);
 
-    /**
-     * Update method with all optional parameters to only set and invoke update with given parameters.
-     * @param systemId Optional
-     * @param committer Optional committer ID (Party Identified)
-     * @param changeType Optional audit change type, indicating creation, modification and so on
-     * @param description Optional
-     * @return Indicating success of operation
-     */
-    Boolean update(UUID systemId, UUID committer, I_ConceptAccess.ContributionChangeType changeType, String description);
+  /**
+   * Update method with all optional parameters to only set and invoke update with given parameters.
+   *
+   * @param systemId Optional
+   * @param committer Optional committer ID (Party Identified)
+   * @param changeType Optional audit change type, indicating creation, modification and so on
+   * @param description Optional
+   * @return Indicating success of operation
+   */
+  Boolean update(
+      UUID systemId,
+      UUID committer,
+      I_ConceptAccess.ContributionChangeType changeType,
+      String description);
 
-    UUID getId();
+  UUID getId();
 
-    void setSystemId(UUID systemId);
-    UUID getSystemId();
+  void setSystemId(UUID systemId);
 
-    /**
-     * @param committer a Party Identified
-     */
-    void setCommitter(UUID committer);
+  UUID getSystemId();
 
-    UUID getCommitter();
+  /** @param committer a Party Identified */
+  void setCommitter(UUID committer);
 
-    void setChangeType(UUID changeType);
+  UUID getCommitter();
 
-    void setChangeType(I_ConceptAccess.ContributionChangeType changeType);
+  void setChangeType(UUID changeType);
 
-    ContributionChangeType getChangeType();
+  void setChangeType(I_ConceptAccess.ContributionChangeType changeType);
 
-    void setDescription(String description);
+  ContributionChangeType getChangeType();
 
-    String getDescription();
+  void setDescription(String description);
 
-    Timestamp getTimeCommitted();
+  String getDescription();
 
-    String getTimeCommittedTzId();
+  Timestamp getTimeCommitted();
 
-    void setRecord(AuditDetailsRecord record);
+  String getTimeCommittedTzId();
 
-    AuditDetails getAsAuditDetails();
+  void setRecord(AuditDetailsRecord record);
+
+  AuditDetails getAsAuditDetails();
 }

@@ -41,6 +41,5 @@ import org.ehrbase.api.service.TerminologyServer;
 /***
  * @Created by Luis Marco-Ruiz on Mar 6, 2020
  */
-public interface I_OpenehrTerminologyServer extends TerminologyServer<DvCodedText, String, String> {
-
-}
+public interface I_OpenehrTerminologyServer
+    extends TerminologyServer<DvCodedText, String, String> {}

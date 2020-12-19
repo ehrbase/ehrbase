@@ -19,12 +19,12 @@
 package org.ehrbase.api.exception;
 
 /**
- * Project-custom exception that allows outbound APIs to react on backend problems. Shall be thrown to invoke
- * status 422 "Unprocessable Entity" or whatever is appropriate.
+ * Project-custom exception that allows outbound APIs to react on backend problems. Shall be thrown
+ * to invoke status 422 "Unprocessable Entity" or whatever is appropriate.
  */
 public class UnprocessableEntityException extends RuntimeException {
 
-    public UnprocessableEntityException(String message) {
-        super(message);
-    }
+  public UnprocessableEntityException(String message) {
+    super(message);
+  }
 }

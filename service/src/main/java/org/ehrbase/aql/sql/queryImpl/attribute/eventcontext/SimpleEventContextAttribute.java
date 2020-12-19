@@ -17,6 +17,8 @@
  */
 package org.ehrbase.aql.sql.queryImpl.attribute.eventcontext;
 
+import static org.ehrbase.jooq.pg.Tables.STATUS;
+
 import org.ehrbase.aql.sql.binding.I_JoinBinder;
 import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryImpl.attribute.I_RMObjectAttribute;
@@ -25,28 +27,26 @@ import org.jooq.Field;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 
-import static org.ehrbase.jooq.pg.Tables.STATUS;
-
 public class SimpleEventContextAttribute extends EventContextAttribute {
 
-    protected Field tableField;
+  protected Field tableField;
 
-    public SimpleEventContextAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
-        super(fieldContext, joinSetup);
-    }
+  public SimpleEventContextAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
+    super(fieldContext, joinSetup);
+  }
 
-    @Override
-    public Field<?> sqlField() {
-        return as(DSL.field(tableField));
-    }
+  @Override
+  public Field<?> sqlField() {
+    return as(DSL.field(tableField));
+  }
 
-    @Override
-    public I_RMObjectAttribute forTableField(TableField tableField) {
-        this.tableField = tableField;
-        if (tableField.getTable().equals(STATUS)) {
-            joinSetup.setJoinEhrStatus(true);
-            this.tableField = I_JoinBinder.statusRecordTable.field(tableField.getName());
-        }
-        return this;
+  @Override
+  public I_RMObjectAttribute forTableField(TableField tableField) {
+    this.tableField = tableField;
+    if (tableField.getTable().equals(STATUS)) {
+      joinSetup.setJoinEhrStatus(true);
+      this.tableField = I_JoinBinder.statusRecordTable.field(tableField.getName());
     }
+    return this;
+  }
 }

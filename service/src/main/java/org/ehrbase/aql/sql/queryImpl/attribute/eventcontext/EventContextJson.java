@@ -17,46 +17,47 @@
  */
 package org.ehrbase.aql.sql.queryImpl.attribute.eventcontext;
 
+import static org.ehrbase.jooq.pg.tables.EventContext.EVENT_CONTEXT;
+
+import java.util.Optional;
 import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryImpl.attribute.I_RMObjectAttribute;
 import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
 import org.ehrbase.aql.sql.queryImpl.value_field.GenericJsonField;
 import org.jooq.Field;
 import org.jooq.TableField;
-import org.jooq.impl.DSL;
-
-import java.util.Optional;
-
-import static org.ehrbase.jooq.pg.tables.EventContext.EVENT_CONTEXT;
 
 public class EventContextJson extends EventContextAttribute {
 
-    protected Optional<String> jsonPath = Optional.empty();
+  protected Optional<String> jsonPath = Optional.empty();
 
-    public EventContextJson(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
-        super(fieldContext, joinSetup);
-    }
+  public EventContextJson(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
+    super(fieldContext, joinSetup);
+  }
 
-    @Override
-    public Field<?> sqlField() {
-        //query the json representation of EVENT_CONTEXT and cast the result as TEXT
-        if (jsonPath.isPresent())
-            return new GenericJsonField(fieldContext, joinSetup).forJsonPath(jsonPath.get()).jsonField("EVENT_CONTEXT","ehr.js_context", EVENT_CONTEXT.ID);
-        else
-            return new GenericJsonField(fieldContext, joinSetup).jsonField("EVENT_CONTEXT","ehr.js_context", EVENT_CONTEXT.ID);
-    }
+  @Override
+  public Field<?> sqlField() {
+    // query the json representation of EVENT_CONTEXT and cast the result as TEXT
+    if (jsonPath.isPresent())
+      return new GenericJsonField(fieldContext, joinSetup)
+          .forJsonPath(jsonPath.get())
+          .jsonField("EVENT_CONTEXT", "ehr.js_context", EVENT_CONTEXT.ID);
+    else
+      return new GenericJsonField(fieldContext, joinSetup)
+          .jsonField("EVENT_CONTEXT", "ehr.js_context", EVENT_CONTEXT.ID);
+  }
 
-    @Override
-    public I_RMObjectAttribute forTableField(TableField tableField) {
-        return this;
-    }
+  @Override
+  public I_RMObjectAttribute forTableField(TableField tableField) {
+    return this;
+  }
 
-    public EventContextJson forJsonPath(String jsonPath){
-        if (jsonPath == null || jsonPath.isEmpty()) {
-            this.jsonPath = Optional.empty();
-            return this;
-        }
-        this.jsonPath = Optional.of(jsonPath);
-        return this;
+  public EventContextJson forJsonPath(String jsonPath) {
+    if (jsonPath == null || jsonPath.isEmpty()) {
+      this.jsonPath = Optional.empty();
+      return this;
     }
+    this.jsonPath = Optional.of(jsonPath);
+    return this;
+  }
 }
