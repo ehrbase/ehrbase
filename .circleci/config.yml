@@ -1458,7 +1458,7 @@ commands:
                         -e POSTGRES_USER=$POSTGRES_USER \
                         -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD -d \
                         -e DISABLE_SECURITY=true \
-                        -p 5432:5432 ehrbaseorg/ehrbase-database-docker:11.5
+                        -p 5432:5432 ehrbase/ehrbase-postgres:11.10
 
 
   setup-file-repo:
@@ -1785,7 +1785,7 @@ executors:
       # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
       # - image:  circleci/python:3.8.5-buster-node-browsers
       - image: circleci/python:3.8.5-node-browsers
-      - image: ehrbaseorg/ehrbase-postgres:10
+      - image: ehrbase/ehrbase-postgres:11.10
         environment:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres

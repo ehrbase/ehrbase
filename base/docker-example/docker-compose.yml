@@ -18,7 +18,7 @@ services:
       - 8080:8080
 
   postgres:
-    image: ehrbaseorg/ehrbase-database-docker:11.5
+    image: ehrbase/ehrbase-postgres:11.10
 
 
 
