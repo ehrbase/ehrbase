@@ -1,0 +1,64 @@
+#
+# Use this with REST Client for Visual Studio Code by Huachao Mao
+# search for "rest client" in VSCode's extensions marketplace
+# KEYBOARD SHORTCUT: Ctrl + Alt + R (trigger request focused by cursor)
+
+
+
+@base_url = http://localhost:8080/ehrbase/rest/openehr/v1
+@uuid = {{$guid}}
+@subject_namespace = {{$randomInt 001 10000}}
+@subject_id = {{create_ehr.response.body.ehr_status.subject.external_ref.id.value}}
+@ehr_id = {{create_ehr.response.body.ehr_id.value}}
+
+
+
+#///////////////////////////////
+#// CREATE EHR              ///
+#/////////////////////////////
+
+# @name create_ehr
+POST {{base_url}}/ehr HTTP/1.1
+content-type: application/json
+Prefer: return=representation
+
+{
+  "_type": "EHR_STATUS",
+  "archetype_node_id": "openEHR-EHR-EHR_STATUS.generic.v1",
+  "name": {
+    "value": "EHR Status"
+  },
+  "subject": {
+    "external_ref": {
+      "id": {
+        "_type": "GENERIC_ID",
+        "value": "{{uuid}}",
+        "scheme": "id_scheme"
+      },
+      "namespace": "wlad_{{subject_namespace}}",
+      "type": "PERSON"
+    }
+  },
+  "is_modifiable": true,
+  "is_queryable": true
+}
+
+###
+
+
+
+#////////////////////////////////////////
+#// EXEQUTE ADHOC QUERY              ///
+#//////////////////////////////////////
+
+# @name adhoc_query
+POST {{base_url}}/query/aql HTTP/1.1
+content-type: application/json
+Authorization: Basic ZWhyYmFzZS11c2VyOlN1cGVyU2VjcmV0UGFzc3dvcmQ=
+Prefer: return=representation
+
+{
+  "q": "SELECT e/ehr_id/value as uid FROM EHR e CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] CONTAINS OBSERVATION obs [openEHR-EHR-OBSERVATION.minimal.v1]"
+}
+
+###

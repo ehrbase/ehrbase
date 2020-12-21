@@ -22,7 +22,7 @@ Metadata    Author    *Wladislaw Wagner*
 Metadata    Author    *Jake Smolka*
 Metadata    Created    2020.09.01
 
-Metadata        TOP_TEST_SUITE    ADMIN_EHR
+Metadata        TOP_TEST_SUITE    ADMIN_DIRECTORY
 Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 
 Suite Setup     startup SUT
