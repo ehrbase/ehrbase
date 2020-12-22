@@ -32,6 +32,11 @@ Force Tags     composition
 
 
 
+*** Variables ***
+${SUT}          ADMIN-TEST    # overriding defaults in suite_settings.robot
+
+
+
 *** Test Cases ***
 
 ADMIN - Delete Composition

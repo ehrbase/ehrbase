@@ -28,11 +28,65 @@ Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 Suite Setup     startup SUT
 Suite Teardown  shutdown SUT
 
-Force Tags     directory
+Force Tags     template
+
+
+
+*** Variables ***
+${SUT}          ADMIN-TEST    # overriding defaults in suite_settings.robot
+
+
+
+# PUT /admin/template/{template_id}    200
+# PUT /admin/template/{template_id}    404
+# PUT /admin/template/{template_id}    422
+# PUT /admin/template/
+# PUT /admin/template/123
+# PUT /admin/template/foobar
+
+# DELETE /admin/template/{template_id}    204
+# DELETE /admin/template/{template_id}    422
+# DELETE /admin/template/all              200
+# DELETE /admin/template/all              ohne vorher opts hochzuladen
+# DELETE /admin/template/all              nur ein opt hochladen
+# DELETE /admin/template/all              422
+
+
+
+
+
 
 
 
 *** Test Cases ***
+
+001 ADMIN - Update Existing Template
+    pass
+
+
+002 ADMIN - Update Non-Existing Template
+    pass
+
+
+003 ADMIN - Update Template in Use
+    pass
+
+
+004 ADMIN - Delete Existing Template
+    pass
+
+
+005 ADMIN - Delete Template in Use
+    pass
+
+
+006 ADMIN - Delete Multiple Templates
+    pass
+
+
+007 ADMIN - Delete Multiple Templates Where Some Are in Use
+    pass
+
 
 ADMIN - Delete Directory
     # pre check

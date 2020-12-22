@@ -26,8 +26,14 @@ Documentation       Admin API REST tests
 ...                 How to run these tests locally
 ...                 ==============================
 ...
-...                 robot -v SUT:ADMIN-TEST -d results/ -L TRACE -i admin robot/ADMIN_TESTS/
+...                 robot -d results/ -L TRACE robot/ADMIN_TESTS/
+...              OR
+...                 robot -v SUT:ADMIN-TEST -d results/ -L TRACE robot/ADMIN_TESTS/
+...              OR (with OAUTH):
+...                 robot -v AUTH_TYPE:OAUTH -d results/ -L TRACE robot/ADMIN_TESTS/
+...
+...              NOTE: Tests with OAUTH require a running and properly configured Keycloak server.
 
-Resource   ${EXECDIR}/robot/_resources/suite_settings.robot
+# Resource   ${EXECDIR}/robot/_resources/suite_settings.robot
 
 Force Tags    admin
