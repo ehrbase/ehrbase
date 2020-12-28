@@ -21,6 +21,7 @@ import org.jooq.Field;
 import org.jooq.TableField;
 
 public interface I_RMObjectAttribute {
-    Field<?> sqlField();
-    I_RMObjectAttribute forTableField(TableField tableField);
+  Field<?> sqlField();
+
+  I_RMObjectAttribute forTableField(TableField tableField);
 }

@@ -27,28 +27,29 @@ import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
-import java.util.List;
-
 @Configuration
 public class WebMvcConfig extends WebMvcConfigurerAdapter implements WebMvcConfigurer {
 
-    /**
-     * This config allows paths parameters to be of form "uuid::domain::version" - more specifically, it allows "." in domains.
-     */
-    @Override
-    public void configurePathMatch(PathMatchConfigurer matcher) {
-        matcher.setUseSuffixPatternMatch(false);
-    }
+  /**
+   * This config allows paths parameters to be of form "uuid::domain::version" - more specifically,
+   * it allows "." in domains.
+   */
+  @Override
+  public void configurePathMatch(PathMatchConfigurer matcher) {
+    matcher.setUseSuffixPatternMatch(false);
+  }
 
-    @Override
-    public void addFormatters(FormatterRegistry registry) {
-        registry.addConverter(new StringToEnumConverter());
-        registry.addConverter(new IsoDateTimeConverter()); // Converter for version_at_time and other ISO date params
-    }
+  @Override
+  public void addFormatters(FormatterRegistry registry) {
+    registry.addConverter(new StringToEnumConverter());
+    registry.addConverter(
+        new IsoDateTimeConverter()); // Converter for version_at_time and other ISO date params
+  }
 
-    // enables CORS requests from any origin to any endpoint (see: https://www.baeldung.com/spring-cors)
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**");
-    }
+  // enables CORS requests from any origin to any endpoint (see:
+  // https://www.baeldung.com/spring-cors)
+  @Override
+  public void addCorsMappings(CorsRegistry registry) {
+    registry.addMapping("/**");
+  }
 }

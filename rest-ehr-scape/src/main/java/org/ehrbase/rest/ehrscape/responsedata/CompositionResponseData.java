@@ -19,59 +19,57 @@
 package org.ehrbase.rest.ehrscape.responsedata;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import java.util.UUID;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.StructuredString;
-
-import java.util.UUID;
 
 @JacksonXmlRootElement
 public class CompositionResponseData extends ActionRestResponseData {
 
+  private StructuredString composition;
 
-    private StructuredString composition;
+  private CompositionFormat format;
+  private String templateId;
+  private UUID ehrId;
+  private String compositionUid;
 
-    private CompositionFormat format;
-    private String templateId;
-    private UUID ehrId;
-    private String compositionUid;
+  public StructuredString getComposition() {
+    return composition;
+  }
 
-    public StructuredString getComposition() {
-        return composition;
-    }
+  public void setComposition(StructuredString composition) {
+    this.composition = composition;
+  }
 
-    public void setComposition(StructuredString composition) {
-        this.composition = composition;
-    }
+  public CompositionFormat getFormat() {
+    return format;
+  }
 
-    public CompositionFormat getFormat() {
-        return format;
-    }
+  public void setFormat(CompositionFormat format) {
+    this.format = format;
+  }
 
-    public void setFormat(CompositionFormat format) {
-        this.format = format;
-    }
+  public String getTemplateId() {
+    return templateId;
+  }
 
-    public String getTemplateId() {
-        return templateId;
-    }
+  public void setTemplateId(String templateId) {
+    this.templateId = templateId;
+  }
 
-    public void setTemplateId(String templateId) {
-        this.templateId = templateId;
-    }
+  public UUID getEhrId() {
+    return ehrId;
+  }
 
-    public UUID getEhrId() {
-        return ehrId;
-    }
+  public void setEhrId(UUID ehrId) {
+    this.ehrId = ehrId;
+  }
 
-    public void setEhrId(UUID ehrId) {
-        this.ehrId = ehrId;
-    }
+  public String getCompositionUid() {
+    return compositionUid;
+  }
 
-    public String getCompositionUid() {
-        return compositionUid;
-    }
-
-    public void setCompositionUid(String compositionUid) {
-        this.compositionUid = compositionUid;
-    }
+  public void setCompositionUid(String compositionUid) {
+    this.compositionUid = compositionUid;
+  }
 }

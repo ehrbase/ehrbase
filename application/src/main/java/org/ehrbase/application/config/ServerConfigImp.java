@@ -17,92 +17,91 @@
  */
 package org.ehrbase.application.config;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 
 @Configuration
 @ConfigurationProperties(prefix = "server")
 public class ServerConfigImp implements org.ehrbase.api.definitions.ServerConfig {
 
-    @Min(1025)
-    @Max(65536)
-    private int port;
-    private String nodename;
-    private AqlConfig aqlConfig;
+  @Min(1025)
+  @Max(65536)
+  private int port;
 
-    public int getPort() {
-        return port;
-    }
+  private String nodename;
+  private AqlConfig aqlConfig;
 
-    public void setPort(int port) {
-        this.port = port;
-    }
+  public int getPort() {
+    return port;
+  }
 
-    public String getNodename() {
-        if (StringUtils.isBlank(nodename))
-            return "local.ehrbase.org";
-        return nodename;
-    }
+  public void setPort(int port) {
+    this.port = port;
+  }
 
-    public void setNodename(String nodename) {
-        this.nodename = nodename;
-    }
+  public String getNodename() {
+    if (StringUtils.isBlank(nodename)) return "local.ehrbase.org";
+    return nodename;
+  }
 
-    @Override
-    public String getAqlIterationSkipList() {
-        return aqlConfig.getIgnoreIterativeNodeList();
-    }
+  public void setNodename(String nodename) {
+    this.nodename = nodename;
+  }
 
-    @Override
-    public Integer getAqlDepth() {
-        return aqlConfig.getIterationScanDepth();
-    }
+  @Override
+  public String getAqlIterationSkipList() {
+    return aqlConfig.getIgnoreIterativeNodeList();
+  }
 
-    @Override
+  @Override
+  public Integer getAqlDepth() {
+    return aqlConfig.getIterationScanDepth();
+  }
+
+  @Override
+  public Boolean getUseJsQuery() {
+    return aqlConfig.getUseJsQuery();
+  }
+
+  public AqlConfig getAqlConfig() {
+    return aqlConfig;
+  }
+
+  public void setAqlConfig(AqlConfig aqlConfig) {
+    this.aqlConfig = aqlConfig;
+  }
+
+  public static class AqlConfig {
+
+    private Boolean useJsQuery;
+    private String ignoreIterativeNodeList;
+    private Integer iterationScanDepth = 1;
+
     public Boolean getUseJsQuery() {
-        return aqlConfig.getUseJsQuery();
+      return useJsQuery;
     }
 
-    public AqlConfig getAqlConfig(){
-        return aqlConfig;
+    public String getIgnoreIterativeNodeList() {
+      return ignoreIterativeNodeList;
     }
 
-    public void setAqlConfig(AqlConfig aqlConfig){
-        this.aqlConfig = aqlConfig;
+    public Integer getIterationScanDepth() {
+      return iterationScanDepth;
     }
 
-    public static class AqlConfig {
-
-        private Boolean useJsQuery;
-        private String ignoreIterativeNodeList;
-        private Integer iterationScanDepth = 1;
-
-        public Boolean getUseJsQuery() {
-            return useJsQuery;
-        }
-
-        public String getIgnoreIterativeNodeList() {
-            return ignoreIterativeNodeList;
-        }
-
-        public Integer getIterationScanDepth() {
-            return iterationScanDepth;
-        }
-
-        public void setUseJsQuery(Boolean useJsQuery) {
-            this.useJsQuery = useJsQuery;
-        }
-
-        public void setIgnoreIterativeNodeList(String ignoreIterativeNodeList) {
-            this.ignoreIterativeNodeList = ignoreIterativeNodeList;
-        }
-
-        public void setIterationScanDepth(Integer iterationScanDepth) {
-            this.iterationScanDepth = iterationScanDepth;
-        }
+    public void setUseJsQuery(Boolean useJsQuery) {
+      this.useJsQuery = useJsQuery;
     }
+
+    public void setIgnoreIterativeNodeList(String ignoreIterativeNodeList) {
+      this.ignoreIterativeNodeList = ignoreIterativeNodeList;
+    }
+
+    public void setIterationScanDepth(Integer iterationScanDepth) {
+      this.iterationScanDepth = iterationScanDepth;
+    }
+  }
 }

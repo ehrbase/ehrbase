@@ -25,56 +25,50 @@ import java.util.Stack;
  */
 class WhereClauseUtil {
 
-    private List<Object> expression;
-    private String unbalanced;
+  private List<Object> expression;
+  private String unbalanced;
 
-    WhereClauseUtil(List<Object> expression) {
-        this.expression = expression;
+  WhereClauseUtil(List<Object> expression) {
+    this.expression = expression;
+  }
+
+  /**
+   * check if an expression block is balanced A block is delimited by '[...]', '{...}' or '(...)'
+   *
+   * @return true if the block is balanced, false otherwise
+   */
+  boolean isBalancedBlocks() {
+
+    Stack<Object> stack = new Stack<>();
+
+    for (Object item : expression) {
+      if (item.toString().length() == 1 && item.toString().matches("\\(|}|\\[")) stack.push(item);
+      else if (item.toString().length() == 1 && item.toString().matches("\\)|\\{|\\]")) {
+        if (stack.empty()) return false;
+        else if (!isBalanced(stack.pop(), item)) return false;
+      }
     }
 
-    /**
-     * check if an expression block is balanced
-     * A block is delimited by '[...]', '{...}' or '(...)'
-     * @return true if the block is balanced, false otherwise
-     */
-    boolean isBalancedBlocks(){
+    return stack.empty();
+  }
 
-        Stack<Object> stack = new Stack<>();
+  private boolean isBalanced(Object fromStack, Object actual) {
+    boolean result = false;
+    if (actual.toString().equals(")")) result = fromStack.toString().equals("(");
+    else if (actual.toString().equals("]")) result = fromStack.toString().equals("[");
+    if (actual.toString().equals("}")) result = fromStack.toString().equals("{");
 
-        for (Object item: expression){
-            if (item.toString().length() == 1 && item.toString().matches("\\(|}|\\["))
-                stack.push(item);
-            else if (item.toString().length() == 1 && item.toString().matches("\\)|\\{|\\]")){
-                if (stack.empty())
-                    return false;
-                else if (!isBalanced(stack.pop(), item))
-                    return false;
-            }
-        }
+    if (!result) unbalanced = actual.toString();
 
-        return stack.empty();
-    }
+    return result;
+  }
 
-    private boolean isBalanced(Object fromStack, Object actual){
-        boolean result = false;
-        if (actual.toString().equals(")"))
-            result = fromStack.toString().equals("(");
-        else if (actual.toString().equals("]"))
-            result = fromStack.toString().equals("[");
-        if (actual.toString().equals("}"))
-            result = fromStack.toString().equals("{");
-
-        if (!result)
-            unbalanced = actual.toString();
-
-        return result;
-    }
-
-    /**
-     * return the balanced state of the last check
-     * @return boolean
-     */
-    String getUnbalanced() {
-        return unbalanced;
-    }
+  /**
+   * return the balanced state of the last check
+   *
+   * @return boolean
+   */
+  String getUnbalanced() {
+    return unbalanced;
+  }
 }

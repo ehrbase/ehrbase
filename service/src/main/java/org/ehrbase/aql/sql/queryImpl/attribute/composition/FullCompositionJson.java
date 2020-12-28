@@ -17,62 +17,71 @@
  */
 package org.ehrbase.aql.sql.queryImpl.attribute.composition;
 
+import static org.ehrbase.jooq.pg.Tables.COMPOSITION;
+
+import java.util.Optional;
 import org.ehrbase.aql.sql.binding.I_JoinBinder;
 import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryImpl.attribute.GenericJsonPath;
 import org.ehrbase.aql.sql.queryImpl.attribute.I_RMObjectAttribute;
 import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
-
 import org.jooq.Field;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 
-import java.util.Optional;
-
-import static org.ehrbase.jooq.pg.Tables.COMPOSITION;
-
 public class FullCompositionJson extends CompositionAttribute {
 
-    protected TableField tableField = COMPOSITION.ID;
-    protected Optional<String> jsonPath = Optional.empty();
+  protected TableField tableField = COMPOSITION.ID;
+  protected Optional<String> jsonPath = Optional.empty();
 
-    public FullCompositionJson(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
-        super(fieldContext, joinSetup);
+  public FullCompositionJson(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
+    super(fieldContext, joinSetup);
+  }
+
+  @Override
+  public Field<?> sqlField() {
+    fieldContext.setJsonDatablock(true);
+    fieldContext.setRmType("COMPOSITION");
+
+    // query the json representation of EVENT_CONTEXT and cast the result as TEXT
+    Field jsonFullComposition;
+
+    if (jsonPath.isPresent()) {
+      jsonFullComposition =
+          DSL.field(
+              "ehr.js_composition("
+                  + DSL.field(
+                      I_JoinBinder.compositionRecordTable.getName() + "." + tableField.getName())
+                  + ",'"
+                  + fieldContext.getServerNodeId()
+                  + "')::json #>>"
+                  + jsonPath.get());
+    } else
+      jsonFullComposition =
+          DSL.field(
+              "ehr.js_composition("
+                  + DSL.field(
+                      I_JoinBinder.compositionRecordTable.getName() + "." + tableField.getName())
+                  + ",'"
+                  + fieldContext.getServerNodeId()
+                  + "')::text");
+
+    if (fieldContext.isWithAlias()) return aliased(DSL.field(jsonFullComposition));
+    else return defaultAliased(jsonFullComposition);
+  }
+
+  @Override
+  public I_RMObjectAttribute forTableField(TableField tableField) {
+    this.tableField = tableField;
+    return this;
+  }
+
+  public FullCompositionJson forJsonPath(String jsonPath) {
+    if (jsonPath == null || jsonPath.isEmpty()) {
+      this.jsonPath = Optional.empty();
+      return this;
     }
-
-    @Override
-    public Field<?> sqlField() {
-        fieldContext.setJsonDatablock(true);
-        fieldContext.setRmType("COMPOSITION");
-
-        //query the json representation of EVENT_CONTEXT and cast the result as TEXT
-        Field jsonFullComposition;
-
-        if (jsonPath.isPresent()) {
-            jsonFullComposition = DSL.field("ehr.js_composition("+DSL.field(I_JoinBinder.compositionRecordTable.getName()+"."+tableField.getName())+",'"+fieldContext.getServerNodeId()+"')::json #>>"+jsonPath.get());
-        }
-        else
-            jsonFullComposition = DSL.field("ehr.js_composition("+DSL.field(I_JoinBinder.compositionRecordTable.getName()+"."+tableField.getName())+",'"+fieldContext.getServerNodeId()+"')::text");
-
-        if (fieldContext.isWithAlias())
-            return aliased(DSL.field(jsonFullComposition));
-        else
-            return defaultAliased(jsonFullComposition);
-    }
-
-    @Override
-    public I_RMObjectAttribute forTableField(TableField tableField) {
-        this.tableField = tableField;
-        return this;
-    }
-
-    public FullCompositionJson forJsonPath(String jsonPath){
-        if (jsonPath == null || jsonPath.isEmpty()) {
-            this.jsonPath = Optional.empty();
-            return this;
-        }
-        this.jsonPath = Optional.of(new GenericJsonPath(jsonPath).jqueryPath());
-        return this;
-    }
+    this.jsonPath = Optional.of(new GenericJsonPath(jsonPath).jqueryPath());
+    return this;
+  }
 }
-

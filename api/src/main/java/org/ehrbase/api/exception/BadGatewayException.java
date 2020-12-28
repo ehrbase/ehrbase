@@ -19,17 +19,18 @@
 package org.ehrbase.api.exception;
 
 /**
- * Project-custom exception that allows outbound APIs to react on backend problems. Shall be thrown to invoke
- * status 502 "Bad gateway" or whatever is appropriate.
- * Proxied connection failed, e.g. the server could not contact the clustered note that processes the specified query (EhrScape API example).
+ * Project-custom exception that allows outbound APIs to react on backend problems. Shall be thrown
+ * to invoke status 502 "Bad gateway" or whatever is appropriate. Proxied connection failed, e.g.
+ * the server could not contact the clustered note that processes the specified query (EhrScape API
+ * example).
  */
-public class BadGatewayException extends RuntimeException{
+public class BadGatewayException extends RuntimeException {
 
-    public BadGatewayException(String message) {
-        super(message);
-    }
+  public BadGatewayException(String message) {
+    super(message);
+  }
 
-    public BadGatewayException(String message, Throwable cause) {
-        super(message, cause);
-    }
+  public BadGatewayException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

@@ -26,16 +26,16 @@ import org.jooq.DSLContext;
 
 public class DatabaseStatusAccess extends DataAccess implements I_DatabaseStatusAccess {
 
-    public DatabaseStatusAccess(DSLContext dslContext, ServerConfig serverConfig) {
-        super(dslContext, null, null, serverConfig);
-    }
+  public DatabaseStatusAccess(DSLContext dslContext, ServerConfig serverConfig) {
+    super(dslContext, null, null, serverConfig);
+  }
 
-    @Override
-    public DataAccess getDataAccess() {
-        return this;
-    }
+  @Override
+  public DataAccess getDataAccess() {
+    return this;
+  }
 
-    public static String getDatabaseVersion(I_DomainAccess domainAccess) {
-        return Routines.getSystemVersion(domainAccess.getContext().configuration());
-    }
+  public static String getDatabaseVersion(I_DomainAccess domainAccess) {
+    return Routines.getSystemVersion(domainAccess.getContext().configuration());
+  }
 }

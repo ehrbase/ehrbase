@@ -21,6 +21,7 @@
 
 package org.ehrbase.service;
 
+import java.util.UUID;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_SystemAccess;
@@ -29,55 +30,60 @@ import org.ehrbase.dao.access.support.ServiceDataAccess;
 import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Value;
 
-import com.nedap.archie.rm.datavalues.DvCodedText;
-
-import java.util.UUID;
-
 public class BaseService {
 
-    public static final String DEMOGRAPHIC = "DEMOGRAPHIC";
-    public static final String PARTY = "PARTY";
+  public static final String DEMOGRAPHIC = "DEMOGRAPHIC";
+  public static final String PARTY = "PARTY";
 
-    @Value("${system.type}")
-    private String systemType = "POSTGRES";
-    @Value("${spring.datasource.url}")
-    private String datasourceUrl = "url";
-    @Value("${spring.datasource.password}")
-    private String datasourcePass = "luis";
-    @Value("${spring.datasource.username}")
-    private String datasourceUser = "luis";
+  @Value("${system.type}")
+  private String systemType = "POSTGRES";
 
-    private final ServerConfig serverConfig;
-    private final KnowledgeCacheService knowledgeCacheService;
-    private final DSLContext context;
-   // private final OpenehrTerminologyServer<DvCodedText, String> openehrTerminologyServer;
+  @Value("${spring.datasource.url}")
+  private String datasourceUrl = "url";
 
-    public BaseService(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig/*, OpenehrTerminologyServer<DvCodedText, String> openehrTerminologyServer*/) {
-		this.knowledgeCacheService = knowledgeCacheService;
-        this.context = context;
-        this.serverConfig = serverConfig;
-       // this.openehrTerminologyServer = openehrTerminologyServer;
-    }
+  @Value("${spring.datasource.password}")
+  private String datasourcePass = "luis";
 
-    protected I_DomainAccess getDataAccess() {
-        return new ServiceDataAccess(context, knowledgeCacheService, knowledgeCacheService, this.serverConfig);
-    }
+  @Value("${spring.datasource.username}")
+  private String datasourceUser = "luis";
 
-    public UUID getSystemUuid() {
-        return I_SystemAccess.createOrRetrieveLocalSystem(getDataAccess());
-    }
+  private final ServerConfig serverConfig;
+  private final KnowledgeCacheService knowledgeCacheService;
+  private final DSLContext context;
+  // private final OpenehrTerminologyServer<DvCodedText, String> openehrTerminologyServer;
 
-    protected UUID getUserUuid() {
-        //@TODO READ from Spring Security
-        return new PersistedPartyProxy(getDataAccess()).getOrCreate(null, "cbf741ff-9480-4792-8894-13fc5f818b6d", DEMOGRAPHIC, "User", PARTY);
-    }
+  public BaseService(
+      KnowledgeCacheService knowledgeCacheService,
+      DSLContext context,
+      ServerConfig
+          serverConfig /*, OpenehrTerminologyServer<DvCodedText, String> openehrTerminologyServer*/) {
+    this.knowledgeCacheService = knowledgeCacheService;
+    this.context = context;
+    this.serverConfig = serverConfig;
+    // this.openehrTerminologyServer = openehrTerminologyServer;
+  }
 
-    public ServerConfig getServerConfig() {
-        return this.serverConfig;
-    }
-    
-    /*public OpenehrTerminologyServer<DvCodedText, String> getOpenehrTerminologyServer() {
-        return this.openehrTerminologyServer;
-    }*/
+  protected I_DomainAccess getDataAccess() {
+    return new ServiceDataAccess(
+        context, knowledgeCacheService, knowledgeCacheService, this.serverConfig);
+  }
+
+  public UUID getSystemUuid() {
+    return I_SystemAccess.createOrRetrieveLocalSystem(getDataAccess());
+  }
+
+  protected UUID getUserUuid() {
+    // @TODO READ from Spring Security
+    return new PersistedPartyProxy(getDataAccess())
+        .getOrCreate(null, "cbf741ff-9480-4792-8894-13fc5f818b6d", DEMOGRAPHIC, "User", PARTY);
+  }
+
+  public ServerConfig getServerConfig() {
+    return this.serverConfig;
+  }
+
+  /*public OpenehrTerminologyServer<DvCodedText, String> getOpenehrTerminologyServer() {
+      return this.openehrTerminologyServer;
+  }*/
 
 }

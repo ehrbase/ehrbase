@@ -19,25 +19,25 @@
 package org.ehrbase.api.exception;
 
 /**
- * Project-custom exception that allows outbound APIs to react on backend problems. Shall be thrown to invoke
- * status 404 "Not found" or whatever is appropriate.
- * The specific resource (EHR, composition, ...) is not available.
+ * Project-custom exception that allows outbound APIs to react on backend problems. Shall be thrown
+ * to invoke status 404 "Not found" or whatever is appropriate. The specific resource (EHR,
+ * composition, ...) is not available.
  */
 public class ObjectNotFoundException extends RuntimeException {
 
-    private String type;
+  private String type;
 
-    public ObjectNotFoundException(String type, String message) {
-        super(message);
-        this.type = type;
-    }
+  public ObjectNotFoundException(String type, String message) {
+    super(message);
+    this.type = type;
+  }
 
-    public ObjectNotFoundException(String type, String message, Throwable cause) {
-        super(message, cause);
-        this.type = type;
-    }
+  public ObjectNotFoundException(String type, String message, Throwable cause) {
+    super(message, cause);
+    this.type = type;
+  }
 
-    public String getType() {
-        return type;
-    }
+  public String getType() {
+    return type;
+  }
 }

@@ -18,35 +18,38 @@
 
 package org.ehrbase.api.service;
 
+import java.util.List;
+import java.util.Map;
 import org.ehrbase.api.definitions.QueryMode;
 import org.ehrbase.response.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.response.ehrscape.QueryResultDto;
 
-import java.util.List;
-import java.util.Map;
-
 public interface QueryService extends BaseService {
-    /**
-     * simple query where the full json expression contains both query (key = 'q') and optional
-     * parameters (key = 'query-parameters')
-      * @param queryString
-     * @param queryMode
-     * @param explain
-     * @return
-     */
-    QueryResultDto query(String queryString, QueryMode queryMode, boolean explain);
+  /**
+   * simple query where the full json expression contains both query (key = 'q') and optional
+   * parameters (key = 'query-parameters')
+   *
+   * @param queryString
+   * @param queryMode
+   * @param explain
+   * @return
+   */
+  QueryResultDto query(String queryString, QueryMode queryMode, boolean explain);
 
-    QueryResultDto query(String queryString, Map<String, Object> parameters, QueryMode queryMode, boolean explain);
+  QueryResultDto query(
+      String queryString, Map<String, Object> parameters, QueryMode queryMode, boolean explain);
 
-    //=== DEFINITION: manage stored queries
-    List<QueryDefinitionResultDto> retrieveStoredQueries(String fullyQualifiedName);
+  // === DEFINITION: manage stored queries
+  List<QueryDefinitionResultDto> retrieveStoredQueries(String fullyQualifiedName);
 
-    QueryDefinitionResultDto retrieveStoredQuery(String qualifiedName, String version);
+  QueryDefinitionResultDto retrieveStoredQuery(String qualifiedName, String version);
 
-    //=== DEFINITION: manage stored queries
-    QueryDefinitionResultDto createStoredQuery(String qualifiedName, String version, String queryString);
+  // === DEFINITION: manage stored queries
+  QueryDefinitionResultDto createStoredQuery(
+      String qualifiedName, String version, String queryString);
 
-    QueryDefinitionResultDto updateStoredQuery(String qualifiedName, String version, String queryString);
+  QueryDefinitionResultDto updateStoredQuery(
+      String qualifiedName, String version, String queryString);
 
-    QueryDefinitionResultDto deleteStoredQuery(String qualifiedName, String version);
+  QueryDefinitionResultDto deleteStoredQuery(String qualifiedName, String version);
 }

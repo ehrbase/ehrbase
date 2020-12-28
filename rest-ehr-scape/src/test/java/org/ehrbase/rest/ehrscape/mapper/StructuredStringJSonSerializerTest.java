@@ -31,57 +31,65 @@ import org.junit.Test;
 
 public class StructuredStringJSonSerializerTest {
 
-    @Test
-    public void serialize() throws JsonProcessingException {
-        SimpleModule mapperModule = new SimpleModule();
-        mapperModule.addSerializer(StructuredString.class, new StructuredStringJSonSerializer());
+  @Test
+  public void serialize() throws JsonProcessingException {
+    SimpleModule mapperModule = new SimpleModule();
+    mapperModule.addSerializer(StructuredString.class, new StructuredStringJSonSerializer());
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(mapperModule);
-        // JSON in JSON
-        {
-            CompositionResponseData responseData = new CompositionResponseData();
-            StructuredString structuredString = new StructuredString("{\"test\":false}", StructuredStringFormat.JSON);
-            responseData.setComposition(structuredString);
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.registerModule(mapperModule);
+    // JSON in JSON
+    {
+      CompositionResponseData responseData = new CompositionResponseData();
+      StructuredString structuredString =
+          new StructuredString("{\"test\":false}", StructuredStringFormat.JSON);
+      responseData.setComposition(structuredString);
 
-            String actual = objectMapper.writer().writeValueAsString(responseData);
-            String expected = "{\"meta\":null,\"action\":null,\"composition\":{\"test\":false},\"format\":null,\"templateId\":null,\"ehrId\":null,\"compositionUid\":null}";
-            Assert.assertEquals(expected, actual);
-        }
-
-        // XML in JSON
-        {
-            CompositionResponseData responseData = new CompositionResponseData();
-            StructuredString structuredString = new StructuredString("<test>Test<test>", StructuredStringFormat.XML);
-            responseData.setComposition(structuredString);
-
-            String actual = objectMapper.writer().writeValueAsString(responseData);
-            String expected = "{\"meta\":null,\"action\":null,\"composition\":\"<test>Test<test>\",\"format\":null,\"templateId\":null,\"ehrId\":null,\"compositionUid\":null}";
-            Assert.assertEquals(expected, actual);
-        }
-
-        // JSON in XML
-        XmlMapper xmlMapper = new XmlMapper();
-        xmlMapper.registerModule(mapperModule);
-        {
-            CompositionResponseData responseData = new CompositionResponseData();
-            StructuredString structuredString = new StructuredString("{\"test\":false}", StructuredStringFormat.JSON);
-            responseData.setComposition(structuredString);
-
-            String actual = xmlMapper.writer().writeValueAsString(responseData);
-            String expected = "<CompositionResponseData><meta/><action/><composition>{\"test\":false}</composition><format/><templateId/><ehrId/><compositionUid/></CompositionResponseData>";
-            Assert.assertEquals(expected, actual);
-        }
-
-        // XML in XML
-        {
-            CompositionResponseData responseData = new CompositionResponseData();
-            StructuredString structuredString = new StructuredString("<test>Test<test>", StructuredStringFormat.XML);
-            responseData.setComposition(structuredString);
-
-            String actual = xmlMapper.writer().writeValueAsString(responseData);
-            String expected = "<CompositionResponseData><meta/><action/><composition><test>Test<test></composition><format/><templateId/><ehrId/><compositionUid/></CompositionResponseData>";
-            Assert.assertEquals(expected, actual);
-        }
+      String actual = objectMapper.writer().writeValueAsString(responseData);
+      String expected =
+          "{\"meta\":null,\"action\":null,\"composition\":{\"test\":false},\"format\":null,\"templateId\":null,\"ehrId\":null,\"compositionUid\":null}";
+      Assert.assertEquals(expected, actual);
     }
+
+    // XML in JSON
+    {
+      CompositionResponseData responseData = new CompositionResponseData();
+      StructuredString structuredString =
+          new StructuredString("<test>Test<test>", StructuredStringFormat.XML);
+      responseData.setComposition(structuredString);
+
+      String actual = objectMapper.writer().writeValueAsString(responseData);
+      String expected =
+          "{\"meta\":null,\"action\":null,\"composition\":\"<test>Test<test>\",\"format\":null,\"templateId\":null,\"ehrId\":null,\"compositionUid\":null}";
+      Assert.assertEquals(expected, actual);
+    }
+
+    // JSON in XML
+    XmlMapper xmlMapper = new XmlMapper();
+    xmlMapper.registerModule(mapperModule);
+    {
+      CompositionResponseData responseData = new CompositionResponseData();
+      StructuredString structuredString =
+          new StructuredString("{\"test\":false}", StructuredStringFormat.JSON);
+      responseData.setComposition(structuredString);
+
+      String actual = xmlMapper.writer().writeValueAsString(responseData);
+      String expected =
+          "<CompositionResponseData><meta/><action/><composition>{\"test\":false}</composition><format/><templateId/><ehrId/><compositionUid/></CompositionResponseData>";
+      Assert.assertEquals(expected, actual);
+    }
+
+    // XML in XML
+    {
+      CompositionResponseData responseData = new CompositionResponseData();
+      StructuredString structuredString =
+          new StructuredString("<test>Test<test>", StructuredStringFormat.XML);
+      responseData.setComposition(structuredString);
+
+      String actual = xmlMapper.writer().writeValueAsString(responseData);
+      String expected =
+          "<CompositionResponseData><meta/><action/><composition><test>Test<test></composition><format/><templateId/><ehrId/><compositionUid/></CompositionResponseData>";
+      Assert.assertEquals(expected, actual);
+    }
+  }
 }

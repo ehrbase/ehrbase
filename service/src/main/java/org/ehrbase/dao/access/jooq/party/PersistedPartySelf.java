@@ -18,86 +18,94 @@
 
 package org.ehrbase.dao.access.jooq.party;
 
+import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
+
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.PartyRef;
+import java.util.UUID;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.jooq.pg.enums.PartyType;
 import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
 import org.jooq.Record;
 
-import java.util.UUID;
-
-import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
-
-/**
- * Manages party_self persistence
- */
+/** Manages party_self persistence */
 class PersistedPartySelf extends PersistedParty {
 
-    PersistedPartySelf(I_DomainAccess domainAccess) {
-        super(domainAccess);
+  PersistedPartySelf(I_DomainAccess domainAccess) {
+    super(domainAccess);
+  }
+
+  @Override
+  public PartyProxy render(PartyIdentifiedRecord partyIdentifiedRecord) {
+    PartyRef partyRef = null;
+
+    if (partyIdentifiedRecord.getPartyRefType() != null) {
+      ObjectId objectID = new PersistedObjectId().fromDB(partyIdentifiedRecord);
+      partyRef =
+          new PartyRef(
+              objectID,
+              partyIdentifiedRecord.getPartyRefNamespace(),
+              partyIdentifiedRecord.getPartyRefType());
     }
 
-    @Override
-    public PartyProxy render(PartyIdentifiedRecord partyIdentifiedRecord){
-        PartyRef partyRef = null;
+    return new PartySelf(partyRef);
+  }
 
-        if (partyIdentifiedRecord.getPartyRefType() != null) {
-            ObjectId objectID = new PersistedObjectId().fromDB(partyIdentifiedRecord);
-            partyRef = new PartyRef(objectID, partyIdentifiedRecord.getPartyRefNamespace(), partyIdentifiedRecord.getPartyRefType());
-        }
+  @Override
+  public UUID store(PartyProxy partyProxy) {
 
-        return new PartySelf(partyRef);
+    PartyRefValue partyRefValue = new PartyRefValue(partyProxy).attributes();
+
+    UUID partyIdentifiedUuid =
+        domainAccess
+            .getContext()
+            .insertInto(
+                PARTY_IDENTIFIED,
+                PARTY_IDENTIFIED.PARTY_REF_NAMESPACE,
+                PARTY_IDENTIFIED.PARTY_REF_VALUE,
+                PARTY_IDENTIFIED.PARTY_REF_SCHEME,
+                PARTY_IDENTIFIED.PARTY_REF_TYPE,
+                PARTY_IDENTIFIED.PARTY_TYPE,
+                PARTY_IDENTIFIED.OBJECT_ID_TYPE)
+            .values(
+                partyRefValue.getNamespace(),
+                partyRefValue.getValue(),
+                partyRefValue.getScheme(),
+                partyRefValue.getType(),
+                PartyType.party_self,
+                partyRefValue.getObjectIdType())
+            .returning(PARTY_IDENTIFIED.ID)
+            .fetchOne()
+            .getId();
+
+    return partyIdentifiedUuid;
+  }
+
+  @Override
+  public UUID findInDB(PartyProxy partyProxy) {
+    UUID partySelfUUID = new PersistedPartyRef(domainAccess).findInDB(partyProxy.getExternalRef());
+
+    if (partySelfUUID == null) {
+      if (partyProxy.getExternalRef() == null) { // find the generic PARTY_SELF in DB
+        Record record =
+            domainAccess
+                .getContext()
+                .fetchAny(
+                    PARTY_IDENTIFIED,
+                    PARTY_IDENTIFIED
+                        .PARTY_REF_VALUE
+                        .isNull()
+                        .and(PARTY_IDENTIFIED.PARTY_REF_NAMESPACE.isNull())
+                        .and(PARTY_IDENTIFIED.PARTY_REF_SCHEME.isNull())
+                        .and(PARTY_IDENTIFIED.PARTY_REF_TYPE.isNull())
+                        .and(PARTY_IDENTIFIED.PARTY_TYPE.eq(PartyType.party_self)));
+
+        if (record != null) partySelfUUID = ((PartyIdentifiedRecord) record).getId();
+      }
     }
 
-    @Override
-    public UUID store(PartyProxy partyProxy){
-
-        PartyRefValue partyRefValue = new PartyRefValue(partyProxy).attributes();
-
-        UUID partyIdentifiedUuid = domainAccess.getContext()
-                .insertInto(PARTY_IDENTIFIED,
-                        PARTY_IDENTIFIED.PARTY_REF_NAMESPACE,
-                        PARTY_IDENTIFIED.PARTY_REF_VALUE,
-                        PARTY_IDENTIFIED.PARTY_REF_SCHEME,
-                        PARTY_IDENTIFIED.PARTY_REF_TYPE,
-                        PARTY_IDENTIFIED.PARTY_TYPE,
-                        PARTY_IDENTIFIED.OBJECT_ID_TYPE)
-                .values(
-                        partyRefValue.getNamespace(),
-                        partyRefValue.getValue(),
-                        partyRefValue.getScheme(),
-                        partyRefValue.getType(),
-                        PartyType.party_self,
-                        partyRefValue.getObjectIdType())
-                .returning(PARTY_IDENTIFIED.ID)
-                .fetchOne().getId();
-
-        return partyIdentifiedUuid;
-    }
-
-
-    @Override
-    public UUID findInDB(PartyProxy partyProxy){
-        UUID partySelfUUID = new PersistedPartyRef(domainAccess).findInDB(partyProxy.getExternalRef());
-
-        if (partySelfUUID == null){
-            if (partyProxy.getExternalRef() == null) { //find the generic PARTY_SELF in DB
-                Record record = domainAccess.getContext().fetchAny(PARTY_IDENTIFIED,
-                        PARTY_IDENTIFIED.PARTY_REF_VALUE.isNull()
-                                .and(PARTY_IDENTIFIED.PARTY_REF_NAMESPACE.isNull())
-                                .and(PARTY_IDENTIFIED.PARTY_REF_SCHEME.isNull())
-                                .and(PARTY_IDENTIFIED.PARTY_REF_TYPE.isNull())
-                                .and(PARTY_IDENTIFIED.PARTY_TYPE.eq(PartyType.party_self)));
-
-                if (record != null)
-                    partySelfUUID = ((PartyIdentifiedRecord) record).getId();
-            }
-        }
-
-        return partySelfUUID;
-    }
-
+    return partySelfUUID;
+  }
 }

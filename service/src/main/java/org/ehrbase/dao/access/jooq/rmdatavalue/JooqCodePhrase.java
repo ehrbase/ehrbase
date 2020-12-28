@@ -6,13 +6,15 @@ import org.ehrbase.jooq.pg.udt.records.CodePhraseRecord;
 
 public class JooqCodePhrase {
 
-    CodePhraseRecord codePhraseRecord;
+  CodePhraseRecord codePhraseRecord;
 
-    public JooqCodePhrase(CodePhraseRecord codePhraseRecord) {
-        this.codePhraseRecord = codePhraseRecord;
-    }
+  public JooqCodePhrase(CodePhraseRecord codePhraseRecord) {
+    this.codePhraseRecord = codePhraseRecord;
+  }
 
-    public CodePhrase toRmInstance(){
-        return new CodePhrase(new TerminologyId(codePhraseRecord.getTerminologyIdValue()), codePhraseRecord.getCodeString());
-    }
+  public CodePhrase toRmInstance() {
+    return new CodePhrase(
+        new TerminologyId(codePhraseRecord.getTerminologyIdValue()),
+        codePhraseRecord.getCodeString());
+  }
 }

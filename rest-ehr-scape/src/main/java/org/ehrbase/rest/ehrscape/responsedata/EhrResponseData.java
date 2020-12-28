@@ -19,28 +19,27 @@
 package org.ehrbase.rest.ehrscape.responsedata;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
-import org.ehrbase.response.ehrscape.EhrStatusDto;
-
 import java.util.UUID;
+import org.ehrbase.response.ehrscape.EhrStatusDto;
 
 @JacksonXmlRootElement
 public class EhrResponseData extends ActionRestResponseData {
-    UUID ehrId;
-    EhrStatusDto ehrStatus;
+  UUID ehrId;
+  EhrStatusDto ehrStatus;
 
-    public UUID getEhrId() {
-        return ehrId;
-    }
+  public UUID getEhrId() {
+    return ehrId;
+  }
 
-    public void setEhrId(UUID ehrId) {
-        this.ehrId = ehrId;
-    }
+  public void setEhrId(UUID ehrId) {
+    this.ehrId = ehrId;
+  }
 
-    public EhrStatusDto getEhrStatus() {
-        return ehrStatus;
-    }
+  public EhrStatusDto getEhrStatus() {
+    return ehrStatus;
+  }
 
-    public void setEhrStatus(EhrStatusDto ehrStatus) {
-        this.ehrStatus = ehrStatus;
-    }
+  public void setEhrStatus(EhrStatusDto ehrStatus) {
+    this.ehrStatus = ehrStatus;
+  }
 }

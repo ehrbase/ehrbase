@@ -17,25 +17,24 @@
  */
 package org.ehrbase.aql.sql.queryImpl.attribute.eventcontext.facility;
 
+import static org.ehrbase.aql.sql.binding.I_JoinBinder.facilityRef;
+
 import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
 import org.ehrbase.aql.sql.queryImpl.attribute.partyref.PartyResolver;
 import org.jooq.Field;
 
-import static org.ehrbase.aql.sql.binding.I_JoinBinder.facilityRef;
+public class FacilityResolver extends PartyResolver {
 
-public class FacilityResolver extends PartyResolver
-{
+  public FacilityResolver(FieldResolutionContext fieldResolutionContext, JoinSetup joinSetup) {
+    super(fieldResolutionContext, joinSetup);
+  }
 
-    public FacilityResolver(FieldResolutionContext fieldResolutionContext, JoinSetup joinSetup) {
-        super(fieldResolutionContext, joinSetup);
-    }
+  public Field<?> sqlField(String path) {
 
-    public Field<?> sqlField(String path){
+    joinSetup.setJoinContextFacility(true);
+    joinSetup.setPartyJoinRef(facilityRef);
 
-        joinSetup.setJoinContextFacility(true);
-        joinSetup.setPartyJoinRef(facilityRef);
-
-        return super.sqlField(path);
-    }
+    return super.sqlField(path);
+  }
 }

@@ -1,26 +1,27 @@
 /*
- * Modifications copyright (C) 2019 Christian Chevalley, Vitasystems GmbH and Hannover Medical School.
+* Modifications copyright (C) 2019 Christian Chevalley, Vitasystems GmbH and Hannover Medical School.
 
- * This file is part of Project EHRbase
+* This file is part of Project EHRbase
 
- * Copyright (c) 2015 Christian Chevalley
- * This file is part of Project Ethercis
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+* Copyright (c) 2015 Christian Chevalley
+* This file is part of Project Ethercis
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 package org.ehrbase.aql.compiler;
 
+import java.util.BitSet;
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.RecognitionException;
@@ -29,43 +30,55 @@ import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 
-import java.util.BitSet;
-
 /**
  * Utility class to handle specific errors during parsing<br>
- * Allows to return more meaningful messages during AQL parsing
- * Created by christian on 4/15/2016.
+ * Allows to return more meaningful messages during AQL parsing Created by christian on 4/15/2016.
  */
 public class AqlErrorHandler extends BaseErrorListener {
 
-    public static AqlErrorHandler INSTANCE = new AqlErrorHandler();
-    public static boolean REPORT_SYNTAX_ERRORS = true;
+  public static AqlErrorHandler INSTANCE = new AqlErrorHandler();
+  public static boolean REPORT_SYNTAX_ERRORS = true;
 
-    @Override
-    public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) throws ParseCancellationException {
-        if (!REPORT_SYNTAX_ERRORS) {
-            return;
-        }
-
-        String sourceName = recognizer.getInputStream().getSourceName();
-        if (!sourceName.isEmpty()) {
-            sourceName = String.format("%s:%d:%d: ", sourceName, line, charPositionInLine);
-        }
-
-        throw new ParseCancellationException("AQL Parse exception: " + (sourceName.isEmpty() ? "source:" + sourceName : "") + "line " + line + ": char " + charPositionInLine + " " + msg);
-//        System.err.println(sourceName+"line "+line+":"+charPositionInLine+" "+msg);
+  @Override
+  public void syntaxError(
+      Recognizer<?, ?> recognizer,
+      Object offendingSymbol,
+      int line,
+      int charPositionInLine,
+      String msg,
+      RecognitionException e)
+      throws ParseCancellationException {
+    if (!REPORT_SYNTAX_ERRORS) {
+      return;
     }
 
-    @Override
-    public void reportAmbiguity(Parser recognizer,
-                                DFA dfa,
-                                int startIndex,
-                                int stopIndex,
-                                boolean exact,
-                                BitSet ambigAlts,
-                                ATNConfigSet configs) {
-
-//        System.out.println("Ambiguous");
+    String sourceName = recognizer.getInputStream().getSourceName();
+    if (!sourceName.isEmpty()) {
+      sourceName = String.format("%s:%d:%d: ", sourceName, line, charPositionInLine);
     }
 
+    throw new ParseCancellationException(
+        "AQL Parse exception: "
+            + (sourceName.isEmpty() ? "source:" + sourceName : "")
+            + "line "
+            + line
+            + ": char "
+            + charPositionInLine
+            + " "
+            + msg);
+    //        System.err.println(sourceName+"line "+line+":"+charPositionInLine+" "+msg);
+  }
+
+  @Override
+  public void reportAmbiguity(
+      Parser recognizer,
+      DFA dfa,
+      int startIndex,
+      int stopIndex,
+      boolean exact,
+      BitSet ambigAlts,
+      ATNConfigSet configs) {
+
+    //        System.out.println("Ambiguous");
+  }
 }

@@ -19,17 +19,17 @@
 package org.ehrbase.api.exception;
 
 /**
- * Project-custom exception that allows outbound APIs to react on backend problems. Shall be thrown to invoke
- * status 409 "Conflict" or whatever is appropriate.
- * Request is in conflict with current state, e.g. referenced version of object is not the last version.
+ * Project-custom exception that allows outbound APIs to react on backend problems. Shall be thrown
+ * to invoke status 409 "Conflict" or whatever is appropriate. Request is in conflict with current
+ * state, e.g. referenced version of object is not the last version.
  */
-public class StateConflictException extends RuntimeException{
+public class StateConflictException extends RuntimeException {
 
-    public StateConflictException(String message) {
-        super(message);
-    }
+  public StateConflictException(String message) {
+    super(message);
+  }
 
-    public StateConflictException(String message, Throwable cause) {
-        super(message, cause);
-    }
+  public StateConflictException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

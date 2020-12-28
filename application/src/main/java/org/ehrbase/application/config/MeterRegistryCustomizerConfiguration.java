@@ -26,12 +26,12 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class MeterRegistryCustomizerConfiguration {
 
-    @Value("${spring.application.name}")
-    private String applicationName;
+  @Value("${spring.application.name}")
+  private String applicationName;
 
-    // Provide the application name for grouping metrics in some monitoring solutions
-    @Bean
-    MeterRegistryCustomizer<MeterRegistry> metricsCommonTags() {
-        return registry -> registry.config().commonTags("application", applicationName);
-    }
+  // Provide the application name for grouping metrics in some monitoring solutions
+  @Bean
+  MeterRegistryCustomizer<MeterRegistry> metricsCommonTags() {
+    return registry -> registry.config().commonTags("application", applicationName);
+  }
 }

@@ -1,27 +1,31 @@
 /*
- * Modifications copyright (C) 2019 Christian Chevalley, Vitasystems GmbH and Hannover Medical School,
- * Stefan Spiska (Vitasystems GmbH).
+* Modifications copyright (C) 2019 Christian Chevalley, Vitasystems GmbH and Hannover Medical School,
+* Stefan Spiska (Vitasystems GmbH).
 
- * This file is part of Project EHRbase
+* This file is part of Project EHRbase
 
- * Copyright (c) 2015 Christian Chevalley
- * This file is part of Project Ethercis
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+* Copyright (c) 2015 Christian Chevalley
+* This file is part of Project Ethercis
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 package org.ehrbase.aql.compiler;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -41,200 +45,223 @@ import org.ehrbase.aql.definition.I_FromEntityDefinition;
 import org.ehrbase.aql.parser.AqlBaseListener;
 import org.ehrbase.aql.parser.AqlParser;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 /**
  * AQL compilation pass 1<br>
- * This pass consists in evaluating the CONTAINS clauses and generate an internal representation of the
- * contain expressions and operators. The internal representation is then translated into a SQL equivalent
- * from the containment index.
- * Created by christian on 4/1/2016.
+ * This pass consists in evaluating the CONTAINS clauses and generate an internal representation of
+ * the contain expressions and operators. The internal representation is then translated into a SQL
+ * equivalent from the containment index. Created by christian on 4/1/2016.
  */
 public class QueryCompilerPass1 extends AqlBaseListener {
-    private Logger logger = LogManager.getLogger(QueryCompilerPass1.class);
+  private Logger logger = LogManager.getLogger(QueryCompilerPass1.class);
 
-    private IdentifierMapper identifierMapper = new IdentifierMapper(); //the map of identified contained nodes
-    private Map<String, ContainmentSet> containmentSetMap = new HashMap<>(); //labelized contains sets
-    private ContainPropositions containPropositions; //ordered contain evaluation map
+  private IdentifierMapper identifierMapper =
+      new IdentifierMapper(); // the map of identified contained nodes
+  private Map<String, ContainmentSet> containmentSetMap =
+      new HashMap<>(); // labelized contains sets
+  private ContainPropositions containPropositions; // ordered contain evaluation map
 
-    private AnonymousSymbol anonymousSymbol = new AnonymousSymbol();
+  private AnonymousSymbol anonymousSymbol = new AnonymousSymbol();
 
-    public QueryCompilerPass1() {
-        containPropositions = new ContainPropositions(identifierMapper);
+  public QueryCompilerPass1() {
+    containPropositions = new ContainPropositions(identifierMapper);
+  }
+
+  @Override
+  public void exitFromEHR(AqlParser.FromEHRContext context) {
+    FromEhrDefinition fromEhrDefinition = new FromEhrDefinition();
+    if (context.IDENTIFIER() != null) {
+      visitFromExpressionChildren(fromEhrDefinition, context.children);
+      String identifier = context.IDENTIFIER().getText();
+      fromEhrDefinition.setIdentifier(identifier);
+      if (!fromEhrDefinition.getEhrPredicates().isEmpty()) {
+        fromEhrDefinition.getEhrPredicates().get(0).setIdentifier(identifier);
+        identifierMapper.add(fromEhrDefinition.getEhrPredicates().get(0));
+      } else identifierMapper.add(new FromEhrDefinition.EhrPredicate(identifier));
+    }
+    if (context.EHR() != null) {
+      fromEhrDefinition.setIsEHR(true);
     }
 
-    @Override
-    public void exitFromEHR(AqlParser.FromEHRContext context) {
-        FromEhrDefinition fromEhrDefinition = new FromEhrDefinition();
-        if (context.IDENTIFIER() != null) {
-            visitFromExpressionChildren(fromEhrDefinition, context.children);
-            String identifier = context.IDENTIFIER().getText();
-            fromEhrDefinition.setIdentifier(identifier);
-            if (!fromEhrDefinition.getEhrPredicates().isEmpty()) {
-                fromEhrDefinition.getEhrPredicates().get(0).setIdentifier(identifier);
-                identifierMapper.add(fromEhrDefinition.getEhrPredicates().get(0));
-            } else
-                identifierMapper.add(new FromEhrDefinition.EhrPredicate(identifier));
-        }
-        if (context.EHR() != null) {
-            fromEhrDefinition.setIsEHR(true);
-        }
+    logger.debug("FromEHR");
+  }
 
-        logger.debug("FromEHR");
+  private void visitFromExpressionChildren(
+      I_FromEntityDefinition fromEntityDefinition, List<ParseTree> children) {
+    if (children.isEmpty()) return;
+
+    for (ParseTree node : children) {
+
+      if (node.getText().equals("[") || node.getText().equals("]")) continue;
+
+      if (node instanceof AqlParser.StandardPredicateContext) {
+        AqlParser.StandardPredicateContext equalityContext =
+            (AqlParser.StandardPredicateContext) node;
+        if (equalityContext.getChildCount() > 0) {
+          if (equalityContext.getChildCount() == 3) {
+            AqlParser.PredicateExprContext predicateExprContext =
+                (AqlParser.PredicateExprContext) equalityContext.getChild(1);
+            AqlParser.PredicateAndContext predicateAndContext =
+                (AqlParser.PredicateAndContext) predicateExprContext.getChild(0);
+            AqlParser.PredicateEqualityContext predicateEqualityContext =
+                (AqlParser.PredicateEqualityContext) predicateAndContext.getChild(0);
+            if (predicateEqualityContext.getChildCount() != 3)
+              throw new IllegalArgumentException(
+                  "Could not handle predicateEqualityContext:" + predicateAndContext.getText());
+            fromEntityDefinition.add(
+                predicateEqualityContext.getChild(0).getText(),
+                predicateEqualityContext.getChild(2).getText(),
+                predicateEqualityContext.getChild(1).getText());
+          }
+        }
+      }
+    }
+  }
+
+  private void visitJoinExpressionChildren(
+      I_FromEntityDefinition fromEntityDefinition, List<ParseTree> children) {
+    if (children.isEmpty()) return;
+
+    for (ParseTree node : children) {
+
+      if (node.getText().equals("[") || node.getText().equals("]")) continue;
+
+      if (node instanceof AqlParser.JoinPredicateContext) {
+        AqlParser.JoinPredicateContext joinContext = (AqlParser.JoinPredicateContext) node;
+        if (joinContext.getChildCount() > 0) {
+          if (joinContext.getChildCount() == 4) {
+            AqlParser.PredicateEqualityContext predicateEqualityContext =
+                (AqlParser.PredicateEqualityContext) joinContext.getChild(2);
+            if (predicateEqualityContext.getChildCount() != 3)
+              throw new IllegalArgumentException(
+                  "Could not handle predicateEqualityContext:"
+                      + predicateEqualityContext.getText());
+            fromEntityDefinition.add(
+                predicateEqualityContext.getChild(0).getText(),
+                predicateEqualityContext.getChild(2).getText(),
+                predicateEqualityContext.getChild(1).getText());
+          }
+        }
+      }
+    }
+  }
+
+  @Override
+  public void exitFromForeignData(AqlParser.FromForeignDataContext context) {
+    FromForeignDataDefinition fromForeignDataDefinition =
+        new FromForeignDataDefinition(context.getChild(0).getText());
+    if (context.IDENTIFIER() != null) {
+      visitJoinExpressionChildren(fromForeignDataDefinition, context.children);
+      String identifier = context.IDENTIFIER().getText();
+      fromForeignDataDefinition.setIdentifier(identifier);
+      if (!fromForeignDataDefinition.getFDPredicates().isEmpty()) {
+        fromForeignDataDefinition.getFDPredicates().get(0).setIdentifier(identifier);
+        identifierMapper.add(fromForeignDataDefinition.getFDPredicates().get(0));
+      } else identifierMapper.add(new FromForeignDataDefinition.NodePredicate(identifier));
     }
 
-    private void visitFromExpressionChildren(I_FromEntityDefinition fromEntityDefinition, List<ParseTree> children) {
-        if (children.isEmpty())
-            return;
+    logger.debug("exitFromForeignData");
+  }
 
-        for (ParseTree node : children) {
+  @Override
+  public void exitContainExpressionBool(
+      AqlParser.ContainExpressionBoolContext containExpressionBoolContext) {
 
-            if (node.getText().equals("[") || node.getText().equals("]"))
-                continue;
-
-            if (node instanceof AqlParser.StandardPredicateContext) {
-                AqlParser.StandardPredicateContext equalityContext = (AqlParser.StandardPredicateContext) node;
-                if (equalityContext.getChildCount() > 0) {
-                    if (equalityContext.getChildCount() == 3) {
-                        AqlParser.PredicateExprContext predicateExprContext = (AqlParser.PredicateExprContext) equalityContext.getChild(1);
-                        AqlParser.PredicateAndContext predicateAndContext = (AqlParser.PredicateAndContext) predicateExprContext.getChild(0);
-                        AqlParser.PredicateEqualityContext predicateEqualityContext = (AqlParser.PredicateEqualityContext) predicateAndContext.getChild(0);
-                        if (predicateEqualityContext.getChildCount() != 3)
-                            throw new IllegalArgumentException("Could not handle predicateEqualityContext:" + predicateAndContext.getText());
-                        fromEntityDefinition.add(predicateEqualityContext.getChild(0).getText(), predicateEqualityContext.getChild(2).getText(), predicateEqualityContext.getChild(1).getText());
-                    }
-                }
-            }
+    // evaluate the containment expression
+    if (containExpressionBoolContext.OPEN_PAR() != null
+        && containExpressionBoolContext.CLOSE_PAR() != null) {
+      List<Object> objects = new ArrayList<>();
+      for (ParseTree token : containExpressionBoolContext.children) {
+        if (token.getText().matches("\\(|\\)")) objects.add(token.getText());
+        else if (token instanceof AqlParser.ContainsExpressionContext) {
+          AqlParser.ContainsExpressionContext containsExpressionContext =
+              (AqlParser.ContainsExpressionContext) token;
+          objects.add(containPropositions.get(containsExpressionContext.getText()));
         }
+      }
+      containPropositions.put(
+          containExpressionBoolContext.getText(),
+          new ComplexContainsCheck(containExpressionBoolContext.getText(), objects));
+    } else if (!new ContainsExpressions(containExpressionBoolContext).isExplicitContainsClause()) {
+      SimpleChainedCheck simpleChainedCheck =
+          new SimpleChainedCheck(
+              new ContainsExpressions(containExpressionBoolContext).containedItemLabel(false),
+              containmentSetMap.get(containExpressionBoolContext.getText()));
+      containPropositions.put(containExpressionBoolContext.getText(), simpleChainedCheck);
     }
+  }
 
-    private void visitJoinExpressionChildren(I_FromEntityDefinition fromEntityDefinition, List<ParseTree> children) {
-        if (children.isEmpty())
-            return;
+  @Override
+  public void exitContainsExpression(
+      AqlParser.ContainsExpressionContext containsExpressionContext) {
+    ContainsProposition proposition =
+        new ContainsProposition(containsExpressionContext, identifierMapper);
+    // check if expression is boolean or a single contains chain
+    if (!proposition.isSingleChain()) {
 
-        for (ParseTree node : children) {
+      List<Object> developedExpression = proposition.develop(containPropositions);
 
-            if (node.getText().equals("[") || node.getText().equals("]"))
-                continue;
+      if (developedExpression.isEmpty())
+        throw new IllegalStateException("Could not develop:" + containsExpressionContext.getText());
 
-            if (node instanceof AqlParser.JoinPredicateContext) {
-                AqlParser.JoinPredicateContext joinContext = (AqlParser.JoinPredicateContext) node;
-                if (joinContext.getChildCount() > 0) {
-                    if (joinContext.getChildCount() == 4) {
-                        AqlParser.PredicateEqualityContext predicateEqualityContext = (AqlParser.PredicateEqualityContext) joinContext.getChild(2);
-                        if (predicateEqualityContext.getChildCount() != 3)
-                            throw new IllegalArgumentException("Could not handle predicateEqualityContext:" + predicateEqualityContext.getText());
-                        fromEntityDefinition.add(predicateEqualityContext.getChild(0).getText(), predicateEqualityContext.getChild(2).getText(), predicateEqualityContext.getChild(1).getText());
-                    }
-                }
-            }
-        }
+      containPropositions.put(
+          containsExpressionContext.getText(),
+          new ComplexContainsCheck(containsExpressionContext.getText(), developedExpression));
     }
+  }
 
+  @Override
+  public void exitSimpleClassExpr(AqlParser.SimpleClassExprContext simpleClassExprContext) {
+    logger.debug("from exitSimpleClassExpr: ENTER");
+    if (!simpleClassExprContext.IDENTIFIER().isEmpty()) {
+      // CHC, 160808: make classname case insensitive
+      String className = simpleClassExprContext.IDENTIFIER(0).getSymbol().getText().toUpperCase();
+      String symbol = new SimpleClassExpressionIdentifier(simpleClassExprContext).resolve();
+      //            if (!simpleClassExprContext.IDENTIFIER().isEmpty() &&
+      // simpleClassExprContext.IDENTIFIER(1) != null)
+      //                symbol = simpleClassExprContext.IDENTIFIER(1).getSymbol().getText();
+      //            else
+      //                symbol = anonymousSymbol.generate(className);
 
-    @Override
-    public void exitFromForeignData(AqlParser.FromForeignDataContext context) {
-        FromForeignDataDefinition fromForeignDataDefinition = new FromForeignDataDefinition(context.getChild(0).getText());
-        if (context.IDENTIFIER() != null) {
-            visitJoinExpressionChildren(fromForeignDataDefinition, context.children);
-            String identifier = context.IDENTIFIER().getText();
-            fromForeignDataDefinition.setIdentifier(identifier);
-            if (!fromForeignDataDefinition.getFDPredicates().isEmpty()) {
-                fromForeignDataDefinition.getFDPredicates().get(0).setIdentifier(identifier);
-                identifierMapper.add(fromForeignDataDefinition.getFDPredicates().get(0));
-            } else
-                identifierMapper.add(new FromForeignDataDefinition.NodePredicate(identifier));
-        }
+      Containment containment = new Containment(className, symbol, "");
+      identifierMapper.add(containment);
+      containmentSetMap.put(
+          simpleClassExprContext.getText(),
+          new ContainsProposition(simpleClassExprContext, identifierMapper)
+              .containmentSet(containment));
 
+    } else if (simpleClassExprContext.getChild(0) instanceof AqlParser.ArchetypedClassExprContext) {
+      // CHC, 160808: make classname case insensitive
+      AqlParser.ArchetypedClassExprContext archetypedClassExprContext =
+          (AqlParser.ArchetypedClassExprContext) simpleClassExprContext.getChild(0);
+      String className =
+          archetypedClassExprContext.IDENTIFIER(0).getSymbol().getText().toUpperCase();
 
-        logger.debug("exitFromForeignData");
+      String symbol =
+          archetypedClassExprContext.IDENTIFIER(1) != null
+              ? archetypedClassExprContext.IDENTIFIER(1).getSymbol().getText()
+              : archetypedClassExprContext.getText().toUpperCase();
+
+      String archetypeId = archetypedClassExprContext.ARCHETYPEID().getText();
+      Containment containment = new Containment(className, symbol, archetypeId);
+
+      identifierMapper.add(containment);
+
+      containmentSetMap.put(
+          archetypedClassExprContext.getText(),
+          new ContainsProposition(archetypedClassExprContext, identifierMapper)
+              .containmentSet(containment));
     }
+  }
+  /**
+   * returns the mapper of resolved identifiers in contains (including resolved paths
+   *
+   * @return
+   */
+  public IdentifierMapper getIdentifierMapper() {
+    return identifierMapper;
+  }
 
-    @Override
-    public void exitContainExpressionBool(AqlParser.ContainExpressionBoolContext containExpressionBoolContext) {
-
-        //evaluate the containment expression
-        if (containExpressionBoolContext.OPEN_PAR() != null && containExpressionBoolContext.CLOSE_PAR() != null){
-            List<Object> objects = new ArrayList<>();
-            for (ParseTree token: containExpressionBoolContext.children){
-                if (token.getText().matches("\\(|\\)"))
-                    objects.add(token.getText());
-                else if (token instanceof AqlParser.ContainsExpressionContext){
-                    AqlParser.ContainsExpressionContext containsExpressionContext = (AqlParser.ContainsExpressionContext)token;
-                    objects.add(containPropositions.get(containsExpressionContext.getText()));
-                }
-            }
-            containPropositions.put(containExpressionBoolContext.getText(), new ComplexContainsCheck(containExpressionBoolContext.getText(), objects));
-        }
-        else if (!new ContainsExpressions(containExpressionBoolContext).isExplicitContainsClause()) {
-            SimpleChainedCheck simpleChainedCheck =  new SimpleChainedCheck(new ContainsExpressions(containExpressionBoolContext).containedItemLabel(false), containmentSetMap.get(containExpressionBoolContext.getText()));
-            containPropositions.put(containExpressionBoolContext.getText(), simpleChainedCheck);
-        }
-
-    }
-
-    @Override
-    public void exitContainsExpression(AqlParser.ContainsExpressionContext containsExpressionContext) {
-        ContainsProposition proposition = new ContainsProposition(containsExpressionContext, identifierMapper);
-        //check if expression is boolean or a single contains chain
-        if (!proposition.isSingleChain()) {
-
-            List<Object> developedExpression = proposition.develop(containPropositions);
-
-            if (developedExpression.isEmpty())
-                throw new IllegalStateException("Could not develop:"+containsExpressionContext.getText());
-
-            containPropositions.put(containsExpressionContext.getText(), new ComplexContainsCheck(containsExpressionContext.getText(), developedExpression));
-        }
-
-    }
-
-    @Override
-    public void exitSimpleClassExpr(AqlParser.SimpleClassExprContext simpleClassExprContext) {
-        logger.debug("from exitSimpleClassExpr: ENTER");
-        if (!simpleClassExprContext.IDENTIFIER().isEmpty()) {
-            //CHC, 160808: make classname case insensitive
-            String className = simpleClassExprContext.IDENTIFIER(0).getSymbol().getText().toUpperCase();
-            String symbol = new SimpleClassExpressionIdentifier(simpleClassExprContext).resolve();
-//            if (!simpleClassExprContext.IDENTIFIER().isEmpty() && simpleClassExprContext.IDENTIFIER(1) != null)
-//                symbol = simpleClassExprContext.IDENTIFIER(1).getSymbol().getText();
-//            else
-//                symbol = anonymousSymbol.generate(className);
-
-            Containment containment = new Containment(className, symbol, "");
-            identifierMapper.add(containment);
-            containmentSetMap.put(simpleClassExprContext.getText(), new ContainsProposition(simpleClassExprContext, identifierMapper).containmentSet(containment));
-
-        }
-        else if (simpleClassExprContext.getChild(0) instanceof AqlParser.ArchetypedClassExprContext){
-            //CHC, 160808: make classname case insensitive
-            AqlParser.ArchetypedClassExprContext archetypedClassExprContext = (AqlParser.ArchetypedClassExprContext)simpleClassExprContext.getChild(0);
-            String className = archetypedClassExprContext.IDENTIFIER(0).getSymbol().getText().toUpperCase();
-
-            String symbol =archetypedClassExprContext.IDENTIFIER(1) != null ?
-                    archetypedClassExprContext.IDENTIFIER(1).getSymbol().getText() :
-                    archetypedClassExprContext.getText().toUpperCase() ;
-
-            String archetypeId = archetypedClassExprContext.ARCHETYPEID().getText();
-            Containment containment = new Containment(className, symbol, archetypeId);
-
-            identifierMapper.add(containment);
-
-            containmentSetMap.put(archetypedClassExprContext.getText(), new ContainsProposition(archetypedClassExprContext, identifierMapper).containmentSet(containment));
-        }
-    }
-    /**
-     * returns the mapper of resolved identifiers in contains (including resolved paths
-     * @return
-     */
-    public IdentifierMapper getIdentifierMapper() {
-        return identifierMapper;
-    }
-
-    public ContainPropositions containPropositions() {
-        return containPropositions;
-    }
+  public ContainPropositions containPropositions() {
+    return containPropositions;
+  }
 }

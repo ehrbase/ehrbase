@@ -24,23 +24,23 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "admin-api")
 public class AdminApiConfiguration {
 
-    private boolean active;
+  private boolean active;
 
-    private boolean allowDeleteAll;
+  private boolean allowDeleteAll;
 
-    public boolean getActive() {
-        return this.active;
-    }
+  public boolean getActive() {
+    return this.active;
+  }
 
-    public void setActive(boolean active) {
-        this.active = active;
-    }
+  public void setActive(boolean active) {
+    this.active = active;
+  }
 
-    public boolean getAllowDeleteAll() {
-        return this.allowDeleteAll;
-    }
+  public boolean getAllowDeleteAll() {
+    return this.allowDeleteAll;
+  }
 
-    public void setAllowDeleteAll(boolean allowDeleteAll) {
-        this.allowDeleteAll = allowDeleteAll;
-    }
+  public void setAllowDeleteAll(boolean allowDeleteAll) {
+    this.allowDeleteAll = allowDeleteAll;
+  }
 }

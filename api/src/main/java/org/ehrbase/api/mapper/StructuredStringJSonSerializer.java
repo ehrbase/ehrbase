@@ -22,38 +22,36 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
+import java.io.IOException;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.response.ehrscape.StructuredString;
 
-import java.io.IOException;
-
 public class StructuredStringJSonSerializer extends JsonSerializer<StructuredString> {
-    @Override
-    public void serialize(StructuredString value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
-        if (jgen instanceof ToXmlGenerator) {
-            switch (value.getFormat()) {
-                case JSON:
-                    jgen.writeObject(value.getValue());
-                    break;
-                case XML:
-                    jgen.writeRawValue(value.getValue());
-                    break;
-                default:
-                    throw new UnexpectedSwitchCaseException(value.getFormat());
-            }
-        } else {
-            switch (value.getFormat()) {
-                case XML:
-                    jgen.writeObject(value.getValue().replace("\"", "\\\""));
-                    break;
-                case JSON:
-                    jgen.writeRawValue(value.getValue());
-                    break;
-                default:
-                    throw new UnexpectedSwitchCaseException(value.getFormat());
-            }
-        }
+  @Override
+  public void serialize(StructuredString value, JsonGenerator jgen, SerializerProvider provider)
+      throws IOException {
+    if (jgen instanceof ToXmlGenerator) {
+      switch (value.getFormat()) {
+        case JSON:
+          jgen.writeObject(value.getValue());
+          break;
+        case XML:
+          jgen.writeRawValue(value.getValue());
+          break;
+        default:
+          throw new UnexpectedSwitchCaseException(value.getFormat());
+      }
+    } else {
+      switch (value.getFormat()) {
+        case XML:
+          jgen.writeObject(value.getValue().replace("\"", "\\\""));
+          break;
+        case JSON:
+          jgen.writeRawValue(value.getValue());
+          break;
+        default:
+          throw new UnexpectedSwitchCaseException(value.getFormat());
+      }
     }
+  }
 }
-
-

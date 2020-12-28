@@ -21,149 +21,151 @@ package org.ehrbase.api.exception;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * <p>
- * Diese Exception wird geworfen, wenn in einem Switch-Block ein Case eingetreten ist, der nicht korrekt behandelt werden kann. Eigentlich
- * sollte dieser Fall nicht auftreten (außer man ignoriert die Eclipse-Warning zum unvollständigen Switch).
- * </p>
- * <p>
- * Typische Verwendungen in einer Switch-Definition:
+ * Diese Exception wird geworfen, wenn in einem Switch-Block ein Case eingetreten ist, der nicht
+ * korrekt behandelt werden kann. Eigentlich sollte dieser Fall nicht auftreten (außer man ignoriert
+ * die Eclipse-Warning zum unvollständigen Switch).
+ *
+ * <p>Typische Verwendungen in einer Switch-Definition:
+ *
  * <ol>
- * <li>Im unerwarteten default-Case</li>
- * <li>Im explizit nicht sinnvoll behandelbaren Case</li>
- * <li>Im unerwarteten default-Case eines Switch mit Fall-Through von nicht sinnvoll behandelbaren Cases (Kombination aus 1. und 2.)</li>
+ *   <li>Im unerwarteten default-Case
+ *   <li>Im explizit nicht sinnvoll behandelbaren Case
+ *   <li>Im unerwarteten default-Case eines Switch mit Fall-Through von nicht sinnvoll behandelbaren
+ *       Cases (Kombination aus 1. und 2.)
  * </ol>
- * <p>
- * Siehe dazu auch: <a href="https://owl.symeda/wiki/doku.php?id=code-conventions#vollstaendige_switch-statements">Code Conventions -
- * Vollständige Switch-Statements</a>
- * </p>
+ *
+ * <p>Siehe dazu auch: <a
+ * href="https://owl.symeda/wiki/doku.php?id=code-conventions#vollstaendige_switch-statements">Code
+ * Conventions - Vollständige Switch-Statements</a>
  *
  * @author Jan Falkenstern, Stefan Kock
  */
 public class UnexpectedSwitchCaseException extends RuntimeException {
 
-    private static final long serialVersionUID = 5695009820197756438L;
+  private static final long serialVersionUID = 5695009820197756438L;
 
-    /**
-     * Erzeugt aus dem übergebenen enumValue eine message.<br />
-     * Ausgegeben in der Exception-Message wird <code>enumValue.name()</code>,
-     * damit z.B. bei lokalisierten Enums immer denselbe Wert ausgegeben wird.
-     *
-     * @param enumValue must not be null
-     */
-    public UnexpectedSwitchCaseException(Enum<?> enumValue) {
-        super(formatMessage(enumValue, null));
+  /**
+   * Erzeugt aus dem übergebenen enumValue eine message.<br>
+   * Ausgegeben in der Exception-Message wird <code>enumValue.name()</code>, damit z.B. bei
+   * lokalisierten Enums immer denselbe Wert ausgegeben wird.
+   *
+   * @param enumValue must not be null
+   */
+  public UnexpectedSwitchCaseException(Enum<?> enumValue) {
+    super(formatMessage(enumValue, null));
+  }
+
+  /**
+   * Erzeugt aus dem übergebenen enumValue eine message.<br>
+   * Ausgegeben in der Exception-Message wird <code>enumValue.name()</code>, damit z.B. bei
+   * lokalisierten Enums immer denselbe Wert ausgegeben wird.
+   *
+   * @param enumValue must not be null
+   * @param additionalMessage additional text for generated message
+   */
+  public UnexpectedSwitchCaseException(Enum<?> enumValue, String additionalMessage) {
+    super(formatMessage(enumValue, additionalMessage));
+  }
+
+  /**
+   * Erzeugt aus dem übergebenen intValue eine message.
+   *
+   * @param intValue
+   */
+  public UnexpectedSwitchCaseException(Integer intValue) {
+    super(formatMessage(intValue, null));
+  }
+
+  /**
+   * Erzeugt aus dem übergebenen intValue eine message.
+   *
+   * @param intValue
+   * @param additionalMessage additional text for generated message
+   */
+  public UnexpectedSwitchCaseException(Integer intValue, String additionalMessage) {
+    super(formatMessage(intValue, additionalMessage));
+  }
+
+  /**
+   * Erzeugt aus dem übergebenen stringValue eine message.
+   *
+   * <p><strong>
+   *
+   * <h2>Achtung: Breaking Change!</h2>
+   *
+   * <p>Mit Version 0.1.3-SNAPSHOT hat sich die Bedeutung des Konstruktors geändert!<br>
+   * Statt der Meldung wird jetzt nur der Wert angegeben! </strong>
+   *
+   * @param stringValue
+   */
+  public UnexpectedSwitchCaseException(String stringValue) {
+    super(formatMessage(stringValue, null));
+  }
+
+  /**
+   * Erzeugt aus dem übergebenen stringValue eine message.
+   *
+   * @param stringValue
+   * @param additionalMessage additional text for generated message
+   */
+  public UnexpectedSwitchCaseException(String stringValue, String additionalMessage) {
+    super(formatMessage(stringValue, additionalMessage));
+  }
+
+  /**
+   * Erzeugt die Message der {@link UnexpectedSwitchCaseException} anhand der übergebenen Parameter
+   * mit Ausgabe von <code>enumValue.getClass().getSimpleName()</code>.<br>
+   * Ausgegeben in der Exception-Message wird <code>enumValue.name()</code>, damit z.B. bei
+   * lokalisierten Enums immer denselbe Wert ausgegeben wird.
+   *
+   * @param enumValue must not be null
+   * @param additionalMessage additional text for generated message (optional)
+   * @return
+   */
+  public static String formatMessage(Enum<?> enumValue, String additionalMessage) {
+
+    return formatMessage(enumValue.getClass().getSimpleName(), enumValue.name(), additionalMessage);
+  }
+
+  /**
+   * Erzeugt die Message der {@link UnexpectedSwitchCaseException} anhand der übergebenen Parameter.
+   *
+   * @param value
+   * @param additionalMessage additional text for generated message (optional)
+   * @return
+   */
+  public static String formatMessage(Object value, String additionalMessage) {
+
+    return formatMessage(null, value, additionalMessage);
+  }
+
+  /**
+   * Erzeugt die Message der {@link UnexpectedSwitchCaseException} anhand der übergebenen Parameter.
+   *
+   * @param type e.g. <code>enumValue.getClass().getSimpleName()</code>
+   * @param value unsupported value in switch
+   * @param additionalMessage additional text for generated message (optional)
+   * @return
+   */
+  public static String formatMessage(String type, Object value, String additionalMessage) {
+
+    StringBuilder sb = new StringBuilder();
+    sb.append("Unexpected value");
+
+    if (StringUtils.isNotBlank(type)) {
+      sb.append(" of ");
+      sb.append(type);
     }
 
-    /**
-     * Erzeugt aus dem übergebenen enumValue eine message.<br />
-     * Ausgegeben in der Exception-Message wird <code>enumValue.name()</code>,
-     * damit z.B. bei lokalisierten Enums immer denselbe Wert ausgegeben wird.
-     *
-     * @param enumValue         must not be null
-     * @param additionalMessage additional text for generated message
-     */
-    public UnexpectedSwitchCaseException(Enum<?> enumValue, String additionalMessage) {
-        super(formatMessage(enumValue, additionalMessage));
+    sb.append(": '");
+    sb.append(value);
+    sb.append("'");
+
+    if (StringUtils.isNotBlank(additionalMessage)) {
+      sb.append("; ");
+      sb.append(additionalMessage);
     }
 
-    /**
-     * Erzeugt aus dem übergebenen intValue eine message.
-     *
-     * @param intValue
-     */
-    public UnexpectedSwitchCaseException(Integer intValue) {
-        super(formatMessage(intValue, null));
-    }
-
-    /**
-     * Erzeugt aus dem übergebenen intValue eine message.
-     *
-     * @param intValue
-     * @param additionalMessage additional text for generated message
-     */
-    public UnexpectedSwitchCaseException(Integer intValue, String additionalMessage) {
-        super(formatMessage(intValue, additionalMessage));
-    }
-
-    /**
-     * Erzeugt aus dem übergebenen stringValue eine message.
-     *
-     * <strong>
-     * <h2>Achtung: Breaking Change!</h2>
-     * <p>Mit Version 0.1.3-SNAPSHOT hat sich die Bedeutung des Konstruktors geändert!<br/>
-     * Statt der Meldung wird jetzt nur der Wert angegeben!</p>
-     * </strong>
-     *
-     * @param stringValue
-     */
-    public UnexpectedSwitchCaseException(String stringValue) {
-        super(formatMessage(stringValue, null));
-    }
-
-    /**
-     * Erzeugt aus dem übergebenen stringValue eine message.
-     *
-     * @param stringValue
-     * @param additionalMessage additional text for generated message
-     */
-    public UnexpectedSwitchCaseException(String stringValue, String additionalMessage) {
-        super(formatMessage(stringValue, additionalMessage));
-    }
-
-    /**
-     * Erzeugt die Message der {@link UnexpectedSwitchCaseException} anhand der übergebenen Parameter mit Ausgabe von
-     * <code>enumValue.getClass().getSimpleName()</code>.<br />
-     * Ausgegeben in der Exception-Message wird <code>enumValue.name()</code>,
-     * damit z.B. bei lokalisierten Enums immer denselbe Wert ausgegeben wird.
-     *
-     * @param enumValue         must not be null
-     * @param additionalMessage additional text for generated message (optional)
-     * @return
-     */
-    public static String formatMessage(Enum<?> enumValue, String additionalMessage) {
-
-        return formatMessage(enumValue.getClass().getSimpleName(), enumValue.name(), additionalMessage);
-    }
-
-    /**
-     * Erzeugt die Message der {@link UnexpectedSwitchCaseException} anhand der übergebenen Parameter.
-     *
-     * @param value
-     * @param additionalMessage additional text for generated message (optional)
-     * @return
-     */
-    public static String formatMessage(Object value, String additionalMessage) {
-
-        return formatMessage(null, value, additionalMessage);
-    }
-
-    /**
-     * Erzeugt die Message der {@link UnexpectedSwitchCaseException} anhand der übergebenen Parameter.
-     *
-     * @param type              e.g. <code>enumValue.getClass().getSimpleName()</code>
-     * @param value             unsupported value in switch
-     * @param additionalMessage additional text for generated message (optional)
-     * @return
-     */
-    public static String formatMessage(String type, Object value, String additionalMessage) {
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("Unexpected value");
-
-        if (StringUtils.isNotBlank(type)) {
-            sb.append(" of ");
-            sb.append(type);
-        }
-
-        sb.append(": '");
-        sb.append(value);
-        sb.append("'");
-
-        if (StringUtils.isNotBlank(additionalMessage)) {
-            sb.append("; ");
-            sb.append(additionalMessage);
-        }
-
-        return sb.toString();
-    }
+    return sb.toString();
+  }
 }

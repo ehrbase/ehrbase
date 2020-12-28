@@ -18,100 +18,100 @@
 
 package org.ehrbase.api.util;
 
-
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class VersionUidHelper {
 
-    public static final Pattern UUID_PATTERN = Pattern.compile("^([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})");
-    public static final Pattern VERSION_PATTERN = Pattern.compile("::(\\d+)$");
-    public static final Pattern SYSTEM_ID_PATTERN = Pattern.compile("::(\\w+.\\w+.\\w+)");
-    public static final Pattern VERSION_UID_PATTERN =
-            Pattern.compile(
-                    UUID_PATTERN.toString() +
-                            SYSTEM_ID_PATTERN.toString() +
-                            VERSION_PATTERN.toString()
-            );
+  public static final Pattern UUID_PATTERN =
+      Pattern.compile(
+          "^([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})");
+  public static final Pattern VERSION_PATTERN = Pattern.compile("::(\\d+)$");
+  public static final Pattern SYSTEM_ID_PATTERN = Pattern.compile("::(\\w+.\\w+.\\w+)");
+  public static final Pattern VERSION_UID_PATTERN =
+      Pattern.compile(
+          UUID_PATTERN.toString() + SYSTEM_ID_PATTERN.toString() + VERSION_PATTERN.toString());
 
-    private UUID uuid;
-    private String systemId;
-    private int version;
+  private UUID uuid;
+  private String systemId;
+  private int version;
 
-    public VersionUidHelper(String versionUid) {
-        if (!VERSION_UID_PATTERN.matcher(versionUid).matches()) {
-            throw new IllegalArgumentException("Version uid " + versionUid + " is not a valid version_uid,");
-        }
-        this.uuid = extractUUID(versionUid);
-        this.systemId = extractSystemId(versionUid);
-        this.version = extractVersion(versionUid);
+  public VersionUidHelper(String versionUid) {
+    if (!VERSION_UID_PATTERN.matcher(versionUid).matches()) {
+      throw new IllegalArgumentException(
+          "Version uid " + versionUid + " is not a valid version_uid,");
     }
+    this.uuid = extractUUID(versionUid);
+    this.systemId = extractSystemId(versionUid);
+    this.version = extractVersion(versionUid);
+  }
 
-    public static boolean isVersionUid(String testString) {
-        return VERSION_UID_PATTERN.matcher(testString).matches();
-    }
+  public static boolean isVersionUid(String testString) {
+    return VERSION_UID_PATTERN.matcher(testString).matches();
+  }
 
-    public static boolean isUUID(String testString) {
-        return UUID_PATTERN.matcher(testString).matches();
-    }
+  public static boolean isUUID(String testString) {
+    return UUID_PATTERN.matcher(testString).matches();
+  }
 
-    public static boolean isSystemId(String testString) {
-        return SYSTEM_ID_PATTERN.matcher(testString).matches();
-    }
+  public static boolean isSystemId(String testString) {
+    return SYSTEM_ID_PATTERN.matcher(testString).matches();
+  }
 
-    public static boolean isVersion(String testString) {
-        return VERSION_PATTERN.matcher(testString).matches();
-    }
+  public static boolean isVersion(String testString) {
+    return VERSION_PATTERN.matcher(testString).matches();
+  }
 
+  public static UUID extractUUID(String versionUid) {
+    Matcher matcher = UUID_PATTERN.matcher(versionUid);
+    if (matcher.find()) {
+      return UUID.fromString(matcher.group(1));
+    }
+    return null;
+  }
 
-    public static UUID extractUUID(String versionUid) {
-        Matcher matcher = UUID_PATTERN.matcher(versionUid);
-        if (matcher.find()) {
-            return UUID.fromString(matcher.group(1));
-        }
-        return null;
+  public static String extractSystemId(String versionUid) {
+    Matcher matcher = SYSTEM_ID_PATTERN.matcher(versionUid);
+    if (matcher.find()) {
+      return matcher.group(1);
     }
+    return null;
+  }
 
+  public static int extractVersion(String versionUid) {
+    Matcher matcher = VERSION_PATTERN.matcher(versionUid);
+    if (matcher.find()) {
+      return Integer.parseInt(matcher.group(1));
+    }
+    return 1;
+  }
 
-    public static String extractSystemId(String versionUid) {
-        Matcher matcher = SYSTEM_ID_PATTERN.matcher(versionUid);
-        if (matcher.find()) {
-            return matcher.group(1);
-        }
-        return null;
-    }
+  public String toString() {
+    return this.uuid.toString() + "::" + this.systemId + "::" + this.version;
+  }
 
+  public UUID getUuid() {
+    return this.uuid;
+  }
 
-    public static int extractVersion(String versionUid) {
-        Matcher matcher = VERSION_PATTERN.matcher(versionUid);
-        if (matcher.find()) {
-            return Integer.parseInt(matcher.group(1));
-        }
-        return 1;
-    }
+  public void setUuid(UUID uuid) {
+    this.uuid = uuid;
+  }
 
-    public String toString() {
-        return this.uuid.toString() + "::" + this.systemId + "::" + this.version;
-    }
+  public String getSystemId() {
+    return systemId;
+  }
 
-    public UUID getUuid() {
-        return this.uuid;
-    }
-    public void setUuid(UUID uuid) {
-        this.uuid = uuid;
-    }
-    public String getSystemId() {
-        return systemId;
-    }
-    public void setSystemId(String systemId) {
-        this.systemId = systemId;
-    }
-    public int getVersion() {
-        return version;
-    }
-    public void setVersion(int version) {
-        this.version = version;
-    }
+  public void setSystemId(String systemId) {
+    this.systemId = systemId;
+  }
 
+  public int getVersion() {
+    return version;
+  }
+
+  public void setVersion(int version) {
+    this.version = version;
+  }
 }

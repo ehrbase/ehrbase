@@ -17,35 +17,36 @@
  */
 package org.ehrbase.aql.sql.queryImpl.attribute.eventcontext;
 
+import static org.ehrbase.jooq.pg.Tables.EVENT_CONTEXT;
 
-import org.ehrbase.aql.sql.queryImpl.JsonbEntryQuery;
 import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryImpl.attribute.I_RMObjectAttribute;
 import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
 import org.jooq.Field;
 import org.jooq.TableField;
 
-import static org.ehrbase.jooq.pg.Tables.EVENT_CONTEXT;
-
 public class ContextOtherContext extends EventContextAttribute {
 
-    public ContextOtherContext(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
-        super(fieldContext, joinSetup);
-    }
+  public ContextOtherContext(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
+    super(fieldContext, joinSetup);
+  }
 
-    @Override
-    public Field<?> sqlField() {
-        String path = new OtherContextPredicate(fieldContext.getVariableDefinition().getPath()).adjustForQuery();
+  @Override
+  public Field<?> sqlField() {
+    String path =
+        new OtherContextPredicate(fieldContext.getVariableDefinition().getPath()).adjustForQuery();
 
-        String variablePath = path.substring("context/other_context".length());
+    String variablePath = path.substring("context/other_context".length());
 
-        if (variablePath.startsWith("/"))
-            variablePath = variablePath.substring(1);
-        return new EventContextJson(fieldContext, joinSetup).forJsonPath("other_context/"+variablePath).forTableField(EVENT_CONTEXT.OTHER_CONTEXT).sqlField();
-    }
+    if (variablePath.startsWith("/")) variablePath = variablePath.substring(1);
+    return new EventContextJson(fieldContext, joinSetup)
+        .forJsonPath("other_context/" + variablePath)
+        .forTableField(EVENT_CONTEXT.OTHER_CONTEXT)
+        .sqlField();
+  }
 
-    @Override
-    public I_RMObjectAttribute forTableField(TableField tableField) {
-        return this;
-    }
+  @Override
+  public I_RMObjectAttribute forTableField(TableField tableField) {
+    return this;
+  }
 }

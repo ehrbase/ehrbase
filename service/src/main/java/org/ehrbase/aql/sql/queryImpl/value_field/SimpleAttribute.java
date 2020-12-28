@@ -17,7 +17,7 @@
  */
 package org.ehrbase.aql.sql.queryImpl.value_field;
 
-import org.ehrbase.aql.sql.binding.I_JoinBinder;
+import java.util.Optional;
 import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryImpl.attribute.I_RMObjectAttribute;
 import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
@@ -26,42 +26,34 @@ import org.jooq.Field;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 
-import java.util.Optional;
-
-import static org.ehrbase.jooq.pg.Tables.COMPOSITION;
-
 public class SimpleAttribute extends CompositionAttribute {
 
-    protected Field tableField;
-    Optional<String> type = Optional.empty();
+  protected Field tableField;
+  Optional<String> type = Optional.empty();
 
-    public SimpleAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
-        super(fieldContext, joinSetup);
-    }
+  public SimpleAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
+    super(fieldContext, joinSetup);
+  }
 
-    @Override
-    public Field<?> sqlField() {
-        Field actualField;
+  @Override
+  public Field<?> sqlField() {
+    Field actualField;
 
-        if (type.isPresent())
-            actualField = DSL.field(tableField+"::"+type.get());
-        else
-            actualField = DSL.field(tableField);
+    if (type.isPresent()) actualField = DSL.field(tableField + "::" + type.get());
+    else actualField = DSL.field(tableField);
 
-        return as(actualField);
+    return as(actualField);
+  }
 
-    }
+  @Override
+  public I_RMObjectAttribute forTableField(TableField tableField) {
+    return forTableField(tableField);
+  }
 
-    @Override
-    public I_RMObjectAttribute forTableField(TableField tableField) {
-        return forTableField(tableField);
-    }
+  public SimpleAttribute forTableField(String pgtype, Field tableField) {
+    if (pgtype != null) type = Optional.of(pgtype);
 
-    public SimpleAttribute forTableField(String pgtype, Field tableField) {
-        if (pgtype != null)
-            type = Optional.of(pgtype);
-
-        this.tableField = tableField;
-        return this;
-    }
+    this.tableField = tableField;
+    return this;
+  }
 }

@@ -23,8 +23,8 @@ import org.ehrbase.aql.sql.queryImpl.attribute.ehr.EhrAttribute;
 
 public abstract class EhrStatusAttribute extends EhrAttribute {
 
-    public EhrStatusAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup){
-        super(fieldContext, joinSetup);
-        joinSetup.setJoinEhrStatus(true);
-    }
+  public EhrStatusAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
+    super(fieldContext, joinSetup);
+    joinSetup.setJoinEhrStatus(true);
+  }
 }

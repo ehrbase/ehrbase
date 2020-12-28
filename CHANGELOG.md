@@ -17,9 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add /status/env endpoint for environment information (see: https://github.com/ehrbase/ehrbase/pull/400)
 - Add /status/metrics endpoint for detailed metrics on specific topics (db connection, http requests, etc.) (see: https://github.com/ehrbase/ehrbase/pull/400)
 - Add /status/prometheus endpoint for prometheus metrics (see: https://github.com/ehrbase/ehrbase/pull/400)
+- Adds git-code-format-maven-plugin to deploy google-java-format tool via pre-commit hook (see: https://github.com/ehrbase/ehrbase/pull/402)
+- Adds CI check to break build on code style violation (see: https://github.com/ehrbase/ehrbase/pull/402)
 
 ### Changed
 - support AQL querying on full EHR (f.e. SELECT e) (see )
+- Reformats code base to comply with Google Java Style Guide (see: https://github.com/ehrbase/ehrbase/pull/402)
 
 ### Fixed
 

@@ -17,6 +17,9 @@
  */
 package org.ehrbase.aql.sql.queryImpl.attribute.setting;
 
+import static org.ehrbase.jooq.pg.tables.EventContext.EVENT_CONTEXT;
+
+import java.util.Optional;
 import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryImpl.attribute.GenericJsonPath;
 import org.ehrbase.aql.sql.queryImpl.attribute.I_RMObjectAttribute;
@@ -27,43 +30,46 @@ import org.jooq.Field;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 
-import java.util.Optional;
-
-import static org.ehrbase.jooq.pg.tables.EventContext.EVENT_CONTEXT;
-
 public class SettingAttribute extends EventContextAttribute {
 
-    protected Field tableField;
-    protected Optional<String> jsonPath = Optional.empty();
-    private boolean isJsonDataBlock = false;
+  protected Field tableField;
+  protected Optional<String> jsonPath = Optional.empty();
+  private boolean isJsonDataBlock = false;
 
-    public SettingAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
-        super(fieldContext, joinSetup);
-    }
+  public SettingAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
+    super(fieldContext, joinSetup);
+  }
 
-    @Override
-    public Field<?> sqlField() {
-        if (jsonPath.isPresent() && isJsonDataBlock)
-            return new GenericJsonField(fieldContext, joinSetup).forJsonPath(jsonPath.get()).jsonField("EVENT_CONTEXT","ehr.js_context", EVENT_CONTEXT.ID);
+  @Override
+  public Field<?> sqlField() {
+    if (jsonPath.isPresent() && isJsonDataBlock)
+      return new GenericJsonField(fieldContext, joinSetup)
+          .forJsonPath(jsonPath.get())
+          .jsonField("EVENT_CONTEXT", "ehr.js_context", EVENT_CONTEXT.ID);
 
-        Field jsonContextField = DSL.field("ehr.js_context_setting("+tableField+")::json #>>"+new GenericJsonPath(jsonPath.get()).jqueryPath());
+    Field jsonContextField =
+        DSL.field(
+            "ehr.js_context_setting("
+                + tableField
+                + ")::json #>>"
+                + new GenericJsonPath(jsonPath.get()).jqueryPath());
 
-        return as(DSL.field(jsonContextField));
-    }
+    return as(DSL.field(jsonContextField));
+  }
 
-    @Override
-    public I_RMObjectAttribute forTableField(TableField tableField) {
-        this.tableField = tableField;
-        return this;
-    }
+  @Override
+  public I_RMObjectAttribute forTableField(TableField tableField) {
+    this.tableField = tableField;
+    return this;
+  }
 
-    public I_RMObjectAttribute forJsonPath(String jsonPath){
-        this.jsonPath = Optional.of(jsonPath);
-        return this;
-    }
+  public I_RMObjectAttribute forJsonPath(String jsonPath) {
+    this.jsonPath = Optional.of(jsonPath);
+    return this;
+  }
 
-    public SettingAttribute setJsonDataBlock(boolean jsonDataBlock) {
-        this.isJsonDataBlock = jsonDataBlock;
-        return this;
-    }
+  public SettingAttribute setJsonDataBlock(boolean jsonDataBlock) {
+    this.isJsonDataBlock = jsonDataBlock;
+    return this;
+  }
 }
