@@ -1,4 +1,4 @@
-# Copyright (c) 2019 Wladislaw Wagner (Vitasystems GmbH), Jake Smolka (Hannover Medical School).
+# Copyright (c) 2019 Wladislaw Wagner (Vitasystems GmbH).
 #
 # This file is part of Project EHRbase
 #
@@ -19,10 +19,9 @@
 *** Settings ***
 Metadata    Version    0.1.0
 Metadata    Author    *Wladislaw Wagner*
-Metadata    Author    *Jake Smolka*
-Metadata    Created    2020.09.01
+Metadata    Created    2020.12.28
 
-Metadata        TOP_TEST_SUITE    ADMIN_EHR
+Metadata        TOP_TEST_SUITE    ADMIN_TEMPLATE
 Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 
 Suite Setup     startup SUT
@@ -33,79 +32,152 @@ Force Tags     template
 
 
 *** Variables ***
-${SUT}          ADMIN-TEST    # overriding defaults in suite_settings.robot
+# comment: overriding defaults in suite_settings.robot
+${SUT}                  ADMIN-TEST
+${CACHE-ENABLED}        ${FALSE}
 
 
 
-# PUT /admin/template/{template_id}    200
-# PUT /admin/template/{template_id}    404
-# PUT /admin/template/{template_id}    422
-# PUT /admin/template/
-# PUT /admin/template/123
-# PUT /admin/template/foobar
-
-# DELETE /admin/template/{template_id}    204
-# DELETE /admin/template/{template_id}    422
-# DELETE /admin/template/all              200
-# DELETE /admin/template/all              ohne vorher opts hochzuladen
-# DELETE /admin/template/all              nur ein opt hochladen
-# DELETE /admin/template/all              422
-
-
-
-
-
-
-
+#////////////////////////////////////////////////////////////
+#//                                                        //
+#//   NOTE: test can't be executed in random order!        //
+#//         cause clean up steps don't work properly!      //
+#//                                                        //
+#///////////////////////////////////////////////////////////
 
 *** Test Cases ***
-
-001 ADMIN - Update Existing Template
-    pass
-
-
-002 ADMIN - Update Non-Existing Template
-    pass
+001 ADMIN - Delete All Templates (when none were uploaded before)
+    delete all OPTs (admin)
+    validate DELETE ALL response - 204 deleted ${0}
 
 
-003 ADMIN - Update Template in Use
-    pass
+002 ADMIN - Delete All Templates (when only one was uploaded before)
+    upload valid OPT    minimal/minimal_admin.opt
+    delete all OPTs (admin)
+    validate DELETE ALL response - 204 deleted ${1}
+
+
+003 ADMIN - Delete Multiple Templates
+    upload valid OPT    minimal/minimal_admin.opt
+    upload valid OPT    minimal/minimal_evaluation.opt
+    delete all OPTs (admin)
+    validate DELETE ALL response - 204 deleted ${2}
 
 
 004 ADMIN - Delete Existing Template
-    pass
+    [Tags]    not-ready
+    upload valid OPT    minimal/minimal_admin.opt
+    delete OPT (admin)
+
+        # TODO: - FIX ME!
+        TRACE GITHUB ISSUE    382    message=see issue for details
+
+    validate DELETE response - 204 deleted
+    [Teardown]    Delete All Templates
 
 
-005 ADMIN - Delete Template in Use
-    pass
+005 ADMIN - Delete Non-Existing Template
+                        prepare new request session    XML
+    ${resp}=            REST.DELETE    /admin/template/foo
+                        Integer    response status    404
+                        String     response body    pattern= .*Operational template with id foo not found
+                        Output     response body
 
 
-006 ADMIN - Delete Multiple Templates
-    pass
+006 ADMIN - Invalid Usage of Delete Endpoint
+                        prepare new request session    XML
+    ${resp}=            REST.DELETE    /admin/template/
+                        Integer    response status    404
+                        Output     response body
+    
+
+007 ADMIN - Update Non-Existing Template
+    generate random templade_id
+    update OPT (admin)    minimal/minimal_admin_updated.opt
+    validate PUT response - 404 unknown templade_id
 
 
-007 ADMIN - Delete Multiple Templates Where Some Are in Use
-    pass
+008 ADMIN - Update Existing Template
+    [Tags]    not-ready
+    upload valid OPT    minimal/minimal_admin.opt
+    update OPT (admin)    minimal/minimal_admin_updated.opt
+
+        # TODO: - FIX ME!
+        TRACE GITHUB ISSUE    382    message=see issue for details
+
+    validate PUT response - 200 updated
+    [Teardown]    Delete All Templates
 
 
-ADMIN - Delete Directory
-    # pre check
-    Connect With DB
-    check directory admin delete table counts initially
-    # preparing and provisioning
-    upload OPT    minimal/minimal_evaluation.opt
-    prepare new request session    JSON    Prefer=return=representation
-    create supernew ehr
-    Set Test Variable  ${ehr_id}  ${response.body.ehr_id.value}
-    ehr_keywords.validate POST response - 201 created ehr
-    create DIRECTORY (JSON)    subfolders_in_directory.json
-    ${versioned_uid}=   Fetch From Left  ${version_uid}  ::
-    Set Test Variable  ${folder_versioned_uid}  ${versioned_uid}
-    # Execute admin delete EHR
-    admin delete directory
-    Log To Console  ${response}
-    # Test with count rows again - post check
-    check directory admin delete table counts
+009 ADMIN - Delete Multiple Templates Where Some Are in Use
+    upload valid OPT    minimal/minimal_admin.opt
+    upload valid OPT    minimal/minimal_evaluation.opt
+    create new EHR (XML)
+    commit composition (XML)    minimal/minimal_admin.composition.extdatetimes.xml
+    delete all OPTs (admin)
+    validate DELETE ALL response - 422 unprocessable entity
+
+    [Teardown]    Run Keywords    Delete All Compositions    AND
+                  ...             Delete All Templates
+
+
+010 ADMIN - Delete Template in Use
+    upload valid OPT    minimal/minimal_admin.opt
+    create new EHR (XML)
+    commit composition (XML)    minimal/minimal_admin.composition.extdatetimes.xml
+    delete OPT (admin)
+    validate DELETE response - 422 unprocessable entity
+
+    [Teardown]    Run Keywords    Delete All Compositions    AND
+                  ...             Delete All Templates
+
+
+011 ADMIN - Update Template in Use
+    [Tags]    not-ready
+    upload valid OPT    minimal/minimal_admin.opt
+    create new EHR (XML)
+    commit composition (XML)    minimal/minimal_admin.composition.extdatetimes.xml
+    update OPT (admin)    minimal/minimal_admin_updated.opt
+
+        # TODO: - FIX ME!
+        TRACE GITHUB ISSUE    382    message=see issue for details
+
+    validate PUT response - 422 unprocessable entity
+
+    [Teardown]    Run Keywords    Delete All Compositions    AND
+                  ...             Delete All Templates
+
+
+012 ADMIN - Invalid Usage of Update Endpoint
+                        prepare new request session    XML
+    ${resp}=            REST.PUT    /admin/template/
+                        Integer    response status    404
+                        Output     response body
+
+
+013 ADMIN - Invalid Usage of Update Endpoint
+                        prepare new request session    XML
+    ${resp}=            REST.PUT    /admin/template/foo
+                        Integer    response status    400
+                        Output     response body
+
+
+014 ADMIN - Invalid Usage of Update Endpoint
+                        prepare new request session    XML
+    ${resp}=            REST.PUT    /admin/template/foo    {"foo": "bar"}
+                        Integer    response status    404
+                        Output     response body
+                        String     response body    pattern=.*Template with id foo does not exist
+
+
+015 ADMIN - Invalid Usage of Update Endpoint
+                        prepare new request session    XML
+    ${resp}=            REST.PUT    /admin/template/${123}    {"foo": "bar"}
+                        Integer    response status    404
+                        Output     response body
+                        String     response body    pattern=.*Template with id 123 does not exist
+
+
 
 
 
@@ -116,77 +188,134 @@ startup SUT
     ...                 to add some ENVs required by this test suite.
 
     Set Environment Variable    ADMINAPI_ACTIVE    true
+    Set Environment Variable    ADMINAPI_ALLOWDELETEALL    true
     Set Environment Variable    SYSTEM_ALLOWTEMPLATEOVERWRITE    true
     generic_keywords.startup SUT
 
 
-admin delete directory
-    [Documentation]     Admin delete of Directory.
-    ...                 Needs manualle created `${folder_versioned_uid}`.
+upload valid OPT
+    [Arguments]           ${opt file}
+
+    prepare new request session    XML
+    ...    Prefer=return=representation
+    get valid OPT file    ${opt file}
+    extract template_id from OPT file
+    upload OPT file
+    Set Test Variable    ${response}    ${response}
+    server accepted OPT
+    
+
+update OPT (admin)
+    [Arguments]         ${opt_file}
+                        prepare new request session    XML
+                        ...    Prefer=return=representation
+                        get valid OPT file    ${opt_file}
+                        # upload OPT file
+    ${resp}=            Put Request    ${SUT}    /admin/template/${template_id}
+                        ...    data=${file}    headers=${headers}
+                        Set Test Variable    ${response}    ${resp}
 
 
-    &{resp}=            REST.DELETE    ${baseurl}/admin/ehr/${ehr_id}/directory/${folder_versioned_uid}
-                        # Should Be Equal As Strings   ${resp.status}   204
-                        Integer    response status   204
+validate PUT response - 200 updated
+                        Should Be Equal As Strings    ${response.status_code}   200
+                        log    ${response.content}
+
+    # TODO: remove GET request!
+    #       SEE COMMENT --> https://github.com/ehrbase/project_management/issues/382#issuecomment-751513534
+    ${resp}=    Get Request    ${SUT}    /definition/template/adl1.4/${template_id}
+                ...    headers=${headers}
+    log    ${resp.content}
+    XML.Element Text Should Be    ${resp.content}    Minimal Admin UPDATED BY ROBOT
+    ...                           xpath=concept
+
+                        XML.Element Text Should Be    ${response.content}    Minimal Admin UPDATED BY ROBOT
+                        ...                           xpath=concept
+
+
+validate PUT response - 404 unknown templade_id
+                        log   ${response.content}
+                        Should Be Equal As Strings    ${response.status_code}    404
+                        Should Match    ${response.text}    *Template with id ${template_id} does not exist*
+
+
+validate PUT response - 422 unprocessable entity
+                        log   ${response.content}
+                        Should Be Equal As Strings    ${response.status_code}    422
+                        Should Match    ${response.text}    *Template with id ${template_id} is used by X composition(s)*
+
+
+delete OPT (admin)
+    [Documentation]     Admin delete OPT on server.
+    ...                 Depends on any KW that exposes an variable named 'template_id'
+    ...                 to test or suite level scope.
+                        prepare new request session
+    &{resp}=            REST.DELETE    ${baseurl}/admin/template/${template_id}
                         Set Test Variable    ${response}    ${resp}
                         Output Debug Info To Console
 
 
-check directory admin delete table counts initially
-
-    ${contr_records}=   Count Rows In DB Table    ehr.contribution
-                        Should Be Equal As Integers    ${contr_records}     ${0}
-    ${contr_h_records}=   Count Rows In DB Table    ehr.contribution_history
-                        Should Be Equal As Integers    ${contr_h_records}     ${0}
-    ${audit_records}=   Count Rows In DB Table    ehr.audit_details
-                        Should Be Equal As Integers    ${audit_records}     ${0}
-    ${compo_records}=   Count Rows In DB Table    ehr.composition
-                        Should Be Equal As Integers    ${compo_records}     ${0}
-    ${compo_h_records}=  Count Rows In DB Table    ehr.composition_history
-                        Should Be Equal As Integers    ${compo_h_records}     ${0}
-    ${entry_records}=   Count Rows In DB Table    ehr.entry
-                        Should Be Equal As Integers    ${entry_records}     ${0}
-    ${entry_h_records}=  Count Rows In DB Table    ehr.entry_history
-                        Should Be Equal As Integers    ${entry_h_records}     ${0}
-    ${event_context_records}=   Count Rows In DB Table    ehr.event_context
-                        Should Be Equal As Integers    ${event_context_records}     ${0}
-    ${entry_participation_records}=   Count Rows In DB Table    ehr.participation
-                        Should Be Equal As Integers    ${entry_participation_records}     ${0}
-    ${folder_records}=   Count Rows In DB Table    ehr.folder
-                        Should Be Equal As Integers    ${folder_records}     ${0}
-    ${folder_hierarchy_records}=   Count Rows In DB Table    ehr.folder_hierarchy
-                        Should Be Equal As Integers    ${folder_hierarchy_records}     ${0}
-    ${folder_items_records}=   Count Rows In DB Table    ehr.folder_items
-                        Should Be Equal As Integers    ${folder_items_records}     ${0}
-    ${object_ref_records}=   Count Rows In DB Table    ehr.object_ref
-                        Should Be Equal As Integers    ${object_ref_records}     ${0}
+validate DELETE response - 204 deleted
+                        Integer    response status   204
+                        String     response body    ${EMPTY}
 
 
-check directory admin delete table counts
+validate DELETE response - 422 unprocessable entity
+                        Integer    response status   422
+                        String     response body error
+                        ...        pattern=Cannot delete template minimal_admin.en.v1 since the following compositions are still using it.*
 
-    ${contr_records}=   Count Rows In DB Table    ehr.contribution
-                        Should Be Equal As Integers    ${contr_records}     ${1}    # from creation of the EHR, which will not be deleted
-    ${contr_h_records}=   Count Rows In DB Table    ehr.contribution_history
-                        Should Be Equal As Integers    ${contr_h_records}     ${0}
-    ${audit_records}=   Count Rows In DB Table    ehr.audit_details
-                        Should Be Equal As Integers    ${audit_records}     ${2}    # from creation of the EHR (1 for status, 1 for the wrapping contribution)
-    ${compo_records}=   Count Rows In DB Table    ehr.composition
-                        Should Be Equal As Integers    ${compo_records}     ${0}
-    ${compo_h_records}=  Count Rows In DB Table    ehr.composition_history
-                        Should Be Equal As Integers    ${compo_h_records}     ${0}
-    ${entry_records}=   Count Rows In DB Table    ehr.entry
-                        Should Be Equal As Integers    ${entry_records}     ${0}
-    ${entry_h_records}=  Count Rows In DB Table    ehr.entry_history
-                        Should Be Equal As Integers    ${entry_h_records}     ${0}
-    ${event_context_records}=   Count Rows In DB Table    ehr.event_context
-                        Should Be Equal As Integers    ${event_context_records}     ${0}
-    ${entry_participation_records}=   Count Rows In DB Table    ehr.participation
-                        Should Be Equal As Integers    ${entry_participation_records}     ${0}
-    ${folder_records}=   Count Rows In DB Table    ehr.folder
-                        Should Be Equal As Integers    ${folder_records}     ${0}
-    ${folder_hierarchy_records}=   Count Rows In DB Table    ehr.folder_hierarchy
-                        Should Be Equal As Integers    ${folder_hierarchy_records}     ${0}
-    ${folder_items_records}=   Count Rows In DB Table    ehr.folder_items
-                        Should Be Equal As Integers    ${folder_items_records}     ${0}
-    ${object_ref_records}=   Count Rows In DB Table    ehr.object_ref
-                        Should Be Equal As Integers    ${object_ref_records}     ${0}
+
+delete all OPTs (admin)
+    [Documentation]     Admin delete OPT on server.
+    ...                 Depends on any KW that exposes an variable named 'template_id'
+    ...                 to test or suite level scope.
+                        prepare new request session
+    &{resp}=            REST.DELETE    ${baseurl}/admin/template/all
+                        Set Test Variable    ${response}    ${resp}
+                        Output Debug Info To Console
+
+
+validate DELETE ALL response - 204 deleted ${amount}
+                        Integer    response status   200
+                        Integer    response body deleted    ${amount}
+
+
+validate DELETE ALL response - 422 unprocessable entity
+                        Integer    response status   422
+                        String     response body error
+                        ...        pattern=Cannot delete template minimal_admin.en.v1 since the following compositions are still using it.*
+
+
+
+
+
+
+
+
+
+
+# oooooooooo.        .o.         .oooooo.   oooo    oooo ooooo     ooo ooooooooo.
+# `888'   `Y8b      .888.       d8P'  `Y8b  `888   .8P'  `888'     `8' `888   `Y88.
+#  888     888     .8"888.     888           888  d8'     888       8   888   .d88'
+#  888oooo888'    .8' `888.    888           88888[       888       8   888ooo88P'
+#  888    `88b   .88ooo8888.   888           888`88b.     888       8   888
+#  888    .88P  .8'     `888.  `88b    ooo   888  `88b.   `88.    .8'   888
+# o888bood8P'  o88o     o8888o  `Y8bood8P'  o888o  o888o    `YbodP'    o888o
+#
+# [ BACKUP ]
+
+
+# VARIANTS
+# PUT /admin/template/{template_id}    200
+# PUT /admin/template/{template_id}    404
+# PUT /admin/template/{template_id}    422
+# PUT /admin/template/                 404
+# PUT /admin/template/123              404
+# PUT /admin/template/foobar           404
+
+# DELETE /admin/template/{template_id}    204
+# DELETE /admin/template/{template_id}    422
+# DELETE /admin/template/all              200
+# DELETE /admin/template/all              422
+# DELETE /admin/template/all              200 (ohne vorher opts hochzuladen)
+# DELETE /admin/template/all              200 (nur 1 opt vorher hochgeladen)

@@ -40,7 +40,7 @@
     <template_id>
         <value>minimal_admin.en.v1</value>
     </template_id>
-    <concept>Minimal Admin UPDATED BY WLAD</concept>
+    <concept>Minimal Admin UPDATED BY ROBOT</concept>
     <definition>
         <rm_type_name>COMPOSITION</rm_type_name>
         <occurrences>

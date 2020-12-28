@@ -45,6 +45,8 @@ tasks:
           echo "EHRbase_VERSION:" ${EHRbase_VERSION}
           # COMMENT: export ENVs to modify ehrbase configuration
           export ADMINAPI_ACTIVE=true
+          export ADMINAPI_ALLOWDELETEALL=true
+          # export SECURITY_AUTHTYPE=BASIC
           # export SECURITY_AUTHTYPE=OAUTH
           # export SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI=http://localhost:8081/auth/realms/ehrbase
           java -jar application/target/application-${EHRbase_VERSION}.jar \

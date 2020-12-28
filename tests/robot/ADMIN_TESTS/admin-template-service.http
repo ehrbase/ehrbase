@@ -1,3 +1,6 @@
+# 
+# THIS IS FOR MANUAL TESTING. IT DOES THE SAME STUFF AS POSTMAN
+# OR INSOMNIA BUT FROM WITHIN VSCODE EDITOR.
 #
 # Use this with REST Client for Visual Studio Code by Huachao Mao
 # search for "rest client" in VSCode's extensions marketplace
@@ -6,9 +9,9 @@
 
 
 @ehrbase_url = http://localhost:8080/ehrbase/rest/openehr/v1
-@base_url = http://localhost:8888/fhir-bridge/fhir
 @uuid = {{$guid}}
 @subject_namespace = {{$randomInt 001 10000}}
+@auth = Basic ZWhyYmFzZS1hZG1pbjpFdmVuTW9yZVNlY3JldFBhc3N3b3Jk
 
 
 
@@ -22,7 +25,7 @@
 POST {{ehrbase_url}}/ehr HTTP/1.1
 content-type: application/json
 Prefer: return=representation
-Authorization: Basic bXl1c2VyOm15UGFzc3dvcmQ0MzI=
+Authorization: {{auth}}
 
 {
   "_type": "EHR_STATUS",
@@ -61,14 +64,13 @@ POST {{ehrbase_url}}/definition/template/adl1.4
 Content-Type: application/xml
 Accept: application/xml
 Prefer: return=representation
-Authorization: Basic bXl1c2VyOm15UGFzc3dvcmQ0MzI=
+Authorization: {{auth}}
 
 < ../_resources/test_data_sets/valid_templates/minimal/minimal_admin.opt
 
 ###
 
 @template_id = {{upload_opt.response.body.//*[name()='template_id']/*[name()='value']}}
-
 
 
 
@@ -82,7 +84,7 @@ GET {{ehrbase_url}}/definition/template/adl1.4/{{template_id}}
 Content-Type: application/xml
 Accept: application/xml
 Prefer: return=representation
-Authorization: Basic bXl1c2VyOm15UGFzc3dvcmQ0MzI=
+Authorization: {{auth}}
 
 ###
 
@@ -97,7 +99,7 @@ PUT {{ehrbase_url}}/admin/template/{{template_id}}
 Content-Type: application/xml
 Accept: application/xml
 Prefer: return=representation
-Authorization: Basic bXl1c2VyOm15UGFzc3dvcmQ0MzI=
+Authorization: {{auth}}
 
 < ../_resources/test_data_sets/valid_templates/minimal/minimal_admin_updated.opt
 
@@ -111,10 +113,19 @@ Authorization: Basic bXl1c2VyOm15UGFzc3dvcmQ0MzI=
 
 // @name delete_opt
 DELETE {{ehrbase_url}}/admin/template/{{template_id}}
-Content-Type: application/xml
-Accept: application/xml
-# Prefer: return=representation
-Authorization: Basic bXl1c2VyOm15UGFzc3dvcmQ0MzI=
+Authorization: {{auth}}
+
+###
+
+
+
+#///////////////////////////////
+#// ADMIN DELETE ALL OPTs   ///
+#/////////////////////////////
+
+// @name delete_opt
+DELETE {{ehrbase_url}}/admin/template/all
+Authorization: {{auth}}
 
 ###
 
@@ -126,7 +137,7 @@ Authorization: Basic bXl1c2VyOm15UGFzc3dvcmQ0MzI=
 
 GET {{ehrbase_url}}/ehr/{{ehr_id}}/composition/32c12782-ddca-4fba-86ee-b45cdfe62c34::local.ehrbase.org::1
 Accept: application/json
-Authorization: Basic bXl1c2VyOm15UGFzc3dvcmQ0MzI= 
+Authorization: {{auth}}
 
 ###
 
@@ -138,19 +149,10 @@ Authorization: Basic bXl1c2VyOm15UGFzc3dvcmQ0MzI=
 
 POST {{ehrbase_url}}/query/aql
 Content-Type: application/json
-Authorization: Basic bXl1c2VyOm15UGFzc3dvcmQ0MzI=
+Authorization: {{auth}}
 
 {
   "q": "SELECT c FROM EHR e [ehr_id/value='{{ehr_id}}'] CONTAINS COMPOSITION c"
 }
 
 ###
-
-
-#//////////////////////////////
-#// AUDITEVENT             ///
-#////////////////////////////
-
-GET {{base_url}}/AuditEvent
-    ?entity=1
-content-type: application/json

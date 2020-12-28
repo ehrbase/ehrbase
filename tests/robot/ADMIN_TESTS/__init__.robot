@@ -18,7 +18,7 @@
 
 *** Settings ***
 Metadata    Version    0.1.0
-Metadata    Author    *Wladislaw Wagner*
+Metadata    Authors    *Wladislaw Wagner, Jake Smolka*
 Metadata    Created    2019.02.26
 Metadata    Updated    2020.01.30
 
@@ -33,7 +33,5 @@ Documentation       Admin API REST tests
 ...                 robot -v AUTH_TYPE:OAUTH -d results/ -L TRACE robot/ADMIN_TESTS/
 ...
 ...              NOTE: Tests with OAUTH require a running and properly configured Keycloak server.
-
-# Resource   ${EXECDIR}/robot/_resources/suite_settings.robot
 
 Force Tags    admin
