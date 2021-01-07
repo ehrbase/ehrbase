@@ -42,6 +42,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static org.ehrbase.aql.sql.queryImpl.QueryImplConstants.AQL_NODE_ITERATIVE_MARKER;
 import static org.ehrbase.jooq.pg.Tables.ENTRY;
 import static org.ehrbase.jooq.pg.Tables.EVENT_CONTEXT;
 import static org.ehrbase.jooq.pg.Tables.STATUS;
@@ -86,7 +87,7 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
     public static final String TAG_ACTIVITIES = "/activities";
     public static final String TAG_EVENTS = "/events";
 
-    private static final String listIdentifier[] = {
+    private static final String[] listIdentifier = {
             "/content",
             "/items",
             TAG_ACTIVITIES,
@@ -212,8 +213,7 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
 
     private int retrieveIndex(String nodeId) {
         if (nodeId.contains("#")) {
-            Integer indexValue = Integer.valueOf((nodeId.split("#")[1]).split("']")[0]);
-            return indexValue;
+            return Integer.parseInt((nodeId.split("#")[1]).split("']")[0]);
         }
         return 0;
     }
@@ -264,8 +264,7 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
         if (variableDefinition.getPath() != null && variableDefinition.getPath().startsWith("content")) {
             path = "/" + variableDefinition.getPath();
             isRootContent = true;
-        }
-        else
+        } else
             path = pathResolver.pathOf(templateId, variableDefinition.getIdentifier());
 
         String alias = clause.equals(Clause.WHERE) ? null : variableDefinition.getAlias();
@@ -305,12 +304,13 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
 
         List<String> referenceItemPathArray = new ArrayList<>();
         referenceItemPathArray.addAll(itemPathArray);
-        Collections.replaceAll(referenceItemPathArray, QueryImplConstants.AQL_NODE_ITERATIVE_MARKER, "0");
+        Collections.replaceAll(referenceItemPathArray, AQL_NODE_ITERATIVE_MARKER, "0");
 
         if (itemPathArray.contains(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER))
             itemPathArray = new NodePredicateCall(itemPathArray).resolve();
-        else if (itemPathArray.contains(QueryImplConstants.AQL_NODE_ITERATIVE_MARKER))
-            itemPathArray = new JsonbFunctionCall(itemPathArray, QueryImplConstants.AQL_NODE_ITERATIVE_MARKER, QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION).resolve();
+        else if (itemPathArray.contains(AQL_NODE_ITERATIVE_MARKER)) {
+            itemPathArray = new JsonbFunctionCall(itemPathArray, AQL_NODE_ITERATIVE_MARKER, QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION).resolve();
+        }
 
         String itemPath = StringUtils.join(itemPathArray.toArray(new String[]{}), ",");
 
@@ -346,14 +346,21 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
 
         Field<?> fieldPathItem;
         if (clause.equals(Clause.SELECT)) {
-            if (alias != null && StringUtils.isNotEmpty(alias))
+            if (StringUtils.isNotEmpty(alias))
                 fieldPathItem = DSL.field(itemPath, String.class).as(alias);
             else {
                 String tempAlias = new DefaultColumnId().value(variableDefinition);
                 fieldPathItem = DSL.field(itemPath, String.class).as(tempAlias);
             }
-        } else
+        } else if (clause.equals(Clause.WHERE)) {
             fieldPathItem = DSL.field(itemPath, String.class);
+            //TODO: add corresponding jUnit test
+            if (itemPathArray.contains(AQL_NODE_ITERATIVE_MARKER))
+                fieldPathItem = DSL.field(DSL.select(fieldPathItem));
+        }
+        else
+            throw new IllegalStateException("Unhandled clause:"+clause);
+
 
         containsJqueryPath = true;
 
@@ -394,7 +401,7 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
 
         for (int i = 0; i < itemPathArray.size(); i++) {
             if (!itemPathArray.get(i).equals("#") && !itemPathArray.get(i).equals("0"))
-                jsqueryPath.append("\"" + itemPathArray.get(i) + "\"");
+                jsqueryPath.append("\"").append(itemPathArray.get(i)).append("\"");
             else if (itemPathArray.get(i).equals("0")){ //case /name/value -> /name,0,value
                 jsqueryPath.append("#");
             }
@@ -415,10 +422,10 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
         for (int i = 0; i < itemPathArray.size(); i++) {
             String nodeId = itemPathArray.get(i);
             if (nodeId.contains("#")) {
-                Integer index = retrieveIndex(nodeId);
+                int index = retrieveIndex(nodeId);
                 //change the default index of the previous one
                 if (i - 1 >= 0) {
-                    itemPathArray.set(i - 1, index.toString());
+                    itemPathArray.set(i - 1, Integer.toString(index));
                 }
 
                 itemPathArray.set(i, nodeId);
@@ -434,7 +441,7 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
             String[] segments = itemPath.split("(?=(,[0-9]*,))");
             //trim the last index expression
             String pathPart = StringUtils.join(ArrayUtils.subarray(segments, 0, segments.length - 1));
-            return "jsonb_array_length(content #> '{" + pathPart + "}')";
+            return QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION+"(content #> '{" + pathPart + "}')";
         } else
             return open + itemPath + close;
 

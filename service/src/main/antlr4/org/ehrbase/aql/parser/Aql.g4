@@ -138,7 +138,8 @@ identifiedEquality
 
 identifiedOperand
         : operand
-        | identifiedPath ;
+        | identifiedPath
+        | stdExpression;
 
 identifiedPath
         : IDENTIFIER (SLASH objectPath)?
@@ -218,6 +219,10 @@ operand
                 | DATE
                 | PARAMETER
                 | BOOLEAN
+                | TRUE
+                | FALSE
+                | NULL
+                | UNKNOWN
         	    | invokeOperand;
 
 invokeOperand

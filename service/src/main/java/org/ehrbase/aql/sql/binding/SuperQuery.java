@@ -46,6 +46,7 @@ public class SuperQuery {
     private VariableDefinitions variableDefinitions;
     private SelectQuery query;
     private DSLContext context;
+    private boolean outputWithJson = true;
 
     public SuperQuery(I_DomainAccess domainAccess, VariableDefinitions variableDefinitions, SelectQuery query) {
         this.context = domainAccess.getContext();
@@ -145,6 +146,9 @@ public class SuperQuery {
 
         selectQuery.addFrom(query);
 
+        //aggregate return scalar values
+        this.outputWithJson = false;
+
         return selectQuery;
     }
 
@@ -177,5 +181,9 @@ public class SuperQuery {
         }
 
         return selectQuery;
+    }
+
+    public boolean isOutputWithJson() {
+        return outputWithJson;
     }
 }

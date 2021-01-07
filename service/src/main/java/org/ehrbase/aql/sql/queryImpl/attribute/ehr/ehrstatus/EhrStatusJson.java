@@ -22,12 +22,14 @@ import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryImpl.attribute.I_RMObjectAttribute;
 import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
 import org.ehrbase.aql.sql.queryImpl.value_field.GenericJsonField;
+import org.ehrbase.jooq.pg.Routines;
 import org.jooq.Field;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 
 import java.util.Optional;
 
+import static org.ehrbase.jooq.pg.Routines.jsEhrStatus;
 import static org.ehrbase.jooq.pg.Tables.STATUS;
 
 public class EhrStatusJson extends EhrStatusAttribute {
@@ -45,9 +47,9 @@ public class EhrStatusJson extends EhrStatusAttribute {
         //query the json representation of EVENT_CONTEXT and cast the result as TEXT
         Field jsonEhrStatusField;
         if (jsonPath.isPresent())
-            jsonEhrStatusField =  new GenericJsonField(fieldContext, joinSetup).forJsonPath(jsonPath.get()).jsonField(null,"ehr.js_ehr_status", I_JoinBinder.statusRecordTable.field(STATUS.EHR_ID));
+            jsonEhrStatusField =  new GenericJsonField(fieldContext, joinSetup).forJsonPath(jsonPath.get()).ehrStatus(I_JoinBinder.statusRecordTable.field(STATUS.EHR_ID));
         else
-            jsonEhrStatusField = DSL.field("ehr.js_ehr_status("+ I_JoinBinder.statusRecordTable.field(STATUS.EHR_ID)+")::text");
+            jsonEhrStatusField = DSL.field(jsEhrStatus(I_JoinBinder.statusRecordTable.field(STATUS.EHR_ID)).cast(String.class));
 
 
         return as(DSL.field(jsonEhrStatusField));

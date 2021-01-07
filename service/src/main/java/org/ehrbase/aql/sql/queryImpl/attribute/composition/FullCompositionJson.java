@@ -23,12 +23,18 @@ import org.ehrbase.aql.sql.queryImpl.attribute.GenericJsonPath;
 import org.ehrbase.aql.sql.queryImpl.attribute.I_RMObjectAttribute;
 import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
 
+import org.jooq.Configuration;
 import org.jooq.Field;
+import org.jooq.JSONB;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 
 import java.util.Optional;
+import java.util.UUID;
 
+import static org.ehrbase.aql.sql.queryImpl.AqlRoutines.jsonpathItemAsText;
+import static org.ehrbase.aql.sql.queryImpl.AqlRoutines.jsonpathParameters;
+import static org.ehrbase.jooq.pg.Routines.jsComposition2;
 import static org.ehrbase.jooq.pg.Tables.COMPOSITION;
 
 public class FullCompositionJson extends CompositionAttribute {
@@ -44,15 +50,31 @@ public class FullCompositionJson extends CompositionAttribute {
     public Field<?> sqlField() {
         fieldContext.setJsonDatablock(true);
         fieldContext.setRmType("COMPOSITION");
+        //to retrieve DB dialect
+        Configuration configuration = fieldContext.getContext().configuration();
 
         //query the json representation of EVENT_CONTEXT and cast the result as TEXT
         Field jsonFullComposition;
 
+        //TODO: add missing UC test
         if (jsonPath.isPresent()) {
-            jsonFullComposition = DSL.field("ehr.js_composition("+DSL.field(I_JoinBinder.compositionRecordTable.getName()+"."+tableField.getName())+",'"+fieldContext.getServerNodeId()+"')::json #>>"+jsonPath.get());
+            jsonFullComposition = DSL.field(
+                    jsonpathItemAsText(configuration,
+                        jsComposition2(
+                                DSL.field(I_JoinBinder.compositionRecordTable.getName()+"."+tableField.getName()).cast(UUID.class),
+                                DSL.val(fieldContext.getServerNodeId())
+                        ).cast(JSONB.class),
+                        jsonpathParameters(jsonPath.get())
+                    )
+            );
         }
         else
-            jsonFullComposition = DSL.field("ehr.js_composition("+DSL.field(I_JoinBinder.compositionRecordTable.getName()+"."+tableField.getName())+",'"+fieldContext.getServerNodeId()+"')::text");
+            jsonFullComposition = DSL.field(
+                    jsComposition2(
+                        DSL.field(I_JoinBinder.compositionRecordTable.getName()+"."+tableField.getName()).cast(UUID.class),
+                        DSL.val(fieldContext.getServerNodeId())
+                    ).cast(String.class)
+            );
 
         if (fieldContext.isWithAlias())
             return aliased(DSL.field(jsonFullComposition));

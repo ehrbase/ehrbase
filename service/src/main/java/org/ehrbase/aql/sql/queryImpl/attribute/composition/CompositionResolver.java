@@ -36,6 +36,7 @@ public class CompositionResolver extends AttributeResolver
 
     public CompositionResolver(FieldResolutionContext fieldResolutionContext, JoinSetup joinSetup) {
         super(fieldResolutionContext, joinSetup);
+        joinSetup.setJoinComposition(true);
     }
 
     public Field<?> sqlField(String path){
@@ -50,9 +51,9 @@ public class CompositionResolver extends AttributeResolver
 
             Field<?> retField = new GenericJsonField(fieldResolutionContext, joinSetup)
                     .forJsonPath(FEEDER_AUDIT, path)
-                    .jsonField("FEEDER_AUDIT", null, I_JoinBinder.compositionRecordTable.field(FEEDER_AUDIT, JSONB.class));
+                    .feederAudit(I_JoinBinder.compositionRecordTable.field(FEEDER_AUDIT));
 
-            String regexpTerminalValues = ".*(id|issuer|assigner|type|original_content|system_id|name|namespace|type|value)$";
+            String regexpTerminalValues = ".*(id|issuer|assigner|type|original_content|system_id|name|namespace|value)$";
             if (path.matches(regexpTerminalValues))
                 fieldResolutionContext.setJsonDatablock(false);
 
@@ -64,7 +65,7 @@ public class CompositionResolver extends AttributeResolver
             case "uid/value":
                 return new CompositionUidValue(fieldResolutionContext, joinSetup).forTableField(NULL_FIELD).sqlField();
             case "name/value":
-                return new GenericJsonField(fieldResolutionContext, joinSetup).forJsonPath("value").jsonField("DV_CODED_TEXT", "ehr.js_dv_coded_text",ENTRY.NAME);
+                return new GenericJsonField(fieldResolutionContext, joinSetup).forJsonPath("value").dvCodedText(ENTRY.NAME);
             case "archetype_node_id":
                 return new SimpleCompositionAttribute(fieldResolutionContext, joinSetup).forTableField(ENTRY.ARCHETYPE_ID).sqlField();
             case "template_id":

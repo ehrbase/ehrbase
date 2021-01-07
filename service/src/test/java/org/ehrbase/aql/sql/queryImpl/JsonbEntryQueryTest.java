@@ -23,30 +23,20 @@ import org.ehrbase.aql.compiler.AqlExpression;
 import org.ehrbase.aql.compiler.Contains;
 import org.ehrbase.aql.definition.I_VariableDefinitionHelper;
 import org.ehrbase.aql.sql.PathResolver;
-import org.ehrbase.aql.sql.QueryProcessorTest;
 import org.ehrbase.dao.jooq.impl.DSLContextHelper;
-import org.ehrbase.service.CacheRule;
-import org.ehrbase.service.IntrospectService;
-import org.ehrbase.service.KnowledgeCacheHelper;
 import org.jooq.*;
 import org.jooq.impl.DSL;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-
-import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class JsonbEntryQueryTest extends TestAqlBase {
 
 
 
     @Test
-    public void testMakeField() throws Exception {
+    public void testMakeField() {
         DSLContext context = DSLContextHelper.buildContext();
 
         String query =
@@ -61,7 +51,7 @@ public class JsonbEntryQueryTest extends TestAqlBase {
 
         PathResolver pathResolver = new PathResolver(knowledge, contains.getIdentifierMapper());
          String entryRoot = "/composition[openEHR-EHR-COMPOSITION.health_summary.v1]";
-        JsonbEntryQuery cut = new JsonbEntryQuery(this.testDomainAccess, knowledge, pathResolver);
+        JsonbEntryQuery cut = new JsonbEntryQuery(testDomainAccess, knowledge, pathResolver);
 
         //CCH 191016: EHR-163 required trailing '/value' as now the query allows canonical json return
         Field<?> actual = cut.makeField("IDCR - Immunisation summary.v0", "d", I_VariableDefinitionHelper.build("description[at0001]/items[at0002]/value/value", "test", "d", false, false, false), I_QueryImpl.Clause.SELECT);

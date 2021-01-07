@@ -50,12 +50,12 @@ public class EhrResolver extends AttributeResolver
 
         switch (path){
             case "ehr_id":
-                return new GenericJsonField(fieldResolutionContext, joinSetup).jsonField("HIER_OBJECT_ID", "ehr.js_canonical_hier_object_id", I_JoinBinder.ehrRecordTable.field(EHR_.ID));
+                return new GenericJsonField(fieldResolutionContext, joinSetup).hierObjectId(I_JoinBinder.ehrRecordTable.field(EHR_.ID));
             case "ehr_id/value":
                 return new EhrIdValue(fieldResolutionContext, joinSetup).forTableField(NULL_FIELD).sqlField();
             case "time_created":
                 return new GenericJsonField(fieldResolutionContext, joinSetup)
-                        .jsonField("DV_DATE_TIME", "ehr.js_dv_date_time", I_JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED), I_JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED_TZID));
+                        .dvDateTime(I_JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED), I_JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED_TZID));
             case "time_created/value":
                 return new FormattedField(fieldResolutionContext, joinSetup)
                         .usingToJson("timestamp with time zone","||", I_JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED), I_JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED_TZID));

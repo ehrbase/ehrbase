@@ -37,7 +37,6 @@ import org.jooq.impl.DSL;
 
 import java.util.*;
 
-import static org.ehrbase.aql.sql.queryImpl.IterativeNodeConstants.ENV_AQL_ARRAY_DEPTH;
 import static org.ehrbase.aql.sql.queryImpl.IterativeNodeConstants.ENV_AQL_USE_JSQUERY;
 
 /**
@@ -79,7 +78,7 @@ public class WhereBinder {
         //this allows to deploy on AWS since jsquery is not supported by this provider
         Boolean usePgExtensions;
         if (System.getenv(ENV_AQL_USE_JSQUERY) != null)
-            usePgExtensions = Boolean.parseBoolean(System.getenv(ENV_AQL_ARRAY_DEPTH));
+            usePgExtensions = Boolean.parseBoolean(System.getenv(ENV_AQL_USE_JSQUERY));
         else if (domainAccess.getServerConfig().getUseJsQuery() != null)
             usePgExtensions = domainAccess.getServerConfig().getUseJsQuery();
         else
@@ -161,6 +160,7 @@ public class WhereBinder {
         //work on a copy since Exist is destructive
         List whereItems = new ArrayList(whereClause);
         boolean notExists = false;
+//        boolean requiresSubquery = false;
 
         for (int cursor = 0; cursor < whereItems.size(); cursor++) {
             Object item = whereItems.get(cursor);
@@ -183,6 +183,16 @@ public class WhereBinder {
                         }
                         break;
 
+                    case "IN": case "ANY": case "SOME": case "ALL" :
+                        taggedBuffer.append((String) item);
+//                        requiresSubquery = true;
+                        break;
+
+//                    case ")":
+//                        taggedBuffer.append((String) item);
+//                        requiresSubquery = false;
+//                        break;
+
                     case "EXISTS":
                         //add the comparison to null after the variable expression
                         whereItems.add(cursor + 2, notExists ? "IS " : "IS NOT ");
@@ -193,13 +203,13 @@ public class WhereBinder {
                     default:
                         ISODateTime isoDateTime = new ISODateTime(((String) item).replaceAll("'", ""));
                         if (isoDateTime.isValidDateTimeExpression()) {
-                            Long timestamp = isoDateTime.toTimeStamp()/1000; //this to align with epoch_offset in the DB, ignore ms
+                            long timestamp = isoDateTime.toTimeStamp()/1000; //this to align with epoch_offset in the DB, ignore ms
                             int lastValuePos = taggedBuffer.lastIndexOf(VALUETYPE_EXPR_VALUE);
                             if (lastValuePos > 0) {
                                 taggedBuffer.replaceLast(VALUETYPE_EXPR_VALUE, "/value,epoch_offset");
                             }
                             isFollowedBySQLConditionalOperator = true;
-                            item = hackItem(taggedBuffer, timestamp.toString(), "numeric");
+                            item = hackItem(taggedBuffer, Long.toString(timestamp), "numeric");
                             taggedBuffer.append((String) item);
                         } else {
                             item = hackItem(taggedBuffer, (String) item, null);
@@ -256,7 +266,6 @@ public class WhereBinder {
                     taggedBuffer.append(taggedStringBuilder.toString());
                     taggedBuffer.setTagField(taggedStringBuilder.getTagField());
                 }
-
             } else if (item instanceof List) {
                 TaggedStringBuilder taggedStringBuilder = buildWhereCondition(templateId, taggedBuffer, (List) item);
                 taggedBuffer.append(taggedStringBuilder.toString());

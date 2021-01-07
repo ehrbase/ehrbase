@@ -23,12 +23,17 @@ import org.ehrbase.aql.sql.queryImpl.attribute.I_RMObjectAttribute;
 import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
 import org.ehrbase.aql.sql.queryImpl.attribute.eventcontext.EventContextAttribute;
 import org.ehrbase.aql.sql.queryImpl.value_field.GenericJsonField;
+import org.ehrbase.jooq.pg.Routines;
 import org.jooq.Field;
+import org.jooq.JSON;
+import org.jooq.JSONB;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 
 import java.util.Optional;
 
+import static org.ehrbase.aql.sql.queryImpl.AqlRoutines.jsonpathItem;
+import static org.ehrbase.aql.sql.queryImpl.AqlRoutines.jsonpathParameters;
 import static org.ehrbase.jooq.pg.tables.EventContext.EVENT_CONTEXT;
 
 public class SettingAttribute extends EventContextAttribute {
@@ -44,9 +49,14 @@ public class SettingAttribute extends EventContextAttribute {
     @Override
     public Field<?> sqlField() {
         if (jsonPath.isPresent() && isJsonDataBlock)
-            return new GenericJsonField(fieldContext, joinSetup).forJsonPath(jsonPath.get()).jsonField("EVENT_CONTEXT","ehr.js_context", EVENT_CONTEXT.ID);
+            return new GenericJsonField(fieldContext, joinSetup).forJsonPath(jsonPath.get()).eventContext(EVENT_CONTEXT.ID);
 
-        Field jsonContextField = DSL.field("ehr.js_context_setting("+tableField+")::json #>>"+new GenericJsonPath(jsonPath.get()).jqueryPath());
+        Field jsonContextField = DSL.field(
+                jsonpathItem(fieldContext.getContext().configuration(),
+                                Routines.jsContextSetting(tableField).cast(JSONB.class),
+                                jsonpathParameters(new GenericJsonPath(jsonPath.get()).jqueryPath())
+                )
+        );
 
         return as(DSL.field(jsonContextField));
     }

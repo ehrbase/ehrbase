@@ -19,8 +19,14 @@ package org.ehrbase.aql.sql.queryImpl.attribute;
 
 import org.ehrbase.aql.sql.queryImpl.attribute.eventcontext.SimpleEventContextAttribute;
 import org.jooq.Field;
+import org.jooq.JSONB;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
+
+import static org.ehrbase.aql.sql.queryImpl.AqlRoutines.jsonpathItemAsText;
+import static org.ehrbase.aql.sql.queryImpl.AqlRoutines.jsonpathParameters;
+import static org.ehrbase.jooq.pg.Routines.jsDvDateTime1;
+import static org.jooq.impl.DSL.field;
 
 public class TemporalWithTimeZone extends SimpleEventContextAttribute {
 
@@ -30,8 +36,15 @@ public class TemporalWithTimeZone extends SimpleEventContextAttribute {
         super(fieldContext, joinSetup);
     }
 
+    @Override
     public Field<?> sqlField() {
-        return as(DSL.field("ehr.js_dv_date_time("+tableField+"::timestamptz, COALESCE("+timeZoneField+"::text,'UTC'))::json #>>'{value}'"));
+        //                "ehr.js_dv_date_time("+tableField+"::timestamptz, COALESCE("+timeZoneField+"::text,'UTC'))::json #>>'{value}'")
+        return as(field(
+                jsonpathItemAsText(
+                        jsDvDateTime1(tableField, timeZoneField.coalesce(DSL.val("UTC"))).cast(JSONB.class),
+                        jsonpathParameters("value")
+                )
+        ));
     }
 
     public TemporalWithTimeZone useTimeZone(TableField tableField){
@@ -44,7 +57,7 @@ public class TemporalWithTimeZone extends SimpleEventContextAttribute {
         this.tableField = tableField;
         if (timeZoneField == null){
             String tzFieldName = tableField.getName().toUpperCase()+"_TZID"; //conventionally
-            timeZoneField = DSL.field(tableField.getTable().getName()+"."+tzFieldName);
+            timeZoneField = field(tableField.getTable().getName()+"."+tzFieldName);
         }
         return this;
     }

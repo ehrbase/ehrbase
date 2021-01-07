@@ -21,14 +21,12 @@ import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryImpl.attribute.I_RMObjectAttribute;
 import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
 import org.ehrbase.aql.sql.queryImpl.attribute.eventcontext.EventContextAttribute;
-import org.ehrbase.aql.sql.queryImpl.attribute.eventcontext.EventContextJson;
 import org.ehrbase.aql.sql.queryImpl.value_field.GenericJsonField;
 import org.jooq.Field;
 import org.jooq.TableField;
 
 import java.util.Optional;
 
-import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
 import static org.ehrbase.jooq.pg.tables.EventContext.EVENT_CONTEXT;
 
 public class ParticipationsJson extends EventContextAttribute {
@@ -44,9 +42,9 @@ public class ParticipationsJson extends EventContextAttribute {
     public Field<?> sqlField() {
         fieldContext.setJsonDatablock(true);
         if (jsonPath.isPresent())
-            return new GenericJsonField(fieldContext, joinSetup).forJsonPath(jsonPath.get()).jsonField("PARTICIPATION","ehr.js_participations", EVENT_CONTEXT.ID);
+            return new GenericJsonField(fieldContext, joinSetup).forJsonPath(jsonPath.get()).participations(EVENT_CONTEXT.ID);
         else
-            return new GenericJsonField(fieldContext, joinSetup).jsonField("PARTICIPATION","ehr.js_canonical_participations", EVENT_CONTEXT.ID);
+            return new GenericJsonField(fieldContext, joinSetup).participations(EVENT_CONTEXT.ID);
     }
 
     @Override

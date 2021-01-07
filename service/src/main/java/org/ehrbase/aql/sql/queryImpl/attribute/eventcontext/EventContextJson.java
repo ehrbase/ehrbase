@@ -23,7 +23,6 @@ import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
 import org.ehrbase.aql.sql.queryImpl.value_field.GenericJsonField;
 import org.jooq.Field;
 import org.jooq.TableField;
-import org.jooq.impl.DSL;
 
 import java.util.Optional;
 
@@ -41,9 +40,9 @@ public class EventContextJson extends EventContextAttribute {
     public Field<?> sqlField() {
         //query the json representation of EVENT_CONTEXT and cast the result as TEXT
         if (jsonPath.isPresent())
-            return new GenericJsonField(fieldContext, joinSetup).forJsonPath(jsonPath.get()).jsonField("EVENT_CONTEXT","ehr.js_context", EVENT_CONTEXT.ID);
+            return new GenericJsonField(fieldContext, joinSetup).forJsonPath(jsonPath.get()).eventContext(EVENT_CONTEXT.ID);
         else
-            return new GenericJsonField(fieldContext, joinSetup).jsonField("EVENT_CONTEXT","ehr.js_context", EVENT_CONTEXT.ID);
+            return new GenericJsonField(fieldContext, joinSetup).eventContext(EVENT_CONTEXT.ID);
     }
 
     @Override

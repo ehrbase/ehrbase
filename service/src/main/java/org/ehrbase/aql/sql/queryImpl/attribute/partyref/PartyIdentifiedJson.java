@@ -34,7 +34,7 @@ public class PartyIdentifiedJson extends GenericJsonField {
 
     @Override
     public Field<?> sqlField() {
-        return super.jsonField("PARTY_IDENTIFIED","ehr.js_canonical_party_identified", joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.ID));
+        return super.canonicalPartyIdendified(joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.ID));
     }
 
     @Override

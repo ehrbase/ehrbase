@@ -44,10 +44,10 @@ public class ConceptJson extends RMObjectAttribute {
     public Field<?> sqlField() {
         //query the json representation of EVENT_CONTEXT and cast the result as TEXT
         if (jsonPath.isPresent())
-            return new GenericJsonField(fieldContext, joinSetup).forJsonPath(jsonPath.get()).jsonField("DV_CODED_TEXT","ehr.js_dv_coded_text", tableField);
+            return new GenericJsonField(fieldContext, joinSetup).forJsonPath(jsonPath.get()).dvCodedText(tableField);
         else {
             fieldContext.setJsonDatablock(true);
-            return new GenericJsonField(fieldContext, joinSetup).jsonField("DV_CODED_TEXT", "ehr.js_dv_coded_text", tableField);
+            return new GenericJsonField(fieldContext, joinSetup).dvCodedText(tableField);
         }
     }
 

@@ -1,12 +1,15 @@
 package org.ehrbase.aql.sql.queryImpl.value_field;
 
 import org.apache.commons.lang3.StringUtils;
-import org.ehrbase.aql.sql.queryImpl.attribute.*;
+import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
+import org.ehrbase.aql.sql.queryImpl.attribute.I_RMObjectAttribute;
+import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
+import org.ehrbase.aql.sql.queryImpl.attribute.RMObjectAttribute;
 import org.jooq.Field;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 
-import java.util.Optional;
+import static org.ehrbase.aql.sql.queryImpl.AqlRoutines.toJson;
 
 /**
  * use to format a result using a function (f.e. to generate a correct ISO date/time
@@ -28,7 +31,10 @@ public class FormattedField extends RMObjectAttribute {
 
     public Field usingToJson(String sqlType, String separator, Field... tableFields) {
         //query the json representation of a node and cast the result as resultType
-        Field formattedField = DSL.field("to_json" + "((" + StringUtils.join(tableFields, separator) + ")::"+sqlType+")"+"#>>'{}'");
+        Field formattedField = DSL.field(
+                    toJson(fieldContext.getContext().configuration(),
+                            DSL.field(StringUtils.join(tableFields, separator)).cast(DSL.val(sqlType)).toString())
+        );
 
         return as(DSL.field(formattedField));
     }

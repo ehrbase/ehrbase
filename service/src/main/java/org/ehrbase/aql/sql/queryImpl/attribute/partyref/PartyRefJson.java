@@ -44,18 +44,21 @@ public class PartyRefJson extends PartyRefAttribute {
         if (jsonPath.isPresent()){
             return new GenericJsonField(fieldContext, joinSetup)
                     .forJsonPath(jsonPath.get())
-                    .jsonField("PARTY_REF","ehr.js_canonical_party_ref",
-                    joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_NAMESPACE),
-                    joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_TYPE),
-                    joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_SCHEME),
-                    joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_VALUE));
+                    .partyRef(
+                        joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_NAMESPACE),
+                        joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_TYPE),
+                        joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_SCHEME),
+                        joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_VALUE)
+                    );
         }
         else
-            return new GenericJsonField(fieldContext, joinSetup).jsonField("PARTY_REF","ehr.js_canonical_party_ref",
-                joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_NAMESPACE),
-                joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_TYPE),
-                joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_SCHEME),
-                joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_VALUE));
+            return new GenericJsonField(fieldContext, joinSetup)
+                    .partyRef(
+                        joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_NAMESPACE),
+                        joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_TYPE),
+                        joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_SCHEME),
+                        joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_VALUE)
+                    );
     }
 
     @Override

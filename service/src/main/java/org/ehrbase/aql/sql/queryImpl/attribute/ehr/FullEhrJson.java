@@ -18,18 +18,22 @@
 package org.ehrbase.aql.sql.queryImpl.attribute.ehr;
 
 import org.ehrbase.aql.sql.binding.I_JoinBinder;
+import org.ehrbase.aql.sql.queryImpl.I_QueryImpl;
 import org.ehrbase.aql.sql.queryImpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryImpl.attribute.GenericJsonPath;
 import org.ehrbase.aql.sql.queryImpl.attribute.I_RMObjectAttribute;
 import org.ehrbase.aql.sql.queryImpl.attribute.JoinSetup;
-import org.ehrbase.aql.sql.queryImpl.attribute.composition.CompositionAttribute;
+import org.jooq.Configuration;
 import org.jooq.Field;
+import org.jooq.JSONB;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 
 import java.util.Optional;
+import java.util.UUID;
 
-import static org.ehrbase.jooq.pg.Tables.COMPOSITION;
+import static org.ehrbase.aql.sql.queryImpl.AqlRoutines.*;
+import static org.ehrbase.jooq.pg.Routines.jsEhr;
 import static org.ehrbase.jooq.pg.Tables.EHR_;
 
 public class FullEhrJson extends EhrAttribute {
@@ -46,42 +50,74 @@ public class FullEhrJson extends EhrAttribute {
         fieldContext.setJsonDatablock(true);
         fieldContext.setRmType("EHR");
 
+        //to retrieve DB dialect
+        Configuration configuration = fieldContext.getContext().configuration();
+
         //query the json representation of EHR
         Field jsonFullEhr;
 
         if (jsonPath.isPresent()) {
             //deals with queries on arrays if any
             String path = jsonPath.get();
-            String suffix = null;
-            String prefix = null;
+            String[] suffix = null;
+            String[] prefix = null;
             if ((path.startsWith("'{compositions") && path.length() > "'{compositions}'".length())||
                 (path.startsWith("'{contributions") && path.length() > "'{contributions}'".length())||
                 (path.startsWith("'{folders") && path.length() > "'{folders}'".length())) {
                     String[] tokens = path.split(",", 2);
+
                     if (tokens.length != 2)
                         throw new IllegalArgumentException("Could not interpret:"+path);
-                    prefix = tokens[0]+"}'";
-                    suffix = "'{"+tokens[1];
-                    if (suffix.matches(".*?(value)\\}'$"))
+
+                    prefix = jsonpathParameters(tokens[0]);
+                    suffix = jsonpathParameters(tokens[1]);
+
+                    if (isValuePath(suffix))
                         fieldContext.setJsonDatablock(false);
             }
 
-            if (prefix != null && suffix != null)
-                jsonFullEhr = DSL.field("jsonb_array_elements(ehr.js_ehr("+
-                        DSL.field(I_JoinBinder.ehrRecordTable.getName()+"."+tableField.getName())+",'"+fieldContext.getServerNodeId()+
-                        "')::jsonb #>"+prefix +
-                        ") #>>"+
-                        suffix);
+            if (prefix != null) {
+                  jsonFullEhr =
+                        DSL.field(
+                                jsonpathItemAsText(configuration,
+                                        jsonArraySplitElements( configuration,
+                                                jsonpathItem( configuration,
+                                                        jsEhr(
+                                                                DSL.field(I_JoinBinder.ehrRecordTable.getName().concat(".").concat(tableField.getName())).cast(UUID.class),
+                                                                DSL.val(fieldContext.getServerNodeId())
+                                                        ).cast(JSONB.class)
+                                                        ,
+                                                        prefix)
+                                        )
+                                        , suffix)
+                        );
+
+                if (fieldContext.getClause().equals(I_QueryImpl.Clause.WHERE))
+                    jsonFullEhr = DSL.field(DSL.select(jsonFullEhr));
+            }
             else
-                jsonFullEhr = DSL.field("ehr.js_ehr("+DSL.field(I_JoinBinder.ehrRecordTable.getName()+"."+tableField.getName())+",'"+fieldContext.getServerNodeId()+"')::jsonb #>"+jsonPath.get());
+                jsonFullEhr = DSL.field(
+                        jsonpathItem( configuration,
+                            jsEhr(
+                                DSL.field(I_JoinBinder.ehrRecordTable.getName().concat(".").concat(tableField.getName())).cast(UUID.class),
+                                DSL.val(fieldContext.getServerNodeId())
+                            ).cast(JSONB.class),
+                            jsonpathParameters(jsonPath.get())
+                        )
+                );
         }
         else
-            jsonFullEhr = DSL.field("ehr.js_ehr("+DSL.field(I_JoinBinder.ehrRecordTable.getName()+"."+tableField.getName())+",'"+fieldContext.getServerNodeId()+"')::text");
+            jsonFullEhr = DSL.field(
+                    jsEhr(
+                            DSL.field(I_JoinBinder.ehrRecordTable.getName().concat(".").concat(tableField.getName())).cast(UUID.class),
+                            DSL.val(fieldContext.getServerNodeId())
+                    ).cast(String.class)
+            );
 
         if (fieldContext.isWithAlias())
             return aliased(DSL.field(jsonFullEhr));
         else
-            return DSL.field(jsonFullEhr).as(fieldContext.getIdentifier());
+            return defaultAliased(jsonFullEhr);
     }
 
     @Override
@@ -97,6 +133,10 @@ public class FullEhrJson extends EhrAttribute {
         }
         this.jsonPath = Optional.of(new GenericJsonPath(jsonPath).jqueryPath().replaceAll("/name,0,value", "name,value"));
         return this;
+    }
+
+    private boolean isValuePath(String[] pathItems){
+        return pathItems[pathItems.length - 1].equals("'value'");
     }
 }
 

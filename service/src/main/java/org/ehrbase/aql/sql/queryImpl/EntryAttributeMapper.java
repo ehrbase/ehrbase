@@ -26,7 +26,6 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.StringTokenizer;
 
 /**
  * Map a datavalue UML expression from an ARCHETYPED structure into its RM/JSON representation
@@ -50,25 +49,6 @@ public class EntryAttributeMapper {
     public static final String INTERVAL = "interval";
     public static final String MAPPINGS = "mappings";
 
-    //from Locatable
-    private static String toCamelCase(String underscoreSeparated) {
-        if (!underscoreSeparated.contains("_")) {
-            return underscoreSeparated;
-        }
-        StringTokenizer tokens = new StringTokenizer(underscoreSeparated, "_");
-        StringBuilder buf = new StringBuilder();
-        while (tokens.hasMoreTokens()) {
-            String word = tokens.nextToken();
-            if (buf.length() == 0) {
-                buf.append(word);
-            } else {
-                buf.append(word.substring(0, 1).toUpperCase());
-                buf.append(word.substring(1));
-            }
-        }
-        return buf.toString();
-    }
-
     private static Integer firstOccurence(int offset, List<String> list, String match) {
         for (int i = offset; i < list.size(); i++) {
             if (list.get(i).equals(match))
@@ -91,7 +71,7 @@ public class EntryAttributeMapper {
 
         int floor = 1;
 
-        if (fields.size() < 1)
+        if (fields.isEmpty())
             return null; //this happens when a non specified value is queried f.e. the whole json body
 
         //deals with the tricky ones first...
@@ -149,19 +129,16 @@ public class EntryAttributeMapper {
         //deals with the remainder of the array
         for (int i = floor; i < fields.size(); i++) {
 
-            if (fields.get(i).toUpperCase().equals("NAME")){
+            if (fields.get(i).equalsIgnoreCase("NAME")){
                 //whenever the canonical json for name is queried
                 fields.set(i, "/name,0");
             }
             else
-                fields.set(i, toCamelCase(fields.get(i)));
+                fields.set(i, NodeIds.toCamelCase(fields.get(i)));
 
         }
 
-        //elegant...
-        String encoded = StringUtils.join(fields, COMMA);
-
-        return encoded;
+        return StringUtils.join(fields, COMMA);
     }
 
     private static Integer intervalValueIndex(List<String> fields) {
