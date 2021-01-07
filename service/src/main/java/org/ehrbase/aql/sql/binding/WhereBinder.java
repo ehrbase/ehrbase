@@ -152,6 +152,8 @@ public class WhereBinder {
 
     public Condition bind(String templateId) {
 
+        boolean unresolvedVariable = false;
+
         if (whereClause.isEmpty())
             return null;
 
@@ -228,6 +230,10 @@ public class WhereBinder {
                     String expanded = expandForCondition(encodeWhereVariable(templateId, (I_VariableDefinition) item, true, null));
                     if (expanded != null)
                         taggedStringBuilder.append(expanded);
+                    else {
+                        unresolvedVariable = true;
+                        break;
+                    }
                 } else {
                     if (((I_VariableDefinition) item).getPath() != null && isWholeComposition) {
                         //assume a composition
@@ -245,6 +251,10 @@ public class WhereBinder {
                             String expanded = expandForCondition(encodeWhereVariable(templateId, (I_VariableDefinition) item, true, null));
                             if (expanded != null)
                                 taggedStringBuilder.append(expanded);
+                            else {
+                                unresolvedVariable = true;
+                                break;
+                            }
                             isFollowedBySQLConditionalOperator = true;
                             requiresJSQueryClosure = false;
                         } else {
@@ -253,10 +263,18 @@ public class WhereBinder {
                                 String expanded = expandForCondition(encodeWhereVariable(templateId, (I_VariableDefinition) item, true, null));
                                 if (expanded != null)
                                     taggedStringBuilder.append(expanded);
+                                else {
+                                    unresolvedVariable = true;
+                                    break;
+                                }
                             } else {
                                 String expanded = expandForCondition(encodeWhereVariable(templateId, (I_VariableDefinition) item, false, null));
                                 if (expanded != null)
                                     taggedStringBuilder.append(expanded);
+                                else {
+                                    unresolvedVariable = true;
+                                    break;
+                                }
                             }
                         }
                     }
@@ -274,9 +292,13 @@ public class WhereBinder {
 
         }
 
-        taggedBuffer = new WhereJsQueryExpression(taggedBuffer, requiresJSQueryClosure, isFollowedBySQLConditionalOperator).closure(); //termination
+        if (!unresolvedVariable) {
+            taggedBuffer = new WhereJsQueryExpression(taggedBuffer, requiresJSQueryClosure, isFollowedBySQLConditionalOperator).closure(); //termination
 
-        return DSL.condition(taggedBuffer.toString());
+            return DSL.condition(taggedBuffer.toString());
+        }
+        else
+            return DSL.condition("false");
     }
 
 
