@@ -306,27 +306,59 @@ workflows:
       WHAT THIS WORKFLOW DOES
       =======================
 
-      CI kicks in after push (of sync/* branch) to ehrbase repo. It will
-      1. pull (from sync/123_example-issue), build, test (unit), install SDK (makes SDK available from ~/.m2)
-      2. build (using locally installed SDK), test (unit) and package ehrbase (.../target/.jar)
-      3. start ehrbase server (from previously packaged .jar)
-      4. run SDK's (java) integration tests
-      5. run EHRbase's (robot) integration tests
-      6. create robot test report
+      Build EHRbase and run all openEHR_SDK Java tests (unit and integration tests)
+      with SDK being checked out from a branch named sync/* or sync/feature/*
+
+      Consider the following scenarios
+      --------------------------------
+
+      code change in repo |
+      EHRBASE	    SDK     |   BRANCH          |   CI ACTION       |   COMMENT
+      --------------------|-------------------|-------------------|---------------------------------------------------------------------
+
+      YES	        NO	        feature/*           default build	      ehrbase uses SDK referenced in it's parent pom.xml	(commit hash)
+      NO	        YES	        feature/*	          default build	      sdk uses EHRBASE (built) from develop branch
+
+      YES	        YES	        feature/*	          SHOULD FAIL		      default builds triggered on both CIs do not take into account
+                                                                      respective changes in the featue branch of the other repository
+                                                                      NOTE: if the build does NOT fail on ehrbase's and/or sdk's CI
+                                                                            then proper Java unit/integration tests are missing!
+
+      YES	        NO	        sync/feature/*	    SHOULD FAIL	        ehrbase's CI fails to checkout sync/feature/* branch from sdk repo
+      NO 	        YES	        sync/feature/*	    SHOULD FAIL	        sdk's CI fails to checkout sync/feature/* branch from ehrbase repo
+
+      YES	        YES	        sync/feature/*	    synced build	      - ehrbase's CI uses SDK from sync/feature/* branch
+                                                                      - sdk's CI uses EHRBASE from sync/feature/* branch
+
+      explanations        
+      --------------------	
+      default build (ehrbase)		EHRbase is build using SDK version given in it's parent pom.xml
+      default build (sdk)		    SDK is build and tested using EHRbase build from develop branch
+
+      synced build                both CIs take into account respective changes in sync/feature/*
+                                  branch of each repository
+
+      Find detailed steps description for this workflow in following jobs:
+      - "pull build install sdk from sync-branch"
+      - "build package ehrbase with locally installed sdk"
+      - "run java integration tests - sdk"
 
       HOW TO USE THIS WORKFLOW?
       =========================
 
-      1. create TWO branches "sync/[issue-id]_name branches" respectively
+      1. create TWO branches "sync/[issue-id]_name branches" respectively in
 
         - ehrbase repo       --> i.e.    sync/123_example-issue
         - openehr_sdk repo   --> i.e.    sync/123_example-issue
 
-      2. apply your code changes
-      3. push to openehr_sdk repo (NO CI will be triggered)
-      4. push to ehrbase repo (CI will trigger this workflow)
+      2. apply and commit your code changes (!!! in both repositories)
+      3. push to openehr_sdk repo (sdk's CI will trigger a similar workflow)
+      4. push to ehrbase repo (ehrbase's CI will trigger this workflow)
+
+        NOTE: at this point 'synced build' should be running on both CIs
+
       5. create TWO PRs (one in ehrbase, one in openehr_sdk)
-      6. WARNING:
+      6. merge both PRs (WARNING):
 
       ///////////////////////////////////////////////////////////////////////
       ///                                                                 ///
@@ -617,6 +649,8 @@ jobs:
           include-tags: "KNOWLEDGE"
           test-suite-path: "KNOWLEDGE_TESTS"
           test-suite-name: "KNOWLEDGE"
+          allow-template-overwrite: false
+          cache-enabled: false
 
   QUERYSERVICE-test-1:
     executor: docker-py3-java11-postgres
@@ -662,7 +696,7 @@ jobs:
             EXPECTED_HASH="f5ee5a9a55c50687dafc3c3acff66089759f1577d7a5dd71aff6e60793ce91c2  /tmp/expected-results-loaded_db-seed"
             [ "$ACTUAL_HASH" = "$EXPECTED_HASH" ] && echo "Expected results unchanged!  Don't regenerate test-data!" || echo "Expected result data-sets changed. Regenerate!" > /tmp/DATA_CHANGED_NOTICE
       - run-robot-tests:
-          sut: "SUT:TEST"
+          sut: "TEST"
           # include-tags: "SMOKE"
           # test-suite-path: "QUERY_SERVICE_TESTS"
           # test-suite-name: "ADHOC-QUERY-SMOKE"
@@ -698,7 +732,7 @@ jobs:
       - install-and-configure-keycloak
       - restore-packaged-ehrbase-jar
       - run-robot-tests:
-          sut: "SUT:TEST -v AUTH_TYPE:OAUTH"
+          sut: "TEST -v AUTH_TYPE:OAUTH"
           include-tags: "OAUTH"
           # test-suite-path: ""
           test-suite-name: "KEYCLOAK-OAUTH"
@@ -713,7 +747,7 @@ jobs:
       - checkout
       - restore-packaged-ehrbase-jar
       - run-robot-tests:
-          sut: "SUT:ADMIN-TEST"
+          sut: "ADMIN-TEST"
           include-tags: "admin"
           test-suite-path: "ADMIN_TESTS"
           test-suite-name: "ADMIN"
@@ -798,9 +832,26 @@ commands:
     parameters:
       sut:
         description: SUT - System Under Test Config
-        enum: ["SUT:DEV", "SUT:DEV -v AUTH_TYPE:OAUTH", "SUT:ADMIN-DEV", "SUT:TEST", "SUT:TEST -v AUTH_TYPE:OAUTH", "SUT:ADMIN-TEST"]
-        default: "SUT:DEV"
+        enum: ["DEV", "DEV -v AUTH_TYPE:OAUTH", "ADMIN-DEV", "TEST", "TEST -v AUTH_TYPE:OAUTH", "ADMIN-TEST"]
+        default: "DEV"
         type: enum
+      
+      nodename:
+        description: | 
+          EHRbase's "CREATING_SYSTEM_ID". It can be set from cli when starting server .jar, i.e.:
+          `java -jar application.jar --server.nodename=local.ehrbase.org`
+        default: "circleci.ehrbase.org"
+        type: string
+      
+      allow-template-overwrite:
+        description:  Sets EHRbase's cli option `--system.allow-template-overwrite=true`
+        default: true
+        type: boolean
+
+      cache-enabled:
+        description: Sets EHRbase's cli option `--cache.enabled=true`
+        default: true
+        type: boolean
 
       include-tags:
         description: Which tests to inclue by TAGs (Robot syntax applies!)
@@ -808,8 +859,8 @@ commands:
 
       test-suite-path:
         description: Target test-suite given by it's folder name e.g. COMPOSITION_TESTS
-        type: string
         default: ""
+        type: string
 
       test-suite-name:
         description: Titel of generated Robot Log/Report.html
@@ -837,7 +888,9 @@ commands:
               EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
               echo ${EHRbase_VERSION}
               java -jar "application/target/application-${EHRbase_VERSION}.jar" \
-                  --cache.enabled=false >log & app_pid=$!
+                   --system.allow-template-overwrite=<< parameters.allow-template-overwrite >> \
+                   --server.nodename=<< parameters.nodename >> \
+                   --cache.enabled=<< parameters.cache-enabled >> > log & app_pid=$!
               if ! tail -f log | timeout 30s grep -m 1 "Started EhrBase in"; then
                 echo "WARNING: Did not see a startup message even after waiting 30s" >&2
                 if kill -0 "$app_pid"; then
@@ -860,7 +913,9 @@ commands:
                   --outputdir results/<< parameters.test-suite-name >> \
                   --timestampoutputs \
                   --name << parameters.test-suite-name >> \
-                  -v << parameters.sut >> \
+                  -v SUT:<< parameters.sut >> \
+                  -v NODENAME:<< parameters.nodename >> \
+                  -v ALLOW-TEMPLATE-OVERWRITE:<< parameters.allow-template-overwrite >> \
                   robot/<< parameters.test-suite-path >>
       # - cache-in-python-requirements
       - save-test-results-folder:
@@ -995,7 +1050,7 @@ commands:
             cd ~/projects
             EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
             echo ${EHRbase_VERSION}
-            java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false > log &
+            java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=true > log &
             grep -m 1 "Started EhrBase in" <(tail -f log)
             cd ~/projects/openEHR_SDK
             jps
@@ -1017,7 +1072,7 @@ commands:
             echo ${EHRbase_VERSION}
             cd ~/projects    # NOTE: This is where the target folder w/ artifacts were persisted to in previous step.
             java -javaagent:/home/circleci/jacoco/lib/jacocoagent.jar=output=tcpserver,address=127.0.0.1 \
-                 -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false > log &
+                 -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=true > log &
             grep -m 1 "Started EhrBase in" <(tail -f log)
             cd ~/projects/openEHR_SDK
             jps
@@ -1193,7 +1248,7 @@ commands:
             ls -la
             EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
             echo ${EHRbase_VERSION}
-            java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false > log &
+            java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=true > log &
             grep -m 1 "Started EhrBase in" <(tail -f log)
             jps
 
@@ -1403,7 +1458,7 @@ commands:
                         -e POSTGRES_USER=$POSTGRES_USER \
                         -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD -d \
                         -e DISABLE_SECURITY=true \
-                        -p 5432:5432 ehrbaseorg/ehrbase-database-docker:11.5
+                        -p 5432:5432 ehrbase/ehrbase-postgres:11.10
 
 
   setup-file-repo:
@@ -1730,7 +1785,7 @@ executors:
       # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
       # - image:  circleci/python:3.8.5-buster-node-browsers
       - image: circleci/python:3.8.5-node-browsers
-      - image: ehrbaseorg/ehrbase-postgres:10
+      - image: ehrbase/ehrbase-postgres:11.10
         environment:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -1753,8 +1808,6 @@ executors:
       image: ubuntu-1604:202007-01
 
 
-  # NOTE: this is a preview image, will be released officially in September 2020
-  #       don't use before that, cause can get breaking changes
   machine-ubuntu-2004:
     description: |
       Ubuntu 20.04 VM (machine executor)
