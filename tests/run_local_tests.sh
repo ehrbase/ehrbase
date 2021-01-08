@@ -163,4 +163,4 @@ rebot --outputdir results \
 # ## 2. Restart PostgreSQL DB container
 # docker run -e POSTGRES_USER=postgres \
 #            -e POSTGRES_PASSWORD=postgres \
-#            -d -p 5432:5432 ehrbaseorg/ehrbase-database-docker:11.5
+#            -d -p 5432:5432 ehrbase/ehrbase-postgres:11.10

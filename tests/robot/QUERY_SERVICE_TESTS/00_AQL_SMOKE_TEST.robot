@@ -38,7 +38,7 @@ AQL LOADED DB SMOKE TEST - Queries
     #//                                                           ///
     #////////////////////////////////////////////////////////////////
 
-    execute ad-hoc query and check result (loaded DB)  A/100_get_ehrs.json    A/100.tmp.json
+    # execute ad-hoc query and check result (loaded DB)  A/100_get_ehrs.json    A/100.tmp.json
     # execute ad-hoc query and check result (loaded DB)  A/101_get_ehrs.json    A/101.tmp.json
     # execute ad-hoc query and check result (loaded DB)  A/102_get_ehrs.json    A/102.tmp.json
     # execute ad-hoc query and check result (loaded DB)  A/103_get_ehrs.json    A/103.tmp.json

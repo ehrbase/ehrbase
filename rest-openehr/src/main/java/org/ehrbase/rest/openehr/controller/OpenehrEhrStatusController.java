@@ -169,7 +169,7 @@ public class OpenehrEhrStatusController extends BaseController {
             throw new PreconditionFailedException("Given If-Match header does not match latest existing version");
 
         // update EHR_STATUS and check for success
-        Optional<EhrStatus> updateStatus = ehrService.updateStatus(ehrId, ehrStatus);
+        Optional<EhrStatus> updateStatus = ehrService.updateStatus(ehrId, ehrStatus, null);
         EhrStatus status = updateStatus.orElseThrow(() -> new InvalidApiParameterException("Could not update EHR_STATUS"));
 
         // update and prepare current version number

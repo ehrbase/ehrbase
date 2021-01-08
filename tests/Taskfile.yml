@@ -41,7 +41,10 @@ tasks:
           cd ..
           EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
           echo "EHRbase_VERSION:" ${EHRbase_VERSION}
-          java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false --server.nodename=manual.execution.org > log &
+          java -jar application/target/application-${EHRbase_VERSION}.jar \
+               --cache.enabled=true \
+               --system.allow-template-overwrite=true \
+               --server.nodename=manual.execution.org > log &
           grep -m 1 "Started EhrBase in" <(tail -f log)
           
           # SECURITY_AUTHTYPE=BASIC java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false --system.allow-template-overwrite=true > log &
@@ -72,8 +75,8 @@ tasks:
     desc: START POSTGRES DB DOCKER CONTAINER
     cmds:
       - echo ... starting DB server ...
-      # - docker run --name ehrdb -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e DISABLE_SECURITY=true -d -p 5432:5432 ehrbaseorg/ehrbase-database-docker:11.5
-      - docker run --name ehrdb -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e DISABLE_SECURITY=true -d -p 5432:5432 ehrbaseorg/ehrbase-postgres:latest
+      # - docker run --name ehrdb -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e DISABLE_SECURITY=true -d -p 5432:5432 ehrbase/ehrbase-postgres:11.10
+      - docker run --name ehrdb -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e DISABLE_SECURITY=true -d -p 5432:5432 ehrbase/ehrbase-postgres:latest
       # - docker run --name ehrdb -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e DISABLE_SECURITY=true -d -p 5432:5432 postgres:11.5-alpine
       - echo ... DB server started.
 

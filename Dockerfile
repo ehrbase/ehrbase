@@ -15,7 +15,7 @@ RUN chown postgres: ${PGDATA}
 RUN chmod 0700 ${PGDATA}
 
 # Define Postgres version for easier upgrades for the future
-ENV PG_MAJOR=11.9
+ENV PG_MAJOR=11.10
 
 # Adding locales to an alpine container as described
 # here: https://github.com/Auswaschbar/alpine-localized-docker
@@ -48,7 +48,7 @@ RUN echo "host  all  all   0.0.0.0/0  scram-sha-256" >> ${PGDATA}/pg_hba.conf
 RUN echo "listen_addresses='*'" >> ${PGDATA}/postgresql.conf
 
 # Install python and dependencies
-RUN apk add --update postgresql-dev \
+RUN apk add --update postgresql=${PG_MAJOR}-r0 \
   build-base \
   git \
   flex \

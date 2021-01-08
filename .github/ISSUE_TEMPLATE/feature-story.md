@@ -6,15 +6,15 @@ labels: story, enhancement
 
 ## Background ##
 
-_Describe what this story is for and the value the customer will gain from it._
+<!-- Describe here what is the intention for this new feature, i.e. why it helps users in their work -->
 
 ## Acceptance criteria ##
 
-_These are the functional requirements for this story. Add all steps to be implemented to fulfill the requirements._
+<!-- Provide a short summary of the new feature in a few points that describe how it should work. -->
 
 - [ ] Item 1
 
-## Success criteria ##
+## Definition of Done ##
 
 - [ ] Review / Merge request approved (P2P session)
 - [ ] Unit tests passed
@@ -23,5 +23,3 @@ _These are the functional requirements for this story. Add all steps to be imple
 - [ ] Build without errors
 - [ ] Release notes prepared
 - [ ] Runtime warnings
-
-

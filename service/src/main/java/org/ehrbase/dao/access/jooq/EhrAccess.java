@@ -531,6 +531,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     public Boolean update(Timestamp transactionTime, boolean force) {
         boolean result;
 
+        statusAccess.setContributionAccess(this.contributionAccess);
         result = statusAccess.update(otherDetails, transactionTime, force);
 
         if (force || ehrRecord.changed()) {
@@ -564,12 +565,29 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     }
 
     @Override
-    public Boolean update(UUID committerId, UUID systemId, ContributionDef.ContributionState state, I_ConceptAccess.ContributionChangeType contributionChangeType, String description) {
+    public Boolean update(UUID committerId, UUID systemId, UUID contributionId, ContributionDef.ContributionState state, I_ConceptAccess.ContributionChangeType contributionChangeType, String description) {
         Timestamp timestamp = TransactionTime.millis();
-        contributionAccess.setAuditDetailsValues(committerId, systemId, description);
-        contributionAccess.setState(state);
-        contributionAccess.setAuditDetailsChangeType(I_ConceptAccess.fetchContributionChangeType(this, contributionChangeType));
+        // If custom contribution ID is provided use it, otherwise reuse already linked one
+        if (contributionId != null) {
+            I_ContributionAccess access = I_ContributionAccess.retrieveInstance(this.getDataAccess(), contributionId);
+            if (access != null) {
+                provisionContributionAccess(access, committerId, systemId, description, state, contributionChangeType);
+                this.contributionAccess = access;
+            } else
+                throw new InternalServerException("Can't update status with invalid contribution ID.");
+        } else {
+            provisionContributionAccess(contributionAccess, committerId, systemId, description, state, contributionChangeType);
+        }
         return update(timestamp);
+    }
+
+    /**
+     * Helper to provision a contribution access object with several data items.
+     */
+    private void provisionContributionAccess(I_ContributionAccess access, UUID committerId, UUID systemId, String description, ContributionDef.ContributionState state, I_ConceptAccess.ContributionChangeType contributionChangeType) {
+        access.setAuditDetailsValues(committerId, systemId, description);
+        access.setState(state);
+        access.setAuditDetailsChangeType(I_ConceptAccess.fetchContributionChangeType(this, contributionChangeType));
     }
 
     /**

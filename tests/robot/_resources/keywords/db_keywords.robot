@@ -162,8 +162,9 @@ Count Rows In DB Table
 
 dump db
     [Documentation]     Dumps ehrbase DB from PostrgeSQL Docker container to a file /tmp/ehrbasedb_dump.sql
-    ${redump_required}  Run Keyword And Return Status    File Should Exist    /tmp/DATA_CHANGED_NOTICE
-                        Return From Keyword If    not ${redump_required}    DUMP DB REQIRED(?): ${redump_required}
+    # ${redump_required}  Run Keyword And Return Status    File Should Exist    /tmp/DATA_CHANGED_NOTICE
+    # ${cache_restored}   Run Keyword And Return Status    File Should Exist    /tmp/ehrbasedb_dump.sql
+    #                     Return From Keyword If    not ${redump_required}    DUMP DB REQIRED(?): ${redump_required}
     
     Log To Console      WRITING DB DUMP TO FILE /tmp/ehrbasedb_dump.sql
     ${result}=          Run Process
