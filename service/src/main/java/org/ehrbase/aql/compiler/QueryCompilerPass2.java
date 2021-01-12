@@ -46,7 +46,7 @@ import java.util.*;
  */
 public class QueryCompilerPass2 extends AqlBaseListener {
 
-    private String[] allowedFunctions = {"COUNT", "MIN", "MAX"};
+    private String[] allowedFunctions = {"COUNT", "MIN", "MAX", "AVG"};
 
     private Logger logger = LogManager.getLogger(QueryCompilerPass2.class);
 
