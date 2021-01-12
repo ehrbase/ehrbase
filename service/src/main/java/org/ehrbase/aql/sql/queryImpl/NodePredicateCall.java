@@ -91,7 +91,7 @@ public class NodePredicateCall {
                 expression.append("'");
                 expression.append("{");
                 endPos = itemPathArray.size();
-                expression.append(StringUtils.join((itemPathArray.subList(markerPos + 3, endPos).toArray(new String[]{})), ","));
+                expression.append(StringUtils.join((itemPathArray.subList(markerPos + 2, endPos).toArray(new String[]{})), ","));
                 expression.append("}");
                 expression.append("'");
                 resultList.add(expression.toString());
