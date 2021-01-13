@@ -23,7 +23,6 @@ package org.ehrbase.dao.access.jooq;
 
 import com.nedap.archie.rm.composition.EventContext;
 import com.nedap.archie.rm.datastructures.ItemStructure;
-import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.DvIdentifier;
 import com.nedap.archie.rm.datavalues.DvText;
@@ -34,7 +33,6 @@ import com.nedap.archie.rm.generic.PartyIdentified;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.PartyRef;
-import com.nedap.archie.rm.support.identification.TerminologyId;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -47,12 +45,20 @@ import org.ehrbase.dao.access.jooq.party.PersistedObjectId;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.TransactionTime;
-import org.ehrbase.jooq.pg.tables.records.*;
+import org.ehrbase.jooq.pg.tables.records.EventContextHistoryRecord;
+import org.ehrbase.jooq.pg.tables.records.EventContextRecord;
+import org.ehrbase.jooq.pg.tables.records.ParticipationRecord;
+import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
 import org.ehrbase.serialisation.dbencoding.RawJson;
 import org.ehrbase.service.RecordedDvCodedText;
 import org.ehrbase.service.RecordedDvDateTime;
 import org.ehrbase.service.RecordedDvText;
-import org.jooq.*;
+import org.jooq.DSLContext;
+import org.jooq.InsertQuery;
+import org.jooq.JSONB;
+import org.jooq.Record;
+import org.jooq.Result;
+import org.jooq.UpdateQuery;
 import org.jooq.exception.DataAccessException;
 
 import java.sql.Timestamp;
@@ -60,7 +66,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static org.ehrbase.jooq.pg.Tables.*;
+import static org.ehrbase.jooq.pg.Tables.EVENT_CONTEXT;
+import static org.ehrbase.jooq.pg.Tables.EVENT_CONTEXT_HISTORY;
+import static org.ehrbase.jooq.pg.Tables.IDENTIFIER;
+import static org.ehrbase.jooq.pg.Tables.PARTICIPATION;
+import static org.ehrbase.jooq.pg.Tables.PARTICIPATION_HISTORY;
+import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
 
 /**
  * Created by Christian Chevalley on 4/9/2015.
@@ -162,7 +173,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                     participationList.add(participation);
                 });
 
-        DvCodedText setting = (DvCodedText)new RecordedDvCodedText().fromDB(eventContextHistoryRecord, EVENT_CONTEXT_HISTORY.SETTING);
+        DvCodedText setting = (DvCodedText) new RecordedDvCodedText().fromDB(eventContextHistoryRecord, EVENT_CONTEXT_HISTORY.SETTING);
 
         return new EventContext(healthCareFacility,
                 new RecordedDvDateTime().decodeDvDateTime(eventContextHistoryRecord.getStartTime(), eventContextHistoryRecord.getStartTimeTzid()),
@@ -188,6 +199,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
 
     /**
      * setup an EventContextRecord instance based on values from an EventContext instance
+     *
      * @param id
      * @param eventContext
      */
@@ -262,7 +274,6 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
             eventContextRecord.setOtherContext(JSONB.valueOf(new RawJson().marshal(eventContext.getOtherContext())));
         }
     }
-
 
 
     /**
@@ -464,7 +475,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
             participationList.add(participation);
         });
 
-        DvCodedText concept = (DvCodedText)new RecordedDvCodedText().fromDB(eventContextRecord, EVENT_CONTEXT.SETTING);
+        DvCodedText concept = (DvCodedText) new RecordedDvCodedText().fromDB(eventContextRecord, EVENT_CONTEXT.SETTING);
 
         ItemStructure otherContext = null;
 
@@ -483,7 +494,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
 
     }
 
-    private static DvInterval<DvDateTime> convertDvIntervalDvDateTimeFromRecord(Record record){
+    private static DvInterval<DvDateTime> convertDvIntervalDvDateTimeFromRecord(Record record) {
         DvInterval<DvDateTime> dvDateTimeDvInterval = null;
         if (record.get(PARTICIPATION.TIME_LOWER) != null) { //start time null value is allowed for participation
             dvDateTimeDvInterval = new DvInterval<>(
@@ -494,11 +505,11 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         return dvDateTimeDvInterval;
     }
 
-    private static DvCodedText convertModeFromRecord(Record record){
+    private static DvCodedText convertModeFromRecord(Record record) {
         DvCodedText mode;
         try {
             if (record.get(PARTICIPATION.MODE) != null) {
-                mode = (DvCodedText)new RecordedDvCodedText().fromDB(record, PARTICIPATION.MODE);
+                mode = (DvCodedText) new RecordedDvCodedText().fromDB(record, PARTICIPATION.MODE);
             } else {
                 mode = null;
             }
