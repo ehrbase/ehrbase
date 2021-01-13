@@ -19,7 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add /status/prometheus endpoint for prometheus metrics (see: https://github.com/ehrbase/ehrbase/pull/400)
 
 ### Changed
+
 - support AQL querying on full EHR (f.e. SELECT e) (see )
+- Update Dockerfile for usage with metrics and status (see https://github.com/ehrbase/ehrbase/pull/408)
 
 ### Fixed
 
