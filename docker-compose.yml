@@ -10,14 +10,9 @@ services:
     env_file:
       - .env.ehrbase
     environment:
-      # overriding .env file values
       DB_URL: jdbc:postgresql://ehrdb:5432/ehrbase
       DB_USER: ehrbase
       DB_PASS: ehrbase
-      SECURITY_AUTHTYPE: BASIC
-      SECURITY_AUTHUSER: ehrbase-user
-      SECURITY_AUTHPASSWORD: SuperSecretPassword
-      SYSTEM_NAME: local.ehrbase.org
     restart: on-failure
 
   ehrdb:
