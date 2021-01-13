@@ -466,7 +466,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
 
         DvCodedText concept = (DvCodedText)new RecordedDvCodedText().fromDB(eventContextRecord, EVENT_CONTEXT.SETTING);
 
-        ItemStructure<?> otherContext = null;
+        ItemStructure otherContext = null;
 
         if (eventContextRecord.getOtherContext() != null) {
             otherContext = new RawJson().unmarshal((eventContextRecord.getOtherContext().data()), ItemStructure.class);
