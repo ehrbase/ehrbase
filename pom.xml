@@ -130,7 +130,7 @@
         <swagger.version>1.6.2</swagger.version>
         <swagger-snapshot.version>2.0.0-rc2</swagger-snapshot.version>
         <postgressql.version>42.2.18</postgressql.version>
-        <ehrbase.sdk.version>29b57aa</ehrbase.sdk.version>
+        <ehrbase.sdk.version>9dc1adb</ehrbase.sdk.version>
         <flyway.version>6.5.7</flyway.version>
         <joda.version>2.10.6</joda.version>
         <database.name>ehrbase</database.name>
@@ -143,6 +143,7 @@
         <surefire.version>3.0.0-M5</surefire.version>
         <failsafe.version>3.0.0-M5</failsafe.version>
         <prometheus.version>1.6.1</prometheus.version>
+        <antlr4.version>4.9.1</antlr4.version>
 
         <skipIntegrationTests>true</skipIntegrationTests>
         <include.tests>**/*Test.java</include.tests>
@@ -266,7 +267,7 @@
             <dependency>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-runtime</artifactId>
-                <version>4.7.1</version>
+                <version>${antlr4.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.jayway.jsonpath</groupId>
@@ -564,7 +565,7 @@
                 <plugin>
                     <groupId>org.antlr</groupId>
                     <artifactId>antlr4-maven-plugin</artifactId>
-                    <version>4.7.1</version>
+                    <version>${antlr4.version}</version>
                     <configuration>
                         <listener>true</listener>
                         <visitor>true</visitor>
