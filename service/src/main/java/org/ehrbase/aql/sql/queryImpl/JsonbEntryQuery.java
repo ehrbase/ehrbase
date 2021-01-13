@@ -181,12 +181,6 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
 
         if (path_part.equals(PATH_PART.VARIABLE_PATH_PART)) {
             StringBuilder stringBuilder = new StringBuilder();
-//            for (int i = jqueryPath.size() - 1; i >= 0; i--) {
-//                if (jqueryPath.get(i).matches("[0-9]*|#") || jqueryPath.get(i).contains("[at"))
-//                    break;
-//                String item = jqueryPath.remove(i);
-//                stringBuilder.insert(0, item);
-//            }
             nodeId = EntryAttributeMapper.map(stringBuilder.toString());
             if (nodeId != null) {
                 if (defaultIndex.equals("#")) { //jsquery

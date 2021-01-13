@@ -40,7 +40,10 @@ public class NodePredicateFunctionTest {
             "/data[at0003]",
             "/items[at0004]",
             "$AQL_NODE_NAME_PREDICATE$",
-            "'Systolic'"
+            "'Systolic'",
+            "0",
+            "/value",
+            "/magnitude"
     };
 
     @Test
