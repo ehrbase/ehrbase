@@ -23,7 +23,7 @@ package org.ehrbase.aql.sql.queryImpl.value_field;
  */
 public class NodePredicate {
 
-    private static final String namedItemPrefix = " and name/value='";
+    private static final String namedItemPrefix = " and name/value=";
     String nodeId;
 
     public NodePredicate(String nodeId) {

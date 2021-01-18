@@ -48,6 +48,8 @@ public class TestAqlBase {
         knowledge.addOperationalTemplate(opt);
         opt = new FileInputStream("./src/test/resources/knowledge/opt/Vital Signs Encounter (Composition).opt").readAllBytes();
         knowledge.addOperationalTemplate(opt);
+        opt = new FileInputStream("./src/test/resources/knowledge/opt/minimal_instruction.opt").readAllBytes();
+        knowledge.addOperationalTemplate(opt);
 
         //tests require a terminology service
         new TerminologyServiceImp().init(); //this sets the instance variable

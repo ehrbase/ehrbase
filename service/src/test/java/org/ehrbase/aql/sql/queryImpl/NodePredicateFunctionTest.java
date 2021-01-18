@@ -20,11 +20,13 @@
 package org.ehrbase.aql.sql.queryImpl;
 
 import org.junit.Test;
+import org.junit.platform.commons.util.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class NodePredicateFunctionTest {
 
@@ -51,7 +53,15 @@ public class NodePredicateFunctionTest {
 
         List itemPathArray = new NodePredicateCall(Arrays.asList(testPath.clone())).resolve();
 
-        assertNotNull(itemPathArray);
+        assertThat(itemPathArray.get(0).toString())
+                .as(String.join("",Arrays.asList(testPath)))
+                .isEqualToIgnoringNewLines(
+                        "ehr.aql_node_name_predicate(" +
+                                    "\"ehr\".\"entry\".\"entry\"," +
+                                    "'Systolic'," +
+                                    "'/content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1],0,/data[at0001],/events,/events[at0002],0,/data[at0003],/items[at0004]'" +
+                                ")" +
+                                "#>>'{/value,/magnitude}'");
     }
 
 }

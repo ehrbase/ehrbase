@@ -171,7 +171,7 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
                 }
             }
 
-            if (isList(nodeId)) {
+            if (/*!nodePredicate.hasPredicate() && */ isList(nodeId)) {
                 if (path_part.equals(PATH_PART.VARIABLE_PATH_PART) && !(i == segments.size() - 1))
                     jqueryPath.add(defaultIndex);
                 else if (path_part.equals(PATH_PART.IDENTIFIER_PATH_PART))
@@ -181,6 +181,12 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
 
         if (path_part.equals(PATH_PART.VARIABLE_PATH_PART)) {
             StringBuilder stringBuilder = new StringBuilder();
+            for (int i = jqueryPath.size() - 1; i >= 0; i--) {
+                if (jqueryPath.get(i).matches("[0-9]*|#") || jqueryPath.get(i).contains("[") ||jqueryPath.get(i).startsWith("'"))
+                    break;
+                String item = jqueryPath.remove(i);
+                stringBuilder.insert(0, item);
+            }
             nodeId = EntryAttributeMapper.map(stringBuilder.toString());
             if (nodeId != null) {
                 if (defaultIndex.equals("#")) { //jsquery
