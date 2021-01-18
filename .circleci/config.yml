@@ -674,7 +674,7 @@ jobs:
       # - cache-out-ehrbase-workspace       # USE FOR PIPELINE DEBUGGING ONLY
       - restore_cache:
           keys:
-            - expected-results-loaded-db-v7
+            - expected-results-loaded-db-v8
       - run:
           name: list files after restore of cache
           command: |
@@ -684,7 +684,7 @@ jobs:
             ls -la tests/robot/_resources/test_data_sets/query/aql_queries_valid/D/
       - restore_cache:
           keys:
-            - ehrbasedb-dump-v7
+            - ehrbasedb-dump-v8
       # COMMENT: USE THE NEXT LINE ONLY TO FORCE TEST-DATA REGENERATION! Otherwise comment it out!
       - run: echo "FORCE GENERATION OF TEST-DATA AND EXPECTED RESULTS!" > /tmp/DATA_CHANGED_NOTICE
       - run: 
@@ -704,7 +704,7 @@ jobs:
           test-suite-path: "QUERY_SERVICE_TESTS"
           test-suite-name: "ADHOC-QUERY-2"
       - save_cache:
-          key: expected-results-loaded-db-v7-{{ checksum "/tmp/expected-results-loaded_db-seed" }}
+          key: expected-results-loaded-db-v8-{{ checksum "/tmp/expected-results-loaded_db-seed" }}
           paths:
             - tests/robot/_resources/test_data_sets/query/expected_results/loaded_db/
             - tests/robot/_resources/test_data_sets/query/aql_queries_valid/
@@ -716,7 +716,7 @@ jobs:
             ls -la tests/robot/_resources/test_data_sets/query/aql_queries_valid/C/
             ls -la tests/robot/_resources/test_data_sets/query/aql_queries_valid/D/
       - save_cache:
-          key: ehrbasedb-dump-v7-{{ checksum "/tmp/ehrbasedb_dump.sql" }}
+          key: ehrbasedb-dump-v8-{{ checksum "/tmp/ehrbasedb_dump.sql" }}
           paths:
             - /tmp/ehrbasedb_dump.sql
   
