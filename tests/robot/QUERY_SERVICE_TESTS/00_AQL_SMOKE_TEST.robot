@@ -38,7 +38,7 @@ AQL LOADED DB SMOKE TEST - Queries
     #//                                                           ///
     #////////////////////////////////////////////////////////////////
 
-    # execute ad-hoc query and check result (loaded DB)  A/100_get_ehrs.json    A/100.tmp.json
+    execute ad-hoc query and check result (loaded DB)  A/100_get_ehrs.json    A/100.tmp.json
     # execute ad-hoc query and check result (loaded DB)  A/101_get_ehrs.json    A/101.tmp.json
     # execute ad-hoc query and check result (loaded DB)  A/102_get_ehrs.json    A/102.tmp.json
     # execute ad-hoc query and check result (loaded DB)  A/103_get_ehrs.json    A/103.tmp.json
@@ -52,8 +52,8 @@ AQL LOADED DB SMOKE TEST - Queries
     # execute ad-hoc query and check result (loaded DB)  A/201_query.tmp.json    A/201.tmp.json
     # execute ad-hoc query and check result (loaded DB)  A/202_query.tmp.json    A/202.tmp.json
     # execute ad-hoc query and check result (loaded DB)  A/203_query.tmp.json    A/203.tmp.json
-    # execute ad-hoc query and check result (loaded DB)  A/300_get_ehrs_by_contains_any_composition.json               A/300.tmp.json
-    # execute ad-hoc query and check result (loaded DB)  A/400_get_ehrs_by_contains_composition_with_archetype.json    A/400.tmp.json
+    execute ad-hoc query and check result (loaded DB)  A/300_get_ehrs_by_contains_any_composition.json               A/300.tmp.json
+    execute ad-hoc query and check result (loaded DB)  A/400_get_ehrs_by_contains_composition_with_archetype.json    A/400.tmp.json
     # execute ad-hoc query and check result (loaded DB)  A/401_get_ehrs_by_contains_composition_with_archetype.json    A/401.tmp.json
     # execute ad-hoc query and check result (loaded DB)  A/402_get_ehrs_by_contains_composition_with_archetype.json    A/402.tmp.json
     # execute ad-hoc query and check result (loaded DB)  A/500_get_ehrs_by_contains_composition_contains_entry_of_type.json      A/500.tmp.json
@@ -364,13 +364,20 @@ Preconditions (PART 2) - Generate Test-Data and Expected-Results (MINIMAL SET)
     upload OPT    all_types/Test_all_types.opt
 
     Create EHR Record On The Server    1    ${ehr data sets}/ehr_status_01.json
-    Create EHR Record On The Server    2    ${ehr data sets}/ehr_status_01.json
     Commit Compo     1    1    ${compo data sets}/minimal_admin_1.composition.json
     Commit Compo     2    1    ${compo data sets}/minimal_evaluation_1.composition.json
     Commit Compo     3    1    ${compo data sets}/minimal_instruction_1.composition.json
     Commit Compo     4    1    ${compo data sets}/minimal_observation_1.composition.json
     Commit Compo     5    1    ${compo data sets}/minimal_action2_1.composition.json
     Commit Compo     6    1    ${compo data sets}/all_types.composition.json
+
+    Create EHR Record On The Server    2    ${ehr data sets}/ehr_status_01.json
+    Commit Compo     1    2    ${compo data sets}/minimal_admin_1.composition.json
+    Commit Compo     2    2    ${compo data sets}/minimal_evaluation_1.composition.json
+    Commit Compo     3    2    ${compo data sets}/minimal_instruction_1.composition.json
+    Commit Compo     4    2    ${compo data sets}/minimal_observation_1.composition.json
+    Commit Compo     5    2    ${compo data sets}/minimal_action2_1.composition.json
+    Commit Compo     6    2    ${compo data sets}/all_types.composition.json
 
     #///////////////////////////////////////////////////
     #//                                              ///
