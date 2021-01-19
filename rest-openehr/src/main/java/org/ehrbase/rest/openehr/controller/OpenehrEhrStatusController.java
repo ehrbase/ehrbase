@@ -226,11 +226,11 @@ public class OpenehrEhrStatusController extends BaseController {
             }
         }
 
+        Optional<OriginalVersion<EhrStatus>> ehrStatus = ehrService.getEhrStatusAtVersion(ehrId, ehrStatusId, version);
         if (minimalOrRepresentation != null) {
             // when this "if" is true the following casting can be executed and data manipulated by reference (handled by temporary variable)
             EhrStatusResponseData objByReference = (EhrStatusResponseData) minimalOrRepresentation;
 
-            Optional<OriginalVersion<EhrStatus>> ehrStatus = ehrService.getEhrStatusAtVersion(ehrId, ehrStatusId, version);
             if (ehrStatus.isPresent()) {
                 objByReference.setArchetypeNodeId(ehrStatus.get().getData().getArchetypeNodeId());
                 objByReference.setName(ehrStatus.get().getData().getName());
@@ -263,8 +263,7 @@ public class OpenehrEhrStatusController extends BaseController {
                     respHeaders.setETag("\"" + ehrStatusId + "::" + ehrService.getServerConfig().getNodename() + "::" + version + "\"");
                     break;
                 case LAST_MODIFIED:
-                    // TODO should be VERSION.commit_audit.time_committed.value which is not implemented yet - mock for now
-                    respHeaders.setLastModified(123124442);
+                    ehrStatus.ifPresent(ehrStatusOriginalVersion -> respHeaders.setLastModified(ehrStatusOriginalVersion.getCommitAudit().getTimeCommitted().getMagnitude()));
                     break;
             }
         }

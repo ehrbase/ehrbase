@@ -338,7 +338,7 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
     public Boolean update(Timestamp transactionTime, boolean force) {
         boolean updated = false;
 
-        if (force || contributionRecord.changed()) {
+        if (force || contributionRecord.changed()) { // TODO-447: test if this creates an own audit for contributions
 
             if (!contributionRecord.changed()) {
                 //hack: force tell jOOQ to perform updateComposition whatever...
