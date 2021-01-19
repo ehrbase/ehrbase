@@ -208,7 +208,18 @@ public class QueryProcessor extends TemplateMetaData {
 
 
     private Result<Record> fetchResultSet(Select<?> select, Result<Record> result) {
-        Result<Record> intermediary = (Result<Record>) select.fetch();
+        Result<Record> intermediary;
+        try {
+            intermediary = (Result<Record>) select.fetch();
+        } catch (Exception e){
+
+            String reason = "Could not perform SQL query:" + e.getCause() +
+                    ", AQL expression:" +
+                    statements.getParsedExpression() +
+                    ", Translated SQL:" +
+                    select.getSQL();
+            throw new IllegalArgumentException(reason);
+        }
         if (result != null) {
             result.addAll(intermediary);
         } else if (intermediary != null) {

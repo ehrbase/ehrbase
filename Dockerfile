@@ -15,7 +15,7 @@ RUN chown postgres: ${PGDATA}
 RUN chmod 0700 ${PGDATA}
 
 # Define Postgres version for easier upgrades for the future
-ENV PG_MAJOR=11.9
+ENV PG_MAJOR=11.10
 
 # Adding locales to an alpine container as described
 # here: https://github.com/Auswaschbar/alpine-localized-docker
@@ -48,7 +48,7 @@ RUN echo "host  all  all   0.0.0.0/0  scram-sha-256" >> ${PGDATA}/pg_hba.conf
 RUN echo "listen_addresses='*'" >> ${PGDATA}/postgresql.conf
 
 # Install python and dependencies
-RUN apk add --update postgresql-dev \
+RUN apk add --update postgresql=${PG_MAJOR}-r0 \
   build-base \
   git \
   flex \
@@ -142,14 +142,33 @@ ARG DB_URL=jdbc:postgresql://ehrdb:5432/ehrbase
 ARG DB_USER="ehrbase"
 ARG DB_PASS="ehrbase"
 ARG SYSTEM_NAME=docker.ehrbase.org
-ARG SECURITY_AUTHTYPE=NONE
 
+# These environment variables are also applied to startup of the container and can be overwritten by setting it with
+# the '-e' flag on 'docker run' command
 ENV EHRBASE_VERSION=${EHRBASE_VERSION}
 ENV DB_USER=$DB_USER
 ENV DB_PASS=$DB_PASS
 ENV DB_URL=$DB_URL
 ENV SYSTEM_NAME=$SYSTEM_NAME
-ENV SECURITY_AUTHTYPE=$SECURITY_AUTHTYPE
+
+# Security
+ENV SECURITY_AUTHTYPE="NONE"
+ENV SECURITY_AUTHUSER="ehrbase-user"
+ENV SECURITY_AUTHPASSWORD="SuperSecretPassword"
+ENV SECURITY_AUTHADMINUSER="ehrbase-admin"
+ENV SECURITY_AUTHADMINPASSWORD="EvenMoreSecretPassword"
+ENV SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI=""
+
+# Status Metric endpoint envs
+ENV MANAGEMENT_ENDPOINTS_WEB_EXPOSURE="env,health,info,metrics,prometheus"
+ENV MANAGEMENT_ENDPOINTS_WEB_BASEPATH="/status"
+ENV MANAGEMENT_ENDPOINT_ENV_ENABLED="false"
+ENV MANAGEMENT_ENDPOINT_HEALTH_ENABLED="false"
+ENV MANAGEMENT_ENDPOINT_HEALTH_DATASOURCE_ENABLED="false"
+ENV MANAGEMENT_ENDPOINT_INFO_ENABLED="false"
+ENV MANAGEMENT_ENDPOINT_METRICS_ENABLED="false"
+ENV MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED="false"
+ENV MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED="true"
 
 EXPOSE 8080
 CMD ./docker-entrypoint.sh

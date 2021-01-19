@@ -76,8 +76,12 @@ public class CompositionAttributeQuery extends ObjectQuery implements I_QueryImp
 
         Field retField;
 
+        if (clause.equals(Clause.WHERE))
+            fieldResolutionContext.setWithAlias(false);
+
         if (!templateId.equals(NIL_TEMPLATE))
             joinSetup.setUseEntry(true);
+
 
         if (columnAlias == null) {
             if (clause.equals(Clause.SELECT)) {
