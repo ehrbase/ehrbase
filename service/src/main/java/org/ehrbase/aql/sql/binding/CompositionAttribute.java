@@ -18,15 +18,16 @@
 package org.ehrbase.aql.sql.binding;
 
 import org.ehrbase.aql.definition.I_VariableDefinition;
-import org.ehrbase.aql.sql.queryImpl.CompositionAttributeQuery;
-import org.ehrbase.aql.sql.queryImpl.I_QueryImpl;
-import org.ehrbase.aql.sql.queryImpl.JsonbEntryQuery;
+import org.ehrbase.aql.sql.queryimpl.CompositionAttributeQuery;
+import org.ehrbase.aql.sql.queryimpl.I_QueryImpl;
+import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
 import org.jooq.Field;
 
 /**
  * convert a select or where AQL field into its SQL equivalent for a composition attribute.
  * This applies to standard attributes f.e. c/name/value etc.
  */
+@SuppressWarnings({"java:S1452","java:S3740"})
 public class CompositionAttribute {
 
     private final CompositionAttributeQuery compositionAttributeQuery;
@@ -42,16 +43,16 @@ public class CompositionAttribute {
         this.clause = clause;
     }
 
-    public Field<?> toSql(I_VariableDefinition variableDefinition, String template_id, String identifier){
+    public Field toSql(I_VariableDefinition variableDefinition, String templateId, String identifier){
         Field<?> field;
 
         if (variableDefinition.getPath() != null && variableDefinition.getPath().startsWith("content")) {
-            field = jsonbEntryQuery.makeField(template_id, identifier, variableDefinition, clause);
+            field = jsonbEntryQuery.makeField(templateId, identifier, variableDefinition, clause);
             containsJsonDataBlock = jsonbEntryQuery.isJsonDataBlock();
             jsonbItemPath = jsonbEntryQuery.getJsonbItemPath();
             compositionAttributeQuery.setUseEntry(true);
         } else {
-            field = compositionAttributeQuery.makeField(template_id, identifier, variableDefinition, clause);
+            field = compositionAttributeQuery.makeField(templateId, identifier, variableDefinition, clause);
             containsJsonDataBlock = compositionAttributeQuery.isJsonDataBlock();
         }
         optionalPath = variableDefinition.getPath();

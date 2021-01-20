@@ -29,7 +29,7 @@ import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.aql.containment.JsonPathQueryResult;
 import org.ehrbase.aql.containment.TemplateIdAqlTuple;
 import org.ehrbase.aql.containment.TemplateIdQueryTuple;
-import org.ehrbase.aql.sql.queryImpl.ItemInfo;
+import org.ehrbase.aql.sql.queryimpl.ItemInfo;
 import org.ehrbase.configuration.CacheConfiguration;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
@@ -103,6 +103,7 @@ import static org.ehrbase.configuration.CacheConfiguration.QUERY_CACHE;
 public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectService {
 
 
+    public static final String ELEMENT = "ELEMENT";
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
 
@@ -187,9 +188,6 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
         if (cacheConfiguration.isPreBuildQueries()) {
             ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
-            ExecutorService executorService =
-                    MoreExecutors.getExitingExecutorService(executor,
-                            100, TimeUnit.MILLISECONDS);
 
             executor.submit(() -> {
 
@@ -276,10 +274,6 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
         if (cacheConfiguration.isPreBuildQueries()) {
             ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
-            ExecutorService executorService =
-                    MoreExecutors.getExitingExecutorService(executor,
-                            100, TimeUnit.MILLISECONDS);
-
             executor.submit(() -> {
                 try {
                     precalculateQuerys(templateId);
@@ -454,7 +448,6 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         try {
             visitor = new OPTParser(operationaltemplate).parse();
         } catch (Exception e) {
-            log.error("Invalid template {}", operationaltemplate.getTemplateId().getValue(), e);
             throw new IllegalArgumentException(String.format("Invalid template: %s", e.getMessage()));
         }
 
@@ -530,7 +523,6 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
             webTemplateNodeList.stream().map(n -> n.getAqlPath(false)).forEach(uniquePaths::add);
             if (uniquePaths.size() == 1) {
                 aql = uniquePaths.iterator().next();
-                //FIXME see https://github.com/ehrbase/project_management/issues/377
             } else if (webTemplateNodeList.size() > 1) {
                 aql = uniquePaths.iterator().next();
                 log.warn(String.format("Aql Path not unique for template %s and path %s ", templateId, nodeIds));
@@ -567,7 +559,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
             Optional<WebTemplateNode> node = webTemplate.findByAqlPath(aql);
             if (node.isEmpty()) {
                 type = null;
-            } else if (node.get().getRmType().equals("ELEMENT")) {
+            } else if (node.get().getRmType().equals(ELEMENT)) {
                 //for element unwrap
                 type = node.get().getChildren().get(0).getRmType();
             } else {
@@ -579,7 +571,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
                 category = null;
             } else if (aql.endsWith("/value")) {
                 //for element unwrap
-                category = webTemplate.findByAqlPath(aql.replace("/value", "")).filter(n -> n.getRmType().equals("ELEMENT")).map(n -> "ELEMENT").orElse("DATA_STRUCTURE");
+                category = webTemplate.findByAqlPath(aql.replace("/value", "")).filter(n -> n.getRmType().equals(ELEMENT)).map(n -> ELEMENT).orElse("DATA_STRUCTURE");
             } else {
                 category = "DATA_STRUCTURE";
             }

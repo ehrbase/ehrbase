@@ -28,7 +28,7 @@ import org.ehrbase.aql.compiler.TopAttributes;
 import org.ehrbase.aql.definition.Variables;
 import org.ehrbase.aql.sql.binding.*;
 import org.ehrbase.aql.sql.postprocessing.RawJsonTransform;
-import org.ehrbase.aql.sql.queryImpl.TemplateMetaData;
+import org.ehrbase.aql.sql.queryimpl.TemplateMetaData;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.service.IntrospectService;
@@ -54,7 +54,7 @@ import static org.ehrbase.jooq.pg.Tables.ENTRY;
  * <p>
  * Created by christian on 4/28/2016.
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"java:S3776", "java:S3740"})
 public class QueryProcessor extends TemplateMetaData {
 
     public static final String NIL_TEMPLATE = "*";
@@ -149,7 +149,7 @@ public class QueryProcessor extends TemplateMetaData {
             if (!queryStep.getTemplateId().equalsIgnoreCase(NIL_TEMPLATE))
                 queryStep.getCompositionAttributeQuery().setUseEntry(true);
 
-            select = new JoinBinder(domainAccess, select, false).addJoinClause(queryStep.getCompositionAttributeQuery());
+            select = new JoinBinder(domainAccess, select).addJoinClause(queryStep.getCompositionAttributeQuery());
 
             //this deals with 'contains c' which adds an implicit where on template id
             if (!queryStep.getTemplateId().equals(NIL_TEMPLATE)) {

@@ -18,11 +18,12 @@
 package org.ehrbase.aql.sql.binding;
 
 import org.ehrbase.aql.definition.I_VariableDefinition;
-import org.ehrbase.aql.sql.queryImpl.CompositionAttributeQuery;
-import org.ehrbase.aql.sql.queryImpl.I_QueryImpl;
-import org.ehrbase.aql.sql.queryImpl.JsonbEntryQuery;
+import org.ehrbase.aql.sql.queryimpl.CompositionAttributeQuery;
+import org.ehrbase.aql.sql.queryimpl.I_QueryImpl;
+import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
 import org.jooq.Field;
 
+@SuppressWarnings({"java:S3776","java:S3740","java:S1452"})
 class ExpressionField {
 
     private final I_VariableDefinition variableDefinition;
@@ -72,7 +73,7 @@ class ExpressionField {
                 }
                 else {
                     // all other that are supported as simpleClassExpr (most common resolution)
-                    LocatableItem locatableItem = new LocatableItem(compositionAttributeQuery, jsonbEntryQuery, I_QueryImpl.Clause.SELECT);
+                    LocatableItem locatableItem = new LocatableItem(compositionAttributeQuery, jsonbEntryQuery);
                     field = locatableItem.toSql(templateId, variableDefinition, className);
                     jsonbItemPath = locatableItem.getJsonbItemPath();
                     containsJsonDataBlock |= locatableItem.isContainsJsonDataBlock();
