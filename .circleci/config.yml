@@ -690,11 +690,17 @@ jobs:
       - run: 
           name: CHECK IF EXPECTED-RESULT TEMPLATES HAVE CHANGED AND REGENERATE TEST-DATA IF NEEDED
           command: |
-            find tests/robot/_resources/test_data_sets/query/expected_results/loaded_db/ -type f ! -name *.tmp.json | sort | xargs cat > /tmp/expected-results-loaded_db-seed
-            sha256sum /tmp/expected-results-loaded_db-seed
-            ACTUAL_HASH="$(sha256sum /tmp/expected-results-loaded_db-seed | cat)"
-            EXPECTED_HASH="f5ee5a9a55c50687dafc3c3acff66089759f1577d7a5dd71aff6e60793ce91c2  /tmp/expected-results-loaded_db-seed"
-            [ "$ACTUAL_HASH" = "$EXPECTED_HASH" ] && echo "Expected results unchanged!  Don't regenerate test-data!" || echo "Expected result data-sets changed. Regenerate!" > /tmp/DATA_CHANGED_NOTICE
+            FILE=/tmp/DATA_CHANGED_NOTICE
+            if [ -f "$FILE" ]; then
+                echo "REGENERATION OF TEST-DATA AND EXPECTED RESULT SETS IS EITHER REQUIRED OR WAS FORCED."
+            else 
+                find tests/robot/_resources/test_data_sets/query/expected_results/loaded_db/ -type f ! -name *.tmp.json | sort | xargs cat > /tmp/expected-results-loaded_db-seed
+                sha256sum /tmp/expected-results-loaded_db-seed
+                ACTUAL_HASH="$(sha256sum /tmp/expected-results-loaded_db-seed | cat)"
+                EXPECTED_HASH="f5ee5a9a55c50687dafc3c3acff66089759f1577d7a5dd71aff6e60793ce91c2  /tmp/expected-results-loaded_db-seed"
+                [ "$ACTUAL_HASH" = "$EXPECTED_HASH" ] && echo "Expected results unchanged!  Don't regenerate test-data!" || echo "Expected result data-sets changed. Regenerate!" > /tmp/DATA_CHANGED_NOTICE
+            fi
+            
       - run-robot-tests:
           sut: "TEST"
           # include-tags: "SMOKE"
