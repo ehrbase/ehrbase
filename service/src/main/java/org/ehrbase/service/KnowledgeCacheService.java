@@ -22,7 +22,6 @@
  */
 package org.ehrbase.service;
 
-import com.google.common.util.concurrent.MoreExecutors;
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.StateConflictException;
@@ -56,28 +55,13 @@ import javax.cache.CacheManager;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static org.ehrbase.configuration.CacheConfiguration.FIELDS_CACHE;
-import static org.ehrbase.configuration.CacheConfiguration.MULTI_VALUE_CACHE;
-import static org.ehrbase.configuration.CacheConfiguration.OPERATIONAL_TEMPLATE_CACHE;
-import static org.ehrbase.configuration.CacheConfiguration.QUERY_CACHE;
+import static org.ehrbase.configuration.CacheConfiguration.*;
 
 /**
  * Look up and caching for archetypes, openEHR showTemplates and Operational Templates. Search in path defined as

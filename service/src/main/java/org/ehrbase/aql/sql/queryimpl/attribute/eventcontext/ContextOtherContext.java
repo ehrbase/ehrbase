@@ -19,7 +19,7 @@ package org.ehrbase.aql.sql.queryimpl.attribute.eventcontext;
 
 
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
-import org.ehrbase.aql.sql.queryimpl.attribute.I_RMObjectAttribute;
+import org.ehrbase.aql.sql.queryimpl.attribute.IRMObjectAttribute;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.jooq.Field;
 import org.jooq.TableField;
@@ -44,7 +44,7 @@ public class ContextOtherContext extends EventContextAttribute {
     }
 
     @Override
-    public I_RMObjectAttribute forTableField(TableField tableField) {
+    public IRMObjectAttribute forTableField(TableField tableField) {
         return this;
     }
 }

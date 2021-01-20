@@ -18,7 +18,7 @@
 package org.ehrbase.aql.sql.queryimpl.attribute.concept;
 
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
-import org.ehrbase.aql.sql.queryimpl.attribute.I_RMObjectAttribute;
+import org.ehrbase.aql.sql.queryimpl.attribute.IRMObjectAttribute;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.ehrbase.aql.sql.queryimpl.attribute.RMObjectAttribute;
 import org.ehrbase.aql.sql.queryimpl.value_field.GenericJsonField;
@@ -50,7 +50,7 @@ public class ConceptJson extends RMObjectAttribute {
     }
 
     @Override
-    public I_RMObjectAttribute forTableField(TableField tableField) {
+    public IRMObjectAttribute forTableField(TableField tableField) {
         this.tableField = tableField;
         return this;
     }

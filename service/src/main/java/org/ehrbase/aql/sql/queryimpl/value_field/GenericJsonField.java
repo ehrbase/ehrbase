@@ -2,7 +2,7 @@ package org.ehrbase.aql.sql.queryimpl.value_field;
 
 import org.ehrbase.aql.sql.queryimpl.Function2;
 import org.ehrbase.aql.sql.queryimpl.Function4;
-import org.ehrbase.aql.sql.queryimpl.I_QueryImpl;
+import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
 import org.ehrbase.aql.sql.queryimpl.QueryImplConstants;
 import org.ehrbase.aql.sql.queryimpl.attribute.*;
 import org.ehrbase.jooq.pg.Routines;
@@ -107,7 +107,7 @@ public class GenericJsonField extends RMObjectAttribute {
         } else
             jsonField = DSL.field(apply(function, tableFields).toString()).cast(String.class);
 
-        if (sqlExpression.toString().contains(QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION) && fieldContext.getClause().equals(I_QueryImpl.Clause.WHERE))
+        if (sqlExpression.toString().contains(QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION) && fieldContext.getClause().equals(IQueryImpl.Clause.WHERE))
             jsonField = DSL.field(DSL.select(jsonField));
 
         return as(DSL.field(jsonField));
@@ -154,7 +154,7 @@ public class GenericJsonField extends RMObjectAttribute {
     }
 
     @Override
-    public I_RMObjectAttribute forTableField(TableField tableField) {
+    public IRMObjectAttribute forTableField(TableField tableField) {
         return this;
     }
 

@@ -22,7 +22,7 @@ import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.ehrbase.aql.sql.queryimpl.attribute.partyref.PartyResolver;
 import org.jooq.Field;
 
-import static org.ehrbase.aql.sql.binding.I_JoinBinder.composerRef;
+import static org.ehrbase.aql.sql.binding.JoinBinder.composerRef;
 
 public class ComposerResolver extends PartyResolver
 {

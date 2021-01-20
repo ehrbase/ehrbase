@@ -23,7 +23,7 @@ package org.ehrbase.aql.sql.binding;
 
 import org.ehrbase.aql.sql.queryimpl.CompositionAttributeQuery;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
-import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
+import org.ehrbase.jooq.pg.tables.records.*;
 import org.jooq.*;
 import org.jooq.impl.DSL;
 
@@ -36,8 +36,19 @@ import static org.ehrbase.jooq.pg.Tables.*;
  * Created by christian on 10/31/2016.
  */
 @SuppressWarnings({"java:S3776","java:S3740","java:S1452"})
-public class JoinBinder implements I_JoinBinder {
+public class JoinBinder implements IJoinBinder {
 
+    public static final String COMPOSITION_JOIN = "composition_join";
+    public static final Table<CompositionRecord> compositionRecordTable = COMPOSITION.as(COMPOSITION_JOIN);
+    public static final String SYSTEM_JOIN = "system_join";
+    public static final Table<SystemRecord> systemRecordTable = SYSTEM.as(SYSTEM_JOIN);
+    public static final String STATUS_JOIN = "status_join";
+    public static final Table<StatusRecord> statusRecordTable = STATUS.as(STATUS_JOIN);
+    public static final String EHR_JOIN = "ehr_join";
+    public static final Table<EhrRecord> ehrRecordTable = EHR_.as(EHR_JOIN);
+    public static final Table<PartyIdentifiedRecord> composerRef = PARTY_IDENTIFIED.as("composer_ref");
+    public static final Table<PartyIdentifiedRecord> subjectRef = PARTY_IDENTIFIED.as("subject_ref");
+    public static final Table<PartyIdentifiedRecord> facilityRef = PARTY_IDENTIFIED.as("facility_ref");
     private boolean compositionJoined = false;
     private boolean statusJoined = false;
     private boolean subjectJoin = false;

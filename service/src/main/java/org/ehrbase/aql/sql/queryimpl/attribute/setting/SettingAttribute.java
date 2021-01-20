@@ -19,7 +19,7 @@ package org.ehrbase.aql.sql.queryimpl.attribute.setting;
 
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryimpl.attribute.GenericJsonPath;
-import org.ehrbase.aql.sql.queryimpl.attribute.I_RMObjectAttribute;
+import org.ehrbase.aql.sql.queryimpl.attribute.IRMObjectAttribute;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.ehrbase.aql.sql.queryimpl.attribute.eventcontext.EventContextAttribute;
 import org.ehrbase.aql.sql.queryimpl.value_field.GenericJsonField;
@@ -64,12 +64,12 @@ public class SettingAttribute extends EventContextAttribute {
     }
 
     @Override
-    public I_RMObjectAttribute forTableField(TableField tableField) {
+    public IRMObjectAttribute forTableField(TableField tableField) {
         this.tableField = tableField;
         return this;
     }
 
-    public I_RMObjectAttribute forJsonPath(String jsonPath){
+    public IRMObjectAttribute forJsonPath(String jsonPath){
         this.jsonPath = Optional.of(jsonPath);
         return this;
     }

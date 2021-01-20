@@ -19,7 +19,7 @@ package org.ehrbase.aql.sql.queryimpl.attribute;
 
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
-import org.ehrbase.aql.sql.queryimpl.I_QueryImpl;
+import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
 import org.ehrbase.service.IntrospectService;
 import org.jooq.DSLContext;
 
@@ -30,7 +30,7 @@ public class FieldResolutionContext {
     private final String identifier;
     private final I_VariableDefinition variableDefinition;
     private boolean withAlias;
-    private final I_QueryImpl.Clause clause;
+    private final IQueryImpl.Clause clause;
     private final DSLContext context;
     private final String serverNodeId;
     private final PathResolver pathResolver;
@@ -39,10 +39,10 @@ public class FieldResolutionContext {
     private boolean jsonDatablock = false;
     private String rmType;
 
-    public FieldResolutionContext(DSLContext context, String serverNodeId, String identifier, I_VariableDefinition variableDefinition, I_QueryImpl.Clause clause, PathResolver pathResolver, IntrospectService introspectCache, String entryRoot) {
+    public FieldResolutionContext(DSLContext context, String serverNodeId, String identifier, I_VariableDefinition variableDefinition, IQueryImpl.Clause clause, PathResolver pathResolver, IntrospectService introspectCache, String entryRoot) {
         this.identifier = identifier;
         this.variableDefinition = variableDefinition;
-        this.withAlias = clause.equals(I_QueryImpl.Clause.SELECT) && variableDefinition.getPath() != null;
+        this.withAlias = clause.equals(IQueryImpl.Clause.SELECT) && variableDefinition.getPath() != null;
         this.clause = clause;
         this.context = context;
         this.serverNodeId = serverNodeId;
@@ -76,7 +76,7 @@ public class FieldResolutionContext {
         return withAlias;
     }
 
-    public I_QueryImpl.Clause getClause() {
+    public IQueryImpl.Clause getClause() {
         return clause;
     }
 

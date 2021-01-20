@@ -53,7 +53,7 @@ public class TemporalWithTimeZone extends SimpleEventContextAttribute {
     }
 
     @Override
-    public I_RMObjectAttribute forTableField(TableField tableField) {
+    public IRMObjectAttribute forTableField(TableField tableField) {
         this.tableField = tableField;
         if (timeZoneField == null){
             String tzFieldName = tableField.getName().toUpperCase()+"_TZID"; //conventionally

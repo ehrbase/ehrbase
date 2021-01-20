@@ -19,7 +19,7 @@ package org.ehrbase.aql.sql.binding;
 
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.sql.queryimpl.CompositionAttributeQuery;
-import org.ehrbase.aql.sql.queryimpl.I_QueryImpl;
+import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
 import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
 import org.jooq.Field;
 
@@ -32,12 +32,12 @@ public class CompositionAttribute {
 
     private final CompositionAttributeQuery compositionAttributeQuery;
     private final JsonbEntryQuery jsonbEntryQuery;
-    private final I_QueryImpl.Clause clause;
+    private final IQueryImpl.Clause clause;
     private boolean containsJsonDataBlock;
     private String jsonbItemPath;
     private String optionalPath;
 
-    public CompositionAttribute(CompositionAttributeQuery compositionAttributeQuery, JsonbEntryQuery jsonbEntryQuery, I_QueryImpl.Clause clause) {
+    public CompositionAttribute(CompositionAttributeQuery compositionAttributeQuery, JsonbEntryQuery jsonbEntryQuery, IQueryImpl.Clause clause) {
         this.compositionAttributeQuery = compositionAttributeQuery;
         this.jsonbEntryQuery = jsonbEntryQuery;
         this.clause = clause;

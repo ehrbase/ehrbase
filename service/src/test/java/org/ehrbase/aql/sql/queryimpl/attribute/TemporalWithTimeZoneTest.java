@@ -21,7 +21,7 @@ package org.ehrbase.aql.sql.queryimpl.attribute;
 
 import org.ehrbase.aql.TestAqlBase;
 import org.ehrbase.aql.definition.VariableDefinition;
-import org.ehrbase.aql.sql.queryimpl.I_QueryImpl;
+import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 import org.junit.Before;
@@ -42,7 +42,7 @@ public class TemporalWithTimeZoneTest extends TestAqlBase {
                 "test",
                 "test",
                 new VariableDefinition("test", null, "test", false),
-                I_QueryImpl.Clause.SELECT,
+                IQueryImpl.Clause.SELECT,
                 null,
                 testDomainAccess.getIntrospectService(),
                 null);

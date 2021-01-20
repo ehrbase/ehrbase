@@ -28,7 +28,7 @@ import org.jooq.Field;
  * Created by christian on 5/6/2016.
  */
 @SuppressWarnings("java:S1452")
-public interface I_QueryImpl {
+public interface IQueryImpl {
 
     boolean isJsonDataBlock();
 

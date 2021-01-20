@@ -17,15 +17,15 @@
  */
 package org.ehrbase.aql.sql.queryimpl.attribute;
 
-import org.ehrbase.aql.sql.binding.I_JoinBinder;
+import org.ehrbase.aql.sql.binding.IJoinBinder;
 import org.ehrbase.aql.sql.queryimpl.DefaultColumnId;
-import org.ehrbase.aql.sql.queryimpl.I_QueryImpl;
+import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
 import org.ehrbase.aql.sql.queryimpl.attribute.composition.CompositionIdFieldSetup;
 import org.ehrbase.aql.sql.queryimpl.attribute.ehr.EhrSetup;
 import org.jooq.Field;
 
 @SuppressWarnings({"java:S3740","java:S1452"})
-public abstract class RMObjectAttribute implements I_RMObjectAttribute, I_JoinBinder {
+public abstract class RMObjectAttribute implements IRMObjectAttribute, IJoinBinder {
 
     protected FilterSetup filterSetup = new FilterSetup();
     protected CompositionIdFieldSetup compositionIdFieldSetup = new CompositionIdFieldSetup();
@@ -44,7 +44,7 @@ public abstract class RMObjectAttribute implements I_RMObjectAttribute, I_JoinBi
         if (fieldContext.isWithAlias())
             return aliased(field);
         else {
-            if (!fieldContext.getClause().equals(I_QueryImpl.Clause.WHERE))
+            if (!fieldContext.getClause().equals(IQueryImpl.Clause.WHERE))
                 return defaultAliased(field);
             else
                 return field;
@@ -62,7 +62,7 @@ public abstract class RMObjectAttribute implements I_RMObjectAttribute, I_JoinBi
     }
 
     protected Field<?> defaultAliased(Field field){
-        if (fieldContext.getClause().equals(I_QueryImpl.Clause.WHERE))
+        if (fieldContext.getClause().equals(IQueryImpl.Clause.WHERE))
             return field;
         else
             return field.as(DefaultColumnId.value(fieldContext.getVariableDefinition()));

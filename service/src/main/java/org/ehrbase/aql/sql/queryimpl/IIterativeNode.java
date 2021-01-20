@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH and Christian Chevalley (Hannover Medical School).
+ * Copyright (c) 2019 Vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -15,12 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.aql.sql.queryimpl.attribute;
 
-import org.jooq.Field;
-import org.jooq.TableField;
-@SuppressWarnings({"java:S1452","java:S3740"})
-public interface I_RMObjectAttribute {
-    Field<?> sqlField();
-    I_RMObjectAttribute forTableField(TableField tableField);
+package org.ehrbase.aql.sql.queryimpl;
+
+/**
+ * Created by christian on 5/17/2018.
+ */
+public interface IIterativeNode {
+
 }

@@ -27,7 +27,7 @@ public abstract class TemplateMetaData {
 
     protected IntrospectService introspectCache;
 
-    public TemplateMetaData(IntrospectService introspectCache) {
+    protected TemplateMetaData(IntrospectService introspectCache) {
         this.introspectCache = introspectCache;
     }
 }

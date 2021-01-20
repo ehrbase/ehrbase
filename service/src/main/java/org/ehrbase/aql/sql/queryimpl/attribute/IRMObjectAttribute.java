@@ -1,10 +1,7 @@
 /*
- * Modifications copyright (C) 2019 Christian Chevalley, Vitasystems GmbH and Hannover Medical School.
-
- * This file is part of Project EHRbase
-
- * Copyright (c) 2015 Christian Chevalley
- * This file is part of Project Ethercis
+ * Copyright (c) 2019 Vitasystems GmbH and Christian Chevalley (Hannover Medical School).
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.ehrbase.aql.sql.queryimpl.attribute;
 
-package org.ehrbase.aql.sql.postprocessing;
-
-/**
- * Created by christian on 2/22/2017.
- */
-public interface I_RawJsonTransform {
-    String TEMPLATE_ID = "_TEMPLATE_ID";
+import org.jooq.Field;
+import org.jooq.TableField;
+@SuppressWarnings({"java:S1452","java:S3740"})
+public interface IRMObjectAttribute {
+    Field<?> sqlField();
+    IRMObjectAttribute forTableField(TableField tableField);
 }

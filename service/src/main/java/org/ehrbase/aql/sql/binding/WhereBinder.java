@@ -25,7 +25,7 @@ import org.ehrbase.aql.containment.IdentifierMapper;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.sql.queryimpl.CompositionAttributeQuery;
-import org.ehrbase.aql.sql.queryimpl.I_QueryImpl;
+import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
 import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
 import org.ehrbase.aql.sql.queryimpl.VariablePath;
 import org.ehrbase.aql.sql.queryimpl.value_field.ISODateTime;
@@ -104,7 +104,7 @@ public class WhereBinder {
             if ((className.equals(COMPOSITION) && !variableDefinition.getPath().contains(CONTENT)) || className.equals(EHR)) {
                 field = compositionAttributeQuery.whereField(templateId, identifier, variableDefinition);
             } else { //should be removed (?)
-                field = jsonbEntryQuery.makeField(templateId, identifier, variableDefinition, I_QueryImpl.Clause.WHERE);
+                field = jsonbEntryQuery.makeField(templateId, identifier, variableDefinition, IQueryImpl.Clause.WHERE);
             }
             if (field == null)
                 return null;
@@ -132,7 +132,7 @@ public class WhereBinder {
 
                 default:
                     if (compositionAttributeQuery.isCompositionAttributeItemStructure(templateId, identifier)){
-                        field = new ContextualAttribute(compositionAttributeQuery, jsonbEntryQuery, I_QueryImpl.Clause.WHERE).toSql(templateId, variableDefinition);
+                        field = new ContextualAttribute(compositionAttributeQuery, jsonbEntryQuery, IQueryImpl.Clause.WHERE).toSql(templateId, variableDefinition);
                         return new TaggedStringBuilder(field.toString(), I_TaggedStringBuilder.TagField.SQLQUERY);
                     }
                     else {
@@ -367,7 +367,7 @@ public class WhereBinder {
 
         if (sqloperators.contains(item.toUpperCase()))
             return item;
-        if (taggedBuffer.toString().contains(I_JoinBinder.COMPOSITION_JOIN) && item.contains("::"))
+        if (taggedBuffer.toString().contains(JoinBinder.COMPOSITION_JOIN) && item.contains("::"))
             return item.split("::")[0] + "'";
         if (requiresJSQueryClosure && !isFollowedBySQLConditionalOperator && taggedBuffer.indexOf("#") > 0 && item.contains("'")) { //conventionally double quote for jsquery
             return item.replace("'", "\"");

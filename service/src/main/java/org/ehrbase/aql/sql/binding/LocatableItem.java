@@ -49,7 +49,7 @@ public class LocatableItem {
     public Field<?> toSql(String templateId, I_VariableDefinition variableDefinition, String className){
         Field<?> field;
 
-        field = jsonbEntryQuery.makeField(templateId, variableDefinition.getIdentifier(), variableDefinition, I_QueryImpl.Clause.SELECT);
+        field = jsonbEntryQuery.makeField(templateId, variableDefinition.getIdentifier(), variableDefinition, IQueryImpl.Clause.SELECT);
         jsonbItemPath = jsonbEntryQuery.getJsonbItemPath();
         containsJsonDataBlock |= jsonbEntryQuery.isJsonDataBlock();
         if (jsonbEntryQuery.isJsonDataBlock() ) {
@@ -67,7 +67,7 @@ public class LocatableItem {
                             try {
                                 I_VariableDefinition variableDefinition1 = variableDefinition.clone();
                                 variableDefinition1.setPath(variableAqlPath.getInfix());
-                                field = jsonbEntryQuery.makeField(templateId, variableDefinition.getIdentifier(), variableDefinition1, I_QueryImpl.Clause.SELECT);
+                                field = jsonbEntryQuery.makeField(templateId, variableDefinition.getIdentifier(), variableDefinition1, IQueryImpl.Clause.SELECT);
                                 jsonbItemPath = jsonbEntryQuery.getJsonbItemPath();
                                 rootJsonKey = variableAqlPath.getSuffix();
                             } catch (CloneNotSupportedException e) {

@@ -17,10 +17,10 @@
  */
 package org.ehrbase.aql.sql.queryimpl.attribute.composition;
 
-import org.ehrbase.aql.sql.binding.I_JoinBinder;
+import org.ehrbase.aql.sql.binding.JoinBinder;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryimpl.attribute.GenericJsonPath;
-import org.ehrbase.aql.sql.queryimpl.attribute.I_RMObjectAttribute;
+import org.ehrbase.aql.sql.queryimpl.attribute.IRMObjectAttribute;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 
 import org.jooq.Configuration;
@@ -61,7 +61,7 @@ public class FullCompositionJson extends CompositionAttribute {
             jsonFullComposition = DSL.field(
                     jsonpathItemAsText(configuration,
                         jsComposition2(
-                                DSL.field(I_JoinBinder.compositionRecordTable.getName()+"."+tableField.getName()).cast(UUID.class),
+                                DSL.field(JoinBinder.compositionRecordTable.getName()+"."+tableField.getName()).cast(UUID.class),
                                 DSL.val(fieldContext.getServerNodeId())
                         ).cast(JSONB.class),
                         jsonpathParameters(jsonPath.get())
@@ -71,7 +71,7 @@ public class FullCompositionJson extends CompositionAttribute {
         else
             jsonFullComposition = DSL.field(
                     jsComposition2(
-                        DSL.field(I_JoinBinder.compositionRecordTable.getName()+"."+tableField.getName()).cast(UUID.class),
+                        DSL.field(JoinBinder.compositionRecordTable.getName()+"."+tableField.getName()).cast(UUID.class),
                         DSL.val(fieldContext.getServerNodeId())
                     ).cast(String.class)
             );
@@ -83,7 +83,7 @@ public class FullCompositionJson extends CompositionAttribute {
     }
 
     @Override
-    public I_RMObjectAttribute forTableField(TableField tableField) {
+    public IRMObjectAttribute forTableField(TableField tableField) {
         this.tableField = tableField;
         return this;
     }

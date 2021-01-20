@@ -54,7 +54,7 @@ public class JsonbEntryQueryTest extends TestAqlBase {
         JsonbEntryQuery cut = new JsonbEntryQuery(testDomainAccess, knowledge, pathResolver);
 
         //CCH 191016: EHR-163 required trailing '/value' as now the query allows canonical json return
-        Field<?> actual = cut.makeField("IDCR - Immunisation summary.v0", "d", I_VariableDefinitionHelper.build("description[at0001]/items[at0002]/value/value", "test", "d", false, false, false), I_QueryImpl.Clause.SELECT);
+        Field<?> actual = cut.makeField("IDCR - Immunisation summary.v0", "d", I_VariableDefinitionHelper.build("description[at0001]/items[at0002]/value/value", "test", "d", false, false, false), IQueryImpl.Clause.SELECT);
 
         SelectSelectStep<? extends Record1<?>> selectQuery = DSL.select(actual);
         assertThat(selectQuery.getQuery().toString()).hasToString("select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') \"test\"");

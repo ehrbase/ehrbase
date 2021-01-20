@@ -20,7 +20,6 @@ package org.ehrbase.aql.sql.binding;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.VariableDefinition;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 

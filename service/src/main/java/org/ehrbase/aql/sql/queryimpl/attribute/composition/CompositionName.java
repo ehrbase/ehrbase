@@ -17,9 +17,9 @@
  */
 package org.ehrbase.aql.sql.queryimpl.attribute.composition;
 
-import org.ehrbase.aql.sql.queryimpl.I_QueryImpl;
+import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
-import org.ehrbase.aql.sql.queryimpl.attribute.I_RMObjectAttribute;
+import org.ehrbase.aql.sql.queryimpl.attribute.IRMObjectAttribute;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.jooq.Field;
 import org.jooq.TableField;
@@ -43,7 +43,7 @@ public class CompositionName extends CompositionAttribute {
         if (fieldContext.isWithAlias()) {
             return aliased(DSL.field(trimName));
         } else {
-            if (fieldContext.getClause().equals(I_QueryImpl.Clause.WHERE)) {
+            if (fieldContext.getClause().equals(IQueryImpl.Clause.WHERE)) {
                 trimName = "(SELECT " + trimName + ")";
             }
             return defaultAliased(DSL.field(trimName));
@@ -51,7 +51,7 @@ public class CompositionName extends CompositionAttribute {
     }
 
     @Override
-    public I_RMObjectAttribute forTableField(TableField tableField) {
+    public IRMObjectAttribute forTableField(TableField tableField) {
         return this;
     }
 }

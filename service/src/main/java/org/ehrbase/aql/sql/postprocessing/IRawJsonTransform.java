@@ -1,7 +1,10 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH and Hannover Medical School.
- *
- * This file is part of project EHRbase
+ * Modifications copyright (C) 2019 Christian Chevalley, Vitasystems GmbH and Hannover Medical School.
+
+ * This file is part of Project EHRbase
+
+ * Copyright (c) 2015 Christian Chevalley
+ * This file is part of Project Ethercis
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +19,10 @@
  * limitations under the License.
  */
 
-package org.ehrbase.aql.sql.binding;
+package org.ehrbase.aql.sql.postprocessing;
 
 /**
- * Created by christian on 3/12/2018.
+ * Created by christian on 2/22/2017.
  */
-public interface I_SelectBinder {
-    String DATA = "data";
-    String COMPOSITION_UID = "__composition_uid";
+public interface IRawJsonTransform {
 }

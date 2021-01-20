@@ -28,7 +28,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
-import org.ehrbase.aql.sql.binding.I_JoinBinder;
+import org.ehrbase.aql.sql.binding.JoinBinder;
 import org.ehrbase.aql.sql.queryimpl.value_field.NodePredicate;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.ehr.util.LocatableHelper;
@@ -52,7 +52,7 @@ import static org.ehrbase.jooq.pg.Tables.STATUS;
  * Created by christian on 5/6/2016.
  */
 @SuppressWarnings({"java:S3776","java:S3740","java:S1452","java:S1075"})
-public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
+public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
 
     public static final String MAGNITUDE = "magnitude";
     Logger logger = LogManager.getLogger(JsonbEntryQuery.class);
@@ -64,7 +64,7 @@ public class JsonbEntryQuery extends ObjectQuery implements I_QueryImpl {
 
 
     //OTHER_DETAILS (Ehr Status Query)
-    private static final String SELECT_EHR_OTHER_DETAILS_MACRO = I_JoinBinder.statusRecordTable.field(STATUS.OTHER_DETAILS) + "->('" + CompositionSerializer.TAG_OTHER_DETAILS + "')";
+    private static final String SELECT_EHR_OTHER_DETAILS_MACRO = JoinBinder.statusRecordTable.field(STATUS.OTHER_DETAILS) + "->('" + CompositionSerializer.TAG_OTHER_DETAILS + "')";
     private static final String JSONB_SELECTOR_EHR_OTHER_DETAILS_OPEN = SELECT_EHR_OTHER_DETAILS_MACRO + JSONB_PATH_SELECTOR_EXPR;
 
 

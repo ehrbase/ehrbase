@@ -21,8 +21,8 @@ package org.ehrbase.aql.sql.queryimpl.value_field;
 
 import org.ehrbase.aql.TestAqlBase;
 import org.ehrbase.aql.definition.VariableDefinition;
-import org.ehrbase.aql.sql.binding.I_JoinBinder;
-import org.ehrbase.aql.sql.queryimpl.I_QueryImpl;
+import org.ehrbase.aql.sql.binding.JoinBinder;
+import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.jooq.Field;
@@ -46,7 +46,7 @@ public class FormattedFieldTest  extends TestAqlBase {
                 "test",
                 "test",
                 new VariableDefinition("test", null, "test", false),
-                I_QueryImpl.Clause.SELECT,
+                IQueryImpl.Clause.SELECT,
                 null,
                 testDomainAccess.getIntrospectService(),
                 null);
@@ -55,7 +55,7 @@ public class FormattedFieldTest  extends TestAqlBase {
     @Test
     public void testSelectEhrDateCreatedValue(){
         Field field = new FormattedField(fieldResolutionContext, joinSetup)
-                .usingToJson("timestamp with time zone","||", I_JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED), I_JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED_TZID));
+                .usingToJson("timestamp with time zone","||", JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED), JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED_TZID));
 
         assertNotNull(field);
         assertThat(DSL.select(field).getQuery().toString())

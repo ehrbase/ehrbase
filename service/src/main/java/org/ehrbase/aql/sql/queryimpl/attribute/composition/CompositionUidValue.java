@@ -17,10 +17,10 @@
  */
 package org.ehrbase.aql.sql.queryimpl.attribute.composition;
 
-import org.ehrbase.aql.sql.binding.I_JoinBinder;
-import org.ehrbase.aql.sql.queryimpl.I_QueryImpl;
+import org.ehrbase.aql.sql.binding.JoinBinder;
+import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
-import org.ehrbase.aql.sql.queryimpl.attribute.I_RMObjectAttribute;
+import org.ehrbase.aql.sql.queryimpl.attribute.IRMObjectAttribute;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.jooq.Field;
 import org.jooq.SelectQuery;
@@ -40,7 +40,7 @@ public class CompositionUidValue extends CompositionAttribute {
 
     @Override
     public Field<?> sqlField(){
-        if (fieldContext.getClause() == I_QueryImpl.Clause.WHERE)
+        if (fieldContext.getClause() == IQueryImpl.Clause.WHERE)
             filterSetup.setCompositionIdFiltered(true);
         else
             compositionIdFieldSetup.setCompositionIdField(true);
@@ -54,7 +54,7 @@ public class CompositionUidValue extends CompositionAttribute {
     }
 
     @Override
-    public I_RMObjectAttribute forTableField(TableField tableField) {
+    public IRMObjectAttribute forTableField(TableField tableField) {
         return this;
     }
 
@@ -64,12 +64,12 @@ public class CompositionUidValue extends CompositionAttribute {
         SelectQuery<?> subSelect = fieldContext.getContext().selectQuery();
         subSelect.addSelect(DSL.count());
         subSelect.addFrom(COMPOSITION_HISTORY);
-        subSelect.addConditions(I_JoinBinder.compositionRecordTable.field("id", UUID.class).eq(COMPOSITION_HISTORY.ID));
+        subSelect.addConditions(JoinBinder.compositionRecordTable.field("id", UUID.class).eq(COMPOSITION_HISTORY.ID));
         subSelect.addGroupBy(COMPOSITION_HISTORY.ID);
 
         String coalesceVersion = "1 + COALESCE(\n(" + subSelect + "), 0)";
 
-        return aliased(DSL.field(I_JoinBinder.compositionRecordTable.field("id")
+        return aliased(DSL.field(JoinBinder.compositionRecordTable.field("id")
                         + "||"
                         + DSL.val("::")
                         + "||"
@@ -83,6 +83,6 @@ public class CompositionUidValue extends CompositionAttribute {
     }
 
     private Field<?> rawUid() {
-        return as(DSL.field(I_JoinBinder.compositionRecordTable.field("id", UUID.class)));
+        return as(DSL.field(JoinBinder.compositionRecordTable.field("id", UUID.class)));
     }
 }

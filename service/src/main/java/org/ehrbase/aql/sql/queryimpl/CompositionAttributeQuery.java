@@ -23,7 +23,7 @@ package org.ehrbase.aql.sql.queryimpl;
 
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
-import org.ehrbase.aql.sql.binding.I_JoinBinder;
+import org.ehrbase.aql.sql.binding.IJoinBinder;
 import org.ehrbase.aql.sql.queryimpl.attribute.AttributePath;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
@@ -45,7 +45,7 @@ import static org.ehrbase.aql.sql.QueryProcessor.NIL_TEMPLATE;
  * Created by christian on 5/6/2016.
  */
 @SuppressWarnings({"java:S3776","java:S3740"})
-public class CompositionAttributeQuery extends ObjectQuery implements I_QueryImpl, I_JoinBinder {
+public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl, IJoinBinder {
 
     private String serverNodeId;
 

@@ -17,7 +17,7 @@
  */
 package org.ehrbase.aql.sql.queryimpl.attribute.system;
 
-import org.ehrbase.aql.sql.binding.I_JoinBinder;
+import org.ehrbase.aql.sql.binding.JoinBinder;
 import org.ehrbase.aql.sql.queryimpl.attribute.AttributeResolver;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
@@ -39,12 +39,12 @@ public class SystemResolver extends AttributeResolver
     public Field<?> sqlField(String path){
 
         if (path.isEmpty()){
-            return new GenericJsonField(fieldResolutionContext, joinSetup).hierObjectId(I_JoinBinder.ehrRecordTable.field(EHR_.SYSTEM_ID));
+            return new GenericJsonField(fieldResolutionContext, joinSetup).hierObjectId(JoinBinder.ehrRecordTable.field(EHR_.SYSTEM_ID));
         }
 
         switch (path){
             case "value":
-                return new GenericJsonField(fieldResolutionContext, joinSetup).forJsonPath("value").hierObjectId(I_JoinBinder.ehrRecordTable.field(EHR_.SYSTEM_ID));
+                return new GenericJsonField(fieldResolutionContext, joinSetup).forJsonPath("value").hierObjectId(JoinBinder.ehrRecordTable.field(EHR_.SYSTEM_ID));
             case "description":
                 return new SystemAttribute(fieldResolutionContext, joinSetup).forTableField(SYSTEM.DESCRIPTION).sqlField();
             default:

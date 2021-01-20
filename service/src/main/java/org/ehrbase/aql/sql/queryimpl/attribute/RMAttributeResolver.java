@@ -21,6 +21,4 @@ import org.jooq.TableField;
 
 @SuppressWarnings("java:S3740")
 public interface RMAttributeResolver {
-
-    TableField NULL_FIELD = null;
 }

@@ -35,7 +35,7 @@ import static org.ehrbase.aql.sql.queryimpl.IterativeNodeConstants.ENV_AQL_ARRAY
  * Created by christian on 5/9/2018.
  */
 @SuppressWarnings({"java:S3776","java:S3740","java:S1452","java:S1075","java:S135"})
-public class IterativeNode implements I_IterativeNode {
+public class IterativeNode implements IIterativeNode {
 
     private List<String> ignoreIterativeNode; //f.e. '/content' '/events' etc.
     private final List<String> unbounded;

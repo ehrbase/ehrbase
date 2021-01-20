@@ -23,7 +23,7 @@ import org.ehrbase.aql.sql.queryimpl.attribute.RMObjectAttribute;
 
 public abstract class CompositionAttribute extends RMObjectAttribute {
 
-    public CompositionAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup){
+    protected CompositionAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup){
         super(fieldContext, joinSetup);
         joinSetup.setJoinComposition(true);
         compositionIdFieldSetup.setCompositionIdField(false);

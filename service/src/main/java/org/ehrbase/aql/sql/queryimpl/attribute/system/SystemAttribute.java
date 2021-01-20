@@ -17,9 +17,9 @@
  */
 package org.ehrbase.aql.sql.queryimpl.attribute.system;
 
-import org.ehrbase.aql.sql.binding.I_JoinBinder;
+import org.ehrbase.aql.sql.binding.JoinBinder;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
-import org.ehrbase.aql.sql.queryimpl.attribute.I_RMObjectAttribute;
+import org.ehrbase.aql.sql.queryimpl.attribute.IRMObjectAttribute;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.ehrbase.aql.sql.queryimpl.attribute.RMObjectAttribute;
 import org.jooq.Field;
@@ -37,11 +37,11 @@ public class SystemAttribute extends RMObjectAttribute {
 
     @Override
     public Field<?> sqlField() {
-        return as(DSL.field(I_JoinBinder.systemRecordTable.getName()+"."+tableField.getName()));
+        return as(DSL.field(JoinBinder.systemRecordTable.getName()+"."+tableField.getName()));
     }
 
     @Override
-    public I_RMObjectAttribute forTableField(TableField tableField) {
+    public IRMObjectAttribute forTableField(TableField tableField) {
         this.tableField = tableField;
         return this;
     }

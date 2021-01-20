@@ -2,7 +2,7 @@ package org.ehrbase.aql.sql.queryimpl.value_field;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
-import org.ehrbase.aql.sql.queryimpl.attribute.I_RMObjectAttribute;
+import org.ehrbase.aql.sql.queryimpl.attribute.IRMObjectAttribute;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.ehrbase.aql.sql.queryimpl.attribute.RMObjectAttribute;
 import org.jooq.Field;
@@ -46,7 +46,7 @@ public class FormattedField extends RMObjectAttribute {
     }
 
     @Override
-    public I_RMObjectAttribute forTableField(TableField tableField) {
+    public IRMObjectAttribute forTableField(TableField tableField) {
         return this;
     }
 }

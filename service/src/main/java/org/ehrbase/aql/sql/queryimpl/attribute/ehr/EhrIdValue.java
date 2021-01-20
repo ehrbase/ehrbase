@@ -17,9 +17,9 @@
  */
 package org.ehrbase.aql.sql.queryimpl.attribute.ehr;
 
-import org.ehrbase.aql.sql.binding.I_JoinBinder;
+import org.ehrbase.aql.sql.binding.JoinBinder;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
-import org.ehrbase.aql.sql.queryimpl.attribute.I_RMObjectAttribute;
+import org.ehrbase.aql.sql.queryimpl.attribute.IRMObjectAttribute;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.jooq.Field;
 import org.jooq.TableField;
@@ -40,25 +40,25 @@ public class EhrIdValue extends EhrAttribute {
         if (fieldContext.getPathResolver().hasPathExpression()) {
             joinSetup.setJoinEhr(true);
             if (fieldContext.isWithAlias()) {
-                return aliased(DSL.field("{0}", I_JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
+                return aliased(DSL.field("{0}", JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
             } else
-                return defaultAliased(DSL.field(I_JoinBinder.ehrRecordTable.field(I_JoinBinder.ehrRecordTable.field(EHR_.ID.getName()))));
+                return defaultAliased(DSL.field(JoinBinder.ehrRecordTable.field(JoinBinder.ehrRecordTable.field(EHR_.ID.getName()))));
         } else if (!joinSetup.isContainsEhrStatus()) {
             joinSetup.setJoinEhr(true);
             if (fieldContext.isWithAlias()) {
-                return aliased(DSL.field("{0}", I_JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
+                return aliased(DSL.field("{0}", JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
             } else
-                return defaultAliased(DSL.field(I_JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
+                return defaultAliased(DSL.field(JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
         } else {
             if (fieldContext.isWithAlias()) {
-                return aliased(DSL.field("{0}", I_JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
+                return aliased(DSL.field("{0}", JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
             } else
-                return defaultAliased(DSL.field(I_JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
+                return defaultAliased(DSL.field(JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
         }
     }
 
     @Override
-    public I_RMObjectAttribute forTableField(TableField tableField) {
+    public IRMObjectAttribute forTableField(TableField tableField) {
         return this;
     }
 

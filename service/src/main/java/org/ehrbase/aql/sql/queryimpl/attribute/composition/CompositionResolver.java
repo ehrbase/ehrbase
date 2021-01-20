@@ -17,7 +17,7 @@
  */
 package org.ehrbase.aql.sql.queryimpl.attribute.composition;
 
-import org.ehrbase.aql.sql.binding.I_JoinBinder;
+import org.ehrbase.aql.sql.binding.JoinBinder;
 import org.ehrbase.aql.sql.queryimpl.attribute.AttributePath;
 import org.ehrbase.aql.sql.queryimpl.attribute.AttributeResolver;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
@@ -52,7 +52,7 @@ public class CompositionResolver extends AttributeResolver
 
             Field<?> retField = new GenericJsonField(fieldResolutionContext, joinSetup)
                     .forJsonPath(FEEDER_AUDIT, path)
-                    .feederAudit(I_JoinBinder.compositionRecordTable.field(FEEDER_AUDIT));
+                    .feederAudit(JoinBinder.compositionRecordTable.field(FEEDER_AUDIT));
 
             String regexpTerminalValues = ".*(id|issuer|assigner|type|original_content|system_id|name|namespace|value)$";
             if (path.matches(regexpTerminalValues))

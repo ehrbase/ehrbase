@@ -17,9 +17,9 @@
  */
 package org.ehrbase.aql.sql.queryimpl.attribute.eventcontext;
 
-import org.ehrbase.aql.sql.binding.I_JoinBinder;
+import org.ehrbase.aql.sql.binding.JoinBinder;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
-import org.ehrbase.aql.sql.queryimpl.attribute.I_RMObjectAttribute;
+import org.ehrbase.aql.sql.queryimpl.attribute.IRMObjectAttribute;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.jooq.Field;
 import org.jooq.TableField;
@@ -41,11 +41,11 @@ public class SimpleEventContextAttribute extends EventContextAttribute {
     }
 
     @Override
-    public I_RMObjectAttribute forTableField(TableField tableField) {
+    public IRMObjectAttribute forTableField(TableField tableField) {
         this.tableField = tableField;
         if (tableField.getTable().equals(STATUS)) {
             joinSetup.setJoinEhrStatus(true);
-            this.tableField = I_JoinBinder.statusRecordTable.field(tableField.getName());
+            this.tableField = JoinBinder.statusRecordTable.field(tableField.getName());
         }
         return this;
     }

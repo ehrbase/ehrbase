@@ -1,7 +1,10 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH and Hannover Medical School.
- *
- * This file is part of project EHRbase
+ * Modifications copyright (C) 2019 Christian Chevalley, Vitasystems GmbH and Hannover Medical School
+
+ * This file is part of Project EHRbase
+
+ * Copyright (c) 2015 Christian Chevalley
+ * This file is part of Project Ethercis
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +19,15 @@
  * limitations under the License.
  */
 
-package org.ehrbase.aql.sql.queryimpl;
+package org.ehrbase.aql.sql.binding;
 
+import static org.ehrbase.jooq.pg.Tables.*;
+
+import org.ehrbase.jooq.pg.tables.records.*;
+import org.jooq.Table;
 /**
- * Created by christian on 5/17/2018.
+ * Created by christian on 11/1/2016.
  */
-public interface I_IterativeNode {
+public interface IJoinBinder {
 
 }

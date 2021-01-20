@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH and Christian Chevalley (Hannover Medical School).
+ * Copyright (c) 2019 Vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -15,16 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.aql.sql.queryimpl.attribute.ehr.ehrstatus;
 
-import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
-import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
-import org.ehrbase.aql.sql.queryimpl.attribute.ehr.EhrAttribute;
+package org.ehrbase.aql.sql.binding;
 
-public abstract class EhrStatusAttribute extends EhrAttribute {
-
-    protected EhrStatusAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup){
-        super(fieldContext, joinSetup);
-        joinSetup.setJoinEhrStatus(true);
-    }
+/**
+ * Created by christian on 3/12/2018.
+ */
+public interface ISelectBinder {
 }

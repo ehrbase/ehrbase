@@ -17,7 +17,7 @@
  */
 package org.ehrbase.aql.sql.queryimpl.attribute.ehr;
 
-import org.ehrbase.aql.sql.binding.I_JoinBinder;
+import org.ehrbase.aql.sql.binding.JoinBinder;
 import org.ehrbase.aql.sql.queryimpl.attribute.*;
 import org.ehrbase.aql.sql.queryimpl.attribute.ehr.ehrstatus.StatusResolver;
 import org.ehrbase.aql.sql.queryimpl.attribute.system.SystemResolver;
@@ -49,15 +49,15 @@ public class EhrResolver extends AttributeResolver
 
         switch (path){
             case "ehr_id":
-                return new GenericJsonField(fieldResolutionContext, joinSetup).hierObjectId(I_JoinBinder.ehrRecordTable.field(EHR_.ID));
+                return new GenericJsonField(fieldResolutionContext, joinSetup).hierObjectId(JoinBinder.ehrRecordTable.field(EHR_.ID));
             case "ehr_id/value":
                 return new EhrIdValue(fieldResolutionContext, joinSetup).forTableField(NULL_FIELD).sqlField();
             case "time_created":
                 return new GenericJsonField(fieldResolutionContext, joinSetup)
-                        .dvDateTime(I_JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED), I_JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED_TZID));
+                        .dvDateTime(JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED), JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED_TZID));
             case "time_created/value":
                 return new FormattedField(fieldResolutionContext, joinSetup)
-                        .usingToJson("timestamp with time zone","||", I_JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED), I_JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED_TZID));
+                        .usingToJson("timestamp with time zone","||", JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED), JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED_TZID));
             default:
                 return new FullEhrJson(fieldResolutionContext, joinSetup)
                         .forJsonPath(path).sqlField();

@@ -19,7 +19,7 @@ package org.ehrbase.aql.sql.binding;
 
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.sql.queryimpl.CompositionAttributeQuery;
-import org.ehrbase.aql.sql.queryimpl.I_QueryImpl;
+import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
 import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
 import org.jooq.Field;
 
@@ -32,13 +32,13 @@ public class ContextualAttribute {
 
     private final CompositionAttributeQuery compositionAttributeQuery;
     private final JsonbEntryQuery jsonbEntryQuery;
-    private final I_QueryImpl.Clause clause;
+    private final IQueryImpl.Clause clause;
 
     private boolean containsJsonDataBlock;
     private String jsonbItemPath;
     private String optionalPath;
 
-    public ContextualAttribute(CompositionAttributeQuery compositionAttributeQuery, JsonbEntryQuery jsonbEntryQuery, I_QueryImpl.Clause clause) {
+    public ContextualAttribute(CompositionAttributeQuery compositionAttributeQuery, JsonbEntryQuery jsonbEntryQuery, IQueryImpl.Clause clause) {
         this.compositionAttributeQuery = compositionAttributeQuery;
         this.jsonbEntryQuery = jsonbEntryQuery;
         this.clause = clause;
@@ -53,7 +53,7 @@ public class ContextualAttribute {
         CompositionAttribute compositionAttribute = new CompositionAttribute(compositionAttributeQuery, jsonbEntryQuery, clause);
         Field field = compositionAttribute.toSql(variableDefinition, templateId, variableDefinition.getIdentifier());
 
-        if (clause.equals(I_QueryImpl.Clause.SELECT)) {
+        if (clause.equals(IQueryImpl.Clause.SELECT)) {
             variableDefinition.setPath(originalPath);
             field = field.as("/"+originalPath);
         }

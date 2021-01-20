@@ -17,11 +17,11 @@
  */
 package org.ehrbase.aql.sql.queryimpl.attribute.ehr;
 
-import org.ehrbase.aql.sql.binding.I_JoinBinder;
-import org.ehrbase.aql.sql.queryimpl.I_QueryImpl;
+import org.ehrbase.aql.sql.binding.JoinBinder;
+import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryimpl.attribute.GenericJsonPath;
-import org.ehrbase.aql.sql.queryimpl.attribute.I_RMObjectAttribute;
+import org.ehrbase.aql.sql.queryimpl.attribute.IRMObjectAttribute;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.jooq.Configuration;
 import org.jooq.Field;
@@ -84,7 +84,7 @@ public class FullEhrJson extends EhrAttribute {
                                         jsonArraySplitElements( configuration,
                                                 jsonpathItem( configuration,
                                                         jsEhr(
-                                                                DSL.field(I_JoinBinder.ehrRecordTable.getName().concat(".").concat(tableField.getName())).cast(UUID.class),
+                                                                DSL.field(JoinBinder.ehrRecordTable.getName().concat(".").concat(tableField.getName())).cast(UUID.class),
                                                                 DSL.val(fieldContext.getServerNodeId())
                                                         ).cast(JSONB.class)
                                                         ,
@@ -93,7 +93,7 @@ public class FullEhrJson extends EhrAttribute {
                                         , suffix)
                         );
 
-                if (fieldContext.getClause().equals(I_QueryImpl.Clause.WHERE))
+                if (fieldContext.getClause().equals(IQueryImpl.Clause.WHERE))
                     jsonFullEhr = DSL.field(DSL.select(jsonFullEhr));
             }
             else {
@@ -101,7 +101,7 @@ public class FullEhrJson extends EhrAttribute {
                     jsonFullEhr = DSL.field(
                             jsonpathItem(configuration,
                                     jsEhr(
-                                            DSL.field(I_JoinBinder.ehrRecordTable.getName().concat(".").concat(tableField.getName())).cast(UUID.class),
+                                            DSL.field(JoinBinder.ehrRecordTable.getName().concat(".").concat(tableField.getName())).cast(UUID.class),
                                             DSL.val(fieldContext.getServerNodeId())
                                     ).cast(JSONB.class),
                                     jsonpathParameters(jsonPath.get())
@@ -112,7 +112,7 @@ public class FullEhrJson extends EhrAttribute {
         else
             jsonFullEhr = DSL.field(
                     jsEhr(
-                            DSL.field(I_JoinBinder.ehrRecordTable.getName().concat(".").concat(tableField.getName())).cast(UUID.class),
+                            DSL.field(JoinBinder.ehrRecordTable.getName().concat(".").concat(tableField.getName())).cast(UUID.class),
                             DSL.val(fieldContext.getServerNodeId())
                     ).cast(String.class)
             );
@@ -124,7 +124,7 @@ public class FullEhrJson extends EhrAttribute {
     }
 
     @Override
-    public I_RMObjectAttribute forTableField(TableField tableField) {
+    public IRMObjectAttribute forTableField(TableField tableField) {
         this.tableField = tableField;
         return this;
     }

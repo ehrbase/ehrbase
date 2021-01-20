@@ -21,8 +21,8 @@ package org.ehrbase.aql.sql.queryimpl.value_field;
 
 import org.ehrbase.aql.TestAqlBase;
 import org.ehrbase.aql.definition.VariableDefinition;
-import org.ehrbase.aql.sql.binding.I_JoinBinder;
-import org.ehrbase.aql.sql.queryimpl.I_QueryImpl;
+import org.ehrbase.aql.sql.binding.JoinBinder;
+import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
 import org.ehrbase.aql.sql.queryimpl.QueryImplConstants;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
@@ -48,7 +48,7 @@ public class GenericJsonFieldTest extends TestAqlBase {
                 "test",
                 "test",
                 new VariableDefinition("test", null, "test", false),
-                I_QueryImpl.Clause.SELECT,
+                IQueryImpl.Clause.SELECT,
                 null,
                 testDomainAccess.getIntrospectService(),
                 null);
@@ -59,7 +59,7 @@ public class GenericJsonFieldTest extends TestAqlBase {
     @Test
     public void testField(){
         Field field = new GenericJsonField(fieldResolutionContext, joinSetup)
-                .hierObjectId(I_JoinBinder.ehrRecordTable.field(EHR_.ID));
+                .hierObjectId(JoinBinder.ehrRecordTable.field(EHR_.ID));
 
         assertNotNull(field);
 

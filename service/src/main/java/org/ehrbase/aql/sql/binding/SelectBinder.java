@@ -43,8 +43,9 @@ import java.util.List;
  * Created by christian on 5/4/2016.
  */
 @SuppressWarnings({"java:S3776","java:S3740","java:S1452"})
-public class SelectBinder extends TemplateMetaData implements I_SelectBinder {
+public class SelectBinder extends TemplateMetaData implements ISelectBinder {
 
+    public static final String DATA = "data";
     private final JsonbEntryQuery jsonbEntryQuery;
     private final CompositionAttributeQuery compositionAttributeQuery;
     private final PathResolver pathResolver;
