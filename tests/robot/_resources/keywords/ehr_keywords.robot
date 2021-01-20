@@ -412,6 +412,21 @@ get ehr_status of fake EHR
                         # String    response body error    EHR with this ID not found
 
 
+get versioned ehr_status of EHR
+    [Documentation]     Gets status of EHR with given ehr_id.
+    ...                 DEPENDENCY: `prepare new request session` and keywords that
+    ...                             create and expose an `ehr_id` e.g.
+    ...                             - `create new EHR`
+    ...                             - `generate random ehr_id`
+
+    &{resp}=            REST.GET    ${baseurl}/ehr/${ehr_id}/versioned_ehr_status
+                        ...         headers={"Content-Type": "application/json"}
+                        # ...         headers={"If-Match": null}
+                        Set Test Variable    ${response}    ${resp}
+
+                        # Output Debug Info To Console
+
+
 set ehr_status of EHR
     [Documentation]     Sets status of EHR with given `ehr_id`.
     ...                 DEPENDENCY: `prepare new request session` and keywords that
