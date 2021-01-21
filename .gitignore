@@ -210,4 +210,5 @@ sonar_issues.json
 vulnerability_analysis.json
 
 # Docker
+.pgdata
 application/.pgdata
