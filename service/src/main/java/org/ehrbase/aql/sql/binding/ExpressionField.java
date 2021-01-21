@@ -18,11 +18,12 @@
 package org.ehrbase.aql.sql.binding;
 
 import org.ehrbase.aql.definition.I_VariableDefinition;
-import org.ehrbase.aql.sql.queryImpl.CompositionAttributeQuery;
-import org.ehrbase.aql.sql.queryImpl.I_QueryImpl;
-import org.ehrbase.aql.sql.queryImpl.JsonbEntryQuery;
+import org.ehrbase.aql.sql.queryimpl.CompositionAttributeQuery;
+import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
+import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
 import org.jooq.Field;
 
+@SuppressWarnings({"java:S3776","java:S3740","java:S1452"})
 class ExpressionField {
 
     private final I_VariableDefinition variableDefinition;
@@ -47,7 +48,7 @@ class ExpressionField {
         switch (className) {
             //COMPOSITION attributes
             case "COMPOSITION":
-                CompositionAttribute compositionAttribute = new CompositionAttribute(compositionAttributeQuery, jsonbEntryQuery, I_QueryImpl.Clause.SELECT);
+                CompositionAttribute compositionAttribute = new CompositionAttribute(compositionAttributeQuery, jsonbEntryQuery, IQueryImpl.Clause.SELECT);
                 field = compositionAttribute.toSql(variableDefinition, templateId, identifier);
                 jsonbItemPath = compositionAttribute.getJsonbItemPath();
                 containsJsonDataBlock = compositionAttribute.isContainsJsonDataBlock();
@@ -56,7 +57,7 @@ class ExpressionField {
             // EHR attributes
             case "EHR":
 
-                field = compositionAttributeQuery.makeField(templateId, identifier, variableDefinition, I_QueryImpl.Clause.SELECT);
+                field = compositionAttributeQuery.makeField(templateId, identifier, variableDefinition, IQueryImpl.Clause.SELECT);
                 containsJsonDataBlock = compositionAttributeQuery.isJsonDataBlock();
                 optionalPath = variableDefinition.getPath();
                 break;
@@ -64,7 +65,7 @@ class ExpressionField {
             default:
                 // other_details f.e.
                 if (compositionAttributeQuery.isCompositionAttributeItemStructure(templateId, variableDefinition.getIdentifier())) {
-                    ContextualAttribute contextualAttribute = new ContextualAttribute(compositionAttributeQuery, jsonbEntryQuery, I_QueryImpl.Clause.SELECT);
+                    ContextualAttribute contextualAttribute = new ContextualAttribute(compositionAttributeQuery, jsonbEntryQuery, IQueryImpl.Clause.SELECT);
                     field = contextualAttribute.toSql(templateId, variableDefinition);
                     jsonbItemPath = contextualAttribute.getJsonbItemPath();
                     containsJsonDataBlock = contextualAttribute.isContainsJsonDataBlock();
@@ -72,7 +73,7 @@ class ExpressionField {
                 }
                 else {
                     // all other that are supported as simpleClassExpr (most common resolution)
-                    LocatableItem locatableItem = new LocatableItem(compositionAttributeQuery, jsonbEntryQuery, I_QueryImpl.Clause.SELECT);
+                    LocatableItem locatableItem = new LocatableItem(compositionAttributeQuery, jsonbEntryQuery);
                     field = locatableItem.toSql(templateId, variableDefinition, className);
                     jsonbItemPath = locatableItem.getJsonbItemPath();
                     containsJsonDataBlock |= locatableItem.isContainsJsonDataBlock();

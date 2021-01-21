@@ -22,7 +22,6 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.aql.compiler.OrderAttribute;
 import org.ehrbase.aql.compiler.Statements;
 import org.ehrbase.aql.definition.I_VariableDefinition;
-import org.ehrbase.aql.definition.VariableDefinition;
 
 import java.util.Iterator;
 

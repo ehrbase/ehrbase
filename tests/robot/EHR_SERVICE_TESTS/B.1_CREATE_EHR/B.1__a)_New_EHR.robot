@@ -132,7 +132,7 @@ MF-004 - Create new EHR (Prefer header: representation)
 
 
 MF-005 - Create new EHR (XML, Prefer header: representation)
-    [tags]    XML
+    [tags]    EHR_STATUS_create_xml
     prepare new request session    XML    Prefer=return=representation
     create new EHR (XML)
     # comment: check steps
@@ -487,7 +487,7 @@ MF-036 - Create new EHR w/ given ehr_id (Prefer header: representation)
 
 
 MF-037 - Create new EHR w/ given ehr_id (XML, Prefer header: representation)
-    [tags]    XML
+    [tags]    EHR_STATUS_create_xml
     prepare new request session    XML    Prefer=return=representation
     PUT /ehr/$ehr_id
     # comment: check steps

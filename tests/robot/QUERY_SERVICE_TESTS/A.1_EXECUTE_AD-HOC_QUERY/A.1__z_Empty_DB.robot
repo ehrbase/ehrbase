@@ -76,7 +76,7 @@ A-107 Execute Ad-Hoc Query - Get EHR(s)
 
 A-109 Execute Ad-Hoc Query - Get EHR(s)
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              timewindow    future    not-ready
+    [Tags]              AQL_timewindow    future    not-ready
     A/109_get_ehrs_within_timewindow.json
 
 
@@ -208,21 +208,21 @@ B-802 Execute Ad-Hoc Query - Get Composition(s)
 
 C-100 Execute Ad-Hoc Query - Get Entrie(s)
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              entry    future
+    [Tags]              AQL_entry    future
     C/100_get_entries_empty_db.json
     [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
 
 
 C-101 Execute Ad-Hoc Query - Get Entries (filtered: top 5)
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              entry    future
+    [Tags]              AQL_entry    future
     C/101_get_entries_empty_db.json
     [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
 
 
 C-102 Execute Ad-Hoc Query - Get Entries (ordered by: name)
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              entry    future
+    [Tags]              AQL_entry    future
     C/102_get_entries_empty_db.json
     [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
 
@@ -236,14 +236,14 @@ C-103 Execute Ad-Hoc Query - Get Entries (filtered: timewindow)
 
 C-200 Execute Ad-Hoc Query - Get Entrie(s)
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              entry    future
+    [Tags]              AQL_entry    future
     C/200_get_entries_empty_db.json
     [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
 
 
 C-300 Execute Ad-Hoc Query - Get Entrie(s)
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              entry    future    not-ready
+    [Tags]              AQL_entry    future    not-ready
     C/300_get_entries_empty_db.json
     C/301_get_entries_empty_db.json
     C/302_get_entries_empty_db.json
@@ -252,28 +252,28 @@ C-300 Execute Ad-Hoc Query - Get Entrie(s)
 
 C-400 Execute Ad-Hoc Query - Get Entrie(s)
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              entry    future
+    [Tags]              AQL_entry    future
     C/400_get_entries_empty_db.json
     [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
 
 
 C-500 Execute Ad-Hoc Query - Get Entrie(s)
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              entry    future
+    [Tags]              AQL_entry    future
     C/500_get_entries_empty_db.json
     [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
 
 
 D-200 Execute Ad-Hoc Query - Get Data
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              data
+    [Tags]              AQL_data
     D/200_select_data_values_from_all_ehrs_contains_composition.json
     D/201_select_data_values_from_all_ehrs_contains_composition.json
 
 
 D-300 Execute Ad-Hoc Query - Get Data
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              data
+    [Tags]              AQL_data
     D/300_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
     D/301_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
     D/302_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
@@ -287,27 +287,27 @@ D-300 Execute Ad-Hoc Query - Get Data
 
 D-306 Execute Ad-Hoc Query - Get Data
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              data    206    not-ready
+    [Tags]              AQL_data    206
     D/306_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
     [Teardown]          TRACE GITHUB ISSUE  206  not-ready
 
 
 D-307 Execute Ad-Hoc Query - Get Data
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              data    206    not-ready
+    [Tags]              AQL_data    206
     D/307_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
     [Teardown]          TRACE GITHUB ISSUE  206  not-ready
 
 
 D-311 Execute Ad-Hoc Query - Get Data
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              data    future
+    [Tags]              AQL_data    future
     D/311_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
 
 
 D-400 Execute Ad-Hoc Query - Get Data
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              data
+    [Tags]              AQL_data
     D/400_select_data_empty_db.json
     D/401_select_data_empty_db.json
     D/402_select_data_empty_db.json
@@ -318,7 +318,7 @@ D-400 Execute Ad-Hoc Query - Get Data
 
 D-500 Execute Ad-Hoc Query - Get Data
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              data
+    [Tags]              AQL_data
     D/500_select_data_empty_db.json
     D/501_select_data_empty_db.json
     D/502_select_data_empty_db.json

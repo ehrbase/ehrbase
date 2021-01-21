@@ -7,6 +7,8 @@ import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.service.*;
 import org.jooq.DSLContext;
 import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
@@ -15,17 +17,17 @@ import java.io.FileInputStream;
 
 public class TestAqlBase {
 
-    protected I_DomainAccess testDomainAccess;
-    protected KnowledgeCacheService knowledge;
+    protected static I_DomainAccess testDomainAccess;
+    protected static KnowledgeCacheService knowledge;
 
-    @Rule
-    public TemporaryFolder testFolder = new TemporaryFolder();
+    @ClassRule
+    public static TemporaryFolder testFolder = new TemporaryFolder();
 
-    @Rule
-    public CacheRule cacheRule = new CacheRule();
+    @ClassRule
+    public static CacheRule cacheRule = new CacheRule();
 
-    @Before
-    public  void beforeClass() throws Exception {
+    @BeforeClass
+    public static void beforeClass() throws Exception {
 
         DSLContext context = DSLContextHelper.buildContext();
         knowledge = KnowledgeCacheHelper.buildKnowledgeCache(testFolder, cacheRule);

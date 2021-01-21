@@ -18,8 +18,6 @@
 
 package org.ehrbase.aql.sql.binding;
 
-import java.util.Optional;
-
 public class TaggedStringBuilder implements I_TaggedStringBuilder {
 
     private StringBuilder stringBuffer;

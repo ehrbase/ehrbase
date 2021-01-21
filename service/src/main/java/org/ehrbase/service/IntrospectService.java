@@ -18,7 +18,7 @@
 
 package org.ehrbase.service;
 
-import org.ehrbase.aql.sql.queryImpl.ItemInfo;
+import org.ehrbase.aql.sql.queryimpl.ItemInfo;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.webtemplate.model.WebTemplate;
 
