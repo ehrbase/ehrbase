@@ -36,7 +36,5 @@ Force Tags
 Get non-existing EHR
 
     prepare new request session    JSON
-
     create fake EHR
-
     retrieve non-existing EHR by ehr_id

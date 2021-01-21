@@ -36,9 +36,6 @@ Force Tags
 Get existing EHR
 
     prepare new request session    JSON    Prefer=return=representation
-
     create new EHR
-
     retrieve EHR by ehr_id
-
     check content of retrieved EHR (JSON)

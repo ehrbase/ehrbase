@@ -24,7 +24,7 @@ Resource    ${CURDIR}${/}../../_resources/suite_settings.robot
 
 
 
-Force Tags    JSON
+Force Tags
 
 
 

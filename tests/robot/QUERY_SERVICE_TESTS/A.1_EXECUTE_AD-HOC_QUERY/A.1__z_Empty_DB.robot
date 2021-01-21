@@ -34,7 +34,7 @@ Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
 Suite Setup  Establish Preconditions for Scenario: EMPTY DB
 # Test Teardown  restore clean SUT state
 
-Force Tags    refactor    empty_db
+Force Tags    refactor    AQL_empty_db
 
 
 

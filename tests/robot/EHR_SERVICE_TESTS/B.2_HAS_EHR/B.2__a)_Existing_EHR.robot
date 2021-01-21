@@ -37,11 +37,8 @@ Force Tags    refactor
 Check has EHR with existing EHR
 
     prepare new request session    JSON    Prefer=return=representation
-
     create new EHR
-
     retrieve EHR by ehr_id
-
     Verification: Response Should Contain Correct Values
 
 

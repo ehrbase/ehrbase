@@ -36,7 +36,7 @@ Suite Setup    aql_query_keywords.Establish Preconditions
 # Test Teardown  restore clean SUT state
 # Suite Teardown    Run Keywords    Clean DB    # Delete Temp Result-Data-Sets
 
-Force Tags    refactor    loaded_db
+Force Tags    refactor    AQL_loaded_db
 
 
 

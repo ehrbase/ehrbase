@@ -42,7 +42,7 @@ Resource        ${CURDIR}${/}../_resources/suite_settings.robot
 # Suite Setup  startup OPT SUT
 # Suite Teardown  Delete All Templates
 
-Force Tags   OPT14    future
+Force Tags   OPT20    OPT20_retrieve    future
 
 
 

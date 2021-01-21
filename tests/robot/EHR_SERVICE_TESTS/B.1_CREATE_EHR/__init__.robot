@@ -24,4 +24,4 @@ Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 # Suite Setup    startup SUT
 # Suite Teardown    shutdown SUT
 
-Force Tags    create_ehr
+Force Tags    EHR_SERVICE_create

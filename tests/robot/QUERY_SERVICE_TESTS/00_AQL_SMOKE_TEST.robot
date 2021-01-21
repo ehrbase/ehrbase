@@ -9,7 +9,7 @@ Resource    ${CURDIR}${/}../_resources/suite_settings.robot
 # Suite Teardown    Run Keywords    Clean DB    # Delete Temp Result-Data-Sets
 # Suite Teardown    dump db
 
-Force Tags    adhoc-query    loaded_db    temp
+Force Tags    AQL_smoke_loaded_db    AQL_temp
 
 
 
@@ -21,7 +21,7 @@ ${compo data sets}    ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/quer
 
 *** Test Cases ***
 AQL LOADED DB SMOKE TEST - Preconditions
-    [Tags]    SMOKE
+    [Tags]    AQL_smoke
 
     Establish Preconditions
 
@@ -29,7 +29,7 @@ AQL LOADED DB SMOKE TEST - Preconditions
 
 
 AQL LOADED DB SMOKE TEST - Queries
-    [Tags]          SMOKE
+    [Tags]          AQL_smoke
 
     # COMMENT: QUERY EXECUTION
     #////////////////////////////////////////////////////////////////
@@ -238,9 +238,9 @@ D-501 Execute Ad-HOc Query - Get Data
 
 
 CLEAN UP SUT
-    [Documentation]     ATTENTION: ALWAYS INCLUDE '-i SMOKE' and '-i tempANDissue_id'
+    [Documentation]     ATTENTION: ALWAYS INCLUDE '-i AQL_smoke' and '-i AQL_tempANDissue_id'
     ...                 when you run test from this suite!!!
-    [Tags]              SMOKE
+    [Tags]              AQL_smoke
     # Pass Execution  DONT DUMP THIS TIME
     dump db
     # db_keywords.Delete All templates
