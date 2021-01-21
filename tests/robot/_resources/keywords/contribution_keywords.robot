@@ -178,8 +178,6 @@ check response: is negative indicating non-existent OPT
 commit COMTRIBUTION(S) (JSON)
                         Set Test Variable  ${KEYWORD NAME}  COMMIT COMTRIBUTION(S) (JSON)
 
-            TRACE GITHUB ISSUE  NO-ISSUE-ID  not-ready
-
 # check response: commit COMTRIBUTION(S) (JSON)
 #                         Should Be Equal As Strings   ${response.status_code}   201
 

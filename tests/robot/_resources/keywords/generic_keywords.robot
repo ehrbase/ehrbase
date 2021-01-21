@@ -624,15 +624,16 @@ THIS IS JUST A PLACEHOLDER!
 
 TRACE GITHUB ISSUE
     [Arguments]     ${GITHUB_ISSUE}
-    ...             ${not-ready}=
+    ...             ${type}=
     ...             ${message}=Next step fails due to a bug!
     ...             ${loglevel}=ERROR
 
                     Log    ${message} | <a href="https://github.com/ehrbase/project_management/issues/${GITHUB_ISSUE}">Github ISSUE #${GITHUB_ISSUE}</a>
                     ...    level=${loglevel}    html=True
 
-                    Set Tags    bug    GITHUB ISSUE ${GITHUB_ISSUE}
-                    Run Keyword If    '${not-ready}'=='not-ready'    Set Tags    not-ready
+                    Set Tags    not-ready    ${type}    ${GITHUB_ISSUE}
+                    # Skip if    '${not-ready}'=='not-ready'    Skipped because test or feature not ready
+                    # Run Keyword If    '${type}'=='not-ready'    Set Tags    not-ready
 
 
 

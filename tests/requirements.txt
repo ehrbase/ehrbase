@@ -1,5 +1,5 @@
-robotframework == 3.2b1
-# robotframework == 3.1.2
+robotframework == v4.0b1
+# robotframework == 3.2b1
 
 robotframework-jsonlibrary == 0.3.1
 robotframework-requests == 0.4.7

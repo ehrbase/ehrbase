@@ -30,4 +30,4 @@ Documentation       Admin API REST tests
 
 Resource   ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Force Tags    admin
+Force Tags    ADMIN

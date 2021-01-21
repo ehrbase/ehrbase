@@ -29,4 +29,4 @@ Resource   ${EXECDIR}/robot/_resources/suite_settings.robot
 # Suite Setup    startup SUT
 # Suite Teardown    shutdown SUT
 
-Force Tags    EHR_STATUS_set    set_modifiable
+Force Tags    EHR_STATUS_set    EHR_STATUS_set_modifiable
