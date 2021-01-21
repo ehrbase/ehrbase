@@ -19,13 +19,12 @@ public class WhereTemporal {
     public boolean containsTemporalItem(VariableDefinition variableDefinition){
 
         //get the index of variable definition in item list
-        Integer pos = whereItems.indexOf(variableDefinition);
+        int pos = whereItems.indexOf(variableDefinition);
 
         for (Object item: whereItems.subList(pos, whereItems.size())){
 
-            if (item instanceof String){ //ignore variable definition
-                if (new DateTimes((String)item).isDateTimeZoned())
-                    return true;
+            if (item instanceof String && new DateTimes((String)item).isDateTimeZoned()) { //ignore variable definition
+                return true;
             }
         }
         return false;

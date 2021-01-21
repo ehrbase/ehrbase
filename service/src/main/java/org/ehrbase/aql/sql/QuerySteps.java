@@ -22,7 +22,7 @@
 package org.ehrbase.aql.sql;
 
 import org.ehrbase.aql.sql.binding.JsonbBlockDef;
-import org.ehrbase.aql.sql.queryImpl.CompositionAttributeQuery;
+import org.ehrbase.aql.sql.queryimpl.CompositionAttributeQuery;
 import org.jooq.Condition;
 import org.jooq.SelectQuery;
 
@@ -31,6 +31,7 @@ import java.util.List;
 /**
  * Created by christian on 2/17/2017.
  */
+@SuppressWarnings({"java:S3740"})
 public class QuerySteps {
     private final SelectQuery selectQuery;
     private final Condition whereCondition;

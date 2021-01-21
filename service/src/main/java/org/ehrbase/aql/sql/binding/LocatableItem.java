@@ -21,7 +21,7 @@ import com.nedap.archie.rm.datavalues.DataValue;
 import com.nedap.archie.rminfo.ArchieRMInfoLookup;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.aql.definition.I_VariableDefinition;
-import org.ehrbase.aql.sql.queryImpl.*;
+import org.ehrbase.aql.sql.queryimpl.*;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
@@ -31,26 +31,25 @@ import java.util.Objects;
  * evaluate the SQL expression for locatables in the ITEM_STRUCTURE: OBSERVATION, INSTRUCTION, CLUSTER etc.
  * NB. At the moment, direct resolution of ELEMENT is not supported.
  */
+@SuppressWarnings({"java:S3776","java:S3740","java:S1452"})
 public class LocatableItem {
 
     private final CompositionAttributeQuery compositionAttributeQuery;
     private final JsonbEntryQuery jsonbEntryQuery;
-    private final I_QueryImpl.Clause clause;
     private boolean containsJsonDataBlock;
     private String jsonbItemPath;
     private String optionalPath;
     private String rootJsonKey;
 
-    public LocatableItem(CompositionAttributeQuery compositionAttributeQuery, JsonbEntryQuery jsonbEntryQuery, I_QueryImpl.Clause clause) {
+    public LocatableItem(CompositionAttributeQuery compositionAttributeQuery, JsonbEntryQuery jsonbEntryQuery) {
         this.compositionAttributeQuery = compositionAttributeQuery;
         this.jsonbEntryQuery = jsonbEntryQuery;
-        this.clause = clause;
     }
 
     public Field<?> toSql(String templateId, I_VariableDefinition variableDefinition, String className){
         Field<?> field;
 
-        field = jsonbEntryQuery.makeField(templateId, variableDefinition.getIdentifier(), variableDefinition, I_QueryImpl.Clause.SELECT);
+        field = jsonbEntryQuery.makeField(templateId, variableDefinition.getIdentifier(), variableDefinition, IQueryImpl.Clause.SELECT);
         jsonbItemPath = jsonbEntryQuery.getJsonbItemPath();
         containsJsonDataBlock |= jsonbEntryQuery.isJsonDataBlock();
         if (jsonbEntryQuery.isJsonDataBlock() ) {
@@ -68,7 +67,7 @@ public class LocatableItem {
                             try {
                                 I_VariableDefinition variableDefinition1 = variableDefinition.clone();
                                 variableDefinition1.setPath(variableAqlPath.getInfix());
-                                field = jsonbEntryQuery.makeField(templateId, variableDefinition.getIdentifier(), variableDefinition1, I_QueryImpl.Clause.SELECT);
+                                field = jsonbEntryQuery.makeField(templateId, variableDefinition.getIdentifier(), variableDefinition1, IQueryImpl.Clause.SELECT);
                                 jsonbItemPath = jsonbEntryQuery.getJsonbItemPath();
                                 rootJsonKey = variableAqlPath.getSuffix();
                             } catch (CloneNotSupportedException e) {
@@ -84,7 +83,7 @@ public class LocatableItem {
 
                             String alias = variableDefinition.getAlias();
                             if (alias == null)
-                                alias = new DefaultColumnId().value(variableDefinition);
+                                alias = DefaultColumnId.value(variableDefinition);
                             field = field.as(alias);
                         }
                     }
