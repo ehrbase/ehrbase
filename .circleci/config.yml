@@ -740,7 +740,7 @@ jobs:
           sut: "TEST -v AUTH_TYPE:OAUTH"
           include-tags: "SECURITY_oauth"
           # test-suite-path: ""
-          test-suite-name: "KEYCLOAK-OAUTH"
+          test-suite-name: "SECURITY"
         
   ADMIN-test:
     # executor: docker-py3-java11-postgres

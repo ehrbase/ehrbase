@@ -494,7 +494,7 @@ C-102 Execute Ad-Hoc Query - Get Entries (ordered by: name)
 C-103 Execute Ad-Hoc Query - Get Entries (filtered: timewindow)
     [Documentation]     get_entries_within_timewindow
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              AQL_entry    timewindow    future
+    [Tags]              AQL_entry    AQL_timewindow    future
     C/103_query.tmp.json    C/103.tmp.json
     [Teardown]          TRACE GITHUB ISSUE  101  bug  reladed
 
