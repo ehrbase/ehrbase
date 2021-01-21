@@ -27,6 +27,7 @@ Force Tags          JSON
 
 *** Test Cases ***
 Alternative flow 2 get COMPOSITION at time, COMPOSITION doesnt exist
+    [Tags]    17    not-ready    bug
 
     upload OPT    minimal/minimal_observation.opt
     create EHR

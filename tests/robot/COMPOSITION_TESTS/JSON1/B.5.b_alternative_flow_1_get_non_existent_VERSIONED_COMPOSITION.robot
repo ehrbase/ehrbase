@@ -27,6 +27,7 @@ Force Tags      JSON
 
 *** Test Cases ***
 Alternative flow 1 get non existent VERSIONED COMPOSITION
+    [Tags]    122    not-ready    bug
 
     create EHR
     create fake composition

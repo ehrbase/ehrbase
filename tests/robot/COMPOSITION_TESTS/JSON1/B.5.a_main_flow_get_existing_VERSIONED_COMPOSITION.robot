@@ -27,6 +27,7 @@ Force Tags      JSON
 
 *** Test Cases ***
 Main flow get existing VERSIONED COMPOSITION
+    [Tags]    122    not-ready    bug
 
     upload OPT    minimal/minimal_observation.opt
     create EHR
