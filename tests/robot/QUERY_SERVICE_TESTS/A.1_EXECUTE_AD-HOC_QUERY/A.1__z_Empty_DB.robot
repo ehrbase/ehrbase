@@ -226,7 +226,7 @@ C-102 Execute Ad-Hoc Query - Get Entries (ordered by: name)
 
 C-103 Execute Ad-Hoc Query - Get Entries (filtered: timewindow)
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              future    entry    future    not-ready
+    [Tags]              AQL_entry    future
     C/103_get_entries_empty_db.json
     [Teardown]          TRACE GITHUB ISSUE  101  bug  reladed
 

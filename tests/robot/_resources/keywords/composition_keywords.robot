@@ -253,7 +253,7 @@ commit same composition again
                         ...                 Accept=application/json
                         ...                 Prefer=return=representation
 
-        TRACE GITHUB ISSUE  125  not-ready
+        TRACE GITHUB ISSUE  125  bug
 
     ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
                         log to console      ${resp.content}
@@ -448,7 +448,7 @@ get versioned composition by uid
 
                         prepare new request session    ${format}
 
-        TRACE GITHUB ISSUE  122  not-ready
+        TRACE GITHUB ISSUE  122  bug
 
     ${resp}=            Get Request         ${SUT}    /ehr/${ehr_id}/versioned_composition/${uid}    headers=${headers}
                         log to console      ${resp.content}

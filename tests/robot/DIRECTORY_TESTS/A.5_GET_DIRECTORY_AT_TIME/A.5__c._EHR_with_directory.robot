@@ -29,6 +29,6 @@ Alternative flow 2: get directory at time on EHR with directory
     create DIRECTORY (JSON)    subfolders_in_directory.json
     get DIRECTORY at current time (JSON)
 
-        TRACE GITHUB ISSUE  353  not-ready
+        TRACE GITHUB ISSUE  353  bug
 
     validate GET-version@time response - 200 retrieved

@@ -76,29 +76,28 @@ A-103 Execute Ad-Hoc Query - Get EHRs
 
 A-105 Execute Ad-Hoc Query - Get EHRs
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TODO       
+    [Tags]              TODO
     A/105_get_ehrs.json    A/105.tmp.json
     A/106_get_ehrs.json    A/106.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  TODO  test-issue
 
 
 A-107 Execute Ad-Hoc Query - Get EHRs (filtered: top 5)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TODO   
+    [Tags]              TODO
     A/107_get_ehrs_top_5.json    A/107.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  103  test-issue
+    [Teardown]          TRACE GITHUB ISSUE  103  not-ready_test-issue
 
 
 A-108 Execute Ad-Hoc Query - Get EHRs (ordered by: time-created)
     [Template]          execute ad-hoc query and check result (loaded DB)
     [Tags]              TODO
     A/108_get_ehrs_orderby_time-created.json    A/108.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  118  test-issue
+    [Teardown]          TRACE GITHUB ISSUE  118  not-ready_test-issue
 
 
 A-109 Execute Ad-Hoc Query - Get EHRs (filtered: timewindow)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              AQL_timewindow    future    not-ready
+    [Tags]              AQL_timewindow    future
 
     A/109_get_ehrs_within_timewindow.json       A/109.tmp.json
 
@@ -171,7 +170,7 @@ B-102 Execute Ad-Hoc Query - Get Compositions (ordered by: name)
 
 B-103 Execute Ad-Hoc Query - Get Compositions (filtered: timewindow)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              AQL_timewindow    future    not-ready
+    [Tags]              AQL_timewindow    future
     B/103_get_compositions_within_timewindow.json    B/103.tmp.json
 
 
@@ -233,22 +232,19 @@ B-503 Execute Ad-Hoc Query - Get Composition(s)
 
 B-600 Execute Ad-Hoc Query - Get Composition(s)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TODO
+    [Tags]              TODO    not-ready_test-issue
     B/600_get_compositions_by_contains_entry_with_archetype_from_all_ehrs.json    B/600.tmp.json
     B/601_get_compositions_by_contains_entry_with_archetype_from_all_ehrs.json    B/601.tmp.json
     B/602_get_compositions_by_contains_entry_with_archetype_from_all_ehrs.json    B/602.tmp.json
     B/603_get_compositions_by_contains_entry_with_archetype_from_all_ehrs.json    B/603.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  TODO
-
 
 
 B-700 Execute Ad-Hoc Query - Get Composition(s)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TODO
+    [Tags]              TODO    not-ready_test-issue
     B/700_get_compositions_by_contains_entry_with_archetype_and_condition_from_all_ehrs.json    B/700.tmp.json
     B/701_get_compositions_by_contains_entry_with_archetype_and_condition_from_all_ehrs.json    B/701.tmp.json
     B/702_get_compositions_by_contains_entry_with_archetype_and_condition_from_all_ehrs.json    B/702.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  TODO
 
 
 B-800 Execute Ad-Hoc Query - Get Compositions By UID
@@ -268,13 +264,12 @@ B-802 Execute Ad-Hoc Query - Get Compositions By UID
     [Tags]              TODO
     B/802_query.tmp.json    B/802.tmp.json
     B/803_query.tmp.json    B/803.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
 
 
 D-200 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              05    not-ready
+    [Tags]              205    not-ready
     D/200_select_data_values_from_all_ehrs_contains_composition.json    D/200.tmp.json
     [Teardown]          TRACE GITHUB ISSUE  205  bug
 
@@ -476,7 +471,7 @@ D-503 Execute Ad-HOc Query - Get Data
 
 C-100 Execute Ad-Hoc Query - Get Entries from EHR
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              AQL_entry    future    not-ready
+    [Tags]              AQL_entry    future
     C/100_query.tmp.json    C/100.tmp.json
 
 
@@ -485,7 +480,7 @@ C-101 Execute Ad-Hoc Query - Get Entries (filtered: top 5)
     [Template]          execute ad-hoc query and check result (loaded DB)
     [Tags]              AQL_entry    future
     C/101_query.tmp.json    C/101.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  101  not-ready  blocked by
+    [Teardown]          TRACE GITHUB ISSUE  101  bug  blocked by
 
 
 C-102 Execute Ad-Hoc Query - Get Entries (ordered by: name)
@@ -493,7 +488,7 @@ C-102 Execute Ad-Hoc Query - Get Entries (ordered by: name)
     [Template]          execute ad-hoc query and check result (loaded DB)
     [Tags]              AQL_entry    future
     C/102_query.tmp.json    C/102.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  101  not-ready  blocked by
+    [Teardown]          TRACE GITHUB ISSUE  101  bug  blocked by
 
 
 C-103 Execute Ad-Hoc Query - Get Entries (filtered: timewindow)
@@ -501,18 +496,18 @@ C-103 Execute Ad-Hoc Query - Get Entries (filtered: timewindow)
     [Template]          execute ad-hoc query and check result (loaded DB)
     [Tags]              AQL_entry    timewindow    future
     C/103_query.tmp.json    C/103.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  101  not-ready  reladed
+    [Teardown]          TRACE GITHUB ISSUE  101  bug  reladed
 
 
 C-200 Execute Ad-Hoc Query - Get Entries from EHR
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              AQL_entry    future    not-ready
+    [Tags]              AQL_entry    future
     C/200_query.tmp.json    C/200.tmp.json
 
 
 C-300 Execute Ad-Hoc Query - Get Entries from EHR
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              AQL_entry    future    not-ready
+    [Tags]              AQL_entry    future
     C/300_query.tmp.json    C/300.tmp.json
     C/301_query.tmp.json    C/301.tmp.json
     C/302_query.tmp.json    C/302.tmp.json
@@ -521,13 +516,13 @@ C-300 Execute Ad-Hoc Query - Get Entries from EHR
 
 C-400 Execute Ad-Hoc Query - Get Entries from EHR
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              AQL_entry    future    not-ready
+    [Tags]              AQL_entry    future
     C/400_query.tmp.json    C/400.tmp.json
 
 
 C-500 Execute Ad-Hoc Query - Get Entries from EHR
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              AQL_entry    future    not-ready
+    [Tags]              AQL_entry    future
     C/500_query.tmp.json    C/500.tmp.json
 
 
@@ -645,7 +640,7 @@ C-500 Execute Ad-Hoc Query - Get Entries from EHR
 #     D/502_select_data_values_from_compositions_with_given_archetype_in_ehr.json
 #     D/503_select_data_values_from_compositions_with_given_archetype_in_ehr.json
 
-#     [Teardown]      TRACE GITHUB ISSUE  GITHUB_ISSUE  not-ready  Some AQL QUERIES fail!
+#     [Teardown]      TRACE GITHUB ISSUE  123  bug  Some AQL QUERIES fail!
 
 
 

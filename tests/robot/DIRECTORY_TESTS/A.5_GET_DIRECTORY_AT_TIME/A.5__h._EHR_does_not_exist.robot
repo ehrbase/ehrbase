@@ -28,6 +28,6 @@ Alternative flow 7: get directory at time on non existent EHR
     create fake EHR
     get DIRECTORY at current time (JSON)
 
-        TRACE GITHUB ISSUE  353  not-ready
+        TRACE GITHUB ISSUE  353  bug
 
     validate GET-version@time response - 404 unknown ehr_id

@@ -31,6 +31,6 @@ Alternative flow 2: get directory on EHR with complex directory structure and it
     create DIRECTORY (JSON)    subfolders_in_directory_with_details_items.json
     get DIRECTORY at time (JSON)    ${time_of_first_version}
 
-        TRACE GITHUB ISSUE  353  not-ready
+        TRACE GITHUB ISSUE  353  bug
 
     validate GET-version@time response - 200 retrieved

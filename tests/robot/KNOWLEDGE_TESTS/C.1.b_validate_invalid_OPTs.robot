@@ -76,7 +76,7 @@ Empty Template ID
     removed_template_id/minimal_admin_invalid_3.opt
     removed_template_id/minimal_admin_invalid_4.opt
 
-    [Teardown]  TRACE GITHUB ISSUE  119  not-ready  
+    [Teardown]  TRACE GITHUB ISSUE  119  bug
 
 
 Removed Mandatory Elements
