@@ -61,7 +61,7 @@ Removed Mandatory Elements
     ...                 Mandatory, optional or combination of it.
     ...                 Elements without minOccurs or MaxOccurs are mandatory
     [Template]          upload invalid OPT
-    [Tags]              mandatory_elements
+    [Tags]
 
     removed_mandatory_elements/minimal_action_removed_concept.opt
     removed_mandatory_elements/minimal_action_removed_concept_value.opt
