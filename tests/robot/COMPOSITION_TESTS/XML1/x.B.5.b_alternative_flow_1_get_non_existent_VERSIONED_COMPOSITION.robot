@@ -27,6 +27,7 @@ Force Tags      XML
 
 *** Test Cases ***
 Alternative flow 1 get non existent VERSIONED COMPOSITION
+    [Tags]    122    not-ready    bug
 
     create EHR    XML
     create fake composition

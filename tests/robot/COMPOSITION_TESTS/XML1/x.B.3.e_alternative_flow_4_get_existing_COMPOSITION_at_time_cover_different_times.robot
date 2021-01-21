@@ -27,6 +27,7 @@ Force Tags      XML
 
 *** Test Cases ***
 Alternative flow 4 get existing COMPOSITION at time, cover different times
+    [Tags]    17    not-ready    bug
 
     upload OPT    minimal/minimal_observation.opt
 

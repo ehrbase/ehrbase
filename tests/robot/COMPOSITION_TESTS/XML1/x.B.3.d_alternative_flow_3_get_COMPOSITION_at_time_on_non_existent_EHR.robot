@@ -27,6 +27,7 @@ Force Tags      XML
 
 *** Test Cases ***
 Alternative flow 3 get COMPOSITION at time, on non-existent EHR
+    [Tags]    17    not-ready    bug
 
     upload OPT    minimal/minimal_observation.opt
 
