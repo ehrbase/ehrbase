@@ -23,7 +23,7 @@ package org.ehrbase.aql.containment;
 
 import org.ehrbase.aql.definition.FromEhrDefinition;
 import org.ehrbase.aql.definition.FromForeignDataDefinition;
-import org.ehrbase.aql.sql.queryImpl.JsonbEntryQuery;
+import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,9 +37,11 @@ import java.util.Set;
  * </p>
  * Created by christian on 4/12/2016.
  */
+@SuppressWarnings({"java:S3776","java:S3740","java:S1452"})
 public class IdentifierMapper {
 
     public static final String SYMBOL_ALREADY_EXISTS = "Symbol already exists:";
+    public static final String COMPOSITION = "COMPOSITION";
 
     public class Mapper {
         private Class queryStrategy; //specifies the constructor to use depending on the identifier
@@ -99,10 +101,10 @@ public class IdentifierMapper {
 
     public Containment getRootContainment(){
         for (Map.Entry<String, Mapper> containment : mapper.entrySet()) {
-            if (containment.getValue().getContainer() instanceof Containment && ((Containment)containment.getValue().getContainer()).getClassName().equals("COMPOSITION"))
+            if (containment.getValue().getContainer() instanceof Containment && ((Containment)containment.getValue().getContainer()).getClassName().equals(COMPOSITION))
                 return (Containment) containment.getValue().getContainer();
         }
-        return new Containment("COMPOSITION", "", "");
+        return new Containment(COMPOSITION, "", "");
     }
 
     public FromEhrDefinition.EhrPredicate getEhrContainer() {
@@ -209,7 +211,7 @@ public class IdentifierMapper {
                 Containment containment = (Containment)mapper1.getContainer();
                 //check if this containment specifies an archetype (triggering a template resolution)
                 //f.e. COMPOSITION a [openEHR-EHR-COMPOSITION.report-result.v1] contains OBSERVATION
-                if (!containment.getClassName().equalsIgnoreCase("COMPOSITION") && containment.getArchetypeId() != null && !containment.getArchetypeId().isBlank()) {
+                if (!containment.getClassName().equalsIgnoreCase(COMPOSITION) && containment.getArchetypeId() != null && !containment.getArchetypeId().isBlank()) {
                         useSimpleComposition = false;
                 }
             }

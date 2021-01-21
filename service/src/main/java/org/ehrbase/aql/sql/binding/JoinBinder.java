@@ -21,9 +21,9 @@
 
 package org.ehrbase.aql.sql.binding;
 
-import org.ehrbase.aql.sql.queryImpl.CompositionAttributeQuery;
+import org.ehrbase.aql.sql.queryimpl.CompositionAttributeQuery;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
-import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
+import org.ehrbase.jooq.pg.tables.records.*;
 import org.jooq.*;
 import org.jooq.impl.DSL;
 
@@ -35,10 +35,20 @@ import static org.ehrbase.jooq.pg.Tables.*;
 /**
  * Created by christian on 10/31/2016.
  */
-public class JoinBinder implements I_JoinBinder {
+@SuppressWarnings({"java:S3776","java:S3740","java:S1452"})
+public class JoinBinder implements IJoinBinder {
 
-    private boolean isWholeComposition = false;
-
+    public static final String COMPOSITION_JOIN = "composition_join";
+    public static final Table<CompositionRecord> compositionRecordTable = COMPOSITION.as(COMPOSITION_JOIN);
+    public static final String SYSTEM_JOIN = "system_join";
+    public static final Table<SystemRecord> systemRecordTable = SYSTEM.as(SYSTEM_JOIN);
+    public static final String STATUS_JOIN = "status_join";
+    public static final Table<StatusRecord> statusRecordTable = STATUS.as(STATUS_JOIN);
+    public static final String EHR_JOIN = "ehr_join";
+    public static final Table<EhrRecord> ehrRecordTable = EHR_.as(EHR_JOIN);
+    public static final Table<PartyIdentifiedRecord> composerRef = PARTY_IDENTIFIED.as("composer_ref");
+    public static final Table<PartyIdentifiedRecord> subjectRef = PARTY_IDENTIFIED.as("subject_ref");
+    public static final Table<PartyIdentifiedRecord> facilityRef = PARTY_IDENTIFIED.as("facility_ref");
     private boolean compositionJoined = false;
     private boolean statusJoined = false;
     private boolean subjectJoin = false;
@@ -52,14 +62,9 @@ public class JoinBinder implements I_JoinBinder {
 
     I_DomainAccess domainAccess;
 
-    public JoinBinder(I_DomainAccess domainAccess,  SelectQuery<?> selectQuery, boolean isWholeComposition) {
+    public JoinBinder(I_DomainAccess domainAccess,  SelectQuery<?> selectQuery) {
         this.domainAccess = domainAccess;
         this.selectQuery = selectQuery;
-        this.isWholeComposition = isWholeComposition;
-    }
-
-    public JoinBinder() {
-        this.isWholeComposition = false;
     }
 
     /**
@@ -80,22 +85,22 @@ public class JoinBinder implements I_JoinBinder {
                 joinSubject(selectQuery, compositionAttributeQuery);
             }
             if (compositionAttributeQuery.isJoinComposition()) {
-                joinComposition(selectQuery, compositionAttributeQuery);
+                joinComposition(selectQuery);
             }
             if (compositionAttributeQuery.isJoinEventContext()) {
-                joinEventContext(selectQuery, compositionAttributeQuery);
+                joinEventContext(selectQuery);
             }
             if (compositionAttributeQuery.isJoinContextFacility()) {
-                joinContextFacility(selectQuery, compositionAttributeQuery);
+                joinContextFacility(selectQuery);
             }
             if (compositionAttributeQuery.isJoinComposer()) {
-                joinComposer(selectQuery, compositionAttributeQuery);
+                joinComposer(selectQuery);
             }
             if (compositionAttributeQuery.isJoinEhr()) {
-                joinEhr(selectQuery, compositionAttributeQuery);
+                joinEhr(selectQuery);
             }
             if (compositionAttributeQuery.isJoinSystem()) {
-                joinSystem(selectQuery, compositionAttributeQuery);
+                joinSystem(selectQuery);
             }
             if (compositionAttributeQuery.isJoinEhrStatus() || compositionAttributeQuery.containsEhrStatus()) {
                 joinEhrStatus(selectQuery, compositionAttributeQuery);
@@ -134,14 +139,14 @@ public class JoinBinder implements I_JoinBinder {
         return selectQuery1;
     }
 
-    private void joinComposition(SelectQuery<?> selectQuery, CompositionAttributeQuery compositionAttributeQuery) {
+    private void joinComposition(SelectQuery<?> selectQuery) {
         if (compositionJoined)
             return;
         selectQuery.addJoin(compositionRecordTable, JoinType.RIGHT_OUTER_JOIN, DSL.field(compositionRecordTable.field(COMPOSITION.ID)).eq(ENTRY.COMPOSITION_ID));
         compositionJoined = true;
     }
 
-    private void joinSystem(SelectQuery<?> selectQuery, CompositionAttributeQuery compositionAttributeQuery) {
+    private void joinSystem(SelectQuery<?> selectQuery) {
         if (systemJoined)
             return;
         selectQuery.addJoin(systemRecordTable, JoinType.RIGHT_OUTER_JOIN, DSL.field(systemRecordTable.field(SYSTEM.ID)).eq(DSL.field(ehrRecordTable.field(EHR_.SYSTEM_ID.getName(), UUID.class))));
@@ -151,13 +156,13 @@ public class JoinBinder implements I_JoinBinder {
     private void joinEhrStatus(SelectQuery<?> selectQuery, CompositionAttributeQuery compositionAttributeQuery) {
         if (statusJoined) return;
         if (compositionAttributeQuery.isJoinComposition() || compositionAttributeQuery.useFromEntry()) {
-            joinComposition(selectQuery, compositionAttributeQuery);
+            joinComposition(selectQuery);
             selectQuery.addJoin(statusRecordTable,
                     DSL.field(statusRecordTable.field(STATUS.EHR_ID.getName(), UUID.class))
                             .eq(DSL.field(compositionRecordTable.field(COMPOSITION.EHR_ID.getName(), UUID.class))));
             statusJoined = true;
         } else {//assume it is joined on EHR
-            joinEhr(selectQuery, compositionAttributeQuery);
+            joinEhr(selectQuery);
             selectQuery.addJoin(statusRecordTable,
                     DSL.field(statusRecordTable.field(STATUS.EHR_ID.getName(), UUID.class))
                             .eq(DSL.field(ehrRecordTable.field(EHR_.ID.getName(), UUID.class))));
@@ -175,15 +180,15 @@ public class JoinBinder implements I_JoinBinder {
         subjectJoin = true;
     }
 
-    private void joinEventContext(SelectQuery<?> selectQuery, CompositionAttributeQuery compositionAttributeQuery) {
+    private void joinEventContext(SelectQuery<?> selectQuery) {
         if (eventContextJoined) return;
         selectQuery.addJoin(EVENT_CONTEXT, EVENT_CONTEXT.COMPOSITION_ID.eq(ENTRY.COMPOSITION_ID));
         eventContextJoined = true;
     }
 
-    private void joinContextFacility(SelectQuery<?> selectQuery, CompositionAttributeQuery compositionAttributeQuery) {
+    private void joinContextFacility(SelectQuery<?> selectQuery) {
         if (facilityJoined) return;
-        joinEventContext(selectQuery, compositionAttributeQuery);
+        joinEventContext(selectQuery);
         Table<PartyIdentifiedRecord> facilityTable = facilityRef;
         selectQuery.addJoin(facilityTable,
                 EVENT_CONTEXT.FACILITY
@@ -191,9 +196,9 @@ public class JoinBinder implements I_JoinBinder {
         facilityJoined = true;
     }
 
-    private void joinComposer(SelectQuery<?> selectQuery, CompositionAttributeQuery compositionAttributeQuery) {
+    private void joinComposer(SelectQuery<?> selectQuery) {
         if (composerJoined) return;
-        joinComposition(selectQuery, compositionAttributeQuery);
+        joinComposition(selectQuery);
         Table<PartyIdentifiedRecord> composerTable = composerRef;
         selectQuery.addJoin(composerTable,
                 DSL.field(compositionRecordTable.field(COMPOSITION.COMPOSER.getName(), UUID.class))
@@ -201,9 +206,9 @@ public class JoinBinder implements I_JoinBinder {
         composerJoined = true;
     }
 
-    private void joinEhr(SelectQuery<?> selectQuery, CompositionAttributeQuery compositionAttributeQuery) {
+    private void joinEhr(SelectQuery<?> selectQuery) {
         if (ehrJoined) return;
-        joinComposition(selectQuery, compositionAttributeQuery);
+        joinComposition(selectQuery);
         selectQuery.addJoin(ehrRecordTable,
                 JoinType.RIGHT_OUTER_JOIN,
                 DSL.field(ehrRecordTable.field(EHR_.ID.getName(), UUID.class))

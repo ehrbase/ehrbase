@@ -27,7 +27,7 @@ import org.ehrbase.aql.definition.FuncParameter;
 import org.ehrbase.aql.definition.FunctionDefinition;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.Variables;
-import org.ehrbase.aql.sql.queryImpl.DefaultColumnId;
+import org.ehrbase.aql.sql.queryimpl.DefaultColumnId;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -41,11 +41,13 @@ import java.util.List;
 /**
  * Created by christian on 9/20/2017.
  */
+@SuppressWarnings({"java:S3776","java:S3740","java:S1452"})
 public class SuperQuery {
 
     private VariableDefinitions variableDefinitions;
     private SelectQuery query;
     private DSLContext context;
+    private boolean outputWithJson = true;
 
     public SuperQuery(I_DomainAccess domainAccess, VariableDefinitions variableDefinitions, SelectQuery query) {
         this.context = domainAccess.getContext();
@@ -74,7 +76,7 @@ public class SuperQuery {
             }
             else {
                 if (variableDefinition.getAlias() == null || variableDefinition.getAlias().isEmpty())
-                    fields.add(DSL.fieldByName(new DefaultColumnId().value(variableDefinition))); //CR #50
+                    fields.add(DSL.fieldByName(DefaultColumnId.value(variableDefinition))); //CR #50
                 else
                     fields.add(DSL.fieldByName(variableDefinition.getAlias()));
             }
@@ -123,7 +125,7 @@ public class SuperQuery {
 
                 fields.add(field);
             } else if (variableDefinition.isExtension()) {
-                //TODO:do nothing... for the time being
+                //do nothing... for the time being
             } else {
                 //check if this alias is serviced by a function
                 //check if this alias requires distinct
@@ -144,6 +146,9 @@ public class SuperQuery {
 
 
         selectQuery.addFrom(query);
+
+        //aggregate return scalar values
+        this.outputWithJson = false;
 
         return selectQuery;
     }
@@ -177,5 +182,9 @@ public class SuperQuery {
         }
 
         return selectQuery;
+    }
+
+    public boolean isOutputWithJson() {
+        return outputWithJson;
     }
 }

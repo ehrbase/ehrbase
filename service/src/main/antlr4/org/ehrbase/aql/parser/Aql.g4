@@ -125,15 +125,21 @@ identifiedEquality
         | OPEN_PAR* NOT? identifiedOperand LIKE STRING CLOSE_PAR*
         | OPEN_PAR* NOT? identifiedOperand ILIKE STRING CLOSE_PAR*
         | OPEN_PAR* NOT? identifiedOperand SIMILARTO STRING CLOSE_PAR*
-//        | NOT identifiedEquality
-        | OPEN_PAR* NOT? IN OPEN_PAR queryExpr CLOSE_PAR CLOSE_PAR*
+        | OPEN_PAR* identifiedOperand NOT? IN OPEN_PAR  (identifiedOperand|matchesOperand) CLOSE_PAR CLOSE_PAR*
+        | OPEN_PAR* NOT? identifiedOperand (COMPARABLEOPERATOR|LIKE|ILIKE) (ANY|ALL|SOME) OPEN_PAR (identifiedOperand|matchesOperand) CLOSE_PAR CLOSE_PAR*
+        | OPEN_PAR* identifiedOperand NOT? BETWEEN identifiedOperand AND identifiedOperand CLOSE_PAR*
+        | OPEN_PAR* identifiedOperand IS NOT? NULL CLOSE_PAR*
+        | OPEN_PAR* identifiedOperand IS NOT? UNKNOWN CLOSE_PAR*
+        | OPEN_PAR* identifiedOperand IS NOT? (TRUE|FALSE) CLOSE_PAR*
+        | OPEN_PAR* identifiedOperand IS NOT? DISTINCT FROM identifiedOperand CLOSE_PAR*
         | OPEN_PAR* NOT? OPEN_PAR identifiedExpr CLOSE_PAR CLOSE_PAR*
         | OPEN_PAR* NOT? EXISTS identifiedPath CLOSE_PAR*
         | OPEN_PAR* NOT? EXISTS identifiedExpr CLOSE_PAR*;
 
 identifiedOperand
         : operand
-        | identifiedPath ;
+        | identifiedPath
+        | stdExpression;
 
 identifiedPath
         : IDENTIFIER (SLASH objectPath)?
@@ -213,6 +219,10 @@ operand
                 | DATE
                 | PARAMETER
                 | BOOLEAN
+                | TRUE
+                | FALSE
+                | NULL
+                | UNKNOWN
         	    | invokeOperand;
 
 invokeOperand
@@ -285,6 +295,15 @@ ALL_VERSIONS :  A L L '_' V E R S I O N S;
 LATEST_VERSION : L A T E S T '_' V E R S I O N ;
 DISTINCT : D I S T I N C T ;
 JOINON: J O I N ' ' O N;
+ANY: A N Y;
+ALL: A L L;
+SOME: S O M E;
+BETWEEN: B E T W E E N;
+IS: I S;
+NULL: N U L L;
+UNKNOWN: U N K N O W N;
+TRUE: T R U E;
+FALSE: F A L S E;
 
 //demographic binding
 PERSON: P E R S O N ;
