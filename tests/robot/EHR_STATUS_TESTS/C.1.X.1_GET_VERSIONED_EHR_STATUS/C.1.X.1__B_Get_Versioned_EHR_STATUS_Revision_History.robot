@@ -48,7 +48,7 @@ Force Tags
 
 
 *** Test Cases ***
-Get Revision History of Versioned Status Of Existing EHR (JSON)
+1. Get Revision History of Versioned Status Of Existing EHR (JSON)
     # Simple test
 
     prepare new request session    JSON    Prefer=return=representation
@@ -65,7 +65,7 @@ Get Revision History of Versioned Status Of Existing EHR (JSON)
     Should Be Equal As Strings    ${ehrstatus_uid}    ${item1.version_id.value}
 
 
-Get Revision History of Versioned Status Of Existing EHR With Two Status Versions (JSON)
+2. Get Revision History of Versioned Status Of Existing EHR With Two Status Versions (JSON)
     # Testing with two versions, so the result should list two history entries.
 
     prepare new request session    JSON    Prefer=return=representation
@@ -89,7 +89,7 @@ Get Revision History of Versioned Status Of Existing EHR With Two Status Version
 
 
 # !!! Blocked by https://github.com/ehrbase/project_management/issues/458 - uncomment if resolved!
-# Get Correct Ordered Revision History of Versioned Status Of Existing EHR With Two Status Versions (JSON)
+# 3. Get Correct Ordered Revision History of Versioned Status Of Existing EHR With Two Status Versions (JSON)
 #     # Testing with two versions like above, but checking the response more thoroughly.
 
 #     Import Library    DateTime

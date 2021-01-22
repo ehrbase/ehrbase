@@ -48,7 +48,7 @@ Force Tags
 
 
 *** Test Cases ***
-Get Versioned Status Of Existing EHR (JSON)
+1. Get Versioned Status Of Existing EHR (JSON)
 
     prepare new request session    JSON    Prefer=return=representation
 
@@ -69,7 +69,7 @@ Get Versioned Status Of Existing EHR (JSON)
 #     verify response (XML)
 
 
-Get Versioned Status Of Existing EHR With Two Status Versions (JSON)
+2. Get Versioned Status Of Existing EHR With Two Status Versions (JSON)
 
     prepare new request session    JSON    Prefer=return=representation
 
