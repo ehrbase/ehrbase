@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.ehrbase.aql.sql.queryImpl.value_field;
+package org.ehrbase.aql.sql.queryimpl.value_field;
 
 /**
  * Created by christian on 5/2/2018.

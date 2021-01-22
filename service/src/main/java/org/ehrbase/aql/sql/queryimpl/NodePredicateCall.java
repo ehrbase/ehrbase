@@ -20,14 +20,12 @@ package org.ehrbase.aql.sql.queryimpl;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jooq.JSONB;
 import org.jooq.impl.DSL;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.ehrbase.jooq.pg.Tables.ENTRY;
-import static org.ehrbase.jooq.pg.Tables.JSONB_ARRAY_ELEMENTS;
 
 /**
  * Created by christian on 5/9/2018.
@@ -96,16 +94,15 @@ public class NodePredicateCall {
             if (itemPathArray.subList(markerPos + 1, itemPathArray.size()).contains(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER)) {
                 //resolve the path selection to the next marker
                 endPos = ArrayUtils.indexOf(itemPathArray.toArray(new String[]{}), QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER, markerPos + 1);
-                expression = appendRightPathExpression(itemPathArray, expression, markerPos, endPos);
+                appendRightPathExpression(itemPathArray, expression, markerPos, endPos);
                 //cast as jsonb for next iteration
-//                expression = DSL.field(expression.toString()).cast(JSONB.class).toString();
                 resultList.add(DSL.field("("+expression.toString()+")::jsonb").toString()); //insert the result in the path list
                 //add the remaining part to the list for the next iteration
                 resultList.addAll(itemPathArray.subList(endPos, itemPathArray.size()));
             } else {
                 endPos = itemPathArray.size();
                 if (markerPos+2 < endPos) {
-                    expression = appendRightPathExpression(itemPathArray, expression, markerPos, endPos);
+                    appendRightPathExpression(itemPathArray, expression, markerPos, endPos);
                 }
                 resultList.add(expression.toString());
             }

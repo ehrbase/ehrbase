@@ -1,47 +1,37 @@
 /*
- * Copyright (c) 2019 Stefan Spiska (Vitasystems GmbH)and Hannover Medical School.
+ *  Copyright (c) 2020 Vitasystems GmbH and Christian Chevalley (Hannover Medical School).
  *
- * This file is part of project EHRbase
+ *  This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
+ *
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing,
+ *   software distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and  limitations under the License.
+ *
  */
 
-package org.ehrbase.aql.sql.queryImpl;
+package org.ehrbase.aql.sql.queryimpl;
 
 import org.ehrbase.aql.TestAqlBase;
 import org.ehrbase.aql.compiler.AqlExpression;
 import org.ehrbase.aql.compiler.Contains;
 import org.ehrbase.aql.definition.I_VariableDefinitionHelper;
 import org.ehrbase.aql.sql.PathResolver;
-import org.ehrbase.aql.sql.QueryProcessorTest;
-import org.ehrbase.dao.jooq.impl.DSLContextHelper;
-import org.ehrbase.service.CacheRule;
-import org.ehrbase.service.IntrospectService;
-import org.ehrbase.service.KnowledgeCacheHelper;
-import org.jooq.*;
+import org.jooq.Field;
+import org.jooq.Record1;
+import org.jooq.SelectSelectStep;
 import org.jooq.impl.DSL;
 import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-
-import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.ArgumentMatchers.same;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class JsonbEntryQueryTest extends TestAqlBase {
 
@@ -81,7 +71,7 @@ public class JsonbEntryQueryTest extends TestAqlBase {
 
 
         //CCH 191016: EHR-163 required trailing '/value' as now the query allows canonical json return
-        Field<?> actual = cut.makeField("IDCR - Immunisation summary.v0", "d", I_VariableDefinitionHelper.build("description[at0001]/items[at0002]/value/value", "test", "d", false, false, false), I_QueryImpl.Clause.SELECT);
+        Field<?> actual = cut.makeField("IDCR - Immunisation summary.v0", "d", I_VariableDefinitionHelper.build("description[at0001]/items[at0002]/value/value", "test", "d", false, false, false), IQueryImpl.Clause.SELECT);
 
         SelectSelectStep<? extends Record1<?>> selectQuery = DSL.select(actual);
         assertThat(selectQuery.getQuery().toString()).isEqualToIgnoringWhitespace("select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') \"test\"");
@@ -94,7 +84,7 @@ public class JsonbEntryQueryTest extends TestAqlBase {
                 "c",
                 I_VariableDefinitionHelper.build("content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1,'Blood pressure (Training sample)']/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/magnitude",
                         "test", "c", false, false, false),
-                I_QueryImpl.Clause.SELECT);
+                IQueryImpl.Clause.SELECT);
 
         SelectSelectStep<? extends Record1<?>> selectQuery = DSL.select(actual);
         assertThat(selectQuery.getQuery().toString()).isEqualToIgnoringWhitespace(
@@ -109,7 +99,7 @@ public class JsonbEntryQueryTest extends TestAqlBase {
                 "c",
                 I_VariableDefinitionHelper.build("content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0004, 'Systolic']/value/magnitude",
                         "test", "c", false, false, false),
-                I_QueryImpl.Clause.SELECT);
+                IQueryImpl.Clause.SELECT);
 
         SelectSelectStep<? extends Record1<?>> selectQuery = DSL.select(actual);
         assertThat(selectQuery.getQuery().toString()).isEqualToIgnoringWhitespace(
@@ -123,7 +113,7 @@ public class JsonbEntryQueryTest extends TestAqlBase {
                 "c",
                 I_VariableDefinitionHelper.build("content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1,'Blood pressure (Training sample)']/data[at0001]/events[at0002]/data[at0003]/items[at0004, 'Systolic']/value/magnitude",
                         "test", "c", false, false, false),
-                I_QueryImpl.Clause.SELECT);
+                IQueryImpl.Clause.SELECT);
 
         SelectSelectStep<? extends Record1<?>> selectQuery = DSL.select(actual);
         assertThat(selectQuery.getQuery().toString()).isEqualToIgnoringWhitespace(
@@ -137,7 +127,7 @@ public class JsonbEntryQueryTest extends TestAqlBase {
                 "c",
                 I_VariableDefinitionHelper.build("content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1,'Blood pressure (Training sample)']/data[at0001, 'history']/events[at0002]/data[at0003]/items[at0004, 'Systolic']/value/magnitude",
                         "test", "c", false, false, false),
-                I_QueryImpl.Clause.SELECT);
+                IQueryImpl.Clause.SELECT);
 
         SelectSelectStep<? extends Record1<?>> selectQuery = DSL.select(actual);
         assertThat(selectQuery.getQuery().toString()).isEqualToIgnoringWhitespace(
@@ -151,7 +141,7 @@ public class JsonbEntryQueryTest extends TestAqlBase {
                 "c",
                 I_VariableDefinitionHelper.build("content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001, 'history']/events[at0002]/data[at0003]/items[at0004]/value/magnitude",
                         "test", "c", false, false, false),
-                I_QueryImpl.Clause.SELECT);
+                IQueryImpl.Clause.SELECT);
 
         SelectSelectStep<? extends Record1<?>> selectQuery = DSL.select(actual);
         assertThat(selectQuery.getQuery().toString()).isEqualToIgnoringWhitespace(
@@ -166,7 +156,7 @@ public class JsonbEntryQueryTest extends TestAqlBase {
                 "c",
                 I_VariableDefinitionHelper.build("content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001 and name/value='history']/events[at0002]/data[at0003]/items[at0004]/value/magnitude",
                         "test", "c", false, false, false),
-                I_QueryImpl.Clause.SELECT);
+                IQueryImpl.Clause.SELECT);
 
         SelectSelectStep<? extends Record1<?>> selectQuery = DSL.select(actual);
         assertThat(selectQuery.getQuery().toString()).isEqualToIgnoringWhitespace(

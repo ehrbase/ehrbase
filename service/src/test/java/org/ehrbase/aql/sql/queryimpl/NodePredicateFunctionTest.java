@@ -17,7 +17,7 @@
  *
  */
 
-package org.ehrbase.aql.sql.queryImpl;
+package org.ehrbase.aql.sql.queryimpl;
 
 import org.junit.Test;
 import org.junit.platform.commons.util.StringUtils;
