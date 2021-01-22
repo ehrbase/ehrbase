@@ -49,6 +49,8 @@ public class KnowledgeCacheHelper {
 
     public static ServerConfig buildServerConfig() {
         return new ServerConfig() {
+            private boolean useJsQuery = false;
+
             @Override
             public int getPort() {
                 return 0;
@@ -81,7 +83,12 @@ public class KnowledgeCacheHelper {
 
             @Override
             public Boolean getUseJsQuery() {
-                return false;
+                return useJsQuery;
+            }
+
+            @Override
+            public void setUseJsQuery(boolean b) {
+                this.useJsQuery = b;
             }
         };
     }

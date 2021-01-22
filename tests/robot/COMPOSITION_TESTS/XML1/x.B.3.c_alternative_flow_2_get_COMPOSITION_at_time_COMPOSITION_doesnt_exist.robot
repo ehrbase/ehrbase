@@ -21,12 +21,13 @@ Documentation   Composition Integration Tests
 Metadata        TOP_TEST_SUITE    COMPOSITION
 Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
 
-Force Tags      XML
+Force Tags
 
 
 
 *** Test Cases ***
 Alternative flow 2 get COMPOSITION at time, COMPOSITION doesnt exist
+    [Tags]    17    not-ready    bug
 
     upload OPT    minimal/minimal_observation.opt
 

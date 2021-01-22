@@ -16,4 +16,5 @@ public interface ServerConfig {
 
     Boolean getUseJsQuery();
 
+    void setUseJsQuery(boolean b);
 }

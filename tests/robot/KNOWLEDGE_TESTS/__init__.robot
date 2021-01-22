@@ -36,4 +36,4 @@ Resource    ${CURDIR}${/}../_resources/suite_settings.robot
 Suite Setup  startup SUT
 Suite Teardown  shutdown SUT
 
-Force Tags    KNOWLEDGE  DEFINITION
+Force Tags    OPT

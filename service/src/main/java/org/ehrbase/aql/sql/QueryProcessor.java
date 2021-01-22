@@ -28,7 +28,7 @@ import org.ehrbase.aql.compiler.TopAttributes;
 import org.ehrbase.aql.definition.Variables;
 import org.ehrbase.aql.sql.binding.*;
 import org.ehrbase.aql.sql.postprocessing.RawJsonTransform;
-import org.ehrbase.aql.sql.queryImpl.TemplateMetaData;
+import org.ehrbase.aql.sql.queryimpl.TemplateMetaData;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.service.IntrospectService;
@@ -54,17 +54,17 @@ import static org.ehrbase.jooq.pg.Tables.ENTRY;
  * <p>
  * Created by christian on 4/28/2016.
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"java:S3776", "java:S3740"})
 public class QueryProcessor extends TemplateMetaData {
 
     public static final String NIL_TEMPLATE = "*";
 
     /**
      */
-    static class AqlSelectQuery {
+    public static class AqlSelectQuery {
         private final SelectQuery<Record> selectQuery;
         private final Collection<QuerySteps> querySteps;
-        private final boolean outputWithJson;
+        private boolean outputWithJson;
 
 
         AqlSelectQuery(SelectQuery<Record> selectQuery, Collection<QuerySteps> querySteps, boolean outputWithJson) {
@@ -77,7 +77,7 @@ public class QueryProcessor extends TemplateMetaData {
             return selectQuery;
         }
 
-        boolean isOutputWithJson() {
+        public boolean isOutputWithJson() {
             return outputWithJson;
         }
 
@@ -117,14 +117,16 @@ public class QueryProcessor extends TemplateMetaData {
         return new AqlResult(result, explainList);
     }
 
-    AqlSelectQuery buildAqlSelectQuery() {
+    public AqlSelectQuery buildAqlSelectQuery() {
 
         Map<String, QuerySteps> cacheQuery = new HashMap<>();
+
+        boolean isOutputWithJson = true;
 
         statements = new OrderByField(statements).merge();
 
         if (contains.getTemplates().isEmpty()){
-            if (contains.hasContains() && !contains.useSimpleCompositionContains())
+            if (contains.hasContains() && contains.useSimpleCompositionContains())
                 cacheQuery.put(NIL_TEMPLATE, buildNullSelect(NIL_TEMPLATE));
             else
                 cacheQuery.put(NIL_TEMPLATE, buildQuerySteps(NIL_TEMPLATE));
@@ -143,8 +145,13 @@ public class QueryProcessor extends TemplateMetaData {
             SelectQuery select = queryStep.getSelectQuery();
 
             select.addFrom(ENTRY);
-            select = new JoinBinder(domainAccess, select, false).addJoinClause(queryStep.getCompositionAttributeQuery());
 
+            if (!queryStep.getTemplateId().equalsIgnoreCase(NIL_TEMPLATE))
+                queryStep.getCompositionAttributeQuery().setUseEntry(true);
+
+            select = new JoinBinder(domainAccess, select).addJoinClause(queryStep.getCompositionAttributeQuery());
+
+            //this deals with 'contains c' which adds an implicit where on template id
             if (!queryStep.getTemplateId().equals(NIL_TEMPLATE)) {
                 select.addConditions(ENTRY.TEMPLATE_ID.eq(queryStep.getTemplateId()));
             }
@@ -168,6 +175,7 @@ public class QueryProcessor extends TemplateMetaData {
             if (statements.getOrderAttributes() != null && !statements.getOrderAttributes().isEmpty()){
                 unionSetQuery = superQuery.setOrderBy(statements.getOrderAttributes(), unionSetQuery);
             }
+            isOutputWithJson = superQuery.isOutputWithJson();
         }
         else if (statements.getOrderAttributes() != null && !statements.getOrderAttributes().isEmpty()) {
             unionSetQuery = new SuperQuery(domainAccess, statements.getVariables(), unionSetQuery).selectOrderBy(statements.getOrderAttributes());
@@ -181,7 +189,10 @@ public class QueryProcessor extends TemplateMetaData {
 
         unionSetQuery = limitBinding.bind();
 
-        return new AqlSelectQuery(unionSetQuery, cacheQuery.values(), cacheQuery.values().stream().anyMatch(QuerySteps::isContainsJson));
+        if (!isOutputWithJson) //superceded by aggregate
+            return new AqlSelectQuery(unionSetQuery, cacheQuery.values(), isOutputWithJson);
+        else
+            return new AqlSelectQuery(unionSetQuery, cacheQuery.values(), cacheQuery.values().stream().anyMatch(QuerySteps::isContainsJson));
     }
 
     private QuerySteps buildQuerySteps(String templateId) {

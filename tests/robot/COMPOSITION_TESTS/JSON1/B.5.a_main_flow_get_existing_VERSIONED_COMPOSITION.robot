@@ -21,12 +21,13 @@ Documentation   Composition Integration Tests
 Metadata        TOP_TEST_SUITE    COMPOSITION
 Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
 
-Force Tags      JSON
+Force Tags
 
 
 
 *** Test Cases ***
 Main flow get existing VERSIONED COMPOSITION
+    [Tags]    122    not-ready    bug
 
     upload OPT    minimal/minimal_observation.opt
     create EHR

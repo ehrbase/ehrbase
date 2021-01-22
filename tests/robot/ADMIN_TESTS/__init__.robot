@@ -34,4 +34,4 @@ Documentation       Admin API REST tests
 ...
 ...              NOTE: Tests with OAUTH require a running and properly configured Keycloak server.
 
-Force Tags    admin
+Force Tags    ADMIN

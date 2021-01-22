@@ -132,7 +132,7 @@ MF-004 - Create new EHR (Prefer header: representation)
 
 
 MF-005 - Create new EHR (XML, Prefer header: representation)
-    [tags]    XML
+    [tags]    EHR_STATUS_create_xml
     prepare new request session    XML    Prefer=return=representation
     create new EHR (XML)
     # comment: check steps
@@ -229,12 +229,12 @@ MF-013 - Create new EHR w/ body: invalid ehr_status
 
 MF-014 - Create new EHR w/ body: invalid ehr_status
     [Documentation]     Covers case where mand. is_modifiable is missing
-    [Tags]
+    [Tags]              154    not-ready
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    invalid/007_ehr_status_is_modifiable_missing.json
     POST /ehr    ${body}
 
-        TRACE GITHUB ISSUE  154  not-ready
+        TRACE GITHUB ISSUE  154  bug
 
     # comment: check step
     Integer    response status    400
@@ -242,12 +242,12 @@ MF-014 - Create new EHR w/ body: invalid ehr_status
 
 MF-015 - Create new EHR w/ body: invalid ehr_status
     [Documentation]     Covers case where mand. is_queryable is missing
-    [Tags]
+    [Tags]              154    not-ready
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    invalid/008_ehr_status_is_queryable_missing.json
     POST /ehr    ${body}
 
-        TRACE GITHUB ISSUE  154  not-ready
+        TRACE GITHUB ISSUE  154  bug
 
     # comment: check step
     Integer    response status    400
@@ -255,12 +255,12 @@ MF-015 - Create new EHR w/ body: invalid ehr_status
 
 MF-016 - Create new EHR w/ body: invalid ehr_status
     [Documentation]     Covers case where mand. is_modifiable and is_queryableis are missing
-    [Tags]
+    [Tags]              154    not-ready
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    invalid/009_ehr_status_is_mod_and_is_quer_missing.json
     POST /ehr    ${body}
 
-        TRACE GITHUB ISSUE  154  not-ready
+        TRACE GITHUB ISSUE  154  bug
 
     # comment: check step
     Integer    response status    400
@@ -277,19 +277,19 @@ MF-017 - Create new EHR w/ body: valid ehr_status
 
 MF-018 - Create new EHR w/ body: valid ehr_status
     [Documentation]     Covers invalid case where subject is empty JSON
-    [Tags]              154
+    [Tags]              154    not-ready
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    invalid/001_ehr_status_subject_empty.json
     POST /ehr    ${body}
 
-        TRACE GITHUB ISSUE  154  not-ready
+        TRACE GITHUB ISSUE  154  bug
 
     Integer    response status    400
 
 
 MF-019 - Create new EHR w/ body: valid ehr_status w/ o.d.
     [Documentation]     Covers happy path w/ "other_details" _type ITEM_TREE
-    [Tags]              161
+    [Tags]              161    not-ready
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/002_ehr_status_with_other_details_item_tree.json
     POST /ehr    ${body}
@@ -300,7 +300,7 @@ MF-019 - Create new EHR w/ body: valid ehr_status w/ o.d.
     &{diff}=            compare json-strings    ${actual_ehr_status}[0]  ${expected_ehr_status}
                         ...    exclude_paths=root['uid']
 
-        TRACE GITHUB ISSUE  161  not-ready
+        TRACE GITHUB ISSUE  161  bug
 
                         Log To Console    \n\n&{diff}
                         Should Be Empty    ${diff}    msg=DIFF DETECTED!
@@ -308,7 +308,7 @@ MF-019 - Create new EHR w/ body: valid ehr_status w/ o.d.
 
 MF-020 - Create new EHR w/ body: valid ehr_status w/ o.d.
     [Documentation]     Covers happy path w/ "other_details" _type ITEM_LIST
-    [Tags]              161
+    [Tags]              161    not-ready
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/003_ehr_status_with_other_details_item_list.json
     POST /ehr    ${body}
@@ -320,7 +320,7 @@ MF-020 - Create new EHR w/ body: valid ehr_status w/ o.d.
     &{diff}=            compare json-strings    ${actual_ehr_status}[0]  ${expected_ehr_status}
                         ...    exclude_paths=root['uid']
     
-        TRACE GITHUB ISSUE  161  not-ready
+        TRACE GITHUB ISSUE  161  bug
 
                         Should Be Empty    ${diff}    msg=DIFF DETECTED!
 
@@ -336,12 +336,12 @@ MF-021 - Create new EHR w/ body: valid ehr_status w/ o.d.
 
 MF-022 - Create new EHR w/ body: valid ehr_status w/ o.d.
     [Documentation]     Covers happy path w/ "other_details" _type ITEM_TABLE
-    [Tags]              162
+    [Tags]              162    not-ready
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/005_ehr_status_with_other_details_item_table.json
     POST /ehr    ${body}
 
-        TRACE GITHUB ISSUE  162  not-ready
+        TRACE GITHUB ISSUE  162  bug
 
     Integer    response status    201
 
@@ -358,7 +358,7 @@ MF-023 - Create new EHR (POST /ehr valid variants)
 
 
 MF-024 - Create new EHR (POST /ehr invalid variants)
-    [Tags]    295
+    [Tags]    295    not-ready
     [Template]          create ehr from data table (invalid)
 
   # SUBJECT    IS_MODIFIABLE   IS_QUERYABLE   R.CODE
@@ -372,7 +372,7 @@ MF-024 - Create new EHR (POST /ehr invalid variants)
     given      0               0              400
     given      "true"          "true"         400
     given      "false"         "false"        400
-    [Teardown]      TRACE GITHUB ISSUE  295  not-ready
+    [Teardown]      TRACE GITHUB ISSUE  295  bug
 
 
 MF-025 - Create new EHR w/ invalid subject (POST /ehr variants)
@@ -381,7 +381,7 @@ MF-025 - Create new EHR w/ invalid subject (POST /ehr variants)
     ...                 2) subject is provided but is invalid
     ...                 because some of it's mandatory elements are missing
     ...                 3) subject is missing completely
-    [Tags]              154
+    [Tags]              154    not-ready
     [Template]          create ehr from data table (invalid)
 
   # SUBJECT    IS_MODIFIABLE   IS_QUERYABLE   R.CODE
@@ -404,7 +404,7 @@ MF-025 - Create new EHR w/ invalid subject (POST /ehr variants)
     missing    true            false          400
     missing    false           true           400
     missing    false           false          400
-    [Teardown]      TRACE GITHUB ISSUE  154  not-ready
+    [Teardown]      TRACE GITHUB ISSUE  154  bug
 
 
 MF-030 - Create new EHR w/ given ehr_id (PUT /ehr/ehr_id variants)
@@ -419,7 +419,7 @@ MF-030 - Create new EHR w/ given ehr_id (PUT /ehr/ehr_id variants)
 
 
 MF-031 - Create new EHR w/ given ehr_id (PUT /ehr/ehr_id invalid variants)
-    [Tags]              154
+    [Tags]              154    not-ready
     [Template]          create ehr w/ given ehr_id but invalid subject from data table
 
   # EHR_ID  SUBJECT    IS_MODIFIABLE   IS_QUERYABLE   R.CODE
@@ -439,7 +439,7 @@ MF-031 - Create new EHR w/ given ehr_id (PUT /ehr/ehr_id invalid variants)
     given   ${EMPTY}   true            false          400
     given   ${EMPTY}   false           false          400
     given   ${EMPTY}   false           true           400
-    [Teardown]      TRACE GITHUB ISSUE  154  not-ready  subject as empty JSON {} is invalid
+    [Teardown]      TRACE GITHUB ISSUE  154  bug
 
 
 MF-032 - Create new EHR w/ invalid ehr_id (PUT /ehr/ehr_id variants)
@@ -487,7 +487,7 @@ MF-036 - Create new EHR w/ given ehr_id (Prefer header: representation)
 
 
 MF-037 - Create new EHR w/ given ehr_id (XML, Prefer header: representation)
-    [tags]    XML
+    [tags]    EHR_STATUS_create_xml
     prepare new request session    XML    Prefer=return=representation
     PUT /ehr/$ehr_id
     # comment: check steps
@@ -583,12 +583,12 @@ MF-045 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
 
 MF-046 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
     [Documentation]     Covers case where mand. is_modifiable is missing
-    [Tags]
+    [Tags]              154    not-ready
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    invalid/007_ehr_status_is_modifiable_missing.json
     PUT /ehr/$ehr_id    body=${body}
 
-        TRACE GITHUB ISSUE  154  not-ready
+        TRACE GITHUB ISSUE  154  bug
 
     # comment: check step
     Integer    response status    400
@@ -596,12 +596,12 @@ MF-046 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
 
 MF-047 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
     [Documentation]     Covers case where mand. is_queryable is missing
-    [Tags]
+    [Tags]              154    not-ready
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    invalid/008_ehr_status_is_queryable_missing.json
     PUT /ehr/$ehr_id    body=${body}
 
-        TRACE GITHUB ISSUE  154  not-ready
+        TRACE GITHUB ISSUE  154  bug
 
     # comment: check step
     Integer    response status    400
@@ -609,12 +609,12 @@ MF-047 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
 
 MF-048 - Create new EHR w/ given ehr_id w/ body: invalid ehr_status
     [Documentation]     Covers case where mand. is_modifiable and is_queryableis are missing
-    [Tags]
+    [Tags]              154    not-ready
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    invalid/009_ehr_status_is_mod_and_is_quer_missing.json
     PUT /ehr/$ehr_id    body=${body}
 
-        TRACE GITHUB ISSUE  154  not-ready
+        TRACE GITHUB ISSUE  154  bug
 
     # comment: check step
     Integer    response status    400
@@ -631,19 +631,19 @@ MF-049 - Create new EHR w/ given ehr_id w/ body: valid ehr_status
 
 MF-050 - Create new EHR w/ given ehr_id w/ body: valid ehr_status
     [Documentation]     Covers INVALID case where subject is empty JSON
-    [Tags]              154
+    [Tags]              154    not-ready
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    invalid/001_ehr_status_subject_empty.json
     PUT /ehr/$ehr_id    body=${body}
 
-        TRACE GITHUB ISSUE  154  not-ready
+        TRACE GITHUB ISSUE  154  bug
 
     Integer    response status    400
 
 
 MF-051 - Create new EHR w/ given ehr_id w/ body: valid ehr_status w/ o.d.
     [Documentation]     Covers happy path w/ "other_details" _type ITEM_TREE
-    [Tags]              161
+    [Tags]              161    not-ready
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/002_ehr_status_with_other_details_item_tree.json
     PUT /ehr/$ehr_id    body=${body}
@@ -655,14 +655,14 @@ MF-051 - Create new EHR w/ given ehr_id w/ body: valid ehr_status w/ o.d.
     &{diff}=            compare json-strings    ${actual_ehr_status}[0]  ${expected_ehr_status}
                         ...    exclude_paths=root['uid']
 
-        TRACE GITHUB ISSUE  161  not-ready
+        TRACE GITHUB ISSUE  161  bug
 
                         Should Be Empty    ${diff}    msg=DIFF DETECTED!
 
 
 MF-052 - Create new EHR w/ given ehr_id w/ body: valid ehr_status w/ o.d.
     [Documentation]     Covers happy path w/ "other_details" _type ITEM_LIST
-    [Tags]              161
+    [Tags]              161    not-ready
     prepare new request session    JSON
     ${body}=     randomize subject_id in test-data-set    valid/003_ehr_status_with_other_details_item_list.json
     PUT /ehr/$ehr_id    body=${body}
@@ -674,7 +674,7 @@ MF-052 - Create new EHR w/ given ehr_id w/ body: valid ehr_status w/ o.d.
     &{diff}=            compare json-strings    ${actual_ehr_status}[0]  ${expected_ehr_status}
                         ...    exclude_paths=root['uid']
 
-        TRACE GITHUB ISSUE  161  not-ready
+        TRACE GITHUB ISSUE  161  bug
 
                         Should Be Empty    ${diff}    msg=DIFF DETECTED!
 
@@ -690,12 +690,12 @@ MF-053 - Create new EHR w/ given ehr_id w/ body: valid ehr_status w/ o.d.
 
 MF-054 - Create new EHR w/ given ehr_id w/ body: valid ehr_status w/ o.d.
     [Documentation]     Covers happy path w/ "other_details" _type ITEM_TABLE
-    [Tags]              162
+    [Tags]              162    not-ready
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/005_ehr_status_with_other_details_item_table.json
     PUT /ehr/$ehr_id    body=${body}
 
-        TRACE GITHUB ISSUE  162  not-ready
+        TRACE GITHUB ISSUE  162  bug
 
     Integer    response status    201
 

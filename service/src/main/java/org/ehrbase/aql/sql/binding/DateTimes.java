@@ -5,7 +5,6 @@ import java.time.format.DateTimeParseException;
 
 /**
  * do some smart guess to identify if a string is an ISO8601 data/time with timezone
- * TODO: should be extended to support partial date time
  */
 public class DateTimes {
     String testItem;

@@ -34,7 +34,6 @@ public class JsonPathQueryBuilder {
 
     public JsonPathQueryBuilder(List<Object> containmentList) {
         this.reverseListIterator = new ReverseListIterator(containmentList);
-        ;
     }
 
 

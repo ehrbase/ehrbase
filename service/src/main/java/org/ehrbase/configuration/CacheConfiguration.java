@@ -21,7 +21,7 @@ package org.ehrbase.configuration;
 import org.ehrbase.aql.containment.JsonPathQueryResult;
 import org.ehrbase.aql.containment.TemplateIdAqlTuple;
 import org.ehrbase.aql.containment.TemplateIdQueryTuple;
-import org.ehrbase.aql.sql.queryImpl.ItemInfo;
+import org.ehrbase.aql.sql.queryimpl.ItemInfo;
 import org.ehrbase.validation.Validator;
 import org.ehrbase.webtemplate.model.WebTemplate;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;

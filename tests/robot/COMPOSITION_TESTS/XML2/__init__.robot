@@ -28,4 +28,4 @@ Documentation    COMPOSITION TEST SUITE
 # Suite Setup  startup SUT
 # Suite Teardown  shutdown SUT
 
-Force Tags    XML2
+Force Tags    COMPOSITION_xml    COMPOSITION_xml2
