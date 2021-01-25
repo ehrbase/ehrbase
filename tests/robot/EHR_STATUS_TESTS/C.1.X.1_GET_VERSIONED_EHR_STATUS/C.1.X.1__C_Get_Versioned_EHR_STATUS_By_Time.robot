@@ -127,7 +127,7 @@ Force Tags
 
 
 
-4. Get Versioned Status Of Existing EHR by Time (JSON)
+4. Get Versioned Status Of Existing EHR by Time Check Lifecycle State (JSON)
     # Simple, but checking lifecycle state
 
     prepare new request session    JSON    Prefer=return=representation
@@ -139,6 +139,39 @@ Force Tags
     Should Be Equal As Strings    ${response.status}    200
     Should Be Equal As Strings    ${ehrstatus_uid}    ${response.body.uid.value}
     Should Be Equal As Strings    complete   ${response.body.lifecycle_state.value}
+
+
+5a. Get Versioned Status Of Existing EHR by Time Check Preceding Version (JSON)
+    # Simple, but checking preceding version uid - with one version
+
+    prepare new request session    JSON    Prefer=return=representation
+
+    create new EHR
+    Should Be Equal As Strings    ${response.status}    201
+    
+    get versioned ehr_status of EHR by time
+    Should Be Equal As Strings    ${response.status}    200
+    Should Be Equal As Strings    ${ehrstatus_uid}    ${response.body.uid.value}
+    Should Not Contain  ${response.body}  preceding_version_uid
+
+
+5b. Get Versioned Status Of Existing EHR by Time Check Preceding Version (JSON)
+    # Simple, but checking preceding version uid - with two versions
+
+    prepare new request session    JSON    Prefer=return=representation
+
+    create new EHR
+    Should Be Equal As Strings    ${response.status}    201
+    # save orginal version uid
+    Set Test Variable  ${original_id}  ${ehrstatus_uid}
+
+    update EHR: set ehr_status is_queryable    ${TRUE}
+    check response of 'update EHR' (JSON)
+
+    get versioned ehr_status of EHR by time
+    Should Be Equal As Strings    ${response.status}    200
+    Should Be Equal As Strings    ${original_id}    ${response.body.preceding_version_uid.value}
+
 
 
 
