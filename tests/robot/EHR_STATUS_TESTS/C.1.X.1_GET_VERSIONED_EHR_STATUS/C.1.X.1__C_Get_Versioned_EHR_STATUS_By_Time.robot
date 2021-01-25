@@ -74,7 +74,7 @@ Force Tags
     # set the query parameter to current data
     ${date} = 	Get Current Date
     ${date} = 	Replace String 	${date} 	${space} 	T       # manually convert robot timestamp to openEHR REST spec timestamp
-    Set Suite Variable 	&{query} 	version_at_time=${date}     # set query as dictionary
+    Set Test Variable 	&{query} 	version_at_time=${date}     # set query as dictionary
 
     get versioned ehr_status of EHR by time
     Should Be Equal As Strings    ${response.status}    200
@@ -109,7 +109,7 @@ Force Tags
     # set the query parameter to current data
     ${date} = 	Get Current Date
     ${date} = 	Replace String 	${date} 	${space} 	T       # manually convert robot timestamp to openEHR REST spec timestamp
-    Set Suite Variable 	&{query} 	version_at_time=${date}     # set query as dictionary
+    Set Test Variable 	&{query} 	version_at_time=${date}     # set query as dictionary
 
     get versioned ehr_status of EHR by time
     Should Be Equal As Strings    ${response.status}    200
@@ -119,7 +119,7 @@ Force Tags
     # first add some time to timestamp so it actually points to time after the creation itself
     ${timestamp} = 	Add Time To Date 	${timestamp} 	1 ms
     ${timestamp} = 	Replace String 	${timestamp} 	${space} 	T       # manually convert robot timestamp to openEHR REST spec timestamp
-    Set Suite Variable 	&{query} 	version_at_time=${timestamp}     # set query as dictionary
+    Set Test Variable 	&{query} 	version_at_time=${timestamp}     # set query as dictionary
 
     get versioned ehr_status of EHR by time
     Should Be Equal As Strings    ${response.status}    200
