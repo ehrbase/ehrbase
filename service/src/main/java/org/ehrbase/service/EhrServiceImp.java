@@ -170,6 +170,10 @@ public class EhrServiceImp extends BaseService implements EhrService {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrUuid.toString());
         }
 
+        if ((version == 0) || (I_StatusAccess.getLatestVersionNumber(getDataAccess(), versionedObjectUid) < version)) {
+            throw new ObjectNotFoundException("versioned_ehr_status", "No VERSIONED_EHR_STATUS with given version: " + version);
+        }
+
         I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstanceByStatus(getDataAccess(), ehrUuid, versionedObjectUid, version);
         if (ehrAccess == null) {
             return Optional.empty();

@@ -469,6 +469,20 @@ internal get versioned ehr_status of EHR by time without query
                         Set Test Variable    ${response}    ${resp}
 
 
+get versioned ehr_status of EHR by version uid
+    [Documentation]     Gets revision history of versioned status of EHR with given ehr_id.
+    ...                 DEPENDENCY: `prepare new request session` and keywords that
+    ...                             create and expose an `ehr_id` e.g.
+    ...                             - `create new EHR`
+    ...                             - `generate random ehr_id`
+    ...                 Input: `version_uid` variable needs to be set
+
+    &{resp}=            REST.GET    ${baseurl}/ehr/${ehr_id}/versioned_ehr_status/version/${version_uid}
+                        ...         headers={"Content-Type": "application/json"}
+                        # ...         headers={"If-Match": null}
+                        Set Test Variable    ${response}    ${resp}
+
+
 set ehr_status of EHR
     [Documentation]     Sets status of EHR with given `ehr_id`.
     ...                 DEPENDENCY: `prepare new request session` and keywords that

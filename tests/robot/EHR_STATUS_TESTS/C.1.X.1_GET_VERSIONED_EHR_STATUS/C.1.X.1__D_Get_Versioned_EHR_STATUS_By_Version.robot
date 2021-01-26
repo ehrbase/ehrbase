@@ -48,32 +48,49 @@ Force Tags
 
 
 *** Test Cases ***
-1. Get Versioned Status Of Existing EHR (JSON)
+1. Get Versioned Status Of Existing EHR by Version UID (JSON)
+    # Simple, valid request
 
     prepare new request session    JSON    Prefer=return=representation
 
     create new EHR
-    Should Be Equal As Strings    ${response.status}    201
+    Should Be Equal As Strings    ${response.status}    201	
 
-    get versioned ehr_status of EHR
+    Set Test Variable  ${version_uid}  ${ehrstatus_uid}
+
+    get versioned ehr_status of EHR by version uid
     Should Be Equal As Strings    ${response.status}    200
     Should Be Equal As Strings    ${ehrstatus_uid}    ${response.body.uid.value}
-    Should Be Equal As Strings    ${ehr_id}    ${response.body.owner_id.id.value}
 
 
-2. Get Versioned Status Of Existing EHR With Two Status Versions (JSON)
+2. Get Versioned Status Of EHR by Version UID Invalid EHR (JSON)
+    # Simple, invalid EHR_ID
 
     prepare new request session    JSON    Prefer=return=representation
 
     create new EHR
     Should Be Equal As Strings    ${response.status}    201
 
-    update EHR: set ehr_status is_queryable    ${TRUE}
-    check response of 'update EHR' (JSON)
+    # take the SYSTEM_ID UID to guarantee this ID doesn't match the EHR ID
+    Set Test Variable 	${ehr_id} 	${response.body.system_id.value}
 
-    get versioned ehr_status of EHR
-    Should Be Equal As Strings    ${response.status}    200
-    Should Be Equal As Strings    ${ehrstatus_uid[0:-1]}2    ${response.body.uid.value}
-    Should Be Equal As Strings    ${ehr_id}    ${response.body.owner_id.id.value}
+    Set Test Variable  ${version_uid}  ${ehrstatus_uid}
 
+    get versioned ehr_status of EHR by version uid
+    Should Be Equal As Strings    ${response.status}    404
+
+
+3. Get Versioned Status Of Existing EHR by Version UID Invalid Version UID (JSON)
+    # Simple, invalid EHR_ID
+
+    prepare new request session    JSON    Prefer=return=representation
+
+    create new EHR
+    Should Be Equal As Strings    ${response.status}    201
+
+    # alter version uid to invalid one
+    Set Test Variable  ${version_uid}  ${ehrstatus_uid[0:-1]}2
+
+    get versioned ehr_status of EHR by version uid
+    Should Be Equal As Strings    ${response.status}    404
 

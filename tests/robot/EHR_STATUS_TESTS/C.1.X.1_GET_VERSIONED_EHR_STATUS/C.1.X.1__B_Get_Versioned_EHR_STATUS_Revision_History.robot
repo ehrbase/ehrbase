@@ -19,10 +19,10 @@
 *** Settings ***
 Metadata    Version    0.1.0
 Metadata    Author    *Wladislaw Wagner*
-Metadata    Created    2019.07.02
+Metadata    Author    *Jake Smolka*
+Metadata    Created    2021.01.26
 
-Documentation   C.1.a) Main flow: Get status of an existing EHR
-...             Preconditions:
+Documentation   Preconditions:
 ...                 An EHR with known ehr_id should exist.
 ...
 ...             Postconditions:

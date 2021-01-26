@@ -19,10 +19,10 @@
 *** Settings ***
 Metadata    Version    0.1.0
 Metadata    Author    *Wladislaw Wagner*
-Metadata    Created    2019.07.02
+Metadata    Author    *Jake Smolka*
+Metadata    Created    2021.01.26
 
-Documentation   C.1.a) Main flow: Get status of an existing EHR
-...             Preconditions:
+Documentation   Preconditions:
 ...                 An EHR with known ehr_id should exist.
 ...
 ...             Postconditions:
@@ -49,7 +49,7 @@ Force Tags
 
 *** Test Cases ***
 1. Get Versioned Status Of Existing EHR by Time Without Query (JSON)
-    # Simple test withour query param
+    # Simple test without query param
 
     prepare new request session    JSON    Prefer=return=representation
 
@@ -173,9 +173,86 @@ Force Tags
     Should Be Equal As Strings    ${original_id}    ${response.body.preceding_version_uid.value}
 
 
+6. Get Versioned Status Of Existing EHR by Time Check Data (JSON)
+    # Simple, but checking object data - with two versions
+
+    prepare new request session    JSON    Prefer=return=representation
+
+    create new EHR
+    Should Be Equal As Strings    ${response.status}    201
+
+    update EHR: set ehr_status is_queryable    ${FALSE}
+    check response of 'update EHR' (JSON)
+
+    get versioned ehr_status of EHR by time
+    Should Be Equal As Strings    ${response.status}    200
+    Should Be Equal As Strings    false    ${response.body.data.is_queryable}  ignore_case=True
 
 
+7a. Get Versioned Status Of Existing EHR by Time With Parameter Check (JSON)
+    # Checking for expected responses with and without valid parameters
 
+    prepare new request session    JSON    Prefer=return=representation
+
+    create new EHR
+    Should Be Equal As Strings    ${response.status}    201
+
+    # a. valid: set the query parameter to current data
+    ${date} = 	Get Current Date
+    ${date} = 	Replace String 	${date} 	${space} 	T       # manually convert robot timestamp to openEHR REST spec timestamp
+    Set Test Variable 	&{query} 	version_at_time=${date}     # set query as dictionary
+
+    get versioned ehr_status of EHR by time
+    Should Be Equal As Strings    ${response.status}    200
+
+
+7b. Get Versioned Status Of Existing EHR by Time With Parameter Check (JSON)
+    # Checking for expected responses with and without valid parameters
+
+    prepare new request session    JSON    Prefer=return=representation
+
+    create new EHR
+    Should Be Equal As Strings    ${response.status}    201
+
+    # b. invalid: wrong timestamp format - 400
+    ${date} = 	Get Current Date
+    Set Test Variable 	&{query} 	version_at_time=${date}     # set query as dictionary
+
+    get versioned ehr_status of EHR by time
+    Should Be Equal As Strings    ${response.status}    400
+
+
+7c. Get Versioned Status Of EHR by Time With Parameter Check (JSON)
+    # Checking for expected responses with and without valid parameters
+
+    prepare new request session    JSON    Prefer=return=representation
+
+    create new EHR
+    Should Be Equal As Strings    ${response.status}    201
+
+    # c. invalid: wrong EHR - 404
+    # take the SYSTEM_ID UID to guarantee this ID doesn't match the EHR ID
+    Set Test Variable 	${ehr_id} 	${response.body.system_id.value}
+
+    get versioned ehr_status of EHR by time
+    Should Be Equal As Strings    ${response.status}    404
+
+7d. Get Versioned Status Of Existing EHR by Time With Parameter Check (JSON)
+    # Checking for expected responses with and without valid parameters
+
+    prepare new request session    JSON    Prefer=return=representation
+
+    create new EHR
+    Should Be Equal As Strings    ${response.status}    201
+
+    # d. valid but invalid: valid timestamp format, but points to time in the past
+    ${date} = 	Get Current Date
+    ${date} = 	Subtract Time From Date 	${date} 	7 days
+    ${date} = 	Replace String 	${date} 	${space} 	T       # manually convert robot timestamp to openEHR REST spec timestamp
+    Set Test Variable 	&{query} 	version_at_time=${date}     # set query as dictionary
+
+    get versioned ehr_status of EHR by time
+    Should Be Equal As Strings    ${response.status}    404
 
 
 
