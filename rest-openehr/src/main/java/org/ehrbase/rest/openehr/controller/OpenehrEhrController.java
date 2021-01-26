@@ -18,6 +18,7 @@
 
 package org.ehrbase.rest.openehr.controller;
 
+import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import io.swagger.annotations.*;
@@ -260,11 +261,12 @@ public class OpenehrEhrController extends BaseController {
 
         if (minimalOrRepresentation != null) {
             // populate maximum response data
-            EhrResponseData objByReference = (EhrResponseData) minimalOrRepresentation;
+            EhrResponseData objByReference = minimalOrRepresentation;
             objByReference.setEhrId(new HierObjectId(ehrId.toString()));
             objByReference.setEhrStatus(ehrStatus.get());
             objByReference.setSystemId(new HierObjectId(ehrService.getSystemUuid().toString()));
-            objByReference.setTimeCreated(ehrService.getCreationTime(ehrId).toString());
+            DvDateTime timeCreated = ehrService.getCreationTime(ehrId);
+            objByReference.setTimeCreated(timeCreated.getValue().toString());
             //objByReference.setCompositions(null);    // TODO get actual data from service layer
             //objByReference.setContributions(null);   // TODO get actual data from service layer
         }
