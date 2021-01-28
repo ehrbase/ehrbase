@@ -78,8 +78,6 @@ check contribution admin delete table counts initially
 
     ${contr_records}=   Count Rows In DB Table    ehr.contribution
                         Should Be Equal As Integers    ${contr_records}     ${0}
-    ${contr_h_records}=   Count Rows In DB Table    ehr.contribution_history
-                        Should Be Equal As Integers    ${contr_h_records}     ${0}
     ${audit_records}=   Count Rows In DB Table    ehr.audit_details
                         Should Be Equal As Integers    ${audit_records}     ${0}
     ${compo_records}=   Count Rows In DB Table    ehr.composition
@@ -100,8 +98,6 @@ check contribution admin delete table counts
 
     ${contr_records}=   Count Rows In DB Table    ehr.contribution
                         Should Be Equal As Integers    ${contr_records}     ${1}    # from creation of the EHR, which will not be deleted
-    ${contr_h_records}=   Count Rows In DB Table    ehr.contribution_history
-                        Should Be Equal As Integers    ${contr_h_records}     ${0}
     ${audit_records}=   Count Rows In DB Table    ehr.audit_details
                         Should Be Equal As Integers    ${audit_records}     ${2}    # from creation of the EHR (1 for status, 1 for the wrapping contribution)
     ${compo_records}=   Count Rows In DB Table    ehr.composition
