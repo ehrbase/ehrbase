@@ -23,5 +23,4 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @ComponentScan(basePackages = {"org.ehrbase.service", "org.ehrbase.configuration"})
-public class ServiceModuleConfiguration {
-}
+public class ServiceModuleConfiguration {}

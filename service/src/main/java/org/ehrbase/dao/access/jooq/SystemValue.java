@@ -22,59 +22,69 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum SystemValue {
+  LANGUAGE("language"),
+  CHARSET("charset"),
+  ENCODING("encoding"),
+  TERMINOLOGY_SERVICE("terminologyService"),
+  MEASUREMENT_SERVICE("measurementService"),
+  SUBJECT("subject"),
+  PROVIDER("provider"),
+  COMPOSER("composer"),
+  TERRITORY("territory"),
+  CONTEXT("context"),
+  CATEGORY("category"),
+  NAME("name"),
+  UID("uid"),
+  FEEDER_AUDIT("feeder_audit"),
+  LINKS("links");
 
-    LANGUAGE("language"),
-    CHARSET("charset"),
-    ENCODING("encoding"),
-    TERMINOLOGY_SERVICE("terminologyService"),
-    MEASUREMENT_SERVICE("measurementService"),
-    SUBJECT("subject"),
-    PROVIDER("provider"),
-    COMPOSER("composer"),
-    TERRITORY("territory"),
-    CONTEXT("context"),
-    CATEGORY("category"),
-    NAME("name"),
-    UID("uid"),
-    FEEDER_AUDIT("feeder_audit"),
-    LINKS("links");
+  /* field */
+  private final String id;
+  private static final Map<String, SystemValue> idMap;
 
-    /* field */
-    private final String id;
-    private static final Map<String, SystemValue> idMap;
-
-    static {
-        SystemValue[] list = {LANGUAGE, CHARSET, TERMINOLOGY_SERVICE,
-                MEASUREMENT_SERVICE, SUBJECT, PROVIDER, COMPOSER, TERRITORY, CONTEXT,
-                CATEGORY, UID, FEEDER_AUDIT, LINKS
-        };
-        idMap = new HashMap<String, SystemValue>();
-        for (SystemValue value : list) {
-            idMap.put(value.id(), value);
-        }
+  static {
+    SystemValue[] list = {
+      LANGUAGE,
+      CHARSET,
+      TERMINOLOGY_SERVICE,
+      MEASUREMENT_SERVICE,
+      SUBJECT,
+      PROVIDER,
+      COMPOSER,
+      TERRITORY,
+      CONTEXT,
+      CATEGORY,
+      UID,
+      FEEDER_AUDIT,
+      LINKS
+    };
+    idMap = new HashMap<String, SystemValue>();
+    for (SystemValue value : list) {
+      idMap.put(value.id(), value);
     }
+  }
 
-    /* constructor */
-    SystemValue(String id) {
-        this.id = id;
-    }
+  /* constructor */
+  SystemValue(String id) {
+    this.id = id;
+  }
 
-    /**
-     * Id of this system value
-     *
-     * @return id
-     */
-    public String id() {
-        return id;
-    }
+  /**
+   * Id of this system value
+   *
+   * @return id
+   */
+  public String id() {
+    return id;
+  }
 
-    /**
-     * Return system value with matching id
-     *
-     * @param id
-     * @return null if not found
-     */
-    public static SystemValue fromId(String id) {
-        return idMap.get(id);
-    }
+  /**
+   * Return system value with matching id
+   *
+   * @param id
+   * @return null if not found
+   */
+  public static SystemValue fromId(String id) {
+    return idMap.get(id);
+  }
 }

@@ -19,5 +19,6 @@
 package org.ehrbase.api.definitions;
 
 public enum OperationalTemplateFormat {
-    XML, JSON
+  XML,
+  JSON
 }

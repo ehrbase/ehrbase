@@ -18,79 +18,79 @@
 
 package org.ehrbase.dao.access.jooq.party;
 
+import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
+
 import com.nedap.archie.rm.generic.PartyIdentified;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.GenericId;
 import com.nedap.archie.rm.support.identification.PartyRef;
+import java.util.UUID;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
 
-import java.util.UUID;
-
-import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
-
-/**
- * Facade to interact with PartyProxy specialization
- */
+/** Facade to interact with PartyProxy specialization */
 public class PersistedPartyProxy {
 
-    I_DomainAccess domainAccess;
+  I_DomainAccess domainAccess;
 
-    public PersistedPartyProxy(I_DomainAccess domainAccess) {
-        this.domainAccess = domainAccess;
+  public PersistedPartyProxy(I_DomainAccess domainAccess) {
+    this.domainAccess = domainAccess;
+  }
+
+  public PartyProxy retrieve(UUID id) {
+    PartyProxy partyProxy;
+
+    if (!(domainAccess.getContext().fetchExists(PARTY_IDENTIFIED, PARTY_IDENTIFIED.ID.eq(id))))
+      partyProxy = null;
+    else {
+
+      // identify the party type
+      PartyIdentifiedRecord identifiedRecord =
+          domainAccess.getContext().fetchOne(PARTY_IDENTIFIED, PARTY_IDENTIFIED.ID.eq(id));
+
+      switch (identifiedRecord.getPartyType()) {
+        case party_self:
+          partyProxy = new PersistedPartySelf(domainAccess).render(identifiedRecord);
+          break;
+        case party_identified:
+          partyProxy = new PersistedPartyIdentified(domainAccess).render(identifiedRecord);
+          break;
+        case party_related:
+          partyProxy = new PersistedPartyRelated(domainAccess).render(identifiedRecord);
+          break;
+        default:
+          throw new InternalServerException(
+              "Inconsistent Party type detected:" + identifiedRecord.getPartyRefType());
+      }
     }
+    return partyProxy;
+  }
 
-    public PartyProxy retrieve(UUID id){
-        PartyProxy partyProxy;
+  public UUID getOrCreate(PartyProxy partyProxy) {
 
-        if (!(domainAccess.getContext().fetchExists(PARTY_IDENTIFIED, PARTY_IDENTIFIED.ID.eq(id))))
-            partyProxy =  null;
-        else {
+    UUID partyUUID = null;
 
-            //identify the party type
-            PartyIdentifiedRecord identifiedRecord = domainAccess.getContext().fetchOne(PARTY_IDENTIFIED, PARTY_IDENTIFIED.ID.eq(id));
-
-            switch (identifiedRecord.getPartyType()) {
-                case party_self:
-                    partyProxy = new PersistedPartySelf(domainAccess).render(identifiedRecord);
-                    break;
-                case party_identified:
-                    partyProxy = new PersistedPartyIdentified(domainAccess).render(identifiedRecord);
-                    break;
-                case party_related:
-                    partyProxy = new PersistedPartyRelated(domainAccess).render(identifiedRecord);
-                    break;
-                default:
-                    throw new InternalServerException("Inconsistent Party type detected:" + identifiedRecord.getPartyRefType());
-            }
-        }
-        return partyProxy;
+    switch (partyProxy.getClass().getSimpleName()) {
+      case "PartySelf":
+        partyUUID = new PersistedPartySelf(domainAccess).getOrCreate(partyProxy);
+        break;
+      case "PartyIdentified":
+        partyUUID = new PersistedPartyIdentified(domainAccess).getOrCreate(partyProxy);
+        break;
+      case "PartyRelated":
+        partyUUID = new PersistedPartyRelated(domainAccess).getOrCreate(partyProxy);
+        break;
+      default:
+        throw new InternalServerException(
+            "Unhandled Party type detected:" + partyProxy.getClass().getSimpleName());
     }
+    return partyUUID;
+  }
 
-    public UUID getOrCreate(PartyProxy partyProxy){
-
-        UUID partyUUID = null;
-
-        switch (partyProxy.getClass().getSimpleName()){
-            case "PartySelf":
-                partyUUID = new PersistedPartySelf(domainAccess).getOrCreate(partyProxy);
-                break;
-            case "PartyIdentified":
-                partyUUID = new PersistedPartyIdentified(domainAccess).getOrCreate(partyProxy);
-                break;
-            case "PartyRelated":
-                partyUUID = new PersistedPartyRelated(domainAccess).getOrCreate(partyProxy);
-                break;
-            default:
-                throw new InternalServerException("Unhandled Party type detected:" + partyProxy.getClass().getSimpleName());
-        }
-        return partyUUID;
-
-    }
-
-    public UUID getOrCreate(String name, String code, String scheme, String namespace, String type){
-        PartyIdentified partyIdentified = new PartyIdentified(new PartyRef(new GenericId(code, scheme), namespace, type), name, null);
-        return getOrCreate(partyIdentified);
-    }
+  public UUID getOrCreate(String name, String code, String scheme, String namespace, String type) {
+    PartyIdentified partyIdentified =
+        new PartyIdentified(new PartyRef(new GenericId(code, scheme), namespace, type), name, null);
+    return getOrCreate(partyIdentified);
+  }
 }

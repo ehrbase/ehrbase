@@ -17,6 +17,10 @@
  */
 package org.ehrbase.aql.sql.queryimpl.attribute.ehr.ehrstatus;
 
+import static org.ehrbase.jooq.pg.Routines.jsEhrStatus;
+import static org.ehrbase.jooq.pg.Tables.STATUS;
+
+import java.util.Optional;
 import org.ehrbase.aql.sql.binding.JoinBinder;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryimpl.attribute.IRMObjectAttribute;
@@ -26,45 +30,45 @@ import org.jooq.Field;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 
-import java.util.Optional;
-
-import static org.ehrbase.jooq.pg.Routines.jsEhrStatus;
-import static org.ehrbase.jooq.pg.Tables.STATUS;
-@SuppressWarnings({"java:S3776","java:S3740"})
+@SuppressWarnings({"java:S3776", "java:S3740"})
 public class EhrStatusJson extends EhrStatusAttribute {
 
-    protected Optional<String> jsonPath = Optional.empty();
+  protected Optional<String> jsonPath = Optional.empty();
 
-    public EhrStatusJson(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
-        super(fieldContext, joinSetup);
+  public EhrStatusJson(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
+    super(fieldContext, joinSetup);
+  }
+
+  @Override
+  public Field<?> sqlField() {
+    fieldContext.setJsonDatablock(true);
+    fieldContext.setRmType("EHR_STATUS");
+    // query the json representation of EVENT_CONTEXT and cast the result as TEXT
+    Field jsonEhrStatusField;
+    if (jsonPath.isPresent())
+      jsonEhrStatusField =
+          new GenericJsonField(fieldContext, joinSetup)
+              .forJsonPath(jsonPath.get())
+              .ehrStatus(JoinBinder.statusRecordTable.field(STATUS.EHR_ID));
+    else
+      jsonEhrStatusField =
+          DSL.field(
+              jsEhrStatus(JoinBinder.statusRecordTable.field(STATUS.EHR_ID)).cast(String.class));
+
+    return as(DSL.field(jsonEhrStatusField));
+  }
+
+  @Override
+  public IRMObjectAttribute forTableField(TableField tableField) {
+    return this;
+  }
+
+  public EhrStatusJson forJsonPath(String jsonPath) {
+    if (jsonPath == null || jsonPath.isEmpty()) {
+      this.jsonPath = Optional.empty();
+      return this;
     }
-
-    @Override
-    public Field<?> sqlField() {
-        fieldContext.setJsonDatablock(true);
-        fieldContext.setRmType("EHR_STATUS");
-        //query the json representation of EVENT_CONTEXT and cast the result as TEXT
-        Field jsonEhrStatusField;
-        if (jsonPath.isPresent())
-            jsonEhrStatusField =  new GenericJsonField(fieldContext, joinSetup).forJsonPath(jsonPath.get()).ehrStatus(JoinBinder.statusRecordTable.field(STATUS.EHR_ID));
-        else
-            jsonEhrStatusField = DSL.field(jsEhrStatus(JoinBinder.statusRecordTable.field(STATUS.EHR_ID)).cast(String.class));
-
-
-        return as(DSL.field(jsonEhrStatusField));
-    }
-
-    @Override
-    public IRMObjectAttribute forTableField(TableField tableField) {
-        return this;
-    }
-
-    public EhrStatusJson forJsonPath(String jsonPath){
-        if (jsonPath == null || jsonPath.isEmpty()) {
-            this.jsonPath = Optional.empty();
-            return this;
-        }
-        this.jsonPath = Optional.of(jsonPath);
-        return this;
-    }
+    this.jsonPath = Optional.of(jsonPath);
+    return this;
+  }
 }

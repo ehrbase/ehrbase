@@ -23,11 +23,12 @@ import org.ehrbase.aql.sql.queryimpl.translator.QueryProcessorTestBase;
 
 public abstract class UC7 extends QueryProcessorTestBase {
 
-    protected UC7(){
-        this.aql = "select a/description[at0001]/items[at0002]/value/value from EHR e " +
-                "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  " +
-                "contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]" +
-                "where a/description[at0001]/items[at0002]/value/value = 'Hepatitis A'";
-        this.expectedOutputWithJson = true;
-    }
+  protected UC7() {
+    this.aql =
+        "select a/description[at0001]/items[at0002]/value/value from EHR e "
+            + "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  "
+            + "contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]"
+            + "where a/description[at0001]/items[at0002]/value/value = 'Hepatitis A'";
+    this.expectedOutputWithJson = true;
+  }
 }

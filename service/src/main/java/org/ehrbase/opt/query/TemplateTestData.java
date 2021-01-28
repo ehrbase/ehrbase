@@ -21,16 +21,15 @@ package org.ehrbase.opt.query;
 import java.io.InputStream;
 
 public enum TemplateTestData {
-    IMMUNISATION_SUMMARY("IDCR - Immunisation summary.v0.opt");
+  IMMUNISATION_SUMMARY("IDCR - Immunisation summary.v0.opt");
 
+  private final String filename;
 
-    private final String filename;
+  TemplateTestData(String filename) {
+    this.filename = filename;
+  }
 
-    TemplateTestData(String filename) {
-        this.filename = filename;
-    }
-
-    public InputStream getStream() {
-        return getClass().getResourceAsStream("/knowledge/" + filename);
-    }
+  public InputStream getStream() {
+    return getClass().getResourceAsStream("/knowledge/" + filename);
+  }
 }

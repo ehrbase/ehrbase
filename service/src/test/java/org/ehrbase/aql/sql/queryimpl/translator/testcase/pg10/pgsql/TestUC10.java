@@ -23,13 +23,13 @@ import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC10;
 
 public class TestUC10 extends UC10 {
 
-    public TestUC10(){
-        super();
-        this.expectedSqlExpression =
-                "select distinct on (\"/ehr_id/value\") \"\".\"/ehr_id/value\"" +
-                        " from (" +
-                        "       select \"ehr_join\".\"id\" as \"/ehr_id/value\"" +
-                        "       from \"ehr\".\"ehr\" as \"ehr_join\"" +
-                        ") as \"\" limit ? offset ?";
-    }
+  public TestUC10() {
+    super();
+    this.expectedSqlExpression =
+        "select distinct on (\"/ehr_id/value\") \"\".\"/ehr_id/value\""
+            + " from ("
+            + "       select \"ehr_join\".\"id\" as \"/ehr_id/value\""
+            + "       from \"ehr\".\"ehr\" as \"ehr_join\""
+            + ") as \"\" limit ? offset ?";
+  }
 }

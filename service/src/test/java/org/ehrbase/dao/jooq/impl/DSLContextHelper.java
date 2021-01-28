@@ -26,17 +26,14 @@ import org.jooq.tools.jdbc.MockDataProvider;
 
 public class DSLContextHelper {
 
-    private DSLContextHelper() {
-    }
+  private DSLContextHelper() {}
 
-    public static DSLContext buildContext() {
-        return DSL.using(SQLDialect.POSTGRES);
-    }
+  public static DSLContext buildContext() {
+    return DSL.using(SQLDialect.POSTGRES);
+  }
 
-
-    public static DSLContext buildContext(MockDataProvider provider) {
-        MockConnection connection = new MockConnection(provider);
-        return DSL.using(connection, SQLDialect.POSTGRES);
-    }
-
+  public static DSLContext buildContext(MockDataProvider provider) {
+    MockConnection connection = new MockConnection(provider);
+    return DSL.using(connection, SQLDialect.POSTGRES);
+  }
 }

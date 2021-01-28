@@ -19,17 +19,17 @@
 package org.ehrbase.api.exception;
 
 /**
- * Project-custom exception that allows outbound APIs to react on backend problems. Shall be thrown to invoke
- * status 400 "Bad Request" or whatever is appropriate.
- * To be thrown in all cases where part of the request leads to problems, like malformed queries or non-existent referenced objects.
+ * Project-custom exception that allows outbound APIs to react on backend problems. Shall be thrown
+ * to invoke status 400 "Bad Request" or whatever is appropriate. To be thrown in all cases where
+ * part of the request leads to problems, like malformed queries or non-existent referenced objects.
  */
-public class GeneralRequestProcessingException extends RuntimeException  {
+public class GeneralRequestProcessingException extends RuntimeException {
 
-    public GeneralRequestProcessingException(String message) {
-        super(message);
-    }
+  public GeneralRequestProcessingException(String message) {
+    super(message);
+  }
 
-    public GeneralRequestProcessingException(String message, Throwable cause) {
-        super(message, cause);
-    }
+  public GeneralRequestProcessingException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

@@ -23,7 +23,7 @@ import org.ehrbase.aql.sql.queryimpl.attribute.RMObjectAttribute;
 
 public abstract class PartyRefAttribute extends RMObjectAttribute {
 
-    protected PartyRefAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup){
-        super(fieldContext, joinSetup);
-    }
+  protected PartyRefAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
+    super(fieldContext, joinSetup);
+  }
 }

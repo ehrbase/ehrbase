@@ -21,18 +21,18 @@ package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC15;
 
-//@Ignore("TODO: BUG - fix it")
+// @Ignore("TODO: BUG - fix it")
 public class TestUC15 extends UC15 {
 
-    public TestUC15(){
-        super();
-        this.expectedSqlExpression =
-                "select distinct on (\"/ehr_status/other_details\") \"\".\"/ehr_status/other_details\"" +
-                " from (select jsonb_extract_path_text(cast(\"ehr\".\"js_ehr_status\"(\"status_join\".\"ehr_id\") as jsonb),'other_details') as \"/ehr_status/other_details\"" +
-                        " from \"ehr\".\"entry\"" +
-                        " right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\"" +
-                        " right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\"" +
-                        " join \"ehr\".\"status\" as \"status_join\" on \"status_join\".\"ehr_id\" = \"ehr_join\".\"id\"" +
-                        " where (\"ehr_join\".\"id\"='2a3b673f-d1b1-44c5-9e38-dcadf67ff2fc')) as \"\"";
-    }
+  public TestUC15() {
+    super();
+    this.expectedSqlExpression =
+        "select distinct on (\"/ehr_status/other_details\") \"\".\"/ehr_status/other_details\""
+            + " from (select jsonb_extract_path_text(cast(\"ehr\".\"js_ehr_status\"(\"status_join\".\"ehr_id\") as jsonb),'other_details') as \"/ehr_status/other_details\""
+            + " from \"ehr\".\"entry\""
+            + " right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\""
+            + " right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\""
+            + " join \"ehr\".\"status\" as \"status_join\" on \"status_join\".\"ehr_id\" = \"ehr_join\".\"id\""
+            + " where (\"ehr_join\".\"id\"='2a3b673f-d1b1-44c5-9e38-dcadf67ff2fc')) as \"\"";
+  }
 }

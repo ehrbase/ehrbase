@@ -18,16 +18,13 @@
 
 package org.ehrbase.api.service;
 
+import java.util.UUID;
 import org.ehrbase.api.definitions.ServerConfig;
 
-import java.util.UUID;
-
-/**
- * Basic service interface, foundation of all service interfaces
- */
+/** Basic service interface, foundation of all service interfaces */
 public interface BaseService {
 
-    UUID getSystemUuid();
+  UUID getSystemUuid();
 
-    ServerConfig getServerConfig();
+  ServerConfig getServerConfig();
 }

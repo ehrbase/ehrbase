@@ -23,8 +23,8 @@ import org.ehrbase.aql.sql.queryimpl.translator.QueryProcessorTestBase;
 
 public abstract class UC35 extends QueryProcessorTestBase {
 
-    protected UC35(){
-        this.aql = "SELECT e/directory FROM EHR e";
-        this.expectedOutputWithJson = true;
-    }
+  protected UC35() {
+    this.aql = "SELECT e/directory FROM EHR e";
+    this.expectedOutputWithJson = true;
+  }
 }

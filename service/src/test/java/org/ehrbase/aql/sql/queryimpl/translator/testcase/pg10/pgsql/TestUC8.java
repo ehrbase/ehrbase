@@ -23,11 +23,11 @@ import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC8;
 
 public class TestUC8 extends UC8 {
 
-    public TestUC8(){
-        super();
-        this.expectedSqlExpression =
-                "select cast(\"ehr\".\"js_composition\"(cast(cast(composition_join.id as uuid) as uuid), cast(? as text)) as varchar) as \"c\" from \"ehr\".\"entry\"" +
-                        " right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\"" +
-                        " where \"ehr\".\"entry\".\"template_id\" = ?";
-    }
+  public TestUC8() {
+    super();
+    this.expectedSqlExpression =
+        "select cast(\"ehr\".\"js_composition\"(cast(cast(composition_join.id as uuid) as uuid), cast(? as text)) as varchar) as \"c\" from \"ehr\".\"entry\""
+            + " right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\""
+            + " where \"ehr\".\"entry\".\"template_id\" = ?";
+  }
 }

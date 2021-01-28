@@ -17,6 +17,8 @@
  */
 package org.ehrbase.aql.sql.queryimpl.attribute.composition;
 
+import static org.ehrbase.jooq.pg.Tables.COMPOSITION;
+
 import org.ehrbase.aql.sql.binding.JoinBinder;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryimpl.attribute.IRMObjectAttribute;
@@ -25,32 +27,30 @@ import org.jooq.Field;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 
-import static org.ehrbase.jooq.pg.Tables.COMPOSITION;
-@SuppressWarnings({"java:S3740","java:S1452"})
+@SuppressWarnings({"java:S3740", "java:S1452"})
 public class SimpleCompositionAttribute extends CompositionAttribute {
 
-    protected TableField tableField;
+  protected TableField tableField;
 
-    public SimpleCompositionAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
-        super(fieldContext, joinSetup);
+  public SimpleCompositionAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
+    super(fieldContext, joinSetup);
+  }
+
+  @Override
+  public Field<?> sqlField() {
+    Field actualField = DSL.field(tableField);
+
+    if (tableField.getTable().equals(COMPOSITION)) {
+      actualField =
+          DSL.field(JoinBinder.compositionRecordTable.getName() + "." + tableField.getName());
     }
 
-    @Override
-    public Field<?> sqlField() {
-        Field actualField = DSL.field(tableField);
+    return as(actualField);
+  }
 
-        if (tableField.getTable().equals(COMPOSITION)) {
-            actualField = DSL.field(JoinBinder.compositionRecordTable.getName()+"."+tableField.getName());
-        }
-
-        return as(actualField);
-
-
-    }
-
-    @Override
-    public IRMObjectAttribute forTableField(TableField tableField) {
-        this.tableField = tableField;
-        return this;
-    }
+  @Override
+  public IRMObjectAttribute forTableField(TableField tableField) {
+    this.tableField = tableField;
+    return this;
+  }
 }

@@ -23,8 +23,8 @@ import org.ehrbase.aql.sql.queryimpl.translator.QueryProcessorTestBase;
 
 public abstract class UC34 extends QueryProcessorTestBase {
 
-    protected UC34(){
-        this.aql = "SELECT min(e/time_created) FROM EHR e";
-        this.expectedOutputWithJson = false;
-    }
+  protected UC34() {
+    this.aql = "SELECT min(e/time_created) FROM EHR e";
+    this.expectedOutputWithJson = false;
+  }
 }

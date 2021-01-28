@@ -28,6 +28,7 @@ import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.Attestation;
 import com.nedap.archie.rm.generic.AuditDetails;
 import com.nedap.archie.rm.generic.PartySelf;
+import java.util.Collections;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.ResponseEntity;
@@ -40,73 +41,83 @@ import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
-import java.util.Collections;
-
 @Configuration
 @EnableSwagger2
 public class SwaggerConfig extends WebMvcConfigurerAdapter {
 
-    // Temporary removal of old EhrScape endpoints from swagger UI
-    /*@Bean
-    public Docket swaggerSpringMvcPlugin() {
-        return new Docket(DocumentationType.SWAGGER_2).groupName("EhrScape API")
-                //.host("http://localhost:8080")
-                .select()
-                .apis(RequestHandlerSelectors.basePackage("org.ehrbase.rest.ehrscape.controller"))
-                .paths(PathSelectors.any())
-                .build()
-                .ignoredParameterTypes(RMObject.class)
-                .apiInfo(metaDataEhrScape());
-    }
+  // Temporary removal of old EhrScape endpoints from swagger UI
+  /*@Bean
+  public Docket swaggerSpringMvcPlugin() {
+      return new Docket(DocumentationType.SWAGGER_2).groupName("EhrScape API")
+              //.host("http://localhost:8080")
+              .select()
+              .apis(RequestHandlerSelectors.basePackage("org.ehrbase.rest.ehrscape.controller"))
+              .paths(PathSelectors.any())
+              .build()
+              .ignoredParameterTypes(RMObject.class)
+              .apiInfo(metaDataEhrScape());
+  }
 
-    private ApiInfo metaDataEhrScape() {
-        return new ApiInfo(
-                "EhrScape openEHR REST API",
-                "EhrScape openEHR REST API",
-                "1.0",
-                "Terms of service",
-                new Contact("", "", ""),
-                "Apache License Version 2.0",
-                "https://www.apache.org/licenses/LICENSE-2.0", Collections.emptyList());
-    }*/
+  private ApiInfo metaDataEhrScape() {
+      return new ApiInfo(
+              "EhrScape openEHR REST API",
+              "EhrScape openEHR REST API",
+              "1.0",
+              "Terms of service",
+              new Contact("", "", ""),
+              "Apache License Version 2.0",
+              "https://www.apache.org/licenses/LICENSE-2.0", Collections.emptyList());
+  }*/
 
-    @Bean
-    public Docket swaggerSpringMvcPluginOpenEhr() {
+  @Bean
+  public Docket swaggerSpringMvcPluginOpenEhr() {
 
-        // Add classes from ReferenceModel to be ignored if causing errors
-        Class[] classesToIgnore = {EhrStatus.class, Folder.class, PartySelf.class, ItemStructure.class, DvText.class,
-                Contribution.class, AuditDetails.class, Attestation.class, Composition.class, DvDateTime.class};
+    // Add classes from ReferenceModel to be ignored if causing errors
+    Class[] classesToIgnore = {
+      EhrStatus.class,
+      Folder.class,
+      PartySelf.class,
+      ItemStructure.class,
+      DvText.class,
+      Contribution.class,
+      AuditDetails.class,
+      Attestation.class,
+      Composition.class,
+      DvDateTime.class
+    };
 
-        return new Docket(DocumentationType.SWAGGER_2).groupName("openEHR API")
-                //.host("http://localhost:8080")
-                .select()
-                .apis(RequestHandlerSelectors.basePackage("org.ehrbase.rest.openehr.controller"))
-                .build()
-                .ignoredParameterTypes(classesToIgnore)
-                .directModelSubstitute(ResponseEntity.class, java.lang.Void.class)
-                .tags(  // Tag name: Short name;
-                        // description: From {EHR, Query, Definition} API,
-                        // - name of resource;
-                        // version of openEHR API this implementation is based on
-                        new Tag("EHR", "EHR API - EHR Resource (v1.0)"),
-                        new Tag("EHR_STATUS", "EHR API - EHR_STATUS Resource (WIP v1.0.1)"),
-                        new Tag("Composition", "EHR API - Composition Resource (v1.0)"),
-                        new Tag("Template", "Definitions API - Template Resource (WIP v1.0.1)"),
-                        new Tag("Directory", "EHR API - Directory Resource (v1.0)"),
-                        new Tag("Query", "Query API - Query Resource (WIP v1.0.1)"),
-                        new Tag("Stored Query", "Definitions API - Stored Query Resource (WIP v1.0.1)"),
-                        new Tag("Contribution", "EHR API - Contribution Resource (WIP v1.0.1)"))
-                .apiInfo(metaDataOpenEhr());
-    }
+    return new Docket(DocumentationType.SWAGGER_2)
+        .groupName("openEHR API")
+        // .host("http://localhost:8080")
+        .select()
+        .apis(RequestHandlerSelectors.basePackage("org.ehrbase.rest.openehr.controller"))
+        .build()
+        .ignoredParameterTypes(classesToIgnore)
+        .directModelSubstitute(ResponseEntity.class, java.lang.Void.class)
+        .tags( // Tag name: Short name;
+            // description: From {EHR, Query, Definition} API,
+            // - name of resource;
+            // version of openEHR API this implementation is based on
+            new Tag("EHR", "EHR API - EHR Resource (v1.0)"),
+            new Tag("EHR_STATUS", "EHR API - EHR_STATUS Resource (WIP v1.0.1)"),
+            new Tag("Composition", "EHR API - Composition Resource (v1.0)"),
+            new Tag("Template", "Definitions API - Template Resource (WIP v1.0.1)"),
+            new Tag("Directory", "EHR API - Directory Resource (v1.0)"),
+            new Tag("Query", "Query API - Query Resource (WIP v1.0.1)"),
+            new Tag("Stored Query", "Definitions API - Stored Query Resource (WIP v1.0.1)"),
+            new Tag("Contribution", "EHR API - Contribution Resource (WIP v1.0.1)"))
+        .apiInfo(metaDataOpenEhr());
+  }
 
-    private ApiInfo metaDataOpenEhr() {
-        return new ApiInfo(
-                "openEHR REST API",
-                "openEHR REST API",
-                "1.0",
-                "Terms of service",
-                new Contact("", "", ""),
-                "Apache License Version 2.0",
-                "https://www.apache.org/licenses/LICENSE-2.0", Collections.emptyList());
-    }
+  private ApiInfo metaDataOpenEhr() {
+    return new ApiInfo(
+        "openEHR REST API",
+        "openEHR REST API",
+        "1.0",
+        "Terms of service",
+        new Contact("", "", ""),
+        "Apache License Version 2.0",
+        "https://www.apache.org/licenses/LICENSE-2.0",
+        Collections.emptyList());
+  }
 }

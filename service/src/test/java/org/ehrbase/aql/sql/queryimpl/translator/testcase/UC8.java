@@ -23,8 +23,9 @@ import org.ehrbase.aql.sql.queryimpl.translator.QueryProcessorTestBase;
 
 public abstract class UC8 extends QueryProcessorTestBase {
 
-    protected UC8(){
-        this.aql = "select c from EHR e contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]";
-        this.expectedOutputWithJson = true;
-    }
+  protected UC8() {
+    this.aql =
+        "select c from EHR e contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]";
+    this.expectedOutputWithJson = true;
+  }
 }

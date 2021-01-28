@@ -23,12 +23,13 @@ import org.ehrbase.aql.sql.queryimpl.translator.QueryProcessorTestBase;
 
 public abstract class UC38 extends QueryProcessorTestBase {
 
-    protected UC38(){
-        this.aql = "select" +
-                "  min (d/description[at0001]/items[at0004]/value/magnitude) as min_magnitude" +
-                " from EHR e" +
-                "  contains COMPOSITION" +
-                "  contains ACTION d[openEHR-EHR-ACTION.immunisation_procedure.v1]";
-        this.expectedOutputWithJson = false;
-    }
+  protected UC38() {
+    this.aql =
+        "select"
+            + "  min (d/description[at0001]/items[at0004]/value/magnitude) as min_magnitude"
+            + " from EHR e"
+            + "  contains COMPOSITION"
+            + "  contains ACTION d[openEHR-EHR-ACTION.immunisation_procedure.v1]";
+    this.expectedOutputWithJson = false;
+  }
 }

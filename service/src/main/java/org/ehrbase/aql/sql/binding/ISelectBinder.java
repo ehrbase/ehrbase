@@ -18,8 +18,5 @@
 
 package org.ehrbase.aql.sql.binding;
 
-/**
- * Created by christian on 3/12/2018.
- */
-public interface ISelectBinder {
-}
+/** Created by christian on 3/12/2018. */
+public interface ISelectBinder {}

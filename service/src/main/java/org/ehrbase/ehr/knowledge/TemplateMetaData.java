@@ -18,49 +18,44 @@
 
 package org.ehrbase.ehr.knowledge;
 
-import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
-
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
 public class TemplateMetaData {
-    private OPERATIONALTEMPLATE operationaltemplate;
-    private OffsetDateTime createdOn;
+  private OPERATIONALTEMPLATE operationaltemplate;
+  private OffsetDateTime createdOn;
 
-    private List<String> errorList;
+  private List<String> errorList;
 
+  public OPERATIONALTEMPLATE getOperationaltemplate() {
+    return operationaltemplate;
+  }
 
-    public OPERATIONALTEMPLATE getOperationaltemplate() {
-        return operationaltemplate;
+  public void setOperationaltemplate(OPERATIONALTEMPLATE operationaltemplate) {
+    this.operationaltemplate = operationaltemplate;
+  }
+
+  public OffsetDateTime getCreatedOn() {
+    return createdOn;
+  }
+
+  public void setCreatedOn(OffsetDateTime createdOn) {
+    this.createdOn = createdOn;
+  }
+
+  public List<String> getErrorList() {
+    if (this.errorList == null) {
+      this.errorList = new ArrayList<>();
     }
+    return errorList;
+  }
 
-    public void setOperationaltemplate(OPERATIONALTEMPLATE operationaltemplate) {
-        this.operationaltemplate = operationaltemplate;
+  public void addError(String error) {
+    if (this.errorList == null) {
+      this.errorList = new ArrayList<>();
     }
-
-    public OffsetDateTime getCreatedOn() {
-        return createdOn;
-    }
-
-    public void setCreatedOn(OffsetDateTime createdOn) {
-        this.createdOn = createdOn;
-    }
-
-
-    public List<String> getErrorList() {
-        if (this.errorList == null) {
-            this.errorList = new ArrayList<>();
-        }
-        return errorList;
-    }
-
-    public void addError(String error) {
-        if (this.errorList == null) {
-            this.errorList = new ArrayList<>();
-        }
-        this.errorList.add(error);
-    }
-
-
+    this.errorList.add(error);
+  }
 }

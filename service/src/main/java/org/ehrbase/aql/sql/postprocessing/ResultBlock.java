@@ -4,19 +4,17 @@ import org.ehrbase.aql.sql.binding.JsonbBlockDef;
 
 public class ResultBlock {
 
-    JsonbBlockDef jsonbBlockDef;
+  JsonbBlockDef jsonbBlockDef;
 
+  public ResultBlock(JsonbBlockDef jsonbBlockDef) {
+    this.jsonbBlockDef = jsonbBlockDef;
+  }
 
-    public ResultBlock(JsonbBlockDef jsonbBlockDef) {
-        this.jsonbBlockDef = jsonbBlockDef;
-    }
+  public boolean isCanonical() {
 
-    public boolean isCanonical(){
+    if (jsonbBlockDef.getPath() == null) return false;
 
-        if (jsonbBlockDef.getPath() == null)
-            return false;
-
-        return jsonbBlockDef.getPath().endsWith("composer/identifiers")||
-                    jsonbBlockDef.getPath().endsWith("health_care_facility/identifiers");
-    }
+    return jsonbBlockDef.getPath().endsWith("composer/identifiers")
+        || jsonbBlockDef.getPath().endsWith("health_care_facility/identifiers");
+  }
 }

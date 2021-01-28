@@ -23,12 +23,13 @@ import org.ehrbase.aql.sql.queryimpl.translator.QueryProcessorTestBase;
 
 public abstract class UC39 extends QueryProcessorTestBase {
 
-    protected UC39(){
-        this.aql = "select" +
-                "  max (d/description[at0001]/items[at0004]/value/magnitude) as max_magnitude" +
-                " from EHR e" +
-                "  contains COMPOSITION" +
-                "  contains ACTION d[openEHR-EHR-ACTION.immunisation_procedure.v1]";
-        this.expectedOutputWithJson = false;
-    }
+  protected UC39() {
+    this.aql =
+        "select"
+            + "  max (d/description[at0001]/items[at0004]/value/magnitude) as max_magnitude"
+            + " from EHR e"
+            + "  contains COMPOSITION"
+            + "  contains ACTION d[openEHR-EHR-ACTION.immunisation_procedure.v1]";
+    this.expectedOutputWithJson = false;
+  }
 }

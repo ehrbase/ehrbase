@@ -25,14 +25,14 @@ import org.junit.Ignore;
 @Ignore
 public class TestUC31 extends UC31 {
 
-    public TestUC31(){
-        super();
-        this.expectedSqlExpression =
-                "select jsonb_array_elements(ehr.js_ehr(ehr_join.id,'local')::jsonb #>'{folders}') #>>'{name,value}' as \"/folders/name/value\"" +
-                        " from \"ehr\".\"ehr\" as \"ehr_join\"" +
-                        " where (" +
-                        "   'case1'=ALL(SELECT jsonb_array_elements(ehr.js_ehr(ehr_join.id,'local')::jsonb #>'{folders}') #>>'{name,value}')" +
-                        "        and " +
-                        "       \"ehr_join\".\"id\"='c2561bab-4d2b-4ffd-a893-4382e9048f8c')";
-    }
+  public TestUC31() {
+    super();
+    this.expectedSqlExpression =
+        "select jsonb_array_elements(ehr.js_ehr(ehr_join.id,'local')::jsonb #>'{folders}') #>>'{name,value}' as \"/folders/name/value\""
+            + " from \"ehr\".\"ehr\" as \"ehr_join\""
+            + " where ("
+            + "   'case1'=ALL(SELECT jsonb_array_elements(ehr.js_ehr(ehr_join.id,'local')::jsonb #>'{folders}') #>>'{name,value}')"
+            + "        and "
+            + "       \"ehr_join\".\"id\"='c2561bab-4d2b-4ffd-a893-4382e9048f8c')";
+  }
 }

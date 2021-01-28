@@ -23,20 +23,20 @@ import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC4;
 
 public class TestUC4 extends UC4 {
 
-    public TestUC4(){
-        super();
-        this.expectedSqlExpression =
-                "select \"\".\"/composer/name\", \"\".\"/context/start_time/value\" from (select \"composer_ref\".\"name\" as \"/composer/name\", jsonb_extract_path_text(cast(\"ehr\".\"js_dv_date_time\"(\n" +
-                        "  \"ehr\".\"event_context\".\"start_time\", \n" +
-                        "  coalesce(\n" +
-                        "    event_context.START_TIME_TZID, \n" +
-                        "    'UTC'\n" +
-                        "  )\n" +
-                        ") as jsonb),'value') as \"/context/start_time/value\"" +
-                        " from \"ehr\".\"entry\"" +
-                        " join \"ehr\".\"event_context\" on \"ehr\".\"event_context\".\"composition_id\" = \"ehr\".\"entry\".\"composition_id\"" +
-                        " right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\"" +
-                        " join \"ehr\".\"party_identified\" as \"composer_ref\" on \"composition_join\".\"composer\" = \"composer_ref\".\"id\"" +
-                        " where \"ehr\".\"entry\".\"template_id\" = ?) as \"\" order by \"/context/start_time/value\" desc";
-    }
+  public TestUC4() {
+    super();
+    this.expectedSqlExpression =
+        "select \"\".\"/composer/name\", \"\".\"/context/start_time/value\" from (select \"composer_ref\".\"name\" as \"/composer/name\", jsonb_extract_path_text(cast(\"ehr\".\"js_dv_date_time\"(\n"
+            + "  \"ehr\".\"event_context\".\"start_time\", \n"
+            + "  coalesce(\n"
+            + "    event_context.START_TIME_TZID, \n"
+            + "    'UTC'\n"
+            + "  )\n"
+            + ") as jsonb),'value') as \"/context/start_time/value\""
+            + " from \"ehr\".\"entry\""
+            + " join \"ehr\".\"event_context\" on \"ehr\".\"event_context\".\"composition_id\" = \"ehr\".\"entry\".\"composition_id\""
+            + " right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\""
+            + " join \"ehr\".\"party_identified\" as \"composer_ref\" on \"composition_join\".\"composer\" = \"composer_ref\".\"id\""
+            + " where \"ehr\".\"entry\".\"template_id\" = ?) as \"\" order by \"/context/start_time/value\" desc";
+  }
 }

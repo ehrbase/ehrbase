@@ -23,5 +23,4 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @ComponentScan(basePackages = "org.ehrbase.rest.openehr")
-public class RestOpenehrModuleConfiguration {
-}
+public class RestOpenehrModuleConfiguration {}

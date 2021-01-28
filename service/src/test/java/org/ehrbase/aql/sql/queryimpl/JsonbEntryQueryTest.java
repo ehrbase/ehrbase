@@ -18,6 +18,8 @@
 
 package org.ehrbase.aql.sql.queryimpl;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 import org.ehrbase.aql.TestAqlBase;
 import org.ehrbase.aql.compiler.AqlExpression;
 import org.ehrbase.aql.compiler.Contains;
@@ -28,37 +30,39 @@ import org.jooq.*;
 import org.jooq.impl.DSL;
 import org.junit.Test;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.Mockito.mock;
-
 public class JsonbEntryQueryTest extends TestAqlBase {
 
+  @Test
+  public void testMakeField() {
+    DSLContext context = DSLContextHelper.buildContext();
 
+    String query =
+        "select\n"
+            + "a, d\n"
+            + "from EHR e\n"
+            + "contains COMPOSITION a[openEHR-EHR-COMPOSITION.health_summary.v1]"
+            + "  CONTAINS ACTION d[openEHR-EHR-ACTION.immunisation_procedure.v1]";
 
-    @Test
-    public void testMakeField() {
-        DSLContext context = DSLContextHelper.buildContext();
+    AqlExpression aqlExpression = new AqlExpression().parse(query);
+    Contains contains = new Contains(aqlExpression.getParseTree(), knowledge).process();
 
-        String query =
-                "select\n" +
-                        "a, d\n" +
-                        "from EHR e\n" +
-                        "contains COMPOSITION a[openEHR-EHR-COMPOSITION.health_summary.v1]" +
-                        "  CONTAINS ACTION d[openEHR-EHR-ACTION.immunisation_procedure.v1]";
+    PathResolver pathResolver = new PathResolver(knowledge, contains.getIdentifierMapper());
+    String entryRoot = "/composition[openEHR-EHR-COMPOSITION.health_summary.v1]";
+    JsonbEntryQuery cut = new JsonbEntryQuery(testDomainAccess, knowledge, pathResolver);
 
-        AqlExpression aqlExpression = new AqlExpression().parse(query);
-        Contains contains = new Contains(aqlExpression.getParseTree(), knowledge).process();
+    // CCH 191016: EHR-163 required trailing '/value' as now the query allows canonical json return
+    Field<?> actual =
+        cut.makeField(
+            "IDCR - Immunisation summary.v0",
+            "d",
+            I_VariableDefinitionHelper.build(
+                "description[at0001]/items[at0002]/value/value", "test", "d", false, false, false),
+            IQueryImpl.Clause.SELECT);
 
-        PathResolver pathResolver = new PathResolver(knowledge, contains.getIdentifierMapper());
-         String entryRoot = "/composition[openEHR-EHR-COMPOSITION.health_summary.v1]";
-        JsonbEntryQuery cut = new JsonbEntryQuery(testDomainAccess, knowledge, pathResolver);
-
-        //CCH 191016: EHR-163 required trailing '/value' as now the query allows canonical json return
-        Field<?> actual = cut.makeField("IDCR - Immunisation summary.v0", "d", I_VariableDefinitionHelper.build("description[at0001]/items[at0002]/value/value", "test", "d", false, false, false), IQueryImpl.Clause.SELECT);
-
-        SelectSelectStep<? extends Record1<?>> selectQuery = DSL.select(actual);
-        assertThat(selectQuery.getQuery().toString()).hasToString("select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') \"test\"");
-        assertThat(actual.toString()).hasToString("\"test\"");
-    }
-
+    SelectSelectStep<? extends Record1<?>> selectQuery = DSL.select(actual);
+    assertThat(selectQuery.getQuery().toString())
+        .hasToString(
+            "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') \"test\"");
+    assertThat(actual.toString()).hasToString("\"test\"");
+  }
 }

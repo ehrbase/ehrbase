@@ -18,27 +18,25 @@
 
 package org.ehrbase.ehr.knowledge;
 
-/**
- * utility class to identify a file extension from a qualifier
- */
+/** utility class to identify a file extension from a qualifier */
 public enum KnowledgeType {
-    ARCHETYPE("ARCHETYPE", "adl"),
-    TEMPLATE("TEMPLATE", "oet"),
-    OPT("OPT", "opt");
+  ARCHETYPE("ARCHETYPE", "adl"),
+  TEMPLATE("TEMPLATE", "oet"),
+  OPT("OPT", "opt");
 
-    private String qualifier;
-    private String extension;
+  private String qualifier;
+  private String extension;
 
-    KnowledgeType(String qualifier, String extension) {
-        this.qualifier = qualifier;
-        this.extension = extension;
-    }
+  KnowledgeType(String qualifier, String extension) {
+    this.qualifier = qualifier;
+    this.extension = extension;
+  }
 
-    public String getQualifier() {
-        return qualifier;
-    }
+  public String getQualifier() {
+    return qualifier;
+  }
 
-    public String getExtension() {
-        return extension;
-    }
+  public String getExtension() {
+    return extension;
+  }
 }

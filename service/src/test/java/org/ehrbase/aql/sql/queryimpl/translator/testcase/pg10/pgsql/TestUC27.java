@@ -23,20 +23,20 @@ import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC27;
 
 public class TestUC27 extends UC27 {
 
-    public TestUC27(){
-        super();
-        this.expectedSqlExpression =
-                "select jsonb_extract_path_text(cast(jsonb_array_elements(cast(jsonb_extract_path(cast(\"ehr\".\"js_ehr\"(\n" +
-                        "  cast(ehr_join.id as uuid), \n" +
-                        "  'local'\n" +
-                        ") as jsonb),'folders') as jsonb)) as jsonb),'name','value') as \"/folders/name/value\"" +
-                        " from \"ehr\".\"ehr\" as \"ehr_join\" " +
-                        " where (\"ehr_join\".\"id\"='c2561bab-4d2b-4ffd-a893-4382e9048f8c'" +
-                        " and 'case1'IN((\n" +
-                        "  select jsonb_extract_path_text(cast(jsonb_array_elements(cast(jsonb_extract_path(cast(\"ehr\".\"js_ehr\"(\n" +
-                        "  cast(ehr_join.id as uuid), \n" +
-                        "  'local'\n" +
-                        ") as jsonb),'folders') as jsonb)) as jsonb),'name','value')\n" +
-                        ")))";
-    }
+  public TestUC27() {
+    super();
+    this.expectedSqlExpression =
+        "select jsonb_extract_path_text(cast(jsonb_array_elements(cast(jsonb_extract_path(cast(\"ehr\".\"js_ehr\"(\n"
+            + "  cast(ehr_join.id as uuid), \n"
+            + "  'local'\n"
+            + ") as jsonb),'folders') as jsonb)) as jsonb),'name','value') as \"/folders/name/value\""
+            + " from \"ehr\".\"ehr\" as \"ehr_join\" "
+            + " where (\"ehr_join\".\"id\"='c2561bab-4d2b-4ffd-a893-4382e9048f8c'"
+            + " and 'case1'IN((\n"
+            + "  select jsonb_extract_path_text(cast(jsonb_array_elements(cast(jsonb_extract_path(cast(\"ehr\".\"js_ehr\"(\n"
+            + "  cast(ehr_join.id as uuid), \n"
+            + "  'local'\n"
+            + ") as jsonb),'folders') as jsonb)) as jsonb),'name','value')\n"
+            + ")))";
+  }
 }

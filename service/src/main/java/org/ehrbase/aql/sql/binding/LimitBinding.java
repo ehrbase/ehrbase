@@ -20,28 +20,27 @@ package org.ehrbase.aql.sql.binding;
 
 import org.jooq.SelectQuery;
 
-/**
- * Created by christian on 4/27/2018.
- */
-@SuppressWarnings({"java:S3776","java:S3740","java:S1452"})
+/** Created by christian on 4/27/2018. */
+@SuppressWarnings({"java:S3776", "java:S3740", "java:S1452"})
 public class LimitBinding {
 
-    private SelectQuery selectQuery;
-    private final Integer limitAttribute;
-    private final Integer offsetAttribute;
+  private SelectQuery selectQuery;
+  private final Integer limitAttribute;
+  private final Integer offsetAttribute;
 
-    public LimitBinding(Integer limitAttribute, Integer offsetAttribute, SelectQuery selectQuery) {
-        this.selectQuery = selectQuery;
-        this.limitAttribute = limitAttribute;
-        this.offsetAttribute = offsetAttribute;
+  public LimitBinding(Integer limitAttribute, Integer offsetAttribute, SelectQuery selectQuery) {
+    this.selectQuery = selectQuery;
+    this.limitAttribute = limitAttribute;
+    this.offsetAttribute = offsetAttribute;
+  }
+
+  public SelectQuery bind() {
+
+    if (limitAttribute != null || offsetAttribute != null) {
+      selectQuery.addLimit(
+          offsetAttribute == null ? 0 : offsetAttribute,
+          limitAttribute == null ? 0 : limitAttribute);
     }
-
-    public SelectQuery bind() {
-
-        if (limitAttribute != null || offsetAttribute != null) {
-            selectQuery.addLimit(offsetAttribute == null ? 0 : offsetAttribute,
-                    limitAttribute == null ? 0 : limitAttribute);
-        }
-        return selectQuery;
-    }
+    return selectQuery;
+  }
 }

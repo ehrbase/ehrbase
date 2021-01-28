@@ -23,8 +23,9 @@ import org.ehrbase.aql.sql.queryimpl.translator.QueryProcessorTestBase;
 
 public abstract class UC15 extends QueryProcessorTestBase {
 
-    protected UC15(){
-        this.aql = "select e/ehr_status/other_details from EHR e[ehr_id/value='2a3b673f-d1b1-44c5-9e38-dcadf67ff2fc']";
-        this.expectedOutputWithJson = true;
-    }
+  protected UC15() {
+    this.aql =
+        "select e/ehr_status/other_details from EHR e[ehr_id/value='2a3b673f-d1b1-44c5-9e38-dcadf67ff2fc']";
+    this.expectedOutputWithJson = true;
+  }
 }

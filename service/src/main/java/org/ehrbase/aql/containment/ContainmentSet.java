@@ -1,121 +1,112 @@
 /*
- * Modifications copyright (C) 2019 Christian Chevalley, Vitasystems GmbH and Hannover Medical School
+* Modifications copyright (C) 2019 Christian Chevalley, Vitasystems GmbH and Hannover Medical School
 
- * This file is part of Project EHRbase
+* This file is part of Project EHRbase
 
- * Copyright (c) 2015 Christian Chevalley
- * This file is part of Project Ethercis
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+* Copyright (c) 2015 Christian Chevalley
+* This file is part of Project Ethercis
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 package org.ehrbase.aql.containment;
 
-import org.apache.commons.collections4.set.ListOrderedSet;
-
 import java.util.List;
+import org.apache.commons.collections4.set.ListOrderedSet;
 
 /**
  * Define the set of containments for a CONTAINS clause
- * <p>
- * Containment sets are associated with Set (boolean) operators and their relation with an enclosing set
- * (inclusion). This structure define the set operations required at the query layer implementation. For
- * example, in an SQL context, this will define set operation like: INTERSECT, UNION, EXCEPT.
- * </p>
- * Created by christian on 4/12/2016.
+ *
+ * <p>Containment sets are associated with Set (boolean) operators and their relation with an
+ * enclosing set (inclusion). This structure define the set operations required at the query layer
+ * implementation. For example, in an SQL context, this will define set operation like: INTERSECT,
+ * UNION, EXCEPT. Created by christian on 4/12/2016.
  */
 public class ContainmentSet {
 
-    private String label;
-    private int serial; //for debugging purpose only
-    private Containment enclosing;
-    private ContainmentSet parentSet;
-    private ListOrderedSet<Object> containmentList = new ListOrderedSet<>();
-    private int operatorSlot = -1; //the last position where to insert an operator, -1 initially
+  private String label;
+  private int serial; // for debugging purpose only
+  private Containment enclosing;
+  private ContainmentSet parentSet;
+  private ListOrderedSet<Object> containmentList = new ListOrderedSet<>();
+  private int operatorSlot = -1; // the last position where to insert an operator, -1 initially
 
+  public ContainmentSet(int serial, Containment enclosing) {
+    this.serial = serial;
+    this.enclosing = enclosing;
+  }
 
-    public ContainmentSet(int serial, Containment enclosing) {
-        this.serial = serial;
-        this.enclosing = enclosing;
-    }
+  public void add(Containment containment) {
+    containmentList.add(containment);
+  }
 
-    public void add(Containment containment) {
-        containmentList.add(containment);
-    }
+  public void addAll(List<Containment> containments) {
+    containmentList.addAll(containments);
+  }
 
-    public void addAll(List<Containment> containments) {
-        containmentList.addAll(containments);
-    }
+  public void add(String operator) {
+    containmentList.add(new ContainOperator(operator));
+  }
 
-    public void add(String operator) {
-        containmentList.add(new ContainOperator(operator));
-    }
+  public String toString() {
+    StringBuffer sb = new StringBuffer();
 
-    public String toString() {
-        StringBuffer sb = new StringBuffer();
+    sb.append(serial + "|");
 
-        sb.append(serial + "|");
+    if (containmentList.size() > 0) {
+      boolean comma = false;
+      for (Object item : containmentList) {
+        if (comma) sb.append(",");
 
-        if (containmentList.size() > 0) {
-            boolean comma = false;
-            for (Object item : containmentList) {
-                if (comma)
-                    sb.append(",");
+        comma = true;
 
-                comma = true;
+        if (item instanceof Containment) sb.append(item);
+        else if (item instanceof ContainOperator) {
+          sb.append(((ContainOperator) item).getOperator());
+        } else if (item instanceof String) {
+          sb.append(item);
+        } else sb.append("-- Unhandled Item Type --");
+      }
+    } else sb.append("--EMPTY SET--");
 
-                if (item instanceof Containment)
-                    sb.append(item);
-                else if (item instanceof ContainOperator) {
-                    sb.append(((ContainOperator) item).getOperator());
-                } else if (item instanceof String) {
-                    sb.append(item);
-                } else
-                    sb.append("-- Unhandled Item Type --");
+    if (parentSet != null) sb.append("<<<IN PARENT#" + parentSet.serial);
+    else sb.append("<<< ROOT");
+    return sb.toString();
+  }
 
-            }
-        } else
-            sb.append("--EMPTY SET--");
+  public int size() {
+    return containmentList.size();
+  }
 
-        if (parentSet != null)
-            sb.append("<<<IN PARENT#" + parentSet.serial);
-        else
-            sb.append("<<< ROOT");
-        return sb.toString();
-    }
+  public boolean isEmpty() {
+    return (containmentList.isEmpty()
+        && enclosing.getSymbol() == null
+        && enclosing.getClassName() == null);
+  }
 
-    public int size() {
-        return containmentList.size();
-    }
+  public void setParentSet(ContainmentSet parentSet) {
+    this.parentSet = parentSet;
+  }
 
-    public boolean isEmpty() {
-        return (containmentList.isEmpty() && enclosing.getSymbol() == null && enclosing.getClassName() == null);
-    }
+  public ListOrderedSet<Object> getContainmentList() {
+    return containmentList;
+  }
 
-    public void setParentSet(ContainmentSet parentSet) {
-        this.parentSet = parentSet;
-    }
+  public ContainmentSet getParentSet() {
+    return parentSet;
+  }
 
-    public ListOrderedSet<Object> getContainmentList() {
-        return containmentList;
-    }
-
-    public ContainmentSet getParentSet() {
-        return parentSet;
-    }
-
-    public Containment getEnclosing() {
-        return enclosing;
-    }
-
+  public Containment getEnclosing() {
+    return enclosing;
+  }
 }

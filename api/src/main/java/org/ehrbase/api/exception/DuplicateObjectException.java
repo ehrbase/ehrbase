@@ -20,19 +20,19 @@ package org.ehrbase.api.exception;
 
 public class DuplicateObjectException extends RuntimeException {
 
-    private String type;
+  private String type;
 
-    public DuplicateObjectException(String type, String message) {
-        super(message);
-        this.type = type;
-    }
+  public DuplicateObjectException(String type, String message) {
+    super(message);
+    this.type = type;
+  }
 
-    public DuplicateObjectException(String type, String message, Throwable cause) {
-        super(message, cause);
-        this.type = type;
-    }
+  public DuplicateObjectException(String type, String message, Throwable cause) {
+    super(message, cause);
+    this.type = type;
+  }
 
-    public String getType() {
-        return type;
-    }
+  public String getType() {
+    return type;
+  }
 }

@@ -18,49 +18,54 @@
 
 package org.ehrbase.api.service;
 
+import java.util.Optional;
+import java.util.UUID;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.ContributionDto;
 
-import java.util.Optional;
-import java.util.UUID;
-
 /**
  * Interface for contribution service roughly based on openEHR SM "I_EHR_CONTRIBUTION Interface",
- * see: https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_contribution_interface
+ * see:
+ * https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_contribution_interface
  */
 public interface ContributionService extends BaseService {
 
-    /**
-     * Check if given contribution exists and is part of given EHR.
-     * @param ehrId ID of EHR
-     * @param contributionId ID of contribution
-     * @return True if exists and part of EHR, false if not
-     */
-    boolean hasContribution(UUID ehrId, UUID contributionId);
+  /**
+   * Check if given contribution exists and is part of given EHR.
+   *
+   * @param ehrId ID of EHR
+   * @param contributionId ID of contribution
+   * @return True if exists and part of EHR, false if not
+   */
+  boolean hasContribution(UUID ehrId, UUID contributionId);
 
-    /**
-     * Return the Contribution with given id in given EHR.
-     * @param ehrId ID of EHR
-     * @param contributionId ID of contribution
-     * @return {@link Optional} containing a {@link ContributionDto} if successful, empty if not
-     */
-    Optional<ContributionDto> getContribution(UUID ehrId, UUID contributionId);
+  /**
+   * Return the Contribution with given id in given EHR.
+   *
+   * @param ehrId ID of EHR
+   * @param contributionId ID of contribution
+   * @return {@link Optional} containing a {@link ContributionDto} if successful, empty if not
+   */
+  Optional<ContributionDto> getContribution(UUID ehrId, UUID contributionId);
 
-    /**
-     * Commit a CONTRIBUTION containing any number of serialized VERSION<Type> objects.
-     * @param ehrId ID of EHR
-     * @param content serialized content, containing version objects and audit object in given format
-     * @param format format of serialized versions
-     * @return ID of successfully committed contribution
-     * @throws IllegalArgumentException when input can't be processed
-     * @throws InternalServerException when DB is inconsistent
-     */
-    UUID commitContribution(UUID ehrId, String content, CompositionFormat format);
+  /**
+   * Commit a CONTRIBUTION containing any number of serialized VERSION<Type> objects.
+   *
+   * @param ehrId ID of EHR
+   * @param content serialized content, containing version objects and audit object in given format
+   * @param format format of serialized versions
+   * @return ID of successfully committed contribution
+   * @throws IllegalArgumentException when input can't be processed
+   * @throws InternalServerException when DB is inconsistent
+   */
+  UUID commitContribution(UUID ehrId, String content, CompositionFormat format);
 
-    /**
-     * Admin method to delete a Contribution from the DB. See EHRbase Admin API specification for details.
-     * @param contributionId Contribution to delete
-     */
-    void adminDelete(UUID contributionId);
+  /**
+   * Admin method to delete a Contribution from the DB. See EHRbase Admin API specification for
+   * details.
+   *
+   * @param contributionId Contribution to delete
+   */
+  void adminDelete(UUID contributionId);
 }

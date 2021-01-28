@@ -19,37 +19,40 @@
 package org.ehrbase.dao.access.jooq.party;
 
 import com.nedap.archie.rm.generic.PartyProxy;
-import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
-
 import java.util.UUID;
+import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
 
 public interface I_PersistedParty {
 
-    /**
-     * Render a PartyProxy from a retrieved DB record (from PartyIdentified table)
-     * @param partyIdentifiedRecord
-     * @return
-     */
-    PartyProxy render(PartyIdentifiedRecord partyIdentifiedRecord);
+  /**
+   * Render a PartyProxy from a retrieved DB record (from PartyIdentified table)
+   *
+   * @param partyIdentifiedRecord
+   * @return
+   */
+  PartyProxy render(PartyIdentifiedRecord partyIdentifiedRecord);
 
-    /**
-     * store a party proxy relatively to its actual type
-     * @param partyProxy
-     * @return
-     */
-    UUID store(PartyProxy partyProxy);
+  /**
+   * store a party proxy relatively to its actual type
+   *
+   * @param partyProxy
+   * @return
+   */
+  UUID store(PartyProxy partyProxy);
 
-    /**
-     * find an existing party proxy or null if none
-     * @param partyProxy
-     * @return
-     */
-    UUID findInDB(PartyProxy partyProxy);
+  /**
+   * find an existing party proxy or null if none
+   *
+   * @param partyProxy
+   * @return
+   */
+  UUID findInDB(PartyProxy partyProxy);
 
-    /**
-     * retrieve a party proxy from the DB or create a new one if not yet stored
-     * @param partyProxy
-     * @return
-     */
-    UUID getOrCreate(PartyProxy partyProxy);
+  /**
+   * retrieve a party proxy from the DB or create a new one if not yet stored
+   *
+   * @param partyProxy
+   * @return
+   */
+  UUID getOrCreate(PartyProxy partyProxy);
 }

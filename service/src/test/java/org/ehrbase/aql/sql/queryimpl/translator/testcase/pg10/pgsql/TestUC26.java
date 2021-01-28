@@ -25,12 +25,12 @@ import org.junit.Ignore;
 @Ignore
 public class TestUC26 extends UC26 {
 
-    public TestUC26(){
-        super();
-        this.expectedSqlExpression =
-                "select count(DISTINCT \"_FCT_ARG_0\") as \"count\" from (select ehr.js_dv_date_time(\"ehr_join\".\"date_created\",\"ehr_join\".\"date_created_tzid\")::text as \"_FCT_ARG_0\"" +
-                        " from \"ehr\".\"entry\"" +
-                        " right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\"" +
-                        " right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\") as \"\"";
-    }
+  public TestUC26() {
+    super();
+    this.expectedSqlExpression =
+        "select count(DISTINCT \"_FCT_ARG_0\") as \"count\" from (select ehr.js_dv_date_time(\"ehr_join\".\"date_created\",\"ehr_join\".\"date_created_tzid\")::text as \"_FCT_ARG_0\""
+            + " from \"ehr\".\"entry\""
+            + " right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\""
+            + " right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\") as \"\"";
+  }
 }

@@ -21,16 +21,16 @@ package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC13;
 
-//@Ignore("CR #375")
+// @Ignore("CR #375")
 public class TestUC13 extends UC13 {
 
-    public TestUC13(){
-        super();
-        this.expectedSqlExpression =
-                "select count(\"count_magnitude\") as \"count_magnitude\" " +
-                        "from (select ((jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0004],0,/value,magnitude}'))::numeric as \"count_magnitude\" " +
-                        "from \"ehr\".\"entry\" " +
-                        "where \"ehr\".\"entry\".\"template_id\" = ?" +
-                        ") as \"\"";
-    }
+  public TestUC13() {
+    super();
+    this.expectedSqlExpression =
+        "select count(\"count_magnitude\") as \"count_magnitude\" "
+            + "from (select ((jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0004],0,/value,magnitude}'))::numeric as \"count_magnitude\" "
+            + "from \"ehr\".\"entry\" "
+            + "where \"ehr\".\"entry\".\"template_id\" = ?"
+            + ") as \"\"";
+  }
 }

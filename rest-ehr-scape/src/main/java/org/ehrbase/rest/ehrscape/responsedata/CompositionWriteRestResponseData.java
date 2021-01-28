@@ -23,14 +23,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class CompositionWriteRestResponseData extends ActionRestResponseData {
 
-    private String compositionUid;
+  private String compositionUid;
 
+  public String getCompositionUid() {
+    return compositionUid;
+  }
 
-    public String getCompositionUid() {
-        return compositionUid;
-    }
-
-    public void setCompositionUid(String compositionUid) {
-        this.compositionUid = compositionUid;
-    }
+  public void setCompositionUid(String compositionUid) {
+    this.compositionUid = compositionUid;
+  }
 }

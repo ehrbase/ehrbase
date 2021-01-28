@@ -18,6 +18,10 @@
 
 package org.ehrbase.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.File;
+import java.util.List;
 import org.apache.commons.io.IOUtils;
 import org.ehrbase.configuration.CacheConfiguration;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
@@ -27,72 +31,70 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import java.io.File;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-/**
- * Created by christian on 5/10/2018.
- */
-
+/** Created by christian on 5/10/2018. */
 public class KnowledgeCacheServiceTest {
 
+  @Rule public TemporaryFolder testFolder = new TemporaryFolder();
 
-    @Rule
-    public TemporaryFolder testFolder = new TemporaryFolder();
+  @Rule public CacheRule cacheRule = new CacheRule();
 
-    @Rule
-    public CacheRule cacheRule = new CacheRule();
+  @Test
+  public void testListAllOperationalTemplates() throws Exception {
+    KnowledgeCacheService cut = buildKnowledgeCache(testFolder, cacheRule);
+    cut.addOperationalTemplate(
+        IOUtils.toByteArray(TemplateTestData.IMMUNISATION_SUMMARY.getStream()));
+    List<TemplateMetaData> templateMetaData = cut.listAllOperationalTemplates();
+    assertThat(templateMetaData).size().isEqualTo(1);
+  }
 
-    @Test
-    public void testListAllOperationalTemplates() throws Exception {
-        KnowledgeCacheService cut = buildKnowledgeCache(testFolder,cacheRule);
-        cut.addOperationalTemplate(IOUtils.toByteArray(TemplateTestData.IMMUNISATION_SUMMARY.getStream()));
-        List<TemplateMetaData> templateMetaData = cut.listAllOperationalTemplates();
-        assertThat(templateMetaData).size().isEqualTo(1);
-    }
+  @Test
+  public void testRetrieveVisitorByTemplateId() throws Exception {
+    KnowledgeCacheService knowledge = buildKnowledgeCache(testFolder, cacheRule);
+    knowledge.addOperationalTemplate(
+        IOUtils.toByteArray(TemplateTestData.IMMUNISATION_SUMMARY.getStream()));
 
-    @Test
-    public void testRetrieveVisitorByTemplateId() throws Exception {
-        KnowledgeCacheService knowledge = buildKnowledgeCache(testFolder, cacheRule);
-        knowledge.addOperationalTemplate(IOUtils.toByteArray(TemplateTestData.IMMUNISATION_SUMMARY.getStream()));
+    assertThat(knowledge.getQueryOptMetaData("IDCR - Immunisation summary.v0")).isNotNull();
+  }
 
+  @Test
+  public void testQueryType() throws Exception {
+    KnowledgeCacheService knowledge = buildKnowledgeCache(testFolder, cacheRule);
+    knowledge.addOperationalTemplate(
+        IOUtils.toByteArray(OperationalTemplateTestData.IDCR_PROBLEM_LIST.getStream()));
 
-        assertThat(knowledge.getQueryOptMetaData("IDCR - Immunisation summary.v0")).isNotNull();
-    }
+    assertThat(
+            knowledge
+                .getInfo(
+                    OperationalTemplateTestData.IDCR_PROBLEM_LIST.getTemplateId(),
+                    "/content[openEHR-EHR-SECTION.problems_issues_rcp.v1]/items[openEHR-EHR-EVALUATION.problem_diagnosis.v1]/data[at0001]/items[at0012]")
+                .getItemType())
+        .isEqualTo("DV_TEXT");
+  }
 
-    @Test
-    public void testQueryType() throws Exception {
-        KnowledgeCacheService knowledge = buildKnowledgeCache(testFolder, cacheRule);
-        knowledge.addOperationalTemplate(IOUtils.toByteArray(OperationalTemplateTestData.IDCR_PROBLEM_LIST.getStream()));
+  @Test
+  public void testQueryType2() throws Exception {
+    KnowledgeCacheService knowledge = buildKnowledgeCache(testFolder, cacheRule);
+    knowledge.addOperationalTemplate(
+        IOUtils.toByteArray(OperationalTemplateTestData.BLOOD_PRESSURE_SIMPLE.getStream()));
 
+    assertThat(
+            knowledge
+                .getInfo(
+                    OperationalTemplateTestData.BLOOD_PRESSURE_SIMPLE.getTemplateId(),
+                    "/content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0004]")
+                .getItemType())
+        .isEqualTo("DV_QUANTITY");
+  }
 
-        assertThat(knowledge.getInfo(OperationalTemplateTestData.IDCR_PROBLEM_LIST.getTemplateId(), "/content[openEHR-EHR-SECTION.problems_issues_rcp.v1]/items[openEHR-EHR-EVALUATION.problem_diagnosis.v1]/data[at0001]/items[at0012]").getItemType())
-                .isEqualTo("DV_TEXT");
-    }
+  public static KnowledgeCacheService buildKnowledgeCache(
+      TemporaryFolder folder, CacheRule cacheRule) throws Exception {
 
-    @Test
-    public void testQueryType2() throws Exception {
-        KnowledgeCacheService knowledge = buildKnowledgeCache(testFolder, cacheRule);
-        knowledge.addOperationalTemplate(IOUtils.toByteArray(OperationalTemplateTestData.BLOOD_PRESSURE_SIMPLE.getStream()));
+    File operationalTemplatesemplates = folder.newFolder("operational_templates");
 
+    TemplateFileStorageService templateFileStorageService = new TemplateFileStorageService();
+    templateFileStorageService.setOptPath(operationalTemplatesemplates.getPath());
 
-        assertThat(knowledge.getInfo(OperationalTemplateTestData.BLOOD_PRESSURE_SIMPLE.getTemplateId(), "/content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0004]").getItemType())
-                .isEqualTo("DV_QUANTITY");
-    }
-
-
-    public static KnowledgeCacheService buildKnowledgeCache(TemporaryFolder folder, CacheRule cacheRule) throws Exception {
-
-
-        File operationalTemplatesemplates = folder.newFolder("operational_templates");
-
-        TemplateFileStorageService templateFileStorageService = new TemplateFileStorageService();
-        templateFileStorageService.setOptPath(operationalTemplatesemplates.getPath());
-
-        return new KnowledgeCacheService(templateFileStorageService, cacheRule.cacheManager, new CacheConfiguration());
-    }
-
-
+    return new KnowledgeCacheService(
+        templateFileStorageService, cacheRule.cacheManager, new CacheConfiguration());
+  }
 }

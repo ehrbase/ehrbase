@@ -17,6 +17,11 @@
  */
 package org.ehrbase.aql.sql.queryimpl.attribute.setting;
 
+import static org.ehrbase.aql.sql.queryimpl.AqlRoutines.jsonpathItem;
+import static org.ehrbase.aql.sql.queryimpl.AqlRoutines.jsonpathParameters;
+import static org.ehrbase.jooq.pg.tables.EventContext.EVENT_CONTEXT;
+
+import java.util.Optional;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryimpl.attribute.GenericJsonPath;
 import org.ehrbase.aql.sql.queryimpl.attribute.IRMObjectAttribute;
@@ -29,53 +34,50 @@ import org.jooq.JSONB;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 
-import java.util.Optional;
-
-import static org.ehrbase.aql.sql.queryimpl.AqlRoutines.jsonpathItem;
-import static org.ehrbase.aql.sql.queryimpl.AqlRoutines.jsonpathParameters;
-import static org.ehrbase.jooq.pg.tables.EventContext.EVENT_CONTEXT;
-@SuppressWarnings({"java:S3740","java:S1452"})
+@SuppressWarnings({"java:S3740", "java:S1452"})
 public class SettingAttribute extends EventContextAttribute {
 
-    protected Field tableField;
-    protected Optional<String> jsonPath = Optional.empty();
-    private boolean isJsonDataBlock = false;
+  protected Field tableField;
+  protected Optional<String> jsonPath = Optional.empty();
+  private boolean isJsonDataBlock = false;
 
-    public SettingAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
-        super(fieldContext, joinSetup);
+  public SettingAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
+    super(fieldContext, joinSetup);
+  }
+
+  @Override
+  public Field<?> sqlField() {
+    if (jsonPath.isPresent()) {
+      if (isJsonDataBlock)
+        return new GenericJsonField(fieldContext, joinSetup)
+            .forJsonPath(jsonPath.get())
+            .eventContext(EVENT_CONTEXT.ID);
+
+      Field jsonContextField =
+          DSL.field(
+              jsonpathItem(
+                  fieldContext.getContext().configuration(),
+                  Routines.jsContextSetting(tableField).cast(JSONB.class),
+                  jsonpathParameters(new GenericJsonPath(jsonPath.get()).jqueryPath())));
+
+      return as(DSL.field(jsonContextField));
     }
+    return null;
+  }
 
-    @Override
-    public Field<?> sqlField() {
-        if (jsonPath.isPresent()) {
-            if (isJsonDataBlock)
-                return new GenericJsonField(fieldContext, joinSetup).forJsonPath(jsonPath.get()).eventContext(EVENT_CONTEXT.ID);
+  @Override
+  public IRMObjectAttribute forTableField(TableField tableField) {
+    this.tableField = tableField;
+    return this;
+  }
 
-            Field jsonContextField = DSL.field(
-                    jsonpathItem(fieldContext.getContext().configuration(),
-                            Routines.jsContextSetting(tableField).cast(JSONB.class),
-                            jsonpathParameters(new GenericJsonPath(jsonPath.get()).jqueryPath())
-                    )
-            );
+  public IRMObjectAttribute forJsonPath(String jsonPath) {
+    this.jsonPath = Optional.of(jsonPath);
+    return this;
+  }
 
-            return as(DSL.field(jsonContextField));
-        }
-        return null;
-    }
-
-    @Override
-    public IRMObjectAttribute forTableField(TableField tableField) {
-        this.tableField = tableField;
-        return this;
-    }
-
-    public IRMObjectAttribute forJsonPath(String jsonPath){
-        this.jsonPath = Optional.of(jsonPath);
-        return this;
-    }
-
-    public SettingAttribute setJsonDataBlock(boolean jsonDataBlock) {
-        this.isJsonDataBlock = jsonDataBlock;
-        return this;
-    }
+  public SettingAttribute setJsonDataBlock(boolean jsonDataBlock) {
+    this.isJsonDataBlock = jsonDataBlock;
+    return this;
+  }
 }

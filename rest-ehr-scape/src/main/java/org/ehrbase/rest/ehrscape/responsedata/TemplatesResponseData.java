@@ -19,20 +19,19 @@
 package org.ehrbase.rest.ehrscape.responsedata;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
-import org.ehrbase.response.ehrscape.TemplateMetaDataDto;
-
 import java.util.List;
+import org.ehrbase.response.ehrscape.TemplateMetaDataDto;
 
 @JacksonXmlRootElement
 public class TemplatesResponseData extends ActionRestResponseData {
 
-    List<TemplateMetaDataDto> templates;
+  List<TemplateMetaDataDto> templates;
 
-    public List<TemplateMetaDataDto> getTemplates() {
-        return templates;
-    }
+  public List<TemplateMetaDataDto> getTemplates() {
+    return templates;
+  }
 
-    public void setTemplates(List<TemplateMetaDataDto> templates) {
-        this.templates = templates;
-    }
+  public void setTemplates(List<TemplateMetaDataDto> templates) {
+    this.templates = templates;
+  }
 }

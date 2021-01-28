@@ -23,12 +23,12 @@ import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC34;
 
 public class TestUC34 extends UC34 {
 
-    public TestUC34(){
-        super();
-        this.expectedSqlExpression =
-                "select min(DISTINCT \"_FCT_ARG_0\") as \"min\" from (select cast(\"ehr\".\"js_dv_date_time\"(\n" +
-                        "  \"ehr_join\".\"date_created\", \n" +
-                        "  \"ehr_join\".\"date_created_tzid\"\n" +
-                        ") as varchar) as \"_FCT_ARG_0\" from \"ehr\".\"ehr\" as \"ehr_join\") as \"\"";
-    }
+  public TestUC34() {
+    super();
+    this.expectedSqlExpression =
+        "select min(DISTINCT \"_FCT_ARG_0\") as \"min\" from (select cast(\"ehr\".\"js_dv_date_time\"(\n"
+            + "  \"ehr_join\".\"date_created\", \n"
+            + "  \"ehr_join\".\"date_created_tzid\"\n"
+            + ") as varchar) as \"_FCT_ARG_0\" from \"ehr\".\"ehr\" as \"ehr_join\") as \"\"";
+  }
 }

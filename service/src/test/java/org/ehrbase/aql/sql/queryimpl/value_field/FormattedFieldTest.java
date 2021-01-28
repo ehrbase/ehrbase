@@ -19,6 +19,10 @@
 
 package org.ehrbase.aql.sql.queryimpl.value_field;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.ehrbase.jooq.pg.Tables.EHR_;
+import static org.junit.Assert.*;
+
 import org.ehrbase.aql.TestAqlBase;
 import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.sql.binding.JoinBinder;
@@ -30,38 +34,39 @@ import org.jooq.impl.DSL;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.ehrbase.jooq.pg.Tables.EHR_;
-import static org.junit.Assert.*;
+public class FormattedFieldTest extends TestAqlBase {
 
-public class FormattedFieldTest  extends TestAqlBase {
+  FieldResolutionContext fieldResolutionContext;
+  JoinSetup joinSetup = new JoinSetup();
 
-    FieldResolutionContext fieldResolutionContext;
-    JoinSetup joinSetup = new JoinSetup();
+  @Before
+  public void setUp() {
+    fieldResolutionContext =
+        new FieldResolutionContext(
+            testDomainAccess.getContext(),
+            "test",
+            "test",
+            new VariableDefinition("test", null, "test", false),
+            IQueryImpl.Clause.SELECT,
+            null,
+            testDomainAccess.getIntrospectService(),
+            null);
+  }
 
-    @Before
-    public void setUp(){
-        fieldResolutionContext = new FieldResolutionContext(
-                testDomainAccess.getContext(),
-                "test",
-                "test",
-                new VariableDefinition("test", null, "test", false),
-                IQueryImpl.Clause.SELECT,
-                null,
-                testDomainAccess.getIntrospectService(),
-                null);
-    }
+  @Test
+  public void testSelectEhrDateCreatedValue() {
+    Field field =
+        new FormattedField(fieldResolutionContext, joinSetup)
+            .usingToJson(
+                "timestamp with time zone",
+                "||",
+                JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED),
+                JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED_TZID));
 
-    @Test
-    public void testSelectEhrDateCreatedValue(){
-        Field field = new FormattedField(fieldResolutionContext, joinSetup)
-                .usingToJson("timestamp with time zone","||", JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED), JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED_TZID));
-
-        assertNotNull(field);
-        assertThat(DSL.select(field).getQuery().toString())
-                .as("test formatting dvdatetime value")
-                .isEqualToIgnoringWhitespace(
-                    "select cast(to_json(cast(\"ehr_join\".\"date_created\"||\"ehr_join\".\"date_created_tzid\" as varchar)) as jsonb) \"/test\"");
-    }
-
+    assertNotNull(field);
+    assertThat(DSL.select(field).getQuery().toString())
+        .as("test formatting dvdatetime value")
+        .isEqualToIgnoringWhitespace(
+            "select cast(to_json(cast(\"ehr_join\".\"date_created\"||\"ehr_join\".\"date_created_tzid\" as varchar)) as jsonb) \"/test\"");
+  }
 }

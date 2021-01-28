@@ -17,8 +17,6 @@
  */
 package org.ehrbase.aql.sql.queryimpl.attribute;
 
-import org.jooq.TableField;
 
 @SuppressWarnings("java:S3740")
-public interface RMAttributeResolver {
-}
+public interface RMAttributeResolver {}

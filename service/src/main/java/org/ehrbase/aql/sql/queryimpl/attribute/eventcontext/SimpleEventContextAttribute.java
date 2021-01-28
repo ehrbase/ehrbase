@@ -17,6 +17,8 @@
  */
 package org.ehrbase.aql.sql.queryimpl.attribute.eventcontext;
 
+import static org.ehrbase.jooq.pg.Tables.STATUS;
+
 import org.ehrbase.aql.sql.binding.JoinBinder;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryimpl.attribute.IRMObjectAttribute;
@@ -25,28 +27,27 @@ import org.jooq.Field;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 
-import static org.ehrbase.jooq.pg.Tables.STATUS;
-@SuppressWarnings({"java:S3740","java:S1452"})
+@SuppressWarnings({"java:S3740", "java:S1452"})
 public class SimpleEventContextAttribute extends EventContextAttribute {
 
-    protected Field tableField;
+  protected Field tableField;
 
-    public SimpleEventContextAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
-        super(fieldContext, joinSetup);
-    }
+  public SimpleEventContextAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
+    super(fieldContext, joinSetup);
+  }
 
-    @Override
-    public Field<?> sqlField() {
-        return as(DSL.field(tableField));
-    }
+  @Override
+  public Field<?> sqlField() {
+    return as(DSL.field(tableField));
+  }
 
-    @Override
-    public IRMObjectAttribute forTableField(TableField tableField) {
-        this.tableField = tableField;
-        if (tableField.getTable().equals(STATUS)) {
-            joinSetup.setJoinEhrStatus(true);
-            this.tableField = JoinBinder.statusRecordTable.field(tableField.getName());
-        }
-        return this;
+  @Override
+  public IRMObjectAttribute forTableField(TableField tableField) {
+    this.tableField = tableField;
+    if (tableField.getTable().equals(STATUS)) {
+      joinSetup.setJoinEhrStatus(true);
+      this.tableField = JoinBinder.statusRecordTable.field(tableField.getName());
     }
+    return this;
+  }
 }

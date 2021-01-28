@@ -22,52 +22,53 @@ import com.nedap.archie.rm.support.identification.*;
 import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
 import org.ehrbase.serialisation.util.SnakeCase;
 
-/**
- * handles id (of type OBJECT_ID) in  PartyRef
- */
+/** handles id (of type OBJECT_ID) in PartyRef */
 public class PersistedObjectId {
 
-    /**
-     * returns the specific ObjectId corresponding to the specialization
-     * The specialization is provided by the object_id_type Enum value stored in DB (party_identified)
-     * @param identifiedRecord
-     * @return
-     */
-    public ObjectId fromDB(PartyIdentifiedRecord identifiedRecord){
+  /**
+   * returns the specific ObjectId corresponding to the specialization The specialization is
+   * provided by the object_id_type Enum value stored in DB (party_identified)
+   *
+   * @param identifiedRecord
+   * @return
+   */
+  public ObjectId fromDB(PartyIdentifiedRecord identifiedRecord) {
 
-        ObjectId objectId = null;
+    ObjectId objectId = null;
 
-        switch(identifiedRecord.getObjectIdType()){
-            case generic_id:
-                objectId = new GenericId(identifiedRecord.getPartyRefValue(), identifiedRecord.getPartyRefScheme());
-                break;
-            case hier_object_id:
-                objectId = new HierObjectId(identifiedRecord.getPartyRefValue());
-                break;
-            case object_version_id:
-                objectId = new ObjectVersionId(identifiedRecord.getPartyRefValue());
-                break;
-        }
-
-        return objectId;
+    switch (identifiedRecord.getObjectIdType()) {
+      case generic_id:
+        objectId =
+            new GenericId(
+                identifiedRecord.getPartyRefValue(), identifiedRecord.getPartyRefScheme());
+        break;
+      case hier_object_id:
+        objectId = new HierObjectId(identifiedRecord.getPartyRefValue());
+        break;
+      case object_version_id:
+        objectId = new ObjectVersionId(identifiedRecord.getPartyRefValue());
+        break;
     }
 
-    /**
-     * convert an objectId specialized class name in its snake case equivalent for storage
-     * @param externalRef
-     * @return
-     */
-    public String objectIdClassSnakeCase(PartyRef externalRef){
+    return objectId;
+  }
 
-        ObjectId objectId = externalRef.getId();
+  /**
+   * convert an objectId specialized class name in its snake case equivalent for storage
+   *
+   * @param externalRef
+   * @return
+   */
+  public String objectIdClassSnakeCase(PartyRef externalRef) {
 
-        String objectIdType = null;
+    ObjectId objectId = externalRef.getId();
 
-        if (objectId != null){
-            objectIdType = new SnakeCase(objectId.getClass().getSimpleName()).camelToSnake();
-        }
+    String objectIdType = null;
 
-        return objectIdType;
-
+    if (objectId != null) {
+      objectIdType = new SnakeCase(objectId.getClass().getSimpleName()).camelToSnake();
     }
+
+    return objectIdType;
+  }
 }

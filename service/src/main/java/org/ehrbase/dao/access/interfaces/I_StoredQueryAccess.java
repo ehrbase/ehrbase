@@ -2,31 +2,30 @@ package org.ehrbase.dao.access.interfaces;
 
 import java.sql.Timestamp;
 
-
 public interface I_StoredQueryAccess {
-    I_StoredQueryAccess commit(Timestamp transactionTime);
+  I_StoredQueryAccess commit(Timestamp transactionTime);
 
-    I_StoredQueryAccess commit();
+  I_StoredQueryAccess commit();
 
-    Boolean update(Timestamp transactionTime);
+  Boolean update(Timestamp transactionTime);
 
-    Boolean update(Timestamp transactionTime, boolean force);
+  Boolean update(Timestamp transactionTime, boolean force);
 
-    Integer delete();
+  Integer delete();
 
-    String getQualifiedName();
+  String getQualifiedName();
 
-    String getReverseDomainName();
+  String getReverseDomainName();
 
-    String getSemanticId();
+  String getSemanticId();
 
-    String getSemver();
+  String getSemver();
 
-    String getQueryText();
+  String getQueryText();
 
-    void setQueryText(String queryText);
+  void setQueryText(String queryText);
 
-    Timestamp getCreationDate();
+  Timestamp getCreationDate();
 
-    String getQueryType();
+  String getQueryType();
 }

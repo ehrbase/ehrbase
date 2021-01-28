@@ -23,9 +23,8 @@ import org.ehrbase.aql.sql.queryimpl.translator.QueryProcessorTestBase;
 
 public abstract class UC2 extends QueryProcessorTestBase {
 
-    protected UC2(){
-        this.aql = "select e/ehr_id/value from EHR e " +
-                "where e/ehr_id/value = '30580007' ";
-        this.expectedOutputWithJson = false;
-    }
+  protected UC2() {
+    this.aql = "select e/ehr_id/value from EHR e " + "where e/ehr_id/value = '30580007' ";
+    this.expectedOutputWithJson = false;
+  }
 }
