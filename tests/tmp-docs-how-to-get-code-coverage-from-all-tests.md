@@ -35,14 +35,12 @@ java -jar ~/JACOCO/lib/jacococli.jar report test-coverage/target/jacoco-sdk-it-c
      --classfiles application/target/classes/ \
      --classfiles base/target/classes/ \
      --classfiles jooq-pq/target/classes/ \
-     --classfiles rest-ehr-scape/target/classes/ \
      --classfiles rest-openehr/target/classes/ \
      --classfiles service/target/classes/ \
      --sourcefiles api/src/main/java/ \
      --sourcefiles application/src/main/java/ \
      --sourcefiles base/src/main/java/ \
      --sourcefiles jooq-pq/src/main/java/ \
-     --sourcefiles rest-ehr-scape/src/main/java/ \
      --sourcefiles rest-openehr/src/main/java/ \
      --sourcefiles service/src/main/java/ \
      --html test-coverage/sdk-it-coverage-report \
@@ -62,14 +60,12 @@ java -jar ~/JACOCO/lib/jacococli.jar report test-coverage/jacoco-all-tests-cover
      --classfiles application/target/classes/ \
      --classfiles base/target/classes/ \
      --classfiles jooq-pq/target/classes/ \
-     --classfiles rest-ehr-scape/target/classes/ \
      --classfiles rest-openehr/target/classes/ \
      --classfiles service/target/classes/ \
      --sourcefiles api/src/main/java/ \
      --sourcefiles application/src/main/java/ \
      --sourcefiles base/src/main/java/ \
      --sourcefiles jooq-pq/src/main/java/ \
-     --sourcefiles rest-ehr-scape/src/main/java/ \
      --sourcefiles rest-openehr/src/main/java/ \
      --sourcefiles service/src/main/java/ \
      --html test-coverage/overall-coverage-report \
@@ -90,7 +86,6 @@ api/target/classes/
 application/target/classes/
 base/target/classes/
 jooq-pq/target/classes/
-rest-ehr-scape/target/classes/
 rest-openehr/target/classes/
 service/target/classes/
 
@@ -103,7 +98,6 @@ api/src/main/java/
 application/src/main/java/
 base/src/main/java/
 jooq-pq/src/main/java/
-rest-ehr-scape/src/main/java/
 rest-openehr/src/main/java/
 service/src/main/java/
 

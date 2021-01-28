@@ -19,15 +19,16 @@
 package org.ehrbase.api.definitions;
 
 public enum QueryMode {
-    SQL("sql"), AQL("aql");
+  SQL("sql"),
+  AQL("aql");
 
-    private final String code;
+  private final String code;
 
-    QueryMode(String code) {
-        this.code = code;
-    }
+  QueryMode(String code) {
+    this.code = code;
+  }
 
-    public String getCode() {
-        return code;
-    }
+  public String getCode() {
+    return code;
+  }
 }

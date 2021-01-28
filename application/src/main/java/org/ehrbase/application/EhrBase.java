@@ -19,7 +19,6 @@
 package org.ehrbase.application;
 
 import org.ehrbase.ServiceModuleConfiguration;
-import org.ehrbase.rest.ehrscape.RestEHRScapeModuleConfiguration;
 import org.ehrbase.rest.openehr.RestOpenehrModuleConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -27,7 +26,6 @@ import org.springframework.context.annotation.Import;
 
 @SpringBootApplication()
 @Import({ServiceModuleConfiguration.class,
-        RestEHRScapeModuleConfiguration.class,
         RestOpenehrModuleConfiguration.class,
 })
 public class EhrBase {

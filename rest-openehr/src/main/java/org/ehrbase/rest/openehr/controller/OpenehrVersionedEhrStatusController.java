@@ -4,7 +4,6 @@ import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.ehr.VersionedEhrStatus;
 import com.nedap.archie.rm.generic.RevisionHistory;
-import io.swagger.annotations.*;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -31,7 +30,6 @@ import java.util.UUID;
 /**
  * Controller for /ehr/{ehrId}/versioned_ehr_status resource of openEHR REST API
  */
-@Api
 @RestController
 @RequestMapping(path = "/rest/openehr/v1/ehr/{ehr_id}/versioned_ehr_status", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrVersionedEhrStatusController extends BaseController{
@@ -46,17 +44,9 @@ public class OpenehrVersionedEhrStatusController extends BaseController{
     }
 
     @GetMapping
-    @ApiOperation(value = "Retrieves a VERSIONED_EHR_STATUS associated with an EHR identified by ehr_id.", response = VersionedObjectResponseData.class)
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok - requested VERSIONED_EHR_STATUS is successfully retrieved.",
-                    responseHeaders = {
-                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class)
-                    }),
-            @ApiResponse(code = 404, message = "Not Found - EHR with ehr_id does not exist."),
-            @ApiResponse(code = 406, message = "Not Acceptable - Service can not fulfil requested Accept format.")})
     public ResponseEntity<VersionedObjectResponseData<EhrStatus>> retrieveVersionedEhrStatusByEhr(
-            @ApiParam(value = "Client should specify expected response format") @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-            @ApiParam(value = "User supplied EHR ID", required = true) @PathVariable(value = "ehr_id") String ehrIdString) {
+            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
+            @PathVariable(value = "ehr_id") String ehrIdString) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
 
@@ -76,17 +66,9 @@ public class OpenehrVersionedEhrStatusController extends BaseController{
     }
 
     @GetMapping(path = "/revision_history")
-    @ApiOperation(value = "Retrieves a VERSIONED_EHR_STATUS associated with an EHR identified by ehr_id.", response = RevisionHistoryResponseData.class)
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok - requested VERSIONED_EHR_STATUS is successfully retrieved.",
-                    responseHeaders = {
-                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class)
-                    }),
-            @ApiResponse(code = 404, message = "Not Found - EHR with ehr_id does not exist."),
-            @ApiResponse(code = 406, message = "Not Acceptable - Service can not fulfil requested Accept format.")})
     public ResponseEntity<RevisionHistoryResponseData> retrieveVersionedEhrStatusRevisionHistoryByEhr(
-            @ApiParam(value = "Client should specify expected response format") @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-            @ApiParam(value = "User supplied EHR ID", required = true) @PathVariable(value = "ehr_id") String ehrIdString) {
+            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
+            @PathVariable(value = "ehr_id") String ehrIdString) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
 
@@ -106,18 +88,10 @@ public class OpenehrVersionedEhrStatusController extends BaseController{
     }
 
     @GetMapping(path = "/version")
-    @ApiOperation(value = "Retrieves the VERSION of an EHR_STATUS associated with the EHR identified by ehr_id. If version_at_time is supplied, retrieves the VERSION extant at specified time, otherwise retrieves the latest VERSION.", response = OriginalVersionResponseData.class)
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok - requested VERSION is successfully retrieved.",
-                    responseHeaders = {
-                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class)
-                    }),
-            @ApiResponse(code = 404, message = "Not Found - EHR with ehr_id does not exist."),
-            @ApiResponse(code = 406, message = "Not Acceptable - Service can not fulfil requested Accept format.")})
     public ResponseEntity<OriginalVersionResponseData<EhrStatus>> retrieveVersionOfEhrStatusByTime(
-            @ApiParam(value = "Client should specify expected response format") @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-            @ApiParam(value = "User supplied EHR ID", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
-            @ApiParam(value = "A timestamp in the ISO8601 format", hidden = true) @RequestParam(value = "version_at_time", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime versionAtTime) {
+            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
+            @PathVariable(value = "ehr_id") String ehrIdString,
+            @RequestParam(value = "version_at_time", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime versionAtTime) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
 
@@ -151,18 +125,10 @@ public class OpenehrVersionedEhrStatusController extends BaseController{
     }
 
     @GetMapping(path = "/version/{version_uid}")
-    @ApiOperation(value = "Retrieves a VERSION identified by version_uid of an EHR_STATUS associated with the EHR identified by ehr_id.", response = OriginalVersionResponseData.class)
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok - requested VERSION is successfully retrieved.",
-                    responseHeaders = {
-                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class)
-                    }),
-            @ApiResponse(code = 404, message = "Not Found - EHR with ehr_id does not exist."),
-            @ApiResponse(code = 406, message = "Not Acceptable - Service can not fulfil requested Accept format.")})
     public ResponseEntity<OriginalVersionResponseData<EhrStatus>> retrieveVersionOfEhrStatusByVersionUid(
-            @ApiParam(value = "Client should specify expected response format") @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-            @ApiParam(value = "User supplied EHR ID", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
-            @ApiParam(value = "User supplied VERSION identifier", required = true) @PathVariable(value = "version_uid") String versionUid) {
+            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
+            @PathVariable(value = "ehr_id") String ehrIdString,
+            @PathVariable(value = "version_uid") String versionUid) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
 
@@ -197,7 +163,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController{
         return ResponseEntity.ok().headers(respHeaders).body(originalVersionResponseData);
     }
 
-    private MediaType getMediaType(@RequestHeader(value = HttpHeaders.ACCEPT, required = false) @ApiParam("Client should specify expected response format") String accept) {
+    private MediaType getMediaType(@RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept) {
         MediaType contentTypeHeaderInput;  // to prepare header input if this header is needed later
         if (StringUtils.isBlank(accept) || accept.equals("*/*")) {  // "*/*" is standard for "any mime-type"
             // assign default if no header was set

@@ -784,14 +784,12 @@ jobs:
               --classfiles application/target/classes/ \
               --classfiles base/target/classes/ \
               --classfiles jooq-pq/target/classes/ \
-              --classfiles rest-ehr-scape/target/classes/ \
               --classfiles rest-openehr/target/classes/ \
               --classfiles service/target/classes/ \
               --sourcefiles api/src/main/java/ \
               --sourcefiles application/src/main/java/ \
               --sourcefiles base/src/main/java/ \
               --sourcefiles jooq-pq/src/main/java/ \
-              --sourcefiles rest-ehr-scape/src/main/java/ \
               --sourcefiles rest-openehr/src/main/java/ \
               --sourcefiles service/src/main/java/ \
               --html test-coverage/overall-coverage-report \
@@ -1112,14 +1110,12 @@ commands:
               --classfiles application/target/classes/ \
               --classfiles base/target/classes/ \
               --classfiles jooq-pq/target/classes/ \
-              --classfiles rest-ehr-scape/target/classes/ \
               --classfiles rest-openehr/target/classes/ \
               --classfiles service/target/classes/ \
               --sourcefiles api/src/main/java/ \
               --sourcefiles application/src/main/java/ \
               --sourcefiles base/src/main/java/ \
               --sourcefiles jooq-pq/src/main/java/ \
-              --sourcefiles rest-ehr-scape/src/main/java/ \
               --sourcefiles rest-openehr/src/main/java/ \
               --sourcefiles service/src/main/java/ \
               --html test-coverage/sdk-it-coverage-report \
@@ -1282,7 +1278,6 @@ commands:
             - projects/application/target
             - projects/base/target
             - projects/jooq-pq/target
-            - projects/rest-ehr-scape/target
             - projects/rest-openehr/target
             - projects/service/target
             - projects/test-coverage/target
@@ -1519,7 +1514,6 @@ commands:
       - persist_to_workspace:
           root: /home/circleci
           paths:
-            - projects/rest-ehr-scape/target/site/jacoco/jacoco.xml
             - projects/rest-openehr/target/site/jacoco/jacoco.xml
             - projects/serialisation/target/site/jacoco/jacoco.xml
             - projects/service/target/site/jacoco/jacoco.xml

@@ -17,56 +17,55 @@
  */
 package org.ehrbase.api.service;
 
-/**
- * Status service to get information about the running EHRbase instance
- */
+/** Status service to get information about the running EHRbase instance */
 public interface StatusService extends BaseService {
 
-    /**
-     * Returns information on the current operating system this EHRbase instance is running on.
-     * The resulting info string contains the name, the architecture and the version of the
-     * operating system, e.g. "Mac OS X x86_64 10.15.7"
-     *
-     * @return OS information
-     */
-    String getOperatingSystemInformation();
+  /**
+   * Returns information on the current operating system this EHRbase instance is running on. The
+   * resulting info string contains the name, the architecture and the version of the operating
+   * system, e.g. "Mac OS X x86_64 10.15.7"
+   *
+   * @return OS information
+   */
+  String getOperatingSystemInformation();
 
-    /**
-     * Returns information on the current Java Virtual Machine that is running this EHRbase
-     * instance. Provide information on the JVM vendor and the full java runtime version, e.g.
-     * "Eclipse OpenJ9 11.0.9+11".
-     *
-     * @return JVM Version string
-     */
-    String getJavaVMInformation();
+  /**
+   * Returns information on the current Java Virtual Machine that is running this EHRbase instance.
+   * Provide information on the JVM vendor and the full java runtime version, e.g. "Eclipse OpenJ9
+   * 11.0.9+11".
+   *
+   * @return JVM Version string
+   */
+  String getJavaVMInformation();
 
-    /**
-     * Returns information on the current connected Database instance version. This contains the
-     * major version and additionally also the operating system it is running on, e.g. useful
-     * if the database runs on a remote server or inside a docker container.
-     *
-     * @return Database information
-     */
-    String getDatabaseInformation();
+  /**
+   * Returns information on the current connected Database instance version. This contains the major
+   * version and additionally also the operating system it is running on, e.g. useful if the
+   * database runs on a remote server or inside a docker container.
+   *
+   * @return Database information
+   */
+  String getDatabaseInformation();
 
-    /**
-     * Returns current version of EHRbase build that is running.
-     *
-     * @return Current EHRbase version
-     */
-    String getEhrbaseVersion();
+  /**
+   * Returns current version of EHRbase build that is running.
+   *
+   * @return Current EHRbase version
+   */
+  String getEhrbaseVersion();
 
-    /**
-     * Returns current version of archie which has been used to build the running EHRbase instance.
-     *
-     * @return Current used Archie version
-     */
-    String getArchieVersion();
+  /**
+   * Returns current version of archie which has been used to build the running EHRbase instance.
+   *
+   * @return Current used Archie version
+   */
+  String getArchieVersion();
 
-    /**
-     * Returns the current version of openEHR_SDK which has been used to build the running EHRbase instance.
-     *
-     * @return Current used openEHR_SDK version
-     */
-    String getOpenEHR_SDK_Version();
+  /**
+   * Returns the current version of openEHR_SDK which has been used to build the running EHRbase
+   * instance.
+   *
+   * @return Current used openEHR_SDK version
+   */
+  String getOpenEHR_SDK_Version();
 }

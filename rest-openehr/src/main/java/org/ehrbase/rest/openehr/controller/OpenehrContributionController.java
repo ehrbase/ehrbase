@@ -21,14 +21,11 @@ package org.ehrbase.rest.openehr.controller;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import io.swagger.annotations.*;
 import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.ContributionDto;
-import org.ehrbase.response.openehr.CompositionResponseData;
 import org.ehrbase.response.openehr.ContributionResponseData;
-import org.ehrbase.response.openehr.ErrorResponseData;
 import org.ehrbase.rest.openehr.util.InternalResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -41,7 +38,6 @@ import java.net.URI;
 import java.util.*;
 import java.util.function.Supplier;
 
-@Api(tags = "Contribution")
 @RestController
 @RequestMapping(path = "/rest/openehr/v1/ehr", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrContributionController extends BaseController {
@@ -54,32 +50,14 @@ public class OpenehrContributionController extends BaseController {
     }
 
     @PostMapping(value = "/{ehr_id}/contribution", consumes = {"application/xml", "application/json"})
-    @OperationNotesResourcesReaderOpenehr.ApiNotes("contributionPost.md")     // this utilizes a workaround, see source class for info
-    @ApiOperation(value = "Create a new composition.")
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, response = CompositionResponseData.class, message = "New Contribution was created. Content body is only returned when Prefer header has return=representation, otherwise only headers are returned.",
-                    responseHeaders = {
-                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class),
-                            @ResponseHeader(name = LOCATION, description = RESP_LOCATION_DESC, response = URI.class),
-                            @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class),
-                            @ResponseHeader(name = LAST_MODIFIED, description = RESP_LAST_MODIFIED_DESC, response = long.class)
-                    }),
-            @ApiResponse(code = 204, message = "No Content - New Contribution was created but not full representation requested. Details in response headers.",
-                    responseHeaders = {
-                            @ResponseHeader(name = LOCATION, description = RESP_LOCATION_DESC, response = URI.class),
-                            @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class),
-                            @ResponseHeader(name = LAST_MODIFIED, description = RESP_LAST_MODIFIED_DESC, response = long.class)
-                    }),
-            @ApiResponse(code = 400, response = ErrorResponseData.class, message = "Bad request: validation errors in one of the attached locatables, modification type doesn’t match the operation - i.e. first version of a composition with MODIFICATION."),
-            @ApiResponse(code = 404, response = ErrorResponseData.class, message = "Not Found - The EHR with the supplied ehr_id did not exist.")})
     @ResponseStatus(value = HttpStatus.CREATED)    // overwrites default 200, fixes the wrong listing of 200 in swagger-ui (EHR-56)
-    public ResponseEntity createContribution(@ApiParam(value = REQ_OPENEHR_VERSION) @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
-                                            @ApiParam(value = REQ_OPENEHR_AUDIT) @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
-                                            @ApiParam(value = REQ_CONTENT_TYPE_BODY, required = true) @RequestHeader(value = CONTENT_TYPE) String contentType,
-                                            @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-                                            @ApiParam(value = REQ_PREFER) @RequestHeader(value = PREFER, required = false) String prefer,
-                                            @ApiParam(value = "EHR identifier taken from EHR.ehr_id.value", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
-                                            @ApiParam(value = "The contribution to create", required = true) @RequestBody String contribution) {
+    public ResponseEntity createContribution(@RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
+                                            @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
+                                            @RequestHeader(value = CONTENT_TYPE) String contentType,
+                                            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
+                                            @RequestHeader(value = PREFER, required = false) String prefer,
+                                            @PathVariable(value = "ehr_id") String ehrIdString,
+                                            @RequestBody String contribution) {
         UUID ehrId = getEhrUuid(ehrIdString);
 
         UUID contributionId = contributionService.commitContribution(ehrId, contribution, extractCompositionFormat(contentType));
@@ -105,21 +83,11 @@ public class OpenehrContributionController extends BaseController {
     }
 
     @GetMapping(value = "/{ehr_id}/contribution/{contribution_uid}")
-    @ApiOperation(value = "Get contribution by id.")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, response = CompositionResponseData.class, message = "Contribution found and returned.",
-                    responseHeaders = {
-                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class),
-                            @ResponseHeader(name = LOCATION, description = RESP_LOCATION_DESC, response = URI.class),
-                            @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class),
-                            @ResponseHeader(name = LAST_MODIFIED, description = RESP_LAST_MODIFIED_DESC, response = long.class)
-                    }),
-            @ApiResponse(code = 404, response = ErrorResponseData.class, message = "Not Found - No EHR with the supplied ehr_id or no Contribution with the supplied contribution_uid was found.")})
-    public ResponseEntity getContribution(@ApiParam(value = REQ_OPENEHR_VERSION) @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
-                                             @ApiParam(value = REQ_OPENEHR_AUDIT) @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
-                                             @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-                                             @ApiParam(value = "EHR identifier taken from EHR.ehr_id.value", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
-                                             @ApiParam(value = "", required = true) @PathVariable(value = "contribution_uid") String contributionUidString) {
+    public ResponseEntity getContribution(@RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
+                                             @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
+                                             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
+                                             @PathVariable(value = "ehr_id") String ehrIdString,
+                                             @PathVariable(value = "contribution_uid") String contributionUidString) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
         UUID contributionUid = getContributionVersionedObjectUidString(contributionUidString);

@@ -78,10 +78,6 @@
         </dependency>
         <dependency>
             <groupId>org.ehrbase.openehr</groupId>
-            <artifactId>rest-ehr-scape</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.ehrbase.openehr</groupId>
             <artifactId>api</artifactId>
         </dependency>
         <dependency>
@@ -95,14 +91,6 @@
         <dependency>
             <groupId>org.ehrbase.openehr</groupId>
             <artifactId>base</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger2</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger-ui</artifactId>
         </dependency>
         <dependency>
             <groupId>io.micrometer</groupId>

@@ -2,19 +2,19 @@ package org.ehrbase.api.definitions;
 
 public interface ServerConfig {
 
-    int getPort();
+  int getPort();
 
-    void setPort(int port);
+  void setPort(int port);
 
-    String getNodename();
+  String getNodename();
 
-    void setNodename(String nodename);
+  void setNodename(String nodename);
 
-    String getAqlIterationSkipList();
+  String getAqlIterationSkipList();
 
-    Integer getAqlDepth();
+  Integer getAqlDepth();
 
-    Boolean getUseJsQuery();
+  Boolean getUseJsQuery();
 
-    void setUseJsQuery(boolean b);
+  void setUseJsQuery(boolean b);
 }

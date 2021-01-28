@@ -19,41 +19,42 @@
 package org.ehrbase.api.exception;
 
 /**
- * Project-custom exception that allows outbound APIs to react on backend problems. Shall be thrown to invoke
- * status 412 "Precondition Failed" or whatever is appropriate.
- * To be thrown in all cases where part of the request leads to problems, like malformed queries or non-existent referenced objects.
+ * Project-custom exception that allows outbound APIs to react on backend problems. Shall be thrown
+ * to invoke status 412 "Precondition Failed" or whatever is appropriate. To be thrown in all cases
+ * where part of the request leads to problems, like malformed queries or non-existent referenced
+ * objects.
  */
-public class PreconditionFailedException  extends RuntimeException  {
+public class PreconditionFailedException extends RuntimeException {
 
-    private final String currentVersionUid;
-    private final String url;
+  private final String currentVersionUid;
+  private final String url;
 
-    public PreconditionFailedException(String message) {
-        super(message);
+  public PreconditionFailedException(String message) {
+    super(message);
 
-        this.currentVersionUid = null;
-        this.url = null;
-    }
+    this.currentVersionUid = null;
+    this.url = null;
+  }
 
-    public PreconditionFailedException(String message, Throwable cause) {
-        super(message, cause);
+  public PreconditionFailedException(String message, Throwable cause) {
+    super(message, cause);
 
-        this.currentVersionUid = null;
-        this.url = null;
-    }
+    this.currentVersionUid = null;
+    this.url = null;
+  }
 
-    public PreconditionFailedException(String message, String currentVersionUid, String url) {
-        super(message);
+  public PreconditionFailedException(String message, String currentVersionUid, String url) {
+    super(message);
 
-        this.currentVersionUid = currentVersionUid;
-        this.url = url;
-    }
+    this.currentVersionUid = currentVersionUid;
+    this.url = url;
+  }
 
-    public String getCurrentVersionUid() {
-        return currentVersionUid;
-    }
+  public String getCurrentVersionUid() {
+    return currentVersionUid;
+  }
 
-    public String getUrl() {
-        return url;
-    }
+  public String getUrl() {
+    return url;
+  }
 }

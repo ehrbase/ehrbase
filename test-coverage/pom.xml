@@ -54,11 +54,6 @@
         </dependency>
         <dependency>
             <groupId>org.ehrbase.openehr</groupId>
-            <artifactId>rest-ehr-scape</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.ehrbase.openehr</groupId>
             <artifactId>service</artifactId>
             <version>${project.version}</version>
         </dependency> 

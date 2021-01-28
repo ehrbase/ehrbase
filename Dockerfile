@@ -96,7 +96,6 @@ COPY ./api/pom.xml ./api/pom.xml
 COPY ./application/pom.xml ./application/pom.xml
 COPY ./base/pom.xml ./base/pom.xml
 COPY ./jooq-pq/pom.xml ./jooq-pq/pom.xml
-COPY ./rest-ehr-scape/pom.xml ./rest-ehr-scape/pom.xml
 COPY ./rest-openehr/pom.xml ./rest-openehr/pom.xml
 COPY ./service/pom.xml ./service/pom.xml
 COPY ./test-coverage/pom.xml ./test-coverage/pom.xml 
@@ -104,7 +103,6 @@ COPY ./api/src ./api/src
 COPY ./application/src ./application/src
 COPY ./base/src ./base/src
 COPY ./jooq-pq/src ./jooq-pq/src
-COPY ./rest-ehr-scape/src ./rest-ehr-scape/src
 COPY ./rest-openehr/src ./rest-openehr/src
 COPY ./service/src ./service/src
 RUN mvn compile dependency:go-offline \

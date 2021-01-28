@@ -17,8 +17,8 @@
  */
 package org.ehrbase.rest.openehr.controller;
 
-import io.swagger.annotations.*;
 import org.ehrbase.api.service.StatusService;
+import org.ehrbase.response.openehr.StatusResponseData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -26,60 +26,48 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import org.ehrbase.response.openehr.StatusResponseData;
-
 import java.util.Objects;
 
 /**
- * API endpoint to get status of EHRbase and version information on used dependencies as archie or openEHR_sdk as well
- * as the current used JVM version or target PostgreSQL server version.
+ * API endpoint to get status of EHRbase and version information on used dependencies as archie or
+ * openEHR_sdk as well as the current used JVM version or target PostgreSQL server version.
  */
-@Api(tags = {"Heartbeat", "Version info", "Status"})
 @RestController
-@RequestMapping(path = "/rest/openehr/v1", produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
+@RequestMapping(
+    path = "/rest/openehr/v1",
+    produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
 public class StatusController extends BaseController {
 
-    private final StatusService statusService;
+  private final StatusService statusService;
 
-    @Autowired
-    public StatusController(StatusService statusService) {
-        this.statusService = Objects.requireNonNull(statusService);
-    }
+  @Autowired
+  public StatusController(StatusService statusService) {
+    this.statusService = Objects.requireNonNull(statusService);
+  }
 
-    @GetMapping(path = "/status")
-    @ApiOperation(
-            value = "Get status information on running EHRbase server instance",
-            response = StatusResponseData.class
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    code = 200,
-                    message = "EHRbase is available. Basic information on runtime and build is returned in body.",
-                    responseHeaders = {
-                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class)
-                    }
-            )
-    })
-    @ResponseStatus(value = HttpStatus.OK)
-    public ResponseEntity<StatusResponseData> getEhrbaseStatus(
-            @ApiParam(value = "Client desired response data format")
-            @RequestHeader(value = HttpHeaders.ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE)
-            String accept
-    ) {
-        StatusResponseData responseData = new StatusResponseData();
-        // Java VM version
-        responseData.setJvmVersion(this.statusService.getJavaVMInformation());
-        // OS Identifier and version
-        responseData.setOsVersion(this.statusService.getOperatingSystemInformation());
-        // Database server version
-        responseData.setPostgresVersion(this.statusService.getDatabaseInformation());
-        // EHRbase version
-        responseData.setEhrbaseVersion(this.statusService.getEhrbaseVersion());
-        // Client SDK Version
-        responseData.setOpenEhrSdkVersion(this.statusService.getOpenEHR_SDK_Version());
-        // Archie version
-        responseData.setArchieVersion(this.statusService.getArchieVersion());
+  @GetMapping(path = "/status")
+  @ResponseStatus(value = HttpStatus.OK)
+  public ResponseEntity<StatusResponseData> getEhrbaseStatus(
+      @RequestHeader(
+              value = HttpHeaders.ACCEPT,
+              required = false,
+              defaultValue = MediaType.APPLICATION_JSON_VALUE)
+          String accept) {
 
-        return ResponseEntity.ok(responseData);
-    }
+    StatusResponseData responseData = new StatusResponseData();
+    // Java VM version
+    responseData.setJvmVersion(this.statusService.getJavaVMInformation());
+    // OS Identifier and version
+    responseData.setOsVersion(this.statusService.getOperatingSystemInformation());
+    // Database server version
+    responseData.setPostgresVersion(this.statusService.getDatabaseInformation());
+    // EHRbase version
+    responseData.setEhrbaseVersion(this.statusService.getEhrbaseVersion());
+    // Client SDK Version
+    responseData.setOpenEhrSdkVersion(this.statusService.getOpenEHR_SDK_Version());
+    // Archie version
+    responseData.setArchieVersion(this.statusService.getArchieVersion());
+
+    return ResponseEntity.ok(responseData);
+  }
 }

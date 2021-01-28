@@ -20,7 +20,7 @@ package org.ehrbase.api.exception;
 
 public class NotAcceptableException extends RuntimeException {
 
-    public NotAcceptableException(String message) {
-        super(message);
-    }
+  public NotAcceptableException(String message) {
+    super(message);
+  }
 }

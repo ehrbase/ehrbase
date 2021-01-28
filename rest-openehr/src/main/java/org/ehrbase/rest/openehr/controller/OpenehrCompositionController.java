@@ -18,7 +18,6 @@
 
 package org.ehrbase.rest.openehr.controller;
 
-import io.swagger.annotations.*;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
@@ -27,9 +26,7 @@ import org.ehrbase.response.ehrscape.CompositionDto;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.StructuredString;
 import org.ehrbase.response.openehr.CompositionResponseData;
-import org.ehrbase.response.openehr.ErrorResponseData;
 import org.ehrbase.response.openehr.VersionedCompositionResponseData;
-import org.ehrbase.rest.openehr.controller.OperationNotesResourcesReaderOpenehr.ApiNotes;
 import org.ehrbase.rest.openehr.util.InternalResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -48,10 +45,7 @@ import java.util.function.Supplier;
 
 /**
  * Controller for /composition resource as part of the EHR sub-API of the openEHR REST API
- * <p>
- * TODO WIP state only implements endpoints from outer server side, everything else is a stub. Also with a lot of duplication at the moment, which should be reduced when implementing functionality.
  */
-@Api(tags = "Composition")
 @RestController
 @RequestMapping(path = "/rest/openehr/v1/ehr", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrCompositionController extends BaseController {
@@ -66,33 +60,14 @@ public class OpenehrCompositionController extends BaseController {
     }
 
     @PostMapping(value = "/{ehr_id}/composition", consumes = {"application/xml", "application/json"})
-    @ApiOperation(value = "Create a new composition.")
-    @ApiNotes("compositionPost.md")     // this utilizes a workaround, see source class for info
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, response = CompositionResponseData.class, message = "Successfully created - New COMPOSITION was created. Content body is only returned when Prefer header has return=representation, otherwise only headers are returned.",
-                    responseHeaders = {
-                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class),
-                            @ResponseHeader(name = LOCATION, description = RESP_LOCATION_DESC, response = URI.class),
-                            @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class),
-                            @ResponseHeader(name = LAST_MODIFIED, description = RESP_LAST_MODIFIED_DESC, response = long.class)
-                    }),
-            @ApiResponse(code = 204, message = "No Content - New COMPOSITION was created but not full representation requested. Details in response headers.",
-                    responseHeaders = {
-                            @ResponseHeader(name = LOCATION, description = RESP_LOCATION_DESC, response = URI.class),
-                            @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class),
-                            @ResponseHeader(name = LAST_MODIFIED, description = RESP_LAST_MODIFIED_DESC, response = long.class)
-                    }),
-            // TODO setting this response class makes swagger-ui fail: Maximum call stack size exceeded
-            @ApiResponse(code = 400, response = ErrorResponseData.class, message = "Bad request - Body of the request could not be read (or converted to a COMPOSITION object) or there were COMPOSITION validation errors. Or invalid ehr_id. E.g. parsing an inconrrectly formatted ehr_id. Some implementing systems may require that all ehr_id are GUIDs, i.e. formatted as five groups of characters separated by hyphens: 01234567-0123-0123-0123-012345678abc"),
-            @ApiResponse(code = 404, response = ErrorResponseData.class, message = "Not Found - The EHR with the supplied ehr_id did not exist.")})
     @ResponseStatus(value = HttpStatus.CREATED)    // overwrites default 200, fixes the wrong listing of 200 in swagger-ui (EHR-56)
-    public ResponseEntity createComposition(@ApiParam(value = REQ_OPENEHR_VERSION) @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
-                                            @ApiParam(value = REQ_OPENEHR_AUDIT) @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
-                                            @ApiParam(value = REQ_CONTENT_TYPE_BODY, required = true) @RequestHeader(value = CONTENT_TYPE) String contentType,
-                                            @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false) String accept,
-                                            @ApiParam(value = REQ_PREFER) @RequestHeader(value = PREFER, required = false) String prefer,
-                                            @ApiParam(value = "EHR identifier taken from EHR.ehr_id.value", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
-                                            @ApiParam(value = "The composition to create", required = true) @RequestBody String composition) {
+    public ResponseEntity createComposition(@RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
+                                            @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
+                                            @RequestHeader(value = CONTENT_TYPE) String contentType,
+                                            @RequestHeader(value = ACCEPT, required = false) String accept,
+                                            @RequestHeader(value = PREFER, required = false) String prefer,
+                                            @PathVariable(value = "ehr_id") String ehrIdString,
+                                            @RequestBody String composition) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
 
@@ -121,35 +96,15 @@ public class OpenehrCompositionController extends BaseController {
     }
 
     @PutMapping("/{ehr_id}/composition/{versioned_object_uid}")
-    @ApiOperation(value = "Update existing composition.", response = CompositionResponseData.class)
-    @ApiNotes("compositionPut.md")     // this utilizes a workaround, see source class for info
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Success.",
-                    responseHeaders = {
-                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class),
-                            @ResponseHeader(name = LOCATION, description = RESP_LOCATION_DESC, response = URI.class),
-                            @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class),
-                            @ResponseHeader(name = LAST_MODIFIED, description = RESP_LAST_MODIFIED_DESC, response = long.class)
-                    }),
-            @ApiResponse(code = 204, message = "No Content - COMPOSITION was updated but no full representation requested. Details in response headers.",
-                    responseHeaders ={
-                            @ResponseHeader(name = LOCATION, description = RESP_LOCATION_DESC, response = URI.class),
-                            @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class),
-                            @ResponseHeader(name = LAST_MODIFIED, description = RESP_LAST_MODIFIED_DESC, response = long.class)
-                    }),
-            @ApiResponse(code = 201, message = "(not valid, ignore. documentation produces this entry automatically."), // workaround to avoid confusion with auto-generated 201 (EHR-56)
-            @ApiResponse(code = 400, response = ErrorResponseData.class, message = "Bad request - either the body of the request could not be read (or converted to a COMPOSITION object) or there were composition validation errors."),
-            @ApiResponse(code = 404, response = ErrorResponseData.class, message = "Not Found - No EHR with the supplied ehr_id or no COMPOSITION with the supplied object_id."),
-            @ApiResponse(code = 409, response = ErrorResponseData.class, message = "Version Conflict - Returned when supplied version_uid is not the latest version. Returns latest version in the Location and ETag headers.")})
-    public ResponseEntity updateComposition(@ApiParam(value = REQ_OPENEHR_VERSION) @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
-                                                                     @ApiParam(value = REQ_OPENEHR_AUDIT) @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
-                                                                     @ApiParam(value = REQ_CONTENT_TYPE_BODY) @RequestHeader(value = CONTENT_TYPE, required = false) String contentType,
-                                                                     @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false) String accept,
-                                                                     @ApiParam(value = REQ_PREFER) @RequestHeader(value = PREFER, required = false) String prefer,
-                                                                     @ApiParam(value = "{preceding_version_uid}", required = true) @RequestHeader(value = IF_MATCH) String ifMatch,
-                                                                     @ApiParam(value = "EHR identifier taken from EHR.ehr_id.value", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
-                                                                     @ApiParam(value = "identifier of the VERSIONED COMPOSITION to be updated.", required = true) @PathVariable(value = "versioned_object_uid") String versionedObjectUidString,
-                                                                     @ApiParam(value = "The composition to create", required = true) @RequestBody String composition) {
+    public ResponseEntity updateComposition(@RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
+                                             @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
+                                             @RequestHeader(value = CONTENT_TYPE, required = false) String contentType,
+                                             @RequestHeader(value = ACCEPT, required = false) String accept,
+                                             @RequestHeader(value = PREFER, required = false) String prefer,
+                                             @RequestHeader(value = IF_MATCH) String ifMatch,
+                                             @PathVariable(value = "ehr_id") String ehrIdString,
+                                             @PathVariable(value = "versioned_object_uid") String versionedObjectUidString,
+                                             @RequestBody String composition) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
         UUID versionedObjectUid = getCompositionVersionedObjectUidString(versionedObjectUidString);
@@ -202,27 +157,11 @@ public class OpenehrCompositionController extends BaseController {
     }
 
     @DeleteMapping("/{ehr_id}/composition/{preceding_version_uid}")
-    @ApiOperation(value = "Deletes existing composition.")
-    @ApiResponses(value = {
-            @ApiResponse(code = 204, message = "COMPOSITION was deleted.",
-                    responseHeaders = {
-                            @ResponseHeader(name = LOCATION, description = RESP_LOCATION_DESC, response = URI.class),
-                            @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class),
-                            @ResponseHeader(name = LAST_MODIFIED, description = RESP_LAST_MODIFIED_DESC, response = long.class)
-                    }),
-            // TODO @ApiResponse(code = 201, message = "(not valid, ignore. documentation produces this entry automatically."), // workaround to avoid confusion with auto-generated 201 (EHR-56)
-            @ApiResponse(code = 400, response = ErrorResponseData.class, message = "Bad request - The composition with preceding_version_uid is already deleted."),
-            @ApiResponse(code = 404, response = ErrorResponseData.class, message = "Not Found - No EHR with the supplied ehr_id or no COMPOSITION with the supplied preceding_version_uid."),
-            @ApiResponse(code = 409, response = ErrorResponseData.class, message = "Version Conflict - Returned when supplied preceding_version_uid doesn’t match the latest version. Returns latest version in the Location and ETag headers.",
-                    responseHeaders = {
-                            @ResponseHeader(name = LOCATION, description = RESP_LOCATION_DESC, response = URI.class),
-                            @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class)
-                    })})
     @ResponseStatus(value = HttpStatus.NO_CONTENT)    // overwrites default 200, fixes the wrong listing of 200 in swagger-ui (EHR-56)
-    public ResponseEntity deleteComposition(@ApiParam(value = REQ_OPENEHR_VERSION) @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
-                                            @ApiParam(value = REQ_OPENEHR_AUDIT) @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
-                                            @ApiParam(value = "EHR identifier taken from EHR.ehr_id.value", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
-                                            @ApiParam(value = "Identifier of the COMPOSITION to be updated. This MUST be the last (most recent) version.", required = true) @PathVariable(value = "preceding_version_uid") String precedingVersionUid) {
+    public ResponseEntity deleteComposition(@RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
+                                            @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
+                                            @PathVariable(value = "ehr_id") String ehrIdString,
+                                            @PathVariable(value = "preceding_version_uid") String precedingVersionUid) {
         UUID ehrId = getEhrUuid(ehrIdString);
 
         HttpHeaders headers = new HttpHeaders();
@@ -275,22 +214,10 @@ public class OpenehrCompositionController extends BaseController {
      * "{?version_at_time}" is hidden in swagger-ui, it only is here to be piped through.
      */
     @GetMapping("/{ehr_id}/composition/{version_uid}")
-    @ApiOperation(value = "Get composition by version id.")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK.",
-                    responseHeaders = {
-                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class)
-                    }),
-            @ApiResponse(code = 204, message = "No Content - Returned when the composition is deleted (logically). (Note: ignore body)",
-                    response = ResponseEntity.class, responseHeaders = {    // response = ResponseEntity.class removes body
-                    @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class), // TODO is the spec correct saying that a content-type header is necessary here?
-                    @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class)
-            }),
-            @ApiResponse(code = 404, response = ErrorResponseData.class, message = "Not Found - No EHR with the supplied ehr_id or no COMPOSITION with the supplied version_uid.")})
-    public ResponseEntity<CompositionResponseData> getCompositionByVersionId(@ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false) String accept,
-                                                                             @ApiParam(value = "EHR identifier taken from EHR.ehr_id.value", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
-                                                                             @ApiParam(value = "VERSION identifier", required = true) @PathVariable(value = "version_uid") String versionUid,
-                                                                             @ApiParam(value = "A timestamp in the ISO8601 format", hidden = true) @RequestParam(value = "version_at_time", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime versionAtTime) {
+    public ResponseEntity<CompositionResponseData> getCompositionByVersionId(@RequestHeader(value = ACCEPT, required = false) String accept,
+                                                                             @PathVariable(value = "ehr_id") String ehrIdString,
+                                                                             @PathVariable(value = "version_uid") String versionUid,
+                                                                             @RequestParam(value = "version_at_time", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime versionAtTime) {
         return getCompositionByTime(accept, ehrIdString, versionUid, versionAtTime);
     }
 
@@ -300,24 +227,10 @@ public class OpenehrCompositionController extends BaseController {
      * Both mappings are specified to behave almost the same, so this solution works in this case.
      */
     @GetMapping("/{ehr_id}/composition/{versioned_object_uid}{?version_at_time}")
-    @ApiOperation(value = "Get composition at time.")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK.",
-                    responseHeaders = {
-                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class),
-                            @ResponseHeader(name = LOCATION, description = RESP_LOCATION_DESC, response = URI.class),
-                            @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class)
-                    }),
-            @ApiResponse(code = 204, message = "No Content - The COMPOSITION at specified version_at_time time has been deleted. (Note: ignore body)",
-                    response = ResponseEntity.class, responseHeaders = {      // response = ResponseEntity.class removes body
-                    @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class), // TODO is the spec correct saying that a content-type header is necessary here?
-                    @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class)
-            }),
-            @ApiResponse(code = 404, response = ErrorResponseData.class, message = "Not Found - No EHR with the supplied ehr_id or no VERSIONED_COMPOSITION with the supplied versioned_object_uid or no COMPOSITION at specified version_at_time time.")})
-    public ResponseEntity getCompositionByTime(@ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false) String accept,
-                                                                        @ApiParam(value = "EHR identifier taken from EHR.ehr_id.value", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
-                                                                        @ApiParam(value = "VERSIONED_COMPOSITION identifier taken from VERSIONED_COMPOSITION.uid.value", required = true) @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
-                                                                        @ApiParam(value = "A timestamp in the ISO8601 format") @RequestParam(value = "version_at_time", required = false) LocalDateTime versionAtTime) {
+    public ResponseEntity getCompositionByTime(@RequestHeader(value = ACCEPT, required = false) String accept,
+                                                @PathVariable(value = "ehr_id") String ehrIdString,
+                                                @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
+                                                @RequestParam(value = "version_at_time", required = false) LocalDateTime versionAtTime) {
         UUID ehrId = getEhrUuid(ehrIdString);
 
         // Note: Since this method can be called by another mapping as "almost overloaded" function some parameters might be semantically named wrong in that case. E.g. versionedObjectUid can contain a versionUid.
@@ -359,18 +272,8 @@ public class OpenehrCompositionController extends BaseController {
      */
 
     @GetMapping("/{ehr_id}/versioned_composition/{versioned_object_uid}")
-    @ApiOperation(value = "Get versioned composition")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK.",
-                    responseHeaders = {
-                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class),
-                            @ResponseHeader(name = LOCATION, description = RESP_LOCATION_DESC, response = URI.class)
-                    }),
-            // TODO @ApiResponse(code = 201, message = "(not valid, ignore. documentation produces this entry automatically."), // workaround to avoid confusion with auto-generated 201 (EHR-56)
-            @ApiResponse(code = 404, response = ErrorResponseData.class, message = "Not Found - No EHR with the supplied ehr_id or no VERSIONED_COMPOSITION with the supplied versioned_object_uid.")})
-    //TODO @ResponseStatus(value= HttpStatus.NO_CONTENT)  // overwrites default 200, fixes the wrong listing of 200 in swagger-ui (EHR-56)
-    public ResponseEntity<VersionedCompositionResponseData> getVersionedCompositionById(@ApiParam(value = "EHR identifier taken from EHR.ehr_id.value", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
-                                                                                        @ApiParam(value = "VERSIONED_COMPOSITION identifier taken from VERSIONED_COMPOSITION.uid.value", required = true) @PathVariable(value = "versioned_object_uid") String versionedObjectUidString) {
+    public ResponseEntity<VersionedCompositionResponseData> getVersionedCompositionById(@PathVariable(value = "ehr_id") String ehrIdString,
+                                                                                        @PathVariable(value = "versioned_object_uid") String versionedObjectUidString) {
         UUID ehrId = getEhrUuid(ehrIdString);
         UUID versionedObjectUid = getCompositionVersionedObjectUidString(versionedObjectUidString);
 
@@ -390,18 +293,8 @@ public class OpenehrCompositionController extends BaseController {
     }
 
     @GetMapping("/{ehr_id}/versioned_composition/{versioned_object_uid}/revision_history")
-    @ApiOperation(value = "Get versioned composition revision history")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK.",
-                    responseHeaders = {
-                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class),
-                            @ResponseHeader(name = LOCATION, description = RESP_LOCATION_DESC, response = URI.class)
-                    }),
-            // TODO @ApiResponse(code = 201, message = "(not valid, ignore. documentation produces this entry automatically."), // workaround to avoid confusion with auto-generated 201 (EHR-56)
-            @ApiResponse(code = 404, response = ErrorResponseData.class, message = "Not Found - No EHR with the supplied ehr_id or no VERSIONED_COMPOSITION with the supplied versioned_object_uid.")})
-    //TODO @ResponseStatus(value= HttpStatus.NO_CONTENT)  // overwrites default 200, fixes the wrong listing of 200 in swagger-ui (EHR-56)
-    public ResponseEntity<VersionedCompositionResponseData> getRevisionHistoryVersionedCompositionById(@ApiParam(value = "EHR identifier taken from EHR.ehr_id.value", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
-                                                                                                       @ApiParam(value = "VERSIONED_COMPOSITION identifier taken from VERSIONED_COMPOSITION.uid.value", required = true) @PathVariable(value = "versioned_object_uid") String versionedObjectUidString) {
+    public ResponseEntity<VersionedCompositionResponseData> getRevisionHistoryVersionedCompositionById(@PathVariable(value = "ehr_id") String ehrIdString,
+                                                                                                       @PathVariable(value = "versioned_object_uid") String versionedObjectUidString) {
         UUID ehrId = getEhrUuid(ehrIdString);
         UUID versionedObjectUid = getCompositionVersionedObjectUidString(versionedObjectUidString);
 
@@ -421,18 +314,9 @@ public class OpenehrCompositionController extends BaseController {
     }
 
     @GetMapping("/{ehr_id}/versioned_composition/{versioned_object_uid}/version/{version_uid}")
-    @ApiOperation(value = "Get versioned composition version by id and reference to revision history")    // TODO correct? also method name
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK.",
-                    responseHeaders = {
-                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class)
-                    }),
-            // TODO @ApiResponse(code = 201, message = "(not valid, ignore. documentation produces this entry automatically."), // workaround to avoid confusion with auto-generated 201 (EHR-56)
-            @ApiResponse(code = 404, response = ErrorResponseData.class, message = "Not Found - No EHR with the supplied ehr_id or no VERSIONED_COMPOSITION with the supplied versioned_object_uid or no VERSION with the supplied versione_uid.")})
-    //TODO @ResponseStatus(value= HttpStatus.NO_CONTENT)  // overwrites default 200, fixes the wrong listing of 200 in swagger-ui (EHR-56)
-    public ResponseEntity<CompositionResponseData> getCompositionByRevisionHistory(@ApiParam(value = "EHR identifier taken from EHR.ehr_id.value", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
-                                                                                   @ApiParam(value = "VERSIONED_COMPOSITION identifier taken from VERSIONED_COMPOSITION.uid.value", required = true) @PathVariable(value = "versioned_object_uid") String versionedObjectUidString,
-                                                                                   @ApiParam(value = "VERSIONED identifier taken from VERSIONED.uid.value", required = true) @PathVariable(value = "version_uid") String versionUid) {
+    public ResponseEntity<CompositionResponseData> getCompositionByRevisionHistory(@PathVariable(value = "ehr_id") String ehrIdString,
+                                                                                   @PathVariable(value = "versioned_object_uid") String versionedObjectUidString,
+                                                                                   @PathVariable(value = "version_uid") String versionUid) {
         UUID ehrId = getEhrUuid(ehrIdString);
         UUID versionedObjectUid = getCompositionVersionedObjectUidString(versionedObjectUidString);
 
@@ -450,20 +334,9 @@ public class OpenehrCompositionController extends BaseController {
     }
 
     @GetMapping("/{ehr_id}/versioned_composition/{versioned_object_uid}/version{?version_at_time}")
-    @ApiOperation(value = "Get versioned composition version at time")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK.",
-                    responseHeaders = {
-                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class),
-                            @ResponseHeader(name = LOCATION, description = RESP_LOCATION_DESC, response = URI.class),
-                            @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class)
-                    }),
-            // TODO @ApiResponse(code = 201, message = "(not valid, ignore. documentation produces this entry automatically."), // workaround to avoid confusion with auto-generated 201 (EHR-56)
-            @ApiResponse(code = 404, response = ErrorResponseData.class, message = "Not Found - No EHR with the supplied ehr_id or no VERSIONED_COMPOSITION with the supplied versioned_object_uid or no VERSION with the supplied versione_uid.")})
-    //TODO @ResponseStatus(value= HttpStatus.NO_CONTENT)  // overwrites default 200, fixes the wrong listing of 200 in swagger-ui (EHR-56)
-    public ResponseEntity<CompositionResponseData> getVersionedCompositionAtTime(@ApiParam(value = "EHR identifier taken from EHR.ehr_id.value", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
-                                                                                 @ApiParam(value = "VERSIONED_COMPOSITION identifier taken from VERSIONED_COMPOSITION.uid.value", required = true) @PathVariable(value = "versioned_object_uid") String versionedObjectUidString,
-                                                                                 @ApiParam(value = "A timestamp in the ISO8601 format") @RequestParam(value = "version_at_time", required = false) String versionAtTime) {
+    public ResponseEntity<CompositionResponseData> getVersionedCompositionAtTime(@PathVariable(value = "ehr_id") String ehrIdString,
+                                                                                 @PathVariable(value = "versioned_object_uid") String versionedObjectUidString,
+                                                                                 @RequestParam(value = "version_at_time", required = false) String versionAtTime) {
         UUID ehrId = getEhrUuid(ehrIdString);
         UUID versionedObjectUid = getCompositionVersionedObjectUidString(versionedObjectUidString);
 
