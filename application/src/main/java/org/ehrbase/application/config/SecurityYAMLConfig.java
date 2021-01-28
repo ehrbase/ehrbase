@@ -27,63 +27,66 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "security")
 public class SecurityYAMLConfig {
 
-    public enum AuthTypes {
-        NONE, BASIC, OAUTH
-    }
+  public enum AuthTypes {
+    NONE,
+    BASIC,
+    OAUTH
+  }
 
-    private AuthTypes authType;
-    private String authUser;
-    private String authPassword;
-    private String authAdminUser;
-    private String authAdminPassword;
-    @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
-    private String oauth2IssuerUri;
+  private AuthTypes authType;
+  private String authUser;
+  private String authPassword;
+  private String authAdminUser;
+  private String authAdminPassword;
 
-    public AuthTypes getAuthType() {
-        return authType;
-    }
+  @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
+  private String oauth2IssuerUri;
 
-    public void setAuthType(AuthTypes authType) {
-        this.authType = authType;
-    }
+  public AuthTypes getAuthType() {
+    return authType;
+  }
 
-    public String getAuthUser() {
-        return authUser;
-    }
+  public void setAuthType(AuthTypes authType) {
+    this.authType = authType;
+  }
 
-    public void setAuthUser(String authUser) {
-        this.authUser = authUser;
-    }
+  public String getAuthUser() {
+    return authUser;
+  }
 
-    public String getAuthPassword() {
-        return authPassword;
-    }
+  public void setAuthUser(String authUser) {
+    this.authUser = authUser;
+  }
 
-    public void setAuthPassword(String authPassword) {
-        this.authPassword = authPassword;
-    }
+  public String getAuthPassword() {
+    return authPassword;
+  }
 
-    public String getAuthAdminUser() {
-        return authAdminUser;
-    }
+  public void setAuthPassword(String authPassword) {
+    this.authPassword = authPassword;
+  }
 
-    public void setAuthAdminUser(String authAdminUser) {
-        this.authAdminUser = authAdminUser;
-    }
+  public String getAuthAdminUser() {
+    return authAdminUser;
+  }
 
-    public String getAuthAdminPassword() {
-        return authAdminPassword;
-    }
+  public void setAuthAdminUser(String authAdminUser) {
+    this.authAdminUser = authAdminUser;
+  }
 
-    public void setAuthAdminPassword(String authAdminPassword) {
-        this.authAdminPassword = authAdminPassword;
-    }
+  public String getAuthAdminPassword() {
+    return authAdminPassword;
+  }
 
-    public String getOauth2IssuerUri() {
-        return oauth2IssuerUri;
-    }
+  public void setAuthAdminPassword(String authAdminPassword) {
+    this.authAdminPassword = authAdminPassword;
+  }
 
-    public void setOauth2IssuerUri(String oauth2IssuerUri) {
-        this.oauth2IssuerUri = oauth2IssuerUri;
-    }
+  public String getOauth2IssuerUri() {
+    return oauth2IssuerUri;
+  }
+
+  public void setOauth2IssuerUri(String oauth2IssuerUri) {
+    this.oauth2IssuerUri = oauth2IssuerUri;
+  }
 }

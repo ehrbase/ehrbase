@@ -23,12 +23,13 @@ import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC2;
 
 public class TestUC2 extends UC2 {
 
-    public TestUC2(){
-        super();
-        this.expectedSqlExpression = "select distinct on (\"/ehr_id/value\") \"\".\"/ehr_id/value\" " +
-                "from (" +
-                "      select \"ehr_join\".\"id\" as \"/ehr_id/value\" from \"ehr\".\"ehr\" as \"ehr_join\" " +
-                "           where (\"ehr_join\".\"id\"='30580007')" +
-                ") as \"\"";
-    }
+  public TestUC2() {
+    super();
+    this.expectedSqlExpression =
+        "select distinct on (\"/ehr_id/value\") \"\".\"/ehr_id/value\" "
+            + "from ("
+            + "      select \"ehr_join\".\"id\" as \"/ehr_id/value\" from \"ehr\".\"ehr\" as \"ehr_join\" "
+            + "           where (\"ehr_join\".\"id\"='30580007')"
+            + ") as \"\"";
+  }
 }

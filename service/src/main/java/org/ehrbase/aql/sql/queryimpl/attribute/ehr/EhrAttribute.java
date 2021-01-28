@@ -24,10 +24,9 @@ import org.ehrbase.aql.sql.queryimpl.attribute.RMObjectAttribute;
 
 public abstract class EhrAttribute extends RMObjectAttribute {
 
-    protected EhrAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup){
-        super(fieldContext, joinSetup);
-        joinSetup.setJoinEhr(true);
-        if (fieldContext.getClause().equals(IQueryImpl.Clause.FROM))
-            filterSetup.setEhrIdFiltered(true);
-    }
+  protected EhrAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
+    super(fieldContext, joinSetup);
+    joinSetup.setJoinEhr(true);
+    if (fieldContext.getClause().equals(IQueryImpl.Clause.FROM)) filterSetup.setEhrIdFiltered(true);
+  }
 }

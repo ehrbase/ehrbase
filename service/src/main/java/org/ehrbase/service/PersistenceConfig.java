@@ -18,7 +18,7 @@
 
 package org.ehrbase.service;
 
-
+import javax.sql.DataSource;
 import org.jooq.ExecuteContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.*;
@@ -33,64 +33,59 @@ import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
 import org.springframework.jdbc.support.SQLExceptionTranslator;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import javax.sql.DataSource;
-
 @Configuration
 @EnableTransactionManagement
 public class PersistenceConfig {
 
-    static class ExceptionTranslator extends DefaultExecuteListener {
-        @Override
-        public void exception(ExecuteContext context) {
-            SQLDialect dialect = context.configuration().dialect();
-            SQLExceptionTranslator translator
-                    = new SQLErrorCodeSQLExceptionTranslator(dialect.name());
-            context.exception(translator
-                    .translate("Access database using Jooq", context.sql(), context.sqlException()));
-        }
+  static class ExceptionTranslator extends DefaultExecuteListener {
+    @Override
+    public void exception(ExecuteContext context) {
+      SQLDialect dialect = context.configuration().dialect();
+      SQLExceptionTranslator translator = new SQLErrorCodeSQLExceptionTranslator(dialect.name());
+      context.exception(
+          translator.translate(
+              "Access database using Jooq", context.sql(), context.sqlException()));
     }
+  }
 
+  @Qualifier("dataSource")
+  @Autowired
+  private DataSource dataSource;
 
-    @Qualifier("dataSource")
-    @Autowired
-    private DataSource dataSource;
+  public TransactionAwareDataSourceProxy transactionAwareDataSource() {
+    return new TransactionAwareDataSourceProxy(dataSource);
+  }
 
+  @Bean
+  public DataSourceTransactionManager transactionManager() {
+    return new DataSourceTransactionManager(dataSource);
+  }
 
-    public TransactionAwareDataSourceProxy transactionAwareDataSource() {
-        return new TransactionAwareDataSourceProxy(dataSource);
-    }
+  @Bean
+  public DataSourceConnectionProvider connectionProvider() {
+    return new DataSourceConnectionProvider(transactionAwareDataSource());
+  }
 
-    @Bean
-    public DataSourceTransactionManager transactionManager() {
-        return new DataSourceTransactionManager(dataSource);
-    }
+  @Bean
+  public ExceptionTranslator exceptionTransformer() {
+    return new ExceptionTranslator();
+  }
 
-    @Bean
-    public DataSourceConnectionProvider connectionProvider() {
-        return new DataSourceConnectionProvider(transactionAwareDataSource());
-    }
+  @Bean
+  @Primary
+  public DefaultDSLContext dsl() {
+    return new DefaultDSLContext(configuration());
+  }
 
-    @Bean
-    public ExceptionTranslator exceptionTransformer() {
-        return new ExceptionTranslator();
-    }
+  @Bean
+  public DefaultConfiguration configuration() {
+    DefaultConfiguration jooqConfiguration = new DefaultConfiguration();
+    jooqConfiguration.set(connectionProvider());
+    jooqConfiguration.set(new DefaultExecuteListenerProvider(exceptionTransformer()));
 
-    @Bean
-    @Primary
-    public DefaultDSLContext dsl() {
-        return new DefaultDSLContext(configuration());
-    }
+    SQLDialect dialect = SQLDialect.POSTGRES;
+    jooqConfiguration.set(dialect);
 
-    @Bean
-    public DefaultConfiguration configuration() {
-        DefaultConfiguration jooqConfiguration = new DefaultConfiguration();
-        jooqConfiguration.set(connectionProvider());
-        jooqConfiguration.set(new DefaultExecuteListenerProvider(exceptionTransformer()));
-
-
-        SQLDialect dialect = SQLDialect.POSTGRES;
-        jooqConfiguration.set(dialect);
-
-        return jooqConfiguration;
-    }
+    return jooqConfiguration;
+  }
 }

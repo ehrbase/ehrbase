@@ -21,16 +21,16 @@ package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC14;
 
-//@Ignore("TODO: BUG - fix it")
+// @Ignore("TODO: BUG - fix it")
 public class TestUC14 extends UC14 {
 
-    public TestUC14(){
-        super();
-        this.expectedSqlExpression =
-                "select \"composer_ref\".\"name\" as \"/composer/name\"" +
-                        " from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\"" +
-                        " on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" join \"ehr\".\"party_identified\" as \"composer_ref\"" +
-                        " on \"composition_join\".\"composer\" = \"composer_ref\".\"id\"" +
-                        " where (1 = 0)";
-    }
+  public TestUC14() {
+    super();
+    this.expectedSqlExpression =
+        "select \"composer_ref\".\"name\" as \"/composer/name\""
+            + " from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\""
+            + " on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" join \"ehr\".\"party_identified\" as \"composer_ref\""
+            + " on \"composition_join\".\"composer\" = \"composer_ref\".\"id\""
+            + " where (1 = 0)";
+  }
 }

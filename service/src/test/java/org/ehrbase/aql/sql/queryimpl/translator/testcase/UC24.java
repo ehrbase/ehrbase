@@ -23,11 +23,12 @@ import org.ehrbase.aql.sql.queryimpl.translator.QueryProcessorTestBase;
 
 public abstract class UC24 extends QueryProcessorTestBase {
 
-    protected UC24(){
-        this.aql = "select c" +
-                " from EHR e" +
-                " contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]" +
-                " WHERE NOT EXISTS c/content[openEHR-EHR-ADMIN_ENTRY.hospitalization.v0]";
-        this.expectedOutputWithJson = true;
-    }
+  protected UC24() {
+    this.aql =
+        "select c"
+            + " from EHR e"
+            + " contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]"
+            + " WHERE NOT EXISTS c/content[openEHR-EHR-ADMIN_ENTRY.hospitalization.v0]";
+    this.expectedOutputWithJson = true;
+  }
 }

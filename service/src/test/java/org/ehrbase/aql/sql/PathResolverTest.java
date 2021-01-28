@@ -18,39 +18,40 @@
 
 package org.ehrbase.aql.sql;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.ehrbase.aql.TestAqlBase;
 import org.ehrbase.aql.compiler.AqlExpression;
 import org.ehrbase.aql.compiler.Contains;
 import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class PathResolverTest extends TestAqlBase {
 
-    @Test
-    public void testResolvePaths() {
-        String query =
-                "select\n" +
-                    "a, d\n" +
-                    "from EHR e\n" +
-                    "contains COMPOSITION a[openEHR-EHR-COMPOSITION.health_summary.v1]" +
-                        "  CONTAINS ACTION d[openEHR-EHR-ACTION.immunisation_procedure.v1]";
+  @Test
+  public void testResolvePaths() {
+    String query =
+        "select\n"
+            + "a, d\n"
+            + "from EHR e\n"
+            + "contains COMPOSITION a[openEHR-EHR-COMPOSITION.health_summary.v1]"
+            + "  CONTAINS ACTION d[openEHR-EHR-ACTION.immunisation_procedure.v1]";
 
-        AqlExpression aqlExpression = new AqlExpression().parse(query);
-        Contains contains = new Contains(aqlExpression.getParseTree(), knowledge).process();
+    AqlExpression aqlExpression = new AqlExpression().parse(query);
+    Contains contains = new Contains(aqlExpression.getParseTree(), knowledge).process();
 
+    /**
+     * mocks the ehr.containment as comp_id | label | path ? |
+     * openEHR_EHR_COMPOSITION_health_summary_v1 |
+     * /composition[openEHR-EHR-COMPOSITION.health_summary.v1] ? |
+     * openEHR_EHR_COMPOSITION_health_summary_v1.openEHR_EHR_ACTION_immunisation_procedure_v1|
+     * /content[openEHR-EHR-ACTION.immunisation_procedure.v1 and name/value='Immunisation
+     * procedure']
+     */
+    PathResolver cut = new PathResolver(knowledge, contains.getIdentifierMapper());
 
-
-        /** mocks the ehr.containment as
-         *   comp_id    |   label                                                                               |   path
-         *   ?          | openEHR_EHR_COMPOSITION_health_summary_v1                                             |  /composition[openEHR-EHR-COMPOSITION.health_summary.v1]
-         *   ?          | openEHR_EHR_COMPOSITION_health_summary_v1.openEHR_EHR_ACTION_immunisation_procedure_v1| /content[openEHR-EHR-ACTION.immunisation_procedure.v1 and name/value='Immunisation procedure']
-         */
-        PathResolver cut = new PathResolver(knowledge, contains.getIdentifierMapper());
-
-
-        assertThat(cut.pathOf("IDCR - Immunisation summary.v0","d")).isEqualTo("/content[openEHR-EHR-ACTION.immunisation_procedure.v1]");
-        assertThat(cut.pathOf("IDCR - Immunisation summary.v0","a")).isEqualTo("/composition[openEHR-EHR-COMPOSITION.health_summary.v1]");
-
-    }
+    assertThat(cut.pathOf("IDCR - Immunisation summary.v0", "d"))
+        .isEqualTo("/content[openEHR-EHR-ACTION.immunisation_procedure.v1]");
+    assertThat(cut.pathOf("IDCR - Immunisation summary.v0", "a"))
+        .isEqualTo("/composition[openEHR-EHR-COMPOSITION.health_summary.v1]");
+  }
 }

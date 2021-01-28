@@ -24,56 +24,68 @@ import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
 import org.jooq.Field;
 
 /**
- * convert a field that is not identied as an EHR or a COMPOSITION (content or attribute). For example a CLUSTER
- * in other_context
+ * convert a field that is not identied as an EHR or a COMPOSITION (content or attribute). For
+ * example a CLUSTER in other_context
  */
-@SuppressWarnings({"java:S3776","java:S3740","java:S1452"})
+@SuppressWarnings({"java:S3776", "java:S3740", "java:S1452"})
 public class ContextualAttribute {
 
-    private final CompositionAttributeQuery compositionAttributeQuery;
-    private final JsonbEntryQuery jsonbEntryQuery;
-    private final IQueryImpl.Clause clause;
+  private final CompositionAttributeQuery compositionAttributeQuery;
+  private final JsonbEntryQuery jsonbEntryQuery;
+  private final IQueryImpl.Clause clause;
 
-    private boolean containsJsonDataBlock;
-    private String jsonbItemPath;
-    private String optionalPath;
+  private boolean containsJsonDataBlock;
+  private String jsonbItemPath;
+  private String optionalPath;
 
-    public ContextualAttribute(CompositionAttributeQuery compositionAttributeQuery, JsonbEntryQuery jsonbEntryQuery, IQueryImpl.Clause clause) {
-        this.compositionAttributeQuery = compositionAttributeQuery;
-        this.jsonbEntryQuery = jsonbEntryQuery;
-        this.clause = clause;
+  public ContextualAttribute(
+      CompositionAttributeQuery compositionAttributeQuery,
+      JsonbEntryQuery jsonbEntryQuery,
+      IQueryImpl.Clause clause) {
+    this.compositionAttributeQuery = compositionAttributeQuery;
+    this.jsonbEntryQuery = jsonbEntryQuery;
+    this.clause = clause;
+  }
+
+  public Field<?> toSql(String templateId, I_VariableDefinition variableDefinition) {
+    String inTemplatePath =
+        compositionAttributeQuery.variableTemplatePath(
+            templateId, variableDefinition.getIdentifier());
+    if (inTemplatePath.startsWith("/"))
+      inTemplatePath =
+          inTemplatePath.substring(
+              1); // conventionally, composition attribute path have the leading '/' striped.
+    String originalPath = variableDefinition.getPath();
+    variableDefinition.setPath(
+        inTemplatePath
+            + (variableDefinition.getPath() == null ? "" : "/" + variableDefinition.getPath()));
+    CompositionAttribute compositionAttribute =
+        new CompositionAttribute(compositionAttributeQuery, jsonbEntryQuery, clause);
+    Field field =
+        compositionAttribute.toSql(
+            variableDefinition, templateId, variableDefinition.getIdentifier());
+
+    if (clause.equals(IQueryImpl.Clause.SELECT)) {
+      variableDefinition.setPath(originalPath);
+      field = field.as("/" + originalPath);
     }
 
-    public Field<?> toSql(String templateId, I_VariableDefinition variableDefinition){
-        String inTemplatePath = compositionAttributeQuery.variableTemplatePath(templateId, variableDefinition.getIdentifier());
-        if (inTemplatePath.startsWith("/"))
-            inTemplatePath = inTemplatePath.substring(1); //conventionally, composition attribute path have the leading '/' striped.
-        String originalPath = variableDefinition.getPath();
-        variableDefinition.setPath(inTemplatePath+(variableDefinition.getPath() == null? "": "/"+variableDefinition.getPath()));
-        CompositionAttribute compositionAttribute = new CompositionAttribute(compositionAttributeQuery, jsonbEntryQuery, clause);
-        Field field = compositionAttribute.toSql(variableDefinition, templateId, variableDefinition.getIdentifier());
+    jsonbItemPath = compositionAttribute.getJsonbItemPath();
+    containsJsonDataBlock = compositionAttribute.isContainsJsonDataBlock();
+    optionalPath = compositionAttribute.getOptionalPath();
 
-        if (clause.equals(IQueryImpl.Clause.SELECT)) {
-            variableDefinition.setPath(originalPath);
-            field = field.as("/"+originalPath);
-        }
+    return field;
+  }
 
-        jsonbItemPath = compositionAttribute.getJsonbItemPath();
-        containsJsonDataBlock = compositionAttribute.isContainsJsonDataBlock();
-        optionalPath = compositionAttribute.getOptionalPath();
+  public boolean isContainsJsonDataBlock() {
+    return containsJsonDataBlock;
+  }
 
-        return field;
-    }
+  public String getJsonbItemPath() {
+    return jsonbItemPath;
+  }
 
-    public boolean isContainsJsonDataBlock() {
-        return containsJsonDataBlock;
-    }
-
-    public String getJsonbItemPath() {
-        return jsonbItemPath;
-    }
-
-    public String getOptionalPath() {
-        return optionalPath;
-    }
+  public String getOptionalPath() {
+    return optionalPath;
+  }
 }

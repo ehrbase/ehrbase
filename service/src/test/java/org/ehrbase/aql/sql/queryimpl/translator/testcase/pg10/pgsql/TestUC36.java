@@ -23,13 +23,13 @@ import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC36;
 
 public class TestUC36 extends UC36 {
 
-    public TestUC36(){
-        super();
-        this.expectedSqlExpression =
-                "select cast(\"ehr\".\"js_ehr\"(\n" +
-                        "  cast(ehr_join.id as uuid), \n" +
-                        "  ?\n" +
-                        ") as varchar) as \"e\"\n" +
-                        "from \"ehr\".\"ehr\" as \"ehr_join\"";
-    }
+  public TestUC36() {
+    super();
+    this.expectedSqlExpression =
+        "select cast(\"ehr\".\"js_ehr\"(\n"
+            + "  cast(ehr_join.id as uuid), \n"
+            + "  ?\n"
+            + ") as varchar) as \"e\"\n"
+            + "from \"ehr\".\"ehr\" as \"ehr_join\"";
+  }
 }

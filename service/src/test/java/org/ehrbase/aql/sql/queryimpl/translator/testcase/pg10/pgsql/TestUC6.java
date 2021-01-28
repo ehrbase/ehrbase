@@ -23,13 +23,13 @@ import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC6;
 
 public class TestUC6 extends UC6 {
 
-    public TestUC6(){
-        super();
-        this.expectedSqlExpression =
-                "select \"\".\"description\" " +
-                        "from (" +
-                        "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') " +
-                        "as \"description\" from \"ehr\".\"entry\" where \"ehr\".\"entry\".\"template_id\" = ?" +
-                        ") as \"\" order by \"description\" asc";
-    }
+  public TestUC6() {
+    super();
+    this.expectedSqlExpression =
+        "select \"\".\"description\" "
+            + "from ("
+            + "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') "
+            + "as \"description\" from \"ehr\".\"entry\" where \"ehr\".\"entry\".\"template_id\" = ?"
+            + ") as \"\" order by \"description\" asc";
+  }
 }

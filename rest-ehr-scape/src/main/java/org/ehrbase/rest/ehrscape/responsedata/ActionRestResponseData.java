@@ -22,22 +22,22 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 public class ActionRestResponseData {
-    Meta meta;
-    Action action;
+  Meta meta;
+  Action action;
 
-    public Meta getMeta() {
-        return meta;
-    }
+  public Meta getMeta() {
+    return meta;
+  }
 
-    public void setMeta(Meta meta) {
-        this.meta = meta;
-    }
+  public void setMeta(Meta meta) {
+    this.meta = meta;
+  }
 
-    public Action getAction() {
-        return action;
-    }
+  public Action getAction() {
+    return action;
+  }
 
-    public void setAction(Action action) {
-        this.action = action;
-    }
+  public void setAction(Action action) {
+    this.action = action;
+  }
 }

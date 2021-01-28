@@ -26,13 +26,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Import;
 
 @SpringBootApplication()
-@Import({ServiceModuleConfiguration.class,
-        RestEHRScapeModuleConfiguration.class,
-        RestOpenehrModuleConfiguration.class,
+@Import({
+  ServiceModuleConfiguration.class,
+  RestEHRScapeModuleConfiguration.class,
+  RestOpenehrModuleConfiguration.class,
 })
 public class EhrBase {
 
-    public static void main(String[] args) {
-        SpringApplication.run(EhrBase.class, args);
-    }
+  public static void main(String[] args) {
+    SpringApplication.run(EhrBase.class, args);
+  }
 }

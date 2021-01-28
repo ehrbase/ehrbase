@@ -20,6 +20,8 @@
 
 package org.ehrbase.service;
 
+import java.util.List;
+import java.util.Optional;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_TemplateStoreAccess;
@@ -31,69 +33,61 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
-
 @Service
 @Transactional()
 public class TemplateDBStorageService implements TemplateStorage {
-    private final DSLContext context;
-    private final ServerConfig serverConfig;
+  private final DSLContext context;
+  private final ServerConfig serverConfig;
 
-    @Autowired
-    public TemplateDBStorageService(DSLContext context, ServerConfig serverConfig) {
-        this.context = context;
-        this.serverConfig = serverConfig;
+  @Autowired
+  public TemplateDBStorageService(DSLContext context, ServerConfig serverConfig) {
+    this.context = context;
+    this.serverConfig = serverConfig;
+  }
+
+  @Override
+  public List<TemplateMetaData> listAllOperationalTemplates() {
+
+    return I_TemplateStoreAccess.fetchAll(getDataAccess());
+  }
+
+  @Override
+  public void storeTemplate(OPERATIONALTEMPLATE template) {
+
+    if (readOperationaltemplate(template.getTemplateId().getValue()).isPresent()) {
+      I_TemplateStoreAccess.getInstance(getDataAccess(), template).update();
+    } else {
+      I_TemplateStoreAccess.getInstance(getDataAccess(), template).commit();
     }
+  }
 
-    @Override
-    public List<TemplateMetaData> listAllOperationalTemplates() {
+  @Override
+  public Optional<OPERATIONALTEMPLATE> readOperationaltemplate(String templateId) {
+    return Optional.ofNullable(
+        I_TemplateStoreAccess.retrieveInstanceByTemplateId(getDataAccess(), templateId)
+            .getTemplate());
+  }
 
-        return I_TemplateStoreAccess.fetchAll(getDataAccess());
-    }
+  /** {@inheritDoc} */
+  @Override
+  public String adminUpdateTemplate(OPERATIONALTEMPLATE template) {
+    return I_TemplateStoreAccess.adminUpdateTemplate(getDataAccess(), template);
+  }
 
+  /** {@inheritDoc} */
+  @Override
+  public boolean deleteTemplate(String templateId) {
 
-    @Override
-    public void storeTemplate(OPERATIONALTEMPLATE template) {
+    return I_TemplateStoreAccess.deleteTemplate(getDataAccess(), templateId);
+  }
 
-        if (readOperationaltemplate(template.getTemplateId().getValue()).isPresent()) {
-            I_TemplateStoreAccess.getInstance(getDataAccess(), template).update();
-        } else {
-            I_TemplateStoreAccess.getInstance(getDataAccess(), template).commit();
-        }
-    }
+  /** {@inheritDoc} */
+  @Override
+  public int adminDeleteAllTemplates(List<TemplateMetaData> templateMetaDataList) {
+    return I_TemplateStoreAccess.adminDeleteAllTemplates(getDataAccess());
+  }
 
-    @Override
-    public Optional<OPERATIONALTEMPLATE> readOperationaltemplate(String templateId) {
-        return Optional.ofNullable(I_TemplateStoreAccess.retrieveInstanceByTemplateId(getDataAccess(), templateId).getTemplate());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String adminUpdateTemplate(OPERATIONALTEMPLATE template) {
-        return I_TemplateStoreAccess.adminUpdateTemplate(getDataAccess(), template);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean deleteTemplate(String templateId) {
-
-        return I_TemplateStoreAccess.deleteTemplate(getDataAccess(), templateId);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public int adminDeleteAllTemplates(List<TemplateMetaData> templateMetaDataList) {
-        return I_TemplateStoreAccess.adminDeleteAllTemplates(getDataAccess());
-    }
-
-    protected I_DomainAccess getDataAccess() {
-        return new ServiceDataAccess(context, null, null, this.serverConfig);
-    }
+  protected I_DomainAccess getDataAccess() {
+    return new ServiceDataAccess(context, null, null, this.serverConfig);
+  }
 }

@@ -18,168 +18,192 @@
 
 package org.ehrbase.dao.access.interfaces;
 
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import org.ehrbase.dao.access.jooq.FolderAccess;
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectRef;
-import org.ehrbase.dao.access.jooq.FolderHistoryAccess;
-import org.ehrbase.dao.access.util.FolderUtils;
-import org.joda.time.DateTime;
-
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 import java.util.*;
-
+import org.ehrbase.dao.access.jooq.FolderAccess;
+import org.ehrbase.dao.access.jooq.FolderHistoryAccess;
+import org.ehrbase.dao.access.util.FolderUtils;
+import org.joda.time.DateTime;
 
 /***
  *@Created by Luis Marco-Ruiz on Jun 13, 2019
  */
 
 /**
- * Data Access Object for CRUD operations on instances of {@link  com.nedap.archie.rm.directory.Folder}.
+ * Data Access Object for CRUD operations on instances of {@link
+ * com.nedap.archie.rm.directory.Folder}.
  */
 public interface I_FolderAccess extends I_SimpleCRUD {
 
-    /**
-     * Get the list of subfolders for the {@link  com.nedap.archie.rm.directory.Folder} that corresponds to this {@link  I_FolderAccess}
-     * @return Map<UUID, I_FolderAccess> whose key is the UUID of the child {@link  com.nedap.archie.rm.directory.Folder}, and whose value is the I_FolderAccess for the child {@link  com.nedap.archie.rm.directory.Folder}.
-     * @throws Exception
-     */
-    Map<UUID, I_FolderAccess>  getSubfoldersList();
+  /**
+   * Get the list of subfolders for the {@link com.nedap.archie.rm.directory.Folder} that
+   * corresponds to this {@link I_FolderAccess}
+   *
+   * @return Map<UUID, I_FolderAccess> whose key is the UUID of the child {@link
+   *     com.nedap.archie.rm.directory.Folder}, and whose value is the I_FolderAccess for the child
+   *     {@link com.nedap.archie.rm.directory.Folder}.
+   * @throws Exception
+   */
+  Map<UUID, I_FolderAccess> getSubfoldersList();
 
-    /**
-     * Set the details stored as a part of the given {@link  com.nedap.archie.rm.directory.Folder}
-     * @param details
-     */
-    void setDetails(ItemStructure details);
+  /**
+   * Set the details stored as a part of the given {@link com.nedap.archie.rm.directory.Folder}
+   *
+   * @param details
+   */
+  void setDetails(ItemStructure details);
 
-    /**
-     * Get the details  stored as a part of the given {@link  com.nedap.archie.rm.directory.Folder}
-     * @return details of the {@link  com.nedap.archie.rm.directory.Folder} that corresponds to this {@link  I_FolderAccess}
-     */
-    ItemStructure getDetails();
+  /**
+   * Get the details stored as a part of the given {@link com.nedap.archie.rm.directory.Folder}
+   *
+   * @return details of the {@link com.nedap.archie.rm.directory.Folder} that corresponds to this
+   *     {@link I_FolderAccess}
+   */
+  ItemStructure getDetails();
 
-    /**
-     * Get the items references stored as a part of the given {@link  com.nedap.archie.rm.directory.Folder}
-     * @return items of the {@link  com.nedap.archie.rm.directory.Folder} that corresponds to this {@link  I_FolderAccess}
-     */
-    List<ObjectRef> getItems();
+  /**
+   * Get the items references stored as a part of the given {@link
+   * com.nedap.archie.rm.directory.Folder}
+   *
+   * @return items of the {@link com.nedap.archie.rm.directory.Folder} that corresponds to this
+   *     {@link I_FolderAccess}
+   */
+  List<ObjectRef> getItems();
 
-    /**
-     * Builds the {@link I_FolderAccess} for persisting the {@link  com.nedap.archie.rm.directory.Folder} provided as param.
-     * @param domainAccess providing the information about the DB connection.
-     * @param folder to define the {@link I_FolderAccess} that allows its DB access.
-     * @param dateTime that will be set as transaction date when the {@link  com.nedap.archie.rm.directory.Folder} is persisted
-     * @param ehrId of the {@link com.nedap.archie.rm.ehr.Ehr} that references the {@link  com.nedap.archie.rm.directory.Folder} provided as param.
-     * @return {@link I_FolderAccess} with the information to persist the provided {@link  com.nedap.archie.rm.directory.Folder}
-     */
-    static I_FolderAccess getNewFolderAccessInstance(I_DomainAccess domainAccess, Folder folder, DateTime dateTime, UUID ehrId){
-        return FolderAccess.getNewFolderAccessInstance(domainAccess, folder, dateTime, ehrId);
-    }
+  /**
+   * Builds the {@link I_FolderAccess} for persisting the {@link
+   * com.nedap.archie.rm.directory.Folder} provided as param.
+   *
+   * @param domainAccess providing the information about the DB connection.
+   * @param folder to define the {@link I_FolderAccess} that allows its DB access.
+   * @param dateTime that will be set as transaction date when the {@link
+   *     com.nedap.archie.rm.directory.Folder} is persisted
+   * @param ehrId of the {@link com.nedap.archie.rm.ehr.Ehr} that references the {@link
+   *     com.nedap.archie.rm.directory.Folder} provided as param.
+   * @return {@link I_FolderAccess} with the information to persist the provided {@link
+   *     com.nedap.archie.rm.directory.Folder}
+   */
+  static I_FolderAccess getNewFolderAccessInstance(
+      I_DomainAccess domainAccess, Folder folder, DateTime dateTime, UUID ehrId) {
+    return FolderAccess.getNewFolderAccessInstance(domainAccess, folder, dateTime, ehrId);
+  }
 
-    /**
-     * Retrieve instance of {@link I_FolderAccess} with the information needed retrieve the folder and its sub-folders.
-     * @param domainAccess providing the information about the DB connection.
-     * @param folderId {@link java.util.UUID} of the {@link  com.nedap.archie.rm.directory.Folder} to be fetched from the DB.
-     * @return the {@link I_FolderAccess} that provides DB access to the {@link  com.nedap.archie.rm.directory.Folder} that corresponds to the provided folderId param.
-     * @throws Exception
-     */
-    static I_FolderAccess retrieveInstanceForExistingFolder(I_DomainAccess domainAccess, UUID folderId){
-        return FolderAccess.retrieveInstanceForExistingFolder(domainAccess, folderId);
-    }
+  /**
+   * Retrieve instance of {@link I_FolderAccess} with the information needed retrieve the folder and
+   * its sub-folders.
+   *
+   * @param domainAccess providing the information about the DB connection.
+   * @param folderId {@link java.util.UUID} of the {@link com.nedap.archie.rm.directory.Folder} to
+   *     be fetched from the DB.
+   * @return the {@link I_FolderAccess} that provides DB access to the {@link
+   *     com.nedap.archie.rm.directory.Folder} that corresponds to the provided folderId param.
+   * @throws Exception
+   */
+  static I_FolderAccess retrieveInstanceForExistingFolder(
+      I_DomainAccess domainAccess, UUID folderId) {
+    return FolderAccess.retrieveInstanceForExistingFolder(domainAccess, folderId);
+  }
 
-    static I_FolderAccess retrieveInstanceForExistingFolder(I_DomainAccess domainAccess, UUID folderId, Timestamp timestamp){
-        return FolderHistoryAccess.retrieveInstanceForExistingFolder(domainAccess, folderId, timestamp);
-    }
+  static I_FolderAccess retrieveInstanceForExistingFolder(
+      I_DomainAccess domainAccess, UUID folderId, Timestamp timestamp) {
+    return FolderHistoryAccess.retrieveInstanceForExistingFolder(domainAccess, folderId, timestamp);
+  }
 
-    /**
-     * Creates a new directory object with a given structure and returns a valid Object_Version_Id containing the given
-     * system identifier and version part.
-     *
-     * @param customContribution Optional ID of a custom contribution to use, instead of creating a new one. Can be null
-     * @return Object_Version_Id for new root directory folder
-     */
-    ObjectVersionId create(UUID customContribution);
+  /**
+   * Creates a new directory object with a given structure and returns a valid Object_Version_Id
+   * containing the given system identifier and version part.
+   *
+   * @param customContribution Optional ID of a custom contribution to use, instead of creating a
+   *     new one. Can be null
+   * @return Object_Version_Id for new root directory folder
+   */
+  ObjectVersionId create(UUID customContribution);
 
-    static I_FolderAccess getInstanceForExistingFolder(I_DomainAccess domainAccess, ObjectVersionId folderId){
-        return FolderAccess.retrieveInstanceForExistingFolder(
-                domainAccess,
-                FolderUtils.extractUuidFromObjectVersionId(folderId)
-        );
-    }
+  static I_FolderAccess getInstanceForExistingFolder(
+      I_DomainAccess domainAccess, ObjectVersionId folderId) {
+    return FolderAccess.retrieveInstanceForExistingFolder(
+        domainAccess, FolderUtils.extractUuidFromObjectVersionId(folderId));
+  }
 
-    static I_FolderAccess getInstanceForExistingFolder(I_DomainAccess domainAccess, ObjectVersionId folderId, Timestamp timestamp) {
-        return FolderAccess.retrieveInstanceForExistingFolder(
-                domainAccess,
-                FolderUtils.extractUuidFromObjectVersionId(folderId)
-        );
-    }
+  static I_FolderAccess getInstanceForExistingFolder(
+      I_DomainAccess domainAccess, ObjectVersionId folderId, Timestamp timestamp) {
+    return FolderAccess.retrieveInstanceForExistingFolder(
+        domainAccess, FolderUtils.extractUuidFromObjectVersionId(folderId));
+  }
 
-    /**
-     * Retrieves the version IDs of all folders, which are linked to the given contribution.
-     * @param domainAccess DB access
-     * @param contribution Given contribution to query for
-     * @param nodeName Node name to build version ID with (access layer doesn't have access to this info)
-     * @return Set of {@link ObjectVersionId} for linked folders
-     */
-    static Set<ObjectVersionId> retrieveFolderVersionIdsInContribution(I_DomainAccess domainAccess, UUID contribution, String nodeName) {
-        return FolderAccess.retrieveFolderVersionIdsInContribution(domainAccess, contribution, nodeName);
-    }
+  /**
+   * Retrieves the version IDs of all folders, which are linked to the given contribution.
+   *
+   * @param domainAccess DB access
+   * @param contribution Given contribution to query for
+   * @param nodeName Node name to build version ID with (access layer doesn't have access to this
+   *     info)
+   * @return Set of {@link ObjectVersionId} for linked folders
+   */
+  static Set<ObjectVersionId> retrieveFolderVersionIdsInContribution(
+      I_DomainAccess domainAccess, UUID contribution, String nodeName) {
+    return FolderAccess.retrieveFolderVersionIdsInContribution(
+        domainAccess, contribution, nodeName);
+  }
 
-    /**
-     * Additional commit method to store a new entry of folder to the database and get all of inserted sub folders
-     * connected by one contribution which has been created before.
-     *
-     * @param transactionTime - Timestamp which will be applied to all folder sys_transaction values
-     * @param contributionId - ID of contribution for CREATE applied to all folders that will be created
-     * @return UUID of the new created root folder
-     */
-    UUID commit(Timestamp transactionTime, UUID contributionId);
+  /**
+   * Additional commit method to store a new entry of folder to the database and get all of inserted
+   * sub folders connected by one contribution which has been created before.
+   *
+   * @param transactionTime - Timestamp which will be applied to all folder sys_transaction values
+   * @param contributionId - ID of contribution for CREATE applied to all folders that will be
+   *     created
+   * @return UUID of the new created root folder
+   */
+  UUID commit(Timestamp transactionTime, UUID contributionId);
 
-    /**
-     * Overloaded update method to allow setting a custom contribution.
-     * @param transactionTime Timestamp
-     * @param force Optional to force the update
-     * @param contribution Optional (can be set null) custom contribution to use for this update
-     * @return success
-     */
-    Boolean update(final Timestamp transactionTime, final boolean force, UUID contribution);
+  /**
+   * Overloaded update method to allow setting a custom contribution.
+   *
+   * @param transactionTime Timestamp
+   * @param force Optional to force the update
+   * @param contribution Optional (can be set null) custom contribution to use for this update
+   * @return success
+   */
+  Boolean update(final Timestamp transactionTime, final boolean force, UUID contribution);
 
-    UUID getFolderId();
+  UUID getFolderId();
 
-    void setFolderId(UUID folderId);
+  void setFolderId(UUID folderId);
 
-    UUID getInContribution();
+  UUID getInContribution();
 
-    void setInContribution(UUID inContribution);
+  void setInContribution(UUID inContribution);
 
-    String getFolderName();
+  String getFolderName();
 
-    void setFolderName(String folderName);
+  void setFolderName(String folderName);
 
-    String getFolderArchetypeNodeId();
+  String getFolderArchetypeNodeId();
 
-    void setFolderNArchetypeNodeId(String folderArchetypeNodeId);
+  void setFolderNArchetypeNodeId(String folderArchetypeNodeId);
 
-    boolean isFolderActive();
+  boolean isFolderActive();
 
-    void setIsFolderActive(boolean folderActive);
+  void setIsFolderActive(boolean folderActive);
 
-    ItemStructure getFolderDetails();
+  ItemStructure getFolderDetails();
 
-    void setFolderDetails(ItemStructure folderDetails);
+  void setFolderDetails(ItemStructure folderDetails);
 
-    void setFolderSysTransaction(Timestamp folderSysTransaction);
+  void setFolderSysTransaction(Timestamp folderSysTransaction);
 
-    Timestamp getFolderSysTransaction();
+  Timestamp getFolderSysTransaction();
 
-    AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime> getFolderSysPeriod();
+  AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime> getFolderSysPeriod();
 
-    void setFolderSysPeriod(AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime> folderSysPeriod);
+  void setFolderSysPeriod(AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime> folderSysPeriod);
 
-    /**
-     * Invoke physical deletion.
-     */
-    void adminDeleteFolder();
+  /** Invoke physical deletion. */
+  void adminDeleteFolder();
 }

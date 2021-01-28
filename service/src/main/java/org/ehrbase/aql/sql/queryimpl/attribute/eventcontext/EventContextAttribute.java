@@ -23,8 +23,8 @@ import org.ehrbase.aql.sql.queryimpl.attribute.RMObjectAttribute;
 
 public abstract class EventContextAttribute extends RMObjectAttribute {
 
-    protected EventContextAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup){
-        super(fieldContext, joinSetup);
-        joinSetup.setJoinEventContext(true);
-    }
+  protected EventContextAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
+    super(fieldContext, joinSetup);
+    joinSetup.setJoinEventContext(true);
+  }
 }

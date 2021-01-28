@@ -18,6 +18,7 @@
 package org.ehrbase.rest.openehr.controller.admin;
 
 import io.swagger.annotations.*;
+import java.util.UUID;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.response.openehr.admin.AdminDeleteResponseData;
@@ -30,104 +31,90 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.UUID;
-
-
 /**
- * Admin API controller for EHR related endpoints. Provides methods to update and delete EHRs physically in the DB.
+ * Admin API controller for EHR related endpoints. Provides methods to update and delete EHRs
+ * physically in the DB.
  */
 @Api(tags = {"Admin", "EHR"})
 @ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
-@RequestMapping(path = "/rest/openehr/v1/admin/ehr", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@RequestMapping(
+    path = "/rest/openehr/v1/admin/ehr",
+    produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrAdminEhrController extends BaseController {
 
-    private final EhrService ehrService;
+  private final EhrService ehrService;
 
-    @Autowired
-    public OpenehrAdminEhrController(EhrService ehrService) {
-        this.ehrService = ehrService;
+  @Autowired
+  public OpenehrAdminEhrController(EhrService ehrService) {
+    this.ehrService = ehrService;
+  }
+
+  @PutMapping(
+      path = "/{ehr_id}",
+      consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            code = 200,
+            message =
+                "EHR has been updated and number of updated items will be returned in the body.",
+            responseHeaders = {
+              @ResponseHeader(
+                  name = CONTENT_TYPE,
+                  description = RESP_CONTENT_TYPE_DESC,
+                  response = MediaType.class)
+            }),
+        @ApiResponse(code = 401, message = "Client credentials are invalid or have been expired."),
+        @ApiResponse(
+            code = 403,
+            message =
+                "Client is not permitted to access this resource since the admin role is missing."),
+        @ApiResponse(code = 404, message = "EHR with id could not be found.")
+      })
+  public ResponseEntity<AdminUpdateResponseData> updateEhr(
+      @ApiParam(value = "Client requested response content type")
+          @RequestHeader(value = HttpHeaders.ACCEPT, required = false)
+          String accept,
+      @ApiParam(value = "Target EHR id to update", required = true) @PathVariable(value = "ehr_id")
+          String ehrId) {
+
+    // Check if EHR with id exists
+    UUID ehrUuid = UUID.fromString(ehrId);
+    if (!ehrService.hasEhr(ehrUuid)) {
+      throw new ObjectNotFoundException(
+          "Admin EHR", String.format("EHR with id %s does not exist.", ehrId));
     }
 
-    @PutMapping(path = "/{ehr_id}", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    @ApiResponses(value = {
-            @ApiResponse(
-                    code = 200,
-                    message = "EHR has been updated and number of updated items will be returned in the body.",
-                    responseHeaders = {
-                            @ResponseHeader(
-                                    name = CONTENT_TYPE,
-                                    description = RESP_CONTENT_TYPE_DESC,
-                                    response = MediaType.class
-                            )
-                    }
-            ),
-            @ApiResponse(
-                    code = 401,
-                    message = "Client credentials are invalid or have been expired."
-            ),
-            @ApiResponse(
-                    code = 403,
-                    message = "Client is not permitted to access this resource since the admin role is missing."
-            ),
-            @ApiResponse(
-                    code = 404,
-                    message = "EHR with id could not be found."
-            )
-    })
-    public ResponseEntity<AdminUpdateResponseData> updateEhr(
-            @ApiParam(value = "Client requested response content type")
-            @RequestHeader(value = HttpHeaders.ACCEPT, required = false)
-                    String accept,
-            @ApiParam(value = "Target EHR id to update", required = true)
-            @PathVariable(value = "ehr_id")
-                    String ehrId
-    ) {
+    // TODO: Implement endpoint functionality
 
-        // Check if EHR with id exists
-        UUID ehrUuid = UUID.fromString(ehrId);
-        if (!ehrService.hasEhr(ehrUuid)) {
-            throw new ObjectNotFoundException("Admin EHR", String.format("EHR with id %s does not exist.", ehrId));
-        }
+    return ResponseEntity.ok().body(new AdminUpdateResponseData(0));
+  }
 
-        // TODO: Implement endpoint functionality
+  @DeleteMapping(path = "/{ehr_id}")
+  @ApiResponses(
+      value = {
+        @ApiResponse(code = 204, message = "EHR has been deleted successfully"),
+        @ApiResponse(code = 401, message = "Client credentials are invalid or have been expired."),
+        @ApiResponse(
+            code = 403,
+            message =
+                "Client is not permitted to access this resource since the admin role is missing."),
+        @ApiResponse(code = 404, message = "EHR with id could not be found.")
+      })
+  public ResponseEntity<AdminDeleteResponseData> deleteEhr(
+      @ApiParam(value = "Target EHR id to delete", required = true) @PathVariable(value = "ehr_id")
+          String ehrId) {
 
-        return ResponseEntity.ok().body(new AdminUpdateResponseData(0));
+    UUID ehrUuid = UUID.fromString(ehrId);
+    // Check if EHR with id exists
+    if (!ehrService.hasEhr(ehrUuid)) {
+      throw new ObjectNotFoundException(
+          "Admin EHR", String.format("EHR with id %s does not exist.", ehrId));
     }
 
-    @DeleteMapping(path = "/{ehr_id}")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    code = 204,
-                    message = "EHR has been deleted successfully"
-            ),
-            @ApiResponse(
-                    code = 401,
-                    message = "Client credentials are invalid or have been expired."
-            ),
-            @ApiResponse(
-                    code = 403,
-                    message = "Client is not permitted to access this resource since the admin role is missing."
-            ),
-            @ApiResponse(
-                    code = 404,
-                    message = "EHR with id could not be found."
-            )
-    })
-    public ResponseEntity<AdminDeleteResponseData> deleteEhr(
-            @ApiParam(value = "Target EHR id to delete", required = true)
-            @PathVariable(value = "ehr_id")
-                    String ehrId
-    ) {
+    ehrService.adminDeleteEhr(ehrUuid);
 
-        UUID ehrUuid = UUID.fromString(ehrId);
-        // Check if EHR with id exists
-        if (!ehrService.hasEhr(ehrUuid)) {
-            throw new ObjectNotFoundException("Admin EHR", String.format("EHR with id %s does not exist.", ehrId));
-        }
-
-        ehrService.adminDeleteEhr(ehrUuid);
-
-        return ResponseEntity.noContent().build();
-    }
+    return ResponseEntity.noContent().build();
+  }
 }

@@ -143,6 +143,7 @@
         <surefire.version>3.0.0-M5</surefire.version>
         <failsafe.version>3.0.0-M5</failsafe.version>
         <prometheus.version>1.6.1</prometheus.version>
+        <fmt-maven-plugin.version>2.10</fmt-maven-plugin.version>
         <antlr4.version>4.9.1</antlr4.version>
 
         <skipIntegrationTests>true</skipIntegrationTests>
@@ -393,6 +394,18 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>com.coveo</groupId>
+                <artifactId>fmt-maven-plugin</artifactId>
+                <version>${fmt-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>format</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>

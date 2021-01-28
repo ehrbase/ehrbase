@@ -19,32 +19,32 @@
 package org.ehrbase.rest.ehrscape.responsedata;
 
 public class Meta {
-    RestHref href;
+  RestHref href;
 
-    public RestHref getHref() {
-        return href;
-    }
+  public RestHref getHref() {
+    return href;
+  }
 
-    public void setHref(RestHref href) {
-        this.href = href;
-    }
+  public void setHref(RestHref href) {
+    this.href = href;
+  }
 
-    public RestHref getPrecedingHref() {
-        return precedingHref;
-    }
+  public RestHref getPrecedingHref() {
+    return precedingHref;
+  }
 
-    public void setPrecedingHref(RestHref precedingHref) {
-        this.precedingHref = precedingHref;
-    }
+  public void setPrecedingHref(RestHref precedingHref) {
+    this.precedingHref = precedingHref;
+  }
 
-    public RestHref getNextHref() {
-        return nextHref;
-    }
+  public RestHref getNextHref() {
+    return nextHref;
+  }
 
-    public void setNextHref(RestHref nextHref) {
-        this.nextHref = nextHref;
-    }
+  public void setNextHref(RestHref nextHref) {
+    this.nextHref = nextHref;
+  }
 
-    RestHref precedingHref;
-    RestHref nextHref;
+  RestHref precedingHref;
+  RestHref nextHref;
 }

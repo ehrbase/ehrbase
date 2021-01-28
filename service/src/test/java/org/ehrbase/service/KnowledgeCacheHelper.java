@@ -18,79 +18,72 @@
 
 package org.ehrbase.service;
 
+import java.io.File;
 import org.apache.commons.io.IOUtils;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.configuration.CacheConfiguration;
 import org.ehrbase.opt.query.TemplateTestData;
 import org.junit.rules.TemporaryFolder;
 
-import java.io.File;
-
-/**
- * Created by christian on 5/10/2018.
- */
-
+/** Created by christian on 5/10/2018. */
 public class KnowledgeCacheHelper {
 
+  public static KnowledgeCacheService buildKnowledgeCache(
+      TemporaryFolder folder, CacheRule cacheRule) throws Exception {
 
-    public static KnowledgeCacheService buildKnowledgeCache(TemporaryFolder folder, CacheRule cacheRule) throws Exception {
+    File operationalTemplatesemplates = folder.newFolder("operational_templates");
 
+    TemplateFileStorageService templateFileStorageService = new TemplateFileStorageService();
 
-        File operationalTemplatesemplates = folder.newFolder("operational_templates");
+    templateFileStorageService.setOptPath(operationalTemplatesemplates.getPath());
 
-        TemplateFileStorageService templateFileStorageService = new TemplateFileStorageService();
+    KnowledgeCacheService knowledgeCacheService =
+        new KnowledgeCacheService(
+            templateFileStorageService, cacheRule.cacheManager, new CacheConfiguration());
+    knowledgeCacheService.addOperationalTemplate(
+        IOUtils.toByteArray(TemplateTestData.IMMUNISATION_SUMMARY.getStream()));
+    return knowledgeCacheService;
+  }
 
-        templateFileStorageService.setOptPath(operationalTemplatesemplates.getPath());
+  public static ServerConfig buildServerConfig() {
+    return new ServerConfig() {
+      private boolean useJsQuery = false;
 
-        KnowledgeCacheService knowledgeCacheService = new KnowledgeCacheService(templateFileStorageService, cacheRule.cacheManager, new CacheConfiguration());
-        knowledgeCacheService.addOperationalTemplate(IOUtils.toByteArray(TemplateTestData.IMMUNISATION_SUMMARY.getStream()));
-        return knowledgeCacheService;
-    }
+      @Override
+      public int getPort() {
+        return 0;
+      }
 
-    public static ServerConfig buildServerConfig() {
-        return new ServerConfig() {
-            private boolean useJsQuery = false;
+      @Override
+      public void setPort(int port) {}
 
-            @Override
-            public int getPort() {
-                return 0;
-            }
+      @Override
+      public String getNodename() {
+        return "local.ehrbase.org";
+      }
 
-            @Override
-            public void setPort(int port) {
+      @Override
+      public void setNodename(String nodename) {}
 
-            }
+      @Override
+      public String getAqlIterationSkipList() {
+        return "/events,/activities,/content";
+      }
 
-            @Override
-            public String getNodename() {
-                return "local.ehrbase.org";
-            }
+      @Override
+      public Integer getAqlDepth() {
+        return 1;
+      }
 
-            @Override
-            public void setNodename(String nodename) {
+      @Override
+      public Boolean getUseJsQuery() {
+        return useJsQuery;
+      }
 
-            }
-
-            @Override
-            public String getAqlIterationSkipList() {
-                return "/events,/activities,/content";
-            }
-
-            @Override
-            public Integer getAqlDepth() {
-                return 1;
-            }
-
-            @Override
-            public Boolean getUseJsQuery() {
-                return useJsQuery;
-            }
-
-            @Override
-            public void setUseJsQuery(boolean b) {
-                this.useJsQuery = b;
-            }
-        };
-    }
-
+      @Override
+      public void setUseJsQuery(boolean b) {
+        this.useJsQuery = b;
+      }
+    };
+  }
 }

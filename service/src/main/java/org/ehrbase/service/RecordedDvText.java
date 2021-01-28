@@ -24,21 +24,20 @@ import org.jooq.Record;
 
 public class RecordedDvText {
 
-    /**
-     * set a DvText to DB
-     */
+  /** set a DvText to DB */
+  public void toDB(Record record, Field<DvCodedTextRecord> targetField, DvText dvText) {
+    DvCodedTextRecord dvCodedTextRecord =
+        new DvCodedTextRecord(
+            dvText.getValue(),
+            null,
+            dvText.getFormatting(),
+            new PersistentCodePhrase(dvText.getLanguage()).encode(),
+            new PersistentCodePhrase(dvText.getEncoding()).encode(),
+            new PersistentTermMapping().termMappingRepresentation(dvText.getMappings()));
 
-    public void toDB(Record record, Field<DvCodedTextRecord> targetField, DvText dvText){
-        DvCodedTextRecord dvCodedTextRecord =
-                new DvCodedTextRecord(dvText.getValue(),
-                        null,
-                        dvText.getFormatting(),
-                        new PersistentCodePhrase(dvText.getLanguage()).encode(),
-                        new PersistentCodePhrase(dvText.getEncoding()).encode(),
-                        new PersistentTermMapping().termMappingRepresentation(dvText.getMappings()));
+    record.set(targetField, dvCodedTextRecord);
+  }
 
-        record.set(targetField, dvCodedTextRecord);
-    }
-
-    //fromDB is performed by the corresponding method in RecordedDvCodedText since DvCodedText inherits from DvText
+  // fromDB is performed by the corresponding method in RecordedDvCodedText since DvCodedText
+  // inherits from DvText
 }

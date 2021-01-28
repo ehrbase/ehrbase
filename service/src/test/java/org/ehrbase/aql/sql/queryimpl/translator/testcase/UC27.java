@@ -23,11 +23,12 @@ import org.ehrbase.aql.sql.queryimpl.translator.QueryProcessorTestBase;
 
 public abstract class UC27 extends QueryProcessorTestBase {
 
-    protected UC27(){
-        this.aql = "Select e/folders/name/value\n" +
-                "               from EHR e\n" +
-                "               where e/ehr_id/value = 'c2561bab-4d2b-4ffd-a893-4382e9048f8c'\n" +
-                "               and 'case1' IN(e/folders/name/value)";
-        this.expectedOutputWithJson = false;
-    }
+  protected UC27() {
+    this.aql =
+        "Select e/folders/name/value\n"
+            + "               from EHR e\n"
+            + "               where e/ehr_id/value = 'c2561bab-4d2b-4ffd-a893-4382e9048f8c'\n"
+            + "               and 'case1' IN(e/folders/name/value)";
+    this.expectedOutputWithJson = false;
+  }
 }

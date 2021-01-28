@@ -23,89 +23,100 @@ import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
 import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
 import org.jooq.Field;
 
-@SuppressWarnings({"java:S3776","java:S3740","java:S1452"})
+@SuppressWarnings({"java:S3776", "java:S3740", "java:S1452"})
 class ExpressionField {
 
-    private final I_VariableDefinition variableDefinition;
-    private final JsonbEntryQuery jsonbEntryQuery;
-    private final CompositionAttributeQuery compositionAttributeQuery;
-    private boolean containsJsonDataBlock = false;
+  private final I_VariableDefinition variableDefinition;
+  private final JsonbEntryQuery jsonbEntryQuery;
+  private final CompositionAttributeQuery compositionAttributeQuery;
+  private boolean containsJsonDataBlock = false;
 
-    private String rootJsonKey = null;
-    private String optionalPath = null;
-    private String jsonbItemPath = null;
+  private String rootJsonKey = null;
+  private String optionalPath = null;
+  private String jsonbItemPath = null;
 
-    public ExpressionField(I_VariableDefinition variableDefinition, JsonbEntryQuery jsonbEntryQuery, CompositionAttributeQuery compositionAttributeQuery) {
-        this.variableDefinition = variableDefinition;
-        this.jsonbEntryQuery = jsonbEntryQuery;
-        this.compositionAttributeQuery = compositionAttributeQuery;
-    }
+  public ExpressionField(
+      I_VariableDefinition variableDefinition,
+      JsonbEntryQuery jsonbEntryQuery,
+      CompositionAttributeQuery compositionAttributeQuery) {
+    this.variableDefinition = variableDefinition;
+    this.jsonbEntryQuery = jsonbEntryQuery;
+    this.compositionAttributeQuery = compositionAttributeQuery;
+  }
 
-    Field<?> toSql(String className, String templateId, String identifier) {
+  Field<?> toSql(String className, String templateId, String identifier) {
 
-        Field<?> field;
+    Field<?> field;
 
-        switch (className) {
-            //COMPOSITION attributes
-            case "COMPOSITION":
-                CompositionAttribute compositionAttribute = new CompositionAttribute(compositionAttributeQuery, jsonbEntryQuery, IQueryImpl.Clause.SELECT);
-                field = compositionAttribute.toSql(variableDefinition, templateId, identifier);
-                jsonbItemPath = compositionAttribute.getJsonbItemPath();
-                containsJsonDataBlock = compositionAttribute.isContainsJsonDataBlock();
-                optionalPath = compositionAttribute.getOptionalPath();
-                break;
-            // EHR attributes
-            case "EHR":
-
-                field = compositionAttributeQuery.makeField(templateId, identifier, variableDefinition, IQueryImpl.Clause.SELECT);
-                containsJsonDataBlock = compositionAttributeQuery.isJsonDataBlock();
-                optionalPath = variableDefinition.getPath();
-                break;
-            // other, f.e. CLUSTER, ADMIN_ENTRY, OBSERVATION etc.
-            default:
-                // other_details f.e.
-                if (compositionAttributeQuery.isCompositionAttributeItemStructure(templateId, variableDefinition.getIdentifier())) {
-                    ContextualAttribute contextualAttribute = new ContextualAttribute(compositionAttributeQuery, jsonbEntryQuery, IQueryImpl.Clause.SELECT);
-                    field = contextualAttribute.toSql(templateId, variableDefinition);
-                    jsonbItemPath = contextualAttribute.getJsonbItemPath();
-                    containsJsonDataBlock = contextualAttribute.isContainsJsonDataBlock();
-                    optionalPath = contextualAttribute.getOptionalPath();
-                }
-                else {
-                    // all other that are supported as simpleClassExpr (most common resolution)
-                    LocatableItem locatableItem = new LocatableItem(compositionAttributeQuery, jsonbEntryQuery);
-                    field = locatableItem.toSql(templateId, variableDefinition, className);
-                    jsonbItemPath = locatableItem.getJsonbItemPath();
-                    containsJsonDataBlock |= locatableItem.isContainsJsonDataBlock();
-                    optionalPath = locatableItem.getOptionalPath();
-                    rootJsonKey = locatableItem.getRootJsonKey();
-                    jsonbItemPath = locatableItem.getJsonbItemPath();
-                    locatableItem.setUseEntry();
-                }
-                break;
+    switch (className) {
+        // COMPOSITION attributes
+      case "COMPOSITION":
+        CompositionAttribute compositionAttribute =
+            new CompositionAttribute(
+                compositionAttributeQuery, jsonbEntryQuery, IQueryImpl.Clause.SELECT);
+        field = compositionAttribute.toSql(variableDefinition, templateId, identifier);
+        jsonbItemPath = compositionAttribute.getJsonbItemPath();
+        containsJsonDataBlock = compositionAttribute.isContainsJsonDataBlock();
+        optionalPath = compositionAttribute.getOptionalPath();
+        break;
+        // EHR attributes
+      case "EHR":
+        field =
+            compositionAttributeQuery.makeField(
+                templateId, identifier, variableDefinition, IQueryImpl.Clause.SELECT);
+        containsJsonDataBlock = compositionAttributeQuery.isJsonDataBlock();
+        optionalPath = variableDefinition.getPath();
+        break;
+        // other, f.e. CLUSTER, ADMIN_ENTRY, OBSERVATION etc.
+      default:
+        // other_details f.e.
+        if (compositionAttributeQuery.isCompositionAttributeItemStructure(
+            templateId, variableDefinition.getIdentifier())) {
+          ContextualAttribute contextualAttribute =
+              new ContextualAttribute(
+                  compositionAttributeQuery, jsonbEntryQuery, IQueryImpl.Clause.SELECT);
+          field = contextualAttribute.toSql(templateId, variableDefinition);
+          jsonbItemPath = contextualAttribute.getJsonbItemPath();
+          containsJsonDataBlock = contextualAttribute.isContainsJsonDataBlock();
+          optionalPath = contextualAttribute.getOptionalPath();
+        } else {
+          // all other that are supported as simpleClassExpr (most common resolution)
+          LocatableItem locatableItem =
+              new LocatableItem(compositionAttributeQuery, jsonbEntryQuery);
+          field = locatableItem.toSql(templateId, variableDefinition, className);
+          jsonbItemPath = locatableItem.getJsonbItemPath();
+          containsJsonDataBlock |= locatableItem.isContainsJsonDataBlock();
+          optionalPath = locatableItem.getOptionalPath();
+          rootJsonKey = locatableItem.getRootJsonKey();
+          jsonbItemPath = locatableItem.getJsonbItemPath();
+          locatableItem.setUseEntry();
         }
-
-        //this takes care of formatting the json result as only the "value" part (e.g. not "value":{"value":...})
-        if (jsonbItemPath != null && (jsonbItemPath.endsWith("/origin")||jsonbItemPath.endsWith("/time"))){
-            rootJsonKey = "value";
-        }
-
-        return field;
+        break;
     }
 
-    boolean isContainsJsonDataBlock() {
-        return containsJsonDataBlock;
+    // this takes care of formatting the json result as only the "value" part (e.g. not
+    // "value":{"value":...})
+    if (jsonbItemPath != null
+        && (jsonbItemPath.endsWith("/origin") || jsonbItemPath.endsWith("/time"))) {
+      rootJsonKey = "value";
     }
 
-    String getRootJsonKey() {
-        return rootJsonKey;
-    }
+    return field;
+  }
 
-    String getOptionalPath() {
-        return optionalPath;
-    }
+  boolean isContainsJsonDataBlock() {
+    return containsJsonDataBlock;
+  }
 
-    String getJsonbItemPath() {
-        return jsonbItemPath;
-    }
+  String getRootJsonKey() {
+    return rootJsonKey;
+  }
+
+  String getOptionalPath() {
+    return optionalPath;
+  }
+
+  String getJsonbItemPath() {
+    return jsonbItemPath;
+  }
 }

@@ -23,12 +23,12 @@ import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC23;
 
 public class TestUC23 extends UC23 {
 
-    public TestUC23(){
-        super();
-        this.expectedSqlExpression =
-                "select count(DISTINCT \"_FCT_ARG_0\") as \"count\" from (select cast(\"ehr\".\"js_dv_date_time\"(\n" +
-                        "  \"ehr_join\".\"date_created\", \n" +
-                        "  \"ehr_join\".\"date_created_tzid\"\n" +
-                        ") as varchar) as \"_FCT_ARG_0\" from \"ehr\".\"ehr\" as \"ehr_join\") as \"\"";
-    }
+  public TestUC23() {
+    super();
+    this.expectedSqlExpression =
+        "select count(DISTINCT \"_FCT_ARG_0\") as \"count\" from (select cast(\"ehr\".\"js_dv_date_time\"(\n"
+            + "  \"ehr_join\".\"date_created\", \n"
+            + "  \"ehr_join\".\"date_created_tzid\"\n"
+            + ") as varchar) as \"_FCT_ARG_0\" from \"ehr\".\"ehr\" as \"ehr_join\") as \"\"";
+  }
 }

@@ -23,12 +23,12 @@ import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC35;
 
 public class TestUC35 extends UC35 {
 
-    public TestUC35(){
-        super();
-        this.expectedSqlExpression =
-                "select cast(jsonb_extract_path(cast(\"ehr\".\"js_ehr\"(\n" +
-                        "  cast(ehr_join.id as uuid), \n" +
-                        "  'local'\n" +
-                        ") as jsonb),'directory') as jsonb) as \"/directory\" from \"ehr\".\"ehr\" as \"ehr_join\"";
-    }
+  public TestUC35() {
+    super();
+    this.expectedSqlExpression =
+        "select cast(jsonb_extract_path(cast(\"ehr\".\"js_ehr\"(\n"
+            + "  cast(ehr_join.id as uuid), \n"
+            + "  'local'\n"
+            + ") as jsonb),'directory') as jsonb) as \"/directory\" from \"ehr\".\"ehr\" as \"ehr_join\"";
+  }
 }

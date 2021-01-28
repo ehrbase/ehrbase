@@ -18,66 +18,66 @@
 
 package org.ehrbase.service;
 
+import static org.junit.Assert.*;
+
 import org.ehrbase.terminology.openehr.TerminologyService;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 public class TerminologyServiceTest {
 
-    TerminologyService terminologyService;
+  TerminologyService terminologyService;
 
-    @Before
-    public void setUp() throws Exception {
-        terminologyService = new TerminologyServiceImp();
-    }
+  @Before
+  public void setUp() throws Exception {
+    terminologyService = new TerminologyServiceImp();
+  }
 
-    @Test
-    public void terminology() {
-        assertNotNull(terminologyService.terminology("openehr"));
-        assertNotNull(terminologyService.terminology("openehr", "ja"));
-    }
+  @Test
+  public void terminology() {
+    assertNotNull(terminologyService.terminology("openehr"));
+    assertNotNull(terminologyService.terminology("openehr", "ja"));
+  }
 
-    @Test
-    public void codeSet() {
-        assertNotNull(terminologyService.codeSet("openehr_integrity_check_algorithms"));
-        assertNotNull(terminologyService.codeSet("openehr_integrity_check_algorithms", "ja"));
-    }
+  @Test
+  public void codeSet() {
+    assertNotNull(terminologyService.codeSet("openehr_integrity_check_algorithms"));
+    assertNotNull(terminologyService.codeSet("openehr_integrity_check_algorithms", "ja"));
+  }
 
-    @Test
-    public void codeSetForId() {
-        assertNotNull(terminologyService.codeSetForId("INTEGRITY_CHECK_ALGORITHMS"));
-        assertNotNull(terminologyService.codeSetForId("INTEGRITY_CHECK_ALGORITHMS", "pt"));
-    }
+  @Test
+  public void codeSetForId() {
+    assertNotNull(terminologyService.codeSetForId("INTEGRITY_CHECK_ALGORITHMS"));
+    assertNotNull(terminologyService.codeSetForId("INTEGRITY_CHECK_ALGORITHMS", "pt"));
+  }
 
-    @Test
-    public void hasTerminology() {
-        assertTrue(terminologyService.hasTerminology("openehr"));
-        assertTrue(terminologyService.hasTerminology("openehr", "ja"));
-    }
+  @Test
+  public void hasTerminology() {
+    assertTrue(terminologyService.hasTerminology("openehr"));
+    assertTrue(terminologyService.hasTerminology("openehr", "ja"));
+  }
 
-    @Test
-    public void hasCodeSet() {
-        assertTrue(terminologyService.hasCodeSet("integrity check algorithms"));
-        assertTrue(terminologyService.hasCodeSet("integrity check algorithms", "pt"));
-    }
+  @Test
+  public void hasCodeSet() {
+    assertTrue(terminologyService.hasCodeSet("integrity check algorithms"));
+    assertTrue(terminologyService.hasCodeSet("integrity check algorithms", "pt"));
+  }
 
-    @Test
-    public void terminologyIdentifiers() {
-        assertTrue(terminologyService.terminologyIdentifiers().length > 0);
-        assertTrue(terminologyService.terminologyIdentifiers("ja").length > 0);
-    }
+  @Test
+  public void terminologyIdentifiers() {
+    assertTrue(terminologyService.terminologyIdentifiers().length > 0);
+    assertTrue(terminologyService.terminologyIdentifiers("ja").length > 0);
+  }
 
-    @Test
-    public void openehrCodeSets() {
-        assertTrue(terminologyService.openehrCodeSets().size() > 0);
-        assertTrue(terminologyService.openehrCodeSets("pt").size() > 0);
-    }
+  @Test
+  public void openehrCodeSets() {
+    assertTrue(terminologyService.openehrCodeSets().size() > 0);
+    assertTrue(terminologyService.openehrCodeSets("pt").size() > 0);
+  }
 
-    @Test
-    public void codeSetIdentifiers() {
-        assertTrue(terminologyService.codeSetIdentifiers().length > 0);
-        assertTrue(terminologyService.codeSetIdentifiers("ja").length > 0);
-    }
+  @Test
+  public void codeSetIdentifiers() {
+    assertTrue(terminologyService.codeSetIdentifiers().length > 0);
+    assertTrue(terminologyService.codeSetIdentifiers("ja").length > 0);
+  }
 }

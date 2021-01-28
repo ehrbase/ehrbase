@@ -21,13 +21,12 @@ package org.ehrbase.aql.sql.queryimpl;
 
 public class QueryImplConstants {
 
-    public static final String AQL_NODE_NAME_PREDICATE_MARKER = "$AQL_NODE_NAME_PREDICATE$";
-    public static final String AQL_NODE_ITERATIVE_MARKER = "$AQL_NODE_ITERATIVE$";
-    public static final String AQL_NODE_NAME_PREDICATE_FUNCTION = "ehr.aql_node_name_predicate";
-    //we use the standard jsonb array elements function
-    //see  https://www.postgresql.org/docs/current/static/functions-json.html for more on usage
-    public static final String AQL_NODE_ITERATIVE_FUNCTION = "jsonb_array_elements";
+  public static final String AQL_NODE_NAME_PREDICATE_MARKER = "$AQL_NODE_NAME_PREDICATE$";
+  public static final String AQL_NODE_ITERATIVE_MARKER = "$AQL_NODE_ITERATIVE$";
+  public static final String AQL_NODE_NAME_PREDICATE_FUNCTION = "ehr.aql_node_name_predicate";
+  // we use the standard jsonb array elements function
+  // see  https://www.postgresql.org/docs/current/static/functions-json.html for more on usage
+  public static final String AQL_NODE_ITERATIVE_FUNCTION = "jsonb_array_elements";
 
-    private QueryImplConstants() {
-    }
+  private QueryImplConstants() {}
 }

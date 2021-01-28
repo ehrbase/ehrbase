@@ -20,7 +20,7 @@ package org.ehrbase.api.exception;
 
 public class InvalidApiParameterException extends RuntimeException {
 
-    public InvalidApiParameterException(String message) {
-        super(message);
-    }
+  public InvalidApiParameterException(String message) {
+    super(message);
+  }
 }

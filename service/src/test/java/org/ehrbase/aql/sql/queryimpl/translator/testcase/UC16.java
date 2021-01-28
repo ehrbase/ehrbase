@@ -23,18 +23,19 @@ import org.ehrbase.aql.sql.queryimpl.translator.QueryProcessorTestBase;
 
 public abstract class UC16 extends QueryProcessorTestBase {
 
-    protected UC16(){
-        this.aql = "select a/description[at0001]/items[openEHR-EHR-CLUSTER.test_all_types.v1]/items[at0001]/items[at0002]/items[at0003]/value/value " +
-                "from EHR e " +
-                "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  " +
-                "contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]" +
-                "WHERE a/description[at0001]/items[at0001]/items[at0002]/items[at0003]/value/value = true " +
-                "OR " +
-                "(" +
-                "a/description[at0001]/items[at0001]/items[at0002]/items[at0003]/value/value = true " +
-                "AND" +
-                " a/description[at0001]/items[at0001]/items[at0002]/items[at0003]/value/value = true" +
-                ")";
-        this.expectedOutputWithJson = true;
-    }
+  protected UC16() {
+    this.aql =
+        "select a/description[at0001]/items[openEHR-EHR-CLUSTER.test_all_types.v1]/items[at0001]/items[at0002]/items[at0003]/value/value "
+            + "from EHR e "
+            + "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  "
+            + "contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]"
+            + "WHERE a/description[at0001]/items[at0001]/items[at0002]/items[at0003]/value/value = true "
+            + "OR "
+            + "("
+            + "a/description[at0001]/items[at0001]/items[at0002]/items[at0003]/value/value = true "
+            + "AND"
+            + " a/description[at0001]/items[at0001]/items[at0002]/items[at0003]/value/value = true"
+            + ")";
+    this.expectedOutputWithJson = true;
+  }
 }

@@ -20,57 +20,59 @@
 
 package org.ehrbase.service;
 
+import java.util.List;
+import java.util.Optional;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
-import java.util.List;
-import java.util.Optional;
-
 public interface TemplateStorage {
 
-    /**
-     * List all Templates in the store;
-     *
-     * @return @see {@link TemplateMetaData}
-     */
-    List<TemplateMetaData> listAllOperationalTemplates();
+  /**
+   * List all Templates in the store;
+   *
+   * @return @see {@link TemplateMetaData}
+   */
+  List<TemplateMetaData> listAllOperationalTemplates();
 
-    /**
-     * Save a template in the store
-     * @param template @see {@link OPERATIONALTEMPLATE}
-     * @throws RuntimeException template Id or uuid are not unique
-     */
-    void storeTemplate(OPERATIONALTEMPLATE template);
+  /**
+   * Save a template in the store
+   *
+   * @param template @see {@link OPERATIONALTEMPLATE}
+   * @throws RuntimeException template Id or uuid are not unique
+   */
+  void storeTemplate(OPERATIONALTEMPLATE template);
 
-    /**
-     * Find and return a saved Template by templateId
-     * @param templateId
-     * @return the template @see {@link OPERATIONALTEMPLATE} or {@link Optional#empty()} if not found.
-     */
-    Optional<OPERATIONALTEMPLATE> readOperationaltemplate(String templateId);
+  /**
+   * Find and return a saved Template by templateId
+   *
+   * @param templateId
+   * @return the template @see {@link OPERATIONALTEMPLATE} or {@link Optional#empty()} if not found.
+   */
+  Optional<OPERATIONALTEMPLATE> readOperationaltemplate(String templateId);
 
-    /**
-     * Replaces the content of an existing template with the same id as in the provided template with the new
-     * content from provided one. Check that the old template is no longer referenced to avoid data inconsistencies
-     *
-     * @param template - Template with new data and id of target to be replaced
-     * @return - XML content of the updated template
-     */
-    String adminUpdateTemplate(OPERATIONALTEMPLATE template);
+  /**
+   * Replaces the content of an existing template with the same id as in the provided template with
+   * the new content from provided one. Check that the old template is no longer referenced to avoid
+   * data inconsistencies
+   *
+   * @param template - Template with new data and id of target to be replaced
+   * @return - XML content of the updated template
+   */
+  String adminUpdateTemplate(OPERATIONALTEMPLATE template);
 
-    /**
-     * Deletes an operational template from template storage. The template will be removed physically so ensure that
-     * there are no compositions referencing the template.
-     *
-     * @param templateId - Template id to delete from storage, e.g. "IDCR Allergies List.v0"
-     * @return - Deletion was successful or not
-     */
-    boolean deleteTemplate(String templateId);
+  /**
+   * Deletes an operational template from template storage. The template will be removed physically
+   * so ensure that there are no compositions referencing the template.
+   *
+   * @param templateId - Template id to delete from storage, e.g. "IDCR Allergies List.v0"
+   * @return - Deletion was successful or not
+   */
+  boolean deleteTemplate(String templateId);
 
-    /**
-     * Removes all templates from template storage and returns the number of deleted entries.
-     *
-     * @return - Count of deleted templates
-     */
-    int adminDeleteAllTemplates(List<TemplateMetaData> templateMetaDataList);
+  /**
+   * Removes all templates from template storage and returns the number of deleted entries.
+   *
+   * @return - Count of deleted templates
+   */
+  int adminDeleteAllTemplates(List<TemplateMetaData> templateMetaDataList);
 }

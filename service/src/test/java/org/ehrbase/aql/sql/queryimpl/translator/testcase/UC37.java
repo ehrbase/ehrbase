@@ -23,12 +23,13 @@ import org.ehrbase.aql.sql.queryimpl.translator.QueryProcessorTestBase;
 
 public abstract class UC37 extends QueryProcessorTestBase {
 
-    protected UC37(){
-        this.aql = "select" +
-                "  avg (d/description[at0001]/items[at0004]/value/magnitude) as avg_magnitude" +
-                " from EHR e" +
-                "  contains COMPOSITION" +
-                "  contains ACTION d[openEHR-EHR-ACTION.immunisation_procedure.v1]";
-        this.expectedOutputWithJson = false;
-    }
+  protected UC37() {
+    this.aql =
+        "select"
+            + "  avg (d/description[at0001]/items[at0004]/value/magnitude) as avg_magnitude"
+            + " from EHR e"
+            + "  contains COMPOSITION"
+            + "  contains ACTION d[openEHR-EHR-ACTION.immunisation_procedure.v1]";
+    this.expectedOutputWithJson = false;
+  }
 }

@@ -19,5 +19,13 @@
 package org.ehrbase.rest.ehrscape.responsedata;
 
 public enum Action {
-    RETRIEVE, CREATE, UPDATE, MERGE, DELETE, EXECUTE, EXPIRED, NOOP, LIST
+  RETRIEVE,
+  CREATE,
+  UPDATE,
+  MERGE,
+  DELETE,
+  EXECUTE,
+  EXPIRED,
+  NOOP,
+  LIST
 }

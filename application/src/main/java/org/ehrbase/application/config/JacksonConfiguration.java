@@ -38,23 +38,23 @@ import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConve
 @Configuration
 public class JacksonConfiguration {
 
-    @Bean
-    public Jackson2ObjectMapperBuilderCustomizer addCustomSerialization() {
-        return jacksonObjectMapperBuilder -> jacksonObjectMapperBuilder
-                .serializerByType(StructuredString.class, new StructuredStringJSonSerializer())
-                .serializerByType(RMObject.class, new RmObjectJsonSerializer())
-                .deserializerByType(EhrStatus.class, new RmObjectJsonDeSerializer())
-                .deserializerByType(Folder.class, new RmObjectJsonDeSerializer())
-                .modules(new JavaTimeModule());
-    }
+  @Bean
+  public Jackson2ObjectMapperBuilderCustomizer addCustomSerialization() {
+    return jacksonObjectMapperBuilder ->
+        jacksonObjectMapperBuilder
+            .serializerByType(StructuredString.class, new StructuredStringJSonSerializer())
+            .serializerByType(RMObject.class, new RmObjectJsonSerializer())
+            .deserializerByType(EhrStatus.class, new RmObjectJsonDeSerializer())
+            .deserializerByType(Folder.class, new RmObjectJsonDeSerializer())
+            .modules(new JavaTimeModule());
+  }
 
-    @Bean
-    @Primary
-    public MappingJackson2XmlHttpMessageConverter mappingJackson2XmlHttpMessageConverter(
-            Jackson2ObjectMapperBuilder builder) {
-        XmlMapper objectMapper = builder.createXmlMapper(true).build();
-        objectMapper.configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true);
-        return new MappingJackson2XmlHttpMessageConverter(
-                objectMapper);
-    }
+  @Bean
+  @Primary
+  public MappingJackson2XmlHttpMessageConverter mappingJackson2XmlHttpMessageConverter(
+      Jackson2ObjectMapperBuilder builder) {
+    XmlMapper objectMapper = builder.createXmlMapper(true).build();
+    objectMapper.configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true);
+    return new MappingJackson2XmlHttpMessageConverter(objectMapper);
+  }
 }

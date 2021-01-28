@@ -26,89 +26,98 @@ import org.jooq.DSLContext;
 @SuppressWarnings("java:S107")
 public class FieldResolutionContext {
 
-    private final String columnAlias;
-    private final String identifier;
-    private final I_VariableDefinition variableDefinition;
-    private boolean withAlias;
-    private final IQueryImpl.Clause clause;
-    private final DSLContext context;
-    private final String serverNodeId;
-    private final PathResolver pathResolver;
-    private final IntrospectService introspectCache;
-    private final String entryRoot;
-    private boolean jsonDatablock = false;
-    private String rmType;
+  private final String columnAlias;
+  private final String identifier;
+  private final I_VariableDefinition variableDefinition;
+  private boolean withAlias;
+  private final IQueryImpl.Clause clause;
+  private final DSLContext context;
+  private final String serverNodeId;
+  private final PathResolver pathResolver;
+  private final IntrospectService introspectCache;
+  private final String entryRoot;
+  private boolean jsonDatablock = false;
+  private String rmType;
 
-    public FieldResolutionContext(DSLContext context, String serverNodeId, String identifier, I_VariableDefinition variableDefinition, IQueryImpl.Clause clause, PathResolver pathResolver, IntrospectService introspectCache, String entryRoot) {
-        this.identifier = identifier;
-        this.variableDefinition = variableDefinition;
-        this.withAlias = clause.equals(IQueryImpl.Clause.SELECT) && variableDefinition.getPath() != null;
-        this.clause = clause;
-        this.context = context;
-        this.serverNodeId = serverNodeId;
-        this.pathResolver = pathResolver;
-        this.entryRoot = entryRoot;
-        this.introspectCache = introspectCache;
-        columnAlias = variableDefinition.getPath();
-    }
+  public FieldResolutionContext(
+      DSLContext context,
+      String serverNodeId,
+      String identifier,
+      I_VariableDefinition variableDefinition,
+      IQueryImpl.Clause clause,
+      PathResolver pathResolver,
+      IntrospectService introspectCache,
+      String entryRoot) {
+    this.identifier = identifier;
+    this.variableDefinition = variableDefinition;
+    this.withAlias =
+        clause.equals(IQueryImpl.Clause.SELECT) && variableDefinition.getPath() != null;
+    this.clause = clause;
+    this.context = context;
+    this.serverNodeId = serverNodeId;
+    this.pathResolver = pathResolver;
+    this.entryRoot = entryRoot;
+    this.introspectCache = introspectCache;
+    columnAlias = variableDefinition.getPath();
+  }
 
-    public String getColumnAlias() {
-        return columnAlias;
-    }
+  public String getColumnAlias() {
+    return columnAlias;
+  }
 
-    public String getIdentifier() {
-        return identifier;
-    }
+  public String getIdentifier() {
+    return identifier;
+  }
 
-    public I_VariableDefinition getVariableDefinition() {
-        return variableDefinition;
-    }
+  public I_VariableDefinition getVariableDefinition() {
+    return variableDefinition;
+  }
 
-    public String getRmType() {
-        return rmType;
-    }
+  public String getRmType() {
+    return rmType;
+  }
 
-    public void setRmType(String rmType) {
-        this.rmType = rmType;
-    }
+  public void setRmType(String rmType) {
+    this.rmType = rmType;
+  }
 
-    public boolean isWithAlias() {
-        return withAlias;
-    }
+  public boolean isWithAlias() {
+    return withAlias;
+  }
 
-    public IQueryImpl.Clause getClause() {
-        return clause;
-    }
+  public IQueryImpl.Clause getClause() {
+    return clause;
+  }
 
-    public DSLContext getContext() {
-        return context;
-    }
+  public DSLContext getContext() {
+    return context;
+  }
 
-    public String getServerNodeId() {
-        return serverNodeId;
-    }
+  public String getServerNodeId() {
+    return serverNodeId;
+  }
 
-    public PathResolver getPathResolver() {
-        return pathResolver;
-    }
+  public PathResolver getPathResolver() {
+    return pathResolver;
+  }
 
-    public IntrospectService getIntrospectCache() {
-        return introspectCache;
-    }
+  public IntrospectService getIntrospectCache() {
+    return introspectCache;
+  }
 
-    public String getEntryRoot() {
-        return entryRoot;
-    }
+  public String getEntryRoot() {
+    return entryRoot;
+  }
 
-    public boolean isJsonDatablock() {
-        return jsonDatablock;
-    }
+  public boolean isJsonDatablock() {
+    return jsonDatablock;
+  }
 
-    public void setJsonDatablock(boolean jsonDatablock) {
-        this.jsonDatablock = jsonDatablock;
-    }
+  public void setJsonDatablock(boolean jsonDatablock) {
+    this.jsonDatablock = jsonDatablock;
+  }
 
-    public void setWithAlias(boolean b) {
-        withAlias = b;
-    }
+  public void setWithAlias(boolean b) {
+    withAlias = b;
+  }
 }
