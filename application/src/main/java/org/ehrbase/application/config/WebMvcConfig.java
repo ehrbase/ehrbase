@@ -20,17 +20,23 @@ package org.ehrbase.application.config;
 
 import org.ehrbase.application.util.IsoDateTimeConverter;
 import org.ehrbase.application.util.StringToEnumConverter;
+import org.ehrbase.rest.openehr.audit.OpenehrAuditInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
-import java.util.List;
-
 @Configuration
 public class WebMvcConfig extends WebMvcConfigurerAdapter implements WebMvcConfigurer {
+
+    private final OpenehrAuditInterceptor openehrAuditInterceptor;
+
+    public WebMvcConfig(OpenehrAuditInterceptor openehrAuditInterceptor) {
+        this.openehrAuditInterceptor = openehrAuditInterceptor;
+    }
 
     /**
      * This config allows paths parameters to be of form "uuid::domain::version" - more specifically, it allows "." in domains.
@@ -50,5 +56,11 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements WebMvcConfi
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**");
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry
+                .addInterceptor(openehrAuditInterceptor).addPathPatterns("/**/composition/**");
     }
 }

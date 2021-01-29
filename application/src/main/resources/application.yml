@@ -139,3 +139,10 @@ management:
     export:
       prometheus:
         enabled: true
+
+# Audit Properties
+ipf:
+  atna:
+    audit-enabled: true
+    audit-repository-host: localhost
+    audit-repository-port: 3000
