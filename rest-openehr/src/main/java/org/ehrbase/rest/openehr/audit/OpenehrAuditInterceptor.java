@@ -29,7 +29,7 @@ public class OpenehrAuditInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) throws Exception {
         OpenehrAuditDataset auditDataset = new OpenehrAuditDataset();
-        auditDataset.setOperation(RestOpenehrOperation.CREATE_COMPOSITION);
+        auditDataset.setOperation(RestOpenehrOperation.CREATE_COMPOSITION); // TODO: Resolve operation dynamically
         auditDataset.setSourceUserId(request.getRequestURI());
         auditDataset.setDestinationUserId(request.getRequestURL().toString());
         auditDataset.setRemoteAddress(request.getRemoteAddr());
