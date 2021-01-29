@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 
 public class AqlExpressionWithParameters extends AqlExpression {
 
-    public final String PARAMETERS_KEY = "query-parameters";
+    public static final String PARAMETERS_KEY = "query-parameters";
 
     public AqlExpressionWithParameters parse(String query, Map<String, Object> parameterValues){
         String query1 = substitute(query, parameterValues);
@@ -45,11 +45,12 @@ public class AqlExpressionWithParameters extends AqlExpression {
      *     "systolic_bp": 140
      *   }
      *
-     * @param query
+     * @param expression
      * @param jsonParameterMap
      * @return
      */
-    public AqlExpressionWithParameters parse(String query, String jsonParameterMap){
+    @Override
+    public AqlExpressionWithParameters parse(String expression, String jsonParameterMap){
 
         //get the map from the json expression
         Gson gson = new GsonBuilder().create();
@@ -62,7 +63,7 @@ public class AqlExpressionWithParameters extends AqlExpression {
 
         parameterMap = (Map<String, Object>) parameterMap.get(PARAMETERS_KEY);
 
-        return parse(query, parameterMap);
+        return parse(expression, parameterMap);
     }
 
     /**
@@ -86,7 +87,7 @@ public class AqlExpressionWithParameters extends AqlExpression {
                 throw new IllegalArgumentException("Could not substitute parameter in AQL expression: '"+variable+"'");
             Object parameterValue = parameterValues.get(variable.substring(1));
 
-            if (parameterValue instanceof String || parameterValue instanceof UUID)
+            if (isSingleQuotedArgument(parameterValue))
                 parameterValue = "'"+parameterValue+"'";
 
             matcher.appendReplacement(stringBuffer, String.valueOf(parameterValue));
@@ -94,5 +95,9 @@ public class AqlExpressionWithParameters extends AqlExpression {
 
         matcher.appendTail(stringBuffer);
         return stringBuffer.toString();
+    }
+
+    private boolean isSingleQuotedArgument(Object parameterValue){
+       return parameterValue instanceof UUID || parameterValue instanceof String;
     }
 }
