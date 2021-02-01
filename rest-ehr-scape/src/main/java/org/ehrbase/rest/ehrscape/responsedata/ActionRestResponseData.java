@@ -16,23 +16,28 @@
  * limitations under the License.
  */
 
-package org.ehrbase.application;
+package org.ehrbase.rest.ehrscape.responsedata;
 
-import org.ehrbase.ServiceModuleConfiguration;
-import org.ehrbase.rest.ehrscape.RestEHRScapeModuleConfiguration;
-import org.ehrbase.rest.openehr.RestOpenehrModuleConfiguration;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Import;
+import javax.xml.bind.annotation.XmlRootElement;
 
-@SpringBootApplication()
-@Import({ServiceModuleConfiguration.class,
-        RestEHRScapeModuleConfiguration.class,
-        RestOpenehrModuleConfiguration.class,
-})
-public class EhrBase {
+@XmlRootElement
+public class ActionRestResponseData {
+    Meta meta;
+    Action action;
 
-    public static void main(String[] args) {
-        SpringApplication.run(EhrBase.class, args);
+    public Meta getMeta() {
+        return meta;
+    }
+
+    public void setMeta(Meta meta) {
+        this.meta = meta;
+    }
+
+    public Action getAction() {
+        return action;
+    }
+
+    public void setAction(Action action) {
+        this.action = action;
     }
 }

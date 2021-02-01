@@ -16,23 +16,21 @@
  * limitations under the License.
  */
 
-package org.ehrbase.application;
+package org.ehrbase.rest.ehrscape.responsedata;
 
-import org.ehrbase.ServiceModuleConfiguration;
-import org.ehrbase.rest.ehrscape.RestEHRScapeModuleConfiguration;
-import org.ehrbase.rest.openehr.RestOpenehrModuleConfiguration;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Import;
+import javax.xml.bind.annotation.XmlRootElement;
 
-@SpringBootApplication()
-@Import({ServiceModuleConfiguration.class,
-        RestEHRScapeModuleConfiguration.class,
-        RestOpenehrModuleConfiguration.class,
-})
-public class EhrBase {
+@XmlRootElement
+public class CompositionWriteRestResponseData extends ActionRestResponseData {
 
-    public static void main(String[] args) {
-        SpringApplication.run(EhrBase.class, args);
+    private String compositionUid;
+
+
+    public String getCompositionUid() {
+        return compositionUid;
+    }
+
+    public void setCompositionUid(String compositionUid) {
+        this.compositionUid = compositionUid;
     }
 }

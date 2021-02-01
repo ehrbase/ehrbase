@@ -16,23 +16,21 @@
  * limitations under the License.
  */
 
-package org.ehrbase.application;
+package org.ehrbase.rest.ehrscape.responsedata;
 
-import org.ehrbase.ServiceModuleConfiguration;
-import org.ehrbase.rest.ehrscape.RestEHRScapeModuleConfiguration;
-import org.ehrbase.rest.openehr.RestOpenehrModuleConfiguration;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Import;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import org.ehrbase.response.ehrscape.StructuredString;
 
-@SpringBootApplication()
-@Import({ServiceModuleConfiguration.class,
-        RestEHRScapeModuleConfiguration.class,
-        RestOpenehrModuleConfiguration.class,
-})
-public class EhrBase {
+@JacksonXmlRootElement
+public class TemplateExampleResponseData extends ActionRestResponseData {
 
-    public static void main(String[] args) {
-        SpringApplication.run(EhrBase.class, args);
+    private StructuredString composition;
+
+    public StructuredString getComposition() {
+        return composition;
+    }
+
+    public void setComposition(StructuredString composition) {
+        this.composition = composition;
     }
 }

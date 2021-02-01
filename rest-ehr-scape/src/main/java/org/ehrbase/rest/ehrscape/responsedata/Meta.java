@@ -16,23 +16,35 @@
  * limitations under the License.
  */
 
-package org.ehrbase.application;
+package org.ehrbase.rest.ehrscape.responsedata;
 
-import org.ehrbase.ServiceModuleConfiguration;
-import org.ehrbase.rest.ehrscape.RestEHRScapeModuleConfiguration;
-import org.ehrbase.rest.openehr.RestOpenehrModuleConfiguration;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Import;
+public class Meta {
+    RestHref href;
 
-@SpringBootApplication()
-@Import({ServiceModuleConfiguration.class,
-        RestEHRScapeModuleConfiguration.class,
-        RestOpenehrModuleConfiguration.class,
-})
-public class EhrBase {
-
-    public static void main(String[] args) {
-        SpringApplication.run(EhrBase.class, args);
+    public RestHref getHref() {
+        return href;
     }
+
+    public void setHref(RestHref href) {
+        this.href = href;
+    }
+
+    public RestHref getPrecedingHref() {
+        return precedingHref;
+    }
+
+    public void setPrecedingHref(RestHref precedingHref) {
+        this.precedingHref = precedingHref;
+    }
+
+    public RestHref getNextHref() {
+        return nextHref;
+    }
+
+    public void setNextHref(RestHref nextHref) {
+        this.nextHref = nextHref;
+    }
+
+    RestHref precedingHref;
+    RestHref nextHref;
 }

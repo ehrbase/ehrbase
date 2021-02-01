@@ -16,23 +16,12 @@
  * limitations under the License.
  */
 
-package org.ehrbase.application;
+package org.ehrbase.rest.ehrscape;
 
-import org.ehrbase.ServiceModuleConfiguration;
-import org.ehrbase.rest.ehrscape.RestEHRScapeModuleConfiguration;
-import org.ehrbase.rest.openehr.RestOpenehrModuleConfiguration;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 
-@SpringBootApplication()
-@Import({ServiceModuleConfiguration.class,
-        RestEHRScapeModuleConfiguration.class,
-        RestOpenehrModuleConfiguration.class,
-})
-public class EhrBase {
-
-    public static void main(String[] args) {
-        SpringApplication.run(EhrBase.class, args);
-    }
+@Configuration
+@ComponentScan(basePackages = "org.ehrbase.rest.ehrscape")
+public class RestEHRScapeModuleConfiguration {
 }

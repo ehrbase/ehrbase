@@ -16,23 +16,31 @@
  * limitations under the License.
  */
 
-package org.ehrbase.application;
+package org.ehrbase.rest.ehrscape.responsedata;
 
-import org.ehrbase.ServiceModuleConfiguration;
-import org.ehrbase.rest.ehrscape.RestEHRScapeModuleConfiguration;
-import org.ehrbase.rest.openehr.RestOpenehrModuleConfiguration;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Import;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import org.ehrbase.response.ehrscape.EhrStatusDto;
 
-@SpringBootApplication()
-@Import({ServiceModuleConfiguration.class,
-        RestEHRScapeModuleConfiguration.class,
-        RestOpenehrModuleConfiguration.class,
-})
-public class EhrBase {
+import java.util.UUID;
 
-    public static void main(String[] args) {
-        SpringApplication.run(EhrBase.class, args);
+@JacksonXmlRootElement
+public class EhrResponseData extends ActionRestResponseData {
+    UUID ehrId;
+    EhrStatusDto ehrStatus;
+
+    public UUID getEhrId() {
+        return ehrId;
+    }
+
+    public void setEhrId(UUID ehrId) {
+        this.ehrId = ehrId;
+    }
+
+    public EhrStatusDto getEhrStatus() {
+        return ehrStatus;
+    }
+
+    public void setEhrStatus(EhrStatusDto ehrStatus) {
+        this.ehrStatus = ehrStatus;
     }
 }

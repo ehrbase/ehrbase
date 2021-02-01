@@ -28,6 +28,7 @@
 
     <modules>
         <module>service</module>
+        <module>rest-ehr-scape</module>
         <module>rest-openehr</module>
         <module>application</module>
         <module>base</module>
@@ -167,6 +168,11 @@
             <dependency>
                 <groupId>org.ehrbase.openehr</groupId>
                 <artifactId>service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ehrbase.openehr</groupId>
+                <artifactId>rest-ehr-scape</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

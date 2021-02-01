@@ -16,23 +16,23 @@
  * limitations under the License.
  */
 
-package org.ehrbase.application;
+package org.ehrbase.rest.ehrscape.responsedata;
 
-import org.ehrbase.ServiceModuleConfiguration;
-import org.ehrbase.rest.ehrscape.RestEHRScapeModuleConfiguration;
-import org.ehrbase.rest.openehr.RestOpenehrModuleConfiguration;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Import;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import org.ehrbase.response.ehrscape.TemplateMetaDataDto;
 
-@SpringBootApplication()
-@Import({ServiceModuleConfiguration.class,
-        RestEHRScapeModuleConfiguration.class,
-        RestOpenehrModuleConfiguration.class,
-})
-public class EhrBase {
+import java.util.List;
 
-    public static void main(String[] args) {
-        SpringApplication.run(EhrBase.class, args);
+@JacksonXmlRootElement
+public class TemplatesResponseData extends ActionRestResponseData {
+
+    List<TemplateMetaDataDto> templates;
+
+    public List<TemplateMetaDataDto> getTemplates() {
+        return templates;
+    }
+
+    public void setTemplates(List<TemplateMetaDataDto> templates) {
+        this.templates = templates;
     }
 }
