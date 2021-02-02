@@ -18,6 +18,7 @@
 
 package org.ehrbase.rest.ehrscape.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.rest.ehrscape.responsedata.Action;
@@ -40,6 +41,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Objects;
 
+@Tag(name = "EhrScape API - Template")
 @RestController
 @RequestMapping(path = "/rest/ecis/v1/template", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class TemplateController extends BaseController {

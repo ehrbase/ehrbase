@@ -24,6 +24,7 @@ import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.PartyRef;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.DuplicateObjectException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -50,6 +51,7 @@ import java.util.UUID;
 /**
  * Controller for /ehr resource of EhrScape REST API
  */
+@Tag(name = "EhrScape API - EHR")
 @RestController
 @RequestMapping(path = "/rest/ecis/v1/ehr", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class EhrController extends BaseController {

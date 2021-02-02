@@ -18,6 +18,7 @@
 
 package org.ehrbase.rest.ehrscape.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.ehrbase.api.definitions.QueryMode;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.service.QueryService;
@@ -34,6 +35,7 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Tag(name = "EhrScape API - Query")
 @RestController
 @RequestMapping(path = "/rest/ecis/v1/query", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class QueryController extends BaseController {
