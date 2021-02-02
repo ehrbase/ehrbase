@@ -126,24 +126,6 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
 
     }
 
-    // FIXME: should this really only look into *_history table? semantically this only accesses "versions" other than latest (not actual openEHR versions, since contribution has none) - also naming suggestively wrong?
-    public static I_ContributionAccess retrieveVersionedInstance(I_DomainAccess domainAccess, UUID contributionVersionedObjId, Timestamp transactionTime) {
-
-        ContributionAccess contributionAccess = new ContributionAccess(domainAccess);
-
-        ContributionHistoryRecord contributionHistoryRecord = domainAccess.getContext()
-                .fetchOne(CONTRIBUTION_HISTORY,
-                        CONTRIBUTION_HISTORY.ID.eq(contributionVersionedObjId)
-                                .and(CONTRIBUTION_HISTORY.SYS_TRANSACTION.eq(transactionTime)));
-
-        if (contributionHistoryRecord != null) {
-            contributionAccess.contributionRecord = domainAccess.getContext().newRecord(CONTRIBUTION);
-            contributionAccess.contributionRecord.from(contributionHistoryRecord);
-            return contributionAccess;
-        } else
-            return null;
-    }
-
     @Override
     public void addComposition(I_CompositionAccess compositionAccess) {
         //set local composition field from this contribution
@@ -174,7 +156,6 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
             log.warn("Contribution state has not been set");
         }
 
-        contributionRecord.setSysTransaction(transactionTime);
         contributionRecord.setEhrId(this.getEhrId());
         if (contributionRecord.insert() == 0)
             throw new InternalServerException("Couldn't store contribution");
@@ -343,10 +324,7 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
             if (!contributionRecord.changed()) {
                 //hack: force tell jOOQ to perform updateComposition whatever...
                 contributionRecord.changed(true);
-                //jOOQ limited support of TSTZRANGE, exclude sys_period from updateComposition!
-                contributionRecord.changed(CONTRIBUTION.SYS_PERIOD, false); //managed by an external trigger anyway...
             }
-            contributionRecord.setSysTransaction(transactionTime);
 
             // update contribution's audit with modification change type and execute update of it, too
             this.auditDetails.setChangeType(I_ConceptAccess.fetchContributionChangeType(this, I_ConceptAccess.ContributionChangeType.MODIFICATION));

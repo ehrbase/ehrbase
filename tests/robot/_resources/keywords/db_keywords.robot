@@ -62,7 +62,6 @@ Clean DB
     # Delete All Rows From Table    ehr.object_ref
     # Delete All Rows From Table    ehr.folder_items
     # Delete All Rows From Table    ehr.composition_history
-    # Delete All Rows From Table    ehr.contribution_history
     # Delete All Rows From Table    ehr.event_context
     # Delete All Rows From Table    ehr.entry
     # Delete All Rows From Table    ehr.compo_xref

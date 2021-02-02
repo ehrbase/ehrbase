@@ -36,12 +36,6 @@ EXECUTE PROCEDURE ext.versioning('sys_period', 'ehr.status_history', true);
 
 CREATE TRIGGER versioning_trigger
   BEFORE INSERT OR UPDATE OR DELETE
-  ON ehr.contribution
-  FOR EACH ROW
-EXECUTE PROCEDURE ext.versioning('sys_period', 'ehr.contribution_history', true);
-
-CREATE TRIGGER versioning_trigger
-  BEFORE INSERT OR UPDATE OR DELETE
   ON ehr.composition
   FOR EACH ROW
 EXECUTE PROCEDURE ext.versioning('sys_period', 'ehr.composition_history', true);
