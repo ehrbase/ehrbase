@@ -21,6 +21,7 @@ package org.ehrbase.rest.openehr.controller;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.*;
 import org.ehrbase.response.ehrscape.CompositionFormat;
+import org.ehrbase.rest.openehr.RestOpenehrOperation;
 import org.ehrbase.serialisation.exception.UnmarshalException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -75,6 +76,9 @@ public abstract class BaseController {
     // common response description fields
     static final String RESP_NOT_ACCEPTABLE_DESC = "Not Acceptable - Service can not fulfill requested format via accept header.";
     static final String RESP_UNSUPPORTED_MEDIA_DESC = "Unsupported Media Type - request's content-type not supported.";
+
+    // Audit
+    public static final String REST_OPERATION = "RestOperation";
 
     public Map<String, Map<String, String>> add2MetaMap(Map<String, Map<String, String>> metaMap, String key, String value) {
         Map<String, String> contentMap;
@@ -236,6 +240,10 @@ public abstract class BaseController {
         return Integer.valueOf(versionUid.substring(versionUid.lastIndexOf("::") + 2));
     }
 
+    protected void registerOperation(HttpServletRequest request, RestOpenehrOperation operation) {
+        request.setAttribute(REST_OPERATION, operation);
+    }
+
     /*
     EXCEPTION HANDLING GENERAL BEHAVIOR DEFINITION
      */
@@ -331,7 +339,7 @@ public abstract class BaseController {
      * Handler for parsing input string parameters to specific type (e.g. time string that cannot be parsed into
      * Instant since it is not a valid ISO 6801 date time string
      *
-     * @param req - Request 
+     * @param req - Request
      * @param e - Exception thrown from converter
      * @return ResponseEntity<Map<String, String>> as BAD_REQUEST - 400
      */

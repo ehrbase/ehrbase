@@ -21,8 +21,10 @@ package org.ehrbase.application.config;
 import org.ehrbase.application.util.IsoDateTimeConverter;
 import org.ehrbase.application.util.StringToEnumConverter;
 import org.ehrbase.rest.openehr.audit.OpenehrAuditInterceptor;
+import org.openehealth.ipf.commons.audit.AuditContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
+import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
@@ -32,10 +34,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 @Configuration
 public class WebMvcConfig extends WebMvcConfigurerAdapter implements WebMvcConfigurer {
 
-    private final OpenehrAuditInterceptor openehrAuditInterceptor;
+    private final AuditContext auditContext;
 
-    public WebMvcConfig(OpenehrAuditInterceptor openehrAuditInterceptor) {
-        this.openehrAuditInterceptor = openehrAuditInterceptor;
+    public WebMvcConfig(AuditContext auditContext) {
+        this.auditContext = auditContext;
     }
 
     /**
@@ -59,8 +61,11 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements WebMvcConfi
     }
 
     @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry
-                .addInterceptor(openehrAuditInterceptor).addPathPatterns("/**/composition/**");
+    public void addInterceptors(@NonNull InterceptorRegistry registry) {
+        if (auditContext.isAuditEnabled()) {
+            registry
+                    .addInterceptor(new OpenehrAuditInterceptor(auditContext))
+                    .addPathPatterns("/**/composition/**", "/**/versioned_composition/**");
+        }
     }
 }

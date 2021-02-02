@@ -5,7 +5,6 @@ import org.openehealth.ipf.commons.audit.AuditContext;
 import org.openehealth.ipf.commons.audit.codes.EventActionCode;
 import org.openehealth.ipf.commons.audit.event.CustomAuditMessageBuilder;
 import org.openehealth.ipf.commons.audit.event.DelegatingAuditMessageBuilder;
-import org.openehealth.ipf.commons.audit.types.EventType;
 import org.openehealth.ipf.commons.audit.utils.AuditUtils;
 
 /**
@@ -21,7 +20,7 @@ public class OpenehrAuditMessageBuilder extends DelegatingAuditMessageBuilder<Op
                 auditDataset.getEventOutcomeDescription(),
                 eventActionCode(auditDataset.getOperation()),
                 OpenehrEventIdCode.REST_OPERATION,
-                EventType.of(auditDataset.getOperation().getCode(), "OpenEHR Event Type", auditDataset.getOperation().getCode()))); // TODO: Review
+                OpenehrEventTypeCode.resolve(auditDataset.getOperation())));
         this.auditContext = auditContext;
         delegate.setAuditSource(auditContext);
         setSourceParticipant(auditDataset);
