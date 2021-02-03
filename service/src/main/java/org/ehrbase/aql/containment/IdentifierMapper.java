@@ -203,19 +203,21 @@ public class IdentifierMapper {
         return sb.toString();
     }
 
-    public boolean isUseSimpleCompositionContainment() {
-        boolean useSimpleComposition = true;
+    public boolean requiresTemplateWhereClause() {
+        boolean resolveTemplateRequired = false;
         for (Map.Entry map: mapper.entrySet()){
             Mapper mapper1 = (Mapper)map.getValue();
             if (mapper1.getContainer() instanceof Containment){
                 Containment containment = (Containment)mapper1.getContainer();
                 //check if this containment specifies an archetype (triggering a template resolution)
                 //f.e. COMPOSITION a [openEHR-EHR-COMPOSITION.report-result.v1] contains OBSERVATION
-                if (!containment.getClassName().equalsIgnoreCase(COMPOSITION) && containment.getArchetypeId() != null && !containment.getArchetypeId().isBlank()) {
-                        useSimpleComposition = false;
+                if (!containment.getClassName().equalsIgnoreCase(COMPOSITION) //anything else: OBSERVATION, EVALUATION...
+                        && containment.getArchetypeId() != null && !containment.getArchetypeId().isBlank()) //archetype is defined
+                {
+                        resolveTemplateRequired = true;
                 }
             }
         }
-        return useSimpleComposition;
+        return resolveTemplateRequired;
     }
 }
