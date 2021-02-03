@@ -394,13 +394,13 @@ public class ContributionServiceImp extends BaseService implements ContributionS
         Map<String, String> objRefs = new HashMap<>();
 
         // query for compositions   // TODO-396: refactor to use service layer only!?
-        Map<I_CompositionAccess, Integer> compositions = I_CompositionAccess.retrieveInstancesInContribution(this.getDataAccess(), contribution);
+        Map<Integer, I_CompositionAccess> compositions = I_CompositionAccess.retrieveInstancesInContribution(this.getDataAccess(), contribution);
         // for each fetched composition: add it to the return map and add the composition type tag - ignoring the access obj
-        compositions.forEach((k, v) -> objRefs.put(k.getId() + "::" + getServerConfig().getNodename() + "::" + v, TYPE_COMPOSITION));
+        compositions.forEach((k, v) -> objRefs.put(v.getId() + "::" + getServerConfig().getNodename() + "::" + k, TYPE_COMPOSITION));
 
         // query for statuses       // TODO-396: refactor to use service layer only!?
-        Map<I_StatusAccess, Integer> statuses = I_StatusAccess.retrieveInstanceByContribution(this.getDataAccess(), contribution);
-        statuses.forEach((k, v) -> objRefs.put(k.getId() + "::" + getServerConfig().getNodename() + "::" + v, TYPE_EHRSTATUS));
+        Map<Integer, I_StatusAccess> statuses = I_StatusAccess.retrieveInstanceByContribution(this.getDataAccess(), contribution);
+        statuses.forEach((k, v) -> objRefs.put(v.getId() + "::" + getServerConfig().getNodename() + "::" + k, TYPE_EHRSTATUS));
 
         // query for folders        // TODO-396: refactor to use service layer only!?
         Set<ObjectVersionId> folders = I_FolderAccess.retrieveFolderVersionIdsInContribution(getDataAccess(), contribution, getServerConfig().getNodename());

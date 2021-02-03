@@ -116,7 +116,7 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
 
         Map<UUID, I_CompositionAccess> compos = new HashMap<>();
         CompositionAccess.retrieveCompositionsInContribution(domainAccess, contributionAccess.contributionRecord.getId())
-            .forEach((access, version) -> compos.put(access.getId(), access));
+            .forEach((version, access) -> compos.put(access.getId(), access));
         contributionAccess.compositions = compos;
 
         // also retrieve attached audit

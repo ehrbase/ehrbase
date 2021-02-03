@@ -192,7 +192,7 @@ public interface I_CompositionAccess extends I_SimpleCRUD {
      * @return a map of {@link I_CompositionAccess} and their version number, that match the condition
      * @throws IllegalArgumentException on DB inconsistency
      */
-    static Map<I_CompositionAccess, Integer> retrieveInstancesInContribution(I_DomainAccess domainAccess, UUID contributionId) {
+    static Map<Integer, I_CompositionAccess> retrieveInstancesInContribution(I_DomainAccess domainAccess, UUID contributionId) {
         return CompositionAccess.retrieveCompositionsInContribution(domainAccess, contributionId);
     }
 
@@ -212,10 +212,10 @@ public interface I_CompositionAccess extends I_SimpleCRUD {
      *
      * @param domainAccess  Data Access
      * @param compositionId Given composition ID
-     * @return Map referencing all versions and their version number
+     * @return Map referencing all versions by their version number
      */
-    static Map<I_CompositionAccess, Integer> getVersionMapOfComposition(I_DomainAccess domainAccess, UUID compositionId) {
-        return I_CompositionAccess.getVersionMapOfComposition(domainAccess, compositionId);
+    static Map<Integer, I_CompositionAccess> getVersionMapOfComposition(I_DomainAccess domainAccess, UUID compositionId) {
+        return CompositionAccess.getVersionMapOfComposition(domainAccess, compositionId);
     }
 
     /**

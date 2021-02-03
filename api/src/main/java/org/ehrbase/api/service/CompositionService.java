@@ -19,6 +19,7 @@
 package org.ehrbase.api.service;
 
 import com.nedap.archie.rm.composition.Composition;
+import com.nedap.archie.rm.ehr.VersionedComposition;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.response.ehrscape.CompositionDto;
@@ -191,4 +192,12 @@ public interface CompositionService extends BaseService {
      * @param compositionId Composition to delete
      */
     void adminDelete(UUID compositionId);
+
+    /**
+     * Gets version container Composition associated with given EHR and Composition ID.
+     * @param ehrUid Given EHR ID
+     * @param composition Given Composition ID
+     * @return Version container object
+     */
+    VersionedComposition getVersionedComposition(UUID ehrUid, UUID composition);
 }

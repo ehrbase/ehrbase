@@ -91,7 +91,7 @@ public interface I_StatusAccess extends I_SimpleCRUD {
      * @return a map of {@link I_StatusAccess} and their version number, that match the condition
      * @throws IllegalArgumentException on DB inconsistency
      */
-    static Map<I_StatusAccess, Integer> retrieveInstanceByContribution(I_DomainAccess domainAccess, UUID contributionId) {
+    static Map<Integer, I_StatusAccess> retrieveInstanceByContribution(I_DomainAccess domainAccess, UUID contributionId) {
         return StatusAccess.retrieveInstanceByContribution(domainAccess, contributionId);
     }
 

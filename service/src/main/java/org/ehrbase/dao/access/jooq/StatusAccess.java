@@ -142,7 +142,7 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
         return createStatusAccessForRetrieval(domainAccess, record, null);
     }
 
-    public static Map<I_StatusAccess, Integer> retrieveInstanceByContribution(I_DomainAccess domainAccess, UUID contributionId) {
+    public static Map<Integer, I_StatusAccess> retrieveInstanceByContribution(I_DomainAccess domainAccess, UUID contributionId) {
         Set<UUID> statuses = new HashSet<>();   // Set, because of unique values
         // add all compositions having a link to given contribution
         domainAccess.getContext().select(STATUS.ID).from(STATUS).where(STATUS.IN_CONTRIBUTION.eq(contributionId)).fetch()
@@ -154,21 +154,21 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
         // get whole "version map" of each matching status and do fine-grain check for matching contribution
         // precondition: each UUID in `statuses` set is unique, so for each the "version map" is only created once below
         // (meta: can't do that as jooq query, because the specific version number isn't stored in DB)
-        Map<I_StatusAccess, Integer> resultMap = new HashMap<>();
+        Map<Integer, I_StatusAccess> resultMap = new HashMap<>();
         for (UUID statusId : statuses) {
-            Map<I_StatusAccess, Integer> map = getVersionMapOfStatus(domainAccess, statusId);
+            Map<Integer, I_StatusAccess> map = getVersionMapOfStatus(domainAccess, statusId);
             // fine-grained contribution ID check
-            for (Map.Entry<I_StatusAccess, Integer> entry : map.entrySet()) {
-                if (entry.getKey().getContributionId().equals(contributionId))
-                    resultMap.put(entry.getKey(), entry.getValue());
-            }
+            map.forEach((k, v) -> {
+                if (v.getContributionId().equals(contributionId))
+                    resultMap.put(k, v);
+            });
         }
 
         return resultMap;
     }
 
-    public static Map<I_StatusAccess, Integer> getVersionMapOfStatus(I_DomainAccess domainAccess, UUID statusId) {
-        Map<I_StatusAccess, Integer> versionMap = new HashMap<>();
+    public static Map<Integer, I_StatusAccess> getVersionMapOfStatus(I_DomainAccess domainAccess, UUID statusId) {
+        Map<Integer, I_StatusAccess> versionMap = new HashMap<>();
 
         // create counter with highest version, to keep track of version number and allow check in the end
         Integer versionCounter = getLatestVersionNumber(domainAccess, statusId);
@@ -177,7 +177,7 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
         StatusRecord record = domainAccess.getContext().fetchOne(STATUS, STATUS.ID.eq(statusId));
         if (record != null) {
             I_StatusAccess statusAccess = createStatusAccessForRetrieval(domainAccess, record, null);
-            versionMap.put(statusAccess, versionCounter);
+            versionMap.put(versionCounter, statusAccess);
 
             versionCounter--;
         }
@@ -191,7 +191,7 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
 
         for (StatusHistoryRecord historyRecord : historyRecords) {
             I_StatusAccess historyAccess = createStatusAccessForRetrieval(domainAccess, null, historyRecord);
-            versionMap.put(historyAccess, versionCounter);
+            versionMap.put(versionCounter, historyAccess);
             versionCounter--;
         }
 

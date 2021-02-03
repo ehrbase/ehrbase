@@ -353,7 +353,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         return retrieveCompositionVersion(domainAccess, compositionUid, version);
     }
 
-    public static Map<I_CompositionAccess, Integer> retrieveCompositionsInContribution(I_DomainAccess domainAccess, UUID contribution) {
+    public static Map<Integer, I_CompositionAccess> retrieveCompositionsInContribution(I_DomainAccess domainAccess, UUID contribution) {
         Set<UUID> compositions = new HashSet<>();   // Set, because of unique values
         // add all compositions having a link to given contribution
         domainAccess.getContext().select(COMPOSITION.ID).from(COMPOSITION).where(COMPOSITION.IN_CONTRIBUTION.eq(contribution)).fetch()
@@ -365,21 +365,21 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         // get whole "version map" of each matching composition and do fine-grain check for matching contribution
         // precondition: each UUID in `compositions` set is unique, so for each the "version map" is only created once below
         // (meta: can't do that as jooq query, because the specific version number isn't stored in DB)
-        Map<I_CompositionAccess, Integer> resultMap = new HashMap<>();
+        Map<Integer, I_CompositionAccess> resultMap = new HashMap<>();
         for (UUID compositionId : compositions) {
-            Map<I_CompositionAccess, Integer> map = getVersionMapOfComposition(domainAccess, compositionId);
+            Map<Integer, I_CompositionAccess> map = getVersionMapOfComposition(domainAccess, compositionId);
             // fine-grained contribution ID check
-            for (Map.Entry<I_CompositionAccess, Integer> entry : map.entrySet()) {
-                if (entry.getKey().getContributionId().equals(contribution))
-                    resultMap.put(entry.getKey(), entry.getValue());
-            }
+            map.forEach((k, v) -> {
+                if (v.getContributionId().equals(contribution))
+                    resultMap.put(k, v);
+            });
         }
 
         return resultMap;
     }
 
-    private static Map<I_CompositionAccess, Integer> getVersionMapOfComposition(I_DomainAccess domainAccess, UUID compositionId) {
-        Map<I_CompositionAccess, Integer> versionMap = new HashMap<>();
+    public static Map<Integer, I_CompositionAccess> getVersionMapOfComposition(I_DomainAccess domainAccess, UUID compositionId) {
+        Map<Integer, I_CompositionAccess> versionMap = new HashMap<>();
 
         // create counter with highest version, to keep track of version number and allow check in the end
         Integer versionCounter = getLastVersionNumber(domainAccess, compositionId);
@@ -390,7 +390,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
             I_CompositionAccess compositionAccess = new CompositionAccess(domainAccess);
             compositionAccess.setCompositionRecord(record);
             compositionAccess.setContent(I_EntryAccess.retrieveInstanceInComposition(domainAccess, compositionAccess));
-            versionMap.put(compositionAccess, versionCounter);
+            versionMap.put(versionCounter, compositionAccess);
 
             versionCounter--;
         }
@@ -406,7 +406,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
             I_CompositionAccess historyAccess = new CompositionAccess(domainAccess);
             historyAccess.setCompositionRecord(historyRecord);
             historyAccess.setContent(I_EntryAccess.retrieveInstanceInComposition(domainAccess, historyAccess));
-            versionMap.put(historyAccess, versionCounter);
+            versionMap.put(versionCounter, historyAccess);
             versionCounter--;
         }
 

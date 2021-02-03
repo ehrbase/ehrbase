@@ -22,6 +22,12 @@
 package org.ehrbase.service;
 
 import com.nedap.archie.rm.composition.Composition;
+import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
+import com.nedap.archie.rm.ehr.VersionedComposition;
+import com.nedap.archie.rm.support.identification.HierObjectId;
+import com.nedap.archie.rm.support.identification.ObjectRef;
+import java.time.OffsetDateTime;
+import java.util.Map;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -35,6 +41,7 @@ import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.dao.access.interfaces.I_CompoXrefAccess;
 import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
+import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
 import org.ehrbase.dao.access.interfaces.I_EntryAccess;
 import org.ehrbase.dao.access.jooq.CompoXRefAccess;
 import org.ehrbase.response.ehrscape.CompositionDto;
@@ -462,6 +469,27 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
     public void adminDelete(UUID compositionId) {
         I_CompositionAccess compositionAccess = I_CompositionAccess.retrieveInstance(getDataAccess(), compositionId);
         compositionAccess.adminDelete();
+    }
+
+    @Override
+    public VersionedComposition getVersionedComposition(UUID ehrId, UUID composition) {
+
+        Optional<CompositionDto> dto = retrieve(composition, 1);
+
+        VersionedComposition compo = new VersionedComposition();
+        if (dto.isPresent()) {
+            compo.setUid(new HierObjectId(dto.get().getUuid().toString()));
+            compo.setOwnerId(new ObjectRef<>(new HierObjectId(dto.get().getEhrId().toString()), "local", "ehr"));
+
+            Map<Integer, I_CompositionAccess> compos = I_CompositionAccess.getVersionMapOfComposition(getDataAccess(), composition);
+            if (compos.containsKey(1)) {
+                compo.setTimeCreated(new DvDateTime(OffsetDateTime.of(compos.get(1).getSysTransaction().toLocalDateTime(), OffsetDateTime.now().getOffset())));
+            } else {
+                throw new InternalServerException("Inconsistent composition data, no version 1 available");
+            }
+        }
+
+        return compo;
     }
 }
 
