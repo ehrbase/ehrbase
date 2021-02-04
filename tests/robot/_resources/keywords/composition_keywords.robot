@@ -715,7 +715,7 @@ capture point in time
     ...                 which's value is a given time in the extended ISO8601 format
     ...                 e.g. 2015-01-20T19:30:22.765+01:00
 
-    ${time}=            Get Current Date    UTC    result_format=%Y-%m-%dT%H:%M:%S
+    ${time}=            Get Current Date    result_format=%Y-%m-%dT%H:%M:%S
     # ${time_tz}=         Catenate            SEPARATOR=${EMPTY}    ${time}   +00:00
                         Set Suite Variable   ${time_${point_in_time}}   ${time}+00:00
                         Sleep               1
