@@ -61,3 +61,23 @@ Force Tags
     Should Be Equal As Strings    ${response.status}    200
     Should Be Equal As Strings    ${ehrstatus_uid[0:-1]}2    ${response.body.uid.value}
     Should Be Equal As Strings    ${ehr_id}    ${response.body.owner_id.id.value}
+
+
+3. Get Versioned Status Of Non-Existing EHR (JSON)
+
+    prepare new request session    JSON    Prefer=return=representation
+
+    create fake EHR
+
+    get versioned ehr_status of EHR
+    Should Be Equal As Strings    ${response.status}    404
+
+
+4. Get Versioned Status Of Invalid EHR_ID (JSON)
+
+    prepare new request session    JSON    Prefer=return=representation
+
+    Set Test Variable    ${ehr_id}    foobar
+
+    get versioned ehr_status of EHR
+    Should Be Equal As Strings    ${response.status}    404
