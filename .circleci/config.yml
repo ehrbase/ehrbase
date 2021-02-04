@@ -746,6 +746,7 @@ jobs:
     # executor: docker-py3-java11-postgres
     executor: machine-ubuntu-2004
     environment:
+      SUT: TEST
       ADMINAPI_ACTIVE: "TRUE"
       SYSTEM_ALLOWTEMPLATEOVERWRITE: "TRUE"
     steps:
@@ -859,7 +860,7 @@ commands:
         type: boolean
 
       include-tags:
-        description: Which tests to inclue by TAGs (Robot syntax applies!)
+        description: Which tests to include by TAGs (Robot syntax applies!)
         type: string
 
       test-suite-path:
@@ -911,7 +912,7 @@ commands:
                     do
                         echo "waiting for EHRbase to be ready ...";
                         if [ "$timeout" == 0 ]; then
-                            echo "WARNING: Did not see a startup message even after waiting 30s"
+                            echo "WARNING: Did not see a startup message even after waiting 60s"
                             exit 1
                         fi
                         sleep 1;
