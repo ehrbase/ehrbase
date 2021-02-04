@@ -1,4 +1,6 @@
-# Copyright (c) 2019 Wladislaw Wagner (Vitasystems GmbH), Pablo Pazos (Hannover Medical School).
+# Copyright (c) 2021 Jake Smolka (Hannover Medical School),
+#                    Wladislaw Wagner (Vitasystems GmbH),
+#                    Pablo Pazos (Hannover Medical School).
 #
 # This file is part of Project EHRbase
 #
@@ -21,21 +23,6 @@ Metadata    Version    0.1.0
 Metadata    Authors    *Jake Smolka*, *Wladislaw Wagner*
 Metadata    Created    2021.01.26
 
-Documentation   Preconditions:
-...                 An EHR with known ehr_id should exist.
-...
-...             Postconditions:
-...                 None
-...
-...             Flow:
-...                 1. Invoke the get EHR_STATUS service by the existing ehr_id
-...                 2. The result should be positive and retrieve a correspondent EHR_STATUS.
-...                    The EHR_STATUS internal information should match the rules in which
-...                    the EHR was created (see test flow Create EHR) and those should be verified:
-...
-...                    a) has or not a subject_id
-...                    b) has correct value for is_modifiable
-...                    c) has correct value for is_queryable
 Metadata        TOP_TEST_SUITE    EHR_STATUS
 Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 

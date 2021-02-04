@@ -1,4 +1,6 @@
-# Copyright (c) 2019 Wladislaw Wagner (Vitasystems GmbH), Pablo Pazos (Hannover Medical School).
+# Copyright (c) 2021 Jake Smolka (Hannover Medical School),
+#                    Wladislaw Wagner (Vitasystems GmbH),
+#                    Pablo Pazos (Hannover Medical School).
 #
 # This file is part of Project EHRbase
 #
@@ -18,11 +20,11 @@
 
 *** Settings ***
 Metadata    Version    0.1.0
-Metadata    Author    *Wladislaw Wagner*
+Metadata    Authors    *Jake Smolka*, *Wladislaw Wagner*
 Metadata    Created    2019.02.26
 Metadata    Updated    2020.01.30
 
-Documentation    https://docs.google.com/document/d/1r_z_E8MhlNdeVZS4xecl-8KbG0JPqCzKtKMfhuL81jY/edit#heading=h.fkdj6wod6hv2
+Documentation    https://wiki.vitagroup.ag/pages/viewpage.action?spaceKey=ETHERCIS&title=Versioned+EHR_STATUS
 
 Resource   ${EXECDIR}/robot/_resources/suite_settings.robot
 
