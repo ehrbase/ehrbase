@@ -896,7 +896,7 @@ commands:
                    --system.allow-template-overwrite=<< parameters.allow-template-overwrite >> \
                    --server.nodename=<< parameters.nodename >> \
                    --cache.enabled=<< parameters.cache-enabled >> > log & app_pid=$!
-                timeout=30
+                timeout=60
                 while [ ! -f ./log ];
                     do
                         echo "Waiting for file ./log ..."
@@ -917,17 +917,7 @@ commands:
                         sleep 1;
                     ((timeout--))
                 done
-                echo "REMAINING TIMEOUT: $timeout"
-
-              # if ! tail -f log | timeout 30s grep -m 1 "Started EhrBase in"; then
-              #   echo "WARNING: Did not see a startup message even after waiting 30s" >&2
-              #   if kill -0 "$app_pid"; then
-              #     echo "...although EHRbase is still running" >&2
-              #   else
-              #     echo "...and EHRbase did not successfully start" >&2
-              #   fi
-              # fi
-              
+                echo "REMAINING TIMEOUT: $timeout"              
             fi
             jps
             cd ~/projects/tests
