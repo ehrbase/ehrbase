@@ -897,17 +897,17 @@ commands:
                    --server.nodename=<< parameters.nodename >> \
                    --cache.enabled=<< parameters.cache-enabled >> > log & app_pid=$!
                 timeout=30
-                while [ ! -f ehrbase/log ];
+                while [ ! -f ./log ];
                     do
-                        echo "Waiting for file ehrbase/log ..."
+                        echo "Waiting for file ./log ..."
                         if [ "$timeout" == 0 ]; then
-                            echo "ERROR: timed out while waiting for file ehrbase/log"
+                            echo "ERROR: timed out while waiting for file ./log"
                             exit 1
                         fi
                         sleep 1
                     ((timeout--))
                 done
-                while ! (cat ehrbase/log | grep -m 1 "Started EhrBase in");
+                while ! (cat ./log | grep -m 1 "Started EhrBase in");
                     do
                         echo "waiting for EHRbase to be ready ...";
                         if [ "$timeout" == 0 ]; then
