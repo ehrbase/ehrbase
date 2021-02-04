@@ -88,7 +88,7 @@ Force Tags
     Should Be Equal As Strings    ${ehrstatus_uid[0:-1]}2    ${item2.version_id.value}
 
 
-# !!! Blocked by https://github.com/ehrbase/project_management/issues/458 - uncomment if resolved!
+# !!! Blocked by https://github.com/ehrbase/project_management/issues/458 - uncomment if resolved
 # 3. Get Correct Ordered Revision History of Versioned Status Of Existing EHR With Two Status Versions (JSON)
 #     # Testing with two versions like above, but checking the response more thoroughly.
 
