@@ -517,14 +517,14 @@ Preconditions (PART 2) - Generate Test-Data and Expected-Results
 
     Populate SUT with Test-Data and Prepare Expected Results    1    ${ehr data sets}/ehr_status_01.json
     Populate SUT with Test-Data and Prepare Expected Results    2    ${ehr data sets}/ehr_status_02.json
-    Populate SUT with Test-Data and Prepare Expected Results    3    ${ehr data sets}/ehr_status_03.json
-    Populate SUT with Test-Data and Prepare Expected Results    4    ${ehr data sets}/ehr_status_04.json
-    Populate SUT with Test-Data and Prepare Expected Results    5    ${ehr data sets}/ehr_status_05.json
-    Populate SUT with Test-Data and Prepare Expected Results    6    ${ehr data sets}/ehr_status_06.json
-    Populate SUT with Test-Data and Prepare Expected Results    7    ${ehr data sets}/ehr_status_07.json
-    Populate SUT with Test-Data and Prepare Expected Results    8    ${ehr data sets}/ehr_status_08.json
-    Populate SUT with Test-Data and Prepare Expected Results    9    ${ehr data sets}/ehr_status_09.json
-    Populate SUT with Test-Data and Prepare Expected Results   10    ${ehr data sets}/ehr_status_10.json
+    # Populate SUT with Test-Data and Prepare Expected Results    3    ${ehr data sets}/ehr_status_03.json
+    # Populate SUT with Test-Data and Prepare Expected Results    4    ${ehr data sets}/ehr_status_04.json
+    # Populate SUT with Test-Data and Prepare Expected Results    5    ${ehr data sets}/ehr_status_05.json
+    # Populate SUT with Test-Data and Prepare Expected Results    6    ${ehr data sets}/ehr_status_06.json
+    # Populate SUT with Test-Data and Prepare Expected Results    7    ${ehr data sets}/ehr_status_07.json
+    # Populate SUT with Test-Data and Prepare Expected Results    8    ${ehr data sets}/ehr_status_08.json
+    # Populate SUT with Test-Data and Prepare Expected Results    9    ${ehr data sets}/ehr_status_09.json
+    # Populate SUT with Test-Data and Prepare Expected Results   10    ${ehr data sets}/ehr_status_10.json
 
 
 Populate SUT with Test-Data and Prepare Expected Results
@@ -535,27 +535,27 @@ Populate SUT with Test-Data and Prepare Expected Results
 
     Commit Compo     1    ${ehr_index}    ${compo data sets}/minimal_admin_1.composition.json
     Commit Compo     2    ${ehr_index}    ${compo data sets}/minimal_admin_2.composition.json
-    Commit Compo     3    ${ehr_index}    ${compo data sets}/minimal_admin_3.composition.json
+    # Commit Compo     3    ${ehr_index}    ${compo data sets}/minimal_admin_3.composition.json
 
     Commit Compo     4    ${ehr_index}    ${compo data sets}/minimal_evaluation_1.composition.json
     Commit Compo     5    ${ehr_index}    ${compo data sets}/minimal_evaluation_2.composition.json
-    Commit Compo     6    ${ehr_index}    ${compo data sets}/minimal_evaluation_3.composition.json
-    Commit Compo     7    ${ehr_index}    ${compo data sets}/minimal_evaluation_4.composition.json
+    # Commit Compo     6    ${ehr_index}    ${compo data sets}/minimal_evaluation_3.composition.json
+    # Commit Compo     7    ${ehr_index}    ${compo data sets}/minimal_evaluation_4.composition.json
     Commit Compo     8    ${ehr_index}    ${compo data sets}/all_types.composition.json
 
     Commit Compo     9    ${ehr_index}    ${compo data sets}/minimal_instruction_1.composition.json
     Commit Compo    10    ${ehr_index}    ${compo data sets}/minimal_instruction_2.composition.json
-    Commit Compo    11    ${ehr_index}    ${compo data sets}/minimal_instruction_3.composition.json
-    Commit Compo    12    ${ehr_index}    ${compo data sets}/minimal_instruction_4.composition.json
+    # Commit Compo    11    ${ehr_index}    ${compo data sets}/minimal_instruction_3.composition.json
+    # Commit Compo    12    ${ehr_index}    ${compo data sets}/minimal_instruction_4.composition.json
 
     Commit Compo    13    ${ehr_index}    ${compo data sets}/minimal_observation_1.composition.json
     Commit Compo    14    ${ehr_index}    ${compo data sets}/minimal_observation_2.composition.json
-    Commit Compo    15    ${ehr_index}    ${compo data sets}/minimal_observation_3.composition.json
-    Commit Compo    16    ${ehr_index}    ${compo data sets}/minimal_observation_4.composition.json
+    # Commit Compo    15    ${ehr_index}    ${compo data sets}/minimal_observation_3.composition.json
+    # Commit Compo    16    ${ehr_index}    ${compo data sets}/minimal_observation_4.composition.json
 
     Commit Compo    17    ${ehr_index}    ${compo data sets}/minimal_action2_1.composition.json
     Commit Compo    18    ${ehr_index}    ${compo data sets}/minimal_action2_2.composition.json
-    Commit Compo    19    ${ehr_index}    ${compo data sets}/minimal_action2_3.composition.json
+    # Commit Compo    19    ${ehr_index}    ${compo data sets}/minimal_action2_3.composition.json
 
 
 

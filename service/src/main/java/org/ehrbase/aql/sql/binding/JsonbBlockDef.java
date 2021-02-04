@@ -26,6 +26,7 @@ import org.jooq.Field;
 /**
  * Created by christian on 2/17/2017.
  */
+@SuppressWarnings({"java:S3776","java:S3740","java:S1452"})
 public class JsonbBlockDef {
     private String path;
     private Field field;

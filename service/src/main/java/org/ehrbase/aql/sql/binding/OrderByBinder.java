@@ -37,6 +37,7 @@ import java.util.List;
 /**
  * Created by christian on 9/23/2016.
  */
+@SuppressWarnings({"java:S3776","java:S3740","java:S1452"})
 public class OrderByBinder {
 
 

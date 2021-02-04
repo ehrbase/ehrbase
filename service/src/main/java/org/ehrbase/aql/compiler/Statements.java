@@ -25,11 +25,12 @@ import org.ehrbase.aql.definition.FromEhrDefinition;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.sql.binding.VariableDefinitions;
-import org.ehrbase.aql.sql.queryImpl.attribute.ehr.EhrResolver;
+import org.ehrbase.aql.sql.queryimpl.attribute.ehr.EhrResolver;
 import org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer;
 
 import java.util.List;
 
+@SuppressWarnings({"java:S3740"})
 public class Statements {
 
     private ParseTree parseTree;

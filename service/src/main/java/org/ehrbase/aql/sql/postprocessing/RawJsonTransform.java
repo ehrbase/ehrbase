@@ -39,9 +39,14 @@ import java.util.List;
 /**
  * Created by christian on 2/21/2017.
  */
-public class RawJsonTransform implements I_RawJsonTransform {
+@SuppressWarnings({"unchecked","java:S3776"})
+public class RawJsonTransform implements IRawJsonTransform {
 
-    @SuppressWarnings("unchecked")
+    public static final String TEMPLATE_ID = "_TEMPLATE_ID";
+    public static final String ARRAY_MARKER = "$array$";
+
+    private RawJsonTransform(){}
+
     public static void toRawJson(Result<Record> result, Collection<QuerySteps> querySteps) {
 
 
@@ -76,11 +81,11 @@ public class RawJsonTransform implements I_RawJsonTransform {
                                 if (jsonbOrigin.startsWith("[") && jsonbOrigin.endsWith("]"))
                                     jsonbOrigin = "{\"$array$\":"+jsonbOrigin+"}";
                                 jsonElement = new LightRawJsonEncoder(jsonbOrigin).encodeContentAsJson(jsonbBlockDef.getJsonPathRoot());
-                                if (jsonElement.getAsJsonObject().has("$array$")) {
+                                if (jsonElement.getAsJsonObject().has(ARRAY_MARKER)) {
                                     if (hasPredicate(jsonbBlockDef.getPath())) //f.e. events[at0002]
-                                        jsonElement = jsonElement.getAsJsonObject().getAsJsonArray("$array$").get(0);
+                                        jsonElement = jsonElement.getAsJsonObject().getAsJsonArray(ARRAY_MARKER).get(0);
                                     else //f.e. ehr/contributions -> an attribute that is an array
-                                        jsonElement = jsonElement.getAsJsonObject().getAsJsonArray("$array$");
+                                        jsonElement = jsonElement.getAsJsonObject().getAsJsonArray(ARRAY_MARKER);
 
                                 }
                             }
@@ -107,10 +112,6 @@ public class RawJsonTransform implements I_RawJsonTransform {
 
         List<String> segments = LocatableHelper.dividePathIntoSegments(path);
 
-        if (segments.get(segments.size() - 1).contains("["))
-            return true;
-        else
-            return false;
-
+        return (segments.get(segments.size() - 1).contains("["));
     }
 }

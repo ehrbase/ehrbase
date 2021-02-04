@@ -102,6 +102,7 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
     @Override
     public List<Object> visitValueListItems(AqlParser.ValueListItemsContext ctx) {
         List<Object> operand = new ArrayList<>();
+        int counter = 0; //to detect the last occurrence
         for (ParseTree tree : ctx.children) {
             if (tree instanceof AqlParser.OperandContext) {
                 AqlParser.OperandContext operandContext = (AqlParser.OperandContext) tree;
@@ -125,7 +126,8 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
                     operand.add("** unsupported operand: PARAMETER **");
                 else
                     operand.add("** unsupported operand: " + operandContext.getText());
-                operand.add(",");
+                if (++counter < ctx.children.size())
+                    operand.add(",");
             } else if (tree instanceof AqlParser.ValueListItemsContext) {
                 List<Object> token = visitValueListItems((AqlParser.ValueListItemsContext) tree);
                 operand.addAll(token);
@@ -155,9 +157,7 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
             try {
 
                 List<DvCodedText> expansion = tsAdapter.expandWithParameters(parametters, operationId);
-                expansion.forEach((DvCodedText dvCode) -> {
-                    codesList.add("'" + dvCode.getDefiningCode().getCodeString() + "'");
-                });
+                expansion.forEach((DvCodedText dvCode) -> codesList.add("'" + dvCode.getDefiningCode().getCodeString() + "'"));
                 invokeExpr.addAll(codesList);
             } catch (Exception e) {
                 throw new IllegalArgumentException("Terminology server operation failed:'" + e.getMessage() + "'");
@@ -180,7 +180,7 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
         for (ParseTree tree : context.children) {
             if (tree instanceof TerminalNodeImpl) {
                 String token = ((TerminalNodeImpl) tree).getSymbol().getText();
-                if (token.toUpperCase().equals(MATCHES)) {
+                if (token.equalsIgnoreCase(MATCHES)) {
                     isMatchExpr = true;
                     whereExpression.add(IN);
                 } else if (token.equals(OPEN_CURL) && isMatchExpr)
@@ -199,7 +199,7 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
                 AqlParser.IdentifiedOperandContext operandContext = (AqlParser.IdentifiedOperandContext) tree;
                 //translate/substitute operand
                 for (ParseTree child : operandContext.children) {
-                    if (child instanceof AqlParser.OperandContext) {
+                    if (child instanceof AqlParser.OperandContext || child instanceof TerminalNodeImpl) {
                         whereExpression.add(child.getText());
                     } else if (child instanceof AqlParser.IdentifiedPathContext) {
                         AqlParser.IdentifiedPathContext identifiedPathContext = (AqlParser.IdentifiedPathContext) child;
