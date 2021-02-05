@@ -22,10 +22,14 @@
 package org.ehrbase.aql.sql.queryimpl;
 
 import org.apache.commons.lang3.StringUtils;
+import org.ehrbase.serialisation.attributes.EntryAttributes;
+import org.ehrbase.serialisation.attributes.LocatableAttributes;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.ehrbase.serialisation.dbencoding.CompositionSerializer.TAG_UID;
 
 /**
  * Map a datavalue UML expression from an ARCHETYPED structure into its RM/JSON representation
@@ -49,6 +53,9 @@ public class EntryAttributeMapper {
     public static final String UPPER = "upper";
     public static final String INTERVAL = "interval";
     public static final String MAPPINGS = "mappings";
+    public static final String FEEDER_AUDIT = "feeder_audit";
+    public static final String CONTEXT = "context";
+
 
     private EntryAttributeMapper(){}
 
@@ -101,7 +108,12 @@ public class EntryAttributeMapper {
                 fields.add(VALUE); //time is formatted with 2 values: string value and epoch_offset
                 fields.set(1, SLASH_VALUE);
             }
-        } else { //this deals with the "/value,value"
+        } else if (LocatableAttributes.isLocatableAttribute("/"+fields.get(0))){
+            fields = setLocatableField(fields);
+        } else if (EntryAttributes.isEntryAttribute("/"+fields.get(0))){
+            fields = setEntryAttributeField(fields);
+        }
+        else { //this deals with the "/value,value"
             Integer match = firstOccurence(0, fields, VALUE);
 
             if (match != null) { //deals with "/value/value"
@@ -111,7 +123,7 @@ public class EntryAttributeMapper {
                     fields.add(ndxInterval, INTERVAL);
                 } else if (match != 0) {
                     //deals with name/value (name value is contained into a list conventionally)
-                    if (match > 1 && fields.get(match - 1).equals("name"))
+                    if (match > 1 && fields.get(match - 1).matches("name|time"))
                         fields.set(match, VALUE);
                     else
                         //usual /value
@@ -125,6 +137,12 @@ public class EntryAttributeMapper {
             }
         }
 
+        //deals with snake vs camel case
+        boolean useCamelCase = true;
+
+        if (FEEDER_AUDIT.equalsIgnoreCase(fields.get(0)))
+            useCamelCase = false;
+
         //prefix the first element
         fields.set(0, SLASH + fields.get(0));
 
@@ -136,7 +154,7 @@ public class EntryAttributeMapper {
                 fields.set(i, "/name,0");
             }
             else
-                fields.set(i, NodeIds.toCamelCase(fields.get(i)));
+                fields.set(i, useCamelCase ? NodeIds.toCamelCase(fields.get(i)) : fields.get(i));
 
         }
 
@@ -150,5 +168,16 @@ public class EntryAttributeMapper {
             }
         }
         return -1;
+    }
+
+    private static List<String> setLocatableField(List<String> fields){
+        if (("/"+fields.get(0)).equals(TAG_UID)){
+            fields.add(1, SLASH_VALUE);
+        }
+        return fields;
+    }
+
+    private static List<String> setEntryAttributeField(List<String> fields){
+        return fields;
     }
 }
