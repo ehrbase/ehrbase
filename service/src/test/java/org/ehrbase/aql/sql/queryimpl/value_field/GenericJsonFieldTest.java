@@ -79,8 +79,8 @@ public class GenericJsonFieldTest extends TestAqlBase {
                 .isEqualToIgnoringWhitespace("select" +
                         " jsonb_extract_path_text(" +
                         "       cast(\"ehr\".\"js_dv_coded_text_inner\"(\"ehr\".\"entry\".\"category\") as jsonb)," +
-                        "   'definingCode'," +
-                        "  'codeString') \"/test\"");
+                        "   'defining_code'," +
+                        "  'code_string') \"/test\"");
 
     }
 
