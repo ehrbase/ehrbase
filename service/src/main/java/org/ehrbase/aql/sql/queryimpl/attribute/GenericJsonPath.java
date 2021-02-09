@@ -16,6 +16,10 @@ public class GenericJsonPath {
     public static final String ORIGINAL_CONTENT = "original_content";
     public static final String ORIGINATING_SYSTEM_AUDIT = "originating_system_audit";
     public static final String FEEDER_SYSTEM_AUDIT = "feeder_system_audit";
+    public static final String ARCHETYPE_DETAILS = "archetype_details";
+    public static final String RM_VERSION = "rm_version";
+    public static final String TEMPLATE_ID = "template_id";
+    public static final String ARCHETYPE_ID = "archetype_id";
     public static final String SETTING = "setting";
     public static final String ITEMS = "items";
     public static final String CONTENT = "content";
@@ -55,7 +59,7 @@ public class GenericJsonPath {
                 if (segment.matches(NAME))
                     actualPaths.add("0");
             }
-            else if (segment.matches(OTHER_DETAILS + "|" + OTHER_CONTEXT))
+            else if (segment.matches(OTHER_DETAILS + "|" + OTHER_CONTEXT+"|"+ARCHETYPE_DETAILS+"|"+ARCHETYPE_ID+"|"+RM_VERSION+"|"+TEMPLATE_ID))
                 actualPaths.add(segment);
             else if (isNonItemStructureAttribute(path))
                 actualPaths.add(segment);
