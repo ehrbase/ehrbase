@@ -21,12 +21,25 @@
 
 package org.ehrbase.service;
 
+import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.composition.Composition;
+import com.nedap.archie.rm.datatypes.CodePhrase;
+import com.nedap.archie.rm.datavalues.DvCodedText;
+import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
+import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.ehr.VersionedComposition;
+import com.nedap.archie.rm.generic.Attestation;
+import com.nedap.archie.rm.generic.AuditDetails;
+import com.nedap.archie.rm.generic.PartyProxy;
+import com.nedap.archie.rm.generic.RevisionHistory;
+import com.nedap.archie.rm.generic.RevisionHistoryItem;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import com.nedap.archie.rm.support.identification.TerminologyId;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Map;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
@@ -38,12 +51,16 @@ import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.ValidationService;
+import org.ehrbase.dao.access.interfaces.I_AuditDetailsAccess;
 import org.ehrbase.dao.access.interfaces.I_CompoXrefAccess;
 import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
 import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
+import org.ehrbase.dao.access.interfaces.I_EhrAccess;
 import org.ehrbase.dao.access.interfaces.I_EntryAccess;
+import org.ehrbase.dao.access.interfaces.I_StatusAccess;
 import org.ehrbase.dao.access.jooq.CompoXRefAccess;
+import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.response.ehrscape.CompositionDto;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.StructuredString;
@@ -473,7 +490,6 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
 
     @Override
     public VersionedComposition getVersionedComposition(UUID ehrId, UUID composition) {
-
         Optional<CompositionDto> dto = retrieve(composition, 1);
 
         VersionedComposition compo = new VersionedComposition();
@@ -490,6 +506,56 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
         }
 
         return compo;
+    }
+
+    @Override
+    public RevisionHistory getRevisionHistoryOfVersionedComposition(UUID composition) {
+        // get number of versions
+        int versions = getLastVersionNumber(composition);
+        // fetch each version and add to revision history
+        RevisionHistory revisionHistory = new RevisionHistory();
+        for (int i = 1; i <= versions; i++) {
+            Optional<CompositionDto> compoVersion = retrieve(composition, i);
+                if (compoVersion.isPresent()) {
+                    revisionHistory.addItem(revisionHistoryItemFromComposition(compoVersion.get(), versions));
+                }
+        }
+
+        if (revisionHistory.getItems().isEmpty()) {
+            throw new InternalServerException("Problem creating RevisionHistory"); // never should be empty; not valid
+        }
+        return revisionHistory;
+    }
+
+    private RevisionHistoryItem revisionHistoryItemFromComposition(CompositionDto composition, int version) {
+
+        ObjectVersionId objectVersionId = new ObjectVersionId(composition.getComposition().getUid().toString());
+
+        // Note: is List but only has more than one item when there are contributions regarding this object of change type attestation
+        List<AuditDetails> auditDetailsList = new ArrayList<>();
+        // retrieving the audits
+        I_CompositionAccess compoAccess = I_CompositionAccess.retrieveCompositionVersion(getDataAccess(), composition.getUuid(), version);
+        I_AuditDetailsAccess commitAuditAccess = compoAccess.getAuditDetailsAccess();
+
+        String systemId = commitAuditAccess.getSystemId().toString();
+        PartyProxy committer = new PersistedPartyProxy(getDataAccess()).retrieve(commitAuditAccess.getCommitter());
+        DvDateTime timeCommitted = new DvDateTime(commitAuditAccess.getTimeCommitted().toLocalDateTime());
+        DvCodedText changeType = new DvCodedText(commitAuditAccess.getChangeType().getLiteral(), new CodePhrase(new TerminologyId("openehr"), "String"));
+        DvText description = new DvText(commitAuditAccess.getDescription());
+
+        AuditDetails commitAudit = new AuditDetails(systemId, committer, timeCommitted, changeType, description);
+        auditDetailsList.add(commitAudit);
+
+        // TODO-413: refactor to create and use OriginalVersion<Composition> here too? Would make sense to have that and makes the next step easy:
+        // add retrieval of attestations, if there are any
+//        if (ehrStatus.getAttestations() != null) {
+//            for (Attestation a : ehrStatus.getAttestations()) {
+//                AuditDetails newAudit = new AuditDetails(a.getSystemId(), a.getCommitter(), a.getTimeCommitted(), a.getChangeType(), a.getDescription());
+//                auditDetailsList.add(newAudit);
+//            }
+//        }
+
+        return new RevisionHistoryItem(objectVersionId, auditDetailsList);
     }
 }
 

@@ -920,6 +920,11 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     }
 
     @Override
+    public I_AuditDetailsAccess getAuditDetailsAccess() {
+        return this.auditDetailsAccess;
+    }
+
+    @Override
     public void setAuditDetailsId(UUID auditId) {
         compositionRecord.setHasAudit(auditId);
     }

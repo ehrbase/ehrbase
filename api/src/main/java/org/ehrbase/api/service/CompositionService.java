@@ -20,6 +20,7 @@ package org.ehrbase.api.service;
 
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.ehr.VersionedComposition;
+import com.nedap.archie.rm.generic.RevisionHistory;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.response.ehrscape.CompositionDto;
@@ -200,4 +201,11 @@ public interface CompositionService extends BaseService {
      * @return Version container object
      */
     VersionedComposition getVersionedComposition(UUID ehrUid, UUID composition);
+
+    /**
+     * Gets revision history of given composition.
+     * @param composition Given composition.
+     * @return Revision history
+     */
+    RevisionHistory getRevisionHistoryOfVersionedComposition(UUID composition);
 }

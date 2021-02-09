@@ -360,7 +360,7 @@ public class EhrServiceImp extends BaseService implements EhrService {
 
             // create RevisionHistoryItem for each version and append it to RevisionHistory
             if (ehrStatus.isPresent())
-                revisionHistory.addItem(revisionHistoryItemfromEhrStatus(ehrUid, ehrStatus.get(), i));
+                revisionHistory.addItem(revisionHistoryItemFromEhrStatus(ehrStatus.get(), i));
         }
 
         if (revisionHistory.getItems().isEmpty()) {
@@ -369,7 +369,7 @@ public class EhrServiceImp extends BaseService implements EhrService {
         return revisionHistory;
     }
 
-    private RevisionHistoryItem revisionHistoryItemfromEhrStatus(UUID ehrId, OriginalVersion<EhrStatus> ehrStatus, int version) {
+    private RevisionHistoryItem revisionHistoryItemFromEhrStatus(OriginalVersion<EhrStatus> ehrStatus, int version) {
 
         String statusId = ehrStatus.getUid().getValue().split("::")[0];
         ObjectVersionId objectVersionId = new ObjectVersionId( statusId + "::" + getServerConfig().getNodename() + "::" + version);

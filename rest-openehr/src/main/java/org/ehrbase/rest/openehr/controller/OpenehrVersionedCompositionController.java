@@ -109,35 +109,42 @@ public class OpenehrVersionedCompositionController extends BaseController{
         return ResponseEntity.ok().headers(respHeaders).body(response);
     }
 
-//    @GetMapping(path = "/revision_history")
-//    @ApiOperation(value = "Retrieves a VERSIONED_EHR_STATUS associated with an EHR identified by ehr_id.", response = RevisionHistoryResponseData.class)
-//    @ApiResponses(value = {
-//            @ApiResponse(code = 200, message = "Ok - requested VERSIONED_EHR_STATUS is successfully retrieved.",
-//                    responseHeaders = {
-//                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class)
-//                    }),
-//            @ApiResponse(code = 404, message = "Not Found - EHR with ehr_id does not exist."),
-//            @ApiResponse(code = 406, message = "Not Acceptable - Service can not fulfil requested Accept format.")})
-//    public ResponseEntity<RevisionHistoryResponseData> retrieveVersionedEhrStatusRevisionHistoryByEhr(
-//            @ApiParam(value = "Client should specify expected response format") @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-//            @ApiParam(value = "User supplied EHR ID", required = true) @PathVariable(value = "ehr_id") String ehrIdString) {
-//
-//        UUID ehrId = getEhrUuid(ehrIdString);
-//
-//        // check if EHR is valid
-//        if(ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
-//            throw new ObjectNotFoundException("ehr", "No EHR with this ID can be found");
-//        }
-//
-//        RevisionHistory revisionHistory = ehrService.getRevisionHistoryOfVersionedEhrStatus(ehrId);
-//
-//        RevisionHistoryResponseData response = new RevisionHistoryResponseData(revisionHistory);
-//
-//        HttpHeaders respHeaders = new HttpHeaders();
-//        respHeaders.setContentType(getMediaType(accept));
-//
-//        return ResponseEntity.ok().headers(respHeaders).body(response);
-//    }
+    @GetMapping(path = "/{versioned_object_uid}/revision_history")
+    @ApiOperation(value = "Retrieves a VERSIONED_COMPOSITION associated with an EHR identified by ehr_id.", response = RevisionHistoryResponseData.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok - requested VERSIONED_COMPOSITION is successfully retrieved.",
+                    responseHeaders = {
+                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class)
+                    }),
+            @ApiResponse(code = 404, message = "Not Found - EHR with ehr_id does not exist or VERSIONED_COMPOSITION with versioned_object_uid does not exist."),
+            @ApiResponse(code = 406, message = "Not Acceptable - Service can not fulfil requested Accept format.")})
+    public ResponseEntity<RevisionHistoryResponseData> retrieveVersionedCompositionRevisionHistoryByEhr(
+            @ApiParam(value = "Client should specify expected response format") @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
+            @ApiParam(value = "User supplied EHR ID", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
+            @PathVariable(value = "versioned_object_uid") String versionedObjectUid) {
+
+        UUID ehrId = getEhrUuid(ehrIdString);
+        UUID versionedCompoUid = getCompositionVersionedObjectUidString(versionedObjectUid);
+
+        // check if EHR is valid
+        if(ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
+            throw new ObjectNotFoundException("ehr", "No EHR with this ID can be found.");
+        }
+
+        // check if Composition if valid
+        if (!compositionService.exists(versionedCompoUid)) {
+            throw new ObjectNotFoundException("composition", "No composition with this ID can be found.");
+        }
+
+        RevisionHistory revisionHistory = compositionService.getRevisionHistoryOfVersionedComposition(versionedCompoUid);
+
+        RevisionHistoryResponseData response = new RevisionHistoryResponseData(revisionHistory);
+
+        HttpHeaders respHeaders = new HttpHeaders();
+        respHeaders.setContentType(getMediaType(accept));
+
+        return ResponseEntity.ok().headers(respHeaders).body(response);
+    }
 
 //    @GetMapping(path = "/version")
 //    @ApiOperation(value = "Retrieves the VERSION of an EHR_STATUS associated with the EHR identified by ehr_id. If version_at_time is supplied, retrieves the VERSION extant at specified time, otherwise retrieves the latest VERSION.", response = OriginalVersionResponseData.class)

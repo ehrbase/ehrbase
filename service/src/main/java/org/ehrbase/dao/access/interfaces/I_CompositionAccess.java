@@ -460,6 +460,8 @@ public interface I_CompositionAccess extends I_SimpleCRUD {
 
     UUID getAuditDetailsId();
 
+    I_AuditDetailsAccess getAuditDetailsAccess();
+
     void setAuditDetailsId(UUID auditId);
 
     /**
