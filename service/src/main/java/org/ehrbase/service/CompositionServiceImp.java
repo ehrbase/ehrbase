@@ -51,6 +51,7 @@ import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.ValidationService;
+import org.ehrbase.dao.access.interfaces.I_AttestationAccess;
 import org.ehrbase.dao.access.interfaces.I_AuditDetailsAccess;
 import org.ehrbase.dao.access.interfaces.I_CompoXrefAccess;
 import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
@@ -59,6 +60,7 @@ import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
 import org.ehrbase.dao.access.interfaces.I_EhrAccess;
 import org.ehrbase.dao.access.interfaces.I_EntryAccess;
 import org.ehrbase.dao.access.interfaces.I_StatusAccess;
+import org.ehrbase.dao.access.jooq.AttestationAccess;
 import org.ehrbase.dao.access.jooq.CompoXRefAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.response.ehrscape.CompositionDto;
@@ -436,7 +438,7 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
             throw e;
         }
         if (version <= 0) {
-            return null;
+            throw new InternalServerException("Invalid version number calculated.");
         } else {
             return version;
         }
@@ -515,10 +517,9 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
         // fetch each version and add to revision history
         RevisionHistory revisionHistory = new RevisionHistory();
         for (int i = 1; i <= versions; i++) {
-            Optional<CompositionDto> compoVersion = retrieve(composition, i);
-                if (compoVersion.isPresent()) {
-                    revisionHistory.addItem(revisionHistoryItemFromComposition(compoVersion.get(), versions));
-                }
+            Optional<OriginalVersion<Composition>> compoVersion = getOriginalVersionComposition(composition, i);
+            compoVersion.ifPresent(compositionOriginalVersion -> revisionHistory
+                .addItem(revisionHistoryItemFromComposition(compositionOriginalVersion, versions)));
         }
 
         if (revisionHistory.getItems().isEmpty()) {
@@ -527,14 +528,14 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
         return revisionHistory;
     }
 
-    private RevisionHistoryItem revisionHistoryItemFromComposition(CompositionDto composition, int version) {
+    private RevisionHistoryItem revisionHistoryItemFromComposition(OriginalVersion<Composition> composition, int version) {
 
-        ObjectVersionId objectVersionId = new ObjectVersionId(composition.getComposition().getUid().toString());
+        ObjectVersionId objectVersionId = composition.getUid();
 
         // Note: is List but only has more than one item when there are contributions regarding this object of change type attestation
         List<AuditDetails> auditDetailsList = new ArrayList<>();
         // retrieving the audits
-        I_CompositionAccess compoAccess = I_CompositionAccess.retrieveCompositionVersion(getDataAccess(), composition.getUuid(), version);
+        I_CompositionAccess compoAccess = I_CompositionAccess.retrieveCompositionVersion(getDataAccess(), UUID.fromString(composition.getUid().getRoot().getValue()), version);
         I_AuditDetailsAccess commitAuditAccess = compoAccess.getAuditDetailsAccess();
 
         String systemId = commitAuditAccess.getSystemId().toString();
@@ -546,16 +547,59 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
         AuditDetails commitAudit = new AuditDetails(systemId, committer, timeCommitted, changeType, description);
         auditDetailsList.add(commitAudit);
 
-        // TODO-413: refactor to create and use OriginalVersion<Composition> here too? Would make sense to have that and makes the next step easy:
         // add retrieval of attestations, if there are any
-//        if (ehrStatus.getAttestations() != null) {
-//            for (Attestation a : ehrStatus.getAttestations()) {
-//                AuditDetails newAudit = new AuditDetails(a.getSystemId(), a.getCommitter(), a.getTimeCommitted(), a.getChangeType(), a.getDescription());
-//                auditDetailsList.add(newAudit);
-//            }
-//        }
+        if (composition.getAttestations() != null) {
+            for (Attestation a : composition.getAttestations()) {
+                AuditDetails newAudit = new AuditDetails(a.getSystemId(), a.getCommitter(), a.getTimeCommitted(), a.getChangeType(), a.getDescription());
+                auditDetailsList.add(newAudit);
+            }
+        }
 
         return new RevisionHistoryItem(objectVersionId, auditDetailsList);
+    }
+
+    @Override
+    public Optional<OriginalVersion<Composition>> getOriginalVersionComposition(UUID versionedObjectUid, int version) {
+        // check for valid version parameter
+        if ((version == 0) || I_CompositionAccess.getLastVersionNumber(getDataAccess(), versionedObjectUid) < version)
+            throw new ObjectNotFoundException("versioned_composition", "No VERSIONED_COMPOSITION with given version: " + version);
+
+        // retrieve requested object
+        I_CompositionAccess compositionAccess = I_CompositionAccess.retrieveCompositionVersion(getDataAccess(), versionedObjectUid, version);
+        if (compositionAccess == null)
+            return Optional.empty();
+
+        // create data for output, i.e. fields of the OriginalVersion<Composition>
+        ObjectVersionId versionId = new ObjectVersionId(versionedObjectUid + "::" + getServerConfig().getNodename() + "::" + version);
+        DvCodedText lifecycleState = new DvCodedText("complete", new CodePhrase("532"));   // TODO: once lifecycle state is supported, get it here dynamically
+        AuditDetails commitAudit = compositionAccess.getAuditDetailsAccess().getAsAuditDetails();
+        ObjectRef<HierObjectId> contribution = new ObjectRef<>(new HierObjectId(compositionAccess.getContributionId().toString()), "openehr", "contribution");
+        List<UUID> attestationIdList = I_AttestationAccess.retrieveListOfAttestationsByRef(getDataAccess(), compositionAccess.getAttestationRef());
+        List<Attestation> attestations = null;  // as default, gets content if available in the following lines
+        if (!attestationIdList.isEmpty()) {
+            attestations = new ArrayList<>();
+            for (UUID id : attestationIdList) {
+                I_AttestationAccess a = new AttestationAccess(getDataAccess()).retrieveInstance(id);
+                attestations.add(a.getAsAttestation());
+            }
+        }
+
+        ObjectVersionId precedingVersionId = null;
+        // check if there is a preceding version and set it, if available
+        if (version > 1) {
+            // in the current scope version is an int and therefore: preceding = current - 1
+            precedingVersionId = new ObjectVersionId(versionedObjectUid + "::" + getServerConfig().getNodename() + "::" + (version - 1));
+        }
+
+        Optional<CompositionDto> compositionDto = retrieve(versionedObjectUid, version);
+        Composition composition = null;
+        if (compositionDto.isPresent())
+            composition = compositionDto.get().getComposition();
+
+        OriginalVersion<Composition> versionComposition = new OriginalVersion<>(versionId, precedingVersionId,
+            composition, lifecycleState, commitAudit, contribution, null, null, attestations);
+
+        return Optional.of(versionComposition);
     }
 }
 

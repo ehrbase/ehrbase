@@ -42,6 +42,7 @@ import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
+import org.ehrbase.response.ehrscape.CompositionDto;
 import org.ehrbase.response.ehrscape.ContributionDto;
 import org.ehrbase.response.openehr.OriginalVersionResponseData;
 import org.ehrbase.response.openehr.RevisionHistoryResponseData;
@@ -99,6 +100,11 @@ public class OpenehrVersionedCompositionController extends BaseController{
             throw new ObjectNotFoundException("ehr", "No EHR with this ID can be found");
         }
 
+        // check if Composition if valid
+        if (!compositionService.exists(versionedCompoUid)) {
+            throw new ObjectNotFoundException("composition", "No composition with this ID can be found.");
+        }
+
         VersionedComposition versionedComposition = compositionService.getVersionedComposition(ehrId, versionedCompoUid);
 
         VersionedObjectResponseData<Composition> response = new VersionedObjectResponseData<>(versionedComposition);
@@ -146,50 +152,59 @@ public class OpenehrVersionedCompositionController extends BaseController{
         return ResponseEntity.ok().headers(respHeaders).body(response);
     }
 
-//    @GetMapping(path = "/version")
-//    @ApiOperation(value = "Retrieves the VERSION of an EHR_STATUS associated with the EHR identified by ehr_id. If version_at_time is supplied, retrieves the VERSION extant at specified time, otherwise retrieves the latest VERSION.", response = OriginalVersionResponseData.class)
-//    @ApiResponses(value = {
-//            @ApiResponse(code = 200, message = "Ok - requested VERSION is successfully retrieved.",
-//                    responseHeaders = {
-//                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class)
-//                    }),
-//            @ApiResponse(code = 404, message = "Not Found - EHR with ehr_id does not exist."),
-//            @ApiResponse(code = 406, message = "Not Acceptable - Service can not fulfil requested Accept format.")})
-//    public ResponseEntity<OriginalVersionResponseData<EhrStatus>> retrieveVersionOfEhrStatusByTime(
-//            @ApiParam(value = "Client should specify expected response format") @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-//            @ApiParam(value = "User supplied EHR ID", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
-//            @ApiParam(value = "A timestamp in the ISO8601 format", hidden = true) @RequestParam(value = "version_at_time", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime versionAtTime) {
-//
-//        UUID ehrId = getEhrUuid(ehrIdString);
-//
-//        // check if EHR is valid
-//        if(ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
-//            throw new ObjectNotFoundException("ehr", "No EHR with this ID can be found");
-//        }
-//
-//        UUID versionedObjectId = ehrService.getEhrStatusVersionedObjectUidByEhr(ehrId);
-//        int version;
-//        if (versionAtTime != null) {
-//            version = ehrService.getEhrStatusVersionByTimestamp(ehrId, Timestamp.valueOf(versionAtTime));
-//        } else {
-//            version = Integer.parseInt(ehrService.getLatestVersionUidOfStatus(ehrId).split("::")[2]);
-//        }
-//
-//        Optional<OriginalVersion<EhrStatus>> ehrStatusOriginalVersion = ehrService.getEhrStatusAtVersion(ehrId, versionedObjectId, version);
-//        UUID contributionId = ehrStatusOriginalVersion
-//                .map(i -> UUID.fromString(i.getContribution().getId().getValue()))
-//                .orElseThrow(() -> new InvalidApiParameterException("Couldn't retrieve EhrStatus with given parameters"));
-//
-//        Optional<ContributionDto> optionalContributionDto = contributionService.getContribution(ehrId, contributionId);
-//        ContributionDto contributionDto = optionalContributionDto.orElseThrow(() -> new InternalServerException("Couldn't fetch contribution for existing EhrStatus")); // shouldn't happen
-//
-//        OriginalVersionResponseData<EhrStatus> originalVersionResponseData = new OriginalVersionResponseData<>(ehrStatusOriginalVersion.get(), contributionDto);
-//
-//        HttpHeaders respHeaders = new HttpHeaders();
-//        respHeaders.setContentType(getMediaType(accept));
-//
-//        return ResponseEntity.ok().headers(respHeaders).body(originalVersionResponseData);
-//    }
+    @GetMapping(path = "/{versioned_object_uid}/version")
+    @ApiOperation(value = "Retrieves the VERSION of an EHR_STATUS associated with the EHR identified by ehr_id. If version_at_time is supplied, retrieves the VERSION extant at specified time, otherwise retrieves the latest VERSION.", response = OriginalVersionResponseData.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok - requested VERSION is successfully retrieved.",
+                    responseHeaders = {
+                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class)
+                    }),
+            @ApiResponse(code = 404, message = "Not Found - EHR with ehr_id does not exist."),
+            @ApiResponse(code = 406, message = "Not Acceptable - Service can not fulfil requested Accept format.")})
+    public ResponseEntity<OriginalVersionResponseData<Composition>> retrieveVersionOfEhrStatusByTime(
+            @ApiParam(value = "Client should specify expected response format") @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
+            @ApiParam(value = "User supplied EHR ID", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
+            @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
+            @ApiParam(value = "A timestamp in the ISO8601 format", hidden = true) @RequestParam(value = "version_at_time", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime versionAtTime) {
+
+        UUID ehrId = getEhrUuid(ehrIdString);
+        UUID versionedCompoUid = getCompositionVersionedObjectUidString(versionedObjectUid);
+
+        // check if EHR is valid
+        if(ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
+            throw new ObjectNotFoundException("ehr", "No EHR with this ID can be found.");
+        }
+
+        // check if Composition if valid
+        if (!compositionService.exists(versionedCompoUid)) {
+            throw new ObjectNotFoundException("composition", "No composition with this ID can be found.");
+        }
+
+
+        int version;
+        if (versionAtTime != null) {
+            version = compositionService.getVersionByTimestamp(versionedCompoUid, versionAtTime);
+        } else {
+            version = compositionService.getLastVersionNumber(versionedCompoUid);
+        }
+
+        Optional<OriginalVersion<Composition>> compositionOriginalVersion = compositionService.getOriginalVersionComposition(versionedCompoUid, version);
+        UUID contributionId = compositionOriginalVersion
+            .map(i -> UUID.fromString(i.getContribution().getId().getValue()))
+            .orElseThrow(() -> new InvalidApiParameterException("Couldn't retrieve Composition with given parameters"));
+
+        Optional<ContributionDto> optionalContributionDto = contributionService.getContribution(ehrId, contributionId);
+        ContributionDto contributionDto = optionalContributionDto.orElseThrow(() -> new InternalServerException("Couldn't fetch contribution for existing Composition")); // shouldn't happen
+
+        OriginalVersionResponseData<Composition> originalVersionResponseData = new OriginalVersionResponseData<>(
+            compositionOriginalVersion.orElseThrow(() -> new InternalServerException("Composition exists but can't be retrieved as Original Version.")),
+            contributionDto);
+
+        HttpHeaders respHeaders = new HttpHeaders();
+        respHeaders.setContentType(getMediaType(accept));
+
+        return ResponseEntity.ok().headers(respHeaders).body(originalVersionResponseData);
+    }
 //
 //    @GetMapping(path = "/version/{version_uid}")
 //    @ApiOperation(value = "Retrieves a VERSION identified by version_uid of an EHR_STATUS associated with the EHR identified by ehr_id.", response = OriginalVersionResponseData.class)

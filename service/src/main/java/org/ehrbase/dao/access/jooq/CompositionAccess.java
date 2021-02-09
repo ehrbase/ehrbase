@@ -973,4 +973,9 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         AdminApiUtils adminApi = new AdminApiUtils(getContext());
         adminApi.deleteComposition(this.getId());
     }
+
+    @Override
+    public UUID getAttestationRef() {
+        return this.compositionRecord.getAttestationRef();
+    }
 }

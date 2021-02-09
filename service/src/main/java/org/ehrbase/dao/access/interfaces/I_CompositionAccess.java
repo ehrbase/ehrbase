@@ -491,4 +491,6 @@ public interface I_CompositionAccess extends I_SimpleCRUD {
      * Invoke physical deletion.
      */
     void adminDelete();
+
+    UUID getAttestationRef();
 }
