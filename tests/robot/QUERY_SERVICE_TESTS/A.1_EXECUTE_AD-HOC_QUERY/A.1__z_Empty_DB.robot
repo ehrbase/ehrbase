@@ -34,7 +34,7 @@ Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
 Suite Setup  Establish Preconditions for Scenario: EMPTY DB
 # Test Teardown  restore clean SUT state
 
-Force Tags    refactor    empty_db
+Force Tags    refactor    AQL_empty_db
 
 
 
@@ -76,7 +76,7 @@ A-107 Execute Ad-Hoc Query - Get EHR(s)
 
 A-109 Execute Ad-Hoc Query - Get EHR(s)
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              timewindow    future    not-ready
+    [Tags]              AQL_timewindow    future
     A/109_get_ehrs_within_timewindow.json
 
 
@@ -143,7 +143,7 @@ B-100 Execute Ad-Hoc Query - Get Composition(s)
 
 B-103 Execute Ad-Hoc Query - Get Composition(s)
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              future    not-ready
+    [Tags]              future
     B/103_get_compositions_within_timewindow.json
 
 
@@ -196,7 +196,7 @@ B-800 Execute Ad-Hoc Query - Get Composition(s)
     [Tags]              109    future
     B/800_get_composition_by_uid_empty_db.json
     B/801_get_composition_by_uid_empty_db.json
-    [Teardown]          TRACE GITHUB ISSUE  109  not-ready  blocked by
+    [Teardown]          TRACE GITHUB ISSUE  109  bug  blocked by
 
 
 B-802 Execute Ad-Hoc Query - Get Composition(s)
@@ -208,42 +208,38 @@ B-802 Execute Ad-Hoc Query - Get Composition(s)
 
 C-100 Execute Ad-Hoc Query - Get Entrie(s)
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              entry    future
+    [Tags]              AQL_entry    future
     C/100_get_entries_empty_db.json
-    [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
 
 
 C-101 Execute Ad-Hoc Query - Get Entries (filtered: top 5)
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              entry    future
+    [Tags]              AQL_entry    future
     C/101_get_entries_empty_db.json
-    [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
 
 
 C-102 Execute Ad-Hoc Query - Get Entries (ordered by: name)
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              entry    future
+    [Tags]              AQL_entry    future
     C/102_get_entries_empty_db.json
-    [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
 
 
 C-103 Execute Ad-Hoc Query - Get Entries (filtered: timewindow)
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              future    entry    future    not-ready
+    [Tags]              AQL_entry    future
     C/103_get_entries_empty_db.json
-    [Teardown]          TRACE GITHUB ISSUE  101  not-ready  reladed
+    [Teardown]          TRACE GITHUB ISSUE  101  bug  reladed
 
 
 C-200 Execute Ad-Hoc Query - Get Entrie(s)
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              entry    future
+    [Tags]              AQL_entry    future
     C/200_get_entries_empty_db.json
-    [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
 
 
 C-300 Execute Ad-Hoc Query - Get Entrie(s)
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              entry    future    not-ready
+    [Tags]              AQL_entry    future
     C/300_get_entries_empty_db.json
     C/301_get_entries_empty_db.json
     C/302_get_entries_empty_db.json
@@ -252,28 +248,26 @@ C-300 Execute Ad-Hoc Query - Get Entrie(s)
 
 C-400 Execute Ad-Hoc Query - Get Entrie(s)
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              entry    future
+    [Tags]              AQL_entry    future
     C/400_get_entries_empty_db.json
-    [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
 
 
 C-500 Execute Ad-Hoc Query - Get Entrie(s)
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              entry    future
+    [Tags]              AQL_entry    future
     C/500_get_entries_empty_db.json
-    [Teardown]          TRACE GITHUB ISSUE  TODO  not-ready
 
 
 D-200 Execute Ad-Hoc Query - Get Data
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              data
+    [Tags]              AQL_data
     D/200_select_data_values_from_all_ehrs_contains_composition.json
     D/201_select_data_values_from_all_ehrs_contains_composition.json
 
 
 D-300 Execute Ad-Hoc Query - Get Data
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              data
+    [Tags]              AQL_data
     D/300_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
     D/301_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
     D/302_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
@@ -287,27 +281,27 @@ D-300 Execute Ad-Hoc Query - Get Data
 
 D-306 Execute Ad-Hoc Query - Get Data
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              data    206
+    [Tags]              AQL_data    206    not-ready
     D/306_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
-    [Teardown]          TRACE GITHUB ISSUE  206  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  206  bug
 
 
 D-307 Execute Ad-Hoc Query - Get Data
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              data    206
+    [Tags]              AQL_data    206    not-ready
     D/307_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
-    [Teardown]          TRACE GITHUB ISSUE  206  not-ready
+    [Teardown]          TRACE GITHUB ISSUE  206  bug
 
 
 D-311 Execute Ad-Hoc Query - Get Data
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              data    future
+    [Tags]              AQL_data    future
     D/311_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
 
 
 D-400 Execute Ad-Hoc Query - Get Data
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              data
+    [Tags]              AQL_data
     D/400_select_data_empty_db.json
     D/401_select_data_empty_db.json
     D/402_select_data_empty_db.json
@@ -318,7 +312,7 @@ D-400 Execute Ad-Hoc Query - Get Data
 
 D-500 Execute Ad-Hoc Query - Get Data
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              data
+    [Tags]              AQL_data
     D/500_select_data_empty_db.json
     D/501_select_data_empty_db.json
     D/502_select_data_empty_db.json

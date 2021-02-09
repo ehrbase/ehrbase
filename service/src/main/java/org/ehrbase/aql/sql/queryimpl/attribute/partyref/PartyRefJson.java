@@ -43,19 +43,19 @@ public class PartyRefJson extends PartyRefAttribute {
             return new GenericJsonField(fieldContext, joinSetup)
                     .forJsonPath(jsonPath.get())
                     .partyRef(
+                            joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_VALUE),
+                            joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_SCHEME),
                         joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_NAMESPACE),
-                        joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_TYPE),
-                        joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_SCHEME),
-                        joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_VALUE)
+                        joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_TYPE)
                     );
         }
         else
             return new GenericJsonField(fieldContext, joinSetup)
                     .partyRef(
-                        joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_NAMESPACE),
-                        joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_TYPE),
-                        joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_SCHEME),
-                        joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_VALUE)
+                            joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_VALUE),
+                            joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_SCHEME),
+                            joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_NAMESPACE),
+                            joinSetup.getPartyJoinRef().field(PARTY_IDENTIFIED.PARTY_REF_TYPE)
                     );
     }
 

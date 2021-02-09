@@ -21,12 +21,13 @@ Documentation   Composition Integration Tests
 Metadata        TOP_TEST_SUITE    COMPOSITION
 Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
 
-Force Tags      XML
+Force Tags
 
 
 
 *** Test Cases ***
 Alternative flow 1 get COMPOSITION latest, COMPOSITION doesn't exist
+    [Tags]    17    not-ready    bug
 
     create EHR    XML
     create fake composition

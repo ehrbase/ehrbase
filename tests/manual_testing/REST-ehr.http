@@ -1,0 +1,99 @@
+#
+# Use this with REST Client for Visual Studio Code by Huachao Mao
+# search for "rest client" in VSCode's extensions marketplace
+# KEYBOARD SHORTCUT: Ctrl + Alt + R (trigger request focused by cursor)
+
+
+
+@ehrbase_url = http://localhost:8080/ehrbase/rest/openehr/v1
+@uuid = {{$guid}}
+@subject_namespace = {{$randomInt 001 10000}}
+@subject_id = {{create_ehr.response.body.ehr_status.subject.external_ref.id.value}}
+@ehr_id = {{create_ehr.response.body.ehr_id.value}}
+
+
+#///////////////////////////////
+#// PRECONDITIONS           ///
+#/////////////////////////////
+
+1. start EHRbase's PostgreSQL DB
+2. start EHRbase with Basic Auth
+
+
+
+#///////////////////////////////
+#// CREATE EHR              ///
+#/////////////////////////////
+
+# @name create_ehr
+POST {{ehrbase_url}}/ehr HTTP/1.1
+content-type: application/json
+Prefer: return=representation
+Authorization: Basic bXl1c2VyOm15UGFzc3dvcmQ0MzI=
+
+{
+  "_type": "EHR_STATUS",
+  "archetype_node_id": "openEHR-EHR-EHR_STATUS.generic.v1",
+  "name": {
+    "value": "EHR Status"
+  },
+  "subject": {
+    "external_ref": {
+      "id": {
+        "_type": "GENERIC_ID",
+        "value": "{{uuid}}",
+        "scheme": "id_scheme"
+      },
+      "namespace": "wlad_{{subject_namespace}}",
+      "type": "PERSON"
+    }
+  },
+  "is_modifiable": true,
+  "is_queryable": true
+}
+
+###
+
+
+
+#/////////////////////////////////////////////////
+#// GET ALL EHRs VIA AQL                      ///
+#///////////////////////////////////////////////
+
+POST {{ehrbase_url}}/query/aql
+Content-Type: application/json
+Authorization: Basic bXl1c2VyOm15UGFzc3dvcmQ0MzI=
+
+{
+  "q": "SELECT e/ehr_id/value FROM EHR e"
+}
+
+###
+
+
+
+# #/////////////////////////////////////////////////
+# #// GET COMPOSITION BY UID                    ///
+# #///////////////////////////////////////////////
+
+# GET {{ehrbase_url}}/ehr/{{ehr_id}}/composition/32c12782-ddca-4fba-86ee-b45cdfe62c34::local.ehrbase.org::1
+# Accept: application/json
+# Authorization: Basic bXl1c2VyOm15UGFzc3dvcmQ0MzI= 
+
+# ###
+
+
+
+# #/////////////////////////////////////////////////
+# #// GET COMPOSITION VIA AQL                   ///
+# #///////////////////////////////////////////////
+
+# POST {{ehrbase_url}}/query/aql
+# Content-Type: application/json
+# Authorization: Basic bXl1c2VyOm15UGFzc3dvcmQ0MzI=
+
+# {
+#   "q": "SELECT c FROM EHR e [ehr_id/value='{{ehr_id}}'] CONTAINS COMPOSITION c"
+# }
+
+###

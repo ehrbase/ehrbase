@@ -48,7 +48,7 @@ Resource        ${CURDIR}${/}../_resources/suite_settings.robot
 # Suite Setup  startup OPT SUT
 # Suite Teardown  shutdown SUT
 
-Force Tags   OPT14    obsolete
+Force Tags   OPT20    OPT20_upload    future
 
 
 

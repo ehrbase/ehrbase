@@ -22,11 +22,11 @@ Documentation   OPT integration tests
 Metadata        TOP_TEST_SUITE    EHR_STATUS
 Resource        ${CURDIR}${/}../_resources/suite_settings.robot
 
-Force Tags      OPT14    TODO
+Force Tags      OPT14    OPT14_delete    TODO
 
 
-*** Variables ***
-
+*** comments ***
+This will probably be available via ADMIN API only!
 
 
 *** Test Cases ***
