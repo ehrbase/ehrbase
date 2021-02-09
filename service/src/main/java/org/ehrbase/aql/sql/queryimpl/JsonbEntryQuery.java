@@ -99,12 +99,6 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
     public static final String PURPOSE = "purpose";
     public static final String TARGET = "target";
     public static final String TERMINOLOGY_ID = "terminologyId";
-    //CCH 191018 EHR-163 matches trailing '/value'
-    // '/name,0' is to matches path relative to the name array
-
-    public static final String MATCH_NODE_PREDICATE = "(/(content|events|protocol|data|description|instruction|items|activities|activity|composition|entry|evaluation|observation|action)\\[([(0-9)|(A-Z)|(a-z)|\\-|_|\\.]*)\\])|" +
-            "(/value|/value,definingCode|/time|/name,0|/origin|/origin,/name,0|/origin,/value|/value,mappings)|" +
-            "(/value,mappings,0)(|,purpose|,target|,purpose,definingCode|,purpose,definingCode,terminologyId|,target,terminologyId)";
 
     //Generic stuff
     private static final String JSONB_SELECTOR_CLOSE = "}'";
@@ -151,7 +145,7 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
     public enum OTHER_ITEM {OTHER_DETAILS, OTHER_CONTEXT}
 
     //deals with special tree based entities
-    //this is required to encode structure like events of events (events:{events[at0001] ... events[at000x]}
+    //this is required to encode structure like events of events
     //the same is applicable to activities. These are in fact pseudo arrays.
     private static void encodeTreeMapNodeId(List<String> jqueryPath, String nodeId) {
         if (nodeId.startsWith(TAG_EVENTS)) {
@@ -230,8 +224,8 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
         }
 
         //CHC 191018 EHR-163 '/value' for an ELEMENT will return a structure
-        if (pathPart.equals(PATH_PART.VARIABLE_PATH_PART) && jqueryPath.get(jqueryPath.size() - 1).matches(MATCH_NODE_PREDICATE)) {
-            jsonDataBlock = true;
+        if (pathPart.equals(PATH_PART.VARIABLE_PATH_PART)) {
+            jsonDataBlock = new JsonDataBlockCheck(jqueryPath).isJsonBlock();
         }
 
         return jqueryPath;
