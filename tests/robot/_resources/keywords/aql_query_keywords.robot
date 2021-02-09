@@ -586,12 +586,14 @@ Create EHR Record On The Server
     # =======================================================================================
     # TODO: @WLAD next block is a workaround related to https://github.com/ehrbase/project_management/issues/453
     #       refactore it when isssue is fixed
-    ${time_created}=    Replace String 	${time_created}[0] 	, 	.       # replace comma with tot
-    ${timezoneoffset}=  Set Variable    ${timecreated}[-6:]             # save UTC offset
-    ${timestamp}=       Convert Date    ${time_created}[0:-6]           # make Robot valid timestamp
-    ${timestamp}=       Convert Date    ${timestamp}    result_format=%Y-%m-%dT%H:%M:%S     # convert to openEHR conform timestamp
-                        # Set Suite Variable    ${time_created}    ${timestamp}
-    ${time_created_obj}  Update Value To Json    ${time_created_obj}[0]    $.value    ${timestamp}${timezoneoffset}
+    ${time_created}=    Replace String 	${time_created}[0] 	, 	.       # replace comma with dot
+    # ${time_created}=    Replace String 	${time_created}  ${SPACE}  T    # replace space with 'T'
+            # ${timezoneoffset}=  Set Variable    ${time_created}[-6:]            # save UTC offset
+            # ${timestamp}=       Convert Date    ${time_created}[0:-6]           # make Robot valid timestamp by removing the timezone
+            # ${timestamp}=       Convert Date    ${timestamp}    result_format=%Y-%m-%dT%H:%M:%S     # convert to openEHR conform timestamp
+    
+    # ${time_created_obj}  Update Value To Json    ${time_created_obj}[0]    $.value    ${time_created}${timezoneoffset}
+    ${time_created_obj}  Update Value To Json    ${time_created_obj}[0]    $.value    ${time_created}
                         Set Suite Variable    ${time_created}    ${time_created_obj}
     
     # TODO END
