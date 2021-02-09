@@ -1,4 +1,4 @@
-package org.ehrbase.rest.openehr.audit;
+package org.ehrbase.rest.openehr.audit.old;
 
 import org.ehrbase.rest.openehr.RestOpenehrOperation;
 import org.openehealth.ipf.commons.audit.codes.EventOutcomeIndicator;

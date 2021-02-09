@@ -1,6 +1,7 @@
-package org.ehrbase.rest.openehr.audit;
+package org.ehrbase.rest.openehr.audit.old;
 
 import org.ehrbase.rest.openehr.RestOpenehrOperation;
+import org.ehrbase.rest.openehr.audit.OpenEhrEventIdCode;
 import org.openehealth.ipf.commons.audit.AuditContext;
 import org.openehealth.ipf.commons.audit.codes.EventActionCode;
 import org.openehealth.ipf.commons.audit.event.CustomAuditMessageBuilder;
@@ -19,8 +20,8 @@ public class OpenehrAuditMessageBuilder extends DelegatingAuditMessageBuilder<Op
                 auditDataset.getOutcome(),
                 auditDataset.getEventOutcomeDescription(),
                 eventActionCode(auditDataset.getOperation()),
-                OpenehrEventIdCode.REST_OPERATION,
-                OpenehrEventTypeCode.resolve(auditDataset.getOperation())));
+                OpenEhrEventIdCode.COMPOSITION,
+                null));
         this.auditContext = auditContext;
         delegate.setAuditSource(auditContext);
         setSourceParticipant(auditDataset);

@@ -1,6 +1,8 @@
 package org.ehrbase.rest.openehr.audit;
 
 import org.ehrbase.rest.openehr.RestOpenehrOperation;
+import org.ehrbase.rest.openehr.audit.old.OpenehrAuditDataset;
+import org.ehrbase.rest.openehr.audit.old.OpenehrAuditMessageBuilder;
 import org.ehrbase.rest.openehr.controller.BaseController;
 import org.openehealth.ipf.commons.audit.AuditContext;
 import org.openehealth.ipf.commons.audit.codes.EventOutcomeIndicator;
