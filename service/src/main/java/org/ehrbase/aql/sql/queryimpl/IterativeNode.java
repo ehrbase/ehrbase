@@ -103,7 +103,9 @@ public class IterativeNode implements IIterativeNode {
         resultingPath.addAll(segmentedPath);
 
         for (Integer pos : clipPos) {
-            if (!resultingPath.get(pos).equals(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER))
+            if (pos == resultingPath.size())
+                resultingPath.add(QueryImplConstants.AQL_NODE_ITERATIVE_MARKER);
+            else
                 resultingPath.set(pos, QueryImplConstants.AQL_NODE_ITERATIVE_MARKER);
         }
         return resultingPath;
