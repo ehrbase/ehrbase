@@ -187,14 +187,6 @@ B-800 Execute Ad-Hoc Query - Get Compositions By UID
     [Teardown]          TRACE GITHUB ISSUE  109  bug  still blocked by
 
 
-D-306 Execute Ad-HOc Query - Get Data
-    [Documentation]     Get Data related query.
-    [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              206    not-ready
-    D/306_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/306.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  206  bug
-
-
 D-309 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
