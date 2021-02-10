@@ -281,16 +281,14 @@ D-300 Execute Ad-Hoc Query - Get Data
 
 D-306 Execute Ad-Hoc Query - Get Data
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              AQL_data    206    not-ready
+    [Tags]              AQL_data
     D/306_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
-    [Teardown]          TRACE GITHUB ISSUE  206  bug
 
 
 D-307 Execute Ad-Hoc Query - Get Data
     [Template]          execute ad-hoc query and check result (empty DB)
-    [Tags]              AQL_data    206    not-ready
+    [Tags]              AQL_data
     D/307_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
-    [Teardown]          TRACE GITHUB ISSUE  206  bug
 
 
 D-311 Execute Ad-Hoc Query - Get Data

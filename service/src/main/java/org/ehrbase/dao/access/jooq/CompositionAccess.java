@@ -248,7 +248,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
             compositionHistoryAccess.setContent(I_EntryAccess.retrieveInstanceInCompositionVersion(domainAccess, compositionHistoryAccess, version));
 
             //retrieve the corresponding contribution
-            I_ContributionAccess contributionAccess = I_ContributionAccess.retrieveVersionedInstance(domainAccess, compositionHistoryAccess.getContributionId(), compositionHistoryAccess.getSysTransaction());
+            I_ContributionAccess contributionAccess = I_ContributionAccess.retrieveInstance(domainAccess, compositionHistoryAccess.getContributionId());
             compositionHistoryAccess.setContributionAccess(contributionAccess);
 
             I_AuditDetailsAccess auditDetailsAccess = new AuditDetailsAccess(domainAccess.getDataAccess()).retrieveInstance(domainAccess.getDataAccess(), compositionHistoryAccess.getAuditDetailsId());

@@ -17,6 +17,7 @@ public class GenericJsonPath {
     public static final String ORIGINATING_SYSTEM_AUDIT = "originating_system_audit";
     public static final String FEEDER_SYSTEM_AUDIT = "feeder_system_audit";
     public static final String SETTING = "setting";
+    public static final String HEALTH_CARE_FACILITY = "health_care_facility";
     public static final String ITEMS = "items";
     public static final String CONTENT = "content";
     public static final String VALUE = "value";
@@ -32,66 +33,41 @@ public class GenericJsonPath {
         this.path = path;
     }
 
-    public String jqueryPath(){
+    public String jqueryPath() {
         if (path == null || path.isEmpty())
             return path;
 
         List<String> jqueryPaths = Arrays.asList(path.split("/|,"));
         List<String> actualPaths = new ArrayList<>();
 
-        for (int i = 0; i < jqueryPaths.size(); i++){
+        for (int i = 0; i < jqueryPaths.size(); i++) {
             String segment = jqueryPaths.get(i);
-            if (segment.startsWith(ITEMS)){
-                actualPaths.add("/"+ segment);
+            if (segment.startsWith(ITEMS)) {
+                actualPaths.add("/" + segment);
                 //takes care of array expression (unless the occurrence is specified)
                 actualPaths.add("0");
-            }
-            else if (segment.startsWith(CONTENT)){
-                actualPaths.add(CONTENT+",/"+ segment);
+            } else if (segment.startsWith(CONTENT)) {
+                actualPaths.add(CONTENT + ",/" + segment);
                 actualPaths.add("0"); //as above
-            }
-            else if (segment.matches(VALUE + "|" + NAME) && !isTerminalValue(jqueryPaths, i)){
-                actualPaths.add("/"+ segment);
+            } else if (segment.matches(VALUE + "|" + NAME) && !isTerminalValue(jqueryPaths, i)) {
+                actualPaths.add("/" + segment);
                 if (segment.matches(NAME))
                     actualPaths.add("0");
-            }
-            else if (segment.matches(OTHER_DETAILS + "|" + OTHER_CONTEXT))
+            } else
                 actualPaths.add(segment);
-            else if (isNonItemStructureAttribute(path))
-                actualPaths.add(segment);
-            else
-                actualPaths.add(NodeIds.toCamelCase(segment));
 
         }
 
-        return "'{"+String.join(",", actualPaths)+"}'";
+        return "'{" + String.join(",", actualPaths) + "}'";
     }
 
-    public boolean isTerminalValue(List<String> paths, int index){
+    public boolean isTerminalValue(List<String> paths, int index) {
         return paths.size() == 1
                 || (paths.size() > 1
-                        && index == paths.size() - 1
-                        && paths.get(index).matches(VALUE + "|" + NAME + "|" + TERMINOLOGY_ID + "|" + PURPOSE + "|" + TARGET)
-                        //check if this 'terminal attribute' is actually a node attribute
-                        //match node predicate regexp starts with '/' which is not the case when splitting the path
-                        && !paths.get(index - 1).matches(I_DvTypeAdapter.matchNodePredicate.substring(1)));
-    }
-
-    /**
-     * identifies if the encoding comes from a db canonical function
-     * NB. the DB encoding still uses camel case instead of snake case for datavalues
-     * @param path locatable path
-     * @return true if non structural
-     */
-    private boolean isNonItemStructureAttribute(String path){
-        return (path.contains(CONTEXT)
-                || path.contains(FEEDER_AUDIT)
-                || path.contains(ORIGINATING_SYSTEM_ITEM_IDS)
-                || path.contains(FEEDER_SYSTEM_ITEM_IDS)
-                || path.contains(ORIGINAL_CONTENT)
-                || path.contains(ORIGINATING_SYSTEM_AUDIT)
-                || path.contains(FEEDER_SYSTEM_AUDIT)
-                || path.contains(SETTING)
-        );
+                && index == paths.size() - 1
+                && paths.get(index).matches(VALUE + "|" + NAME + "|" + TERMINOLOGY_ID + "|" + PURPOSE + "|" + TARGET)
+                //check if this 'terminal attribute' is actually a node attribute
+                //match node predicate regexp starts with '/' which is not the case when splitting the path
+                && !paths.get(index - 1).matches(I_DvTypeAdapter.matchNodePredicate.substring(1)));
     }
 }
