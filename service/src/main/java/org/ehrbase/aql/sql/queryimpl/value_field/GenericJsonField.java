@@ -66,7 +66,7 @@ public class GenericJsonField extends RMObjectAttribute {
 
     public Field dvDateTime(Field<Timestamp> dateTime, Field<String> timeZoneId ){
         String rmType = "DV_DATE_TIME";
-        Function2<Field<Timestamp>, Field<String>, Field<JSON>> function = Routines::jsDvDateTime1;
+        Function2<Field<Timestamp>, Field<String>, Field<JSON>> function = Routines::jsDvDateTime;
         return jsonField(rmType, function, (TableField)dateTime, (TableField)timeZoneId);
     }
 
