@@ -325,17 +325,17 @@ D-304 Execute Ad-HOc Query - Get Data
 D-306 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              206    not-ready
+    [Tags]              205    not-ready
     D/306_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/306.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  206  bug
+    [Teardown]          TRACE GITHUB ISSUE  205  bug
 
 
 D-307 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              206    not-ready
+    [Tags]              205    not-ready
     D/307_select_data_values_from_all_ehrs_contains_composition_with_archetype.json    D/307.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  206  bug
+    [Teardown]          TRACE GITHUB ISSUE  205  bug
 
 
 D-308 Execute Ad-HOc Query - Get Data
@@ -401,25 +401,22 @@ D-402 Execute Ad-HOc Query - Get Data
 D-403 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              332    not-ready
+    [Tags]              
     D/403_query.tmp.json    D/403.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  332  bug
 
 
 D-404 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              332    not-ready
+    [Tags]              
     D/404_query.tmp.json    D/404.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  332  bug
 
 
 D-405 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              332    not-ready
+    [Tags]              
     D/405_query.tmp.json    D/405.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  332  bug
 
 
 D-500 Execute Ad-HOc Query - Get Data
