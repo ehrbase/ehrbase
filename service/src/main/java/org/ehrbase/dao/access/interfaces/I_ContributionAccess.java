@@ -61,19 +61,6 @@ public interface I_ContributionAccess extends I_SimpleCRUD {
     }
 
     /**
-     * retrieve a contribution from its object ID and a timestamp
-     * FIXME: note: this only looks for instances in *_history table, see called method for details on problem - also naming suggestively wrong?
-     *
-     * @param domainAccess      SQL context
-     * @param contributionObjId the contribution object UUID
-     * @param timestamp         time in history to calculate related version
-     * @return an {@link I_ContributionAccess} instance or null
-     */
-    static I_ContributionAccess retrieveVersionedInstance(I_DomainAccess domainAccess, UUID contributionObjId, Timestamp timestamp) {
-        return ContributionAccess.retrieveVersionedInstance(domainAccess, contributionObjId, timestamp);
-    }
-
-    /**
      * add a new composition to this contribution<br>
      * NB: The contribution and composition requires commit() to be saved in the DB
      *

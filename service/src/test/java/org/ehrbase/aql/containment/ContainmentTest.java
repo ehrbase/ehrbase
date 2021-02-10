@@ -95,7 +95,7 @@ public class ContainmentTest extends TestAqlBase {
 
 
     @Test
-    public void testInterpretContainement_testehr_ested_5_levels_contains() {
+    public void testInterpretContainement_testehr_nested_5_levels_contains() {
 
         String query = "SELECT c/uid/value, cluster2/items[at0002]/value" +
                 " FROM EHR e[ehr_id/value=$ehr_id]" +
@@ -108,7 +108,7 @@ public class ContainmentTest extends TestAqlBase {
 
         AqlExpression aqlExpression = new AqlExpression().parse(query);
         Contains contains = new Contains(aqlExpression.getParseTree(), knowledge).process();
-        assertFalse(contains.useSimpleCompositionContains());
+        assertTrue(contains.requiresTemplateWhereClause());
         assertTrue(contains.getTemplates().contains("nested.en.v1"));
     }
 
@@ -123,7 +123,7 @@ public class ContainmentTest extends TestAqlBase {
         AqlExpression aqlExpression = new AqlExpression().parse(query);
         Contains contains = new Contains(aqlExpression.getParseTree(), knowledge).process();
 
-        assertTrue(contains.useSimpleCompositionContains());
+        assertFalse(contains.requiresTemplateWhereClause());
     }
 
     @Test

@@ -39,7 +39,7 @@ public class Contains {
 
     private final KnowledgeCacheService knowledgeCache;
 
-    private boolean useSimpleCompositionContainment = false;
+    private boolean requiresTemplateWhereClause = false;
     private boolean hasContains;
 
     public Contains(ParseTree parseTree, KnowledgeCacheService knowledgeCache) {
@@ -63,7 +63,7 @@ public class Contains {
         containPropositions.evaluate(knowledgeCache);
         this.templates = containPropositions.resolvedTemplates();
         this.identifierMapper = queryCompilerPass1.getIdentifierMapper();
-        this.useSimpleCompositionContainment = containPropositions.isUseSimpleCompositionContainment();
+        this.requiresTemplateWhereClause = containPropositions.requiresTemplateWhereClause();
         this.hasContains = containPropositions.hasContains();
 
         return this;
@@ -79,8 +79,8 @@ public class Contains {
         return identifierMapper;
     }
 
-    public boolean useSimpleCompositionContains() {
-        return useSimpleCompositionContainment;
+    public boolean requiresTemplateWhereClause() {
+        return requiresTemplateWhereClause;
     }
 
     public boolean hasContains() {
