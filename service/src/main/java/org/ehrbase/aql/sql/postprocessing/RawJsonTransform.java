@@ -35,6 +35,7 @@ import org.jooq.Result;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * Created by christian on 2/21/2017.
@@ -110,8 +111,13 @@ public class RawJsonTransform implements IRawJsonTransform {
 
     private static boolean hasPredicate(String path){
 
-        List<String> segments = LocatableHelper.dividePathIntoSegments(path);
+        try {
+            List<String> segments = LocatableHelper.dividePathIntoSegments(path);
 
-        return (segments.get(segments.size() - 1).contains("["));
+            return (segments.get(segments.size() - 1).contains("["));
+        }
+        catch (NoSuchElementException e) { //not an AQL path (f.e. function based)
+            return false;
+        }
     }
 }

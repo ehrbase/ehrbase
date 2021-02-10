@@ -577,12 +577,29 @@ Create EHR Record On The Server
                         #          The value is at index 0 in that list
                         Set Suite Variable    ${ehr_id}    ${ehr_id_value}[0]
 
-    # TODO: BUG - time_created should be an object! Update when iplementation is fixed
-        # this is how it should look like:
-        # ${time_created_obj}  Object    response body time_created
-        # ${time_created}     String    response body time_created value
+
+    ${time_created_obj}  Object    response body time_created
     ${time_created}=    String    response body time_created value
-                        Set Suite Variable    ${time_created}    ${time_created}
+
+
+
+    # =======================================================================================
+    # TODO: @WLAD next block is a workaround related to https://github.com/ehrbase/project_management/issues/453
+    #       refactore it when isssue is fixed
+    ${time_created}=    Replace String 	${time_created}[0] 	, 	.       # replace comma with dot
+    # ${time_created}=    Replace String 	${time_created}  ${SPACE}  T    # replace space with 'T'
+            # ${timezoneoffset}=  Set Variable    ${time_created}[-6:]            # save UTC offset
+            # ${timestamp}=       Convert Date    ${time_created}[0:-6]           # make Robot valid timestamp by removing the timezone
+            # ${timestamp}=       Convert Date    ${timestamp}    result_format=%Y-%m-%dT%H:%M:%S     # convert to openEHR conform timestamp
+    
+    # ${time_created_obj}  Update Value To Json    ${time_created_obj}[0]    $.value    ${time_created}${timezoneoffset}
+    ${time_created_obj}  Update Value To Json    ${time_created_obj}[0]    $.value    ${time_created}
+                        Set Suite Variable    ${time_created}    ${time_created_obj}
+    
+    # TODO END
+    # =======================================================================================
+
+
 
     ${system_id_obj}=   Object    response body system_id
     ${system_id}=       String    response body system_id value
@@ -725,10 +742,7 @@ Commit Compo
     D/308
     D/309
     D/310
-
-    # D/311     # comment: future feature
-                # NOTE: for details check -->  https://github.com/ehrbase/ehrbase/pull/179/files/4c2253f04e69c9e72986a74b464b9d20f9c43d70#r401266691
-                # TODO: @WLAD reactivate when becomes available
+    D/311
     D/312
     D/400
     D/401
@@ -893,7 +907,7 @@ A/100
 
 A/101
     ${A/101}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/101.tmp.json
-    ${temp}=            Create List  ${ehr_id_value}[0]  ${time_created}[0]  ${system_id}[0]
+    ${temp}=            Create List  ${ehr_id_value}[0]  ${time_created["value"]}  ${system_id}[0]
     ${A/101}=           Add Object To Json    ${A/101}    $.rows    ${temp}
                         Output    ${A/101}    ${QUERY RESULTS LOADED DB}/A/101.tmp.json
 
@@ -904,7 +918,7 @@ A/102
 
 A/103
     ${A/103}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/103.tmp.json
-    ${temp}=            Create List  ${ehr_id_value}[0]  ${time_created}[0]  ${system_id}[0]
+    ${temp}=            Create List  ${ehr_id_value}[0]  ${time_created["value"]}  ${system_id}[0]
     ${A/103}=           Add Object To Json    ${A/103}    $.rows    ${temp}
                         Output    ${A/103}    ${QUERY RESULTS LOADED DB}/A/103.tmp.json
 
@@ -918,14 +932,14 @@ A/105
     # TODO: here time_created_obj has to be used, but it is not implemented yet
     #       this is how is should look like:
     #       ${temp}=            Create List  ${ehr_id_obj}[0]  ${time_created_obj}[0]  ${system_id_obj}[0]
-    ${temp}=            Create List  ${ehr_id_obj}[0]  ${time_created}[0]  ${system_id_obj}[0]
+    ${temp}=            Create List  ${ehr_id_obj}[0]  ${time_created}  ${system_id_obj}[0]
     ${A/105}=           Add Object To Json    ${A/105}    $.rows    ${temp}
                         Output    ${A/105}    ${QUERY RESULTS LOADED DB}/A/105.tmp.json
 
 A/106
     ${A/106}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/106.tmp.json
     # TODO: same as above! update to use time_created_obj
-    ${temp}=            Create List  ${ehr_id_obj}[0]  ${time_created}[0]  ${system_id_obj}[0]  ${ehr_status_obj}[0]
+    ${temp}=            Create List  ${ehr_id_obj}[0]  ${time_created}  ${system_id_obj}[0]  ${ehr_status_obj}[0]
     ${A/106}=           Add Object To Json    ${A/106}    $.rows    ${temp}
                         Output    ${A/106}    ${QUERY RESULTS LOADED DB}/A/106.tmp.json
 
@@ -1389,65 +1403,65 @@ D/200
     ...                 is not filled with dublicates on every interation which takes place for each Composition. 
     ...                 Same flow as A/101
                         Return From Keyword If    ${compo_index}!=1    NOTHING TO DO HERE!
-                        Create Temp List    ${ehr_id_value}[0]    ${time_created}[0]    ${system_id}[0]
+                        Create Temp List    ${ehr_id_value}[0]    ${time_created["value"]}    ${system_id}[0]
                         Update 'rows' in Temp Result-Data-Set    D/200
 
 D/201
     [Documentation]     same flow as A/105
                         Return From Keyword If    ${compo_index}!=1    NOTHING TO DO HERE!
                         # TODO-NOTE: same problem with {time_created} as in data-set A/105 --> check comment there!!!
-                        Create Temp List    ${ehr_id_obj}[0]  ${time_created}[0]  ${system_id_obj}[0]
+                        Create Temp List    ${ehr_id_obj}[0]  ${time_created}  ${system_id_obj}[0]
                         Update 'rows' in Temp Result-Data-Set    D/201
 
 D/300
     [Documentation]     same flow as D/200
                         Return From Keyword If    ${compo_index}!=1    NOTHING TO DO HERE!
-                        Create Temp List    ${ehr_id_value}[0]    ${time_created}[0]    ${system_id}[0]
+                        Create Temp List    ${ehr_id_value}[0]    ${time_created["value"]}    ${system_id}[0]
                         Update 'rows' in Temp Result-Data-Set    D/300
 
 D/301
     [Documentation]     same flow as D/201
                         Return From Keyword If    ${compo_index}!=1    NOTHING TO DO HERE!
                         # TODO-NOTE: same problem with {time_created} as in data-set A/105 --> check comment there!!!
-                        Create Temp List    ${ehr_id_obj}[0]  ${time_created}[0]  ${system_id_obj}[0]
+                        Create Temp List    ${ehr_id_obj}[0]  ${time_created}  ${system_id_obj}[0]
                         Update 'rows' in Temp Result-Data-Set    D/301
 
 D/302
     [Documentation]     same flow as D/200
                         Return From Keyword If    ${compo_index}!=1    NOTHING TO DO HERE!
-                        Create Temp List    ${ehr_id_value}[0]    ${time_created}[0]    ${system_id}[0]
+                        Create Temp List    ${ehr_id_value}[0]    ${time_created["value"]}    ${system_id}[0]
                         Update 'rows' in Temp Result-Data-Set    D/302
 
 D/303
     [Documentation]     same flow as D/201
                         Return From Keyword If    ${compo_index}!=1    NOTHING TO DO HERE!
                         # TODO-NOTE: same problem with {time_created} as in data-set A/105 --> check comment there!!!
-                        Create Temp List    ${ehr_id_obj}[0]  ${time_created}[0]  ${system_id_obj}[0]
+                        Create Temp List    ${ehr_id_obj}[0]  ${time_created}  ${system_id_obj}[0]
                         Update 'rows' in Temp Result-Data-Set    D/303
 
 D/304
     [Documentation]     same flow as D/200
                         Return From Keyword If    ${compo_index}!=1    NOTHING TO DO HERE!
-                        Create Temp List    ${ehr_id_value}[0]    ${time_created}[0]    ${system_id}[0]
+                        Create Temp List    ${ehr_id_value}[0]    ${time_created["value"]}    ${system_id}[0]
                         Update 'rows' in Temp Result-Data-Set    D/304
 
 D/306
     [Documentation]     same flow as D/200
                         Return From Keyword If    ${compo_index}!=1    NOTHING TO DO HERE!
-                        Create Temp List    ${ehr_id_value}[0]    ${time_created}[0]    ${system_id}[0]
+                        Create Temp List    ${ehr_id_value}[0]    ${time_created["value"]}    ${system_id}[0]
                         Update 'rows' in Temp Result-Data-Set    D/306
 
 D/307
     [Documentation]     same flow as D/201
                         Return From Keyword If    ${compo_index}!=1    NOTHING TO DO HERE!
                         # TODO-NOTE: same problem with {time_created} as in data-set A/105 --> check comment there!!!
-                        Create Temp List    ${ehr_id_obj}[0]  ${time_created}[0]  ${system_id_obj}[0]
+                        Create Temp List    ${ehr_id_obj}[0]  ${time_created}  ${system_id_obj}[0]
                         Update 'rows' in Temp Result-Data-Set    D/307
 
 D/308
     [Documentation]     same flow as D/200
                         Return From Keyword If    ${compo_index}!=1    NOTHING TO DO HERE!
-                        Create Temp List    ${ehr_id_value}[0]    ${time_created}[0]    ${system_id}[0]
+                        Create Temp List    ${ehr_id_value}[0]    ${time_created["value"]}    ${system_id}[0]
                         Update 'rows' in Temp Result-Data-Set    D/308
 
 D/309
@@ -1455,20 +1469,20 @@ D/309
                         Return From Keyword If    ${compo_index}!=1    NOTHING TO DO HERE!
                         Load Temp Result-Data-Set    D/309
                         # TODO-NOTE: same problem with {time_created} as in data-set A/105 --> check comment there!!!
-                        Create Temp List    ${ehr_id_obj}[0]  ${time_created}[0]  ${system_id_obj}[0]
+                        Create Temp List    ${ehr_id_obj}[0]  ${time_created}  ${system_id_obj}[0]
                         Update 'rows' in Temp Result-Data-Set    D/309
 
 D/310
     [Documentation]     same flow as D/200
                         Return From Keyword If    ${compo_index}!=1    NOTHING TO DO HERE!
-                        Create Temp List    ${ehr_id_value}[0]    ${time_created}[0]    ${system_id}[0]
+                        Create Temp List    ${ehr_id_value}[0]    ${time_created["value"]}    ${system_id}[0]
                         Update 'rows' in Temp Result-Data-Set    D/310
 
 D/311
     [Documentation]     same flow as D/201
                         Return From Keyword If    ${compo_index}!=1    NOTHING TO DO HERE!
                         # TODO-NOTE: same problem with {time_created} as in data-set A/105 --> check comment there!!!
-                        Create Temp List    ${ehr_id_obj}[0]    ${time_created}[0]    ${system_id_obj}[0]
+                        Create Temp List    ${ehr_id_obj}[0]    ${time_created}    ${system_id_obj}[0]
                         Update 'rows' in Temp Result-Data-Set    D/311
 
 D/312
@@ -1476,7 +1490,7 @@ D/312
                         Return From Keyword If    ${compo_index}!=1    NOTHING TO DO HERE!
                         Return From Keyword If    ${ehr_index}>5   NOT IN TOP 5!
                         Create Temp List    ${ehr_id_value}[0]
-                        ...                 ${time_created}[0]
+                        ...                 ${time_created["value"]}
                         ...                 ${system_id}[0]
                         ...                 TODOO: CLARIFY w/ @PABLO - TOP5 newest OR oldest?
                         Update 'rows' in Temp Result-Data-Set    D/312

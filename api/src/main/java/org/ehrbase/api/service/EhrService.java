@@ -19,6 +19,7 @@
 package org.ehrbase.api.service;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
+import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.ehr.VersionedEhrStatus;
 import com.nedap.archie.rm.generic.RevisionHistory;
@@ -28,7 +29,6 @@ import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.EhrStatusDto;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -90,7 +90,7 @@ public interface EhrService extends BaseService {
      */
     String getLatestVersionUidOfStatus(UUID ehrId);
 
-    LocalDateTime getCreationTime(UUID ehrId);
+    DvDateTime getCreationTime(UUID ehrId);
 
     /**
      * Get version number of EHR_STATUS associated with given EHR UID at given timestamp.
