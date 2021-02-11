@@ -203,7 +203,7 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
         if (pathPart.equals(PATH_PART.VARIABLE_PATH_PART)) {
             StringBuilder stringBuilder = new StringBuilder();
             for (int i = jqueryPath.size() - 1; i >= 0; i--) {
-                if (jqueryPath.get(i).matches("[0-9]*|#") || jqueryPath.get(i).contains("[at"))
+                if (jqueryPath.get(i).matches("[0-9]*|#") || jqueryPath.get(i).contains("[") ||jqueryPath.get(i).startsWith("'"))
                     break;
                 String item = jqueryPath.remove(i);
                 stringBuilder.insert(0, item);

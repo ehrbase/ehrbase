@@ -3,16 +3,15 @@ package org.ehrbase.aql;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.support.DummyDataAccess;
 import org.ehrbase.dao.jooq.impl.DSLContextHelper;
-import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
-import org.ehrbase.service.*;
+import org.ehrbase.service.CacheRule;
+import org.ehrbase.service.KnowledgeCacheHelper;
+import org.ehrbase.service.KnowledgeCacheService;
+import org.ehrbase.service.TerminologyServiceImp;
 import org.jooq.DSLContext;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
-import java.io.File;
 import java.io.FileInputStream;
 
 public class TestAqlBase {
@@ -49,6 +48,8 @@ public class TestAqlBase {
         opt = new FileInputStream("./src/test/resources/knowledge/operational_templates/Virologischer_Befund.opt").readAllBytes();
         knowledge.addOperationalTemplate(opt);
         opt = new FileInputStream("./src/test/resources/knowledge/opt/Vital Signs Encounter (Composition).opt").readAllBytes();
+        knowledge.addOperationalTemplate(opt);
+        opt = new FileInputStream("./src/test/resources/knowledge/opt/minimal_instruction.opt").readAllBytes();
         knowledge.addOperationalTemplate(opt);
 
         //tests require a terminology service
