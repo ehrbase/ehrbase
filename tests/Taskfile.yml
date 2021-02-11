@@ -39,16 +39,44 @@ tasks:
         - |
           echo ... starting EHRbase server ...
           cd ..
-          EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+          EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" \
+                                   -Dexec.args='${project.version}' \
+                                   --non-recursive exec:exec)
           echo "EHRbase_VERSION:" ${EHRbase_VERSION}
+          # COMMENT: export ENVs to modify ehrbase configuration
+          export ADMINAPI_ACTIVE=true
+          export ADMINAPI_ALLOWDELETEALL=true
+          # export SECURITY_AUTHTYPE=BASIC
+          # export SECURITY_AUTHTYPE=OAUTH
+          # export SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI=http://localhost:8081/auth/realms/ehrbase
           java -jar application/target/application-${EHRbase_VERSION}.jar \
-               --cache.enabled=true \
-               --system.allow-template-overwrite=true \
-               --server.nodename=manual.execution.org > log &
-          grep -m 1 "Started EhrBase in" <(tail -f log)
-          
-          # SECURITY_AUTHTYPE=BASIC java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=false --system.allow-template-overwrite=true > log &
-          # SECURITY_AUTHTYPE=OAUTH SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI=http://localhost:8081/auth/realms/ehrbase java -jar application/target/application-${EHRbase_VERSION}.jar
+                    --cache.enabled=true \
+                    --system.allow-template-overwrite=true \
+                    --server.nodename=manual.execution.org > ehrbase-log &
+          timeout=30
+          while [ ! -f ehrbase-log ];
+              do
+                  echo "Waiting for file ehrbase-log ..."
+                  if [ "$timeout" == 0 ]; then
+                      echo "ERROR: timed out while waiting for file ehrbase-log"
+                      exit 1
+                  fi
+                  sleep 1
+              ((timeout--))
+          done
+          while ! (cat ehrbase-log | grep -m 1 "Started EhrBase in");
+              do
+                  echo "waiting for EHRbase to be ready ...";
+                  if [ "$timeout" == 0 ]; then
+                      echo "WARNING: Did not see a startup message even after waiting 30s"
+                      exit 1
+                  fi
+                  sleep 1;
+              ((timeout--))
+          done
+          echo "REMAINING TIMEOUT: $timeout"
+          jps
+
       # env:
       #   DISABLE_SECURITY: true
 

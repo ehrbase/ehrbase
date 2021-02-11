@@ -18,13 +18,13 @@
 
 *** Settings ***
 Documentation    COMPOSITION Specific Keywords
-Library          XML
-Library          String
+# Library          XML
+# Library          String
 
-Resource    ${CURDIR}${/}../suite_settings.robot
-Resource    generic_keywords.robot
-Resource    template_opt1.4_keywords.robot
-Resource    ehr_keywords.robot
+# Resource    ${CURDIR}${/}../suite_settings.robot
+# Resource    generic_keywords.robot
+# Resource    template_opt1.4_keywords.robot
+# Resource    ehr_keywords.robot
 
 
 
@@ -73,13 +73,14 @@ generate random version_uid
 
 
 commit invalid composition (JSON)
-    [Arguments]         ${opt_file}
+    [Arguments]         ${composition_json}
     [Documentation]     Creates the first version of a new COMPOSITION
     ...                 DEPENDENCY: `upload OPT`, `create EHR`
     ...
     ...                 ENDPOINT: POST /ehr/${ehr_id}/composition
 
-                        get invalid OPT file    ${opt_file}
+                        # TODO: FIX ME! should be 'get invalid compo file'
+                        get invalid OPT file    ${composition_json}
 
     &{headers}=         Create Dictionary   Content-Type=application/xml
                         ...                 Accept=application/json
@@ -91,13 +92,14 @@ commit invalid composition (JSON)
 
 
 commit invalid composition (XML)
-    [Arguments]         ${opt_file}
+    [Arguments]         ${composition_xml}
     [Documentation]     Creates the first version of a new COMPOSITION
     ...                 DEPENDENCY: `upload OPT`, `create EHR`
     ...
     ...                 ENDPOINT: POST /ehr/${ehr_id}/composition
 
-                        get invalid OPT file    ${opt_file}
+                        # TODO: FIX ME! Should be 'get invalid compo file'
+                        get invalid OPT file    ${composition_xml}
 
     &{headers}=         Create Dictionary   Content-Type=application/xml
                         ...                 Accept=application/json
@@ -109,12 +111,13 @@ commit invalid composition (XML)
 
 
 commit composition - no referenced OPT
-    [Arguments]         ${opt_file}
+    [Arguments]         ${composition}
     [Documentation]     Creates a new COMPOSITION with missing referenced OPT
     ...                 DEPENDENCY: `create EHR`, `prepare new request session` with proper args!!!
     ...                 ENDPOINT: POST /ehr/${ehr_id}/composition
 
-                        get valid OPT file  ${opt_file}
+                        # TODO: FIX ME! Rename KW properly
+                        get valid OPT file  ${composition}
 
     ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
                         # log to console      ${resp.content}
@@ -122,13 +125,13 @@ commit composition - no referenced OPT
 
 
 commit composition - no referenced EHR
-    [Arguments]         ${opt_file}
+    [Arguments]         ${composition}
     [Documentation]     Creates a new COMPOSITION with missing referenced EHR
     ...                 DEPENDENCY: `create EHR`, `prepare new request session` with proper args!!!
     ...                             e.g. content-type must be application/xml
     ...                 ENDPOINT: POST /ehr/${ehr_id}/composition
 
-                        get valid OPT file  ${opt_file}
+                        get valid OPT file  ${composition}
 
                         prepare new request session    XML    Prefer=return=representation
 
@@ -138,13 +141,14 @@ commit composition - no referenced EHR
 
 
 commit composition (JSON)
-    [Arguments]         ${opt_file}
+    [Arguments]         ${json_composition}
     [Documentation]     Creates the first version of a new COMPOSITION
     ...                 DEPENDENCY: `upload OPT`, `create EHR`
     ...
     ...                 ENDPOINT: POST /ehr/${ehr_id}/composition
 
-                        get valid OPT file  ${opt_file}
+                        # TODO: FIX ME! rename/replace KW
+                        get valid OPT file  ${json_composition}
 
     &{headers}=         Create Dictionary   Content-Type=application/xml
                         ...                 Accept=application/json
@@ -168,13 +172,14 @@ commit composition (JSON)
 
 
 commit composition without accept header
-    [Arguments]         ${opt_file}
+    [Arguments]         ${composition}
     [Documentation]     Creates the first version of a new COMPOSITION
     ...                 DEPENDENCY: `upload OPT`, `create EHR`
     ...
     ...                 ENDPOINT: POST /ehr/${ehr_id}/composition
 
-                        get valid OPT file  ${opt_file}
+                        # TODO: FIX ME! replace KW
+                        get valid OPT file  ${composition}
 
     &{headers}=         Create Dictionary   Content-Type=application/xml
                         ...                 Prefer=return=representation
@@ -203,10 +208,11 @@ check content of composition (JSON)
 
 
 commit composition (XML)
-    [Arguments]         ${opt_file}
+    [Arguments]         ${xml_composition}
     [Documentation]     POST /ehr/${ehr_id}/composition
 
-                        get valid OPT file  ${opt_file}
+                        # TODO: FIX ME! replace KW
+                        get valid OPT file  ${xml_composition}
 
     &{headers}=         Create Dictionary   Content-Type=application/xml
                         ...                 Accept=application/xml
@@ -719,6 +725,17 @@ capture point in time
     # ${time_tz}=         Catenate            SEPARATOR=${EMPTY}    ${time}   +00:00
                         Set Suite Variable   ${time_${point_in_time}}   ${time}+00:00
                         Sleep               1
+
+
+
+(admin) delete composition
+    [Documentation]     Admin delete of Composition.
+    ...                 Needs `${versioned_object_uid}` var from e.g. `commit composition (JSON)` KW.
+
+    &{resp}=            REST.DELETE    ${baseurl}/admin/ehr/${ehr_id}/composition/${versioned_object_uid}
+                        Should Be Equal As Strings   ${resp.status}   204
+                        Set Test Variable    ${response}    ${resp}
+                        Output Debug Info To Console
 
 
 

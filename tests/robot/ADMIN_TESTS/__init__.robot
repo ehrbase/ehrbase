@@ -18,7 +18,7 @@
 
 *** Settings ***
 Metadata    Version    0.1.0
-Metadata    Author    *Wladislaw Wagner*
+Metadata    Authors    *Wladislaw Wagner, Jake Smolka*
 Metadata    Created    2019.02.26
 Metadata    Updated    2020.01.30
 
@@ -26,8 +26,12 @@ Documentation       Admin API REST tests
 ...                 How to run these tests locally
 ...                 ==============================
 ...
-...                 robot -v SUT:ADMIN-TEST -d results/ -L TRACE -i admin robot/ADMIN_TESTS/
-
-Resource   ${EXECDIR}/robot/_resources/suite_settings.robot
+...                 robot -d results/ -L TRACE robot/ADMIN_TESTS/
+...              OR
+...                 robot -v SUT:ADMIN-TEST -d results/ -L TRACE robot/ADMIN_TESTS/
+...              OR (with OAUTH):
+...                 robot -v AUTH_TYPE:OAUTH -d results/ -L TRACE robot/ADMIN_TESTS/
+...
+...              NOTE: Tests with OAUTH require a running and properly configured Keycloak server.
 
 Force Tags    ADMIN
