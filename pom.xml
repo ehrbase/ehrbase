@@ -119,7 +119,7 @@
         <maven.compiler.target>11</maven.compiler.target>
         <commons.io.version>2.6</commons.io.version>
         <commons.lang3.version>3.11</commons.lang3.version>
-        <archie.version>dc09642</archie.version>
+        <archie.version>5a4a9442e5e2516aed5f25636ac236682aace7b9</archie.version>
         <assertj.core>3.11.1</assertj.core>
         <json.path.version>2.4.0</json.path.version>
         <jooq.version>3.12.3</jooq.version>
