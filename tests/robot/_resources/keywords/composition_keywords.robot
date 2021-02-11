@@ -18,13 +18,13 @@
 
 *** Settings ***
 Documentation    COMPOSITION Specific Keywords
-Library          XML
-Library          String
+# Library          XML
+# Library          String
 
-Resource    ${CURDIR}${/}../suite_settings.robot
-Resource    generic_keywords.robot
-Resource    template_opt1.4_keywords.robot
-Resource    ehr_keywords.robot
+# Resource    ${CURDIR}${/}../suite_settings.robot
+# Resource    generic_keywords.robot
+# Resource    template_opt1.4_keywords.robot
+# Resource    ehr_keywords.robot
 
 
 
@@ -725,6 +725,17 @@ capture point in time
     # ${time_tz}=         Catenate            SEPARATOR=${EMPTY}    ${time}   +00:00
                         Set Suite Variable   ${time_${point_in_time}}   ${time}+00:00
                         Sleep               1
+
+
+
+(admin) delete composition
+    [Documentation]     Admin delete of Composition.
+    ...                 Needs `${versioned_object_uid}` var from e.g. `commit composition (JSON)` KW.
+
+    &{resp}=            REST.DELETE    ${baseurl}/admin/ehr/${ehr_id}/composition/${versioned_object_uid}
+                        Should Be Equal As Strings   ${resp.status}   204
+                        Set Test Variable    ${response}    ${resp}
+                        Output Debug Info To Console
 
 
 

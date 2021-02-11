@@ -40,40 +40,41 @@ ${CACHE-ENABLED}        ${FALSE}
 
 #////////////////////////////////////////////////////////////
 #//                                                        //
-#//   NOTE: test can't be executed in random order!        //
+#//   NOTE: Tests can't be executed in random order!       //
+#//         Some have impact on each other                 //
 #//         cause clean up steps don't work properly!      //
+#//         Until this is fixed preserve given order!!!    //
 #//                                                        //
 #///////////////////////////////////////////////////////////
 
 *** Test Cases ***
 001 ADMIN - Delete All Templates (when none were uploaded before)
-    delete all OPTs (admin)
+    (admin) delete all OPTs
     validate DELETE ALL response - 204 deleted ${0}
 
 
 002 ADMIN - Delete All Templates (when only one was uploaded before)
     upload valid OPT    minimal/minimal_admin.opt
-    delete all OPTs (admin)
+    (admin) delete all OPTs
     validate DELETE ALL response - 204 deleted ${1}
 
 
 003 ADMIN - Delete Multiple Templates
     upload valid OPT    minimal/minimal_admin.opt
     upload valid OPT    minimal/minimal_evaluation.opt
-    delete all OPTs (admin)
+    (admin) delete all OPTs
     validate DELETE ALL response - 204 deleted ${2}
 
 
 004 ADMIN - Delete Existing Template
-    [Tags]    not-ready
+    [Tags]    382  not-ready  bug
     upload valid OPT    minimal/minimal_admin.opt
-    delete OPT (admin)
+    (admin) delete OPT
 
-        # TODO: - FIX ME!
-        TRACE GITHUB ISSUE    382    message=see issue for details
+        TRACE GITHUB ISSUE    382    message=see https://github.com/ehrbase/project_management/issues/382#issuecomment-777255800 for details
 
     validate DELETE response - 204 deleted
-    [Teardown]    Delete All Templates
+    [Teardown]    (admin) delete all OPTs
 
 
 005 ADMIN - Delete Non-Existing Template
@@ -93,59 +94,98 @@ ${CACHE-ENABLED}        ${FALSE}
 
 007 ADMIN - Update Non-Existing Template
     generate random templade_id
-    update OPT (admin)    minimal/minimal_admin_updated.opt
+    (admin) update OPT    minimal/minimal_admin_updated.opt
     validate PUT response - 404 unknown templade_id
 
 
 008 ADMIN - Update Existing Template
-    [Tags]    not-ready
+    [Tags]    382  not-ready  bug
     upload valid OPT    minimal/minimal_admin.opt
-    update OPT (admin)    minimal/minimal_admin_updated.opt
+    (admin) update OPT    minimal/minimal_admin_updated.opt
 
-        # TODO: - FIX ME!
-        TRACE GITHUB ISSUE    382    message=see issue for details
+        TRACE GITHUB ISSUE    382    message=see https://github.com/ehrbase/project_management/issues/382#issuecomment-777049676 for details
 
     validate PUT response - 200 updated
-    [Teardown]    Delete All Templates
+    [Teardown]    (admin) delete all OPTs
 
 
-009 ADMIN - Delete Multiple Templates Where Some Are in Use
+009 ADMIN - Delete Multiple Templates Where Some Are In Use
     upload valid OPT    minimal/minimal_admin.opt
     upload valid OPT    minimal/minimal_evaluation.opt
     create new EHR (XML)
     commit composition (XML)    minimal/minimal_admin.composition.extdatetimes.xml
-    delete all OPTs (admin)
+    (admin) delete all OPTs
     validate DELETE ALL response - 422 unprocessable entity
 
-    [Teardown]    Run Keywords    Delete All Compositions    AND
-                  ...             Delete All Templates
+    [Teardown]    Run Keywords    (admin) delete composition    AND
+                  ...             (admin) delete all OPTs
 
 
-010 ADMIN - Delete Template in Use
+010a ADMIN - Delete Template That Is In Use
     upload valid OPT    minimal/minimal_admin.opt
     create new EHR (XML)
     commit composition (XML)    minimal/minimal_admin.composition.extdatetimes.xml
-    delete OPT (admin)
+    (admin) delete OPT
     validate DELETE response - 422 unprocessable entity
 
-    [Teardown]    Run Keywords    Delete All Compositions    AND
-                  ...             Delete All Templates
+    [Teardown]    Run Keywords    (admin) delete composition    AND
+                  ...             (admin) delete all OPTs
 
 
-011 ADMIN - Update Template in Use
-    [Tags]    not-ready
+010c ADMIN - Delete Template That Was In Use - (Admin)Deleted Composition
+    [Documentation]    Composition is deleted with the admin endpoint and thus has been removed 
+    ...                "physically" from database. The admin endpoint will respond with a 204
+    ...                response and the template is removed.
+    [Tags]    382  not-ready  bug
     upload valid OPT    minimal/minimal_admin.opt
     create new EHR (XML)
     commit composition (XML)    minimal/minimal_admin.composition.extdatetimes.xml
-    update OPT (admin)    minimal/minimal_admin_updated.opt
+    (admin) delete composition
+    (admin) delete OPT
 
-        # TODO: - FIX ME!
-        TRACE GITHUB ISSUE    382    message=see issue for details
+        TRACE GITHUB ISSUE    382    message=see https://github.com/ehrbase/project_management/issues/382#issuecomment-777255800 for details
+
+    validate DELETE response - 204 deleted
+    # comment: check that template does not exist any more
+    ${resp}=    Get Request    ${SUT}    /definition/template/adl1.4/${template_id}
+                Should Be Equal As Strings    ${resp.status_code}    404
+
+    [Teardown]    Run Keywords    (admin) delete all OPTs
+
+
+010b ADMIN - Delete Template That Is In Use - Deleted Composition
+    [Tags]    
+    upload valid OPT    minimal/minimal_admin.opt
+    create new EHR (XML)
+    commit composition (XML)    minimal/minimal_admin.composition.extdatetimes.xml
+    delete composition    ${version_uid}
+    (admin) delete OPT
+    validate DELETE response - 422 unprocessable entity
+
+    [Teardown]    Run Keywords    (admin) delete all OPTs
+
+
+011 ADMIN - Update Template That Is In Use
+    [Tags]    382    not-ready    bug
+    upload valid OPT    minimal/minimal_admin.opt
+    create new EHR (XML)
+    commit composition (XML)    minimal/minimal_admin.composition.extdatetimes.xml
+    (admin) update OPT    minimal/minimal_admin_updated.opt
+
+        TRACE GITHUB ISSUE    382    message=see https://github.com/ehrbase/project_management/issues/382#issuecomment-777248693 for details
 
     validate PUT response - 422 unprocessable entity
 
-    [Teardown]    Run Keywords    Delete All Compositions    AND
-                  ...             Delete All Templates
+    # TODO: @WLAD make sure the template was NOT modified!
+    #       use a GET request, s. example below:
+    ${resp}=    Get Request    ${SUT}    /definition/template/adl1.4/${template_id}
+                ...    headers=${headers}
+                log    ${resp.content}
+                XML.Element Text Should Be    ${resp.content}    Minimal admin
+                ...                           xpath=concept
+
+    [Teardown]    Run Keywords    (admin) delete composition    AND
+                  ...             (admin) delete all OPTs
 
 
 012 ADMIN - Invalid Usage of Update Endpoint
@@ -205,7 +245,7 @@ upload valid OPT
     server accepted OPT
     
 
-update OPT (admin)
+(admin) update OPT
     [Arguments]         ${opt_file}
                         prepare new request session    XML
                         ...    Prefer=return=representation
@@ -219,15 +259,6 @@ update OPT (admin)
 validate PUT response - 200 updated
                         Should Be Equal As Strings    ${response.status_code}   200
                         log    ${response.content}
-
-    # TODO: remove GET request!
-    #       SEE COMMENT --> https://github.com/ehrbase/project_management/issues/382#issuecomment-751513534
-    ${resp}=    Get Request    ${SUT}    /definition/template/adl1.4/${template_id}
-                ...    headers=${headers}
-    log    ${resp.content}
-    XML.Element Text Should Be    ${resp.content}    Minimal Admin UPDATED BY ROBOT
-    ...                           xpath=concept
-
                         XML.Element Text Should Be    ${response.content}    Minimal Admin UPDATED BY ROBOT
                         ...                           xpath=concept
 
@@ -244,11 +275,12 @@ validate PUT response - 422 unprocessable entity
                         Should Match    ${response.text}    *Template with id ${template_id} is used by X composition(s)*
 
 
-delete OPT (admin)
+(admin) delete OPT
     [Documentation]     Admin delete OPT on server.
     ...                 Depends on any KW that exposes an variable named 'template_id'
     ...                 to test or suite level scope.
                         prepare new request session
+                        ...    Prefer=return=representation
     &{resp}=            REST.DELETE    ${baseurl}/admin/template/${template_id}
                         Set Test Variable    ${response}    ${resp}
                         Output Debug Info To Console
@@ -265,7 +297,7 @@ validate DELETE response - 422 unprocessable entity
                         ...        pattern=Cannot delete template minimal_admin.en.v1 since the following compositions are still using it.*
 
 
-delete all OPTs (admin)
+(admin) delete all OPTs
     [Documentation]     Admin delete OPT on server.
     ...                 Depends on any KW that exposes an variable named 'template_id'
     ...                 to test or suite level scope.
