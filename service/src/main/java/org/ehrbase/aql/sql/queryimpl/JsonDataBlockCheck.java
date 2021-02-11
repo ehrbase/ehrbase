@@ -45,7 +45,7 @@ public class JsonDataBlockCheck {
         if (jqueryPath.get(0).startsWith("/feeder_audit"))
             return checkFeederAuditPath();
         else
-            return jqueryPath.get(jqueryPath.size() - 1).matches(MATCH_NODE_PREDICATE);
+            return checkResultingPath();
     }
 
     private boolean checkFeederAuditPath(){
@@ -66,5 +66,13 @@ public class JsonDataBlockCheck {
                  lastItem.equalsIgnoreCase("id")||
                  lastItem.equalsIgnoreCase("type"));
 
+    }
+
+    private boolean checkResultingPath(){
+        int index = jqueryPath.size() - 1;
+        String terminalNode = jqueryPath.get(index);
+        if (index > 0 && terminalNode.startsWith("'") && jqueryPath.get(index - 1).equals(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER))
+            terminalNode = jqueryPath.get(index - 2); //skip the node predicate marker
+        return terminalNode.matches(MATCH_NODE_PREDICATE);
     }
 }
