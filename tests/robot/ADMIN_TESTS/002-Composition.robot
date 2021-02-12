@@ -39,7 +39,7 @@ ${SUT}          ADMIN-TEST    # overriding defaults in suite_settings.robot
 
 *** Test Cases ***
 
-ADMIN - Delete Composition
+001 ADMIN - Delete Composition
     # pre check
     Connect With DB
     check composition admin delete table counts initially
@@ -55,6 +55,23 @@ ADMIN - Delete Composition
     Log To Console  ${response}
     # Test with count rows again - post check
     check composition admin delete table counts
+
+
+002 ADMIN - Delete An Already Deleted Composition
+    [Documentation]     1. Delete a composition via 'normal' endpoint \n\n
+    ...                    (DELETE /ehr/${ehr_id}/composition/${uid}) \n\n
+    ...                 2. Delete the same composition again via admin endpoint \n\n
+    ...                    (DELETE /admin/ehr/${ehr_id}/composition/${versioned_object_uid} \n\n
+    [Tags]    433  not-ready  bug
+    upload OPT    minimal/minimal_admin.opt
+    create new EHR (XML)
+    commit composition (XML)    minimal/minimal_admin.composition.extdatetimes.xml
+    delete composition    ${version_uid}
+
+        TRACE GITHUB ISSUE  433  bug
+
+    (admin) delete composition
+    [Teardown]          (admin) delete OPT
 
 
 
@@ -87,6 +104,7 @@ check composition admin delete table counts initially
                         Should Be Equal As Integers    ${event_context_records}     ${0}
     ${entry_participation_records}=   Count Rows In DB Table    ehr.participation
                         Should Be Equal As Integers    ${entry_participation_records}     ${0}
+
 
 check composition admin delete table counts
 
