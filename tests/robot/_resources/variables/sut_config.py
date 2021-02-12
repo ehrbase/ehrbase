@@ -27,6 +27,19 @@ KC_JWT_ISSUERURI = KEYCLOAK_URL + "/realms/ehrbase"
 
 
 # SUT CONFIGURATIONS
+"""
+CONFIG              SUT STARTUP AUTOMATED?      COMMENT
+------              ----------------------      -------
+
+DEV                 no                          manually start ehrbase, db
+DEV-OAUTH           no                          manually start ehrbase, db, keycloak
+TEST                yes
+TEST-OAUTH          partly                      manually start keycloak
+ADMIN-DEV           no                          manually start ehrbase, db
+ADMIN-DEV-OAUTH     manual                      manually start ehrbase, db, keycloak
+ADMIN-TEST          yes
+ADMIN-TEST-OAUTH    partly                      manually start keycloak
+"""
 
 # dev environment: for local development
 # requires manual startup of EHRbase and DB
@@ -148,25 +161,6 @@ ADMIN_TEST_CONFIG = {
     "KC_ACCESS_TOKEN_URL": KC_ACCESS_TOKEN_URL,
 }
 
-# # staging environment
-# &{STAGE}                URL=http://localhost:8080/ehrbase/rest/openehr/v1
-# ...                     HEARTBEAT=http://localhost:8080/ehrbase/
-# ...                     CREDENTIALS=@{stagecreds}
-# ...                     BASIC={"Authorization": "Basic ZWhyYmFzZS11..."}
-# ...                     OAUTH={"Authorization": "Bearer 1234"}
-# ...                     NODENAME=stage.ehrbase.org
-# ...                     CONTROL=docker
-# @{stagecreds}           username    password
-
-# # pre production environment
-# &{PREPROD}              URL=http://localhost:8080/ehrbase/rest/openehr/v1
-# ...                     HEARTBEAT=http://localhost:8080/ehrbase/
-# ...                     CREDENTIALS=@{preprodcreds}
-# ...                     BASIC={"Authorization": "Basic ZWhyYmFzZS11c2Vy..."}
-# ...                     OAUTH={"Authorization": "Bearer 1234"}
-# ...                     NODENAME=preprod.ehrbase.org
-# ...                     CONTROL=docker
-# @{preprodcreds}         username    password
 
 # # NOTE: for this configuration to work the following environment variables
 # #       have to be available:

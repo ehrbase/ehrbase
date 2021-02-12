@@ -18,8 +18,7 @@
 
 *** Settings ***
 Metadata    Version    0.1.0
-Metadata    Author    *Wladislaw Wagner*
-Metadata    Author    *Jake Smolka*
+Metadata    Authors    *Jake Smolka*, *Wladislaw Wagner*  
 Metadata    Created    2020.09.01
 
 Metadata        TOP_TEST_SUITE    ADMIN_EHR
@@ -29,6 +28,11 @@ Suite Setup     startup SUT
 Suite Teardown  shutdown SUT
 
 Force Tags     ADMIN_ehr
+
+
+
+*** Variables ***
+${SUT}          ADMIN-TEST    # overriding defaults in suite_settings.robot
 
 
 

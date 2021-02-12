@@ -25,7 +25,7 @@ import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
-import org.ehrbase.aql.compiler.recovery.RecoverArchetypeId;
+import org.ehrbase.aql.parser.AqlParser;
 
 import java.util.BitSet;
 
@@ -34,13 +34,13 @@ import java.util.BitSet;
  * Allows to return more meaningful messages during AQL parsing
  * Created by christian on 4/15/2016.
  */
-public class AqlErrorHandler extends BaseErrorListener {
+public class AqlErrorHandlerNoRecovery extends BaseErrorListener {
 
-    public static final AqlErrorHandler INSTANCE = new AqlErrorHandler();
+    public static final AqlErrorHandlerNoRecovery INSTANCE = new AqlErrorHandlerNoRecovery();
     public static final boolean REPORT_SYNTAX_ERRORS = true;
 
     @Override
-    public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e)  {
+    public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) throws ParseCancellationException {
         if (!REPORT_SYNTAX_ERRORS) {
             return;
         }
@@ -48,10 +48,6 @@ public class AqlErrorHandler extends BaseErrorListener {
         String sourceName = recognizer.getInputStream().getSourceName();
         if (!sourceName.isEmpty()) {
             sourceName = String.format("%s:%d:%d: ", sourceName, line, charPositionInLine);
-        }
-
-        if (e != null && new RecoverArchetypeId().isRecoverableArchetypeId(e.getCtx(), offendingSymbol)){
-                return; //ignore since it will be 'fixed' by the recognizer
         }
 
         throw new ParseCancellationException("AQL Parse exception: " + (sourceName.isEmpty() ? "source:" + sourceName : "") + "line " + line + ": char " + charPositionInLine + " " + msg);

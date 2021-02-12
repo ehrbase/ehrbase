@@ -18,6 +18,7 @@ import java.util.UUID;
 import java.util.function.Function;
 
 import static org.ehrbase.aql.sql.queryimpl.AqlRoutines.*;
+import static org.ehrbase.aql.sql.queryimpl.QueryImplConstants.AQL_NODE_ITERATIVE_MARKER;
 import static org.ehrbase.aql.sql.queryimpl.value_field.Functions.apply;
 
 @SuppressWarnings({"java:S3776","java:S3740"})
@@ -25,9 +26,9 @@ public class GenericJsonField extends RMObjectAttribute {
 
     protected Optional<String> jsonPath = Optional.empty();
 
-    private static final String AQLNODEITERATIVE = "'$AQLNODEITERATIVE$'";
-
     private boolean isJsonDataBlock = true; //by default, can be overriden
+
+    private static final String ITERATIVE_MARKER = "'"+AQL_NODE_ITERATIVE_MARKER+"'";
 
     public GenericJsonField(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
         super(fieldContext, joinSetup);
@@ -65,7 +66,7 @@ public class GenericJsonField extends RMObjectAttribute {
 
     public Field dvDateTime(Field<Timestamp> dateTime, Field<String> timeZoneId ){
         String rmType = "DV_DATE_TIME";
-        Function2<Field<Timestamp>, Field<String>, Field<JSON>> function = Routines::jsDvDateTime1;
+        Function2<Field<Timestamp>, Field<String>, Field<JSON>> function = Routines::jsDvDateTime;
         return jsonField(rmType, function, (TableField)dateTime, (TableField)timeZoneId);
     }
 
@@ -98,7 +99,7 @@ public class GenericJsonField extends RMObjectAttribute {
         if (jsonPath.isPresent()) {
             List<String> tokenized = Arrays.asList(jsonpathParameters(jsonPath.get()));
 
-            if (tokenized.contains(AQLNODEITERATIVE))
+            if (tokenized.contains(ITERATIVE_MARKER))
                 jsonField = fieldWithJsonArrayIteration(configuration, tokenized, function, tableFields);
             else
                 jsonField =
@@ -115,8 +116,8 @@ public class GenericJsonField extends RMObjectAttribute {
 
     private Field fieldWithJsonArrayIteration(Configuration configuration, List<String> tokenized, Object function, TableField... tableFields){
 
-        String[] prefix = tokenized.subList(0, tokenized.indexOf(AQLNODEITERATIVE)).toArray(new String[]{});
-        String[] remaining = tokenized.subList(tokenized.indexOf(AQLNODEITERATIVE)+1, tokenized.size()).toArray(new String[]{});
+        String[] prefix = tokenized.subList(0, tokenized.indexOf(ITERATIVE_MARKER)).toArray(new String[]{});
+        String[] remaining = tokenized.subList(tokenized.indexOf(ITERATIVE_MARKER)+1, tokenized.size()).toArray(new String[]{});
 
         //initial
         Field field = jsonpathItem(
@@ -127,9 +128,9 @@ public class GenericJsonField extends RMObjectAttribute {
 
         while (remaining.length > 0){
             List<String> tokens = Arrays.asList(remaining.clone());
-            if (tokens.contains(AQLNODEITERATIVE)) {
-                prefix = tokens.subList(0, tokens.indexOf(AQLNODEITERATIVE)).toArray(new String[]{});
-                remaining = tokens.subList(tokens.indexOf(AQLNODEITERATIVE) + 1, tokens.size()).toArray(new String[]{});
+            if (tokens.contains(ITERATIVE_MARKER)) {
+                prefix = tokens.subList(0, tokens.indexOf(ITERATIVE_MARKER)).toArray(new String[]{});
+                remaining = tokens.subList(tokens.indexOf(ITERATIVE_MARKER) + 1, tokens.size()).toArray(new String[]{});
             }
             else {
                 prefix = remaining;

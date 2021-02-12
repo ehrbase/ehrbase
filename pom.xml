@@ -130,7 +130,7 @@
         <swagger.version>1.6.2</swagger.version>
         <swagger-snapshot.version>2.0.0-rc2</swagger-snapshot.version>
         <postgressql.version>42.2.18</postgressql.version>
-        <ehrbase.sdk.version>9dc1adb</ehrbase.sdk.version>
+        <ehrbase.sdk.version>30e3062</ehrbase.sdk.version>
         <flyway.version>6.5.7</flyway.version>
         <joda.version>2.10.6</joda.version>
         <database.name>ehrbase</database.name>

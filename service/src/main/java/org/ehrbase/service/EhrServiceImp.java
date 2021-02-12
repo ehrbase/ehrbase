@@ -55,6 +55,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -259,7 +260,7 @@ public class EhrServiceImp extends BaseService implements EhrService {
      * @param ehrId
      * @return LocalDateTime instance of timestamp from DB
      */
-    public LocalDateTime getCreationTime(UUID ehrId) {
+    public DvDateTime getCreationTime(UUID ehrId) {
         //pre-step: check for valid ehrId
         if (hasEhr(ehrId).equals(Boolean.FALSE)) {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
@@ -267,7 +268,8 @@ public class EhrServiceImp extends BaseService implements EhrService {
 
         try {
             I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
-            return ehrAccess.getEhrRecord().getDateCreated().toLocalDateTime();
+            OffsetDateTime offsetDateTime = OffsetDateTime.from(LocalDateTime.from(ehrAccess.getEhrRecord().getDateCreated().toLocalDateTime()).atZone(ZoneId.of(ehrAccess.getEhrRecord().getDateCreatedTzid())));
+            return new DvDateTime(offsetDateTime);
         } catch (Exception e) {
             logger.error(e.getMessage());
             throw new InternalServerException(e);

@@ -95,9 +95,29 @@ Clean DB
     [Teardown]          Disconnect From Database
 
 
+Delete All Compositions
+    [Documentation]     Deletes all entries from ehr.composition and ehr.composition_history tables.
+    ...                 Is expected to be used with EHRbase server started with disabled Cache
+    ...                 e.g. `java -jar ehrbase-server.jar --cache.enabled=false`
+
+            # comment:  exit if 'control mode' is NONE
+                        Return From Keyword If    "${CONTROL_MODE}"=="NONE"
+                        ...    No DB connection required!
+
+            # comment:  use API if 'control mode' is API
+                        Run Keyword And Return If    "${CONTROL_MODE}"=="API"
+                        ...  Log To Console  Using API to delete templates on the server!
+
+            # comment:  use DB connection if 'control mode' is DOCKER or MANUAL
+                        Connect With DB
+                        Delete All Rows From Table    ehr.composition
+                        Delete All Rows From Table    ehr.composition_history
+                        Disconnect From Database
+
+
 Delete All Templates
     [Documentation]     Deletes all templates from ehr.template_store table.
-    ...                 Is meant to be used with EHRbase server started with disabled Cache
+    ...                 Is expected to be used with EHRbase server started with disabled Cache
     ...                 e.g. `java -jar ehrbase-server.jar --cache.enabled=false`
 
             # comment:  exit if 'control mode' is NONE
@@ -116,7 +136,7 @@ Delete All Templates
 
 Delete All EHR Records
     [Documentation]     Deletes all EHR records from ehr.ehr table.
-    ...                 Is meant to be used with EHRbase server started with disabled Cache
+    ...                 Is expected to be used with EHRbase server started with disabled Cache
     ...                 e.g. `java -jar ehrbase-server.jar --cache.enabled=false`
 
             # comment:  exit if 'control mode' is NONE
