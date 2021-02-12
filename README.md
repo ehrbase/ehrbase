@@ -14,10 +14,11 @@ This release of EHRbase (v0.13.0) is the first **beta** release. Please see [EHR
 ## 📝 Documentation
 [EHRbase Documentation](https://ehrbase.readthedocs.io/en/latest/) is build with Sphinx and hosted on [Read the Docs](https://readthedocs.org/).
 
+## Quick Start: Run EHRbase with Docker
+See our [Run EHRbase + DB with Docker-Compose](https://ehrbase.readthedocs.io/en/latest/03_development/04_docker_images/01_ehrbase/02_use_image/index.html#run-ehrbase-db-with-docker-compose) documentation page for a quick start.
 
-## Getting Started
-
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. Please read these instructions carefully. See [deployment](#deployment) for notes on how to deploy the project on a live system.
+## Building and Installing EHRbase
+These instructions will get you a copy of the project up and running on your local machine **for development and testing purposes**. Please read these instructions carefully. See [deployment](#deployment) for notes on how to deploy the project on a live system.
 
 ### Prerequisites
 
@@ -56,7 +57,7 @@ You can also use this Docker image which is a preconfigured Postgres database:
     docker run --name ehrdb --network ehrbase-net -e POSTGRES_PASSWORD=postgres -d -p 5432:5432 ehrbase/ehrbase-postgres:latest
 ```
 
-(For a preconfigured EHRbase application Docker image and its usage see [below](#Docker))
+(For a preconfigured EHRbase application Docker image and its usage see the [documentation](https://ehrbase.readthedocs.io/en/latest/03_development/04_docker_images/index.html))
 #### 2. Setup Maven environment
 
 Edit the database properties in  `./pom.xml` if necessary
