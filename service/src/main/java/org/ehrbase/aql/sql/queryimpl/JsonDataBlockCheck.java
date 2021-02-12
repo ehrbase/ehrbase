@@ -27,7 +27,7 @@ public class JsonDataBlockCheck {
     // '/name,0' is to matches path relative to the name array
 
     public static final String MATCH_NODE_PREDICATE = "(/(content|events|protocol|data|description|instruction|items|activities|activity|composition|entry|evaluation|observation|action)\\[([(0-9)|(A-Z)|(a-z)|\\-|_|\\.]*)\\])|" +
-            "(/value|/value,definingCode|/time|/name,0|/origin|/origin,/name,0|/origin,/value|/value,mappings)|" +
+            "(/value|/value,definingCode|/time|/name,0|/origin|/origin,/name,0|/origin,/value|/value,mappings|/value,lower|/value,upper)|" +
             "(/value,mappings,0)(|,purpose|,target|,purpose,definingCode|,purpose,definingCode,terminologyId|,target,terminologyId)|" +
             // common locatable attributes
             "(/uid,/value|/language|/language,terminologyId|/encoding|/encoding,terminologyId)";

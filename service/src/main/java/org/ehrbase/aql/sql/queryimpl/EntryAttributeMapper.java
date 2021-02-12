@@ -117,11 +117,8 @@ public class EntryAttributeMapper {
             Integer match = firstOccurence(0, fields, VALUE);
 
             if (match != null) { //deals with "/value/value"
-                Integer ndxInterval;
 
-                if ((ndxInterval = intervalValueIndex(fields)) > 0) { //interval
-                    fields.add(ndxInterval, INTERVAL);
-                } else if (match != 0) {
+                if (match != 0) {
                     //deals with name/value (name value is contained into a list conventionally)
                     if (match > 1 && fields.get(match - 1).matches("name|time"))
                         fields.set(match, VALUE);
@@ -159,15 +156,6 @@ public class EntryAttributeMapper {
         }
 
         return StringUtils.join(fields, COMMA);
-    }
-
-    private static Integer intervalValueIndex(List<String> fields) {
-        for (int i = 0; i < fields.size(); i++) {
-            if (fields.get(i).matches("^lower|^upper")) {
-                return i;
-            }
-        }
-        return -1;
     }
 
     private static List<String> setLocatableField(List<String> fields){
