@@ -164,6 +164,14 @@ public interface CompositionService extends BaseService {
     String getUidFromInputComposition(String content, CompositionFormat format);
 
     /**
+     * Helper function to read the template ID from given composition input in stated format.
+     * @param content Composition input
+     * @param format Composition format
+     * @return The UUID or null when not available.
+     */
+    String getTemplateIdFromInputComposition(String content, CompositionFormat format);
+
+    /**
      * Gets the version of a composition that is closest in time before timestamp
      * @param compositionId UUID (versioned_object_id) of composition
      * @param timestamp Given time

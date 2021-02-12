@@ -10,6 +10,10 @@ public abstract class OpenEhrAuditDataset implements Serializable {
 
     private String eventOutcomeDescription;
 
+    private String sourceUserId;
+
+    private String sourceAddress;
+
     public EventOutcomeIndicator getEventOutcomeIndicator() {
         return eventOutcomeIndicator;
     }
@@ -24,5 +28,21 @@ public abstract class OpenEhrAuditDataset implements Serializable {
 
     public void setEventOutcomeDescription(String eventOutcomeDescription) {
         this.eventOutcomeDescription = eventOutcomeDescription;
+    }
+
+    public String getSourceUserId() {
+        return sourceUserId;
+    }
+
+    public void setSourceUserId(String sourceUserId) {
+        this.sourceUserId = sourceUserId;
+    }
+
+    public String getSourceAddress() {
+        return sourceAddress;
+    }
+
+    public void setSourceAddress(String sourceAddress) {
+        this.sourceAddress = sourceAddress;
     }
 }

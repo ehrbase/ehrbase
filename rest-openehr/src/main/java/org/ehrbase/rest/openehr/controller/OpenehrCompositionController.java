@@ -34,6 +34,7 @@ import org.ehrbase.response.ehrscape.StructuredString;
 import org.ehrbase.response.openehr.CompositionResponseData;
 import org.ehrbase.response.openehr.ErrorResponseData;
 import org.ehrbase.response.openehr.VersionedCompositionResponseData;
+import org.ehrbase.rest.openehr.audit.CompositionAuditStrategy;
 import org.ehrbase.rest.openehr.controller.OperationNotesResourcesReaderOpenehr.ApiNotes;
 import org.ehrbase.rest.openehr.util.InternalResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +54,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -117,6 +120,9 @@ public class OpenehrCompositionController extends BaseController {
 
         CompositionFormat compositionFormat = extractCompositionFormat(contentType);
 
+        // Enrich current request with template ID
+        enrichRequestAttribute(CompositionAuditStrategy.COMPOSITION_TEMPLATE_ID, compositionService.getTemplateIdFromInputComposition(composition, compositionFormat));
+
         UUID compositionUuid = compositionService.create(ehrId, composition, compositionFormat);
 
         URI uri = URI.create(this.encodePath(getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId.toString() + "/composition/" + compositionUuid.toString()));
@@ -174,6 +180,9 @@ public class OpenehrCompositionController extends BaseController {
         UUID versionedObjectUid = getCompositionVersionedObjectUidString(versionedObjectUidString);
 
         CompositionFormat compositionFormat = extractCompositionFormat(contentType);
+
+        // Enrich current request with template ID
+        enrichRequestAttribute(CompositionAuditStrategy.COMPOSITION_TEMPLATE_ID, compositionService.getTemplateIdFromInputComposition(composition, compositionFormat));
 
         // check if composition ID path variable is valid
         compositionService.exists(versionedObjectUid);
@@ -247,7 +256,8 @@ public class OpenehrCompositionController extends BaseController {
         HttpHeaders headers = new HttpHeaders();
 
         // check if this composition in given preceding version is available
-        compositionService.retrieve(extractVersionedObjectUidFromVersionUid(precedingVersionUid), 1).orElseThrow(
+        compositionService.retrieve(extractVersionedObjectUidFromVersionUid(precedingVersionUid), 1)
+                .ifPresentOrElse(compositionDto -> enrichRequestAttribute(CompositionAuditStrategy.COMPOSITION_TEMPLATE_ID, compositionDto.getTemplateId()),
                 () -> new ObjectNotFoundException("composition", "No EHR with the supplied ehr_id or no COMPOSITION with the supplied preceding_version_uid.")
         ); // TODO check for ehr + composition match as well - wow to to that? should be part of deletion, according to openEHR platform spec --> postponed, see EHR-265
 
@@ -556,12 +566,15 @@ public class OpenehrCompositionController extends BaseController {
             }
 
             Optional<CompositionDto> compositionDto = compositionService.retrieve(compositionId, versionNumber);
+
             // TODO how to handle error situation here only with Optional? is there a better way without java 9 Optional.ifPresentOrElse()?
             if (compositionDto.isPresent()) {
                 StructuredString ss = compositionService.serialize(compositionDto.get(), format);
                 objByReference.setValue(ss.getValue());
                 objByReference.setFormat(ss.getFormat());
                 //objByReference.setComposition(compositionService.serialize(compositionDto.get(), format));
+                RequestContextHolder.currentRequestAttributes()
+                        .setAttribute(CompositionAuditStrategy.COMPOSITION_TEMPLATE_ID, compositionDto.get().getTemplateId(), RequestAttributes.SCOPE_REQUEST);
             } else {
                 //TODO undo creation of composition, if applicable
                 throw new ObjectNotFoundException("composition", "Couldn't retrieve composition");
@@ -577,5 +590,4 @@ public class OpenehrCompositionController extends BaseController {
 
         return Optional.of(new InternalResponse<>(minimalOrRepresentation, respHeaders));
     }
-
 }

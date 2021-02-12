@@ -40,6 +40,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -245,6 +246,16 @@ public abstract class BaseController {
         // extract the version from string of format "$UUID::$SYSTEM::$VERSION"
         // via making a substring starting at last occurrence of "::" + 2
         return Integer.valueOf(versionUid.substring(versionUid.lastIndexOf("::") + 2));
+    }
+
+    /**
+     * Add attribute to the current request.
+     * @param attributeName
+     * @param value
+     */
+    protected void enrichRequestAttribute(String attributeName, Object value) {
+        RequestContextHolder.currentRequestAttributes()
+                .setAttribute(attributeName, value, RequestAttributes.SCOPE_REQUEST);
     }
 
     /*

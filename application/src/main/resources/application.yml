@@ -28,7 +28,7 @@
 
 spring:
   application:
-    name: ehrbase-client
+    name: ehrbase
   security:
     oauth2:
       resourceserver:

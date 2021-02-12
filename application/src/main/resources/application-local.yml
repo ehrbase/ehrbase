@@ -39,7 +39,9 @@ server:
     iterationScanDepth: 2
 
 security:
-  authType: NONE
+  authType: basic
+  auth-user: myuser
+  auth-password: myPassword432
 
 system:
   type: LOCAL
