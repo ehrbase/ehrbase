@@ -20,7 +20,7 @@ package org.ehrbase.application.config;
 
 import org.ehrbase.application.util.IsoDateTimeConverter;
 import org.ehrbase.application.util.StringToEnumConverter;
-import org.ehrbase.rest.openehr.audit.OpenehrAuditInterceptor;
+import org.ehrbase.rest.openehr.audit.CompositionAuditStrategy;
 import org.openehealth.ipf.commons.audit.AuditContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
@@ -64,7 +64,7 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements WebMvcConfi
     public void addInterceptors(@NonNull InterceptorRegistry registry) {
         if (auditContext.isAuditEnabled()) {
             registry
-                    .addInterceptor(new OpenehrAuditInterceptor(auditContext))
+                    .addInterceptor(new CompositionAuditStrategy(auditContext))
                     .addPathPatterns("/**/composition/**", "/**/versioned_composition/**");
         }
     }

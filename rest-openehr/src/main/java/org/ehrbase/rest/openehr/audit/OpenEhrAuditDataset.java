@@ -4,7 +4,7 @@ import org.openehealth.ipf.commons.audit.codes.EventOutcomeIndicator;
 
 import java.io.Serializable;
 
-public class OpenEhrAuditDataset implements Serializable {
+public abstract class OpenEhrAuditDataset implements Serializable {
 
     private EventOutcomeIndicator eventOutcomeIndicator;
 

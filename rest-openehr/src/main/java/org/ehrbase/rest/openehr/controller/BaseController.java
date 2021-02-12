@@ -19,9 +19,19 @@
 package org.ehrbase.rest.openehr.controller;
 
 import org.apache.commons.lang3.StringUtils;
-import org.ehrbase.api.exception.*;
+import org.ehrbase.api.exception.BadGatewayException;
+import org.ehrbase.api.exception.DuplicateObjectException;
+import org.ehrbase.api.exception.GeneralRequestProcessingException;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.InvalidApiParameterException;
+import org.ehrbase.api.exception.NotAcceptableException;
+import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.exception.PreconditionFailedException;
+import org.ehrbase.api.exception.StateConflictException;
+import org.ehrbase.api.exception.UnprocessableEntityException;
+import org.ehrbase.api.exception.UnsupportedMediaTypeException;
+import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.response.ehrscape.CompositionFormat;
-import org.ehrbase.rest.openehr.RestOpenehrOperation;
 import org.ehrbase.serialisation.exception.UnmarshalException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -47,38 +57,35 @@ import java.util.UUID;
  */
 public abstract class BaseController {
 
-    static final String RETURN_MINIMAL = "return=minimal";
-    static final String RETURN_REPRESENTATION = "return=representation";
-
     // Fixed header identifiers
     public static final String CONTENT_TYPE = HttpHeaders.CONTENT_TYPE;
+    public static final String ACCEPT = HttpHeaders.ACCEPT;
+    public static final String REQ_CONTENT_TYPE = "Client may request content format";
+    public static final String REQ_CONTENT_TYPE_BODY = "Format of transferred body";
+    public static final String REQ_ACCEPT = "Client should specify expected format";
+    // response headers
+    public static final String RESP_CONTENT_TYPE_DESC = "Format of response";
+    // Audit
+    public static final String REST_OPERATION = "RestOperation";
+    static final String RETURN_MINIMAL = "return=minimal";
+    static final String RETURN_REPRESENTATION = "return=representation";
     static final String LOCATION = HttpHeaders.LOCATION;
     static final String ETAG = HttpHeaders.ETAG;
     static final String LAST_MODIFIED = HttpHeaders.LAST_MODIFIED;
-    public static final String ACCEPT = HttpHeaders.ACCEPT;
     static final String PREFER = "PREFER";
     static final String IF_MATCH = HttpHeaders.IF_MATCH;
     static final String IF_NONE_MATCH = HttpHeaders.IF_NONE_MATCH;
-
     // Configuration of swagger-ui description fields
     // request headers
     static final String REQ_OPENEHR_VERSION = "Optional custom request header for versioning";
     static final String REQ_OPENEHR_AUDIT = "Optional custom request header for auditing";
-    public static final String REQ_CONTENT_TYPE = "Client may request content format";
-    public static final String REQ_CONTENT_TYPE_BODY = "Format of transferred body";
-    public static final String REQ_ACCEPT = "Client should specify expected format";
     static final String REQ_PREFER = "May be used by clients for resource representation negotiation";
-    // response headers
-    public static final String RESP_CONTENT_TYPE_DESC = "Format of response";
     static final String RESP_LOCATION_DESC = "Location of resource";
     static final String RESP_ETAG_DESC = "Entity tag for resource";
     static final String RESP_LAST_MODIFIED_DESC = "Time of last modification of resource";
     // common response description fields
     static final String RESP_NOT_ACCEPTABLE_DESC = "Not Acceptable - Service can not fulfill requested format via accept header.";
     static final String RESP_UNSUPPORTED_MEDIA_DESC = "Unsupported Media Type - request's content-type not supported.";
-
-    // Audit
-    public static final String REST_OPERATION = "RestOperation";
 
     public Map<String, Map<String, String>> add2MetaMap(Map<String, Map<String, String>> metaMap, String key, String value) {
         Map<String, String> contentMap;
@@ -201,7 +208,7 @@ public abstract class BaseController {
      */
     public String encodePath(String path) {
 
-            path = UriUtils.encodePath(path, "UTF-8");
+        path = UriUtils.encodePath(path, "UTF-8");
 
         return path;
     }
@@ -238,10 +245,6 @@ public abstract class BaseController {
         // extract the version from string of format "$UUID::$SYSTEM::$VERSION"
         // via making a substring starting at last occurrence of "::" + 2
         return Integer.valueOf(versionUid.substring(versionUid.lastIndexOf("::") + 2));
-    }
-
-    protected void registerOperation(HttpServletRequest request, RestOpenehrOperation operation) {
-        request.setAttribute(REST_OPERATION, operation);
     }
 
     /*
@@ -340,8 +343,8 @@ public abstract class BaseController {
      * Instant since it is not a valid ISO 6801 date time string
      *
      * @param req - Request
-     * @param e - Exception thrown from converter
-     * @return ResponseEntity<Map<String, String>> as BAD_REQUEST - 400
+     * @param e   - Exception thrown from converter
+     * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
      */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<Map<String, String>> restErrorHandler(HttpServletRequest req, MethodArgumentTypeMismatchException e) {

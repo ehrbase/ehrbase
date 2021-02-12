@@ -18,7 +18,12 @@
 
 package org.ehrbase.rest.openehr.controller;
 
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.ResponseHeader;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
@@ -29,7 +34,6 @@ import org.ehrbase.response.ehrscape.StructuredString;
 import org.ehrbase.response.openehr.CompositionResponseData;
 import org.ehrbase.response.openehr.ErrorResponseData;
 import org.ehrbase.response.openehr.VersionedCompositionResponseData;
-import org.ehrbase.rest.openehr.RestOpenehrOperation;
 import org.ehrbase.rest.openehr.controller.OperationNotesResourcesReaderOpenehr.ApiNotes;
 import org.ehrbase.rest.openehr.util.InternalResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,14 +42,27 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 /**
@@ -94,9 +111,7 @@ public class OpenehrCompositionController extends BaseController {
                                             @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false) String accept,
                                             @ApiParam(value = REQ_PREFER) @RequestHeader(value = PREFER, required = false) String prefer,
                                             @ApiParam(value = "EHR identifier taken from EHR.ehr_id.value", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
-                                            @ApiParam(value = "The composition to create", required = true) @RequestBody String composition,
-                                            HttpServletRequest request) {
-        registerOperation(request, RestOpenehrOperation.CREATE_COMPOSITION);
+                                            @ApiParam(value = "The composition to create", required = true) @RequestBody String composition) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
 
@@ -153,9 +168,7 @@ public class OpenehrCompositionController extends BaseController {
                                             @ApiParam(value = "{preceding_version_uid}", required = true) @RequestHeader(value = IF_MATCH) String ifMatch,
                                             @ApiParam(value = "EHR identifier taken from EHR.ehr_id.value", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
                                             @ApiParam(value = "identifier of the VERSIONED COMPOSITION to be updated.", required = true) @PathVariable(value = "versioned_object_uid") String versionedObjectUidString,
-                                            @ApiParam(value = "The composition to create", required = true) @RequestBody String composition,
-                                            HttpServletRequest request) {
-        registerOperation(request, RestOpenehrOperation.UPDATE_COMPOSITION);
+                                            @ApiParam(value = "The composition to create", required = true) @RequestBody String composition) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
         UUID versionedObjectUid = getCompositionVersionedObjectUidString(versionedObjectUidString);
@@ -228,10 +241,7 @@ public class OpenehrCompositionController extends BaseController {
     public ResponseEntity deleteComposition(@ApiParam(value = REQ_OPENEHR_VERSION) @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
                                             @ApiParam(value = REQ_OPENEHR_AUDIT) @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
                                             @ApiParam(value = "EHR identifier taken from EHR.ehr_id.value", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
-                                            @ApiParam(value = "Identifier of the COMPOSITION to be updated. This MUST be the last (most recent) version.", required = true) @PathVariable(value = "preceding_version_uid") String precedingVersionUid,
-                                            HttpServletRequest request) {
-        registerOperation(request, RestOpenehrOperation.DELETE_COMPOSITION);
-
+                                            @ApiParam(value = "Identifier of the COMPOSITION to be updated. This MUST be the last (most recent) version.", required = true) @PathVariable(value = "preceding_version_uid") String precedingVersionUid) {
         UUID ehrId = getEhrUuid(ehrIdString);
 
         HttpHeaders headers = new HttpHeaders();
@@ -299,10 +309,8 @@ public class OpenehrCompositionController extends BaseController {
     public ResponseEntity<CompositionResponseData> getCompositionByVersionId(@ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false) String accept,
                                                                              @ApiParam(value = "EHR identifier taken from EHR.ehr_id.value", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
                                                                              @ApiParam(value = "VERSION identifier", required = true) @PathVariable(value = "version_uid") String versionUid,
-                                                                             @ApiParam(value = "A timestamp in the ISO8601 format", hidden = true) @RequestParam(value = "version_at_time", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime versionAtTime,
-                                                                             HttpServletRequest request) {
-        registerOperation(request, RestOpenehrOperation.GET_COMPOSITION_BY_VERSION_ID);
-        return getCompositionByTime(accept, ehrIdString, versionUid, versionAtTime, request);
+                                                                             @ApiParam(value = "A timestamp in the ISO8601 format", hidden = true) @RequestParam(value = "version_at_time", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime versionAtTime) {
+        return getCompositionByTime(accept, ehrIdString, versionUid, versionAtTime);
     }
 
     /**
@@ -328,10 +336,7 @@ public class OpenehrCompositionController extends BaseController {
     public ResponseEntity getCompositionByTime(@ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false) String accept,
                                                @ApiParam(value = "EHR identifier taken from EHR.ehr_id.value", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
                                                @ApiParam(value = "VERSIONED_COMPOSITION identifier taken from VERSIONED_COMPOSITION.uid.value", required = true) @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
-                                               @ApiParam(value = "A timestamp in the ISO8601 format") @RequestParam(value = "version_at_time", required = false) LocalDateTime versionAtTime,
-                                               HttpServletRequest request) {
-        registerOperation(request, RestOpenehrOperation.GET_COMPOSITION_AT_TIME);
-
+                                               @ApiParam(value = "A timestamp in the ISO8601 format") @RequestParam(value = "version_at_time", required = false) LocalDateTime versionAtTime) {
         UUID ehrId = getEhrUuid(ehrIdString);
 
         // Note: Since this method can be called by another mapping as "almost overloaded" function some parameters might be semantically named wrong in that case. E.g. versionedObjectUid can contain a versionUid.
@@ -384,10 +389,7 @@ public class OpenehrCompositionController extends BaseController {
             @ApiResponse(code = 404, response = ErrorResponseData.class, message = "Not Found - No EHR with the supplied ehr_id or no VERSIONED_COMPOSITION with the supplied versioned_object_uid.")})
     //TODO @ResponseStatus(value= HttpStatus.NO_CONTENT)  // overwrites default 200, fixes the wrong listing of 200 in swagger-ui (EHR-56)
     public ResponseEntity<VersionedCompositionResponseData> getVersionedCompositionById(@ApiParam(value = "EHR identifier taken from EHR.ehr_id.value", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
-                                                                                        @ApiParam(value = "VERSIONED_COMPOSITION identifier taken from VERSIONED_COMPOSITION.uid.value", required = true) @PathVariable(value = "versioned_object_uid") String versionedObjectUidString,
-                                                                                        HttpServletRequest request) {
-        registerOperation(request, RestOpenehrOperation.GET_VERSIONED_COMPOSITION);
-
+                                                                                        @ApiParam(value = "VERSIONED_COMPOSITION identifier taken from VERSIONED_COMPOSITION.uid.value", required = true) @PathVariable(value = "versioned_object_uid") String versionedObjectUidString) {
         UUID ehrId = getEhrUuid(ehrIdString);
         UUID versionedObjectUid = getCompositionVersionedObjectUidString(versionedObjectUidString);
 
@@ -418,10 +420,7 @@ public class OpenehrCompositionController extends BaseController {
             @ApiResponse(code = 404, response = ErrorResponseData.class, message = "Not Found - No EHR with the supplied ehr_id or no VERSIONED_COMPOSITION with the supplied versioned_object_uid.")})
     //TODO @ResponseStatus(value= HttpStatus.NO_CONTENT)  // overwrites default 200, fixes the wrong listing of 200 in swagger-ui (EHR-56)
     public ResponseEntity<VersionedCompositionResponseData> getRevisionHistoryVersionedCompositionById(@ApiParam(value = "EHR identifier taken from EHR.ehr_id.value", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
-                                                                                                       @ApiParam(value = "VERSIONED_COMPOSITION identifier taken from VERSIONED_COMPOSITION.uid.value", required = true) @PathVariable(value = "versioned_object_uid") String versionedObjectUidString,
-                                                                                                       HttpServletRequest request) {
-        registerOperation(request, RestOpenehrOperation.GET_VERSIONED_COMPOSITION_REVISION_HISTORY);
-
+                                                                                                       @ApiParam(value = "VERSIONED_COMPOSITION identifier taken from VERSIONED_COMPOSITION.uid.value", required = true) @PathVariable(value = "versioned_object_uid") String versionedObjectUidString) {
         UUID ehrId = getEhrUuid(ehrIdString);
         UUID versionedObjectUid = getCompositionVersionedObjectUidString(versionedObjectUidString);
 
@@ -452,10 +451,7 @@ public class OpenehrCompositionController extends BaseController {
     //TODO @ResponseStatus(value= HttpStatus.NO_CONTENT)  // overwrites default 200, fixes the wrong listing of 200 in swagger-ui (EHR-56)
     public ResponseEntity<CompositionResponseData> getCompositionByRevisionHistory(@ApiParam(value = "EHR identifier taken from EHR.ehr_id.value", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
                                                                                    @ApiParam(value = "VERSIONED_COMPOSITION identifier taken from VERSIONED_COMPOSITION.uid.value", required = true) @PathVariable(value = "versioned_object_uid") String versionedObjectUidString,
-                                                                                   @ApiParam(value = "VERSIONED identifier taken from VERSIONED.uid.value", required = true) @PathVariable(value = "version_uid") String versionUid,
-                                                                                   HttpServletRequest request) {
-        registerOperation(request, RestOpenehrOperation.GET_VERSIONED_COMPOSITION_VERSION_BY_ID);
-
+                                                                                   @ApiParam(value = "VERSIONED identifier taken from VERSIONED.uid.value", required = true) @PathVariable(value = "version_uid") String versionUid) {
         UUID ehrId = getEhrUuid(ehrIdString);
         UUID versionedObjectUid = getCompositionVersionedObjectUidString(versionedObjectUidString);
 
@@ -486,10 +482,7 @@ public class OpenehrCompositionController extends BaseController {
     //TODO @ResponseStatus(value= HttpStatus.NO_CONTENT)  // overwrites default 200, fixes the wrong listing of 200 in swagger-ui (EHR-56)
     public ResponseEntity<CompositionResponseData> getVersionedCompositionAtTime(@ApiParam(value = "EHR identifier taken from EHR.ehr_id.value", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
                                                                                  @ApiParam(value = "VERSIONED_COMPOSITION identifier taken from VERSIONED_COMPOSITION.uid.value", required = true) @PathVariable(value = "versioned_object_uid") String versionedObjectUidString,
-                                                                                 @ApiParam(value = "A timestamp in the ISO8601 format") @RequestParam(value = "version_at_time", required = false) String versionAtTime,
-                                                                                 HttpServletRequest request) {
-        registerOperation(request, RestOpenehrOperation.GET_VERSIONED_COMPOSITION_VERSION_AT_TIME);
-
+                                                                                 @ApiParam(value = "A timestamp in the ISO8601 format") @RequestParam(value = "version_at_time", required = false) String versionAtTime) {
         UUID ehrId = getEhrUuid(ehrIdString);
         UUID versionedObjectUid = getCompositionVersionedObjectUidString(versionedObjectUidString);
 
