@@ -412,6 +412,77 @@ get ehr_status of fake EHR
                         # String    response body error    EHR with this ID not found
 
 
+get versioned ehr_status of EHR
+    [Documentation]     Gets versioned status of EHR with given ehr_id.
+    ...                 DEPENDENCY: `prepare new request session` and keywords that
+    ...                             create and expose an `ehr_id` e.g.
+    ...                             - `create new EHR`
+    ...                             - `generate random ehr_id`
+
+    &{resp}=            REST.GET    ${baseurl}/ehr/${ehr_id}/versioned_ehr_status
+                        ...         headers={"Content-Type": "application/json"}
+                        # ...         headers={"If-Match": null}
+                        Set Test Variable    ${response}    ${resp}
+
+
+get revision history of versioned ehr_status of EHR
+    [Documentation]     Gets revision history of versioned status of EHR with given ehr_id.
+    ...                 DEPENDENCY: `prepare new request session` and keywords that
+    ...                             create and expose an `ehr_id` e.g.
+    ...                             - `create new EHR`
+    ...                             - `generate random ehr_id`
+
+    &{resp}=            REST.GET    ${baseurl}/ehr/${ehr_id}/versioned_ehr_status/revision_history
+                        ...         headers={"Content-Type": "application/json"}
+                        # ...         headers={"If-Match": null}
+                        Set Test Variable    ${response}    ${resp}
+
+
+get versioned ehr_status of EHR by time
+    [Documentation]     Gets status of EHR with given ehr_id.
+    ...                 DEPENDENCY: `prepare new request session` and keywords that
+    ...                             create and expose an `ehr_id` e.g.
+    ...                             - `create new EHR`
+    ...                             - `generate random ehr_id`
+    ...                 Input: `query` variable containing query parameters as object or directory (e.g. _limit=2 for [$URL]?_limit=2)
+
+    # Trick to see if ${query} was set. (if not, "Get Variale Value" will set the value to None)
+    ${query} = 	Get Variable Value 	${query}
+    # Only run the GET with query if $query was set
+    Run Keyword Unless 	$query is None 	internal get versioned ehr_status of EHR by time with query
+    Run Keyword If 	$query is None 	internal get versioned ehr_status of EHR by time without query
+
+
+# internal only, do not call from outside. use "get versioned ehr_status of EHR by time" instead
+internal get versioned ehr_status of EHR by time with query
+    &{resp}=            REST.GET    ${baseurl}/ehr/${ehr_id}/versioned_ehr_status/version    ${query}
+                        ...         headers={"Content-Type": "application/json"}
+                        # ...         headers={"If-Match": null}
+                        Set Test Variable    ${response}    ${resp}
+
+
+# internal only, do not call from outside. use "get versioned ehr_status of EHR by time" instead
+internal get versioned ehr_status of EHR by time without query
+    &{resp}=            REST.GET    ${baseurl}/ehr/${ehr_id}/versioned_ehr_status/version
+                        ...         headers={"Content-Type": "application/json"}
+                        # ...         headers={"If-Match": null}
+                        Set Test Variable    ${response}    ${resp}
+
+
+get versioned ehr_status of EHR by version uid
+    [Documentation]     Gets revision history of versioned status of EHR with given ehr_id.
+    ...                 DEPENDENCY: `prepare new request session` and keywords that
+    ...                             create and expose an `ehr_id` e.g.
+    ...                             - `create new EHR`
+    ...                             - `generate random ehr_id`
+    ...                 Input: `version_uid` variable needs to be set
+
+    &{resp}=            REST.GET    ${baseurl}/ehr/${ehr_id}/versioned_ehr_status/version/${version_uid}
+                        ...         headers={"Content-Type": "application/json"}
+                        # ...         headers={"If-Match": null}
+                        Set Test Variable    ${response}    ${resp}
+
+
 set ehr_status of EHR
     [Documentation]     Sets status of EHR with given `ehr_id`.
     ...                 DEPENDENCY: `prepare new request session` and keywords that

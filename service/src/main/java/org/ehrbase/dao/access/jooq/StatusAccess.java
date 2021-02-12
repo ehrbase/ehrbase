@@ -471,6 +471,7 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
 
         // retrieve all other versions from status_history and sort by time
         Result result = getDataAccess().getContext().selectFrom(STATUS_HISTORY)
+                .where(STATUS_HISTORY.ID.eq(statusUid))
                 .orderBy(STATUS_HISTORY.SYS_TRANSACTION.desc())    // latest at top, i.e. [0]
                 .fetch();
 
