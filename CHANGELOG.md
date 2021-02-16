@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add /status/env endpoint for environment information (see: https://github.com/ehrbase/ehrbase/pull/400)
 - Add /status/metrics endpoint for detailed metrics on specific topics (db connection, http requests, etc.) (see: https://github.com/ehrbase/ehrbase/pull/400)
 - Add /status/prometheus endpoint for prometheus metrics (see: https://github.com/ehrbase/ehrbase/pull/400)
+- Endpoints and integration tests for VERISONED_EHR_STATUS (see: https://github.com/ehrbase/ehrbase/pull/415)
 
 ### Changed
 
