@@ -171,13 +171,17 @@ public class EhrServiceImp extends BaseService implements EhrService {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrUuid.toString());
         }
 
+        if ((version == 0) || (I_StatusAccess.getLatestVersionNumber(getDataAccess(), versionedObjectUid) < version)) {
+            throw new ObjectNotFoundException("versioned_ehr_status", "No VERSIONED_EHR_STATUS with given version: " + version);
+        }
+
         I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstanceByStatus(getDataAccess(), ehrUuid, versionedObjectUid, version);
         if (ehrAccess == null) {
             return Optional.empty();
         }
 
         ObjectVersionId versionId = new ObjectVersionId(versionedObjectUid + "::" + getServerConfig().getNodename() + "::" + version);
-        DvCodedText lifecycleState = new DvCodedText("TODO", new CodePhrase("TODO"));   // FIXME VERSIONED_OBJECT_POC: needs meaningful values
+        DvCodedText lifecycleState = new DvCodedText("complete", new CodePhrase("532"));   // TODO: once lifecycle state is supported, get it here dynamically
         AuditDetails commitAudit = ehrAccess.getStatusAccess().getAuditDetailsAccess().getAsAuditDetails();
         ObjectRef<HierObjectId> contribution = new ObjectRef<>(new HierObjectId(ehrAccess.getStatusAccess().getStatusRecord().getInContribution().toString()), "openehr", "contribution");
         List<UUID> attestationIdList = I_AttestationAccess.retrieveListOfAttestationsByRef(getDataAccess(), ehrAccess.getStatusAccess().getStatusRecord().getAttestationRef());
@@ -189,7 +193,15 @@ public class EhrServiceImp extends BaseService implements EhrService {
                 attestations.add(a.getAsAttestation());
             }
         }
-        OriginalVersion<EhrStatus> versionStatus = new OriginalVersion<>(versionId, null, ehrAccess.getStatus(),
+
+        ObjectVersionId precedingVersionId = null;
+        // check if there is a preceding version and set it, if available
+        if (version > 1) {
+            // in the current scope version is an int and therefore: preceding = current - 1
+            precedingVersionId = new ObjectVersionId(versionedObjectUid + "::" + getServerConfig().getNodename() + "::" + (version - 1));
+        }
+
+        OriginalVersion<EhrStatus> versionStatus = new OriginalVersion<>(versionId, precedingVersionId, ehrAccess.getStatus(),
                 lifecycleState, commitAudit, contribution, null, null, attestations);
 
         return Optional.of(versionStatus);

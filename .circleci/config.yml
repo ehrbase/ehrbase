@@ -746,6 +746,7 @@ jobs:
     # executor: docker-py3-java11-postgres
     executor: machine-ubuntu-2004
     environment:
+      SUT: TEST
       ADMINAPI_ACTIVE: "TRUE"
       SYSTEM_ALLOWTEMPLATEOVERWRITE: "TRUE"
     steps:
@@ -859,7 +860,7 @@ commands:
         type: boolean
 
       include-tags:
-        description: Which tests to inclue by TAGs (Robot syntax applies!)
+        description: Which tests to include by TAGs (Robot syntax applies!)
         type: string
 
       test-suite-path:
@@ -896,14 +897,28 @@ commands:
                    --system.allow-template-overwrite=<< parameters.allow-template-overwrite >> \
                    --server.nodename=<< parameters.nodename >> \
                    --cache.enabled=<< parameters.cache-enabled >> > log & app_pid=$!
-              if ! tail -f log | timeout 30s grep -m 1 "Started EhrBase in"; then
-                echo "WARNING: Did not see a startup message even after waiting 30s" >&2
-                if kill -0 "$app_pid"; then
-                  echo "...although EHRbase is still running" >&2
-                else
-                  echo "...and EHRbase did not successfully start" >&2
-                fi
-              fi
+                timeout=60
+                while [ ! -f ./log ];
+                    do
+                        echo "Waiting for file ./log ..."
+                        if [ "$timeout" == 0 ]; then
+                            echo "ERROR: timed out while waiting for file ./log"
+                            exit 1
+                        fi
+                        sleep 1
+                    ((timeout--))
+                done
+                while ! (cat ./log | grep -m 1 "Started EhrBase in");
+                    do
+                        echo "waiting for EHRbase to be ready ...";
+                        if [ "$timeout" == 0 ]; then
+                            echo "WARNING: Did not see a startup message even after waiting 60s"
+                            exit 1
+                        fi
+                        sleep 1;
+                    ((timeout--))
+                done
+                echo "REMAINING TIMEOUT: $timeout"              
             fi
             jps
             cd ~/projects/tests
@@ -1682,7 +1697,8 @@ commands:
           keys:
             - job-integration-tests-v2-pip-{{ checksum "~/projects/tests/requirements.txt" }}
       - restore_cache:
-          keys: google-chrome-incl-webdriver-
+          keys:
+            - google-chrome-incl-webdriver-
 
   save-build-ehrbase-job-caches:
     description: Save all caches in building artifacts job
@@ -1774,6 +1790,9 @@ executors:
     working_directory: ~/projects
     docker:
       - image: cimg/base:stable
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
 
   docker-python3-java11:
     working_directory: ~/projects
@@ -1781,6 +1800,9 @@ executors:
       # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
       # - image: circleci/python:3.8.5-buster-node-browsers
       - image: circleci/python:3.8.5-node-browsers
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
 
   docker-py3-java11-postgres:
     working_directory: ~/projects
@@ -1788,7 +1810,13 @@ executors:
       # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
       # - image:  circleci/python:3.8.5-buster-node-browsers
       - image: circleci/python:3.8.5-node-browsers
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
       - image: ehrbase/ehrbase-postgres:11.10
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
         environment:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
