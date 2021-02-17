@@ -116,3 +116,14 @@ Force Tags
     # comment: Idea - newer/higher timestamp - older/lesser timestamp = number larger than 0 IF correct
     Should Be True 	${timediff} > 0
     [Teardown]    TRACE GITHUB ISSUE    458    bug
+
+
+4. Get Revision History of Versioned Status Of Non-Existing EHR (JSON)
+    [Documentation]    Simple test
+
+    prepare new request session    JSON    Prefer=return=representation
+
+    create fake EHR
+
+    get revision history of versioned ehr_status of EHR
+    Should Be Equal As Strings    ${response.status}    404
