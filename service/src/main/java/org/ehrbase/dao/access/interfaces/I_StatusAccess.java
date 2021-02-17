@@ -173,4 +173,14 @@ public interface I_StatusAccess extends I_SimpleCRUD {
      * @return time as {@link Timestamp}
      */
     Timestamp getInitialTimeOfVersionedEhrStatus();
+
+    /**
+     * Checks existence of given EHR_STATUS.
+     * @param domainAccess domain access
+     * @param ehrStatusId given EHR_STATUS
+     * @return True if object with ID exists, false if not
+     */
+    static boolean exists(I_DomainAccess domainAccess, UUID ehrStatusId) {
+        return StatusAccess.exists(domainAccess, ehrStatusId);
+    }
 }

@@ -109,6 +109,13 @@ public interface EhrService extends BaseService {
     Boolean hasEhr(UUID ehrId);
 
     /**
+     * Return True if a EHR_STATUS with identifier statusId exists.
+     * @param statusId identifier to test
+     * @return True when existing, false if not
+     */
+    boolean hasStatus(UUID statusId);
+
+    /**
      * Helper to get (Versioned Object) Uid of EHR_STATUS of given EHR.
      * @param ehrUid Uid of EHR
      * @return UUID of corresponding EHR_STATUS

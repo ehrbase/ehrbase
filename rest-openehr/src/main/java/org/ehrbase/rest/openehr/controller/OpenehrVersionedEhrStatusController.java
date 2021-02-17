@@ -168,7 +168,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController{
 
         // check if EHR is valid
         if(ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
-            throw new ObjectNotFoundException("ehr", "No EHR with this ID can be found");
+            throw new ObjectNotFoundException("ehr", "No EHR with this ID can be found.");
         }
 
         // parse given version uid
@@ -179,6 +179,10 @@ public class OpenehrVersionedEhrStatusController extends BaseController{
             version = Integer.parseInt(versionUid.split("::")[2]);
         } catch (Exception e) {
             throw new InvalidApiParameterException("VERSION UID parameter has wrong format: " + e.getMessage());
+        }
+
+        if(!ehrService.hasStatus(versionedObjectId)) {
+            throw new ObjectNotFoundException("ehr_status", "No EHR_STATUS with given ID can be found.");
         }
 
         Optional<OriginalVersion<EhrStatus>> ehrStatusOriginalVersion = ehrService.getEhrStatusAtVersion(ehrId, versionedObjectId, version);

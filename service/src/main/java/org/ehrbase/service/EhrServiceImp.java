@@ -316,6 +316,7 @@ public class EhrServiceImp extends BaseService implements EhrService {
         return ehrAccess.getStatusId();
     }
 
+    @Override
     public Boolean hasEhr(UUID ehrId) {
         I_EhrAccess ehrAccess;
         try {
@@ -324,6 +325,11 @@ public class EhrServiceImp extends BaseService implements EhrService {
             return false;
         }
         return ehrAccess != null;   // true if != null; false if == null
+    }
+
+    @Override
+    public boolean hasStatus(UUID statusId) {
+        return I_StatusAccess.exists(getDataAccess(), statusId);
     }
 
     @Override
