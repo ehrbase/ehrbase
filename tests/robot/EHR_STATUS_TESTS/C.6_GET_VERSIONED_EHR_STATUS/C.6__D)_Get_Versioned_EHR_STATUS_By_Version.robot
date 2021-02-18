@@ -67,7 +67,7 @@ Force Tags
     Should Be Equal As Strings    ${version_uid}    ${response.body.uid.value}
 
 
-1c. Get Versioned Status Of Existing EHR With 2 Versions by Version UID (JSON)
+1c. Get Versioned Status Of Existing EHR With 2 Versions by Invalid Version UID (JSON)
     [Documentation]    Simple, valid EHR_ID but invalid (non-existent) version
 
     prepare new request session    JSON    Prefer=return=representation
@@ -84,7 +84,7 @@ Force Tags
     Should Be Equal As Strings    ${response.status}    404
 
 
-1d. Get Versioned Status Of Existing EHR by Version UID (JSON)
+1d. Get Versioned Status Of Existing EHR by Invalid Version UID (JSON)
     [Documentation]    Simple, invalid (negative) version number
 
     prepare new request session    JSON    Prefer=return=representation
@@ -101,7 +101,7 @@ Force Tags
     Should Be Equal As Strings    ${response.status}    400
 
 
-1e. Get Versioned Status Of Existing EHR by Version UID (JSON)
+1e. Get Versioned Status Of Existing EHR by Invalid Version UID (JSON)
     [Documentation]    Simple, invalid (floating point) version number
 
     prepare new request session    JSON    Prefer=return=representation
@@ -116,6 +116,20 @@ Force Tags
 
     get versioned ehr_status of EHR by version uid
     Should Be Equal As Strings    ${response.status}    400
+
+
+1f. Get Versioned Status Of Existing EHR by Invalid Version UID (JSON)
+    [Documentation]    Simple, invalid (random) version UID
+
+
+    prepare new request session    JSON    Prefer=return=representation
+
+    create new EHR
+    Should Be Equal As Strings    ${response.status}    201
+    
+    generate random version_uid
+    get versioned ehr_status of EHR by version uid
+    Should Be Equal As Strings    ${response.status}    404
 
 
 2. Get Versioned Status Of EHR by Version UID Invalid EHR (JSON)
