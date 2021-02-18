@@ -454,8 +454,6 @@ get versioned composition by uid
 
                         prepare new request session    ${format}
 
-        TRACE GITHUB ISSUE  122  bug
-
     ${resp}=            Get Request         ${SUT}    /ehr/${ehr_id}/versioned_composition/${uid}    headers=${headers}
                         log to console      ${resp.content}
                         Set Test Variable   ${response}    ${resp}
@@ -469,7 +467,7 @@ get versioned composition by uid
 check content of versioned composition (JSON)
                         Should Be Equal As Strings    ${response.status_code}    200
                         Should Be Equal    ${response.json()['uid']['value']}    ${versioned_object_uid}
-                        Should Be Equal    ${response.json()['owner_id']}    ${ehr_id}
+                        Should Be Equal    ${response.json()['owner_id']['id']['value']}    ${ehr_id}
 
 
 check content of versioned composition (XML)
@@ -477,6 +475,8 @@ check content of versioned composition (XML)
     ${xml}=             Parse Xml           ${response.text}
     ${uid}=             Get Element         ${xml}    uid/value
                         Element Text Should Be    ${uid}    ${versioned_object_uid}
+    ${owner}=           Get Element         ${xml}    owner_id/id/value
+                        Element Text Should Be    ${owner}    ${ehr_id}
 
 
 get composition - latest version

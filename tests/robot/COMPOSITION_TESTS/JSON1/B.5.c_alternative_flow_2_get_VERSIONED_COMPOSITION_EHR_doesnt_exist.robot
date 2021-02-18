@@ -27,7 +27,6 @@ Force Tags
 
 *** Test Cases ***
 Alternative flow 2 get VERSIONED COMPOSITION EHR doesnt exist
-    [Tags]    122    not-ready    bug
 
     create fake EHR
     create fake composition
