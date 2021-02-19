@@ -43,7 +43,7 @@ Force Tags
 
     get versioned ehr_status of EHR
     Should Be Equal As Strings    ${response.status}    200
-    Should Be Equal As Strings    ${ehrstatus_uid}    ${response.body.uid.value}
+    Should Be Equal As Strings    ${versioned_status_uid}    ${response.body.uid.value}
     Should Be Equal As Strings    ${ehr_id}    ${response.body.owner_id.id.value}
 
 
@@ -59,7 +59,7 @@ Force Tags
 
     get versioned ehr_status of EHR
     Should Be Equal As Strings    ${response.status}    200
-    Should Be Equal As Strings    ${ehrstatus_uid[0:-1]}2    ${response.body.uid.value}
+    Should Be Equal As Strings    ${versioned_status_uid}    ${response.body.uid.value}
     Should Be Equal As Strings    ${ehr_id}    ${response.body.owner_id.id.value}
 
 

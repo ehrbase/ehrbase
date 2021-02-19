@@ -459,6 +459,21 @@ get versioned composition by uid
                         Set Test Variable   ${response}    ${resp}
 
 
+# Note: uses REST.GET
+get versioned composition of EHR by UID
+    [Arguments]         ${uid}
+    [Documentation]     Gets versioned status of EHR with given ehr_id.
+    ...                 DEPENDENCY: `prepare new request session` and keywords that
+    ...                             create and expose an `ehr_id` e.g.
+    ...                             - `create new EHR`
+    ...                             - `generate random ehr_id`
+    ...                             and creation of composition, giving its ID as argument
+
+    &{resp}=            REST.GET    ${baseurl}/ehr/${ehr_id}/versioned_composition/${uid}
+                        ...         headers={"Accept": "application/json"}
+                        Set Test Variable    ${response}    ${resp}
+
+
 # get versioned composition by version_uid
 #     [Documentation]     ENDPOINT: /ehr/{ehr_id}/versioned_composition/{versioned_object_uid}/version/{version_uid}
 #                         Pass Execution    TODO    PLACEHOLDER
@@ -739,8 +754,24 @@ capture point in time
                         Output Debug Info To Console
 
 
+create EHR and commit a composition for versioned composition tests
+    [Documentation]     Creates an EHR and commits a pre-set composition to kick off a test environment.
+    ...                 Important returned vars are: `${ehr_id}` and `${version_uid}`
+
+    create new EHR
+    Should Be Equal As Strings    ${response.status}    201
+
+    upload OPT    minimal/minimal_observation.opt
+    commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.xml
 
 
+update a composition for versioned composition tests
+    [Documentation]     Updates a pre-set composition to alter a versioned test environment.
+    ...                 Requires `${compo_uid_v1}` or to be run after the `create EHR and commit a composition 
+    ...                 for versioned composition tests` keyword.
+
+    update composition (JSON)   minimal/minimal_observation.composition.participations.extdatetimes.v2.xml
+    check composition update succeeded
 
 
 

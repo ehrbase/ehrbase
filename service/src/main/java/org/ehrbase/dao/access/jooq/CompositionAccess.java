@@ -576,12 +576,12 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
                 historyRecord.getLanguage(),
                 historyRecord.getTerritory(),
                 historyRecord.getComposer(),
-                null,
-                null,
+                historyRecord.getSysTransaction(),
+                historyRecord.getSysPeriod(),
                 historyRecord.getHasAudit(),
-                null,
-                null,
-                null
+                historyRecord.getAttestationRef(),
+                historyRecord.getFeederAudit(),
+                historyRecord.getLinks()
         );
     }
 

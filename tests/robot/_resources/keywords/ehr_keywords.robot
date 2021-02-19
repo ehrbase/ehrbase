@@ -604,6 +604,9 @@ extract ehrstatus_uid (JSON)
                         Log To Console    \n\tDEBUG OUTPUT - EHR_STATUS UUID: \n\t${ehrstatus_uid}[0]
                         Set Suite Variable    ${ehrstatus_uid}   ${ehrstatus_uid}[0]
 
+    ${short_uid}=       Remove String       ${ehrstatus_uid}    ::${CREATING_SYSTEM_ID}::1
+                        Set Test Variable   ${versioned_status_uid}    ${short_uid}
+
 
 extract ehr_id from response (XML)
     [Documentation]     Extracts `ehr_id` from response of preceding request with content-type=xml

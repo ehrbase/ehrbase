@@ -342,7 +342,7 @@ public class EhrServiceImp extends BaseService implements EhrService {
 
         VersionedEhrStatus versionedEhrStatus = new VersionedEhrStatus();
         if (ehrStatus.isPresent()) {
-            versionedEhrStatus.setUid(new HierObjectId(ehrStatus.get().getUid().toString()));
+            versionedEhrStatus.setUid(new HierObjectId(ehrStatus.get().getUid().getRoot().getValue()));
             versionedEhrStatus.setOwnerId(new ObjectRef<>(new HierObjectId(ehrUid.toString()), "local", "EHR"));
             I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrUid);
             versionedEhrStatus.setTimeCreated(new DvDateTime(OffsetDateTime.of(ehrAccess.getStatusAccess().getInitialTimeOfVersionedEhrStatus().toLocalDateTime(),
