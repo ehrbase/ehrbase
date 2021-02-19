@@ -605,7 +605,7 @@ extract ehrstatus_uid (JSON)
                         Set Suite Variable    ${ehrstatus_uid}   ${ehrstatus_uid}[0]
 
     ${short_uid}=       Remove String       ${ehrstatus_uid}    ::${CREATING_SYSTEM_ID}::1
-                        Set Test Variable   ${versioned_status_uid}    ${short_uid}
+                        Set Suite Variable   ${versioned_status_uid}    ${short_uid}
 
 
 extract ehr_id from response (XML)
