@@ -23,7 +23,7 @@ Metadata    Version    0.1.0
 Metadata    Authors    *Jake Smolka*, *Wladislaw Wagner*
 Metadata    Created    2021.01.26
 
-Metadata        TOP_TEST_SUITE    EHR_STATUS
+Metadata        TOP_TEST_SUITE    COMPOSITION
 Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 
 # Suite Setup  startup SUT
@@ -34,69 +34,62 @@ Force Tags
 
 
 *** Test Cases ***
-# TODO: adapt to composition
-1. Get Revision History of Versioned Status Of Existing EHR (JSON)
+1. Get Revision History of Versioned Composition Of Existing EHR (JSON)
     [Documentation]    Simple test
 
     prepare new request session    JSON    Prefer=return=representation
 
-    create new EHR
-    Should Be Equal As Strings    ${response.status}    201
+    create EHR and commit a composition for versioned composition tests
 
-    get revision history of versioned ehr_status of EHR
+    get revision history of versioned composition of EHR by UID    ${versioned_object_uid}
     Should Be Equal As Strings    ${response.status}    200
     ${length} =    Get Length    ${response.body} 	
     Should Be Equal As Integers 	${length} 	1
 
     ${item1} =    Get From List    ${response.body}    0
-    Should Be Equal As Strings    ${ehrstatus_uid}    ${item1.version_id.value}
+    Should Be Equal As Strings    ${version_uid}    ${item1.version_id.value}
 
 
-# TODO: adapt to composition
-2. Get Revision History of Versioned Status Of Existing EHR With Two Status Versions (JSON)
+2. Get Revision History of Versioned Composition Of Existing EHR With Two Composition Versions (JSON)
     [Documentation]    Testing with two versions, so the result should list two history entries.
 
     prepare new request session    JSON    Prefer=return=representation
 
-    create new EHR
-    Should Be Equal As Strings    ${response.status}    201
+    create EHR and commit a composition for versioned composition tests
 
-    update EHR: set ehr_status is_queryable    ${TRUE}
-    check response of 'update EHR' (JSON)
+    update a composition for versioned composition tests
 
-    get revision history of versioned ehr_status of EHR
+    get revision history of versioned composition of EHR by UID    ${versioned_object_uid}
     Should Be Equal As Strings    ${response.status}    200
     ${length} =    Get Length    ${response.body} 	
     Should Be Equal As Integers 	${length} 	2
 
     ${item1} =    Get From List    ${response.body}    0
-    Should Be Equal As Strings    ${ehrstatus_uid}    ${item1.version_id.value}
+    Should Be Equal As Strings    ${version_uid}    ${item1.version_id.value}
 
     ${item2} =    Get From List    ${response.body}    1
-    Should Be Equal As Strings    ${ehrstatus_uid[0:-1]}2    ${item2.version_id.value}
+    Should Be Equal As Strings    ${version_uid[0:-1]}2    ${item2.version_id.value}
 
 
-# TODO: adapt to composition
-3. Get Correct Ordered Revision History of Versioned Status Of Existing EHR With Two Status Versions (JSON)
+# TODO: TODO-413 check whether or not this is a new issue or indeed part of 458
+3. Get Correct Ordered Revision History of Versioned Composition Of Existing EHR With Two Composition Versions (JSON)
     [Documentation]     Testing with two versions like above, but checking the response more thoroughly.
     [Tags]              not-ready   458 
 
     prepare new request session    JSON    Prefer=return=representation
 
-    create new EHR
-    Should Be Equal As Strings    ${response.status}    201
+    create EHR and commit a composition for versioned composition tests
 
-    update EHR: set ehr_status is_queryable    ${TRUE}
-    check response of 'update EHR' (JSON)
+    update a composition for versioned composition tests
 
-    get revision history of versioned ehr_status of EHR
+    get revision history of versioned composition of EHR by UID    ${versioned_object_uid}
     Should Be Equal As Strings    ${response.status}    200
     ${length} =    Get Length    ${response.body} 	
     Should Be Equal As Integers 	${length} 	2
 
     # comment: Attention: the following code is depending on the order of the array!
     ${item1} =    Get From List    ${response.body}    0
-    Should Be Equal As Strings    ${ehrstatus_uid}    ${item1.version_id.value}
+    Should Be Equal As Strings    ${version_uid}    ${item1.version_id.value}
     # comment: check if change type is "creation"
     ${audit1} =    Get From List    ${item1.audits}    0
     Should Be Equal As Strings    creation    ${audit1.change_type.value}
@@ -104,7 +97,7 @@ Force Tags
     ${timestamp1} = 	Convert Date    ${audit1.time_committed.value}    result_format=%Y-%m-%dT%H:%M:%S.%f
 
     ${item2} =    Get From List    ${response.body}    1
-    Should Be Equal As Strings    ${ehrstatus_uid[0:-1]}2    ${item2.version_id.value}
+    Should Be Equal As Strings    ${version_uid[0:-1]}2    ${item2.version_id.value}
     # comment: check if change type is "modification"
     ${audit2} =    Get From List    ${item2.audits}    0
     Should Be Equal As Strings    modification    ${audit2.change_type.value}
@@ -112,22 +105,33 @@ Force Tags
     ${timestamp2} = 	Convert Date    ${audit2.time_committed.value}    result_format=%Y-%m-%dT%H:%M:%S.%f
 
 
-
     # comment: check if this one is newer/bigger/higher than the creation timestamp.
     ${timediff} = 	Subtract Date From Date 	${timestamp2} 	${timestamp1}
 
-    # comment: Idea - newer/higher timestamp - older/lesser timestamp = number larger than 0 IF correct
+    # comment: Idea here: newer/higher timestamp - older/lesser timestamp = number larger than 0 IF correct
     Should Be True 	${timediff} > 0
     [Teardown]    TRACE GITHUB ISSUE    458    bug
 
 
-# TODO: adapt to composition
-4. Get Revision History of Versioned Status Of Non-Existing EHR (JSON)
+4. Get Revision History of Versioned Composition Of Non-Existing EHR (JSON)
     [Documentation]    Simple test
 
     prepare new request session    JSON    Prefer=return=representation
 
+    create EHR and commit a composition for versioned composition tests
     create fake EHR
 
-    get revision history of versioned ehr_status of EHR
+    get revision history of versioned composition of EHR by UID    ${versioned_object_uid}
+    Should Be Equal As Strings    ${response.status}    404
+
+
+5. Get Revision History of Versioned Composition Of Non-Existing Composition (JSON)
+    [Documentation]    Simple test
+
+    prepare new request session    JSON    Prefer=return=representation
+
+    create EHR and commit a composition for versioned composition tests
+    create fake composition
+
+    get revision history of versioned composition of EHR by UID    ${versioned_object_uid}
     Should Be Equal As Strings    ${response.status}    404

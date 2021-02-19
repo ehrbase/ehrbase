@@ -462,7 +462,7 @@ get versioned composition by uid
 # Note: uses REST.GET
 get versioned composition of EHR by UID
     [Arguments]         ${uid}
-    [Documentation]     Gets versioned status of EHR with given ehr_id.
+    [Documentation]     Gets versioned composition with given uid.
     ...                 DEPENDENCY: `prepare new request session` and keywords that
     ...                             create and expose an `ehr_id` e.g.
     ...                             - `create new EHR`
@@ -473,6 +473,52 @@ get versioned composition of EHR by UID
                         ...         headers={"Accept": "application/json"}
                         Set Test Variable    ${response}    ${resp}
 
+
+get revision history of versioned composition of EHR by UID
+    [Arguments]         ${uid}
+    [Documentation]     Gets revision history of versioned composition with given uid.
+    ...                 DEPENDENCY: `prepare new request session` and keywords that
+    ...                             create and expose an `ehr_id` e.g.
+    ...                             - `create new EHR`
+    ...                             - `generate random ehr_id`
+    ...                             and creation of composition, giving its ID as argument
+
+    &{resp}=            REST.GET    ${baseurl}/ehr/${ehr_id}/versioned_composition/${uid}/revision_history
+                        ...         headers={"Accept": "application/json"}
+                        Set Test Variable    ${response}    ${resp}
+
+
+get version of versioned composition of EHR by UID and time
+    [Arguments]         ${uid}
+    [Documentation]     Gets composition with given UID by time.
+    ...                 DEPENDENCY: `prepare new request session` and keywords that
+    ...                             create and expose an `ehr_id` e.g.
+    ...                             - `create new EHR`
+    ...                             - `generate random ehr_id`
+    ...                 Input: `query` variable containing query parameters as object or directory (e.g. _limit=2 for [$URL]?_limit=2)
+    ...                 which can be empty too
+
+    # Trick to see if ${query} was set. (if not, "Get Variale Value" will set the value to None)
+    ${query} = 	Get Variable Value 	${query}
+    # Only run the GET with query if $query was set
+    Run Keyword Unless 	$query is None 	internal get version of versioned composition of EHR by UID and time with query    ${uid}
+    Run Keyword If 	$query is None 	internal get version of versioned composition of EHR by UID and time without query    ${uid}
+
+
+# internal only, do not call from outside. use "get version of versioned composition of EHR by UID and time" instead
+internal get version of versioned composition of EHR by UID and time with query
+    [Arguments]         ${uid}
+    &{resp}=            REST.GET    ${baseurl}/ehr/${ehr_id}/versioned_composition/${uid}/version    ${query}
+                        ...         headers={"Accept": "application/json"}
+                        Set Test Variable    ${response}    ${resp}
+
+
+# internal only, do not call from outside. use "get version of versioned composition of EHR by UID and time" instead
+internal get version of versioned composition of EHR by UID and time without query
+    [Arguments]         ${uid}
+    &{resp}=            REST.GET    ${baseurl}/ehr/${ehr_id}/versioned_composition/${uid}/version
+                        ...         headers={"Accept": "application/json"}
+                        Set Test Variable    ${response}    ${resp}
 
 # get versioned composition by version_uid
 #     [Documentation]     ENDPOINT: /ehr/{ehr_id}/versioned_composition/{versioned_object_uid}/version/{version_uid}
