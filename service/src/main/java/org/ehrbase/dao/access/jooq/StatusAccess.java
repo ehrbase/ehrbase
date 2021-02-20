@@ -462,6 +462,10 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
         return domainAccess.getContext().fetchExists(STATUS_HISTORY, STATUS_HISTORY.ID.eq(ehrStatusId));
     }
 
+    public static boolean exists(I_DomainAccess domainAccess, UUID ehrStatusId) {
+        return domainAccess.getContext().fetchExists(STATUS, STATUS.ID.eq(ehrStatusId));
+    }
+
     @Override
     @SuppressWarnings("rawtypes")   // `result` is raw so later iterating also gets the version number
     public int getEhrStatusVersionFromTimeStamp(Timestamp time) {
@@ -471,6 +475,7 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
 
         // retrieve all other versions from status_history and sort by time
         Result result = getDataAccess().getContext().selectFrom(STATUS_HISTORY)
+                .where(STATUS_HISTORY.ID.eq(statusUid))
                 .orderBy(STATUS_HISTORY.SYS_TRANSACTION.desc())    // latest at top, i.e. [0]
                 .fetch();
 

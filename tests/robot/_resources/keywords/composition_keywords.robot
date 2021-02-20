@@ -720,9 +720,10 @@ capture point in time
     ...                 exposes to test level scope a variable e.g. `${time_1}`
     ...                 which's value is a given time in the extended ISO8601 format
     ...                 e.g. 2015-01-20T19:30:22.765+01:00
+    ...                 s. http://robotframework.org/robotframework/latest/libraries/DateTime.html
+    ...                 for DateTime Library docs
 
-    ${time}=            Get Current Date    UTC    result_format=%Y-%m-%dT%H:%M:%S
-    # ${time_tz}=         Catenate            SEPARATOR=${EMPTY}    ${time}   +00:00
+    ${time}=            Get Current Date    result_format=%Y-%m-%dT%H:%M:%S.%f
                         Set Suite Variable   ${time_${point_in_time}}   ${time}+00:00
                         Sleep               1
 
