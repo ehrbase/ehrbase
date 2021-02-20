@@ -33,7 +33,7 @@
     </details>
   </description>
   <uid>
-    <value>{{$guid}}</value>
+    <value>{{uuid}}</value>
   </uid>
   <template_id>
     <value>minimal_action.en.v1_{{randomize}}</value>

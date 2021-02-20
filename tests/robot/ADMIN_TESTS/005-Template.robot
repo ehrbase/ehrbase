@@ -241,6 +241,25 @@ ${CACHE-ENABLED}        ${FALSE}
                         String     response body    pattern=.*Template with id 123 does not exist
 
 
+016 ADMIN - PUT Method Should Not Create New DB Entries
+    [Tags]    444    not-ready    bug
+    [Documentation]     1. Upload OPT via 'normal' REST endpoint \n\n
+    ...                 2. Use 'admin' update endpoint with template_id from step 1 \n\n
+    ...                    with a different payload than in step 1 \n\n
+    ...                    (especially with a different uid and template_id in the payload) \n\n
+    ...                 3. Assert a proper error message is returned and \n\n
+    ...                    no new records created in DB. \n\n
+    upload valid OPT    minimal/minimal_admin.opt
+    (admin) update OPT    minimal/minimal_action.opt    # NOTE: a different OPT is used as payload!!!
+
+        TRACE GITHUB ISSUE    444
+
+    Connect With DB
+    ${opt_records}=     Count Rows In DB Table    ehr.template_store
+                        Should Be Equal As Integers    ${opt_records}       ${1}
+
+    [Teardown]    Run Keywords    (admin) delete all OPTs
+
 
 
 

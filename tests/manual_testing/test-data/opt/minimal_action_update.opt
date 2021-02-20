@@ -33,10 +33,10 @@
     </details>
   </description>
   <uid>
-    <value>{{upload_opt.response.body.//*[name()='uid']/*[name()='value']}}</value>
+    <value>{{template_uid}}</value>
   </uid>
   <template_id>
-    <value>{{upload_opt.response.body.//*[name()='template_id']/*[name()='value']}}</value>
+    <value>{{template_id}}</value>
   </template_id>
   <concept>{{updated_value_1}}</concept>
   <definition>
