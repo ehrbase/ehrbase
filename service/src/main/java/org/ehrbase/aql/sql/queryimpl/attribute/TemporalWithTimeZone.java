@@ -25,7 +25,7 @@ import org.jooq.impl.DSL;
 
 import static org.ehrbase.aql.sql.queryimpl.AqlRoutines.jsonpathItemAsText;
 import static org.ehrbase.aql.sql.queryimpl.AqlRoutines.jsonpathParameters;
-import static org.ehrbase.jooq.pg.Routines.jsDvDateTime1;
+import static org.ehrbase.jooq.pg.Routines.jsDvDateTime;
 import static org.jooq.impl.DSL.field;
 @SuppressWarnings({"java:S3740","java:S1452"})
 public class TemporalWithTimeZone extends SimpleEventContextAttribute {
@@ -41,7 +41,7 @@ public class TemporalWithTimeZone extends SimpleEventContextAttribute {
         //                "ehr.js_dv_date_time("+tableField+"::timestamptz, COALESCE("+timeZoneField+"::text,'UTC'))::json #>>'{value}'")
         return as(field(
                 jsonpathItemAsText(
-                        jsDvDateTime1(tableField, timeZoneField.coalesce(DSL.val("UTC"))).cast(JSONB.class),
+                        jsDvDateTime(tableField, timeZoneField.coalesce(DSL.val("UTC"))).cast(JSONB.class),
                         jsonpathParameters("value")
                 )
         ));

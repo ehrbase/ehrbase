@@ -1,0 +1,158 @@
+# 
+# THIS IS FOR MANUAL TESTING. IT DOES THE SAME STUFF AS POSTMAN
+# OR INSOMNIA BUT FROM WITHIN VSCODE EDITOR.
+#
+# Use this with REST Client for Visual Studio Code by Huachao Mao
+# search for "rest client" in VSCode's extensions marketplace
+# KEYBOARD SHORTCUT: Ctrl + Alt + R (trigger request focused by cursor)
+
+
+
+@ehrbase_url = http://localhost:8080/ehrbase/rest/openehr/v1
+@uuid = {{$guid}}
+@subject_namespace = {{$randomInt 001 10000}}
+@auth = Basic ZWhyYmFzZS1hZG1pbjpFdmVuTW9yZVNlY3JldFBhc3N3b3Jk
+
+
+
+
+
+#///////////////////////////////
+#// CREATE EHR              ///
+#/////////////////////////////
+
+// @name create_ehr
+POST {{ehrbase_url}}/ehr HTTP/1.1
+content-type: application/json
+Prefer: return=representation
+Authorization: {{auth}}
+
+{
+  "_type": "EHR_STATUS",
+  "archetype_node_id": "openEHR-EHR-EHR_STATUS.generic.v1",
+  "name": {
+    "value": "EHR Status"
+  },
+  "subject": {
+    "external_ref": {
+      "id": {
+        "_type": "GENERIC_ID",
+        "value": "{{uuid}}",
+        "scheme": "id_scheme"
+      },
+      "namespace": "wlad_{{subject_namespace}}",
+      "type": "PERSON"
+    }
+  },
+  "is_modifiable": true,
+  "is_queryable": true
+}
+
+###
+
+@subject_id = {{create_ehr.response.body.ehr_status.subject.external_ref.id.value}}
+@ehr_id = {{create_ehr.response.body.ehr_id.value}}
+
+
+
+#///////////////////////////////
+#// UPLOAD OPT              ///
+#/////////////////////////////
+
+// @name upload_opt
+POST {{ehrbase_url}}/definition/template/adl1.4
+Content-Type: application/xml
+Accept: application/xml
+Prefer: return=representation
+Authorization: {{auth}}
+
+< ../_resources/test_data_sets/valid_templates/minimal/minimal_admin.opt
+
+###
+
+@template_id = {{upload_opt.response.body.//*[name()='template_id']/*[name()='value']}}
+
+
+
+#///////////////////////////////
+#// RETRIEVE OPT            ///
+#/////////////////////////////
+
+# minimal_admin.en.v1
+// @name retrieve_opt
+GET {{ehrbase_url}}/definition/template/adl1.4/{{template_id}}
+Content-Type: application/xml
+Accept: application/xml
+Prefer: return=representation
+Authorization: {{auth}}
+
+###
+
+
+
+#///////////////////////////////
+#// ADMIN UPDATE OPT        ///
+#/////////////////////////////
+
+// @name update_opt
+PUT {{ehrbase_url}}/admin/template/{{template_id}}
+Content-Type: application/xml
+Accept: application/xml
+Prefer: return=representation
+Authorization: {{auth}}
+
+< ../_resources/test_data_sets/valid_templates/minimal/minimal_admin_updated.opt
+
+###
+
+
+
+#///////////////////////////////
+#// ADMIN DELETE OPT        ///
+#/////////////////////////////
+
+// @name delete_opt
+DELETE {{ehrbase_url}}/admin/template/{{template_id}}
+Authorization: {{auth}}
+
+###
+
+
+
+#///////////////////////////////
+#// ADMIN DELETE ALL OPTs   ///
+#/////////////////////////////
+
+// @name delete_opt
+DELETE {{ehrbase_url}}/admin/template/all
+Authorization: {{auth}}
+
+###
+
+
+
+#/////////////////////////////////////////////////
+#// GET COMPOSITION BY UID                    ///
+#///////////////////////////////////////////////
+
+GET {{ehrbase_url}}/ehr/{{ehr_id}}/composition/32c12782-ddca-4fba-86ee-b45cdfe62c34::local.ehrbase.org::1
+Accept: application/json
+Authorization: {{auth}}
+
+###
+
+
+
+#/////////////////////////////////////////////////
+#// GET COMPOSITION VIA AQL                   ///
+#///////////////////////////////////////////////
+
+POST {{ehrbase_url}}/query/aql
+Content-Type: application/json
+Authorization: {{auth}}
+
+{
+  "q": "SELECT c FROM EHR e [ehr_id/value='{{ehr_id}}'] CONTAINS COMPOSITION c"
+}
+
+###

@@ -165,8 +165,8 @@ public class ContainPropositions {
      * true if this expression is for a simple COMPOSITION containment (e.g. no embedded CONTAINs)
      * @return
      */
-    public boolean isUseSimpleCompositionContainment() {
-        return identifierMapper.isUseSimpleCompositionContainment();
+    public boolean requiresTemplateWhereClause() {
+        return identifierMapper.requiresTemplateWhereClause();
     }
 
     public boolean hasContains() {

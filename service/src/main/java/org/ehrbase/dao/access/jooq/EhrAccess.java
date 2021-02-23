@@ -40,20 +40,20 @@ import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
-import org.ehrbase.jooq.pg.Routines;
 import org.ehrbase.dao.access.util.TransactionTime;
+import org.ehrbase.jooq.pg.Routines;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
-import org.ehrbase.jooq.pg.tables.*;
+import org.ehrbase.jooq.pg.tables.AdminDeleteEhrHistory;
 import org.ehrbase.jooq.pg.tables.records.*;
-import org.ehrbase.serialisation.dbencoding.RawJson;
 import org.ehrbase.service.RecordedDvCodedText;
 import org.ehrbase.service.RecordedDvText;
 import org.jooq.DSLContext;
-import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Result;
 
 import java.sql.Timestamp;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
 
@@ -62,6 +62,7 @@ import static org.ehrbase.jooq.pg.Tables.*;
 /**
  * Created by Christian Chevalley on 4/17/2015.
  */
+@SuppressWarnings("java:S2589")
 public class EhrAccess extends DataAccess implements I_EhrAccess {
 
     private static final Logger log = LogManager.getLogger(EhrAccess.class);
@@ -74,7 +75,6 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
 
     //holds the non serialized ItemStructure other_details structure
     private ItemStructure otherDetails = null;
-    private String otherDetailsTemplateId;
 
     private I_ContributionAccess contributionAccess; //locally referenced contribution associated to ehr transactions
 
@@ -82,7 +82,6 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
 
     //set this variable to change the identification  mode in status
     public enum PARTY_MODE {IDENTIFIER, EXTERNAL_REF}
-    private PARTY_MODE party_identifier = PARTY_MODE.EXTERNAL_REF;
 
     /**
      * @throws InternalServerException if creating or retrieving system failed
@@ -241,7 +240,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         // check if input version number fits into existing amount of versions, but is not the same (same equals latest version)
         // when either there is only one version or the requested one is the latest, continue with record already set
         if (versions > version && !version.equals(versions)) { // or get the particular requested version
-            // TODO: why does sonarlint says that the expression above is always true? tested it, it can be true and false!?
+            // sonarlint says that the expression above is always true? tested it, it can be true and false!?
             // note: here version is > 1 and there has to be at least one history entry
             Result<StatusHistoryRecord> result = domainAccess.getContext().selectFrom(STATUS_HISTORY)
                     // FIXME VERSIONED_OBJECT_POC: bug? should here be "where ehrId = given ehrId"?
@@ -470,7 +469,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     public UUID commit(Timestamp transactionTime) {
 
         ehrRecord.setDateCreated(transactionTime);
-        ehrRecord.setDateCreatedTzid(ZonedDateTime.now().getZone().getId());    // get zoneId independent of "transactionTime"
+        ehrRecord.setDateCreatedTzid(OffsetDateTime.from(transactionTime.toLocalDateTime().atOffset(ZoneOffset.from(OffsetDateTime.now()))).getOffset().getId());    // get zoneId independent of "transactionTime"
         ehrRecord.store();
 
         UUID contributionId = contributionAccess.commit(transactionTime);
@@ -694,7 +693,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     @Override
     public void setOtherDetails(ItemStructure otherDetails, String templateId) {
         this.otherDetails = otherDetails;
-        this.otherDetailsTemplateId = Optional.ofNullable(otherDetails).map(Locatable::getArchetypeDetails).map(Archetyped::getTemplateId).map(ObjectId::getValue).orElse(null);
+//        this.otherDetailsTemplateId = Optional.ofNullable(otherDetails).map(Locatable::getArchetypeDetails).map(Archetyped::getTemplateId).map(ObjectId::getValue).orElse(null);
     }
 
     @Override

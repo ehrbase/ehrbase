@@ -21,6 +21,7 @@ public class GenericJsonPath {
     public static final String TEMPLATE_ID = "template_id";
     public static final String ARCHETYPE_ID = "archetype_id";
     public static final String SETTING = "setting";
+    public static final String HEALTH_CARE_FACILITY = "health_care_facility";
     public static final String ITEMS = "items";
     public static final String CONTENT = "content";
     public static final String VALUE = "value";
@@ -36,7 +37,7 @@ public class GenericJsonPath {
         this.path = path;
     }
 
-    public String jqueryPath(){
+    public String jqueryPath() {
         if (path == null || path.isEmpty())
             return path;
 

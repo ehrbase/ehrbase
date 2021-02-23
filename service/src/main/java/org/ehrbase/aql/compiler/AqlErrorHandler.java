@@ -21,13 +21,11 @@
 
 package org.ehrbase.aql.compiler;
 
-import org.antlr.v4.runtime.BaseErrorListener;
-import org.antlr.v4.runtime.Parser;
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.Recognizer;
+import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
+import org.ehrbase.aql.compiler.recovery.RecoverArchetypeId;
 
 import java.util.BitSet;
 
@@ -38,11 +36,11 @@ import java.util.BitSet;
  */
 public class AqlErrorHandler extends BaseErrorListener {
 
-    public static AqlErrorHandler INSTANCE = new AqlErrorHandler();
-    public static boolean REPORT_SYNTAX_ERRORS = true;
+    public static final AqlErrorHandler INSTANCE = new AqlErrorHandler();
+    public static final boolean REPORT_SYNTAX_ERRORS = true;
 
     @Override
-    public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) throws ParseCancellationException {
+    public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e)  {
         if (!REPORT_SYNTAX_ERRORS) {
             return;
         }
@@ -52,8 +50,11 @@ public class AqlErrorHandler extends BaseErrorListener {
             sourceName = String.format("%s:%d:%d: ", sourceName, line, charPositionInLine);
         }
 
+        if (e != null && new RecoverArchetypeId().isRecoverableArchetypeId(e.getCtx(), offendingSymbol)){
+                return; //ignore since it will be 'fixed' by the recognizer
+        }
+
         throw new ParseCancellationException("AQL Parse exception: " + (sourceName.isEmpty() ? "source:" + sourceName : "") + "line " + line + ": char " + charPositionInLine + " " + msg);
-//        System.err.println(sourceName+"line "+line+":"+charPositionInLine+" "+msg);
     }
 
     @Override

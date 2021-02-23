@@ -55,6 +55,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -170,13 +171,17 @@ public class EhrServiceImp extends BaseService implements EhrService {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrUuid.toString());
         }
 
+        if ((version == 0) || (I_StatusAccess.getLatestVersionNumber(getDataAccess(), versionedObjectUid) < version)) {
+            throw new ObjectNotFoundException("versioned_ehr_status", "No VERSIONED_EHR_STATUS with given version: " + version);
+        }
+
         I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstanceByStatus(getDataAccess(), ehrUuid, versionedObjectUid, version);
         if (ehrAccess == null) {
             return Optional.empty();
         }
 
         ObjectVersionId versionId = new ObjectVersionId(versionedObjectUid + "::" + getServerConfig().getNodename() + "::" + version);
-        DvCodedText lifecycleState = new DvCodedText("TODO", new CodePhrase("TODO"));   // FIXME VERSIONED_OBJECT_POC: needs meaningful values
+        DvCodedText lifecycleState = new DvCodedText("complete", new CodePhrase("532"));   // TODO: once lifecycle state is supported, get it here dynamically
         AuditDetails commitAudit = ehrAccess.getStatusAccess().getAuditDetailsAccess().getAsAuditDetails();
         ObjectRef<HierObjectId> contribution = new ObjectRef<>(new HierObjectId(ehrAccess.getStatusAccess().getStatusRecord().getInContribution().toString()), "openehr", "contribution");
         List<UUID> attestationIdList = I_AttestationAccess.retrieveListOfAttestationsByRef(getDataAccess(), ehrAccess.getStatusAccess().getStatusRecord().getAttestationRef());
@@ -188,7 +193,15 @@ public class EhrServiceImp extends BaseService implements EhrService {
                 attestations.add(a.getAsAttestation());
             }
         }
-        OriginalVersion<EhrStatus> versionStatus = new OriginalVersion<>(versionId, null, ehrAccess.getStatus(),
+
+        ObjectVersionId precedingVersionId = null;
+        // check if there is a preceding version and set it, if available
+        if (version > 1) {
+            // in the current scope version is an int and therefore: preceding = current - 1
+            precedingVersionId = new ObjectVersionId(versionedObjectUid + "::" + getServerConfig().getNodename() + "::" + (version - 1));
+        }
+
+        OriginalVersion<EhrStatus> versionStatus = new OriginalVersion<>(versionId, precedingVersionId, ehrAccess.getStatus(),
                 lifecycleState, commitAudit, contribution, null, null, attestations);
 
         return Optional.of(versionStatus);
@@ -259,7 +272,7 @@ public class EhrServiceImp extends BaseService implements EhrService {
      * @param ehrId
      * @return LocalDateTime instance of timestamp from DB
      */
-    public LocalDateTime getCreationTime(UUID ehrId) {
+    public DvDateTime getCreationTime(UUID ehrId) {
         //pre-step: check for valid ehrId
         if (hasEhr(ehrId).equals(Boolean.FALSE)) {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
@@ -267,7 +280,8 @@ public class EhrServiceImp extends BaseService implements EhrService {
 
         try {
             I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
-            return ehrAccess.getEhrRecord().getDateCreated().toLocalDateTime();
+            OffsetDateTime offsetDateTime = OffsetDateTime.from(LocalDateTime.from(ehrAccess.getEhrRecord().getDateCreated().toLocalDateTime()).atZone(ZoneId.of(ehrAccess.getEhrRecord().getDateCreatedTzid())));
+            return new DvDateTime(offsetDateTime);
         } catch (Exception e) {
             logger.error(e.getMessage());
             throw new InternalServerException(e);
@@ -302,6 +316,7 @@ public class EhrServiceImp extends BaseService implements EhrService {
         return ehrAccess.getStatusId();
     }
 
+    @Override
     public Boolean hasEhr(UUID ehrId) {
         I_EhrAccess ehrAccess;
         try {
@@ -310,6 +325,11 @@ public class EhrServiceImp extends BaseService implements EhrService {
             return false;
         }
         return ehrAccess != null;   // true if != null; false if == null
+    }
+
+    @Override
+    public boolean hasStatus(UUID statusId) {
+        return I_StatusAccess.exists(getDataAccess(), statusId);
     }
 
     @Override
