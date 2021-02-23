@@ -67,9 +67,7 @@ public abstract class OpenEhrAuditStrategy<T extends OpenEhrAuditDataset> implem
         String eventOutcomeDescription = status.value() + " " + status.getReasonPhrase();
 
         if (status.isError()) {
-            if (status == HttpStatus.NOT_FOUND) {
-                eventOutcomeIndicator = EventOutcomeIndicator.MinorFailure;
-            } else if (status.is4xxClientError()) {
+            if (status.is4xxClientError()) {
                 eventOutcomeIndicator = EventOutcomeIndicator.SeriousFailure;
             } else {
                 eventOutcomeIndicator = EventOutcomeIndicator.MajorFailure;

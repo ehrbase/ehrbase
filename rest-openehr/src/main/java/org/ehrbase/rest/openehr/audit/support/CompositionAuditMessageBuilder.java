@@ -55,7 +55,7 @@ public class CompositionAuditMessageBuilder extends OpenEhrAuditMessageBuilder {
                 null,
                 null,
                 null,
-                auditDataset.getEhrId(),
+                auditDataset.getPatientNumber(),
                 ParticipantObjectTypeCode.Person,
                 ParticipantObjectTypeCodeRole.Patient,
                 null,

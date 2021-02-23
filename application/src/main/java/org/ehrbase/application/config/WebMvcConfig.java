@@ -18,6 +18,7 @@
 
 package org.ehrbase.application.config;
 
+import org.ehrbase.api.service.EhrService;
 import org.ehrbase.application.util.IsoDateTimeConverter;
 import org.ehrbase.application.util.StringToEnumConverter;
 import org.ehrbase.rest.openehr.audit.CompositionAuditStrategy;
@@ -36,8 +37,11 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements WebMvcConfi
 
     private final AuditContext auditContext;
 
-    public WebMvcConfig(AuditContext auditContext) {
+    private final EhrService ehrService;
+
+    public WebMvcConfig(AuditContext auditContext, EhrService ehrService) {
         this.auditContext = auditContext;
+        this.ehrService = ehrService;
     }
 
     /**
@@ -64,7 +68,7 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements WebMvcConfi
     public void addInterceptors(@NonNull InterceptorRegistry registry) {
         if (auditContext.isAuditEnabled()) {
             registry
-                    .addInterceptor(new CompositionAuditStrategy(auditContext))
+                    .addInterceptor(new CompositionAuditStrategy(auditContext, ehrService))
                     .addPathPatterns("/**/composition/**", "/**/versioned_composition/**");
         }
     }

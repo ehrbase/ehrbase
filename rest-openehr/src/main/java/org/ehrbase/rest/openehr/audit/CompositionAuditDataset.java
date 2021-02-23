@@ -24,7 +24,7 @@ public class CompositionAuditDataset extends OpenEhrAuditDataset {
 
     private EventActionCode eventActionCode;
 
-    private String ehrId;
+    private String patientNumber;
 
     private String compositionUri;
 
@@ -38,12 +38,12 @@ public class CompositionAuditDataset extends OpenEhrAuditDataset {
         this.eventActionCode = eventActionCode;
     }
 
-    public String getEhrId() {
-        return ehrId;
+    public String getPatientNumber() {
+        return patientNumber;
     }
 
-    public void setEhrId(String ehrId) {
-        this.ehrId = ehrId;
+    public void setPatientNumber(String patientNumber) {
+        this.patientNumber = patientNumber;
     }
 
     public String getCompositionUri() {
@@ -62,8 +62,8 @@ public class CompositionAuditDataset extends OpenEhrAuditDataset {
         this.compositionTemplateId = compositionTemplateId;
     }
 
-    boolean hasEhrId() {
-        return ehrId != null;
+    boolean hasPatientNumber() {
+        return patientNumber != null;
     }
 
     boolean hasComposition() {

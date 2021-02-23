@@ -18,6 +18,10 @@
 
 package org.ehrbase.rest.openehr.audit;
 
+import com.nedap.archie.rm.generic.PartySelf;
+import com.nedap.archie.rm.support.identification.ObjectId;
+import com.nedap.archie.rm.support.identification.PartyRef;
+import org.ehrbase.api.service.EhrService;
 import org.ehrbase.rest.openehr.audit.support.CompositionAuditMessageBuilder;
 import org.openehealth.ipf.commons.audit.AuditContext;
 import org.openehealth.ipf.commons.audit.codes.EventActionCode;
@@ -29,13 +33,20 @@ import org.springframework.web.servlet.View;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 public class CompositionAuditStrategy extends OpenEhrAuditStrategy<CompositionAuditDataset> {
 
     public static final String COMPOSITION_TEMPLATE_ID = "CompositionAuditStrategy.CompositionTemplateId";
 
-    public CompositionAuditStrategy(AuditContext auditContext) {
+    private static final String EHR_ID = "ehr_id";
+
+    private final EhrService ehrService;
+
+    public CompositionAuditStrategy(AuditContext auditContext, EhrService ehrService) {
         super(auditContext);
+        this.ehrService = ehrService;
     }
 
     @Override
@@ -44,12 +55,8 @@ public class CompositionAuditStrategy extends OpenEhrAuditStrategy<CompositionAu
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     protected void enrichAuditDataset(CompositionAuditDataset auditDataset, HttpServletRequest request, HttpServletResponse response) {
         super.enrichAuditDataset(auditDataset, request, response);
-
-        Map<String, Object> pathVariables = (Map<String, Object>) request.getAttribute(View.PATH_VARIABLES);
-        auditDataset.setEhrId((String) pathVariables.get("ehr_id"));
 
         HttpMethod method = HttpMethod.valueOf(request.getMethod());
         switch (method) {
@@ -79,6 +86,9 @@ public class CompositionAuditStrategy extends OpenEhrAuditStrategy<CompositionAu
         if (compositionTemplateId != null) {
             auditDataset.setCompositionTemplateId(compositionTemplateId);
         }
+
+        Optional<String> patientNumber = getPatientNumber(request);
+        patientNumber.ifPresent(auditDataset::setPatientNumber);
     }
 
     @Override
@@ -87,9 +97,23 @@ public class CompositionAuditStrategy extends OpenEhrAuditStrategy<CompositionAu
         if (auditDataset.hasComposition()) {
             builder.addComposition(auditDataset);
         }
-        if (auditDataset.hasEhrId()) {
+        if (auditDataset.hasPatientNumber()) {
             builder.addPatient(auditDataset);
         }
         return builder.getMessages();
+    }
+
+    @SuppressWarnings("unchecked")
+    private Optional<String> getPatientNumber(HttpServletRequest request) {
+        Map<String, Object> pathVariables = (Map<String, Object>) request.getAttribute(View.PATH_VARIABLES);
+        UUID ehrId = UUID.fromString((String) pathVariables.get(EHR_ID));
+
+        return ehrService.getEhrStatus(ehrId)
+                .map(ehrStatus -> {
+                    PartySelf subject = ehrStatus.getSubject();
+                    PartyRef externalRef = subject.getExternalRef();
+                    ObjectId objectId = externalRef.getId();
+                    return objectId.getValue();
+                });
     }
 }
