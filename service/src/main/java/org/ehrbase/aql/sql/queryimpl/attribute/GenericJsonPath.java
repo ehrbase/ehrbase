@@ -1,6 +1,5 @@
 package org.ehrbase.aql.sql.queryimpl.attribute;
 
-import org.ehrbase.aql.sql.queryimpl.NodeIds;
 import org.ehrbase.serialisation.dbencoding.wrappers.json.I_DvTypeAdapter;
 
 import java.util.ArrayList;
@@ -60,12 +59,8 @@ public class GenericJsonPath {
                 if (segment.matches(NAME))
                     actualPaths.add("0");
             }
-            else if (segment.matches(OTHER_DETAILS + "|" + OTHER_CONTEXT+"|"+ARCHETYPE_DETAILS+"|"+ARCHETYPE_ID+"|"+RM_VERSION+"|"+TEMPLATE_ID))
-                actualPaths.add(segment);
-            else if (isNonItemStructureAttribute(path))
-                actualPaths.add(segment);
             else
-                actualPaths.add(NodeIds.toCamelCase(segment));
+                actualPaths.add(segment);
 
         }
 
@@ -80,23 +75,5 @@ public class GenericJsonPath {
                         //check if this 'terminal attribute' is actually a node attribute
                         //match node predicate regexp starts with '/' which is not the case when splitting the path
                         && !paths.get(index - 1).matches(I_DvTypeAdapter.matchNodePredicate.substring(1)));
-    }
-
-    /**
-     * identifies if the encoding comes from a db canonical function
-     * NB. the DB encoding still uses camel case instead of snake case for datavalues
-     * @param path locatable path
-     * @return true if non structural
-     */
-    private boolean isNonItemStructureAttribute(String path){
-        return (path.contains(CONTEXT)
-                || path.contains(FEEDER_AUDIT)
-                || path.contains(ORIGINATING_SYSTEM_ITEM_IDS)
-                || path.contains(FEEDER_SYSTEM_ITEM_IDS)
-                || path.contains(ORIGINAL_CONTENT)
-                || path.contains(ORIGINATING_SYSTEM_AUDIT)
-                || path.contains(FEEDER_SYSTEM_AUDIT)
-                || path.contains(SETTING)
-        );
     }
 }
