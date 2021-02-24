@@ -24,10 +24,8 @@ import com.nedap.archie.rm.support.identification.PartyRef;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.rest.openehr.audit.support.CompositionAuditMessageBuilder;
 import org.openehealth.ipf.commons.audit.AuditContext;
-import org.openehealth.ipf.commons.audit.codes.EventActionCode;
 import org.openehealth.ipf.commons.audit.model.AuditMessage;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.web.servlet.View;
 
 import javax.servlet.http.HttpServletRequest;
@@ -58,25 +56,6 @@ public class CompositionAuditStrategy extends OpenEhrAuditStrategy<CompositionAu
     protected void enrichAuditDataset(CompositionAuditDataset auditDataset, HttpServletRequest request, HttpServletResponse response) {
         super.enrichAuditDataset(auditDataset, request, response);
 
-        HttpMethod method = HttpMethod.valueOf(request.getMethod());
-        switch (method) {
-            case POST:
-                auditDataset.setEventActionCode(EventActionCode.Create);
-                break;
-            case GET:
-                auditDataset.setEventActionCode(EventActionCode.Read);
-                break;
-            case PUT:
-                auditDataset.setEventActionCode(EventActionCode.Update);
-                break;
-            case DELETE:
-                auditDataset.setEventActionCode(EventActionCode.Delete);
-                break;
-            default:
-                auditDataset.setEventActionCode(EventActionCode.Execute);
-                break;
-        }
-
         String compositionUri = response.getHeader(HttpHeaders.LOCATION);
         if (compositionUri != null) {
             auditDataset.setCompositionUri(compositionUri);
@@ -84,7 +63,7 @@ public class CompositionAuditStrategy extends OpenEhrAuditStrategy<CompositionAu
 
         String compositionTemplateId = (String) request.getAttribute(COMPOSITION_TEMPLATE_ID);
         if (compositionTemplateId != null) {
-            auditDataset.setCompositionTemplateId(compositionTemplateId);
+            auditDataset.setTemplateId(compositionTemplateId);
         }
 
         Optional<String> patientNumber = getPatientNumber(request);

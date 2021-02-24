@@ -15,17 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.rest.openehr.audit;
 
-import org.openehealth.ipf.commons.audit.codes.EventActionCode;
 import org.openehealth.ipf.commons.audit.types.EnumeratedCodedValue;
 import org.openehealth.ipf.commons.audit.types.EventType;
+import org.springframework.http.HttpMethod;
 
 /**
  * Audit Event Type Code for openEHR.
  */
-public enum OpenEhrEventTypeCode implements EventType, EnumeratedCodedValue<EventType> {
+public enum CompositionEventTypeCode implements EventType, EnumeratedCodedValue<EventType> {
 
     CREATE("249", "creation"),
 
@@ -35,17 +34,17 @@ public enum OpenEhrEventTypeCode implements EventType, EnumeratedCodedValue<Even
 
     private final EventType value;
 
-    OpenEhrEventTypeCode(String code, String originalText) {
+    CompositionEventTypeCode(String code, String originalText) {
         this.value = EventType.of(code, "openehr", originalText);
     }
 
-    public static OpenEhrEventTypeCode resolve(EventActionCode eventActionCode) {
-        switch (eventActionCode) {
-            case Create:
+    public static CompositionEventTypeCode resolve(HttpMethod method) {
+        switch (method) {
+            case POST:
                 return CREATE;
-            case Update:
+            case PUT:
                 return UPDATE;
-            case Delete:
+            case DELETE:
                 return DELETE;
             default:
                 return null;

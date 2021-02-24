@@ -15,18 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.rest.openehr.audit;
 
 import org.openehealth.ipf.commons.audit.codes.EventOutcomeIndicator;
+import org.springframework.http.HttpMethod;
 
 import java.io.Serializable;
 
-public abstract class OpenEhrAuditDataset implements Serializable {
+public class OpenEhrAuditDataset implements Serializable {
 
     private EventOutcomeIndicator eventOutcomeIndicator;
 
     private String eventOutcomeDescription;
+
+    private HttpMethod method;
 
     private String sourceUserId;
 
@@ -46,6 +48,14 @@ public abstract class OpenEhrAuditDataset implements Serializable {
 
     public void setEventOutcomeDescription(String eventOutcomeDescription) {
         this.eventOutcomeDescription = eventOutcomeDescription;
+    }
+
+    public HttpMethod getMethod() {
+        return method;
+    }
+
+    public void setMethod(HttpMethod method) {
+        this.method = method;
     }
 
     public String getSourceUserId() {

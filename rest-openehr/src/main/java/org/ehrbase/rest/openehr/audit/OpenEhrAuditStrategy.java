@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.rest.openehr.audit;
 
 import org.openehealth.ipf.commons.audit.AuditContext;
@@ -23,6 +22,7 @@ import org.openehealth.ipf.commons.audit.codes.EventOutcomeIndicator;
 import org.openehealth.ipf.commons.audit.model.AuditMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.DispatcherServlet;
@@ -57,6 +57,8 @@ public abstract class OpenEhrAuditStrategy<T extends OpenEhrAuditDataset> implem
     protected abstract T createAuditDataset();
 
     protected void enrichAuditDataset(T auditDataset, HttpServletRequest request, HttpServletResponse response) {
+        auditDataset.setMethod(HttpMethod.valueOf(request.getMethod()));
+
         if (request.getUserPrincipal() != null) {
             auditDataset.setSourceUserId(request.getUserPrincipal().getName());
         }

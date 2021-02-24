@@ -15,28 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.rest.openehr.audit;
 
-import org.openehealth.ipf.commons.audit.codes.EventActionCode;
-
 public class CompositionAuditDataset extends OpenEhrAuditDataset {
-
-    private EventActionCode eventActionCode;
 
     private String patientNumber;
 
     private String compositionUri;
 
-    private String compositionTemplateId;
-
-    public EventActionCode getEventActionCode() {
-        return eventActionCode;
-    }
-
-    public void setEventActionCode(EventActionCode eventActionCode) {
-        this.eventActionCode = eventActionCode;
-    }
+    private String templateId;
 
     public String getPatientNumber() {
         return patientNumber;
@@ -54,12 +41,12 @@ public class CompositionAuditDataset extends OpenEhrAuditDataset {
         this.compositionUri = compositionUri;
     }
 
-    public String getCompositionTemplateId() {
-        return compositionTemplateId;
+    public String getTemplateId() {
+        return templateId;
     }
 
-    public void setCompositionTemplateId(String compositionTemplateId) {
-        this.compositionTemplateId = compositionTemplateId;
+    public void setTemplateId(String templateId) {
+        this.templateId = templateId;
     }
 
     boolean hasPatientNumber() {

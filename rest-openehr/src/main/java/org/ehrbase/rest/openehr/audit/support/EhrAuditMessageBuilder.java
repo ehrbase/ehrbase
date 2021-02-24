@@ -15,28 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.rest.openehr.audit;
+package org.ehrbase.rest.openehr.audit.support;
 
-import org.openehealth.ipf.commons.audit.types.EnumeratedCodedValue;
-import org.openehealth.ipf.commons.audit.types.EventId;
+import org.ehrbase.rest.openehr.audit.OpenEhrAuditDataset;
+import org.openehealth.ipf.commons.audit.AuditContext;
+import org.openehealth.ipf.commons.audit.codes.EventIdCode;
 
-/**
- * Audit Event ID Code for openEHR.
- */
-public enum OpenEhrEventIdCode implements EventId, EnumeratedCodedValue<EventId> {
+public class EhrAuditMessageBuilder extends OpenEhrAuditMessageBuilder {
 
-    COMPOSITION("composition"),
-
-    QUERY("query");
-
-    private final EventId value;
-
-    OpenEhrEventIdCode(String code) {
-        this.value = EventId.of(code, "http://www.openehr.org/api/v1/ehr", code);
-    }
-
-    @Override
-    public EventId getValue() {
-        return value;
+    public EhrAuditMessageBuilder(AuditContext auditContext, OpenEhrAuditDataset auditDataset) {
+        super(auditContext, auditDataset, EventIdCode.PatientRecord, null);
     }
 }

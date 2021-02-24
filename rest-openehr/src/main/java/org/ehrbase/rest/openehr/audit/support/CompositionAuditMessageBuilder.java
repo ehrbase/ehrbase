@@ -15,12 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.rest.openehr.audit.support;
 
 import org.ehrbase.rest.openehr.audit.CompositionAuditDataset;
+import org.ehrbase.rest.openehr.audit.CompositionEventTypeCode;
 import org.ehrbase.rest.openehr.audit.OpenEhrEventIdCode;
-import org.ehrbase.rest.openehr.audit.OpenEhrEventTypeCode;
 import org.openehealth.ipf.commons.audit.AuditContext;
 import org.openehealth.ipf.commons.audit.codes.ParticipantObjectDataLifeCycle;
 import org.openehealth.ipf.commons.audit.codes.ParticipantObjectIdTypeCode;
@@ -31,14 +30,13 @@ import org.openehealth.ipf.commons.audit.codes.ParticipantObjectTypeCodeRole;
 public class CompositionAuditMessageBuilder extends OpenEhrAuditMessageBuilder {
 
     public CompositionAuditMessageBuilder(AuditContext auditContext, CompositionAuditDataset auditDataset) {
-        super(auditContext, auditDataset, auditDataset.getEventActionCode(), OpenEhrEventIdCode.COMPOSITION,
-                OpenEhrEventTypeCode.resolve(auditDataset.getEventActionCode()));
+        super(auditContext, auditDataset, OpenEhrEventIdCode.COMPOSITION, CompositionEventTypeCode.resolve(auditDataset.getMethod()));
     }
 
     public CompositionAuditMessageBuilder addComposition(CompositionAuditDataset auditDataset) {
         delegate.addParticipantObjectIdentification(
                 ParticipantObjectIdTypeCode.URI,
-                auditDataset.getCompositionTemplateId(),
+                auditDataset.getTemplateId(),
                 null,
                 null,
                 auditDataset.getCompositionUri(),
@@ -64,12 +62,12 @@ public class CompositionAuditMessageBuilder extends OpenEhrAuditMessageBuilder {
     }
 
     private ParticipantObjectDataLifeCycle resolveCompositionObjectDataLifeCycle(CompositionAuditDataset auditDataset) {
-        switch (auditDataset.getEventActionCode()) {
-            case Create:
+        switch (auditDataset.getMethod()) {
+            case POST:
                 return ParticipantObjectDataLifeCycle.Origination;
-            case Update:
+            case PUT:
                 return ParticipantObjectDataLifeCycle.Amendment;
-            case Read:
+            case GET:
                 return ParticipantObjectDataLifeCycle.Disclosure;
             default:
                 return null;
