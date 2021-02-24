@@ -34,155 +34,147 @@ Force Tags
 
 
 *** Test Cases ***
-# TODO: adapt to composition
-1. Get Versioned Status Of Existing EHR by Version UID (JSON)
+1. Get Versioned Composition Of Existing EHR by Version UID (JSON)
     [Documentation]    Simple, valid request
 
     prepare new request session    JSON    Prefer=return=representation
 
-    create new EHR
-    Should Be Equal As Strings    ${response.status}    201	
+    create EHR and commit a composition for versioned composition tests
 
-    Set Test Variable  ${version_uid}  ${ehrstatus_uid}
-
-    get versioned ehr_status of EHR by version uid
-    Should Be Equal As Strings    ${response.status}    200
-    Should Be Equal As Strings    ${ehrstatus_uid}    ${response.body.uid.value}
-
-
-# TODO: adapt to composition
-1b. Get Versioned Status Of Existing EHR With 2 Versions by Version UID (JSON)
-    [Documentation]    Simple, valid request
-
-    prepare new request session    JSON    Prefer=return=representation
-
-    create new EHR
-    Should Be Equal As Strings    ${response.status}    201	
-
-    update EHR: set ehr_status is_queryable    ${TRUE}
-    check response of 'update EHR' (JSON)
-
-    Set Test Variable  ${version_uid}  ${ehrstatus_uid[0:-1]}2
-
-    get versioned ehr_status of EHR by version uid
+    get version of versioned composition of EHR by UID    ${versioned_object_uid}    ${version_uid}
     Should Be Equal As Strings    ${response.status}    200
     Should Be Equal As Strings    ${version_uid}    ${response.body.uid.value}
 
 
-# TODO: adapt to composition
-1c. Get Versioned Status Of Existing EHR With 2 Versions by Invalid Version UID (JSON)
+1b. Get Versioned Composition Of Existing EHR With 2 Versions by Version UID (JSON)
+    [Documentation]    Simple, valid request
+
+    prepare new request session    JSON    Prefer=return=representation
+
+    create EHR and commit a composition for versioned composition tests
+
+    update a composition for versioned composition tests
+
+    Set Test Variable  ${version_uid}  ${version_uid[0:-1]}2
+
+    get version of versioned composition of EHR by UID    ${versioned_object_uid}    ${version_uid}
+    Should Be Equal As Strings    ${response.status}    200
+    Should Be Equal As Strings    ${version_uid}    ${response.body.uid.value}
+
+
+1c. Get Versioned Composition Of Existing EHR With 2 Versions by Invalid Version UID (JSON)
     [Documentation]    Simple, valid EHR_ID but invalid (non-existent) version
 
     prepare new request session    JSON    Prefer=return=representation
 
-    create new EHR
-    Should Be Equal As Strings    ${response.status}    201	
+    create EHR and commit a composition for versioned composition tests	
 
-    update EHR: set ehr_status is_queryable    ${TRUE}
-    check response of 'update EHR' (JSON)
+    update a composition for versioned composition tests
 
-    Set Test Variable  ${version_uid}  ${ehrstatus_uid[0:-1]}3
+    Set Test Variable  ${version_uid}  ${version_uid[0:-1]}3
 
-    get versioned ehr_status of EHR by version uid
+    get version of versioned composition of EHR by UID    ${versioned_object_uid}    ${version_uid}
     Should Be Equal As Strings    ${response.status}    404
 
 
-# TODO: adapt to composition
-1d. Get Versioned Status Of Existing EHR by Invalid Version UID (JSON)
+1d. Get Versioned Composition Of Existing EHR by Invalid Version UID (JSON)
     [Documentation]    Simple, invalid (negative) version number
 
     prepare new request session    JSON    Prefer=return=representation
 
-    create new EHR
-    Should Be Equal As Strings    ${response.status}    201	
+    create EHR and commit a composition for versioned composition tests
 
-    update EHR: set ehr_status is_queryable    ${TRUE}
-    check response of 'update EHR' (JSON)
+    update a composition for versioned composition tests
 
-    Set Test Variable  ${version_uid}  ${ehrstatus_uid[0:-1]}-2
+    Set Test Variable  ${version_uid}  ${version_uid[0:-1]}-2
 
-    get versioned ehr_status of EHR by version uid
+    get version of versioned composition of EHR by UID    ${versioned_object_uid}    ${version_uid}
     Should Be Equal As Strings    ${response.status}    400
 
 
-# TODO: adapt to composition
-1e. Get Versioned Status Of Existing EHR by Invalid Version UID (JSON)
+1e. Get Versioned Composition Of Existing EHR by Invalid Version UID (JSON)
     [Documentation]    Simple, invalid (floating point) version number
 
     prepare new request session    JSON    Prefer=return=representation
 
-    create new EHR
-    Should Be Equal As Strings    ${response.status}    201	
+    create EHR and commit a composition for versioned composition tests
 
-    update EHR: set ehr_status is_queryable    ${TRUE}
-    check response of 'update EHR' (JSON)
+    update a composition for versioned composition tests
 
-    Set Test Variable  ${version_uid}  ${ehrstatus_uid[0:-1]}2.0
+    Set Test Variable  ${version_uid}  ${version_uid[0:-1]}2.0
 
-    get versioned ehr_status of EHR by version uid
+    get version of versioned composition of EHR by UID    ${versioned_object_uid}    ${version_uid}
     Should Be Equal As Strings    ${response.status}    400
 
 
-# TODO: adapt to composition
-1f. Get Versioned Status Of Existing EHR by Invalid Version UID (JSON)
+1f. Get Versioned Composition Of Existing EHR by Invalid Version UID (JSON)
     [Documentation]    Simple, invalid (random) version UID
 
 
     prepare new request session    JSON    Prefer=return=representation
 
-    create new EHR
-    Should Be Equal As Strings    ${response.status}    201
+    create EHR and commit a composition for versioned composition tests
     
     generate random version_uid
-    get versioned ehr_status of EHR by version uid
-    Should Be Equal As Strings    ${response.status}    404
+    get version of versioned composition of EHR by UID    ${versioned_object_uid}    ${version_uid}
+    Should Be Equal As Strings    ${response.status}    400
 
 
-# TODO: adapt to composition
-2. Get Versioned Status Of EHR by Version UID Invalid EHR (JSON)
+2. Get Versioned Composition Of EHR by Version UID Invalid EHR (JSON)
     [Documentation]    Simple, invalid EHR_ID (non-existent)
 
     prepare new request session    JSON    Prefer=return=representation
 
+    create EHR and commit a composition for versioned composition tests
     generate random ehr_id
-    generate random version_uid
 
-    get versioned ehr_status of EHR by version uid
+    get version of versioned composition of EHR by UID    ${versioned_object_uid}    ${version_uid}
     Should Be Equal As Strings    ${response.status}    404
 
 
-# TODO: adapt to composition
-3. Get Versioned Status Of Existing EHR by Version UID Invalid Version UID (JSON)
+3. Get Versioned Composition Of EHR by Version UID Invalid Versioned Object UID (JSON)
+    [Documentation]    Simple, invalid EHR_ID (non-existent)
+
+    prepare new request session    JSON    Prefer=return=representation
+
+    create EHR and commit a composition for versioned composition tests
+    # comment: save orginal version uid
+    ${original_id} =  Set Variable  ${version_uid}
+    create fake composition
+    # reset only this var to original
+    ${version_uid} =  Set Variable  ${original_id}
+
+    get version of versioned composition of EHR by UID    ${versioned_object_uid}    ${version_uid}
+    Should Be Equal As Strings    ${response.status}    404
+
+
+4. Get Versioned Composition Of Existing EHR by Version UID Invalid Version UID (JSON)
     [Documentation]    Simple, valid EHR_ID but invalid version_uid
 
     prepare new request session    JSON    Prefer=return=representation
 
-    create new EHR
-    Should Be Equal As Strings    ${response.status}    201
+    create EHR and commit a composition for versioned composition tests
 
     # comment: alter version uid to invalid one
-    Set Test Variable  ${version_uid}  ${ehrstatus_uid[0:-1]}2
+    Set Test Variable  ${version_uid}  ${version_uid[0:-1]}2
 
-    get versioned ehr_status of EHR by version uid
+    get version of versioned composition of EHR by UID    ${versioned_object_uid}    ${version_uid}
     Should Be Equal As Strings    ${response.status}    404
 
 
-# TODO: adapt to composition
-4. Get Versioned Status Of Existing EHR With 2 Versions by Version UID Invalid Version UID (JSON)
+5. Get Versioned Composition Of Existing EHR With 2 Versions by Version UID Invalid Version UID (JSON)
     [Documentation]    Simple, valid EHR_ID but invalid version_uid
 
     prepare new request session    JSON    Prefer=return=representation
 
-    create new EHR
-    Should Be Equal As Strings    ${response.status}    201
+    create EHR and commit a composition for versioned composition tests
 
-    update EHR: set ehr_status is_queryable    ${TRUE}
-    check response of 'update EHR' (JSON)
+    update a composition for versioned composition tests
 
     generate random version_uid
 
     # comment: alter version uid to invalid one
     Set Test Variable  ${version_uid}  ${version_uid[0:-1]}2
 
-    get versioned ehr_status of EHR by version uid
-    Should Be Equal As Strings    ${response.status}    404
+    get version of versioned composition of EHR by UID    ${versioned_object_uid}    ${version_uid}
+    Should Be Equal As Strings    ${response.status}    400

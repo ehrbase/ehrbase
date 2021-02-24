@@ -99,148 +99,157 @@ Force Tags
     Should Be Equal As Strings    ${original_id}    ${response.body.uid.value}
 
 
-# TODO: adapt to composition
 4. Get Composition via Versioned Composition Of Existing EHR by Time Check Lifecycle State (JSON)
     [Documentation]    Simple, but checking lifecycle state
 
     prepare new request session    JSON    Prefer=return=representation
 
-    create new EHR
-    Should Be Equal As Strings    ${response.status}    201
+    create EHR and commit a composition for versioned composition tests
 
-    get versioned ehr_status of EHR by time
+    get version of versioned composition of EHR by UID and time    ${versioned_object_uid}
     Should Be Equal As Strings    ${response.status}    200
-    Should Be Equal As Strings    ${ehrstatus_uid}    ${response.body.uid.value}
+    Should Be Equal As Strings    ${version_uid}    ${response.body.uid.value}
     Should Be Equal As Strings    complete   ${response.body.lifecycle_state.value}
 
 
-# TODO: adapt to composition
 5a. Get Composition via Versioned Composition Of Existing EHR by Time Check Preceding Version (JSON)
     [Documentation]    Simple, but checking preceding version uid - with one version
 
     prepare new request session    JSON    Prefer=return=representation
 
-    create new EHR
-    Should Be Equal As Strings    ${response.status}    201
+    create EHR and commit a composition for versioned composition tests
     
-    get versioned ehr_status of EHR by time
+    get version of versioned composition of EHR by UID and time    ${versioned_object_uid}
     Should Be Equal As Strings    ${response.status}    200
-    Should Be Equal As Strings    ${ehrstatus_uid}    ${response.body.uid.value}
+    Should Be Equal As Strings    ${version_uid}    ${response.body.uid.value}
     Should Not Contain  ${response.body}  preceding_version_uid
 
 
-# TODO: adapt to composition
 5b. Get Composition via Versioned Composition Of Existing EHR by Time Check Preceding Version (JSON)
     [Documentation]    Simple, but checking preceding version uid - with two versions
 
     prepare new request session    JSON    Prefer=return=representation
 
-    create new EHR
-    Should Be Equal As Strings    ${response.status}    201
+    create EHR and commit a composition for versioned composition tests
     # comment: save orginal version uid
-    Set Test Variable  ${original_id}  ${ehrstatus_uid}
+    Set Test Variable  ${original_id}  ${version_uid}
 
-    update EHR: set ehr_status is_queryable    ${TRUE}
-    check response of 'update EHR' (JSON)
+    update a composition for versioned composition tests
 
-    get versioned ehr_status of EHR by time
+    get version of versioned composition of EHR by UID and time    ${versioned_object_uid}
     Should Be Equal As Strings    ${response.status}    200
     Should Be Equal As Strings    ${original_id}    ${response.body.preceding_version_uid.value}
 
 
-# TODO: adapt to composition
+# TODO: figure out how to address the variable
 6. Get Composition via Versioned Composition Of Existing EHR by Time Check Data (JSON)
     [Documentation]    Simple, but checking object data - with two versions
+    [Tags]              not-ready
 
     prepare new request session    JSON    Prefer=return=representation
 
-    create new EHR
-    Should Be Equal As Strings    ${response.status}    201
+    create EHR and commit a composition for versioned composition tests
 
-    update EHR: set ehr_status is_queryable    ${FALSE}
-    check response of 'update EHR' (JSON)
+    update a composition for versioned composition tests
 
-    get versioned ehr_status of EHR by time
+    get version of versioned composition of EHR by UID and time    ${versioned_object_uid}
     Should Be Equal As Strings    ${response.status}    200
-    Should Be Equal As Strings    false    ${response.body.data.is_queryable}  ignore_case=True
+    # the target string is (in basic style): response.body.data.content[0].data.events[0].data.items[0].value.value
+
+    Log    ${response.body.data.content[0].data.events[0].data}
+    Log    ${response.body.data.content[0].data.events[0].data.name}
+    Log    ${response.body.data.content[0].data.events[0].data.items}
+
+    # ${items} =    ${response.body.data.content[0].data.events[0].data.items}
+    # Convert To Dictionary    ${items}
+
+    # ${items} =    Convert To Dictionary    ${response.body.data.content[0].data.events[0].data.items}
+    # Log    ${items}
+
+    # TODO: after figuring out how to address it set it below
+    # Should Be Equal As Strings    modified value    ${response.body.data.........}
 
 
-# TODO: adapt to composition
 7a. Get Composition via Versioned Composition Of Existing EHR by Time With Parameter Check (JSON)
     [Documentation]    Checking for expected responses with and without valid parameters
 
     prepare new request session    JSON    Prefer=return=representation
 
-    create new EHR
-    Should Be Equal As Strings    ${response.status}    201
+    create EHR and commit a composition for versioned composition tests
 
     # comment: set the query parameter to current data in openEHR REST spec conformant timestamp
     ${date} = 	Get Current Date    result_format=%Y-%m-%dT%H:%M:%S.%f
     Set Test Variable 	&{query} 	version_at_time=${date}     # set query as dictionary
 
-    get versioned ehr_status of EHR by time
+    get version of versioned composition of EHR by UID and time    ${versioned_object_uid}
     Should Be Equal As Strings    ${response.status}    200
 
 
-# TODO: adapt to composition
 7b. Get Composition via Versioned Composition Of Existing EHR With Invalid Timestamp As Parameter (JSON)
     [Documentation]    Checking for expected responses with invalid parameters
 
     prepare new request session    JSON    Prefer=return=representation
 
-    create new EHR
-    Should Be Equal As Strings    ${response.status}    201
+    create EHR and commit a composition for versioned composition tests
 
     # comment: generate a timestamp which is considered invalid by openEHR REST Spec
     ${date} = 	Get Current Date
     Set Test Variable 	&{query} 	version_at_time=${date}     # set query as dictionary
 
-    get versioned ehr_status of EHR by time
+    get version of versioned composition of EHR by UID and time    ${versioned_object_uid}
     Should Be Equal As Strings    ${response.status}    400
 
 
-# TODO: adapt to composition
 7c. Get Composition via Versioned Composition Of Non-Existent EHR by Time With Parameter Check (JSON)
     [Documentation]    Checking for expected responses with and without valid parameters
 
     prepare new request session    JSON    Prefer=return=representation
 
-    create fake EHR
-    Should Be Equal As Strings    ${response.status}    201
+    create EHR and commit a composition for versioned composition tests
 
-    get versioned ehr_status of EHR by time
+    create fake EHR
+
+    get version of versioned composition of EHR by UID and time    ${versioned_object_uid}
     Should Be Equal As Strings    ${response.status}    404
 
 
-# TODO: adapt to composition
-7d. Get Composition via Versioned Composition Of Existing EHR by Timestamp From The Past As Parameter (JSON)
+7d. Get Composition via Versioned Composition Of Non-Existent Composition by Time With Parameter Check (JSON)
     [Documentation]    Checking for expected responses with and without valid parameters
 
     prepare new request session    JSON    Prefer=return=representation
 
-    create new EHR
-    Should Be Equal As Strings    ${response.status}    201
+    create EHR and commit a composition for versioned composition tests
+    create fake composition
+
+    get version of versioned composition of EHR by UID and time    ${versioned_object_uid}
+    Should Be Equal As Strings    ${response.status}    404
+
+
+7e. Get Composition via Versioned Composition Of Existing EHR by Timestamp From The Past As Parameter (JSON)
+    [Documentation]    Checking for expected responses with and without valid parameters
+
+    prepare new request session    JSON    Prefer=return=representation
+
+    create EHR and commit a composition for versioned composition tests
 
     # comment: valid timestamp format, but points to time in the past
     ${date} = 	Get Current Date    increment=-7 days    result_format=%Y-%m-%dT%H:%M:%S.%f
     Set Test Variable 	&{query} 	version_at_time=${date}     # set query as dictionary
 
-    get versioned ehr_status of EHR by time
+    get version of versioned composition of EHR by UID and time    ${versioned_object_uid}
     Should Be Equal As Strings    ${response.status}    404
 
 
-# TODO: adapt to composition
-7e. Get Composition via Versioned Composition Of Existing EHR by Timestamp From The Future As Parameter (JSON)
+7f. Get Composition via Versioned Composition Of Existing EHR by Timestamp From The Future As Parameter (JSON)
     [Documentation]    Checking for expected responses with and without valid parameters
 
     prepare new request session    JSON    Prefer=return=representation
 
-    create new EHR
-    Should Be Equal As Strings    ${response.status}    201
+    create EHR and commit a composition for versioned composition tests
 
     # comment: valid timestamp format, but points to time in the past
     ${date} = 	Get Current Date    increment=7 days    result_format=%Y-%m-%dT%H:%M:%S.%f
     Set Test Variable 	&{query} 	version_at_time=${date}     # set query as dictionary
 
-    get versioned ehr_status of EHR by time
+    get version of versioned composition of EHR by UID and time    ${versioned_object_uid}
     Should Be Equal As Strings    ${response.status}    200

@@ -505,6 +505,20 @@ get version of versioned composition of EHR by UID and time
     Run Keyword If 	$query is None 	internal get version of versioned composition of EHR by UID and time without query    ${uid}
 
 
+get version of versioned composition of EHR by UID
+    [Arguments]         ${versioned_object_uid}    ${version_uid}
+    [Documentation]     Gets composition with given version UID
+    ...                 DEPENDENCY: `prepare new request session` and keywords that
+    ...                             create and expose an `ehr_id` e.g.
+    ...                             - `create new EHR`
+    ...                             - `generate random ehr_id`
+    ...                             and creation of composition, giving its ID as argument
+
+    &{resp}=            REST.GET    ${baseurl}/ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version/${version_uid}
+                        ...         headers={"Accept": "application/json"}
+                        Set Test Variable    ${response}    ${resp}
+
+
 # internal only, do not call from outside. use "get version of versioned composition of EHR by UID and time" instead
 internal get version of versioned composition of EHR by UID and time with query
     [Arguments]         ${uid}

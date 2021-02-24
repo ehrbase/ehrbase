@@ -303,7 +303,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     }
 
     /**
-     * @throws IllegalArgumentException when no version in compliance with timestamp is available
+     * @throws ObjectNotFoundException when no version in compliance with timestamp is available
      * @throws InternalServerException  on problem with SQL statement or input
      */
     public static int getVersionFromTimeStamp(I_DomainAccess domainAccess, UUID vCompositionUid, Timestamp timeCommitted) {
@@ -332,7 +332,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
             versionComHist++;
         }
         if (versionComHist == 0) {
-            throw new IllegalArgumentException("There are no versions available prior to date " + timeCommitted + " for the the composition with id: " + vCompositionUid);
+            throw new ObjectNotFoundException("composition", "There are no versions available prior to date " + timeCommitted + " for the the composition with id: " + vCompositionUid);
         }
         return versionComHist;
     }

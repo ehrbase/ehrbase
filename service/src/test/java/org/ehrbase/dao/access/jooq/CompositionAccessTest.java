@@ -18,6 +18,7 @@
 
 package org.ehrbase.dao.access.jooq;
 
+import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.support.DummyDataAccess;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
@@ -78,7 +79,7 @@ public class CompositionAccessTest {
 		assertEquals(11, version2);
 		
 		//test that the situation where there is no composition with smaller time stamp is managed appropriately throwing an exception 1546344000000 = 1/1/2019, 1:00:00 PM
-		assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(()->CompositionAccess.getVersionFromTimeStamp(compositionAccess, UUID.fromString("8701233c-c8fd-47ba-91b5-ef9ff23c259b"), new Timestamp(Long.parseLong("1546344000000")))).withMessageStartingWith("There are no versions available prior to date");
+		assertThatExceptionOfType(ObjectNotFoundException.class).isThrownBy(()->CompositionAccess.getVersionFromTimeStamp(compositionAccess, UUID.fromString("8701233c-c8fd-47ba-91b5-ef9ff23c259b"), new Timestamp(Long.parseLong("1546344000000")))).withMessageStartingWith("There are no versions available prior to date");
 
 		//test that the one in the composition table is returned when the timestamp is greater than any existing sys_transaction (including the latest one in the Composition table) 2019-05-07 12:41:56.546
 		int version4 = CompositionAccess.getVersionFromTimeStamp(compositionAccess, UUID.fromString("8701233c-c8fd-47ba-91b5-ef9ff23c259b"), new Timestamp(Long.parseLong("1562673600000")));//Tuesday, July 9, 2019 2:00:00 PM GMT+02:00 DST
