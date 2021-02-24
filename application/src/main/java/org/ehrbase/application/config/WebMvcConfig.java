@@ -21,8 +21,8 @@ package org.ehrbase.application.config;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.application.util.IsoDateTimeConverter;
 import org.ehrbase.application.util.StringToEnumConverter;
-import org.ehrbase.rest.openehr.audit.CompositionAuditStrategy;
-import org.ehrbase.rest.openehr.audit.EhrAuditStrategy;
+import org.ehrbase.rest.openehr.audit.CompositionEndpointAuditStrategy;
+import org.ehrbase.rest.openehr.audit.EhrEndpointAuditStrategy;
 import org.openehealth.ipf.commons.audit.AuditContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
@@ -68,12 +68,14 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements WebMvcConfi
     @Override
     public void addInterceptors(@NonNull InterceptorRegistry registry) {
         if (auditContext.isAuditEnabled()) {
+            // Composition Endpoint
             registry
-                    .addInterceptor(new EhrAuditStrategy(auditContext))
+                    .addInterceptor(new CompositionEndpointAuditStrategy(auditContext, ehrService))
+                    .addPathPatterns("/rest/openehr/v1/**/composition/**", "/rest/openehr/v1/**/versioned_composition/**");
+            // Ehr Endpoint
+            registry
+                    .addInterceptor(new EhrEndpointAuditStrategy(auditContext, ehrService))
                     .addPathPatterns("/rest/openehr/v1/ehr", "/rest/openehr/v1/ehr/*");
-            registry
-                    .addInterceptor(new CompositionAuditStrategy(auditContext, ehrService))
-                    .addPathPatterns("/rest/openehr/v1/composition/**", "/rest/openehr/v1/versioned_composition/**");
         }
     }
 }

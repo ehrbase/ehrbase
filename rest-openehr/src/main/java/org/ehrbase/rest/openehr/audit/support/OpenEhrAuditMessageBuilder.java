@@ -27,11 +27,13 @@ import org.openehealth.ipf.commons.audit.types.EventType;
 import org.openehealth.ipf.commons.audit.utils.AuditUtils;
 import org.springframework.http.HttpMethod;
 
+@SuppressWarnings("UnusedReturnValue")
 public abstract class OpenEhrAuditMessageBuilder extends DelegatingAuditMessageBuilder<OpenEhrAuditMessageBuilder, CustomAuditMessageBuilder> {
 
     private final AuditContext auditContext;
 
-    protected OpenEhrAuditMessageBuilder(AuditContext auditContext, OpenEhrAuditDataset auditDataset, EventId eventId, EventType eventType) {
+    protected OpenEhrAuditMessageBuilder(AuditContext auditContext, OpenEhrAuditDataset auditDataset,
+                                         EventId eventId, EventType eventType) {
         this(auditContext, auditDataset, resolveEventActionCode(auditDataset.getMethod()), eventId, eventType);
     }
 

@@ -24,7 +24,7 @@ import org.springframework.http.HttpMethod;
 /**
  * Audit Event Type Code for openEHR.
  */
-public enum CompositionEventTypeCode implements EventType, EnumeratedCodedValue<EventType> {
+public enum CompositionEndpointEventTypeCode implements EventType, EnumeratedCodedValue<EventType> {
 
     CREATE("249", "creation"),
 
@@ -34,11 +34,11 @@ public enum CompositionEventTypeCode implements EventType, EnumeratedCodedValue<
 
     private final EventType value;
 
-    CompositionEventTypeCode(String code, String originalText) {
+    CompositionEndpointEventTypeCode(String code, String originalText) {
         this.value = EventType.of(code, "openehr", originalText);
     }
 
-    public static CompositionEventTypeCode resolve(HttpMethod method) {
+    public static CompositionEndpointEventTypeCode resolve(HttpMethod method) {
         switch (method) {
             case POST:
                 return CREATE;

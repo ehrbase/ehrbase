@@ -17,6 +17,7 @@
  */
 package org.ehrbase.rest.openehr.audit;
 
+import org.ehrbase.api.service.EhrService;
 import org.openehealth.ipf.commons.audit.AuditContext;
 import org.openehealth.ipf.commons.audit.codes.EventOutcomeIndicator;
 import org.openehealth.ipf.commons.audit.model.AuditMessage;
@@ -33,28 +34,34 @@ import javax.servlet.http.HttpServletResponse;
 
 public abstract class OpenEhrAuditStrategy<T extends OpenEhrAuditDataset> implements HandlerInterceptor {
 
+    public static final String EHR_ID_ATTRIBUTE = OpenEhrAuditStrategy.class.getName() + ".EHR_ID";
+
     private static final Logger LOG = LoggerFactory.getLogger(OpenEhrAuditStrategy.class);
 
     protected final AuditContext auditContext;
 
-    protected OpenEhrAuditStrategy(AuditContext auditContext) {
+    protected final EhrService ehrService;
+
+    protected OpenEhrAuditStrategy(AuditContext auditContext, EhrService ehrService) {
         this.auditContext = auditContext;
+        this.ehrService = ehrService;
     }
 
     @Override
     public void afterCompletion(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
                                 @NonNull Object handler, Exception ex) {
-
         T auditDataset = createAuditDataset();
         enrichAuditDataset(auditDataset, request, response);
-
         AuditMessage[] messages = getMessages(auditDataset);
+
         auditContext.audit(messages);
 
         LOG.debug("Messages sent to the audit repository: {}", (Object[]) messages);
     }
 
     protected abstract T createAuditDataset();
+
+    protected abstract AuditMessage[] getMessages(T auditDataset);
 
     protected void enrichAuditDataset(T auditDataset, HttpServletRequest request, HttpServletResponse response) {
         auditDataset.setMethod(HttpMethod.valueOf(request.getMethod()));
@@ -86,6 +93,4 @@ public abstract class OpenEhrAuditStrategy<T extends OpenEhrAuditDataset> implem
         auditDataset.setEventOutcomeIndicator(eventOutcomeIndicator);
         auditDataset.setEventOutcomeDescription(eventOutcomeDescription);
     }
-
-    protected abstract AuditMessage[] getMessages(T auditDataset);
 }

@@ -26,34 +26,27 @@ import org.ehrbase.rest.openehr.audit.support.CompositionAuditMessageBuilder;
 import org.openehealth.ipf.commons.audit.AuditContext;
 import org.openehealth.ipf.commons.audit.model.AuditMessage;
 import org.springframework.http.HttpHeaders;
-import org.springframework.web.servlet.View;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-public class CompositionAuditStrategy extends OpenEhrAuditStrategy<CompositionAuditDataset> {
+public class CompositionEndpointAuditStrategy extends OpenEhrAuditStrategy<CompositionEndpointAuditDataset> {
 
-    public static final String COMPOSITION_TEMPLATE_ID = "CompositionAuditStrategy.CompositionTemplateId";
+    public static final String TEMPLATE_ID_ATTRIBUTE = CompositionEndpointAuditStrategy.class.getName() + ".TEMPLATE_ID";
 
-    private static final String EHR_ID = "ehr_id";
-
-    private final EhrService ehrService;
-
-    public CompositionAuditStrategy(AuditContext auditContext, EhrService ehrService) {
-        super(auditContext);
-        this.ehrService = ehrService;
+    public CompositionEndpointAuditStrategy(AuditContext auditContext, EhrService ehrService) {
+        super(auditContext, ehrService);
     }
 
     @Override
-    protected CompositionAuditDataset createAuditDataset() {
-        return new CompositionAuditDataset();
+    protected CompositionEndpointAuditDataset createAuditDataset() {
+        return new CompositionEndpointAuditDataset();
     }
 
     @Override
-    protected void enrichAuditDataset(CompositionAuditDataset auditDataset, HttpServletRequest request, HttpServletResponse response) {
+    protected void enrichAuditDataset(CompositionEndpointAuditDataset auditDataset, HttpServletRequest request, HttpServletResponse response) {
         super.enrichAuditDataset(auditDataset, request, response);
 
         String compositionUri = response.getHeader(HttpHeaders.LOCATION);
@@ -61,7 +54,7 @@ public class CompositionAuditStrategy extends OpenEhrAuditStrategy<CompositionAu
             auditDataset.setCompositionUri(compositionUri);
         }
 
-        String compositionTemplateId = (String) request.getAttribute(COMPOSITION_TEMPLATE_ID);
+        String compositionTemplateId = (String) request.getAttribute(TEMPLATE_ID_ATTRIBUTE);
         if (compositionTemplateId != null) {
             auditDataset.setTemplateId(compositionTemplateId);
         }
@@ -71,7 +64,7 @@ public class CompositionAuditStrategy extends OpenEhrAuditStrategy<CompositionAu
     }
 
     @Override
-    protected AuditMessage[] getMessages(CompositionAuditDataset auditDataset) {
+    protected AuditMessage[] getMessages(CompositionEndpointAuditDataset auditDataset) {
         CompositionAuditMessageBuilder builder = new CompositionAuditMessageBuilder(auditContext, auditDataset);
         if (auditDataset.hasComposition()) {
             builder.addComposition(auditDataset);
@@ -84,8 +77,7 @@ public class CompositionAuditStrategy extends OpenEhrAuditStrategy<CompositionAu
 
     @SuppressWarnings("unchecked")
     private Optional<String> getPatientNumber(HttpServletRequest request) {
-        Map<String, Object> pathVariables = (Map<String, Object>) request.getAttribute(View.PATH_VARIABLES);
-        UUID ehrId = UUID.fromString((String) pathVariables.get(EHR_ID));
+        UUID ehrId = (UUID) request.getAttribute(EHR_ID_ATTRIBUTE);
 
         return ehrService.getEhrStatus(ehrId)
                 .map(ehrStatus -> {

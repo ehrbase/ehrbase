@@ -143,6 +143,4 @@ management:
 # Audit Properties
 ipf:
   atna:
-    audit-enabled: false
-    audit-repository-host:
-    audit-repository-port:
+    audit-enabled: true

@@ -17,17 +17,19 @@
  */
 package org.ehrbase.rest.openehr.audit;
 
+import org.ehrbase.api.service.EhrService;
 import org.ehrbase.rest.openehr.audit.support.EhrAuditMessageBuilder;
 import org.openehealth.ipf.commons.audit.AuditContext;
 import org.openehealth.ipf.commons.audit.model.AuditMessage;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.UUID;
 
-public class EhrAuditStrategy extends OpenEhrAuditStrategy<OpenEhrAuditDataset> {
+public class EhrEndpointAuditStrategy extends OpenEhrAuditStrategy<OpenEhrAuditDataset> {
 
-    public EhrAuditStrategy(AuditContext auditContext) {
-        super(auditContext);
+    public EhrEndpointAuditStrategy(AuditContext auditContext, EhrService ehrService) {
+        super(auditContext, ehrService);
     }
 
     @Override
@@ -39,6 +41,7 @@ public class EhrAuditStrategy extends OpenEhrAuditStrategy<OpenEhrAuditDataset> 
     protected void enrichAuditDataset(OpenEhrAuditDataset auditDataset, HttpServletRequest request, HttpServletResponse response) {
         super.enrichAuditDataset(auditDataset, request, response);
 
+        UUID ehrId = (UUID) request.getAttribute(EHR_ID_ATTRIBUTE);
 
     }
 

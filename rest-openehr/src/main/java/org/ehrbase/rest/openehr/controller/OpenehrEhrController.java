@@ -21,7 +21,12 @@ package org.ehrbase.rest.openehr.controller;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.support.identification.HierObjectId;
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.ResponseHeader;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -29,6 +34,7 @@ import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.response.openehr.EhrResponseData;
+import org.ehrbase.rest.openehr.audit.OpenEhrAuditStrategy;
 import org.ehrbase.rest.openehr.controller.OperationNotesResourcesReaderOpenehr.ApiNotes;
 import org.ehrbase.rest.openehr.util.InternalResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,10 +42,24 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 /**
@@ -82,7 +102,8 @@ public class OpenehrEhrController extends BaseController {
                                     @ApiParam(value = REQ_CONTENT_TYPE_BODY) @RequestHeader(value = CONTENT_TYPE, required = false) String contentType,    // TODO when working on EHR_STATUS
                                     @ApiParam(value = "Client should specify expected response format") @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
                                     @ApiParam(value = "May be used by clients for resource representation negotiation") @RequestHeader(value = PREFER, required = false, defaultValue = RETURN_MINIMAL) String prefer,
-                                    @ApiParam(value = "An ehr_status may be supplied as the request body") @RequestBody(required = false) EhrStatus ehrStatus) {
+                                    @ApiParam(value = "An ehr_status may be supplied as the request body") @RequestBody(required = false) EhrStatus ehrStatus,
+                                    HttpServletRequest request) {
         final UUID ehrId;
         if (ehrStatus != null) {
             ehrId = ehrService.create(ehrStatus, null);
@@ -90,7 +111,7 @@ public class OpenehrEhrController extends BaseController {
             ehrId = ehrService.create(null, null);
         }
 
-        return internalPostEhrProcessing(accept, prefer, ehrId);
+        return internalPostEhrProcessing(accept, prefer, ehrId, request);
     }
 
     @PutMapping(path = "/{ehr_id}")
@@ -114,7 +135,8 @@ public class OpenehrEhrController extends BaseController {
                                                            @ApiParam(value = "Client should specify expected response format") @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
                                                            @ApiParam(value = "May be used by clients for resource representation negotiation") @RequestHeader(value = PREFER, required = false) String prefer,
                                                            @ApiParam(value = "User supplied EHR ID", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
-                                                           @ApiParam(value = "An ehr_status may be supplied as the request body") @RequestBody(required = false) EhrStatus ehrStatus) {
+                                                           @ApiParam(value = "An ehr_status may be supplied as the request body") @RequestBody(required = false) EhrStatus ehrStatus,
+                                                           HttpServletRequest request) {
 
         UUID ehrId; // can't use getEhrUuid(..) because here another exception needs to be thrown (-> 400, not 404 in response)
         try {
@@ -138,10 +160,10 @@ public class OpenehrEhrController extends BaseController {
             throw new InternalServerException("Error creating EHR with custom ID and/or status");
         }
 
-        return internalPostEhrProcessing(accept, prefer, resultEhrId);
+        return internalPostEhrProcessing(accept, prefer, resultEhrId, request);
     }
 
-    private ResponseEntity<EhrResponseData> internalPostEhrProcessing( String accept, String prefer, UUID resultEhrId) {
+    private ResponseEntity<EhrResponseData> internalPostEhrProcessing(String accept, String prefer, UUID resultEhrId, HttpServletRequest request) {
         URI url = URI.create(this.encodePath(getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + resultEhrId.toString()));
 
         List<String> headerList = Arrays.asList(CONTENT_TYPE, LOCATION, ETAG, LAST_MODIFIED);   // whatever is required by REST spec
@@ -152,6 +174,9 @@ public class OpenehrEhrController extends BaseController {
         } else {    // "minimal" is default fallback
             respData = buildEhrResponseData(() -> null, resultEhrId, accept, headerList);
         }
+
+        // Registers EhrId in request attributes for audit processing
+        request.setAttribute(OpenEhrAuditStrategy.EHR_ID_ATTRIBUTE, resultEhrId);
 
         // returns 201 with body + headers, 204 only with headers or 500 error depending on what processing above yields
         return respData.map(i -> Optional.ofNullable(i.getResponseData()).map(j -> ResponseEntity.created(url).headers(i.getHeaders()).body(j))
@@ -176,15 +201,16 @@ public class OpenehrEhrController extends BaseController {
             @ApiResponse(code = 406, message = "Not Acceptable - Service can not fulfil requested Accept format."),
             @ApiResponse(code = 415, message = "Unsupported Media Type - Type not supported.")})
     public ResponseEntity<EhrResponseData> retrieveEhrById(@ApiParam(value = "Client should specify expected response format") @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-                                                           @ApiParam(value = "User supplied EHR ID", required = true) @PathVariable(value = "ehr_id") String ehrIdString) {
+                                                           @ApiParam(value = "User supplied EHR ID", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
+                                                           HttpServletRequest request) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
 
-        if(ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
+        if (ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
             throw new ObjectNotFoundException("ehr", "No EHR with this ID can be found");
         }
 
-        return internalGetEhrProcessing(accept, ehrId);
+        return internalGetEhrProcessing(accept, ehrId, request);
     }
 
     /**
@@ -203,19 +229,23 @@ public class OpenehrEhrController extends BaseController {
             @ApiResponse(code = 415, message = "Unsupported Media Type - Type not supported.")})
     public ResponseEntity<EhrResponseData> retrieveEhrBySubject(@ApiParam(value = "Client should specify expected response format") @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
                                                                 @ApiParam(value = "subject id", required = true) @RequestParam(value = "subject_id") String subjectId,
-                                                                @ApiParam(value = "subject namespace", required = true) @RequestParam(value = "subject_namespace") String subjectNamespace) {
+                                                                @ApiParam(value = "subject namespace", required = true) @RequestParam(value = "subject_namespace") String subjectNamespace,
+                                                                HttpServletRequest request) {
 
         Optional<UUID> ehrIdOpt = ehrService.findBySubject(subjectId, subjectNamespace);
 
         UUID ehrId = ehrIdOpt.orElseThrow(() -> new ObjectNotFoundException("ehr", "No EHR with supplied subject parameters found"));
 
-        return internalGetEhrProcessing(accept, ehrId);
+        return internalGetEhrProcessing(accept, ehrId, request);
     }
 
-    private ResponseEntity<EhrResponseData> internalGetEhrProcessing(String accept, UUID ehrId) {
+    private ResponseEntity<EhrResponseData> internalGetEhrProcessing(String accept, UUID ehrId, HttpServletRequest request) {
         List<String> headerList = Arrays.asList(CONTENT_TYPE, LOCATION, ETAG, LAST_MODIFIED);   // whatever is required by REST spec
 
         Optional<InternalResponse<EhrResponseData>> respData = buildEhrResponseData(EhrResponseData::new, ehrId, accept, headerList);
+
+        // Registers EhrId in request attributes for audit processing
+        request.setAttribute(OpenEhrAuditStrategy.EHR_ID_ATTRIBUTE, ehrId);
 
         return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData()))
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
@@ -293,6 +323,8 @@ public class OpenehrEhrController extends BaseController {
                 case LAST_MODIFIED:
                     // TODO should be VERSION.commit_audit.time_committed.value which is not implemented yet - mock for now
                     respHeaders.setLastModified(123124442);
+                    break;
+                default:
                     break;
             }
         }

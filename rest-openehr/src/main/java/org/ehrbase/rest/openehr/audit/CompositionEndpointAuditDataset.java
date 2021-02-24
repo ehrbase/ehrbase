@@ -17,7 +17,7 @@
  */
 package org.ehrbase.rest.openehr.audit;
 
-public class CompositionAuditDataset extends OpenEhrAuditDataset {
+public class CompositionEndpointAuditDataset extends OpenEhrAuditDataset {
 
     private String patientNumber;
 

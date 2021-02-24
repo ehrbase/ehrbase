@@ -17,8 +17,8 @@
  */
 package org.ehrbase.rest.openehr.audit.support;
 
-import org.ehrbase.rest.openehr.audit.CompositionAuditDataset;
-import org.ehrbase.rest.openehr.audit.CompositionEventTypeCode;
+import org.ehrbase.rest.openehr.audit.CompositionEndpointAuditDataset;
+import org.ehrbase.rest.openehr.audit.CompositionEndpointEventTypeCode;
 import org.ehrbase.rest.openehr.audit.OpenEhrEventIdCode;
 import org.openehealth.ipf.commons.audit.AuditContext;
 import org.openehealth.ipf.commons.audit.codes.ParticipantObjectDataLifeCycle;
@@ -29,11 +29,11 @@ import org.openehealth.ipf.commons.audit.codes.ParticipantObjectTypeCodeRole;
 @SuppressWarnings("UnusedReturnValue")
 public class CompositionAuditMessageBuilder extends OpenEhrAuditMessageBuilder {
 
-    public CompositionAuditMessageBuilder(AuditContext auditContext, CompositionAuditDataset auditDataset) {
-        super(auditContext, auditDataset, OpenEhrEventIdCode.COMPOSITION, CompositionEventTypeCode.resolve(auditDataset.getMethod()));
+    public CompositionAuditMessageBuilder(AuditContext auditContext, CompositionEndpointAuditDataset auditDataset) {
+        super(auditContext, auditDataset, OpenEhrEventIdCode.COMPOSITION, CompositionEndpointEventTypeCode.resolve(auditDataset.getMethod()));
     }
 
-    public CompositionAuditMessageBuilder addComposition(CompositionAuditDataset auditDataset) {
+    public CompositionAuditMessageBuilder addComposition(CompositionEndpointAuditDataset auditDataset) {
         delegate.addParticipantObjectIdentification(
                 ParticipantObjectIdTypeCode.URI,
                 auditDataset.getTemplateId(),
@@ -47,7 +47,7 @@ public class CompositionAuditMessageBuilder extends OpenEhrAuditMessageBuilder {
         return this;
     }
 
-    public CompositionAuditMessageBuilder addPatient(CompositionAuditDataset auditDataset) {
+    public CompositionAuditMessageBuilder addPatient(CompositionEndpointAuditDataset auditDataset) {
         delegate.addParticipantObjectIdentification(
                 ParticipantObjectIdTypeCode.PatientNumber,
                 null,
@@ -61,7 +61,7 @@ public class CompositionAuditMessageBuilder extends OpenEhrAuditMessageBuilder {
         return this;
     }
 
-    private ParticipantObjectDataLifeCycle resolveCompositionObjectDataLifeCycle(CompositionAuditDataset auditDataset) {
+    private ParticipantObjectDataLifeCycle resolveCompositionObjectDataLifeCycle(CompositionEndpointAuditDataset auditDataset) {
         switch (auditDataset.getMethod()) {
             case POST:
                 return ParticipantObjectDataLifeCycle.Origination;
