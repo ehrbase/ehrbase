@@ -5,13 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
 ## [Unreleased]
 
 ### Added
 
 ### Changed
 
+
 ### Fixed
+
+
+## [0.15.0] (beta)
+
+### Added
+- Adds Admin API endpoints: Del EHR, Del Composition and Del Contribution (see: https://github.com/ehrbase/ehrbase/pull/344)
+- Add ATNA logging configuration capabilities (see https://github.com/ehrbase/ehrbase/pull/355)
+- Support for EHR_STATUS and (partial) FOLDER version objects in contributions (see: https://github.com/ehrbase/ehrbase/pull/372)
+- Add status endpoint to retrieve version information on running EHRbase instance and for heartbeat checks. (see: https://github.com/ehrbase/ehrbase/pull/393)
+- Add /status/info endpoint using actuator for basic info on running app (see: https://github.com/ehrbase/ehrbase/pull/400)
+- Add /status/health endpoint for kubernetes liveness and readiness probes (see: https://github.com/ehrbase/ehrbase/pull/400)
+- Add /status/env endpoint for environment information (see: https://github.com/ehrbase/ehrbase/pull/400)
+- Add /status/metrics endpoint for detailed metrics on specific topics (db connection, http requests, etc.) (see: https://github.com/ehrbase/ehrbase/pull/400)
+- Add /status/prometheus endpoint for prometheus metrics (see: https://github.com/ehrbase/ehrbase/pull/400)
+- Endpoints and integration tests for VERISONED_EHR_STATUS (see: https://github.com/ehrbase/ehrbase/pull/415)
+
+### Changed
+
+- support AQL querying on full EHR (f.e. SELECT e) (see )
+- Update Dockerfile for usage with metrics and status (see https://github.com/ehrbase/ehrbase/pull/408)
+- Refactored DB handling of contributions, removed misleading `CONTIRUBITON_HISTORY` table (see https://github.com/ehrbase/ehrbase/pull/416)
+
+### Fixed
+TODO: add links
 
 
 
@@ -33,6 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added Junit5 support via spring-boot-starter-test (https://github.com/ehrbase/ehrbase/pull/298)
 - Enable cartesian products on embedded arrays in JSONB (see https://github.com/ehrbase/ehrbase/pull/309)
 - Use new OPT-Parser from sdk (see https://github.com/ehrbase/ehrbase/pull/314)
+- Add CORS config to enable clients to detect auth method (see https://github.com/ehrbase/ehrbase/pull/354).
 
 ### Fixed
 
@@ -186,7 +213,9 @@ Starting with the next release this file will provide a proper overview.
 - Fixed error regarding DISTINCT operator in AQL (https://github.com/ehrbase/ehrbase/issues/50)
 - Fixed null pointer exceptions that could occur in persistent compositions
 
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.13.0...HEAD
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.15.0...HEAD
+[0.15.0]: https://github.com/ehrbase/ehrbase/compare/v0.14.0...v0.15.0
+[0.14.0]: https://github.com/ehrbase/ehrbase/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/ehrbase/ehrbase/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/ehrbase/ehrbase/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/ehrbase/ehrbase/compare/v0.10.0...v0.11.0

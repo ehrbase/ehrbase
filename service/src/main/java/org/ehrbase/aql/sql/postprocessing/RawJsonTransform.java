@@ -26,6 +26,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import org.ehrbase.aql.sql.QuerySteps;
 import org.ehrbase.aql.sql.binding.JsonbBlockDef;
+import org.ehrbase.ehr.util.LocatableHelper;
 import org.ehrbase.serialisation.dbencoding.EncodeUtilArchie;
 import org.ehrbase.serialisation.dbencoding.rawjson.LightRawJsonEncoder;
 import org.jooq.Record;
@@ -34,13 +35,19 @@ import org.jooq.Result;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * Created by christian on 2/21/2017.
  */
-public class RawJsonTransform implements I_RawJsonTransform {
+@SuppressWarnings({"unchecked","java:S3776"})
+public class RawJsonTransform implements IRawJsonTransform {
 
-    @SuppressWarnings("unchecked")
+    public static final String TEMPLATE_ID = "_TEMPLATE_ID";
+    public static final String ARRAY_MARKER = "$array$";
+
+    private RawJsonTransform(){}
+
     public static void toRawJson(Result<Record> result, Collection<QuerySteps> querySteps) {
 
 
@@ -67,8 +74,22 @@ public class RawJsonTransform implements I_RawJsonTransform {
                                 else
                                     jsonElement = item.getAsJsonObject();
                             }
-                            else
+                            else {
+                                //this allows to deal with json array without impacting the structure of json transform
+                                //as it deals with complex arrays such as items[...], content[...] etc.
+                                //hence, we pass the array as a a simple key-value and then retrieve the value part
+                                //referenced by "$array$"
+                                if (jsonbOrigin.startsWith("[") && jsonbOrigin.endsWith("]"))
+                                    jsonbOrigin = "{\"$array$\":"+jsonbOrigin+"}";
                                 jsonElement = new LightRawJsonEncoder(jsonbOrigin).encodeContentAsJson(jsonbBlockDef.getJsonPathRoot());
+                                if (jsonElement.getAsJsonObject().has(ARRAY_MARKER)) {
+                                    if (hasPredicate(jsonbBlockDef.getPath())) //f.e. events[at0002]
+                                        jsonElement = jsonElement.getAsJsonObject().getAsJsonArray(ARRAY_MARKER).get(0);
+                                    else //f.e. ehr/contributions -> an attribute that is an array
+                                        jsonElement = jsonElement.getAsJsonObject().getAsJsonArray(ARRAY_MARKER);
+
+                                }
+                            }
 
                             record.setValue(jsonbBlockDef.getField(), jsonElement);
 
@@ -87,4 +108,16 @@ public class RawJsonTransform implements I_RawJsonTransform {
         }
     }
 
+
+    private static boolean hasPredicate(String path){
+
+        try {
+            List<String> segments = LocatableHelper.dividePathIntoSegments(path);
+
+            return (segments.get(segments.size() - 1).contains("["));
+        }
+        catch (NoSuchElementException e) { //not an AQL path (f.e. function based)
+            return false;
+        }
+    }
 }

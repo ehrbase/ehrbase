@@ -18,7 +18,7 @@ Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags    353
+Force Tags    353    not-ready
 
 
 
@@ -28,6 +28,6 @@ Alternative flow 7: get directory at time on non existent EHR
     create fake EHR
     get DIRECTORY at current time (JSON)
 
-        TRACE GITHUB ISSUE  353  not-ready
+        TRACE GITHUB ISSUE  353  bug
 
     validate GET-version@time response - 404 unknown ehr_id

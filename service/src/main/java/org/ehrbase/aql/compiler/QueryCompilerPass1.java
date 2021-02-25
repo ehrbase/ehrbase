@@ -22,9 +22,12 @@
 
 package org.ehrbase.aql.compiler;
 
+import org.antlr.v4.runtime.CommonToken;
+import org.antlr.v4.runtime.InputMismatchException;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.ehrbase.aql.compiler.recovery.RecoverArchetypeId;
 import org.ehrbase.aql.containment.AnonymousSymbol;
 import org.ehrbase.aql.containment.ComplexContainsCheck;
 import org.ehrbase.aql.containment.ContainPropositions;
@@ -54,13 +57,19 @@ import java.util.Map;
  * Created by christian on 4/1/2016.
  */
 public class QueryCompilerPass1 extends AqlBaseListener {
+
+    //an equality expression consists of a left operand, an operator, a right operand
+    //from grammar: predicateOperand COMPARABLEOPERATOR predicateOperand
+    public static final int EQUALITY_ARGUMENTS_COUNT = 3;
+
+    //from grammar: OPEN_BRACKET JOINON predicateEquality CLOSE_BRACKET
+    public static final int JOIN_ARGUMENTS_COUNT = 4;
+
     private Logger logger = LogManager.getLogger(QueryCompilerPass1.class);
 
     private IdentifierMapper identifierMapper = new IdentifierMapper(); //the map of identified contained nodes
     private Map<String, ContainmentSet> containmentSetMap = new HashMap<>(); //labelized contains sets
     private ContainPropositions containPropositions; //ordered contain evaluation map
-
-    private AnonymousSymbol anonymousSymbol = new AnonymousSymbol();
 
     public QueryCompilerPass1() {
         containPropositions = new ContainPropositions(identifierMapper);
@@ -97,16 +106,14 @@ public class QueryCompilerPass1 extends AqlBaseListener {
 
             if (node instanceof AqlParser.StandardPredicateContext) {
                 AqlParser.StandardPredicateContext equalityContext = (AqlParser.StandardPredicateContext) node;
-                if (equalityContext.getChildCount() > 0) {
-                    if (equalityContext.getChildCount() == 3) {
-                        AqlParser.PredicateExprContext predicateExprContext = (AqlParser.PredicateExprContext) equalityContext.getChild(1);
-                        AqlParser.PredicateAndContext predicateAndContext = (AqlParser.PredicateAndContext) predicateExprContext.getChild(0);
-                        AqlParser.PredicateEqualityContext predicateEqualityContext = (AqlParser.PredicateEqualityContext) predicateAndContext.getChild(0);
-                        if (predicateEqualityContext.getChildCount() != 3)
-                            throw new IllegalArgumentException("Could not handle predicateEqualityContext:" + predicateAndContext.getText());
-                        fromEntityDefinition.add(predicateEqualityContext.getChild(0).getText(), predicateEqualityContext.getChild(2).getText(), predicateEqualityContext.getChild(1).getText());
-                    }
-                }
+                if (equalityContext.getChildCount() == EQUALITY_ARGUMENTS_COUNT) {
+                    AqlParser.PredicateExprContext predicateExprContext = (AqlParser.PredicateExprContext) equalityContext.getChild(1);
+                    AqlParser.PredicateAndContext predicateAndContext = (AqlParser.PredicateAndContext) predicateExprContext.getChild(0);
+                    AqlParser.PredicateEqualityContext predicateEqualityContext = (AqlParser.PredicateEqualityContext) predicateAndContext.getChild(0);
+                    if (predicateEqualityContext.getChildCount() != EQUALITY_ARGUMENTS_COUNT)
+                        throw new IllegalArgumentException("Could not handle predicateEqualityContext:" + predicateAndContext.getText());
+                    fromEntityDefinition.add(predicateEqualityContext.getChild(0).getText(), predicateEqualityContext.getChild(2).getText(), predicateEqualityContext.getChild(1).getText());
+            }
             }
         }
     }
@@ -122,13 +129,11 @@ public class QueryCompilerPass1 extends AqlBaseListener {
 
             if (node instanceof AqlParser.JoinPredicateContext) {
                 AqlParser.JoinPredicateContext joinContext = (AqlParser.JoinPredicateContext) node;
-                if (joinContext.getChildCount() > 0) {
-                    if (joinContext.getChildCount() == 4) {
-                        AqlParser.PredicateEqualityContext predicateEqualityContext = (AqlParser.PredicateEqualityContext) joinContext.getChild(2);
-                        if (predicateEqualityContext.getChildCount() != 3)
-                            throw new IllegalArgumentException("Could not handle predicateEqualityContext:" + predicateEqualityContext.getText());
-                        fromEntityDefinition.add(predicateEqualityContext.getChild(0).getText(), predicateEqualityContext.getChild(2).getText(), predicateEqualityContext.getChild(1).getText());
-                    }
+                if (joinContext.getChildCount() == JOIN_ARGUMENTS_COUNT) {
+                    AqlParser.PredicateEqualityContext predicateEqualityContext = (AqlParser.PredicateEqualityContext) joinContext.getChild(2);
+                    if (predicateEqualityContext.getChildCount() != EQUALITY_ARGUMENTS_COUNT)
+                        throw new IllegalArgumentException("Could not handle predicateEqualityContext:" + predicateEqualityContext.getText());
+                    fromEntityDefinition.add(predicateEqualityContext.getChild(0).getText(), predicateEqualityContext.getChild(2).getText(), predicateEqualityContext.getChild(1).getText());
                 }
             }
         }
@@ -199,11 +204,6 @@ public class QueryCompilerPass1 extends AqlBaseListener {
             //CHC, 160808: make classname case insensitive
             String className = simpleClassExprContext.IDENTIFIER(0).getSymbol().getText().toUpperCase();
             String symbol = new SimpleClassExpressionIdentifier(simpleClassExprContext).resolve();
-//            if (!simpleClassExprContext.IDENTIFIER().isEmpty() && simpleClassExprContext.IDENTIFIER(1) != null)
-//                symbol = simpleClassExprContext.IDENTIFIER(1).getSymbol().getText();
-//            else
-//                symbol = anonymousSymbol.generate(className);
-
             Containment containment = new Containment(className, symbol, "");
             identifierMapper.add(containment);
             containmentSetMap.put(simpleClassExprContext.getText(), new ContainsProposition(simpleClassExprContext, identifierMapper).containmentSet(containment));
@@ -218,7 +218,19 @@ public class QueryCompilerPass1 extends AqlBaseListener {
                     archetypedClassExprContext.IDENTIFIER(1).getSymbol().getText() :
                     archetypedClassExprContext.getText().toUpperCase() ;
 
-            String archetypeId = archetypedClassExprContext.ARCHETYPEID().getText();
+            String archetypeId;
+            if (archetypedClassExprContext.ARCHETYPEID() == null && archetypedClassExprContext.exception instanceof InputMismatchException){
+                //check out if this is caused by a quoted archetypeId
+                InputMismatchException inputMismatchException = (InputMismatchException)archetypedClassExprContext.exception;
+                if (inputMismatchException.getOffendingToken() instanceof CommonToken) {
+                    archetypeId = new RecoverArchetypeId().recoverInvalidArchetypeId(archetypedClassExprContext, (CommonToken)inputMismatchException.getOffendingToken() );
+                }
+                else
+                    throw new IllegalArgumentException("AQL Parse exception: "+simpleClassExprContext.getText());
+            }
+            else {
+                archetypeId = archetypedClassExprContext.ARCHETYPEID().getText();
+            }
             Containment containment = new Containment(className, symbol, archetypeId);
 
             identifierMapper.add(containment);
@@ -237,4 +249,5 @@ public class QueryCompilerPass1 extends AqlBaseListener {
     public ContainPropositions containPropositions() {
         return containPropositions;
     }
+
 }

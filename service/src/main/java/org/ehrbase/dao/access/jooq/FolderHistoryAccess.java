@@ -89,7 +89,7 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
     /*************Data Access and modification methods*****************/
 
     @Override
-    public ObjectVersionId create() { return null; }
+    public ObjectVersionId create(UUID customContribution) { return null; }
 
     @Override
     public Boolean update(Timestamp transactionTime) {
@@ -109,6 +109,11 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
 
     @Override
     public Boolean update(Boolean force){
+        return null;
+    }
+
+    @Override
+    public Boolean update(final Timestamp transactionTime, final boolean force, UUID contribution) {
         return null;
     }
 
@@ -691,5 +696,10 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
             }
         }
         return folderAccess;
+    }
+
+    @Override
+    public void adminDeleteFolder() {
+        // needed because the interface declares it, but the ACTUAL admin delete handling is done at non-history level
     }
 }

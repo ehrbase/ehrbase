@@ -22,22 +22,20 @@
  */
 package org.ehrbase.service;
 
-import com.google.common.util.concurrent.MoreExecutors;
 import org.apache.xmlbeans.XmlException;
-import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.aql.containment.JsonPathQueryResult;
 import org.ehrbase.aql.containment.TemplateIdAqlTuple;
 import org.ehrbase.aql.containment.TemplateIdQueryTuple;
-import org.ehrbase.aql.sql.queryImpl.ItemInfo;
+import org.ehrbase.aql.sql.queryimpl.ItemInfo;
 import org.ehrbase.configuration.CacheConfiguration;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
-import org.ehrbase.webtemplate.NodeId;
-import org.ehrbase.webtemplate.OPTParser;
-import org.ehrbase.webtemplate.WebTemplate;
-import org.ehrbase.webtemplate.WebTemplateNode;
+import org.ehrbase.webtemplate.model.WebTemplate;
+import org.ehrbase.webtemplate.model.WebTemplateNode;
+import org.ehrbase.webtemplate.parser.NodeId;
+import org.ehrbase.webtemplate.parser.OPTParser;
 import org.openehr.schemas.v1.OBJECTID;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.openehr.schemas.v1.TEMPLATEID;
@@ -48,6 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -56,28 +55,13 @@ import javax.cache.CacheManager;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
-import static org.ehrbase.configuration.CacheConfiguration.FIELDS_CACHE;
-import static org.ehrbase.configuration.CacheConfiguration.MULTI_VALUE_CACHE;
-import static org.ehrbase.configuration.CacheConfiguration.OPERATIONAL_TEMPLATE_CACHE;
-import static org.ehrbase.configuration.CacheConfiguration.QUERY_CACHE;
+import static org.ehrbase.configuration.CacheConfiguration.*;
 
 /**
  * Look up and caching for archetypes, openEHR showTemplates and Operational Templates. Search in path defined as
@@ -99,9 +83,11 @@ import static org.ehrbase.configuration.CacheConfiguration.QUERY_CACHE;
  * @author C. Chevalley
  */
 @Service
+@Transactional
 public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectService {
 
 
+    public static final String ELEMENT = "ELEMENT";
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
 
@@ -111,7 +97,6 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     private final Cache<String, OPERATIONALTEMPLATE> atOptCache;
     private final Cache<UUID, WebTemplate> webTemplateCache;
     private final Cache<TemplateIdAqlTuple, ItemInfo> fieldCache;
-
     private final Cache<String, List> multivaluedCache;
 
     //index uuid to templateId
@@ -143,18 +128,61 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
     @PostConstruct
     public void init() {
-        allTemplateId = listAllOperationalTemplates().stream().map(TemplateMetaData::getOperationaltemplate).map(OPERATIONALTEMPLATE::getTemplateId).map(OBJECTID::getValue).collect(Collectors.toSet());
-        listAllOperationalTemplates().stream().map(TemplateMetaData::getOperationaltemplate).forEach(this::putIntoCache);
+        allTemplateId = new HashSet<>();
 
+
+        for (TemplateMetaData metaData : listAllOperationalTemplates()) {
+            OPERATIONALTEMPLATE operationaltemplate = metaData.getOperationaltemplate();
+
+
+            String value = "";
+            try {
+                value = Optional.ofNullable(operationaltemplate).map(OPERATIONALTEMPLATE::getTemplateId).map(OBJECTID::getValue).orElseThrow();
+                putIntoCache(operationaltemplate);
+                allTemplateId.add(value);
+
+            } catch (RuntimeException e) {
+                log.error("Invalidate template : {}", value);
+            }
+        }
+
+
+        // If the template was manually removed from db invalidate the cache.
+        Set<String> templateIdInCache = new HashSet<>();
+        Iterator<Cache.Entry<UUID, WebTemplate>> iterator = webTemplateCache.iterator();
+
+
+        while (iterator.hasNext()) {
+            try {
+                Optional.ofNullable(iterator.next()).map(Cache.Entry::getValue).map(WebTemplate::getTemplateId).ifPresent(templateIdInCache::add);
+            } catch (RuntimeException e) {
+                //NOP
+            }
+
+        }
+        templateIdInCache.removeAll(allTemplateId);
+
+        if (!templateIdInCache.isEmpty()) {
+            webTemplateCache.clear();
+            jsonPathQueryResultCache.clear();
+            atOptCache.clear();
+            fieldCache.clear();
+            multivaluedCache.clear();
+        }
 
         if (cacheConfiguration.isPreBuildQueries()) {
             ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
-            ExecutorService executorService =
-                    MoreExecutors.getExitingExecutorService(executor,
-                            100, TimeUnit.MILLISECONDS);
 
-            executor.submit(() ->
-                    allTemplateId.forEach(this::precalculateQuerys));
+            executor.submit(() -> {
+
+                for (String s : allTemplateId) {
+                    try {
+                        precalculateQuerys(s);
+                    } catch (RuntimeException e) {
+                        log.error("Invalidate template : {}", s);
+                    }
+                }
+            });
         }
 
     }
@@ -162,6 +190,18 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     @PreDestroy
     public void closeCache() {
         cacheManager.close();
+    }
+
+
+    private <T, S> S getFromCache(T key, Cache<T, S> cache) {
+        try {
+            return cache.get(key);
+        } catch (RuntimeException e) {
+            // Tread errors in cache as miss;
+            cache.remove(key);
+            log.debug(String.format("Removed invalid value from cache: %s", cache.getName()), e);
+            return null;
+        }
     }
 
     @Override
@@ -207,21 +247,24 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         // pre-check: if already existing throw proper exception
         if (!allowTemplateOverwrite && !overwrite && retrieveOperationalTemplate(templateId).isPresent()) {
             throw new StateConflictException("Operational template with this template ID already exists");
+        } else {
+            invalidateCache(template);
         }
 
         templateStorage.storeTemplate(template);
 
 
-        invalidateCache(template);
-
         putIntoCache(template);
+
         if (cacheConfiguration.isPreBuildQueries()) {
             ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
-            ExecutorService executorService =
-                    MoreExecutors.getExitingExecutorService(executor,
-                            100, TimeUnit.MILLISECONDS);
-
-            executor.submit(() -> precalculateQuerys(templateId));
+            executor.submit(() -> {
+                try {
+                    precalculateQuerys(templateId);
+                } catch (RuntimeException e) {
+                    //NOP
+                }
+            });
         }
 
         //retrieve the template Id for this new entry
@@ -229,13 +272,21 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     }
 
     private void putIntoCache(OPERATIONALTEMPLATE template) {
-        String templateId = template.getTemplateId().getValue();
-        atOptCache.put(templateId, template);
-        idxCacheUuidToTemplateId.put(UUID.fromString(template.getUid().getValue()), templateId);
-        idxCacheTemplateIdToUuid.put(templateId, UUID.fromString(template.getUid().getValue()));
-        allTemplateId.add(templateId);
+        try {
 
-        getQueryOptMetaData(templateId);
+
+            String templateId = template.getTemplateId().getValue();
+            atOptCache.put(templateId, template);
+            idxCacheUuidToTemplateId.put(UUID.fromString(template.getUid().getValue()), templateId);
+            idxCacheTemplateIdToUuid.put(templateId, UUID.fromString(template.getUid().getValue()));
+            allTemplateId.add(templateId);
+
+            getQueryOptMetaData(templateId);
+        } catch (RuntimeException e) {
+            invalidateCache(template);
+            log.error("Invalid template {}", template.getTemplateId().getValue());
+            throw e;
+        }
     }
 
     private void precalculateQuerys(String templateId) {
@@ -258,13 +309,13 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     private void invalidateCache(OPERATIONALTEMPLATE template) {
 
         //invalidate the cache for this template
+        allTemplateId.remove(template.getTemplateId().getValue());
         webTemplateCache.remove(UUID.fromString(template.getUid().getValue()));
-        Set<TemplateIdQueryTuple> collect = StreamSupport.stream(jsonPathQueryResultCache.spliterator(), true)
-                .map(Cache.Entry::getKey)
+        atOptCache.remove(template.getTemplateId().getValue());
 
-                .filter(k -> k.getTemplateId().equals(template.getTemplateId().getValue()))
-                .collect(Collectors.toSet());
-        jsonPathQueryResultCache.removeAll(collect);
+        jsonPathQueryResultCache.clear();
+        fieldCache.clear();
+        multivaluedCache.clear();
     }
 
 
@@ -277,7 +328,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     @Override
     public Optional<OPERATIONALTEMPLATE> retrieveOperationalTemplate(String key) {
         log.debug("retrieveOperationalTemplate({})", key);
-        OPERATIONALTEMPLATE template = atOptCache.get(key);
+        OPERATIONALTEMPLATE template = getFromCache(key, atOptCache);
         if (template == null) {     // null if not in cache already, which triggers the following retrieval and putting into cache
             template = getOperationaltemplateFromFileStorage(key);
         }
@@ -346,7 +397,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         final WebTemplate retval;
 
         if (webTemplateCache.containsKey(uuid))
-            retval = webTemplateCache.get(uuid);
+            retval = getFromCache(uuid, webTemplateCache);
         else {
             retval = buildAndCacheQueryOptMetaData(uuid);
         }
@@ -381,7 +432,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         try {
             visitor = new OPTParser(operationaltemplate).parse();
         } catch (Exception e) {
-            throw new InternalServerException(e.getMessage(), e);
+            throw new IllegalArgumentException(String.format("Invalid template: %s", e.getMessage()));
         }
 
         webTemplateCache.put(UUID.fromString(operationaltemplate.getUid().getValue()), visitor);
@@ -427,7 +478,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     public JsonPathQueryResult resolveForTemplate(String templateId, Collection<NodeId> nodeIds) {
         TemplateIdQueryTuple key = new TemplateIdQueryTuple(templateId, nodeIds);
 
-        JsonPathQueryResult jsonPathQueryResult = jsonPathQueryResultCache.get(key);
+        JsonPathQueryResult jsonPathQueryResult = getFromCache(key, jsonPathQueryResultCache);
         if (jsonPathQueryResult == null) {
 
 
@@ -456,7 +507,6 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
             webTemplateNodeList.stream().map(n -> n.getAqlPath(false)).forEach(uniquePaths::add);
             if (uniquePaths.size() == 1) {
                 aql = uniquePaths.iterator().next();
-                //FIXME see https://github.com/ehrbase/project_management/issues/377
             } else if (webTemplateNodeList.size() > 1) {
                 aql = uniquePaths.iterator().next();
                 log.warn(String.format("Aql Path not unique for template %s and path %s ", templateId, nodeIds));
@@ -485,7 +535,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     @Override
     public ItemInfo getInfo(String templateId, String aql) {
         TemplateIdAqlTuple key = new TemplateIdAqlTuple(templateId, aql);
-        ItemInfo itemInfo = fieldCache.get(key);
+        ItemInfo itemInfo = getFromCache(key, fieldCache);
         if (itemInfo == null) {
 
             WebTemplate webTemplate = getQueryOptMetaData(templateId);
@@ -493,7 +543,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
             Optional<WebTemplateNode> node = webTemplate.findByAqlPath(aql);
             if (node.isEmpty()) {
                 type = null;
-            } else if (node.get().getRmType().equals("ELEMENT")) {
+            } else if (node.get().getRmType().equals(ELEMENT)) {
                 //for element unwrap
                 type = node.get().getChildren().get(0).getRmType();
             } else {
@@ -505,7 +555,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
                 category = null;
             } else if (aql.endsWith("/value")) {
                 //for element unwrap
-                category = webTemplate.findByAqlPath(aql.replace("/value", "")).filter(n -> n.getRmType().equals("ELEMENT")).map(n -> "ELEMENT").orElse("DATA_STRUCTURE");
+                category = webTemplate.findByAqlPath(aql.replace("/value", "")).filter(n -> n.getRmType().equals(ELEMENT)).map(n -> ELEMENT).orElse("DATA_STRUCTURE");
             } else {
                 category = "DATA_STRUCTURE";
             }
@@ -518,7 +568,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
     @Override
     public List<String> multiValued(String templateId) {
-        List<String> list = multivaluedCache.get(templateId);
+        List<String> list = getFromCache(templateId, multivaluedCache);
         if (list == null) {
             list = getQueryOptMetaData(templateId).multiValued().stream().map(webTemplateNode -> webTemplateNode.getAqlPath(false)).collect(Collectors.toList());
             multivaluedCache.put(templateId, list);

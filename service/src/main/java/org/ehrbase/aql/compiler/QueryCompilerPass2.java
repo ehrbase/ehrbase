@@ -46,7 +46,7 @@ import java.util.*;
  */
 public class QueryCompilerPass2 extends AqlBaseListener {
 
-    private String[] allowedFunctions = {"COUNT"};
+    private String[] allowedFunctions = {"COUNT", "MIN", "MAX", "AVG"};
 
     private Logger logger = LogManager.getLogger(QueryCompilerPass2.class);
 
@@ -176,7 +176,7 @@ public class QueryCompilerPass2 extends AqlBaseListener {
         Integer window = null;
         TopAttributes.TopDirection direction = null;
         if (context.TOP() != null) {
-            window = new Integer(context.INTEGER().getText());
+            window = Integer.valueOf(context.INTEGER().getText());
             if (context.BACKWARD() != null)
                 direction = TopAttributes.TopDirection.BACKWARD;
             else if (context.FORWARD() != null)
@@ -220,12 +220,12 @@ public class QueryCompilerPass2 extends AqlBaseListener {
 
     @Override
     public void exitOffset(AqlParser.OffsetContext ctx) {
-        offsetAttribute = new Integer(ctx.INTEGER().getText());
+        offsetAttribute = Integer.valueOf(ctx.INTEGER().getText());
     }
 
     @Override
     public void exitLimit(AqlParser.LimitContext ctx) {
-        limitAttribute = new Integer(ctx.INTEGER().getText());
+        limitAttribute = Integer.valueOf(ctx.INTEGER().getText());
     }
 
     @Override

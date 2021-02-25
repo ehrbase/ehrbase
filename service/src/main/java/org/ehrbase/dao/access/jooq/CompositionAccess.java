@@ -26,6 +26,7 @@ import com.nedap.archie.rm.archetyped.Link;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.composition.EventContext;
 import com.nedap.archie.rm.generic.PartyProxy;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.definitions.ServerConfig;
@@ -247,7 +248,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
             compositionHistoryAccess.setContent(I_EntryAccess.retrieveInstanceInCompositionVersion(domainAccess, compositionHistoryAccess, version));
 
             //retrieve the corresponding contribution
-            I_ContributionAccess contributionAccess = I_ContributionAccess.retrieveVersionedInstance(domainAccess, compositionHistoryAccess.getContributionId(), compositionHistoryAccess.getSysTransaction());
+            I_ContributionAccess contributionAccess = I_ContributionAccess.retrieveInstance(domainAccess, compositionHistoryAccess.getContributionId());
             compositionHistoryAccess.setContributionAccess(contributionAccess);
 
             I_AuditDetailsAccess auditDetailsAccess = new AuditDetailsAccess(domainAccess.getDataAccess()).retrieveInstance(domainAccess.getDataAccess(), compositionHistoryAccess.getAuditDetailsId());
@@ -377,7 +378,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         return resultMap;
     }
 
-    public static Map<I_CompositionAccess, Integer> getVersionMapOfComposition(I_DomainAccess domainAccess, UUID compositionId) {
+    private static Map<I_CompositionAccess, Integer> getVersionMapOfComposition(I_DomainAccess domainAccess, UUID compositionId) {
         Map<I_CompositionAccess, Integer> versionMap = new HashMap<>();
 
         // create counter with highest version, to keep track of version number and allow check in the end
@@ -960,5 +961,11 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
             throw new ObjectNotFoundException(COMPOSITION_LITERAL, "No composition with given ID found");
         }
         throw new InternalServerException("Problem processing CompositionAccess.isDeleted(..)");
+    }
+
+    @Override
+    public void adminDelete() {
+        AdminApiUtils adminApi = new AdminApiUtils(getContext());
+        adminApi.deleteComposition(this.getId());
     }
 }

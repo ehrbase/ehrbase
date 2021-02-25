@@ -32,12 +32,14 @@ import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.dao.access.util.TransactionTime;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
+import org.ehrbase.jooq.pg.Routines;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.enums.ContributionState;
-import org.ehrbase.jooq.pg.tables.records.ContributionHistoryRecord;
-import org.ehrbase.jooq.pg.tables.records.ContributionRecord;
+import org.ehrbase.jooq.pg.tables.AdminDeleteStatusHistory;
+import org.ehrbase.jooq.pg.tables.records.*;
 import org.ehrbase.service.IntrospectService;
 import org.jooq.DSLContext;
+import org.jooq.Result;
 
 import java.sql.Timestamp;
 import java.util.*;
@@ -124,24 +126,6 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
 
     }
 
-    // FIXME: should this really only look into *_history table? semantically this only accesses "versions" other than latest (not actual openEHR versions, since contribution has none) - also naming suggestively wrong?
-    public static I_ContributionAccess retrieveVersionedInstance(I_DomainAccess domainAccess, UUID contributionVersionedObjId, Timestamp transactionTime) {
-
-        ContributionAccess contributionAccess = new ContributionAccess(domainAccess);
-
-        ContributionHistoryRecord contributionHistoryRecord = domainAccess.getContext()
-                .fetchOne(CONTRIBUTION_HISTORY,
-                        CONTRIBUTION_HISTORY.ID.eq(contributionVersionedObjId)
-                                .and(CONTRIBUTION_HISTORY.SYS_TRANSACTION.eq(transactionTime)));
-
-        if (contributionHistoryRecord != null) {
-            contributionAccess.contributionRecord = domainAccess.getContext().newRecord(CONTRIBUTION);
-            contributionAccess.contributionRecord.from(contributionHistoryRecord);
-            return contributionAccess;
-        } else
-            return null;
-    }
-
     @Override
     public void addComposition(I_CompositionAccess compositionAccess) {
         //set local composition field from this contribution
@@ -172,7 +156,6 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
             log.warn("Contribution state has not been set");
         }
 
-        contributionRecord.setSysTransaction(transactionTime);
         contributionRecord.setEhrId(this.getEhrId());
         if (contributionRecord.insert() == 0)
             throw new InternalServerException("Couldn't store contribution");
@@ -336,15 +319,12 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
     public Boolean update(Timestamp transactionTime, boolean force) {
         boolean updated = false;
 
-        if (force || contributionRecord.changed()) {
+        if (force || contributionRecord.changed()) { // TODO-447: test if this creates an own audit for contributions
 
             if (!contributionRecord.changed()) {
                 //hack: force tell jOOQ to perform updateComposition whatever...
                 contributionRecord.changed(true);
-                //jOOQ limited support of TSTZRANGE, exclude sys_period from updateComposition!
-                contributionRecord.changed(CONTRIBUTION.SYS_PERIOD, false); //managed by an external trigger anyway...
             }
-            contributionRecord.setSysTransaction(transactionTime);
 
             // update contribution's audit with modification change type and execute update of it, too
             this.auditDetails.setChangeType(I_ConceptAccess.fetchContributionChangeType(this, I_ConceptAccess.ContributionChangeType.MODIFICATION));
@@ -539,5 +519,39 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
     @Override
     public UUID getHasAuditDetails() {
         return contributionRecord.getHasAudit();
+    }
+
+    @Override
+    public void adminDelete() {
+        AdminApiUtils adminApi = new AdminApiUtils(getContext());
+
+        // retrieve info on all linked versioned_objects
+        Result<AdminGetLinkedCompositionsForContribRecord> linkedCompositions = Routines.adminGetLinkedCompositionsForContrib(getContext().configuration(), this.getId());
+        Result<AdminGetLinkedStatusForContribRecord> linkedStatus = Routines.adminGetLinkedStatusForContrib(getContext().configuration(), this.getId());
+
+        // handling of linked composition
+        linkedCompositions.forEach(compo -> adminApi.deleteComposition(compo.getComposition()));
+
+        // handling of linked status
+        linkedStatus.forEach(status -> {
+            Result<AdminDeleteStatusRecord> delStatus = Routines.adminDeleteStatus(getContext().configuration(), status.getStatus());
+            if (delStatus.isEmpty()) {
+                throw new InternalServerException("Admin deletion of Status failed! Unexpected result.");
+            }
+            // handle auxiliary objects
+            delStatus.forEach(id -> {
+                // delete status audit
+                adminApi.deleteAudit(id.getStatusAudit(), "Status", false);
+
+                // clear history
+                int res = getContext().selectQuery(new AdminDeleteStatusHistory().call(status.getStatus())).execute();
+                if (res != 1)
+                    throw new InternalServerException("Admin deletion of Status failed!");
+            });
+
+        });
+
+        // delete contribution itself
+        adminApi.deleteContribution(this.getId(), null, false);
     }
 }

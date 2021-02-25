@@ -3,29 +3,30 @@ package org.ehrbase.aql;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.support.DummyDataAccess;
 import org.ehrbase.dao.jooq.impl.DSLContextHelper;
-import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
-import org.ehrbase.service.*;
+import org.ehrbase.service.CacheRule;
+import org.ehrbase.service.KnowledgeCacheHelper;
+import org.ehrbase.service.KnowledgeCacheService;
+import org.ehrbase.service.TerminologyServiceImp;
 import org.jooq.DSLContext;
-import org.junit.Before;
-import org.junit.Rule;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.rules.TemporaryFolder;
 
-import java.io.File;
 import java.io.FileInputStream;
 
 public class TestAqlBase {
 
-    protected I_DomainAccess testDomainAccess;
-    protected KnowledgeCacheService knowledge;
+    protected static I_DomainAccess testDomainAccess;
+    protected static KnowledgeCacheService knowledge;
 
-    @Rule
-    public TemporaryFolder testFolder = new TemporaryFolder();
+    @ClassRule
+    public static TemporaryFolder testFolder = new TemporaryFolder();
 
-    @Rule
-    public CacheRule cacheRule = new CacheRule();
+    @ClassRule
+    public static CacheRule cacheRule = new CacheRule();
 
-    @Before
-    public  void beforeClass() throws Exception {
+    @BeforeClass
+    public static void beforeClass() throws Exception {
 
         DSLContext context = DSLContextHelper.buildContext();
         knowledge = KnowledgeCacheHelper.buildKnowledgeCache(testFolder, cacheRule);
@@ -47,6 +48,8 @@ public class TestAqlBase {
         opt = new FileInputStream("./src/test/resources/knowledge/operational_templates/Virologischer_Befund.opt").readAllBytes();
         knowledge.addOperationalTemplate(opt);
         opt = new FileInputStream("./src/test/resources/knowledge/opt/Vital Signs Encounter (Composition).opt").readAllBytes();
+        knowledge.addOperationalTemplate(opt);
+        opt = new FileInputStream("./src/test/resources/knowledge/opt/minimal_instruction.opt").readAllBytes();
         knowledge.addOperationalTemplate(opt);
 
         //tests require a terminology service

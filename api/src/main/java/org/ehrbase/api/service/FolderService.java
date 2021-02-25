@@ -45,6 +45,19 @@ public interface FolderService extends BaseService {
     ObjectVersionId create(UUID ehrId, Folder content);
 
     /**
+     * Creates a new folder entry at the database from content. The provided
+     * content from request payload will be serialized before corresponding to
+     * the given source format. The folder will be linked to the EHR addressed
+     * by the request.
+     *
+     * @param ehrId - ID for the corresponding EHR
+     * @param content - {@link com.nedap.archie.rm.directory.Folder} to persist
+     * @param contribution Optional (can be null) custom contribution to use, instead of a generic new one
+     * @return UUID of the new created Folder from database
+     */
+    ObjectVersionId create(UUID ehrId, Folder content, UUID contribution);
+
+    /**
      * Retrieves a folder from database identified by object_version_uid and
      * extracts the given sub path of existing. If the object_version_uid does
      * not contain a version number the latest entry will be returned. A path
@@ -91,6 +104,19 @@ public interface FolderService extends BaseService {
     Optional<FolderDto> update(ObjectVersionId folderId, Folder update, UUID ehrId);
 
     /**
+     * Updates a target folder entry identified by the given folderId with new
+     * content. The content string will be serialized from the given source
+     * format.
+     *
+     * @param folderId - Full version_uid for folder including system id and version
+     * @param update - Update content from request body
+     * @param ehrId - EHR id for contribution creation
+     * @param contribution - Optional (can be set null) custom contribution to use for this update
+     * @return Updated folder entry
+     */
+    Optional<FolderDto> update(ObjectVersionId folderId, Folder update, UUID ehrId, UUID contribution);
+
+    /**
      * Marks a given folder as deleted and moves it into the history table. The
      * folder will no longer be accessible without time or version information
      * available.
@@ -134,4 +160,10 @@ public interface FolderService extends BaseService {
      * @throws ObjectNotFoundException - Folder entry does not exist at the time
      */
     Integer getVersionNumberForTimestamp(ObjectVersionId folderId, Timestamp timestamp);
+
+    /**
+     * Admin method to delete a Folder from the DB. See EHRbase Admin API specification for details.
+     * @param folderId Folder to delete
+     */
+    void adminDeleteFolder(UUID folderId);
 }

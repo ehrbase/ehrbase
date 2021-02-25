@@ -23,7 +23,6 @@ package org.ehrbase.dao.access.jooq;
 
 import com.nedap.archie.rm.composition.EventContext;
 import com.nedap.archie.rm.datastructures.ItemStructure;
-import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.DvIdentifier;
 import com.nedap.archie.rm.datavalues.DvText;
@@ -34,7 +33,6 @@ import com.nedap.archie.rm.generic.PartyIdentified;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.PartyRef;
-import com.nedap.archie.rm.support.identification.TerminologyId;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -47,11 +45,20 @@ import org.ehrbase.dao.access.jooq.party.PersistedObjectId;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.TransactionTime;
-import org.ehrbase.jooq.pg.tables.records.*;
+import org.ehrbase.jooq.pg.tables.records.EventContextHistoryRecord;
+import org.ehrbase.jooq.pg.tables.records.EventContextRecord;
+import org.ehrbase.jooq.pg.tables.records.ParticipationRecord;
+import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
 import org.ehrbase.serialisation.dbencoding.RawJson;
 import org.ehrbase.service.RecordedDvCodedText;
 import org.ehrbase.service.RecordedDvDateTime;
-import org.jooq.*;
+import org.ehrbase.service.RecordedDvText;
+import org.jooq.DSLContext;
+import org.jooq.InsertQuery;
+import org.jooq.JSONB;
+import org.jooq.Record;
+import org.jooq.Result;
+import org.jooq.UpdateQuery;
 import org.jooq.exception.DataAccessException;
 
 import java.sql.Timestamp;
@@ -59,14 +66,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static org.ehrbase.jooq.pg.Tables.*;
+import static org.ehrbase.jooq.pg.Tables.EVENT_CONTEXT;
+import static org.ehrbase.jooq.pg.Tables.EVENT_CONTEXT_HISTORY;
+import static org.ehrbase.jooq.pg.Tables.IDENTIFIER;
+import static org.ehrbase.jooq.pg.Tables.PARTICIPATION;
+import static org.ehrbase.jooq.pg.Tables.PARTICIPATION_HISTORY;
+import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
 
 /**
  * Created by Christian Chevalley on 4/9/2015.
  */
 public class ContextAccess extends DataAccess implements I_ContextAccess {
 
-    private static final TerminologyId OPENEHR_TERMINOLOGY_ID = new TerminologyId("openehr");
     private static final String DB_INCONSISTENCY = "DB inconsistency";
     private static Logger log = LogManager.getLogger(ContextAccess.class);
     private EventContextRecord eventContextRecord;
@@ -98,6 +109,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         eventContextRecord.setEndTime((Timestamp) records.getValue(0, I_CompositionAccess.F_CONTEXT_END_TIME));
         eventContextRecord.setEndTimeTzid((String) records.getValue(0, I_CompositionAccess.F_CONTEXT_END_TIME_TZID));
         eventContextRecord.setLocation((String) records.getValue(0, I_CompositionAccess.F_CONTEXT_LOCATION));
+//        eventContextRecord.setSetting(records.getValue(0, I_CompositionAccess.F_CONTEXT_SETTING));
         eventContextRecord.setOtherContext((JSONB) records.getValue(0, I_CompositionAccess.F_CONTEXT_OTHER_CONTEXT));
 
         return contextAccess;
@@ -154,32 +166,21 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                     DvCodedText mode = convertModeFromRecord(eventContextHistoryRecord);
 
                     Participation participation = new Participation(performer,
-                            new DvText(record.getFunction()),
+                            (DvText) new RecordedDvCodedText().fromDB(record, PARTICIPATION.FUNCTION),
                             mode,
                             startTime);
 
                     participationList.add(participation);
                 });
 
-        DvCodedText concept;
-
-        //retrieve the setting
-        UUID settingUuid = eventContextHistoryRecord.getSetting();
-
-        ConceptRecord conceptRecord = domainAccess.getContext().fetchOne(CONCEPT, CONCEPT.ID.eq(settingUuid).and(CONCEPT.LANGUAGE.eq("en")));
-
-        if (conceptRecord != null) {
-            concept = new DvCodedText(conceptRecord.getDescription(), new CodePhrase(OPENEHR_TERMINOLOGY_ID, conceptRecord.getConceptid().toString()));
-        } else {
-            concept = new DvCodedText("event", new CodePhrase(OPENEHR_TERMINOLOGY_ID, "433"));
-        }
+        DvCodedText setting = (DvCodedText) new RecordedDvCodedText().fromDB(eventContextHistoryRecord, EVENT_CONTEXT_HISTORY.SETTING);
 
         return new EventContext(healthCareFacility,
                 new RecordedDvDateTime().decodeDvDateTime(eventContextHistoryRecord.getStartTime(), eventContextHistoryRecord.getStartTimeTzid()),
                 new RecordedDvDateTime().decodeDvDateTime(eventContextHistoryRecord.getEndTime(), eventContextHistoryRecord.getEndTimeTzid()),
                 participationList.isEmpty() ? null : participationList,
                 eventContextHistoryRecord.getLocation(),
-                concept,
+                setting,
                 null);
 
     }
@@ -198,6 +199,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
 
     /**
      * setup an EventContextRecord instance based on values from an EventContext instance
+     *
      * @param id
      * @param eventContext
      */
@@ -224,16 +226,13 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         if (eventContext.getLocation() != null)
             eventContextRecord.setLocation(eventContext.getLocation());
 
-        Integer settingCode = Integer.parseInt(eventContext.getSetting().getDefiningCode().getCodeString());
-            // when not throwing exception continue with
-        eventContextRecord.setSetting(ConceptAccess.fetchConceptUUID(this, settingCode, "en"));
-
+        new RecordedDvCodedText().toDB(eventContextRecord, EVENT_CONTEXT.SETTING, eventContext.getSetting());
 
         if (eventContext.getParticipations() != null) {
             for (Participation participation : eventContext.getParticipations()) {
                 ParticipationRecord participationRecord = getContext().newRecord(PARTICIPATION);
                 participationRecord.setEventContext(eventContextRecord.getId());
-                participationRecord.setFunction(participation.getFunction().getValue());
+                new RecordedDvText().toDB(participationRecord, PARTICIPATION.FUNCTION, participation.getFunction());
                 if (participation.getMode() != null)
                     new RecordedDvCodedText().toDB(participationRecord, PARTICIPATION.MODE, participation.getMode());
                 if (participation.getTime() != null) {
@@ -275,7 +274,6 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
             eventContextRecord.setOtherContext(JSONB.valueOf(new RawJson().marshal(eventContext.getOtherContext())));
         }
     }
-
 
 
     /**
@@ -470,26 +468,16 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
             DvCodedText mode = convertModeFromRecord(record);
 
             Participation participation = new Participation(performer,
-                    new DvText(record.getFunction()),
+                    (DvText) new RecordedDvCodedText().fromDB(record, PARTICIPATION.FUNCTION),
                     mode,
                     dvInterval);
 
             participationList.add(participation);
         });
 
-        DvCodedText concept;
+        DvCodedText concept = (DvCodedText) new RecordedDvCodedText().fromDB(eventContextRecord, EVENT_CONTEXT.SETTING);
 
-        //retrieve the setting
-        UUID settingUuid = eventContextRecord.getSetting();
-
-        ConceptRecord conceptRecord = getContext().fetchOne(CONCEPT, CONCEPT.ID.eq(settingUuid).and(CONCEPT.LANGUAGE.eq("en")));
-
-        if (conceptRecord != null) {
-            concept = new DvCodedText(conceptRecord.getDescription(), new CodePhrase(OPENEHR_TERMINOLOGY_ID, conceptRecord.getConceptid().toString()));
-        } else {
-            concept = new DvCodedText("event", new CodePhrase(OPENEHR_TERMINOLOGY_ID, "433"));
-        }
-        ItemStructure<?> otherContext = null;
+        ItemStructure otherContext = null;
 
         if (eventContextRecord.getOtherContext() != null) {
             otherContext = new RawJson().unmarshal((eventContextRecord.getOtherContext().data()), ItemStructure.class);
@@ -506,7 +494,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
 
     }
 
-    private static DvInterval<DvDateTime> convertDvIntervalDvDateTimeFromRecord(Record record){
+    private static DvInterval<DvDateTime> convertDvIntervalDvDateTimeFromRecord(Record record) {
         DvInterval<DvDateTime> dvDateTimeDvInterval = null;
         if (record.get(PARTICIPATION.TIME_LOWER) != null) { //start time null value is allowed for participation
             dvDateTimeDvInterval = new DvInterval<>(
@@ -517,11 +505,11 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         return dvDateTimeDvInterval;
     }
 
-    private static DvCodedText convertModeFromRecord(Record record){
+    private static DvCodedText convertModeFromRecord(Record record) {
         DvCodedText mode;
         try {
             if (record.get(PARTICIPATION.MODE) != null) {
-                mode = (DvCodedText)new RecordedDvCodedText().fromDB(record, PARTICIPATION.MODE);
+                mode = (DvCodedText) new RecordedDvCodedText().fromDB(record, PARTICIPATION.MODE);
             } else {
                 mode = null;
             }

@@ -41,9 +41,10 @@ import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.dao.access.util.TransactionTime;
+import org.ehrbase.jooq.pg.Routines;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
+import org.ehrbase.jooq.pg.tables.AdminDeleteEhrHistory;
 import org.ehrbase.jooq.pg.tables.records.*;
-import org.ehrbase.serialisation.dbencoding.RawJson;
 import org.ehrbase.service.RecordedDvCodedText;
 import org.ehrbase.service.RecordedDvText;
 import org.jooq.DSLContext;
@@ -51,6 +52,8 @@ import org.jooq.Record;
 import org.jooq.Result;
 
 import java.sql.Timestamp;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
 
@@ -59,6 +62,7 @@ import static org.ehrbase.jooq.pg.Tables.*;
 /**
  * Created by Christian Chevalley on 4/17/2015.
  */
+@SuppressWarnings("java:S2589")
 public class EhrAccess extends DataAccess implements I_EhrAccess {
 
     private static final Logger log = LogManager.getLogger(EhrAccess.class);
@@ -71,7 +75,6 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
 
     //holds the non serialized ItemStructure other_details structure
     private ItemStructure otherDetails = null;
-    private String otherDetailsTemplateId;
 
     private I_ContributionAccess contributionAccess; //locally referenced contribution associated to ehr transactions
 
@@ -79,7 +82,6 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
 
     //set this variable to change the identification  mode in status
     public enum PARTY_MODE {IDENTIFIER, EXTERNAL_REF}
-    private PARTY_MODE party_identifier = PARTY_MODE.EXTERNAL_REF;
 
     /**
      * @throws InternalServerException if creating or retrieving system failed
@@ -238,7 +240,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         // check if input version number fits into existing amount of versions, but is not the same (same equals latest version)
         // when either there is only one version or the requested one is the latest, continue with record already set
         if (versions > version && !version.equals(versions)) { // or get the particular requested version
-            // TODO: why does sonarlint says that the expression above is always true? tested it, it can be true and false!?
+            // sonarlint says that the expression above is always true? tested it, it can be true and false!?
             // note: here version is > 1 and there has to be at least one history entry
             Result<StatusHistoryRecord> result = domainAccess.getContext().selectFrom(STATUS_HISTORY)
                     // FIXME VERSIONED_OBJECT_POC: bug? should here be "where ehrId = given ehrId"?
@@ -467,7 +469,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     public UUID commit(Timestamp transactionTime) {
 
         ehrRecord.setDateCreated(transactionTime);
-        ehrRecord.setDateCreatedTzid(ZonedDateTime.now().getZone().getId());    // get zoneId independent of "transactionTime"
+        ehrRecord.setDateCreatedTzid(OffsetDateTime.from(transactionTime.toLocalDateTime().atOffset(ZoneOffset.from(OffsetDateTime.now()))).getOffset().getId());    // get zoneId independent of "transactionTime"
         ehrRecord.store();
 
         UUID contributionId = contributionAccess.commit(transactionTime);
@@ -528,6 +530,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     public Boolean update(Timestamp transactionTime, boolean force) {
         boolean result;
 
+        statusAccess.setContributionAccess(this.contributionAccess);
         result = statusAccess.update(otherDetails, transactionTime, force);
 
         if (force || ehrRecord.changed()) {
@@ -561,12 +564,29 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     }
 
     @Override
-    public Boolean update(UUID committerId, UUID systemId, ContributionDef.ContributionState state, I_ConceptAccess.ContributionChangeType contributionChangeType, String description) {
+    public Boolean update(UUID committerId, UUID systemId, UUID contributionId, ContributionDef.ContributionState state, I_ConceptAccess.ContributionChangeType contributionChangeType, String description) {
         Timestamp timestamp = TransactionTime.millis();
-        contributionAccess.setAuditDetailsValues(committerId, systemId, description);
-        contributionAccess.setState(state);
-        contributionAccess.setAuditDetailsChangeType(I_ConceptAccess.fetchContributionChangeType(this, contributionChangeType));
+        // If custom contribution ID is provided use it, otherwise reuse already linked one
+        if (contributionId != null) {
+            I_ContributionAccess access = I_ContributionAccess.retrieveInstance(this.getDataAccess(), contributionId);
+            if (access != null) {
+                provisionContributionAccess(access, committerId, systemId, description, state, contributionChangeType);
+                this.contributionAccess = access;
+            } else
+                throw new InternalServerException("Can't update status with invalid contribution ID.");
+        } else {
+            provisionContributionAccess(contributionAccess, committerId, systemId, description, state, contributionChangeType);
+        }
         return update(timestamp);
+    }
+
+    /**
+     * Helper to provision a contribution access object with several data items.
+     */
+    private void provisionContributionAccess(I_ContributionAccess access, UUID committerId, UUID systemId, String description, ContributionDef.ContributionState state, I_ConceptAccess.ContributionChangeType contributionChangeType) {
+        access.setAuditDetailsValues(committerId, systemId, description);
+        access.setState(state);
+        access.setAuditDetailsChangeType(I_ConceptAccess.fetchContributionChangeType(this, contributionChangeType));
     }
 
     /**
@@ -673,7 +693,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     @Override
     public void setOtherDetails(ItemStructure otherDetails, String templateId) {
         this.otherDetails = otherDetails;
-        this.otherDetailsTemplateId = Optional.ofNullable(otherDetails).map(Locatable::getArchetypeDetails).map(Archetyped::getTemplateId).map(ObjectId::getValue).orElse(null);
+//        this.otherDetailsTemplateId = Optional.ofNullable(otherDetails).map(Locatable::getArchetypeDetails).map(Archetyped::getTemplateId).map(ObjectId::getValue).orElse(null);
     }
 
     @Override
@@ -742,5 +762,44 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         status.setSubject(partySelf);
 
         return status;
+    }
+
+    @Override
+    public void adminDeleteEhr() {
+        AdminApiUtils adminApi = new AdminApiUtils(getContext());
+
+        // retrieve linked entities
+        Result<AdminGetLinkedCompositionsRecord> linkedCompositions = Routines.adminGetLinkedCompositions(getContext().configuration(), this.getId());
+        Result<AdminGetLinkedContributionsRecord> linkedContributions = Routines.adminGetLinkedContributions(getContext().configuration(), this.getId());
+
+        // remove linked directory folder
+        // TODO: get linked folders from "folder" attribute, once this RM 1.1.0 attribute is implemented
+        if (getDirectoryId() != null)
+            adminApi.deleteFolder(getDirectoryId(), false); // contribs will be deleted by EHR later
+
+        // handling of existing composition
+        linkedCompositions.forEach(compo -> adminApi.deleteComposition(compo.getComposition()));
+
+        // delete EHR itself
+        Result<AdminDeleteEhrRecord> adminDeleteEhr = Routines.adminDeleteEhr(getContext().configuration(), this.getId());
+        if (adminDeleteEhr.isEmpty()) {
+            throw new InternalServerException("Admin deletion of EHR failed! Unexpected result.");
+        }
+
+        // adminDeleteEhr returns all linked contributions, audits and statuses - go through and delete them
+        adminDeleteEhr.forEach(response -> {
+            UUID statusAudit = response.getStatusAudit();
+
+            // delete status audit
+            adminApi.deleteAudit(statusAudit, "Status", false);
+
+            // delete linked contributions
+            linkedContributions.forEach(contrib -> adminApi.deleteContribution(contrib.getContribution(), contrib.getAudit(), true));
+
+            // final cleanup of auxiliary objects
+            int res = getContext().selectQuery(new AdminDeleteEhrHistory().call(this.getId())).execute();
+            if (res != 1)
+                throw new InternalServerException("Admin deletion of EHR failed!");
+        });
     }
 }

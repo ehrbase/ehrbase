@@ -123,6 +123,7 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
 
         if (force || auditDetailsRecord.changed()) {
             auditDetailsRecord.setId(UUID.randomUUID()); // force to create new entry from old values
+            //auditDetailsRecord.setTimeCommitted(transactionTime); // TODO-447: does this make query CI tests fail?
             result = auditDetailsRecord.insert() == 1;
         }
 

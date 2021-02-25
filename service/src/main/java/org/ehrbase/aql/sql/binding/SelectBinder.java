@@ -26,9 +26,10 @@ import org.ehrbase.aql.compiler.Statements;
 import org.ehrbase.aql.containment.IdentifierMapper;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
-import org.ehrbase.aql.sql.queryImpl.CompositionAttributeQuery;
-import org.ehrbase.aql.sql.queryImpl.JsonbEntryQuery;
-import org.ehrbase.aql.sql.queryImpl.TemplateMetaData;
+import org.ehrbase.aql.sql.queryimpl.CompositionAttributeQuery;
+import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
+import org.ehrbase.aql.sql.queryimpl.ObjectQuery;
+import org.ehrbase.aql.sql.queryimpl.TemplateMetaData;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.service.IntrospectService;
 import org.ehrbase.service.KnowledgeCacheService;
@@ -41,8 +42,10 @@ import java.util.List;
  * Bind the abstract representation of a SELECT clause into a SQL expression
  * Created by christian on 5/4/2016.
  */
-public class SelectBinder extends TemplateMetaData implements I_SelectBinder {
+@SuppressWarnings({"java:S3776","java:S3740","java:S1452"})
+public class SelectBinder extends TemplateMetaData implements ISelectBinder {
 
+    public static final String DATA = "data";
     private final JsonbEntryQuery jsonbEntryQuery;
     private final CompositionAttributeQuery compositionAttributeQuery;
     private final PathResolver pathResolver;
@@ -74,11 +77,11 @@ public class SelectBinder extends TemplateMetaData implements I_SelectBinder {
     /**
      * bind with path resolution depending on composition
      *
-     * @param template_id
+     * @param templateId
      * @return
      */
-    public SelectQuery<Record> bind(String template_id) {
-        jsonbEntryQuery.reset();
+    public SelectQuery<Record> bind(String templateId) {
+        ObjectQuery.reset();
 
         SelectQuery<Record> selectQuery = context.selectQuery();
 
@@ -92,7 +95,7 @@ public class SelectBinder extends TemplateMetaData implements I_SelectBinder {
 
             ExpressionField expressionField = new ExpressionField(variableDefinition, jsonbEntryQuery, compositionAttributeQuery);
 
-            Field<?> field = expressionField.toSql(className, template_id, identifier);
+            Field<?> field = expressionField.toSql(className, templateId, identifier);
 
             handleJsonDataBlock(expressionField, field, expressionField.getRootJsonKey(), expressionField.getOptionalPath());
 
@@ -100,7 +103,7 @@ public class SelectBinder extends TemplateMetaData implements I_SelectBinder {
                 continue;
             }
             selectQuery.addSelect(field);
-            jsonbEntryQuery.inc();
+            ObjectQuery.inc();
         }
 
         return selectQuery;

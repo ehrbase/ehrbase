@@ -31,6 +31,7 @@ import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.StructuredString;
 import org.ehrbase.response.ehrscape.StructuredStringFormat;
 import org.ehrbase.response.ehrscape.TemplateMetaDataDto;
+import org.ehrbase.webtemplate.model.WebTemplate;
 import org.jooq.DSLContext;
 import org.openehr.schemas.v1.CARCHETYPEROOT;
 import org.openehr.schemas.v1.OBJECTID;
@@ -39,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.xml.namespace.QName;
 import java.nio.charset.StandardCharsets;
@@ -48,6 +50,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class TemplateServiceImp extends BaseService implements TemplateService {
 
     private final KnowledgeCacheService knowledgeCacheService;
@@ -93,9 +96,9 @@ public class TemplateServiceImp extends BaseService implements TemplateService {
     }
 
     @Override
-    public org.ehrbase.webtemplate.WebTemplate findTemplate(String templateId) {
+    public WebTemplate findTemplate(String templateId) {
 
-        org.ehrbase.webtemplate.WebTemplate webTemplate;
+        WebTemplate webTemplate;
         try {
             Optional<OPERATIONALTEMPLATE> operationaltemplate = this.knowledgeCacheService.retrieveOperationalTemplate(templateId);
 

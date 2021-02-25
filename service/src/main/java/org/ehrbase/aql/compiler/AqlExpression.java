@@ -25,6 +25,8 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.tree.ParseTree;
 
+import java.lang.reflect.Method;
+
 /**
  * Wrap the walkers for pass1 and pass2 as well as invoke the WHERE getQueryOptMetaData
  * <p>
@@ -52,6 +54,30 @@ public class AqlExpression {
         aqlParser.addErrorListener(AqlErrorHandler.INSTANCE);
 
         this.parseTree = aqlParser.query(); //begin parsing at query rule
+
+        return this;
+    }
+
+    public AqlExpression parse(String expression, String ruleName){
+        ANTLRInputStream antlrInputStream = new ANTLRInputStream(expression);
+        Lexer aqlLexer = new AqlLexer(antlrInputStream);
+        CommonTokenStream commonTokenStream = new CommonTokenStream(aqlLexer);
+        this.aqlParser = new AqlParser(commonTokenStream);
+
+        //define our own error listener (default one just display a message on System.err
+        aqlLexer.removeErrorListeners();
+        aqlLexer.addErrorListener(AqlErrorHandlerNoRecovery.INSTANCE);
+        aqlParser.removeErrorListeners();
+        aqlParser.addErrorListener(AqlErrorHandlerNoRecovery.INSTANCE);
+
+        try {
+            Method ruleMethod = aqlParser.getClass().getMethod(ruleName);
+
+            this.parseTree = (ParseTree) ruleMethod.invoke(aqlParser); //begin parsing at query rule
+        }
+        catch (Exception e){
+            throw new IllegalArgumentException(e.getCause().getMessage());
+        }
 
         return this;
     }

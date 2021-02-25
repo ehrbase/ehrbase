@@ -134,5 +134,17 @@ public class AqlExpressionTest extends TestAqlBase {
 
     }
 
+    @Test
+    public void testSpecificRule1() {
+
+        String query = "COMPOSITIONc[openEHR-EHR-COMPOSITION.123.minimal.v1]";
+        try {
+            AqlExpression cut = new AqlExpression().parse(query, "archetypedClassExpr");
+
+            fail("the invalid archetype id should have been rejected");
+        } catch (Exception e){}
+
+    }
+
 
 }

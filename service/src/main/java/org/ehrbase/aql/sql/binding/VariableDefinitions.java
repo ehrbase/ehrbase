@@ -20,7 +20,6 @@ package org.ehrbase.aql.sql.binding;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.VariableDefinition;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -49,10 +48,10 @@ public class VariableDefinitions implements Iterator<I_VariableDefinition>{
     }
 
     public boolean exists(I_VariableDefinition variableDefinition){
-        Iterator<I_VariableDefinition> iterator = variableDefinitionList.iterator();
+        Iterator<I_VariableDefinition> variableDefinitionIterator = variableDefinitionList.iterator();
 
-        while (iterator.hasNext()){
-            if (iterator.next().equals(variableDefinition)){
+        while (variableDefinitionIterator.hasNext()){
+            if (variableDefinitionIterator.next().equals(variableDefinition)){
                 return true;
             }
         }
@@ -60,27 +59,14 @@ public class VariableDefinitions implements Iterator<I_VariableDefinition>{
     }
 
     public boolean isDistinct(String variableAlias){
-        Iterator<I_VariableDefinition> iterator = variableDefinitionList.iterator();
+        Iterator<I_VariableDefinition> variableDefinitionIterator = variableDefinitionList.iterator();
 
-        while (iterator.hasNext()){
-            I_VariableDefinition variableDefinition = iterator.next();
+        while (variableDefinitionIterator.hasNext()){
+            I_VariableDefinition variableDefinition = variableDefinitionIterator.next();
             if (variableDefinition instanceof VariableDefinition && variableDefinition.getAlias().equals(variableAlias))
                 return variableDefinition.isDistinct();
         }
         return false;
     }
 
-    public VariableDefinitions clone(){
-        List<I_VariableDefinition> variableDefinitionClone = new ArrayList<>();
-
-        for (I_VariableDefinition variableDefinition: variableDefinitionList){
-            try {
-                variableDefinitionClone.add(variableDefinition.clone());
-            } catch (CloneNotSupportedException e){
-                throw new IllegalStateException("Internal error, clone failed:"+e);
-            }
-        }
-
-        return new VariableDefinitions(variableDefinitionClone);
-    }
 }

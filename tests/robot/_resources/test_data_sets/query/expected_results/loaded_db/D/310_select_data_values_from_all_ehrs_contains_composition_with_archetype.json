@@ -4,7 +4,7 @@
     "_created": "2019-10-19T18:51:02.700Z",
     "_executed_aql": "select e/ehr_id/value, e/time_created/value, e/system_id/value from EHR e CONTAINS COMPOSITION c WHERE c/archetype_node_id='openEHR-EHR-COMPOSITION.minimal.v1'"
   },
-  "q": "select e/ehr_id/value, e/time_created/value, e/system_id/value from EHR e CONTAINS COMPOSITION c WHERE c/archetype_node_id='$archetype_id'",
+  "q": "select e/ehr_id/value, e/time_created/value, e/system_id/value from EHR e CONTAINS COMPOSITION c WHERE c/archetype_node_id=$archetype_id",
   "columns": [
     {
       "name": "#0",

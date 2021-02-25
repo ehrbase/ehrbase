@@ -18,13 +18,13 @@
 
 *** Settings ***
 Documentation    COMPOSITION Specific Keywords
-Library          XML
-Library          String
+# Library          XML
+# Library          String
 
-Resource    ${CURDIR}${/}../suite_settings.robot
-Resource    generic_keywords.robot
-Resource    template_opt1.4_keywords.robot
-Resource    ehr_keywords.robot
+# Resource    ${CURDIR}${/}../suite_settings.robot
+# Resource    generic_keywords.robot
+# Resource    template_opt1.4_keywords.robot
+# Resource    ehr_keywords.robot
 
 
 
@@ -73,13 +73,14 @@ generate random version_uid
 
 
 commit invalid composition (JSON)
-    [Arguments]         ${opt_file}
+    [Arguments]         ${composition_json}
     [Documentation]     Creates the first version of a new COMPOSITION
     ...                 DEPENDENCY: `upload OPT`, `create EHR`
     ...
     ...                 ENDPOINT: POST /ehr/${ehr_id}/composition
 
-                        get invalid OPT file    ${opt_file}
+                        # TODO: FIX ME! should be 'get invalid compo file'
+                        get invalid OPT file    ${composition_json}
 
     &{headers}=         Create Dictionary   Content-Type=application/xml
                         ...                 Accept=application/json
@@ -91,13 +92,14 @@ commit invalid composition (JSON)
 
 
 commit invalid composition (XML)
-    [Arguments]         ${opt_file}
+    [Arguments]         ${composition_xml}
     [Documentation]     Creates the first version of a new COMPOSITION
     ...                 DEPENDENCY: `upload OPT`, `create EHR`
     ...
     ...                 ENDPOINT: POST /ehr/${ehr_id}/composition
 
-                        get invalid OPT file    ${opt_file}
+                        # TODO: FIX ME! Should be 'get invalid compo file'
+                        get invalid OPT file    ${composition_xml}
 
     &{headers}=         Create Dictionary   Content-Type=application/xml
                         ...                 Accept=application/json
@@ -109,12 +111,13 @@ commit invalid composition (XML)
 
 
 commit composition - no referenced OPT
-    [Arguments]         ${opt_file}
+    [Arguments]         ${composition}
     [Documentation]     Creates a new COMPOSITION with missing referenced OPT
     ...                 DEPENDENCY: `create EHR`, `prepare new request session` with proper args!!!
     ...                 ENDPOINT: POST /ehr/${ehr_id}/composition
 
-                        get valid OPT file  ${opt_file}
+                        # TODO: FIX ME! Rename KW properly
+                        get valid OPT file  ${composition}
 
     ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
                         # log to console      ${resp.content}
@@ -122,13 +125,13 @@ commit composition - no referenced OPT
 
 
 commit composition - no referenced EHR
-    [Arguments]         ${opt_file}
+    [Arguments]         ${composition}
     [Documentation]     Creates a new COMPOSITION with missing referenced EHR
     ...                 DEPENDENCY: `create EHR`, `prepare new request session` with proper args!!!
     ...                             e.g. content-type must be application/xml
     ...                 ENDPOINT: POST /ehr/${ehr_id}/composition
 
-                        get valid OPT file  ${opt_file}
+                        get valid OPT file  ${composition}
 
                         prepare new request session    XML    Prefer=return=representation
 
@@ -138,13 +141,14 @@ commit composition - no referenced EHR
 
 
 commit composition (JSON)
-    [Arguments]         ${opt_file}
+    [Arguments]         ${json_composition}
     [Documentation]     Creates the first version of a new COMPOSITION
     ...                 DEPENDENCY: `upload OPT`, `create EHR`
     ...
     ...                 ENDPOINT: POST /ehr/${ehr_id}/composition
 
-                        get valid OPT file  ${opt_file}
+                        # TODO: FIX ME! rename/replace KW
+                        get valid OPT file  ${json_composition}
 
     &{headers}=         Create Dictionary   Content-Type=application/xml
                         ...                 Accept=application/json
@@ -168,13 +172,14 @@ commit composition (JSON)
 
 
 commit composition without accept header
-    [Arguments]         ${opt_file}
+    [Arguments]         ${composition}
     [Documentation]     Creates the first version of a new COMPOSITION
     ...                 DEPENDENCY: `upload OPT`, `create EHR`
     ...
     ...                 ENDPOINT: POST /ehr/${ehr_id}/composition
 
-                        get valid OPT file  ${opt_file}
+                        # TODO: FIX ME! replace KW
+                        get valid OPT file  ${composition}
 
     &{headers}=         Create Dictionary   Content-Type=application/xml
                         ...                 Prefer=return=representation
@@ -203,10 +208,11 @@ check content of composition (JSON)
 
 
 commit composition (XML)
-    [Arguments]         ${opt_file}
+    [Arguments]         ${xml_composition}
     [Documentation]     POST /ehr/${ehr_id}/composition
 
-                        get valid OPT file  ${opt_file}
+                        # TODO: FIX ME! replace KW
+                        get valid OPT file  ${xml_composition}
 
     &{headers}=         Create Dictionary   Content-Type=application/xml
                         ...                 Accept=application/xml
@@ -253,7 +259,7 @@ commit same composition again
                         ...                 Accept=application/json
                         ...                 Prefer=return=representation
 
-        TRACE GITHUB ISSUE  125  not-ready
+        TRACE GITHUB ISSUE  125  bug
 
     ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
                         log to console      ${resp.content}
@@ -448,7 +454,7 @@ get versioned composition by uid
 
                         prepare new request session    ${format}
 
-        TRACE GITHUB ISSUE  122  not-ready
+        TRACE GITHUB ISSUE  122  bug
 
     ${resp}=            Get Request         ${SUT}    /ehr/${ehr_id}/versioned_composition/${uid}    headers=${headers}
                         log to console      ${resp.content}
@@ -480,11 +486,6 @@ get composition - latest version
     ...                 format: JSON or XML for accept/content headers
 
                         prepare new request session    ${format}    Prefer=return=representation
-
-        ####### TODO: @WLAD/PABLO - remove when fixed!!!!! #####################
-        TRACE GITHUB ISSUE  17  not-ready
-        ########################################################################
-
     ${resp}=            Get Request           ${SUT}   /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version    headers=${headers}
                         log to console        ${resp.text}
                         Set Test Variable     ${response}    ${resp}
@@ -493,14 +494,14 @@ get composition - latest version
 check content of compositions latest version (JSON)
     [Documentation]     DEPENDENCY: `get composition - latest version` keyword
                         Should Be Equal As Strings   ${response.status_code}   200
-                        Set Test Variable     ${version_uid_latest}    ${resp.json()['uid']['value']}
+                        Set Test Variable     ${version_uid_latest}    ${response.json()['uid']['value']}
 
                         # comment: Check the latest version uid is equal to the second committed compo uid
                         Should Be Equal       ${version_uid_latest}    ${composition_uid_v2}
 
                         # comment: check content of the latest version is equal to the content committed on the second compo
                         # should be the content in the 2nd committed compo "modified value"
-                        Set Test Variable     ${text}    ${resp.json()['data']['content'][0]['data']['events'][0]['data']['items'][0]['value']['value']}
+                        Set Test Variable     ${text}    ${response.json()['data']['content'][0]['data']['events'][0]['data']['items'][0]['value']['value']}
                         Should Be Equal       ${text}    modified value
 
 
@@ -538,11 +539,6 @@ get versioned composition - version at time
 
     # Get version at time 1, should exist and be COMPO 1
     &{params}=          Create Dictionary     version_at_time=${time_x}
-
-        ####### TODO: @WLAD/PABLO - remove when fixed!!!!! #####################
-        TRACE GITHUB ISSUE  17  not-ready
-        ########################################################################
-
     ${resp}=            Get Request           ${SUT}   /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version
                         ...                   params=${params}
 
@@ -561,11 +557,6 @@ get composition - version at time (XML)
 
     &{params}=          Create Dictionary     version_at_time=$${time_x}
     &{headers}=         Create Dictionary     Accept=application/xml
-
-        ####### TODO: @WLAD/PABLO - remove when fixed!!!!! #####################
-        TRACE GITHUB ISSUE  17  not-ready
-        ########################################################################
-
     ${resp}=            Get Request           ${SUT}   /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version
                         ...                   params=${params}   headers=${headers}
 
@@ -729,11 +720,23 @@ capture point in time
     ...                 exposes to test level scope a variable e.g. `${time_1}`
     ...                 which's value is a given time in the extended ISO8601 format
     ...                 e.g. 2015-01-20T19:30:22.765+01:00
+    ...                 s. http://robotframework.org/robotframework/latest/libraries/DateTime.html
+    ...                 for DateTime Library docs
 
-    ${time}=            Get Current Date    UTC    result_format=%Y-%m-%dT%H:%M:%S
-    # ${time_tz}=         Catenate            SEPARATOR=${EMPTY}    ${time}   +00:00
+    ${time}=            Get Current Date    result_format=%Y-%m-%dT%H:%M:%S.%f
                         Set Suite Variable   ${time_${point_in_time}}   ${time}+00:00
                         Sleep               1
+
+
+
+(admin) delete composition
+    [Documentation]     Admin delete of Composition.
+    ...                 Needs `${versioned_object_uid}` var from e.g. `commit composition (JSON)` KW.
+
+    &{resp}=            REST.DELETE    ${baseurl}/admin/ehr/${ehr_id}/composition/${versioned_object_uid}
+                        Should Be Equal As Strings   ${resp.status}   204
+                        Set Test Variable    ${response}    ${resp}
+                        Output Debug Info To Console
 
 
 

@@ -21,12 +21,13 @@ Documentation   Composition Integration Tests
 Metadata        TOP_TEST_SUITE    COMPOSITION
 Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
 
-Force Tags      XML
+Force Tags
 
         # @ PABLO: analogous to B.4.a please review: does test use proper steps (don't care about step's details)
 
 *** Test Cases ***
 Main flow get existing COMPOSITION at version
+    [Tags]    17    not-ready    bug
 
     upload OPT      minimal/minimal_observation.opt
 

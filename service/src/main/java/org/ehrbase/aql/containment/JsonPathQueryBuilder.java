@@ -19,7 +19,7 @@ package org.ehrbase.aql.containment;
 
 import org.apache.commons.collections.iterators.ReverseListIterator;
 import org.apache.commons.lang3.StringUtils;
-import org.ehrbase.webtemplate.NodeId;
+import org.ehrbase.webtemplate.parser.NodeId;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -34,7 +34,6 @@ public class JsonPathQueryBuilder {
 
     public JsonPathQueryBuilder(List<Object> containmentList) {
         this.reverseListIterator = new ReverseListIterator(containmentList);
-        ;
     }
 
 

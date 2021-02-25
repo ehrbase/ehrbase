@@ -18,7 +18,7 @@
 package org.ehrbase.aql.containment;
 
 import org.ehrbase.service.KnowledgeCacheService;
-import org.ehrbase.webtemplate.NodeId;
+import org.ehrbase.webtemplate.parser.NodeId;
 
 import java.util.ArrayList;
 import java.util.List;

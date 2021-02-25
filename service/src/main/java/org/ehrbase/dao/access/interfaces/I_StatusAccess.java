@@ -22,9 +22,12 @@ package org.ehrbase.dao.access.interfaces;
 
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import org.ehrbase.dao.access.jooq.StatusAccess;
+import org.ehrbase.jooq.pg.tables.records.StatusHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.StatusRecord;
 
 import java.sql.Timestamp;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -81,6 +84,18 @@ public interface I_StatusAccess extends I_SimpleCRUD {
     }
 
     /**
+     * Retrieve a map of status accesses for all statuses referencing a contribution
+     *
+     * @param domainAccess   SQL context, knowledge
+     * @param contributionId contribution object uuid
+     * @return a map of {@link I_StatusAccess} and their version number, that match the condition
+     * @throws IllegalArgumentException on DB inconsistency
+     */
+    static Map<I_StatusAccess, Integer> retrieveInstanceByContribution(I_DomainAccess domainAccess, UUID contributionId) {
+        return StatusAccess.retrieveInstanceByContribution(domainAccess, contributionId);
+    }
+
+    /**
      * Commit this status instance.
      * @param transactionTime Time of transaction
      * @param ehrId Associated EHR
@@ -110,6 +125,8 @@ public interface I_StatusAccess extends I_SimpleCRUD {
     UUID getId();
 
     void setStatusRecord(StatusRecord record);
+
+    void setStatusRecord(StatusHistoryRecord input);
 
     StatusRecord getStatusRecord();
 
@@ -156,4 +173,14 @@ public interface I_StatusAccess extends I_SimpleCRUD {
      * @return time as {@link Timestamp}
      */
     Timestamp getInitialTimeOfVersionedEhrStatus();
+
+    /**
+     * Checks existence of given EHR_STATUS.
+     * @param domainAccess domain access
+     * @param ehrStatusId given EHR_STATUS
+     * @return True if object with ID exists, false if not
+     */
+    static boolean exists(I_DomainAccess domainAccess, UUID ehrStatusId) {
+        return StatusAccess.exists(domainAccess, ehrStatusId);
+    }
 }

@@ -199,7 +199,8 @@ start server process without coverage
                         Run Keyword If    '${SECURITY_AUTHTYPE}' == 'OAUTH'    Set Environment Variable
                         ...               SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI    ${JWT_ISSUERURI}    
     ${result}=          Start Process  java  -jar  ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
-                        ...                  --cache.enabled\=false
+                        ...                  --cache.enabled\=${CACHE-ENABLED}
+                        ...                  --system.allow-template-overwrite\=${ALLOW-TEMPLATE-OVERWRITE}
                         ...                  --server.nodename\=${NODENAME}    alias=ehrserver
                         ...                    cwd=${PROJECT_ROOT}    stdout=stdout.txt    stderr=stderr.txt
 
@@ -497,12 +498,16 @@ startup SUT
                           ...    abort tests due to issues with remote test environment
 
     # comment: test environment controlled by Robot (CONTROL_MODE=Docker)
-    get application version
+    # get application version
     start ehrdb
     start openehr server
 
 
 shutdown SUT
+    [Documentation]     Cleans up and shuts down test environment 
+
+    Run Keyword If    ${REDUMP_REQUIRED}    db_keywords.dump_db
+    
     Run Keyword And Return If   "${CONTROL_MODE}"=="manual"
                           ...    remind to restart manual test environment
     
@@ -619,15 +624,16 @@ THIS IS JUST A PLACEHOLDER!
 
 TRACE GITHUB ISSUE
     [Arguments]     ${GITHUB_ISSUE}
-    ...             ${not-ready}=
+    ...             ${type}=
     ...             ${message}=Next step fails due to a bug!
     ...             ${loglevel}=ERROR
 
                     Log    ${message} | <a href="https://github.com/ehrbase/project_management/issues/${GITHUB_ISSUE}">Github ISSUE #${GITHUB_ISSUE}</a>
                     ...    level=${loglevel}    html=True
 
-                    Set Tags    bug    GITHUB ISSUE ${GITHUB_ISSUE}
-                    Run Keyword If    '${not-ready}'=='not-ready'    Set Tags    not-ready
+                    Set Tags    not-ready    ${type}    ${GITHUB_ISSUE}
+                    # Skip if    '${not-ready}'=='not-ready'    Skipped because test or feature not ready
+                    # Run Keyword If    '${type}'=='not-ready'    Set Tags    not-ready
 
 
 

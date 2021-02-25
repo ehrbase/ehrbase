@@ -67,6 +67,11 @@ public class ServerConfigImp implements org.ehrbase.api.definitions.ServerConfig
         return aqlConfig.getUseJsQuery();
     }
 
+    @Override
+    public void setUseJsQuery(boolean b) {
+        aqlConfig.setUseJsQuery(b);
+    }
+
     public AqlConfig getAqlConfig(){
         return aqlConfig;
     }

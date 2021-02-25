@@ -29,6 +29,8 @@ import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.dao.access.util.TransactionTime;
+import org.ehrbase.jooq.pg.tables.records.CompositionHistoryRecord;
+import org.ehrbase.jooq.pg.tables.records.CompositionRecord;
 import org.ehrbase.jooq.pg.tables.records.StatusHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.StatusRecord;
 import org.apache.logging.log4j.LogManager;
@@ -37,7 +39,7 @@ import org.jooq.DSLContext;
 import org.jooq.Result;
 
 import java.sql.Timestamp;
-import java.util.UUID;
+import java.util.*;
 
 import static org.ehrbase.jooq.pg.Tables.*;
 
@@ -71,7 +73,7 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
         if (record == null)
             return null;
 
-        return createStatusAccessForRetrieval(domainAccess, record);
+        return createStatusAccessForRetrieval(domainAccess, record, null);
     }
 
     public static I_StatusAccess retrieveInstanceByNamedSubject(I_DomainAccess domainAccess, String partyName) {
@@ -89,7 +91,7 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
         if (record == null)
             return null;
 
-        return createStatusAccessForRetrieval(domainAccess, record);
+        return createStatusAccessForRetrieval(domainAccess, record, null);
     }
 
     public static I_StatusAccess retrieveInstanceByParty(I_DomainAccess domainAccess, UUID partyIdentified) {
@@ -107,7 +109,7 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
         if (record == null)
             return null;
 
-        return createStatusAccessForRetrieval(domainAccess, record);
+        return createStatusAccessForRetrieval(domainAccess, record, null);
 
     }
 
@@ -137,25 +139,93 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
         if (record == null)
             return null;
 
-        return createStatusAccessForRetrieval(domainAccess, record);
+        return createStatusAccessForRetrieval(domainAccess, record, null);
+    }
+
+    public static Map<I_StatusAccess, Integer> retrieveInstanceByContribution(I_DomainAccess domainAccess, UUID contributionId) {
+        Set<UUID> statuses = new HashSet<>();   // Set, because of unique values
+        // add all compositions having a link to given contribution
+        domainAccess.getContext().select(STATUS.ID).from(STATUS).where(STATUS.IN_CONTRIBUTION.eq(contributionId)).fetch()
+                .forEach(rec -> statuses.add(rec.value1()));
+        // and older versions or deleted ones, too
+        domainAccess.getContext().select(STATUS_HISTORY.ID).from(STATUS_HISTORY).where(STATUS_HISTORY.IN_CONTRIBUTION.eq(contributionId)).fetch()
+                .forEach(rec -> statuses.add(rec.value1()));
+
+        // get whole "version map" of each matching status and do fine-grain check for matching contribution
+        // precondition: each UUID in `statuses` set is unique, so for each the "version map" is only created once below
+        // (meta: can't do that as jooq query, because the specific version number isn't stored in DB)
+        Map<I_StatusAccess, Integer> resultMap = new HashMap<>();
+        for (UUID statusId : statuses) {
+            Map<I_StatusAccess, Integer> map = getVersionMapOfStatus(domainAccess, statusId);
+            // fine-grained contribution ID check
+            for (Map.Entry<I_StatusAccess, Integer> entry : map.entrySet()) {
+                if (entry.getKey().getContributionId().equals(contributionId))
+                    resultMap.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return resultMap;
+    }
+
+    public static Map<I_StatusAccess, Integer> getVersionMapOfStatus(I_DomainAccess domainAccess, UUID statusId) {
+        Map<I_StatusAccess, Integer> versionMap = new HashMap<>();
+
+        // create counter with highest version, to keep track of version number and allow check in the end
+        Integer versionCounter = getLatestVersionNumber(domainAccess, statusId);
+
+        // fetch matching entry
+        StatusRecord record = domainAccess.getContext().fetchOne(STATUS, STATUS.ID.eq(statusId));
+        if (record != null) {
+            I_StatusAccess statusAccess = createStatusAccessForRetrieval(domainAccess, record, null);
+            versionMap.put(statusAccess, versionCounter);
+
+            versionCounter--;
+        }
+
+        // if composition was removed (i.e. from "COMPOSITION" table) *or* other versions are existing
+        Result<StatusHistoryRecord> historyRecords = domainAccess.getContext()
+                .selectFrom(STATUS_HISTORY)
+                .where(STATUS_HISTORY.ID.eq(statusId))
+                .orderBy(STATUS_HISTORY.SYS_TRANSACTION.desc())
+                .fetch();
+
+        for (StatusHistoryRecord historyRecord : historyRecords) {
+            I_StatusAccess historyAccess = createStatusAccessForRetrieval(domainAccess, null, historyRecord);
+            versionMap.put(historyAccess, versionCounter);
+            versionCounter--;
+        }
+
+        if (versionCounter != 0)
+            throw new InternalServerException("Version Map generation failed");
+
+        return versionMap;
     }
 
     /**
-     * Helper to create a new {@link StatusAccess} instance from a queried record, to return to service layer.
+     * Helper to create a new {@link StatusAccess} instance from a queried record (either as {@link StatusRecord} or
+     * {@link StatusHistoryRecord}), to return to service layer.
      * @param domainAccess General access
-     * @param record Queried {@link StatusRecord} which contains ID of linked EHR, audit and contribution
-     * @return
+     * @param record Queried {@link StatusRecord} which contains ID of linked EHR, audit and contribution. Give null if not used
+     * @param historyRecord Option: Same as record but as history input type. Give null if not used
+     * @return Resulting access object
      */
-    private static I_StatusAccess createStatusAccessForRetrieval(I_DomainAccess domainAccess, StatusRecord record) {
-        StatusAccess statusAccess = new StatusAccess(domainAccess, record.getEhrId());
-        statusAccess.setStatusRecord(record);
+    private static I_StatusAccess createStatusAccessForRetrieval(I_DomainAccess domainAccess, StatusRecord record, StatusHistoryRecord historyRecord) {
+        StatusAccess statusAccess;
+        if (record != null) {
+            statusAccess = new StatusAccess(domainAccess, record.getEhrId());
+            statusAccess.setStatusRecord(record);
+        } else if (historyRecord != null) {
+            statusAccess = new StatusAccess(domainAccess, historyRecord.getEhrId());
+            statusAccess.setStatusRecord(historyRecord);
+        } else
+            throw new InternalServerException("Error creating version map of EHR_STATUS");
 
         // retrieve corresponding audit
         I_AuditDetailsAccess auditAccess = new AuditDetailsAccess(domainAccess.getDataAccess()).retrieveInstance(domainAccess.getDataAccess(), statusAccess.getAuditDetailsId());
         statusAccess.setAuditDetailsAccess(auditAccess);
 
         // retrieve corresponding contribution
-        I_ContributionAccess retContributionAccess = I_ContributionAccess.retrieveInstance(domainAccess, record.getInContribution());
+        I_ContributionAccess retContributionAccess = I_ContributionAccess.retrieveInstance(domainAccess, statusAccess.getContributionId());
         statusAccess.setContributionAccess(retContributionAccess);
 
         return statusAccess;
@@ -288,6 +358,25 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
     }
 
     @Override
+    public void setStatusRecord(StatusHistoryRecord input) {
+        this.statusRecord = new StatusRecord(
+                input.getId(),
+                input.getEhrId(),
+                input.getIsQueryable(),
+                input.getIsModifiable(),
+                input.getParty(),
+                input.getOtherDetails(),
+                null,
+                null,
+                input.getHasAudit(),
+                input.getAttestationRef(),
+                input.getInContribution(),
+                input.getArchetypeNodeId(),
+                input.getName()
+        );
+    }
+
+    @Override
     public StatusRecord getStatusRecord() {
         return this.statusRecord;
     }
@@ -373,6 +462,10 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
         return domainAccess.getContext().fetchExists(STATUS_HISTORY, STATUS_HISTORY.ID.eq(ehrStatusId));
     }
 
+    public static boolean exists(I_DomainAccess domainAccess, UUID ehrStatusId) {
+        return domainAccess.getContext().fetchExists(STATUS, STATUS.ID.eq(ehrStatusId));
+    }
+
     @Override
     @SuppressWarnings("rawtypes")   // `result` is raw so later iterating also gets the version number
     public int getEhrStatusVersionFromTimeStamp(Timestamp time) {
@@ -382,6 +475,7 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
 
         // retrieve all other versions from status_history and sort by time
         Result result = getDataAccess().getContext().selectFrom(STATUS_HISTORY)
+                .where(STATUS_HISTORY.ID.eq(statusUid))
                 .orderBy(STATUS_HISTORY.SYS_TRANSACTION.desc())    // latest at top, i.e. [0]
                 .fetch();
 

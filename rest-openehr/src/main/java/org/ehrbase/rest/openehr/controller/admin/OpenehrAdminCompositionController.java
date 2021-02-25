@@ -19,6 +19,7 @@ package org.ehrbase.rest.openehr.controller.admin;
 
 import io.swagger.annotations.*;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.response.openehr.admin.AdminDeleteResponseData;
 import org.ehrbase.rest.openehr.controller.BaseController;
@@ -31,6 +32,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -43,10 +45,12 @@ import java.util.UUID;
 public class OpenehrAdminCompositionController extends BaseController {
 
     private final EhrService ehrService;
+    private final CompositionService compositionService;
 
     @Autowired
-    public OpenehrAdminCompositionController(EhrService ehrService) {
-        this.ehrService = ehrService;
+    public OpenehrAdminCompositionController(EhrService ehrService, CompositionService compositionService) {
+        this.ehrService = Objects.requireNonNull(ehrService);
+        this.compositionService = Objects.requireNonNull(compositionService);
     }
 
     @DeleteMapping(path = "/{ehr_id}/composition/{composition_id}")
@@ -92,10 +96,10 @@ public class OpenehrAdminCompositionController extends BaseController {
             );
         }
 
-        // TODO: Implement endpoint functionality
+        UUID compositionUid = UUID.fromString(compositionId);
 
-        // Composition existence will be checked during deletion
+        compositionService.adminDelete(compositionUid);
 
-        return ResponseEntity.ok().body(new AdminDeleteResponseData(0));
+        return ResponseEntity.noContent().build();
     }
 }

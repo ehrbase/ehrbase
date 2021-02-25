@@ -94,3 +94,48 @@ terminology-server:
   codePath: '$["expansion"]["contains"][*]["code"]'
   systemPath: '$["expansion"]["contains"][*]["system"]'
   displayPath: '$["expansion"]["contains"][*]["display"]'
+
+# Configuration of actuator for reporting and health endpoints
+management:
+  endpoints:
+    # Disable all endpoint by default to opt-in enabled endpoints
+    enabled-by-default: false
+    web:
+      base-path: '/status'
+      exposure:
+        include: 'env, health, info, metrics, prometheus'
+  # Per endpoint settings
+  endpoint:
+    # Env endpoint - Shows information on environment of EHRbase
+    env:
+      # Enable / disable env endpoint
+      enabled: false
+    # Health endpoint - Shows information on system status
+    health:
+      # Enable / disable health endpoint
+      enabled: false
+      # Show components in health endpoint. Can be "never", "when-authorized" or "always"
+      show-components: 'when-authorized'
+      # Show details in health endpoint. Can be "never", "when-authorized" or "always"
+      show-details: 'when-authorized'
+      # Show additional information on used systems. See https://docs.spring.io/spring-boot/docs/current/reference/html/production-ready-features.html#production-ready-health-indicators for available keys
+      datasource:
+        # Enable / disable report if datasource connection could be established
+        enabled: true
+    # Info endpoint - Shows information on the application as build infor, etc.
+    info:
+      # Enable / disable info endpoint
+      enabled: false
+    # Metrics endpoint - Shows several metrics on running EHRbase
+    metrics:
+      # Enable / disable metrics endpoint
+      enabled: false
+    # Prometheus metric endpoint - Special metrics format to display in microservice observer solutions
+    prometheus:
+      # Enable / disable prometheus endpoint
+      enabled: false
+  # Metrics settings
+  metrics:
+    export:
+      prometheus:
+        enabled: true

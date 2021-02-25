@@ -28,4 +28,4 @@ Documentation    COMPOSITION TEST SUITE
 # Suite Setup  startup SUT
 # Suite Teardown  shutdown SUT
 
-Force Tags    JSON2
+Force Tags    COMPOSITION_json    COMPOSITION_json2
