@@ -434,6 +434,13 @@ D-503 Execute Ad-HOc Query - Get Data
     [Teardown]          TRACE GITHUB ISSUE  208  bug
 
 
+D-504 Execute Ad-HOc Query - Get archetype_details
+    [Documentation]     Get Data related query.
+    [Template]          execute ad-hoc query and check result (loaded DB)
+    [Tags]              464    not-ready
+    D/504_query.tmp.json    D/504.tmp.json
+    [Teardown]          TRACE GITHUB ISSUE  464  bug
+
 
 
 

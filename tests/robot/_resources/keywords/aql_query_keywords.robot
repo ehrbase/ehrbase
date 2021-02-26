@@ -490,6 +490,8 @@ Preconditions (PART 1) - Load Blueprints of Queries and Expected-Results
                         ...            D/501_select_data_values_from_compositions_with_given_archetype_in_ehr.json
                         ...            D/502_select_data_values_from_compositions_with_given_archetype_in_ehr.json
                         ...            D/503_select_data_values_from_compositions_with_given_archetype_in_ehr.json
+                        ...            D/504_select_data_archetype_details.json
+
 
                 FOR     ${blueprint}    IN    @{blueprints}
 
@@ -671,6 +673,7 @@ Commit Compo
                         Set Suite Variable    ${compo_archetype_id_value}     ${response.body.archetype_details.archetype_id.value}
                         Set Suite Variable    ${compo_archetype_id}     ${response.body.archetype_details.archetype_id}
                         Set Suite Variable    ${compo_archetype_node_id}    ${response.body.archetype_node_id}
+                        Set Suite Variable    ${compo_archetype_details}    ${response.body.archetype_details} 
                         Set Suite Variable    ${compo_content_archetype_node_id}    ${response.body.content[0].archetype_node_id}
                         Set Suite Variable    ${compo_content_type}    ${response.body.content[0]._type}
                         Set Suite Variable    ${compo_language}    ${response.body.language}
@@ -754,6 +757,7 @@ Commit Compo
     D/501
     D/502
     D/503
+    D/504
 
 
     # BACKLOG / DATA GENERATION NOT READY/POSSIBLE OR NOT CLEAR HOW TO DO
@@ -1636,7 +1640,16 @@ D/503
                         Update 'rows' in Temp Result-Data-Set    D/503
 
 
+D/504
+    [Documentation]     Conditions are set to meet reqs of expected result-data-set.
+    ...                 Here we are interested only in EHR record number 1 and all of it's compositions.
+    ...                 1. Don't do anything if {ehr_index} is not 1.
+    ...                 2. Update query-data-set ONLY on FIRST iteration to avoid unnecessary repetitions.
+                        Return From Keyword If    not ${ehr_index}==1    NOTHING TO DO HERE!
+                        Run Keyword if    ${ehr_index}==1 and ${compo_index}==1    Update Temp Query-Data-Set    D/504
+                        Create Temp List    ${compo_archetype_details}
 
+                        Update 'rows', 'q' and 'meta' in Temp Result-Data-Set    D/504
 
 
 

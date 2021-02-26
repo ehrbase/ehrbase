@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation   AQL QUERY SMOME TEST
+Documentation   AQL QUERY SMOKE TEST
 
 Resource    ${CURDIR}${/}../_resources/suite_settings.robot
 
@@ -201,6 +201,14 @@ D-501 Execute Ad-HOc Query - Get Data
     [Tags]              408    not-ready
     D/501_query.tmp.json    D/501.tmp.json
     [Teardown]          TRACE GITHUB ISSUE  408  bug
+
+
+D-504 Execute Ad-HOc Query - Get archetype_details
+    [Documentation]     Get Data related query.
+    [Template]          execute ad-hoc query and check result (loaded DB)
+    [Tags]              464    not-ready
+    D/504_query.tmp.json    D/504.tmp.json
+    [Teardown]          TRACE GITHUB ISSUE  464  bug
 
 
 CLEAN UP SUT
