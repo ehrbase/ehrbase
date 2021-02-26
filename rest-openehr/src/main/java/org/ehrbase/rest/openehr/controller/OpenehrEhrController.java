@@ -34,7 +34,7 @@ import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.response.openehr.EhrResponseData;
-import org.ehrbase.rest.openehr.audit.OpenEhrAuditStrategy;
+import org.ehrbase.rest.openehr.audit.OpenEhrAuditInterceptor;
 import org.ehrbase.rest.openehr.controller.OperationNotesResourcesReaderOpenehr.ApiNotes;
 import org.ehrbase.rest.openehr.util.InternalResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -175,8 +175,8 @@ public class OpenehrEhrController extends BaseController {
             respData = buildEhrResponseData(() -> null, resultEhrId, accept, headerList);
         }
 
-        // Registers EhrId in request attributes for audit processing
-        request.setAttribute(OpenEhrAuditStrategy.EHR_ID_ATTRIBUTE, resultEhrId);
+        // Enriches request attributes with current EhrId for later audit processing
+        request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, resultEhrId);
 
         // returns 201 with body + headers, 204 only with headers or 500 error depending on what processing above yields
         return respData.map(i -> Optional.ofNullable(i.getResponseData()).map(j -> ResponseEntity.created(url).headers(i.getHeaders()).body(j))
@@ -244,8 +244,8 @@ public class OpenehrEhrController extends BaseController {
 
         Optional<InternalResponse<EhrResponseData>> respData = buildEhrResponseData(EhrResponseData::new, ehrId, accept, headerList);
 
-        // Registers EhrId in request attributes for audit processing
-        request.setAttribute(OpenEhrAuditStrategy.EHR_ID_ATTRIBUTE, ehrId);
+        // Enriches request attributes with current EhrId for later audit processing
+        request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, ehrId);
 
         return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData()))
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());

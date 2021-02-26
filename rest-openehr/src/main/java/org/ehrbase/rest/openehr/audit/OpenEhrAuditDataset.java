@@ -22,6 +22,9 @@ import org.springframework.http.HttpMethod;
 
 import java.io.Serializable;
 
+/**
+ * Base class for openEHR audit dataset
+ */
 public class OpenEhrAuditDataset implements Serializable {
 
     private EventOutcomeIndicator eventOutcomeIndicator;
@@ -30,9 +33,11 @@ public class OpenEhrAuditDataset implements Serializable {
 
     private HttpMethod method;
 
-    private String sourceUserId;
+    private String sourceParticipantUserId;
 
-    private String sourceAddress;
+    private String sourceParticipantNetworkId;
+
+    private String patientParticipantObjectId;
 
     public EventOutcomeIndicator getEventOutcomeIndicator() {
         return eventOutcomeIndicator;
@@ -58,19 +63,31 @@ public class OpenEhrAuditDataset implements Serializable {
         this.method = method;
     }
 
-    public String getSourceUserId() {
-        return sourceUserId;
+    public String getSourceParticipantUserId() {
+        return sourceParticipantUserId;
     }
 
-    public void setSourceUserId(String sourceUserId) {
-        this.sourceUserId = sourceUserId;
+    public void setSourceParticipantUserId(String sourceParticipantUserId) {
+        this.sourceParticipantUserId = sourceParticipantUserId;
     }
 
-    public String getSourceAddress() {
-        return sourceAddress;
+    public String getSourceParticipantNetworkId() {
+        return sourceParticipantNetworkId;
     }
 
-    public void setSourceAddress(String sourceAddress) {
-        this.sourceAddress = sourceAddress;
+    public void setSourceParticipantNetworkId(String sourceParticipantNetworkId) {
+        this.sourceParticipantNetworkId = sourceParticipantNetworkId;
+    }
+
+    public String getPatientParticipantObjectId() {
+        return patientParticipantObjectId;
+    }
+
+    public void setPatientParticipantObjectId(String patientParticipantObjectId) {
+        this.patientParticipantObjectId = patientParticipantObjectId;
+    }
+
+    public boolean hasPatientParticipantObjectId() {
+        return patientParticipantObjectId != null;
     }
 }

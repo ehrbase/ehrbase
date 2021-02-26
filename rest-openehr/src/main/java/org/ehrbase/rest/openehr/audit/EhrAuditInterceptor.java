@@ -22,13 +22,12 @@ import org.ehrbase.rest.openehr.audit.support.EhrAuditMessageBuilder;
 import org.openehealth.ipf.commons.audit.AuditContext;
 import org.openehealth.ipf.commons.audit.model.AuditMessage;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.UUID;
+/**
+ * Concrete implementation of {@link OpenEhrAuditInterceptor} for EHR API.
+ */
+public class EhrAuditInterceptor extends OpenEhrAuditInterceptor<OpenEhrAuditDataset> {
 
-public class EhrEndpointAuditStrategy extends OpenEhrAuditStrategy<OpenEhrAuditDataset> {
-
-    public EhrEndpointAuditStrategy(AuditContext auditContext, EhrService ehrService) {
+    public EhrAuditInterceptor(AuditContext auditContext, EhrService ehrService) {
         super(auditContext, ehrService);
     }
 
@@ -38,16 +37,11 @@ public class EhrEndpointAuditStrategy extends OpenEhrAuditStrategy<OpenEhrAuditD
     }
 
     @Override
-    protected void enrichAuditDataset(OpenEhrAuditDataset auditDataset, HttpServletRequest request, HttpServletResponse response) {
-        super.enrichAuditDataset(auditDataset, request, response);
-
-        UUID ehrId = (UUID) request.getAttribute(EHR_ID_ATTRIBUTE);
-
-    }
-
-    @Override
-    protected AuditMessage[] getMessages(OpenEhrAuditDataset auditDataset) {
+    protected AuditMessage[] getAuditMessages(OpenEhrAuditDataset auditDataset) {
         EhrAuditMessageBuilder builder = new EhrAuditMessageBuilder(auditContext, auditDataset);
+        if (auditDataset.hasPatientParticipantObjectId()) {
+            builder.addPatientParticipantObjectIdentification(auditDataset);
+        }
         return builder.getMessages();
     }
 }

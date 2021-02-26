@@ -17,23 +17,59 @@
  */
 package org.ehrbase.rest.openehr.audit.support;
 
-import org.ehrbase.rest.openehr.audit.CompositionEndpointAuditDataset;
-import org.ehrbase.rest.openehr.audit.CompositionEndpointEventTypeCode;
+import org.ehrbase.rest.openehr.audit.CompositionAuditDataset;
 import org.ehrbase.rest.openehr.audit.OpenEhrEventIdCode;
+import org.ehrbase.rest.openehr.audit.OpenEhrEventTypeCode;
 import org.openehealth.ipf.commons.audit.AuditContext;
+import org.openehealth.ipf.commons.audit.codes.EventActionCode;
 import org.openehealth.ipf.commons.audit.codes.ParticipantObjectDataLifeCycle;
 import org.openehealth.ipf.commons.audit.codes.ParticipantObjectIdTypeCode;
 import org.openehealth.ipf.commons.audit.codes.ParticipantObjectTypeCode;
-import org.openehealth.ipf.commons.audit.codes.ParticipantObjectTypeCodeRole;
+import org.openehealth.ipf.commons.audit.types.EventType;
+import org.springframework.http.HttpMethod;
 
+/**
+ * Concrete implementation of {@link OpenEhrAuditMessageBuilder} for Composition AuditMessages.
+ */
 @SuppressWarnings("UnusedReturnValue")
-public class CompositionAuditMessageBuilder extends OpenEhrAuditMessageBuilder {
+public class CompositionAuditMessageBuilder extends OpenEhrAuditMessageBuilder<CompositionAuditMessageBuilder> {
 
-    public CompositionAuditMessageBuilder(AuditContext auditContext, CompositionEndpointAuditDataset auditDataset) {
-        super(auditContext, auditDataset, OpenEhrEventIdCode.COMPOSITION, CompositionEndpointEventTypeCode.resolve(auditDataset.getMethod()));
+    public CompositionAuditMessageBuilder(AuditContext auditContext, CompositionAuditDataset auditDataset) {
+        super(auditContext, auditDataset, resolveEventActionCode(auditDataset.getMethod()),
+                OpenEhrEventIdCode.COMPOSITION, resolveEventType(auditDataset.getMethod()));
     }
 
-    public CompositionAuditMessageBuilder addComposition(CompositionEndpointAuditDataset auditDataset) {
+    private static EventActionCode resolveEventActionCode(HttpMethod method) {
+        switch (method) {
+            case POST:
+                return EventActionCode.Create;
+            case GET:
+                return EventActionCode.Read;
+            case PUT:
+                return EventActionCode.Update;
+            case DELETE:
+                return EventActionCode.Delete;
+            default:
+                throw new IllegalArgumentException("Cannot resolve EventActionCode, method not supported");
+        }
+    }
+
+    private static EventType resolveEventType(HttpMethod method) {
+        switch (method) {
+            case POST:
+                return OpenEhrEventTypeCode.CREATE;
+            case GET:
+                return null;
+            case PUT:
+                return OpenEhrEventTypeCode.UPDATE;
+            case DELETE:
+                return OpenEhrEventTypeCode.DELETE;
+            default:
+                throw new IllegalArgumentException("Cannot resolve EventType, method not supported");
+        }
+    }
+
+    public CompositionAuditMessageBuilder addCompositionParticipantObjectIdentification(CompositionAuditDataset auditDataset) {
         delegate.addParticipantObjectIdentification(
                 ParticipantObjectIdTypeCode.URI,
                 auditDataset.getTemplateId(),
@@ -42,35 +78,28 @@ public class CompositionAuditMessageBuilder extends OpenEhrAuditMessageBuilder {
                 auditDataset.getCompositionUri(),
                 ParticipantObjectTypeCode.System,
                 null,
-                resolveCompositionObjectDataLifeCycle(auditDataset),
+                resolveLifeCycle(auditDataset.getMethod()),
                 null);
         return this;
     }
 
-    public CompositionAuditMessageBuilder addPatient(CompositionEndpointAuditDataset auditDataset) {
-        delegate.addParticipantObjectIdentification(
-                ParticipantObjectIdTypeCode.PatientNumber,
-                null,
-                null,
-                null,
-                auditDataset.getPatientNumber(),
-                ParticipantObjectTypeCode.Person,
-                ParticipantObjectTypeCodeRole.Patient,
-                null,
-                null);
+    public CompositionAuditMessageBuilder addPatientParticipantObjectIdentification(CompositionAuditDataset auditDataset) {
+        delegate.addPatientParticipantObject(auditDataset.getPatientParticipantObjectId(), null, null, null);
         return this;
     }
 
-    private ParticipantObjectDataLifeCycle resolveCompositionObjectDataLifeCycle(CompositionEndpointAuditDataset auditDataset) {
-        switch (auditDataset.getMethod()) {
+    private ParticipantObjectDataLifeCycle resolveLifeCycle(HttpMethod method) {
+        switch (method) {
             case POST:
                 return ParticipantObjectDataLifeCycle.Origination;
             case PUT:
                 return ParticipantObjectDataLifeCycle.Amendment;
             case GET:
                 return ParticipantObjectDataLifeCycle.Disclosure;
-            default:
+            case DELETE:
                 return null;
+            default:
+                throw new IllegalArgumentException("Cannot resolve ParticipantObjectDataLifeCycle, method not supported");
         }
     }
 }

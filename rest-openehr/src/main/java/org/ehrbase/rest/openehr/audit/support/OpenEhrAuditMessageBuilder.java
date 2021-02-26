@@ -27,70 +27,43 @@ import org.openehealth.ipf.commons.audit.types.EventType;
 import org.openehealth.ipf.commons.audit.utils.AuditUtils;
 import org.springframework.http.HttpMethod;
 
+/**
+ * Abstract {@link org.openehealth.ipf.commons.audit.event.AuditMessageBuilder AuditMessageBuilder}
+ * for building DICOM audit messages as specified in openEHR Audit Event Message Specifications.
+ */
 @SuppressWarnings("UnusedReturnValue")
-public abstract class OpenEhrAuditMessageBuilder extends DelegatingAuditMessageBuilder<OpenEhrAuditMessageBuilder, CustomAuditMessageBuilder> {
+public abstract class OpenEhrAuditMessageBuilder<T extends OpenEhrAuditMessageBuilder<T>> extends DelegatingAuditMessageBuilder<T, CustomAuditMessageBuilder> {
 
     private final AuditContext auditContext;
 
     protected OpenEhrAuditMessageBuilder(AuditContext auditContext, OpenEhrAuditDataset auditDataset,
-                                         EventId eventId, EventType eventType) {
-        this(auditContext, auditDataset, resolveEventActionCode(auditDataset.getMethod()), eventId, eventType);
-    }
-
-    protected OpenEhrAuditMessageBuilder(AuditContext auditContext, OpenEhrAuditDataset auditDataset,
                                          EventActionCode eventActionCode, EventId eventId, EventType eventType) {
-        super(
-                new CustomAuditMessageBuilder(
-                        auditDataset.getEventOutcomeIndicator(),
-                        auditDataset.getEventOutcomeDescription(),
-                        eventActionCode,
-                        eventId,
-                        eventType));
-
+        super(new CustomAuditMessageBuilder(
+                auditDataset.getEventOutcomeIndicator(),
+                auditDataset.getEventOutcomeDescription(),
+                eventActionCode,
+                eventId,
+                eventType));
         this.auditContext = auditContext;
 
-        setAuditSource();
-        setSourceActiveParticipant(auditDataset);
-        setDestinationActiveParticipant();
-    }
+        addSourceActiveParticipant(auditDataset);
+        addDestinationActiveParticipant();
 
-    private static EventActionCode resolveEventActionCode(HttpMethod method) {
-        switch (method) {
-            case POST:
-                return EventActionCode.Create;
-            case GET:
-                return EventActionCode.Read;
-            case PUT:
-            case PATCH:
-                return EventActionCode.Update;
-            case DELETE:
-                return EventActionCode.Delete;
-            default:
-                return EventActionCode.Execute;
-        }
-    }
-
-    protected OpenEhrAuditMessageBuilder setAuditSource() {
         delegate.setAuditSource(auditContext);
-        return this;
     }
 
-    protected OpenEhrAuditMessageBuilder setSourceActiveParticipant(OpenEhrAuditDataset auditDataset) {
-        delegate.addSourceActiveParticipant(auditDataset.getSourceUserId() != null ? auditDataset.getSourceUserId() : auditContext.getAuditValueIfMissing(),
+    protected final T addSourceActiveParticipant(OpenEhrAuditDataset auditDataset) {
+        delegate.addSourceActiveParticipant(
+                auditDataset.getSourceParticipantUserId() != null ? auditDataset.getSourceParticipantUserId() : auditContext.getAuditValueIfMissing(),
                 null,
                 null,
-                auditDataset.getSourceAddress(),
+                auditDataset.getSourceParticipantNetworkId() != null ? auditDataset.getSourceParticipantNetworkId() : auditContext.getAuditValueIfMissing(),
                 true);
-        return this;
+        return self();
     }
 
-    protected OpenEhrAuditMessageBuilder setDestinationActiveParticipant() {
-        delegate.addDestinationActiveParticipant(auditContext.getAuditSourceId(),
-                null,
-                null,
-                AuditUtils.getLocalIPAddress(),
-                false);
-        return this;
-
+    protected final T addDestinationActiveParticipant() {
+        delegate.addDestinationActiveParticipant(auditContext.getAuditSourceId(), null, null, AuditUtils.getLocalIPAddress(), false);
+        return self();
     }
 }

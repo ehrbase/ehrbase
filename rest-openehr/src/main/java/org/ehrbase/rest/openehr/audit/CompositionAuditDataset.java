@@ -17,21 +17,14 @@
  */
 package org.ehrbase.rest.openehr.audit;
 
-public class CompositionEndpointAuditDataset extends OpenEhrAuditDataset {
-
-    private String patientNumber;
+/**
+ * {@link OpenEhrAuditDataset} used for Composition audit messages
+ */
+public class CompositionAuditDataset extends OpenEhrAuditDataset {
 
     private String compositionUri;
 
     private String templateId;
-
-    public String getPatientNumber() {
-        return patientNumber;
-    }
-
-    public void setPatientNumber(String patientNumber) {
-        this.patientNumber = patientNumber;
-    }
 
     public String getCompositionUri() {
         return compositionUri;
@@ -41,19 +34,15 @@ public class CompositionEndpointAuditDataset extends OpenEhrAuditDataset {
         this.compositionUri = compositionUri;
     }
 
+    public boolean hasCompositionUri() {
+        return compositionUri != null;
+    }
+
     public String getTemplateId() {
         return templateId;
     }
 
     public void setTemplateId(String templateId) {
         this.templateId = templateId;
-    }
-
-    boolean hasPatientNumber() {
-        return patientNumber != null;
-    }
-
-    boolean hasComposition() {
-        return compositionUri != null;
     }
 }

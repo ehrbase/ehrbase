@@ -19,12 +19,11 @@ package org.ehrbase.rest.openehr.audit;
 
 import org.openehealth.ipf.commons.audit.types.EnumeratedCodedValue;
 import org.openehealth.ipf.commons.audit.types.EventType;
-import org.springframework.http.HttpMethod;
 
 /**
- * Audit Event Type Code for openEHR.
+ * openEHR Event Type codes used in audit messages.
  */
-public enum CompositionEndpointEventTypeCode implements EventType, EnumeratedCodedValue<EventType> {
+public enum OpenEhrEventTypeCode implements EventType, EnumeratedCodedValue<EventType> {
 
     CREATE("249", "creation"),
 
@@ -34,21 +33,8 @@ public enum CompositionEndpointEventTypeCode implements EventType, EnumeratedCod
 
     private final EventType value;
 
-    CompositionEndpointEventTypeCode(String code, String originalText) {
+    OpenEhrEventTypeCode(String code, String originalText) {
         this.value = EventType.of(code, "openehr", originalText);
-    }
-
-    public static CompositionEndpointEventTypeCode resolve(HttpMethod method) {
-        switch (method) {
-            case POST:
-                return CREATE;
-            case PUT:
-                return UPDATE;
-            case DELETE:
-                return DELETE;
-            default:
-                return null;
-        }
     }
 
     @Override

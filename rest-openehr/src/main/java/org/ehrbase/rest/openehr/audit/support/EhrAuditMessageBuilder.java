@@ -19,11 +19,46 @@ package org.ehrbase.rest.openehr.audit.support;
 
 import org.ehrbase.rest.openehr.audit.OpenEhrAuditDataset;
 import org.openehealth.ipf.commons.audit.AuditContext;
+import org.openehealth.ipf.commons.audit.codes.EventActionCode;
 import org.openehealth.ipf.commons.audit.codes.EventIdCode;
+import org.openehealth.ipf.commons.audit.codes.ParticipantObjectDataLifeCycle;
+import org.springframework.http.HttpMethod;
 
-public class EhrAuditMessageBuilder extends OpenEhrAuditMessageBuilder {
+/**
+ * Concrete implementation of {@link OpenEhrAuditMessageBuilder} for EHR AuditMessages.
+ */
+public class EhrAuditMessageBuilder extends OpenEhrAuditMessageBuilder<EhrAuditMessageBuilder> {
 
     public EhrAuditMessageBuilder(AuditContext auditContext, OpenEhrAuditDataset auditDataset) {
-        super(auditContext, auditDataset, EventIdCode.PatientRecord, null);
+        super(auditContext, auditDataset, resolveEventActionCode(auditDataset.getMethod()), EventIdCode.PatientRecord, null);
+    }
+
+    protected static EventActionCode resolveEventActionCode(HttpMethod method) {
+        switch (method) {
+            case POST:
+            case PUT:
+                return EventActionCode.Create;
+            case GET:
+                return EventActionCode.Read;
+            default:
+                throw new IllegalArgumentException("Cannot resolve EventActionCode, method not supported");
+        }
+    }
+
+    public EhrAuditMessageBuilder addPatientParticipantObjectIdentification(OpenEhrAuditDataset auditDataset) {
+        delegate.addPatientParticipantObject(auditDataset.getPatientParticipantObjectId(), null, null, resolveLifeCycle(auditDataset.getMethod()));
+        return this;
+    }
+
+    private ParticipantObjectDataLifeCycle resolveLifeCycle(HttpMethod method) {
+        switch (method) {
+            case POST:
+            case PUT:
+                return ParticipantObjectDataLifeCycle.Origination;
+            case GET:
+                return ParticipantObjectDataLifeCycle.Disclosure;
+            default:
+                throw new IllegalArgumentException("Cannot resolve ParticipantObjectDataLifeCycle, method not supported");
+        }
     }
 }
