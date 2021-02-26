@@ -50,9 +50,9 @@ mvn build-helper:parse-version versions:set \
 
 # bumping patch version is probably not suiteable for a new release but if you want - i.e. 0.14.0 --> 0.14.1
 mvn build-helper:parse-version \
-    versions:set \
-    -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion} \
-    versions:commit
+  versions:set \
+  -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion} \
+  versions:commit
 ```
 
 - [ ] done 
