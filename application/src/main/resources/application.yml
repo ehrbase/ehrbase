@@ -143,4 +143,4 @@ management:
 # Audit Properties
 ipf:
   atna:
-    audit-enabled: true
+    audit-enabled: false
