@@ -9,7 +9,7 @@ This is a quick 10 step checklist to create and publish a new Github Release ver
     mvn clean package    # remember to start ehrbase DB before
     ```
 
-    [] done
+    - [ ] done
 
 02. Create new release branch 
     ```
@@ -17,22 +17,22 @@ This is a quick 10 step checklist to create and publish a new Github Release ver
     ```
     NOTE: exact syntax is important (i.e. `v` before version number)
           build rules on Docker Hub won't apply if branch name does not match properly
-          TODO: ADD MY SCREESHOT (dockerhub_autobuilds) HERE
+          ![img/dockerhub_autobuilds.png]
     
-    [] done
+    - [ ] done
 
 03. Bump version (in all POM files that apply)
 
     As of writing this (2021-02-25) the following POM files have to be updated
-    - pom.xml    
-    - api/pom.xml 
-    - application/pom.xml 
-    - base/pom.xml 
-    - jooq-pq/pom.xml 
-    - rest-ehr-scape/pom.xml 
-    - rest-openehr/pom.xml 
-    - service/pom.xml 
-    - test-coverage/pom.xml
+    - [ ] pom.xml    
+    - [ ] api/pom.xml 
+    - [ ] application/pom.xml 
+    - [ ] base/pom.xml 
+    - [ ] jooq-pq/pom.xml 
+    - [ ] rest-ehr-scape/pom.xml 
+    - [ ] rest-openehr/pom.xml 
+    - [ ] service/pom.xml 
+    - [ ] test-coverage/pom.xml
 
     Use one of below commands to update the version in all POMs at once:
    
@@ -48,11 +48,11 @@ This is a quick 10 step checklist to create and publish a new Github Release ver
     mvn build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion} versions:commit
     ```
 
-    [] done 
+    - [ ] done 
     
 
 04. Update CHANGELOG.md and README.md
-    - IN CHANGELOG:
+    - [ ] IN CHANGELOG:
         - replace top [Unreleased] with release version
         - add empty sections for next release's changes to the top, i.e.
             
@@ -72,12 +72,11 @@ This is a quick 10 step checklist to create and publish a new Github Release ver
             [0.15.0]: https://github.com/ehrbase/ehrbase/compare/v0.14.0...v0.15.0
             ...
             ```
-    [] done
 
-    - IN README:
+    - [ ] IN README:
         - add new Releas version at the top
     
-    [] done
+    - [ ] done
     
 
 05. Commit changes with proper message and push to remote (Github)
@@ -87,20 +86,20 @@ This is a quick 10 step checklist to create and publish a new Github Release ver
     git push -u origin release/v0.15.0
     ```
 
-    [] done
+    - [ ] done
 
 06. Merge into develop
-    - In Github's UI create a PR (Pull Request) from release branch into develop
-    - wait for CI to succeed - all checks have to pass!!!
-    - especially make sure that DockerHub build passes
-    - if needed continue committing to release branch until all CI checks pass
-    TODO: ADD MY SCREENSHOT (pr check pass) HERE
+    - [ ] In Github's UI create a PR (Pull Request) from release branch into develop
+    - [ ] wait for CI to succeed - all checks have to pass!!!
+    - [ ] especially make sure that DockerHub build passes
+    - [ ] if needed continue committing to release branch until all CI checks pass
+    ![img/pr_checks_pass.png]
     
     - remote release branch will be deleted automatically after merge
     - your local release branch has to be delete manually
       (do it at the end of the whole procedure)
     
-    [] done
+    - [ ] done
 
 07. Add an annotated Git tag (and push it to remote)
     - Now that we know all checks have passed on develop, let's finalize the release and give it a proper Git tag
@@ -111,7 +110,7 @@ This is a quick 10 step checklist to create and publish a new Github Release ver
     git tag -a v0.15.0 -m "Beta Release v0.15.0"
     git push origin v0.15.0
     ```
-    [] done
+    - [ ] done
 
     NOTE: if you messed up with Git tags, remember that you can delete them locally and on remote at any time, i.e.:
     ```
@@ -131,11 +130,11 @@ This is a quick 10 step checklist to create and publish a new Github Release ver
     - give it a proper description
     - click `Publish release`
 
-    [] done
+    - [ ] done
 
 
 09. Merge into master
-    - OPTION I (on local machine)
+    - [ ] OPTION I (on local machine)
 
     ```
     git checkout master
@@ -144,16 +143,16 @@ This is a quick 10 step checklist to create and publish a new Github Release ver
     git push
     ```
 
-    - OPTION II (via Github UI)
+    - [ ] OPTION II (via Github UI)
         - create a PR from develop into master
         - merge PR
         - make sure CI and Docker Hub build pass
     
-    [] done
+    - [ ] done
 
 10. Update release notes (in documentation repository)
     - Copy & Paste properly all the stuff from CHANGELOG to Sphinx Docs
 
-    [] done 
+    - [ ] done 
 
 
