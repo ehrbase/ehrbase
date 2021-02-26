@@ -17,7 +17,8 @@ This is a quick 10 step checklist to create and publish a new Github Release ver
     ```
     NOTE: exact syntax is important (i.e. `v` before version number)
           build rules on Docker Hub won't apply if branch name does not match properly
-          ![img/dockerhub_autobuilds.png]
+
+    ![docker hub build rules](img/release_dockerhub_autobuilds.png)
     
     - [ ] done
 
@@ -93,11 +94,12 @@ This is a quick 10 step checklist to create and publish a new Github Release ver
     - [ ] wait for CI to succeed - all checks have to pass!!!
     - [ ] especially make sure that DockerHub build passes
     - [ ] if needed continue committing to release branch until all CI checks pass
-    ![img/pr_checks_pass.png]
+
+    ![CI checks pass](img/release_pr_checks_pass.png)
     
+    NOTES:
     - remote release branch will be deleted automatically after merge
-    - your local release branch has to be delete manually
-      (do it at the end of the whole procedure)
+    - your local release branch has to be deleted manually (do it at the end of the whole procedure)
     
     - [ ] done
 
@@ -154,5 +156,3 @@ This is a quick 10 step checklist to create and publish a new Github Release ver
     - Copy & Paste properly all the stuff from CHANGELOG to Sphinx Docs
 
     - [ ] done 
-
-
