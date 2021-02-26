@@ -17,7 +17,7 @@ mvn clean package    # remember to start ehrbase DB before
 ```
 git checkout -b release/v0.15.0
 ```
-NOTE: exact syntax is important (i.e. `v` before version number). Otherwise build rules on Docker Hub won't apply if branch name does not match properly
+NOTE: exact syntax is important (i.e. `v` before version number). Otherwise, if branch name does not match properly, build rules on Docker Hub won't apply, when you push your commit.
 
 ![docker hub build rules](img/release_dockerhub_autobuilds.png)
 
@@ -61,7 +61,7 @@ mvn build-helper:parse-version \
 ## 04. Update CHANGELOG.md and README.md
 
 - [ ] IN CHANGELOG:
-    - replace top [Unreleased] with release version
+    - replace top `[Unreleased]` with release version
     - add empty sections for next release's changes to the top, i.e.
         
         ```
@@ -82,17 +82,20 @@ mvn build-helper:parse-version \
         ```
 
 - [ ] IN README:
-    - add new Releas version at the top
+    - add new Release version at the top
+    - describe in one sentence what's this release is about
 
 - [ ] done
     
 
-## 05. Commit changes with proper message and push to remote (Github)
+## 05. Commit changes with proper message and push to remote
     
 ```
 git commit -m "Updated release version to v0.15.0"
-git push -u origin release/v0.15.0
+git push --set-upstream origin release/v0.15.0
 ```
+
+NOTE: This will trigger a Docker Hub build creating the image **ehrbase/ehrbase:0.15.0**
 
 - [ ] done
 
@@ -100,23 +103,39 @@ git push -u origin release/v0.15.0
 
 - [ ] In Github's UI create a PR (Pull Request) from release branch into develop
 - [ ] wait for CI to succeed - all checks have to pass!!!
-- [ ] especially make sure that DockerHub build passes
+- [ ] especially make sure that DockerHub build from step 5. succeeds
 - [ ] if needed continue committing to release branch until all CI checks pass
 
 ![CI checks pass](img/release_pr_checks_pass.png)
 
 NOTES:
+- a Docker Hub build creating the image **ehrbase/ehrbase:next** will be triggert after merge of pull request. Make sure it succeeds.
 - remote release branch will be deleted automatically after merge
 - your local release branch has to be deleted manually (do it at the end of the whole procedure)
 
 - [ ] done
 
-## 07. Add an annotated Git tag (and push it to remote)
-
-- Now that we know all checks have passed on develop, let's finalize the release and give it a proper Git tag
+## 07. Merge into master
 
 ```
-git checkout develop
+git checkout master
+git pull
+git merge --no-ff release/v0.15.0
+git push
+```
+
+NOTE: This will trigger a Docker Hub build creating the image **ehrbase/ehrbase:latest**. Make sure it succeeds.
+
+![CI checks pass](img/release_dockerhub_build_progress.png)
+
+- [ ] done
+
+## 08. Add an annotated Git tag and push to remote
+
+- After all checks have passed on develop and master finalize the release by giving it a proper Git tag
+
+```
+git checkout master
 git pull
 git tag -a v0.15.0 -m "Beta Release v0.15.0"
 git push origin v0.15.0
@@ -140,32 +159,12 @@ git push --delete origin v0.15.0
 
     NOTE: the input field provides autosuggestion to avoid typos
 
-- select '**Target: develop**'
+- select '**Target: master**'
 - give it a proper description
 - click '**Publish release**'
 
 - [ ] done
 
-
-## 09. Merge into master
-
-- [ ] OPTION I (on local machine)
-
-```
-git checkout master
-git pull
-git merge --no-ff develop
-git push
-```
-
-- [ ] OPTION II (via Github UI)
-    - create a PR from develop into master
-    - merge PR
-    - make sure CI and Docker Hub build pass
-
-![CI checks pass](img/release_dockerhub_build_progress.png)
-
-- [ ] done
 
 ## 10. Update release notes (in documentation repository)
 
