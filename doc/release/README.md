@@ -83,7 +83,7 @@ mvn build-helper:parse-version \
 
 - [ ] IN README:
     - add new Release version at the top
-    - describe in one sentence what's this release is about
+    - describe in one sentence what this release is about
 
 - [ ] done
     
@@ -151,7 +151,7 @@ git tag --delete v0.15.0
 git push --delete origin v0.15.0
 ```
     
-## 08. Create a Release in Github UI
+## 09. Create a Release in Github UI
 
 - navigate to '**Releases**' in EHRbase's repository
 - click on '**Draft a new release**'
