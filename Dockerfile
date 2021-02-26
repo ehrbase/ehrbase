@@ -15,7 +15,7 @@ RUN chown postgres: ${PGDATA}
 RUN chmod 0700 ${PGDATA}
 
 # Define Postgres version for easier upgrades for the future
-ENV PG_MAJOR=11.10
+ENV PG_MAJOR=11.11
 
 # Adding locales to an alpine container as described
 # here: https://github.com/Auswaschbar/alpine-localized-docker
@@ -119,7 +119,7 @@ RUN su - postgres -c "pg_ctl -D ${PGDATA} -w start" \
 # PACKAGE EHRBASE .JAR
 RUN ls -la
 RUN su - postgres -c "pg_ctl -D ${PGDATA} -w start" \
-  && mvn package -Dmaven.javadoc.skip=true
+  && mvn package -Dmaven.javadoc.skip=true -Djacoco.skip=true
 
 RUN ls -la
 RUN EHRBASE_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec) \
