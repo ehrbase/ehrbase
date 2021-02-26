@@ -17,7 +17,7 @@ mvn clean package    # remember to start ehrbase DB before
 ```
 git checkout -b release/v0.15.0
 ```
-NOTE: exact syntax is important (i.e. `v` before version number). Build rules on Docker Hub won't apply if branch name does not match properly
+NOTE: exact syntax is important (i.e. `v` before version number). Otherwise build rules on Docker Hub won't apply if branch name does not match properly
 
 ![docker hub build rules](img/release_dockerhub_autobuilds.png)
 
@@ -43,11 +43,16 @@ Use one of below commands to update the version in all POMs at once:
 mvn build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.nextMajorVersion}.0.0 versions:commit
 
 # OR use this to bump minor version - i.e. 0.14. --> 0.15.0
-mvn build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.nextMinorVersion}.0 versions:commit
+mvn build-helper:parse-version versions:set \
+    -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.nextMinorVersion}.0 \
+    versions:commit
 
 
 # bumping patch version is probably not suiteable for a new release but if you want - i.e. 0.14.0 --> 0.14.1
-mvn build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion} versions:commit
+mvn build-helper:parse-version \
+    versions:set \
+    -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion} \
+    versions:commit
 ```
 
 - [ ] done 
@@ -129,15 +134,15 @@ git push --delete origin v0.15.0
     
 ## 08. Create a Release in Github UI
 
-- navigate to Releases in EHRbase's repository
-- click on 'Draft a new release'
+- navigate to '**Releases**' in EHRbase's repository
+- click on '**Draft a new release**'
 - input the tag created in step 7. (including `v` i.e. `v0.15.0`)
 
     NOTE: the input field provides autosuggestion to avoid typos
 
-- select `Target: develop`
+- select '**Target: develop**'
 - give it a proper description
-- click `Publish release`
+- click '**Publish release**'
 
 - [ ] done
 
@@ -157,6 +162,8 @@ git push
     - create a PR from develop into master
     - merge PR
     - make sure CI and Docker Hub build pass
+
+![CI checks pass](img/release_dockerhub_build_progress.png)
 
 - [ ] done
 
