@@ -142,9 +142,8 @@ AQL LOADED DB SMOKE TEST - Queries
 
 B-100 Execute Ad-Hoc Query - Get Compositions From All EHRs
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              235    not-ready
+    [Tags]              not-ready    not-ready_test-issue
     B/100_get_compositions_from_all_ehrs.json    B/100.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  235  bug
 
 
 B-102 Execute Ad-Hoc Query - Get Compositions (ordered by: name)

@@ -147,9 +147,10 @@ A-600 Execute Ad-Hoc Query - Get EHRs Which Have Compositions
 
 B-100 Execute Ad-Hoc Query - Get Compositions From All EHRs
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              235    not-ready
+    [Tags]              not-ready    not-ready_test-issue
+    # comment: note-ready_test-issue because huge payloads to compare,
+    #          it's nearly impossible to get the diff to zero
     B/100_get_compositions_from_all_ehrs.json    B/100.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  235  bug
 
 
 B-101 Execute Ad-Hoc Query - Get Compositions (filtered: top 5)
