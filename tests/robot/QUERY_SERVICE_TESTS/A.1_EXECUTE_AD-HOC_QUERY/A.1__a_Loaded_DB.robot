@@ -138,19 +138,19 @@ A-500 Execute Ad-Hoc Query - Get EHRs Which Have Compositions
 
 A-600 Execute Ad-Hoc Query - Get EHRs Which Have Compositions
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              393    not-ready
+    [Tags]              
     A/600_get_ehrs_by_contains_composition_contains_entry_with_archetype.json    A/600.tmp.json
     A/601_get_ehrs_by_contains_composition_contains_entry_with_archetype.json    A/601.tmp.json
     A/602_get_ehrs_by_contains_composition_contains_entry_with_archetype.json    A/602.tmp.json
     A/603_get_ehrs_by_contains_composition_contains_entry_with_archetype.json    A/603.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  393  bug
 
 
 B-100 Execute Ad-Hoc Query - Get Compositions From All EHRs
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              235    not-ready
+    [Tags]              not-ready    not-ready_test-issue
+    # comment: note-ready_test-issue because huge payloads to compare,
+    #          it's nearly impossible to get the diff to zero
     B/100_get_compositions_from_all_ehrs.json    B/100.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  235  bug
 
 
 B-101 Execute Ad-Hoc Query - Get Compositions (filtered: top 5)
@@ -201,9 +201,9 @@ B-300 Execute Ad-Hoc Query - Get Compositions From All EHRs
 B-400 Execute Ad-Hoc Query - Get Composition(s)
     [Documentation]     Test w/ "all_types.composition.json" commit
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              331    not-ready
+    [Tags]              463    not-ready
     B/400_get_compositions_contains_section_with_archetype_from_all_ehrs.json    B/400.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  331  bug
+    [Teardown]          TRACE GITHUB ISSUE  463  bug
 
 
 B-500 Execute Ad-Hoc Query - Get Composition(s)
@@ -406,34 +406,41 @@ D-405 Execute Ad-HOc Query - Get Data
 D-500 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              208    not-ready
+    [Tags]              361    not-ready
     D/500_query.tmp.json    D/500.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  208  bug
+    [Teardown]          TRACE GITHUB ISSUE  361  bug
 
 
 D-501 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              408    not-ready
+    [Tags]              361    not-ready
     D/501_query.tmp.json    D/501.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  408  bug
+    [Teardown]          TRACE GITHUB ISSUE  361  bug
 
 
 D-502 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              208    not-ready
+    [Tags]              361    not-ready
     D/502_query.tmp.json    D/502.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  208  bug
+    [Teardown]          TRACE GITHUB ISSUE  361  bug
 
 
 D-503 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              208    not-ready
+    [Tags]              361    not-ready
     D/503_query.tmp.json    D/503.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  208  bug
+    [Teardown]          TRACE GITHUB ISSUE  361  bug
 
+
+D-504 Execute Ad-HOc Query - Get archetype_details
+    [Documentation]     Get Data related query.
+    [Template]          execute ad-hoc query and check result (loaded DB)
+    [Tags]              464    not-ready
+    D/504_query.tmp.json    D/504.tmp.json
+    [Teardown]          TRACE GITHUB ISSUE  464  bug
 
 
 

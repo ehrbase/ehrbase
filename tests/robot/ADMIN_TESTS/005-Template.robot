@@ -18,7 +18,7 @@
 
 *** Settings ***
 Metadata    Version    0.1.0
-Metadata    Author    *Wladislaw Wagner*
+Metadata    Authors    *Wladislaw Wagner*, *Axel Siebert"
 Metadata    Created    2020.12.28
 
 Metadata        TOP_TEST_SUITE    ADMIN_TEMPLATE
@@ -66,12 +66,23 @@ ${CACHE-ENABLED}        ${FALSE}
     validate DELETE ALL response - 204 deleted ${2}
 
 
-004 ADMIN - Delete Existing Template
-    [Tags]    382  not-ready  bug
+004a ADMIN - Delete Existing Template
+    [Tags]    438  not-ready  bug
     upload valid OPT    minimal/minimal_admin.opt
     (admin) delete OPT
 
-        TRACE GITHUB ISSUE    382    message=see https://github.com/ehrbase/project_management/issues/382#issuecomment-777255800 for details
+        TRACE GITHUB ISSUE    438
+
+    validate DELETE response - 204 deleted
+    [Teardown]    (admin) delete all OPTs
+
+
+004b ADMIN - Delete Existing Template (minimal response)
+    [Tags]    438  not-ready  bug
+    upload valid OPT    minimal/minimal_admin.opt
+    (admin) delete OPT    prefer_return=minimal
+
+        TRACE GITHUB ISSUE    438
 
     validate DELETE response - 204 deleted
     [Teardown]    (admin) delete all OPTs
@@ -98,12 +109,23 @@ ${CACHE-ENABLED}        ${FALSE}
     validate PUT response - 404 unknown templade_id
 
 
-008 ADMIN - Update Existing Template
-    [Tags]    382  not-ready  bug
+008a ADMIN - Update Existing Template
+    [Tags]    436  not-ready  bug
     upload valid OPT    minimal/minimal_admin.opt
     (admin) update OPT    minimal/minimal_admin_updated.opt
 
-        TRACE GITHUB ISSUE    382    message=see https://github.com/ehrbase/project_management/issues/382#issuecomment-777049676 for details
+        TRACE GITHUB ISSUE    436
+
+    validate PUT response - 200 updated
+    [Teardown]    (admin) delete all OPTs
+
+
+008b ADMIN - Update Existing Template (minimal response)
+    [Tags]    435  not-ready  bug
+    upload valid OPT    minimal/minimal_admin.opt
+    (admin) update OPT    minimal/minimal_admin_updated.opt    prefer_return=minimal
+
+        TRACE GITHUB ISSUE    435
 
     validate PUT response - 200 updated
     [Teardown]    (admin) delete all OPTs
@@ -136,14 +158,14 @@ ${CACHE-ENABLED}        ${FALSE}
     [Documentation]    Composition is deleted with the admin endpoint and thus has been removed 
     ...                "physically" from database. The admin endpoint will respond with a 204
     ...                response and the template is removed.
-    [Tags]    382  not-ready  bug
+    [Tags]    438  not-ready  bug
     upload valid OPT    minimal/minimal_admin.opt
     create new EHR (XML)
     commit composition (XML)    minimal/minimal_admin.composition.extdatetimes.xml
     (admin) delete composition
     (admin) delete OPT
 
-        TRACE GITHUB ISSUE    382    message=see https://github.com/ehrbase/project_management/issues/382#issuecomment-777255800 for details
+        TRACE GITHUB ISSUE    438    message=see https://github.com/ehrbase/project_management/issues/382#issuecomment-777255800 for details
 
     validate DELETE response - 204 deleted
     # comment: check that template does not exist any more
@@ -166,13 +188,14 @@ ${CACHE-ENABLED}        ${FALSE}
 
 
 011 ADMIN - Update Template That Is In Use
-    [Tags]    382    not-ready    bug
+    [Tags]    437    not-ready    bug
+    [Documentation]     A template that is in use by a composition has to reject updates.
     upload valid OPT    minimal/minimal_admin.opt
     create new EHR (XML)
     commit composition (XML)    minimal/minimal_admin.composition.extdatetimes.xml
     (admin) update OPT    minimal/minimal_admin_updated.opt
 
-        TRACE GITHUB ISSUE    382    message=see https://github.com/ehrbase/project_management/issues/382#issuecomment-777248693 for details
+        TRACE GITHUB ISSUE    437
 
     validate PUT response - 422 unprocessable entity
 
@@ -218,6 +241,25 @@ ${CACHE-ENABLED}        ${FALSE}
                         String     response body    pattern=.*Template with id 123 does not exist
 
 
+016 ADMIN - PUT Method Should Not Create New DB Entries
+    [Tags]    444    not-ready    bug
+    [Documentation]     1. Upload OPT via 'normal' REST endpoint \n\n
+    ...                 2. Use 'admin' update endpoint with template_id from step 1 \n\n
+    ...                    with a different payload than in step 1 \n\n
+    ...                    (especially with a different uid and template_id in the payload) \n\n
+    ...                 3. Assert a proper error message is returned and \n\n
+    ...                    no new records created in DB. \n\n
+    upload valid OPT    minimal/minimal_admin.opt
+    (admin) update OPT    minimal/minimal_action.opt    # NOTE: a different OPT is used as payload!!!
+
+        TRACE GITHUB ISSUE    444
+
+    Connect With DB
+    ${opt_records}=     Count Rows In DB Table    ehr.template_store
+                        Should Be Equal As Integers    ${opt_records}       ${1}
+
+    [Teardown]    Run Keywords    (admin) delete all OPTs
+
 
 
 
@@ -246,9 +288,14 @@ upload valid OPT
     
 
 (admin) update OPT
-    [Arguments]         ${opt_file}
+    [Arguments]         ${opt_file}    ${prefer_return}=representation
+    [Documentation]     Updates OPT via admin endpoint /admin/template/${template_id} \n\n
+    ...                 valid values for 'prefer_return': \n\n\
+    ...                 - representation (default) \n\n
+    ...                 - minimal
                         prepare new request session    XML
-                        ...    Prefer=return=representation
+                        ...    Prefer=return=${prefer_return}
+                        Set Test Variable    ${prefer_return}    ${prefer_return}
                         get valid OPT file    ${opt_file}
                         # upload OPT file
     ${resp}=            Put Request    ${SUT}    /admin/template/${template_id}
@@ -259,8 +306,16 @@ upload valid OPT
 validate PUT response - 200 updated
                         Should Be Equal As Strings    ${response.status_code}   200
                         log    ${response.content}
-                        XML.Element Text Should Be    ${response.content}    Minimal Admin UPDATED BY ROBOT
-                        ...                           xpath=concept
+
+                        IF    '${prefer_return}'=='representation'
+
+                              XML.Element Text Should Be    ${response.content}
+                              ...                           Minimal Admin UPDATED BY ROBOT
+                              ...                           xpath=concept
+                        END
+                        IF    '${prefer_return}'=='minimal'
+                              Should Be Equal As Strings    ${response.content}    ${EMPTY}
+                        END
 
 
 validate PUT response - 404 unknown templade_id
@@ -276,11 +331,16 @@ validate PUT response - 422 unprocessable entity
 
 
 (admin) delete OPT
+    [Arguments]         ${prefer_return}=representation
     [Documentation]     Admin delete OPT on server.
     ...                 Depends on any KW that exposes an variable named 'template_id'
-    ...                 to test or suite level scope.
+    ...                 to test or suite level scope. \n\n
+    ...                 valid values for 'prefer_return': \n\n\
+    ...                 - representation (default) \n\n
+    ...                 - minimal
                         prepare new request session
-                        ...    Prefer=return=representation
+                        ...    Prefer=return=${prefer_return}
+                        Set Test Variable    ${prefer_return}    ${prefer_return}
     &{resp}=            REST.DELETE    ${baseurl}/admin/template/${template_id}
                         Set Test Variable    ${response}    ${resp}
                         Output Debug Info To Console
@@ -288,7 +348,13 @@ validate PUT response - 422 unprocessable entity
 
 validate DELETE response - 204 deleted
                         Integer    response status   204
-                        String     response body    ${EMPTY}
+
+                        IF    '${prefer_return}'=='representation'
+                              Integer    response body deleted    1
+                        END
+                        IF    '${prefer_return}'=='minimal'
+                              String     response body    ${EMPTY}
+                        END
 
 
 validate DELETE response - 422 unprocessable entity
