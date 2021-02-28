@@ -681,16 +681,56 @@ Commit Compo
                         Set Suite Variable    ${compo_category_value}    ${response.body.category.value}
                         Set Suite Variable    ${compo_category}    ${response.body.category}
 
-    Run Keyword If      "${compo_content_archetype_node_id}"=="openEHR-EHR-OBSERVATION.minimal.v1"    Run Keywords
-    ...                 Set Suite Variable    ${compo_data_origin_value}    ${response.body.content[0].data.origin.value}    AND
-    ...                 Set Suite Variable    ${compo_data_origin}    ${response.body.content[0].data.origin}    AND
-    ...                 Set Suite Variable    ${compo_events_time_value}    ${response.body.content[0].data.events[0].time.value}    AND
-    ...                 Set Suite Variable    ${compo_events_time}    ${response.body.content[0].data.events[0].time}    AND
-    ...                 Set Suite Variable    ${observ_items}    ${response.body.content[0].data.events[0].data["items"]}    AND
-    ...                 Set Suite Variable    ${compo_events_items_value_value}    ${observ_items[0].value.value}    AND
-    ...                 Set Suite Variable    ${compo_events_items_value}    ${observ_items[0].value}
-                        # NOTE: above lines contain a workaround to set "{content[0].data.events[0].data.items[0].value.value}"
-                        #       which normaly fails cause Robot/Python considers 'items' to be a method/function
+
+
+
+
+    #++++++ WORKAROUND ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    # for https://github.com/ehrbase/project_management/issues/361
+    # TODO: remove when issue is fixed
+
+            # BACKUP previous solution
+            # Run Keyword If      "${compo_content_archetype_node_id}"=="openEHR-EHR-OBSERVATION.minimal.v1"    Run Keywords
+            # ...                 Set Suite Variable    ${compo_data_origin_value}    ${response.body.content[0].data.origin.value}    AND
+            # ...                 Set Suite Variable    ${compo_data_origin}    ${response.body.content[0].data.origin}    AND
+            # ...                 Set Suite Variable    ${compo_events_time_value}    ${compo_events_time_value}    AND
+            # ...                 Set Suite Variable    ${compo_events_time}    ${response.body.content[0].data.events[0].time}    AND
+            # ...                 Set Suite Variable    ${observ_items}    ${response.body.content[0].data.events[0].data["items"]}    AND
+            # ...                 Set Suite Variable    ${compo_events_items_value_value}    ${observ_items[0].value.value}    AND
+            # ...                 Set Suite Variable    ${compo_events_items_value}    ${observ_items[0].value}
+            #                     # NOTE: above lines contain a workaround to set "{content[0].data.events[0].data.items[0].value.value}"
+            #                     #       which normaly fails cause Robot/Python considers 'items' to be a method/function
+
+
+    IF      "${compo_content_archetype_node_id}"=="openEHR-EHR-OBSERVATION.minimal.v1"
+            ${compo_data_origin_value}=    Set Variable    ${response.body.content[0].data.origin.value}    # part of workaround
+            ${compo_data_origin_value}=    Replace String 	${compo_data_origin_value} 	, 	.               # part of workaround
+            Set Suite Variable    ${compo_data_origin_value}    ${compo_data_origin_value}                  # last var part of workaround
+
+            ${compo_data_origin}=          Set Variable    ${response.body.content[0].data.origin}          # part of workaround
+            Update Value To Json    ${compo_data_origin}    $.value    ${compo_data_origin_value}           # part of workaround
+            Set Suite Variable    ${compo_data_origin}    ${compo_data_origin}                              # last var part of workaround
+
+            ${compo_events_time_value}=    Set Variable    ${response.body.content[0].data.events[0].time.value}    # part of workaround
+            ${compo_events_time_value}=    Replace String 	${compo_events_time_value} 	, 	.                       # part of workaround
+            Set Suite Variable    ${compo_events_time_value}    ${compo_events_time_value}                          # last var part of workaround
+
+            ${compo_events_time}=          Set Variable    ${response.body.content[0].data.events[0].time}  # part of workaround
+            Update Value To Json    ${compo_events_time}    $.value    ${compo_events_time_value}           # part of workaround
+            Set Suite Variable    ${compo_events_time}    ${compo_events_time}                              # last var part of workaround
+
+            Set Suite Variable    ${observ_items}    ${response.body.content[0].data.events[0].data["items"]}
+            Set Suite Variable    ${compo_events_items_value_value}    ${observ_items[0].value.value}
+            Set Suite Variable    ${compo_events_items_value}    ${observ_items[0].value}
+                    # NOTE: above lines contain a workaround to set "{content[0].data.events[0].data.items[0].value.value}"
+                    #       which normaly fails cause Robot/Python considers 'items' to be a method/function
+    END
+    #++++++ END OF WORKAROUND ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+
+
 
     ###########################################################################################
     #                                                                                         #
