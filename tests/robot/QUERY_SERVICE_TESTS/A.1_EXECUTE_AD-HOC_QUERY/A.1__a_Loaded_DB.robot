@@ -414,9 +414,9 @@ D-500 Execute Ad-HOc Query - Get Data
 D-501 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              408    not-ready
+    [Tags]              361    not-ready
     D/501_query.tmp.json    D/501.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  408  bug
+    [Teardown]          TRACE GITHUB ISSUE  361  bug
 
 
 D-502 Execute Ad-HOc Query - Get Data
