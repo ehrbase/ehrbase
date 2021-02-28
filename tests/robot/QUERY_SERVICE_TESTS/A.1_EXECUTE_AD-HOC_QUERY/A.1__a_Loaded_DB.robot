@@ -406,9 +406,9 @@ D-405 Execute Ad-HOc Query - Get Data
 D-500 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              208    not-ready
+    [Tags]              361    not-ready
     D/500_query.tmp.json    D/500.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  208  bug
+    [Teardown]          TRACE GITHUB ISSUE  361  bug
 
 
 D-501 Execute Ad-HOc Query - Get Data
@@ -422,17 +422,17 @@ D-501 Execute Ad-HOc Query - Get Data
 D-502 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              208    not-ready
+    [Tags]              361    not-ready
     D/502_query.tmp.json    D/502.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  208  bug
+    [Teardown]          TRACE GITHUB ISSUE  361  bug
 
 
 D-503 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              208    not-ready
+    [Tags]              361    not-ready
     D/503_query.tmp.json    D/503.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  208  bug
+    [Teardown]          TRACE GITHUB ISSUE  361  bug
 
 
 D-504 Execute Ad-HOc Query - Get archetype_details
