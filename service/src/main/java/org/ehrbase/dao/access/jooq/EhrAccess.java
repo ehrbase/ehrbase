@@ -37,9 +37,11 @@ import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.dao.access.interfaces.*;
+import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
+import org.ehrbase.dao.access.util.ContributionDef.ContributionState;
 import org.ehrbase.dao.access.util.TransactionTime;
 import org.ehrbase.jooq.pg.Routines;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
@@ -243,7 +245,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             // sonarlint says that the expression above is always true? tested it, it can be true and false!?
             // note: here version is > 1 and there has to be at least one history entry
             Result<StatusHistoryRecord> result = domainAccess.getContext().selectFrom(STATUS_HISTORY)
-                    // FIXME VERSIONED_OBJECT_POC: bug? should here be "where ehrId = given ehrId"?
+                    .where(STATUS_HISTORY.EHR_ID.eq(ehrId))
                     .orderBy(STATUS_HISTORY.SYS_TRANSACTION.asc())  // oldest at top, i.e. [0]
                     .fetch();
 
@@ -253,12 +255,21 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             // result set of history table is always version+1, because the latest is in non-history table
             StatusHistoryRecord statusHistoryRecord = result.get(version-1);
             // FIXME EHR_STATUS: manually converting types. dirty, formally break jooq-style, right? the record would considered to be updated when calling methods like .store()
+            ehrAccess.getStatusAccess().getStatusRecord().setEhrId(statusHistoryRecord.getEhrId());
             ehrAccess.getStatusAccess().getStatusRecord().setIsQueryable(statusHistoryRecord.getIsQueryable());
             ehrAccess.getStatusAccess().getStatusRecord().setIsModifiable(statusHistoryRecord.getIsModifiable());
             ehrAccess.getStatusAccess().getStatusRecord().setParty(statusHistoryRecord.getParty());
             ehrAccess.getStatusAccess().getStatusRecord().setOtherDetails(statusHistoryRecord.getOtherDetails());
+
             ehrAccess.getStatusAccess().getStatusRecord().setSysTransaction(statusHistoryRecord.getSysTransaction());
             ehrAccess.getStatusAccess().getStatusRecord().setSysPeriod(statusHistoryRecord.getSysPeriod());
+
+            ehrAccess.getStatusAccess().getStatusRecord().setHasAudit(statusHistoryRecord.getHasAudit());
+            ehrAccess.getStatusAccess().getStatusRecord().setAttestationRef(statusHistoryRecord.getAttestationRef());
+            ehrAccess.getStatusAccess().getStatusRecord().setInContribution(statusHistoryRecord.getInContribution());
+            ehrAccess.getStatusAccess().getStatusRecord().setArchetypeNodeId(statusHistoryRecord.getArchetypeNodeId());
+            ehrAccess.getStatusAccess().getStatusRecord().setName(statusHistoryRecord.getName());
+
         }
 
         try {
@@ -317,16 +328,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
 
         ehrAccess.isNew = false;
 
-        //retrieve the current contribution for this ehr
-        ContributionRecord contributionRecord = context.fetchOne(CONTRIBUTION, CONTRIBUTION.EHR_ID.eq(ehrAccess.ehrRecord.getId()).and(CONTRIBUTION.CONTRIBUTION_TYPE.eq(ContributionDataType.ehr)));
-        if (contributionRecord == null)
-            throw new IllegalArgumentException("DB inconsistency: could not find a related contribution for ehr=" + ehrAccess.ehrRecord.getId());
-
-        UUID contributionId = contributionRecord.getId();
-
-        if (contributionId != null) {
-            ehrAccess.setContributionAccess(I_ContributionAccess.retrieveInstance(domainAccess, contributionId));
-        }
+        ehrAccess.setContributionAccess(I_ContributionAccess.retrieveInstance(domainAccess, ehrAccess.getStatusAccess().getContributionId()));
 
         return ehrAccess;
     }
@@ -531,6 +533,12 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         boolean result;
 
         statusAccess.setContributionAccess(this.contributionAccess);
+
+        // create new audit for this update
+        statusAccess.setAuditDetailsAccess(new AuditDetailsAccess(this,
+            this.contributionAccess.getAuditsSystemId(), this.contributionAccess.getAuditsCommitter(),
+            ContributionChangeType.MODIFICATION, this.contributionAccess.getAuditsDescription()));
+
         result = statusAccess.update(otherDetails, transactionTime, force);
 
         if (force || ehrRecord.changed()) {
@@ -575,6 +583,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             } else
                 throw new InternalServerException("Can't update status with invalid contribution ID.");
         } else {
+            this.contributionAccess = new ContributionAccess(this, getEhrRecord().getId());
             provisionContributionAccess(contributionAccess, committerId, systemId, description, state, contributionChangeType);
         }
         return update(timestamp);
@@ -587,6 +596,8 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         access.setAuditDetailsValues(committerId, systemId, description);
         access.setState(state);
         access.setAuditDetailsChangeType(I_ConceptAccess.fetchContributionChangeType(this, contributionChangeType));
+        access.setDataType(ContributionDataType.ehr);
+        access.setState(ContributionState.COMPLETE);
     }
 
     /**
@@ -801,5 +812,9 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             if (res != 1)
                 throw new InternalServerException("Admin deletion of EHR failed!");
         });
+    }
+
+    public static boolean hasEhr(I_DomainAccess domainAccess, UUID ehrId) {
+        return domainAccess.getContext().fetchExists(EHR_, EHR_.ID.eq(ehrId));
     }
 }

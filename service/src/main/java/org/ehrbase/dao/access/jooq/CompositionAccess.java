@@ -789,9 +789,23 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     @Override
     public Boolean update(UUID committerId, UUID systemId, ContributionDef.ContributionState state, I_ConceptAccess.ContributionChangeType contributionChangeType, String description) {
         Timestamp timestamp = TransactionTime.millis();
-        // update both contribution (incl its audit) and the composition's own audit
-        contributionAccess.update(timestamp, committerId, systemId, null, state, contributionChangeType, description);
-        auditDetailsAccess.update(systemId, committerId, contributionChangeType, description);
+        // create new contribution (and its audit) for this operation
+        contributionAccess = new ContributionAccess(this, getEhrid());
+        contributionAccess.setDataType(ContributionDataType.composition);
+        contributionAccess.setState(state);
+        contributionAccess.setAuditDetailsValues(committerId, systemId, description);
+        contributionAccess.setAuditDetailsChangeType(I_ConceptAccess.fetchContributionChangeType(this, contributionChangeType));
+        UUID contributionId = this.contributionAccess.commit();
+        setContributionId(contributionId);
+        // create new composition audit with given values
+        auditDetailsAccess = new AuditDetailsAccess(this);
+        auditDetailsAccess.setSystemId(systemId);
+        auditDetailsAccess.setCommitter(committerId);
+        auditDetailsAccess.setDescription(description);
+        auditDetailsAccess.setChangeType(I_ConceptAccess.fetchContributionChangeType(this, contributionChangeType));
+        UUID auditID = this.auditDetailsAccess.commit();
+        setAuditDetailsId(auditID);
+
         return update(timestamp, true);
     }
 

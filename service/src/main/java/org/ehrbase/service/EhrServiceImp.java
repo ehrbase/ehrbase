@@ -37,6 +37,7 @@ import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.jooq.AttestationAccess;
+import org.ehrbase.dao.access.jooq.StatusAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyRef;
 import org.ehrbase.response.ehrscape.CompositionFormat;
@@ -175,16 +176,13 @@ public class EhrServiceImp extends BaseService implements EhrService {
             throw new ObjectNotFoundException("versioned_ehr_status", "No VERSIONED_EHR_STATUS with given version: " + version);
         }
 
-        I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstanceByStatus(getDataAccess(), ehrUuid, versionedObjectUid, version);
-        if (ehrAccess == null) {
-            return Optional.empty();
-        }
+        I_StatusAccess statusAccess = I_StatusAccess.getVersionMapOfStatus(getDataAccess(), versionedObjectUid).get(version);
 
         ObjectVersionId versionId = new ObjectVersionId(versionedObjectUid + "::" + getServerConfig().getNodename() + "::" + version);
         DvCodedText lifecycleState = new DvCodedText("complete", new CodePhrase("532"));   // TODO: once lifecycle state is supported, get it here dynamically
-        AuditDetails commitAudit = ehrAccess.getStatusAccess().getAuditDetailsAccess().getAsAuditDetails();
-        ObjectRef<HierObjectId> contribution = new ObjectRef<>(new HierObjectId(ehrAccess.getStatusAccess().getStatusRecord().getInContribution().toString()), "openehr", "contribution");
-        List<UUID> attestationIdList = I_AttestationAccess.retrieveListOfAttestationsByRef(getDataAccess(), ehrAccess.getStatusAccess().getStatusRecord().getAttestationRef());
+        AuditDetails commitAudit = statusAccess.getAuditDetailsAccess().getAsAuditDetails();
+        ObjectRef<HierObjectId> contribution = new ObjectRef<>(new HierObjectId(statusAccess.getStatusRecord().getInContribution().toString()), "openehr", "contribution");
+        List<UUID> attestationIdList = I_AttestationAccess.retrieveListOfAttestationsByRef(getDataAccess(), statusAccess.getStatusRecord().getAttestationRef());
         List<Attestation> attestations = null;  // as default, gets content if available in the following lines
         if (!attestationIdList.isEmpty()) {
             attestations = new ArrayList<>();
@@ -201,7 +199,7 @@ public class EhrServiceImp extends BaseService implements EhrService {
             precedingVersionId = new ObjectVersionId(versionedObjectUid + "::" + getServerConfig().getNodename() + "::" + (version - 1));
         }
 
-        OriginalVersion<EhrStatus> versionStatus = new OriginalVersion<>(versionId, precedingVersionId, ehrAccess.getStatus(),
+        OriginalVersion<EhrStatus> versionStatus = new OriginalVersion<>(versionId, precedingVersionId, statusAccess.getStatus(),
                 lifecycleState, commitAudit, contribution, null, null, attestations);
 
         return Optional.of(versionStatus);
@@ -318,13 +316,7 @@ public class EhrServiceImp extends BaseService implements EhrService {
 
     @Override
     public Boolean hasEhr(UUID ehrId) {
-        I_EhrAccess ehrAccess;
-        try {
-            ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
-        return ehrAccess != null;   // true if != null; false if == null
+        return I_EhrAccess.hasEhr(getDataAccess(), ehrId);
     }
 
     @Override
@@ -383,18 +375,7 @@ public class EhrServiceImp extends BaseService implements EhrService {
         // Note: is List but only has more than one item when there are contributions regarding this object of change type attestation
         List<AuditDetails> auditDetailsList = new ArrayList<>();
         // retrieving the audits
-        I_StatusAccess statusAccess = I_StatusAccess.retrieveInstance(getDataAccess(), UUID.fromString(statusId));
-        I_AuditDetailsAccess commitAuditAccess = statusAccess.getAuditDetailsAccess();
-
-        String systemId = commitAuditAccess.getSystemId().toString();
-        PartyProxy committer = new PersistedPartyProxy(getDataAccess()).retrieve(commitAuditAccess.getCommitter());
-        DvDateTime timeCommitted = new DvDateTime(commitAuditAccess.getTimeCommitted().toLocalDateTime());
-        DvCodedText changeType = new DvCodedText(commitAuditAccess.getChangeType().getLiteral(), new CodePhrase(new TerminologyId("openehr"), "String"));
-        DvText description = new DvText(commitAuditAccess.getDescription());
-
-        AuditDetails commitAudit = new AuditDetails(systemId, committer, timeCommitted, changeType, description);
-
-        auditDetailsList.add(commitAudit);
+        auditDetailsList.add(ehrStatus.getCommitAudit());
 
         // add retrieval of attestations, if there are any
         if (ehrStatus.getAttestations() != null) {

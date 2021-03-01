@@ -279,4 +279,14 @@ public interface I_EhrAccess extends I_SimpleCRUD {
      * Invoke physical deletion.
      */
     void adminDeleteEhr();
+
+    /**
+     * Check for existence of given ID as EHR.
+     * @param domainAccess Context
+     * @param ehrId EHR ID to check
+     * @return true or false
+     */
+    static boolean hasEhr(I_DomainAccess domainAccess, UUID ehrId) {
+        return EhrAccess.hasEhr(domainAccess, ehrId);
+    }
 }

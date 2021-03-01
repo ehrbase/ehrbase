@@ -63,6 +63,7 @@ import org.ehrbase.dao.access.interfaces.I_StatusAccess;
 import org.ehrbase.dao.access.jooq.AttestationAccess;
 import org.ehrbase.dao.access.jooq.CompoXRefAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
+import org.ehrbase.dao.access.util.ContributionDef.ContributionState;
 import org.ehrbase.response.ehrscape.CompositionDto;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.StructuredString;
@@ -315,7 +316,7 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
      *
      * @param compositionId  ID of existing composition
      * @param composition    RMObject instance of the given Composition which represents the new version
-     * @param contributionId NULL if is not needed, or ID of given custom contribution
+     * @param contributionId NULL if new one should be created; or ID of given custom contribution
      * @return Version UID pointing to updated composition
      */
     private String internalUpdate(UUID compositionId, Composition composition, UUID contributionId) {
@@ -353,7 +354,7 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
                 compositionAccess.setContributionId(contributionId);
                 result = compositionAccess.updateWithCustomContribution(getUserUuid(), getSystemUuid(), I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
             } else {    // else existing one will be updated
-                result = compositionAccess.update(getUserUuid(), getSystemUuid(), null, I_ConceptAccess.ContributionChangeType.MODIFICATION, DESCRIPTION);
+                result = compositionAccess.update(getUserUuid(), getSystemUuid(), ContributionState.COMPLETE, I_ConceptAccess.ContributionChangeType.MODIFICATION, DESCRIPTION);
             }
 
         } catch (ObjectNotFoundException | InvalidApiParameterException e) {   //otherwise exceptions would always get sucked up by the catch below
@@ -519,7 +520,7 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
         for (int i = 1; i <= versions; i++) {
             Optional<OriginalVersion<Composition>> compoVersion = getOriginalVersionComposition(composition, i);
             compoVersion.ifPresent(compositionOriginalVersion -> revisionHistory
-                .addItem(revisionHistoryItemFromComposition(compositionOriginalVersion, versions)));
+                .addItem(revisionHistoryItemFromComposition(compositionOriginalVersion)));
         }
 
         if (revisionHistory.getItems().isEmpty()) {
@@ -528,24 +529,14 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
         return revisionHistory;
     }
 
-    private RevisionHistoryItem revisionHistoryItemFromComposition(OriginalVersion<Composition> composition, int version) {
+    private RevisionHistoryItem revisionHistoryItemFromComposition(OriginalVersion<Composition> composition) {
 
         ObjectVersionId objectVersionId = composition.getUid();
 
         // Note: is List but only has more than one item when there are contributions regarding this object of change type attestation
         List<AuditDetails> auditDetailsList = new ArrayList<>();
         // retrieving the audits
-        I_CompositionAccess compoAccess = I_CompositionAccess.retrieveCompositionVersion(getDataAccess(), UUID.fromString(composition.getUid().getRoot().getValue()), version);
-        I_AuditDetailsAccess commitAuditAccess = compoAccess.getAuditDetailsAccess();
-
-        String systemId = commitAuditAccess.getSystemId().toString();
-        PartyProxy committer = new PersistedPartyProxy(getDataAccess()).retrieve(commitAuditAccess.getCommitter());
-        DvDateTime timeCommitted = new DvDateTime(commitAuditAccess.getTimeCommitted().toLocalDateTime());
-        DvCodedText changeType = new DvCodedText(commitAuditAccess.getChangeType().getLiteral(), new CodePhrase(new TerminologyId("openehr"), "String"));
-        DvText description = new DvText(commitAuditAccess.getDescription());
-
-        AuditDetails commitAudit = new AuditDetails(systemId, committer, timeCommitted, changeType, description);
-        auditDetailsList.add(commitAudit);
+        auditDetailsList.add(composition.getCommitAudit());
 
         // add retrieval of attestations, if there are any
         if (composition.getAttestations() != null) {

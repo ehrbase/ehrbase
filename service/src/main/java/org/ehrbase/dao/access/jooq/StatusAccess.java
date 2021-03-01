@@ -22,10 +22,16 @@
 package org.ehrbase.dao.access.jooq;
 
 import com.nedap.archie.rm.datastructures.ItemStructure;
+import com.nedap.archie.rm.datavalues.DvCodedText;
+import com.nedap.archie.rm.datavalues.DvText;
+import com.nedap.archie.rm.ehr.EhrStatus;
+import com.nedap.archie.rm.generic.PartySelf;
+import com.nedap.archie.rm.support.identification.HierObjectId;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.dao.access.interfaces.*;
+import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.dao.access.util.TransactionTime;
@@ -35,6 +41,7 @@ import org.ehrbase.jooq.pg.tables.records.StatusHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.StatusRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.ehrbase.service.RecordedDvCodedText;
 import org.jooq.DSLContext;
 import org.jooq.Result;
 
@@ -313,9 +320,9 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
     public Boolean update(ItemStructure otherDetails, Timestamp transactionTime, boolean force) {
         if (force || statusRecord.changed()) {
             // update both contribution (incl its audit) and the status' own audit
-            contributionAccess.update(transactionTime, null, null, null, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
+            contributionAccess.commit(transactionTime);
             statusRecord.setInContribution(contributionAccess.getId()); // new contribution ID
-            auditDetailsAccess.update(null, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
+            auditDetailsAccess.commit();
             statusRecord.setHasAudit(auditDetailsAccess.getId()); // new audit ID
 
             if (otherDetails != null) {
@@ -511,5 +518,31 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
 
         // if haven't returned above use time from latest version (already available in this instance)
         return statusRecord.getSysTransaction();
+    }
+
+    @Override
+    public EhrStatus getStatus() {
+        EhrStatus status = new EhrStatus();
+
+        status.setModifiable(getStatusRecord().getIsModifiable());
+        status.setQueryable(getStatusRecord().getIsQueryable());
+        // set otherDetails if available
+        if (getStatusRecord().getOtherDetails() != null) {
+            status.setOtherDetails(getStatusRecord().getOtherDetails());
+        }
+
+        //Locatable attribute
+        status.setArchetypeNodeId(getStatusRecord().getArchetypeNodeId());
+        Object name = new RecordedDvCodedText().fromDB(getStatusRecord(), STATUS.NAME);
+        status.setName(name instanceof DvText ? (DvText)name : (DvCodedText)name);
+
+        UUID statusId = getStatusRecord().getId();
+        status.setUid(new HierObjectId(statusId.toString() + "::" + getServerConfig().getNodename() + "::" +
+            I_StatusAccess.getLatestVersionNumber(this, statusId)));
+
+        PartySelf partySelf = (PartySelf)new PersistedPartyProxy(this).retrieve(getStatusRecord().getParty());
+        status.setSubject(partySelf);
+
+        return status;
     }
 }

@@ -21,6 +21,7 @@
 package org.ehrbase.dao.access.interfaces;
 
 import com.nedap.archie.rm.datastructures.ItemStructure;
+import com.nedap.archie.rm.ehr.EhrStatus;
 import org.ehrbase.dao.access.jooq.StatusAccess;
 import org.ehrbase.jooq.pg.tables.records.StatusHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.StatusRecord;
@@ -183,4 +184,20 @@ public interface I_StatusAccess extends I_SimpleCRUD {
     static boolean exists(I_DomainAccess domainAccess, UUID ehrStatusId) {
         return StatusAccess.exists(domainAccess, ehrStatusId);
     }
+
+    /**
+     * Get complete version list, mapped to their version number.
+     * @param domainAccess Access
+     * @param statusId
+     * @return
+     */
+    static Map<Integer, I_StatusAccess> getVersionMapOfStatus(I_DomainAccess domainAccess, UUID statusId) {
+        return StatusAccess.getVersionMapOfStatus(domainAccess, statusId);
+    }
+
+    /**
+     * Get current record as {@link EhrStatus} representation.
+     * @return Current status object
+     */
+    EhrStatus getStatus();
 }

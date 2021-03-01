@@ -71,10 +71,8 @@ Force Tags
     Should Be Equal As Strings    ${version_uid[0:-1]}2    ${item2.version_id.value}
 
 
-# TODO: TODO-413 check whether or not this is a new issue or indeed part of 458
 3. Get Correct Ordered Revision History of Versioned Composition Of Existing EHR With Two Composition Versions (JSON)
     [Documentation]     Testing with two versions like above, but checking the response more thoroughly.
-    [Tags]              not-ready   458 
 
     prepare new request session    JSON    Prefer=return=representation
 
@@ -110,7 +108,6 @@ Force Tags
 
     # comment: Idea here: newer/higher timestamp - older/lesser timestamp = number larger than 0 IF correct
     Should Be True 	${timediff} > 0
-    [Teardown]    TRACE GITHUB ISSUE    458    bug
 
 
 4. Get Revision History of Versioned Composition Of Non-Existing EHR (JSON)
