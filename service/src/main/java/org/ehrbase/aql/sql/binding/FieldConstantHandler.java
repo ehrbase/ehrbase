@@ -37,12 +37,12 @@ public class FieldConstantHandler {
 
     public boolean isConstant(){
         //split path in segments
-        if (variableDefinition.getPath() == null)
+        if (variableDefinition.getPath() == null || variableDefinition.getPath().toUpperCase().startsWith("EHR_STATUS"))
             return false;
 
         List<String> segments = LocatableHelper.dividePathIntoSegments(variableDefinition.getPath());
 
-        if (segments.get(segments.size() - 1).equals(I_DvTypeAdapter.ARCHETYPE_NODE_ID))
+        if (segments.size() > 2 && segments.get(segments.size() - 1).equals(I_DvTypeAdapter.ARCHETYPE_NODE_ID))
             return true;
 
         return false;

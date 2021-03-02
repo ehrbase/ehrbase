@@ -53,6 +53,10 @@ public class GenericJsonPath {
                 actualPaths.add("/" + segment);
                 if (segment.matches(NAME))
                     actualPaths.add("0");
+            } else if (segment.matches(NAME) && isTerminalValue(jqueryPaths, i) && jqueryPaths.get(0).equals(OTHER_DETAILS)){
+                //keep '/name' attribute db encoding format since other_details is not related to a template and kept as is...
+                actualPaths.add("/"+segment);
+                actualPaths.add("0");
             } else
                 actualPaths.add(segment);
 
