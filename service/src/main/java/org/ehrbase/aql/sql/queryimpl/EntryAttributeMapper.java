@@ -154,7 +154,7 @@ public class EntryAttributeMapper {
                 fields.set(i, "/name,0");
             }
             else
-                fields.set(i, useCamelCase ? NodeIds.toCamelCase(fields.get(i)) : fields.get(i));
+                fields.set(i, fields.get(i));
 
         }
 
