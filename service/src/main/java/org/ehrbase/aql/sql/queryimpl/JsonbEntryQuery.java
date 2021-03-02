@@ -28,6 +28,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
+import org.ehrbase.aql.sql.binding.ExpressionField;
 import org.ehrbase.aql.sql.binding.JoinBinder;
 import org.ehrbase.aql.sql.queryimpl.value_field.NodePredicate;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
@@ -274,7 +275,7 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
 
     @Override
     public Field<?> makeField(String templateId, String identifier, I_VariableDefinition variableDefinition, Clause clause) {
-
+        boolean setReturningFunctionInWhere = false; //if true, use a subselect
         boolean isRootContent = false; //that is a query path on a full composition starting from the root content
 
         if (pathResolver.entryRoot(templateId) == null) //case of (invalid) composition with null entry!
@@ -304,19 +305,19 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
 
         List<String> itemPathArray = new ArrayList<>();
         itemPathArray.add(pathResolver.entryRoot(templateId));
+
         if (!path.startsWith(TAG_COMPOSITION) && !isRootContent)
             itemPathArray.addAll(jqueryPath(PATH_PART.IDENTIFIER_PATH_PART, path, "0"));
         itemPathArray.addAll(jqueryPath(PATH_PART.VARIABLE_PATH_PART, variableDefinition.getPath(), "0"));
 
-        //EHR-327: do not use array expression in WHERE clause
-        if (clause.equals(Clause.SELECT)) {
-            try {
-                IterativeNode iterativeNode = new IterativeNode(domainAccess, templateId, introspectCache);
-                Integer[] pos = iterativeNode.iterativeAt(itemPathArray);
-                itemPathArray = iterativeNode.clipInIterativeMarker(itemPathArray, pos);
-            } catch (Exception e) {
-                ;
-            }
+        try {
+            IterativeNode iterativeNode = new IterativeNode(domainAccess, templateId, introspectCache);
+            Integer[] pos = iterativeNode.iterativeAt(itemPathArray);
+            itemPathArray = iterativeNode.clipInIterativeMarker(itemPathArray, pos);
+            if (clause.equals(Clause.WHERE))
+                setReturningFunctionInWhere = true;
+        } catch (Exception e) {
+            ;
         }
 
         resolveArrayIndex(itemPathArray);
@@ -385,6 +386,9 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
         if (isJsonDataBlock()) {
             jsonbItemPath = toAqlPath(itemPathArray);
         }
+
+        if (setReturningFunctionInWhere)
+            fieldPathItem = DSL.select(fieldPathItem).asField();
 
         return fieldPathItem;
     }

@@ -21,9 +21,9 @@
 
 package org.ehrbase.aql.sql.binding;
 
-import org.ehrbase.aql.containment.IdentifierMapper;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.VariableDefinition;
+import org.ehrbase.aql.sql.PathResolver;
 import org.ehrbase.aql.sql.queryimpl.CompositionAttributeQuery;
 import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
 import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
@@ -68,24 +68,24 @@ public class WhereBinder {
     private JsonbEntryQuery jsonbEntryQuery;
     private CompositionAttributeQuery compositionAttributeQuery;
     private final List<Object> whereClause;
-    private IdentifierMapper mapper;
+    private PathResolver pathResolver;
     private boolean isWholeComposition = false;
     private String compositionName = null;
     private String sqlConditionalFunctionalOperatorRegexp = "(?i)(like|ilike|in|not in)"; //list of subquery and operators
     private boolean requiresJSQueryClosure = false;
     private boolean isFollowedBySQLConditionalOperator = false;
 
-    public WhereBinder(I_DomainAccess domainAccess, JsonbEntryQuery jsonbEntryQuery, CompositionAttributeQuery compositionAttributeQuery, List<Object> whereClause, IdentifierMapper mapper) {
+    public WhereBinder(I_DomainAccess domainAccess, JsonbEntryQuery jsonbEntryQuery, CompositionAttributeQuery compositionAttributeQuery, List<Object> whereClause, PathResolver pathResolver) {
         this.jsonbEntryQuery = jsonbEntryQuery;
         this.compositionAttributeQuery = compositionAttributeQuery;
         this.whereClause = whereClause;
-        this.mapper = mapper;
+        this.pathResolver = pathResolver;
         this.domainAccess = domainAccess;
     }
 
     private TaggedStringBuilder encodeWhereVariable(String templateId, I_VariableDefinition variableDefinition, boolean forceSQL, String compositionName) {
         String identifier = variableDefinition.getIdentifier();
-        String className = mapper.getClassName(identifier);
+        String className = pathResolver.classNameOf(identifier);
         if (className == null)
             throw new IllegalArgumentException("Could not bind identifier in WHERE clause:'" + identifier + "'");
         Field<?> field;
@@ -101,11 +101,9 @@ public class WhereBinder {
 
         if (forceSQL || Boolean.FALSE.equals(usePgExtensions)) {
             //EHR-327: also supports EHR attributes in WHERE clause
-            if ((className.equals(COMPOSITION) && !variableDefinition.getPath().contains(CONTENT)) || className.equals(EHR)) {
-                field = compositionAttributeQuery.whereField(templateId, identifier, variableDefinition);
-            } else { //should be removed (?)
-                field = jsonbEntryQuery.makeField(templateId, identifier, variableDefinition, IQueryImpl.Clause.WHERE);
-            }
+            ExpressionField expressionField = new ExpressionField(variableDefinition, jsonbEntryQuery, compositionAttributeQuery);
+            field = expressionField.toSql(className, templateId, identifier, IQueryImpl.Clause.WHERE);
+
             if (field == null)
                 return null;
             return new TaggedStringBuilder(field.toString(), I_TaggedStringBuilder.TagField.SQLQUERY);
