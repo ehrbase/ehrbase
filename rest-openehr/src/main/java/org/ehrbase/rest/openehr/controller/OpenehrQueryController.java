@@ -20,21 +20,35 @@ package org.ehrbase.rest.openehr.controller;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.ResponseHeader;
 import org.ehrbase.api.definitions.QueryMode;
 import org.ehrbase.api.service.QueryService;
 import org.ehrbase.response.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.response.openehr.ErrorBodyPayload;
 import org.ehrbase.response.openehr.QueryDefinitionResponseData;
 import org.ehrbase.response.openehr.QueryResponseData;
+import org.ehrbase.rest.openehr.audit.QueryAuditInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -69,7 +83,8 @@ public class OpenehrQueryController extends BaseController {
                                                            @ApiParam(value = "AQL query to be executed", required = true) @RequestParam(value = "q") String query,
                                                            @ApiParam(value = "row number in result-set to start result-set from (0-based), default 0") @RequestParam(value = "offset", required = false) Integer offset,
                                                            @ApiParam(value = "number of rows to fetch, default depends on the implementation") @RequestParam(value = "fetch", required = false) Integer fetch,
-                                                           @ApiParam(value = "query parameters (can appear multiple times)") @RequestParam Map<String, Object> queryParameters) {
+                                                           @ApiParam(value = "query parameters (can appear multiple times)") @RequestParam Map<String, Object> queryParameters,
+                                                           HttpServletRequest request) {
 
         //deal with offset and fetch
         if (fetch != null)
@@ -79,6 +94,9 @@ public class OpenehrQueryController extends BaseController {
             query = withOffset(query, offset);
 
         if (query != null) {
+            // Enriches request attributes with aql for later audit processing
+            request.setAttribute(QueryAuditInterceptor.QUERY_ATTRIBUTE, query);
+
             QueryResponseData queryResponseData;
 
             if (queryParameters != null && !queryParameters.isEmpty())
@@ -107,7 +125,8 @@ public class OpenehrQueryController extends BaseController {
 
     public ResponseEntity<QueryResponseData> postAdhocQuery(@ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false) String accept,
                                                             @ApiParam(value = REQ_CONTENT_TYPE_BODY, required = true) @RequestHeader(value = CONTENT_TYPE) String contentType,
-                                                            @ApiParam(value = "AQL query to be executed", required = true) @RequestBody String query) {
+                                                            @ApiParam(value = "AQL query to be executed", required = true) @RequestBody String query,
+                                                            HttpServletRequest request) {
 
         log.debug("Got following input: " + query);
 
@@ -122,6 +141,9 @@ public class OpenehrQueryController extends BaseController {
         QueryResponseData queryResponseData = null;
 
         if (aql != null) {
+            // Enriches request attributes with aql for later audit processing
+            request.setAttribute(QueryAuditInterceptor.QUERY_ATTRIBUTE, aql);
+
             aql = withOffsetLimit(aql, mapped);
 
             //get the query and pass it to the service
@@ -175,14 +197,20 @@ public class OpenehrQueryController extends BaseController {
                                                             @ApiParam(value = "query version (SEMVER), default is LATEST") @PathVariable(value = "version") Optional<String> version,
                                                             @ApiParam(value = "row number in result-set to start result-set from (0-based), default 0") @RequestParam(value = "offset", required = false) Integer offset,
                                                             @ApiParam(value = "number of rows to fetch, default depends on the implementation") @RequestParam(value = "fetch", required = false) Integer fetch,
-                                                            @ApiParam(value = "query parameters (can appear multiple times)") @RequestParam Map<String, Object> queryParameter) {
+                                                            @ApiParam(value = "query parameters (can appear multiple times)") @RequestParam Map<String, Object> queryParameter,
+                                                            HttpServletRequest request) {
 
         log.debug("getStoredQuery not implemented but got following input: " + qualifiedQueryName + " - " + version + " - " + offset + " - " + fetch + " - " + queryParameter);
+        // Enriches request attributes with query name for later audit processing
+        request.setAttribute(QueryAuditInterceptor.QUERY_ID_ATTRIBUTE, qualifiedQueryName);
 
         //retrieve the stored query for execution
         QueryDefinitionResultDto queryDefinitionResultDto = queryService.retrieveStoredQuery(qualifiedQueryName, version.isPresent() ? version.get() : "LATEST");
 
         String query = queryDefinitionResultDto.getQueryText();
+
+        // Enriches request attributes with aql for later audit processing
+        request.setAttribute(QueryAuditInterceptor.QUERY_ATTRIBUTE, query);
 
         if (fetch != null) {
             //append LIMIT clause to aql
@@ -221,17 +249,22 @@ public class OpenehrQueryController extends BaseController {
                                                              @ApiParam(value = "use this ehrid") @RequestHeader(value = IF_NONE_MATCH, required = false) String ifNoneMatch,
                                                              @ApiParam(value = "query name to be executed, example: org.openehr::compositions", required = true) @PathVariable(value = "qualified_query_name") String qualifiedQueryName,
                                                              @ApiParam(value = "query version (SEMVER), default is LATEST") @PathVariable(value = "version") Optional<String> version,
-                                                             @ApiParam(value = "parameters used to execute the query") @RequestBody(required = false) String parameterBody) {
+                                                             @ApiParam(value = "parameters used to execute the query") @RequestBody(required = false) String parameterBody,
+                                                             HttpServletRequest request) {
 
         log.debug("postStoredQuery with the following input: " + qualifiedQueryName + " - " + version + " - " + parameterBody);
 
         //retrieve the stored query for execution
+        request.setAttribute(QueryAuditInterceptor.QUERY_ID_ATTRIBUTE, qualifiedQueryName);
 
         QueryDefinitionResultDto queryDefinitionResultDto = queryService.retrieveStoredQuery(qualifiedQueryName, version.isPresent() ? version.get() : "LATEST");
 
         String query = queryDefinitionResultDto.getQueryText();
 
         if (query != null) {
+            // Enriches request attributes with aql for later audit processing
+            request.setAttribute(QueryAuditInterceptor.QUERY_ATTRIBUTE, query);
+
             //retrieve the parameter from body
             //get the query and parameters if any
             Map<String, Object> queryParameter = null;

@@ -21,4 +21,24 @@ package org.ehrbase.rest.openehr.audit;
  * {@link OpenEhrAuditDataset} used for Query audit messages
  */
 public class QueryAuditDataset extends OpenEhrAuditDataset {
+
+    private String query;
+
+    private String queryId;
+
+    public String getQuery() {
+        return query;
+    }
+
+    public void setQuery(String query) {
+        this.query = query;
+    }
+
+    public String getQueryId() {
+        return queryId;
+    }
+
+    public void setQueryId(String queryId) {
+        this.queryId = queryId;
+    }
 }

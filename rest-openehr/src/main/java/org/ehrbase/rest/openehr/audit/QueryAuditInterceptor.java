@@ -22,10 +22,18 @@ import org.ehrbase.rest.openehr.audit.support.QueryAuditMessageBuilder;
 import org.openehealth.ipf.commons.audit.AuditContext;
 import org.openehealth.ipf.commons.audit.model.AuditMessage;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 /**
  * Concrete implementation of {@link OpenEhrAuditInterceptor} for Query API.
  */
+// TODO: Handle the Patient Number (check with @chevalleyc about hidden fields)
 public class QueryAuditInterceptor extends OpenEhrAuditInterceptor<QueryAuditDataset> {
+
+    public static final String QUERY_ATTRIBUTE = CompositionAuditInterceptor.class.getName() + ".QUERY";
+
+    public static final String QUERY_ID_ATTRIBUTE = CompositionAuditInterceptor.class.getName() + ".QUERY_ID";
 
     public QueryAuditInterceptor(AuditContext auditContext, EhrService ehrService) {
         super(auditContext, ehrService);
@@ -34,6 +42,14 @@ public class QueryAuditInterceptor extends OpenEhrAuditInterceptor<QueryAuditDat
     @Override
     protected QueryAuditDataset createAuditDataset() {
         return new QueryAuditDataset();
+    }
+
+    @Override
+    protected void enrichDataset(QueryAuditDataset auditDataset, HttpServletRequest request, HttpServletResponse response) {
+        super.enrichDataset(auditDataset, request, response);
+
+        auditDataset.setQuery((String) request.getAttribute(QUERY_ATTRIBUTE));
+        auditDataset.setQueryId((String) request.getAttribute(QUERY_ID_ATTRIBUTE));
     }
 
     @Override

@@ -17,17 +17,38 @@
  */
 package org.ehrbase.rest.openehr.audit.support;
 
-import org.ehrbase.rest.openehr.audit.OpenEhrAuditDataset;
 import org.ehrbase.rest.openehr.audit.OpenEhrEventIdCode;
+import org.ehrbase.rest.openehr.audit.QueryAuditDataset;
 import org.openehealth.ipf.commons.audit.AuditContext;
 import org.openehealth.ipf.commons.audit.codes.EventActionCode;
+import org.openehealth.ipf.commons.audit.codes.ParticipantObjectIdTypeCode;
+import org.openehealth.ipf.commons.audit.codes.ParticipantObjectTypeCode;
+import org.openehealth.ipf.commons.audit.codes.ParticipantObjectTypeCodeRole;
+
+import java.nio.charset.StandardCharsets;
 
 /**
  * Concrete implementation of {@link OpenEhrAuditMessageBuilder} for Query AuditMessages.
  */
 public class QueryAuditMessageBuilder extends OpenEhrAuditMessageBuilder<QueryAuditMessageBuilder> {
 
-    public QueryAuditMessageBuilder(AuditContext auditContext, OpenEhrAuditDataset auditDataset) {
+    public QueryAuditMessageBuilder(AuditContext auditContext, QueryAuditDataset auditDataset) {
         super(auditContext, auditDataset, EventActionCode.Execute, OpenEhrEventIdCode.QUERY, null);
+
+        addQueryParticipantObjectIdentification(auditDataset);
+    }
+
+    public QueryAuditMessageBuilder addQueryParticipantObjectIdentification(QueryAuditDataset auditDataset) {
+        delegate.addParticipantObjectIdentification(
+                ParticipantObjectIdTypeCode.SearchCriteria,
+                null,
+                auditDataset.getQuery() != null ? auditDataset.getQuery().getBytes(StandardCharsets.UTF_8) : null,
+                null,
+                auditDataset.getQueryId() != null ? auditDataset.getQueryId() : auditContext.getAuditValueIfMissing(),
+                ParticipantObjectTypeCode.System,
+                ParticipantObjectTypeCodeRole.Query,
+                null,
+                null);
+        return this;
     }
 }
