@@ -22,11 +22,7 @@ import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.ehr.util.LocatableHelper;
 import org.ehrbase.service.IntrospectService;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 import static org.ehrbase.aql.sql.queryimpl.IterativeNodeConstants.ENV_AQL_ARRAY_DEPTH;
 import static org.ehrbase.aql.sql.queryimpl.IterativeNodeConstants.ENV_AQL_ARRAY_IGNORE_NODE;
@@ -83,7 +79,7 @@ public class IterativeNode implements IIterativeNode {
                 if (ignoreThisAqlPath)
                     continue;
 
-                if (path.startsWith(aqlPath)) {
+                if (path.startsWith(aqlPath) && !aqlPath.matches("^.*(value|name)$")) {
                     int pos = aqlPathInJsonbArray(aqlPathSegments, segmentedPath);
                     retarray.add(pos);
                     if (retarray.size() >= depth)
