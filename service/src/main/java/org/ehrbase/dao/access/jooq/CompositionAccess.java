@@ -353,25 +353,25 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         return retrieveCompositionVersion(domainAccess, compositionUid, version);
     }
 
-    public static Map<Integer, I_CompositionAccess> retrieveCompositionsInContribution(I_DomainAccess domainAccess, UUID contribution) {
+    public static Map<ObjectVersionId, I_CompositionAccess> retrieveCompositionsInContribution(I_DomainAccess domainAccess, UUID contribution, String node) {
         Set<UUID> compositions = new HashSet<>();   // Set, because of unique values
         // add all compositions having a link to given contribution
         domainAccess.getContext().select(COMPOSITION.ID).from(COMPOSITION).where(COMPOSITION.IN_CONTRIBUTION.eq(contribution)).fetch()
-                .forEach(rec -> compositions.add(rec.value1()));
+            .forEach(rec -> compositions.add(rec.value1()));
         // and older versions or deleted ones, too
         domainAccess.getContext().select(COMPOSITION_HISTORY.ID).from(COMPOSITION_HISTORY).where(COMPOSITION_HISTORY.IN_CONTRIBUTION.eq(contribution)).fetch()
-                .forEach(rec -> compositions.add(rec.value1()));
+            .forEach(rec -> compositions.add(rec.value1()));
 
         // get whole "version map" of each matching composition and do fine-grain check for matching contribution
         // precondition: each UUID in `compositions` set is unique, so for each the "version map" is only created once below
         // (meta: can't do that as jooq query, because the specific version number isn't stored in DB)
-        Map<Integer, I_CompositionAccess> resultMap = new HashMap<>();
+        Map<ObjectVersionId, I_CompositionAccess> resultMap = new HashMap<>();
         for (UUID compositionId : compositions) {
             Map<Integer, I_CompositionAccess> map = getVersionMapOfComposition(domainAccess, compositionId);
             // fine-grained contribution ID check
             map.forEach((k, v) -> {
                 if (v.getContributionId().equals(contribution))
-                    resultMap.put(k, v);
+                    resultMap.put(new ObjectVersionId(compositionId.toString(), node, k.toString()), v);
             });
         }
 

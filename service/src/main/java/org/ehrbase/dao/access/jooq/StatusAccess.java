@@ -27,6 +27,7 @@ import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.HierObjectId;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -149,7 +150,7 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
         return createStatusAccessForRetrieval(domainAccess, record, null);
     }
 
-    public static Map<Integer, I_StatusAccess> retrieveInstanceByContribution(I_DomainAccess domainAccess, UUID contributionId) {
+    public static Map<ObjectVersionId, I_StatusAccess> retrieveInstanceByContribution(I_DomainAccess domainAccess, UUID contributionId, String node) {
         Set<UUID> statuses = new HashSet<>();   // Set, because of unique values
         // add all compositions having a link to given contribution
         domainAccess.getContext().select(STATUS.ID).from(STATUS).where(STATUS.IN_CONTRIBUTION.eq(contributionId)).fetch()
@@ -161,13 +162,13 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
         // get whole "version map" of each matching status and do fine-grain check for matching contribution
         // precondition: each UUID in `statuses` set is unique, so for each the "version map" is only created once below
         // (meta: can't do that as jooq query, because the specific version number isn't stored in DB)
-        Map<Integer, I_StatusAccess> resultMap = new HashMap<>();
+        Map<ObjectVersionId, I_StatusAccess> resultMap = new HashMap<>();
         for (UUID statusId : statuses) {
             Map<Integer, I_StatusAccess> map = getVersionMapOfStatus(domainAccess, statusId);
             // fine-grained contribution ID check
             map.forEach((k, v) -> {
                 if (v.getContributionId().equals(contributionId))
-                    resultMap.put(k, v);
+                    resultMap.put(new ObjectVersionId(statusId.toString(), node, k.toString()), v);
             });
         }
 
@@ -320,8 +321,14 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
     public Boolean update(ItemStructure otherDetails, Timestamp transactionTime, boolean force) {
         if (force || statusRecord.changed()) {
             // update both contribution (incl its audit) and the status' own audit
-            contributionAccess.commit(transactionTime);
-            statusRecord.setInContribution(contributionAccess.getId()); // new contribution ID
+            if (contributionAccess.getId() == null) {
+                // new contribution
+                contributionAccess.commit(transactionTime);
+            } else {
+                // use existing for batch contribution
+                contributionAccess.update(transactionTime, null, null, null, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
+            }
+            statusRecord.setInContribution(contributionAccess.getId());
             auditDetailsAccess.commit();
             statusRecord.setHasAudit(auditDetailsAccess.getId()); // new audit ID
 

@@ -53,7 +53,6 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
 
     Logger log = LogManager.getLogger(ContributionAccess.class);
     private ContributionRecord contributionRecord;
-    private Map<UUID, I_CompositionAccess> compositions = new HashMap<>();
     private I_AuditDetailsAccess auditDetails; // audit associated with this contribution
 
     /**
@@ -114,35 +113,11 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
         if (contributionAccess.contributionRecord == null)
             return null;
 
-        Map<UUID, I_CompositionAccess> compos = new HashMap<>();
-        CompositionAccess.retrieveCompositionsInContribution(domainAccess, contributionAccess.contributionRecord.getId())
-            .forEach((version, access) -> compos.put(access.getId(), access));
-        contributionAccess.compositions = compos;
-
         // also retrieve attached audit
         contributionAccess.auditDetails = new AuditDetailsAccess(domainAccess.getDataAccess()).retrieveInstance(domainAccess.getDataAccess(), contributionAccess.getHasAuditDetails());
 
         return contributionAccess;
 
-    }
-
-    @Override
-    public void addComposition(I_CompositionAccess compositionAccess) {
-        //set local composition field from this contribution
-        compositionAccess.setEhrid(contributionRecord.getEhrId());
-        if (compositionAccess.getComposerId() == null)
-            compositionAccess.setComposerId(auditDetails.getCommitter());   // FIXME: does this work, is there an audit instance available here? not tested, function not used right now...
-        if (compositionAccess.getAuditDetailsId() == null)
-            throw new IllegalArgumentException("Composition has no embedded audit");
-        compositionAccess.setContributionId(contributionRecord.getId()); //this is the ContributionVersionId!!!
-
-        compositions.put(compositionAccess.getId(), compositionAccess);
-    }
-
-    @Override
-    public boolean removeComposition(I_CompositionAccess compositionAccess) {
-        I_CompositionAccess removed = compositions.remove(compositionAccess.getId());
-        return removed != null;
     }
 
     @Override
@@ -159,15 +134,8 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
         contributionRecord.setEhrId(this.getEhrId());
         if (contributionRecord.insert() == 0)
             throw new InternalServerException("Couldn't store contribution");
-        UUID contributionId = contributionRecord.getId();
 
-        //commit the compositions
-        for (I_CompositionAccess compositionAccess : compositions.values()) {
-            // composition can only be added when having an audit attached, so this is assumed to be the case here
-            compositionAccess.commit(transactionTime);
-        }
-
-        return contributionId;
+        return contributionRecord.getId();
     }
 
     @Override
@@ -301,16 +269,6 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
     }
 
     @Override
-    public void updateComposition(I_CompositionAccess compositionAccess) {
-
-        compositions.remove(compositionAccess.getId());
-        compositions.put(compositionAccess.getId(), compositionAccess);
-        log.info("Updated composition with id:" + compositionAccess.getId());
-        contributionRecord.changed(true);
-        update(TransactionTime.millis());
-    }
-
-    @Override
     public Boolean update(Timestamp transactionTime) {
         return update(transactionTime, false);
     }
@@ -336,14 +294,6 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
             contributionRecord.setId(UUID.randomUUID());    // force to create new entry from old values
             updated = contributionRecord.insert() == 1;
         }
-
-        //commit or updateComposition the compositions
-        //TODO: ---- not complete !!!
-        //get the list of composition uuids *referencing* the current contribution
-//        List<UUID> allUuids = context.select(COMPOSITION.ID).from(COMPOSITION).where(COMPOSITION.IN_CONTRIBUTION.eq(contributionRecord.getId())).fetch(COMPOSITION.ID);
-//        updateChangedCompositions(CollectionUtils.intersection(allUuids, compositions.keySet()), transactionTime, force);
-//        commitAddedCompositions(CollectionUtils.subtract(compositions.keySet(), allUuids), transactionTime);
-//        deleteRemovedCompositions(CollectionUtils.subtract(allUuids, compositions.keySet()));
 
         return updated;
     }
@@ -474,16 +424,6 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
     @Override
     public UUID getEhrId() {
         return contributionRecord.getEhrId();
-    }
-
-    @Override
-    public Set<UUID> getCompositionIds() {
-        return compositions.keySet();
-    }
-
-    @Override
-    public I_CompositionAccess getComposition(UUID id) {
-        return compositions.get(id);
     }
 
     @Override

@@ -22,6 +22,7 @@ package org.ehrbase.dao.access.interfaces;
 
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.ehr.EhrStatus;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import org.ehrbase.dao.access.jooq.StatusAccess;
 import org.ehrbase.jooq.pg.tables.records.StatusHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.StatusRecord;
@@ -89,11 +90,12 @@ public interface I_StatusAccess extends I_SimpleCRUD {
      *
      * @param domainAccess   SQL context, knowledge
      * @param contributionId contribution object uuid
-     * @return a map of {@link I_StatusAccess} and their version number, that match the condition
+     * @param node Name of local node, for creation of object version ID
+     * @return a map of {@link I_StatusAccess} and their version ID, that match the condition
      * @throws IllegalArgumentException on DB inconsistency
      */
-    static Map<Integer, I_StatusAccess> retrieveInstanceByContribution(I_DomainAccess domainAccess, UUID contributionId) {
-        return StatusAccess.retrieveInstanceByContribution(domainAccess, contributionId);
+    static Map<ObjectVersionId, I_StatusAccess> retrieveInstanceByContribution(I_DomainAccess domainAccess, UUID contributionId, String node) {
+        return StatusAccess.retrieveInstanceByContribution(domainAccess, contributionId, node);
     }
 
     /**

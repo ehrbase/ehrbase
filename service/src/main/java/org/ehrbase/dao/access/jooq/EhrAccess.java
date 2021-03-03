@@ -578,7 +578,6 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         if (contributionId != null) {
             I_ContributionAccess access = I_ContributionAccess.retrieveInstance(this.getDataAccess(), contributionId);
             if (access != null) {
-                provisionContributionAccess(access, committerId, systemId, description, state, contributionChangeType);
                 this.contributionAccess = access;
             } else
                 throw new InternalServerException("Can't update status with invalid contribution ID.");

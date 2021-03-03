@@ -23,6 +23,7 @@ package org.ehrbase.dao.access.interfaces;
 
 import com.nedap.archie.rm.archetyped.FeederAudit;
 import com.nedap.archie.rm.archetyped.Link;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.dao.access.jooq.CompositionAccess;
@@ -189,11 +190,12 @@ public interface I_CompositionAccess extends I_SimpleCRUD {
      *
      * @param domainAccess   SQL context, knowledge
      * @param contributionId contribution object uuid
-     * @return a map of {@link I_CompositionAccess} and their version number, that match the condition
+     * @param node Name of local node, for creation of object version ID
+     * @return a map of {@link I_CompositionAccess} and their version ID, that match the condition
      * @throws IllegalArgumentException on DB inconsistency
      */
-    static Map<Integer, I_CompositionAccess> retrieveInstancesInContribution(I_DomainAccess domainAccess, UUID contributionId) {
-        return CompositionAccess.retrieveCompositionsInContribution(domainAccess, contributionId);
+    static Map<ObjectVersionId, I_CompositionAccess> retrieveInstancesInContribution(I_DomainAccess domainAccess, UUID contributionId, String node) {
+        return CompositionAccess.retrieveCompositionsInContribution(domainAccess, contributionId, node);
     }
 
     /**

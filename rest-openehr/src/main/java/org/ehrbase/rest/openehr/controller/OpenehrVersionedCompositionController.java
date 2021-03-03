@@ -156,7 +156,6 @@ public class OpenehrVersionedCompositionController extends BaseController{
         // check if parameters are valid
         checkForValidEhrAndCompositionParameter(ehrId, versionedCompoUid);
 
-        // TODO-413: here
         ObjectVersionId compositionVersionId = new ObjectVersionId(versionUid);
         if (!compositionVersionId.getRoot().getValue().equals(versionedObjectUid)) {
             throw new IllegalArgumentException("Composition parameters are not matching.");
