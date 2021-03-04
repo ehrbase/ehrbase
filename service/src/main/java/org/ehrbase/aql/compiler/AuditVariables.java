@@ -19,12 +19,11 @@
 
 package org.ehrbase.aql.compiler;
 
+import org.ehrbase.aql.definition.FunctionDefinition;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.VariableDefinition;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class AuditVariables {
 
@@ -48,12 +47,18 @@ public class AuditVariables {
      */
     public List<I_VariableDefinition> complete(){
 
+        //check if we deal with (aggregate) functions... if so, we cannot just insert the audit data select
+        for (I_VariableDefinition variableDefinition: variables){
+            if (variableDefinition instanceof FunctionDefinition)
+                return variables;
+        }
+
         for (String[] auditVarDef: requiredAuditVariables){
             //loop in variables to check for existence
             boolean found = false;
 
             for (I_VariableDefinition variableDefinition: variables) {
-                if (variableDefinition.getPath().equals(auditVarDef[0])) {
+                if (variableDefinition.getPath() != null && variableDefinition.getPath().equals(auditVarDef[0])) {
                     found = true;
                     break;
                 }
@@ -78,7 +83,7 @@ public class AuditVariables {
         boolean retval = false;
 
         for (String[] auditVarDef: requiredAuditVariables) {
-            if (variable.getPath().equals(auditVarDef[0])) {
+            if (variable.getPath() != null && variable.getPath().equals(auditVarDef[0])) {
                 retval = true;
                 break;
             }

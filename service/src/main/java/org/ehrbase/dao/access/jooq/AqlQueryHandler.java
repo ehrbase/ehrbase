@@ -102,7 +102,8 @@ public class AqlQueryHandler extends DataAccess {
         String columnIdentifier = variableDefinition.getAlias() != null ? variableDefinition.getAlias() : "/"+variableDefinition.getPath();
 
         for (Record record: recordResult){
-            resultSet.add(record.get(columnIdentifier));
+            if (variableDefinition.getAlias() != null && !variableDefinition.getAlias().startsWith("_FCT")) //if the variable is a function parameter, ignore it (f.e. count())
+                resultSet.add(record.get(columnIdentifier));
         }
         return resultSet;
     }
