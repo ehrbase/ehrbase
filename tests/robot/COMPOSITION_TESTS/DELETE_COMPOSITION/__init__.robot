@@ -18,15 +18,13 @@
 
 *** Settings ***
 Metadata    Version    0.1.0
-Metadata    Authors    *Wladislaw Wagner, Pablo Pazos, Jake Smolka*
+Metadata    Authors    *Wladislaw Wagner*, *Pablo Pazos* 
 
 Documentation    COMPOSITION TEST SUITE
 ...
 ...              test documentation: https://docs.google.com/document/d/1TvSWjG-Esz-iMFJE-VLfjGH8MiI9tcHE2ilVtJMPYyQ/edit?ts=5d1e49fc
 
-Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
+# Suite Setup  startup SUT
+# Suite Teardown  shutdown SUT
 
-Suite Setup  startup SUT
-Suite Teardown  shutdown SUT
-
-Force Tags    COMPOSITION
+Force Tags    COMPOSITION_delete

@@ -17,16 +17,22 @@
 
 
 *** Settings ***
-Metadata    Version    0.1.0
-Metadata    Authors    *Wladislaw Wagner, Pablo Pazos, Jake Smolka*
+Documentation   Composition Integration Tests
+Metadata        TOP_TEST_SUITE    COMPOSITION
+Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Documentation    COMPOSITION TEST SUITE
-...
-...              test documentation: https://docs.google.com/document/d/1TvSWjG-Esz-iMFJE-VLfjGH8MiI9tcHE2ilVtJMPYyQ/edit?ts=5d1e49fc
+Force Tags
 
-Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Suite Setup  startup SUT
-Suite Teardown  shutdown SUT
 
-Force Tags    COMPOSITION
+*** Test Cases ***
+Alternative flow 6 create new event COMPOSITION EHR doesnt exist
+
+    upload OPT    nested/nested.opt
+
+    create fake EHR
+
+    prepare new request session    XML    Prefer=return=representation
+    commit composition - no referenced EHR    nested/nested.composition.extdatetimes.xml
+
+    # [Teardown]    restart SUT

@@ -17,16 +17,28 @@
 
 
 *** Settings ***
-Metadata    Version    0.1.0
-Metadata    Authors    *Wladislaw Wagner, Pablo Pazos, Jake Smolka*
-
-Documentation    COMPOSITION TEST SUITE
-...
-...              test documentation: https://docs.google.com/document/d/1TvSWjG-Esz-iMFJE-VLfjGH8MiI9tcHE2ilVtJMPYyQ/edit?ts=5d1e49fc
+Documentation   Composition Integration Tests
+Metadata        TOP_TEST_SUITE    COMPOSITION
 
 Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Suite Setup  startup SUT
-Suite Teardown  shutdown SUT
 
-Force Tags    COMPOSITION
+
+Force Tags
+
+
+
+*** Test Cases ***
+Main flow get existing COMPOSITION at time
+    [Tags]    17    not-ready    bug
+
+    upload OPT    minimal/minimal_observation.opt
+
+    create EHR
+
+    commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.xml
+
+    get versioned composition - version at time    ${time_1}
+    check content of compositions version at time (JSON)    time_1    original value
+
+    [Teardown]    restart SUT

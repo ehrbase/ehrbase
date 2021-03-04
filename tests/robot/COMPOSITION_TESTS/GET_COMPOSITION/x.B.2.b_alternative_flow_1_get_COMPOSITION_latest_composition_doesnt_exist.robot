@@ -17,16 +17,19 @@
 
 
 *** Settings ***
-Metadata    Version    0.1.0
-Metadata    Authors    *Wladislaw Wagner, Pablo Pazos, Jake Smolka*
+Documentation   Composition Integration Tests
+Metadata        TOP_TEST_SUITE    COMPOSITION
+Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Documentation    COMPOSITION TEST SUITE
-...
-...              test documentation: https://docs.google.com/document/d/1TvSWjG-Esz-iMFJE-VLfjGH8MiI9tcHE2ilVtJMPYyQ/edit?ts=5d1e49fc
+Force Tags
 
-Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Suite Setup  startup SUT
-Suite Teardown  shutdown SUT
 
-Force Tags    COMPOSITION
+*** Test Cases ***
+Alternative flow 1 get COMPOSITION latest, COMPOSITION doesn't exist
+    [Tags]    17    not-ready    bug
+
+    create EHR    XML
+    create fake composition
+    get composition - latest version    XML
+    check composition does not exist (latest version)

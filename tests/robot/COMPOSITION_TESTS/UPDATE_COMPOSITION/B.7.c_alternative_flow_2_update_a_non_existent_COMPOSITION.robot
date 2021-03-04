@@ -17,16 +17,24 @@
 
 
 *** Settings ***
-Metadata    Version    0.1.0
-Metadata    Authors    *Wladislaw Wagner, Pablo Pazos, Jake Smolka*
+Documentation   Composition Integration Tests
+Metadata        TOP_TEST_SUITE    COMPOSITION
+Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Documentation    COMPOSITION TEST SUITE
-...
-...              test documentation: https://docs.google.com/document/d/1TvSWjG-Esz-iMFJE-VLfjGH8MiI9tcHE2ilVtJMPYyQ/edit?ts=5d1e49fc
+Force Tags
 
-Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Suite Setup  startup SUT
-Suite Teardown  shutdown SUT
 
-Force Tags    COMPOSITION
+*** Test Cases ***
+Alternative flow 2 update a non-existent COMPOSITION
+
+    upload OPT    minimal_persistent/persistent_minimal.opt
+
+    create EHR
+
+    # Commit fake COMPOSITION
+    generate random composition_uid
+
+    update non-existent composition (JSON)    minimal_persistent/persistent_minimal.composition.extdatetime.v2.xml
+
+    [Teardown]    restart SUT

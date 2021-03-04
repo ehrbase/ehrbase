@@ -17,16 +17,23 @@
 
 
 *** Settings ***
-Metadata    Version    0.1.0
-Metadata    Authors    *Wladislaw Wagner, Pablo Pazos, Jake Smolka*
+Documentation   Composition Integration Tests
+Metadata        TOP_TEST_SUITE    COMPOSITION
+Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Documentation    COMPOSITION TEST SUITE
-...
-...              test documentation: https://docs.google.com/document/d/1TvSWjG-Esz-iMFJE-VLfjGH8MiI9tcHE2ilVtJMPYyQ/edit?ts=5d1e49fc
+Force Tags
 
-Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Suite Setup  startup SUT
-Suite Teardown  shutdown SUT
 
-Force Tags    COMPOSITION
+*** Test Cases ***
+Alternative flow 2 create persistent COMPOSITION for the same archetype twice
+    [Tags]        125    future
+
+    upload OPT    minimal_persistent/persistent_minimal.opt
+    create EHR
+    commit composition (JSON)    minimal_persistent/persistent_minimal.composition.extdatetime.xml
+
+    # comment: Another commit for the same persistent archetype/template to the same EHR
+    commit same composition again    minimal_persistent/persistent_minimal.composition.extdatetime.xml
+
+    [Teardown]    restart SUT

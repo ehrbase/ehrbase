@@ -1,4 +1,6 @@
-# Copyright (c) 2019 Wladislaw Wagner (Vitasystems GmbH), Pablo Pazos (Hannover Medical School).
+# Copyright (c) 2021 Jake Smolka (Hannover Medical School),
+#                    Wladislaw Wagner (Vitasystems GmbH),
+#                    Pablo Pazos (Hannover Medical School).
 #
 # This file is part of Project EHRbase
 #
@@ -18,15 +20,15 @@
 
 *** Settings ***
 Metadata    Version    0.1.0
-Metadata    Authors    *Wladislaw Wagner, Pablo Pazos, Jake Smolka*
+Metadata    Authors    *Jake Smolka*, *Wladislaw Wagner*
+Metadata    Created    2019.02.26
+Metadata    Updated    2020.01.30
 
-Documentation    COMPOSITION TEST SUITE
-...
-...              test documentation: https://docs.google.com/document/d/1TvSWjG-Esz-iMFJE-VLfjGH8MiI9tcHE2ilVtJMPYyQ/edit?ts=5d1e49fc
+Documentation    https://wiki.vitagroup.ag/display/ETHERCIS/Versioned+COMPOSITION
 
-Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
+Resource   ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Suite Setup  startup SUT
-Suite Teardown  shutdown SUT
+# Suite Setup    startup SUT
+# Suite Teardown    shutdown SUT
 
-Force Tags    COMPOSITION
+Force Tags    COMPOSITION_get_versioned

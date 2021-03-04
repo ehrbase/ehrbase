@@ -630,7 +630,7 @@ get composition - version at time (XML)
     ...                 :time_x: variable w. DateTime-TimeZone (like returned from `capture point in time` kw)
     ...                 ENDPOINT: /ehr/{ehr_id}/versioned_composition/{versioned_object_uid}/version{?version_at_time}
 
-    &{params}=          Create Dictionary     version_at_time=$${time_x}
+    &{params}=          Create Dictionary     version_at_time=${time_x}
     &{headers}=         Create Dictionary     Accept=application/xml
     ${resp}=            Get Request           ${SUT}   /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version
                         ...                   params=${params}   headers=${headers}
@@ -643,30 +643,30 @@ get composition - version at time (XML)
 
 
 check content of compositions version at time (JSON)
-    [Arguments]         ${time_x_nr}
+    [Arguments]         ${time_x_nr}    ${value}
     [Documentation]     DEPENDENCY: `get compostion - version at time`
     ...                 :time_x_nr:  a string like `time_1`
 
                         Should Be Equal As Strings   ${response.status_code}   200
-    ${version_uid}=     Set Variable    ${resp.json()['uid']['value']}
+    ${version_uid}=     Set Variable    ${response.json()['uid']['value']}
 
     Run Keyword If      '${time_x_nr}'=='time_1'   Should Be Equal       ${version_uid}    ${composition_uid}
     Run Keyword If      '${time_x_nr}'=='time_2'   Should Be Equal       ${version_uid}    ${composition_uid_v2}
 
 
                         # check content of the latest version is equal to the content committed on the first compo
-                        Set Test Variable     ${text}    ${resp.json()['data']['content'][0]['data']['events'][0]['data']['items'][0]['value']['value']}
-                        Should Be Equal       ${text}    original value
+                        Set Test Variable     ${text}    ${response.json()['data']['content'][0]['data']['events'][0]['data']['items'][0]['value']['value']}
+                        Should Be Equal       ${text}    ${value}
 
 
 check content of compositions version at time (XML)
-    [Arguments]         ${time_x_nr}
+    [Arguments]         ${time_x_nr}    ${value}
     [Documentation]     DEPENDENCY: `get compostion - version at time (XML)`
     ...                 :time_x_nr:  a string like `time_1`
                         Should Be Equal As Strings   ${response.status_code}   200
 
     # compo.uid.value has the version_uid
-    ${xresp}=           Parse Xml             ${resp.text}
+    ${xresp}=           Parse Xml             ${response.text}
     ${version_uid}=     Get Element           ${xresp}      uid/value
 
     Run Keyword If      '${time_x_nr}'=='time_1'    Element Text Should Be    ${version_uid}    ${composition_uid}
@@ -674,7 +674,7 @@ check content of compositions version at time (XML)
 
     # check content of the latest version is equal to the content committed on the first compo
     ${xtext}=           Get Element           ${xresp}      data/content[1]/data/events[1]/data/items[1]/value/value
-                        Element Text Should Be    ${xtext}    original value
+                        Element Text Should Be    ${xtext}    ${value}
 
 
 check composition exists

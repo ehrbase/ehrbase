@@ -72,6 +72,12 @@ workflows:
           requires:
             - build-ehrbase
             - QUERYSERVICE-test-1
+      
+      - COMPOSITION-tests-5:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
 
       - CONTRIBUTION-test:
           context: org-global
@@ -205,6 +211,12 @@ workflows:
             - QUERYSERVICE-test-2
 
       - COMPOSITION-tests-4:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-2
+      
+      - COMPOSITION-tests-5:
           context: org-global
           requires:
             - build-ehrbase
@@ -404,6 +416,10 @@ workflows:
           context: org-global
           requires:
             - build package ehrbase with locally installed sdk
+      - COMPOSITION-tests-5:
+          context: org-global
+          requires:
+            - build package ehrbase with locally installed sdk
       - CONTRIBUTION-test:
           context: org-global
           requires:
@@ -559,7 +575,7 @@ jobs:
       - checkout
       - restore-packaged-ehrbase-jar
       - run-robot-tests:
-          include-tags: "compositionANDcomposition_json1"
+          include-tags: "compositionANDcomposition_create"
           test-suite-path: "COMPOSITION_TESTS"
           test-suite-name: "COMPOSITION_1"
 
@@ -571,7 +587,7 @@ jobs:
       - checkout
       - restore-packaged-ehrbase-jar
       - run-robot-tests:
-          include-tags: "compositionANDcomposition_json2"
+          include-tags: "compositionANDcomposition_get"
           test-suite-path: "COMPOSITION_TESTS"
           test-suite-name: "COMPOSITION_2"
 
@@ -582,7 +598,7 @@ jobs:
       - checkout
       - restore-packaged-ehrbase-jar
       - run-robot-tests:
-          include-tags: "compositionANDcomposition_xml1"
+          include-tags: "compositionANDcomposition_get_versioned"
           test-suite-path: "COMPOSITION_TESTS"
           test-suite-name: "COMPOSITION_3"
 
@@ -593,9 +609,20 @@ jobs:
       - checkout
       - restore-packaged-ehrbase-jar
       - run-robot-tests:
-          include-tags: "compositionANDcomposition_xml2"
+          include-tags: "compositionANDcomposition_update"
           test-suite-path: "COMPOSITION_TESTS"
           test-suite-name: "COMPOSITION_4"
+    
+  COMPOSITION-tests-5:
+    executor: docker-py3-java11-postgres
+    # executor: machine-ubuntu-2004
+    steps:
+      - checkout
+      - restore-packaged-ehrbase-jar
+      - run-robot-tests:
+          include-tags: "compositionANDcomposition_delete"
+          test-suite-path: "COMPOSITION_TESTS"
+          test-suite-name: "COMPOSITION_5"
 
   CONTRIBUTION-test:
     executor: docker-py3-java11-postgres
