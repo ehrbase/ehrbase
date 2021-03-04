@@ -102,8 +102,14 @@ public class AqlQueryHandler extends DataAccess {
         String columnIdentifier = variableDefinition.getAlias() != null ? variableDefinition.getAlias() : "/"+variableDefinition.getPath();
 
         for (Record record: recordResult){
-            if (variableDefinition.getAlias() != null && !variableDefinition.getAlias().startsWith("_FCT")) //if the variable is a function parameter, ignore it (f.e. count())
-                resultSet.add(record.get(columnIdentifier));
+            if (variableDefinition.getAlias() != null && !variableDefinition.getAlias().startsWith("_FCT")) { //if the variable is a function parameter, ignore it (f.e. count())
+                try {
+                    resultSet.add(record.get(columnIdentifier));
+                } catch (IllegalArgumentException e){
+                    if (!e.getMessage().contains(AuditVariables.AUDIT_VARIABLE_PREFIX))
+                        throw new IllegalStateException("Internal error:"+e.getMessage());
+                }
+            }
         }
         return resultSet;
     }

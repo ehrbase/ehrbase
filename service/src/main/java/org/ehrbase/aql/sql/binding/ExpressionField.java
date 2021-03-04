@@ -45,6 +45,9 @@ public class ExpressionField {
 
         Field<?> field;
 
+        if (className == null)
+            return null;
+
         switch (className) {
             //COMPOSITION attributes
             case "COMPOSITION":
