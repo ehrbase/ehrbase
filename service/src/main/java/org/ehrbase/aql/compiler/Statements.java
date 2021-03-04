@@ -35,7 +35,6 @@ public class Statements {
 
     private ParseTree parseTree;
     private List<Object> whereClause;
-    //    private ParseTreeWalker walker = new ParseTreeWalker();
     private List<I_VariableDefinition> variables;
     private TopAttributes topAttributes;
     private List<OrderAttribute> orderAttributes;
@@ -56,6 +55,9 @@ public class Statements {
         ParseTreeWalker walker = new ParseTreeWalker();
         walker.walk(queryCompilerPass2, parseTree);
         variables = queryCompilerPass2.getVariables();
+
+        variables = new AuditVariables(variables).complete();
+
         whereClause = visitWhere();
         //append any EHR predicates into the where clause list
 

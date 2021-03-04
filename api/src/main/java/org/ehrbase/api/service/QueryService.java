@@ -24,6 +24,7 @@ import org.ehrbase.response.ehrscape.QueryResultDto;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface QueryService extends BaseService {
     /**
@@ -49,4 +50,7 @@ public interface QueryService extends BaseService {
     QueryDefinitionResultDto updateStoredQuery(String qualifiedName, String version, String queryString);
 
     QueryDefinitionResultDto deleteStoredQuery(String qualifiedName, String version);
+
+    //the audit variables
+    Map<String, Set<Object>> getAuditResultMap();
 }
