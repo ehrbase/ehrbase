@@ -27,7 +27,7 @@ Force Tags
 
 *** Test Cases ***
 Alternative flow 2 get COMPOSITION latest on non-existent EHR
-    [Tags]    17    not-ready    bug
+    [Tags]     
 
     # create fake EHR
     generate random ehr_id

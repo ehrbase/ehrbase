@@ -27,7 +27,7 @@ Force Tags
 
 *** Test Cases ***
 Alternative flow 1 get existing COMPOSITION at time, without given time
-    [Tags]    17    not-ready    bug
+    [Tags]     
 
     upload OPT    minimal/minimal_observation.opt
 

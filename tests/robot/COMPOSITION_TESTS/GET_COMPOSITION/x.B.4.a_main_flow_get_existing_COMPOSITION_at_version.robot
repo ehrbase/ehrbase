@@ -27,7 +27,7 @@ Force Tags
 
 *** Test Cases ***
 Main flow get existing COMPOSITION at version
-    [Tags]    17    not-ready    bug
+    [Tags]     
 
     upload OPT      minimal/minimal_observation.opt
 

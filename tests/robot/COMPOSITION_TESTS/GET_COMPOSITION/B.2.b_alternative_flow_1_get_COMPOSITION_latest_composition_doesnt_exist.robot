@@ -27,7 +27,7 @@ Force Tags
 
 *** Test Cases ***
 Alternative flow 1 get COMPOSITION latest, COMPOSITION doesn't exist
-    [Tags]    17    not-ready    bug
+    [Tags]    
 
     create EHR      JSON
     create fake composition
