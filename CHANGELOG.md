@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Endpoints and integration tests for VERSIONED_COMPOSITION (see: https://github.com/ehrbase/ehrbase/pull/448)
 
 ### Changed
 
