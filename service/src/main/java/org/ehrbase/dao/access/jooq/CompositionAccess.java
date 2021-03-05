@@ -303,7 +303,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     }
 
     /**
-     * @throws IllegalArgumentException when no version in compliance with timestamp is available
+     * @throws ObjectNotFoundException when no version in compliance with timestamp is available
      * @throws InternalServerException  on problem with SQL statement or input
      */
     public static int getVersionFromTimeStamp(I_DomainAccess domainAccess, UUID vCompositionUid, Timestamp timeCommitted) {
@@ -332,7 +332,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
             versionComHist++;
         }
         if (versionComHist == 0) {
-            throw new IllegalArgumentException("There are no versions available prior to date " + timeCommitted + " for the the composition with id: " + vCompositionUid);
+            throw new ObjectNotFoundException("composition", "There are no versions available prior to date " + timeCommitted + " for the the composition with id: " + vCompositionUid);
         }
         return versionComHist;
     }
@@ -353,33 +353,33 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         return retrieveCompositionVersion(domainAccess, compositionUid, version);
     }
 
-    public static Map<I_CompositionAccess, Integer> retrieveCompositionsInContribution(I_DomainAccess domainAccess, UUID contribution) {
+    public static Map<ObjectVersionId, I_CompositionAccess> retrieveCompositionsInContribution(I_DomainAccess domainAccess, UUID contribution, String node) {
         Set<UUID> compositions = new HashSet<>();   // Set, because of unique values
         // add all compositions having a link to given contribution
         domainAccess.getContext().select(COMPOSITION.ID).from(COMPOSITION).where(COMPOSITION.IN_CONTRIBUTION.eq(contribution)).fetch()
-                .forEach(rec -> compositions.add(rec.value1()));
+            .forEach(rec -> compositions.add(rec.value1()));
         // and older versions or deleted ones, too
         domainAccess.getContext().select(COMPOSITION_HISTORY.ID).from(COMPOSITION_HISTORY).where(COMPOSITION_HISTORY.IN_CONTRIBUTION.eq(contribution)).fetch()
-                .forEach(rec -> compositions.add(rec.value1()));
+            .forEach(rec -> compositions.add(rec.value1()));
 
         // get whole "version map" of each matching composition and do fine-grain check for matching contribution
         // precondition: each UUID in `compositions` set is unique, so for each the "version map" is only created once below
         // (meta: can't do that as jooq query, because the specific version number isn't stored in DB)
-        Map<I_CompositionAccess, Integer> resultMap = new HashMap<>();
+        Map<ObjectVersionId, I_CompositionAccess> resultMap = new HashMap<>();
         for (UUID compositionId : compositions) {
-            Map<I_CompositionAccess, Integer> map = getVersionMapOfComposition(domainAccess, compositionId);
+            Map<Integer, I_CompositionAccess> map = getVersionMapOfComposition(domainAccess, compositionId);
             // fine-grained contribution ID check
-            for (Map.Entry<I_CompositionAccess, Integer> entry : map.entrySet()) {
-                if (entry.getKey().getContributionId().equals(contribution))
-                    resultMap.put(entry.getKey(), entry.getValue());
-            }
+            map.forEach((k, v) -> {
+                if (v.getContributionId().equals(contribution))
+                    resultMap.put(new ObjectVersionId(compositionId.toString(), node, k.toString()), v);
+            });
         }
 
         return resultMap;
     }
 
-    private static Map<I_CompositionAccess, Integer> getVersionMapOfComposition(I_DomainAccess domainAccess, UUID compositionId) {
-        Map<I_CompositionAccess, Integer> versionMap = new HashMap<>();
+    public static Map<Integer, I_CompositionAccess> getVersionMapOfComposition(I_DomainAccess domainAccess, UUID compositionId) {
+        Map<Integer, I_CompositionAccess> versionMap = new HashMap<>();
 
         // create counter with highest version, to keep track of version number and allow check in the end
         Integer versionCounter = getLastVersionNumber(domainAccess, compositionId);
@@ -390,7 +390,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
             I_CompositionAccess compositionAccess = new CompositionAccess(domainAccess);
             compositionAccess.setCompositionRecord(record);
             compositionAccess.setContent(I_EntryAccess.retrieveInstanceInComposition(domainAccess, compositionAccess));
-            versionMap.put(compositionAccess, versionCounter);
+            versionMap.put(versionCounter, compositionAccess);
 
             versionCounter--;
         }
@@ -406,7 +406,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
             I_CompositionAccess historyAccess = new CompositionAccess(domainAccess);
             historyAccess.setCompositionRecord(historyRecord);
             historyAccess.setContent(I_EntryAccess.retrieveInstanceInComposition(domainAccess, historyAccess));
-            versionMap.put(historyAccess, versionCounter);
+            versionMap.put(versionCounter, historyAccess);
             versionCounter--;
         }
 
@@ -576,12 +576,12 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
                 historyRecord.getLanguage(),
                 historyRecord.getTerritory(),
                 historyRecord.getComposer(),
-                null,
-                null,
+                historyRecord.getSysTransaction(),
+                historyRecord.getSysPeriod(),
                 historyRecord.getHasAudit(),
-                null,
-                null,
-                null
+                historyRecord.getAttestationRef(),
+                historyRecord.getFeederAudit(),
+                historyRecord.getLinks()
         );
     }
 
@@ -789,9 +789,23 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     @Override
     public Boolean update(UUID committerId, UUID systemId, ContributionDef.ContributionState state, I_ConceptAccess.ContributionChangeType contributionChangeType, String description) {
         Timestamp timestamp = TransactionTime.millis();
-        // update both contribution (incl its audit) and the composition's own audit
-        contributionAccess.update(timestamp, committerId, systemId, null, state, contributionChangeType, description);
-        auditDetailsAccess.update(systemId, committerId, contributionChangeType, description);
+        // create new contribution (and its audit) for this operation
+        contributionAccess = new ContributionAccess(this, getEhrid());
+        contributionAccess.setDataType(ContributionDataType.composition);
+        contributionAccess.setState(state);
+        contributionAccess.setAuditDetailsValues(committerId, systemId, description);
+        contributionAccess.setAuditDetailsChangeType(I_ConceptAccess.fetchContributionChangeType(this, contributionChangeType));
+        UUID contributionId = this.contributionAccess.commit();
+        setContributionId(contributionId);
+        // create new composition audit with given values
+        auditDetailsAccess = new AuditDetailsAccess(this);
+        auditDetailsAccess.setSystemId(systemId);
+        auditDetailsAccess.setCommitter(committerId);
+        auditDetailsAccess.setDescription(description);
+        auditDetailsAccess.setChangeType(I_ConceptAccess.fetchContributionChangeType(this, contributionChangeType));
+        UUID auditID = this.auditDetailsAccess.commit();
+        setAuditDetailsId(auditID);
+
         return update(timestamp, true);
     }
 
@@ -920,6 +934,11 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     }
 
     @Override
+    public I_AuditDetailsAccess getAuditDetailsAccess() {
+        return this.auditDetailsAccess;
+    }
+
+    @Override
     public void setAuditDetailsId(UUID auditId) {
         compositionRecord.setHasAudit(auditId);
     }
@@ -967,5 +986,10 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     public void adminDelete() {
         AdminApiUtils adminApi = new AdminApiUtils(getContext());
         adminApi.deleteComposition(this.getId());
+    }
+
+    @Override
+    public UUID getAttestationRef() {
+        return this.compositionRecord.getAttestationRef();
     }
 }
