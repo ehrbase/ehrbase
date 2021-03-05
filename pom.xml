@@ -20,7 +20,7 @@
     <packaging>pom</packaging>
     <groupId>org.ehrbase.openehr</groupId>
     <artifactId>server</artifactId>
-    <version>0.14.0</version>
+    <version>0.15.0</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>EHRbase is a Free, Libre, Open Source openEHR Clinical Data Repository</description>
@@ -130,7 +130,7 @@
         <swagger.version>1.6.2</swagger.version>
         <swagger-snapshot.version>2.0.0-rc2</swagger-snapshot.version>
         <postgressql.version>42.2.18</postgressql.version>
-        <ehrbase.sdk.version>fc328d5</ehrbase.sdk.version>
+        <ehrbase.sdk.version>f7a75b2</ehrbase.sdk.version>
         <flyway.version>6.5.7</flyway.version>
         <joda.version>2.10.6</joda.version>
         <database.name>ehrbase</database.name>

@@ -317,7 +317,10 @@ D-500 Execute Ad-Hoc Query - Get Data
     D/503_select_data_empty_db.json
 
 
-
+D-504 Execute Ad-Hoc Query - Get archetype_details
+    [Template]          execute ad-hoc query and check result (empty DB)
+    [Tags]              AQL_data
+    D/504_select_data_empty_db.json
 
 
 

@@ -2046,3 +2046,18 @@ executors:
 #           path: ~/projects/tests/results/
 #       - store_artifacts:
 #           path: ~/projects/tests/results/
+
+# ## Nightly builds example 
+# workflows:
+#   version: 2
+#   nightly:
+#     triggers:
+#       - schedule:
+#           cron: "0 21 * * *"
+#           filters:
+#             branches:
+#               only:
+#                 - feature/NUM-985-nightly-builds
+#     jobs:
+#       - build-ehrbase
+#       - run-SDK-integration-tests

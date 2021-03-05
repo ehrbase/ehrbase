@@ -50,6 +50,9 @@ tasks:
           # export SECURITY_AUTHTYPE=OAUTH
           # export SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI=http://localhost:8081/auth/realms/ehrbase
           java -jar application/target/application-${EHRbase_VERSION}.jar \
+                    --security.authType="BASIC" \
+                    --security.authUser="myuser" \
+                    --security.authPassword="myPassword432" \
                     --cache.enabled=true \
                     --system.allow-template-overwrite=true \
                     --server.nodename=manual.execution.org > ehrbase-log &

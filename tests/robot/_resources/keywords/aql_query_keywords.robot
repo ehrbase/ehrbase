@@ -490,6 +490,8 @@ Preconditions (PART 1) - Load Blueprints of Queries and Expected-Results
                         ...            D/501_select_data_values_from_compositions_with_given_archetype_in_ehr.json
                         ...            D/502_select_data_values_from_compositions_with_given_archetype_in_ehr.json
                         ...            D/503_select_data_values_from_compositions_with_given_archetype_in_ehr.json
+                        ...            D/504_select_data_archetype_details.json
+
 
                 FOR     ${blueprint}    IN    @{blueprints}
 
@@ -671,6 +673,7 @@ Commit Compo
                         Set Suite Variable    ${compo_archetype_id_value}     ${response.body.archetype_details.archetype_id.value}
                         Set Suite Variable    ${compo_archetype_id}     ${response.body.archetype_details.archetype_id}
                         Set Suite Variable    ${compo_archetype_node_id}    ${response.body.archetype_node_id}
+                        Set Suite Variable    ${compo_archetype_details}    ${response.body.archetype_details} 
                         Set Suite Variable    ${compo_content_archetype_node_id}    ${response.body.content[0].archetype_node_id}
                         Set Suite Variable    ${compo_content_type}    ${response.body.content[0]._type}
                         Set Suite Variable    ${compo_language}    ${response.body.language}
@@ -678,16 +681,56 @@ Commit Compo
                         Set Suite Variable    ${compo_category_value}    ${response.body.category.value}
                         Set Suite Variable    ${compo_category}    ${response.body.category}
 
-    Run Keyword If      "${compo_content_archetype_node_id}"=="openEHR-EHR-OBSERVATION.minimal.v1"    Run Keywords
-    ...                 Set Suite Variable    ${compo_data_origin_value}    ${response.body.content[0].data.origin.value}    AND
-    ...                 Set Suite Variable    ${compo_data_origin}    ${response.body.content[0].data.origin}    AND
-    ...                 Set Suite Variable    ${compo_events_time_value}    ${response.body.content[0].data.events[0].time.value}    AND
-    ...                 Set Suite Variable    ${compo_events_time}    ${response.body.content[0].data.events[0].time}    AND
-    ...                 Set Suite Variable    ${observ_items}    ${response.body.content[0].data.events[0].data["items"]}    AND
-    ...                 Set Suite Variable    ${compo_events_items_value_value}    ${observ_items[0].value.value}    AND
-    ...                 Set Suite Variable    ${compo_events_items_value}    ${observ_items[0].value}
-                        # NOTE: above lines contain a workaround to set "{content[0].data.events[0].data.items[0].value.value}"
-                        #       which normaly fails cause Robot/Python considers 'items' to be a method/function
+
+
+
+
+    #++++++ WORKAROUND ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    # for https://github.com/ehrbase/project_management/issues/361
+    # TODO: remove when issue is fixed
+
+            # BACKUP previous solution
+            # Run Keyword If      "${compo_content_archetype_node_id}"=="openEHR-EHR-OBSERVATION.minimal.v1"    Run Keywords
+            # ...                 Set Suite Variable    ${compo_data_origin_value}    ${response.body.content[0].data.origin.value}    AND
+            # ...                 Set Suite Variable    ${compo_data_origin}    ${response.body.content[0].data.origin}    AND
+            # ...                 Set Suite Variable    ${compo_events_time_value}    ${compo_events_time_value}    AND
+            # ...                 Set Suite Variable    ${compo_events_time}    ${response.body.content[0].data.events[0].time}    AND
+            # ...                 Set Suite Variable    ${observ_items}    ${response.body.content[0].data.events[0].data["items"]}    AND
+            # ...                 Set Suite Variable    ${compo_events_items_value_value}    ${observ_items[0].value.value}    AND
+            # ...                 Set Suite Variable    ${compo_events_items_value}    ${observ_items[0].value}
+            #                     # NOTE: above lines contain a workaround to set "{content[0].data.events[0].data.items[0].value.value}"
+            #                     #       which normaly fails cause Robot/Python considers 'items' to be a method/function
+
+
+    IF      "${compo_content_archetype_node_id}"=="openEHR-EHR-OBSERVATION.minimal.v1"
+            ${compo_data_origin_value}=    Set Variable    ${response.body.content[0].data.origin.value}    # part of workaround
+            ${compo_data_origin_value}=    Replace String 	${compo_data_origin_value} 	, 	.               # part of workaround
+            Set Suite Variable    ${compo_data_origin_value}    ${compo_data_origin_value}                  # last var part of workaround
+
+            ${compo_data_origin}=          Set Variable    ${response.body.content[0].data.origin}          # part of workaround
+            Update Value To Json    ${compo_data_origin}    $.value    ${compo_data_origin_value}           # part of workaround
+            Set Suite Variable    ${compo_data_origin}    ${compo_data_origin}                              # last var part of workaround
+
+            ${compo_events_time_value}=    Set Variable    ${response.body.content[0].data.events[0].time.value}    # part of workaround
+            ${compo_events_time_value}=    Replace String 	${compo_events_time_value} 	, 	.                       # part of workaround
+            Set Suite Variable    ${compo_events_time_value}    ${compo_events_time_value}                          # last var part of workaround
+
+            ${compo_events_time}=          Set Variable    ${response.body.content[0].data.events[0].time}  # part of workaround
+            Update Value To Json    ${compo_events_time}    $.value    ${compo_events_time_value}           # part of workaround
+            Set Suite Variable    ${compo_events_time}    ${compo_events_time}                              # last var part of workaround
+
+            Set Suite Variable    ${observ_items}    ${response.body.content[0].data.events[0].data["items"]}
+            Set Suite Variable    ${compo_events_items_value_value}    ${observ_items[0].value.value}
+            Set Suite Variable    ${compo_events_items_value}    ${observ_items[0].value}
+                    # NOTE: above lines contain a workaround to set "{content[0].data.events[0].data.items[0].value.value}"
+                    #       which normaly fails cause Robot/Python considers 'items' to be a method/function
+    END
+    #++++++ END OF WORKAROUND ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+
+
 
     ###########################################################################################
     #                                                                                         #
@@ -754,6 +797,7 @@ Commit Compo
     D/501
     D/502
     D/503
+    D/504
 
 
     # BACKLOG / DATA GENERATION NOT READY/POSSIBLE OR NOT CLEAR HOW TO DO
@@ -1636,7 +1680,16 @@ D/503
                         Update 'rows' in Temp Result-Data-Set    D/503
 
 
+D/504
+    [Documentation]     Conditions are set to meet reqs of expected result-data-set.
+    ...                 Here we are interested only in EHR record number 1 and all of it's compositions.
+    ...                 1. Don't do anything if {ehr_index} is not 1.
+    ...                 2. Update query-data-set ONLY on FIRST iteration to avoid unnecessary repetitions.
+                        Return From Keyword If    not ${ehr_index}==1    NOTHING TO DO HERE!
+                        Run Keyword if    ${ehr_index}==1 and ${compo_index}==1    Update Temp Query-Data-Set    D/504
+                        Create Temp List    ${compo_archetype_details}
 
+                        Update 'rows', 'q' and 'meta' in Temp Result-Data-Set    D/504
 
 
 
