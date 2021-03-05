@@ -21,7 +21,7 @@ Documentation   Composition Integration Tests
 Metadata        TOP_TEST_SUITE    COMPOSITION
 Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Force Tags
+Force Tags      COMPOSITION_get_versioned
 
 
 

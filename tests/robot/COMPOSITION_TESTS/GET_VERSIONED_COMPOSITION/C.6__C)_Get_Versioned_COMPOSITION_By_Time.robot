@@ -144,7 +144,7 @@ Force Tags      COMPOSITION_get_versioned
 # TODO: figure out how to address the variable
 6. Get Composition via Versioned Composition Of Existing EHR by Time Check Data (JSON)
     [Documentation]    Simple, but checking object data - with two versions
-    [Tags]              not-ready
+    [Tags]
 
     prepare new request session    JSON    Prefer=return=representation
 
@@ -154,20 +154,11 @@ Force Tags      COMPOSITION_get_versioned
 
     get version of versioned composition of EHR by UID and time    ${versioned_object_uid}
     Should Be Equal As Strings    ${response.status}    200
-    # the target string is (in basic style): response.body.data.content[0].data.events[0].data.items[0].value.value
+    # comment: the target string is (in basic style): response.body.data.content[0].data.events[0].data.items[0].value.value
+    ${items} =    Set Variable    ${response.body.data.content[0].data.events[0].data["items"]}
+    ${target_string} =   Set Variable    ${items[0].value.value}
 
-    Log    ${response.body.data.content[0].data.events[0].data}
-    Log    ${response.body.data.content[0].data.events[0].data.name}
-    Log    ${response.body.data.content[0].data.events[0].data.items}
-
-    # ${items} =    ${response.body.data.content[0].data.events[0].data.items}
-    # Convert To Dictionary    ${items}
-
-    # ${items} =    Convert To Dictionary    ${response.body.data.content[0].data.events[0].data.items}
-    # Log    ${items}
-
-    # TODO: after figuring out how to address it set it below
-    # Should Be Equal As Strings    modified value    ${response.body.data.........}
+    Should Be Equal As Strings    ${target_string}    modified value
 
 
 7a. Get Composition via Versioned Composition Of Existing EHR by Time With Parameter Check (JSON)
