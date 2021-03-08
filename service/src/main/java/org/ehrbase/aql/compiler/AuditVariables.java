@@ -23,54 +23,23 @@ import org.ehrbase.aql.definition.FunctionDefinition;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.VariableDefinition;
 
-import java.util.List;
+import java.util.*;
 
 public class AuditVariables {
 
     public static final String AUDIT_VARIABLE_PREFIX = "$__AUDIT_";
     //a list of audit variables needed if not present
-    //defines as: path, alias, symbol
+    //defined as: path, alias, usual symbol
+    //NB. only the path is relevant for identification
     public static final String[][] requiredAuditVariables = {
             {"ehr_id/value", AUDIT_VARIABLE_PREFIX+"EHR_ID", "e"}
     };
 
-    private final List<I_VariableDefinition> variables;
+    //set of path to skip whenever used in aggregate function
+    private Set<String> skipList;
 
-    public AuditVariables(List<I_VariableDefinition> variables) {
-        this.variables = variables;
-    }
-
-    /**
-     * complete the query by adding missing required audit variable. Added variables are tagged hidden
-     * and therefore will not appear in the query result but will be held in the audit result map
-     * @return
-     */
-    public List<I_VariableDefinition> complete(){
-
-        //check if we deal with (aggregate) functions... if so, we cannot just insert the audit data select
-        for (I_VariableDefinition variableDefinition: variables){
-            if (variableDefinition instanceof FunctionDefinition)
-                return variables;
-        }
-
-        for (String[] auditVarDef: requiredAuditVariables){
-            //loop in variables to check for existence
-            boolean found = false;
-
-            for (I_VariableDefinition variableDefinition: variables) {
-                if (variableDefinition.getPath() != null && variableDefinition.getPath().equals(auditVarDef[0])) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found){
-                //add a hidden audit variable
-                I_VariableDefinition variableDefinition = new VariableDefinition(auditVarDef[0],  auditVarDef[1], auditVarDef[2], false, true);
-                variables.add(variableDefinition);
-            }
-        }
-
-        return variables;
+    public AuditVariables() {
+        this.skipList = new HashSet<>();
     }
 
     /**
@@ -78,17 +47,31 @@ public class AuditVariables {
      * @param variable
      * @return
      */
-    public static boolean isAuditData(I_VariableDefinition variable){
+    public boolean isAuditVariable(I_VariableDefinition variable){
 
         boolean retval = false;
 
         for (String[] auditVarDef: requiredAuditVariables) {
-            if (variable.getPath() != null && variable.getPath().equals(auditVarDef[0])) {
+            if (variable instanceof FunctionDefinition){
+                //check if this function uses an audit variable
+                if (variable.getPath().contains(auditVarDef[0])){
+                    skipList.add(auditVarDef[0]);
+                }
+            }
+            else if (variable.getPath() != null && variable.getPath().equals(auditVarDef[0])) {
                 retval = true;
                 break;
             }
         }
 
         return retval;
+    }
+
+    public void addResults(Map<String, Set<Object>> auditResultMap, String path, Set<Object> resultSetForVariable) {
+        //check if this path is not to be skipped
+        if (!skipList.contains(path)){
+            auditResultMap.put(path, resultSetForVariable);
+        }
+
     }
 }

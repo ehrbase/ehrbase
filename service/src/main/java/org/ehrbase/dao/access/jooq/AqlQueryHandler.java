@@ -62,6 +62,9 @@ public class AqlQueryHandler extends DataAccess {
 
     @SuppressWarnings("unchecked")
     private AqlResult execute(AqlExpression aqlExpression){
+
+        AuditVariables auditVariables = new AuditVariables();
+
         Contains contains = new Contains(aqlExpression.getParseTree(), (KnowledgeCacheService)this.getDataAccess().getIntrospectService()).process();
 
         Statements statements = new Statements(aqlExpression.getParseTree(), contains.getIdentifierMapper(), tsAdapter).process();
@@ -78,9 +81,9 @@ public class AqlQueryHandler extends DataAccess {
         while (iterator.hasNext()) {
             I_VariableDefinition variableDefinition = iterator.next();
 
-            if (AuditVariables.isAuditData(variableDefinition)){
+            if (auditVariables.isAuditVariable(variableDefinition)){
                 //add the result to the list of audit variables
-                auditResultMap.put(variableDefinition.getPath(), resultSetForVariable(variableDefinition, aqlResult.getRecords()));
+                auditVariables.addResults(auditResultMap, variableDefinition.getPath(), resultSetForVariable(variableDefinition, aqlResult.getRecords()));
             }
 
             if (!variableDefinition.isHidden())
@@ -103,12 +106,7 @@ public class AqlQueryHandler extends DataAccess {
 
         for (Record record: recordResult){
             if (variableDefinition.getAlias() != null && !variableDefinition.getAlias().startsWith("_FCT")) { //if the variable is a function parameter, ignore it (f.e. count())
-                try {
-                    resultSet.add(record.get(columnIdentifier));
-                } catch (IllegalArgumentException e){
-                    if (!e.getMessage().contains(AuditVariables.AUDIT_VARIABLE_PREFIX))
-                        throw new IllegalStateException("Internal error:"+e.getMessage());
-                }
+                resultSet.add(record.get(columnIdentifier));
             }
         }
         return resultSet;

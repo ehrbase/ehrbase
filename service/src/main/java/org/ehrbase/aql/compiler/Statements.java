@@ -56,10 +56,7 @@ public class Statements {
         walker.walk(queryCompilerPass2, parseTree);
         variables = queryCompilerPass2.getVariables();
 
-        variables = new AuditVariables(variables).complete();
-
         whereClause = visitWhere();
-        //append any EHR predicates into the where clause list
 
         //from Contains
         if (identifierMapper.hasEhrContainer())
@@ -102,7 +99,6 @@ public class Statements {
                 .allMatch(v -> EhrResolver.isEhrAttribute(v.getPath()));
 
         // Force distinct If only contains ehr variables
-        //FIXME https://github.com/ehrbase/project_management/issues/375
         if (!containsNonEhrVariable && containsOnlyEhrAttributes) {
             variables.forEach(v -> v.setDistinct(true));
         }
