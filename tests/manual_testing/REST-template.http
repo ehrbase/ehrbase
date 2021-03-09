@@ -1,0 +1,80 @@
+#
+# Use this with REST Client for Visual Studio Code by Huachao Mao
+# search for "rest client" in VSCode's extensions marketplace
+# KEYBOARD SHORTCUT: Ctrl + Alt + R (trigger request focused by cursor)
+
+
+
+@ehrbase_url = http://localhost:8080/ehrbase/rest/openehr/v1
+@uuid = {{$guid}}
+@randomize = {{$randomInt 001 10000}}
+@subject_namespace = NAMESPACE_{{$randomInt 001 10000}}
+@subject_id = {{create_ehr.response.body.ehr_status.subject.external_ref.id.value}}
+@ehr_id = {{create_ehr.response.body.ehr_id.value}}
+
+
+
+
+#///////////////////////////////
+#// PRECONDITIONS           ///
+#/////////////////////////////
+
+1. start EHRbase's PostgreSQL DB
+2. start EHRbase with Basic Auth
+
+###
+
+
+
+#///////////////////////////////
+#// UPLOAD OPT              ///
+#/////////////////////////////
+
+// @name upload_opt
+POST {{ehrbase_url}}/definition/template/adl1.4
+content-type: application/xml
+Accept: application/xml
+Prefer: return=representation
+Authorization: Basic myuser:myPassword432
+
+<@ ./test-data/opt/minimal_action.opt
+
+###
+
+
+
+#////////////////////////////
+#// GET OPT              ///
+#//////////////////////////
+
+@template_id = {{upload_opt.response.body.//*[name()='template_id']/*[name()='value']}}
+
+// @name get_opt
+GET {{ehrbase_url}}/definition/template/adl1.4/{{template_id}}
+content-type: application/xml
+Accept: application/xml
+Prefer: return=representation
+Authorization: Basic myuser:myPassword432
+
+###
+
+
+
+#////////////////////////////////////////////
+#// (ADMIN) UPDATE TEMPLATE              ///
+#//////////////////////////////////////////
+
+@template_id = {{upload_opt.response.body.//*[name()='template_id']/*[name()='value']}}
+@template_uid = {{upload_opt.response.body.//*[name()='uid']/*[name()='value']}}
+@updated_value_1 = "BUSTED! BUSTED! BUSTED!"
+
+// @name update_opt
+PUT {{ehrbase_url}}/admin/template/{{template_id}}
+content-type: application/xml
+Accept: application/xml
+Prefer: return=representation
+Authorization: Basic ehrbase-admin:EvenMoreSecretPassword
+
+<@ ./test-data/opt/minimal_action_update.opt
+
+###

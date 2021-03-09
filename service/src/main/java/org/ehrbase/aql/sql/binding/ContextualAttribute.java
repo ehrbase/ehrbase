@@ -55,7 +55,10 @@ public class ContextualAttribute {
 
         if (clause.equals(IQueryImpl.Clause.SELECT)) {
             variableDefinition.setPath(originalPath);
-            field = field.as("/"+originalPath);
+            if (originalPath != null)
+               field = field.as("/"+originalPath);
+            else
+                field = field.as(variableDefinition.getIdentifier());
         }
 
         jsonbItemPath = compositionAttribute.getJsonbItemPath();

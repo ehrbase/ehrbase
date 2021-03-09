@@ -154,6 +154,10 @@ public class OpenehrQueryController extends BaseController {
         } else
             return missingRequestResponseEntity();
 
+        //TODO: get the audit variables resulting from AQL processing
+        //the variables are in a map with path as key (f.e. ehr_id/value) and a list of corresponding values
+//            queryService.getAuditResultMap()
+
         if (queryResponseData == null)
             return ResponseEntity.noContent().build();
             //NB. Empty result -> HTTP 200 with empty columns and rows (EtherCIS previously returned 204, but I think it's wrong)

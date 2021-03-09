@@ -22,6 +22,38 @@
 ###
 
 
+#////////////////////////////////////////
+#// GET EHRBASE VERSION              ///
+#//////////////////////////////////////
+
+# @name get_ehrbase_version
+GET {{ehrbase_url}}/status HTTP/1.1
+content-type: application/json
+Accept: application/json
+Prefer: return=representation
+# Authorization: Basic bXl1c2VyOm15UGFzc3dvcmQ0MzI=
+
+###
+
+
+
+#///////////////////////////////
+#// UPLOAD OPT              ///
+#/////////////////////////////
+
+# @name upload_opt
+POST {{ehrbase_url}}/definition/template/adl1.4 HTTP/1.1
+content-type: application/xml
+Accept: application/xml
+Prefer: return=representation
+# Authorization: Basic bXl1c2VyOm15UGFzc3dvcmQ0MzI=
+
+< ../robot/_resources/test_data_sets/valid_templates/minimal/minimal_evaluation.opt
+
+###
+
+
+
 #///////////////////////////////
 #// CREATE EHR              ///
 #/////////////////////////////
@@ -71,6 +103,21 @@ Authorization: Basic bXl1c2VyOm15UGFzc3dvcmQ0MzI=
 
 ###
 
+
+#///////////////////////////////////////
+#// COMMIT COMPOSITION              ///
+#/////////////////////////////////////
+
+# @name commit_composition
+POST {{ehrbase_url}}/ehr/{{ehr_id}}/composition HTTP/1.1
+content-type: application/json
+Accept: application/json
+Prefer: return=representation
+# Authorization: Basic bXl1c2VyOm15UGFzc3dvcmQ0MzI=
+
+< ../robot/_resources/test_data_sets/compositions/valid/minimal_evaluation_1.composition.json
+
+###
 
 
 # #/////////////////////////////////////////////////

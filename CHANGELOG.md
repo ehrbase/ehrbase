@@ -5,7 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
 ## [Unreleased]
+
+### Added
+
+### Changed
+
+
+### Fixed
+
+
+## [0.15.0] (beta)
 
 ### Added
 - Adds Admin API endpoints: Del EHR, Del Composition and Del Contribution (see: https://github.com/ehrbase/ehrbase/pull/344)
@@ -17,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add /status/env endpoint for environment information (see: https://github.com/ehrbase/ehrbase/pull/400)
 - Add /status/metrics endpoint for detailed metrics on specific topics (db connection, http requests, etc.) (see: https://github.com/ehrbase/ehrbase/pull/400)
 - Add /status/prometheus endpoint for prometheus metrics (see: https://github.com/ehrbase/ehrbase/pull/400)
+- Endpoints and integration tests for VERISONED_EHR_STATUS (see: https://github.com/ehrbase/ehrbase/pull/415)
 
 ### Changed
 
@@ -25,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactored DB handling of contributions, removed misleading `CONTIRUBITON_HISTORY` table (see https://github.com/ehrbase/ehrbase/pull/416)
 
 ### Fixed
+TODO: add links
 
 
 
@@ -200,7 +213,8 @@ Starting with the next release this file will provide a proper overview.
 - Fixed error regarding DISTINCT operator in AQL (https://github.com/ehrbase/ehrbase/issues/50)
 - Fixed null pointer exceptions that could occur in persistent compositions
 
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.14.0...HEAD
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.15.0...HEAD
+[0.15.0]: https://github.com/ehrbase/ehrbase/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/ehrbase/ehrbase/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/ehrbase/ehrbase/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/ehrbase/ehrbase/compare/v0.11.0...v0.12.0
