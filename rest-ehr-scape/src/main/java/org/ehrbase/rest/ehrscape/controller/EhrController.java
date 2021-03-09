@@ -24,10 +24,6 @@ import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.PartyRef;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.DuplicateObjectException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -35,7 +31,6 @@ import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.EhrStatusDto;
-import org.ehrbase.rest.ehrscape.controller.OperationNotesResourcesReader.ApiNotes;
 import org.ehrbase.rest.ehrscape.responsedata.Action;
 import org.ehrbase.rest.ehrscape.responsedata.EhrResponseData;
 import org.ehrbase.rest.ehrscape.responsedata.Meta;
@@ -71,19 +66,13 @@ public class EhrController extends BaseController {
     }
 
     @PostMapping()
-    @ApiOperation(value = "Create a EHR for subject", response = EhrResponseData.class)
-    @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Successfully created - response body will contain the newly created EHR's ID."),
-        @ApiResponse(code = 400, message = "Bad request - no subject ID specified, no subject namespace specified, EHR for the specified subject ID and namespace already exists."),
-        @ApiResponse(code = 401, message = "Unauthenticated - could not authenticate the user."),
-        @ApiResponse(code = 403, message = "Forbidden - the user does not have the required permissions to execute this request.")})
     @ResponseStatus(value= HttpStatus.CREATED)  // overwrites default 200, fixes the wrong listing of 200 in swagger-ui (EHR-56)
-    public ResponseEntity<EhrResponseData> createEhr(@ApiParam(value = "Id of a subject in a remote namespace") @RequestParam(value = "subjectId", required = false) String subjectId,
-                                                     @ApiParam(value = "Remote namespace of the subject") @RequestParam(value = "subjectNamespace", required = false) String subjectNamespace,
-                                                     @ApiParam(value = "The external ID of the committer user.") @RequestParam(value = "committerId", required = false) String committerId,
-                                                     @ApiParam(value = "The name of the committer user. If omitted, the current session's logged in user's name will be used.") @RequestParam(value = "committerName", required = false) String committerName,
-                                                     @ApiParam(value = "Sets the response type") @RequestHeader(value = "Content-Type", required = false) String contentType,
-                                                     @ApiParam(value = "otherDetails") @RequestBody(required = false) String content) throws Exception {
+    public ResponseEntity<EhrResponseData> createEhr(@RequestParam(value = "subjectId", required = false) String subjectId,
+                                                     @RequestParam(value = "subjectNamespace", required = false) String subjectNamespace,
+                                                     @RequestParam(value = "committerId", required = false) String committerId,
+                                                     @RequestParam(value = "committerName", required = false) String committerName,
+                                                     @RequestHeader(value = "Content-Type", required = false) String contentType,
+                                                     @RequestBody(required = false) String content) throws Exception {
 
         // subjectId and subjectNamespace are not required by EhrScape spec but without those parameters a 400 error shall be returned
         if ((subjectId == null) || (subjectNamespace == null)) {
@@ -102,52 +91,31 @@ public class EhrController extends BaseController {
     }
 
     @GetMapping()
-    @ApiOperation(value = "Find EHR by subject")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Success - response body will contain information about the EHR."),
-            @ApiResponse(code = 204, message = "No content - no EHR for the specified subject ID and namespace exists."),
-            @ApiResponse(code = 400, message = "Bad request - no subject ID specified, no subject namespace specified."),
-            @ApiResponse(code = 401, message = "Unauthenticated - could not authenticate the user."),
-            @ApiResponse(code = 403, message = "Forbidden - the user does not have the required permissions to execute this request.")})
-    public ResponseEntity<EhrResponseData> getEhr(@ApiParam(required = true, value = "Id of a subject in a remote namespace") @RequestParam(value = "subjectId") String subjectId,
-                                                  @ApiParam(required = true, value = "Remote namespace of the subject") @RequestParam(value = "subjectNamespace") String subjectNamespace,
-                                                  @ApiParam(value = "Sets the response type") @RequestHeader(value = "Content-Type", required = false) String contentType) {
+    public ResponseEntity<EhrResponseData> getEhr(@RequestParam(value = "subjectId") String subjectId,
+                                                  @RequestParam(value = "subjectNamespace") String subjectNamespace,
+                                                  @RequestHeader(value = "Content-Type", required = false) String contentType) {
 
         Optional<UUID> ehrId = ehrService.findBySubject(subjectId, subjectNamespace);
         return ehrId.flatMap(i -> buildEhrResponseData(i, Action.RETRIEVE, contentType)).map(ResponseEntity::ok).orElse(ResponseEntity.noContent().build());
     }
 
     @GetMapping(path = "/{uuid}")
-    @ApiOperation(value = "Returns information about the specified EHR")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Success - response body will contain information about the EHR."),
-            @ApiResponse(code = 401, message = "Unauthenticated - could not authenticate the user."),
-            @ApiResponse(code = 403, message = "Forbidden - the user does not have the required permissions to execute this request."),
-            @ApiResponse(code = 404, message = "Not found - EHR does not exist.")})
-    public ResponseEntity<EhrResponseData> getEhr(@ApiParam(value = "EHR ID", required = true) @PathVariable("uuid") UUID ehrId,
-                                                  @ApiParam(value = "Sets the response type") @RequestHeader(value = "Content-Type", required = false) String contentType) {
+    public ResponseEntity<EhrResponseData> getEhr(@PathVariable("uuid") UUID ehrId,
+                                                  @RequestHeader(value = "Content-Type", required = false) String contentType) {
 
         return Optional.ofNullable(ehrId).flatMap(i -> buildEhrResponseData(i, Action.RETRIEVE, contentType)).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping(path = "/{uuid}/status")
-    @ApiOperation(value = "Update status of the specified EHR")
-    @ApiNotes("ehrPutEhrUuidStatus.md")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Success - EHR_STATUS updated."),
-            @ApiResponse(code = 201, message = "(not valid, ignore. documentation produces this entry automatically."),
-            @ApiResponse(code = 401, message = "Unauthenticated - could not authenticate the user."),
-            @ApiResponse(code = 403, message = "Forbidden - the user does not have the required permissions to execute this request."),
-            @ApiResponse(code = 404, message = "Not found - specified EHR was not found.")})
-    public ResponseEntity<EhrResponseData> updateStatus(@ApiParam(value = "EHR ID", required = true) @PathVariable("uuid") UUID ehrId,
-                                                        @ApiParam(value = "EHR status.", required = true) @RequestBody() String ehrStatus,
-                                                        @ApiParam(value = "Sets the response type") @RequestHeader(value = "Content-Type", required = false) String contentType) {
+    public ResponseEntity<EhrResponseData> updateStatus(@PathVariable("uuid") UUID ehrId,
+                                                        @RequestBody() String ehrStatus,
+                                                        @RequestHeader(value = "Content-Type", required = false) String contentType) {
 
         ehrService.updateStatus(ehrId, extractEhrStatus(ehrStatus), null);
         return Optional.ofNullable(ehrId).flatMap(i -> buildEhrResponseData(i, Action.UPDATE, contentType)).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
-    private EhrStatus extractEhrStatus(@RequestBody @ApiParam(value = "EHR status.", required = true) String content) {
+    private EhrStatus extractEhrStatus(@RequestBody String content) {
         EhrStatus ehrStatus = new EhrStatus();
 
         if (StringUtils.isNotBlank(content)) {

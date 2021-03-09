@@ -37,8 +37,6 @@ import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.FolderService;
 import org.ehrbase.response.ehrscape.FolderDto;
 import org.ehrbase.response.openehr.DirectoryResponseData;
-import org.ehrbase.response.openehr.ErrorResponseData;
-import org.ehrbase.rest.openehr.controller.OperationNotesResourcesReaderOpenehr.ApiNotes;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -58,17 +56,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.ResponseHeader;
-
 /**
  * Controller for openEHR /directory endpoints
  */
-@Api(tags = "Directory")
 @RestController
 @RequestMapping(path = "/rest/openehr/v1/ehr")
 public class OpenehrDirectoryController extends BaseController {
@@ -83,50 +73,15 @@ public class OpenehrDirectoryController extends BaseController {
     }
 
     @PostMapping(value = "/{ehr_id}/directory")
-    @ApiOperation("Create a new directory folder associated with the EHR identified by ehr_id.")
-    @ApiNotes("directoryPost.md")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    code = 201,
-                    response = DirectoryResponseData.class,
-                    message = "Created successfully - new FOLDER created was created. Content body is only returned when Prefer header has return=representation, otherwise only headers are returned.",
-                    responseHeaders = {
-                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class),
-                            @ResponseHeader(name = LOCATION, description = RESP_LOCATION_DESC, response = URI.class),
-                            @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class),
-                            @ResponseHeader(name = LAST_MODIFIED, description = RESP_LAST_MODIFIED_DESC, response = long.class)
-                    }
-            ),
-            @ApiResponse(
-                    code = 204,
-                    message = "No Content - New FOLDER was created but not full representation requested. Details in response headers.",
-                    responseHeaders = {
-                            @ResponseHeader(name = LOCATION, description = RESP_LOCATION_DESC, response = URI.class),
-                            @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class),
-                            @ResponseHeader(name = LAST_MODIFIED, description = RESP_LAST_MODIFIED_DESC, response = long.class)
-                    }
-            ),
-            @ApiResponse(
-                    code = 400,
-                    message = "Bad Request - New FOLDER could not be created due to a malformed request data. Request must be modified to match the expected formats.",
-                    response = ErrorResponseData.class
-            ),
-            @ApiResponse(
-                    code = 404,
-                    message = "Not Found - New FOLDER could not be created due to the EHR identified by the ehr_id could not be found.",
-                    response = ErrorResponseData.class
-            )
-    })
     @ResponseStatus(value = HttpStatus.CREATED)
     public ResponseEntity<DirectoryResponseData> createFolder(
-            @ApiParam(value = REQ_OPENEHR_VERSION) @RequestHeader(value = "openEHR-VERSION", required = false) String openEhrVersion,
-            @ApiParam(value = REQ_OPENEHR_AUDIT) @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openEhrAuditDetails,
-            @ApiParam(value = REQ_CONTENT_TYPE_BODY) @RequestHeader(value = CONTENT_TYPE) String contentType,
-            @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
-            @ApiParam(value = REQ_PREFER) @RequestHeader(value = PREFER, required = false, defaultValue = RETURN_MINIMAL) String prefer,
-            @ApiParam(value = "EHR identifier from resource path after ehr/", required = true) @PathVariable(value = "ehr_id") UUID ehrId,
-            @ApiParam(value = "The FOLDER to create.", required = true) @RequestBody Folder folder
-    ) {
+            @RequestHeader(value = "openEHR-VERSION", required = false) String openEhrVersion,
+            @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openEhrAuditDetails,
+            @RequestHeader(value = CONTENT_TYPE) String contentType,
+            @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
+            @RequestHeader(value = PREFER, required = false, defaultValue = RETURN_MINIMAL) String prefer,
+            @PathVariable(value = "ehr_id") UUID ehrId,
+            @RequestBody Folder folder) {
 
         // Check for existence of EHR record
         checkEhrExists(ehrId);
@@ -158,34 +113,11 @@ public class OpenehrDirectoryController extends BaseController {
     }
 
     @GetMapping(path = "/{ehr_id}/directory/{version_uid}{?path}")
-    @ApiOperation("Get an existing FOLDER in EHR identified by id ")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    code = 200,
-                    response = DirectoryResponseData.class,
-                    message = "Success - FOLDER found and will be returned inside response body.",
-                    responseHeaders = {
-                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class),
-                            @ResponseHeader(name = LOCATION, description = RESP_LOCATION_DESC, response = URI.class),
-                            @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class),
-                            @ResponseHeader(name = LAST_MODIFIED, description = RESP_LAST_MODIFIED_DESC, response = long.class)
-                    }
-            ),
-            @ApiResponse(
-                    code = 204,
-                    message = "No Content - No FOLDER found at specified path."
-            ),
-            @ApiResponse(
-                    code = 404,
-                    message = ("Not Found - Either specified EHR with ehr_id or directory with the directory_id do not exist.")
-            )
-    })
     public ResponseEntity<DirectoryResponseData> getFolder(
-            @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
-            @ApiParam(value = "EHR identifier from resource path after ehr/", required = true) @PathVariable(value = "ehr_id") UUID ehrId,
-            @ApiParam(value = "DIRECTORY identifier from resource path after directory/", required = true) @PathVariable(value = "version_uid") ObjectVersionId folderId,
-            @ApiParam(value = "Path parameter to specify a subfolder at directory") @RequestParam(value = "path", required = false) String path
-    ) {
+            @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
+            @PathVariable(value = "ehr_id") UUID ehrId,
+            @PathVariable(value = "version_uid") ObjectVersionId folderId,
+            @RequestParam(value = "path", required = false) String path) {
 
         // Path value
         if (path != null && !isValidPath(path)) {
@@ -215,34 +147,11 @@ public class OpenehrDirectoryController extends BaseController {
     }
 
     @GetMapping(path = "/{ehr_id}/directory{?version_at_time,path}")
-    @ApiOperation("Get an existing FOLDER in EHR which was actual at given version at time.")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    code = 200,
-                    response = DirectoryResponseData.class,
-                    message = "Success - FOLDER found and will be returned inside response body.",
-                    responseHeaders = {
-                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class),
-                            @ResponseHeader(name = LOCATION, description = RESP_LOCATION_DESC, response = URI.class),
-                            @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class),
-                            @ResponseHeader(name = LAST_MODIFIED, description = RESP_LAST_MODIFIED_DESC, response = long.class)
-                    }
-            ),
-            @ApiResponse(
-                    code = 204,
-                    message = "No Content - EHR has no version at time or no folder at path"
-            ),
-            @ApiResponse(
-                    code = 404,
-                    message = ("Not Found - Specified EHR with ehr_id does not exist.")
-            )
-    })
     public ResponseEntity<DirectoryResponseData> getFolderVersionAtTime(
-            @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
-            @ApiParam(value = "EHR identifier from resource path after ehr/", required = true) @PathVariable(value = "ehr_id") UUID ehrId,
-            @ApiParam(value = "Timestamp in extended ISO8601 format to identify version of folder.") @RequestParam(value = "version_at_time", required = false) Instant versionAtTime,
-            @ApiParam(value = "Path parameter to specify a sub folder at directory") @RequestParam(value = "path", required = false) String path
-    ) {
+            @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
+            @PathVariable(value = "ehr_id") UUID ehrId,
+            @RequestParam(value = "version_at_time", required = false) Instant versionAtTime,
+            @RequestParam(value = "path", required = false) String path) {
         // Check path string if they are valid
         if (path != null && !isValidPath(path)) {
             throw new IllegalArgumentException("Value for path is malformed. Expecting a unix like notation, e.g. '/episodes/a/b/c'");
@@ -286,59 +195,15 @@ public class OpenehrDirectoryController extends BaseController {
     }
 
     @PutMapping(path = "/{ehr_id}/directory")
-    @ApiOperation("Update an existing folder in directory. The folder will be identified by the latest version_uid specified in the If-Match header")
-    @ApiNotes("directoryPut.md")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    code = 200,
-                    response = DirectoryResponseData.class,
-                    message = "Success - FOLDER has been updated successfully.",
-                    responseHeaders = {
-                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class),
-                            @ResponseHeader(name = LOCATION, description = RESP_LOCATION_DESC, response = URI.class),
-                            @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class),
-                            @ResponseHeader(name = LAST_MODIFIED, description = RESP_LAST_MODIFIED_DESC, response = long.class)
-                    }
-            ),
-            @ApiResponse(
-                    code = 204,
-                    message = "Success - FOLDER has been updated successfully but no representation has been requested. Details at response headers.",
-                    responseHeaders = {
-                            @ResponseHeader(name = LOCATION, description = RESP_LOCATION_DESC, response = URI.class),
-                            @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class),
-                            @ResponseHeader(name = LAST_MODIFIED, description = RESP_LAST_MODIFIED_DESC, response = long.class)
-                    }
-            ),
-            @ApiResponse(
-                    code = 400,
-                    response = ErrorResponseData.class,
-                    message = "Bad Request - FOLDER could not be updated due to one or more malformed request parameters or data."
-            ),
-            @ApiResponse(
-                    code = 404,
-                    response = ErrorResponseData.class,
-                    message = "Not Found - EHR with given id from path could not be found."
-            ),
-            @ApiResponse(
-                    code = 412,
-                    response = ErrorResponseData.class,
-                    message = "Precondition failed - The version specified in the If-Match header does not match the latest version of the FOLDER. Returns the latest version_uid in Location and ETag header.",
-                    responseHeaders = {
-                            @ResponseHeader(name = LOCATION, description = RESP_LOCATION_DESC, response = URI.class),
-                            @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = URI.class)
-                    }
-            )
-    })
     public ResponseEntity<DirectoryResponseData> updateFolder(
-            @ApiParam(value = REQ_OPENEHR_VERSION) @RequestHeader(value = "openEHR-VERSION", required = false) String openEhrVersion,
-            @ApiParam(value = REQ_OPENEHR_AUDIT) @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openEhrAuditDetails,
-            @ApiParam(value = REQ_CONTENT_TYPE_BODY) @RequestHeader(value = CONTENT_TYPE) String contentType,
-            @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
-            @ApiParam(value = REQ_PREFER) @RequestHeader(value = PREFER, required = false, defaultValue = RETURN_MINIMAL) String prefer,
-            @ApiParam(value = "{preceding_version_uid}", required = true) @RequestHeader(value = IF_MATCH) ObjectVersionId folderId,
-            @ApiParam(value = "EHR identifier from resource path after ehr/", required = true) @PathVariable(value = "ehr_id") UUID ehrId,
-            @ApiParam(value = "Update data for the target FOLDER") @RequestBody Folder folder
-    ) {
+            @RequestHeader(value = "openEHR-VERSION", required = false) String openEhrVersion,
+            @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openEhrAuditDetails,
+            @RequestHeader(value = CONTENT_TYPE) String contentType,
+            @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
+            @RequestHeader(value = PREFER, required = false, defaultValue = RETURN_MINIMAL) String prefer,
+            @RequestHeader(value = IF_MATCH) ObjectVersionId folderId,
+            @PathVariable(value = "ehr_id") UUID ehrId,
+            @RequestBody Folder folder) {
 
         // Check if directory is set and ehr exists
         checkEhrExists(ehrId);
@@ -365,43 +230,12 @@ public class OpenehrDirectoryController extends BaseController {
     }
 
     @DeleteMapping(path = "/{ehr_id}/directory")
-    @ApiOperation("Delete an existing folder in directory. The folder will be identified by the latest version_uid specified in the If-Match header")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    code = 204,
-                    message = "Success - DIRECTORY has been deleted successfully.",
-                    responseHeaders = {
-                            @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class),
-                            @ResponseHeader(name = LAST_MODIFIED, description = RESP_LAST_MODIFIED_DESC, response = long.class)
-                    }
-            ),
-            @ApiResponse(
-                    code = 400,
-                    response = ErrorResponseData.class,
-                    message = "Bad Request - FOLDER could not be deleted due to one or more malformed request parameters or data."
-            ),
-            @ApiResponse(
-                    code = 404,
-                    response = ErrorResponseData.class,
-                    message = "Not Found - EHR with given id from path could not be found."
-            ),
-            @ApiResponse(
-                    code = 412,
-                    response = ErrorResponseData.class,
-                    message = "Precondition failed - The version specified in the If-Match header does not match the latest version of the FOLDER. Returns the latest version_uid in Location and ETag header.",
-                    responseHeaders = {
-                            @ResponseHeader(name = LOCATION, description = RESP_LOCATION_DESC, response = URI.class),
-                            @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = URI.class)
-                    }
-            )
-    })
     public ResponseEntity<DirectoryResponseData> deleteFolder(
-            @ApiParam(value = REQ_OPENEHR_VERSION) @RequestHeader(value = "openEHR-VERSION", required = false) String openEhrVersion,
-            @ApiParam(value = REQ_OPENEHR_AUDIT) @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openEhrAuditDetails,
-            @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
-            @ApiParam(value = "{preceding_version_uid}", required = true) @RequestHeader(value = IF_MATCH) ObjectVersionId folderId,
-            @ApiParam(value = "EHR identifier from resource path after ehr/", required = true) @PathVariable(value = "ehr_id") String ehrIdString
-    ) {
+            @RequestHeader(value = "openEHR-VERSION", required = false) String openEhrVersion,
+            @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openEhrAuditDetails,
+            @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
+            @RequestHeader(value = IF_MATCH) ObjectVersionId folderId,
+            @PathVariable(value = "ehr_id") String ehrIdString) {
         UUID ehrId = getEhrUuid(ehrIdString);
 
         // Check if directory is set and ehr exists

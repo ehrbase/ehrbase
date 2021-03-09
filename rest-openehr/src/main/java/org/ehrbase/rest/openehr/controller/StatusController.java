@@ -17,7 +17,14 @@
  */
 package org.ehrbase.rest.openehr.controller;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.ehrbase.api.service.StatusService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -34,7 +41,7 @@ import java.util.Objects;
  * API endpoint to get status of EHRbase and version information on used dependencies as archie or openEHR_sdk as well
  * as the current used JVM version or target PostgreSQL server version.
  */
-@Api(tags = {"Heartbeat", "Version info", "Status"})
+@Tag(name = "Status", description = "Heartbeat, Version info, Status")
 @RestController
 @RequestMapping(path = "/rest/openehr/v1", produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
 public class StatusController extends BaseController {
@@ -47,22 +54,22 @@ public class StatusController extends BaseController {
     }
 
     @GetMapping(path = "/status")
-    @ApiOperation(
-            value = "Get status information on running EHRbase server instance",
-            response = StatusResponseData.class
+    @Operation(
+            summary = "Get status information on running EHRbase server instance"
     )
     @ApiResponses(value = {
             @ApiResponse(
-                    code = 200,
-                    message = "EHRbase is available. Basic information on runtime and build is returned in body.",
-                    responseHeaders = {
-                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class)
-                    }
+                    responseCode = "200",
+                    description = "EHRbase is available. Basic information on runtime and build is returned in body.",
+                    headers = {
+                            @Header(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, schema = @Schema(implementation = MediaType.class))
+                    },
+                    content = @Content(schema = @Schema(implementation = StatusResponseData.class))
             )
     })
     @ResponseStatus(value = HttpStatus.OK)
     public ResponseEntity<StatusResponseData> getEhrbaseStatus(
-            @ApiParam(value = "Client desired response data format")
+            @Parameter(description = "Client desired response data format")
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE)
             String accept
     ) {
