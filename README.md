@@ -124,7 +124,7 @@ cd tests
 ## Deployment
 
  1. `java -jar application/target/application-*.jar` You can override the application properties (like database settings) using the normal spring boot mechanism: [Command-Line Arguments in Spring Boot](https://www.baeldung.com/spring-boot-command-line-arguments)
- 2. Browse to Swagger UI --> http://localhost:8080/ehrbase/swagger-ui.html
+ 2. Browse to Swagger UI --> http://localhost:8080/ehrbase/swagger-ui/index.html?configUrl=/ehrbase/v3/api-docs/swagger-config
 
 
 

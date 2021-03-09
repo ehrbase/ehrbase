@@ -17,7 +17,12 @@
  */
 package org.ehrbase.rest.openehr.controller.admin;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.FolderService;
@@ -37,7 +42,7 @@ import java.util.UUID;
 /**
  * Admin API controller for directories. Provides endpoint to remove complete directory trees from database physically.
  */
-@Api(tags = {"Admin", "Directory"})
+@Tag(name = "Admin - Directory")
 @ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
 @RequestMapping(path = "/rest/openehr/v1/admin/ehr", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
@@ -55,34 +60,34 @@ public class OpenehrAdminDirectoryController extends BaseController {
     @DeleteMapping(path = "/{ehr_id}/directory/{directory_id}")
     @ApiResponses(value = {
             @ApiResponse(
-                    code = 200,
-                    message = "Directory has been deleted successfully",
-                    responseHeaders = {
-                            @ResponseHeader(
+                    responseCode = "200",
+                    description = "Directory has been deleted successfully",
+                    headers = {
+                            @Header(
                                     name = CONTENT_TYPE,
                                     description = RESP_CONTENT_TYPE_DESC,
-                                    response = MediaType.class
+                                    schema = @Schema(implementation = MediaType.class)
                             )
                     }
             ),
             @ApiResponse(
-                    code = 401,
-                    message = "Client credentials are invalid or have expired."
+                    responseCode = "401",
+                    description = "Client credentials are invalid or have expired."
             ),
             @ApiResponse(
-                    code = 403,
-                    message = "Client has no permission to access since admin role is missing."
+                    responseCode = "403",
+                    description = "Client has no permission to access since admin role is missing."
             ),
             @ApiResponse(
-                    code = 404,
-                    message = "EHR or Directory could not be found."
+                    responseCode = "404",
+                    description = "EHR or Directory could not be found."
             )
     })
     public ResponseEntity<AdminDeleteResponseData> deleteDirectory(
-            @ApiParam(value = "Target EHR ed to remove Directory from", required = true)
+            @Parameter(description = "Target EHR ed to remove Directory from", required = true)
             @PathVariable(value = "ehr_id")
                     String ehrId,
-            @ApiParam(value = "Target Directory id to delete", required = true)
+            @Parameter(description = "Target Directory id to delete", required = true)
             @PathVariable(value = "directory_id")
                     String directoryId
     ) {

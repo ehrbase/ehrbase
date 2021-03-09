@@ -20,7 +20,8 @@ package org.ehrbase.rest.openehr.controller;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.ehrbase.api.definitions.QueryMode;
 import org.ehrbase.api.service.QueryService;
 import org.ehrbase.response.ehrscape.QueryDefinitionResultDto;
@@ -40,7 +41,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-@Api(tags = "Query")
 @RestController
 @RequestMapping(path = "/rest/openehr/v1/query", produces = MediaType.APPLICATION_JSON_VALUE)
 public class OpenehrQueryController extends BaseController {
@@ -56,20 +56,11 @@ public class OpenehrQueryController extends BaseController {
     }
 
     @GetMapping("/aql{?q, offset, fetch, query_parameter}")
-    @ApiOperation(value = "Execute ad-hoc (non-stored) AQL query", response = QueryResponseData.class)
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Success.",
-                    responseHeaders = {
-                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class),
-                            @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class)
-                    }),
-            @ApiResponse(code = 400, message = "Invalid input, e.g. a request with missing required field q or invalid query syntax."),
-            @ApiResponse(code = 204, message = "The query didn't give any result.")})
-    public ResponseEntity<QueryResponseData> getAdhocQuery(@ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false) String accept,
-                                                           @ApiParam(value = "AQL query to be executed", required = true) @RequestParam(value = "q") String query,
-                                                           @ApiParam(value = "row number in result-set to start result-set from (0-based), default 0") @RequestParam(value = "offset", required = false) Integer offset,
-                                                           @ApiParam(value = "number of rows to fetch, default depends on the implementation") @RequestParam(value = "fetch", required = false) Integer fetch,
-                                                           @ApiParam(value = "query parameters (can appear multiple times)") @RequestParam Map<String, Object> queryParameters) {
+    public ResponseEntity<QueryResponseData> getAdhocQuery(@RequestHeader(value = ACCEPT, required = false) String accept,
+                                                           @RequestParam(value = "q") String query,
+                                                           @RequestParam(value = "offset", required = false) Integer offset,
+                                                           @RequestParam(value = "fetch", required = false) Integer fetch,
+                                                           @RequestParam Map<String, Object> queryParameters) {
 
         //deal with offset and fetch
         if (fetch != null)
@@ -95,19 +86,9 @@ public class OpenehrQueryController extends BaseController {
     }
 
     @PostMapping("/aql")
-    @ApiOperation(value = "Execute ad-hoc (non-stored) AQL query", response = QueryResponseData.class)
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Success.",
-                    responseHeaders = {
-                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class),
-                            @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class)
-                    }),
-            @ApiResponse(code = 400, message = "Invalid input, e.g. a request with missing required field q or invalid query syntax."),
-            @ApiResponse(code = 204, message = "The query didn't give any result.")})
-
-    public ResponseEntity<QueryResponseData> postAdhocQuery(@ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false) String accept,
-                                                            @ApiParam(value = REQ_CONTENT_TYPE_BODY, required = true) @RequestHeader(value = CONTENT_TYPE) String contentType,
-                                                            @ApiParam(value = "AQL query to be executed", required = true) @RequestBody String query) {
+    public ResponseEntity<QueryResponseData> postAdhocQuery(@RequestHeader(value = ACCEPT, required = false) String accept,
+                                                            @RequestHeader(value = CONTENT_TYPE) String contentType,
+                                                            @RequestBody String query) {
 
         log.debug("Got following input: " + query);
 
@@ -163,19 +144,12 @@ public class OpenehrQueryController extends BaseController {
     }
 
     @GetMapping(value = {"/{qualified_query_name}/{version}{?offset,fetch,query_parameter}", "/{qualified_query_name}{?offset,fetch,query_parameter}"})
-    @ApiOperation(value = "Execute stored AQL query", response = QueryResponseData.class)
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Success.",
-                    responseHeaders = {
-                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class),
-                            @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class)
-                    })})
-    public ResponseEntity<QueryResponseData> getStoredQuery(@ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false) String accept,
-                                                            @ApiParam(value = "query name to be executed, example: org.openehr::compositions", required = true) @PathVariable(value = "qualified_query_name") String qualifiedQueryName,
-                                                            @ApiParam(value = "query version (SEMVER), default is LATEST") @PathVariable(value = "version") Optional<String> version,
-                                                            @ApiParam(value = "row number in result-set to start result-set from (0-based), default 0") @RequestParam(value = "offset", required = false) Integer offset,
-                                                            @ApiParam(value = "number of rows to fetch, default depends on the implementation") @RequestParam(value = "fetch", required = false) Integer fetch,
-                                                            @ApiParam(value = "query parameters (can appear multiple times)") @RequestParam Map<String, Object> queryParameter) {
+    public ResponseEntity<QueryResponseData> getStoredQuery(@RequestHeader(value = ACCEPT, required = false) String accept,
+                                                            @PathVariable(value = "qualified_query_name") String qualifiedQueryName,
+                                                            @PathVariable(value = "version") Optional<String> version,
+                                                            @RequestParam(value = "offset", required = false) Integer offset,
+                                                            @RequestParam(value = "fetch", required = false) Integer fetch,
+                                                            @RequestParam Map<String, Object> queryParameter) {
 
         log.debug("getStoredQuery not implemented but got following input: " + qualifiedQueryName + " - " + version + " - " + offset + " - " + fetch + " - " + queryParameter);
 
@@ -206,22 +180,13 @@ public class OpenehrQueryController extends BaseController {
     }
 
     @PostMapping(value = {"/{qualified_query_name}/{version}", "/{qualified_query_name}"})
-    @ApiOperation(value = "Execute stored AQL query", response = QueryDefinitionResponseData.class)
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Success.",
-                    responseHeaders = {
-                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class),
-                            @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class)
-                    }),
-            @ApiResponse(code = 400, message = "Invalid input, e.g. a request with missing required field q or invalid query syntax."),
-            @ApiResponse(code = 412, message = "Precondition failed, ID given as If-None-Match header already exists.")})
-    public ResponseEntity<QueryResponseData> postStoredQuery(@ApiParam(value = REQ_ACCEPT) @RequestHeader(value = ACCEPT, required = false) String accept,
-                                                             @ApiParam(value = REQ_CONTENT_TYPE_BODY, required = true) @RequestHeader(value = CONTENT_TYPE) String contentType,
+    public ResponseEntity<QueryResponseData> postStoredQuery(@RequestHeader(value = ACCEPT, required = false) String accept,
+                                                             @RequestHeader(value = CONTENT_TYPE) String contentType,
                                                              // TODO: what is this header about? couldn't be clarified and will be discussed with openEHR REST API people
-                                                             @ApiParam(value = "use this ehrid") @RequestHeader(value = IF_NONE_MATCH, required = false) String ifNoneMatch,
-                                                             @ApiParam(value = "query name to be executed, example: org.openehr::compositions", required = true) @PathVariable(value = "qualified_query_name") String qualifiedQueryName,
-                                                             @ApiParam(value = "query version (SEMVER), default is LATEST") @PathVariable(value = "version") Optional<String> version,
-                                                             @ApiParam(value = "parameters used to execute the query") @RequestBody(required = false) String parameterBody) {
+                                                             @RequestHeader(value = IF_NONE_MATCH, required = false) String ifNoneMatch,
+                                                             @PathVariable(value = "qualified_query_name") String qualifiedQueryName,
+                                                             @PathVariable(value = "version") Optional<String> version,
+                                                             @RequestBody(required = false) String parameterBody) {
 
         log.debug("postStoredQuery with the following input: " + qualifiedQueryName + " - " + version + " - " + parameterBody);
 
