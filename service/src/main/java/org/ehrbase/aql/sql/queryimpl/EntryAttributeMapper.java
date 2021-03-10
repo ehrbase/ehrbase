@@ -85,16 +85,7 @@ public class EntryAttributeMapper {
             return null; //this happens when a non specified value is queried f.e. the whole json body
 
         //deals with the tricky ones first...
-        if (fields.get(0).equals(ISM_TRANSITION)) {
-            //get the next key and concatenate...
-            String subfield = fields.get(1);
-            fields.remove(0);
-            fields.set(0, ISM_TRANSITION + SLASH + subfield);
-            if (!fields.get(1).equals(NAME)) {
-                fields.add(1, SLASH_VALUE);
-            }
-            floor = 2;
-        } else if (fields.get(0).equals(OTHER_PARTICIPATIONS)) { //insert a tag value
+        if (fields.get(0).equals(OTHER_PARTICIPATIONS)) { //insert a tag value
             fields.set(0, OTHER_PARTICIPATIONS);
             fields.add(1, "0");
             fields.add(2, SLASH_VALUE);
@@ -108,6 +99,9 @@ public class EntryAttributeMapper {
                 fields.add(VALUE); //time is formatted with 2 values: string value and epoch_offset
                 fields.set(1, SLASH_VALUE);
             }
+            else {
+                fields.add(SLASH_VALUE);
+            }
         } else if (LocatableAttributes.isLocatableAttribute("/"+fields.get(0))){
             fields = setLocatableField(fields);
         } else if (EntryAttributes.isEntryAttribute("/"+fields.get(0))){
@@ -117,13 +111,9 @@ public class EntryAttributeMapper {
             Integer match = firstOccurence(0, fields, VALUE);
 
             if (match != null) { //deals with "/value/value"
-                Integer ndxInterval;
-
-                if ((ndxInterval = intervalValueIndex(fields)) > 0) { //interval
-                    fields.add(ndxInterval, INTERVAL);
-                } else if (match != 0) {
+                if (match != 0) {
                     //deals with name/value (name value is contained into a list conventionally)
-                    if (match > 1 && fields.get(match - 1).matches("name|time"))
+                    if (match > 1 && fields.get(match - 1).matches("name|time|current_state|transition|careflow_step|reason|terminology_id"))
                         fields.set(match, VALUE);
                     else
                         //usual /value

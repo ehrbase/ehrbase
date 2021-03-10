@@ -42,7 +42,7 @@ public class FieldConstantHandler {
 
         List<String> segments = LocatableHelper.dividePathIntoSegments(variableDefinition.getPath());
 
-        if (segments.size() > 2 && segments.get(segments.size() - 1).equals(I_DvTypeAdapter.ARCHETYPE_NODE_ID))
+        if (segments.size() >= 2 && segments.get(segments.size() - 1).equals(I_DvTypeAdapter.ARCHETYPE_NODE_ID))
             return true;
 
         return false;

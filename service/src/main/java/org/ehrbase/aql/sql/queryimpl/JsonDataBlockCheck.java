@@ -19,6 +19,8 @@
 
 package org.ehrbase.aql.sql.queryimpl;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.List;
 
 public class JsonDataBlockCheck {
@@ -27,8 +29,9 @@ public class JsonDataBlockCheck {
     // '/name,0' is to matches path relative to the name array
 
     public static final String MATCH_NODE_PREDICATE = "(/(content|events|protocol|data|description|instruction|items|activities|activity|composition|entry|evaluation|observation|action)\\[([(0-9)|(A-Z)|(a-z)|\\-|_|\\.]*)\\])|" +
-            "(/value|/value,defining_code|/time|/name,0|/origin|/origin,/name,0|/origin,/value|/value,mappings)|" +
+            "(/value|/value,defining_code|/time|/time,/value|/name,0|/origin|/origin,/name,0|/origin,/value|/value,mappings)|" +
             "(/value,mappings,0)(|,purpose|,target|,purpose,defining_code|,purpose,defining_code,terminology_id|,target,terminology_id)|" +
+            "(/ism_transition)(|,current_state|,transition|,careflow_step)|" +
             // common locatable attributes
             "(/uid,/value|/language|/language,terminology_id|/encoding|/encoding,terminology_id)";
     
@@ -70,9 +73,20 @@ public class JsonDataBlockCheck {
 
     private boolean checkResultingPath(){
         int index = jqueryPath.size() - 1;
+        if (jqueryPath.get(index).equals("0"))
+            index--;
         String terminalNode = jqueryPath.get(index);
         if (index > 0 && terminalNode.startsWith("'") && jqueryPath.get(index - 1).equals(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER))
             terminalNode = jqueryPath.get(index - 2); //skip the node predicate marker
-        return terminalNode.matches(MATCH_NODE_PREDICATE);
+        return terminalNode.matches(MATCH_NODE_PREDICATE) || isStructuredItem(terminalNode);
+    }
+
+    private boolean isStructuredItem(String terminalNode){
+        String lastItem = StringUtils.substringAfterLast(terminalNode, ",");
+
+        if (!lastItem.isEmpty())
+            return lastItem.matches("defining_code|mappings|language|encoding|terminology_id|lower|upper");
+        return false;
+
     }
 }

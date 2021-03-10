@@ -18,9 +18,14 @@
 
 package org.ehrbase.aql.sql.queryimpl;
 
+import com.nedap.archie.rm.datavalues.quantity.DvInterval;
 import org.apache.commons.lang3.StringUtils;
+import org.ehrbase.serialisation.dbencoding.wrappers.json.writer.translator_db2raw.GenericRmType;
+import org.jooq.DataType;
 
 import java.util.List;
+
+import static org.jooq.impl.SQLDataType.*;
 
 /**
  * Created by christian on 5/9/2018.
@@ -33,29 +38,42 @@ public class PGType {
         this.segmentedPath = segmentedPath;
     }
 
-    public String forRmType(String type) {
+    public DataType forRmType(String type) {
         String attribute = segmentedPath.get(segmentedPath.size() - 1);
-        String pgtype = null;
+        DataType pgtype = null;
 
-        switch (type) {
-            case "DV_QUANTITY":
-                if (StringUtils.endsWith(attribute, "magnitude"))
-                    pgtype = "real";
-                break;
-            case "DV_PROPORTION":
-                if (StringUtils.endsWith(attribute, "numerator")||StringUtils.endsWith(attribute, "denominator"))
-                    pgtype = "real";
-                break;
-            case "DV_COUNT":
-                if (StringUtils.endsWith(attribute, "magnitude"))
-                    pgtype = "int8";
-                break;
-            case "DV_ORDINAL":
-                if (StringUtils.endsWith(attribute, "value"))
-                    pgtype = "int8";
-                break;
-            default:
-                break;
+        if (new GenericRmType(type).isSpecialized()){
+            if (new GenericRmType(type).mainType().equals("DV_INTERVAL") &&
+                    (StringUtils.endsWith(attribute, "lower_unbounded") || StringUtils.endsWith(attribute,"upper_unbounded")))
+                pgtype = BOOLEAN;
+            else
+                type = new GenericRmType(type).specializedWith();
+        }
+        if (pgtype == null) {
+            switch (type) {
+                case "DV_QUANTITY":
+                    if (StringUtils.endsWith(attribute, "magnitude"))
+                        pgtype = REAL;
+                    break;
+                case "DV_PROPORTION":
+                    if (StringUtils.endsWith(attribute, "numerator") || StringUtils.endsWith(attribute, "denominator"))
+                        pgtype = REAL;
+                    break;
+                case "DV_COUNT":
+                    if (StringUtils.endsWith(attribute, "magnitude"))
+                        pgtype = BIGINT;
+                    break;
+                case "DV_ORDINAL":
+                    if (StringUtils.endsWith(attribute, "value"))
+                        pgtype = BIGINT;
+                    break;
+                case "DV_BOOLEAN":
+                    if (StringUtils.endsWith(attribute, "value"))
+                        pgtype = BOOLEAN;
+                    break;
+                default:
+                    break;
+            }
         }
 
         return pgtype;
