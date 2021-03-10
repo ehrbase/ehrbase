@@ -40,16 +40,18 @@ public class LocatableItem {
     private String jsonbItemPath;
     private String optionalPath;
     private String rootJsonKey;
+    private IQueryImpl.Clause clause;
 
-    public LocatableItem(CompositionAttributeQuery compositionAttributeQuery, JsonbEntryQuery jsonbEntryQuery) {
+    public LocatableItem(CompositionAttributeQuery compositionAttributeQuery, JsonbEntryQuery jsonbEntryQuery,  IQueryImpl.Clause clause) {
         this.compositionAttributeQuery = compositionAttributeQuery;
         this.jsonbEntryQuery = jsonbEntryQuery;
+        this.clause = clause;
     }
 
     public Field<?> toSql(String templateId, I_VariableDefinition variableDefinition, String className){
         Field<?> field;
 
-        field = jsonbEntryQuery.makeField(templateId, variableDefinition.getIdentifier(), variableDefinition, IQueryImpl.Clause.SELECT);
+        field = jsonbEntryQuery.makeField(templateId, variableDefinition.getIdentifier(), variableDefinition, clause);
         jsonbItemPath = jsonbEntryQuery.getJsonbItemPath();
         containsJsonDataBlock |= jsonbEntryQuery.isJsonDataBlock();
         if (jsonbEntryQuery.isJsonDataBlock() ) {
@@ -67,7 +69,7 @@ public class LocatableItem {
                             try {
                                 I_VariableDefinition variableDefinition1 = variableDefinition.clone();
                                 variableDefinition1.setPath(variableAqlPath.getInfix());
-                                field = jsonbEntryQuery.makeField(templateId, variableDefinition.getIdentifier(), variableDefinition1, IQueryImpl.Clause.SELECT);
+                                field = jsonbEntryQuery.makeField(templateId, variableDefinition.getIdentifier(), variableDefinition1, clause);
                                 jsonbItemPath = jsonbEntryQuery.getJsonbItemPath();
                                 rootJsonKey = variableAqlPath.getSuffix();
                             } catch (CloneNotSupportedException e) {
@@ -81,10 +83,12 @@ public class LocatableItem {
                                 //to pass the actual value datatype into the json block
                                 field = DSL.field("(ehr.js_typed_element_value(" + jsonbItemPath.substring(0, cut) + "}')::jsonb))");
 
-                            String alias = variableDefinition.getAlias();
-                            if (alias == null)
-                                alias = DefaultColumnId.value(variableDefinition);
-                            field = field.as(alias);
+                            if (clause.equals(IQueryImpl.Clause.SELECT)) {
+                                String alias = variableDefinition.getAlias();
+                                if (alias == null)
+                                    alias = DefaultColumnId.value(variableDefinition);
+                                field = field.as(alias);
+                            }
                         }
                     }
 
