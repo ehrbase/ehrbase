@@ -53,6 +53,9 @@ security:
   authAdminUser: ehrbase-admin
   authAdminPassword: EvenMoreSecretPassword
 
+abac:
+  disabled: true
+
 cache:
   config-path: '/ehcache.xml'
   enabled: true
