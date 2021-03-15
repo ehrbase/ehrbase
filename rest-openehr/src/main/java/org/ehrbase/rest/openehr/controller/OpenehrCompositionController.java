@@ -23,6 +23,7 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.service.CompositionService;
+import org.ehrbase.api.service.EhrService;
 import org.ehrbase.response.ehrscape.CompositionDto;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.StructuredString;
@@ -37,6 +38,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -61,7 +64,6 @@ public class OpenehrCompositionController extends BaseController {
 
     @Autowired
     public OpenehrCompositionController(CompositionService compositionService) {
-
         this.compositionService = Objects.requireNonNull(compositionService);
     }
 
@@ -275,6 +277,7 @@ public class OpenehrCompositionController extends BaseController {
      * "{?version_at_time}" is hidden in swagger-ui, it only is here to be piped through.
      */
     @GetMapping("/{ehr_id}/composition/{version_uid}")
+    @PostAuthorize("checkAbacComposition('', @ehrService.getSubjectUuid(#ehrIdString), returnObject)")
     @ApiOperation(value = "Get composition by version id.")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK.",

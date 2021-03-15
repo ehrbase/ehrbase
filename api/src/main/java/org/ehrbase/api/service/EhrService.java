@@ -159,4 +159,10 @@ public interface EhrService extends BaseService {
      */
     void adminDeleteEhr(UUID ehrId);
 
+    /**
+     * Helper to directly get the linked subject ID to given EHR.
+     * @param ehrId Given EHR ID
+     * @return Linked subject ID or null
+     */
+    UUID getSubjectUuid(String ehrId);
 }

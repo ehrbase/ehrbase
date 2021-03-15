@@ -36,8 +36,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PostAuthorize;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -63,7 +61,6 @@ public class OpenehrEhrController extends BaseController {
     }
 
     @PostMapping//(consumes = {"application/xml", "application/json"})
-    @PreAuthorize("isAllowed('', '', '')")
     @ApiOperation(value = "Create a new EHR with an auto-generated identifier.", response = EhrResponseData.class)
     @ApiNotes("ehrPostPutEhrWithStatus.md")     // TODO this utilizes a workaround, see source class for info
     @ApiResponses(value = {

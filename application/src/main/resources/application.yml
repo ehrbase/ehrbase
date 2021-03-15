@@ -53,8 +53,37 @@ security:
   authAdminUser: ehrbase-admin
   authAdminPassword: EvenMoreSecretPassword
 
+# Attribute Based Access Control
 abac:
   disabled: true
+  server: http://localhost:8080/rest/v1/policy/execute/name
+  # Policies need to be configured for each resource. Available parameters are
+  # - organization
+  # - patient
+  # - template
+  policy:
+    ehr:
+      name: 'has_consent_patient'
+      parameters: 'organization, patient'
+    ehrstatus:
+      name: 'has_consent_patient'
+      parameters: 'organization, patient'
+    composition:
+      name: 'has_consent_template'
+      parameters: 'organization, patient, template'
+    directory:
+      name: 'has_consent_patient'
+      parameters: 'organization, patient'
+    contribution:
+      name: 'has_consent_template'
+      parameters: 'organization, patient, template'
+    query:
+      name: 'has_consent_template'
+      parameters: 'organization, patient, template'
+    definition:
+      name: 'has_consent_definition'
+      parameters: 'organization'
+
 
 cache:
   config-path: '/ehcache.xml'
