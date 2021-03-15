@@ -174,6 +174,13 @@ public class GenericJsonField extends RMObjectAttribute {
         return forJsonPath(actualPath);
     }
 
+    public GenericJsonField forJsonPath(String[] path){
+        if (GenericJsonPath.isTerminalValue(Arrays.asList(path), path.length - 1))
+            isJsonDataBlock = false;
+        this.jsonPath = Optional.of(new JsonbSelect(Arrays.asList(path)).field());
+        return this;
+    }
+
 
     public GenericJsonField setJsonDataBlock(boolean jsonDataBlock) {
         this.isJsonDataBlock = jsonDataBlock;

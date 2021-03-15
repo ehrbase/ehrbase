@@ -29,11 +29,11 @@ public class JsonDataBlockCheck {
     // '/name,0' is to matches path relative to the name array
 
     public static final String MATCH_NODE_PREDICATE = "(/(content|events|protocol|data|description|instruction|items|activities|activity|composition|entry|evaluation|observation|action)\\[([(0-9)|(A-Z)|(a-z)|\\-|_|\\.]*)\\])|" +
-            "(/value|/value,defining_code|/time|/time,/value|/name,0|/origin|/origin,/name,0|/origin,/value|/value,mappings)|" +
+            "(/value|/value,defining_code|/time|/time,/value|/timing,/value|/name,0|/origin|/origin,/name,0|/origin,/value|/value,mappings)|" +
             "(/value,mappings,0)(|,purpose|,target|,purpose,defining_code|,purpose,defining_code,terminology_id|,target,terminology_id)|" +
             "(/ism_transition)(|,current_state|,transition|,careflow_step)|" +
             // common locatable attributes
-            "(/uid,/value|/language|/language,terminology_id|/encoding|/encoding,terminology_id)";
+            "(/uid,/value|/language|/language,terminology_id|/encoding|/encoding,terminology_id|/subject)";
     
     private final List<String> jqueryPath;
 

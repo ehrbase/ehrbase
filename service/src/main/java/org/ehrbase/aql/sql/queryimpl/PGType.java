@@ -18,7 +18,6 @@
 
 package org.ehrbase.aql.sql.queryimpl;
 
-import com.nedap.archie.rm.datavalues.quantity.DvInterval;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.serialisation.dbencoding.wrappers.json.writer.translator_db2raw.GenericRmType;
 import org.jooq.DataType;
@@ -32,6 +31,10 @@ import static org.jooq.impl.SQLDataType.*;
  */
 public class PGType {
 
+    public static final String MAGNITUDE = "magnitude";
+    public static final String VALUE = "value";
+    public static final String NUMERATOR = "numerator";
+    public static final String DENOMINATOR = "denominator";
     List<String> segmentedPath;
 
     public PGType(List<String> segmentedPath) {
@@ -52,29 +55,32 @@ public class PGType {
         if (pgtype == null) {
             switch (type) {
                 case "DV_QUANTITY":
-                    if (StringUtils.endsWith(attribute, "magnitude"))
-                        pgtype = REAL;
+                    if (StringUtils.endsWith(attribute, MAGNITUDE))
+                        pgtype = NUMERIC;
                     break;
                 case "DV_PROPORTION":
-                    if (StringUtils.endsWith(attribute, "numerator") || StringUtils.endsWith(attribute, "denominator"))
-                        pgtype = REAL;
+                    if (StringUtils.endsWith(attribute, NUMERATOR) || StringUtils.endsWith(attribute, DENOMINATOR))
+                        pgtype = NUMERIC;
                     break;
                 case "DV_COUNT":
-                    if (StringUtils.endsWith(attribute, "magnitude"))
+                    if (StringUtils.endsWith(attribute, MAGNITUDE))
                         pgtype = BIGINT;
                     break;
                 case "DV_ORDINAL":
-                    if (StringUtils.endsWith(attribute, "value"))
+                    if (StringUtils.endsWith(attribute, VALUE))
                         pgtype = BIGINT;
                     break;
                 case "DV_BOOLEAN":
-                    if (StringUtils.endsWith(attribute, "value"))
+                    if (StringUtils.endsWith(attribute, VALUE))
                         pgtype = BOOLEAN;
                     break;
                 default:
                     break;
             }
         }
+
+        if (pgtype == null && attribute.endsWith(MAGNITUDE)) //this may happen when we have a choice...
+            pgtype = NUMERIC;
 
         return pgtype;
     }

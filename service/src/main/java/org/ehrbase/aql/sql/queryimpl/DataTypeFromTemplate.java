@@ -51,6 +51,9 @@ public class DataTypeFromTemplate {
                 if (itemType != null) {
                     identifiedType = new PGType(referenceItemPathArray).forRmType(itemType);
                 }
+                else {
+                    identifiedType = new PGType(referenceItemPathArray).forRmType("UNKNOWN");
+                }
             }
         } catch (Exception e) {
             if (!ignoreUnresolvedIntrospect)

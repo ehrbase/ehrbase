@@ -37,6 +37,8 @@ public class SettingResolver extends AttributeResolver
 
     public Field<?> sqlField(String path){
 
+        Field<?> retField;
+
         if (path.isEmpty())
             return new EventContextJson(fieldResolutionContext, joinSetup).forJsonPath("setting").sqlField();
 
@@ -44,27 +46,12 @@ public class SettingResolver extends AttributeResolver
         if (!path.equals(MAPPINGS) && path.startsWith(MAPPINGS)) {
             path = path.substring(path.indexOf(MAPPINGS)+ MAPPINGS.length()+1);
             //we insert a tag to indicate that the path operates on a json array
-            return new EventContextJson(fieldResolutionContext, joinSetup).forJsonPath("setting/mappings/"+ QueryImplConstants.AQL_NODE_ITERATIVE_MARKER+"/" + path).forTableField(EVENT_CONTEXT.SETTING).sqlField();
+            retField = new EventContextJson(fieldResolutionContext, joinSetup).forJsonPath("setting/mappings/"+ QueryImplConstants.AQL_NODE_ITERATIVE_MARKER+"/" + path).forTableField(EVENT_CONTEXT.SETTING).sqlField();
+        }
+        else {
+            retField = new EventContextJson(fieldResolutionContext, joinSetup).forJsonPath("setting/" + path).forTableField(EVENT_CONTEXT.SETTING).sqlField();
         }
 
-        switch (path){
-            case "value":
-                return new SettingAttribute(fieldResolutionContext, joinSetup).forJsonPath(path).forTableField(EVENT_CONTEXT.SETTING).sqlField();
-            case "defining_code":
-            case "formatting":
-            case "language":
-            case "encoding":
-                return new EventContextJson(fieldResolutionContext, joinSetup).forJsonPath("setting/"+path).forTableField(EVENT_CONTEXT.SETTING).sqlField();
-            case MAPPINGS:
-                fieldResolutionContext.setJsonDatablock(true);
-                return new EventContextJson(fieldResolutionContext, joinSetup).forJsonPath("setting/"+path).forTableField(EVENT_CONTEXT.SETTING).sqlField();
-            case "defining_code/terminology_id":
-            case "defining_code/terminology_id/value":
-                return new SettingAttribute(fieldResolutionContext, joinSetup).forJsonPath(path).forTableField(EVENT_CONTEXT.SETTING).sqlField();
-            case "defining_code/code_string":
-                return new SettingAttribute(fieldResolutionContext, joinSetup).forJsonPath(path).forTableField(EVENT_CONTEXT.SETTING).sqlField();
-            default:
-                throw new IllegalArgumentException("Unresolved context/facility attribute path:"+path);
-        }
+        return retField;
     }
 }
