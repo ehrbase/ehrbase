@@ -22,28 +22,19 @@
 package org.ehrbase.dao.access.jooq;
 
 import org.apache.commons.lang3.StringUtils;
-import org.ehrbase.aql.compiler.AqlExpression;
-import org.ehrbase.aql.compiler.AqlExpressionWithParameters;
-import org.ehrbase.aql.compiler.AuditVariables;
-import org.ehrbase.aql.compiler.Contains;
-import org.ehrbase.aql.compiler.Statements;
+import org.ehrbase.aql.compiler.*;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.sql.AqlResult;
 import org.ehrbase.aql.sql.QueryProcessor;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer;
 import org.ehrbase.dao.access.support.DataAccess;
-import org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl;
 import org.ehrbase.service.KnowledgeCacheService;
+import org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl;
 import org.jooq.Record;
 import org.jooq.Result;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by christian on 6/9/2016.
@@ -70,11 +61,11 @@ public class AqlQueryHandler extends DataAccess {
     }
 
     @SuppressWarnings("unchecked")
-    private AqlResult execute(AqlExpression aqlExpression) {
+    private AqlResult execute(AqlExpression aqlExpression){
 
         AuditVariables auditVariables = new AuditVariables();
 
-        Contains contains = new Contains(aqlExpression.getParseTree(), (KnowledgeCacheService) this.getDataAccess().getIntrospectService()).process();
+        Contains contains = new Contains(aqlExpression.getParseTree(), (KnowledgeCacheService)this.getDataAccess().getIntrospectService()).process();
 
         Statements statements = new Statements(aqlExpression.getParseTree(), contains.getIdentifierMapper(), tsAdapter).process();
 
@@ -90,7 +81,7 @@ public class AqlQueryHandler extends DataAccess {
         while (iterator.hasNext()) {
             I_VariableDefinition variableDefinition = iterator.next();
 
-            if (auditVariables.isAuditVariable(variableDefinition)) {
+            if (auditVariables.isAuditVariable(variableDefinition)){
                 //add the result to the list of audit variables
                 auditVariables.addResults(auditResultMap, variableDefinition.getPath(), resultSetForVariable(variableDefinition, aqlResult.getRecords()));
             }
@@ -108,13 +99,13 @@ public class AqlQueryHandler extends DataAccess {
         return this;
     }
 
-    public Set<Object> resultSetForVariable(I_VariableDefinition variableDefinition, Result<Record> recordResult) {
+    public Set<Object> resultSetForVariable(I_VariableDefinition variableDefinition, Result<Record> recordResult){
         Set<Object> resultSet = new HashSet<>();
 
-        String columnIdentifier = variableDefinition.getAlias() != null ? variableDefinition.getAlias() : "/" + variableDefinition.getPath();
+        String columnIdentifier = variableDefinition.getAlias() != null ? variableDefinition.getAlias() : "/"+variableDefinition.getPath();
 
-        for (Record record : recordResult) {
-//            if (variableDefinition.getAlias() == null && !variableDefinition.getAlias().startsWith("_FCT")) { TODO: Check with @Christian
+        for (Record record: recordResult){
+//            if (variableDefinition.getAlias() != null && !variableDefinition.getAlias().startsWith("_FCT")) { TODO: Check with @Christian
             if (variableDefinition.getAlias() == null || !variableDefinition.getAlias().startsWith("_FCT")) { //if the variable is a function parameter, ignore it (f.e. count())
                 resultSet.add(record.get(columnIdentifier));
             }
