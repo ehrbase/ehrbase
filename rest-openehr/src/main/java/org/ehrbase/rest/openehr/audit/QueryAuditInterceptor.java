@@ -28,7 +28,6 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Concrete implementation of {@link OpenEhrAuditInterceptor} for Query API.
  */
-// TODO: Handle the Patient Number (check with @chevalleyc about hidden fields)
 public class QueryAuditInterceptor extends OpenEhrAuditInterceptor<QueryAuditDataset> {
 
     public static final String QUERY_ATTRIBUTE = CompositionAuditInterceptor.class.getName() + ".QUERY";
@@ -54,7 +53,9 @@ public class QueryAuditInterceptor extends OpenEhrAuditInterceptor<QueryAuditDat
 
     @Override
     protected AuditMessage[] getAuditMessages(QueryAuditDataset auditDataset) {
-        return new QueryAuditMessageBuilder(auditContext, auditDataset)
-                .getMessages();
+        return auditDataset.getPatientParticipantObjectIds()
+                .stream()
+                .map(patientNumber -> new QueryAuditMessageBuilder(auditContext, auditDataset, patientNumber).getMessage())
+                .toArray(AuditMessage[]::new);
     }
 }

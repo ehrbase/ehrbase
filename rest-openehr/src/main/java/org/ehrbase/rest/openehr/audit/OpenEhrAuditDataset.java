@@ -17,10 +17,14 @@
  */
 package org.ehrbase.rest.openehr.audit;
 
+import org.ehrbase.api.exception.InternalServerException;
 import org.openehealth.ipf.commons.audit.codes.EventOutcomeIndicator;
 import org.springframework.http.HttpMethod;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Base class for openEHR audit dataset
@@ -37,7 +41,7 @@ public class OpenEhrAuditDataset implements Serializable {
 
     private String sourceParticipantNetworkId;
 
-    private String patientParticipantObjectId;
+    private Set<String> patientParticipantObjectIds = new HashSet<>();
 
     public EventOutcomeIndicator getEventOutcomeIndicator() {
         return eventOutcomeIndicator;
@@ -79,15 +83,34 @@ public class OpenEhrAuditDataset implements Serializable {
         this.sourceParticipantNetworkId = sourceParticipantNetworkId;
     }
 
-    public String getPatientParticipantObjectId() {
-        return patientParticipantObjectId;
+    public Set<String> getPatientParticipantObjectIds() {
+        return patientParticipantObjectIds;
     }
 
-    public void setPatientParticipantObjectId(String patientParticipantObjectId) {
-        this.patientParticipantObjectId = patientParticipantObjectId;
+    public void setPatientParticipantObjectIds(Set<String> patientParticipantObjectIds) {
+        this.patientParticipantObjectIds = patientParticipantObjectIds;
     }
 
-    public boolean hasPatientParticipantObjectId() {
-        return patientParticipantObjectId != null;
+    public void addPatientParticipantObjectIds(Collection<String> patientParticipantObjectIds) {
+        this.patientParticipantObjectIds.addAll(patientParticipantObjectIds);
+    }
+
+    public boolean hasPatientParticipantObjectIds() {
+        return patientParticipantObjectIds != null && !patientParticipantObjectIds.isEmpty();
+    }
+
+    public String getUniquePatientParticipantObjectId() {
+        Set<String> ids = getPatientParticipantObjectIds();
+        if (ids.isEmpty()) {
+            return null;
+        } else if (ids.size() == 1) {
+            return ids.iterator().next();
+        } else {
+            throw new InternalServerException("Non unique patient number result");
+        }
+    }
+
+    public boolean hasUniqueParticipantObjectIds() {
+        return hasPatientParticipantObjectIds() && patientParticipantObjectIds.size() == 1;
     }
 }

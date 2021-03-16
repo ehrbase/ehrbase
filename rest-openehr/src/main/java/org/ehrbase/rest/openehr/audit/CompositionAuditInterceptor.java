@@ -67,7 +67,7 @@ public class CompositionAuditInterceptor extends OpenEhrAuditInterceptor<Composi
         if (auditDataset.hasCompositionUri()) {
             builder.addCompositionParticipantObjectIdentification(auditDataset);
         }
-        if (auditDataset.hasPatientParticipantObjectId()) {
+        if (auditDataset.hasPatientParticipantObjectIds()) {
             builder.addPatientParticipantObjectIdentification(auditDataset);
         }
         return builder.getMessages();
@@ -76,7 +76,7 @@ public class CompositionAuditInterceptor extends OpenEhrAuditInterceptor<Composi
     private String getCompositionUri(HttpServletRequest request) {
         UUID compositionId = (UUID) request.getAttribute(COMPOSITION_ID_ATTRIBUTE);
         if (compositionId != null) {
-            UUID ehrId = (UUID) request.getAttribute(EHR_ID_ATTRIBUTE);
+            UUID ehrId = getUniqueEhrId(request);
             Integer version = (Integer) request.getAttribute(VERSION_ATTRIBUTE);
             if (version == null || version == 0) {
                 version = compositionService.getLastVersionNumber(compositionId);

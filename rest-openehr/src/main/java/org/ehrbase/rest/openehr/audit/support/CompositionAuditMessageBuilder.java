@@ -84,7 +84,7 @@ public class CompositionAuditMessageBuilder extends OpenEhrAuditMessageBuilder<C
     }
 
     public CompositionAuditMessageBuilder addPatientParticipantObjectIdentification(CompositionAuditDataset auditDataset) {
-        delegate.addPatientParticipantObject(auditDataset.getPatientParticipantObjectId(), null, null, null);
+        delegate.addPatientParticipantObject(auditDataset.getUniquePatientParticipantObjectId(), null, null, null);
         return this;
     }
 

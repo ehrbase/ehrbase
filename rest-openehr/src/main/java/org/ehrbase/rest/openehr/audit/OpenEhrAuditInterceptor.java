@@ -21,6 +21,7 @@ import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.PartyRef;
 import org.apache.commons.lang3.StringUtils;
+import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.service.EhrService;
 import org.openehealth.ipf.commons.audit.AuditContext;
 import org.openehealth.ipf.commons.audit.codes.EventOutcomeIndicator;
@@ -35,7 +36,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.security.Principal;
 import java.time.Instant;
+import java.util.Collections;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Base {@link HandlerInterceptor} that provides the common logic for handling audit feature.
@@ -100,12 +104,12 @@ public abstract class OpenEhrAuditInterceptor<T extends OpenEhrAuditDataset> imp
         }
 
         // Patient ParticipantObjectIdentification
-        auditDataset.setPatientParticipantObjectId(getPatientNumber(request));
+        auditDataset.addPatientParticipantObjectIds(getPatientNumbers(request));
     }
 
     protected abstract AuditMessage[] getAuditMessages(T auditDataset);
 
-    private String getCurrentAuthenticatedUsername(HttpServletRequest request) {
+    protected String getCurrentAuthenticatedUsername(HttpServletRequest request) {
         Principal principal = request.getUserPrincipal();
         if (principal == null) {
             return null;
@@ -113,7 +117,7 @@ public abstract class OpenEhrAuditInterceptor<T extends OpenEhrAuditDataset> imp
         return principal.getName();
     }
 
-    private String getClientIpAddress(HttpServletRequest request) {
+    protected String getClientIpAddress(HttpServletRequest request) {
         String address = request.getHeader("X-Forwarded-For");
         if (StringUtils.isEmpty(address)) {
             address = request.getRemoteAddr();
@@ -121,20 +125,37 @@ public abstract class OpenEhrAuditInterceptor<T extends OpenEhrAuditDataset> imp
         return address;
     }
 
-    private String getPatientNumber(HttpServletRequest request) {
-        UUID ehrId = (UUID) request.getAttribute(EHR_ID_ATTRIBUTE);
-        if (ehrId == null) {
+    protected UUID getUniqueEhrId(HttpServletRequest request) {
+        Set<UUID> ehrIds = getEhrIds(request);
+        if (ehrIds.isEmpty()) {
             return null;
+        } else if (ehrIds.size() == 1) {
+            return ehrIds.iterator().next();
+        } else {
+            throw new InternalServerException("Non unique EhrId result");
         }
+    }
 
-        // TODO: Check how to get issuer, type and assigner
-        return ehrService.getEhrStatus(ehrId)
-                .map(ehrStatus -> {
-                    PartySelf subject = ehrStatus.getSubject();
-                    PartyRef externalRef = subject.getExternalRef();
-                    ObjectId objectId = externalRef.getId();
-                    return objectId.getValue();
-                })
-                .orElse(null);
+    @SuppressWarnings("unchecked")
+    protected Set<UUID> getEhrIds(HttpServletRequest request) {
+        Set<UUID> ehrIds = (Set<UUID>) request.getAttribute(EHR_ID_ATTRIBUTE);
+        if (ehrIds == null) {
+            return Collections.emptySet();
+        }
+        return ehrIds;
+    }
+
+    protected Set<String> getPatientNumbers(HttpServletRequest request) {
+        return getEhrIds(request)
+                .stream()
+                .map(ehrId -> ehrService.getEhrStatus(ehrId)
+                        .map(ehrStatus -> {
+                            PartySelf subject = ehrStatus.getSubject();
+                            PartyRef externalRef = subject.getExternalRef();
+                            ObjectId objectId = externalRef.getId();
+                            return objectId.getValue();
+                        })
+                        .orElse(null))
+                .collect(Collectors.toSet());
     }
 }

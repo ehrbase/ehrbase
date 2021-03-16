@@ -32,6 +32,7 @@ import org.ehrbase.response.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.response.openehr.ErrorBodyPayload;
 import org.ehrbase.response.openehr.QueryDefinitionResponseData;
 import org.ehrbase.response.openehr.QueryResponseData;
+import org.ehrbase.rest.openehr.audit.OpenEhrAuditInterceptor;
 import org.ehrbase.rest.openehr.audit.QueryAuditInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +54,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 @Api(tags = "Query")
 @RestController
@@ -60,9 +62,8 @@ import java.util.Optional;
 public class OpenehrQueryController extends BaseController {
 
     final static Logger log = LoggerFactory.getLogger(OpenehrQueryController.class);
-    private QueryService queryService;
-
     private final String QUERY_PARAMETERS = "query_parameters";
+    private QueryService queryService;
 
     @Autowired
     public OpenehrQueryController(QueryService queryService) {
@@ -103,6 +104,10 @@ public class OpenehrQueryController extends BaseController {
                 queryResponseData = new QueryResponseData(queryService.query(query, queryParameters, QueryMode.AQL, false));
             else
                 queryResponseData = new QueryResponseData(queryService.query(query, QueryMode.AQL, false));
+
+            // Enriches request attributes with EhrId(s) for later audit processing
+            Map<String, Set<Object>> auditResultMap = queryService.getAuditResultMap();
+            request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, auditResultMap.get("ehr_id/value"));
 
             if (queryResponseData.getRows().size() > 0)
                 return ResponseEntity.ok(queryResponseData);
@@ -154,9 +159,9 @@ public class OpenehrQueryController extends BaseController {
         } else
             return missingRequestResponseEntity();
 
-        //TODO: get the audit variables resulting from AQL processing
-        //the variables are in a map with path as key (f.e. ehr_id/value) and a list of corresponding values
-//            queryService.getAuditResultMap()
+        // Enriches request attributes with EhrId(s) for later audit processing
+        Map<String, Set<Object>> auditResultMap = queryService.getAuditResultMap();
+        request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, auditResultMap.get("ehr_id/value"));
 
         if (queryResponseData == null)
             return ResponseEntity.noContent().build();
@@ -226,7 +231,7 @@ public class OpenehrQueryController extends BaseController {
             query = withOffset(query, offset);
         }
 
-        QueryResponseData queryResponseData = invoke(query, queryParameter);
+        QueryResponseData queryResponseData = invoke(query, queryParameter, request);
 
         if (queryResponseData == null) {
             return ResponseEntity.noContent().build();
@@ -281,7 +286,7 @@ public class OpenehrQueryController extends BaseController {
                 query = withOffsetLimit(query, mapped);
 
             }
-            QueryResponseData queryResponseData = invoke(query, queryParameter);
+            QueryResponseData queryResponseData = invoke(query, queryParameter, request);
 
             if (queryResponseData == null) {
                 return badRequestResponseEntity(qualifiedQueryName, version);
@@ -304,7 +309,7 @@ public class OpenehrQueryController extends BaseController {
         return new ResponseEntity(errorBody, HttpStatus.BAD_REQUEST);
     }
 
-    QueryResponseData invoke(String query, Map<String, Object> queryParameter) {
+    QueryResponseData invoke(String query, Map<String, Object> queryParameter, HttpServletRequest request) {
         QueryResponseData queryResponseData;
 
         if (queryParameter != null && !queryParameter.isEmpty()) {
@@ -313,6 +318,10 @@ public class OpenehrQueryController extends BaseController {
             queryResponseData = new QueryResponseData(queryService.query(query, parameters, QueryMode.AQL, false));
         } else
             queryResponseData = new QueryResponseData(queryService.query(query, QueryMode.AQL, false));
+
+        // Enriches request attributes with EhrId(s) for later audit processing
+        Map<String, Set<Object>> auditResultMap = queryService.getAuditResultMap();
+        request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, auditResultMap.get("ehr_id/value"));
 
         return queryResponseData;
     }

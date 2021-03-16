@@ -62,6 +62,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -136,7 +137,7 @@ public class OpenehrCompositionController extends BaseController {
         }
 
         // Enriches request attributes with current compositionId for later audit processing
-        request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, ehrId);
+        request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, Collections.singleton(ehrId));
         request.setAttribute(CompositionAuditInterceptor.COMPOSITION_ID_ATTRIBUTE, compositionUuid);
 
         // returns 201 with body + headers, 204 only with headers or 500 error depending on what processing above yields
@@ -220,7 +221,7 @@ public class OpenehrCompositionController extends BaseController {
             }
 
             // Enriches request attributes with current compositionId for later audit processing
-            request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, ehrId);
+            request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, Collections.singleton(ehrId));
             request.setAttribute(CompositionAuditInterceptor.COMPOSITION_ID_ATTRIBUTE, compositionId);
 
         } catch (ObjectNotFoundException e) { // composition not found
@@ -295,7 +296,7 @@ public class OpenehrCompositionController extends BaseController {
             headers.setLastModified(ZonedDateTime.of(time, ZoneId.systemDefault()).toInstant().toEpochMilli());
 
             // Enriches request attributes with current compositionId for later audit processing
-            request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, ehrId);
+            request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, Collections.singleton(ehrId));
             request.setAttribute(CompositionAuditInterceptor.COMPOSITION_ID_ATTRIBUTE, extractVersionedObjectUidFromVersionUid(precedingVersionUid));
 
             return ResponseEntity.noContent().headers(headers).build();
@@ -388,7 +389,7 @@ public class OpenehrCompositionController extends BaseController {
         Optional<InternalResponse<CompositionResponseData>> respData = buildCompositionResponseData(compositionUid, version, accept, uri, headerList, () -> new CompositionResponseData(null, null));
 
         // Enriches request attributes with ehrId, compositionId and version for later audit processing
-        request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, ehrId);
+        request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, Collections.singleton(ehrId));
         request.setAttribute(CompositionAuditInterceptor.COMPOSITION_ID_ATTRIBUTE, compositionUid);
         request.setAttribute(CompositionAuditInterceptor.VERSION_ATTRIBUTE, version);
 

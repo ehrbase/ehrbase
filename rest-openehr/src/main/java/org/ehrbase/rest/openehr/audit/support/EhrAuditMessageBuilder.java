@@ -46,7 +46,7 @@ public class EhrAuditMessageBuilder extends OpenEhrAuditMessageBuilder<EhrAuditM
     }
 
     public EhrAuditMessageBuilder addPatientParticipantObjectIdentification(OpenEhrAuditDataset auditDataset) {
-        delegate.addPatientParticipantObject(auditDataset.getPatientParticipantObjectId(), null, null, resolveLifeCycle(auditDataset.getMethod()));
+        delegate.addPatientParticipantObject(auditDataset.getUniquePatientParticipantObjectId(), null, null, resolveLifeCycle(auditDataset.getMethod()));
         return this;
     }
 

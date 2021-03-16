@@ -30,12 +30,14 @@ import java.nio.charset.StandardCharsets;
 /**
  * Concrete implementation of {@link OpenEhrAuditMessageBuilder} for Query AuditMessages.
  */
+@SuppressWarnings("UnusedReturnValue")
 public class QueryAuditMessageBuilder extends OpenEhrAuditMessageBuilder<QueryAuditMessageBuilder> {
 
-    public QueryAuditMessageBuilder(AuditContext auditContext, QueryAuditDataset auditDataset) {
+    public QueryAuditMessageBuilder(AuditContext auditContext, QueryAuditDataset auditDataset, String patientNumber) {
         super(auditContext, auditDataset, EventActionCode.Execute, OpenEhrEventIdCode.QUERY, null);
 
         addQueryParticipantObjectIdentification(auditDataset);
+        addPatientParticipantObjectIdentification(patientNumber);
     }
 
     public QueryAuditMessageBuilder addQueryParticipantObjectIdentification(QueryAuditDataset auditDataset) {
@@ -49,6 +51,11 @@ public class QueryAuditMessageBuilder extends OpenEhrAuditMessageBuilder<QueryAu
                 ParticipantObjectTypeCodeRole.Query,
                 null,
                 null);
+        return this;
+    }
+
+    public QueryAuditMessageBuilder addPatientParticipantObjectIdentification(String patientNumber) {
+        delegate.addPatientParticipantObject(patientNumber, null, null, null);
         return this;
     }
 }

@@ -39,7 +39,7 @@ public class EhrAuditInterceptor extends OpenEhrAuditInterceptor<OpenEhrAuditDat
     @Override
     protected AuditMessage[] getAuditMessages(OpenEhrAuditDataset auditDataset) {
         EhrAuditMessageBuilder builder = new EhrAuditMessageBuilder(auditContext, auditDataset);
-        if (auditDataset.hasPatientParticipantObjectId()) {
+        if (auditDataset.hasPatientParticipantObjectIds()) {
             builder.addPatientParticipantObjectIdentification(auditDataset);
         }
         return builder.getMessages();

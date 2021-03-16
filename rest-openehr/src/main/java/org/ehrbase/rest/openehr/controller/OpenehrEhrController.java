@@ -56,6 +56,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -176,7 +177,7 @@ public class OpenehrEhrController extends BaseController {
         }
 
         // Enriches request attributes with current EhrId for later audit processing
-        request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, resultEhrId);
+        request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, Collections.singleton(resultEhrId));
 
         // returns 201 with body + headers, 204 only with headers or 500 error depending on what processing above yields
         return respData.map(i -> Optional.ofNullable(i.getResponseData()).map(j -> ResponseEntity.created(url).headers(i.getHeaders()).body(j))
@@ -245,7 +246,7 @@ public class OpenehrEhrController extends BaseController {
         Optional<InternalResponse<EhrResponseData>> respData = buildEhrResponseData(EhrResponseData::new, ehrId, accept, headerList);
 
         // Enriches request attributes with current EhrId for later audit processing
-        request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, ehrId);
+        request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, Collections.singleton(ehrId));
 
         return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData()))
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
