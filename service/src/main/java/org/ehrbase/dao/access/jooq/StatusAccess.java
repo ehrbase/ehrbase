@@ -22,10 +22,17 @@
 package org.ehrbase.dao.access.jooq;
 
 import com.nedap.archie.rm.datastructures.ItemStructure;
+import com.nedap.archie.rm.datavalues.DvCodedText;
+import com.nedap.archie.rm.datavalues.DvText;
+import com.nedap.archie.rm.ehr.EhrStatus;
+import com.nedap.archie.rm.generic.PartySelf;
+import com.nedap.archie.rm.support.identification.HierObjectId;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.dao.access.interfaces.*;
+import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.dao.access.util.TransactionTime;
@@ -35,6 +42,7 @@ import org.ehrbase.jooq.pg.tables.records.StatusHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.StatusRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.ehrbase.service.RecordedDvCodedText;
 import org.jooq.DSLContext;
 import org.jooq.Result;
 
@@ -142,7 +150,7 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
         return createStatusAccessForRetrieval(domainAccess, record, null);
     }
 
-    public static Map<I_StatusAccess, Integer> retrieveInstanceByContribution(I_DomainAccess domainAccess, UUID contributionId) {
+    public static Map<ObjectVersionId, I_StatusAccess> retrieveInstanceByContribution(I_DomainAccess domainAccess, UUID contributionId, String node) {
         Set<UUID> statuses = new HashSet<>();   // Set, because of unique values
         // add all compositions having a link to given contribution
         domainAccess.getContext().select(STATUS.ID).from(STATUS).where(STATUS.IN_CONTRIBUTION.eq(contributionId)).fetch()
@@ -154,21 +162,21 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
         // get whole "version map" of each matching status and do fine-grain check for matching contribution
         // precondition: each UUID in `statuses` set is unique, so for each the "version map" is only created once below
         // (meta: can't do that as jooq query, because the specific version number isn't stored in DB)
-        Map<I_StatusAccess, Integer> resultMap = new HashMap<>();
+        Map<ObjectVersionId, I_StatusAccess> resultMap = new HashMap<>();
         for (UUID statusId : statuses) {
-            Map<I_StatusAccess, Integer> map = getVersionMapOfStatus(domainAccess, statusId);
+            Map<Integer, I_StatusAccess> map = getVersionMapOfStatus(domainAccess, statusId);
             // fine-grained contribution ID check
-            for (Map.Entry<I_StatusAccess, Integer> entry : map.entrySet()) {
-                if (entry.getKey().getContributionId().equals(contributionId))
-                    resultMap.put(entry.getKey(), entry.getValue());
-            }
+            map.forEach((k, v) -> {
+                if (v.getContributionId().equals(contributionId))
+                    resultMap.put(new ObjectVersionId(statusId.toString(), node, k.toString()), v);
+            });
         }
 
         return resultMap;
     }
 
-    public static Map<I_StatusAccess, Integer> getVersionMapOfStatus(I_DomainAccess domainAccess, UUID statusId) {
-        Map<I_StatusAccess, Integer> versionMap = new HashMap<>();
+    public static Map<Integer, I_StatusAccess> getVersionMapOfStatus(I_DomainAccess domainAccess, UUID statusId) {
+        Map<Integer, I_StatusAccess> versionMap = new HashMap<>();
 
         // create counter with highest version, to keep track of version number and allow check in the end
         Integer versionCounter = getLatestVersionNumber(domainAccess, statusId);
@@ -177,7 +185,7 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
         StatusRecord record = domainAccess.getContext().fetchOne(STATUS, STATUS.ID.eq(statusId));
         if (record != null) {
             I_StatusAccess statusAccess = createStatusAccessForRetrieval(domainAccess, record, null);
-            versionMap.put(statusAccess, versionCounter);
+            versionMap.put(versionCounter, statusAccess);
 
             versionCounter--;
         }
@@ -191,7 +199,7 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
 
         for (StatusHistoryRecord historyRecord : historyRecords) {
             I_StatusAccess historyAccess = createStatusAccessForRetrieval(domainAccess, null, historyRecord);
-            versionMap.put(historyAccess, versionCounter);
+            versionMap.put(versionCounter, historyAccess);
             versionCounter--;
         }
 
@@ -313,9 +321,15 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
     public Boolean update(ItemStructure otherDetails, Timestamp transactionTime, boolean force) {
         if (force || statusRecord.changed()) {
             // update both contribution (incl its audit) and the status' own audit
-            contributionAccess.update(transactionTime, null, null, null, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
-            statusRecord.setInContribution(contributionAccess.getId()); // new contribution ID
-            auditDetailsAccess.update(null, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
+            if (contributionAccess.getId() == null) {
+                // new contribution
+                contributionAccess.commit(transactionTime);
+            } else {
+                // use existing for batch contribution
+                contributionAccess.update(transactionTime, null, null, null, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
+            }
+            statusRecord.setInContribution(contributionAccess.getId());
+            auditDetailsAccess.commit();
             statusRecord.setHasAudit(auditDetailsAccess.getId()); // new audit ID
 
             if (otherDetails != null) {
@@ -511,5 +525,31 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
 
         // if haven't returned above use time from latest version (already available in this instance)
         return statusRecord.getSysTransaction();
+    }
+
+    @Override
+    public EhrStatus getStatus() {
+        EhrStatus status = new EhrStatus();
+
+        status.setModifiable(getStatusRecord().getIsModifiable());
+        status.setQueryable(getStatusRecord().getIsQueryable());
+        // set otherDetails if available
+        if (getStatusRecord().getOtherDetails() != null) {
+            status.setOtherDetails(getStatusRecord().getOtherDetails());
+        }
+
+        //Locatable attribute
+        status.setArchetypeNodeId(getStatusRecord().getArchetypeNodeId());
+        Object name = new RecordedDvCodedText().fromDB(getStatusRecord(), STATUS.NAME);
+        status.setName(name instanceof DvText ? (DvText)name : (DvCodedText)name);
+
+        UUID statusId = getStatusRecord().getId();
+        status.setUid(new HierObjectId(statusId.toString() + "::" + getServerConfig().getNodename() + "::" +
+            I_StatusAccess.getLatestVersionNumber(this, statusId)));
+
+        PartySelf partySelf = (PartySelf)new PersistedPartyProxy(this).retrieve(getStatusRecord().getParty());
+        status.setSubject(partySelf);
+
+        return status;
     }
 }

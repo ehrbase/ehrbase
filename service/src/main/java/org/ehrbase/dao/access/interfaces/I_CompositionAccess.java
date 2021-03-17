@@ -23,6 +23,7 @@ package org.ehrbase.dao.access.interfaces;
 
 import com.nedap.archie.rm.archetyped.FeederAudit;
 import com.nedap.archie.rm.archetyped.Link;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.dao.access.jooq.CompositionAccess;
@@ -189,11 +190,12 @@ public interface I_CompositionAccess extends I_SimpleCRUD {
      *
      * @param domainAccess   SQL context, knowledge
      * @param contributionId contribution object uuid
-     * @return a map of {@link I_CompositionAccess} and their version number, that match the condition
+     * @param node Name of local node, for creation of object version ID
+     * @return a map of {@link I_CompositionAccess} and their version ID, that match the condition
      * @throws IllegalArgumentException on DB inconsistency
      */
-    static Map<I_CompositionAccess, Integer> retrieveInstancesInContribution(I_DomainAccess domainAccess, UUID contributionId) {
-        return CompositionAccess.retrieveCompositionsInContribution(domainAccess, contributionId);
+    static Map<ObjectVersionId, I_CompositionAccess> retrieveInstancesInContribution(I_DomainAccess domainAccess, UUID contributionId, String node) {
+        return CompositionAccess.retrieveCompositionsInContribution(domainAccess, contributionId, node);
     }
 
     /**
@@ -212,10 +214,10 @@ public interface I_CompositionAccess extends I_SimpleCRUD {
      *
      * @param domainAccess  Data Access
      * @param compositionId Given composition ID
-     * @return Map referencing all versions and their version number
+     * @return Map referencing all versions by their version number
      */
-    static Map<I_CompositionAccess, Integer> getVersionMapOfComposition(I_DomainAccess domainAccess, UUID compositionId) {
-        return I_CompositionAccess.getVersionMapOfComposition(domainAccess, compositionId);
+    static Map<Integer, I_CompositionAccess> getVersionMapOfComposition(I_DomainAccess domainAccess, UUID compositionId) {
+        return CompositionAccess.getVersionMapOfComposition(domainAccess, compositionId);
     }
 
     /**
@@ -460,6 +462,8 @@ public interface I_CompositionAccess extends I_SimpleCRUD {
 
     UUID getAuditDetailsId();
 
+    I_AuditDetailsAccess getAuditDetailsAccess();
+
     void setAuditDetailsId(UUID auditId);
 
     /**
@@ -489,4 +493,6 @@ public interface I_CompositionAccess extends I_SimpleCRUD {
      * Invoke physical deletion.
      */
     void adminDelete();
+
+    UUID getAttestationRef();
 }

@@ -181,6 +181,9 @@ public class OpenehrVersionedEhrStatusController extends BaseController{
             throw new InvalidApiParameterException("VERSION UID parameter has wrong format: " + e.getMessage());
         }
 
+        if (version < 1)
+            throw new InvalidApiParameterException("Version can't be negative.");
+
         if(!ehrService.hasStatus(versionedObjectId)) {
             throw new ObjectNotFoundException("ehr_status", "No EHR_STATUS with given ID can be found.");
         }

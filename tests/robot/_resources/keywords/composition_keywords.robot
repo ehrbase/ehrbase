@@ -454,12 +454,85 @@ get versioned composition by uid
 
                         prepare new request session    ${format}
 
-        TRACE GITHUB ISSUE  122  bug
-
     ${resp}=            Get Request         ${SUT}    /ehr/${ehr_id}/versioned_composition/${uid}    headers=${headers}
                         log to console      ${resp.content}
                         Set Test Variable   ${response}    ${resp}
 
+
+# Note: uses REST.GET
+get versioned composition of EHR by UID
+    [Arguments]         ${uid}
+    [Documentation]     Gets versioned composition with given uid.
+    ...                 DEPENDENCY: `prepare new request session` and keywords that
+    ...                             create and expose an `ehr_id` e.g.
+    ...                             - `create new EHR`
+    ...                             - `generate random ehr_id`
+    ...                             and creation of composition, giving its ID as argument
+
+    &{resp}=            REST.GET    ${baseurl}/ehr/${ehr_id}/versioned_composition/${uid}
+                        ...         headers={"Accept": "application/json"}
+                        Set Test Variable    ${response}    ${resp}
+
+
+get revision history of versioned composition of EHR by UID
+    [Arguments]         ${uid}
+    [Documentation]     Gets revision history of versioned composition with given uid.
+    ...                 DEPENDENCY: `prepare new request session` and keywords that
+    ...                             create and expose an `ehr_id` e.g.
+    ...                             - `create new EHR`
+    ...                             - `generate random ehr_id`
+    ...                             and creation of composition, giving its ID as argument
+
+    &{resp}=            REST.GET    ${baseurl}/ehr/${ehr_id}/versioned_composition/${uid}/revision_history
+                        ...         headers={"Accept": "application/json"}
+                        Set Test Variable    ${response}    ${resp}
+
+
+get version of versioned composition of EHR by UID and time
+    [Arguments]         ${uid}
+    [Documentation]     Gets composition with given UID by time.
+    ...                 DEPENDENCY: `prepare new request session` and keywords that
+    ...                             create and expose an `ehr_id` e.g.
+    ...                             - `create new EHR`
+    ...                             - `generate random ehr_id`
+    ...                 Input: `query` variable containing query parameters as object or directory (e.g. _limit=2 for [$URL]?_limit=2)
+    ...                 which can be empty too
+
+    # Trick to see if ${query} was set. (if not, "Get Variale Value" will set the value to None)
+    ${query} = 	Get Variable Value 	${query}
+    # Only run the GET with query if $query was set
+    Run Keyword Unless 	$query is None 	internal get version of versioned composition of EHR by UID and time with query    ${uid}
+    Run Keyword If 	$query is None 	internal get version of versioned composition of EHR by UID and time without query    ${uid}
+
+
+get version of versioned composition of EHR by UID
+    [Arguments]         ${versioned_object_uid}    ${version_uid}
+    [Documentation]     Gets composition with given version UID
+    ...                 DEPENDENCY: `prepare new request session` and keywords that
+    ...                             create and expose an `ehr_id` e.g.
+    ...                             - `create new EHR`
+    ...                             - `generate random ehr_id`
+    ...                             and creation of composition, giving its ID as argument
+
+    &{resp}=            REST.GET    ${baseurl}/ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version/${version_uid}
+                        ...         headers={"Accept": "application/json"}
+                        Set Test Variable    ${response}    ${resp}
+
+
+# internal only, do not call from outside. use "get version of versioned composition of EHR by UID and time" instead
+internal get version of versioned composition of EHR by UID and time with query
+    [Arguments]         ${uid}
+    &{resp}=            REST.GET    ${baseurl}/ehr/${ehr_id}/versioned_composition/${uid}/version    ${query}
+                        ...         headers={"Accept": "application/json"}
+                        Set Test Variable    ${response}    ${resp}
+
+
+# internal only, do not call from outside. use "get version of versioned composition of EHR by UID and time" instead
+internal get version of versioned composition of EHR by UID and time without query
+    [Arguments]         ${uid}
+    &{resp}=            REST.GET    ${baseurl}/ehr/${ehr_id}/versioned_composition/${uid}/version
+                        ...         headers={"Accept": "application/json"}
+                        Set Test Variable    ${response}    ${resp}
 
 # get versioned composition by version_uid
 #     [Documentation]     ENDPOINT: /ehr/{ehr_id}/versioned_composition/{versioned_object_uid}/version/{version_uid}
@@ -469,7 +542,7 @@ get versioned composition by uid
 check content of versioned composition (JSON)
                         Should Be Equal As Strings    ${response.status_code}    200
                         Should Be Equal    ${response.json()['uid']['value']}    ${versioned_object_uid}
-                        Should Be Equal    ${response.json()['owner_id']}    ${ehr_id}
+                        Should Be Equal    ${response.json()['owner_id']['id']['value']}    ${ehr_id}
 
 
 check content of versioned composition (XML)
@@ -477,6 +550,8 @@ check content of versioned composition (XML)
     ${xml}=             Parse Xml           ${response.text}
     ${uid}=             Get Element         ${xml}    uid/value
                         Element Text Should Be    ${uid}    ${versioned_object_uid}
+    ${owner}=           Get Element         ${xml}    owner_id/id/value
+                        Element Text Should Be    ${owner}    ${ehr_id}
 
 
 get composition - latest version
@@ -555,7 +630,7 @@ get composition - version at time (XML)
     ...                 :time_x: variable w. DateTime-TimeZone (like returned from `capture point in time` kw)
     ...                 ENDPOINT: /ehr/{ehr_id}/versioned_composition/{versioned_object_uid}/version{?version_at_time}
 
-    &{params}=          Create Dictionary     version_at_time=$${time_x}
+    &{params}=          Create Dictionary     version_at_time=${time_x}
     &{headers}=         Create Dictionary     Accept=application/xml
     ${resp}=            Get Request           ${SUT}   /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version
                         ...                   params=${params}   headers=${headers}
@@ -568,30 +643,30 @@ get composition - version at time (XML)
 
 
 check content of compositions version at time (JSON)
-    [Arguments]         ${time_x_nr}
+    [Arguments]         ${time_x_nr}    ${value}
     [Documentation]     DEPENDENCY: `get compostion - version at time`
     ...                 :time_x_nr:  a string like `time_1`
 
                         Should Be Equal As Strings   ${response.status_code}   200
-    ${version_uid}=     Set Variable    ${resp.json()['uid']['value']}
+    ${version_uid}=     Set Variable    ${response.json()['uid']['value']}
 
     Run Keyword If      '${time_x_nr}'=='time_1'   Should Be Equal       ${version_uid}    ${composition_uid}
     Run Keyword If      '${time_x_nr}'=='time_2'   Should Be Equal       ${version_uid}    ${composition_uid_v2}
 
 
                         # check content of the latest version is equal to the content committed on the first compo
-                        Set Test Variable     ${text}    ${resp.json()['data']['content'][0]['data']['events'][0]['data']['items'][0]['value']['value']}
-                        Should Be Equal       ${text}    original value
+                        Set Test Variable     ${text}    ${response.json()['data']['content'][0]['data']['events'][0]['data']['items'][0]['value']['value']}
+                        Should Be Equal       ${text}    ${value}
 
 
 check content of compositions version at time (XML)
-    [Arguments]         ${time_x_nr}
+    [Arguments]         ${time_x_nr}    ${value}
     [Documentation]     DEPENDENCY: `get compostion - version at time (XML)`
     ...                 :time_x_nr:  a string like `time_1`
                         Should Be Equal As Strings   ${response.status_code}   200
 
     # compo.uid.value has the version_uid
-    ${xresp}=           Parse Xml             ${resp.text}
+    ${xresp}=           Parse Xml             ${response.text}
     ${version_uid}=     Get Element           ${xresp}      uid/value
 
     Run Keyword If      '${time_x_nr}'=='time_1'    Element Text Should Be    ${version_uid}    ${composition_uid}
@@ -599,7 +674,7 @@ check content of compositions version at time (XML)
 
     # check content of the latest version is equal to the content committed on the first compo
     ${xtext}=           Get Element           ${xresp}      data/content[1]/data/events[1]/data/items[1]/value/value
-                        Element Text Should Be    ${xtext}    original value
+                        Element Text Should Be    ${xtext}    ${value}
 
 
 check composition exists
@@ -739,8 +814,24 @@ capture point in time
                         Output Debug Info To Console
 
 
+create EHR and commit a composition for versioned composition tests
+    [Documentation]     Creates an EHR and commits a pre-set composition to kick off a test environment.
+    ...                 Important returned vars are: `${ehr_id}` and `${version_uid}`
+
+    create new EHR
+    Should Be Equal As Strings    ${response.status}    201
+
+    upload OPT    minimal/minimal_observation.opt
+    commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.xml
 
 
+update a composition for versioned composition tests
+    [Documentation]     Updates a pre-set composition to alter a versioned test environment.
+    ...                 Requires `${compo_uid_v1}` or to be run after the `create EHR and commit a composition 
+    ...                 for versioned composition tests` keyword.
+
+    update composition (JSON)   minimal/minimal_observation.composition.participations.extdatetimes.v2.xml
+    check composition update succeeded
 
 
 

@@ -28,7 +28,6 @@ import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
 
 import java.sql.Timestamp;
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -60,33 +59,7 @@ public interface I_ContributionAccess extends I_SimpleCRUD {
         return ContributionAccess.retrieveInstance(domainAccess, contributionId);
     }
 
-    /**
-     * add a new composition to this contribution<br>
-     * NB: The contribution and composition requires commit() to be saved in the DB
-     *
-     * @param compositionAccess a valid I_CompositionAccess
-     * @throws IllegalArgumentException when composition is not complete, e.g. has not embedded audit
-     */
-    void addComposition(I_CompositionAccess compositionAccess);
-
     UUID updateWithSignature(String signature);
-
-    /**
-     * updateComposition an <b>existing</b> composition<br>
-     * only a composition with the same id is effectively updated with this method<br>
-     * NB: The contribution and composition requires commit() to be saved in the DB
-     *
-     * @param compositionAccess access instance
-     */
-    void updateComposition(I_CompositionAccess compositionAccess);
-
-    /**
-     * TODO: doc. what exactly happens or need to happen, i.e. also commit(..) necessary afterwards?
-     *
-     * @param compositionAccess access instance
-     * @return ?
-     */
-    boolean removeComposition(I_CompositionAccess compositionAccess);
 
     /**
      * Commits given input as contribution record. Creation of audit is required beforehand. All parameters are optional and will be provided with default values if NULL.
@@ -210,10 +183,6 @@ public interface I_ContributionAccess extends I_SimpleCRUD {
      *
      */
     void setEhrId(UUID ehrId);
-
-    I_CompositionAccess getComposition(UUID id);
-
-    Set<UUID> getCompositionIds();
 
     String getDataType();
 
