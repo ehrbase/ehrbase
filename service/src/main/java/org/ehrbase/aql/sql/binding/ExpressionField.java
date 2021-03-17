@@ -45,6 +45,10 @@ public class ExpressionField {
 
         Field<?> field;
 
+        if (new FieldConstantHandler(variableDefinition).isConstant()){
+            return new FieldConstantHandler(variableDefinition).field();
+        }
+
         switch (className) {
             //COMPOSITION attributes
             case "COMPOSITION":
