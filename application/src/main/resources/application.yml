@@ -34,7 +34,7 @@ spring:
       resourceserver:
         jwt:
           #issuer-uri: http://localhost:8081/auth/realms/ehrbase  # Example issuer URI - or set via env var
-          issuer-uri:
+          issuer-uri: https://keycloak.dev.num-codex.de/auth/realms/ctr
   profiles:
     active: local
   datasource:
@@ -56,7 +56,7 @@ security:
 # Attribute Based Access Control
 abac:
   disabled: true
-  server: http://localhost:8080/rest/v1/policy/execute/name
+  server: http://localhost:8080/rest/v1/policy/execute/name/
   # Policies need to be configured for each resource. Available parameters are
   # - organization
   # - patient
