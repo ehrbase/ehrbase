@@ -18,19 +18,37 @@
 
 package org.ehrbase.application.config;
 
+import org.ehrbase.api.service.CompositionService;
+import org.ehrbase.api.service.EhrService;
 import org.ehrbase.application.util.IsoDateTimeConverter;
 import org.ehrbase.application.util.StringToEnumConverter;
+import org.ehrbase.rest.openehr.audit.CompositionAuditInterceptor;
+import org.ehrbase.rest.openehr.audit.EhrAuditInterceptor;
+import org.ehrbase.rest.openehr.audit.QueryAuditInterceptor;
+import org.openehealth.ipf.commons.audit.AuditContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
+import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
-import java.util.List;
-
 @Configuration
 public class WebMvcConfig extends WebMvcConfigurerAdapter implements WebMvcConfigurer {
+
+    private final AuditContext auditContext;
+
+    private final EhrService ehrService;
+
+    private final CompositionService compositionService;
+
+    public WebMvcConfig(AuditContext auditContext, EhrService ehrService, CompositionService compositionService) {
+        this.auditContext = auditContext;
+        this.ehrService = ehrService;
+        this.compositionService = compositionService;
+    }
 
     /**
      * This config allows paths parameters to be of form "uuid::domain::version" - more specifically, it allows "." in domains.
@@ -50,5 +68,23 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements WebMvcConfi
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**");
+    }
+
+    @Override
+    public void addInterceptors(@NonNull InterceptorRegistry registry) {
+        if (auditContext.isAuditEnabled()) {
+            // Composition endpoint
+            registry
+                    .addInterceptor(new CompositionAuditInterceptor(auditContext, ehrService, compositionService))
+                    .addPathPatterns("/rest/openehr/v1/**/composition/**");
+            // Ehr endpoint
+            registry
+                    .addInterceptor(new EhrAuditInterceptor(auditContext, ehrService))
+                    .addPathPatterns("/rest/openehr/v1/ehr", "/rest/openehr/v1/ehr/*");
+            // Query endpoint
+            registry
+                    .addInterceptor(new QueryAuditInterceptor(auditContext, ehrService))
+                    .addPathPatterns("/rest/openehr/v1/query/**");
+        }
     }
 }
