@@ -95,7 +95,7 @@ public class LocatableItem {
                 }
             }
             else
-                throw new IllegalStateException("Internal: unsupported item type for:"+variableDefinition);
+                throw new IllegalArgumentException("Unresolved aql path:"+variableDefinition.getPath());
         }
         return field;
     }
