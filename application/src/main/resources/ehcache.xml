@@ -48,7 +48,7 @@
         </expiry>
         <resources>
             <heap unit="entries">300</heap>
-            <disk unit="MB" persistent="true">400</disk>
+<!--            <disk unit="MB" persistent="true">400</disk>-->
         </resources>
     </cache-template>
 
@@ -58,7 +58,7 @@
         </expiry>
         <resources>
             <heap unit="MB">200</heap>
-            <disk unit="MB" persistent="true">400</disk>
+<!--            <disk unit="MB" persistent="true">400</disk>-->
         </resources>
     </cache-template>
 </config>

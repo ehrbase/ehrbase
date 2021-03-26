@@ -81,7 +81,7 @@ public class WhereBinder {
     private PathResolver pathResolver;
     private boolean isWholeComposition = false;
     private String compositionName = null;
-    private String sqlConditionalFunctionalOperatorRegexp = "(?i)(like|ilike|in|not in)"; //list of subquery and operators
+    private String sqlConditionalFunctionalOperatorRegexp = "(?i)(like|ilike|substr|in|not in)"; //list of subquery and operators
     private boolean requiresJSQueryClosure = false;
     private boolean isFollowedBySQLConditionalOperator = false;
 

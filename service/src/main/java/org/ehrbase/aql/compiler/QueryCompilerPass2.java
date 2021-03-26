@@ -33,6 +33,8 @@ import org.ehrbase.aql.parser.AqlParser;
 
 import java.util.*;
 
+import static org.ehrbase.aql.parser.AqlLexer.*;
+
 /**
  * AQL compilation pass 2<p>
  * This pass uses the results of pass 1 to:
@@ -46,7 +48,11 @@ import java.util.*;
  */
 public class QueryCompilerPass2 extends AqlBaseListener {
 
-    private String[] allowedFunctions = {"COUNT", "MIN", "MAX", "AVG"};
+    private String[] allowedFunctions = {"COUNT", "MIN", "MAX", "AVG", "SUM", 
+            "SUBSTR","STRPOS","SPLIT_PART","BTRIM","CONCAT","CONCAT_WS","DECODE","ENCODE","FORMAT","INITCAP","LEFT","LENGTH","LPAD","LTRIM",
+            "REGEXP_MATCH","REGEXP_REPLACE","REGEXP_SPLIT_TO_ARRAY","REGEXP_SPLIT_TO_TABLE","REPEAT","REPLACE","REVERSE","RIGHT","RPAD",
+            "RTRIM","TRANSLATE"
+    };
 
     private Logger logger = LogManager.getLogger(QueryCompilerPass2.class);
 

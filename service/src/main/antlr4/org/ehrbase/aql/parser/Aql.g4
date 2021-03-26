@@ -216,6 +216,7 @@ operand
                 : STRING
                 | INTEGER
                 | FLOAT
+                | REAL
                 | DATE
                 | PARAMETER
                 | BOOLEAN
@@ -316,7 +317,7 @@ FUNCTION_IDENTIFIER : COUNT | AVG | BOOL_AND | BOOL_OR | EVERY | MAX | MIN | SUM
                       CORR | COVAR_POP | COVAR_SAMP | REGR_AVGX | REGR_AVGY | REGR_COUNT | REGR_INTERCEPT | REGR_R2 | REGR_SLOPE | REGR_SXX |
                       REGR_SXY | REGR_SYY | STDDEV | STDDEV_POP | STDDEV_SAMP | VARIANCE | VAR_POP | VAR_SAMP |
 //string function
-                      SUBSTR | STRPOS | SPLIT_PART | BTRIM | CONCAT | CONCAT_WS | DECODE | ENCODE | FORMAT | INITCAP | LEFT | LENGTH | LPAD | LTRIM |
+                      SUBSTR | `STRPOS` | SPLIT_PART | BTRIM | CONCAT | CONCAT_WS | DECODE | ENCODE | FORMAT | INITCAP | LEFT | LENGTH | LPAD | LTRIM |
                        REGEXP_MATCH | REGEXP_REPLACE | REGEXP_SPLIT_TO_ARRAY | REGEXP_SPLIT_TO_TABLE | REPEAT | REPLACE | REVERSE | RIGHT | RPAD |
                        RTRIM | TRANSLATE |
 //encoding function
@@ -342,6 +343,7 @@ DEMOGRAPHIC
 
 INTEGER :   '-'? DIGIT+;
 FLOAT   :   '-'? DIGIT+ '.' DIGIT+;
+REAL    :   '-'? DIGIT+ ('.' DIGIT+)? (E (|'+'|'-') DIGIT+)?;
 DATE    :   '\'' DIGIT DIGIT DIGIT DIGIT DIGIT DIGIT DIGIT DIGIT 'T' DIGIT DIGIT DIGIT DIGIT DIGIT DIGIT '.' DIGIT DIGIT DIGIT '+' DIGIT DIGIT DIGIT DIGIT '\'';
 PARAMETER : '$' LETTER IDCHAR*;
 
