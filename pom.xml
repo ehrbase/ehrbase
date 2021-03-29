@@ -647,6 +647,9 @@
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
+                    <configuration>
+                        <mainClass>org.ehrbase.application.EhrBase</mainClass>
+                    </configuration>
                     <executions>
                         <execution>
                             <id>build-info</id>
