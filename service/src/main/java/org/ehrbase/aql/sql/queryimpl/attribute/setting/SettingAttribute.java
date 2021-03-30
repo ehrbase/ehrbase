@@ -51,7 +51,7 @@ public class SettingAttribute extends EventContextAttribute {
                 return new GenericJsonField(fieldContext, joinSetup).forJsonPath(jsonPath.get()).eventContext(EVENT_CONTEXT.ID);
 
             Field jsonContextField = DSL.field(
-                    jsonpathItemAsText(fieldContext.getContext().configuration(),
+                    jsonpathItem(fieldContext.getContext().configuration(),
                             Routines.jsDvCodedText2(tableField).cast(JSONB.class),
                             jsonpathParameters(new GenericJsonPath(jsonPath.get()).jqueryPath())
                     )

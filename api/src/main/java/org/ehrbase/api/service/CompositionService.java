@@ -18,7 +18,10 @@
 
 package org.ehrbase.api.service;
 
+import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.composition.Composition;
+import com.nedap.archie.rm.ehr.VersionedComposition;
+import com.nedap.archie.rm.generic.RevisionHistory;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.response.ehrscape.CompositionDto;
@@ -164,10 +167,18 @@ public interface CompositionService extends BaseService {
     String getUidFromInputComposition(String content, CompositionFormat format);
 
     /**
+     * Helper function to read the template ID from given composition input in stated format.
+     * @param content Composition input
+     * @param format Composition format
+     * @return The UUID or null when not available.
+     */
+    String getTemplateIdFromInputComposition(String content, CompositionFormat format);
+
+    /**
      * Gets the version of a composition that is closest in time before timestamp
      * @param compositionId UUID (versioned_object_id) of composition
      * @param timestamp Given time
-     * @return Version closest in time before given timestamp, or `null` in case of
+     * @return Version closest in time before given timestamp, or `null` in case of error.
      */
     Integer getVersionByTimestamp(UUID compositionId, LocalDateTime timestamp);
 
@@ -191,4 +202,27 @@ public interface CompositionService extends BaseService {
      * @param compositionId Composition to delete
      */
     void adminDelete(UUID compositionId);
+
+    /**
+     * Gets version container Composition associated with given EHR and Composition ID.
+     * @param ehrUid Given EHR ID
+     * @param composition Given Composition ID
+     * @return Version container object
+     */
+    VersionedComposition getVersionedComposition(UUID ehrUid, UUID composition);
+
+    /**
+     * Gets revision history of given composition.
+     * @param composition Given composition.
+     * @return Revision history
+     */
+    RevisionHistory getRevisionHistoryOfVersionedComposition(UUID composition);
+
+    /**
+     * Gets Original Version container class representation of the given composition at given version.
+     * @param versionedObjectUid Given composition Uid.
+     * @param version Given version number.
+     * @return Original Version container class representation.
+     */
+    Optional<OriginalVersion<Composition>> getOriginalVersionComposition(UUID versionedObjectUid, int version);
 }

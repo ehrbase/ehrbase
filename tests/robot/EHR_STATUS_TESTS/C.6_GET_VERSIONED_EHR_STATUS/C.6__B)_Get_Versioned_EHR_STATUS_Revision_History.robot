@@ -76,7 +76,6 @@ Force Tags
 
 3. Get Correct Ordered Revision History of Versioned Status Of Existing EHR With Two Status Versions (JSON)
     [Documentation]     Testing with two versions like above, but checking the response more thoroughly.
-    [Tags]              not-ready   458 
 
     prepare new request session    JSON    Prefer=return=representation
 
@@ -115,7 +114,6 @@ Force Tags
 
     # comment: Idea - newer/higher timestamp - older/lesser timestamp = number larger than 0 IF correct
     Should Be True 	${timediff} > 0
-    [Teardown]    TRACE GITHUB ISSUE    458    bug
 
 
 4. Get Revision History of Versioned Status Of Non-Existing EHR (JSON)

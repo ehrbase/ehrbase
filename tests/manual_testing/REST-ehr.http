@@ -19,6 +19,7 @@
 1. start EHRbase's PostgreSQL DB
 2. start EHRbase with Basic Auth
 
+###
 
 
 #///////////////////////////////
@@ -95,5 +96,21 @@ Authorization: Basic bXl1c2VyOm15UGFzc3dvcmQ0MzI=
 # {
 #   "q": "SELECT c FROM EHR e [ehr_id/value='{{ehr_id}}'] CONTAINS COMPOSITION c"
 # }
+
+###
+
+
+
+#/////////////////////////////////////////////////
+#// EXECUTE AD-HOC AQL QUERY                  ///
+#///////////////////////////////////////////////
+
+POST {{ehrbase_url}}/query/aql
+Content-Type: application/json
+Authorization: Basic bXl1c2VyOm15UGFzc3dvcmQ0MzI=
+
+{
+    "q": "select a/archetype_details from EHR e contains COMPOSITION a where a/uid/value='{{ehr_id}}'"
+}
 
 ###

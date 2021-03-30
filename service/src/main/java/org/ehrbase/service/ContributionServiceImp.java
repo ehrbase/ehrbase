@@ -393,16 +393,16 @@ public class ContributionServiceImp extends BaseService implements ContributionS
     private Map<String, String> retrieveUuidsOfContributionObjects(UUID contribution) {
         Map<String, String> objRefs = new HashMap<>();
 
-        // query for compositions   // TODO-396: refactor to use service layer only!?
-        Map<I_CompositionAccess, Integer> compositions = I_CompositionAccess.retrieveInstancesInContribution(this.getDataAccess(), contribution);
+        // query for compositions   // TODO: refactor to use service layer only!?
+        Map<ObjectVersionId, I_CompositionAccess> compositions = I_CompositionAccess.retrieveInstancesInContribution(this.getDataAccess(), contribution, getServerConfig().getNodename());
         // for each fetched composition: add it to the return map and add the composition type tag - ignoring the access obj
-        compositions.forEach((k, v) -> objRefs.put(k.getId() + "::" + getServerConfig().getNodename() + "::" + v, TYPE_COMPOSITION));
+        compositions.forEach((k, v) -> objRefs.put(k.getValue(), TYPE_COMPOSITION));
 
-        // query for statuses       // TODO-396: refactor to use service layer only!?
-        Map<I_StatusAccess, Integer> statuses = I_StatusAccess.retrieveInstanceByContribution(this.getDataAccess(), contribution);
-        statuses.forEach((k, v) -> objRefs.put(k.getId() + "::" + getServerConfig().getNodename() + "::" + v, TYPE_EHRSTATUS));
+        // query for statuses       // TODO: refactor to use service layer only!?
+        Map<ObjectVersionId, I_StatusAccess> statuses = I_StatusAccess.retrieveInstanceByContribution(this.getDataAccess(), contribution, getServerConfig().getNodename());
+        statuses.forEach((k, v) -> objRefs.put(k.getValue(), TYPE_EHRSTATUS));
 
-        // query for folders        // TODO-396: refactor to use service layer only!?
+        // query for folders        // TODO: refactor to use service layer only!?
         Set<ObjectVersionId> folders = I_FolderAccess.retrieveFolderVersionIdsInContribution(getDataAccess(), contribution, getServerConfig().getNodename());
         folders.forEach(f -> objRefs.put(f.toString(), TYPE_FOLDER));
 

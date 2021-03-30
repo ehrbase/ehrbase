@@ -19,6 +19,7 @@
 
 package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 
+import org.ehrbase.aql.sql.queryimpl.QueryImplConstants;
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC33;
 
 public class TestUC33 extends UC33 {
@@ -26,7 +27,7 @@ public class TestUC33 extends UC33 {
     public TestUC33(){
         super();
         this.expectedSqlExpression =
-                "select jsonb_extract_path_text(cast(jsonb_array_elements(cast(jsonb_extract_path(cast(\"ehr\".\"js_ehr\"(\n" +
+                "select jsonb_extract_path_text(cast("+ QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION+"(cast(jsonb_extract_path(cast(\"ehr\".\"js_ehr\"(\n" +
                         "  cast(ehr_join.id as uuid), \n" +
                         "  'local'\n" +
                         ") as jsonb),'folders') as jsonb)) as jsonb),'name','value') as \"/folders/name/value\" from \"ehr\".\"ehr\" as \"ehr_join\"" +

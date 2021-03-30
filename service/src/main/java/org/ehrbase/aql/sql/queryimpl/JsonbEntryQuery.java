@@ -28,12 +28,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
+import org.ehrbase.aql.sql.binding.ExpressionField;
 import org.ehrbase.aql.sql.binding.JoinBinder;
 import org.ehrbase.aql.sql.queryimpl.value_field.NodePredicate;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.ehr.util.LocatableHelper;
 import org.ehrbase.serialisation.dbencoding.CompositionSerializer;
 import org.ehrbase.service.IntrospectService;
+import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
@@ -182,6 +184,8 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
             if (pathPart.equals(PATH_PART.IDENTIFIER_PATH_PART)) {
                 nodeId = nodePredicate.removeNameValuePredicate();
                 jqueryPath.add(nodeId);
+                if (i <= segments.size() - 1 && isList(nodeId))
+                    jqueryPath.add(defaultIndex);
             }
             //VARIABLE_PATH_PART is provided by the user. It may contain name/value node predicate
             //see http://www.openehr.org/releases/QUERY/latest/docs/AQL/AQL.html#_node_predicate
@@ -194,10 +198,15 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
                     nodeId = nodePredicate.removeNameValuePredicate();
                     jqueryPath.add(nodeId);
                 }
+
+                if (isList(nodeId))
+                    jqueryPath.add(defaultIndex);
             }
 
-            if (isList(nodeId) && ((pathPart.equals(PATH_PART.VARIABLE_PATH_PART) && !(i == segments.size() - 1))||pathPart.equals(PATH_PART.IDENTIFIER_PATH_PART)))
-                jqueryPath.add(defaultIndex);
+//            if (isList(nodeId) &&
+//                    ((pathPart.equals(PATH_PART.VARIABLE_PATH_PART) &&
+//                            !(i == segments.size() - 1))||pathPart.equals(PATH_PART.IDENTIFIER_PATH_PART)))
+//                jqueryPath.add(defaultIndex);
         }
 
         if (pathPart.equals(PATH_PART.VARIABLE_PATH_PART)) {
@@ -274,8 +283,9 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
 
     @Override
     public Field<?> makeField(String templateId, String identifier, I_VariableDefinition variableDefinition, Clause clause) {
-
+        boolean setReturningFunctionInWhere = false; //if true, use a subselect
         boolean isRootContent = false; //that is a query path on a full composition starting from the root content
+        DataType castTypeAs = null;
 
         if (pathResolver.entryRoot(templateId) == null) //case of (invalid) composition with null entry!
             return null;
@@ -304,19 +314,19 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
 
         List<String> itemPathArray = new ArrayList<>();
         itemPathArray.add(pathResolver.entryRoot(templateId));
+
         if (!path.startsWith(TAG_COMPOSITION) && !isRootContent)
             itemPathArray.addAll(jqueryPath(PATH_PART.IDENTIFIER_PATH_PART, path, "0"));
         itemPathArray.addAll(jqueryPath(PATH_PART.VARIABLE_PATH_PART, variableDefinition.getPath(), "0"));
 
-        //EHR-327: do not use array expression in WHERE clause
-        if (clause.equals(Clause.SELECT)) {
-            try {
-                IterativeNode iterativeNode = new IterativeNode(domainAccess, templateId, introspectCache);
-                Integer[] pos = iterativeNode.iterativeAt(itemPathArray);
-                itemPathArray = iterativeNode.clipInIterativeMarker(itemPathArray, pos);
-            } catch (Exception e) {
-                ;
-            }
+        try {
+            IterativeNode iterativeNode = new IterativeNode(domainAccess, templateId, introspectCache);
+            Integer[] pos = iterativeNode.iterativeAt(itemPathArray);
+            itemPathArray = iterativeNode.clipInIterativeMarker(itemPathArray, pos);
+            if (clause.equals(Clause.WHERE))
+                setReturningFunctionInWhere = true;
+        } catch (Exception e) {
+            ;
         }
 
         resolveArrayIndex(itemPathArray);
@@ -336,43 +346,27 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
         if (!itemPath.startsWith(QueryImplConstants.AQL_NODE_NAME_PREDICATE_FUNCTION) && !itemPath.contains(QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION))
             itemPath = wrapQuery(itemPath, JSONB_SELECTOR_COMPOSITION_OPEN, JSONB_SELECTOR_CLOSE);
 
-        //type casting from introspected data value type
-        try {
-            if (introspectCache == null)
-                throw new IllegalArgumentException("MetaDataCache is not initialized");
-            String reducedItemPathArray = new SegmentedPath(referenceItemPathArray).reduce();
-            if (reducedItemPathArray != null && !reducedItemPathArray.isEmpty()) {
-                ItemInfo info = introspectCache.getInfo(templateId, reducedItemPathArray);
 
-                itemType = info.getItemType();
-                itemCategory = info.getItemCategory();
-                if (itemType != null) {
-                    String pgType = new PGType(itemPathArray).forRmType(itemType);
-                    if (pgType != null)
-                        itemPath = "(" + itemPath + ")::" + pgType;
-                }
-            }
-        } catch (Exception e) {
-            if (!ignoreUnresolvedIntrospect)
-                throw new IllegalArgumentException("Unresolved type, missing template?(" + templateId + "), reason:" + e);
-            else
-                logger.warn("Ignoring unresolved introspect (reason:" + e + ")");
-        }
-        if (itemPathArray.get(itemPathArray.size() - 1).contains(MAGNITUDE)) { //force explicit type cast for DvQuantity
-            itemPath = "(" + itemPath + ")::numeric";
-        }
+         DataTypeFromTemplate dataTypeFromTemplate = new DataTypeFromTemplate(introspectCache, ignoreUnresolvedIntrospect);
 
+         dataTypeFromTemplate.evaluate(templateId, referenceItemPathArray);
+
+         itemType = dataTypeFromTemplate.getItemType();
+         itemCategory = dataTypeFromTemplate.getItemCategory();
+
+         if (!isJsonDataBlock())
+             castTypeAs = dataTypeFromTemplate.getIdentifiedType();
 
         Field<?> fieldPathItem;
         if (clause.equals(Clause.SELECT)) {
             if (StringUtils.isNotEmpty(alias))
-                fieldPathItem = DSL.field(itemPath, String.class).as(alias);
+                fieldPathItem = buildFieldWithCast(itemPath,castTypeAs,alias);
             else {
                 String tempAlias = DefaultColumnId.value(variableDefinition);
-                fieldPathItem = DSL.field(itemPath, String.class).as(tempAlias);
+                fieldPathItem = buildFieldWithCast(itemPath,castTypeAs,tempAlias);
             }
         } else if (clause.equals(Clause.WHERE)) {
-            fieldPathItem = DSL.field(itemPath, String.class);
+            fieldPathItem = buildFieldWithCast(itemPath,castTypeAs,null);;
             if (itemPathArray.contains(AQL_NODE_ITERATIVE_MARKER))
                 fieldPathItem = DSL.field(DSL.select(fieldPathItem));
         }
@@ -386,6 +380,25 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
             jsonbItemPath = toAqlPath(itemPathArray);
         }
 
+        if (setReturningFunctionInWhere)
+            fieldPathItem = DSL.select(fieldPathItem).asField();
+
+        return fieldPathItem;
+    }
+
+    private Field<?> buildFieldWithCast(String itemPath, DataType castTypeAs, String alias){
+        Field fieldPathItem;
+
+        if (castTypeAs != null) {
+            fieldPathItem = DSL.field(itemPath, String.class).cast(castTypeAs).as(alias);
+        }
+        else {
+            fieldPathItem = DSL.field(itemPath, String.class).as(alias);
+        }
+
+        if (alias != null)
+            fieldPathItem = fieldPathItem.as(alias);
+
         return fieldPathItem;
     }
 
@@ -398,6 +411,7 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
         }
         return StringUtils.join(aqlPath.toArray(new String[]{}));
     }
+
 
     @Override
     public Field<?> whereField(String templateId, String identifier, I_VariableDefinition variableDefinition) {

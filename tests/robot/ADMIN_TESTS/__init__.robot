@@ -22,13 +22,16 @@ Metadata    Authors    *Wladislaw Wagner, Jake Smolka*
 Metadata    Created    2019.02.26
 Metadata    Updated    2020.01.30
 
-Documentation       Admin API REST tests
-...                 How to run these tests locally
-...                 ==============================
+Documentation       Admin API REST tests \n\n
+...                 How to run these tests locally \n\n
+...                 ============================== \n\n
 ...
 ...                 robot -d results/ -L TRACE robot/ADMIN_TESTS/
 ...              OR
 ...                 robot -v SUT:ADMIN-TEST -d results/ -L TRACE robot/ADMIN_TESTS/
+...              OR
+...                 # when you have started EHRbase + DB manually
+...                 robot -v SUT:ADMIN-DEV -d results/ -L TRACE robot/ADMIN_TESTS/
 ...              OR (with OAUTH):
 ...                 robot -v AUTH_TYPE:OAUTH -d results/ -L TRACE robot/ADMIN_TESTS/
 ...

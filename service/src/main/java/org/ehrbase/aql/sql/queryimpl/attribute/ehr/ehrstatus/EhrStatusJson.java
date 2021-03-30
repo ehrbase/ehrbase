@@ -45,8 +45,12 @@ public class EhrStatusJson extends EhrStatusAttribute {
         fieldContext.setRmType("EHR_STATUS");
         //query the json representation of EVENT_CONTEXT and cast the result as TEXT
         Field jsonEhrStatusField;
-        if (jsonPath.isPresent())
-            jsonEhrStatusField =  new GenericJsonField(fieldContext, joinSetup).forJsonPath(jsonPath.get()).ehrStatus(JoinBinder.statusRecordTable.field(STATUS.EHR_ID));
+        if (jsonPath.isPresent()) {
+            if (jsonPath.get().startsWith("name"))
+                jsonEhrStatusField = new GenericJsonField(fieldContext, joinSetup).forJsonPath(jsonPath.get().split("/")).ehrStatus(JoinBinder.statusRecordTable.field(STATUS.EHR_ID));
+            else
+                jsonEhrStatusField = new GenericJsonField(fieldContext, joinSetup).forJsonPath(jsonPath.get()).ehrStatus(JoinBinder.statusRecordTable.field(STATUS.EHR_ID));
+        }
         else
             jsonEhrStatusField = DSL.field(jsEhrStatus(JoinBinder.statusRecordTable.field(STATUS.EHR_ID)).cast(String.class));
 

@@ -10,10 +10,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+
 ### Changed
 
 
 ### Fixed
+
+
+
+## [0.16.0] (beta)
+
+### Added
+- Endpoints and integration tests for VERSIONED_COMPOSITION (see: https://github.com/ehrbase/ehrbase/pull/448)
+- ATNA Logging for composition endpoints, querying and operations on the EHR object (see: https://github.com/ehrbase/ehrbase/pull/452)
+- EHRbase Release Checklist (see: https://github.com/ehrbase/ehrbase/pull/451)
+- CACHE_ENABLED ENV to Dockerfile (see: https://github.com/ehrbase/ehrbase/pull/467)
+
+
+### Changed
+- Updated the SDK dependency to the latest version (see: https://github.com/ehrbase/ehrbase/pull/463)
+- Force retrieval of operational template from DB (see: https://github.com/ehrbase/ehrbase/pull/468)
+
+
+### Fixed
+- WHERE field construct (see: https://github.com/ehrbase/ehrbase/pull/439)
+- Inconsistent behavior in SMICS Virology Query (see: https://github.com/ehrbase/ehrbase/pull/456)
+- Bunch of AQL issues (see: https://github.com/ehrbase/ehrbase/pull/461)
+- AQL: Error in processing OR in Contains clause (see: https://github.com/ehrbase/ehrbase/pull/462)
+- Cache issue on Startup (see: https://github.com/ehrbase/ehrbase/pull/465)
 
 
 ## [0.15.0] (beta)
@@ -35,10 +59,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support AQL querying on full EHR (f.e. SELECT e) (see )
 - Update Dockerfile for usage with metrics and status (see https://github.com/ehrbase/ehrbase/pull/408)
 - Refactored DB handling of contributions, removed misleading `CONTIRUBITON_HISTORY` table (see https://github.com/ehrbase/ehrbase/pull/416)
-
-### Fixed
-TODO: add links
-
 
 
 ## [0.14.0] (beta)
@@ -213,7 +233,8 @@ Starting with the next release this file will provide a proper overview.
 - Fixed error regarding DISTINCT operator in AQL (https://github.com/ehrbase/ehrbase/issues/50)
 - Fixed null pointer exceptions that could occur in persistent compositions
 
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.15.0...HEAD
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.16.0...HEAD
+[0.16.0]: https://github.com/ehrbase/ehrbase/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/ehrbase/ehrbase/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/ehrbase/ehrbase/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/ehrbase/ehrbase/compare/v0.12.0...v0.13.0
@@ -221,4 +242,3 @@ Starting with the next release this file will provide a proper overview.
 [0.11.0]: https://github.com/ehrbase/ehrbase/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/ehrbase/ehrbase/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/ehrbase/ehrbase/releases/tag/v0.9.0
-

@@ -177,7 +177,7 @@ public class IdentifierMapper {
     public String getClassName(String symbol) {
         Mapper definition = mapper.get(symbol);
         if (definition == null)
-            throw new IllegalArgumentException("Identifier is not defined in FROM/CONTAIN clause:" + symbol);
+                throw new IllegalArgumentException("Identifier is not defined in FROM/CONTAIN clause:" + symbol);
 
         Object containment = definition.getContainer();
         if (containment instanceof Containment) {
