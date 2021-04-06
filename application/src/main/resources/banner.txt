@@ -1,0 +1,10 @@
+${AnsiColor.BLUE}
+ ______ _    _ _____  _
+|  ____| |  | |  __ \| |
+| |__  | |__| | |__) | |__   __ _ ___  ___
+|  __| |  __  |  _  /| '_ \ / _` / __|/ _ \
+| |____| |  | | | \ \| |_) | (_| \__ \  __/
+|______|_|  |_|_|  \_\_.__/ \__,_|___/\___|
+Spring Boot ${spring-boot.version}
+EHRbase ${application.formatted-version}
+https://ehrbase.org/ ${AnsiBackground.DEFAULT}${AnsiColor.DEFAULT}
