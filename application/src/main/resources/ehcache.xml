@@ -15,6 +15,29 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
+
+<!--
+Notes on configuration:
+
+More on XML configuration can be found at: https://www.ehcache.org/documentation/3.3/xml.html
+
+1. The cache persistence directory is specified with:
+     <persistence directory="${java.io.tmpdir}/ehcache"/>, on a linux platform this translate as:
+
+     /tmp/ehcache
+
+     with the actual cache files in subdirectory file
+
+2. For tests and development we recommend the following Tier configuration for persistence:
+        <resources>
+            ...
+            <disk unit="MB" persistent="false">400</disk>
+        </resources>
+    The attribute 'persistent="false"' implies that cache resources (e.g. disk files) are removed upon termination of the JVM
+    This is specifically important as there might be serialization discrepancies depending on the SDK release
+
+-->
+
 <config
         xmlns='http://www.ehcache.org/v3'
         xmlns:jsr107='http://www.ehcache.org/v3/jsr107'>
@@ -29,7 +52,7 @@
             <jsr107:cache name="multivaluedCache" template="query-cache"/>
         </jsr107:defaults>
     </service>
-    <persistence directory="${java.io.tmpdir}"/>
+    <persistence directory="${java.io.tmpdir}/ehcache"/>
 
 
     <cache-template name="template-cache">
@@ -48,7 +71,7 @@
         </expiry>
         <resources>
             <heap unit="entries">300</heap>
-<!--            <disk unit="MB" persistent="true">400</disk>-->
+            <disk unit="MB" persistent="false">400</disk>
         </resources>
     </cache-template>
 
@@ -58,7 +81,7 @@
         </expiry>
         <resources>
             <heap unit="MB">200</heap>
-<!--            <disk unit="MB" persistent="true">400</disk>-->
+            <disk unit="MB" persistent="false">400</disk>
         </resources>
     </cache-template>
 </config>
