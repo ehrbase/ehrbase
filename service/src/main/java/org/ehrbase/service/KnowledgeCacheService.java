@@ -328,7 +328,10 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     @Override
     public Optional<OPERATIONALTEMPLATE> retrieveOperationalTemplate(String key) {
         log.debug("retrieveOperationalTemplate({})", key);
-        OPERATIONALTEMPLATE template = getFromCache(key, atOptCache);
+        //CCH, 29.3.21: systematically retrieve the operational template from the DB.
+//        OPERATIONALTEMPLATE template = getFromCache(key, atOptCache);
+        OPERATIONALTEMPLATE template = null;
+
         if (template == null) {     // null if not in cache already, which triggers the following retrieval and putting into cache
             template = getOperationaltemplateFromFileStorage(key);
         }
