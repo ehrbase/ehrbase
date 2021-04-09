@@ -21,7 +21,9 @@ package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.jsquery;
 
 import org.ehrbase.aql.sql.queryimpl.QueryImplConstants;
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC16;
+import org.junit.Ignore;
 
+@Ignore("doesn't match template, hence cast to boolean cannot be done using this path")
 public class TestUC16 extends UC16 {
 
     public TestUC16(){

@@ -21,6 +21,7 @@
 
 package org.ehrbase.aql.definition;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -80,6 +81,11 @@ public class VariableDefinition implements I_VariableDefinition {
     }
 
     @Override
+    public boolean isConstant() {
+        return false;
+    }
+
+    @Override
     public boolean isDistinct() {
         return isDistinct;
     }
@@ -101,7 +107,7 @@ public class VariableDefinition implements I_VariableDefinition {
 
     @Override
     public List<FuncParameter> getFuncParameters() {
-        return null;
+        return new ArrayList<>();
     }
 
     @Override
@@ -120,7 +126,7 @@ public class VariableDefinition implements I_VariableDefinition {
     }
 
     @Override
-    public I_VariableDefinition clone(){
+    public I_VariableDefinition duplicate(){
         return new VariableDefinition(this.path, this.alias, this.identifier, this.isDistinct, this.isHidden);
     }
 
