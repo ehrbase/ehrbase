@@ -84,6 +84,8 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
                 whereExpression.addAll(visitValueListItems((AqlParser.ValueListItemsContext) tree));
             } else if (tree instanceof AqlParser.IdentifiedEqualityContext) {
                 visitIdentifiedEquality((AqlParser.IdentifiedEqualityContext) tree);
+            } else if (tree instanceof AqlParser.IdentifiedPathContext) {
+                parsePathContext((AqlParser.IdentifiedPathContext) tree);
             }
         }
         return whereExpression;

@@ -30,7 +30,10 @@ topExpr
 //        | TOP INTEGER FORWARD ;
 
 function
-        : FUNCTION_IDENTIFIER OPEN_PAR (IDENTIFIER|identifiedPath|operand) (COMMA (IDENTIFIER|identifiedPath|operand))* CLOSE_PAR;
+        : FUNCTION_IDENTIFIER OPEN_PAR (IDENTIFIER|identifiedPath|operand|) (COMMA (IDENTIFIER|identifiedPath|operand))* CLOSE_PAR;
+
+castFunction :
+        CAST_FUNCTION_IDENTIFIER OPEN_PAR (IDENTIFIER|identifiedPath|operand) AS STRING CLOSE_PAR;
 
 extension
         : EXTENSION_IDENTIFIER OPEN_PAR STRING COMMA STRING CLOSE_PAR;
@@ -67,9 +70,19 @@ selectExpr
 
 stdExpression
         : function
+        | castFunction
         | extension
         | INTEGER
         | STRING
+        | FLOAT
+        | REAL
+        | DATE
+        | PARAMETER
+        | BOOLEAN
+        | TRUE
+        | FALSE
+        | NULL
+        | UNKNOWN
         ;
 
 //variableSeq_
@@ -176,6 +189,7 @@ nodePredicateRegEx
 
 matchesOperand
         : valueListItems
+        | identifiedPath
         | URIVALUE ;
 
 valueListItems
@@ -216,6 +230,7 @@ operand
                 : STRING
                 | INTEGER
                 | FLOAT
+                | REAL
                 | DATE
                 | PARAMETER
                 | BOOLEAN
@@ -223,7 +238,10 @@ operand
                 | FALSE
                 | NULL
                 | UNKNOWN
-        	    | invokeOperand;
+        	    | invokeOperand
+        	    | function
+        	    | castFunction;
+
 
 invokeOperand
         	: invokeExpr;
@@ -305,6 +323,7 @@ UNKNOWN: U N K N O W N;
 TRUE: T R U E;
 FALSE: F A L S E;
 
+
 //demographic binding
 PERSON: P E R S O N ;
 AGENT: A G E N T ;
@@ -312,17 +331,20 @@ ORGANISATION: O R G A N I S A T I O N ;
 GROUP: G R O U P ;
 
 FUNCTION_IDENTIFIER : COUNT | AVG | BOOL_AND | BOOL_OR | EVERY | MAX | MIN | SUM |
-//statistic
+//statistics
                       CORR | COVAR_POP | COVAR_SAMP | REGR_AVGX | REGR_AVGY | REGR_COUNT | REGR_INTERCEPT | REGR_R2 | REGR_SLOPE | REGR_SXX |
                       REGR_SXY | REGR_SYY | STDDEV | STDDEV_POP | STDDEV_SAMP | VARIANCE | VAR_POP | VAR_SAMP |
-//string function
+//string functions
                       SUBSTR | STRPOS | SPLIT_PART | BTRIM | CONCAT | CONCAT_WS | DECODE | ENCODE | FORMAT | INITCAP | LEFT | LENGTH | LPAD | LTRIM |
                        REGEXP_MATCH | REGEXP_REPLACE | REGEXP_SPLIT_TO_ARRAY | REGEXP_SPLIT_TO_TABLE | REPEAT | REPLACE | REVERSE | RIGHT | RPAD |
                        RTRIM | TRANSLATE |
-//encoding function
-                       RAW_COMPOSITION_ENCODE
+//encoding functions
+                       RAW_COMPOSITION_ENCODE |
+//basic date functions
+                       NOW | AGE | CURRENT_TIME | CURRENT_DATE
 
                        ;
+CAST_FUNCTION_IDENTIFIER: C A S T;
 
 
 EXTENSION_IDENTIFIER: '_' E X T;
@@ -342,6 +364,7 @@ DEMOGRAPHIC
 
 INTEGER :   '-'? DIGIT+;
 FLOAT   :   '-'? DIGIT+ '.' DIGIT+;
+REAL    :   '-'? DIGIT+ ('.' DIGIT+)? (E (|'+'|'-') DIGIT+)?;
 DATE    :   '\'' DIGIT DIGIT DIGIT DIGIT DIGIT DIGIT DIGIT DIGIT 'T' DIGIT DIGIT DIGIT DIGIT DIGIT DIGIT '.' DIGIT DIGIT DIGIT '+' DIGIT DIGIT DIGIT DIGIT '\'';
 PARAMETER : '$' LETTER IDCHAR*;
 
@@ -440,6 +463,11 @@ VARIANCE : V A R I A N C E;
 VAR_POP : V A R '_' P O P;
 VAR_SAMP : V A R '_' S A M P;
 RAW_COMPOSITION_ENCODE : '_' '_' R A W '_' C O M P O S I T I O N '_' E N C O D E;
+CAST : C A S T;
+NOW : N O W;
+AGE : A G E;
+CURRENT_TIME : C U R R E N T '_' T I M E;
+CURRENT_DATE : C U R R E N T '_' D A T E;
 
 fragment
 ESC_SEQ
