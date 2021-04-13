@@ -185,6 +185,9 @@ public class WhereBinder {
         List<Object> whereItems = new ArrayList<>(whereClause);
         boolean notExists = false;
 
+        //TODO: remove when SDK supports IN operator
+        whereItems = new InSetWhereClause(whereItems, pathResolver, domainAccess, jsonbEntryQuery, compositionAttributeQuery).swapIfRequired(templateId, compositionName);
+
         for (int cursor = 0; cursor < whereItems.size(); cursor++) {
             Object item = whereItems.get(cursor);
             if (item instanceof String) {
