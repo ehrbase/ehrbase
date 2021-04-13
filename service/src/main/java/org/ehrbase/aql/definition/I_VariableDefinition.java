@@ -45,7 +45,7 @@ public interface I_VariableDefinition extends Cloneable {
 
     List<FuncParameter> getFuncParameters();
 
-    I_VariableDefinition clone() throws CloneNotSupportedException;
+    I_VariableDefinition duplicate();
 
     void setPath(String path); //used to modify the path in case of struct query (canonical json).
 
@@ -56,4 +56,6 @@ public interface I_VariableDefinition extends Cloneable {
     void setAlias(String alias);
 
     String toString();
+
+    boolean isConstant();
 }

@@ -78,8 +78,7 @@ public class I_VariableDefinitionHelper {
             }
 
             @Override
-            public I_VariableDefinition clone() throws CloneNotSupportedException {
-                super.clone();
+            public I_VariableDefinition duplicate() {
                 return I_VariableDefinitionHelper.build(path, alias, identifier, distinct, function, extension);
             }
 
@@ -101,6 +100,11 @@ public class I_VariableDefinitionHelper {
             @Override
             public void setAlias(String alias) {
 
+            }
+
+            @Override
+            public boolean isConstant() {
+                return false;
             }
         };
     }

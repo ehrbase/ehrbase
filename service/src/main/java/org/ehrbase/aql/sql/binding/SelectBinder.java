@@ -24,6 +24,7 @@ package org.ehrbase.aql.sql.binding;
 import org.ehrbase.aql.compiler.Contains;
 import org.ehrbase.aql.compiler.Statements;
 import org.ehrbase.aql.containment.IdentifierMapper;
+import org.ehrbase.aql.definition.ConstantDefinition;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
 import org.ehrbase.aql.sql.queryimpl.*;
@@ -31,6 +32,7 @@ import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.service.IntrospectService;
 import org.ehrbase.service.KnowledgeCacheService;
 import org.jooq.*;
+import org.jooq.impl.DSL;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,20 +86,39 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
 
         while (variableDefinitions.hasNext()) {
             I_VariableDefinition variableDefinition = variableDefinitions.next();
+            Field<?> field;
             if (variableDefinition.isFunction() || variableDefinition.isExtension()) {
                 continue;
             }
-            String identifier = variableDefinition.getIdentifier();
-            String className = pathResolver.classNameOf(identifier);
+            else if (variableDefinition.isConstant()){
+                ConstantDefinition constantDefinition = (ConstantDefinition)variableDefinition;
+                if (constantDefinition.getValue() == null) //assume NULL
+                    field = DSL.field("NULL");
+                else
+                    field = DSL.field(DSL.val(constantDefinition.getValue()));
 
-            ExpressionField expressionField = new ExpressionField(variableDefinition, jsonbEntryQuery, compositionAttributeQuery);
+                if (constantDefinition.getAlias() != null)
+                    field = field.as(constantDefinition.getAlias());
+                else {
+                    String defaultAlias = DefaultColumnId.value(constantDefinition);
+                    field = field.as("/"+defaultAlias);
+                    constantDefinition.setPath(defaultAlias);
+                }
 
-            Field<?> field = expressionField.toSql(className, templateId, identifier, IQueryImpl.Clause.SELECT);
+            }
+            else {
+                String identifier = variableDefinition.getIdentifier();
+                String className = pathResolver.classNameOf(identifier);
 
-            handleJsonDataBlock(expressionField, field, expressionField.getRootJsonKey(), expressionField.getOptionalPath());
+                ExpressionField expressionField = new ExpressionField(variableDefinition, jsonbEntryQuery, compositionAttributeQuery);
 
-            if (field == null) { //the field cannot be resolved with containment (f.e. empty DB)
-                continue;
+                field = expressionField.toSql(className, templateId, identifier, IQueryImpl.Clause.SELECT);
+
+                handleJsonDataBlock(expressionField, field, expressionField.getRootJsonKey(), expressionField.getOptionalPath());
+
+                if (field == null) { //the field cannot be resolved with containment (f.e. empty DB)
+                    continue;
+                }
             }
             selectQuery.addSelect(field);
             ObjectQuery.inc();

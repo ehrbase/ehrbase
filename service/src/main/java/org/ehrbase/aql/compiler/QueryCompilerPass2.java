@@ -33,6 +33,8 @@ import org.ehrbase.aql.parser.AqlParser;
 
 import java.util.*;
 
+import static org.ehrbase.aql.parser.AqlLexer.*;
+
 /**
  * AQL compilation pass 2<p>
  * This pass uses the results of pass 1 to:
@@ -46,7 +48,11 @@ import java.util.*;
  */
 public class QueryCompilerPass2 extends AqlBaseListener {
 
-    private String[] allowedFunctions = {"COUNT", "MIN", "MAX", "AVG"};
+    private String[] allowedFunctions = {"COUNT", "MIN", "MAX", "AVG", "SUM", 
+            "SUBSTR","STRPOS","SPLIT_PART","BTRIM","CONCAT","CONCAT_WS","DECODE","ENCODE","FORMAT","INITCAP","LEFT","LENGTH","LPAD","LTRIM",
+            "REGEXP_MATCH","REGEXP_REPLACE","REGEXP_SPLIT_TO_ARRAY","REGEXP_SPLIT_TO_TABLE","REPEAT","REPLACE","REVERSE","RIGHT","RPAD",
+            "RTRIM","TRANSLATE","CAST", "NOW"
+    };
 
     private Logger logger = LogManager.getLogger(QueryCompilerPass2.class);
 
@@ -82,47 +88,16 @@ public class QueryCompilerPass2 extends AqlBaseListener {
             logger.debug("Found standard expression");
             //set alias if any (function AS alias
             if (selectExprContext.stdExpression().function() != null) {
-                logger.debug("Found function");
-                AqlParser.FunctionContext functionContext = selectExprContext.stdExpression().function();
-                String name = functionContext.FUNCTION_IDENTIFIER().getText();
-
-                if (!Arrays.asList(allowedFunctions).contains(name.toUpperCase()))
-                    throw new IllegalArgumentException("Found not supported function:'"+name+"'");
-
-                List<FuncParameter> parameters = new ArrayList<>();
-
-                int serial = 0;
-
-                for (ParseTree pathTree : functionContext.children) {
-                    if (pathTree instanceof AqlParser.IdentifiedPathContext) {
-                        AqlParser.IdentifiedPathContext pathContext = (AqlParser.IdentifiedPathContext) pathTree;
-                        VariableDefinition variableDefinition = new IdentifiedPathVariable(pathContext, selectExprContext, false).definition();
-                        //by default postgresql limits the size of column name to 63 bytes
-                        if (variableDefinition.getAlias() == null || variableDefinition.getAlias().isEmpty() || variableDefinition.getAlias().length() > 63)
-                            variableDefinition.setAlias("_FCT_ARG_"+serial++);
-                        pushVariableDefinition(variableDefinition);
-                        parameters.add(new FuncParameter(FuncParameterType.VARIABLE, variableDefinition.getAlias() == null ? variableDefinition.getPath() : variableDefinition.getAlias()));
-                    } else if (pathTree instanceof AqlParser.OperandContext) {
-                        parameters.add(new FuncParameter(FuncParameterType.OPERAND, pathTree.getText()));
-                    } else if (pathTree instanceof TerminalNode) {
-                        parameters.add(new FuncParameter(FuncParameterType.IDENTIFIER, pathTree.getText()));
-                    }
-                }
-
-                String alias = selectExprContext.IDENTIFIER() == null ? name : selectExprContext.IDENTIFIER().getText();
-                String path = functionContext.getText();
-                FunctionDefinition definition = new FunctionDefinition(name, alias, path, parameters);
-                pushVariableDefinition(definition);
+                handleFunctionDefinition(selectExprContext.stdExpression().function(), selectExprContext);
             }
-            if (selectExprContext.stdExpression().extension() != null) {
-                logger.debug("Found extension");
-                AqlParser.ExtensionContext extensionContext = selectExprContext.stdExpression().extension();
-                String context = extensionContext.getChild(2).getText();
-                String parsableExpression = extensionContext.getChild(4).getText();
-                String alias = selectExprContext.IDENTIFIER() == null ? "_alias_" + Math.abs(new Random().nextLong()) : selectExprContext.IDENTIFIER().getText();
-                ExtensionDefinition definition = new ExtensionDefinition(context, parsableExpression, alias);
-                pushVariableDefinition(definition);
+            else if (selectExprContext.stdExpression().castFunction() != null){
+                handleCastFunctionDefinition(selectExprContext.stdExpression().castFunction(), selectExprContext);
             }
+            else if (selectExprContext.stdExpression().extension() != null) {
+                handleExtensionDefinition(selectExprContext.stdExpression().extension(), selectExprContext);
+            }
+            else
+                handleTerminalNodeExpression(selectExprContext.stdExpression(), selectExprContext);
 
         } else
             throw new IllegalArgumentException("Could not interpret select context");
@@ -131,6 +106,117 @@ public class QueryCompilerPass2 extends AqlBaseListener {
     private void pushVariableDefinition(I_VariableDefinition variableDefinition){
         isUnique(variableDefinition);
         variableStack.push(variableDefinition);
+    }
+
+    private void handleFunctionDefinition(AqlParser.FunctionContext functionContext, AqlParser.SelectExprContext inSelectExprContext){
+        logger.debug("Found function");
+         String name = functionContext.FUNCTION_IDENTIFIER().getText();
+
+        if (!Arrays.asList(allowedFunctions).contains(name.toUpperCase()))
+            throw new IllegalArgumentException("Found not supported function:'"+name+"'");
+
+        List<FuncParameter> parameters = new ArrayList<>();
+
+        int serial = 0;
+
+        for (ParseTree pathTree : functionContext.children) {
+            if (pathTree instanceof AqlParser.IdentifiedPathContext) {
+                AqlParser.IdentifiedPathContext pathContext = (AqlParser.IdentifiedPathContext) pathTree;
+                VariableDefinition variableDefinition = new IdentifiedPathVariable(pathContext, inSelectExprContext, false).definition();
+                //by default postgresql limits the size of column name to 63 bytes
+                if (variableDefinition.getAlias() == null || variableDefinition.getAlias().isEmpty() || variableDefinition.getAlias().length() > 63)
+                    variableDefinition.setAlias("_FCT_ARG_"+serial++);
+                pushVariableDefinition(variableDefinition);
+                parameters.add(new FuncParameter(FuncParameterType.VARIABLE, variableDefinition.getAlias() == null ? variableDefinition.getPath() : variableDefinition.getAlias()));
+            } else if (pathTree instanceof AqlParser.OperandContext) {
+                parameters.add(new FuncParameter(FuncParameterType.OPERAND, pathTree.getText()));
+            } else if (pathTree instanceof TerminalNode) {
+                parameters.add(new FuncParameter(FuncParameterType.IDENTIFIER, pathTree.getText()));
+            }
+        }
+        String alias = extractAlias(inSelectExprContext);
+        if (alias == null) {
+            if (inSelectExprContext.IDENTIFIER() == null)
+                alias = name;
+            else
+                inSelectExprContext.IDENTIFIER().getText();
+        }
+        String path = functionContext.getText();
+        FunctionDefinition definition = new FunctionDefinition(name, alias, path, parameters);
+        pushVariableDefinition(definition);
+    }
+
+    private void handleCastFunctionDefinition(AqlParser.CastFunctionContext cast_functionContext, AqlParser.SelectExprContext inSelectExprContext){
+        logger.debug("Found CAST function");
+
+        List<FuncParameter> parameters = new ArrayList<>();
+
+        int serial = 0;
+
+        for (ParseTree pathTree : cast_functionContext.children) {
+            if (pathTree instanceof AqlParser.IdentifiedPathContext) {
+                AqlParser.IdentifiedPathContext pathContext = (AqlParser.IdentifiedPathContext) pathTree;
+                VariableDefinition variableDefinition = new IdentifiedPathVariable(pathContext, inSelectExprContext, false).definition();
+                //by default postgresql limits the size of column name to 63 bytes
+                if (variableDefinition.getAlias() == null || variableDefinition.getAlias().isEmpty() || variableDefinition.getAlias().length() > 63)
+                    variableDefinition.setAlias("_FCT_ARG_"+serial++);
+                pushVariableDefinition(variableDefinition);
+                parameters.add(new FuncParameter(FuncParameterType.VARIABLE, variableDefinition.getAlias() == null ? variableDefinition.getPath() : variableDefinition.getAlias()));
+            } else if (pathTree instanceof AqlParser.OperandContext) {
+                parameters.add(new FuncParameter(FuncParameterType.OPERAND, pathTree.getText()));
+            } else if (pathTree instanceof TerminalNode) {
+                String text = pathTree.getText();
+                if (text.contains("'"))
+                    //unquote
+                    text = text.replaceAll("'","");
+                text = " "+text;
+                parameters.add(new FuncParameter(FuncParameterType.IDENTIFIER, text));
+            }
+        }
+
+        String alias = extractAlias(inSelectExprContext);
+        if (alias == null)
+            alias = "CAST";
+        String path = cast_functionContext.getText();
+        FunctionDefinition definition = new FunctionDefinition("CAST", alias, path, parameters);
+        pushVariableDefinition(definition);
+    }
+
+    public void handleExtensionDefinition(AqlParser.ExtensionContext extensionContext, AqlParser.SelectExprContext inSelectExprContext){
+        logger.debug("Found extension");
+        String context = extensionContext.getChild(2).getText();
+        String parsableExpression = extensionContext.getChild(4).getText();
+        String alias = inSelectExprContext.IDENTIFIER() == null ? "_alias_" + Math.abs(new Random().nextLong()) : inSelectExprContext.IDENTIFIER().getText();
+        ExtensionDefinition definition = new ExtensionDefinition(context, parsableExpression, alias);
+        pushVariableDefinition(definition);
+    }
+
+    public void handleTerminalNodeExpression(AqlParser.StdExpressionContext inStdExpressionContext, AqlParser.SelectExprContext inSelectExprContext){
+        logger.debug("Found terminal node");
+        Object value;
+        if (inStdExpressionContext.BOOLEAN() != null)
+            value = Boolean.valueOf(inStdExpressionContext.getText());
+        else if (inStdExpressionContext.FALSE() != null)
+            value = false;
+        else if (inStdExpressionContext.TRUE() != null)
+            value = true;
+        else if (inStdExpressionContext.FLOAT() != null)
+            value = Float.valueOf(inStdExpressionContext.getText());
+        else if (inStdExpressionContext.INTEGER() != null)
+            value = Integer.valueOf(inStdExpressionContext.getText());
+        else  if (inStdExpressionContext.NULL() != null)
+            value = null;
+        else if (inStdExpressionContext.REAL() != null)
+            value = Double.valueOf(inStdExpressionContext.getText());
+        else if (inStdExpressionContext.UNKNOWN() != null)
+            value = null;
+        else if (inStdExpressionContext.STRING() != null)
+            value = inStdExpressionContext.getText().replaceAll("'","");
+        else //DATE()
+            value = inStdExpressionContext.getText();
+
+        ConstantDefinition definition = new ConstantDefinition(value, extractAlias(inSelectExprContext));
+        pushVariableDefinition(definition);
     }
 
     /**
@@ -151,23 +237,13 @@ public class QueryCompilerPass2 extends AqlBaseListener {
         }
     }
 
-//    @Override
-//    public void exitIdentifiedPath(AqlParser.IdentifiedPathContext identifiedPathContext){
-//        logger.debug("IdentifiedPathSeq->");
-////        AqlParser.IdentifiedPathContext identifiedPathContext = identifiedPathContext.identifiedPath();
-//        String path = identifiedPathContext.objectPath().getText();
-//        String identifier = identifiedPathContext.IDENTIFIER().getText();
-//        String alias = null;
-//        Object parent = identifiedPathContext.getParent(); //either selectExpr or identifiedOperand (no alias)
-//        if (parent instanceof AqlParser.SelectExprContext) {
-//            AqlParser.SelectExprContext selectExprContext = (AqlParser.SelectExprContext) identifiedPathContext.getParent();
-//            if (selectExprContext.IDENTIFIER() != null)
-//                alias = selectExprContext.IDENTIFIER().getText();
-//
-//            VariableDefinition variableDefinition = new VariableDefinition(path, alias, identifier);
-//            variableStack.push(variableDefinition);
-//        }
-//    }
+    private String extractAlias(AqlParser.SelectExprContext inSelectExprContext){
+        String foundAlias = null;
+        if (inSelectExprContext.getChildCount() == 3 && inSelectExprContext.getChild(1).getText().equalsIgnoreCase("AS")){
+            foundAlias = inSelectExprContext.getChild(2).getText();
+        }
+        return foundAlias;
+    }
 
 
 
@@ -244,7 +320,7 @@ public class QueryCompilerPass2 extends AqlBaseListener {
 
     List<OrderAttribute> getOrderAttributes() {
         if (orderAttributes == null)
-            return null;
+            return new ArrayList<>();
         return new ArrayList<>(orderAttributes);
     }
 
