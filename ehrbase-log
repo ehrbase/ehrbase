@@ -1,0 +1,176 @@
+
+ ______ _    _ _____  _
+|  ____| |  | |  __ \| |
+| |__  | |__| | |__) | |__   __ _ ___  ___
+|  __| |  __  |  _  /| '_ \ / _` / __|/ _ \
+| |____| |  | | | \ \| |_) | (_| \__ \  __/
+|______|_|  |_|_|  \_\_.__/ \__,_|___/\___|
+Spring Boot 2.3.5.RELEASE
+EHRbase  (v0.16.1)
+https://ehrbase.org/ 
+2021-04-07 15:50:34.869  INFO 2818547 --- [           main] org.ehrbase.application.EhrBase          : Starting EhrBase v0.16.1 on pc with PID 2818547 (/home/wlad/projects/ec/vs/github/ehrbase/application/target/application-0.16.1.jar started by wlad in /home/wlad/projects/ec/vs/github/ehrbase)
+2021-04-07 15:50:34.871  INFO 2818547 --- [           main] org.ehrbase.application.EhrBase          : The following profiles are active: local
+2021-04-07 15:50:35.904  INFO 2818547 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFERRED mode.
+2021-04-07 15:50:35.920  INFO 2818547 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 10ms. Found 0 JPA repository interfaces.
+2021-04-07 15:50:36.407  INFO 2818547 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2021-04-07 15:50:36.414  INFO 2818547 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2021-04-07 15:50:36.415  INFO 2818547 --- [           main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.39]
+2021-04-07 15:50:36.450  INFO 2818547 --- [           main] o.a.c.c.C.[.[localhost].[/ehrbase]       : Initializing Spring embedded WebApplicationContext
+2021-04-07 15:50:36.451  INFO 2818547 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1543 ms
+2021-04-07 15:50:36.661  INFO 2818547 --- [           main] o.f.c.internal.license.VersionPrinter    : Flyway Community Edition 6.5.7 by Redgate
+2021-04-07 15:50:36.670  INFO 2818547 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2021-04-07 15:50:36.750  INFO 2818547 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2021-04-07 15:50:36.774  INFO 2818547 --- [           main] o.f.c.internal.database.DatabaseFactory  : Database: jdbc:postgresql://localhost:5432/ehrbase (PostgreSQL 11.5)
+2021-04-07 15:50:36.828  INFO 2818547 --- [           main] o.f.core.internal.command.DbValidate     : Successfully validated 50 migrations (execution time 00:00.039s)
+2021-04-07 15:50:36.834  INFO 2818547 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "ehr"."flyway_schema_history" ...
+2021-04-07 15:50:36.866  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "ehr": << Empty Schema >>
+2021-04-07 15:50:36.871  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 1 - empty
+2021-04-07 15:50:36.898  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 2 - ehr
+2021-04-07 15:50:37.187  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 3 - terminology
+2021-04-07 15:50:38.052  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 4.1 - patient summary
+2021-04-07 15:50:38.089  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 5 - raw json encoding
+2021-04-07 15:50:38.102  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 6 - aql v1 2 0
+2021-04-07 15:50:38.109  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 7 - meta cache
+2021-04-07 15:50:38.122  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 8 - folders support
+2021-04-07 15:50:38.221  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 9 - audit
+2021-04-07 15:50:38.251  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 9.1 - attestation and changes
+2021-04-07 15:50:38.270  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 10 - stored query
+2021-04-07 15:50:38.289  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 11 - raw json encoding new format
+2021-04-07 15:50:38.303  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 12 - datatypes canonical json
+2021-04-07 15:50:38.312  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 13 - template table
+2021-04-07 15:50:38.332  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 14 - remove old template tables
+2021-04-07 15:50:38.341  INFO 2818547 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: drop cascades to constraint template_heading_xref_template_id_fkey on table template_heading_xref
+2021-04-07 15:50:38.348  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 15 - fix plpgsql js functions
+2021-04-07 15:50:38.354  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 16 - fix plpgsql js functions composition uid
+2021-04-07 15:50:38.359  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 17 - make directory paths unique
+2021-04-07 15:50:38.368  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 18 - new js canonical party identified
+2021-04-07 15:50:38.375  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 19 - qualified party
+2021-04-07 15:50:38.385  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 20 - raw json encoding fix
+2021-04-07 15:50:38.392  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 21 - ehr status name archetype node id
+2021-04-07 15:50:38.399  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 22 - js concept
+2021-04-07 15:50:38.404  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 23 - ehr status history fix
+2021-04-07 15:50:38.409  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 24 - typed element value
+2021-04-07 15:50:38.416  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 25 - fix ehr status party self
+2021-04-07 15:50:38.424  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 26 - archetype details
+2021-04-07 15:50:38.430  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 27 - participations
+2021-04-07 15:50:38.454  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 28 - contains refactoring
+2021-04-07 15:50:38.461  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 29 - feeder audit
+2021-04-07 15:50:38.466  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 30 - iso timestamp
+2021-04-07 15:50:38.470  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 31 - canonical composer encoding
+2021-04-07 15:50:38.475  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 32 - fix js canonical json
+2021-04-07 15:50:38.479  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 33 - fix AQL time retrieval
+2021-04-07 15:50:38.484  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 34 - admin delete templates
+2021-04-07 15:50:38.484  INFO 2818547 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: function ehr.admin_get_template_usage() does not exist, skipping
+2021-04-07 15:50:38.485  INFO 2818547 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: function ehr.admin_update_template() does not exist, skipping
+2021-04-07 15:50:38.485  INFO 2818547 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: function ehr.admin_delete_all_templates() does not exist, skipping
+2021-04-07 15:50:38.486  INFO 2818547 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: function ehr.admin_delete_template() does not exist, skipping
+2021-04-07 15:50:38.492  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 35 - term mapping
+2021-04-07 15:50:38.550  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 36 - participations function
+2021-04-07 15:50:38.573  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 37 - canonical ehr
+2021-04-07 15:50:38.578  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 38 - fix contribution history
+2021-04-07 15:50:38.588  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 39 - admin delete ehr
+2021-04-07 15:50:38.597  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 40 - get system version function
+2021-04-07 15:50:38.597  INFO 2818547 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: function ehr.get_system_version() does not exist, skipping
+2021-04-07 15:50:38.602  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 41 - fct wrappers
+2021-04-07 15:50:38.608  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 42 - drop contribution history
+2021-04-07 15:50:38.614  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 43 - node name predicate fix
+2021-04-07 15:50:38.620  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 44 - composition name
+2021-04-07 15:50:38.625  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 45 - fix canonical comp
+2021-04-07 15:50:38.630  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 46 - node name predicate fix
+2021-04-07 15:50:38.635  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 47 - fix iso dv date time
+2021-04-07 15:50:38.640  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 48 - fix canonical
+2021-04-07 15:50:38.645  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "ehr" to version 49 - deal with jsonb empty resultset
+2021-04-07 15:50:38.648  INFO 2818547 --- [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 50 migrations to schema "ehr" (execution time 00:01.785s)
+2021-04-07 15:50:38.709  INFO 2818547 --- [           main] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService 'applicationTaskExecutor'
+2021-04-07 15:50:38.762  INFO 2818547 --- [         task-1] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2021-04-07 15:50:38.823  INFO 2818547 --- [         task-1] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.4.22.Final
+2021-04-07 15:50:38.912  INFO 2818547 --- [         task-1] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.0.Final}
+2021-04-07 15:50:39.034  INFO 2818547 --- [         task-1] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.PostgreSQL10Dialect
+2021-04-07 15:50:39.201  INFO 2818547 --- [         task-1] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+2021-04-07 15:50:39.208  INFO 2818547 --- [         task-1] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2021-04-07 15:50:39.643  INFO 2818547 --- [           main] org.ehcache.jsr107.ConfigurationMerger   : Configuration of cache introspectCache will be supplemented by template introspect-cache
+2021-04-07 15:50:39.644  INFO 2818547 --- [           main] org.ehcache.jsr107.ConfigurationMerger   : Cache introspectCache will use expiry configuration from template introspect-cache
+2021-04-07 15:50:39.752  INFO 2818547 --- [           main] org.ehcache.core.EhcacheManager          : Cache 'introspectCache' created in EhcacheManager.
+2021-04-07 15:50:39.761  INFO 2818547 --- [           main] org.ehcache.jsr107.ConfigurationMerger   : Configuration of cache operationaltemplateCache will be supplemented by template template-cache
+2021-04-07 15:50:39.761  INFO 2818547 --- [           main] org.ehcache.jsr107.ConfigurationMerger   : Cache operationaltemplateCache will use expiry configuration from template template-cache
+2021-04-07 15:50:39.764  INFO 2818547 --- [           main] org.ehcache.core.EhcacheManager          : Cache 'operationaltemplateCache' created in EhcacheManager.
+2021-04-07 15:50:39.766  INFO 2818547 --- [           main] org.ehcache.jsr107.ConfigurationMerger   : Configuration of cache validatorCache will be supplemented by template template-cache
+2021-04-07 15:50:39.766  INFO 2818547 --- [           main] org.ehcache.jsr107.ConfigurationMerger   : Cache validatorCache will use expiry configuration from template template-cache
+2021-04-07 15:50:39.768  INFO 2818547 --- [           main] org.ehcache.core.EhcacheManager          : Cache 'validatorCache' created in EhcacheManager.
+2021-04-07 15:50:39.770  INFO 2818547 --- [           main] org.ehcache.jsr107.ConfigurationMerger   : Configuration of cache queryCache will be supplemented by template query-cache
+2021-04-07 15:50:39.770  INFO 2818547 --- [           main] org.ehcache.jsr107.ConfigurationMerger   : Cache queryCache will use expiry configuration from template query-cache
+2021-04-07 15:50:39.774  INFO 2818547 --- [           main] o.e.s.filters.AnnotationSizeOfFilter     : Using regular expression provided through VM argument org.ehcache.sizeof.filters.AnnotationSizeOfFilter.pattern for IgnoreSizeOf annotation : ^.*cache\..*IgnoreSizeOf$
+2021-04-07 15:50:39.787  INFO 2818547 --- [           main] org.ehcache.sizeof.impl.JvmInformation   : Detected JVM data model settings of: 64-Bit OpenJDK JVM with Compressed OOPs
+2021-04-07 15:50:39.825  INFO 2818547 --- [           main] org.ehcache.sizeof.impl.AgentLoader      : Failed to attach to VM and load the agent: class java.io.IOException: Can not attach to current VM
+2021-04-07 15:50:39.895  INFO 2818547 --- [           main] org.ehcache.core.EhcacheManager          : Cache 'queryCache' created in EhcacheManager.
+2021-04-07 15:50:39.897  INFO 2818547 --- [           main] org.ehcache.jsr107.ConfigurationMerger   : Configuration of cache fieldsCache will be supplemented by template query-cache
+2021-04-07 15:50:39.897  INFO 2818547 --- [           main] org.ehcache.jsr107.ConfigurationMerger   : Cache fieldsCache will use expiry configuration from template query-cache
+2021-04-07 15:50:39.905  INFO 2818547 --- [           main] org.ehcache.core.EhcacheManager          : Cache 'fieldsCache' created in EhcacheManager.
+2021-04-07 15:50:39.907  INFO 2818547 --- [           main] org.ehcache.jsr107.ConfigurationMerger   : Configuration of cache multivaluedCache will be supplemented by template query-cache
+2021-04-07 15:50:39.908  INFO 2818547 --- [           main] org.ehcache.jsr107.ConfigurationMerger   : Cache multivaluedCache will use expiry configuration from template query-cache
+2021-04-07 15:50:39.938  INFO 2818547 --- [           main] org.ehcache.core.EhcacheManager          : Cache 'multivaluedCache' created in EhcacheManager.
+2021-04-07 15:50:40.148  INFO 2818547 --- [           main] org.jooq.Constants                       : 
+                                      
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@  @@        @@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@        @@@@@@@@@@
+@@@@@@@@@@@@@@@@  @@  @@    @@@@@@@@@@
+@@@@@@@@@@  @@@@  @@  @@    @@@@@@@@@@
+@@@@@@@@@@        @@        @@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@        @@        @@@@@@@@@@
+@@@@@@@@@@    @@  @@  @@@@  @@@@@@@@@@
+@@@@@@@@@@    @@  @@  @@@@  @@@@@@@@@@
+@@@@@@@@@@        @@  @  @  @@@@@@@@@@
+@@@@@@@@@@        @@        @@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@  @@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  Thank you for using jOOQ 3.12.3
+                                      
+2021-04-07 15:50:40.449  WARN 2818547 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2021-04-07 15:50:40.855  INFO 2818547 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 0 endpoint(s) beneath base path '/status'
+2021-04-07 15:50:40.999  INFO 2818547 --- [           main] yConfig$$EnhancerBySpringCGLIB$$32e9d66c : Using basic authentication.
+2021-04-07 15:50:41.023  INFO 2818547 --- [           main] o.s.s.web.DefaultSecurityFilterChain     : Creating filter chain: any request, [org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@61394494, org.springframework.security.web.context.SecurityContextPersistenceFilter@463afa6e, org.springframework.security.web.header.HeaderWriterFilter@77a0dd63, org.springframework.web.filter.CorsFilter@578a5ce8, org.springframework.security.web.authentication.logout.LogoutFilter@256bb5be, org.springframework.security.web.authentication.www.BasicAuthenticationFilter@6c0b51da, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@7ccd611e, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@640d604, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@7c453c34, org.springframework.security.web.session.SessionManagementFilter@637c840d, org.springframework.security.web.access.ExceptionTranslationFilter@7c8874ef, org.springframework.security.web.access.intercept.FilterSecurityInterceptor@50ec4bfc]
+2021-04-07 15:50:41.055  INFO 2818547 --- [           main] pertySourcedRequestMappingHandlerMapping : Mapped URL path [/v2/api-docs] onto method [springfox.documentation.swagger2.web.Swagger2Controller#getDocumentation(String, HttpServletRequest)]
+2021-04-07 15:50:41.450  INFO 2818547 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path '/ehrbase'
+2021-04-07 15:50:41.451  INFO 2818547 --- [           main] d.s.w.p.DocumentationPluginsBootstrapper : Context refreshed
+2021-04-07 15:50:41.465  INFO 2818547 --- [           main] d.s.w.p.DocumentationPluginsBootstrapper : Found 1 custom documentation plugin(s)
+2021-04-07 15:50:41.538  INFO 2818547 --- [           main] s.d.s.w.s.ApiListingReferenceScanner     : Scanning for api listing references
+2021-04-07 15:50:41.701  INFO 2818547 --- [           main] .d.s.w.r.o.CachingOperationNameGenerator : Generating unique operation named: deleteCompositionUsingDELETE_1
+2021-04-07 15:50:41.736  INFO 2818547 --- [           main] .d.s.w.r.o.CachingOperationNameGenerator : Generating unique operation named: getStoredQueryListUsingGET_1
+2021-04-07 15:50:41.743  INFO 2818547 --- [           main] .d.s.w.r.o.CachingOperationNameGenerator : Generating unique operation named: putStoreQueryUsingPUT_1
+2021-04-07 15:50:41.826  INFO 2818547 --- [           main] .d.s.w.r.o.CachingOperationNameGenerator : Generating unique operation named: getStoredQueryUsingGET_1
+2021-04-07 15:50:41.830  INFO 2818547 --- [           main] .d.s.w.r.o.CachingOperationNameGenerator : Generating unique operation named: postStoredQueryUsingPOST_1
+2021-04-07 15:50:41.894  INFO 2818547 --- [           main] DeferredRepositoryInitializationListener : Triggering deferred initialization of Spring Data repositories…
+2021-04-07 15:50:41.895  INFO 2818547 --- [           main] DeferredRepositoryInitializationListener : Spring Data repositories initialized!
+2021-04-07 15:50:41.909  INFO 2818547 --- [           main] org.ehrbase.application.EhrBase          : Started EhrBase in 7.432 seconds (JVM running for 7.92)
+2021-04-07 15:51:32.916  INFO 2818547 --- [nio-8080-exec-1] o.a.c.c.C.[.[localhost].[/ehrbase]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2021-04-07 15:51:32.917  INFO 2818547 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2021-04-07 15:51:32.925  INFO 2818547 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 8 ms
+2021-04-07 15:51:33.556  INFO 2818547 --- [nio-8080-exec-3] o.ehrbase.service.KnowledgeCacheService  : Updating WebTemplate cache for template: Beatmungswerte
+2021-04-07 15:51:33.901  INFO 2818547 --- [nio-8080-exec-5] o.ehrbase.service.KnowledgeCacheService  : Updating WebTemplate cache for template: Klinische Frailty-Skala
+2021-04-07 15:51:34.127  INFO 2818547 --- [nio-8080-exec-7] o.ehrbase.service.KnowledgeCacheService  : Updating WebTemplate cache for template: Patient auf ICU
+2021-04-07 15:51:34.394  INFO 2818547 --- [io-8080-exec-10] o.ehrbase.service.KnowledgeCacheService  : Updating WebTemplate cache for template: GECCO_Prozedur
+2021-04-07 15:51:34.656  INFO 2818547 --- [nio-8080-exec-1] o.ehrbase.service.KnowledgeCacheService  : Updating WebTemplate cache for template: GECCO_Personendaten
+2021-04-07 15:51:34.844  INFO 2818547 --- [nio-8080-exec-3] o.ehrbase.service.KnowledgeCacheService  : Updating WebTemplate cache for template: Körpergröße
+2021-04-07 15:51:35.003  INFO 2818547 --- [nio-8080-exec-5] o.ehrbase.service.KnowledgeCacheService  : Updating WebTemplate cache for template: Atemfrequenz
+2021-04-07 15:51:35.298  INFO 2818547 --- [nio-8080-exec-7] o.ehrbase.service.KnowledgeCacheService  : Updating WebTemplate cache for template: D4L_questionnaire
+2021-04-07 15:51:35.633  INFO 2818547 --- [io-8080-exec-10] o.ehrbase.service.KnowledgeCacheService  : Updating WebTemplate cache for template: GECCO_Diagnose
+2021-04-07 15:51:35.791  INFO 2818547 --- [nio-8080-exec-1] o.ehrbase.service.KnowledgeCacheService  : Updating WebTemplate cache for template: Schwangerschaftsstatus
+2021-04-07 15:51:36.024  INFO 2818547 --- [nio-8080-exec-3] o.ehrbase.service.KnowledgeCacheService  : Updating WebTemplate cache for template: Kennzeichnung Erregernachweis SARS-CoV-2
+2021-04-07 15:51:36.251  INFO 2818547 --- [nio-8080-exec-5] o.ehrbase.service.KnowledgeCacheService  : Updating WebTemplate cache for template: Körpergewicht
+2021-04-07 15:51:36.422  INFO 2818547 --- [nio-8080-exec-7] o.ehrbase.service.KnowledgeCacheService  : Updating WebTemplate cache for template: Pulsoxymetrie
+2021-04-07 15:51:36.614  INFO 2818547 --- [io-8080-exec-10] o.ehrbase.service.KnowledgeCacheService  : Updating WebTemplate cache for template: Befund der Blutgasanalyse
+2021-04-07 15:51:36.805  INFO 2818547 --- [nio-8080-exec-1] o.ehrbase.service.KnowledgeCacheService  : Updating WebTemplate cache for template: Symptom
+2021-04-07 15:51:36.957  INFO 2818547 --- [nio-8080-exec-3] o.ehrbase.service.KnowledgeCacheService  : Updating WebTemplate cache for template: Blutdruck
+2021-04-07 15:51:37.118  INFO 2818547 --- [nio-8080-exec-5] o.ehrbase.service.KnowledgeCacheService  : Updating WebTemplate cache for template: GECCO_Laborbefund
+2021-04-07 15:51:37.295  INFO 2818547 --- [nio-8080-exec-7] o.ehrbase.service.KnowledgeCacheService  : Updating WebTemplate cache for template: Raucherstatus
+2021-04-07 15:51:37.464  INFO 2818547 --- [io-8080-exec-10] o.ehrbase.service.KnowledgeCacheService  : Updating WebTemplate cache for template: Intensivmedizinisches Monitoring Korpertemperatur
+2021-04-07 15:51:37.654  INFO 2818547 --- [nio-8080-exec-1] o.ehrbase.service.KnowledgeCacheService  : Updating WebTemplate cache for template: Herzfrequenz
+2021-04-07 15:51:37.841  INFO 2818547 --- [nio-8080-exec-3] o.ehrbase.service.KnowledgeCacheService  : Updating WebTemplate cache for template: SOFA
+2021-04-07 15:51:38.025  INFO 2818547 --- [nio-8080-exec-5] o.ehrbase.service.KnowledgeCacheService  : Updating WebTemplate cache for template: GECCO_Radiologischer Befund
+2021-04-07 15:51:38.193  INFO 2818547 --- [nio-8080-exec-7] o.ehrbase.service.KnowledgeCacheService  : Updating WebTemplate cache for template: Reisehistorie
+2021-04-07 15:51:38.408  INFO 2818547 --- [io-8080-exec-10] o.ehrbase.service.KnowledgeCacheService  : Updating WebTemplate cache for template: Diagnose
+2021-04-07 15:51:38.637  INFO 2818547 --- [nio-8080-exec-1] o.ehrbase.service.KnowledgeCacheService  : Updating WebTemplate cache for template: Prozedur
