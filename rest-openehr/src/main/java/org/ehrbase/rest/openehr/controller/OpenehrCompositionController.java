@@ -277,7 +277,8 @@ public class OpenehrCompositionController extends BaseController {
      * "{?version_at_time}" is hidden in swagger-ui, it only is here to be piped through.
      */
     @GetMapping("/{ehr_id}/composition/{version_uid}")
-    @PostAuthorize("checkAbacComposition('', @ehrService.getSubjectUuid(#ehrIdString), returnObject)")
+    @PostAuthorize("checkAbacPost(@openehrCompositionController.COMPOSITION, authentication, "
+        + "@ehrService.getSubjectUuid(#ehrIdString), returnObject)")
     @ApiOperation(value = "Get composition by version id.")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK.",

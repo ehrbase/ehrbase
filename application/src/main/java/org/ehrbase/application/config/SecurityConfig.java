@@ -108,7 +108,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             // Everything else is open to all users of role admin and user
             .antMatchers("/**")
             // TODO-505: remove PoC hard coded roles
-            .hasAnyRole(ADMIN, USER, "OFFLINE_ACCESS", "VIEW-PROFILE", "UMA_AUTHORIZATION", "UMA_PROTECTION")
+            .hasAnyRole(ADMIN, USER, "PROFILE", "OFFLINE_ACCESS", "VIEW-PROFILE", "UMA_AUTHORIZATION", "UMA_PROTECTION")
             .and()
             .oauth2ResourceServer()
             .jwt()
@@ -134,7 +134,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
     converter.setJwtGrantedAuthoritiesConverter(
         jwt -> {
-          Map<String, Object> realmAccess =
+          /*Map<String, Object> realmAccess =
               (Map<String, Object>) jwt.getClaims().get("realm_access");
           // TODO-505: fix or remove PoC handling
           if (realmAccess == null)
@@ -146,7 +146,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
               .stream()
                   .map(roleName -> "ROLE_" + roleName.toUpperCase())
                   .map(SimpleGrantedAuthority::new)
-                  .collect(Collectors.toList());
+                  .collect(Collectors.toList());*/
+
+          return Arrays.stream(jwt.getClaims().get("scope").toString().split(" "))
+              .map(roleName -> "ROLE_" + roleName.toUpperCase())
+              .map(SimpleGrantedAuthority::new)
+              .collect(Collectors.toList());
         });
     return converter;
   }

@@ -56,7 +56,11 @@ security:
 # Attribute Based Access Control
 abac:
   disabled: true
-  server: http://localhost:8080/rest/v1/policy/execute/name/
+  server: http://localhost:3001/rest/v1/policy/execute/name/
+  # Definition of the JWT claim which contains the organization ID.
+  organizationClaim: 'organization_id'
+  # Definition of the JWT claim which contains the patient ID. Falls back to the EHR's subject, if unavailable.
+  patientClaim: 'patient_id'
   # Policies need to be configured for each resource. Available parameters are
   # - organization
   # - patient

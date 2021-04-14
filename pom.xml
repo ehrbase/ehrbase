@@ -130,7 +130,7 @@
         <swagger.version>1.6.2</swagger.version>
         <swagger-snapshot.version>2.0.0-rc2</swagger-snapshot.version>
         <postgressql.version>42.2.18</postgressql.version>
-        <ehrbase.sdk.version>f7a75b2</ehrbase.sdk.version>
+        <ehrbase.sdk.version>2930e3e</ehrbase.sdk.version>
         <flyway.version>6.5.7</flyway.version>
         <joda.version>2.10.6</joda.version>
         <database.name>ehrbase</database.name>
@@ -356,11 +356,6 @@
                 <version>${spring-boot.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-security</artifactId>
-                <version>${spring-boot.version}</version>
-            </dependency>
-            <!--<dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-web</artifactId>
                 <version>${spring-security.version}</version>
@@ -369,7 +364,7 @@
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-config</artifactId>
                 <version>${spring-security.version}</version>
-            </dependency>-->
+            </dependency>
             <dependency>
                 <!-- TODO migrate away from joda -->
                 <groupId>joda-time</groupId>
@@ -652,6 +647,9 @@
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
+                    <configuration>
+                        <mainClass>org.ehrbase.application.EhrBase</mainClass>
+                    </configuration>
                     <executions>
                         <execution>
                             <id>build-info</id>
