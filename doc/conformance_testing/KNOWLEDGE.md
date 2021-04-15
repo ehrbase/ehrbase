@@ -15,8 +15,6 @@
   $ python tocgen.py ../ehrbase/doc/conformance_testing
 -->
 <!--ts-->
-- [openEHR Conformance Testing Specification (KNOWLEDGE)](#openehr-conformance-testing-specification-knowledge)
-- [Index](#index)
 - [Knowledge Validation Suite](#knowledge-validation-suite)
   - [A. General Requirements](#a-general-requirements)
   - [B. OPT 1.4/2 Support Validation](#b-opt-142-support-validation)

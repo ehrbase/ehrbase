@@ -13,8 +13,6 @@
   $ python tocgen.py ../ehrbase/doc/conformance_testing
 -->
 <!--ts-->
-- [openEHR Conformance Testing Specification](#openehr-conformance-testing-specification)
-- [Index](#index)
 - [Introduction](#introduction)
 - [General considerations](#general-considerations)
   - [Preconditions](#preconditions)

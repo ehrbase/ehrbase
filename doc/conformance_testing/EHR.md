@@ -16,8 +16,6 @@
   $ python tocgen.py ../ehrbase/doc/conformance_testing
 -->
 <!--ts-->
-- [openEHR Conformance Testing Specification (EHR)](#openehr-conformance-testing-specification-ehr)
-- [Index](#index)
 - [EHR Validation Suite](#ehr-validation-suite)
   - [A. General Requirements](#a-general-requirements)
   - [B. EHR Service Test Cases](#b-ehr-service-test-cases)
