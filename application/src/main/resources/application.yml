@@ -33,8 +33,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          #issuer-uri: http://localhost:8081/auth/realms/ehrbase  # Example issuer URI - or set via env var
-          issuer-uri: https://keycloak.dev.num-codex.de/auth/realms/ctr
+          issuer-uri: # http://localhost:8081/auth/realms/ehrbase  # Example issuer URI - or set via env var
   profiles:
     active: local
   datasource:
@@ -59,9 +58,9 @@ abac:
   server: http://localhost:3001/rest/v1/policy/execute/name/
   # Definition of the JWT claim which contains the organization ID.
   organizationClaim: 'organization_id'
-  # Definition of the JWT claim which contains the patient ID. Falls back to the EHR's subject, if unavailable.
+  # Definition of the JWT claim which contains the patient ID. Falls back to the EHR's subject.
   patientClaim: 'patient_id'
-  # Policies need to be configured for each resource. Available parameters are
+  # Policies need to be named and configured for each resource. Available parameters are
   # - organization
   # - patient
   # - template
