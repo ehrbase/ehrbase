@@ -483,3 +483,34 @@ None (the server will be in the same state as the initial).
 2. Invoke the delete OPT service with a non existing template_id
 3. The server will return an error related to the OPT not existing in the server
 4. Include flow: delete existing OPTs
+
+
+## D. ADL 1.4/2 Test Cases
+
+To be done.
+
+
+## E. Terminology Test cases
+
+To be done.
+
+Since the I_TERMINOLOGY interface is not yet defined in the openEHR Platform Model specification, we can only suggest some ideas to create test cases for the future.
+
+Use cases to be considered:
+
+- return part of one terminology
+   - a "part" could be a domain, a chapter, a subset, etc.
+   - this includes codes, rubrics and definitions if available
+- retrieve descendants, given one terminology item
+   - this applies only for hierarchical terminologies
+   - a terminology item could be given by any of it's identifiers in the correspondent terminology
+- retrieve ancestors, given one terminology item
+   - this applies only for hierarchical terminologies
+   - a terminology item could be given by any of it's identifiers in the correspondent terminology
+- offer suggestions based on given text
+   - text might be partial, complete or acronym
+   - current language is needed as context
+   - part of the terminology might be required to give context and constraint results
+   - queried terminology is required
+- retrieve mappings of terminology items between different terminologies
+   - given a terminology term, it's terminology and the target terminology, retrieve the matching terminology items from the target terminology
