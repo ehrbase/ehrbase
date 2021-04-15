@@ -15,59 +15,38 @@
   $ python tocgen.py ../ehrbase/doc/conformance_testing
 -->
 <!--ts-->
-* [General considerations](#general-considerations)
-    * [Preconditions](#preconditions)
-    * [Considerations](#considerations)
-* [Knowledge Validation Suite](#knowledge-validation-suite)
-    * [A. General Requirements](#a-general-requirements)
-    * [B. OPT 1.4/2 Support Validation](#b-opt-142-support-validation)
-        * [Considerations](#considerations-1)
-    * [C. OPT 1.4/2 Test cases](#c-opt-142-test-cases)
-        * [C.1. Validate OPT](#c1-validate-opt)
-            * [C.1.a. Main flow: validate valid OPTs](#c1a-main-flow-validate-valid-opts)
-            * [C.1.b. Alternative flow 1: validate invalid OPTs](#c1b-alternative-flow-1-validate-invalid-opts)
-        * [C.2. Upload OPT](#c2-upload-opt)
-            * [C.2.a. Main flow: upload valid OPTs](#c2a-main-flow-upload-valid-opts)
-            * [C.2.b. Alternative flow 1: upload invalid OPTs](#c2b-alternative-flow-1-upload-invalid-opts)
-            * [C.2.c. Alternative flow 2: upload valid OPT twice with conflict](#c2c-alternative-flow-2-upload-valid-opt-twice-with-conflict)
-            * [C.2.d. Alternative flow 3: upload valid OPT twice with no conflict](#c2d-alternative-flow-3-upload-valid-opt-twice-with-no-conflict)
-        * [C.3. Retrieve OPT](#c3-retrieve-opt)
-            * [C.3.a. Main flow: retrieve a single OPT](#c3a-main-flow-retrieve-a-single-opt)
-            * [C.3.b. Alternative flow 1: empty server OPT retrieve fail test](#c3b-alternative-flow-1-empty-server-opt-retrieve-fail-test)
-            * [C.3.c. Alternative flow 3: retrieve last version of versioned OPT](#c3c-alternative-flow-3-retrieve-last-version-of-versioned-opt)
-            * [C.3.d. Alternative flow 4: retrieve a specific version (not last) of versioned OPT](#c3d-alternative-flow-4-retrieve-a-specific-version-not-last-of-versioned-opt)
-        * [C.4. Retrieve OPTs](#c4-retrieve-opts)
-            * [C.4.a. Main flow: retrieve all loaded OPTs](#c4a-main-flow-retrieve-all-loaded-opts)
-            * [C.4.b. Alternative flow 1: retrieve all loaded OPTs when none is loaded](#c4b-alternative-flow-1-retrieve-all-loaded-opts-when-none-is-loaded)
-        * [C.5. Delete OPT](#c5-delete-opt)
-            * [C.5.a. Main flow: delete existing OPTs](#c5a-main-flow-delete-existing-opts)
-            * [C.5.b. Alternative flow 1: delete last version of a versioned OPT](#c5b-alternative-flow-1-delete-last-version-of-a-versioned-opt)
-            * [C.5.c. Alternative flow 2: delete non latest version of a versioned OPT](#c5c-alternative-flow-2-delete-non-latest-version-of-a-versioned-opt)
-            * [C.5.d. Alternative flow 3: delete a non existing OPT, fail test](#c5d-alternative-flow-3-delete-a-non-existing-opt-fail-test)
+- [openEHR Conformance Testing Specification (KNOWLEDGE)](#openehr-conformance-testing-specification-knowledge)
+- [Index](#index)
+- [Knowledge Validation Suite](#knowledge-validation-suite)
+  - [A. General Requirements](#a-general-requirements)
+  - [B. OPT 1.4/2 Support Validation](#b-opt-142-support-validation)
+    - [Considerations](#considerations)
+  - [C. OPT 1.4/2 Test cases](#c-opt-142-test-cases)
+    - [C.1. Validate OPT](#c1-validate-opt)
+      - [C.1.a. Main flow: validate valid OPTs](#c1a-main-flow-validate-valid-opts)
+      - [C.1.b. Alternative flow 1: validate invalid OPTs](#c1b-alternative-flow-1-validate-invalid-opts)
+    - [C.2. Upload OPT](#c2-upload-opt)
+      - [C.2.a. Main flow: upload valid OPTs](#c2a-main-flow-upload-valid-opts)
+      - [C.2.b. Alternative flow 1: upload invalid OPTs](#c2b-alternative-flow-1-upload-invalid-opts)
+      - [C.2.c. Alternative flow 2: upload valid OPT twice with conflict](#c2c-alternative-flow-2-upload-valid-opt-twice-with-conflict)
+      - [C.2.d. Alternative flow 3: upload valid OPT twice with no conflict](#c2d-alternative-flow-3-upload-valid-opt-twice-with-no-conflict)
+    - [C.3. Retrieve OPT](#c3-retrieve-opt)
+      - [C.3.a. Main flow: retrieve a single OPT](#c3a-main-flow-retrieve-a-single-opt)
+      - [C.3.b. Alternative flow 1: empty server OPT retrieve fail test](#c3b-alternative-flow-1-empty-server-opt-retrieve-fail-test)
+      - [C.3.c. Alternative flow 3: retrieve last version of versioned OPT](#c3c-alternative-flow-3-retrieve-last-version-of-versioned-opt)
+      - [C.3.d. Alternative flow 4: retrieve a specific version (not last) of versioned OPT](#c3d-alternative-flow-4-retrieve-a-specific-version-not-last-of-versioned-opt)
+    - [C.4. Retrieve OPTs](#c4-retrieve-opts)
+      - [C.4.a. Main flow: retrieve all loaded OPTs](#c4a-main-flow-retrieve-all-loaded-opts)
+      - [C.4.b. Alternative flow 1: retrieve all loaded OPTs when none is loaded](#c4b-alternative-flow-1-retrieve-all-loaded-opts-when-none-is-loaded)
+    - [C.5. Delete OPT](#c5-delete-opt)
+      - [C.5.a. Main flow: delete existing OPTs](#c5a-main-flow-delete-existing-opts)
+      - [C.5.b. Alternative flow 1: delete last version of a versioned OPT](#c5b-alternative-flow-1-delete-last-version-of-a-versioned-opt)
+      - [C.5.c. Alternative flow 2: delete non latest version of a versioned OPT](#c5c-alternative-flow-2-delete-non-latest-version-of-a-versioned-opt)
+      - [C.5.d. Alternative flow 3: delete a non existing OPT, fail test](#c5d-alternative-flow-3-delete-a-non-existing-opt-fail-test)
+  - [D. ADL 1.4/2 Test Cases](#d-adl-142-test-cases)
+  - [E. Terminology Test cases](#e-terminology-test-cases)
 <!--te-->
 
-
-# General considerations
-
-## Preconditions
-
-1. It should be able to run test suites against a clean server:
-   - There are no EHRs
-   - There are no commits (COMPOSITIONs, VERSIONs)
-   - There are no templates or archetypes loaded
-2. The server under test should provide some kind of authorization mechanism, for instance an auth endpoint on the REST API, or provide some kind of token, etc.
-
-
-## Considerations
-
-1. The server under test should be classified as "Custom API" or "openEHR API" (compliant with the openEHR REST API). This is needed in order to implement tests in code.
-2. The supported IM version(s) by the server under test should be stated beforehand, because this will determine some variations on the data sets used for testing. The minimum required version is 1.0.2.
-3. In most test frameworks pre conditions, setup, actions, post conditions, and cleansteps can be implemented
-   - PRE would be to ensure the server is on a known state,
-   - SETUP is for creating a specific state knowing the PRE is satisfied (for instance this will load some data),
-   - then ACTIONS will alter that state and should not fail (actions can be positive or negative),
-   - POST is a set of assertions that should be satisfied by the state after the ACTIONS, and
-   - CLEAN is leaving the server in the state found at PRE.
 
 
 # Knowledge Validation Suite

@@ -3,7 +3,7 @@
 
 | Author                                           | Version          | Comments                                         |
 |:------------------------------------------------:|:----------------:|:------------------------------------------------:|
-| Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 1.0 (2021-04-14) | First version integratig all tests suites into a single documenation.     |
+| Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 1.0 (2021-04-14) | First version integrating all tests suites into a single documenation.     |
 
 
 # Index
@@ -13,21 +13,47 @@
   $ python tocgen.py ../ehrbase/doc/conformance_testing
 -->
 <!--ts-->
-* [openEHR Conformance Testing Specification](#openehr-conformance-testing-specification)
-* [Index](#index)
-* [Introduction](#introduction)
-* [Test Suites](#test-suites)
-    * [Test Suite Components](#test-suite-components)
-        * [Knowledge](#knowledge)
-        * [EHR](#ehr)
-        * [EHR/COMPOSITION](#ehrcomposition)
-    * [Test Case Dependencies](#test-case-dependencies)
+- [openEHR Conformance Testing Specification](#openehr-conformance-testing-specification)
+- [Index](#index)
+- [Introduction](#introduction)
+- [General considerations](#general-considerations)
+  - [Preconditions](#preconditions)
+  - [Considerations](#considerations)
+- [Test Suites](#test-suites)
+  - [Test Suite Components](#test-suite-components)
+    - [Knowledge](#knowledge)
+    - [EHR](#ehr)
+    - [EHR/COMPOSITION](#ehrcomposition)
+  - [Test Case Dependencies](#test-case-dependencies)
 <!--te-->
 
 
 # Introduction
 
 This documentation contains different test suites focused on validating any implementation of the [openEHR Service Model](https://specifications.openehr.org/releases/SM/latest/openehr_platform.html) (SM). The SM is an abstract specification of services any openEHR implementation can provide. Currently the only concrete imlementable spec for SM is the [openEHR REST API](https://specifications.openehr.org/releases/ITS-REST/latest), that is why the openEHR REST API is considered an ITS artifact (Implementable Technology Specification).
+
+
+# General considerations
+
+## Preconditions
+
+1. It should be able to run test suites against a clean server:
+   - There are no EHRs
+   - There are no commits (COMPOSITIONs, VERSIONs)
+   - There are no templates or archetypes loaded
+2. The server under test should provide some kind of authorization mechanism, for instance an auth endpoint on the REST API, or provide some kind of token, etc.
+
+
+## Considerations
+
+1. The server under test should be classified as "Custom API" or "openEHR API" (compliant with the openEHR REST API). This is needed in order to implement tests in code.
+2. The supported IM version(s) by the server under test should be stated beforehand, because this will determine some variations on the data sets used for testing. The minimum required version is 1.0.2.
+3. In most test frameworks pre conditions, setup, actions, post conditions, and cleansteps can be implemented
+   - PRE would be to ensure the server is on a known state,
+   - SETUP is for creating a specific state knowing the PRE is satisfied (for instance this will load some data),
+   - then ACTIONS will alter that state and should not fail (actions can be positive or negative),
+   - POST is a set of assertions that should be satisfied by the state after the ACTIONS, and
+   - CLEAN is leaving the server in the state found at PRE.
 
 
 # Test Suites
