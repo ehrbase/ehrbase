@@ -68,7 +68,7 @@ public class SuperQuery {
             }
             if (variableDefinition instanceof FunctionDefinition) {
                 StringBuilder stringBuilder = new StringBuilder();
-                for (FuncParameter funcParameter : ((FunctionDefinition) variableDefinition).getParameters()) {
+                for (FuncParameter funcParameter : variableDefinition.getFuncParameters()) {
                     stringBuilder.append(funcParameter.getValue());
                 }
                 fields.add(DSL.fieldByName(stringBuilder.toString()));

@@ -51,8 +51,18 @@ public class WhereBinder {
     public static final String EXISTS = "EXISTS";
     public static final String MATCHES = "MATCHES";
     public static final String NOT = "NOT";
+    public static final String IS = "IS";
+    public static final String TRUE = "TRUE";
+    public static final String FALSE = "FALSE";
+    public static final String NULL = "NULL";
+    public static final String UNKNOWN = "UNKNOWN";
+    public static final String DISTINCT = "DISTINCT";
+    public static final String FROM = "FROM";
+    public static final String BETWEEN = "BETWEEN";
+
     //from AQL grammar
-    private static final Set<String> sqloperators = new HashSet<>(Arrays.asList("=", "!=", ">", ">=", "<", "<=", MATCHES, EXISTS, NOT, "(", ")", "{", "}"));
+    private static final Set<String> sqloperators = new HashSet<>(Arrays.asList(
+            "=", "!=", ">", ">=", "<", "<=", MATCHES, EXISTS, NOT, IS, TRUE, FALSE, NULL, UNKNOWN, DISTINCT, FROM, BETWEEN, "(", ")", "{", "}"));
     public static final String COMPOSITION = "COMPOSITION";
     public static final String CONTENT = "content";
     public static final String EHR = "EHR";
@@ -71,7 +81,7 @@ public class WhereBinder {
     private PathResolver pathResolver;
     private boolean isWholeComposition = false;
     private String compositionName = null;
-    private String sqlConditionalFunctionalOperatorRegexp = "(?i)(like|ilike|in|not in)"; //list of subquery and operators
+    private String sqlConditionalFunctionalOperatorRegexp = "(?i)(like|ilike|substr|in|not in)"; //list of subquery and operators
     private boolean requiresJSQueryClosure = false;
     private boolean isFollowedBySQLConditionalOperator = false;
 
@@ -174,6 +184,9 @@ public class WhereBinder {
         //work on a copy since Exist is destructive
         List<Object> whereItems = new ArrayList<>(whereClause);
         boolean notExists = false;
+
+        //TODO: remove when SDK supports IN operator
+        whereItems = new InSetWhereClause(whereItems, pathResolver, domainAccess, jsonbEntryQuery, compositionAttributeQuery).swapIfRequired(templateId, compositionName);
 
         for (int cursor = 0; cursor < whereItems.size(); cursor++) {
             Object item = whereItems.get(cursor);
@@ -364,7 +377,7 @@ public class WhereBinder {
         }
 
         if (sqloperators.contains(item.toUpperCase()))
-            return item;
+            return " "+item+" ";
         if (taggedBuffer.toString().contains(JoinBinder.COMPOSITION_JOIN) && item.contains("::"))
             return item.split("::")[0] + "'";
         if (requiresJSQueryClosure && !isFollowedBySQLConditionalOperator && taggedBuffer.indexOf("#") > 0 && item.contains("'")) { //conventionally double quote for jsquery

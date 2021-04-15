@@ -41,6 +41,11 @@ server:
 security:
   authType: NONE
 
+#use admin for cleaning up the db during tests
+admin-api:
+  active: true
+  allowDeleteAll: true
+
 system:
   type: LOCAL
 

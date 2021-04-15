@@ -22,6 +22,7 @@
 
 package org.ehrbase.aql.definition;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -79,32 +80,36 @@ public class ExtensionDefinition implements I_VariableDefinition {
 
     @Override
     public List<FuncParameter> getFuncParameters() {
-        return null;
+        return new ArrayList<>();
     }
 
     @Override
-    public I_VariableDefinition clone() throws CloneNotSupportedException {
-        super.clone();
+    public I_VariableDefinition duplicate(){
         return new ExtensionDefinition(this.context, this.parsableExpression, this.alias);
     }
 
     @Override
     public void setPath(String path) {
-
+        // n/a
     }
 
     @Override
     public void setDistinct(boolean distinct) {
-
+        // n/a
     }
 
     @Override
     public void setHidden(boolean hidden) {
-
+        // n/a
     }
 
     @Override
     public void setAlias(String alias) {
+        // n/a
+    }
 
+    @Override
+    public boolean isConstant() {
+        return false;
     }
 }

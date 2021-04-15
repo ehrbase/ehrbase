@@ -35,7 +35,6 @@ public class Statements {
 
     private ParseTree parseTree;
     private List<Object> whereClause;
-    //    private ParseTreeWalker walker = new ParseTreeWalker();
     private List<I_VariableDefinition> variables;
     private TopAttributes topAttributes;
     private List<OrderAttribute> orderAttributes;
@@ -56,8 +55,8 @@ public class Statements {
         ParseTreeWalker walker = new ParseTreeWalker();
         walker.walk(queryCompilerPass2, parseTree);
         variables = queryCompilerPass2.getVariables();
+
         whereClause = visitWhere();
-        //append any EHR predicates into the where clause list
 
         //from Contains
         if (identifierMapper.hasEhrContainer())
@@ -100,7 +99,6 @@ public class Statements {
                 .allMatch(v -> EhrResolver.isEhrAttribute(v.getPath()));
 
         // Force distinct If only contains ehr variables
-        //FIXME https://github.com/ehrbase/project_management/issues/375
         if (!containsNonEhrVariable && containsOnlyEhrAttributes) {
             variables.forEach(v -> v.setDistinct(true));
         }

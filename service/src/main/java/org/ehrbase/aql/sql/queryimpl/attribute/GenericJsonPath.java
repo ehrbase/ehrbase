@@ -27,6 +27,7 @@ public class GenericJsonPath {
     public static final String TERMINOLOGY_ID = "terminology_id";
     public static final String PURPOSE = "purpose";
     public static final String TARGET = "target";
+    public static final String ARCHETYPE_NODE_ID = "archetype_node_id";
     private final String path;
 
     public GenericJsonPath(String path) {
@@ -49,19 +50,28 @@ public class GenericJsonPath {
             } else if (segment.startsWith(CONTENT)) {
                 actualPaths.add(CONTENT + ",/" + segment);
                 actualPaths.add("0"); //as above
-            } else if (segment.matches(VALUE + "|" + NAME) && !isTerminalValue(jqueryPaths, i)) {
-                actualPaths.add("/" + segment);
+            } else if (segment.matches(VALUE + "|" + NAME) && !isTerminalValue(jqueryPaths, i) && !jqueryPaths.get(0).equals(CONTEXT)) {
+                actualPaths.add("/"+segment);
                 if (segment.matches(NAME))
                     actualPaths.add("0");
-            } else
+            } else if (segment.matches(NAME) && isTerminalValue(jqueryPaths, i) && jqueryPaths.get(0).equals(OTHER_DETAILS)){
+                //keep '/name' attribute db encoding format since other_details is not related to a template and kept as is...
+                actualPaths.add("/"+segment);
+                actualPaths.add("0");
+
+            } else if (segment.matches(ARCHETYPE_NODE_ID) && jqueryPaths.get(0).equals(OTHER_DETAILS)){
+                //keep '/name' attribute db encoding format since other_details is not related to a template and kept as is...
+                actualPaths.add("/"+segment);
+            }
+            else
                 actualPaths.add(segment);
 
         }
 
-        return "'{" + String.join(",", actualPaths) + "}'";
+        return new JsonbSelect(actualPaths).field();
     }
 
-    public boolean isTerminalValue(List<String> paths, int index) {
+    public static boolean isTerminalValue(List<String> paths, int index) {
         return paths.size() == 1
                 || (paths.size() > 1
                 && index == paths.size() - 1

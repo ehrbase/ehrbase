@@ -4,8 +4,13 @@ EHRbase is an [openEHR](openehr.org) Clinical Data Repository, providing a stand
 
 ## Release Notes
 
+##### 2021, March 30
+v0.16.0 - fourth **beta** release. New endpoints for versioned Compositions, ATNA Logging, AQL fixes and other enhancements.
+Please see [EHRbase Documentation](https://ehrbase.readthedocs.io/en/latest/) for further details.
+
 ##### 2021, February 25
-v0.15.0 - third **beta** release. Please see [EHRbase Documentation](https://ehrbase.readthedocs.io/en/latest/) for further details.
+v0.15.0 - third **beta** release. New admin API endpoints for EHRs, Compositions and Contributions. Fixes and other enhancements.
+Please see [EHRbase Documentation](https://ehrbase.readthedocs.io/en/latest/) for further details.
 
 
 ##### 2020, October 1

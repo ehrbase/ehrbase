@@ -40,10 +40,6 @@ public class FunctionDefinition implements I_VariableDefinition {
         this.parameters = parameters;
     }
 
-    public List<FuncParameter> getParameters() {
-        return parameters;
-    }
-
     @Override
     public String getAlias() {
         return alias;
@@ -87,8 +83,7 @@ public class FunctionDefinition implements I_VariableDefinition {
     }
 
     @Override
-    public I_VariableDefinition clone() throws CloneNotSupportedException {
-        super.clone();
+    public I_VariableDefinition duplicate() {
         return new FunctionDefinition(this.identifier, this.alias, this.path, this.parameters);
     }
 
@@ -99,16 +94,21 @@ public class FunctionDefinition implements I_VariableDefinition {
 
     @Override
     public void setDistinct(boolean distinct) {
-
+        // n/a
     }
 
     @Override
     public void setHidden(boolean hidden) {
-
+        // n/a
     }
 
     @Override
     public void setAlias(String alias) {
+        // n/a
+    }
 
+    @Override
+    public boolean isConstant() {
+        return false;
     }
 }

@@ -96,10 +96,10 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
 
     public static final String DESCRIPTION = "description";
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private boolean supportCompositionXRef = false;
     private final ValidationService validationService;
     private final KnowledgeCacheService knowledgeCacheService;
     private final EhrService ehrService;
+    private boolean supportCompositionXRef = false;
 
     @Autowired
     public CompositionServiceImp(KnowledgeCacheService knowledgeCacheService, ValidationService validationService, EhrService ehrService, DSLContext context, ServerConfig serverConfig) {
@@ -472,6 +472,16 @@ public class CompositionServiceImp extends BaseService implements CompositionSer
             return composition.getUid().toString();
         }
 
+    }
+
+    @Override
+    public String getTemplateIdFromInputComposition(String content, CompositionFormat format) {
+        Composition composition = buildComposition(content, format, null);
+        if (composition.getArchetypeDetails() == null || composition.getArchetypeDetails().getTemplateId() == null) {
+            return null;
+        } else {
+            return composition.getArchetypeDetails().getTemplateId().getValue();
+        }
     }
 
     @Override

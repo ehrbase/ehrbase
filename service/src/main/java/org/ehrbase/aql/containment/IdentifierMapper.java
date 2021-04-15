@@ -177,7 +177,7 @@ public class IdentifierMapper {
     public String getClassName(String symbol) {
         Mapper definition = mapper.get(symbol);
         if (definition == null)
-            throw new IllegalArgumentException("Identifier is not defined in FROM/CONTAIN clause:" + symbol);
+                throw new IllegalArgumentException("Identifier is not defined in FROM/CONTAIN clause:" + symbol);
 
         Object containment = definition.getContainer();
         if (containment instanceof Containment) {
@@ -211,8 +211,7 @@ public class IdentifierMapper {
                 Containment containment = (Containment)mapper1.getContainer();
                 //check if this containment specifies an archetype (triggering a template resolution)
                 //f.e. COMPOSITION a [openEHR-EHR-COMPOSITION.report-result.v1] contains OBSERVATION
-                if (!containment.getClassName().equalsIgnoreCase(COMPOSITION) //anything else: OBSERVATION, EVALUATION...
-                        && containment.getArchetypeId() != null && !containment.getArchetypeId().isBlank()) //archetype is defined
+                if (containment.getArchetypeId() != null && !containment.getArchetypeId().isBlank()) //archetype is defined
                 {
                         resolveTemplateRequired = true;
                 }

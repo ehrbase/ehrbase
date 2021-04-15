@@ -28,7 +28,7 @@
 
 spring:
   application:
-    name: ehrbase-client
+    name: ehrbase
   security:
     oauth2:
       resourceserver:
@@ -174,3 +174,8 @@ management:
     export:
       prometheus:
         enabled: true
+
+# Audit Properties
+ipf:
+  atna:
+    audit-enabled: false

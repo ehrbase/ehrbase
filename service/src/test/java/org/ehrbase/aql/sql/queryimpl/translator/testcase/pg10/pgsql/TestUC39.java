@@ -19,6 +19,7 @@
 
 package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 
+import org.ehrbase.aql.sql.queryimpl.QueryImplConstants;
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC39;
 
 //@Ignore("CR #375")
@@ -27,10 +28,6 @@ public class TestUC39 extends UC39 {
     public TestUC39(){
         super();
         this.expectedSqlExpression =
-                "select max(\"max_magnitude\") as \"max_magnitude\" " +
-                        "from (select ((jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0004],0,/value,magnitude}'))::numeric as \"max_magnitude\" " +
-                        "from \"ehr\".\"entry\" " +
-                        "where \"ehr\".\"entry\".\"template_id\" = ?" +
-                        ") as \"\"";
+                "select max(\"max_magnitude\") as \"max_magnitude\" from (select cast((ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0004],0,/value,magnitude}') as bigint) as \"max_magnitude\" from \"ehr\".\"entry\" where \"ehr\".\"entry\".\"template_id\" = ?) as \"\"";
     }
 }
