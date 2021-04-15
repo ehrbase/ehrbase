@@ -92,6 +92,8 @@ public class OpenehrCompositionController extends BaseController {
     }
 
     @PostMapping(value = "/{ehr_id}/composition", consumes = {"application/xml", "application/json"})
+    @PreAuthorize("checkAbacPre(@openehrCompositionController.COMPOSITION, authentication, "
+        + "@ehrService.getSubjectUuid(#ehrIdString), #composition, #contentType)")
     @ApiOperation(value = "Create a new composition.")
     @ApiNotes("compositionPost.md")     // this utilizes a workaround, see source class for info
     @ApiResponses(value = {
@@ -319,7 +321,7 @@ public class OpenehrCompositionController extends BaseController {
      */
     @GetMapping("/{ehr_id}/composition/{version_uid}")
     @PostAuthorize("checkAbacPost(@openehrCompositionController.COMPOSITION, authentication, "
-        + "@ehrService.getSubjectUuid(#ehrIdString), returnObject)")
+        + "@ehrService.getSubjectUuid(#ehrIdString), returnObject, #accept)")
     @ApiOperation(value = "Get composition by version id.")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK.",

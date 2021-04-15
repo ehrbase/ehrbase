@@ -18,8 +18,6 @@
 
 package org.ehrbase.application.abac;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.URI;
@@ -35,7 +33,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.NotAcceptableException;
+import org.ehrbase.api.service.CompositionService;
+import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.rest.openehr.controller.BaseController;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.expression.SecurityExpressionRoot;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
@@ -52,40 +54,59 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
   static final String ORGANIZATION = "organization";
   static final String PATIENT = "patient";
   static final String TEMPLATE = "template";
+  static final String PRE = "pre";
+  static final String POST = "post";
+
   private final AbacConfig abacConfig;
+  private final CompositionService compositionService;
   private Object filterObject;
   private Object returnObject;
 
   public CustomMethodSecurityExpressionRoot(Authentication authentication,
-      AbacConfig abacConfig) {
+      AbacConfig abacConfig, CompositionService compositionService) {
     super(authentication);
     this.abacConfig = abacConfig;
+    this.compositionService = compositionService;
   }
 
   /**
    * Custom SpEL expression to be used to check if the remote ABAC allows the operation by given
    * data.
+   * <p>
+   * TODO-505: only guarantees to work with JSON as input or output for now
    *
-   * @param type Type of scope's resource
-   * @param auth Authentication stored in the security context
+   * @param type    Type of scope's resource
+   * @param auth    Authentication stored in the security context
    * @param subject Subject ID from the current EHR context
    * @param payload Payload of the request (post-request condition)
    * @return True if ABAC authorizes given attributes
    */
-  public boolean checkAbacPost(String type, Authentication auth, UUID subject, Object payload)
+  public boolean checkAbacPost(String type, Authentication auth, UUID subject, Object payload,
+      String contentType)
       throws IOException, InterruptedException {
 
+    return checkAbac(type, auth, subject, payload, contentType, POST);
+  }
+
+  // TODO-505: doc
+  public boolean checkAbacPre(String type, Authentication auth, UUID subject, Object payload,
+      String contentType)
+      throws IOException, InterruptedException {
+
+    // @PreAuthorize will give different types, e.g. String (for composition), EhrStatus,...
+    // so just pipe it through to templateHandling and make by-type handling there
+
+    return checkAbac(type, auth, subject, payload, contentType, PRE);
+  }
+
+  private boolean checkAbac(String type, Authentication auth, UUID subject, Object payload,
+      String contentType, String authType) throws IOException, InterruptedException {
     // Extract and set parameters according to which parameters are configured
     List<String> policyParameters = new ArrayList<>(
         Arrays.asList(abacConfig.getPolicyCompositionParameters()));
 
     // Check and extract JWT
-    JwtAuthenticationToken jwt;
-    if (auth instanceof JwtAuthenticationToken) {
-      jwt = (JwtAuthenticationToken) auth;
-    } else {
-      throw new IllegalArgumentException("ABAC: Invalid authentication, no JWT available.");
-    }
+    JwtAuthenticationToken jwt = getJwtAuthenticationToken(auth);
 
     // Request body map. will result in simple JSON like {"patient_id":"...", ...}
     Map<String, String> requestMap = new HashMap<>();
@@ -97,12 +118,12 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
 
     // Patient attribute handling
     if (policyParameters.contains(PATIENT)) {
-      templateHandling(jwt, subject, requestMap);
+      patientHandling(jwt, subject, requestMap);
     }
 
     // Extract template ID from composition
     if (policyParameters.contains(TEMPLATE)) {
-      templateHandling(type, payload, requestMap);
+      templateHandling(type, payload, contentType, requestMap, authType);
     }
 
     // Build and fire abac server request
@@ -122,7 +143,7 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
     }
   }
 
-  private void templateHandling(JwtAuthenticationToken jwt, UUID subject,
+  private void patientHandling(JwtAuthenticationToken jwt, UUID subject,
       Map<String, String> requestMap) {
     if (!jwt.getTokenAttributes().containsKey(abacConfig.getPatientClaim())) {
       // "patient_id" not available, use EHRbase subject as fallback
@@ -134,18 +155,37 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
     }
   }
 
-  private void templateHandling(String type, Object payload, Map<String, String> requestMap)
-      throws JsonProcessingException {
+  // payload will be a response body string, in case of @PostAuthorize.
+  // payload will be request body string, or already deserialized object (e.g. EhrStatus), in case of @PreAuthorize.
+  private void templateHandling(String type, Object payload, String contentType, Map<String,
+      String> requestMap, String authType) {
     switch (type) {
       case BaseController.EHR:
         break;  // TODO-505: write handling
       case BaseController.EHR_STATUS:
         break; // TODO-505: write handling
       case BaseController.COMPOSITION:
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode actualObj = mapper.readTree(((ResponseEntity) payload).getBody().toString());
-        String templateId = actualObj.get("archetype_details").get("template_id").get("value")
-            .asText();
+        String content;
+        if (authType.equals(POST)) {
+          // @PostAuthorize gives a ResponseEntity type for "returnObject", so payload is of that type
+          content = ((ResponseEntity) payload).getBody().toString();
+        } else if (authType.equals(PRE)) {
+          content = (String) payload;
+        } else {
+          throw new InternalServerException("ABAC: invalid auth type given.");
+        }
+        final CompositionFormat compositionFormat;
+        if (MediaType.parseMediaType(contentType).isCompatibleWith(MediaType.APPLICATION_XML)) {
+          compositionFormat = CompositionFormat.XML;
+        } else if (MediaType.parseMediaType(contentType)
+            .isCompatibleWith(MediaType.APPLICATION_JSON)) {
+          compositionFormat = CompositionFormat.JSON;
+        } else {
+          throw new NotAcceptableException(
+              "Only compositions in XML or JSON are supported at the moment");
+        }
+        String templateId = compositionService
+            .getTemplateIdFromInputComposition(content, compositionFormat);
         requestMap.put(TEMPLATE, templateId);
         break;
       case BaseController.DIRECTORY:
@@ -181,6 +221,16 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
         .build();
 
     return HttpClient.newHttpClient().send(request, BodyHandlers.ofString());
+  }
+
+  private JwtAuthenticationToken getJwtAuthenticationToken(Authentication auth) {
+    JwtAuthenticationToken jwt;
+    if (auth instanceof JwtAuthenticationToken) {
+      jwt = (JwtAuthenticationToken) auth;
+    } else {
+      throw new IllegalArgumentException("ABAC: Invalid authentication, no JWT available.");
+    }
+    return jwt;
   }
 
   @Override
