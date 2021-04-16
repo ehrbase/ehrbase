@@ -22,6 +22,9 @@
 
 package org.ehrbase.aql.definition;
 
+import org.jooq.Record;
+import org.jooq.Table;
+
 import java.util.List;
 
 /**
@@ -34,6 +37,8 @@ public interface I_VariableDefinition extends Cloneable {
     String getAlias();
 
     String getIdentifier();
+
+    void setLateralJoinTable(Table<Record> lateralJoinTable);
 
     boolean isDistinct();
 
@@ -58,4 +63,8 @@ public interface I_VariableDefinition extends Cloneable {
     String toString();
 
     boolean isConstant();
+
+    boolean isLateralJoin();
+
+    Table<Record> getLateralJoinTable();
 }

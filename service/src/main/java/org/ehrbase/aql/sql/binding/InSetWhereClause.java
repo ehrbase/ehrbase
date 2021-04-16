@@ -19,82 +19,39 @@
 
 package org.ehrbase.aql.sql.binding;
 
-import org.ehrbase.aql.definition.I_VariableDefinition;
-import org.ehrbase.aql.sql.PathResolver;
-import org.ehrbase.aql.sql.queryimpl.CompositionAttributeQuery;
-import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
-import org.ehrbase.dao.access.interfaces.I_DomainAccess;
-
-import java.util.ArrayList;
 import java.util.List;
 
-import static org.ehrbase.aql.sql.queryimpl.QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION;
-
 /**
- * deals with "transparent" swap of arguments whenever the left operand is an IdentifiedPath in a (NOT)'IN' clause:
- * | OPEN_PAR* identifiedOperand NOT? IN OPEN_PAR  (identifiedOperand|matchesOperand) CLOSE_PAR CLOSE_PAR*
- * The expected result is an expression compatible with scalar 'IN' (set).
- * This is hack is currently (12.4.21) required due to SDK limitation (IN is not supported). It should be removed whenever updated
- * NB. MATCHES is already substituted as IN by QueryCompilerPass2
- * TODO: deprecate whenever SDK supports the IN operator
+ * deals with sub-query expressions to identify whether correlated query is required (LATERAL join)
+ * Sub queries are specified at https://www.postgresql.org/docs/13/functions-subquery.html
+ * AQL MATCHES is substituted with IN since it is not a standard SQL operator
  */
-
 public class InSetWhereClause {
 
     private final List<Object> whereItems;
-    private final PathResolver pathResolver;
-    private final I_DomainAccess domainAccess;
-    private final JsonbEntryQuery jsonbEntryQuery;
-    private final CompositionAttributeQuery compositionAttributeQuery;
 
-    public InSetWhereClause(List<Object> whereItems, PathResolver pathResolver, I_DomainAccess domainAccess, JsonbEntryQuery jsonbEntryQuery, CompositionAttributeQuery compositionAttributeQuery) {
+    private static final String IGNORE_OPERATOR = "NOT|=|>|<|>=|<=|!=";
+    private static final String SUB_EXPRESSION_OPERATOR = "IN|ANY|SOME|ALL";
+
+    public InSetWhereClause(List<Object> whereItems) {
         this.whereItems = whereItems;
-        this.pathResolver = pathResolver;
-        this.domainAccess = domainAccess;
-        this.jsonbEntryQuery = jsonbEntryQuery;
-        this.compositionAttributeQuery = compositionAttributeQuery;
     }
 
-    public List<Object> swapIfRequired(String templateId, String compositionName){
+    public boolean isInSubQueryExpression(int cursor) {
 
-        List<Object> updatedList = new ArrayList<>(whereItems);
-
-        for (int cursor = 0; cursor < updatedList.size(); cursor++) {
-
-            if (updatedList.get(cursor) instanceof I_VariableDefinition){
-                //we check if the variable encoding implies set returning function
-                TaggedStringBuilder taggedStringBuilder = new WhereVariable(pathResolver, domainAccess, jsonbEntryQuery, compositionAttributeQuery).encode(templateId, (I_VariableDefinition) updatedList.get(cursor), true, compositionName);
-                if (!taggedStringBuilder.toString().contains(AQL_NODE_ITERATIVE_FUNCTION))
-                    break;
-                //lookahead to check if the condition deals with IN | NOT IN set containment condition
-                if (cursor+1 >= updatedList.size()||cursor+2 >= updatedList.size())
-                    break;
-                if (updatedList.get(cursor + 1) instanceof String){
-                    String lookahead1 = ((String)updatedList.get(cursor + 1)).strip();
-                    if (lookahead1.equalsIgnoreCase("NOT")){
-                        String lookahead2 = ((String)updatedList.get(cursor + 2)).strip();
-                        if (lookahead2.equalsIgnoreCase("IN")){
-                            //perform swap of argument at location
-                            swapItemsAtOffset(updatedList, cursor, 4);
-                        }
-                    }
-                    else {
-                        String lookahead2 = ((String) updatedList.get(cursor + 1)).strip();
-                        if (lookahead2.equalsIgnoreCase("IN")){
-                            //perform swap of argument at location
-                            swapItemsAtOffset(updatedList, cursor, 3);
-                        }
-                    }
-                }
+        if (cursor + 1 >= whereItems.size() || cursor + 2 >= whereItems.size())
+            return false;
+        if (whereItems.get(cursor + 1) instanceof String) {
+            String lookahead1 = ((String) whereItems.get(cursor + 1)).strip();
+            String lookahead2;
+            if (lookahead1.toUpperCase().matches(IGNORE_OPERATOR)) {
+                lookahead2 = ((String) whereItems.get(cursor + 2)).strip();
+            } else {
+                lookahead2 = ((String) whereItems.get(cursor + 1)).strip();
             }
+            return lookahead2.toUpperCase().matches(SUB_EXPRESSION_OPERATOR);
         }
-        return updatedList;
-    }
 
-    private void swapItemsAtOffset(List<Object> itemList, int cursor, int offset){
-        //perform swap of argument at location
-        Object arg1 = itemList.get(cursor);
-        itemList.set(cursor, itemList.get(cursor+offset));
-        itemList.set(cursor+offset, arg1);
+        return false;
     }
 }

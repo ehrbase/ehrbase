@@ -33,6 +33,8 @@ import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.serialisation.dbencoding.CompositionSerializer;
 import org.jooq.Condition;
 import org.jooq.Field;
+import org.jooq.Record;
+import org.jooq.Table;
 import org.jooq.impl.DSL;
 
 import java.util.*;
@@ -84,6 +86,7 @@ public class WhereBinder {
     private String sqlConditionalFunctionalOperatorRegexp = "(?i)(like|ilike|substr|in|not in)"; //list of subquery and operators
     private boolean requiresJSQueryClosure = false;
     private boolean isFollowedBySQLConditionalOperator = false;
+    private static int seed = 1;
 
     public WhereBinder(I_DomainAccess domainAccess, JsonbEntryQuery jsonbEntryQuery, CompositionAttributeQuery compositionAttributeQuery, List<Object> whereClause, PathResolver pathResolver) {
         this.jsonbEntryQuery = jsonbEntryQuery;
@@ -94,7 +97,7 @@ public class WhereBinder {
     }
 
     private TaggedStringBuilder encodeWhereVariable(String templateId, I_VariableDefinition variableDefinition, boolean forceSQL, String compositionName) {
-        String identifier = variableDefinition.getIdentifier();
+        var identifier = variableDefinition.getIdentifier();
         String className = pathResolver.classNameOf(identifier);
         if (className == null)
             throw new IllegalArgumentException("Could not bind identifier in WHERE clause:'" + identifier + "'");
@@ -185,9 +188,6 @@ public class WhereBinder {
         List<Object> whereItems = new ArrayList<>(whereClause);
         boolean notExists = false;
 
-        //TODO: remove when SDK supports IN operator
-        whereItems = new InSetWhereClause(whereItems, pathResolver, domainAccess, jsonbEntryQuery, compositionAttributeQuery).swapIfRequired(templateId, compositionName);
-
         for (int cursor = 0; cursor < whereItems.size(); cursor++) {
             Object item = whereItems.get(cursor);
             if (item instanceof String) {
@@ -245,7 +245,15 @@ public class WhereBinder {
                 //look ahead and check if followed by a sql operator
                 TaggedStringBuilder taggedStringBuilder = new TaggedStringBuilder();
                 if (isFollowedBySQLConditionalOperator(cursor)) {
-                    String expanded = expandForCondition(encodeWhereVariable(templateId, (I_VariableDefinition) item, true, null));
+                    TaggedStringBuilder encodedVar = encodeWhereVariable(templateId, (I_VariableDefinition) item, true, null);
+                    String expanded = expandForCondition(encodedVar);
+                    if (new WhereSetReturningFunction(expanded).isUsed() && new InSetWhereClause(whereItems).isInSubQueryExpression(cursor)){
+                        //insert new LATERAL pseudo table to the variable if not yet defined
+                        if (!((I_VariableDefinition) item).isLateralJoin()) {
+                            encodeLateral(encodedVar, (I_VariableDefinition)item );
+                        }
+                        expanded = ((I_VariableDefinition) item).getAlias();
+                    }
                     if (expanded != null)
                         taggedStringBuilder.append(expanded);
                     else {
@@ -408,6 +416,23 @@ public class WhereBinder {
         }
 
         return wrapped;
+    }
+
+    private void encodeLateral(TaggedStringBuilder encodedVar, I_VariableDefinition item){
+        if (encodedVar == null)
+            return;
+        int abs = Math.abs(encodedVar.toString().hashCode());
+        String tableAlias = "array_" + abs + "_" + inc();
+        String variableAlias = "var_" + abs + "_" + inc();
+        //insert the variable alias used for the lateral join expression
+        encodedVar.replaceLast(")", " AS " + variableAlias + ")");
+        Table<Record> table = DSL.table(encodedVar.toString()).as(tableAlias);
+        item.setLateralJoinTable(table);
+        item.setAlias(tableAlias + "." + variableAlias + " ");
+    }
+
+    private static synchronized int inc(){
+        return seed++;
     }
 
 }
