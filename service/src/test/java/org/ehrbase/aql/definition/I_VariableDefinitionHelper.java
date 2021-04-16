@@ -18,6 +18,8 @@
 
 package org.ehrbase.aql.definition;
 
+import org.jooq.Table;
+
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -50,6 +52,11 @@ public class I_VariableDefinitionHelper {
             @Override
             public String getIdentifier() {
                 return identifier;
+            }
+
+            @Override
+            public void setLateralJoinTable(Table lateralJoinTable) {
+
             }
 
             @Override
@@ -105,6 +112,16 @@ public class I_VariableDefinitionHelper {
             @Override
             public boolean isConstant() {
                 return false;
+            }
+
+            @Override
+            public boolean isLateralJoin() {
+                return false;
+            }
+
+            @Override
+            public Table getLateralJoinTable() {
+                return null;
             }
         };
     }

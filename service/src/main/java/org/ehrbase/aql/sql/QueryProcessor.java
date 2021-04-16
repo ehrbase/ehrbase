@@ -25,6 +25,7 @@ package org.ehrbase.aql.sql;
 import org.ehrbase.aql.compiler.Contains;
 import org.ehrbase.aql.compiler.Statements;
 import org.ehrbase.aql.compiler.TopAttributes;
+import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.Variables;
 import org.ehrbase.aql.sql.binding.*;
 import org.ehrbase.aql.sql.postprocessing.RawJsonTransform;
@@ -151,6 +152,8 @@ public class QueryProcessor extends TemplateMetaData {
 
             select = new JoinBinder(domainAccess, select).addJoinClause(queryStep.getCompositionAttributeQuery());
 
+            select = setLateralJoins(select);
+
             //this deals with 'contains c' which adds an implicit where on template id
             if (!queryStep.getTemplateId().equals(NIL_TEMPLATE)) {
                 select.addConditions(ENTRY.TEMPLATE_ID.eq(queryStep.getTemplateId()));
@@ -217,6 +220,15 @@ public class QueryProcessor extends TemplateMetaData {
                 selectBinder.getJsonDataBlock(), selectBinder.containsJQueryPath());
     }
 
+    private SelectQuery<?> setLateralJoins(SelectQuery<?> selectQuery){
+        for (Object item: statements.getWhereClause()){
+            if (item instanceof I_VariableDefinition && ((I_VariableDefinition)item).isLateralJoin()) {
+                selectQuery.addFrom(DSL.lateral(((I_VariableDefinition)item).getLateralJoinTable()));
+            }
+        }
+
+        return selectQuery;
+    }
 
     private Result<Record> fetchResultSet(Select<?> select, Result<Record> result) {
         Result<Record> intermediary;
