@@ -21,6 +21,8 @@
 
 package org.ehrbase.aql.definition;
 
+import org.jooq.Table;
+
 import java.util.List;
 
 /**
@@ -55,6 +57,11 @@ public class FunctionDefinition implements I_VariableDefinition {
     @Override
     public String getIdentifier() {
         return identifier;
+    }
+
+    @Override
+    public void setLateralJoinTable(Table lateralJoinTable) {
+        // n/a
     }
 
     @Override
@@ -110,5 +117,15 @@ public class FunctionDefinition implements I_VariableDefinition {
     @Override
     public boolean isConstant() {
         return false;
+    }
+
+    @Override
+    public boolean isLateralJoin() {
+        return false;
+    }
+
+    @Override
+    public Table getLateralJoinTable() {
+        return null;
     }
 }
