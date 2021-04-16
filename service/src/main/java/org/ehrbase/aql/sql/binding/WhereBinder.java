@@ -421,7 +421,12 @@ public class WhereBinder {
     private void encodeLateral(TaggedStringBuilder encodedVar, I_VariableDefinition item){
         if (encodedVar == null)
             return;
-        int abs = Math.abs(encodedVar.toString().hashCode());
+        int hashValue = encodedVar.toString().hashCode(); //cf. SonarLint
+        int abs;
+        if (hashValue != 0)
+            abs = Math.abs(encodedVar.toString().hashCode());
+        else
+            abs = 0;
         String tableAlias = "array_" + abs + "_" + inc();
         String variableAlias = "var_" + abs + "_" + inc();
         //insert the variable alias used for the lateral join expression
