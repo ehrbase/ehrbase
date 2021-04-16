@@ -1,5 +1,4 @@
 robotframework == v4.0b1
-# robotframework == 3.2b1
 
 robotframework-jsonlibrary == 0.3.1
 robotframework-requests == 0.4.7
@@ -9,7 +8,7 @@ RESTinstance == 1.0.0
 
 docker == 4.0.2
 deepdiff == 4.3.2
-psycopg2-binary == 2.8.4
+psycopg2-binary == 2.8.6
 
 pyjwt == 1.7.1
 # git+https://github.com/adiralashiva8/robotframework-metrics@v3.1.4
