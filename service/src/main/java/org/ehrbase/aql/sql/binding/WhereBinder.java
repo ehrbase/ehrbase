@@ -424,7 +424,7 @@ public class WhereBinder {
         int hashValue = encodedVar.toString().hashCode(); //cf. SonarLint
         int abs;
         if (hashValue != 0)
-            abs = Math.abs(encodedVar.toString().hashCode());
+            abs = Math.abs(hashValue);
         else
             abs = 0;
         String tableAlias = "array_" + abs + "_" + inc();
