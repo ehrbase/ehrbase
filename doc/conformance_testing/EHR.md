@@ -65,12 +65,17 @@ Reference: https://specifications.openehr.org/releases/SM/latest/openehr_platfor
 
 ## A. General Requirements
 
-1. The server under test should support at least OPTs, 1.4 or 2, but OPT 1.4 if more frequent since modeling tools supporting this were around for a long time. Could also support ADL, 1.4 or 2.
+1. The server under test should support at least OPTs, 1.4 or 2, but OPT 1.4 if more frequent since there are more modeling tools supporting OPT 1.4.
 
 2. The server should support at least the XML representation of COMPOSITIONs for committing data, since we can use the openEHR XSDs (and later JSON schemas) to validate those formats. We can't test, for now, other formats since we don't have official tools to validate them.
 
 3. The server might be able to validate the internal contents of the COMPOSITION against the constraints in the correspondent OPT. If the server supports this, tests for that validation should be designed.
 
+
+Notes:
+
+-  OPT 1.4 is a [format specification](https://specifications.openehr.org/releases/ITS-XML/latest/components/AM/Release-1.4/).
+-  OPTs 1.4 are derived from [ADL 1.4](https://specifications.openehr.org/releases/AM/Release-2.0.6/ADL1.4.html) archetypes, which are based on the [AOM 1.4](https://specifications.openehr.org/releases/AM/Release-2.0.6/AOM1.4.html).
 
 
 ## B. EHR Service Test Cases
@@ -92,22 +97,22 @@ These are the data set classes:
 
 | No. | is_queryable | is_modifiable | subject  | other_details | ehr_id       |
 | --- | ------------ | ------------- | -------- | ------------- | ------------ |
-| 1   | true         | true          | provided | not provided  | provided     |
-| 2   | true         | false         | provided | not provided  | provided     |
-| 3   | false        | true          | provided | not provided  | provided     |
-| 4   | false        | false         | provided | not provided  | provided     |
-| 5   | true         | true          | provided | provided      | provided     |
-| 6   | true         | false         | provided | provided      | provided     |
-| 7   | false        | true          | provided | provided      | provided     |
-| 8   | false        | false         | provided | provided      | provided     |
-| 9   | true         | true          | provided | not provided  | not provided |
-| 10  | true         | false         | provided | not provided  | not provided |
-| 11  | false        | true          | provided | not provided  | not provided |
-| 12  | false        | false         | provided | not provided  | not provided |
-| 13  | true         | true          | provided | provided      | not provided |
-| 14  | true         | false         | provided | provided      | not provided |
-| 15  | false        | true          | provided | provided      | not provided |
-| 16  | false        | false         | provided | provided      | not provided |
+| 1   | true         | true          | provided | not provided  | not provided |
+| 2   | true         | false         | provided | not provided  | not provided |
+| 3   | false        | true          | provided | not provided  | not provided |
+| 4   | false        | false         | provided | not provided  | not provided |
+| 5   | true         | true          | provided | provided      | not provided |
+| 6   | true         | false         | provided | provided      | not provided |
+| 7   | false        | true          | provided | provided      | not provided |
+| 8   | false        | false         | provided | provided      | not provided |
+| 9   | true         | true          | provided | not provided  | provided     |
+| 10  | true         | false         | provided | not provided  | provided     |
+| 11  | false        | true          | provided | not provided  | provided     |
+| 12  | false        | false         | provided | not provided  | provided     |
+| 13  | true         | true          | provided | provided      | provided     |
+| 14  | true         | false         | provided | provided      | provided     |
+| 15  | false        | true          | provided | provided      | provided     |
+| 16  | false        | false         | provided | provided      | provided     |
 
 
 **Any other data set should be treated as invalid, like providing EHR_STATUS with:**
@@ -147,7 +152,7 @@ A new EHR will exist in the system and be consistent with the data sets used.
 
 
 
-#### B.1.b. Alternative flow 1: Create same EHR twice attempt
+#### B.1.b. Alternative flow 1: Attempt to create same EHR twice
 
 **Preconditions:**
 
@@ -162,10 +167,12 @@ A new EHR will exist in the system, the first one created, and be consistent wit
 **Flow:**
 
 1. Invoke the create EHR service
-   1. for each VALID data set with provided ehr_id
+   1. for each VALID data set not providing ehr_id
+   2. for each VALID data set providing ehr_id
 2. The server should answer with a positive response associated to the successful EHR creation
 3. Invoke the create EHR service
-   1. with the same item as in 1.1.
+   1. with the same ehr_id of the EHR created in 1.1. (should be read from the response)
+   2. with the same ehr_id of the EHR created in 1.2. (should be read from the test data sets)
 4. The server should answer with a negative response, related to the existence of an EHR with the provided ehr_id, because ehr_id values should be unique
 
 
@@ -182,10 +189,12 @@ A new EHR will exist in the system.
 
 **Flow:**
 
-1. Invoke the create EHR service (for each item in the Data set with given subject
+1. Invoke the create EHR service
+   1. for each VALID data set with a provided subject and not providing ehr_id
 2. The server should answer with a positive response associated to the successful EHR creation
-3. Invoke the create EHR service with a data set that has the same subject_id as the one used in 1 (if the data set has an ehr_id, use a different ehr_id than the one used in 1.)
-4. The server should answer with a negative response, and that should be related with the EHR existence, like "EHR for subject_id already exists"
+3. Invoke the create EHR service
+   1. with the same data set used in 1.1
+4. The server should answer with a negative response, related with the EHR already existing for the given subject
 
 
 
@@ -204,7 +213,7 @@ None.
 **Flow:**
 
 1. Invoke has EHR service with the known ehr_id
-2. The result should be positive "the EHR with ehr_id exists"
+2. The result should be positive, related to "the EHR with ehr_id exists"
 
 
 #### B.2.b. Alternative flow 1: Check has EHR with existing EHR by subject_id
@@ -220,9 +229,13 @@ None.
 **Flow:**
 
 1. Invoke has EHR service with the known subject_id
-2. The result should be positive "the EHR with subject_id exists"
+2. The result should be positive, realted to "the EHR with subject_id exists"
 
-B.2.c. Alternative flow 2: Check has EHR with non existing EHR by ehr_id
+
+Note: 'subject_id' refers to the PARTY_REF class instance containing the identifier of a patient represented by PARTY_SELF in the openEHR Reference Model.
+
+
+#### B.2.c. Alternative flow 2: Check has EHR with non existing EHR
 
 **Preconditions:**
 
@@ -230,12 +243,12 @@ The server should be empty (no EHRs, no commits, no OPTs).
 
 **Postconditions:**
 
-None
+None.
 
 **Flow:**
 
 1. Invoke has EHR service with a random ehr_id.
-2. The result should be negative, like "the EHR with ehr_id does not exist"
+2. The result should be negative, related to "the EHR with ehr_id does not exist"
 
 
 #### B.2.d. Alternative flow 3: Check has EHR with non existing EHR by subject_id
@@ -246,12 +259,13 @@ The server should be empty (no EHRs, no commits, no OPTs).
 
 **Postconditions:**
 
-None
+None.
 
 **Flow:**
 
 1. Invoke has EHR service with a random subject_id.
-2. The result should be negative, like "the EHR for subject_id does not exist"
+2. The result should be negative, related to "the EHR for subject_id does not exist"
+
 
 
 ### B.3. Get EHR
@@ -264,12 +278,12 @@ An EHR should exist in the system with a known ehr_id.
 
 **Postconditions:**
 
-None
+None.
 
 **Flow:**
 
 1. Invoke get EHR service with the known ehr_id
-2. The result should be positive and retrieve the EHR and EHR_STATUS information
+2. The result should be positive and retrieve the EHR
 
 
 #### B.3.b. Alternative flow 1: Get existing EHR by subject_id
@@ -280,12 +294,12 @@ An EHR should exist in the system with a known subject_id.
 
 **Postconditions:**
 
-None
+None.
 
 **Flow:**
 
 1. Invoke get EHR service with the known subject_id
-2. The result should be positive and retrieve the EHR and EHR_STATUS information
+2. The result should be positive and retrieve the EHR
 
 
 #### B.3.c. Alternative flow 2: Get non existing EHR
@@ -296,12 +310,12 @@ The server should be empty (no EHRs, no commits, no OPTs).
 
 **Postconditions:**
 
-None
+None.
 
 **Flow:**
 
 1. Invoke get EHR service by a random ehr_id
-2. The result should be negative, like "EHR with ehr_id doesn't exist"
+2. The result should be negative, related to "EHR with ehr_id doesn't exist"
 
 
 #### B.3.d. Alternative flow 3: Get non existing EHR by subject_id
