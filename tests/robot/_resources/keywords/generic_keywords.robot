@@ -181,6 +181,11 @@ start openehr server
     run keyword if  '${CODE_COVERAGE}' == 'True'   start server process with coverage
     run keyword if  '${CODE_COVERAGE}' == 'False'  start server process without coverage
     Wait For Process  ehrserver  timeout=25  on_timeout=continue
+
+    # comment: log EHRbase's stack trace
+    Log File    ../stderr.txt
+    Log File    ../stdout.txt
+    
     Is Process Running  ehrserver
     ${status}=      Run Keyword And Return Status    Process Should Be Running    ehrserver
                     Run Keyword If    ${status}==${FALSE}    Fatal Error    Server failed to start!
