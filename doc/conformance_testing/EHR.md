@@ -6,7 +6,7 @@
 | Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 0.2 (2019-03-12)   | Removed CONTRIBUTION section.                                              |
 | Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 0.2.1 (2019-12-30) | Added comments about EHR_STATUS.other_details.                             |
 | Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 0.3 (2020-04-07)   | Updated data sets for create EHR.                                          |
-| Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 0.4 (2021-04-15)   | Refactored data sets for create EHR. Improved description of the flows.    |
+| Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 0.4 (2021-04-19)   | Refactored data sets for create EHR. Improved description of the flows, grammar and comments |
 
 
 # Index
@@ -21,11 +21,12 @@
   - [B. EHR Service Test Cases](#b-ehr-service-test-cases)
     - [B.1. Create EHR](#b1-create-ehr)
       - [B.1.a. Main flow: Create new EHR](#b1a-main-flow-create-new-ehr)
-      - [B.1.b. Alternative flow 1: Create same EHR twice attempt](#b1b-alternative-flow-1-create-same-ehr-twice-attempt)
+      - [B.1.b. Alternative flow 1: Attempt to create same EHR twice](#b1b-alternative-flow-1-attempt-to-create-same-ehr-twice)
       - [B.1.c. Alternative flow 2: Create two EHRs for the same patient](#b1c-alternative-flow-2-create-two-ehrs-for-the-same-patient)
     - [B.2. Has EHR](#b2-has-ehr)
       - [B.2.a. Main flow: Check has EHR with existing EHR](#b2a-main-flow-check-has-ehr-with-existing-ehr)
       - [B.2.b. Alternative flow 1: Check has EHR with existing EHR by subject_id](#b2b-alternative-flow-1-check-has-ehr-with-existing-ehr-by-subject_id)
+      - [B.2.c. Alternative flow 2: Check has EHR with non existing EHR](#b2c-alternative-flow-2-check-has-ehr-with-non-existing-ehr)
       - [B.2.d. Alternative flow 3: Check has EHR with non existing EHR by subject_id](#b2d-alternative-flow-3-check-has-ehr-with-non-existing-ehr-by-subject_id)
     - [B.3. Get EHR](#b3-get-ehr)
       - [B.3.a. Main flow: Get existing EHR](#b3a-main-flow-get-existing-ehr)
@@ -115,7 +116,7 @@ These are the data set classes:
 | 16  | false        | false         | provided | provided      | provided     |
 
 
-**Any other data set should be treated as invalid, like providing EHR_STATUS with:**
+**Any other data set should be treated as invalid, for instance providing EHR_STATUS with:**
 
 - missing is_queryable, is_modifiable
 - empty is_queryable, is_modifiable
@@ -130,6 +131,7 @@ These are the data set classes:
 2. The server should set the EHR.system_id value to a known value (defined by the server's configuration).
 3. The default values that should be assigned by the server for is_modifiable and is_queryable are "true", and for the subject it defaults to an instance of PARTY_SELF.
 4. There are no cases to check if the provided ehr_id is valid, since in the [openEHR Service Model](https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface) the parameters is typed to UUID, any other format will be an invalid call.
+5. The validity of an EHR_STATUS can be checked in it's JSON form by validating against the JSON schemas https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM
 
 
 
@@ -194,7 +196,7 @@ A new EHR will exist in the system.
 2. The server should answer with a positive response associated to the successful EHR creation
 3. Invoke the create EHR service
    1. with the same data set used in 1.1
-4. The server should answer with a negative response, related with the EHR already existing for the given subject
+4. The server should answer with a negative response, related with the EHR already existing for the provided subject
 
 
 
@@ -263,7 +265,7 @@ None.
 
 **Flow:**
 
-1. Invoke has EHR service with a random subject_id.
+1. Invoke has EHR service with a random subject_id
 2. The result should be negative, related to "the EHR for subject_id does not exist"
 
 
@@ -331,7 +333,7 @@ None
 **Flow:**
 
 1. Invoke get EHR service by a random subject_id
-2. The result should be negative, like "EHR for subject_id doesn't exist"
+2. The result should be negative, relato to "EHR for subject_id doesn't exist"
 
 
 ## C. EHR_STATUS Test Cases
@@ -351,7 +353,9 @@ None
 **Flow:**
 
 1. Invoke the get EHR_STATUS service by the existing ehr_id
-2. The result should be positive and retrieve a correspondent EHR_STATUS. The EHR_STATUS internal information should match the rules in which the EHR was created (see test flow Create EHR) and those should be verified: a. has or not a subject_id, b. has correct value for is_modifiable, c. has correct value for is_queryable.
+2. The result should be positive and retrieve a correspondent EHR_STATUS.
+   1. The EHR_STATUS internal information should match the rules in which the EHR was created (see test flow Create EHR)
+   2. Those rules should be verified: a. has or not a subject_id, b. has correct value for is_modifiable, c. has correct value for is_queryable.
 
 
 #### C.1.b. Alternative flow 1: Get status of a non existing EHR
@@ -508,8 +512,6 @@ None
 
 1. Invoke the clear EHR modifiable service by a random ehr_id
 2. The result should be negative and the result should include an error related to "EHR with ehr_id doesn't exist".
-
-
 
 
 
