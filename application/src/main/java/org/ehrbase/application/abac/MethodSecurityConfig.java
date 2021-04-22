@@ -19,7 +19,6 @@
 package org.ehrbase.application.abac;
 
 import org.aopalliance.intercept.MethodInterceptor;
-import org.ehrbase.api.service.CompositionService;
 import org.springframework.aop.interceptor.SimpleTraceInterceptor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -33,12 +32,9 @@ import org.springframework.security.config.annotation.method.configuration.Globa
 public class MethodSecurityConfig extends GlobalMethodSecurityConfiguration {
 
   private final AbacConfig abacConfig;
-  private final CompositionService compositionService;
 
-  public MethodSecurityConfig(AbacConfig abacConfig,
-      CompositionService compositionService) {
+  public MethodSecurityConfig(AbacConfig abacConfig) {
     this.abacConfig = abacConfig;
-    this.compositionService = compositionService;
   }
 
   @Value("${abac.disabled}")
@@ -62,10 +58,7 @@ public class MethodSecurityConfig extends GlobalMethodSecurityConfiguration {
    */
   @Override
   protected MethodSecurityExpressionHandler createExpressionHandler() {
-    CustomMethodSecurityExpressionHandler expressionHandler =
-        new CustomMethodSecurityExpressionHandler(abacConfig, compositionService);
-    //expressionHandler.setPermissionEvaluator(new AbacPermissionEvaluator());  // TODO-505: remove
-    return expressionHandler;
+    return new CustomMethodSecurityExpressionHandler(abacConfig);
   }
 
 }

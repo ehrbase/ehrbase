@@ -75,8 +75,6 @@ import java.util.function.Supplier;
 
 /**
  * Controller for /composition resource as part of the EHR sub-API of the openEHR REST API
- * <p>
- * TODO WIP state only implements endpoints from outer server side, everything else is a stub. Also with a lot of duplication at the moment, which should be reduced when implementing functionality.
  */
 @Api(tags = "Composition")
 @RestController
