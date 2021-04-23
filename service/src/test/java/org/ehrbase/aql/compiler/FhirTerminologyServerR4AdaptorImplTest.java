@@ -20,8 +20,8 @@ package org.ehrbase.aql.compiler;
  */
 
 import com.nedap.archie.rm.datavalues.DvCodedText;
-import org.ehrbase.configuration.HttpClientProperties;
-import org.ehrbase.configuration.WebClientConfiguration;
+import org.ehrbase.configuration.client.ClientProperties;
+import org.ehrbase.configuration.client.WebClientConfiguration;
 import org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer;
 import org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl;
 import org.ehrbase.service.FhirTsProps;
@@ -80,8 +80,8 @@ public class FhirTerminologyServerR4AdaptorImplTest {
     public void expandValueSetUsingSsl() {
         WebClient.Builder webClientBuilder = WebClient.builder();
 
-        HttpClientProperties properties = new HttpClientProperties();
-        HttpClientProperties.Ssl ssl = properties.getSsl();
+        ClientProperties properties = new ClientProperties();
+        ClientProperties.Ssl ssl = properties.getSsl();
 //        ssl.setEnabled(true);
 //        ssl.setKeyPassword("");
 //        ssl.setKeyStore("");

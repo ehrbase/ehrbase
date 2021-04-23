@@ -15,15 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.configuration;
+package org.ehrbase.configuration.client;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * {@link ConfigurationProperties} for HTTP Client.
+ * {@link ConfigurationProperties} for Spring WebClient and Apache HTTP Client.
  */
 @ConfigurationProperties(prefix = "client")
-public class HttpClientProperties {
+public class ClientProperties {
 
     private final Ssl ssl = new Ssl();
 

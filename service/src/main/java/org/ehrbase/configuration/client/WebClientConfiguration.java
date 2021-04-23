@@ -15,11 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.configuration;
+
+package org.ehrbase.configuration.client;
 
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.reactive.function.client.WebClientCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -39,10 +39,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
 /**
- * {@link Configuration} for WebClient.
+ * {@link Configuration} for Spring WebClient.
  */
 @Configuration
-@EnableConfigurationProperties(HttpClientProperties.class)
 public class WebClientConfiguration {
 
     @Bean
@@ -51,7 +50,7 @@ public class WebClientConfiguration {
     }
 
     @Bean
-    public WebClientCustomizer httpClientCustomizer(HttpClientProperties properties) {
+    public WebClientCustomizer httpClientCustomizer(ClientProperties properties) {
         return webClientBuilder -> {
             HttpClient httpClient;
 
@@ -66,7 +65,7 @@ public class WebClientConfiguration {
         };
     }
 
-    private SslContext sslContext(HttpClientProperties.Ssl ssl) {
+    private SslContext sslContext(ClientProperties.Ssl ssl) {
         try {
             return SslContextBuilder.forClient()
                     .keyManager(getKeyManagerFactory(ssl))
@@ -77,7 +76,7 @@ public class WebClientConfiguration {
         }
     }
 
-    private KeyManagerFactory getKeyManagerFactory(HttpClientProperties.Ssl ssl) {
+    private KeyManagerFactory getKeyManagerFactory(ClientProperties.Ssl ssl) {
         try {
             KeyStore keyStore = loadKeyStore(ssl.getKeyStoreType(), ssl.getKeyStore(), ssl.getKeyStorePassword());
             KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
@@ -92,7 +91,7 @@ public class WebClientConfiguration {
         }
     }
 
-    private TrustManagerFactory getTrustManagerFactory(HttpClientProperties.Ssl ssl) {
+    private TrustManagerFactory getTrustManagerFactory(ClientProperties.Ssl ssl) {
         try {
             KeyStore trustStore = loadKeyStore(ssl.getTrustStoreType(), ssl.getTrustStore(), ssl.getTrustStorePassword());
             TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
