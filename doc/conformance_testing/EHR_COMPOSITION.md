@@ -593,25 +593,29 @@ The update COMPOSITION service needs a the VERSION.preceding_version_uid attribu
    1. This COMPOSITION has the same OPT as the COMPOSITION created in 1
 4. The result should be positive and a new version of the existing COMPOSITION should exist in the EHR
 
-# WIP...
 
 #### B.7.b. Alternative flow 1: update an existing persistent COMPOSITION
 
 **Preconditions:**
 
-The OPT referenced by the COMPOSITIONs to commit exists on the server
-An EHR with known ehr_id should exist
-The EHR should have no commits
+1. The OPT referenced by the COMPOSITIONs to commit exists on the server
+2. An EHR with known ehr_id should exist
+3. The EHR should have no commits
 
 **Postconditions:**
 
-None
+1. The server should contain one VERSIONED_OBJECT
+2. The VERSIONED_OBJECT should have two VERSIONs of COMPOSITION
+3. The COMPOSITIONs should comply with the existing OPT
 
 **Flow:**
 
 1. Invoke the create COMPOSITION service with a valid persistent COMPOSITION and the existing ehr_id
+   1. The OPT referenced by this COMPOSITION exists on the server
 2. The result should be positive and a new COMPOSITION should exist in the EHR
-3. Invoke the update COMPOSITION service with a valid persistent COMPOSITION, that has the same template as the COMPOSITION created in 1., to the existing ehr_id and preceding_version_uid should be the version uid from the COMPOSITION created in 1
+3. Invoke the update COMPOSITION service with a valid persistent COMPOSITION, to the existing ehr_id
+   1. that has the same template as the COMPOSITION created in 1.,
+   2. preceding_version_uid should be the VERSION uid from the COMPOSITION created in 1
 4. The result should be positive and a new version of the existing COMPOSITION should exist in the EHR
 
 
@@ -619,17 +623,18 @@ None
 
 **Preconditions:**
 
-The OPT referenced by the COMPOSITIONs to commit exists on the server.
-An EHR with known ehr_id should exist.
-The EHR should have no commits.
+1. The OPT referenced by the COMPOSITIONs to commit exists on the server
+2. An EHR with known ehr_id should exist
+3. The EHR should have no commits
 
-**Postconditions:**:
+**Postconditions:**
 
 None
 
 **Flow:**
 
 1. Invoke the update COMPOSITION service with a valid event COMPOSITION, the existing ehr_id and preceding_version_uid should be a random value
+   1. The COMPOSITION should comply with the existing OPT
 2. The result should be negative and return an error related to the inexistence of the preceding_version_id
 
 
@@ -637,19 +642,23 @@ None
 
 **Preconditions:**
 
-The OPTs referenced by the COMPOSITIONs to commit exist on the server.
-An EHR with known ehr_id should exist.
-The EHR should have no commits.
+1. The OPTs, referenced by the COMPOSITIONs to commit, exist on the server
+2. An EHR with known ehr_id should exist
+3. The EHR should have no commits
 
-**Postconditions:**:
+**Postconditions:**
 
-None
+1. The server has a new VERSIONED_OBJECT
+2. The VERSIONED_OBJECT has one VERSION of a COMPOSITION
 
 **Flow:**
 
 1. Invoke the create COMPOSITION service with a valid event COMPOSITION and the existing ehr_id
+   1. The OPT referenced by this COMPOSITION exists on the server
 2. The result should be positive and a new COMPOSITION should exist in the EHR
-3. Invoke the update COMPOSITION service with a valid event COMPOSITION, that has a different template as the COMPOSITION created in 1., to the existing ehr_id and preceding_version_uid should be the version uid from the COMPOSITION created in 1
+3. Invoke the update COMPOSITION service with a valid event COMPOSITION, to the existing ehr_id and preceding_version_uid should be the version uid from the COMPOSITION created in 1
+   1. The COMPOSITION references a different template than the one referenced by the COMPOSITION created in 1.
+   2. The OPT referenced by this COMPOSITION exists on the server
 4. The result should be negative and return an error related to the template_id mismatch
 
 
@@ -660,49 +669,61 @@ None
 
 **Preconditions:**
 
-The OPT referenced by the COMPOSITIONs to commit exists on the server.
-An EHR with known ehr_id should exist.
-The EHR should have no commits.
+1. The OPT referenced by the COMPOSITIONs to commit exists on the server
+2. An EHR with known ehr_id should exist
+3. The EHR should have no commits
 
-**Postconditions:**:
+**Postconditions:**
 
-None
+1. The server has one VERSIONED_OBJECT
+2. The VERSIONED_OBJECT contains two VERSIONS of COMPOSITION
+3. The second VERSION.lifecycle_state value is the code openehr::523(deleted)
 
 **Flow:**
 
 1. Invoke the create COMPOSITION service with a valid event COMPOSITION and the existing ehr_id
+   1. The COMPOSITION complies with the existing OPT
 2. The result should be positive and a new COMPOSITION should exist in the EHR
 3. Invoke the delete COMPOSITION service with the existing ehr_id and preceding_version_uid should be the version id of the COMPOSITION created in 1
-4. The result should be positive
+4. The result should be positive, and the COMPOSITION should be deleted
+
+
+**Notes:**
+
+The common implementation of the `delete` operation is two create a new VERSION of the COMPOSITION that has VERSION.commit_audit.change_type == openehr::523(deleted), and VERSION.lifecycle_state == openehr::523(deleted). So the `delete` operation is not a physical delete but a logical delete. Some implementations might add the option of a physical deleted. This test case considers the `postcondition` to be a logical delete, which behaves like an `update` operation in which a new VERSION of an existing COMPOSITION is created.
+
 
 #### B.8.b. Alternative flow 1: delete persistent COMPOSITION
 
 **Preconditions:**
 
-The OPT referenced by the COMPOSITIONs to commit exists on the server.
-An EHR with known ehr_id should exist.
-The EHR should have no commits.
+1. The OPT referenced by the COMPOSITIONs to commit exists on the server
+2. An EHR with known ehr_id should exist
+3. The EHR should have no commits
 
-**Postconditions:**:
+**Postconditions:**
 
-None
+1. The server has one VERSIONED_OBJECT
+2. The VERSIONED_OBJECT contains two VERSIONS of COMPOSITION
+3. The second VERSION.lifecycle_state value is the code openehr::523(deleted)
 
 **Flow:**
 
 1. Invoke the create COMPOSITION service with a valid persistent COMPOSITION and the existing ehr_id
 2. The result should be positive and a new COMPOSITION should exist in the EHR
 3. Invoke the delete COMPOSITION service with the existing ehr_id and preceding_version_uid should be the version id of the COMPOSITION created in 1
-4. The result should be positive
+4. The result should be positive, and the COMPOSITION should be deleted
+
 
 #### B.8.c. Alternative flow 2: delete non-existent COMPOSITION
 
 **Preconditions:**
 
-The OPT referenced by the COMPOSITIONs to commit exists on the server.
-An EHR with known ehr_id should exist.
-The EHR should have no commits.
+1. The OPT referenced by the COMPOSITIONs to commit exists on the server
+2. An EHR with known ehr_id should exist
+3. The EHR should have no commits
 
-**Postconditions:**:
+**Postconditions:**
 
 None
 
