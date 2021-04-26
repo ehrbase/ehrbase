@@ -6,7 +6,7 @@
 | Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 0.2 (2019-04-25) | Added cases for create, update and delete COMPOSITION.     |
 | Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 0.3 (2019-05-14) | Fixed typos, improve wording, fully indexed each section inside B.x     |
 | Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> / Wladislaw Wagner <wladislaw.wagner@vitagroup.ag> | 0.4 (2020-11-18) | Added test cases for CONTRIBUTION with VERSION<EHR_STATUS>     |
-| Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 1.0 (2021-04-25) | Integration into single document, minor grammar fixes.     |
+| Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 1.0 (2021-04-25) | Integration into single document, minor grammar fixes, improved description of flows.     |
 
 
 # Index
@@ -38,6 +38,27 @@
       - [B.4.b. Alternative flow 1: get COMPOSITION at version, VERSION<COMPOSITION> doesn't exist](#b4b-alternative-flow-1-get-composition-at-version-versioncomposition-doesnt-exist)
       - [B.4.c. Alternative flow 2: get COMPOSITION at version, EHR doesn't exist](#b4c-alternative-flow-2-get-composition-at-version-ehr-doesnt-exist)
       - [B.4.d. Alternative flow 3: get COMPOSITION at version, cover different versions](#b4d-alternative-flow-3-get-composition-at-version-cover-different-versions)
+    - [B.5. Get VERSIONED COMPOSITION](#b5-get-versioned-composition)
+      - [B.5.a. Main flow: get existing VERSIONED COMPOSITION](#b5a-main-flow-get-existing-versioned-composition)
+      - [B.5.b. Alternative flow 1: get non-existent VERSIONED COMPOSITION](#b5b-alternative-flow-1-get-non-existent-versioned-composition)
+      - [B.5.c. Alternative flow 2: get VERSIONED COMPOSITION, EHR doesn't exist](#b5c-alternative-flow-2-get-versioned-composition-ehr-doesnt-exist)
+    - [B.6. Create COMPOSITION](#b6-create-composition)
+      - [B.6.a. Main flow: Create new event COMPOSITION](#b6a-main-flow-create-new-event-composition)
+      - [B.6.b. Alternative flow 1: Create new persistent COMPOSITION](#b6b-alternative-flow-1-create-new-persistent-composition)
+      - [B.6.c. Alternative flow 2: Create persistent COMPOSITION for the same OPT twice](#b6c-alternative-flow-2-create-persistent-composition-for-the-same-opt-twice)
+      - [B.6.d. Alternative flow 3: Create new invalid event COMPOSITION](#b6d-alternative-flow-3-create-new-invalid-event-composition)
+      - [B.6.e. Alternative flow 4: Create new invalid persistent COMPOSITION](#b6e-alternative-flow-4-create-new-invalid-persistent-composition)
+      - [B.6.f. Alternative flow 5: Create new event COMPOSITION, referenced OPT doesn't exist](#b6f-alternative-flow-5-create-new-event-composition-referenced-opt-doesnt-exist)
+      - [B.6.g. Alternative flow 6: Create new event COMPOSITION, EHR doesn't exist](#b6g-alternative-flow-6-create-new-event-composition-ehr-doesnt-exist)
+    - [B.7. Update COMPOSITION](#b7-update-composition)
+      - [B.7.a. Main flow: update an existing event COMPOSITION](#b7a-main-flow-update-an-existing-event-composition)
+      - [B.7.b. Alternative flow 1: update an existing persistent COMPOSITION](#b7b-alternative-flow-1-update-an-existing-persistent-composition)
+      - [B.7.c. Alternative flow 2: update a non-existent COMPOSITION](#b7c-alternative-flow-2-update-a-non-existent-composition)
+      - [B.7.d. Alternative flow 3: update an existing COMPOSITION, referencing a different template](#b7d-alternative-flow-3-update-an-existing-composition-referencing-a-different-template)
+    - [B.8. Delete COMPOSITION](#b8-delete-composition)
+      - [B.8.a. Main flow: delete event COMPOSITION](#b8a-main-flow-delete-event-composition)
+      - [B.8.b. Alternative flow 1: delete persistent COMPOSITION](#b8b-alternative-flow-1-delete-persistent-composition)
+      - [B.8.c. Alternative flow 2: delete non-existent COMPOSITION](#b8c-alternative-flow-2-delete-non-existent-composition)
 <!--te-->
 
 
