@@ -87,7 +87,7 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
    * @throws IOException On parsing error
    * @throws InterruptedException On error while communicating with the ABAC server
    */
-  public boolean checkAbacPost(String type, Authentication auth, UUID subject, Object payload,
+  public boolean checkAbacPost(String type, Authentication auth, String subject, Object payload,
       String contentType)
       throws IOException, InterruptedException {
 
@@ -107,7 +107,7 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
    * @throws IOException On parsing error
    * @throws InterruptedException On error while communicating with the ABAC server
    */
-  public boolean checkAbacPre(String type, Authentication auth, UUID subject, Object payload,
+  public boolean checkAbacPre(String type, Authentication auth, String subject, Object payload,
       String contentType)
       throws IOException, InterruptedException {
 
@@ -129,11 +129,45 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
    * @throws IOException On parsing error
    * @throws InterruptedException On error while communicating with the ABAC server
    */
-  private boolean checkAbac(String type, Authentication auth, UUID subject, Object payload,
+  private boolean checkAbac(String type, Authentication auth, String subject, Object payload,
       String contentType, String authType) throws IOException, InterruptedException {
+    // Set type specific settings:
     // Extract and set parameters according to which parameters are configured
-    List<String> policyParameters = new ArrayList<>(
-        Arrays.asList(abacConfig.getPolicyCompositionParameters()));
+    List<String> policyParameters;
+    // Build abac server request, depending on type
+    String requestUrl = abacConfig.getServer().toString();
+    switch (type) {
+      case BaseController.EHR:
+        policyParameters = new ArrayList<>(Arrays.asList(abacConfig.getPolicyEhrParameters()));
+        requestUrl = requestUrl.concat(abacConfig.getPolicyEhrName());
+        break;
+      case BaseController.EHR_STATUS:
+        policyParameters = new ArrayList<>(Arrays.asList(abacConfig.getPolicyEhrStatusParameters()));
+        requestUrl = requestUrl.concat(abacConfig.getPolicyEhrStatusName());
+        break;
+      case BaseController.COMPOSITION:
+        policyParameters = new ArrayList<>(Arrays.asList(abacConfig.getPolicyCompositionParameters()));
+        requestUrl = requestUrl.concat(abacConfig.getPolicyCompositionName());
+        break;
+      case BaseController.DIRECTORY:
+        policyParameters = new ArrayList<>(Arrays.asList(abacConfig.getPolicyDirectoryParameters()));
+        requestUrl = requestUrl.concat(abacConfig.getPolicyDirectoryName());
+        break;
+      case BaseController.CONTRIBUTION:
+        policyParameters = new ArrayList<>(Arrays.asList(abacConfig.getPolicyContributionParameters()));
+        requestUrl = requestUrl.concat(abacConfig.getPolicyContributionName());
+        break;
+      case BaseController.QUERY:
+        policyParameters = new ArrayList<>(Arrays.asList(abacConfig.getPolicyQueryParameters()));
+        requestUrl = requestUrl.concat(abacConfig.getPolicyQueryName());
+        break;
+      case BaseController.DEFINITION:
+        policyParameters = new ArrayList<>(Arrays.asList(abacConfig.getPolicyDefinitionParameters()));
+        requestUrl = requestUrl.concat(abacConfig.getPolicyDefinitionName());
+        break;
+      default:
+        throw new InternalServerException("ABAC: Invalid type given from Pre- or PostAuthorize");
+    }
 
     // Check and extract JWT
     JwtAuthenticationToken jwt = getJwtAuthenticationToken(auth);
@@ -151,38 +185,11 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
       patientHandling(jwt, subject, requestMap);
     }
 
-    // Extract template ID from composition
+    // Extract template ID from object of type "type"
     if (policyParameters.contains(TEMPLATE)) {
       templateHandling(type, payload, contentType, requestMap, authType);
     }
 
-    // Build abac server request, depending on type
-    String requestUrl = abacConfig.getServer().toString();
-    switch (type) {
-      case BaseController.EHR:
-        requestUrl = requestUrl.concat(abacConfig.getPolicyEhrName());
-        break;
-      case BaseController.EHR_STATUS:
-        requestUrl = requestUrl.concat(abacConfig.getPolicyEhrStatusName());
-        break;
-      case BaseController.COMPOSITION:
-        requestUrl = requestUrl.concat(abacConfig.getPolicyCompositionName());
-        break;
-      case BaseController.DIRECTORY:
-        requestUrl = requestUrl.concat(abacConfig.getPolicyDirectoryName());
-        break;
-      case BaseController.CONTRIBUTION:
-        requestUrl = requestUrl.concat(abacConfig.getPolicyContributionName());
-        break;
-      case BaseController.QUERY:
-        requestUrl = requestUrl.concat(abacConfig.getPolicyQueryName());
-        break;
-      case BaseController.DEFINITION:
-        requestUrl = requestUrl.concat(abacConfig.getPolicyDefinitionName());
-        break;
-      default:
-        throw new InternalServerException("ABAC: Invalid type given from Pre- or PostAuthorize");
-    }
     // Fire abac server request
     return evaluateResponse(abacRequest(requestUrl, requestMap));
   }
@@ -210,11 +217,11 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
    * @param subject Subject from EHR
    * @param requestMap ABAC request attribute map to add the result
    */
-  private void patientHandling(JwtAuthenticationToken jwt, UUID subject,
+  private void patientHandling(JwtAuthenticationToken jwt, String subject,
       Map<String, String> requestMap) {
     if (!jwt.getTokenAttributes().containsKey(abacConfig.getPatientClaim())) {
       // "patient_id" not available, use EHRbase subject as fallback
-      requestMap.put(PATIENT, subject.toString());
+      requestMap.put(PATIENT, subject);
     } else {
       // use "patient_id" if available
       String patientId = (String) jwt.getTokenAttributes().get(abacConfig.getPatientClaim());
@@ -239,14 +246,19 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
       String> requestMap, String authType) throws IOException {
     switch (type) {
       case BaseController.EHR:
-        break;  // TODO-505: write handling
+        throw new IllegalArgumentException("ABAC: Unsupported configuration: Can't set template ID for EHR type.");
       case BaseController.EHR_STATUS:
-        break; // TODO-505: write handling
+        throw new IllegalArgumentException("ABAC: Unsupported configuration: Can't set template ID for EHR_STATUS type.");
       case BaseController.COMPOSITION:
         String content;
         if (authType.equals(POST)) {
           // @PostAuthorize gives a ResponseEntity type for "returnObject", so payload is of that type
-          content = ((ResponseEntity) payload).getBody().toString();
+          if (((ResponseEntity) payload).hasBody()) {
+            content = ((ResponseEntity) payload).getBody().toString();
+          } else {
+            // explicit case if no body is returned
+            content = null;
+          }
         } else if (authType.equals(PRE)) {
           content = (String) payload;
         } else {
@@ -316,7 +328,7 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
       }
     } catch (SAXException e) {
       throw new IllegalArgumentException("ABAC: Failed to parse XML composition: " + e.getMessage());
-    }
+    } // TODO-505: add catch to try with a bit different node names if this is from a version_composition (i.e. new preceding "data")
     return templateId;
   }
 
@@ -332,6 +344,7 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
     ObjectMapper mapper = new ObjectMapper();
     JsonNode actualObj = mapper.readTree(content);
     templateId = actualObj.get("archetype_details").get("template_id").get("value").asText();
+    // TODO-505: add catch to try with a bit different node names if this is from a version_composition (i.e. new preceding "data")
     return templateId;
   }
 

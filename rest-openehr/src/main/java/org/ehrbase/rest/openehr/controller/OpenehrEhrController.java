@@ -42,6 +42,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -191,6 +193,9 @@ public class OpenehrEhrController extends BaseController {
      * Returns EHR by ID
      */
     @GetMapping(path = "/{ehr_id}")
+    // checkAbacPre /-Post attributes (type, auth object, subject, payload, content type)
+    @PostAuthorize("checkAbacPost(@openehrCompositionController.EHR, authentication, "
+        + "@ehrService.getSubjectUuid(#ehrIdString), null, null)")
     @ApiOperation(value = "Retrieve the EHR with the specified ehr_id.", response = EhrResponseData.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok - EHR resource is successfully retrieved.",
@@ -218,6 +223,9 @@ public class OpenehrEhrController extends BaseController {
      * Returns EHR by subject (id and namespace)
      */
     @GetMapping(params = {"subject_id", "subject_namespace"})
+    // checkAbacPre /-Post attributes (type, auth object, subject, payload, content type)
+    @PreAuthorize("checkAbacPre(@openehrCompositionController.EHR, authentication, "
+        + "#subjectId, null, null)")
     @ApiOperation(value = "Retrieve the EHR with the specified subject_id and subject_namespace.", response = EhrResponseData.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok - EHR resource is successfully retrieved.",
