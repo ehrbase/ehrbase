@@ -22,6 +22,9 @@
 
 package org.ehrbase.aql.definition;
 
+import org.jooq.Record;
+import org.jooq.Table;
+
 import java.util.List;
 
 /**
@@ -35,6 +38,8 @@ public interface I_VariableDefinition extends Cloneable {
 
     String getIdentifier();
 
+    void setLateralJoinTable(Table<Record> lateralJoinTable);
+
     boolean isDistinct();
 
     boolean isFunction();
@@ -45,7 +50,7 @@ public interface I_VariableDefinition extends Cloneable {
 
     List<FuncParameter> getFuncParameters();
 
-    I_VariableDefinition clone() throws CloneNotSupportedException;
+    I_VariableDefinition duplicate();
 
     void setPath(String path); //used to modify the path in case of struct query (canonical json).
 
@@ -56,4 +61,10 @@ public interface I_VariableDefinition extends Cloneable {
     void setAlias(String alias);
 
     String toString();
+
+    boolean isConstant();
+
+    boolean isLateralJoin();
+
+    Table<Record> getLateralJoinTable();
 }

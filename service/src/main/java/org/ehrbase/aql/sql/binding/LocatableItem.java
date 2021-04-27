@@ -19,7 +19,6 @@ package org.ehrbase.aql.sql.binding;
 
 import com.nedap.archie.rm.datavalues.DataValue;
 import com.nedap.archie.rminfo.ArchieRMInfoLookup;
-import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.sql.queryimpl.*;
 import org.jooq.Field;
@@ -66,15 +65,11 @@ public class LocatableItem {
                     VariableAqlPath variableAqlPath = new VariableAqlPath(variableDefinition.getPath());
                     if (variableAqlPath.getSuffix().equals("value")){
                         if (Objects.equals(className, "COMPOSITION")) { //assumes this is a data value within an ELEMENT
-                            try {
-                                I_VariableDefinition variableDefinition1 = variableDefinition.clone();
-                                variableDefinition1.setPath(variableAqlPath.getInfix());
-                                field = jsonbEntryQuery.makeField(templateId, variableDefinition.getIdentifier(), variableDefinition1, clause);
-                                jsonbItemPath = jsonbEntryQuery.getJsonbItemPath();
-                                rootJsonKey = variableAqlPath.getSuffix();
-                            } catch (CloneNotSupportedException e) {
-                                throw new InternalServerException("Couldn't handle variable:" + variableDefinition.toString() + "Code error:" + e);
-                            }
+                            I_VariableDefinition variableDefinition1 = variableDefinition.duplicate();
+                            variableDefinition1.setPath(variableAqlPath.getInfix());
+                            field = jsonbEntryQuery.makeField(templateId, variableDefinition.getIdentifier(), variableDefinition1, clause);
+                            jsonbItemPath = jsonbEntryQuery.getJsonbItemPath();
+                            rootJsonKey = variableAqlPath.getSuffix();
                         }
                         else if (jsonbEntryQuery.getItemCategory().equals("ELEMENT") || jsonbEntryQuery.getItemCategory().equals("CLUSTER")){
                             int cut = jsonbItemPath.lastIndexOf(",/value");

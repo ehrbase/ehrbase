@@ -53,6 +53,8 @@ tasks:
                     --security.authType="BASIC" \
                     --security.authUser="myuser" \
                     --security.authPassword="myPassword432" \
+                    --security.authAdminUser="myadmin" \
+                    --security.authAdminPassword="mySuperAwesomePassword123" \
                     --cache.enabled=true \
                     --system.allow-template-overwrite=true \
                     --server.nodename=manual.execution.org > ehrbase-log &

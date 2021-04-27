@@ -28,10 +28,6 @@ public class TestUC13 extends UC13 {
     public TestUC13(){
         super();
         this.expectedSqlExpression =
-                "select count(\"count_magnitude\") as \"count_magnitude\" " +
-                        "from (select (("+ QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION+"((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0004],0,/value,magnitude}'))::numeric as \"count_magnitude\" " +
-                        "from \"ehr\".\"entry\" " +
-                        "where \"ehr\".\"entry\".\"template_id\" = ?" +
-                        ") as \"\"";
+                "select count(\"count_magnitude\") as \"count_magnitude\" from (select cast((ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0004],0,/value,magnitude}') as bigint) as \"count_magnitude\" from \"ehr\".\"entry\" where \"ehr\".\"entry\".\"template_id\" = ?) as \"\"";
     }
 }

@@ -3,8 +3,7 @@
 
  * This file is part of Project EHRbase
 
- * Copyright (c) Ripple Foundation CIC Ltd, UK, 2017
- * Author: Christian Chevalley
+ * Copyright (c) 2015 Christian Chevalley
  * This file is part of Project Ethercis
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,32 +27,32 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by christian on 9/20/2016.
+ * Container of a variable (symbol) with its path and alias (AS 'alias')
+ * Created by christian on 5/3/2016.
  */
-public class ExtensionDefinition implements I_VariableDefinition {
+public class ConstantDefinition implements I_VariableDefinition {
 
-    private String context;
-    private String parsableExpression;
     private String alias;
+    private String path;
+    private Object value;
 
-    public ExtensionDefinition(String context, String parsableExpression, String alias) {
-        this.context = context;
-        this.parsableExpression = parsableExpression;
+    public ConstantDefinition(Object value, String alias) {
+        this.value = value;
         this.alias = alias;
-    }
-
-
-    @Override
-    public String getAlias() {
-        return alias;
+        if (alias != null)
+            path = alias;
     }
 
 
     @Override
     public String getPath() {
-        return null;
+        return path;
     }
 
+    @Override
+    public String getAlias() {
+        return alias;
+    }
 
     @Override
     public String getIdentifier() {
@@ -63,6 +62,26 @@ public class ExtensionDefinition implements I_VariableDefinition {
     @Override
     public void setLateralJoinTable(Table lateralJoinTable) {
         // n/a
+    }
+
+    @Override
+    public String toString() {
+        return value.toString();
+    }
+
+    @Override
+    public boolean isConstant() {
+        return true;
+    }
+
+    @Override
+    public boolean isLateralJoin() {
+        return false;
+    }
+
+    @Override
+    public Table getLateralJoinTable() {
+        return null;
     }
 
     @Override
@@ -77,7 +96,7 @@ public class ExtensionDefinition implements I_VariableDefinition {
 
     @Override
     public boolean isExtension() {
-        return true;
+        return false;
     }
 
     @Override
@@ -91,42 +110,33 @@ public class ExtensionDefinition implements I_VariableDefinition {
     }
 
     @Override
-    public I_VariableDefinition duplicate(){
-        return new ExtensionDefinition(this.context, this.parsableExpression, this.alias);
+    public void setPath(String path){
+        this.path = path;
     }
 
     @Override
-    public void setPath(String path) {
+    public void setDistinct(boolean distinct){
         // n/a
     }
 
     @Override
-    public void setDistinct(boolean distinct) {
+    public void setHidden(boolean hidden){
         // n/a
     }
 
     @Override
-    public void setHidden(boolean hidden) {
-        // n/a
+    public I_VariableDefinition duplicate() {
+        return new ConstantDefinition(this.value, this.alias);
     }
 
     @Override
     public void setAlias(String alias) {
-        // n/a
+        this.alias = alias;
     }
 
-    @Override
-    public boolean isConstant() {
-        return false;
-    }
+    public void setValue(Object value){ this.value = value;}
 
-    @Override
-    public boolean isLateralJoin() {
-        return false;
-    }
-
-    @Override
-    public Table getLateralJoinTable() {
-        return null;
+    public Object getValue() {
+        return value;
     }
 }

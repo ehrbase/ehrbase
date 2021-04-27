@@ -18,6 +18,8 @@
 
 package org.ehrbase.aql.definition;
 
+import org.jooq.Table;
+
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,6 +55,11 @@ public class I_VariableDefinitionHelper {
             }
 
             @Override
+            public void setLateralJoinTable(Table lateralJoinTable) {
+
+            }
+
+            @Override
             public boolean isDistinct() {
                 return distinct;
             }
@@ -78,8 +85,7 @@ public class I_VariableDefinitionHelper {
             }
 
             @Override
-            public I_VariableDefinition clone() throws CloneNotSupportedException {
-                super.clone();
+            public I_VariableDefinition duplicate() {
                 return I_VariableDefinitionHelper.build(path, alias, identifier, distinct, function, extension);
             }
 
@@ -101,6 +107,21 @@ public class I_VariableDefinitionHelper {
             @Override
             public void setAlias(String alias) {
 
+            }
+
+            @Override
+            public boolean isConstant() {
+                return false;
+            }
+
+            @Override
+            public boolean isLateralJoin() {
+                return false;
+            }
+
+            @Override
+            public Table getLateralJoinTable() {
+                return null;
             }
         };
     }

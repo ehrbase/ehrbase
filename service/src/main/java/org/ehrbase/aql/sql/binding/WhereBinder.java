@@ -33,6 +33,8 @@ import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.serialisation.dbencoding.CompositionSerializer;
 import org.jooq.Condition;
 import org.jooq.Field;
+import org.jooq.Record;
+import org.jooq.Table;
 import org.jooq.impl.DSL;
 
 import java.util.*;
@@ -51,8 +53,18 @@ public class WhereBinder {
     public static final String EXISTS = "EXISTS";
     public static final String MATCHES = "MATCHES";
     public static final String NOT = "NOT";
+    public static final String IS = "IS";
+    public static final String TRUE = "TRUE";
+    public static final String FALSE = "FALSE";
+    public static final String NULL = "NULL";
+    public static final String UNKNOWN = "UNKNOWN";
+    public static final String DISTINCT = "DISTINCT";
+    public static final String FROM = "FROM";
+    public static final String BETWEEN = "BETWEEN";
+
     //from AQL grammar
-    private static final Set<String> sqloperators = new HashSet<>(Arrays.asList("=", "!=", ">", ">=", "<", "<=", MATCHES, EXISTS, NOT, "(", ")", "{", "}"));
+    private static final Set<String> sqloperators = new HashSet<>(Arrays.asList(
+            "=", "!=", ">", ">=", "<", "<=", MATCHES, EXISTS, NOT, IS, TRUE, FALSE, NULL, UNKNOWN, DISTINCT, FROM, BETWEEN, "(", ")", "{", "}"));
     public static final String COMPOSITION = "COMPOSITION";
     public static final String CONTENT = "content";
     public static final String EHR = "EHR";
@@ -71,9 +83,10 @@ public class WhereBinder {
     private PathResolver pathResolver;
     private boolean isWholeComposition = false;
     private String compositionName = null;
-    private String sqlConditionalFunctionalOperatorRegexp = "(?i)(like|ilike|in|not in)"; //list of subquery and operators
+    private String sqlConditionalFunctionalOperatorRegexp = "(?i)(like|ilike|substr|in|not in)"; //list of subquery and operators
     private boolean requiresJSQueryClosure = false;
     private boolean isFollowedBySQLConditionalOperator = false;
+    private static int seed = 1;
 
     public WhereBinder(I_DomainAccess domainAccess, JsonbEntryQuery jsonbEntryQuery, CompositionAttributeQuery compositionAttributeQuery, List<Object> whereClause, PathResolver pathResolver) {
         this.jsonbEntryQuery = jsonbEntryQuery;
@@ -84,7 +97,7 @@ public class WhereBinder {
     }
 
     private TaggedStringBuilder encodeWhereVariable(String templateId, I_VariableDefinition variableDefinition, boolean forceSQL, String compositionName) {
-        String identifier = variableDefinition.getIdentifier();
+        var identifier = variableDefinition.getIdentifier();
         String className = pathResolver.classNameOf(identifier);
         if (className == null)
             throw new IllegalArgumentException("Could not bind identifier in WHERE clause:'" + identifier + "'");
@@ -232,7 +245,8 @@ public class WhereBinder {
                 //look ahead and check if followed by a sql operator
                 TaggedStringBuilder taggedStringBuilder = new TaggedStringBuilder();
                 if (isFollowedBySQLConditionalOperator(cursor)) {
-                    String expanded = expandForCondition(encodeWhereVariable(templateId, (I_VariableDefinition) item, true, null));
+                    TaggedStringBuilder encodedVar = encodeWhereVariable(templateId, (I_VariableDefinition) item, true, null);
+                    String expanded = expandForLateral(encodedVar, (I_VariableDefinition)item );
                     if (expanded != null)
                         taggedStringBuilder.append(expanded);
                     else {
@@ -253,7 +267,7 @@ public class WhereBinder {
                     } else {
                         //if the path contains node predicate expression uses a SQL syntax instead of jsquery
                         if (new VariablePath(((I_VariableDefinition) item).getPath()).hasPredicate()) {
-                            String expanded = expandForCondition(encodeWhereVariable(templateId, (I_VariableDefinition) item, true, null));
+                            String expanded = expandForLateral(encodeWhereVariable(templateId, (I_VariableDefinition) item, true, null), (I_VariableDefinition)item );
                             if (expanded != null)
                                 taggedStringBuilder.append(expanded);
                             else {
@@ -263,23 +277,12 @@ public class WhereBinder {
                             isFollowedBySQLConditionalOperator = true;
                             requiresJSQueryClosure = false;
                         } else {
-                            //check if a comparison item is a date, then force SQL if any
-                            if (item instanceof  VariableDefinition && new WhereTemporal(whereItems).containsTemporalItem((VariableDefinition)item) || new WhereEvaluation(whereItems).requiresSQL()) {
-                                String expanded = expandForCondition(encodeWhereVariable(templateId, (I_VariableDefinition) item, true, null));
-                                if (expanded != null)
-                                    taggedStringBuilder.append(expanded);
-                                else {
-                                    unresolvedVariable = true;
-                                    break;
-                                }
-                            } else {
-                                String expanded = expandForCondition(encodeWhereVariable(templateId, (I_VariableDefinition) item, false, null));
-                                if (expanded != null)
-                                    taggedStringBuilder.append(expanded);
-                                else {
-                                    unresolvedVariable = true;
-                                    break;
-                                }
+                            String expanded = expandForLateral(encodeWhereVariable(templateId, (I_VariableDefinition) item, true, null), (I_VariableDefinition)item );
+                            if (expanded != null)
+                                taggedStringBuilder.append(expanded);
+                            else {
+                                unresolvedVariable = true;
+                                break;
                             }
                         }
                     }
@@ -364,7 +367,7 @@ public class WhereBinder {
         }
 
         if (sqloperators.contains(item.toUpperCase()))
-            return item;
+            return " "+item+" ";
         if (taggedBuffer.toString().contains(JoinBinder.COMPOSITION_JOIN) && item.contains("::"))
             return item.split("::")[0] + "'";
         if (requiresJSQueryClosure && !isFollowedBySQLConditionalOperator && taggedBuffer.indexOf("#") > 0 && item.contains("'")) { //conventionally double quote for jsquery
@@ -395,6 +398,41 @@ public class WhereBinder {
         }
 
         return wrapped;
+    }
+
+    private String expandForLateral( TaggedStringBuilder encodedVar, I_VariableDefinition item){
+        String expanded = expandForCondition(encodedVar);
+        if (new WhereSetReturningFunction(expanded).isUsed()){
+            //insert new LATERAL pseudo table to the variable if not yet defined
+            if (!item.isLateralJoin()) {
+                encodeLateral(encodedVar, item );
+            }
+            expanded = item.getAlias();
+        }
+
+        return expanded;
+    }
+
+    private void encodeLateral(TaggedStringBuilder encodedVar, I_VariableDefinition item){
+        if (encodedVar == null)
+            return;
+        int hashValue = encodedVar.toString().hashCode(); //cf. SonarLint
+        int abs;
+        if (hashValue != 0)
+            abs = Math.abs(hashValue);
+        else
+            abs = 0;
+        String tableAlias = "array_" + abs + "_" + inc();
+        String variableAlias = "var_" + abs + "_" + inc();
+        //insert the variable alias used for the lateral join expression
+        encodedVar.replaceLast(")", " AS " + variableAlias + ")");
+        Table<Record> table = DSL.table(encodedVar.toString()).as(tableAlias);
+        item.setLateralJoinTable(table);
+        item.setAlias(tableAlias + "." + variableAlias + " ");
+    }
+
+    private static synchronized int inc(){
+        return seed++;
     }
 
 }

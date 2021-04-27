@@ -18,7 +18,6 @@
 package org.ehrbase.aql.sql.binding;
 
 import com.google.common.base.Strings;
-import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.aql.compiler.OrderAttribute;
 import org.ehrbase.aql.compiler.Statements;
 import org.ehrbase.aql.definition.I_VariableDefinition;
@@ -47,13 +46,9 @@ public class OrderByField {
 
             if (!isSelectVariable(orderAttributeVariable)){
                 //add it to the statement as an hidden variable
-                try {
-                    I_VariableDefinition orderVariable = orderAttributeVariable.clone();
-                    orderVariable.setHidden(true);
-                    statements.put(orderVariable);
-                } catch (CloneNotSupportedException e){
-                    throw new InternalServerException("Could not handle order variable:"+orderAttributeVariable.toString()+", exception:"+e);
-                }
+                I_VariableDefinition orderVariable = orderAttributeVariable.duplicate();
+                orderVariable.setHidden(true);
+                statements.put(orderVariable);
             }
         }
 

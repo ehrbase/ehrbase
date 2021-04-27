@@ -21,6 +21,9 @@
 
 package org.ehrbase.aql.definition;
 
+import org.jooq.Table;
+
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,6 +37,7 @@ public class VariableDefinition implements I_VariableDefinition {
     private String identifier;
     private boolean isDistinct;
     private boolean isHidden;
+    private Table<?> lateralJoinTable;
 
     public VariableDefinition(String path, String alias, String identifier, boolean isDistinct) {
         this.path = path;
@@ -80,6 +84,26 @@ public class VariableDefinition implements I_VariableDefinition {
     }
 
     @Override
+    public boolean isConstant() {
+        return false;
+    }
+
+    @Override
+    public boolean isLateralJoin() {
+        return lateralJoinTable != null;
+    }
+
+    @Override
+    public Table getLateralJoinTable() {
+        return lateralJoinTable;
+    }
+
+    @Override
+    public void setLateralJoinTable(Table lateralJoinTable) {
+        this.lateralJoinTable = lateralJoinTable;
+    }
+
+    @Override
     public boolean isDistinct() {
         return isDistinct;
     }
@@ -101,7 +125,7 @@ public class VariableDefinition implements I_VariableDefinition {
 
     @Override
     public List<FuncParameter> getFuncParameters() {
-        return null;
+        return new ArrayList<>();
     }
 
     @Override
@@ -120,7 +144,7 @@ public class VariableDefinition implements I_VariableDefinition {
     }
 
     @Override
-    public I_VariableDefinition clone(){
+    public I_VariableDefinition duplicate(){
         return new VariableDefinition(this.path, this.alias, this.identifier, this.isDistinct, this.isHidden);
     }
 
