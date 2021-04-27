@@ -67,7 +67,6 @@
 Items under this validation suite conceptually use these abstract interfaces:
 
 - I_EHR_COMPOSITION
-- I_EHR_CONTRIBUTION
 
 Reference: https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_openehr_platform_model
 
@@ -87,7 +86,7 @@ This test suite depends on other test suites:
 
 
 
-## B. COMPOSITION Test cases
+## B. COMPOSITION Test Cases
 
 The services under test in this section are defined by the openEHR Service Model [I_EHR_COMPOSITION interface](https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface).
 
