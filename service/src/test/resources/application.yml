@@ -16,7 +16,7 @@
 
 spring:
   profiles: test
-    
+
 terminology_server:
   tsUrl: 'https://r4.ontoserver.csiro.au/fhir/'
   codePath: '$[\"expansion\"][\"contains\"][*][\"code\"]'
@@ -24,3 +24,13 @@ terminology_server:
   displayPath: '$[\"expansion\"][\"contains\"][*][\"display\"]'
   validationResultPath: '$.parameter[:1].valueBoolean'
 
+client:
+  ssl:
+    enabled: false
+    key-password:
+    key-store:
+    key-store-password:
+    key-store-type:
+    trust-store:
+    trust-store-password:
+    trust-store-type:
