@@ -19,6 +19,7 @@
 package org.ehrbase.application.abac;
 
 import org.aopalliance.intercept.MethodInvocation;
+import org.ehrbase.api.service.CompositionService;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
 import org.springframework.security.authentication.AuthenticationTrustResolver;
@@ -32,16 +33,18 @@ public class CustomMethodSecurityExpressionHandler extends DefaultMethodSecurity
   private final AbacConfig abacConfig;
   private final AuthenticationTrustResolver trustResolver =
       new AuthenticationTrustResolverImpl();
+  private final CompositionService compositionService;
 
-  public CustomMethodSecurityExpressionHandler(AbacConfig abacConfig) {
+  public CustomMethodSecurityExpressionHandler(AbacConfig abacConfig, CompositionService compositionService) {
     this.abacConfig = abacConfig;
+    this.compositionService = compositionService;
   }
 
   @Override
   protected MethodSecurityExpressionOperations createSecurityExpressionRoot(
       Authentication authentication, MethodInvocation invocation) {
     CustomMethodSecurityExpressionRoot root =
-        new CustomMethodSecurityExpressionRoot(authentication, abacConfig);
+        new CustomMethodSecurityExpressionRoot(authentication, abacConfig, compositionService);
     root.setPermissionEvaluator(getPermissionEvaluator());
     root.setTrustResolver(this.trustResolver);
     root.setRoleHierarchy(getRoleHierarchy());

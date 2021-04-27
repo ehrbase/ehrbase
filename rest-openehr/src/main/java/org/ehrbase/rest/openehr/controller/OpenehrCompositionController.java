@@ -241,6 +241,9 @@ public class OpenehrCompositionController extends BaseController {
     }
 
     @DeleteMapping("/{ehr_id}/composition/{preceding_version_uid}")
+    // checkAbacPre /-Post attributes (type, auth object, subject, payload, content type)
+    @PreAuthorize("checkAbacPre(@openehrCompositionController.COMPOSITION, authentication, "
+        + "@ehrService.getSubjectUuid(#ehrIdString), #precedingVersionUid, null)")
     @ApiOperation(value = "Deletes existing composition.")
     @ApiResponses(value = {
             @ApiResponse(code = 204, message = "COMPOSITION was deleted.",

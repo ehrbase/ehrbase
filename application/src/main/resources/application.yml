@@ -74,18 +74,12 @@ abac:
     composition:
       name: 'has_consent_template'
       parameters: 'organization, patient, template'
-    directory:
-      name: 'has_consent_patient'
-      parameters: 'organization, patient'
     contribution:
       name: 'has_consent_template'
       parameters: 'organization, patient, template'
     query:
       name: 'has_consent_template'
       parameters: 'organization, patient, template'
-    definition:
-      name: 'has_consent_definition'
-      parameters: 'organization'
 
 
 cache:

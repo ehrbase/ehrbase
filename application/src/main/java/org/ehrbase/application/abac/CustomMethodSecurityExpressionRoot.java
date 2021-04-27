@@ -21,6 +21,8 @@ package org.ehrbase.application.abac;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nedap.archie.rm.composition.Composition;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
@@ -34,12 +36,19 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.service.CompositionService;
+import org.ehrbase.response.ehrscape.CompositionDto;
+import org.ehrbase.response.ehrscape.CompositionFormat;
+import org.ehrbase.response.openehr.OriginalVersionResponseData;
 import org.ehrbase.rest.openehr.controller.BaseController;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.expression.SecurityExpressionRoot;
@@ -65,13 +74,15 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
   static final String POST = "post";
 
   private final AbacConfig abacConfig;
+  private final CompositionService compositionService;
   private Object filterObject;
   private Object returnObject;
 
   public CustomMethodSecurityExpressionRoot(Authentication authentication,
-      AbacConfig abacConfig) {
+      AbacConfig abacConfig, CompositionService compositionService) {
     super(authentication);
     this.abacConfig = abacConfig;
+    this.compositionService = compositionService;
   }
 
   /**
@@ -149,10 +160,6 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
         policyParameters = new ArrayList<>(Arrays.asList(abacConfig.getPolicyCompositionParameters()));
         requestUrl = requestUrl.concat(abacConfig.getPolicyCompositionName());
         break;
-      case BaseController.DIRECTORY:
-        policyParameters = new ArrayList<>(Arrays.asList(abacConfig.getPolicyDirectoryParameters()));
-        requestUrl = requestUrl.concat(abacConfig.getPolicyDirectoryName());
-        break;
       case BaseController.CONTRIBUTION:
         policyParameters = new ArrayList<>(Arrays.asList(abacConfig.getPolicyContributionParameters()));
         requestUrl = requestUrl.concat(abacConfig.getPolicyContributionName());
@@ -160,10 +167,6 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
       case BaseController.QUERY:
         policyParameters = new ArrayList<>(Arrays.asList(abacConfig.getPolicyQueryParameters()));
         requestUrl = requestUrl.concat(abacConfig.getPolicyQueryName());
-        break;
-      case BaseController.DEFINITION:
-        policyParameters = new ArrayList<>(Arrays.asList(abacConfig.getPolicyDefinitionParameters()));
-        requestUrl = requestUrl.concat(abacConfig.getPolicyDefinitionName());
         break;
       default:
         throw new InternalServerException("ABAC: Invalid type given from Pre- or PostAuthorize");
@@ -240,112 +243,76 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
    * @param contentType Content type from the scope
    * @param requestMap ABAC request attribute map to add the result
    * @param authType Pre- or PostAuthorize, determines payload style (string or object)
-   * @throws IOException On parsing error
    */
   private void templateHandling(String type, Object payload, String contentType, Map<String,
-      String> requestMap, String authType) throws IOException {
+      String> requestMap, String authType) {
     switch (type) {
       case BaseController.EHR:
         throw new IllegalArgumentException("ABAC: Unsupported configuration: Can't set template ID for EHR type.");
       case BaseController.EHR_STATUS:
         throw new IllegalArgumentException("ABAC: Unsupported configuration: Can't set template ID for EHR_STATUS type.");
       case BaseController.COMPOSITION:
-        String content;
+        String content = "";
         if (authType.equals(POST)) {
           // @PostAuthorize gives a ResponseEntity type for "returnObject", so payload is of that type
           if (((ResponseEntity) payload).hasBody()) {
-            content = ((ResponseEntity) payload).getBody().toString();
+            Object body = ((ResponseEntity) payload).getBody();
+            if (body instanceof OriginalVersionResponseData) {
+              // case of versioned_composition --> fast path, because template is easy to get
+              if (((OriginalVersionResponseData<?>) body).getData() instanceof Composition) {
+                String template = Objects.requireNonNull(
+                    ((Composition) ((OriginalVersionResponseData<?>) body).getData())
+                        .getArchetypeDetails().getTemplateId()).getValue();
+                requestMap.put(TEMPLATE, template);
+                break;  // special case, so done here, exit
+              }
+            } else if (body instanceof String) {
+              content = (String) body;
+            } else {
+              throw new InternalServerException("ABAC: unexpected composition payload object");
+            }
           } else {
-            // explicit case if no body is returned
-            content = null;
+            throw new InternalServerException("ABAC: unexpected empty response body");
           }
         } else if (authType.equals(PRE)) {
-          content = (String) payload;
+          try {
+            // try if this is the Delete composition case. Payload would contain the UUID of the compo.
+            ObjectVersionId versionId = new ObjectVersionId((String) payload);
+            UUID compositionUid = UUID.fromString(versionId.getRoot().getValue());
+            Optional<CompositionDto> compoDto = compositionService.retrieve(compositionUid, null);
+            if (compoDto.isPresent()) {
+              Composition c = compoDto.get().getComposition();
+              requestMap.put(TEMPLATE, c.getArchetypeDetails().getTemplateId().getValue());
+              break; // special case, so done here, exit
+            } else {
+              throw new InternalServerException(
+                  "ABAC: unexpected empty response from composition delete");
+            }
+          } catch (IllegalArgumentException e) {
+            // if not an UUID, the payload is a composition itself so continue
+            content = (String) payload;
+          }
         } else {
           throw new InternalServerException("ABAC: invalid auth type given.");
         }
         String templateId;
         if (MediaType.parseMediaType(contentType).isCompatibleWith(MediaType.APPLICATION_JSON)) {
-          templateId = extractTemplateIdFromJson(content);
+          templateId = compositionService.getTemplateIdFromInputComposition(content, CompositionFormat.JSON);
         } else if (MediaType.parseMediaType(contentType).isCompatibleWith(MediaType.APPLICATION_XML)) {
-          templateId = extractTemplateIdFromXml(content);
+          templateId = compositionService.getTemplateIdFromInputComposition(content, CompositionFormat.XML);
         } else {
           throw new IllegalArgumentException("ABAC: Only JSON and XML composition are supported.");
         }
         requestMap.put(TEMPLATE, templateId);
         break;
-      case BaseController.DIRECTORY:
-        break; // TODO-505: write handling
       case BaseController.CONTRIBUTION:
         break; // TODO-505: write handling
       case BaseController.QUERY:
         // TODO-505: what's the concept?
         break; // TODO-505: write handling
-      case BaseController.DEFINITION:
-        break; // TODO-505: write handling
       default:
         throw new InternalServerException("ABAC: Invalid type given from Pre- or PostAuthorize");
     }
-  }
-
-  /**
-   * Helper to extract the template ID from a XML composition.
-   * @param content String of XML composition
-   * @return Template ID
-   * @throws IOException On parsing error
-   */
-  private String extractTemplateIdFromXml(String content) throws IOException {
-    String templateId = null;
-    DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
-    DocumentBuilder builder;
-    try {
-      builder = builderFactory.newDocumentBuilder();
-    } catch (ParserConfigurationException e) {
-      throw new InternalServerException("ABAC: XML parsing failed: ", e);
-    }
-    try {
-      Document document = builder.parse(new ByteArrayInputStream(content.getBytes()));
-      Element rootElement = document.getDocumentElement();
-      // traverse path - always: archetype_details->template_id->value
-      NodeList archetype = rootElement.getElementsByTagName("archetype_details");
-      for (int i = 0; i < archetype.getLength(); i++) {
-        // check children of archetype_details
-        if (archetype.item(i) instanceof Element) {
-          NodeList template = ((Element) archetype.item(i)).getElementsByTagName("template_id");
-          for (int j = 0; j < template.getLength(); j++) {
-            // check children of template_id
-            if (template.item(j) instanceof Element) {
-              NodeList id = ((Element) template.item(j)).getElementsByTagName("value");
-              for (int k = 0; k < id.getLength(); k++) {
-                templateId = id.item(k).getTextContent();
-              }
-            }
-          }
-        }
-      }
-      if (templateId == null) {
-        throw new IllegalArgumentException("ABAC: Failed to get template ID from composition");
-      }
-    } catch (SAXException e) {
-      throw new IllegalArgumentException("ABAC: Failed to parse XML composition: " + e.getMessage());
-    } // TODO-505: add catch to try with a bit different node names if this is from a version_composition (i.e. new preceding "data")
-    return templateId;
-  }
-
-  /**
-   * Helper to extract the template ID from a JSON composition.
-   * @param content String of JSON composition
-   * @return Template ID
-   * @throws JsonProcessingException On parsing error
-   */
-  private String extractTemplateIdFromJson(String content) throws JsonProcessingException {
-    String templateId;
-    // extract template ID from JSON composition
-    ObjectMapper mapper = new ObjectMapper();
-    JsonNode actualObj = mapper.readTree(content);
-    templateId = actualObj.get("archetype_details").get("template_id").get("value").asText();
-    // TODO-505: add catch to try with a bit different node names if this is from a version_composition (i.e. new preceding "data")
-    return templateId;
   }
 
   private boolean evaluateResponse(HttpResponse<?> response) {

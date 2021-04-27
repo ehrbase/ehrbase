@@ -47,11 +47,6 @@ public class AbacConfig {
   private String policyCompositionName;
   @Value("${abac.policy.composition.parameters}")
   private String[] policyCompositionParameters;
-  // directory
-  @Value("${abac.policy.directory.name}")
-  private String policyDirectoryName;
-  @Value("${abac.policy.directory.parameters}")
-  private String[] policyDirectoryParameters;
   // contribution
   @Value("${abac.policy.contribution.name}")
   private String policyContributionName;
@@ -62,11 +57,6 @@ public class AbacConfig {
   private String policyQueryName;
   @Value("${abac.policy.query.parameters}")
   private String[] policyQueryParameters;
-  // definition
-  @Value("${abac.policy.definition.name}")
-  private String policyDefinitionName;
-  @Value("${abac.policy.definition.parameters}")
-  private String[] policyDefinitionParameters;
 
   public URI getServer() {
     return server;
@@ -132,22 +122,6 @@ public class AbacConfig {
     this.policyCompositionName = policyCompositionName;
   }
 
-  public String getPolicyDirectoryName() {
-    return policyDirectoryName;
-  }
-
-  public void setPolicyDirectoryName(String policyDirectoryName) {
-    this.policyDirectoryName = policyDirectoryName;
-  }
-
-  public String[] getPolicyDirectoryParameters() {
-    return policyDirectoryParameters;
-  }
-
-  public void setPolicyDirectoryParameters(String[] policyDirectoryParameters) {
-    this.policyDirectoryParameters = policyDirectoryParameters;
-  }
-
   public String getPolicyContributionName() {
     return policyContributionName;
   }
@@ -178,22 +152,6 @@ public class AbacConfig {
 
   public void setPolicyQueryParameters(String[] policyQueryParameters) {
     this.policyQueryParameters = policyQueryParameters;
-  }
-
-  public String getPolicyDefinitionName() {
-    return policyDefinitionName;
-  }
-
-  public void setPolicyDefinitionName(String policyDefinitionName) {
-    this.policyDefinitionName = policyDefinitionName;
-  }
-
-  public String[] getPolicyDefinitionParameters() {
-    return policyDefinitionParameters;
-  }
-
-  public void setPolicyDefinitionParameters(String[] policyDefinitionParameters) {
-    this.policyDefinitionParameters = policyDefinitionParameters;
   }
 
   public String[] getPolicyCompositionParameters() {

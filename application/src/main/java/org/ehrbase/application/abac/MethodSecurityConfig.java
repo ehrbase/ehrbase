@@ -58,7 +58,8 @@ public class MethodSecurityConfig extends GlobalMethodSecurityConfiguration {
    */
   @Override
   protected MethodSecurityExpressionHandler createExpressionHandler() {
-    return new CustomMethodSecurityExpressionHandler(abacConfig);
+    // "null" for CompositionService here, but autowiring will make the bean available on runtime
+    return new CustomMethodSecurityExpressionHandler(abacConfig, null);
   }
 
 }
