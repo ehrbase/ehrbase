@@ -39,26 +39,18 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.response.ehrscape.CompositionDto;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.openehr.OriginalVersionResponseData;
 import org.ehrbase.rest.openehr.controller.BaseController;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.expression.SecurityExpressionRoot;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 /**
  * Implementation of custom security expression, to be used in e.g. @PreAuthorize(..) to allow ABAC
@@ -74,14 +66,17 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
   static final String POST = "post";
 
   private final AbacConfig abacConfig;
-  private final CompositionService compositionService;
+  private CompositionService compositionService;
   private Object filterObject;
   private Object returnObject;
 
   public CustomMethodSecurityExpressionRoot(Authentication authentication,
-      AbacConfig abacConfig, CompositionService compositionService) {
+      AbacConfig abacConfig) {
     super(authentication);
     this.abacConfig = abacConfig;
+  }
+
+  public void setCompositionService(CompositionService compositionService) {
     this.compositionService = compositionService;
   }
 
