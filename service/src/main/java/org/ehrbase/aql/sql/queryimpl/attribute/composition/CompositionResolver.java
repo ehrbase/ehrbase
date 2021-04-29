@@ -18,6 +18,7 @@
 package org.ehrbase.aql.sql.queryimpl.attribute.composition;
 
 import org.ehrbase.aql.sql.binding.JoinBinder;
+import org.ehrbase.aql.sql.queryimpl.JsonDataBlockCheck;
 import org.ehrbase.aql.sql.queryimpl.attribute.AttributePath;
 import org.ehrbase.aql.sql.queryimpl.attribute.AttributeResolver;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
@@ -25,6 +26,8 @@ import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.ehrbase.aql.sql.queryimpl.attribute.concept.ConceptResolver;
 import org.ehrbase.aql.sql.queryimpl.value_field.GenericJsonField;
 import org.jooq.Field;
+
+import java.util.Arrays;
 
 import static org.ehrbase.jooq.pg.Tables.COMPOSITION;
 import static org.ehrbase.jooq.pg.Tables.ENTRY;
@@ -54,9 +57,7 @@ public class CompositionResolver extends AttributeResolver
                     .forJsonPath(FEEDER_AUDIT, path)
                     .feederAudit(JoinBinder.compositionRecordTable.field(FEEDER_AUDIT));
 
-            String regexpTerminalValues = ".*(id|issuer|assigner|type|original_content|system_id|name|namespace|value)$";
-            if (path.matches(regexpTerminalValues))
-                fieldResolutionContext.setJsonDatablock(false);
+            fieldResolutionContext.setJsonDatablock(new JsonDataBlockCheck(Arrays.asList(path.split("/").clone())).isJsonBlockStaticAttributeForm());
 
             return retField;
         }

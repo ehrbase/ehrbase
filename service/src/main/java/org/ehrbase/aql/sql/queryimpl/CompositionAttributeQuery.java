@@ -36,6 +36,7 @@ import org.ehrbase.aql.sql.queryimpl.attribute.eventcontext.EventContextResolver
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.service.IntrospectService;
 import org.jooq.Field;
+import org.jooq.impl.DSL;
 
 import static org.ehrbase.aql.sql.QueryProcessor.NIL_TEMPLATE;
 
@@ -110,6 +111,9 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
         }
 
         jsonDataBlock = fieldResolutionContext.isJsonDatablock();
+        if (fieldResolutionContext.isUsingSetReturningFunction())
+            retField = DSL.field(DSL.select(retField));
+
         return retField;
     }
 

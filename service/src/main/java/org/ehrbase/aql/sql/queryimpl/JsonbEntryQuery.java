@@ -28,7 +28,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
-import org.ehrbase.aql.sql.binding.ExpressionField;
 import org.ehrbase.aql.sql.binding.JoinBinder;
 import org.ehrbase.aql.sql.queryimpl.value_field.NodePredicate;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
@@ -45,9 +44,9 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.ehrbase.aql.sql.queryimpl.QueryImplConstants.AQL_NODE_ITERATIVE_MARKER;
-import static org.ehrbase.jooq.pg.Tables.ENTRY;
-import static org.ehrbase.jooq.pg.Tables.EVENT_CONTEXT;
-import static org.ehrbase.jooq.pg.Tables.STATUS;
+import static org.ehrbase.aql.sql.queryimpl.attribute.GenericJsonPath.OTHER_DETAILS;
+import static org.ehrbase.jooq.pg.Tables.*;
+import static org.ehrbase.serialisation.dbencoding.CompositionSerializer.TAG_FEEDER_AUDIT;
 
 /**
  * Generate an SQL field corresponding to a JSONB data value query
@@ -67,20 +66,15 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
 
     //OTHER_DETAILS (Ehr Status Query)
     private static final String SELECT_EHR_OTHER_DETAILS_MACRO = JoinBinder.statusRecordTable.field(STATUS.OTHER_DETAILS) + "->('" + CompositionSerializer.TAG_OTHER_DETAILS + "')";
-    private static final String JSONB_SELECTOR_EHR_OTHER_DETAILS_OPEN = SELECT_EHR_OTHER_DETAILS_MACRO + JSONB_PATH_SELECTOR_EXPR;
-
 
     //OTHER_CONTEXT (Composition context other_context Query)
     private static final String SELECT_EHR_OTHER_CONTEXT_MACRO = EVENT_CONTEXT.OTHER_CONTEXT + "->('" + CompositionSerializer.TAG_OTHER_CONTEXT + "[at0001]" + "')";
-    private static final String JSONB_SELECTOR_EHR_OTHER_CONTEXT_OPEN = SELECT_EHR_OTHER_CONTEXT_MACRO + JSONB_PATH_SELECTOR_EXPR;
-    public static final String JSQUERY_EHR_OTHER_CONTEXT_OPEN = SELECT_EHR_OTHER_CONTEXT_MACRO + JSONB_AT_AT_SELECTOR_EXPR;
 
     public static final String COMPOSITION = "composition";
     public static final String CONTENT = "content";
     public static final String ACTIVITIES = "activities";
     public static final String EVENTS = "events";
     public static final String ITEMS = "items";
-
 
     public static final String PROTOCOL = "protocol";
     public static final String DATA = "data";
@@ -113,6 +107,7 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
     public static final String TAG_COMPOSITION = "/" + COMPOSITION;
     public static final String TAG_CONTENT = "/" + CONTENT;
     public static final String TAG_ITEMS = "/" + ITEMS;
+    public static final String TAG_OTHER_DETAILS = "/" + OTHER_DETAILS;
 
     private static final String[] listIdentifier = {
             TAG_CONTENT,
@@ -173,8 +168,7 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
         List<String> jqueryPath = new ArrayList<>();
         String nodeId = null;
         for (int i = offset; i < segments.size(); i++) {
-            nodeId = segments.get(i);
-            nodeId = "/" + nodeId;
+            nodeId = "/"+ segments.get(i);
 
             encodeTreeMapNodeId(jqueryPath, nodeId);
 
@@ -203,21 +197,11 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
                     jqueryPath.add(defaultIndex);
             }
 
-//            if (isList(nodeId) &&
-//                    ((pathPart.equals(PATH_PART.VARIABLE_PATH_PART) &&
-//                            !(i == segments.size() - 1))||pathPart.equals(PATH_PART.IDENTIFIER_PATH_PART)))
-//                jqueryPath.add(defaultIndex);
         }
 
         if (pathPart.equals(PATH_PART.VARIABLE_PATH_PART)) {
-            StringBuilder stringBuilder = new StringBuilder();
-            for (int i = jqueryPath.size() - 1; i >= 0; i--) {
-                if (jqueryPath.get(i).matches("[0-9]*|#") || jqueryPath.get(i).contains("[") ||jqueryPath.get(i).startsWith("'"))
-                    break;
-                String item = jqueryPath.remove(i);
-                stringBuilder.insert(0, item);
-            }
-            nodeId = EntryAttributeMapper.map(stringBuilder.toString());
+            nodeId = EntryAttributeMapper.map(assembleLeafNodePath(jqueryPath));
+
             if (nodeId != null) {
                 if (defaultIndex.equals("#")) { //jsquery
                     if (nodeId.contains(",")) {
@@ -240,44 +224,36 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
         return jqueryPath;
     }
 
+    private String assembleLeafNodePath(List<String> jqueryPath){
+        StringBuilder stringBuilder = new StringBuilder();
+
+        for (int i = jqueryPath.size() - 1; i >= 0; i--) {
+            if (  !jqueryPath.get(0).equals(TAG_FEEDER_AUDIT) &&
+                    !jqueryPath.get(i).startsWith(TAG_OTHER_DETAILS) &&
+//                        !segments.get(0).equals(FEEDER_AUDIT) &&
+                    (jqueryPath.get(i).matches("[0-9]*|#") ||
+                            jqueryPath.get(i).contains("[") ||
+                            jqueryPath.get(i).startsWith("'")
+                    )
+            ) break;
+
+            String item = jqueryPath.remove(i);
+
+            //if the item hasn't been discarded because it is part of an embedded structure in f.e. other_details
+            if (item.matches("[0-9]*|#"))
+                stringBuilder.insert(0, ","+item);
+            else
+                stringBuilder.insert(0, item);
+        }
+
+        return stringBuilder.toString();
+    }
+
     private int retrieveIndex(String nodeId) {
         if (nodeId.contains("#")) {
             return Integer.parseInt((nodeId.split("#")[1]).split("']")[0]);
         }
         return 0;
-    }
-
-
-    public Field<?> makeField(OTHER_ITEM type, String path, String alias, String variablePath, boolean withAlias) {
-        List<String> itemPathArray = new ArrayList<>();
-
-        if (path != null)
-            itemPathArray.addAll(jqueryPath(PATH_PART.IDENTIFIER_PATH_PART, path, "0"));
-        itemPathArray.addAll(jqueryPath(PATH_PART.VARIABLE_PATH_PART, variablePath, "0"));
-
-        resolveArrayIndex(itemPathArray);
-
-        String itemPath = StringUtils.join(itemPathArray.toArray(new String[]{}), ",");
-
-        itemPath = wrapQuery(itemPath, type.equals(OTHER_ITEM.OTHER_DETAILS) ? JSONB_SELECTOR_EHR_OTHER_DETAILS_OPEN : JSONB_SELECTOR_EHR_OTHER_CONTEXT_OPEN, JSONB_SELECTOR_CLOSE);
-
-        if (itemPathArray.get(itemPathArray.size() - 1).contains(MAGNITUDE)) { //force explicit type cast for DvQuantity
-            itemPath = "(" + itemPath + ")::float";
-        }
-
-        Field<?> fieldPathItem;
-        if (withAlias) {
-            if (StringUtils.isNotEmpty(alias))
-                fieldPathItem = DSL.field(itemPath, String.class).as(alias);
-            else {
-                String tempAlias = "FIELD_" + getSerial();
-                fieldPathItem = DSL.field(itemPath, String.class).as(tempAlias);
-            }
-        } else
-            fieldPathItem = DSL.field(itemPath, String.class);
-
-        containsJqueryPath = true;
-        return fieldPathItem;
     }
 
 
@@ -319,14 +295,16 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
             itemPathArray.addAll(jqueryPath(PATH_PART.IDENTIFIER_PATH_PART, path, "0"));
         itemPathArray.addAll(jqueryPath(PATH_PART.VARIABLE_PATH_PART, variableDefinition.getPath(), "0"));
 
+        //deal with arrays in structure
         try {
             IterativeNode iterativeNode = new IterativeNode(domainAccess, templateId, introspectCache);
             Integer[] pos = iterativeNode.iterativeAt(itemPathArray);
             itemPathArray = iterativeNode.clipInIterativeMarker(itemPathArray, pos);
+            itemPathArray = iterativeNode.iterativeForArrayAttributeValues(itemPathArray);
             if (clause.equals(Clause.WHERE))
                 setReturningFunctionInWhere = true;
         } catch (Exception e) {
-            ;
+            //do nothing
         }
 
         resolveArrayIndex(itemPathArray);
@@ -366,7 +344,7 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
                 fieldPathItem = buildFieldWithCast(itemPath,castTypeAs,tempAlias);
             }
         } else if (clause.equals(Clause.WHERE)) {
-            fieldPathItem = buildFieldWithCast(itemPath,castTypeAs,null);;
+            fieldPathItem = buildFieldWithCast(itemPath,castTypeAs,null);
             if (itemPathArray.contains(AQL_NODE_ITERATIVE_MARKER))
                 fieldPathItem = DSL.field(DSL.select(fieldPathItem));
         }

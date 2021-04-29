@@ -1,11 +1,12 @@
 package org.ehrbase.aql.sql.queryimpl.attribute;
 
-import org.ehrbase.aql.sql.queryimpl.NodeIds;
 import org.ehrbase.serialisation.dbencoding.wrappers.json.I_DvTypeAdapter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.ehrbase.aql.sql.queryimpl.QueryImplConstants.AQL_NODE_ITERATIVE_MARKER;
 
 public class GenericJsonPath {
 
@@ -29,6 +30,7 @@ public class GenericJsonPath {
     public static final String TARGET = "target";
     public static final String ARCHETYPE_NODE_ID = "archetype_node_id";
     private final String path;
+    private boolean isIterative = false;
 
     public GenericJsonPath(String path) {
         this.path = path;
@@ -41,6 +43,8 @@ public class GenericJsonPath {
         List<String> jqueryPaths = Arrays.asList(path.split("/|,"));
         List<String> actualPaths = new ArrayList<>();
 
+        boolean inStruct = false;
+
         for (int i = 0; i < jqueryPaths.size(); i++) {
             String segment = jqueryPaths.get(i);
             if (segment.startsWith(ITEMS)) {
@@ -50,18 +54,26 @@ public class GenericJsonPath {
             } else if (segment.startsWith(CONTENT)) {
                 actualPaths.add(CONTENT + ",/" + segment);
                 actualPaths.add("0"); //as above
+            } else if (segment.startsWith(OTHER_DETAILS)) {
+                actualPaths.add(segment);
+                inStruct = true; //as above
             } else if (segment.matches(VALUE + "|" + NAME) && !isTerminalValue(jqueryPaths, i) && !jqueryPaths.get(0).equals(CONTEXT)) {
                 actualPaths.add("/"+segment);
                 if (segment.matches(NAME))
                     actualPaths.add("0");
-            } else if (segment.matches(NAME) && isTerminalValue(jqueryPaths, i) && jqueryPaths.get(0).equals(OTHER_DETAILS)){
+            } else if (segment.matches(NAME) && isTerminalValue(jqueryPaths, i) && inStruct){
                 //keep '/name' attribute db encoding format since other_details is not related to a template and kept as is...
                 actualPaths.add("/"+segment);
                 actualPaths.add("0");
+                inStruct = false;
 
             } else if (segment.matches(ARCHETYPE_NODE_ID) && jqueryPaths.get(0).equals(OTHER_DETAILS)){
                 //keep '/name' attribute db encoding format since other_details is not related to a template and kept as is...
                 actualPaths.add("/"+segment);
+            }  else if (segment.equalsIgnoreCase(FEEDER_SYSTEM_ITEM_IDS)){
+                actualPaths.add(segment);
+                actualPaths.add(AQL_NODE_ITERATIVE_MARKER);
+                isIterative = true;
             }
             else
                 actualPaths.add(segment);
@@ -78,6 +90,12 @@ public class GenericJsonPath {
                 && paths.get(index).matches(VALUE + "|" + NAME + "|" + TERMINOLOGY_ID + "|" + PURPOSE + "|" + TARGET)
                 //check if this 'terminal attribute' is actually a node attribute
                 //match node predicate regexp starts with '/' which is not the case when splitting the path
-                && !paths.get(index - 1).matches(I_DvTypeAdapter.matchNodePredicate.substring(1)));
+                && !paths.get(index - 1).matches(I_DvTypeAdapter.matchNodePredicate.substring(1))
+                && !paths.get(index - 1).startsWith(OTHER_DETAILS)
+        );
+    }
+
+    public boolean isIterative() {
+        return isIterative;
     }
 }

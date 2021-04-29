@@ -45,10 +45,29 @@ public class JsonDataBlockCheck {
         if (jqueryPath.isEmpty())
             return true;
         
-        if (jqueryPath.get(0).startsWith("/feeder_audit"))
+        if (jqueryPath.get(0).toUpperCase().contains("FEEDER_AUDIT"))
             return checkFeederAuditPath();
         else
             return checkResultingPath();
+    }
+
+    /**
+     * use this method, whenever the attribute comes from a table column
+     * @return
+     */
+    public boolean isJsonBlockStaticAttributeForm(){
+        if (jqueryPath.isEmpty())
+            return true;
+
+        String lastNode = jqueryPath.get(jqueryPath.size() - 1);
+        String previousNode = null;
+        if (jqueryPath.size() > 2)
+            previousNode = jqueryPath.get(jqueryPath.size() - 2);
+
+        if (jqueryPath.get(0).toUpperCase().contains("FEEDER_AUDIT"))
+            return checkFeederAuditPath(lastNode, previousNode);
+        else
+            return checkResultingPath(lastNode);
     }
 
     private boolean checkFeederAuditPath(){
@@ -56,18 +75,24 @@ public class JsonDataBlockCheck {
 
         String lastItem = tokens[tokens.length - 1];
         
-        return !(lastItem.equalsIgnoreCase("value")||
-                 lastItem.equalsIgnoreCase("system_id")||
-                lastItem.equalsIgnoreCase("version_id")||
-                 //PartyIdentified
-                 lastItem.equalsIgnoreCase("name")||
-                 //PartyRef
-                lastItem.equalsIgnoreCase("namespace")||
-                //dvIdentifier
-                 lastItem.equalsIgnoreCase("issuer")||
-                 lastItem.equalsIgnoreCase("assigner")||
-                 lastItem.equalsIgnoreCase("id")||
-                 lastItem.equalsIgnoreCase("type"));
+        return checkFeederAuditPath(lastItem, null);
+    }
+
+    private boolean checkFeederAuditPath(String lastItem, String previousItem){
+
+        if (lastItem.equalsIgnoreCase("value") && previousItem != null && !previousItem.equals("value"))
+            return true;
+        else
+            return !(
+                    lastItem.equalsIgnoreCase("system_id")||
+                    lastItem.equalsIgnoreCase("version_id")||
+                    //PartyRef
+                    lastItem.equalsIgnoreCase("namespace")||
+                    //dvIdentifier
+                    lastItem.equalsIgnoreCase("issuer")||
+                    lastItem.equalsIgnoreCase("assigner")||
+                    lastItem.equalsIgnoreCase("id")||
+                    lastItem.equalsIgnoreCase("type"));
 
     }
 
@@ -78,8 +103,13 @@ public class JsonDataBlockCheck {
         String terminalNode = jqueryPath.get(index);
         if (index > 0 && terminalNode.startsWith("'") && jqueryPath.get(index - 1).equals(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER))
             terminalNode = jqueryPath.get(index - 2); //skip the node predicate marker
+        return checkResultingPath(terminalNode);
+    }
+
+    private boolean checkResultingPath(String terminalNode){
         return terminalNode.matches(MATCH_NODE_PREDICATE) || isStructuredItem(terminalNode);
     }
+
 
     private boolean isStructuredItem(String terminalNode){
         String lastItem = StringUtils.substringAfterLast(terminalNode, ",");
