@@ -15,11 +15,14 @@
 - [EHR/CONTRIBUTION Validation Suite](#ehrcontribution-validation-suite)
   - [A. General Requirements](#a-general-requirements)
   - [B. CONTRIBUTION Test Cases](#b-contribution-test-cases)
-    - [CONTRIBUTION data Sets:](#contribution-data-sets)
-    - [VERSION<COMPOSITION> Data Sets (CONTRIBUTION contents):](#versioncomposition-data-sets-contribution-contents)
-    - [B.1. Commit CONTRIBUTION](#b1-commit-contribution)
-      - [B.1.1. Commit CONTRIBUTION Test Data Sets for COMPOSITIONs](#b11-commit-contribution-test-data-sets-for-compositions)
-        - [B.1.1.1. Combinations for data sets](#c111-combinations-for-data-sets)
+    - [B.1. General Commit CONTRIBUTION Data Sets](#b1-general-commit-contribution-data-sets)
+    - [B.2. COMPOSITION Commit CONTRIBUTION Data Sets](#b2-composition-commit-contribution-data-sets)
+      - [B.2.1. Considerations for the test data sets](#b21-considerations-for-the-test-data-sets)
+      - [B.2.2. Combinations for data sets](#b22-combinations-for-data-sets)
+    - [B.3. EHR_STATUS Commit CONTRIBUTION Test Data Sets](#b3-ehr_status-commit-contribution-test-data-sets)
+      - [B.3.1. Combinations for data sets](#b31-combinations-for-data-sets)
+    - [B.4. FOLDER Commit CONTRIBUTION Test Data Sets](#b4-folder-commit-contribution-test-data-sets)
+      - [B.4.1. Combinations for data sets](#b41-combinations-for-data-sets)
 <!--te-->
 
 
@@ -47,7 +50,7 @@ This test suite depends on other test suites:
 
 ## B. CONTRIBUTION Test Cases
 
-### CONTRIBUTION data Sets:
+### B.1. General Commit CONTRIBUTION Data Sets
 
 1. CONTRIBUTIONS with single valid VERSION<COMPOSITION> (minimal, one for each entry type)
 2. CONTRIBUTIONS with multiple valid VERSION<COMPOSITION> (reuse the minimal ^)
@@ -59,8 +62,12 @@ This test suite depends on other test suites:
    3. Wrong lifecycle
 6. CONTRIBUTIONS with multiple VERSION<COMPOSITION>, with mixed valid and invalid ones
 
+> Note: these cases do not consider which type is contained in the VERSIONs, it could be COMPOSITION, FOLDER, EHR_STATUS, etc.
+> 
 
-### VERSION<COMPOSITION> Data Sets (CONTRIBUTION contents):
+### B.2. COMPOSITION Commit CONTRIBUTION Data Sets
+
+Since there are many combinations of data that could be used for testing the Commit CONTRIBUTION service, we decided to create three main kinds of CONTRIBUTIONs that should be tested:
 
 1. Valid
    1. minimal COMPOSITIONs with one type of ENTRY (one ENTRY each, all ENTRIES covered)
@@ -84,13 +91,11 @@ This test suite depends on other test suites:
 > 3. deleted
 
 
-### B.1. Commit CONTRIBUTION
-
-#### B.1.1. Commit CONTRIBUTION Test Data Sets for COMPOSITIONs
+#### B.2.1. Considerations for the test data sets
 
 **change_type**
 
-Eech VERSION in a CONTRIBUTION has an AUDIT_DETAILS which contains a change_type attribute. The value on that attribute determines the internal behavior for processing each VERSION, and each VERSION in the same CONTRIBUTION could have a different change_type. The most used change types are:
+Each VERSION in a CONTRIBUTION has an AUDIT_DETAILS which contains a change_type attribute. The value on that attribute determines the internal behavior for processing each VERSION, and each VERSION in the same CONTRIBUTION could have a different change_type. The most used change types are:
 
 1. **creation**: the VERSION represents the first version of a COMPOSITION.
 2. **amendment**: the VERSION represents a new version of an existing COMPOSITION, with the purpose of adding data.
@@ -118,7 +123,7 @@ These codes are defined here: https://github.com/openEHR/terminology/blob/master
 </div>
 
 
-##### B.1.1.1. Combinations for data sets
+#### B.2.2. Combinations for data sets
 
 These combinations can be tested by doing a single commit. The same combinations with flows of multiple commits could lead to different results.
 
@@ -130,6 +135,9 @@ These combinations can be tested by doing a single commit. The same combinations
 
 #one_commit tr:nth-child(1) > td:last-child,
 #one_commit tr:nth-child(5) > td:last-child,
+#folder_commit tr:nth-child(1) > td:last-child,
+#folder_commit tr:nth-child(2) > td:last-child,
+#folder_commit tr:nth-child(3) > td:last-child,
 .accepted {
   background-color: #ccffcc;
 }
@@ -209,7 +217,7 @@ C. Creating two valid, complete and mixed category COMPOSITIONS in one commit sh
 This CONTRIBUTION should be <span class="accepted">ACCEPTED</span>.
 
 
-D. If any COMPOSITION is invalid, the whole commit should fail. It doesn't matter if it is complete or incomplete, event or persistent (just showing some of the combinations below).
+D. If any COMPOSITION is invalid in a CONTRIBUTION, the whole commit should fail. It doesn't matter if it is complete or incomplete, event or persistent (just showing some of the combinations below).
 
 | change_type+  | lifecycle_state++ | composition category | composition validity |
 |:-------------:|:-----------------:|:--------------------:|:--------------------:|
@@ -219,7 +227,7 @@ D. If any COMPOSITION is invalid, the whole commit should fail. It doesn't matte
 | change_type+  | lifecycle_state++ | composition category | composition validity |
 |:-------------:|:-----------------:|:--------------------:|:--------------------:|
 | creation      | complete          | persistent           | valid                |
-| creation      | complete          | persistent           | valid                |
+| creation      | complete          | persistent           | invalid              |
 
 | change_type+  | lifecycle_state++ | composition category | composition validity |
 |:-------------:|:-----------------:|:--------------------:|:--------------------:|
@@ -238,4 +246,75 @@ These CONTRIBUTIONs should be <span class="rejected">REJECTED</span>.
 > \++ Note: the incomplete cases should be equal to the complete, because the flag is just adding semantics about the content, not setting how the content should be processed.
 
 
-WIP....
+
+### B.3. EHR_STATUS Commit CONTRIBUTION Test Data Sets
+
+#### B.3.1. Combinations for data sets
+
+The following <span class="accepted">ACCEPTED</span> and <span class="rejected">REJECTED</span> apply under any of these scenarios:
+
+1. The server has an EHR with the default EHR_STATUS (the EHR was created without providing an EHR_STATUS).
+2. The server has an EHR created by providing an EHR_STATUS.
+3. The server has an EHR with modifications already done to it's EHR_STATUS (consecutive modifications).
+
+**Reject Cases:**
+
+1. CONTRIBUTIONS with VERSION<EHR_STATUS>, where VERSION<EHR_STATUS>.commit_audit.change_type IN [`creation`, `deleted`] should be <span class="rejected">REJECTED</span>, because the default EHR_STATUS was already created in the EHR, and the EHR_STATUS can't be deleted once created.
+
+2. CONTRIBUTIONS with VERSION<EHR_STATUS>, where VERSION<EHR_STATUS>.lifecycle_state = `incomplete` should be <span class="rejected">REJECTED</span>, because the `incomplete` state doesn't apply to EHR_STATUS. Though there is an open issue related to this: https://openehr.atlassian.net/browse/SPECPR-368
+
+3. Any other case with an `invalid` EHR_STATUS in VERSION<EHR_STATUS> should also be <span class="rejected">REJECTED</span>.
+
+**Accepted Cases:**
+
+1. CONTRIBUTIONS with VERSION<EHR_STATUE> where VERSION<EHR_STATUS>.commit_audit.change_tyoe IN [`modification`, `amendment`] and `valid` EHR_STATUS, should be <span class="accepted">ACCEPTED</span>. This inscludes the following combinations for EHR_STATUS:
+
+| is_modifiable | is_queryable | subject.external_ref |
+|:-------------:|:------------:|:--------------------:|
+| true          | true         | HIER_OBJECT_ID       |
+| true          | true         | GENERIC_ID           |
+| true          | true         | NULL                 |
+| true          | false        | HIER_OBJECT_ID       |
+| true          | false        | GENERIC_ID           |
+| true          | false        | NULL                 |
+| false         | true         | HIER_OBJECT_ID       |
+| false         | true         | GENERIC_ID           |
+| false         | true         | NULL                 |
+| false         | true         | HIER_OBJECT_ID       |
+| false         | true         | GENERIC_ID           |
+| false         | true         | NULL                 |
+| false         | false        | HIER_OBJECT_ID       |
+| false         | false        | GENERIC_ID           |
+| false         | false        | NULL                 |
+
+
+> Note: Since EHR_STATUS is LOCATABLE, is should have an archetype_id assigned. It is recommended to test the combination described above, combined with different values for EHR_STATUS.archetype_id
+
+
+
+### B.4. FOLDER Commit CONTRIBUTION Test Data Sets
+
+All the datasets are specified at the EHR.directory level, since that is the current level of operation of the openEHR REST API for FOLDERs to create, update or delete.
+
+
+#### B.4.1. Combinations for data sets
+
+`Valid` payload should include these cases:
+
+1. minimal directory
+2. directory with items
+3. directry with subfolders
+4. directory with items and subfolders
+5. directory with items and subfolders with items
+
+<div id ="folder_commit">
+
+| change_type              | lifecycle_state       | payload | expected |
+|:------------------------:|:---------------------:|:-------:|:--------:|
+| creation                 | complete / incomplete | valid   | accepted |
+| amendment / modification | complete / incomplete | valid   | accepted |
+| deleted                  | deleted               | valid   | accepted |
+</div>
+
+
+Any `invalid` payload should be <span class="rejected">REJECTED</span>.
