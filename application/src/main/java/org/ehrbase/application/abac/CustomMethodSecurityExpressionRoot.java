@@ -34,13 +34,17 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.service.CompositionService;
+import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.response.ehrscape.CompositionDto;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.openehr.OriginalVersionResponseData;
@@ -67,6 +71,7 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
 
   private final AbacConfig abacConfig;
   private CompositionService compositionService;
+  private ContributionService contributionService;
   private Object filterObject;
   private Object returnObject;
 
@@ -78,6 +83,10 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
 
   public void setCompositionService(CompositionService compositionService) {
     this.compositionService = compositionService;
+  }
+
+  public void setContributionService(ContributionService contributionService) {
+    this.contributionService = contributionService;
   }
 
   /**
@@ -171,7 +180,8 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
     JwtAuthenticationToken jwt = getJwtAuthenticationToken(auth);
 
     // Request body map. will result in simple JSON like {"patient_id":"...", ...}
-    Map<String, String> requestMap = new HashMap<>();
+    // but requires "Object" for template handling, which can have a Set<String> for multiple IDs
+    Map<String, Object> requestMap = new HashMap<>();
 
     // Organization attribute handling
     if (policyParameters.contains(ORGANIZATION)) {
@@ -189,7 +199,7 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
     }
 
     // Fire abac server request
-    return evaluateResponse(abacRequest(requestUrl, requestMap));
+    return abacCheckRequest(requestUrl, requestMap);
   }
 
   /**
@@ -197,7 +207,7 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
    * @param jwt Token
    * @param requestMap ABAC request attribute map to add the result
    */
-  private void organizationHandling(JwtAuthenticationToken jwt, Map<String, String> requestMap) {
+  private void organizationHandling(JwtAuthenticationToken jwt, Map<String, Object> requestMap) {
     if (jwt.getTokenAttributes().containsKey(abacConfig.getOrganizationClaim())) {
       // "patient_id" not available, use EHRbase subject
       String orgaId = (String) jwt.getTokenAttributes().get(abacConfig.getOrganizationClaim());
@@ -216,7 +226,7 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
    * @param requestMap ABAC request attribute map to add the result
    */
   private void patientHandling(JwtAuthenticationToken jwt, String subject,
-      Map<String, String> requestMap) {
+      Map<String, Object> requestMap) {
     if (!jwt.getTokenAttributes().containsKey(abacConfig.getPatientClaim())) {
       // "patient_id" not available, use EHRbase subject as fallback
       requestMap.put(PATIENT, subject);
@@ -240,7 +250,7 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
    * @param authType Pre- or PostAuthorize, determines payload style (string or object)
    */
   private void templateHandling(String type, Object payload, String contentType, Map<String,
-      String> requestMap, String authType) {
+      Object> requestMap, String authType) {
     switch (type) {
       case BaseController.EHR:
         throw new IllegalArgumentException("ABAC: Unsupported configuration: Can't set template ID for EHR type.");
@@ -301,7 +311,21 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
         requestMap.put(TEMPLATE, templateId);
         break;
       case BaseController.CONTRIBUTION:
-        break; // TODO-505: write handling
+        CompositionFormat format;
+        if (MediaType.parseMediaType(contentType).isCompatibleWith(MediaType.APPLICATION_JSON)) {
+          format = CompositionFormat.JSON;
+        } else if (MediaType.parseMediaType(contentType).isCompatibleWith(MediaType.APPLICATION_XML)) {
+          format = CompositionFormat.XML;
+        } else {
+          throw new IllegalArgumentException("ABAC: Only JSON and XML composition are supported.");
+        }
+        if (payload instanceof String) {
+          Set<String> templates = contributionService.getListOfTemplates((String) payload, format);
+          requestMap.put(TEMPLATE, templates);
+          break;
+        } else {
+          throw new InternalServerException("ABAC: invalid POST contribution payload.");
+        }
       case BaseController.QUERY:
         // TODO-505: what's the concept?
         break; // TODO-505: write handling
@@ -310,8 +334,39 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
     }
   }
 
-  private boolean evaluateResponse(HttpResponse<?> response) {
-    return response.statusCode() == 200;
+  private boolean abacCheckRequest(String url, Map<String, Object> bodyMap)
+      throws IOException, InterruptedException {
+    // prepare request attributes and convert from <String, Object> to <String, String>
+    Map<String, String> request = new HashMap<>();
+    if (bodyMap.containsKey(PATIENT)) {
+      request.put(PATIENT, (String) bodyMap.get(PATIENT));
+    }
+    if (bodyMap.containsKey(ORGANIZATION)) {
+      request.put(ORGANIZATION, (String) bodyMap.get(ORGANIZATION));
+    }
+    // check if template attributes are available and see if it contains a Set
+    if (bodyMap.containsKey(TEMPLATE)) {
+      if (bodyMap.get(TEMPLATE) instanceof Set) {
+        // set each template and send separate ABAC requests
+        Set<String> set = (Set<String>) bodyMap.get(TEMPLATE);
+        for (String s : set) {
+          request.put(TEMPLATE, s);
+          boolean allowed = evaluateResponse(abacRequest(url, request));
+          if (!allowed) {
+            // if only one combination of attributes is rejected by ABAC return false for all
+            return false;
+          }
+        }
+        // in case all combinations were validated successfully
+        return true;
+      } else if (bodyMap.get(TEMPLATE) instanceof String) {
+        // if it is just a String, set it and continue normal
+        request.put(TEMPLATE, (String) bodyMap.get(TEMPLATE));
+      } else {
+        throw new InternalServerException("ABAC: Invalid template attribute content.");
+      }
+    }
+    return evaluateResponse(abacRequest(url, request));
   }
 
   /**
@@ -324,6 +379,7 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
    */
   private HttpResponse<?> abacRequest(String url, Map<String, String> bodyMap)
       throws IOException, InterruptedException {
+
     // convert bodyMap to JSON
     ObjectMapper objectMapper = new ObjectMapper();
     String requestBody = objectMapper
@@ -337,6 +393,10 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
         .build();
 
     return HttpClient.newHttpClient().send(request, BodyHandlers.ofString());
+  }
+
+  private boolean evaluateResponse(HttpResponse<?> response) {
+    return response.statusCode() == 200;
   }
 
   private JwtAuthenticationToken getJwtAuthenticationToken(Authentication auth) {
