@@ -21,18 +21,20 @@ package org.ehrbase.aql.compiler;
 
 import org.ehrbase.aql.definition.FunctionDefinition;
 import org.ehrbase.aql.definition.I_VariableDefinition;
-import org.ehrbase.aql.definition.VariableDefinition;
 
 import java.util.*;
 
 public class AuditVariables {
 
     public static final String AUDIT_VARIABLE_PREFIX = "$__AUDIT_";
+    public static final String EHR_PATH = "ehr_id/value";
+    public static final String TEMPLATE_PATH = "archetype_details/template_id/value";
     //a list of audit variables needed if not present
     //defined as: path, alias, usual symbol
     //NB. only the path is relevant for identification
     public static final String[][] requiredAuditVariables = {
-            {"ehr_id/value", AUDIT_VARIABLE_PREFIX+"EHR_ID", "e"}
+            {EHR_PATH, AUDIT_VARIABLE_PREFIX+"EHR_ID", "e"},
+            {TEMPLATE_PATH, AUDIT_VARIABLE_PREFIX+"TEMPLATE_ID", "c"}
     };
 
     //set of path to skip whenever used in aggregate function

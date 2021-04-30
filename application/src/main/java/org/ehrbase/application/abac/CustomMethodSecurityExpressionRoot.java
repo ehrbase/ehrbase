@@ -18,12 +18,9 @@
 
 package org.ehrbase.application.abac;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -35,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -45,6 +41,8 @@ import java.util.UUID;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.ContributionService;
+import org.ehrbase.api.service.EhrService;
+import org.ehrbase.aql.compiler.AuditVariables;
 import org.ehrbase.response.ehrscape.CompositionDto;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.openehr.OriginalVersionResponseData;
@@ -72,6 +70,7 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
   private final AbacConfig abacConfig;
   private CompositionService compositionService;
   private ContributionService contributionService;
+  private EhrService ehrService;
   private Object filterObject;
   private Object returnObject;
 
@@ -87,6 +86,10 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
 
   public void setContributionService(ContributionService contributionService) {
     this.contributionService = contributionService;
+  }
+
+  public void setEhrService(EhrService ehrService) {
+    this.ehrService = ehrService;
   }
 
   /**
@@ -190,7 +193,12 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
 
     // Patient attribute handling
     if (policyParameters.contains(PATIENT)) {
-      patientHandling(jwt, subject, requestMap);
+      // populate requestMap, but also already check if subject from token and request matches
+      boolean patientMatch = patientHandling(jwt, subject, requestMap, type, payload);
+      if (!patientMatch) {
+        // doesn't match -> requesting data for patient X with token for patient Y
+        return false;
+      }
     }
 
     // Extract template ID from object of type "type"
@@ -225,16 +233,58 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
    * @param subject Subject from EHR
    * @param requestMap ABAC request attribute map to add the result
    */
-  private void patientHandling(JwtAuthenticationToken jwt, String subject,
-      Map<String, Object> requestMap) {
+  private boolean patientHandling(JwtAuthenticationToken jwt, String subject,
+      Map<String, Object> requestMap, String type, Object payload) {
+    if (type.equals(BaseController.QUERY)) {
+      // special case of type QUERY, where multiple subjects are possible
+      if (payload instanceof Map) {
+        if (((Map<?, ?>) payload).containsKey(AuditVariables.EHR_PATH)) {
+          Set<UUID> ehrs = (Set) ((Map<?, ?>) payload).get(AuditVariables.EHR_PATH);
+          Set<String> patientSet = new HashSet<>();
+          for (UUID ehr : ehrs) {
+            UUID subjectId = ehrService.getSubjectUuid(ehr.toString());
+            // check if patient token is available and if it matches
+            if (!jwt.getTokenAttributes().containsKey(abacConfig.getPatientClaim())) {
+              // no token, so just add our subject
+              patientSet.add(subjectId.toString());
+            } else {
+              String tokenPatient = (String) jwt.getTokenAttributes().get(abacConfig.getPatientClaim());
+              if (subjectId.toString().equals(tokenPatient)) {
+                // matches, so add our subject
+                patientSet.add(subjectId.toString());
+              } else {
+                // doesn't match -> requesting data for patient X with token for patient Y
+                return false;
+              }
+            }
+          }
+          // put result set into the requestMap and exit
+          requestMap.put(PATIENT, patientSet);
+          return true;
+        } else {
+          throw new InternalServerException("ABAC: AQL audit patient data unavailable.");
+        }
+      } else {
+        throw new InternalServerException("ABAC: AQL audit patient data malformed.");
+      }
+    }
+
+    // in all other cases just handle the one String "subject" variable
     if (!jwt.getTokenAttributes().containsKey(abacConfig.getPatientClaim())) {
       // "patient_id" not available, use EHRbase subject as fallback
       requestMap.put(PATIENT, subject);
     } else {
       // use "patient_id" if available
       String patientId = (String) jwt.getTokenAttributes().get(abacConfig.getPatientClaim());
-      requestMap.put(PATIENT, patientId);
+      // and matches (to block accessing patient X with token from patient Y)
+      if (patientId.equals(subject)) {
+        requestMap.put(PATIENT, patientId);
+      } else {
+        // doesn't match -> requesting data for patient X with token for patient Y
+        return false;
+      }
     }
+    return true;
   }
 
   /**
@@ -327,8 +377,23 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
           throw new InternalServerException("ABAC: invalid POST contribution payload.");
         }
       case BaseController.QUERY:
-        // TODO-505: what's the concept?
-        break; // TODO-505: write handling
+        // special case of type QUERY, where multiple subjects are possible
+        if (payload instanceof Map) {
+          if (((Map<?, ?>) payload).containsKey(AuditVariables.TEMPLATE_PATH)) {
+            Set<String> templates = (Set) ((Map<?, ?>) payload).get(AuditVariables.TEMPLATE_PATH);
+            Set<String> templateSet = new HashSet<>();
+            for (String template : templates) {
+              templateSet.add(template);
+            }
+            // put result set into the requestMap and exit
+            requestMap.put(TEMPLATE, templateSet);
+            break;
+          } else {
+            throw new InternalServerException("ABAC: AQL audit template data unavailable.");
+          }
+        } else {
+          throw new InternalServerException("ABAC: AQL audit template data malformed.");
+        }
       default:
         throw new InternalServerException("ABAC: Invalid type given from Pre- or PostAuthorize");
     }
@@ -338,27 +403,44 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
       throws IOException, InterruptedException {
     // prepare request attributes and convert from <String, Object> to <String, String>
     Map<String, String> request = new HashMap<>();
-    if (bodyMap.containsKey(PATIENT)) {
-      request.put(PATIENT, (String) bodyMap.get(PATIENT));
-    }
     if (bodyMap.containsKey(ORGANIZATION)) {
       request.put(ORGANIZATION, (String) bodyMap.get(ORGANIZATION));
     }
-    // check if template attributes are available and see if it contains a Set
+    // check if patient attribues are available and see if it contains a Set or simple String
+    if (bodyMap.containsKey(PATIENT)) {
+      if (bodyMap.get(PATIENT) instanceof Set) {
+        // check if templates are also configured
+        if (bodyMap.containsKey(TEMPLATE)) {
+          if (bodyMap.get(TEMPLATE) instanceof Set) {
+            // multiple templates possible: need cartesian product of n patients and m templates
+            // so: for each patient, go through templates and do a request each
+            Set<String> setP = (Set<String>) bodyMap.get(PATIENT);
+            for (String p : setP) {
+              request.put(PATIENT, p);
+              boolean success = sendRequestForEach(TEMPLATE, url, bodyMap, request);
+              if (!success) {
+                return false;
+              }
+            }
+            // in case all combinations were validated successfully
+            return true;
+          }
+        } else {
+          // only patients (or + orga) set. So run request for each patient, without template.
+          return sendRequestForEach(PATIENT, url, bodyMap, request);
+        }
+      } else if (bodyMap.get(PATIENT) instanceof String) {
+        request.put(PATIENT, (String) bodyMap.get(PATIENT));
+      } else {
+        // if it is just a String, set it and continue normal
+        throw new InternalServerException("ABAC: Invalid patient attribute content.");
+      }
+    }
+    // check if template attributes are available and see if it contains a Set or simple String
     if (bodyMap.containsKey(TEMPLATE)) {
       if (bodyMap.get(TEMPLATE) instanceof Set) {
         // set each template and send separate ABAC requests
-        Set<String> set = (Set<String>) bodyMap.get(TEMPLATE);
-        for (String s : set) {
-          request.put(TEMPLATE, s);
-          boolean allowed = evaluateResponse(abacRequest(url, request));
-          if (!allowed) {
-            // if only one combination of attributes is rejected by ABAC return false for all
-            return false;
-          }
-        }
-        // in case all combinations were validated successfully
-        return true;
+        return sendRequestForEach(TEMPLATE, url, bodyMap, request);
       } else if (bodyMap.get(TEMPLATE) instanceof String) {
         // if it is just a String, set it and continue normal
         request.put(TEMPLATE, (String) bodyMap.get(TEMPLATE));
@@ -367,6 +449,31 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
       }
     }
     return evaluateResponse(abacRequest(url, request));
+  }
+
+  /**
+   * Goes through all template IDs and sends an ABAC request for each.
+   * @param type Type, either ORGANIZATION, TEMPLATE, PATIENT
+   * @param url ABAC server request URL
+   * @param bodyMap Unprocessed attributes for the request
+   * @param request Processed attributes for the request
+   * @return True on success, False if one combinations is rejected by the ABAC server
+   * @throws IOException On error during attribute or HTTP handling
+   * @throws InterruptedException On error during HTTP handling
+   */
+  private boolean sendRequestForEach(String type, String url, Map<String, Object> bodyMap,
+      Map<String, String> request) throws IOException, InterruptedException {
+    Set<String> set = (Set<String>) bodyMap.get(type);
+    for (String s : set) {
+      request.put(type, s);
+      boolean allowed = evaluateResponse(abacRequest(url, request));
+      if (!allowed) {
+        // if only one combination of attributes is rejected by ABAC return false for all
+        return false;
+      }
+    }
+    // in case all combinations were validated successfully
+    return true;
   }
 
   /**
@@ -395,6 +502,11 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
     return HttpClient.newHttpClient().send(request, BodyHandlers.ofString());
   }
 
+  /**
+   * Evaluates the HTTP response for success.
+   * @param response HTTP response to evaluate
+   * @return True if status code indicates success
+   */
   private boolean evaluateResponse(HttpResponse<?> response) {
     return response.statusCode() == 200;
   }

@@ -40,6 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -118,6 +119,8 @@ public class OpenehrQueryController extends BaseController {
     }
 
     @PostMapping("/aql")
+    @PostAuthorize("checkAbacPost(@openehrQueryController.QUERY, authentication, "
+        + "null, @queryServiceImp.getAuditResultMap(), null)")
     @ApiOperation(value = "Execute ad-hoc (non-stored) AQL query", response = QueryResponseData.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Success.",
