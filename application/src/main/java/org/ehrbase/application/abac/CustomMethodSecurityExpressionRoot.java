@@ -68,6 +68,7 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
   static final String POST = "post";
 
   private final AbacConfig abacConfig;
+  private AbacCheck abacCheck;
   private CompositionService compositionService;
   private ContributionService contributionService;
   private EhrService ehrService;
@@ -75,9 +76,10 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
   private Object returnObject;
 
   public CustomMethodSecurityExpressionRoot(Authentication authentication,
-      AbacConfig abacConfig) {
+      AbacConfig abacConfig, AbacCheck abacCheck) {
     super(authentication);
     this.abacConfig = abacConfig;
+    this.abacCheck = abacCheck;
   }
 
   public void setCompositionService(CompositionService compositionService) {
@@ -217,10 +219,10 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
    */
   private void organizationHandling(JwtAuthenticationToken jwt, Map<String, Object> requestMap) {
     if (jwt.getTokenAttributes().containsKey(abacConfig.getOrganizationClaim())) {
-      // "patient_id" not available, use EHRbase subject
       String orgaId = (String) jwt.getTokenAttributes().get(abacConfig.getOrganizationClaim());
       requestMap.put(ORGANIZATION, orgaId);
     } else {
+      // organization configured but claim not available
       // TODO-505: reactivate later
       /*throw new IllegalArgumentException("ABAC use of an organization claim is configured but "
           + "can't be retrieved from the given JWT.");*/
@@ -242,16 +244,16 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
           Set<UUID> ehrs = (Set) ((Map<?, ?>) payload).get(AuditVariables.EHR_PATH);
           Set<String> patientSet = new HashSet<>();
           for (UUID ehr : ehrs) {
-            UUID subjectId = ehrService.getSubjectUuid(ehr.toString());
+            String subjectId = ehrService.getSubjectExtRef(ehr.toString());
             // check if patient token is available and if it matches
             if (!jwt.getTokenAttributes().containsKey(abacConfig.getPatientClaim())) {
               // no token, so just add our subject
-              patientSet.add(subjectId.toString());
+              patientSet.add(subjectId);
             } else {
               String tokenPatient = (String) jwt.getTokenAttributes().get(abacConfig.getPatientClaim());
-              if (subjectId.toString().equals(tokenPatient)) {
+              if (subjectId.equals(tokenPatient)) {
                 // matches, so add our subject
-                patientSet.add(subjectId.toString());
+                patientSet.add(subjectId);
               } else {
                 // doesn't match -> requesting data for patient X with token for patient Y
                 return false;
@@ -448,7 +450,7 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
         throw new InternalServerException("ABAC: Invalid template attribute content.");
       }
     }
-    return evaluateResponse(abacRequest(url, request));
+    return abacCheck.execute(url, request);
   }
 
   /**
@@ -466,7 +468,7 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
     Set<String> set = (Set<String>) bodyMap.get(type);
     for (String s : set) {
       request.put(type, s);
-      boolean allowed = evaluateResponse(abacRequest(url, request));
+      boolean allowed = abacCheck.execute(url, request);
       if (!allowed) {
         // if only one combination of attributes is rejected by ABAC return false for all
         return false;
@@ -477,40 +479,10 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
   }
 
   /**
-   * Helper to build and send the actual HTTP request to the ABAC server.
-   * @param url URL for ABAC server request
-   * @param bodyMap Map of attributes for the request
-   * @return HTTP response
-   * @throws IOException On error during attribute or HTTP handling
-   * @throws InterruptedException On error during HTTP handling
+   * Extracts the JWT auth token.
+   * @param auth Auth object.
+   * @return JWT Auth Token
    */
-  private HttpResponse<?> abacRequest(String url, Map<String, String> bodyMap)
-      throws IOException, InterruptedException {
-
-    // convert bodyMap to JSON
-    ObjectMapper objectMapper = new ObjectMapper();
-    String requestBody = objectMapper
-        .writerWithDefaultPrettyPrinter()
-        .writeValueAsString(bodyMap);
-
-    HttpRequest request = HttpRequest.newBuilder()
-        .uri(URI.create(url))
-        .header("Content-Type", "application/json")
-        .POST(BodyPublishers.ofString(requestBody))
-        .build();
-
-    return HttpClient.newHttpClient().send(request, BodyHandlers.ofString());
-  }
-
-  /**
-   * Evaluates the HTTP response for success.
-   * @param response HTTP response to evaluate
-   * @return True if status code indicates success
-   */
-  private boolean evaluateResponse(HttpResponse<?> response) {
-    return response.statusCode() == 200;
-  }
-
   private JwtAuthenticationToken getJwtAuthenticationToken(Authentication auth) {
     JwtAuthenticationToken jwt;
     if (auth instanceof JwtAuthenticationToken) {

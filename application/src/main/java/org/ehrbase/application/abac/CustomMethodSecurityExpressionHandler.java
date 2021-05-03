@@ -39,21 +39,25 @@ public class CustomMethodSecurityExpressionHandler extends DefaultMethodSecurity
   private final CompositionService compositionService;
   private final ContributionService contributionService;
   private final EhrService ehrService;
+  private final AbacCheck abacCheck;
 
   @Lazy
-  public CustomMethodSecurityExpressionHandler(AbacConfig abacConfig, CompositionService compositionService,
-      ContributionService contributionService, EhrService ehrService) {
+  public CustomMethodSecurityExpressionHandler(AbacConfig abacConfig,
+      CompositionService compositionService,
+      ContributionService contributionService, EhrService ehrService,
+      AbacCheck abacCheck) {
     this.abacConfig = abacConfig;
     this.compositionService = compositionService;
     this.contributionService = contributionService;
     this.ehrService = ehrService;
+    this.abacCheck = abacCheck;
   }
 
   @Override
   protected MethodSecurityExpressionOperations createSecurityExpressionRoot(
       Authentication authentication, MethodInvocation invocation) {
     CustomMethodSecurityExpressionRoot root =
-        new CustomMethodSecurityExpressionRoot(authentication, abacConfig);
+        new CustomMethodSecurityExpressionRoot(authentication, abacConfig, abacCheck);
     root.setCompositionService(this.compositionService);
     root.setContributionService(this.contributionService);
     root.setEhrService(this.ehrService);

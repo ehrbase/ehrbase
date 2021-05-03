@@ -165,4 +165,11 @@ public interface EhrService extends BaseService {
      * @return Linked subject ID or null
      */
     UUID getSubjectUuid(String ehrId);
+
+    /**
+     * Helper to directly get the external subject reference form the linked subject to given EHR.
+     * @param ehrId Given EHR ID
+     * @return Linked external subject reference or null
+     */
+    String getSubjectExtRef(String ehrId);
 }
