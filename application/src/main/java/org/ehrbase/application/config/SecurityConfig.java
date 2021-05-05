@@ -109,7 +109,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .hasRole(ADMIN)
             // Everything else is open to all users of role admin and user
             .antMatchers("/**")
-            // TODO-505: remove PoC hard coded roles
             .hasAnyRole(ADMIN, USER, PROFILE_SCOPE)
             .and()
             .oauth2ResourceServer()

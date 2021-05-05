@@ -217,9 +217,8 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
       requestMap.put(ORGANIZATION, orgaId);
     } else {
       // organization configured but claim not available
-      // TODO-505: reactivate later
-      /*throw new IllegalArgumentException("ABAC use of an organization claim is configured but "
-          + "can't be retrieved from the given JWT.");*/
+      throw new IllegalArgumentException("ABAC use of an organization claim is configured but "
+          + "can't be retrieved from the given JWT.");
     }
   }
 
