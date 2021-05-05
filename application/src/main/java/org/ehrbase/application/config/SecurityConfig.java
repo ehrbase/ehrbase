@@ -30,6 +30,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -49,6 +50,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
   // Roles, independent of auth type
   public static final String ADMIN = "ADMIN";
   public static final String USER = "USER";
+  public static final String PROFILE_SCOPE = "PROFILE";
 
   private final SecurityYAMLConfig securityYAMLConfig;
 
@@ -108,7 +110,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             // Everything else is open to all users of role admin and user
             .antMatchers("/**")
             // TODO-505: remove PoC hard coded roles
-            .hasAnyRole(ADMIN, USER, "PROFILE", "OFFLINE_ACCESS", "VIEW-PROFILE", "UMA_AUTHORIZATION", "UMA_PROTECTION")
+            .hasAnyRole(ADMIN, USER, PROFILE_SCOPE)
             .and()
             .oauth2ResourceServer()
             .jwt()
@@ -129,29 +131,32 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     return new BCryptPasswordEncoder();
   }
 
-  // Converter creates list of "ROLE_*" (upper case) authorities for each realm access role from JWT
+  // Converter creates list of "ROLE_*" (upper case) authorities for each "realm access" role
+  // and "roles" role from JWT
   private Converter<Jwt, AbstractAuthenticationToken> getJwtAuthenticationConverter() {
-    JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+    var converter = new JwtAuthenticationConverter();
     converter.setJwtGrantedAuthoritiesConverter(
         jwt -> {
-          /*Map<String, Object> realmAccess =
-              (Map<String, Object>) jwt.getClaims().get("realm_access");
-          // TODO-505: fix or remove PoC handling
-          if (realmAccess == null)
-            realmAccess = new HashMap<>();
-          Map<String, Object> resourceAccess = (Map<String, Object>) jwt.getClaims()
-              .get("resource_access");
-          realmAccess.putAll((Map<String, Object>) resourceAccess.get("demographics-service"));
-          return ((List<String>) realmAccess.get("roles"))
-              .stream()
-                  .map(roleName -> "ROLE_" + roleName.toUpperCase())
-                  .map(SimpleGrantedAuthority::new)
-                  .collect(Collectors.toList());*/
+          Map<String, Object> realmAccess;
+          realmAccess = (Map<String, Object>) jwt.getClaims().get("realm_access");
 
-          return Arrays.stream(jwt.getClaims().get("scope").toString().split(" "))
-              .map(roleName -> "ROLE_" + roleName.toUpperCase())
-              .map(SimpleGrantedAuthority::new)
-              .collect(Collectors.toList());
+          Collection<GrantedAuthority> authority = new HashSet<>();
+          if (realmAccess != null && realmAccess.containsKey("roles")) {
+            authority.addAll(((List<String>) realmAccess.get("roles"))
+                .stream()
+                .map(roleName -> "ROLE_" + roleName.toUpperCase())
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList()));
+          }
+
+          //Collection<GrantedAuthority> finalAuthority = authority;
+          if (jwt.getClaims().containsKey("scope")) {
+            authority.addAll(Arrays.stream(jwt.getClaims().get("scope").toString().split(" "))
+                .map(roleName -> "ROLE_" + roleName.toUpperCase())
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList()));
+            }
+          return authority;
         });
     return converter;
   }

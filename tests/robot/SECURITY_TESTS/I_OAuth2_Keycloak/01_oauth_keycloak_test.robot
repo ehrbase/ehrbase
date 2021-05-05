@@ -161,6 +161,13 @@ Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
         Integer         response status    401
 
 
+08 Private resources are available with valid token
+        Set Headers     { "Authorization": "Bearer ${ACCESS_TOKEN}" }
+        REST.GET        ${BASEURL}/ehr
+                        Output
+        Integer         response status    200
+
+
 # 7) Private resources are available after auth
 #    This is tested by reusing existing tests with changed settings on the CI 
 #    For details check .circleci/config.yml --> search "SECURITY-test"
