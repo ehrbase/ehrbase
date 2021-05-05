@@ -138,8 +138,8 @@ public class OpenehrVersionedCompositionController extends BaseController{
 
     @GetMapping(path = "/{versioned_object_uid}/version/{version_uid}")
     // checkAbacPre /-Post attributes (type, auth object, subject, payload, content type)
-    @PostAuthorize("checkAbacPost(@openehrCompositionController.COMPOSITION, authentication, "
-        + "@ehrService.getSubjectUuid(#ehrIdString), returnObject, #accept)")
+    @PostAuthorize("checkAbacPost(@openehrVersionedCompositionController.COMPOSITION, authentication, "
+        + "@ehrService.getSubjectExtRef(#ehrIdString), returnObject, #accept)")
     @ApiOperation(value = "Retrieves a VERSION identified by version_uid of a VERSIONED_COMPOSITION identified by versioned_object_uid and associated with the EHR identified by ehr_id.", response = OriginalVersionResponseData.class)
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Ok - requested VERSION is successfully retrieved.",
@@ -182,8 +182,8 @@ public class OpenehrVersionedCompositionController extends BaseController{
 
     @GetMapping(path = "/{versioned_object_uid}/version")
     // checkAbacPre /-Post attributes (type, auth object, subject, payload, content type)
-    @PostAuthorize("checkAbacPost(@openehrCompositionController.COMPOSITION, authentication, "
-        + "@ehrService.getSubjectUuid(#ehrIdString), returnObject, #accept)")
+    @PostAuthorize("checkAbacPost(@openehrVersionedCompositionController.COMPOSITION, authentication, "
+        + "@ehrService.getSubjectExtRef(#ehrIdString), returnObject, #accept)")
     @ApiOperation(value = "Retrieves a VERSION of a VERSIONED_COMPOSITION identified by versioned_object_uid and associated with the EHR identified by ehr_id. If version_at_time is supplied, retrieves the VERSION extant at specified time, otherwise retrieves the latest VERSION.", response = OriginalVersionResponseData.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok - requested VERSION is successfully retrieved.",

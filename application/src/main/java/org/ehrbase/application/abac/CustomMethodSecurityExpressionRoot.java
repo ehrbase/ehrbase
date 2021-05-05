@@ -18,16 +18,9 @@
 
 package org.ehrbase.application.abac;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpRequest.BodyPublishers;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -47,6 +40,7 @@ import org.ehrbase.response.ehrscape.CompositionDto;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.openehr.OriginalVersionResponseData;
 import org.ehrbase.rest.openehr.controller.BaseController;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.expression.SecurityExpressionRoot;
@@ -314,6 +308,19 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
           // @PostAuthorize gives a ResponseEntity type for "returnObject", so payload is of that type
           if (((ResponseEntity) payload).hasBody()) {
             Object body = ((ResponseEntity) payload).getBody();
+            // can have "No content" here (even with some data in the body) if the compo was (logically) deleted
+            if (((ResponseEntity<?>) payload).getStatusCode().equals(HttpStatus.NO_CONTENT)) {
+              if (body instanceof Map) {
+                Object error = ((Map<?, ?>) body).get("error");
+                if (error != null) {
+                  if (((String) error).contains("delet")) {
+                    //composition was deleted, so nothing to check here, skip
+                    break;
+                  }
+                }
+              }
+              throw new InternalServerException("ABAC: Unexpected empty response from composition reuquest");
+            }
             if (body instanceof OriginalVersionResponseData) {
               // case of versioned_composition --> fast path, because template is easy to get
               if (((OriginalVersionResponseData<?>) body).getData() instanceof Composition) {
@@ -383,10 +390,7 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
         if (payload instanceof Map) {
           if (((Map<?, ?>) payload).containsKey(AuditVariables.TEMPLATE_PATH)) {
             Set<String> templates = (Set) ((Map<?, ?>) payload).get(AuditVariables.TEMPLATE_PATH);
-            Set<String> templateSet = new HashSet<>();
-            for (String template : templates) {
-              templateSet.add(template);
-            }
+            Set<String> templateSet = new HashSet<>(templates);
             // put result set into the requestMap and exit
             requestMap.put(TEMPLATE, templateSet);
             break;

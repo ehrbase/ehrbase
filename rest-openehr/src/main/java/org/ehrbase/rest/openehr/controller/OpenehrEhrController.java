@@ -194,8 +194,8 @@ public class OpenehrEhrController extends BaseController {
      */
     @GetMapping(path = "/{ehr_id}")
     // checkAbacPre /-Post attributes (type, auth object, subject, payload, content type)
-    @PostAuthorize("checkAbacPost(@openehrCompositionController.EHR, authentication, "
-        + "@ehrService.getSubjectUuid(#ehrIdString), null, null)")
+    @PostAuthorize("checkAbacPost(@openehrEhrController.EHR, authentication, "
+        + "@ehrService.getSubjectExtRef(#ehrIdString), null, null)")
     @ApiOperation(value = "Retrieve the EHR with the specified ehr_id.", response = EhrResponseData.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok - EHR resource is successfully retrieved.",
@@ -224,8 +224,8 @@ public class OpenehrEhrController extends BaseController {
      */
     @GetMapping(params = {"subject_id", "subject_namespace"})
     // checkAbacPre /-Post attributes (type, auth object, subject, payload, content type)
-    @PreAuthorize("checkAbacPre(@openehrCompositionController.EHR, authentication, "
-        + "#subjectId, null, null)")
+    @PreAuthorize("checkAbacPre(@openehrEhrController.EHR, authentication, "
+        + "@ehrService.getSubjectExtRef(#ehrIdString), null, null)")
     @ApiOperation(value = "Retrieve the EHR with the specified subject_id and subject_namespace.", response = EhrResponseData.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok - EHR resource is successfully retrieved.",

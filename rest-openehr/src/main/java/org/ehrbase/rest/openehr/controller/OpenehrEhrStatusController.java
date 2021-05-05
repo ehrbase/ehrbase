@@ -34,7 +34,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -61,8 +60,8 @@ public class OpenehrEhrStatusController extends BaseController {
 
     @GetMapping
     // checkAbacPre /-Post attributes (type, auth object, subject, payload, content type)
-    @PreAuthorize("checkAbacPre(@openehrCompositionController.EHR_STATUS, authentication, "
-        + "@ehrService.getSubjectUuid(#ehrIdString), null, null)")
+    @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, authentication, "
+        + "@ehrService.getSubjectExtRef(#ehrIdString), null, null)")
     @ApiOperation(value = "Retrieves the version of the EHR_STATUS associated with the EHR identified by ehr_id. If version_at_time is supplied, retrieves the version extant at specified time, otherwise retrieves the latest EHR_STATUS version.", response = EhrStatusResponseData.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok - requested EHR_STATUS resource is successfully retrieved.",
@@ -101,8 +100,8 @@ public class OpenehrEhrStatusController extends BaseController {
 
     @GetMapping(path = "/{version_uid}")
     // checkAbacPre /-Post attributes (type, auth object, subject, payload, content type)
-    @PreAuthorize("checkAbacPre(@openehrCompositionController.EHR_STATUS, authentication, "
-        + "@ehrService.getSubjectUuid(#ehrIdString), null, null)")
+    @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, authentication, "
+        + "@ehrService.getSubjectExtRef(#ehrIdString), null, null)")
     @ApiOperation(value = "Retrieves a particular version of the EHR_STATUS identified by version_uid and associated with the EHR identified by ehr_id.", response = EhrStatusResponseData.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok - requested EHR_STATUS is successfully retrieved.",
@@ -145,8 +144,8 @@ public class OpenehrEhrStatusController extends BaseController {
 
     @PutMapping
     // checkAbacPre /-Post attributes (type, auth object, subject, payload, content type)
-    @PreAuthorize("checkAbacPre(@openehrCompositionController.EHR_STATUS, authentication, "
-        + "@ehrService.getSubjectUuid(#ehrIdString), null, null)")
+    @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, authentication, "
+        + "@ehrService.getSubjectExtRef(#ehrIdString), null, null)")
     @ApiOperation(value = "Updates EHR_STATUS associated with the EHR identified by ehr_id. The existing latest version_uid of EHR_STATUS resource (i.e the preceding_version_uid) must be specified in the If-Match header. The response will contain the updated EHR_STATUS resource when the Prefer header has a value of return=representation")
     @OperationNotesResourcesReaderOpenehr.ApiNotes("ehrStatusPut.md")
     @ApiResponses(value = {

@@ -152,7 +152,7 @@ public class OpenehrCompositionController extends BaseController {
     @PutMapping("/{ehr_id}/composition/{versioned_object_uid}")
     // checkAbacPre /-Post attributes (type, auth object, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrCompositionController.COMPOSITION, authentication, "
-        + "@ehrService.getSubjectUuid(#ehrIdString), #composition, #contentType)")
+        + "@ehrService.getSubjectExtRef(#ehrIdString), #composition, #contentType)")
     @ApiOperation(value = "Update existing composition.", response = CompositionResponseData.class)
     @ApiNotes("compositionPut.md")     // this utilizes a workaround, see source class for info
     @ApiResponses(value = {
@@ -243,7 +243,7 @@ public class OpenehrCompositionController extends BaseController {
     @DeleteMapping("/{ehr_id}/composition/{preceding_version_uid}")
     // checkAbacPre /-Post attributes (type, auth object, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrCompositionController.COMPOSITION, authentication, "
-        + "@ehrService.getSubjectUuid(#ehrIdString), #precedingVersionUid, null)")
+        + "@ehrService.getSubjectExtRef(#ehrIdString), #precedingVersionUid, null)")
     @ApiOperation(value = "Deletes existing composition.")
     @ApiResponses(value = {
             @ApiResponse(code = 204, message = "COMPOSITION was deleted.",
@@ -324,7 +324,7 @@ public class OpenehrCompositionController extends BaseController {
     @GetMapping("/{ehr_id}/composition/{version_uid}")
     // checkAbacPre /-Post attributes (type, auth object, subject, payload, content type)
     @PostAuthorize("checkAbacPost(@openehrCompositionController.COMPOSITION, authentication, "
-        + "@ehrService.getSubjectUuid(#ehrIdString), returnObject, #accept)")
+        + "@ehrService.getSubjectExtRef(#ehrIdString), returnObject, #accept)")
     @ApiOperation(value = "Get composition by version id.")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK.",
@@ -353,7 +353,7 @@ public class OpenehrCompositionController extends BaseController {
     @GetMapping("/{ehr_id}/composition/{versioned_object_uid}{?version_at_time}")
     // checkAbacPre /-Post attributes (type, auth object, subject, payload, content type)
     @PostAuthorize("checkAbacPost(@openehrCompositionController.COMPOSITION, authentication, "
-        + "@ehrService.getSubjectUuid(#ehrIdString), returnObject, #accept)")
+        + "@ehrService.getSubjectExtRef(#ehrIdString), returnObject, #accept)")
     @ApiOperation(value = "Get composition at time.")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK.",
