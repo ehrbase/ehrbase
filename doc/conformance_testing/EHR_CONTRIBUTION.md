@@ -334,7 +334,7 @@ Any `invalid` payload should be <span class="rejected">REJECTED</span>.
 
 
 
-## C. CONTRIBUTION of COMPOSITIONs Flows
+## C. Commit CONTRIBUTION of COMPOSITIONs Flows
 
 ### C.1. Main flow: successfully commit CONTRIBUTION with single valid `VERSION<COMPOSITION>`
 
@@ -560,25 +560,154 @@ None
 
 
 
-## D. CONTRIBUTIONS of EHR_STATUS Flows
+## D. Commit CONTRIBUTIONS of EHR_STATUS Flows
 
-WIP....
-
-
-#### B.5.k. Alternative flow 10: successfully commit CONTRIBUTION with single valid VERSION<EHR_STATUS> MODIFICATION
+### D.1. Main flow: successfully commit CONTRIBUTION of VERSION<EHR_STATUS>
 
 **Preconditions:**
 
-An EHR with known ehr_id exists, and contains the default EHR_STATUS.
+1. An EHR with known ehr_id exists
+2. The EHR contains a default EHR_STATUS
 
 **Postconditions:**
 
-The EHR with ehr_id will have a new CONTRIBUTION.
-The EHR with ehr_id has a new VERSION for the EHR_STATUS.
+1. The EHR should have a new CONTRIBUTION
+2. The EHR should have a new VERSION for the EHR_STATUS
 
 **Flow:**
 
-1. Invoke commit CONTRIBUTION service with an existing ehr_id and the valid data sets (see section C.1.1.1.), with change_type MODIFICATION.
-2. The result should be positive and retrieve the id of the CONTRIBUTION just created.
-3. Verify expected CONTRIBUTION uids and CONTRIBUTION count for the EHR with ehr_id.
+1. Invoke commit CONTRIBUTION service with an existing ehr_id and the valid data sets (see section B.3.)
+   1. For EHR_STATUS CONTRIBUTIONs, the change_type is always `modification` or `amendment`
+2. The result should be positive and retrieve the id of the CONTRIBUTION just created
+3. Verify expected CONTRIBUTION uids and CONTRIBUTION count for the EHR with ehr_id
 
+
+### D.2. Alternative flow 1: successfully commit CONTRIBUTION of VERSION<EHR_STATUS>, full EHR_STATUS
+
+> Note: this case is the same as D.1. but the precondition 2. is different.
+
+**Preconditions:**
+
+1. An EHR with known ehr_id exists
+2. The EHR contains a full EHR_STATUS (all the optional information is set, for instance subject.external_ref)
+
+**Postconditions:**
+
+1. The EHR should have a new CONTRIBUTION
+2. The EHR should have a new VERSION for the EHR_STATUS
+
+**Flow:**
+
+1. Invoke commit CONTRIBUTION service with an existing ehr_id and the valid data sets (see section B.3.)
+   1. Use change_type = `modification` or `amendment`
+2. The result should be positive and retrieve the id of the CONTRIBUTION just created
+3. Verify expected CONTRIBUTION uids and CONTRIBUTION count for the EHR with ehr_id
+
+
+### D.3. Alternative flow 2: fail commit CONTRIBUTION of VERSION<EHR_STATUS>, wrong change_type
+
+**Preconditions:**
+
+1. An EHR with known ehr_id exists
+2. The EHR has the default EHR_STATUS
+
+**Postconditions:**
+
+None
+
+**Flow:**
+
+1. Invoke commit CONTRIBUTION service with an existing ehr_id and the valid data sets (see section B.3.)
+   1. Use change_type = `create` and `delete`
+2. The result should be negative and retrieve an error related to the EHR_STATUS already existing for the EHR
+
+
+### D.4. Alternative flow 3: fail commit CONTRIBUTION of VERSION<EHR_STATUS>, invalid EHR_STATUS
+
+**Preconditions:**
+
+1. An EHR with known ehr_id exists
+2. The EHR has the default EHR_STATUS
+
+**Postconditions:**
+
+None
+
+**Flow:**
+
+1. Invoke commit CONTRIBUTION service with an existing ehr_id and the invalid data sets (see section B.3.)
+   1. Use change_type = `modification`
+2. The result should be negative and retrieve an error related to the invalid EHR_STATUS
+
+
+
+## E. Commit CONTRIBUTIONS of FOLDER Flows
+
+### E.1. Alternative flow 12: successfully commit CONTRIBUTION of VERSION<FOLDER>
+
+**Preconditions:**
+
+1. An EHR with known ehr_id exists
+2. The EHR doesn't have a directory (root FOLDER)
+
+**Postconditions:**
+
+1. The EHR with should have a new CONTRIBUTION and a root FOLDER.
+
+**Flow:**
+
+1. Invoke commit CONTRIBUTION service with an existing ehr_id and the valid data sets (see B.4.) and change_type = `creation`
+2. The result should be positive and retrieve the id of the CONTRIBUTION just created
+
+
+### E.2. Alternative flow 13: error commit CONTRIBUTION of VERSION<FOLDER> FOLDER exists
+
+**Preconditions:**
+
+1. An EHR with known ehr_id exists
+2. The EHR has a directory (root FOLDER)
+
+**Postconditions:**
+
+None
+
+**Flow:**
+
+1. Invoke commit CONTRIBUTION service with an existing ehr_id and the valid data sets (see B.4.) and change_type = `creation`
+2. The result should be negative, and retrieve an error related to the wrong change_type because the root FOLDER already exists
+
+
+### E.3. Alternative flow 14: error commit CONTRIBUTION of VERSION<FOLDER> update
+
+**Preconditions:**
+
+1. An EHR with known ehr_id exists
+2. The EHR doesn't have a directory (root FOLDER)
+
+**Postconditions:**
+
+None
+
+**Flow:**
+
+1. Invoke commit CONTRIBUTION service with an existing ehr_id and the valid data sets
+   1. Use change_type = `modification`
+   2. Use a random `preceding_version_uid`
+2. The result should be negative since, and retrieve an error related to the wrong change_type, because it's trying to modify something that doesn't exist
+
+
+### E.4. Alternative flow 15: successful commit CONTRIBUTION of VERSION<FOLDER> update
+
+**Preconditions:**
+
+1. An EHR with known ehr_id exists
+2. The EHR has a directory (root FOLDER)
+
+**Postconditions:**
+
+!. The EHR should have a new CONTRIBUTION and a new VERSION for the root FOLDER
+
+**Flow:**
+
+1. Invoke commit CONTRIBUTION service with an existing ehr_id and the valid data sets with change_type = `modification` or `amendment`
+2. The result should be positive and retrieve the id of the CONTRIBUTION just created
