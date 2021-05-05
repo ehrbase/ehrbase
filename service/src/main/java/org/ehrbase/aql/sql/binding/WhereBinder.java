@@ -246,14 +246,7 @@ public class WhereBinder {
                 TaggedStringBuilder taggedStringBuilder = new TaggedStringBuilder();
                 if (isFollowedBySQLConditionalOperator(cursor)) {
                     TaggedStringBuilder encodedVar = encodeWhereVariable(templateId, (I_VariableDefinition) item, true, null);
-                    String expanded = expandForCondition(encodedVar);
-                    if (new WhereSetReturningFunction(expanded).isUsed() && new InSetWhereClause(whereItems).isInSubQueryExpression(cursor)){
-                        //insert new LATERAL pseudo table to the variable if not yet defined
-                        if (!((I_VariableDefinition) item).isLateralJoin()) {
-                            encodeLateral(encodedVar, (I_VariableDefinition)item );
-                        }
-                        expanded = ((I_VariableDefinition) item).getAlias();
-                    }
+                    String expanded = expandForLateral(encodedVar, (I_VariableDefinition)item );
                     if (expanded != null)
                         taggedStringBuilder.append(expanded);
                     else {
@@ -274,7 +267,7 @@ public class WhereBinder {
                     } else {
                         //if the path contains node predicate expression uses a SQL syntax instead of jsquery
                         if (new VariablePath(((I_VariableDefinition) item).getPath()).hasPredicate()) {
-                            String expanded = expandForCondition(encodeWhereVariable(templateId, (I_VariableDefinition) item, true, null));
+                            String expanded = expandForLateral(encodeWhereVariable(templateId, (I_VariableDefinition) item, true, null), (I_VariableDefinition)item );
                             if (expanded != null)
                                 taggedStringBuilder.append(expanded);
                             else {
@@ -284,23 +277,12 @@ public class WhereBinder {
                             isFollowedBySQLConditionalOperator = true;
                             requiresJSQueryClosure = false;
                         } else {
-                            //check if a comparison item is a date, then force SQL if any
-                            if (item instanceof  VariableDefinition && new WhereTemporal(whereItems).containsTemporalItem((VariableDefinition)item) || new WhereEvaluation(whereItems).requiresSQL()) {
-                                String expanded = expandForCondition(encodeWhereVariable(templateId, (I_VariableDefinition) item, true, null));
-                                if (expanded != null)
-                                    taggedStringBuilder.append(expanded);
-                                else {
-                                    unresolvedVariable = true;
-                                    break;
-                                }
-                            } else {
-                                String expanded = expandForCondition(encodeWhereVariable(templateId, (I_VariableDefinition) item, false, null));
-                                if (expanded != null)
-                                    taggedStringBuilder.append(expanded);
-                                else {
-                                    unresolvedVariable = true;
-                                    break;
-                                }
+                            String expanded = expandForLateral(encodeWhereVariable(templateId, (I_VariableDefinition) item, true, null), (I_VariableDefinition)item );
+                            if (expanded != null)
+                                taggedStringBuilder.append(expanded);
+                            else {
+                                unresolvedVariable = true;
+                                break;
                             }
                         }
                     }
@@ -416,6 +398,19 @@ public class WhereBinder {
         }
 
         return wrapped;
+    }
+
+    private String expandForLateral( TaggedStringBuilder encodedVar, I_VariableDefinition item){
+        String expanded = expandForCondition(encodedVar);
+        if (new WhereSetReturningFunction(expanded).isUsed()){
+            //insert new LATERAL pseudo table to the variable if not yet defined
+            if (!item.isLateralJoin()) {
+                encodeLateral(encodedVar, item );
+            }
+            expanded = item.getAlias();
+        }
+
+        return expanded;
     }
 
     private void encodeLateral(TaggedStringBuilder encodedVar, I_VariableDefinition item){

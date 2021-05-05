@@ -174,3 +174,13 @@ management:
 ipf:
   atna:
     audit-enabled: false
+
+# External Terminology Validation Properties
+validation:
+  external-terminology:
+    enabled: false
+
+# SSL Properties (used by Spring WebClient and Apache HTTP Client)
+client:
+  ssl:
+    enabled: false
