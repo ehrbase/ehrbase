@@ -163,9 +163,9 @@ Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 
 08 Private resources are available with valid token
         Set Headers     { "Authorization": "Bearer ${ACCESS_TOKEN}" }
-        REST.GET        ${BASEURL}/ehr
+        REST.GET        ${BASEURL}/ehr/cd05e77d-63f8-4074-9937-80c4d4406bff
                         Output
-        Integer         response status    200
+        Integer         response status    404
 
 
 # 7) Private resources are available after auth
