@@ -22,6 +22,8 @@
     - [Knowledge](#knowledge)
     - [EHR](#ehr)
     - [EHR/COMPOSITION](#ehrcomposition)
+    - [EHR/CONTRIBUTION](#ehrcontribution)
+    - [FOLDER](#folder)
   - [Test Case Dependencies](#test-case-dependencies)
 <!--te-->
 
@@ -88,9 +90,23 @@ This component includes the test suites for EHR and EHR_STATUS, which test servi
 
 ### EHR/COMPOSITION
 
-This component includes the test suites COMPOSITION and CONTRIBUTION. Both are composed by test cases focused on EHR data management, including creation, modification and versioning.
+This component includes the test suite for COMPOSITION related services, containing test cases focused on information content, including creation, modification and versioning.
 
 [EHR/COMPOSITION Test Suite](EHR_COMPOSITION.md)
+
+
+### EHR/CONTRIBUTION
+
+This component includes te test suite for CONTRIBUTION related services, containing test cases focused on EHR data management, including creation, modification and versioning of COMPOSITION, EHR_STATUS and FOLDER.
+
+[EHR/CONTRIBUTION Test Suite](EHR_CONTRIBUTION.md)
+
+
+### FOLDER
+
+WIP
+
+[FOLDER](FOLDER.md)
 
 
 ## Test Case Dependencies
