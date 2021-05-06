@@ -23,8 +23,8 @@
       - [B.3.1. Combinations for data sets](#b31-combinations-for-data-sets)
     - [B.4. FOLDER Commit CONTRIBUTION Test Data Sets](#b4-folder-commit-contribution-test-data-sets)
       - [B.4.1. Combinations for data sets](#b41-combinations-for-data-sets)
-  - [C. CONTRIBUTION of COMPOSITIONs Flows](#c-contribution-of-compositions-flows)
-    - [C.1. Main flow: successfully commit CONTRIBUTION with single valid `VERSION<COMPOSITION>`](#c1-main-flow-successfully-commit-contribution-with-single-valid-versioncomposition)
+  - [C. Commit CONTRIBUTION of COMPOSITIONs Flows](#c-commit-contribution-of-compositions-flows)
+    - [C.1. Main flow: successfully commit CONTRIBUTION of `VERSION<COMPOSITION>`](#c1-main-flow-successfully-commit-contribution-of-versioncomposition)
     - [C.2. Alternative flow 1: commit CONTRIBUTION with errors in `VERSION<COMPOSITION>`](#c2-alternative-flow-1-commit-contribution-with-errors-in-versioncomposition)
     - [C.3. Alternative flow 2: commit invalid CONTRIBUTION (no VERSIONs provided)](#c3-alternative-flow-2-commit-invalid-contribution-no-versions-provided)
     - [C.4. Alternative flow 3: commit CONTRIBUTION with a mix of valid and invalid `VERSION<COMPOSITION>`](#c4-alternative-flow-3-commit-contribution-with-a-mix-of-valid-and-invalid-versioncomposition)
@@ -34,8 +34,32 @@
     - [C.8. Alternative flow 7: commit CONTRIBUTIONS for versioning, the second commit contains errors](#c8-alternative-flow-7-commit-contributions-for-versioning-the-second-commit-contains-errors)
     - [C.9. Alternative flow 8: commit CONTRIBUTIONS for versioning a persistent COMPOSITION, the second commit has change type creation](#c9-alternative-flow-8-commit-contributions-for-versioning-a-persistent-composition-the-second-commit-has-change-type-creation)
     - [C.10. Alternative flow 9. commit CONTRIBUTION with COMPOSITION referencing a non existing OPT](#c10-alternative-flow-9-commit-contribution-with-composition-referencing-a-non-existing-opt)
-  - [D. CONTRIBUTIONS of EHR_STATUS Flows](#d-contributions-of-ehr_status-flows)
-      - [B.5.k. Alternative flow 10: successfully commit CONTRIBUTION with single valid VERSION<EHR_STATUS> MODIFICATION](#b5k-alternative-flow-10-successfully-commit-contribution-with-single-valid-versionehr_status-modification)
+  - [D. Commit CONTRIBUTIONS of EHR_STATUS Flows](#d-commit-contributions-of-ehr_status-flows)
+    - [D.1. Main flow: successfully commit CONTRIBUTION of `VERSION<EHR_STATUS>`](#d1-main-flow-successfully-commit-contribution-of-versionehr_status)
+    - [D.2. Alternative flow 1: successfully commit CONTRIBUTION of `VERSION<EHR_STATUS>`, full EHR_STATUS](#d2-alternative-flow-1-successfully-commit-contribution-of-versionehr_status-full-ehr_status)
+    - [D.3. Alternative flow 2: fail commit CONTRIBUTION of `VERSION<EHR_STATUS>`, wrong change_type](#d3-alternative-flow-2-fail-commit-contribution-of-versionehr_status-wrong-change_type)
+    - [D.4. Alternative flow 3: fail commit CONTRIBUTION of `VERSION<EHR_STATUS>`, invalid EHR_STATUS](#d4-alternative-flow-3-fail-commit-contribution-of-versionehr_status-invalid-ehr_status)
+  - [E. Commit CONTRIBUTIONS of FOLDER Flows](#e-commit-contributions-of-folder-flows)
+    - [E.1. Alternative flow 12: successfully commit CONTRIBUTION of `VERSION<FOLDER>`](#e1-alternative-flow-12-successfully-commit-contribution-of-versionfolder)
+    - [E.2. Alternative flow 13: fail commit CONTRIBUTION of `VERSION<FOLDER>` FOLDER exists](#e2-alternative-flow-13-fail-commit-contribution-of-versionfolder-folder-exists)
+    - [E.3. Alternative flow 14: fail commit CONTRIBUTION of `VERSION<FOLDER>` update](#e3-alternative-flow-14-fail-commit-contribution-of-versionfolder-update)
+    - [E.4. Alternative flow 15: successful commit CONTRIBUTION of `VERSION<FOLDER>` update](#e4-alternative-flow-15-successful-commit-contribution-of-versionfolder-update)
+  - [F. List CONTRIBUTIONs](#f-list-contributions)
+    - [F.1. Main flow: list CONTRIBUTIONS of existing EHR with a just committed CONTRIBUTION (COMPOSITION)](#f1-main-flow-list-contributions-of-existing-ehr-with-a-just-committed-contribution-composition)
+    - [F.2. Alternative flow 1: list CONTRIBUTIONS of existing EHR with no CONTRIBUTIONS (ANY)](#f2-alternative-flow-1-list-contributions-of-existing-ehr-with-no-contributions-any)
+    - [F.3. Alternative flow 2: lis CONTRIBUTIONS of non existing EHR (ANY)](#f3-alternative-flow-2-lis-contributions-of-non-existing-ehr-any)
+    - [F.4. Alternative flow 3: list CONTRIBUTIONS of existing EHR with a just committed CONTRIBUTION (EHR_STATUS)](#f4-alternative-flow-3-list-contributions-of-existing-ehr-with-a-just-committed-contribution-ehr_status)
+    - [F.5. Alternative flow 4: list CONTRIBUTIONS of existing EHR with a just committed CONTRIBUTION (FOLDER)](#f5-alternative-flow-4-list-contributions-of-existing-ehr-with-a-just-committed-contribution-folder)
+  - [G. Has CONTRIBUTION](#g-has-contribution)
+    - [G.1. Main flow: has CONTRIBUTION with existing CONTRIBUTION](#g1-main-flow-has-contribution-with-existing-contribution)
+    - [G.2. Alternative flow 1: has CONTRIBUTION on empty EHR](#g2-alternative-flow-1-has-contribution-on-empty-ehr)
+    - [G.3. Alternative flow 2: has CONTRIBUTION, EHR doesn't exist](#g3-alternative-flow-2-has-contribution-ehr-doesnt-exist)
+    - [G.4. Alternative flow 3: has CONTRIBUTION, EHR with CONTRIBUTIONS, but CONTRIBUTION doesn't exist](#g4-alternative-flow-3-has-contribution-ehr-with-contributions-but-contribution-doesnt-exist)
+  - [H. Get CONTRIBUTION](#h-get-contribution)
+    - [H.1. Main flow: get CONTRIBUTION with existing CONTRIBUTION](#h1-main-flow-get-contribution-with-existing-contribution)
+    - [H.2. Alternative flow 1: get CONTRIBUTION on empty EHR](#h2-alternative-flow-1-get-contribution-on-empty-ehr)
+    - [H.3. Alternative flow 2: get CONTRIBUTION, EHR doesn't exist](#h3-alternative-flow-2-get-contribution-ehr-doesnt-exist)
+    - [H.4. Alternative flow 3: get CONTRIBUTION, EHR with CONTRIBUTIONS, but CONTRIBUTION doesn't exist](#h4-alternative-flow-3-get-contribution-ehr-with-contributions-but-contribution-doesnt-exist)
 <!--te-->
 
 
@@ -320,6 +344,16 @@ All the datasets are specified at the EHR.directory level, since that is the cur
 4. directory with items and subfolders
 5. directory with items and subfolders with items
 
+
+Sample structure of FOLDERs with items:
+
+<div align="center">
+
+![Folders with items](img/openEHR_Test_Folder_Data.png)
+</div>
+
+Table of data combinations:
+
 <div id ="folder_commit">
 
 | change_type              | lifecycle_state       | payload | expected |
@@ -336,7 +370,7 @@ Any `invalid` payload should be <span class="rejected">REJECTED</span>.
 
 ## C. Commit CONTRIBUTION of COMPOSITIONs Flows
 
-### C.1. Main flow: successfully commit CONTRIBUTION with single valid `VERSION<COMPOSITION>`
+### C.1. Main flow: successfully commit CONTRIBUTION of `VERSION<COMPOSITION>`
 
 **Preconditions:**
 
@@ -562,7 +596,7 @@ None
 
 ## D. Commit CONTRIBUTIONS of EHR_STATUS Flows
 
-### D.1. Main flow: successfully commit CONTRIBUTION of VERSION<EHR_STATUS>
+### D.1. Main flow: successfully commit CONTRIBUTION of `VERSION<EHR_STATUS>`
 
 **Preconditions:**
 
@@ -582,7 +616,7 @@ None
 3. Verify expected CONTRIBUTION uids and CONTRIBUTION count for the EHR with ehr_id
 
 
-### D.2. Alternative flow 1: successfully commit CONTRIBUTION of VERSION<EHR_STATUS>, full EHR_STATUS
+### D.2. Alternative flow 1: successfully commit CONTRIBUTION of `VERSION<EHR_STATUS>`, full EHR_STATUS
 
 > Note: this case is the same as D.1. but the precondition 2. is different.
 
@@ -604,7 +638,7 @@ None
 3. Verify expected CONTRIBUTION uids and CONTRIBUTION count for the EHR with ehr_id
 
 
-### D.3. Alternative flow 2: fail commit CONTRIBUTION of VERSION<EHR_STATUS>, wrong change_type
+### D.3. Alternative flow 2: fail commit CONTRIBUTION of `VERSION<EHR_STATUS>`, wrong change_type
 
 **Preconditions:**
 
@@ -622,7 +656,7 @@ None
 2. The result should be negative and retrieve an error related to the EHR_STATUS already existing for the EHR
 
 
-### D.4. Alternative flow 3: fail commit CONTRIBUTION of VERSION<EHR_STATUS>, invalid EHR_STATUS
+### D.4. Alternative flow 3: fail commit CONTRIBUTION of `VERSION<EHR_STATUS>`, invalid EHR_STATUS
 
 **Preconditions:**
 
@@ -643,7 +677,7 @@ None
 
 ## E. Commit CONTRIBUTIONS of FOLDER Flows
 
-### E.1. Alternative flow 12: successfully commit CONTRIBUTION of VERSION<FOLDER>
+### E.1. Alternative flow 12: successfully commit CONTRIBUTION of `VERSION<FOLDER>`
 
 **Preconditions:**
 
@@ -660,7 +694,7 @@ None
 2. The result should be positive and retrieve the id of the CONTRIBUTION just created
 
 
-### E.2. Alternative flow 13: error commit CONTRIBUTION of VERSION<FOLDER> FOLDER exists
+### E.2. Alternative flow 13: fail commit CONTRIBUTION of `VERSION<FOLDER>` FOLDER exists
 
 **Preconditions:**
 
@@ -677,7 +711,7 @@ None
 2. The result should be negative, and retrieve an error related to the wrong change_type because the root FOLDER already exists
 
 
-### E.3. Alternative flow 14: error commit CONTRIBUTION of VERSION<FOLDER> update
+### E.3. Alternative flow 14: fail commit CONTRIBUTION of `VERSION<FOLDER>` update
 
 **Preconditions:**
 
@@ -696,7 +730,7 @@ None
 2. The result should be negative since, and retrieve an error related to the wrong change_type, because it's trying to modify something that doesn't exist
 
 
-### E.4. Alternative flow 15: successful commit CONTRIBUTION of VERSION<FOLDER> update
+### E.4. Alternative flow 15: successful commit CONTRIBUTION of `VERSION<FOLDER>` update
 
 **Preconditions:**
 
@@ -711,3 +745,239 @@ None
 
 1. Invoke commit CONTRIBUTION service with an existing ehr_id and the valid data sets with change_type = `modification` or `amendment`
 2. The result should be positive and retrieve the id of the CONTRIBUTION just created
+
+
+
+
+## F. List CONTRIBUTIONs
+
+> Note: CONTRIBUTIONs can contain COMPOSITION, EHR_STATUS or FOLDER, even a mix of those. Each flow below applies to a specific type, except when 'ANY' is mentioned, in which case the flow applies to any of those three types.
+
+
+### F.1. Main flow: list CONTRIBUTIONS of existing EHR with a just committed CONTRIBUTION (COMPOSITION)
+
+**Preconditions:**
+
+1. An EHR with known ehr_id exists
+2. The EHR as a CONTRIBUTION with known uid
+3. The CONTRIBUTION contains a `VERSION<COMPOSITION>`
+
+**Postconditions:**
+
+None
+
+**Flow:**
+
+1. Invoke list CONTRIBUTIONS service with the existing ehr_id
+2. The result should be positive and retrieve a list of CONTRIBUTIONS with one item
+3. The CONTRIBUTION should contain a `VERSION<COMPOSITION>`
+
+
+### F.2. Alternative flow 1: list CONTRIBUTIONS of existing EHR with no CONTRIBUTIONS (ANY)
+
+**Preconditions:**
+
+1. An EHR with known ehr_id should exist
+2. The EHR has no CONTRIBUTIONs
+
+**Postconditions:**
+
+None
+
+**Flow:**
+
+1. Invoke get CONTRIBUTIONS service by the existing ehr_id
+2. The result should be positive and retrieve an empty list
+
+
+### F.3. Alternative flow 2: lis CONTRIBUTIONS of non existing EHR (ANY)
+
+**Preconditions:**
+
+1. There are no EHRs on the server
+
+**Postconditions:**
+
+None
+
+**Flow:**
+
+1. Invoke list CONTRIBUTIONS service with a random ehr_id
+2. The result should be negative and retrieve an error related to "EHR with ehr_id doesn't exist"
+
+
+### F.4. Alternative flow 3: list CONTRIBUTIONS of existing EHR with a just committed CONTRIBUTION (EHR_STATUS)
+
+**Preconditions:**
+
+1. An EHR with known ehr_id exists
+2. The EHR has a CONTRIBUTION with known uid
+3. The CONTRIBUTION contains a `VERSION<EHR_STATUS>`
+
+**Postconditions:**
+
+None
+
+**Flow:**
+
+1. Invoke list CONTRIBUTIONS service by the existing ehr_id
+2. The result should be positive and retrieve a list of CONTRIBUTIONS with one item
+3. The CONTRIBUTION should contain an EHR_STATUS
+
+
+### F.5. Alternative flow 4: list CONTRIBUTIONS of existing EHR with a just committed CONTRIBUTION (FOLDER)
+
+**Preconditions:**
+
+1. An EHR with known ehr_id exists
+2. The EHR has a CONTRIBUTION with known uid
+3. The CONTRIBUTION contains a `VERSION<FOLDER>`
+
+**Postconditions:**
+
+None
+
+**Flow:**
+
+1. Invoke get CONTRIBUTIONS service by the existing ehr_id
+2. The result should be positive and retrieve a list of CONTRIBUTIONS with one item
+3. The CONTRIBUTION should contain a FOLDER
+
+
+## G. Has CONTRIBUTION
+
+### G.1. Main flow: has CONTRIBUTION with existing CONTRIBUTION
+
+**Preconditions:**
+
+1. An EHR should exist in the system with a known ehr_id
+2. The EHR has a CONTRIBUTION with known uid
+
+**Postconditions:**
+
+None
+
+**Flow:**
+
+1. Invoke has CONTRIBUTION service with the known ehr_id and CONTRIBUTION uid
+2. The result should be `true`
+
+
+### G.2. Alternative flow 1: has CONTRIBUTION on empty EHR
+
+**Preconditions:**
+
+1. An EHR should exists in the system with a known ehr_id
+2. The EHR doesn't have any CONTRIBUTIONS
+
+**Postconditions:**
+
+None
+
+**Flow:**
+
+1. Invoke has CONTRIBUTION service with the known ehr_id and a random CONTRIBUTION uid
+2. The result should be `false`
+
+
+### G.3. Alternative flow 2: has CONTRIBUTION, EHR doesn't exist
+
+**Preconditions:**
+
+1. There are no EHRs on the server
+
+**Postconditions:**
+
+None
+
+**Flow:**
+
+1. Invoke has CONTRIBUTION service with a random ehr_id and a random CONTRIBUTION uid
+2. The result should be negative, and retrieve an error related to "the EHR with ehd_id doesn't exist"
+
+
+### G.4. Alternative flow 3: has CONTRIBUTION, EHR with CONTRIBUTIONS, but CONTRIBUTION doesn't exist
+
+**Preconditions:**
+
+1. An EHR should exist on the server with a known ehr_id
+2. The EHR has CONTRIBUTIONs
+
+**Postconditions:**
+
+None
+
+**Flow:**
+
+1. Invoke has CONTRIBUTION service with the known ehr_id and a random, not existing CONTRIBUTION uid
+2. The result should be `false`
+
+
+
+## H. Get CONTRIBUTION
+
+### H.1. Main flow: get CONTRIBUTION with existing CONTRIBUTION
+
+**Preconditions:**
+
+1. An EHR should exist in the system with a known ehr_id
+2. The EHR has a CONTRIBUTION with known uid
+
+**Postconditions:**
+
+None
+
+**Flow:**
+
+1. Invoke has CONTRIBUTION service with the known ehr_id and CONTRIBUTION uid
+2. The result should be the existing CONTRIBUTION
+
+
+### H.2. Alternative flow 1: get CONTRIBUTION on empty EHR
+
+**Preconditions:**
+
+1. An EHR should exists in the system with a known ehr_id
+2. The EHR doesn't have any CONTRIBUTIONS
+
+**Postconditions:**
+
+None
+
+**Flow:**
+
+1. Invoke has CONTRIBUTION service with the known ehr_id and a random CONTRIBUTION uid
+2. The result should be negative and retrieve an error related to the non existing CONTRIBUTION
+
+
+### H.3. Alternative flow 2: get CONTRIBUTION, EHR doesn't exist
+
+**Preconditions:**
+
+1. There are no EHRs on the server
+
+**Postconditions:**
+
+None
+
+**Flow:**
+
+1. Invoke has CONTRIBUTION service with a random ehr_id and a random CONTRIBUTION uid
+2. The result should be negative, and retrieve an error related to "the EHR with ehd_id doesn't exist"
+
+
+### H.4. Alternative flow 3: get CONTRIBUTION, EHR with CONTRIBUTIONS, but CONTRIBUTION doesn't exist
+
+**Preconditions:**
+
+1. An EHR should exist on the server with a known ehr_id
+2. The EHR has CONTRIBUTIONs
+
+**Postconditions:**
+
+None
+
+**Flow:**
+
+1. Invoke has CONTRIBUTION service with the known ehr_id and a random, not existing CONTRIBUTION uid
+2. The result should be negative and retrieve an error related to the non existing CONTRIBUTION
