@@ -87,7 +87,7 @@ public class OpenehrCompositionController extends BaseController {
     }
 
     @PostMapping(value = "/{ehr_id}/composition", consumes = {"application/xml", "application/json"})
-    // checkAbacPre /-Post attributes (type, auth object, subject, payload, content type)
+    // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrCompositionController.COMPOSITION, authentication, "
         + "@ehrService.getSubjectExtRef(#ehrIdString), #composition, #contentType)")
     @ApiOperation(value = "Create a new composition.")
@@ -150,7 +150,7 @@ public class OpenehrCompositionController extends BaseController {
     }
 
     @PutMapping("/{ehr_id}/composition/{versioned_object_uid}")
-    // checkAbacPre /-Post attributes (type, auth object, subject, payload, content type)
+    // checkAbacPre /-Post attributes (type , subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrCompositionController.COMPOSITION, authentication, "
         + "@ehrService.getSubjectExtRef(#ehrIdString), #composition, #contentType)")
     @ApiOperation(value = "Update existing composition.", response = CompositionResponseData.class)
@@ -241,7 +241,7 @@ public class OpenehrCompositionController extends BaseController {
     }
 
     @DeleteMapping("/{ehr_id}/composition/{preceding_version_uid}")
-    // checkAbacPre /-Post attributes (type, auth object, subject, payload, content type)
+    // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrCompositionController.COMPOSITION, authentication, "
         + "@ehrService.getSubjectExtRef(#ehrIdString), #precedingVersionUid, null)")
     @ApiOperation(value = "Deletes existing composition.")

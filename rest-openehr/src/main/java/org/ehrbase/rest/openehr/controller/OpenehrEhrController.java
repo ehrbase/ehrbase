@@ -193,8 +193,8 @@ public class OpenehrEhrController extends BaseController {
      * Returns EHR by ID
      */
     @GetMapping(path = "/{ehr_id}")
-    // checkAbacPre /-Post attributes (type, auth object, subject, payload, content type)
-    @PostAuthorize("checkAbacPost(@openehrEhrController.EHR, authentication, "
+    // checkAbacPre /-Post attributes (type, subject, payload, content type)
+    @PostAuthorize("checkAbacPost(@openehrEhrController.EHR, "
         + "@ehrService.getSubjectExtRef(#ehrIdString), null, null)")
     @ApiOperation(value = "Retrieve the EHR with the specified ehr_id.", response = EhrResponseData.class)
     @ApiResponses(value = {

@@ -107,8 +107,8 @@ public class OpenehrVersionedEhrStatusController extends BaseController{
     }
 
     @GetMapping(path = "/version")
-    // checkAbacPre /-Post attributes (type, auth object, subject, payload, content type)
-    @PreAuthorize("checkAbacPre(@openehrVersionedEhrStatusController.EHR_STATUS, authentication, "
+    // checkAbacPre /-Post attributes (type, subject, payload, content type)
+    @PreAuthorize("checkAbacPre(@openehrVersionedEhrStatusController.EHR_STATUS, "
         + "@ehrService.getSubjectExtRef(#ehrIdString), null, null)")
     @ApiOperation(value = "Retrieves the VERSION of an EHR_STATUS associated with the EHR identified by ehr_id. If version_at_time is supplied, retrieves the VERSION extant at specified time, otherwise retrieves the latest VERSION.", response = OriginalVersionResponseData.class)
     @ApiResponses(value = {
@@ -155,8 +155,8 @@ public class OpenehrVersionedEhrStatusController extends BaseController{
     }
 
     @GetMapping(path = "/version/{version_uid}")
-    // checkAbacPre /-Post attributes (type, auth object, subject, payload, content type)
-    @PreAuthorize("checkAbacPre(@openehrVersionedEhrStatusController.EHR_STATUS, authentication, "
+    // checkAbacPre /-Post attributes (type, subject, payload, content type)
+    @PreAuthorize("checkAbacPre(@openehrVersionedEhrStatusController.EHR_STATUS, "
         + "@ehrService.getSubjectExtRef(#ehrIdString), null, null)")
     @ApiOperation(value = "Retrieves a VERSION identified by version_uid of an EHR_STATUS associated with the EHR identified by ehr_id.", response = OriginalVersionResponseData.class)
     @ApiResponses(value = {

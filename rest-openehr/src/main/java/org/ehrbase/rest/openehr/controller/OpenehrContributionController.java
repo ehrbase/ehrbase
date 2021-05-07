@@ -55,8 +55,8 @@ public class OpenehrContributionController extends BaseController {
     }
 
     @PostMapping(value = "/{ehr_id}/contribution", consumes = {"application/xml", "application/json"})
-    // checkAbacPre /-Post attributes (type, auth object, subject, payload, content type)
-    @PreAuthorize("checkAbacPre(@openehrContributionController.CONTRIBUTION, authentication, "
+    // checkAbacPre /-Post attributes (type, subject, payload, content type)
+    @PreAuthorize("checkAbacPre(@openehrContributionController.CONTRIBUTION, "
         + "@ehrService.getSubjectExtRef(#ehrIdString), #contribution, #contentType)")
     @OperationNotesResourcesReaderOpenehr.ApiNotes("contributionPost.md")     // this utilizes a workaround, see source class for info
     @ApiOperation(value = "Create a new composition.")

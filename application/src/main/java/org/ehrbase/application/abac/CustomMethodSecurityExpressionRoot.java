@@ -93,7 +93,6 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
    * data. For @PostAuthorize cases.
    *
    * @param type    Type of scope's resource
-   * @param auth    Authentication stored in the security context
    * @param subject Subject ID from the current EHR context
    * @param payload Payload object, either request's input or response's output
    * @param contentType Content type from the scope
@@ -101,11 +100,11 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
    * @throws IOException On parsing error
    * @throws InterruptedException On error while communicating with the ABAC server
    */
-  public boolean checkAbacPost(String type, Authentication auth, String subject, Object payload,
+  public boolean checkAbacPost(String type, String subject, Object payload,
       String contentType)
       throws IOException, InterruptedException {
 
-    return checkAbac(type, auth, subject, payload, contentType, POST);
+    return checkAbac(type, subject, payload, contentType, POST);
   }
 
   /**
@@ -113,7 +112,6 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
    * data. For @PreAuthorize cases.
    *
    * @param type    Type of scope's resource
-   * @param auth    Authentication stored in the security context
    * @param subject Subject ID from the current EHR context
    * @param payload Payload object, either request's input or response's output
    * @param contentType Content type from the scope
@@ -121,20 +119,19 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
    * @throws IOException On parsing error
    * @throws InterruptedException On error while communicating with the ABAC server
    */
-  public boolean checkAbacPre(String type, Authentication auth, String subject, Object payload,
+  public boolean checkAbacPre(String type, String subject, Object payload,
       String contentType)
       throws IOException, InterruptedException {
 
     // @PreAuthorize will give different types, e.g. String (for composition), EhrStatus,...
     // so just pipe it through to templateHandling and make by-type handling there
 
-    return checkAbac(type, auth, subject, payload, contentType, PRE);
+    return checkAbac(type, subject, payload, contentType, PRE);
   }
 
   /**
    * Builds the ABAC request with given data and evaluates the ABAC's response.
    * @param type Object type of scope
-   * @param auth Authentication stored in the security context
    * @param subject Subject ID from the current EHR context
    * @param payload Payload object, either request's input or response's output
    * @param contentType Content type from the scope
@@ -143,7 +140,7 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
    * @throws IOException On parsing error
    * @throws InterruptedException On error while communicating with the ABAC server
    */
-  private boolean checkAbac(String type, Authentication auth, String subject, Object payload,
+  private boolean checkAbac(String type, String subject, Object payload,
       String contentType, String authType) throws IOException, InterruptedException {
     // Set type specific settings:
     // Extract and set parameters according to which parameters are configured
@@ -176,7 +173,7 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
     }
 
     // Check and extract JWT
-    JwtAuthenticationToken jwt = getJwtAuthenticationToken(auth);
+    var jwt = getJwtAuthenticationToken(this.authentication);
 
     // Request body map. will result in simple JSON like {"patient_id":"...", ...}
     // but requires "Object" for template handling, which can have a Set<String> for multiple IDs

@@ -72,7 +72,8 @@ public class OpenehrQueryController extends BaseController {
     }
 
     @GetMapping("/aql{?q, offset, fetch, query_parameter}")
-    @PostAuthorize("checkAbacPost(@openehrQueryController.QUERY, authentication, "
+    // checkAbacPre /-Post attributes (type, subject, payload, content type)
+    @PostAuthorize("checkAbacPost(@openehrQueryController.QUERY, "
         + "null, @queryServiceImp.getAuditResultMap(), null)")
     @ApiOperation(value = "Execute ad-hoc (non-stored) AQL query", response = QueryResponseData.class)
     @ApiResponses(value = {
@@ -121,7 +122,8 @@ public class OpenehrQueryController extends BaseController {
     }
 
     @PostMapping("/aql")
-    @PostAuthorize("checkAbacPost(@openehrQueryController.QUERY, authentication, "
+    // checkAbacPre /-Post attributes (type, subject, payload, content type)
+    @PostAuthorize("checkAbacPost(@openehrQueryController.QUERY, "
         + "null, @queryServiceImp.getAuditResultMap(), null)")
     @ApiOperation(value = "Execute ad-hoc (non-stored) AQL query", response = QueryResponseData.class)
     @ApiResponses(value = {
@@ -199,7 +201,8 @@ public class OpenehrQueryController extends BaseController {
     }
 
     @GetMapping(value = {"/{qualified_query_name}/{version}{?offset,fetch,query_parameter}", "/{qualified_query_name}{?offset,fetch,query_parameter}"})
-    @PostAuthorize("checkAbacPost(@openehrQueryController.QUERY, authentication, "
+    // checkAbacPre /-Post attributes (type, subject, payload, content type)
+    @PostAuthorize("checkAbacPost(@openehrQueryController.QUERY, "
         + "null, @queryServiceImp.getAuditResultMap(), null)")
     @ApiOperation(value = "Execute stored AQL query", response = QueryResponseData.class)
     @ApiResponses(value = {
@@ -250,7 +253,8 @@ public class OpenehrQueryController extends BaseController {
     }
 
     @PostMapping(value = {"/{qualified_query_name}/{version}", "/{qualified_query_name}"})
-    @PostAuthorize("checkAbacPost(@openehrQueryController.QUERY, authentication, "
+    // checkAbacPre /-Post attributes (type, subject, payload, content type)
+    @PostAuthorize("checkAbacPost(@openehrQueryController.QUERY, "
         + "null, @queryServiceImp.getAuditResultMap(), null)")
     @ApiOperation(value = "Execute stored AQL query", response = QueryDefinitionResponseData.class)
     @ApiResponses(value = {

@@ -60,7 +60,7 @@ import org.springframework.test.web.servlet.MvcResult;
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.MOCK,
     classes = EhrBase.class,
-    properties = {"abac.disabled=false", "abac.server=http://localhost:8080/abac/"})
+    properties = {"abac.enabled=true", "abac.server=http://localhost:8080/abac/"})
 @AutoConfigureMockMvc
 class AbacIntegrationTest {
 
