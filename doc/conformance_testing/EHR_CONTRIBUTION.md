@@ -67,7 +67,7 @@
 
 Items under this validation suite conceptually use these abstract interfaces:
 
-- I_EHR_CONTRIBUTION
+- [I_EHR_CONTRIBUTION](https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_contribution_interface)
 
 Reference: https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_openehr_platform_model
 

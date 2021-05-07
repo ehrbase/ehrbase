@@ -23,7 +23,7 @@
     - [EHR](#ehr)
     - [EHR/COMPOSITION](#ehrcomposition)
     - [EHR/CONTRIBUTION](#ehrcontribution)
-    - [FOLDER](#folder)
+    - [DIRECTORY](#directory)
   - [Test Case Dependencies](#test-case-dependencies)
 <!--te-->
 
@@ -97,16 +97,16 @@ This component includes the test suite for COMPOSITION related services, contain
 
 ### EHR/CONTRIBUTION
 
-This component includes te test suite for CONTRIBUTION related services, containing test cases focused on EHR data management, including creation, modification and versioning of COMPOSITION, EHR_STATUS and FOLDER.
+This component includes the test suite for CONTRIBUTION related services, containing test cases focused on EHR data management, including creation, modification and versioning of COMPOSITION, EHR_STATUS and FOLDER.
 
 [EHR/CONTRIBUTION Test Suite](EHR_CONTRIBUTION.md)
 
 
-### FOLDER
+### DIRECTORY
 
-WIP
+This component includes the test suite for EHR.directory related services, which help to organize clinical documents inside the EHR.
 
-[FOLDER](FOLDER.md)
+[DIRECTORY](DIRECTORY.md)
 
 
 ## Test Case Dependencies
