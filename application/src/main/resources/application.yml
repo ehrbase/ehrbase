@@ -54,7 +54,7 @@ security:
 
 # Attribute Based Access Control
 abac:
-  disabled: true
+  enabled: false
   # Server URL incl. trailing "/"!
   server: http://localhost:3001/rest/v1/policy/execute/name/
   # Definition of the JWT claim which contains the organization ID.
@@ -68,7 +68,7 @@ abac:
   policy:
     ehr:
       name: 'has_consent_patient'
-      parameters: 'organization, patient'
+      parameters: 'patient'
     ehrstatus:
       name: 'has_consent_patient'
       parameters: 'organization, patient'

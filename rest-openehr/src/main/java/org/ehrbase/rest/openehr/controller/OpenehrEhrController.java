@@ -223,8 +223,8 @@ public class OpenehrEhrController extends BaseController {
      * Returns EHR by subject (id and namespace)
      */
     @GetMapping(params = {"subject_id", "subject_namespace"})
-    // checkAbacPre /-Post attributes (type, auth object, subject, payload, content type)
-    @PreAuthorize("checkAbacPre(@openehrEhrController.EHR, authentication, "
+    // checkAbacPre /-Post attributes (type, subject, payload, content type)
+    @PreAuthorize("checkAbacPre(@openehrEhrController.EHR, "
         + "@ehrService.getSubjectExtRef(#ehrIdString), null, null)")
     @ApiOperation(value = "Retrieve the EHR with the specified subject_id and subject_namespace.", response = EhrResponseData.class)
     @ApiResponses(value = {

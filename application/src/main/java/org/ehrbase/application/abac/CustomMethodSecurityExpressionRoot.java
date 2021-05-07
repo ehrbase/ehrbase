@@ -199,7 +199,15 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
       templateHandling(type, payload, contentType, requestMap, authType);
     }
 
-    // Fire abac server request
+    // Final check, if request would be empty even though params were configured to be used
+    if ((policyParameters.contains(ORGANIZATION) ||
+        policyParameters.contains(PATIENT) ||
+        policyParameters.contains(TEMPLATE))
+        && requestMap.size() == 0) {
+      throw new InternalServerException("ABAC: Parameters were configured, but request parameters "
+          + "are empty.");
+    }
+
     return abacCheckRequest(requestUrl, requestMap);
   }
 
@@ -227,6 +235,13 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
    */
   private boolean patientHandling(JwtAuthenticationToken jwt, String subject,
       Map<String, Object> requestMap, String type, Object payload) {
+
+    if (!jwt.getTokenAttributes().containsKey(abacConfig.getPatientClaim())) {
+      throw new IllegalArgumentException("ABAC: Patient parameter configured, but no claim "
+          + "attribute available.");
+    }
+    String tokenPatient = (String) jwt.getTokenAttributes().get(abacConfig.getPatientClaim());
+
     if (type.equals(BaseController.QUERY)) {
       // special case of type QUERY, where multiple subjects are possible
       if (payload instanceof Map) {
@@ -235,20 +250,15 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
           Set<String> patientSet = new HashSet<>();
           for (UUID ehr : ehrs) {
             String subjectId = ehrService.getSubjectExtRef(ehr.toString());
-            // check if patient token is available and if it matches
-            if (!jwt.getTokenAttributes().containsKey(abacConfig.getPatientClaim())) {
-              // no token, so just add our subject
-              patientSet.add(subjectId);
+            // check if patient token is available and if it matches OR internal reference is null
+            if (tokenPatient.equals(subjectId) || subjectId == null) {
+              // matches OR EHR's external ref is null, so add our subject from token
+              patientSet.add(tokenPatient);
             } else {
-              String tokenPatient = (String) jwt.getTokenAttributes().get(abacConfig.getPatientClaim());
-              if (subjectId.equals(tokenPatient)) {
-                // matches, so add our subject
-                patientSet.add(subjectId);
-              } else {
-                // doesn't match -> requesting data for patient X with token for patient Y
-                return false;
-              }
+              // doesn't match -> requesting data for patient X with token for patient Y
+              return false;
             }
+
           }
           // put result set into the requestMap and exit
           requestMap.put(PATIENT, patientSet);
@@ -262,20 +272,15 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
     }
 
     // in all other cases just handle the one String "subject" variable
-    if (!jwt.getTokenAttributes().containsKey(abacConfig.getPatientClaim())) {
-      // "patient_id" not available, use EHRbase subject as fallback
-      requestMap.put(PATIENT, subject);
+    // check if matches (to block accessing patient X with token from patient Y) OR null reference
+    if (tokenPatient.equals(subject) || subject != null) {
+      // matches OR EHR's external ref is null, so add our subject from token
+      requestMap.put(PATIENT, tokenPatient);
     } else {
-      // use "patient_id" if available
-      String patientId = (String) jwt.getTokenAttributes().get(abacConfig.getPatientClaim());
-      // and matches (to block accessing patient X with token from patient Y)
-      if (patientId.equals(subject)) {
-        requestMap.put(PATIENT, patientId);
-      } else {
-        // doesn't match -> requesting data for patient X with token for patient Y
-        return false;
-      }
+      // doesn't match -> requesting data for patient X with token for patient Y
+      return false;
     }
+
     return true;
   }
 

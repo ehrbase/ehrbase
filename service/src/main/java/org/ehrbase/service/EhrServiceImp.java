@@ -437,7 +437,7 @@ public class EhrServiceImp extends BaseService implements EhrService {
 
     @Override
     public String getSubjectExtRef(String ehrId) {
-        return Optional.of(new PersistedPartyProxy(getDataAccess()).retrieve(getSubjectUuid(ehrId)).getExternalRef())
+        return Optional.ofNullable(new PersistedPartyProxy(getDataAccess()).retrieve(getSubjectUuid(ehrId)).getExternalRef())
             .map(p -> p.getId().getValue()).orElse(null);
     }
 }
