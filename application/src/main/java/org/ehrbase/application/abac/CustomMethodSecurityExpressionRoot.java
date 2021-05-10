@@ -21,7 +21,6 @@ package org.ehrbase.application.abac;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,6 +34,9 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
+import org.ehrbase.application.abac.AbacConfig.AbacType;
+import org.ehrbase.application.abac.AbacConfig.Policy;
+import org.ehrbase.application.abac.AbacConfig.PolicyParameter;
 import org.ehrbase.aql.compiler.AuditVariables;
 import org.ehrbase.response.ehrscape.CompositionDto;
 import org.ehrbase.response.ehrscape.CompositionFormat;
@@ -160,29 +162,32 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
       String contentType, String authType) throws IOException, InterruptedException {
     // Set type specific settings:
     // Extract and set parameters according to which parameters are configured
-    List<String> policyParameters;
+    List<PolicyParameter> policyParameters;
     // Build abac server request, depending on type
-    String requestUrl = abacConfig.getServer().toString();
+    var requestUrl = abacConfig.getServer().toString();
+
+    Map<AbacType, Policy> policy = abacConfig.getPolicy();
+
     switch (type) {
       case BaseController.EHR:
-        policyParameters = new ArrayList<>(Arrays.asList(abacConfig.getPolicyEhrParameters()));
-        requestUrl = requestUrl.concat(abacConfig.getPolicyEhrName());
+        policyParameters = Arrays.asList(policy.get(AbacType.EHR).getParameters());
+        requestUrl = requestUrl.concat(policy.get(AbacType.EHR).getName());
         break;
       case BaseController.EHR_STATUS:
-        policyParameters = new ArrayList<>(Arrays.asList(abacConfig.getPolicyEhrStatusParameters()));
-        requestUrl = requestUrl.concat(abacConfig.getPolicyEhrStatusName());
+        policyParameters = Arrays.asList(policy.get(AbacType.EHR_STATUS).getParameters());
+        requestUrl = requestUrl.concat(policy.get(AbacType.EHR_STATUS).getName());
         break;
       case BaseController.COMPOSITION:
-        policyParameters = new ArrayList<>(Arrays.asList(abacConfig.getPolicyCompositionParameters()));
-        requestUrl = requestUrl.concat(abacConfig.getPolicyCompositionName());
+        policyParameters = Arrays.asList(policy.get(AbacType.COMPOSITION).getParameters());
+        requestUrl = requestUrl.concat(policy.get(AbacType.COMPOSITION).getName());
         break;
       case BaseController.CONTRIBUTION:
-        policyParameters = new ArrayList<>(Arrays.asList(abacConfig.getPolicyContributionParameters()));
-        requestUrl = requestUrl.concat(abacConfig.getPolicyContributionName());
+        policyParameters = Arrays.asList(policy.get(AbacType.CONTRIBUTION).getParameters());
+        requestUrl = requestUrl.concat(policy.get(AbacType.CONTRIBUTION).getName());
         break;
       case BaseController.QUERY:
-        policyParameters = new ArrayList<>(Arrays.asList(abacConfig.getPolicyQueryParameters()));
-        requestUrl = requestUrl.concat(abacConfig.getPolicyQueryName());
+        policyParameters = Arrays.asList(policy.get(AbacType.QUERY).getParameters());
+        requestUrl = requestUrl.concat(policy.get(AbacType.QUERY).getName());
         break;
       default:
         throw new InternalServerException("ABAC: Invalid type given from Pre- or PostAuthorize");
@@ -196,12 +201,12 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
     Map<String, Object> requestMap = new HashMap<>();
 
     // Organization attribute handling
-    if (policyParameters.contains(ORGANIZATION)) {
+    if (policyParameters.contains(PolicyParameter.ORGANIZATION)) {
       organizationHandling(jwt, requestMap);
     }
 
     // Patient attribute handling
-    if (policyParameters.contains(PATIENT)) {
+    if (policyParameters.contains(PolicyParameter.PATIENT)) {
       // populate requestMap, but also already check if subject from token and request matches
       boolean patientMatch = patientHandling(jwt, subject, requestMap, type, payload);
       if (!patientMatch) {
@@ -211,14 +216,14 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
     }
 
     // Extract template ID from object of type "type"
-    if (policyParameters.contains(TEMPLATE)) {
+    if (policyParameters.contains(PolicyParameter.TEMPLATE)) {
       templateHandling(type, payload, contentType, requestMap, authType);
     }
 
     // Final check, if request would be empty even though params were configured to be used
-    if ((policyParameters.contains(ORGANIZATION) ||
-        policyParameters.contains(PATIENT) ||
-        policyParameters.contains(TEMPLATE))
+    if ((policyParameters.contains(PolicyParameter.ORGANIZATION) ||
+        policyParameters.contains(PolicyParameter.PATIENT) ||
+        policyParameters.contains(PolicyParameter.TEMPLATE))
         && requestMap.size() == 0) {
       throw new InternalServerException("ABAC: Parameters were configured, but request parameters "
           + "are empty.");

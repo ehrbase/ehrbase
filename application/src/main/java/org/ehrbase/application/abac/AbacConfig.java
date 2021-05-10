@@ -19,7 +19,7 @@
 package org.ehrbase.application.abac;
 
 import java.net.URI;
-import org.springframework.beans.factory.annotation.Value;
+import java.util.Map;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -31,34 +31,39 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "abac")
 public class AbacConfig {
 
+  public enum AbacType {
+    EHR, EHR_STATUS, COMPOSITION, CONTRIBUTION, QUERY
+  }
+
+  public enum PolicyParameter {
+    ORGANIZATION, PATIENT, TEMPLATE
+  }
+
+  static class Policy {
+    private String name;
+    private PolicyParameter[] parameters;
+
+    public String getName() {
+      return name;
+    }
+
+    public void setName(String name) {
+      this.name = name;
+    }
+
+    public PolicyParameter[] getParameters() {
+      return parameters;
+    }
+
+    public void setParameters(PolicyParameter[] parameters) {
+      this.parameters = parameters;
+    }
+  }
+
   private URI server;
   private String organizationClaim;
   private String patientClaim;
-  // ehrStatus
-  @Value("${abac.policy.ehrstatus.name}")
-  private String policyEhrStatusName;
-  @Value("${abac.policy.ehrstatus.parameters}")
-  private String[] policyEhrStatusParameters;
-  // ehr
-  @Value("${abac.policy.ehr.name}")
-  private String policyEhrName;
-  @Value("${abac.policy.ehr.parameters}")
-  private String[] policyEhrParameters;
-  // composition
-  @Value("${abac.policy.composition.name}")
-  private String policyCompositionName;
-  @Value("${abac.policy.composition.parameters}")
-  private String[] policyCompositionParameters;
-  // contribution
-  @Value("${abac.policy.contribution.name}")
-  private String policyContributionName;
-  @Value("${abac.policy.contribution.parameters}")
-  private String[] policyContributionParameters;
-  // query
-  @Value("${abac.policy.query.name}")
-  private String policyQueryName;
-  @Value("${abac.policy.query.parameters}")
-  private String[] policyQueryParameters;
+  private Map<AbacType, Policy> policy;
 
   public URI getServer() {
     return server;
@@ -84,83 +89,12 @@ public class AbacConfig {
     this.patientClaim = patientClaim;
   }
 
-  public String getPolicyEhrStatusName() {
-    return policyEhrStatusName;
+  public Map<AbacType, Policy> getPolicy() {
+    return policy;
   }
 
-  public void setPolicyEhrStatusName(String policyEhrStatusName) {
-    this.policyEhrStatusName = policyEhrStatusName;
-  }
-
-  public String[] getPolicyEhrStatusParameters() {
-    return policyEhrStatusParameters;
-  }
-
-  public void setPolicyEhrStatusParameters(String[] policyEhrStatusParameters) {
-    this.policyEhrStatusParameters = policyEhrStatusParameters;
-  }
-
-  public String getPolicyEhrName() {
-    return policyEhrName;
-  }
-
-  public void setPolicyEhrName(String policyEhrName) {
-    this.policyEhrName = policyEhrName;
-  }
-
-  public String[] getPolicyEhrParameters() {
-    return policyEhrParameters;
-  }
-
-  public void setPolicyEhrParameters(String[] policyEhrParameters) {
-    this.policyEhrParameters = policyEhrParameters;
-  }
-
-  public String getPolicyCompositionName() {
-    return policyCompositionName;
-  }
-
-  public void setPolicyCompositionName(String policyCompositionName) {
-    this.policyCompositionName = policyCompositionName;
-  }
-
-  public String getPolicyContributionName() {
-    return policyContributionName;
-  }
-
-  public void setPolicyContributionName(String policyContributionName) {
-    this.policyContributionName = policyContributionName;
-  }
-
-  public String[] getPolicyContributionParameters() {
-    return policyContributionParameters;
-  }
-
-  public void setPolicyContributionParameters(String[] policyContributionParameters) {
-    this.policyContributionParameters = policyContributionParameters;
-  }
-
-  public String getPolicyQueryName() {
-    return policyQueryName;
-  }
-
-  public void setPolicyQueryName(String policyQueryName) {
-    this.policyQueryName = policyQueryName;
-  }
-
-  public String[] getPolicyQueryParameters() {
-    return policyQueryParameters;
-  }
-
-  public void setPolicyQueryParameters(String[] policyQueryParameters) {
-    this.policyQueryParameters = policyQueryParameters;
-  }
-
-  public String[] getPolicyCompositionParameters() {
-    return policyCompositionParameters;
-  }
-
-  public void setPolicyCompositionParameters(String[] policyCompositionParameters) {
-    this.policyCompositionParameters = policyCompositionParameters;
+  public void setPolicy(
+      Map<AbacType, Policy> policy) {
+    this.policy = policy;
   }
 }
