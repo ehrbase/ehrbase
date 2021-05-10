@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.application.config;
+package org.ehrbase.application.config.security;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -26,6 +26,10 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties
 @ConfigurationProperties(prefix = "security")
 public class SecurityYAMLConfig {
+
+    // Roles, independent of auth type
+    public static final String ADMIN = "ADMIN";
+    public static final String USER = "USER";
 
     public enum AuthTypes {
         NONE, BASIC, OAUTH
