@@ -68,7 +68,7 @@ abac:
   policy:
     ehr:
       name: 'has_consent_patient'
-      parameters: 'patient'
+      parameters: 'organization, patient'
     ehrstatus:
       name: 'has_consent_patient'
       parameters: 'organization, patient'

@@ -40,6 +40,7 @@ import org.ehrbase.response.ehrscape.CompositionDto;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.openehr.OriginalVersionResponseData;
 import org.ehrbase.rest.openehr.controller.BaseController;
+import org.ehrbase.rest.openehr.controller.OpenehrQueryController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -107,6 +108,12 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
     return checkAbac(type, subject, payload, contentType, POST);
   }
 
+  public boolean checkAbacPostQuery(Object payload)
+      throws IOException, InterruptedException {
+
+    return checkAbac(OpenehrQueryController.QUERY, null, payload, null, POST);
+  }
+
   /**
    * Custom SpEL expression to be used to check if the remote ABAC allows the operation by given
    * data. For @PreAuthorize cases.
@@ -127,6 +134,15 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
     // so just pipe it through to templateHandling and make by-type handling there
 
     return checkAbac(type, subject, payload, contentType, PRE);
+  }
+
+  /*
+  Short call with less parameters.
+   */
+  public boolean checkAbacPre(String type, String subject)
+      throws IOException, InterruptedException {
+
+    return checkAbac(type, subject, null, null, PRE);
   }
 
   /**
