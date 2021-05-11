@@ -21,6 +21,7 @@ import org.apache.commons.collections4.MapUtils;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * wrap the result of a jsonpath query
@@ -29,19 +30,19 @@ import java.util.Map;
 public class JsonPathQueryResult implements Serializable {
 
     private final String templateId;
-    private final String aqlPath;
+    private final Set<String> aqlPath;
 
     public JsonPathQueryResult(String templateId, Map<String, Object> objectMap) {
         this.templateId = templateId;
 
         if (!MapUtils.isEmpty(objectMap)) {
-            aqlPath = (String) objectMap.get("aql_path");
+            aqlPath = (Set<String>) objectMap.get("aql_path");
         } else {
             aqlPath = null;
         }
     }
 
-    public JsonPathQueryResult(String templateId, String aqlPath) {
+    public JsonPathQueryResult(String templateId, Set<String> aqlPath) {
         this.templateId = templateId;
         this.aqlPath = aqlPath;
     }
@@ -50,7 +51,7 @@ public class JsonPathQueryResult implements Serializable {
         return templateId;
     }
 
-    public String getAqlPath() {
+    public Set<String> getAqlPath() {
         return aqlPath;
     }
 }

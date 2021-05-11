@@ -29,7 +29,7 @@ import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.Variables;
 import org.ehrbase.aql.sql.binding.*;
 import org.ehrbase.aql.sql.postprocessing.RawJsonTransform;
-import org.ehrbase.aql.sql.queryimpl.TemplateMetaData;
+import org.ehrbase.aql.sql.queryimpl.*;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.service.IntrospectService;
@@ -192,7 +192,7 @@ public class QueryProcessor extends TemplateMetaData {
 
         unionSetQuery = limitBinding.bind();
 
-        if (!isOutputWithJson) //superceded by aggregate
+        if (!isOutputWithJson) //superseded by aggregate
             return new AqlSelectQuery(unionSetQuery, cacheQuery.values(), isOutputWithJson);
         else
             return new AqlSelectQuery(unionSetQuery, cacheQuery.values(), cacheQuery.values().stream().anyMatch(QuerySteps::isContainsJson));
@@ -201,23 +201,54 @@ public class QueryProcessor extends TemplateMetaData {
     private QuerySteps buildQuerySteps(String templateId) {
         SelectBinder selectBinder = new SelectBinder(domainAccess, introspectCache, contains, statements, serverNodeId);
 
-        SelectQuery<?> select = selectBinder.bind(templateId);
-        return new QuerySteps(select,
-                selectBinder.getWhereConditions(templateId),
-                templateId,
-                selectBinder.getCompositionAttributeQuery(),
-                selectBinder.getJsonDataBlock(), selectBinder.containsJQueryPath());
+//        SelectQuery<?> select = selectBinder.bind(templateId);
+
+        MultiFieldsMap multiSelectFieldsMap = new MultiFieldsMap(selectBinder.bind(templateId));
+        MultiFieldsMap multiWhereFieldsMap = new MultiFieldsMap(new WhereMultiFields(domainAccess, introspectCache, contains, statements.getWhereClause(), serverNodeId).bind(templateId));
+
+        for (Iterator<MultiFields> it = multiSelectFieldsMap.multiFieldsIterator(); it.hasNext(); ) {
+            MultiFields multiSelectFields = it.next();
+
+            //build the actual sets of fields depending on the generated multi fields
+            //...
+
+            SelectQuery<?> select = domainAccess.getContext().selectQuery();
+
+            if (containsNonUniquePath(multiSelectFields)){
+                throw new IllegalStateException("Found non unique path!");
+            }
+
+            select.addSelect(multiSelectFields.getFields().get(0).getSQLField());
+
+            return new QuerySteps(select,
+                    selectBinder.getWhereConditions(multiWhereFieldsMap),
+                    templateId,
+                    selectBinder.getCompositionAttributeQuery(),
+                    selectBinder.getJsonDataBlock(), multiSelectFields.getFields().get(0).isContainsJqueryPath());
+        }
+        return null;
+    }
+
+    //for debugging
+    private boolean containsNonUniquePath(MultiFields multiFields){
+        return multiFields.getFields().size() > 1;
     }
 
     private QuerySteps buildNullSelect(String templateId) {
         SelectBinder selectBinder = new SelectBinder(domainAccess, introspectCache, contains, statements, serverNodeId);
 
-        SelectQuery<?> select = selectBinder.bind(templateId);
+        List<MultiFields> multiFieldsList = selectBinder.bind(templateId);
+
+        SelectQuery<?> select = domainAccess.getContext().selectQuery();
+
+        //TODO: is handling multiple path (?) required...
+        select.addSelect(multiFieldsList.get(0).getFields().get(0).getSQLField());
+
         return new QuerySteps(select,
                 DSL.condition("1 = 0"),
                 templateId,
                 selectBinder.getCompositionAttributeQuery(),
-                selectBinder.getJsonDataBlock(), selectBinder.containsJQueryPath());
+                selectBinder.getJsonDataBlock(), false);
     }
 
     private SelectQuery<?> setLateralJoins(SelectQuery<?> selectQuery){

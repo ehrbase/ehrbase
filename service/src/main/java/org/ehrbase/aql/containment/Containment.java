@@ -24,6 +24,7 @@ package org.ehrbase.aql.containment;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Container for containment definition<p>
@@ -37,7 +38,7 @@ public class Containment implements Serializable {
     private String symbol;
     private String archetypeId;
     private String className;
-    private Map<String, String> path = new HashMap<>(); //path is identified by a templateId and the relative aql path within
+    private Map<String, Set<String>> path = new HashMap<>(); //path is identified by a templateId and the relative aql path within
 
     public Containment(String className, String symbol, String archetypeId) {
         this.setSymbol(symbol);
@@ -45,7 +46,7 @@ public class Containment implements Serializable {
         this.className = className;
     }
 
-    public void setPath(String template, String path) {
+    public void setPath(String template, Set<String> path) {
         this.path.put(template, path);
     }
 
@@ -57,7 +58,7 @@ public class Containment implements Serializable {
         return archetypeId;
     }
 
-    public String getPath(String templateId) {
+    public Set<String> getPath(String templateId) {
         return path.get(templateId);
     }
 

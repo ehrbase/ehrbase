@@ -79,31 +79,21 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
      * @param templateId
      * @return
      */
-    public SelectQuery<Record> bind(String templateId) {
+    public List<MultiFields> bind(String templateId) {
         ObjectQuery.reset();
 
-        SelectQuery<Record> selectQuery = context.selectQuery();
+//        SelectQuery<Record> selectQuery = context.selectQuery();
+
+        List<MultiFields> multiFieldsList = new ArrayList<>();
 
         while (variableDefinitions.hasNext()) {
             I_VariableDefinition variableDefinition = variableDefinitions.next();
-            Field<?> field;
+           MultiFields multiFields;
             if (variableDefinition.isFunction() || variableDefinition.isExtension()) {
                 continue;
             }
             else if (variableDefinition.isConstant()){
-                ConstantDefinition constantDefinition = (ConstantDefinition)variableDefinition;
-                if (constantDefinition.getValue() == null) //assume NULL
-                    field = DSL.field("NULL");
-                else
-                    field = DSL.field(DSL.val(constantDefinition.getValue()));
-
-                if (constantDefinition.getAlias() != null)
-                    field = field.as(constantDefinition.getAlias());
-                else {
-                    String defaultAlias = DefaultColumnId.value(constantDefinition);
-                    field = field.as("/"+defaultAlias);
-                    constantDefinition.setPath(defaultAlias);
-                }
+                multiFields = new MultiFields(variableDefinition, new ConstantField(variableDefinition).toSql(), templateId);
 
             }
             else {
@@ -112,35 +102,38 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
 
                 ExpressionField expressionField = new ExpressionField(variableDefinition, jsonbEntryQuery, compositionAttributeQuery);
 
-                field = expressionField.toSql(className, templateId, identifier, IQueryImpl.Clause.SELECT);
+                multiFields = expressionField.toSql(className, templateId, identifier, IQueryImpl.Clause.SELECT);
 
-                handleJsonDataBlock(expressionField, field, expressionField.getRootJsonKey(), expressionField.getOptionalPath());
+                handleJsonDataBlock(multiFields);
 
-                if (field == null) { //the field cannot be resolved with containment (f.e. empty DB)
+                if (multiFields == null) { //the field cannot be resolved with containment (f.e. empty DB)
                     continue;
                 }
             }
-            selectQuery.addSelect(field);
+            multiFieldsList.add(multiFields);
             ObjectQuery.inc();
         }
 
-        return selectQuery;
+        return multiFieldsList;
     }
 
-    private void handleJsonDataBlock(ExpressionField expressionField, Field field, String rootJsonKey, String optionalPath){
-        if (expressionField.isContainsJsonDataBlock())
-            jsonDataBlock.add(new JsonbBlockDef(optionalPath == null ? expressionField.getJsonbItemPath() : optionalPath, field, rootJsonKey));
+    private void handleJsonDataBlock(MultiFields multiFields){
+        if (!multiFields.isEmpty()) {
+            for (QualifiedAqlField aqlField: multiFields.getFields())
+                if (aqlField.isJsonDataBlock())
+                    jsonDataBlock.add(new JsonbBlockDef(aqlField.getOptionalPath() == null ? aqlField.getJsonbItemPath() : aqlField.getOptionalPath(), aqlField.getSQLField(), multiFields.getRootJsonKey()));
+        }
     }
 
 
-    public Condition getWhereConditions(String templateId) {
+    public Condition getWhereConditions(MultiFieldsMap multiFieldsMap) {
 
-        return whereBinder.bind(templateId);
+        return whereBinder.bind(multiFieldsMap);
     }
 
-    public boolean containsJQueryPath() {
-        return jsonbEntryQuery.isContainsJqueryPath();
-    }
+//    public boolean containsJQueryPath() {
+//        return jsonbEntryQuery.isContainsJqueryPath();
+//    }
 
 
     public CompositionAttributeQuery getCompositionAttributeQuery() {

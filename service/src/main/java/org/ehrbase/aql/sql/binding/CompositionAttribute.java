@@ -18,10 +18,7 @@
 package org.ehrbase.aql.sql.binding;
 
 import org.ehrbase.aql.definition.I_VariableDefinition;
-import org.ehrbase.aql.sql.queryimpl.CompositionAttributeQuery;
-import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
-import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
-import org.jooq.Field;
+import org.ehrbase.aql.sql.queryimpl.*;
 
 /**
  * convert a select or where AQL field into its SQL equivalent for a composition attribute.
@@ -43,31 +40,30 @@ public class CompositionAttribute {
         this.clause = clause;
     }
 
-    public Field toSql(I_VariableDefinition variableDefinition, String templateId, String identifier){
-        Field<?> field;
+    public MultiFields toSql(I_VariableDefinition variableDefinition, String templateId, String identifier){
+        MultiFields qualifiedAqlFields;
 
         if (variableDefinition.getPath() != null && variableDefinition.getPath().startsWith("content")) {
-            field = jsonbEntryQuery.makeField(templateId, identifier, variableDefinition, clause);
-            containsJsonDataBlock = jsonbEntryQuery.isJsonDataBlock();
-            jsonbItemPath = jsonbEntryQuery.getJsonbItemPath();
-            compositionAttributeQuery.setUseEntry(true);
+            qualifiedAqlFields = jsonbEntryQuery.makeField(templateId, identifier, variableDefinition, clause);
+            qualifiedAqlFields.setUseEntryTable(true);
+//            compositionAttributeQuery.setUseEntry(true);
         } else {
-            field = compositionAttributeQuery.makeField(templateId, identifier, variableDefinition, clause);
-            containsJsonDataBlock = compositionAttributeQuery.isJsonDataBlock();
+            qualifiedAqlFields = compositionAttributeQuery.makeField(templateId, identifier, variableDefinition, clause);
+//            containsJsonDataBlock = compositionAttributeQuery.isJsonDataBlock();
         }
         optionalPath = variableDefinition.getPath();
-        return field;
+        return qualifiedAqlFields;
     }
 
-    public boolean isContainsJsonDataBlock() {
-        return containsJsonDataBlock;
-    }
+//    public boolean isContainsJsonDataBlock() {
+//        return containsJsonDataBlock;
+//    }
 
-    public String getJsonbItemPath() {
-        return jsonbItemPath;
-    }
+//    public String getJsonbItemPath() {
+//        return jsonbItemPath;
+//    }
 
-    public String getOptionalPath() {
-        return optionalPath;
-    }
+//    public String getOptionalPath() {
+//        return optionalPath;
+//    }
 }

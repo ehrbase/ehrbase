@@ -17,15 +17,16 @@
  *
  */
 
-package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
+package org.ehrbase.aql.sql.queryimpl;
 
-import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC41;
+import java.util.HashSet;
+import java.util.Set;
 
-public class TestUC41 extends UC41 {
+public class MultiPath {
 
-    public TestUC41(){
-        super();
-        this.expectedSqlExpression =
-                "select ? as \"constant\" from \"ehr\".\"entry\"";
+    public Set<String> asSet(String singlePath){
+        Set<String> pathSet = new HashSet<>();
+        pathSet.add(singlePath);
+        return pathSet;
     }
 }

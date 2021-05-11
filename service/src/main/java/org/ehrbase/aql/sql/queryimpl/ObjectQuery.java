@@ -25,6 +25,8 @@ import org.ehrbase.aql.sql.PathResolver;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.jooq.DSLContext;
 
+import java.util.Set;
+
 /**
  * Created by christian on 5/6/2016.
  */
@@ -32,14 +34,14 @@ public abstract class ObjectQuery {
 
     protected I_DomainAccess domainAccess;
     protected PathResolver pathResolver;
-    protected boolean jsonDataBlock = false;
-    protected String itemType = null;
+//    protected boolean jsonDataBlock = false;
+//    protected String itemType = null;
 
-    public String getItemCategory() {
-        return itemCategory;
-    }
+//    public String getItemCategory() {
+//        return itemCategory;
+//    }
 
-    protected String itemCategory = null;
+//    protected String itemCategory = null;
 
     protected static int serial = 0; //used to alias fields for now.
 
@@ -61,15 +63,15 @@ public abstract class ObjectQuery {
         return serial;
     }
 
-    public String getItemType() {
-        return itemType;
-    }
+//    public String getItemType() {
+//        return itemType;
+//    }
 
-    public boolean isJsonDataBlock() {
-        return jsonDataBlock;
-    }
+//    public boolean isJsonDataBlock() {
+//        return jsonDataBlock;
+//    }
 
-    public String variableTemplatePath(String templateId, String identifier){
+    public Set<String> variableTemplatePath(String templateId, String identifier){
         return pathResolver.pathOf(templateId, identifier);
     }
 

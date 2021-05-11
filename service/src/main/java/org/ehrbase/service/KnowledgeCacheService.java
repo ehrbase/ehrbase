@@ -505,19 +505,12 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
                         .collect(Collectors.toList());
             }
 
-            final String aql;
+//            final String aql;
             Set<String> uniquePaths = new TreeSet<>();
             webTemplateNodeList.stream().map(n -> n.getAqlPath(false)).forEach(uniquePaths::add);
-            if (uniquePaths.size() == 1) {
-                aql = uniquePaths.iterator().next();
-            } else if (webTemplateNodeList.size() > 1) {
-                aql = uniquePaths.iterator().next();
-                log.warn(String.format("Aql Path not unique for template %s and path %s ", templateId, nodeIds));
-            } else {
-                aql = null;
-            }
-            if (aql != null) {
-                jsonPathQueryResult = new JsonPathQueryResult(templateId, aql);
+
+            if (!uniquePaths.isEmpty()) {
+                jsonPathQueryResult = new JsonPathQueryResult(templateId, uniquePaths);
             } else {
                 //dummy result since null can not be path of a cache
                 jsonPathQueryResult = new JsonPathQueryResult(null, Collections.emptyMap());

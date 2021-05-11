@@ -27,6 +27,9 @@ import org.ehrbase.aql.containment.IdentifierMapper;
 import org.ehrbase.aql.containment.Templates;
 import org.ehrbase.service.KnowledgeCacheService;
 
+import java.util.Set;
+import java.util.TreeSet;
+
 import static org.ehrbase.aql.sql.QueryProcessor.NIL_TEMPLATE;
 
 /**
@@ -45,16 +48,17 @@ public class PathResolver {
     }
 
 
-    public String pathOf(String templateId, String identifier) {
-        String result =  getMapper().getPath(templateId, identifier);
-        if (StringUtils.isBlank(result) && getMapper().getClassName(identifier).equals("COMPOSITION")) {
+    public Set<String> pathOf(String templateId, String identifier) {
+        Set<String> result =  getMapper().getPath(templateId, identifier);
+        if (result.isEmpty() && getMapper().getClassName(identifier).equals("COMPOSITION")) {
             //assemble a fake path for composition
             StringBuilder stringBuilder = new StringBuilder();
             Containment containment = (Containment) getMapper().getContainer(identifier);
             stringBuilder.append("/composition[");
             stringBuilder.append(containment.getArchetypeId());
             stringBuilder.append("]");
-            result = stringBuilder.toString();
+            result = new TreeSet<>();
+            result.add(stringBuilder.toString());
         }
         return result;
     }

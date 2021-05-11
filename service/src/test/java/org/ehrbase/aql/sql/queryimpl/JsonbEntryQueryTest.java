@@ -71,7 +71,7 @@ public class JsonbEntryQueryTest extends TestAqlBase {
 
 
         //CCH 191016: EHR-163 required trailing '/value' as now the query allows canonical json return
-        Field<?> actual = cut.makeField("IDCR - Immunisation summary.v0", "d", I_VariableDefinitionHelper.build("description[at0001]/items[at0002]/value/value", "test", "d", false, false, false), IQueryImpl.Clause.SELECT);
+        Field<?> actual = cut.makeField("IDCR - Immunisation summary.v0", "d", I_VariableDefinitionHelper.build("description[at0001]/items[at0002]/value/value", "test", "d", false, false, false), IQueryImpl.Clause.SELECT).getFields().get(0).getSQLField();
 
         SelectSelectStep<? extends Record1<?>> selectQuery = DSL.select(actual);
         assertThat(selectQuery.getQuery().toString()).isEqualToIgnoringWhitespace("select ("+ QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION+"((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') \"test\"");
@@ -84,7 +84,7 @@ public class JsonbEntryQueryTest extends TestAqlBase {
                 "c",
                 I_VariableDefinitionHelper.build("content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1,'Blood pressure (Training sample)']/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/magnitude",
                         "test", "c", false, false, false),
-                IQueryImpl.Clause.SELECT);
+                IQueryImpl.Clause.SELECT).getFields().get(0).getSQLField();
 
         SelectSelectStep<? extends Record1<?>> selectQuery = DSL.select(actual);
         assertThat(selectQuery.getQuery().toString()).isEqualToIgnoringWhitespace(
@@ -99,7 +99,7 @@ public class JsonbEntryQueryTest extends TestAqlBase {
                 "c",
                 I_VariableDefinitionHelper.build("content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0004, 'Systolic']/value/magnitude",
                         "test", "c", false, false, false),
-                IQueryImpl.Clause.SELECT);
+                IQueryImpl.Clause.SELECT).getFields().get(0).getSQLField();
 
         SelectSelectStep<? extends Record1<?>> selectQuery = DSL.select(actual);
         assertThat(selectQuery.getQuery().toString()).isEqualToIgnoringWhitespace(
@@ -113,7 +113,7 @@ public class JsonbEntryQueryTest extends TestAqlBase {
                 "c",
                 I_VariableDefinitionHelper.build("content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1,'Blood pressure (Training sample)']/data[at0001]/events[at0002]/data[at0003]/items[at0004, 'Systolic']/value/magnitude",
                         "test", "c", false, false, false),
-                IQueryImpl.Clause.SELECT);
+                IQueryImpl.Clause.SELECT).getFields().get(0).getSQLField();
 
         SelectSelectStep<? extends Record1<?>> selectQuery = DSL.select(actual);
         assertThat(selectQuery.getQuery().toString()).isEqualToIgnoringWhitespace(
@@ -127,7 +127,7 @@ public class JsonbEntryQueryTest extends TestAqlBase {
                 "c",
                 I_VariableDefinitionHelper.build("content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1,'Blood pressure (Training sample)']/data[at0001, 'history']/events[at0002]/data[at0003]/items[at0004, 'Systolic']/value/magnitude",
                         "test", "c", false, false, false),
-                IQueryImpl.Clause.SELECT);
+                IQueryImpl.Clause.SELECT).getFields().get(0).getSQLField();
 
         SelectSelectStep<? extends Record1<?>> selectQuery = DSL.select(actual);
         assertThat(selectQuery.getQuery().toString()).isEqualToIgnoringWhitespace(
@@ -141,7 +141,7 @@ public class JsonbEntryQueryTest extends TestAqlBase {
                 "c",
                 I_VariableDefinitionHelper.build("content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001, 'history']/events[at0002]/data[at0003]/items[at0004]/value/magnitude",
                         "test", "c", false, false, false),
-                IQueryImpl.Clause.SELECT);
+                IQueryImpl.Clause.SELECT).getFields().get(0).getSQLField();
 
         SelectSelectStep<? extends Record1<?>> selectQuery = DSL.select(actual);
         assertThat(selectQuery.getQuery().toString()).isEqualToIgnoringWhitespace(
@@ -156,7 +156,7 @@ public class JsonbEntryQueryTest extends TestAqlBase {
                 "c",
                 I_VariableDefinitionHelper.build("content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001 and name/value='history']/events[at0002]/data[at0003]/items[at0004]/value/magnitude",
                         "test", "c", false, false, false),
-                IQueryImpl.Clause.SELECT);
+                IQueryImpl.Clause.SELECT).getFields().get(0).getSQLField();
 
         SelectSelectStep<? extends Record1<?>> selectQuery = DSL.select(actual);
         assertThat(selectQuery.getQuery().toString()).isEqualToIgnoringWhitespace(

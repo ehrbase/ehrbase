@@ -24,23 +24,25 @@ package org.ehrbase.aql.sql.queryimpl;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.jooq.Field;
 
+import java.util.List;
+
 /**
  * Created by christian on 5/6/2016.
  */
 @SuppressWarnings("java:S1452")
 public interface IQueryImpl {
 
-    boolean isJsonDataBlock();
+//    boolean isJsonDataBlock();
 
-    boolean isContainsJqueryPath();
-
-    String getJsonbItemPath();
+//    boolean isContainsJqueryPath();
+//
+//    String getJsonbItemPath();
 
     enum Clause {SELECT, WHERE, ORDERBY, FROM}
 
-    Field<?> makeField(String templateId, String identifier, I_VariableDefinition variableDefinition, Clause clause);
+    MultiFields makeField(String templateId, String identifier, I_VariableDefinition variableDefinition, Clause clause);
 
-    Field<?> whereField(String templateId, String identifier, I_VariableDefinition variableDefinition);
+    MultiFields whereField(String templateId, String identifier, I_VariableDefinition variableDefinition);
 
-    String getItemType();
+//    String getItemType();
 }

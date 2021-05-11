@@ -37,6 +37,8 @@ import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.service.IntrospectService;
 import org.jooq.Field;
 
+import java.util.List;
+
 import static org.ehrbase.aql.sql.QueryProcessor.NIL_TEMPLATE;
 
 /**
@@ -61,10 +63,9 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
     }
 
     @Override
-    public Field<?> makeField(String templateId, String identifier, I_VariableDefinition variableDefinition, Clause clause) {
+    public MultiFields makeField(String templateId, String identifier, I_VariableDefinition variableDefinition, Clause clause) {
         //resolve composition attributes and/or context
         String columnAlias = variableDefinition.getPath();
-        jsonDataBlock = false;
         FieldResolutionContext fieldResolutionContext =
                 new FieldResolutionContext(domainAccess.getContext(),
                         serverNodeId,
@@ -109,12 +110,13 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
                 throw new IllegalArgumentException("INTERNAL: the following class cannot be resolved for AQL querying:" + (pathResolver.classNameOf(variableDefinition.getIdentifier())));
         }
 
-        jsonDataBlock = fieldResolutionContext.isJsonDatablock();
-        return retField;
+        QualifiedAqlField aqlField = new QualifiedAqlField(retField);
+        aqlField.setJsonDataBlock(fieldResolutionContext.isJsonDatablock());
+        return new MultiFields(variableDefinition, aqlField, templateId);
     }
 
     @Override
-    public Field<?> whereField(String templateId,String identifier, I_VariableDefinition variableDefinition) {
+    public MultiFields whereField(String templateId,String identifier, I_VariableDefinition variableDefinition) {
         return makeField(templateId, identifier, variableDefinition, Clause.WHERE);
     }
 
@@ -152,17 +154,6 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
 
     public boolean containsEhrStatus() {
         return joinSetup.isContainsEhrStatus();
-    }
-
-
-    @Override
-    public boolean isContainsJqueryPath() {
-        return false;
-    }
-
-    @Override
-    public String getJsonbItemPath() {
-        return null;
     }
 
     /**
