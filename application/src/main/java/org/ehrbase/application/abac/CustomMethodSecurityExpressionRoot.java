@@ -65,7 +65,7 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
   static final String POST = "post";
 
   private final AbacConfig abacConfig;
-  private AbacCheck abacCheck;
+  private final AbacCheck abacCheck;
   private CompositionService compositionService;
   private ContributionService contributionService;
   private EhrService ehrService;

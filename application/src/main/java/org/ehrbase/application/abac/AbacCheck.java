@@ -21,12 +21,13 @@ package org.ehrbase.application.abac;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Map;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.application.config.HttpClientConfig;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -38,10 +39,10 @@ import org.springframework.stereotype.Component;
  */
 public class AbacCheck {
 
-  AbacConfig abacConfig;
+  private final HttpClientConfig httpClientConfig;
 
-  public AbacCheck(AbacConfig abacConfig) {
-    this.abacConfig = abacConfig;
+  public AbacCheck(HttpClientConfig httpClientConfig) {
+    this.httpClientConfig = httpClientConfig;
   }
 
   /**
@@ -72,7 +73,11 @@ public class AbacCheck {
         .POST(BodyPublishers.ofString(requestBody))
         .build();
 
-    return HttpClient.newHttpClient().send(request, BodyHandlers.ofString());
+    try {
+      return httpClientConfig.getClient().send(request, BodyHandlers.ofString());
+    } catch (Exception e) {
+      throw new InternalServerException("ABAC: Connection with ABAC server failed. Check configuration. Error: " + e.getMessage());
+    }
   }
 
   private boolean evaluateResponse(HttpResponse<?> response) {

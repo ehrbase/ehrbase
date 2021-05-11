@@ -75,6 +75,7 @@ abac:
     composition:
       name: 'has_consent_template'
       parameters: 'organization, patient, template'
+      #parameters: 'template'  # for manual testing, doesn't depend on real claims in JWT
     contribution:
       name: 'has_consent_template'
       parameters: 'organization, patient, template'
@@ -82,6 +83,9 @@ abac:
       name: 'has_consent_template'
       parameters: 'organization, patient, template'
 
+httpclient:
+  #proxy: 'localhost'
+  #proxyPort: 1234
 
 cache:
   config-path: '/ehcache.xml'
