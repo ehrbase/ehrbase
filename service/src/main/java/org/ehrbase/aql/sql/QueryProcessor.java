@@ -218,20 +218,20 @@ public class QueryProcessor extends TemplateMetaData {
                 throw new IllegalStateException("Found non unique path!");
             }
 
-            select.addSelect(multiSelectFields.getFields().get(0).getSQLField());
+            select.addSelect(multiSelectFields.getField(0).getSQLField());
 
             return new QuerySteps(select,
                     selectBinder.getWhereConditions(multiWhereFieldsMap),
                     templateId,
                     selectBinder.getCompositionAttributeQuery(),
-                    selectBinder.getJsonDataBlock(), multiSelectFields.getFields().get(0).isContainsJqueryPath());
+                    selectBinder.getJsonDataBlock(), multiSelectFields.getField(0).isContainsJqueryPath());
         }
         return null;
     }
 
     //for debugging
     private boolean containsNonUniquePath(MultiFields multiFields){
-        return multiFields.getFields().size() > 1;
+        return multiFields.fieldsSize() > 1;
     }
 
     private QuerySteps buildNullSelect(String templateId) {
@@ -242,7 +242,7 @@ public class QueryProcessor extends TemplateMetaData {
         SelectQuery<?> select = domainAccess.getContext().selectQuery();
 
         //TODO: is handling multiple path (?) required...
-        select.addSelect(multiFieldsList.get(0).getFields().get(0).getSQLField());
+        select.addSelect(multiFieldsList.get(0).getField(0).getSQLField());
 
         return new QuerySteps(select,
                 DSL.condition("1 = 0"),

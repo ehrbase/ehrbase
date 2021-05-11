@@ -99,7 +99,7 @@ public class WhereBinder {
         if (className == null)
             throw new IllegalArgumentException("Could not bind identifier in WHERE clause:'" + identifier + "'");
 
-        Field<?> field = multiFieldsMap.get(variableDefinition.getIdentifier(), variableDefinition.getPath()).getFields().get(0).getSQLField();
+        Field<?> field = multiFieldsMap.get(variableDefinition.getIdentifier(), variableDefinition.getPath()).getField(0).getSQLField();
 
         //EHR-327: if force SQL is set to true via environment, jsquery extension is not required
         //this allows to deploy on AWS since jsquery is not supported by this provider

@@ -20,6 +20,8 @@ package org.ehrbase.aql.sql.binding;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.sql.queryimpl.*;
 
+import java.util.Iterator;
+
 /**
  * convert a field that is not identied as an EHR or a COMPOSITION (content or attribute). For example a CLUSTER
  * in other_context
@@ -52,7 +54,8 @@ public class ContextualAttribute {
         MultiFields fields = compositionAttribute.toSql(variableDefinition, templateId, variableDefinition.getIdentifier());
 
         if (clause.equals(IQueryImpl.Clause.SELECT)) {
-            for (QualifiedAqlField field: fields.getFields()) {
+            for (Iterator<QualifiedAqlField> qualifiedAqlFieldIterator = fields.iterator(); qualifiedAqlFieldIterator.hasNext();) {
+                QualifiedAqlField field = qualifiedAqlFieldIterator.next();
                 variableDefinition.setPath(originalPath);
                 if (originalPath != null)
                     field.setField(field.getSQLField().as("/" + originalPath));

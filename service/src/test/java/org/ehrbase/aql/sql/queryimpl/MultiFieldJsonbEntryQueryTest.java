@@ -31,6 +31,7 @@ import org.jooq.Record1;
 import org.jooq.SelectSelectStep;
 import org.jooq.impl.DSL;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -65,9 +66,10 @@ public class MultiFieldJsonbEntryQueryTest extends TestAqlBase {
 
 
     @Test
+//    @Ignore("In work")
     public void testMakeMultiField() throws Exception {
 
-        Field<?> actual = cut.makeField("non_unique_aql_paths", "a", I_VariableDefinitionHelper.build("description[at0001]/items[at0002]/name/value", "test", "a", false, false, false), IQueryImpl.Clause.SELECT).getFields().get(0).getSQLField();
+        Field<?> actual = cut.makeField("non_unique_aql_paths", "a", I_VariableDefinitionHelper.build("description[at0001]/items[at0002]/name/value", "test", "a", false, false, false), IQueryImpl.Clause.SELECT).getField(0).getSQLField();
 
         SelectSelectStep<? extends Record1<?>> selectQuery = DSL.select(actual);
         assertThat(selectQuery.getQuery().toString()).isEqualToIgnoringWhitespace("select ("+ QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION+"((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') \"test\"");

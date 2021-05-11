@@ -35,6 +35,7 @@ import org.jooq.*;
 import org.jooq.impl.DSL;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -119,9 +120,12 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
 
     private void handleJsonDataBlock(MultiFields multiFields){
         if (!multiFields.isEmpty()) {
-            for (QualifiedAqlField aqlField: multiFields.getFields())
+            Iterator<QualifiedAqlField> qualifiedAqlFieldIterator = multiFields.iterator();
+            while(qualifiedAqlFieldIterator.hasNext()) {
+                QualifiedAqlField aqlField = qualifiedAqlFieldIterator.next();
                 if (aqlField.isJsonDataBlock())
                     jsonDataBlock.add(new JsonbBlockDef(aqlField.getOptionalPath() == null ? aqlField.getJsonbItemPath() : aqlField.getOptionalPath(), aqlField.getSQLField(), multiFields.getRootJsonKey()));
+            }
         }
     }
 

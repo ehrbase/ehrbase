@@ -49,8 +49,9 @@ public class PathResolver {
 
 
     public Set<String> pathOf(String templateId, String identifier) {
-        Set<String> result =  getMapper().getPath(templateId, identifier);
-        if (result.isEmpty() && getMapper().getClassName(identifier).equals("COMPOSITION")) {
+        Set<String> result;
+
+        if (!getMapper().hasPathExpression() && getMapper().getClassName(identifier).equals("COMPOSITION")) {
             //assemble a fake path for composition
             StringBuilder stringBuilder = new StringBuilder();
             Containment containment = (Containment) getMapper().getContainer(identifier);
@@ -60,6 +61,9 @@ public class PathResolver {
             result = new TreeSet<>();
             result.add(stringBuilder.toString());
         }
+        else
+             result =  getMapper().getPath(templateId, identifier);
+
         return result;
     }
 

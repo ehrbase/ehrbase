@@ -50,7 +50,7 @@ public class LocatableItem {
 //        jsonbItemPath = jsonbEntryQuery.getJsonbItemPath();
 //        containsJsonDataBlock |= jsonbEntryQuery.isJsonDataBlock();
         if (!multiFields.isEmpty()) {
-            QualifiedAqlField aqlField = multiFields.getFields().get(0);
+            QualifiedAqlField aqlField = multiFields.getField(0);
             if (aqlField.isJsonDataBlock()) {
 
                 if (aqlField.getItemType() != null) {

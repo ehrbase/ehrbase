@@ -23,6 +23,7 @@ import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.jooq.Field;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class MultiFields {
@@ -57,8 +58,31 @@ public class MultiFields {
         return useEntryTable;
     }
 
-    public List<QualifiedAqlField> getFields() {
-        return fields;
+//    public List<QualifiedAqlField> getFields() {
+//        return fields;
+//    }
+
+    public int fieldsSize(){
+        return fields.size();
+    }
+
+    public QualifiedAqlField getField(int index){
+        return fields.get(index);
+    }
+
+    public Iterator<QualifiedAqlField> iterator(){
+        return fields.iterator();
+    }
+
+    public QualifiedAqlField getLast(){
+        return fields.get(fieldsSize() - 1);
+    }
+
+    public QualifiedAqlField getFieldOrLast(int index){
+        if (index >= fieldsSize())
+            return getLast();
+        else
+            return getField(index);
     }
 
     public int size(){
