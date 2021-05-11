@@ -75,6 +75,8 @@ public class AbacCheck {
 
     try {
       return httpClientConfig.getClient().send(request, BodyHandlers.ofString());
+    } catch (InterruptedException e) {
+      throw e;
     } catch (Exception e) {
       throw new InternalServerException("ABAC: Connection with ABAC server failed. Check configuration. Error: " + e.getMessage());
     }
