@@ -66,7 +66,7 @@ public class MultiFields {
         return fields.size();
     }
 
-    public QualifiedAqlField getField(int index){
+    public QualifiedAqlField getQualifiedField(int index){
         return fields.get(index);
     }
 
@@ -74,15 +74,15 @@ public class MultiFields {
         return fields.iterator();
     }
 
-    public QualifiedAqlField getLast(){
+    public QualifiedAqlField getLastQualifiedField(){
         return fields.get(fieldsSize() - 1);
     }
 
-    public QualifiedAqlField getFieldOrLast(int index){
+    public QualifiedAqlField getQualifiedFieldOrLast(int index){
         if (index >= fieldsSize())
-            return getLast();
+            return getLastQualifiedField();
         else
-            return getField(index);
+            return getQualifiedField(index);
     }
 
     public int size(){

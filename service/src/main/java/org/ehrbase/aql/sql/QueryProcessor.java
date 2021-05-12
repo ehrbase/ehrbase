@@ -206,6 +206,9 @@ public class QueryProcessor extends TemplateMetaData {
         MultiFieldsMap multiSelectFieldsMap = new MultiFieldsMap(selectBinder.bind(templateId));
         MultiFieldsMap multiWhereFieldsMap = new MultiFieldsMap(new WhereMultiFields(domainAccess, introspectCache, contains, statements.getWhereClause(), serverNodeId).bind(templateId));
 
+        int selectCursor = 0;
+        int whereCursor = 0;
+
         for (Iterator<MultiFields> it = multiSelectFieldsMap.multiFieldsIterator(); it.hasNext(); ) {
             MultiFields multiSelectFields = it.next();
 
@@ -218,13 +221,13 @@ public class QueryProcessor extends TemplateMetaData {
                 throw new IllegalStateException("Found non unique path!");
             }
 
-            select.addSelect(multiSelectFields.getField(0).getSQLField());
+            select.addSelect(multiSelectFields.getQualifiedField(selectCursor).getSQLField());
 
             return new QuerySteps(select,
-                    selectBinder.getWhereConditions(multiWhereFieldsMap),
+                    selectBinder.getWhereConditions(whereCursor, multiWhereFieldsMap),
                     templateId,
                     selectBinder.getCompositionAttributeQuery(),
-                    selectBinder.getJsonDataBlock(), multiSelectFields.getField(0).isContainsJqueryPath());
+                    selectBinder.getJsonDataBlock(), multiSelectFields.getQualifiedField(selectCursor).isContainsJqueryPath());
         }
         return null;
     }
@@ -242,7 +245,7 @@ public class QueryProcessor extends TemplateMetaData {
         SelectQuery<?> select = domainAccess.getContext().selectQuery();
 
         //TODO: is handling multiple path (?) required...
-        select.addSelect(multiFieldsList.get(0).getField(0).getSQLField());
+        select.addSelect(multiFieldsList.get(0).getQualifiedField(0).getSQLField());
 
         return new QuerySteps(select,
                 DSL.condition("1 = 0"),

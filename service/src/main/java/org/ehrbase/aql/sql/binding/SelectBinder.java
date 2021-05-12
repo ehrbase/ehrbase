@@ -130,9 +130,9 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
     }
 
 
-    public Condition getWhereConditions(MultiFieldsMap multiFieldsMap) {
+    public Condition getWhereConditions(int whereCursor, MultiFieldsMap multiFieldsMap) {
 
-        return whereBinder.bind(multiFieldsMap);
+        return whereBinder.bind(whereCursor, multiFieldsMap);
     }
 
 //    public boolean containsJQueryPath() {

@@ -21,7 +21,6 @@ import com.nedap.archie.rm.datavalues.DataValue;
 import com.nedap.archie.rminfo.ArchieRMInfoLookup;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.sql.queryimpl.*;
-import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 import java.util.Objects;
@@ -43,6 +42,7 @@ public class LocatableItem {
         this.clause = clause;
     }
 
+    //TODO: apply to ALL qualified fields instead of only the first one!
     public MultiFields toSql(String templateId, I_VariableDefinition variableDefinition, String className) {
         MultiFields multiFields;
 
@@ -50,7 +50,7 @@ public class LocatableItem {
 //        jsonbItemPath = jsonbEntryQuery.getJsonbItemPath();
 //        containsJsonDataBlock |= jsonbEntryQuery.isJsonDataBlock();
         if (!multiFields.isEmpty()) {
-            QualifiedAqlField aqlField = multiFields.getField(0);
+            QualifiedAqlField aqlField = multiFields.getQualifiedField(0);
             if (aqlField.isJsonDataBlock()) {
 
                 if (aqlField.getItemType() != null) {

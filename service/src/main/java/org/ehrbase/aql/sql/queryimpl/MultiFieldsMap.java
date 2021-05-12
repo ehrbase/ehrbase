@@ -54,4 +54,17 @@ public class MultiFieldsMap {
     public Iterator<MultiFields> multiFieldsIterator(){
         return multiFieldsMap.values().iterator();
     }
+
+    /**
+     * return the upper limit of all paths in the map
+     */
+    public int upperPathBoundary() {
+        int upperbound = 0;
+
+        for (MultiFields multiFields : multiFieldsMap.values()) {
+            if (multiFields.fieldsSize() > upperbound)
+                upperbound = multiFields.fieldsSize();
+        }
+        return upperbound;
+    }
 }
