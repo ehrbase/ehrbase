@@ -268,16 +268,16 @@ commit same composition again
 
 
 commit composition (FLAT)
-    [Arguments]         ${json_composition}   ${template_id}
+    [Arguments]         ${composition}   ${template_id}
     [Documentation]     Creates the first version of a new COMPOSITION
     ...                 DEPENDENCY: `upload OPT`, `create EHR`
     ...
     ...                 ENDPOINT: POST /ehr/${ehr_id}/composition
 
-    ${file}=            Get File   ${VALID COMPO DATA SETS}/${json_composition}
+    ${file}=            Get File   ${VALID COMPO DATA SETS}/${composition}
 
     &{headers}=         Create Dictionary   Content-Type=application/openehr.wt.flat+json
-                        ...                 Accept=application/json
+                        ...                 Accept=application/openehr.wt.flat+json
                         ...                 Prefer=return=representation
                         ...                 openEHR-VERSION.lifecycle_state=complete
                         ...                 Template-Id=${template_id}
@@ -288,14 +288,48 @@ commit composition (FLAT)
                         capture point in time    1 
 
 check the successfull result of commit compostion (FLAT)
+    [Arguments]    ${uid_json_path}
     Should Be Equal As Strings   ${response.status_code}   201
 
-    Set Test Variable    ${composition_uid}    ${response.json()}[uid][value]    
+    Set Test Variable    ${composition_uid}    ${response.json()}[${uid_json_path}]    
     ${ETag}    Get Substring    ${response.headers}[ETag]    1    -1
     Set Test Variable    ${Location}    ${response.headers}[Location]
 
     Should Be Equal    ${ETag}    ${composition_uid}
     Should Be Equal    ${Location}    ${BASEURL}/ehr/${ehr_id}/composition/${composition_uid}
+
+
+commit composition (TDD\TDS)
+    [Arguments]         ${composition}   ${template_id}
+    [Documentation]     Creates the first version of a new COMPOSITION
+    ...                 DEPENDENCY: `upload OPT`, `create EHR`
+    ...
+    ...                 ENDPOINT: POST /ehr/${ehr_id}/composition
+
+    ${file}=            Get File   ${VALID COMPO DATA SETS}/${composition}
+
+    &{headers}=         Create Dictionary   Content-Type=application/openehr.tds2+xml
+                        ...                 Accept=application/openehr.tds2+xml
+                        ...                 Prefer=return=representation
+                        ...                 openEHR-VERSION.lifecycle_state=incomplete
+                        ...                 Template-Id=${template_id}
+
+    ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
+
+                        Set Test Variable   ${response}    ${resp}
+                        capture point in time    1
+
+check the successfull result of commit compostion (TDD\TDS)
+    Should Be Equal As Strings   ${response.status_code}   201
+
+    ${xresp}=   Parse Xml   ${response.text}
+
+    ${composition_uid}=   Get Element      ${xresp}   uid/value
+    ${ETag}=              Get Substring    ${response.headers}[ETag]   1   -1
+    Set Test Variable     ${Location}      ${response.headers}[Location]
+
+    Should Be Equal    ${ETag}    ${composition_uid.text}
+    Should Be Equal    ${Location}    ${BASEURL}/ehr/${ehr_id}/composition/${composition_uid.text}    
 
 
 update composition (JSON)
