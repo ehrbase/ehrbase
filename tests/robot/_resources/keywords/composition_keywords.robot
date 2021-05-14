@@ -32,6 +32,7 @@ Resource   ${EXECDIR}/robot/_resources/suite_settings.robot
 *** Variables ***
 ${VALID DATA SETS}     ${PROJECT_ROOT}${/}tests${/}robot${/}_resources${/}test_data_sets${/}valid_templates
 ${INVALID DATA SETS}   ${PROJECT_ROOT}${/}tests${/}robot${/}_resources${/}test_data_sets${/}invalid_templates
+${COMPO DATA SETS}     ${PROJECT_ROOT}${/}tests${/}robot${/}_resources${/}test_data_sets${/}compositions
 
 
 
@@ -268,18 +269,18 @@ commit same composition again
 
 
 commit composition (FLAT)
-    [Arguments]         ${composition}   ${template_id}
+    [Arguments]         ${composition}   ${template_id}   ${prefer}   ${lifecycle}
     [Documentation]     Creates the first version of a new COMPOSITION
     ...                 DEPENDENCY: `upload OPT`, `create EHR`
     ...
     ...                 ENDPOINT: POST /ehr/${ehr_id}/composition
 
-    ${file}=            Get File   ${VALID COMPO DATA SETS}/${composition}
+    ${file}=            Get File   ${COMPO DATA SETS}/${composition}
 
     &{headers}=         Create Dictionary   Content-Type=application/openehr.wt.flat+json
                         ...                 Accept=application/openehr.wt.flat+json
-                        ...                 Prefer=return=representation
-                        ...                 openEHR-VERSION.lifecycle_state=complete
+                        ...                 Prefer=return=${prefer}
+                        ...                 openEHR-VERSION.lifecycle_state=${lifecycle}
                         ...                 Template-Id=${template_id}
 
     ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
@@ -300,18 +301,18 @@ check the successfull result of commit compostion (FLAT)
 
 
 commit composition (TDD\TDS)
-    [Arguments]         ${composition}   ${template_id}
+    [Arguments]         ${composition}   ${template_id}   ${prefer}   ${lifecycle}
     [Documentation]     Creates the first version of a new COMPOSITION
     ...                 DEPENDENCY: `upload OPT`, `create EHR`
     ...
     ...                 ENDPOINT: POST /ehr/${ehr_id}/composition
 
-    ${file}=            Get File   ${VALID COMPO DATA SETS}/${composition}
+    ${file}=            Get File   ${COMPO DATA SETS}/${composition}
 
     &{headers}=         Create Dictionary   Content-Type=application/openehr.tds2+xml
                         ...                 Accept=application/openehr.tds2+xml
-                        ...                 Prefer=return=representation
-                        ...                 openEHR-VERSION.lifecycle_state=incomplete
+                        ...                 Prefer=return=${prefer}
+                        ...                 openEHR-VERSION.lifecycle_state=${lifecycle}
                         ...                 Template-Id=${template_id}
 
     ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
