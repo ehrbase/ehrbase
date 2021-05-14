@@ -25,6 +25,7 @@ Documentation    COMPOSITION Specific Keywords
 # Resource    generic_keywords.robot
 # Resource    template_opt1.4_keywords.robot
 # Resource    ehr_keywords.robot
+Resource   ${EXECDIR}/robot/_resources/suite_settings.robot
 
 
 
@@ -264,6 +265,37 @@ commit same composition again
     ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
                         log to console      ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   400
+
+
+commit composition (FLAT)
+    [Arguments]         ${json_composition}   ${template_id}
+    [Documentation]     Creates the first version of a new COMPOSITION
+    ...                 DEPENDENCY: `upload OPT`, `create EHR`
+    ...
+    ...                 ENDPOINT: POST /ehr/${ehr_id}/composition
+
+    ${file}=            Get File   ${VALID COMPO DATA SETS}/${json_composition}
+
+    &{headers}=         Create Dictionary   Content-Type=application/openehr.wt.flat+json
+                        ...                 Accept=application/json
+                        ...                 Prefer=return=representation
+                        ...                 openEHR-VERSION.lifecycle_state=complete
+                        ...                 Template-Id=${template_id}
+
+    ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
+
+                        Set Test Variable   ${response}    ${resp}
+                        capture point in time    1 
+
+check the successfull result of commit compostion (FLAT)
+    Should Be Equal As Strings   ${response.status_code}   201
+
+    Set Test Variable    ${composition_uid}    ${response.json()}[uid][value]    
+    ${ETag}    Get Substring    ${response.headers}[ETag]    1    -1
+    Set Test Variable    ${Location}    ${response.headers}[Location]
+
+    Should Be Equal    ${ETag}    ${composition_uid}
+    Should Be Equal    ${Location}    ${BASEURL}/ehr/${ehr_id}/composition/${composition_uid}
 
 
 update composition (JSON)
