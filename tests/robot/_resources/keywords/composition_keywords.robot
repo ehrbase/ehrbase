@@ -329,8 +329,13 @@ check the successfull result of commit compostion (TDD\TDS)
     Set Test Variable     ${Location}      ${response.headers}[Location]
 
     Should Be Equal    ${ETag}    ${composition_uid.text}
-    Should Be Equal    ${Location}    ${BASEURL}/ehr/${ehr_id}/composition/${composition_uid.text}    
-
+    Should Be Equal    ${Location}    ${BASEURL}/ehr/${ehr_id}/composition/${composition_uid.text}
+    
+        
+check status_code of commit composition
+    [Arguments]    ${status_code}
+    Should Be Equal As Strings   ${response.status_code}   ${status_code}
+    
 
 update composition (JSON)
     [Arguments]         ${new_version_of_composition}

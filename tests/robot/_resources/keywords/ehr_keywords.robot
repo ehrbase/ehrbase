@@ -269,6 +269,22 @@ create new EHR with subject_id (JSON)
                         extract ehr_status from response (JSON)
 
 
+create new EHR can't be modified 
+
+    prepare new request session   Prefer=return=representation
+    generate random subject_id
+
+    ${ehr_status_json}  Load JSON From File   ${VALID EHR DATA SETS}/ehr_can_not_be_modifyable.json
+                        Update Value To Json  ${ehr_status_json}   $.subject.external_ref.id.value
+                        ...                   ${subject_id}
+
+    &{resp}=            REST.POST    ${baseurl}/ehr    ${ehr_status_json}
+                        Set Suite Variable    ${response}    ${resp}
+                        Output Debug Info To Console
+
+                        extract ehr_id from response (JSON)
+
+
 check content of created EHR (JSON)
                         Integer      response status    201
 
