@@ -3,7 +3,7 @@ Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 
 *** Test Cases ***
 Create_minimal_event_composition_TDD\TDS_invalid_composition_example
-   [Tags]   not-ready
+   [Tags]   not-ready   2021
    
    upload OPT   nested/nested.opt
    create EHR

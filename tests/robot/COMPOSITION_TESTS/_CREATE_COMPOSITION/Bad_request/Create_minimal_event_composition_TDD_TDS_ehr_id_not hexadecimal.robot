@@ -5,7 +5,7 @@ Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 Create_minimal_event_composition_TDD\TDS_ehr_id_not hexadecimal
    [Tags]   not-ready   bug   2024
    upload OPT   nested/nested.opt
-   Set Test Variable   ${ehr_id}   not_hexadecimal_ehr_id
+   create fake EHR not hexadecimal
    commit composition (TDD\TDS)    valid/nested.composition.TDD_TDS.xml
    ...                             nested.en.v1
    ...                             minimal

@@ -655,6 +655,21 @@ create fake EHR
     generate random subject_id
 
 
+create fake EHR not hexadecimal
+    [Documentation]     Set invalid ehr_id that is not hexadecimal (for alternative scenarios)
+
+    ${ehr_id}=          Set Variable   XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+    Set Test Variable   ${ehr_id}    ${ehr_id}
+
+
+create fake EHR not match pattern
+    [Documentation]     Set invalid ehr_id that is not match the UUID pattern 8-4-4-4-12 (for alternative scenarios)
+
+    ${ehr_id}=          Evaluate    str(uuid.uuid4())    uuid
+    ${ehr_id}=          Get Substring    ${ehr_id}    0    -2
+    Set Test Variable   ${ehr_id}    ${ehr_id}
+
+
 generate random ehr_id
     [Documentation]     Generates a random UUIDv4 spec conform `ehr_id`
     ...                 and exposes it as Test Variable
