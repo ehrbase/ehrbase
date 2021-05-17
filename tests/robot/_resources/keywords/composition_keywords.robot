@@ -269,7 +269,7 @@ commit same composition again
 
 
 commit composition (FLAT)
-    [Arguments]         ${composition}   ${template_id}   ${prefer}   ${lifecycle}
+    [Arguments]         ${composition}   ${template_id}   ${prefer}=representation   ${lifecycle}=complete
     [Documentation]     Creates the first version of a new COMPOSITION
     ...                 DEPENDENCY: `upload OPT`, `create EHR`
     ...
@@ -301,7 +301,7 @@ check the successfull result of commit compostion (FLAT)
 
 
 commit composition (TDD\TDS)
-    [Arguments]         ${composition}   ${template_id}   ${prefer}   ${lifecycle}
+    [Arguments]         ${composition}   ${template_id}   ${prefer}=representation   ${lifecycle}=complete
     [Documentation]     Creates the first version of a new COMPOSITION
     ...                 DEPENDENCY: `upload OPT`, `create EHR`
     ...
@@ -334,7 +334,7 @@ check the successfull result of commit compostion (TDD\TDS)
 
 
 commit composition (JSON-STRUCTURED)
-    [Arguments]         ${composition}   ${template_id}   ${prefer}   ${lifecycle}
+    [Arguments]         ${composition}   ${template_id}   ${prefer}=representation   ${lifecycle}=complete
     [Documentation]     Creates the first version of a new COMPOSITION
     ...                 DEPENDENCY: `upload OPT`, `create EHR`
     ...

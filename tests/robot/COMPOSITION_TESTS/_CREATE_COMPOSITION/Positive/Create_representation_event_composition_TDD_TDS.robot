@@ -5,10 +5,9 @@ Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 Create_representation_event_composition_TDD\TDS
    upload OPT   nested/nested.opt
    create EHR
-   commit composition (TDD\TDS)    valid/nested.composition.TDD_TDS.xml
-   ...                             nested.en.v1
-   ...                             representation
-   ...                             incomplete
+   commit composition (TDD\TDS)    composition=valid/nested.composition.TDD_TDS.xml
+   ...                             template_id=nested.en.v1
+   ...                             lifecycle=incomplete
    check the successfull result of commit compostion (TDD\TDS)
 
    [Teardown]    restart SUT
