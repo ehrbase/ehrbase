@@ -331,6 +331,39 @@ check the successfull result of commit compostion (TDD\TDS)
 
     Should Be Equal    ${ETag}    ${composition_uid.text}
     Should Be Equal    ${Location}    ${BASEURL}/ehr/${ehr_id}/composition/${composition_uid.text}
+
+
+commit composition (JSON-STRUCTURED)
+    [Arguments]         ${composition}   ${template_id}   ${prefer}   ${lifecycle}
+    [Documentation]     Creates the first version of a new COMPOSITION
+    ...                 DEPENDENCY: `upload OPT`, `create EHR`
+    ...
+    ...                 ENDPOINT: POST /ehr/${ehr_id}/composition
+
+    ${file}=            Get File   ${COMPO DATA SETS}/${composition}
+
+    &{headers}=         Create Dictionary   Content-Type=application/openehr.wt.structured+json
+                        ...                 Accept=application/openehr.wt.structured+json
+                        ...                 Prefer=return=${prefer}
+                        ...                 openEHR-VERSION.lifecycle_state=${lifecycle}
+                        ...                 Template-Id=${template_id}
+
+    ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
+
+                        Set Test Variable   ${response}    ${resp}
+                        capture point in time    1
+
+
+check the successfull result of commit compostion (JSON-STRUCTURED)
+    [Arguments]    ${uid_json_path}
+    Should Be Equal As Strings   ${response.status_code}   201
+
+    Set Test Variable    ${composition_uid}    ${response.json()}[${uid_json_path}][_uid][0]    
+    ${ETag}    Get Substring    ${response.headers}[ETag]    1    -1
+    Set Test Variable    ${Location}    ${response.headers}[Location]
+
+    Should Be Equal    ${ETag}    ${composition_uid}
+    Should Be Equal    ${Location}    ${BASEURL}/ehr/${ehr_id}/composition/${composition_uid}
     
         
 check status_code of commit composition
