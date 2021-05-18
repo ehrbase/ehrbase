@@ -5,7 +5,7 @@
 | Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 0.1 (2019-06-18) | First version |
 | Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 0.2 (2019-09-02) | Added annex with REST API proposal |
 | Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 0.3 (2020-03-02) | Added test cases for update directory |
-| Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 1.0 (2021-04-30) | Small corrections and fixes before publication |
+| Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 1.0 (2021-05-18) | Small corrections and fixes before publication |
 
 
 # Index
@@ -44,6 +44,26 @@
     - [G.5. Alternative flow 4: get directory at time on EHR with directory with multiple versions in multiple times](#g5-alternative-flow-4-get-directory-at-time-on-ehr-with-directory-with-multiple-versions-in-multiple-times)
     - [G.6. Alternative flow 5: get directory at time on EHR with directory with multiple versions with empty time](#g6-alternative-flow-5-get-directory-at-time-on-ehr-with-directory-with-multiple-versions-with-empty-time)
     - [G.7. Alternative flow 7: get directory at time on non existent EHR](#g7-alternative-flow-7-get-directory-at-time-on-non-existent-ehr)
+  - [H. Update DIRECTORY](#h-update-directory)
+    - [H.1. Main flow: update directory from EHR with directory](#h1-main-flow-update-directory-from-ehr-with-directory)
+    - [H.2. Alternative flow 1: update directory on empty EHR](#h2-alternative-flow-1-update-directory-on-empty-ehr)
+    - [H.3. Alternative flow 2: update directory on non-existing EHR](#h3-alternative-flow-2-update-directory-on-non-existing-ehr)
+  - [I. Delete DIRECTORY](#i-delete-directory)
+    - [I.1. Main flow: delete directory on empty EHR](#i1-main-flow-delete-directory-on-empty-ehr)
+    - [I.2. Alternative flow 1: delete directory from EHR with directory](#i2-alternative-flow-1-delete-directory-from-ehr-with-directory)
+    - [I.3. Alternative flow 2: delete directory from non-existent EHR](#i3-alternative-flow-2-delete-directory-from-non-existent-ehr)
+  - [J. Has DIRECTORY version](#j-has-directory-version)
+    - [J.1. Main flow: has directory from empty EHR](#j1-main-flow-has-directory-from-empty-ehr)
+    - [J.2. Alternative flow 1: has directory on EHR that has two versions of directory](#j2-alternative-flow-1-has-directory-on-ehr-that-has-two-versions-of-directory)
+    - [J.3. Alternative flow 2: has directory on non-existent EHR](#j3-alternative-flow-2-has-directory-on-non-existent-ehr)
+  - [K. Get DIRECTORY at version](#k-get-directory-at-version)
+    - [K.1. Main flow: get directory at version from empty EHR](#k1-main-flow-get-directory-at-version-from-empty-ehr)
+    - [K.2. Alternative flow 1: get DIRECTORY at version from EHR that has two versions of directory](#k2-alternative-flow-1-get-directory-at-version-from-ehr-that-has-two-versions-of-directory)
+    - [K.3. Alternative flow 2: get DIRECTORY at version from non existent EHR](#k3-alternative-flow-2-get-directory-at-version-from-non-existent-ehr)
+  - [L. Get versioned DIRECTORY](#l-get-versioned-directory)
+    - [L.1. Main flow: get versioned directory from EHR with no directory](#l1-main-flow-get-versioned-directory-from-ehr-with-no-directory)
+    - [L.2. Alternative flow 1: get versioned directory from existent EHR that has two versions of directory](#l2-alternative-flow-1-get-versioned-directory-from-existent-ehr-that-has-two-versions-of-directory)
+    - [L.3. Alternative flow 2: get versioned directory from non existent EHR](#l3-alternative-flow-2-get-versioned-directory-from-non-existent-ehr)
   - [Annex: proposal for FOLDER API](#annex-proposal-for-folder-api)
     - [Background](#background)
     - [Operations for the Service Model](#operations-for-the-service-model)
@@ -511,6 +531,282 @@ WIP
 ---
 
 
+
+
+
+
+## H. Update DIRECTORY
+
+### H.1. Main flow: update directory from EHR with directory
+
+**Preconditions:**
+
+1. An EHR with ehr_id exists on the server
+2. The EHR has a directory
+
+**Postconditions:**
+
+1. The EHR with ehr_id has an updated directory structure
+
+**Flow:**
+
+1. Invoke the update directory service for the ehr_id
+   1. Use any of the valid paylaods described on the previous tests
+2. The service should return a positive result related with the updated directory
+
+
+### H.2. Alternative flow 1: update directory on empty EHR
+
+**Preconditions:**
+
+1. An EHR with ehr_id exists on the server
+2. The EHR doesn't have a directory
+
+**Postconditions:**
+
+None
+
+**Flow:**
+
+1. Invoke the update directory service for the ehr_id
+   1. Use any of the valid paylaods described on the previous tests
+3. The service should return an error related to the non existent directory to update
+
+
+### H.3. Alternative flow 2: update directory on non-existing EHR
+
+**Preconditions:**
+
+1. The server is empty, doesn't have any EHRs
+
+**Postconditions:**
+
+None
+
+**Flow:**
+
+1. Invoke the update directory service for random ehr_id
+   1. Any valid payload will suffice
+2. The service should return an error related to the non existent ehr_id
+
+
+## I. Delete DIRECTORY
+
+### I.1. Main flow: delete directory on empty EHR
+
+**Preconditions:**
+
+1. An EHR with ehr_id exists on the server
+2. The EHR doesn't have a directory
+
+**Postconditions:**
+
+None
+
+**Flow:**
+
+1. Invoke the delete directory service for the ehr_id
+2. The service should return an error related to the non existent directory
+
+
+### I.2. Alternative flow 1: delete directory from EHR with directory
+
+**Preconditions:**
+
+1. An EHR with ehr_id exists on the server
+2. The EHR has a directory
+
+**Postconditions:**
+
+1. The EHR ehr_id doesn't have directory
+
+> Note: the directory exists as a new deleted version (that is VERSION.lifecycle_state=deleted).
+
+**Flow:**
+
+1. Invoke the delete directory service for the ehr_id
+2. The service should return a positive result related with the deleted directory
+
+
+### I.3. Alternative flow 2: delete directory from non-existent EHR
+
+**Preconditions:**
+
+1. The server is empty, there are no EHRs
+
+**Postconditions:**
+
+None
+
+**Flow:**
+
+1. Invoke the get directory service for a random ehr_id
+2. The service should return an error related to the non existent EHR
+
+
+## J. Has DIRECTORY version
+
+### J.1. Main flow: has directory from empty EHR
+
+**Preconditions:**
+
+1. An EHR with known ehr_id exists on the server
+2. The EHR doesn't have a directory
+
+**Postconditions:**
+
+None
+
+**Flow:**
+
+1. Invoke the has directory service for the ehr_id and a random version uid
+2. The service should return false
+
+
+### J.2. Alternative flow 1: has directory on EHR that has two versions of directory
+
+**Preconditions:**
+
+1. An EHR with known ehr_id exists on the server
+2. The EHR has two directory versions
+
+**Postconditions:**
+
+None
+
+**Flow:**
+
+1. Invoke the has directory service for the ehr_id and the version_uid of the first version of directory
+2. The service should return true
+3. Invoke the has directory service for the ehr_id and the version_uid of the second version of directory
+4. The service should return true
+
+
+### J.3. Alternative flow 2: has directory on non-existent EHR
+
+**Preconditions:**
+
+1. The server doesn't have EHRs
+
+**Postconditions:**
+
+None
+
+**Flow:**
+
+1. Invoke the has directory service for a random ehr_id and version uid
+2. The service should return an error related with the non existence of the EHR
+
+
+## K. Get DIRECTORY at version
+
+### K.1. Main flow: get directory at version from empty EHR
+
+**Preconditions:**
+
+1. An EHR with known ehr_id exists on the server
+2. The EHR doesn't have a directory
+
+**Postconditions:**
+
+None
+
+**Flow:**
+
+1. Invoke the get directory at version service for the ehr_id and a random version uid
+2. The service should return an error related to the non existence of the EHR directory version
+
+
+### K.2. Alternative flow 1: get DIRECTORY at version from EHR that has two versions of directory
+
+**Preconditions:**
+
+1. An EHR with known ehr_id exists on the server
+2. The EHR has two versions of directory
+
+**Postconditions:**
+
+None
+
+**Flow:**
+
+1. Invoke the get directory at version service for the ehr_id and the version_uid of the first version of directory
+2. The service should return the first version of the directory
+3. Invoke the get directory at version service for the ehr_id and the version_uid of the second version of directory
+4. The service should return the second version of the directory
+
+
+### K.3. Alternative flow 2: get DIRECTORY at version from non existent EHR
+
+**Preconditions:**
+
+1. The server doesn't have EHRs
+
+**Postconditions:**
+
+None
+
+**Flow:**
+
+1. Invoke the get directory at version service for a random ehr_id and version uid
+2. The service should return an error related with the non existence of the EHR
+
+
+## L. Get versioned DIRECTORY
+
+### L.1. Main flow: get versioned directory from EHR with no directory
+
+**Preconditions:**
+
+1. An EHR with known ehr_id exists on the server
+
+**Postconditions:**
+
+None
+
+**Flow:**
+
+1. Invoke the get versioned directory service for the ehr_id
+2. The service should return an error because the versioned directory doesn't exist
+
+> Note: depending on the implementation, a valid result could also be returning an empty result instead of an error.
+
+
+### L.2. Alternative flow 1: get versioned directory from existent EHR that has two versions of directory
+
+**Preconditions:**
+
+1. An EHR with known ehr_id exists on the server
+2. The EHR has two versions of directory
+
+**Postconditions:**
+
+None
+
+**Flow:**
+
+1. Invoke the get versioned directory service for the ehr_id
+2. The service should return the versioned folder and should reference the two exsinting versions
+
+
+### L.3. Alternative flow 2: get versioned directory from non existent EHR
+
+**Preconditions:**
+
+1. The server doesn't have any EHRs
+
+**Postconditions:**
+
+None
+
+**Flow:**
+
+1. Invoke the get directory service for a random ehr_id
+2. The service should return an error related with the non existence of the EHR
+
+
+---
+
 ## Annex: proposal for FOLDER API
 
 REF: https://wiki.vitagroup.ag/display/ETHERCIS/FOLDER+related+decisions+-+internal+implementation%2C+API+and+conformance
@@ -560,7 +856,7 @@ Current service model related for EHR.directory might lead to some complexities 
 8. create_folder(ehr_id, parent_folder_uid, new_folder)    // NEW, like mkdir command, if no parent_folder_uid is provided, the new_folder will be created under the EHR.directory
 9. update_folder(ehr_id, updated_folder)    // NEW, allows to modify an individual FOLDER and what it contains, including name, details, folders and items. The updated_folder contains it's uid so there is no need for an extra parameter. If subfolders are deleted in the updated folder, they are deleted in the directory as well in EHRbase.
 10. remove_folder(ehr_id, folder_uid)    // NEW, like rmdir -r (removes also subfolders and items)
-11. add_item(ehr_id, folder_uid, versioned_object_uid)    // NEW, like the touch command, adds the item to the FOLDER.items via OBJECT_REF (TODO: verify OBJECT_REF needs namespace and type values but I think those could be set to default values set in the server config so we might not need to add extra parameters for those)
+11. add_item(ehr_id, folder_uid, versioned_object_uid)    // NEW, like the touch command, adds the item to the FOLDER.items via OBJECT_REF (TODO: verify OBJECT_REF needs namespace and type values but I think those could be set to default values set on the server config so we might not need to add extra parameters for those)
 12. remove_item(ehr_id, folder_uid, versioned_object_uid)   // NEW, like the rm command, removes the versioned object reference from the FOLDER.items
 13. delete_directory(ehr_id)    // MAINTAIN, but is contained in remove_folder when it is invoked with the EHR.directory.uid as folder_uid value
 14. has_directory_version(ehr_id, version_uid): Boolean    // MAINTAIN
