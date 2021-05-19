@@ -34,6 +34,7 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
+import org.ehrbase.application.abac.AbacConfig.AbacCheck;
 import org.ehrbase.application.abac.AbacConfig.AbacType;
 import org.ehrbase.application.abac.AbacConfig.Policy;
 import org.ehrbase.application.abac.AbacConfig.PolicyParameter;

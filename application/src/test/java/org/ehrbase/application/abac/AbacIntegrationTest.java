@@ -66,7 +66,7 @@ class AbacIntegrationTest {
 
   private static final String ORGA_ID = "f47bfc11-ec8d-412e-aebf-c6953cc23e7d";
   @MockBean
-  private AbacCheck abacCheck;
+  private AbacConfig.AbacCheck abacCheck;
   @Autowired
   private MockMvc mockMvc;
   @Autowired

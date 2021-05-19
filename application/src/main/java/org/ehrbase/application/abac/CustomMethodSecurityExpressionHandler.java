@@ -22,6 +22,7 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
+import org.ehrbase.application.abac.AbacConfig.AbacCheck;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
