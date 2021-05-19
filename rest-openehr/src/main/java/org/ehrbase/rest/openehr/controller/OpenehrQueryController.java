@@ -40,6 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -71,6 +72,7 @@ public class OpenehrQueryController extends BaseController {
     }
 
     @GetMapping("/aql{?q, offset, fetch, query_parameter}")
+    @PostAuthorize("checkAbacPostQuery(@queryServiceImp.getAuditResultMap())")
     @ApiOperation(value = "Execute ad-hoc (non-stored) AQL query", response = QueryResponseData.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Success.",
@@ -118,6 +120,7 @@ public class OpenehrQueryController extends BaseController {
     }
 
     @PostMapping("/aql")
+    @PostAuthorize("checkAbacPostQuery(@queryServiceImp.getAuditResultMap())")
     @ApiOperation(value = "Execute ad-hoc (non-stored) AQL query", response = QueryResponseData.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Success.",
@@ -194,6 +197,7 @@ public class OpenehrQueryController extends BaseController {
     }
 
     @GetMapping(value = {"/{qualified_query_name}/{version}{?offset,fetch,query_parameter}", "/{qualified_query_name}{?offset,fetch,query_parameter}"})
+    @PostAuthorize("checkAbacPostQuery(@queryServiceImp.getAuditResultMap())")
     @ApiOperation(value = "Execute stored AQL query", response = QueryResponseData.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Success.",
@@ -243,6 +247,7 @@ public class OpenehrQueryController extends BaseController {
     }
 
     @PostMapping(value = {"/{qualified_query_name}/{version}", "/{qualified_query_name}"})
+    @PostAuthorize("checkAbacPostQuery(@queryServiceImp.getAuditResultMap())")
     @ApiOperation(value = "Execute stored AQL query", response = QueryDefinitionResponseData.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Success.",

@@ -18,6 +18,7 @@
 
 package org.ehrbase.api.service;
 
+import java.util.Set;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.ContributionDto;
@@ -63,4 +64,12 @@ public interface ContributionService extends BaseService {
      * @param contributionId Contribution to delete
      */
     void adminDelete(UUID contributionId);
+
+    /**
+     * Extracts set of used templates in payload's compositions.
+     * @param contribution Contribution request content
+     * @param format Format of that content
+     * @return Set of templates used by compositions
+     */
+    Set<String> getListOfTemplates(String contribution, CompositionFormat format);
 }

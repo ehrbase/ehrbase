@@ -88,6 +88,15 @@ public abstract class BaseController {
     static final String RESP_NOT_ACCEPTABLE_DESC = "Not Acceptable - Service can not fulfill requested format via accept header.";
     static final String RESP_UNSUPPORTED_MEDIA_DESC = "Unsupported Media Type - request's content-type not supported.";
 
+    // constants of all API resources
+    public static final String EHR = "ehr";
+    public static final String EHR_STATUS = "ehrstatus";
+    public static final String COMPOSITION = "composition";
+    public static final String DIRECTORY = "directory";
+    public static final String CONTRIBUTION = "contribution";
+    public static final String QUERY = "query";
+    public static final String DEFINITION = "definition";
+
     public Map<String, Map<String, String>> add2MetaMap(Map<String, Map<String, String>> metaMap, String key, String value) {
         Map<String, String> contentMap;
 
