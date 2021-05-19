@@ -455,17 +455,18 @@ None
 
 **Combination table**
 
-Num | Ehr_id | Template_id | Example | lifecycle | format composition | prefer
-----|--------|-------------|---------|-----------|--------------------|------------- 
- 1  |  2     |      1      |  event  | complete  | canonical JSON     | minimal
-----|--------|-------------|---------|-----------|--------------------|------------- 
- 2  | 2      |      1      |  event  | incomplete| TDD                |representation
-    |        |             |         |(not empty)|                    |
-----|--------|-------------|---------|-----------|--------------------|-------------  
- 3  |  2     |      1      |  event  | complete  | FLAT               |representation
-----|--------|-------------|---------|-----------|--------------------|-------------  
- 4  | 2      |      1      |  event  | incomplete| TDD                | minimal
-    |        |             |         | (empty)   |                    |
+Num | Ehr_id | Template_id | Example | format composition 
+----|--------|-------------|---------|--------------------
+ 1  |  2     |      1      |  event  |canonical JSON     
+----|--------|-------------|---------|--------------------
+ 2  |  2     |      1      |  event  |  TDD                
+    |        |             |         |                    
+----|--------|-------------|---------|--------------------
+ 3  |  2     |      1      |  event  |  FLAT               
+----|--------|-------------|---------|--------------------
+ 4  |  2     |      1      |  event  |  JSON STRUCTURED                
+----|--------|-------------|---------|--------------------
+ 5  |  2     |      1      |  event  | canonical XML                    
 
 **Preconditions:**
 
@@ -487,17 +488,18 @@ A new event COMPOSITION exists in the EHR.
 
 **Combination table**
 
-Num | Ehr_id | Template_id | Example  | lifecycle | format composition | prefer
-----|--------|-------------|----------|-----------|--------------------|------------- 
- 1  |  2     |      1      |persistent| complete  | canonical XML      |representation
-----|--------|-------------|----------|-----------|--------------------|------------- 
- 2  | 2      |      1      |persistent| incomplete| TDD                |representation
-    |        |             |          |   (empty) |                    |
-----|--------|-------------|----------|-----------|--------------------|-------------  
- 3  |  2     |      1      |persistent| complete  | canonical JSON     |minimal
-----|--------|-------------|----------|-----------|--------------------|-------------  
- 4  | 2      |      1      |persistent| incomplete| FLAT               | minimal
-    |        |             |          |(not empty)|                    |
+Num | Ehr_id | Template_id | Example  | format composition 
+----|--------|-------------|----------|--------------------
+ 1  |  2     |      1      |persistent| canonical XML      
+----|--------|-------------|----------|--------------------
+ 2  | 2      |      1      |persistent| TDD                
+----|--------|-------------|----------|--------------------
+ 3  |  2     |      1      |persistent| canonical JSON     
+----|--------|-------------|----------|--------------------
+ 4  | 2      |      1      |persistent|  FLAT               
+----|--------|-------------|----------|--------------------
+ 5  |   2    |      1      |presistent| STRUCTURED JSON
+                   
 
 **Preconditions:**
 
@@ -517,11 +519,26 @@ A new persistent COMPOSITION exists in the EHR.
 
 #### B.6.c. Alternative flow 2: Create persistent COMPOSITION for the same OPT twice
 
+**Combination table**
+
+Num | Ehr_id | Template_id | Example  | format composition 
+----|--------|-------------|----------|--------------------
+ 1  |  2     |      1      |persistent| canonical XML      
+----|--------|-------------|----------|--------------------
+ 2  | 2      |      1      |persistent| TDD                
+----|--------|-------------|----------|--------------------
+ 3  |  2     |      1      |persistent| canonical JSON     
+----|--------|-------------|----------|--------------------
+ 4  | 2      |      1      |persistent|  FLAT               
+----|--------|-------------|----------|--------------------
+ 5  |   2    |      1      |presistent| STRUCTURED JSON
+
 **Preconditions:**
 
-1. The OPT, associated with the persistent COMPOSITION that will be created, should exist on the server
-2. An EHR with known ehr_id should exist
+1. The OPT, associated with the persistent COMPOSITION that will be created, should exist on the server (in table num. 1)
+2. An EHR with known ehr_id should exist (in table num. 2)
 3. The EHR should have no commits
+4. Invoke the create COMPOSITION service with a valid persistent COMPOSITION, compliant with the existing OPT, and with the known ehr_id, of a invalid  request in the table upstairs
 
 **Postconditions:**
 
@@ -529,10 +546,8 @@ A new persistent COMPOSITION exists in the EHR.
 
 **Flow:**
 
-1. Invoke the create COMPOSITION service with a valid persistent COMPOSITION, compliant with the existing OPT, and with the known ehr_id
-2. The result should be positive, and return information about the new COMPOSITION added to the EHR, and the version number should be 1
-3. Invoke the create COMPOSITION service with a valid persistent COMPOSITION and the same ehr_id as in 1., the COMPOSITION should comply with the same persistent OPT as the COMPOSITION in 1
-4. The result should be negative, returning an error related to trying to create a persistent COMPOSITION for the same persistent OPT that already has a first version
+1. Repeate precondition num. 4
+2. The result should be negative, returning an error related to trying to create a persistent COMPOSITION for the same persistent OPT that already has a first version
 
 **Notes:**
 
@@ -544,37 +559,19 @@ A new persistent COMPOSITION exists in the EHR.
 
 **Combination table**
 
-Num | Ehr_id   | Template_id | Example  | lifecycle | format composition | prefer
-----|----------|-------------|----------|-----------|--------------------|------------- 
- 1  |can't be  |      1      |  event   | incomplete|            TDD     |representation
-    | modify   |             |          |           |                    |
-----|----------|-------------|----------|-----------|--------------------|------------- 
- 2  |doesn't   |      1      |   event  | incomplete| canonical XML      |representation
-    |match the |             |          |           |                    | 
-    |pattern   |             |          |           |                    |
-    |8-4-4-4-12|             |          |           |                    |
-----|----------|-------------|----------|-----------|--------------------|-------------  
- 3  |not       |      1      |   event  | complete  | TDD                |minimal
-    |hexdecimal|             |          |           |                    |
-----|----------|-------------|----------|-----------|--------------------|-------------  
- 4  |  2       |      1      |event     | incomplete| TDD                |representation
-    |          |             |not TDD   |           |                    |
-    |          |             |format    |           |                    |
-----|----------|-------------|----------|-----------|--------------------|-------------  
- 5  |  2       |      1      |example   | complete  | JSON-STRUCTURED    | representation
-    |          |             |not passed|           |                    |
-----|----------|-------------|----------|-----------|--------------------|-------------  
- 6  |  2       | invalid     | event    | complete  | canonical JSON     | representation
-    |          |template_id  |          |           |                    |
-----|----------|-------------|----------|-----------|--------------------|-------------  
- 7  |  2       | invalid     | event    | complete  | JSON-STRUCTURED    | representation
-    |          |template_id  |          |           |                    |
-----|----------|-------------|----------|-----------|--------------------|-------------  
- 8  |  2       | invalid     | event    | incomplete| canonical JSON     | minimal
-    |          |template_id  |          |           |                    |
-----|----------|-------------|----------|-----------|--------------------|-------------  
- 9  |  2       | invalid     | event    | incomplete| FALT               | minimal
-    |          |template_id  |          |           |                    |
+Num | Ehr_id   | Template_id | Example  | format composition 
+----|----------|-------------|----------|--------------------
+ 1  |   2      |      1      |  event   | TDD     
+----|----------|-------------|----------|--------------------
+ 2  |   2      |      1      |  event   | canonical XML        
+----|----------|-------------|----------|-------------------- 
+ 3  |   2      |      1      |  event   | FLAT               
+----|----------|-------------|----------|-------------------- 
+ 4  |  2       |      1      |  event   | canonical JSON               
+----|----------|-------------|----------|--------------------  
+ 5  |  2       |      1      |  event   | JSON-STRUCTURED    
+
+
 
 **Preconditions:**
 
@@ -588,7 +585,7 @@ None
 
 **Flow:**
 
-1. Invoke the create COMPOSITION service with the invalid data from the table upstairs
+1. Invoke the create COMPOSITION service with an invalid event COMPOSITION and the known ehr_id, with the invalid data from the table upstairs
 2. The result should be negative, and return information about the errors in the provided COMPOSITION
 
 
@@ -596,44 +593,18 @@ None
 
 **Combination table**
 
-Num | Ehr_id   | Template_id | Example  | lifecycle | format composition | prefer
-----|----------|-------------|----------|-----------|--------------------|------------- 
- 1  |can't be  |      1      |presistent| incomplete| canonicl XML       |representation
-    | modify   |             |          |           |                    |
-----|----------|-------------|----------|-----------|--------------------|------------- 
- 2  |doesn't   |      1      |presistent| complete  | JSON STRUCTURED    |minimal
-    |match the |             |          |           |                    | 
-    |pattern   |             |          |           |                    |
-    |8-4-4-4-12|             |          |           |                    |
-----|----------|-------------|----------|-----------|--------------------|-------------  
- 3  |not       |      1      |presistent| complete  | canonical XML      |minimal
-    |hexdecimal|             |          |           |                    |
-----|----------|-------------|----------|-----------|--------------------|-------------  
- 4  |  2       |      1      |presistent| incomplete| canonical XML      |representation
-    |          |             |not XML   |           |                    |
-    |          |             |format    |           |                    |
-----|----------|-------------|----------|-----------|--------------------|-------------  
- 5  |  2       |      1      |presistent| incomplete| canonical JSON     | minimal
-    |          |             |passed    |           |                    |
-    |          |             |twice for |           |                    |
-    |          |             |the same  |           |                    |
-    |          |             |OPT       |           |                    |
-----|----------|-------------|----------|-----------|--------------------|-------------  
- 6  |  2       |     1       |presistent| complete  | FLAT               | minimal
-    |          |             | not FLAT |           |                    |
-    |          |             | format   |           |                    |
-----|----------|-------------|----------|-----------|--------------------|-------------  
- 7  |  2       |     1       |presistent| complete  | TDD                | minimal
-    |          |             |not passed|           |                    |
-----|----------|-------------|----------|-----------|--------------------|-------------  
- 8  |  2       | invalid     |presistent| incomplete| TDD                | minimal
-    |          |template_id  |          |           |                    |
-----|----------|-------------|----------|-----------|--------------------|-------------  
- 9  |  2       | invalid     |presistent| complete  | canonical XML      | representation
-    |          |template_id  |          |           |                    |
-----|----------|-------------|----------|-----------|--------------------|-------------  
-10  |  2       | invalid     |presistent| incomplete| JSON STRUCTURED    | minimal
-    |          |template_id  |          |           |                    |
+Num | Ehr_id   | Template_id | Example  | format composition 
+----|----------|-------------|----------|--------------------
+ 1  |   2      |      1      |presistent| canonicl XML       
+----|----------|-------------|----------|--------------------
+ 2  |   2      |      1      |presistent| JSON STRUCTURED    
+----|----------|-------------|----------|--------------------
+ 3  |   2      |      1      |presistent| TDD     
+----|----------|-------------|----------|--------------------
+ 4  |  2       |      1      |presistent| FLAT     
+----|----------|-------------|----------|-------------------- 
+ 5  |  2       |      1      |presistent| canonical JSON     
+
 
 **Preconditions:**
 
@@ -647,7 +618,7 @@ None
 
 **Flow:**
 
-1. Invoke the create COMPOSITION service with the invalid data from the table upstairs
+1. nvoke the create COMPOSITION service with an invalid persistent COMPOSITION and the known ehr_id using data from the table upstairs
 2. The result should be negative, and return information about the errors in the provided COMPOSITION
 
 
@@ -655,72 +626,22 @@ None
 
 **Combination table**
 
-Num | Ehr_id   | Template_id | Example    | lifecycle | format composition | prefer
-----|----------|-------------|------------|-----------|--------------------|------------- 
- 1  |    2     |      1      |  invalid   | complete  | TDD                |minimal
-    |          |             |    event   |           |                    |
-    |          |             |(in content)|           |                    |
-----|----------|-------------|------------|-----------|--------------------|------------- 
- 2  |    2     |      1      |invalid     | incomplete| canonical XML      |representation
-    |          |             |presistent  |           |                    | 
-    |          |             |(in content)|           |                    |
-----|----------|-------------|------------|-----------|--------------------|-------------  
- 3  |    2     |      1      |   invalid  | incomplete| canonical JSON     |representation
-    |          |             | event (out |           |                    |
-    |          |             | content)   |           |                    |
-----|----------|-------------|------------|-----------|--------------------|-------------  
- 4  |  2       |      1      |invalid     | complete  | JSON STRUCTURED    |minimal
-    |          |             |presistent (|           |                    |
-    |          |             |out content)|           |                    |
-----|----------|-------------|------------|-----------|--------------------|-------------  
- 5  |  2       |      1      |invalid     | incomplete| TDD                | representation
-    |          |             |event (in   |           |                    |
-    |          |             |content)    |           |                    |
-----|----------|-------------|------------|-----------|--------------------|-------------  
- 6  |  2       |     1       |ivalid      | complete  | canonical XML      | minimal
-    |          |             |presistent  |           |                    |
-    |          |             |(in content)|           |                    |
-----|----------|-------------|------------|-----------|--------------------|-------------  
- 7  |  2       |event        |  presistent| complete  | TDD                | representation
-    |          |  template_id|            |           |                    |
-----|----------|-------------|------------|-----------|--------------------|-------------  
- 8  |  2       | presistent  |   event    |  complete | canonical XML      | representation
-    |          |template_id  |            |           |                    |
-----|----------|-------------|------------|-----------|--------------------|-------------  
- 9  |  2       | event       |presistent  | incomplete|  FLAT              | minimal
-    |          |template_id  |            |           |                    |
-----|----------|-------------|------------|-----------|--------------------|-------------  
-10  |  2       | event       |presistent  | incomplete| canonical JSON     | minimal
-    |          |template_id  |            |           |                    |
-----|----------|-------------|------------|-----------|--------------------|-------------  
-11  |  2       | does not    |   event    | complete  | canonical XML      | representation
-    |          | exist       |            |           |                    |
-----|----------|-------------|------------|-----------|--------------------|-------------  
-12  |  2       | does not    |presistent  |   complete|  FALT              | representation
-    |          | exist       |            |           |                    |  
-----|----------|-------------|------------|-----------|--------------------|-------------  
-13  |  2       | does not    |presistent  | incomplete| FALT               | minimal
-    |          | exist       |            |           |                    |  
-----|----------|-------------|------------|-----------|--------------------|-------------  
-14  |  2       | does not    |   event    | incomplete| TDD                | minimal
-    |          | exist       |            |           |                    |  
-----|----------|-------------|------------|-----------|--------------------|-------------  
-15  |  2       | does not    |   event    | incomplete| JSON STRUCTURED    | minimal
-    |          | exist       |            |           |                    |  
-----|----------|-------------|------------|-----------|--------------------|-------------  
-16  |  2       | does not    |   event    | complete  | JSON STRUCTURED    | representation
-    |          | exist       |            |           |                    |  
-----|----------|-------------|------------|-----------|--------------------|-------------  
-17  |  2       | does not    |presistent  | incomplete| canonical JSON     | minimal
-    |          | exist       |            |           |                    |  
-----|----------|-------------|------------|-----------|--------------------|-------------  
-18  |  2       | does not    |   event    | complete  | canonical JSON     | representation
-    |          | exist       |            |           |                    |  
+Num | Ehr_id   | Template_id | Example    | format composition 
+----|----------|-------------|------------|-------------------- 
+ 1  |    2     |      1      |  event     | TDD                
+----|----------|-------------|------------|--------------------
+ 2  |    2     |      1      |  event     | canonical XML      
+----|----------|-------------|------------|-------------------- 
+ 3  |    2     |      1      |  event     | canonical JSON     
+----|----------|-------------|------------|-------------------- 
+ 4  |  2       |      1      |  event     | JSON STRUCTURED    
+----|----------|-------------|------------|--------------------
+ 5  |  2       |      1      |  event     | FLAT                
 
 
 **Preconditions:**
 
-1. The OPT, associated with the persistent COMPOSITION that will be created, should exist on the server (in table num. 1)
+1. The OPT, referenced by the COMPOSITION to commit, doesn't exist on the server (in table num. 1)
 2. An EHR with known ehr_id should exist (in table num. 2)
 3. The EHR should have no commits
 
@@ -731,31 +652,35 @@ None
 **Flow:**
 
 1. Invoke the create COMPOSITION service with the invalid data from the table upstairs
-2. The result should be negative, and return information about the errors in the provided COMPOSITION
+    1. The COMPOSITION should reference an OPT that doesn't exist on the server
+2. The result should be negative, and return information about the non-existent OPT
 
 
 #### B.6.g. Alternative flow 6: Create new event COMPOSITION, EHR doesn't exist
 
 **Combination table**
 
-Num | Ehr_id   | Template_id | Example    | lifecycle | format composition | prefer
-----|----------|-------------|------------|-----------|--------------------|------------- 
- 1  |    2     |      1      |  event     | complete  | canonical JSON     |representation
-----|----------|-------------|------------|-----------|--------------------|------------- 
- 2  |    2     |      1      |presitent   | incomplete| TDD                |minimal
-----|----------|-------------|------------|-----------|--------------------|-------------  
- 3  |    2     |      1      |   event    | incomplete| canonical XML      |minimal
-----|----------|-------------|------------|-----------|--------------------|-------------  
- 4  |  2       |      1      |presistent  | complete  | FLAT               |representation
-----|----------|-------------|------------|-----------|--------------------|-------------  
- 5  |  2       |      1      |   event    | incomplete| canonical JSON     |minimal
-----|----------|-------------|------------|-----------|--------------------|-------------  
- 6  |  2       |     1       |presitent   | complete  | canonical XML      |representation
-----|----------|-------------|------------|-----------|--------------------|-------------  
- 7  |  2       |     1       |   event    | incomplete| FLAT               |minimal
-----|----------|-------------|------------|-----------|--------------------|-------------  
- 8  |  2       |     1       |presistent  | complete  |  TDD               |representation
-
+Num | Ehr_id   | Template_id | Example    | format composition 
+----|----------|-------------|------------|-------------------- 
+ 1  |   2      |    1        |  event     | canonical JSON     
+----|----------|-------------|------------|--------------------
+ 2  |   2      |    1        |  event     | TDD                
+----|----------|-------------|------------|--------------------
+ 3  |   2      |    1        |  event     | canonical XML      
+----|----------|-------------|------------|--------------------
+ 4  |   2      |    1        |  event     | FLAT               
+----|----------|-------------|------------|-------------------- 
+ 5  |   2      |    1        |  event     | STUCTURED JSON     
+----|----------|-------------|------------|--------------------
+ 6  |   2      |    1        |presitent   | canonical XML      
+----|----------|-------------|------------|--------------------
+ 7  |   2      |    1        |presitent   | FLAT               
+----|----------|-------------|------------|--------------------
+ 8  |   2      |    1        |presistent  | TDD               
+----|----------|-------------|------------|--------------------
+ 9  |   2      |    1        |presistent  | canonical JSON  
+----|----------|-------------|------------|--------------------
+ 10 |   2      |    1        |presistent  | STRUCTURED JSON
 **Preconditions:**
 
 1. The OPT, referenced by the COMPOSITION to commit, exists on the server (in table num. 1)
@@ -768,7 +693,7 @@ None
 **Flow:**
 
 1. Invoke the create COMPOSITION service with the invalid data from the table upstairs
-2. The result should be negative, and return information about the errors in the provided COMPOSITION
+2. The result should be negative, and return information about the non-existent EHR
 
 
 
