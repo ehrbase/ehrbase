@@ -57,7 +57,7 @@
       <rm:namespace>local</rm:namespace>
       <rm:type>ANY</rm:type>
     </rm:external_ref>
-    <rm:name>Alexander Ziborov</rm:name>
+    <rm:name>composer test value</rm:name>
   </composer>
   <context>
     <start_time>

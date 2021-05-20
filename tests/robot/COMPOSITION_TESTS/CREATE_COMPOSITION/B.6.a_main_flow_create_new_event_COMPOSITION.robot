@@ -1,45 +1,39 @@
-# Copyright (c) 2019 Wladislaw Wagner (Vitasystems GmbH), Pablo Pazos (Hannover Medical School).
-#
-# This file is part of Project EHRbase
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-
-
 *** Settings ***
 Documentation   Composition Integration Tests
 Metadata        TOP_TEST_SUITE    COMPOSITION
 Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Force Tags
-
+Suite Setup     Precondition
+Suite Teardown  restart SUT
 
 
 *** Test Cases ***
-Main flow create new event COMPOSITION
+Main flow create new event COMPOSITION RAW_JSON
+    commit composition   format=RAW_JSON
+    ...                  composition=nested.en.v1__full.json
+    check the successfull result of commit compostion
 
+Main flow create new event COMPOSITION RAW_XML
+    commit composition   format=RAW_XML
+    ...                  composition=nested.en.v1__full.xml
+    check the successfull result of commit compostion
+
+Main flow create new event COMPOSITION FLAT
+    commit composition   format=FLAT
+    ...                  composition=nested.en.v1__full.json
+    check the successfull result of commit compostion   template_for_path=nesting
+
+Main flow create new event COMPOSITION TDD
+    commit composition   format=TDD
+    ...                  composition=nested.en.v1__full.xml
+    check the successfull result of commit compostion
+
+Main flow create new event COMPOSITION STRUCTURED
+    commit composition   format=STRUCTURED
+    ...                  composition=nested.en.v1__full.json
+    check the successfull result of commit compostion   template_for_path=nesting
+
+*** Keywords ***
+Precondition
     upload OPT    nested/nested.opt
-
     create EHR
-
-    commit composition (JSON)    nested/nested.composition.extdatetimes.xml
-
-    # Check result data
-                      Set Test Variable  ${template_id}    ${response.json()['archetype_details']['template_id']['value']}
-                      Should Be Equal    ${template_id}    nested.en.v1
-                      Set Test Variable  ${composer}       ${response.json()['composer']['name']}
-                      Should Be Equal    ${composer}       Dr. House
-                      Set Test Variable  ${setting}        ${response.json()['context']['setting']['value']}
-                      Should Be Equal    ${setting}        primary nursing care
-
-    [Teardown]    restart SUT

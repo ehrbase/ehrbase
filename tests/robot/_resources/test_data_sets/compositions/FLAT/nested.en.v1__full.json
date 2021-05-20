@@ -16,7 +16,7 @@
   "nesting/composer|id_namespace": "local",
   "nesting/composer|id": "value",
   "nesting/composer|id_scheme": "scheme",
-  "nesting/composer|name": "Alexander Ziborov",
+  "nesting/composer|name": "composer test value",
   "nesting/context/start_time": "2021-05-13T16:50:29.481+03:00",
   "nesting/context/_end_time": "2021-05-13T16:50:29.481+03:00",
   "nesting/context/setting|value": "other care",

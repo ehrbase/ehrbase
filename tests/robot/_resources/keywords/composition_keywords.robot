@@ -268,103 +268,101 @@ commit same composition again
                         Should Be Equal As Strings   ${resp.status_code}   400
 
 
-commit composition (FLAT)
-    [Arguments]         ${composition}   ${template_id}   ${prefer}=representation   ${lifecycle}=complete
+commit composition
+    [Arguments]         ${format}   ${composition}   ${need_template_id}=true   ${prefer}=representation   ${lifecycle}=complete
     [Documentation]     Creates the first version of a new COMPOSITION
     ...                 DEPENDENCY: `upload OPT`, `create EHR`
     ...
     ...                 ENDPOINT: POST /ehr/${ehr_id}/composition
-
-    ${file}=            Get File   ${COMPO DATA SETS}/${composition}
-
-    &{headers}=         Create Dictionary   Content-Type=application/openehr.wt.flat+json
-                        ...                 Accept=application/openehr.wt.flat+json
-                        ...                 Prefer=return=${prefer}
-                        ...                 openEHR-VERSION.lifecycle_state=${lifecycle}
-                        ...                 Template-Id=${template_id}
-
-    ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
-
-                        Set Test Variable   ${response}    ${resp}
-                        capture point in time    1 
-
-check the successfull result of commit compostion (FLAT)
-    [Arguments]    ${uid_json_path}
-    Should Be Equal As Strings   ${response.status_code}   201
-
-    Set Test Variable    ${composition_uid}    ${response.json()}[${uid_json_path}]    
-    ${ETag}    Get Substring    ${response.headers}[ETag]    1    -1
-    Set Test Variable    ${Location}    ${response.headers}[Location]
-
-    Should Be Equal    ${ETag}    ${composition_uid}
-    Should Be Equal    ${Location}    ${BASEURL}/ehr/${ehr_id}/composition/${composition_uid}
-
-
-commit composition (TDD\TDS)
-    [Arguments]         ${composition}   ${template_id}   ${prefer}=representation   ${lifecycle}=complete
-    [Documentation]     Creates the first version of a new COMPOSITION
-    ...                 DEPENDENCY: `upload OPT`, `create EHR`
     ...
-    ...                 ENDPOINT: POST /ehr/${ehr_id}/composition
+    ...                 FORMAT VARIABLES: FLAT, TDD, STRUCTURED, RAW_JSON, RAW_XML
 
-    ${file}=            Get File   ${COMPO DATA SETS}/${composition}
+    @{template}=        Split String    ${composition}   __
+    ${template}=        Get From List   ${template}      0
 
-    &{headers}=         Create Dictionary   Content-Type=application/openehr.tds2+xml
-                        ...                 Accept=application/openehr.tds2+xml
-                        ...                 Prefer=return=${prefer}
-                        ...                 openEHR-VERSION.lifecycle_state=${lifecycle}
-                        ...                 Template-Id=${template_id}
+    ${file}=           Get File   ${COMPO DATA SETS}/${format}/${composition}
 
-    ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
+    &{headers}=        Create Dictionary   Prefer=return=${prefer}
+    ...                openEHR-VERSION.lifecycle_state=${lifecycle}
 
-                        Set Test Variable   ${response}    ${resp}
-                        capture point in time    1
+    IF    '${need_template_id}' == 'true'
+        Set To Dictionary   ${headers}   Template-Id=${template}
+    END
 
-check the successfull result of commit compostion (TDD\TDS)
-    Should Be Equal As Strings   ${response.status_code}   201
-
-    ${xresp}=   Parse Xml   ${response.text}
-
-    ${composition_uid}=   Get Element      ${xresp}   uid/value
-    ${ETag}=              Get Substring    ${response.headers}[ETag]   1   -1
-    Set Test Variable     ${Location}      ${response.headers}[Location]
-
-    Should Be Equal    ${ETag}    ${composition_uid.text}
-    Should Be Equal    ${Location}    ${BASEURL}/ehr/${ehr_id}/composition/${composition_uid.text}
-
-
-commit composition (JSON-STRUCTURED)
-    [Arguments]         ${composition}   ${template_id}   ${prefer}=representation   ${lifecycle}=complete
-    [Documentation]     Creates the first version of a new COMPOSITION
-    ...                 DEPENDENCY: `upload OPT`, `create EHR`
-    ...
-    ...                 ENDPOINT: POST /ehr/${ehr_id}/composition
-
-    ${file}=            Get File   ${COMPO DATA SETS}/${composition}
-
-    &{headers}=         Create Dictionary   Content-Type=application/openehr.wt.structured+json
-                        ...                 Accept=application/openehr.wt.structured+json
-                        ...                 Prefer=return=${prefer}
-                        ...                 openEHR-VERSION.lifecycle_state=${lifecycle}
-                        ...                 Template-Id=${template_id}
+    IF   '${format}'=='RAW_JSON'
+        Set To Dictionary   ${headers}   Content-Type=application/json
+        Set To Dictionary   ${headers}   Accept=application/json    
+    ELSE IF   '${format}'=='RAW_XML'
+        Set To Dictionary   ${headers}   Content-Type=application/xml
+        Set To Dictionary   ${headers}   Accept=application/xml
+    ELSE IF   '${format}'=='FLAT'
+        Set To Dictionary   ${headers}   Content-Type=application/openehr.wt.flat+json
+        Set To Dictionary   ${headers}   Accept=application/openehr.wt.flat+json
+    ELSE IF   '${format}'=='TDD'
+        Set To Dictionary   ${headers}   Content-Type=application/openehr.tds2+xml
+        Set To Dictionary   ${headers}   Accept=application/openehr.tds2+xml
+    ELSE IF   '${format}'=='STRUCTURED'
+        Set To Dictionary   ${headers}   Content-Type=application/openehr.wt.structured+json
+        Set To Dictionary   ${headers}   Accept=application/openehr.wt.structured+json
+    END
 
     ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
 
-                        Set Test Variable   ${response}    ${resp}
-                        capture point in time    1
+    Set Test Variable   ${response}     ${resp}
+    Set Test Variable   ${format}       ${format}
+    Set Test Variable   ${template}     ${template}
 
 
-check the successfull result of commit compostion (JSON-STRUCTURED)
-    [Arguments]    ${uid_json_path}
+    capture point in time    1
+
+
+check the successfull result of commit compostion
+    [Arguments]         ${template_for_path}=null
+    [Documentation]     Checks result of commit new composition if the result is successful
+    ...                 DEPENDENCY: `commit composition`
+
     Should Be Equal As Strings   ${response.status_code}   201
 
-    Set Test Variable    ${composition_uid}    ${response.json()}[${uid_json_path}][_uid][0]    
-    ${ETag}    Get Substring    ${response.headers}[ETag]    1    -1
-    Set Test Variable    ${Location}    ${response.headers}[Location]
+    ${Location}   Set Variable    ${response.headers}[Location]
+    ${ETag}       Get Substring   ${response.headers}[ETag]    1    -1
 
-    Should Be Equal    ${ETag}    ${composition_uid}
-    Should Be Equal    ${Location}    ${BASEURL}/ehr/${ehr_id}/composition/${composition_uid}
-    
+    IF  '${format}' == 'RAW_JSON'
+        ${composition_uid}=   Set Variable   ${response.json()}[uid][value]
+        ${template_id}=       Set Variable   ${response.json()}[archetype_details][template_id][value]
+        ${composer}           Set Variable   ${response.json()}[composer][name]
+        ${setting}            Set variable   ${response.json()}[context][setting][value]
+    ELSE IF   '${format}' == 'RAW_XML'
+        ${xresp}=             Parse Xml             ${response.text}
+        ${composition_uid}=   Get Element Text      ${xresp}   uid/value
+        ${template_id}=       Get Element Text      ${xresp}   archetype_details/template_id/value
+        ${composer}=          Get Element Text      ${xresp}   composer/name
+        ${setting}=           Get Element Text      ${xresp}   context/setting/value    
+    ELSE IF   '${format}' == 'FLAT'
+        ${composition_uid}    Set Variable   ${response.json()}[${template_for_path}/_uid]
+        # in FLAT response isn't template_id so make a following placeholder:
+        ${template_id}=       Set Variable   ${template}
+        ${composer}           Set Variable   ${response.json()}[${template_for_path}/composer|name]
+        ${setting}            Set variable   ${response.json()}[${template_for_path}/context/setting|value]
+    ELSE IF   '${format}' == 'TDD'
+        ${xresp}=             Parse Xml                 ${response.text}
+        ${composition_uid}=   Get Element Text          ${xresp}   uid/value
+        ${template_id}=       Get Element Attribute     ${xresp}   template_id
+        ${composer}=          Get Element Text          ${xresp}   composer/name
+        ${setting}=           Get Element Text      ${xresp}   context/setting/value 
+    ELSE IF   '${format}' == 'STRUCTURED'
+        ${composition_uid}    Set Variable   ${response.json()}[${template_for_path}][_uid][0]
+        # in STRUCTURED response isn't template_id so make a following placeholder:
+        ${template_id}=       Set Variable   ${template}
+        ${composer}           Set Variable   ${response.json()}[${template_for_path}][composer][0][|name]
+        ${setting}            Set variable   ${response.json()}[${template_for_path}][context][0][setting][0][|value]
+    END
+
+    Should Be Equal    ${ETag}            ${composition_uid}
+    Should Be Equal    ${Location}        ${BASEURL}/ehr/${ehr_id}/composition/${composition_uid}
+    Should Be Equal    ${template_id}     ${template}
+    Should Be Equal    ${composer}        composer test value
+    Should Be Equal    ${setting}         other care
+   
         
 check status_code of commit composition
     [Arguments]    ${status_code}
