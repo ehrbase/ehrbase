@@ -21,7 +21,7 @@ Main flow create new event COMPOSITION RAW_XML
 Main flow create new event COMPOSITION FLAT
     commit composition   format=FLAT
     ...                  composition=nested.en.v1__full.json
-    check the successfull result of commit compostion   template_for_path=nesting
+    check the successfull result of commit compostion   nesting
 
 Main flow create new event COMPOSITION TDD
     commit composition   format=TDD
@@ -31,7 +31,7 @@ Main flow create new event COMPOSITION TDD
 Main flow create new event COMPOSITION STRUCTURED
     commit composition   format=STRUCTURED
     ...                  composition=nested.en.v1__full.json
-    check the successfull result of commit compostion   template_for_path=nesting
+    check the successfull result of commit compostion   nesting
 
 *** Keywords ***
 Precondition
