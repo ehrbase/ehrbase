@@ -498,7 +498,7 @@ Num | Ehr_id | Template_id | Example  | format composition
 ----|--------|-------------|----------|--------------------
  4  | 2      |      1      |persistent|  FLAT               
 ----|--------|-------------|----------|--------------------
- 5  |   2    |      1      |presistent| STRUCTURED JSON
+ 5  |   2    |      1      |persistent| STRUCTURED JSON
                    
 
 **Preconditions:**
@@ -531,7 +531,7 @@ Num | Ehr_id | Template_id | Example  | format composition
 ----|--------|-------------|----------|--------------------
  4  | 2      |      1      |persistent|  FLAT               
 ----|--------|-------------|----------|--------------------
- 5  |   2    |      1      |presistent| STRUCTURED JSON
+ 5  |   2    |      1      |persistent| STRUCTURED JSON
 
 **Preconditions:**
 
@@ -595,15 +595,15 @@ None
 
 Num | Ehr_id   | Template_id | Example  | format composition 
 ----|----------|-------------|----------|--------------------
- 1  |   2      |      1      |presistent| canonicl XML       
+ 1  |   2      |      1      |persistent| canonicl XML       
 ----|----------|-------------|----------|--------------------
- 2  |   2      |      1      |presistent| JSON STRUCTURED    
+ 2  |   2      |      1      |persistent| JSON STRUCTURED    
 ----|----------|-------------|----------|--------------------
- 3  |   2      |      1      |presistent| TDD     
+ 3  |   2      |      1      |persistent| TDD     
 ----|----------|-------------|----------|--------------------
- 4  |  2       |      1      |presistent| FLAT     
+ 4  |  2       |      1      |persistent| FLAT     
 ----|----------|-------------|----------|-------------------- 
- 5  |  2       |      1      |presistent| canonical JSON     
+ 5  |  2       |      1      |persistent| canonical JSON     
 
 
 **Preconditions:**
@@ -669,15 +669,16 @@ Num | Ehr_id   | Template_id | Example    | format composition
 ----|----------|-------------|------------|-------------------- 
  5  |   2      |    1        |  event     | STUCTURED JSON     
 ----|----------|-------------|------------|--------------------
- 6  |   2      |    1        |presitent   | canonical XML      
+ 6  |   2      |    1        |persistent   | canonical XML      
 ----|----------|-------------|------------|--------------------
- 7  |   2      |    1        |presitent   | FLAT               
+ 7  |   2      |    1        |persistent  | FLAT               
 ----|----------|-------------|------------|--------------------
- 8  |   2      |    1        |presistent  | TDD               
+ 8  |   2      |    1        |persistent  | TDD               
 ----|----------|-------------|------------|--------------------
- 9  |   2      |    1        |presistent  | canonical JSON  
+ 9  |   2      |    1        |persistent  | canonical JSON  
 ----|----------|-------------|------------|--------------------
- 10 |   2      |    1        |presistent  | STRUCTURED JSON
+ 10 |   2      |    1        |persistent  | STRUCTURED JSON
+
 **Preconditions:**
 
 1. The OPT, referenced by the COMPOSITION to commit, exists on the server (in table num. 1)

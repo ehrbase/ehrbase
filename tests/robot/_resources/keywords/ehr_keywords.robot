@@ -675,7 +675,7 @@ generate random ehr_id
     ...                 and exposes it as Test Variable
 
     ${ehr_id}=          Evaluate    str(uuid.uuid4())    uuid
-                        Set Test Variable    ${ehr_id}    ${ehr_id}
+                        Set Suite Variable    ${ehr_id}    ${ehr_id}
 
 
 generate random subject_id
@@ -683,7 +683,7 @@ generate random subject_id
     ...                 and exposes it as Test Variable
 
     ${subjectid}=       Evaluate    str(uuid.uuid4())    uuid
-                        Set Test Variable    ${subject_id}    ${subjectid}
+                        Set Suite Variable    ${subject_id}    ${subjectid}
 
 
 generate fake ehr_status
