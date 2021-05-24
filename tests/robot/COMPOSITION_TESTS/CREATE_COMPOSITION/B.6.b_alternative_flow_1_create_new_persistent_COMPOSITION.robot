@@ -19,7 +19,7 @@ Alternative flow 1 create new persistent COMPOSITION RAW_XML
     check the successfull result of commit compostion
 
 Alternative flow 1 create new persistent COMPOSITION FLAT
-    [Tags]    not-ready    bug
+    [Tags]    our_implementation_false   EHRDB-2051
     commit composition   format=FLAT
     ...                  composition=persistent_minimal.en.v1__full.json
     check the successfull result of commit compostion   persistent_minimal
@@ -30,7 +30,7 @@ Alternative flow 1 create new persistent COMPOSITION TDD
     check the successfull result of commit compostion
 
 Alternative flow 1 create new persistent COMPOSITION STRUCTURED
-    [Tags]    not-ready    bug
+    [Tags]    our_implementation_false   EHRDB-2051
     commit composition   format=STRUCTURED
     ...                  composition=persistent_minimal.en.v1__full.json
     check the successfull result of commit compostion   persistent_minimal
