@@ -38,5 +38,5 @@ Alternative flow 3 create new invalid event COMPOSITION STRUCTURED
 
 *** Keywords ***
 Precondition
-    upload OPT    minimal_persistent/persistent_minimal.opt
+    upload OPT    nested/nested.opt
     create EHR
