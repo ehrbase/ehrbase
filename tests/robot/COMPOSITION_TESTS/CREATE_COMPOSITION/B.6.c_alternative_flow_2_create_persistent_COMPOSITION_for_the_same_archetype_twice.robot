@@ -27,6 +27,7 @@ Alternative flow 2 create persistent COMPOSITION for the same archetype twice RA
     check status_code of commit composition   400
 
 Alternative flow 2 create persistent COMPOSITION for the same archetype twice FLAT
+    [Tags]    future
     commit composition   format=FLAT
     ...                  composition=persistent_minimal.en.v1__full.json
     check status_code of commit composition   201
@@ -35,6 +36,7 @@ Alternative flow 2 create persistent COMPOSITION for the same archetype twice FL
     check status_code of commit composition   400
 
 Alternative flow 2 create persistent COMPOSITION for the same archetype twice TDD
+    [Tags]    future
     commit composition   format=TDD
     ...                  composition=persistent_minimal.en.v1__full.xml
     check status_code of commit composition    201
@@ -43,6 +45,7 @@ Alternative flow 2 create persistent COMPOSITION for the same archetype twice TD
     check status_code of commit composition    400    
 
 Alternative flow 2 create persistent COMPOSITION for the same archetype twice STRUCTURED
+    [Tags]    future
     commit composition   format=STRUCTURED
     ...                  composition=persistent_minimal.en.v1__full.json
     check status_code of commit composition    201

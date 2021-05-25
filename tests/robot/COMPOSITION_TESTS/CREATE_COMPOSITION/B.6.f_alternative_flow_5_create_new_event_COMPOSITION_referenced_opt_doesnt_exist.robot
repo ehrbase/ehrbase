@@ -19,6 +19,7 @@ Alternative flow 5 create new event COMPOSITION referenced opt doesnt exist RAW_
     check status_code of commit composition    422
 
 Alternative flow 5 create new event COMPOSITION referenced opt doesnt exist TDD
+    [Tags]    future
     commit composition   format=TDD
     ...                  composition=nested.en.v1__invalid_opt_doesnt_exist.xml
     check status_code of commit composition    422

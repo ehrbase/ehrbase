@@ -18,16 +18,19 @@ Alternative flow 6 create new event COMPOSITION EHR doesnt exist RAW_XML
     check status_code of commit composition    404
 
 Alternative flow 6 create new event COMPOSITION EHR doesnt exist FLAT
+    [Tags]    future
     commit composition   format=FLAT
     ...                  composition=nested.en.v1__full.json
     check status_code of commit composition    404
 
 Alternative flow 6 create new event COMPOSITION EHR doesnt exist TDD
+    [Tags]    future
     commit composition   format=TDD
     ...                  composition=nested.en.v1__full.xml
     check status_code of commit composition    404
 
 Alternative flow 6 create new event COMPOSITION EHR doesnt exist STRUCTURED
+    [Tags]    future
     commit composition   format=STRUCTURED
     ...                  composition=nested.en.v1__full.json
     check status_code of commit composition    404
@@ -43,16 +46,19 @@ Alternative flow 6 create new persistent COMPOSITION EHR doesnt exist RAW_XML
     check status_code of commit composition    404
 
 Alternative flow 6 create new persistent COMPOSITION EHR doesnt exist FLAT
+    [Tags]    future
     commit composition   format=FLAT
     ...                  composition=persistent_minimal.en.v1__full.json
     check status_code of commit composition    404
 
 Alternative flow 6 create new persistent COMPOSITION EHR doesnt exist TDD
+    [Tags]    future
     commit composition   format=TDD
     ...                  composition=persistent_minimal.en.v1__full.xml
     check status_code of commit composition    404
 
 Alternative flow 6 create new persistent COMPOSITION EHR doesnt exist STRUCTURED
+    [Tags]    future
     commit composition   format=STRUCTURED
     ...                  composition=persistent_minimal.en.v1__full.json
     check status_code of commit composition    404
