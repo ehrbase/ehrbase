@@ -10,12 +10,12 @@ Suite Teardown  restart SUT
 *** Test Cases ***
 Alternative flow 1 create new persistent COMPOSITION RAW_JSON
     commit composition   format=RAW_JSON
-    ...                  composition=persistent_minimal.en.v1__full.json
+    ...                  composition=persistent_minimal.en.v1__full_without_links.json
     check the successfull result of commit compostion
 
 Alternative flow 1 create new persistent COMPOSITION RAW_XML
     commit composition   format=RAW_XML
-    ...                  composition=persistent_minimal.en.v1__full.xml
+    ...                  composition=persistent_minimal.en.v1__full_without_links.xml
     check the successfull result of commit compostion
 
 Alternative flow 1 create new persistent COMPOSITION FLAT
