@@ -316,7 +316,7 @@ commit composition
     capture point in time    1
 
 
-check the successfull result of commit compostion
+check the successful result of commit composition
     [Arguments]         ${template_for_path}=null
     [Documentation]     Checks result of commit new composition if the result is successful
     ...                 DEPENDENCY: `commit composition`

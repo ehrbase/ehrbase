@@ -11,30 +11,30 @@ Suite Teardown  restart SUT
 Alternative flow 1 create new persistent COMPOSITION RAW_JSON
     commit composition   format=RAW_JSON
     ...                  composition=persistent_minimal.en.v1__full_without_links.json
-    check the successfull result of commit compostion
+    check the successful result of commit composition
 
 Alternative flow 1 create new persistent COMPOSITION RAW_XML
     commit composition   format=RAW_XML
     ...                  composition=persistent_minimal.en.v1__full_without_links.xml
-    check the successfull result of commit compostion
+    check the successful result of commit composition
 
 Alternative flow 1 create new persistent COMPOSITION FLAT
     [Tags]    future
     commit composition   format=FLAT
     ...                  composition=persistent_minimal.en.v1__full.json
-    check the successfull result of commit compostion   persistent_minimal
+    check the successful result of commit composition   persistent_minimal
 
 Alternative flow 1 create new persistent COMPOSITION TDD
     [Tags]    future
     commit composition   format=TDD
     ...                  composition=persistent_minimal.en.v1__full.xml
-    check the successfull result of commit compostion
+    check the successful result of commit composition
 
 Alternative flow 1 create new persistent COMPOSITION STRUCTURED
     [Tags]    future
     commit composition   format=STRUCTURED
     ...                  composition=persistent_minimal.en.v1__full.json
-    check the successfull result of commit compostion   persistent_minimal
+    check the successful result of commit composition   persistent_minimal
 
 *** Keywords ***
 Precondition
