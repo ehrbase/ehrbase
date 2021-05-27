@@ -17,9 +17,6 @@
  */
 package org.ehrbase.rest.openehr.audit;
 
-import com.nedap.archie.rm.generic.PartySelf;
-import com.nedap.archie.rm.support.identification.ObjectId;
-import com.nedap.archie.rm.support.identification.PartyRef;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.service.EhrService;
