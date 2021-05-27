@@ -148,14 +148,7 @@ public abstract class OpenEhrAuditInterceptor<T extends OpenEhrAuditDataset> imp
     protected Set<String> getPatientNumbers(HttpServletRequest request) {
         return getEhrIds(request)
                 .stream()
-                .map(ehrId -> ehrService.getEhrStatus(ehrId)
-                        .map(ehrStatus -> {
-                            PartySelf subject = ehrStatus.getSubject();
-                            PartyRef externalRef = subject.getExternalRef();
-                            ObjectId objectId = externalRef.getId();
-                            return objectId.getValue();
-                        })
-                        .orElse(null))
+                .map(ehrId -> ehrService.getSubjectExtRef(ehrId.toString()))
                 .collect(Collectors.toSet());
     }
 }
