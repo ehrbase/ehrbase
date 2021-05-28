@@ -23,8 +23,11 @@
 # E.g. if you want to allow the delete all endpoints in the admin api set an environment variable like this:
 # ADMINAPI_ALLOWDELETEALL=true
 #
-# See https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-external-config-relaxed-binding-from-environment-variables
+# See https://docs.spring.io/spring-boot/docs/2.5.0/reference/html/features.html#features.external-config.typesafe-configuration-properties.relaxed-binding.environment-variables
 # for official documentation on this feature.
+#
+# Also see the documentation on externalized configuration in general:
+# https://docs.spring.io/spring-boot/docs/2.5.0/reference/html/features.html#features.external-config
 
 spring:
   application:
