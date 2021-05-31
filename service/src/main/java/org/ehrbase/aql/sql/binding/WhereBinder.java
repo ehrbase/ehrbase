@@ -74,7 +74,6 @@ public class WhereBinder {
     public static final String ALL = "ALL";
     private final I_DomainAccess domainAccess;
 
-    private JsonbEntryQuery jsonbEntryQuery;
     private CompositionAttributeQuery compositionAttributeQuery;
     private final List<Object> whereClause;
     private PathResolver pathResolver;
@@ -85,8 +84,7 @@ public class WhereBinder {
     private boolean isFollowedBySQLConditionalOperator = false;
     private static int seed = 1;
 
-    public WhereBinder(I_DomainAccess domainAccess, JsonbEntryQuery jsonbEntryQuery, CompositionAttributeQuery compositionAttributeQuery, List<Object> whereClause, PathResolver pathResolver) {
-        this.jsonbEntryQuery = jsonbEntryQuery;
+    public WhereBinder(I_DomainAccess domainAccess, CompositionAttributeQuery compositionAttributeQuery, List<Object> whereClause, PathResolver pathResolver) {
         this.compositionAttributeQuery = compositionAttributeQuery;
         this.whereClause = whereClause;
         this.pathResolver = pathResolver;
@@ -99,7 +97,7 @@ public class WhereBinder {
         if (className == null)
             throw new IllegalArgumentException("Could not bind identifier in WHERE clause:'" + identifier + "'");
 
-        Field<?> field = multiFieldsMap.get(variableDefinition.getIdentifier(), variableDefinition.getPath()).getQualifiedField(whereCursor).getSQLField();
+        Field<?> field = multiFieldsMap.get(variableDefinition.getIdentifier(), variableDefinition.getPath()).getQualifiedFieldOrLast(whereCursor).getSQLField();
 
         //EHR-327: if force SQL is set to true via environment, jsquery extension is not required
         //this allows to deploy on AWS since jsquery is not supported by this provider
@@ -121,7 +119,6 @@ public class WhereBinder {
             switch (className) {
                 case COMPOSITION:
                     if (variableDefinition.getPath().startsWith(CONTENT)) {
-                        //TODO: OR multiple fields if applicable
                         TaggedStringBuilder taggedStringBuilder = new TaggedStringBuilder(field.toString(), I_TaggedStringBuilder.TagField.JSQUERY);
                         if (compositionName != null && taggedStringBuilder.startWith(CompositionSerializer.TAG_COMPOSITION)) {
                             //add the composition name into the composition predicate
@@ -131,7 +128,6 @@ public class WhereBinder {
                     }
                     break;
                 case EHR:
-                    //TODO: OR multiple fields if applicable
                     if (field == null)
                         return null;
                     isFollowedBySQLConditionalOperator = true;
@@ -139,11 +135,9 @@ public class WhereBinder {
 
                 default:
                     if (compositionAttributeQuery.isCompositionAttributeItemStructure(multiFieldsMap.get(variableDefinition.getIdentifier(), variableDefinition.getPath()).getTemplateId(), identifier)){
-                        //TODO: OR multiple fields if applicable
                         return new TaggedStringBuilder(field.toString(), I_TaggedStringBuilder.TagField.SQLQUERY);
                     }
                     else {
-                        //TODO: OR multiple fields if applicable
                         return new TaggedStringBuilder(field.toString(), I_TaggedStringBuilder.TagField.JSQUERY);
                     }
             }
@@ -183,6 +177,7 @@ public class WhereBinder {
         //work on a copy since Exist is destructive
         List<Object> whereItems = new ArrayList<>(whereClause);
         boolean notExists = false;
+        boolean inSubqueryOperator = false;
 
         for (int cursor = 0; cursor < whereItems.size(); cursor++) {
             Object item = whereItems.get(cursor);
@@ -206,6 +201,8 @@ public class WhereBinder {
                         break;
 
                     case IN: case ANY: case SOME: case ALL:
+                        if (((String) item).trim().toUpperCase().matches("ANY|SOME|ALL"))
+                            inSubqueryOperator = true;
                         taggedBuffer.append((String) item);
                         break;
 
@@ -264,8 +261,10 @@ public class WhereBinder {
                         //if the path contains node predicate expression uses a SQL syntax instead of jsquery
                         if (new VariablePath(((I_VariableDefinition) item).getPath()).hasPredicate()) {
                             String expanded = expandForLateral(encodeWhereVariable(whereCursor, multiFieldsMap, (I_VariableDefinition) item, true, null), (I_VariableDefinition)item );
-                            if (expanded != null)
-                                taggedStringBuilder.append(expanded);
+                            if (expanded != null) {
+                                taggedStringBuilder.append(encodeForSubquery(expanded, inSubqueryOperator));
+                                inSubqueryOperator = false;
+                            }
                             else {
                                 unresolvedVariable = true;
                                 break;
@@ -274,8 +273,10 @@ public class WhereBinder {
                             requiresJSQueryClosure = false;
                         } else {
                             String expanded = expandForLateral(encodeWhereVariable(whereCursor, multiFieldsMap, (I_VariableDefinition) item, true, null), (I_VariableDefinition)item );
-                            if (expanded != null)
-                                taggedStringBuilder.append(expanded);
+                            if (expanded != null) {
+                                taggedStringBuilder.append(encodeForSubquery(expanded, inSubqueryOperator));
+                                inSubqueryOperator = false;
+                            }
                             else {
                                 unresolvedVariable = true;
                                 break;
@@ -305,6 +306,13 @@ public class WhereBinder {
             return DSL.condition("false");
     }
 
+
+    private String encodeForSubquery(String sqlExpression, boolean inSubqueryOperator){
+        if (inSubqueryOperator)
+            return "(SELECT " + sqlExpression+")";
+        else
+            return sqlExpression;
+    }
 
     //look ahead for a SQL operator
     private boolean isFollowedBySQLConditionalOperator(int cursor) {

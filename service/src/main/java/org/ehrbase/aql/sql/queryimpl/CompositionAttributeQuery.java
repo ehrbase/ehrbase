@@ -37,8 +37,6 @@ import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.service.IntrospectService;
 import org.jooq.Field;
 
-import java.util.List;
-
 import static org.ehrbase.aql.sql.QueryProcessor.NIL_TEMPLATE;
 
 /**
@@ -120,51 +118,6 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
         return makeField(templateId, identifier, variableDefinition, Clause.WHERE);
     }
 
-    public boolean isJoinComposition() {
-        return joinSetup.isJoinComposition();
-    }
-
-    public boolean isJoinEventContext() {
-        return joinSetup.isJoinEventContext();
-    }
-
-    public boolean isJoinSubject() {
-        return joinSetup.isJoinSubject();
-    }
-
-    public boolean isJoinEhr() {
-        return joinSetup.isJoinEhr();
-    }
-
-    public boolean isJoinSystem() {
-        return joinSetup.isJoinSystem();
-    }
-
-    public boolean isJoinEhrStatus() {
-        return joinSetup.isJoinEhrStatus();
-    }
-
-    public boolean isJoinComposer() {
-        return joinSetup.isJoinComposer();
-    }
-
-    public boolean isJoinContextFacility() {
-        return joinSetup.isJoinContextFacility();
-    }
-
-    public boolean containsEhrStatus() {
-        return joinSetup.isContainsEhrStatus();
-    }
-
-    /**
-     * true if the expression contains path and then use ENTRY as primary from table
-     *
-     * @return
-     */
-    public boolean useFromEntry() {
-        return pathResolver.hasPathExpression();
-    }
-
     public boolean isCompositionAttributeItemStructure(String templateId, String identifier){
         if (variableTemplatePath(templateId, identifier) == null)
             return false;
@@ -178,5 +131,9 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
 
     public boolean isUseEntry(){
         return joinSetup.isUseEntry();
+    }
+
+    public JoinSetup getJoinSetup(){
+        return joinSetup;
     }
 }

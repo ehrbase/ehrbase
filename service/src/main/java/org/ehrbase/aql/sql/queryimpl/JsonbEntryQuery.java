@@ -62,13 +62,9 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
 
     //OTHER_DETAILS (Ehr Status Query)
     private static final String SELECT_EHR_OTHER_DETAILS_MACRO = JoinBinder.statusRecordTable.field(STATUS.OTHER_DETAILS) + "->('" + CompositionSerializer.TAG_OTHER_DETAILS + "')";
-    private static final String JSONB_SELECTOR_EHR_OTHER_DETAILS_OPEN = SELECT_EHR_OTHER_DETAILS_MACRO + JSONB_PATH_SELECTOR_EXPR;
-
 
     //OTHER_CONTEXT (Composition context other_context Query)
     private static final String SELECT_EHR_OTHER_CONTEXT_MACRO = EVENT_CONTEXT.OTHER_CONTEXT + "->('" + CompositionSerializer.TAG_OTHER_CONTEXT + "[at0001]" + "')";
-    private static final String JSONB_SELECTOR_EHR_OTHER_CONTEXT_OPEN = SELECT_EHR_OTHER_CONTEXT_MACRO + JSONB_PATH_SELECTOR_EXPR;
-    public static final String JSQUERY_EHR_OTHER_CONTEXT_OPEN = SELECT_EHR_OTHER_CONTEXT_MACRO + JSONB_AT_AT_SELECTOR_EXPR;
 
     public static final String COMPOSITION = "composition";
     public static final String CONTENT = "content";
@@ -100,8 +96,6 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
     //Generic stuff
     private static final String JSONB_SELECTOR_CLOSE = "}'";
     public static final String JSQUERY_CLOSE = " '::jsquery";
-
-//    private String jsonbItemPath;
 
     public static final String TAG_ACTIVITIES = "/" + ACTIVITIES;
     public static final String TAG_EVENTS = "/" + EVENTS;
@@ -148,7 +142,6 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
             pathSet = new MultiPath().asSet("/" + variableDefinition.getPath());
             isRootContent = true;
         } else
-            //TODO: create multiple fields!
             pathSet = pathResolver.pathOf(templateId, variableDefinition.getIdentifier());
 
         String alias = clause.equals(Clause.WHERE) ? null : variableDefinition.getAlias();
@@ -177,7 +170,7 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
                 if (clause.equals(Clause.WHERE))
                     setReturningFunctionInWhere = true;
             } catch (Exception e) {
-                ;
+                //do nothing
             }
 
             resolveArrayIndex(itemPathArray);
@@ -215,15 +208,10 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
                 }
             } else if (clause.equals(Clause.WHERE)) {
                 fieldPathItem = buildFieldWithCast(itemPath, castTypeAs, null);
-                ;
                 if (itemPathArray.contains(AQL_NODE_ITERATIVE_MARKER))
                     fieldPathItem = DSL.field(DSL.select(fieldPathItem));
             } else
                 throw new IllegalStateException("Unhandled clause:" + clause);
-
-//            if (jqueryPath.isJsonDataBlock()) {
-//                jsonbItemPath = toAqlPath(itemPathArray);
-//            }
 
             if (setReturningFunctionInWhere)
                 fieldPathItem = DSL.select(fieldPathItem).asField();
@@ -270,7 +258,6 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
 
     @Override
     public MultiFields whereField(String templateId, String identifier, I_VariableDefinition variableDefinition) {
-        //TODO: create multiple fields!
         Set<String> pathSet = pathResolver.pathOf(templateId, variableDefinition.getIdentifier());
 
         //traverse the set of paths and create the corresponding fields

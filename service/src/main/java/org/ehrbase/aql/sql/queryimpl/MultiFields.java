@@ -58,15 +58,11 @@ public class MultiFields {
         return useEntryTable;
     }
 
-//    public List<QualifiedAqlField> getFields() {
-//        return fields;
-//    }
-
     public int fieldsSize(){
         return fields.size();
     }
 
-    public QualifiedAqlField getQualifiedField(int index){
+    private QualifiedAqlField getQualifiedField(int index){
         return fields.get(index);
     }
 
@@ -90,7 +86,7 @@ public class MultiFields {
     }
 
     public boolean isEmpty(){
-        return fields.size() == 0;
+        return fields.isEmpty();
     }
 
     public String getRootJsonKey() {

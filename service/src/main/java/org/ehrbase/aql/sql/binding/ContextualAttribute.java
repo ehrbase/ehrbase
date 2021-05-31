@@ -33,10 +33,6 @@ public class ContextualAttribute {
     private final JsonbEntryQuery jsonbEntryQuery;
     private final IQueryImpl.Clause clause;
 
-    private boolean containsJsonDataBlock;
-    private String jsonbItemPath;
-    private String optionalPath;
-
     public ContextualAttribute(CompositionAttributeQuery compositionAttributeQuery, JsonbEntryQuery jsonbEntryQuery, IQueryImpl.Clause clause) {
         this.compositionAttributeQuery = compositionAttributeQuery;
         this.jsonbEntryQuery = jsonbEntryQuery;
@@ -44,7 +40,6 @@ public class ContextualAttribute {
     }
 
     public MultiFields toSql(String templateId, I_VariableDefinition variableDefinition){
-        //TODO: create multiple fields!
         String inTemplatePath = compositionAttributeQuery.variableTemplatePath(templateId, variableDefinition.getIdentifier()).stream().toString();
         if (inTemplatePath.startsWith("/"))
             inTemplatePath = inTemplatePath.substring(1); //conventionally, composition attribute path have the leading '/' striped.
@@ -63,23 +58,7 @@ public class ContextualAttribute {
                     field.setField(field.getSQLField().as(variableDefinition.getIdentifier()));
             }
         }
-
-//        jsonbItemPath = compositionAttribute.getJsonbItemPath();
-//        containsJsonDataBlock = compositionAttribute.isContainsJsonDataBlock();
-//        optionalPath = compositionAttribute.getOptionalPath();
-
         return fields;
     }
-//
-//    public boolean isContainsJsonDataBlock() {
-//        return containsJsonDataBlock;
-//    }
-//
-//    public String getJsonbItemPath() {
-//        return jsonbItemPath;
-//    }
-//
-//    public String getOptionalPath() {
-//        return optionalPath;
-//    }
+
 }

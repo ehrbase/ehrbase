@@ -95,10 +95,6 @@ public class JqueryPath {
                     jqueryPath.add(defaultIndex);
             }
 
-//            if (isList(nodeId) &&
-//                    ((pathPart.equals(PATH_PART.VARIABLE_PATH_PART) &&
-//                            !(i == segments.size() - 1))||pathPart.equals(PATH_PART.IDENTIFIER_PATH_PART)))
-//                jqueryPath.add(defaultIndex);
         }
 
         if (pathPart.equals(JsonbEntryQuery.PATH_PART.VARIABLE_PATH_PART)) {

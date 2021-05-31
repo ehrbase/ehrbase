@@ -30,9 +30,6 @@ public class CompositionAttribute {
     private final CompositionAttributeQuery compositionAttributeQuery;
     private final JsonbEntryQuery jsonbEntryQuery;
     private final IQueryImpl.Clause clause;
-    private boolean containsJsonDataBlock;
-    private String jsonbItemPath;
-    private String optionalPath;
 
     public CompositionAttribute(CompositionAttributeQuery compositionAttributeQuery, JsonbEntryQuery jsonbEntryQuery, IQueryImpl.Clause clause) {
         this.compositionAttributeQuery = compositionAttributeQuery;
@@ -46,24 +43,9 @@ public class CompositionAttribute {
         if (variableDefinition.getPath() != null && variableDefinition.getPath().startsWith("content")) {
             qualifiedAqlFields = jsonbEntryQuery.makeField(templateId, identifier, variableDefinition, clause);
             qualifiedAqlFields.setUseEntryTable(true);
-//            compositionAttributeQuery.setUseEntry(true);
         } else {
             qualifiedAqlFields = compositionAttributeQuery.makeField(templateId, identifier, variableDefinition, clause);
-//            containsJsonDataBlock = compositionAttributeQuery.isJsonDataBlock();
         }
-        optionalPath = variableDefinition.getPath();
         return qualifiedAqlFields;
     }
-
-//    public boolean isContainsJsonDataBlock() {
-//        return containsJsonDataBlock;
-//    }
-
-//    public String getJsonbItemPath() {
-//        return jsonbItemPath;
-//    }
-
-//    public String getOptionalPath() {
-//        return optionalPath;
-//    }
 }

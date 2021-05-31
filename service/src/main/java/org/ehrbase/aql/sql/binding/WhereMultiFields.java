@@ -29,6 +29,7 @@ import org.ehrbase.aql.sql.queryimpl.CompositionAttributeQuery;
 import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
 import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
 import org.ehrbase.aql.sql.queryimpl.MultiFields;
+import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.service.IntrospectService;
 import org.ehrbase.service.KnowledgeCacheService;
@@ -59,7 +60,7 @@ public class WhereMultiFields {
     public WhereMultiFields(I_DomainAccess domainAccess, IntrospectService introspectCache, Contains contains, List<Object> whereClause, String serverNodeId) {
         this.pathResolver = new PathResolver((KnowledgeCacheService)introspectCache, contains.getIdentifierMapper());
         this.jsonbEntryQuery = new JsonbEntryQuery(domainAccess, introspectCache, pathResolver);
-        this.compositionAttributeQuery = new CompositionAttributeQuery(domainAccess, pathResolver, serverNodeId, introspectCache);;
+        this.compositionAttributeQuery = new CompositionAttributeQuery(domainAccess, pathResolver, serverNodeId, introspectCache);
         this.whereClause = whereClause;
     }
 
@@ -91,6 +92,10 @@ public class WhereMultiFields {
         buildWhereCondition(multiFieldsList, templateId, whereItems );
 
         return multiFieldsList;
+    }
+
+    public JoinSetup getJoinSetup(){
+        return compositionAttributeQuery.getJoinSetup();
     }
 
 }

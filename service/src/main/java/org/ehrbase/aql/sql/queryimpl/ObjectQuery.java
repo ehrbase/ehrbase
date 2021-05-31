@@ -34,14 +34,6 @@ public abstract class ObjectQuery {
 
     protected I_DomainAccess domainAccess;
     protected PathResolver pathResolver;
-//    protected boolean jsonDataBlock = false;
-//    protected String itemType = null;
-
-//    public String getItemCategory() {
-//        return itemCategory;
-//    }
-
-//    protected String itemCategory = null;
 
     protected static int serial = 0; //used to alias fields for now.
 
@@ -62,14 +54,6 @@ public abstract class ObjectQuery {
     public static int getSerial() {
         return serial;
     }
-
-//    public String getItemType() {
-//        return itemType;
-//    }
-
-//    public boolean isJsonDataBlock() {
-//        return jsonDataBlock;
-//    }
 
     public Set<String> variableTemplatePath(String templateId, String identifier){
         return pathResolver.pathOf(templateId, identifier);

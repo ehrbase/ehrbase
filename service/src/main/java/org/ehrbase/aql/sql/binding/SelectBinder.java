@@ -24,15 +24,13 @@ package org.ehrbase.aql.sql.binding;
 import org.ehrbase.aql.compiler.Contains;
 import org.ehrbase.aql.compiler.Statements;
 import org.ehrbase.aql.containment.IdentifierMapper;
-import org.ehrbase.aql.definition.ConstantDefinition;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
 import org.ehrbase.aql.sql.queryimpl.*;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.service.IntrospectService;
 import org.ehrbase.service.KnowledgeCacheService;
-import org.jooq.*;
-import org.jooq.impl.DSL;
+import org.jooq.Condition;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -51,18 +49,15 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
     private final PathResolver pathResolver;
     private final VariableDefinitions variableDefinitions;
     private final List<JsonbBlockDef> jsonDataBlock = new ArrayList<>();
-    private final DSLContext context;
     private final WhereBinder whereBinder;
 
     SelectBinder(I_DomainAccess domainAccess, IntrospectService introspectCache, PathResolver pathResolver, VariableDefinitions variableDefinitions, List whereClause, String serverNodeId) {
         super(introspectCache);
-        this.context = domainAccess.getContext();
         this.pathResolver = pathResolver;
-
         this.variableDefinitions = variableDefinitions;
         this.jsonbEntryQuery = new JsonbEntryQuery(domainAccess, introspectCache, pathResolver);
         this.compositionAttributeQuery = new CompositionAttributeQuery(domainAccess, pathResolver, serverNodeId, introspectCache);
-        this.whereBinder = new WhereBinder(domainAccess, jsonbEntryQuery, compositionAttributeQuery, whereClause, pathResolver);
+        this.whereBinder = new WhereBinder(domainAccess, compositionAttributeQuery, whereClause, pathResolver);
     }
 
     private SelectBinder(I_DomainAccess domainAccess, IntrospectService introspectCache, IdentifierMapper mapper, VariableDefinitions variableDefinitions, List whereClause, String serverNodeId) {
@@ -82,8 +77,6 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
      */
     public List<MultiFields> bind(String templateId) {
         ObjectQuery.reset();
-
-//        SelectQuery<Record> selectQuery = context.selectQuery();
 
         List<MultiFields> multiFieldsList = new ArrayList<>();
 
@@ -135,12 +128,7 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
         return whereBinder.bind(whereCursor, multiFieldsMap);
     }
 
-//    public boolean containsJQueryPath() {
-//        return jsonbEntryQuery.isContainsJqueryPath();
-//    }
-
-
-    public CompositionAttributeQuery getCompositionAttributeQuery() {
+   public CompositionAttributeQuery getCompositionAttributeQuery() {
         return compositionAttributeQuery;
     }
 

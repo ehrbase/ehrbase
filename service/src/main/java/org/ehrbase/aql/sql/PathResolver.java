@@ -21,7 +21,6 @@
 
 package org.ehrbase.aql.sql;
 
-import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.aql.containment.Containment;
 import org.ehrbase.aql.containment.IdentifierMapper;
 import org.ehrbase.aql.containment.Templates;

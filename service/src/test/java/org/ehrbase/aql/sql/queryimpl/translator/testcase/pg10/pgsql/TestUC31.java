@@ -23,17 +23,19 @@ import org.ehrbase.aql.sql.queryimpl.QueryImplConstants;
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC31;
 import org.junit.Ignore;
 
-@Ignore
 public class TestUC31 extends UC31 {
 
     public TestUC31(){
         super();
         this.expectedSqlExpression =
-                "select "+ QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION+"(ehr.js_ehr(ehr_join.id,'local')::jsonb #>'{folders}') #>>'{name,value}' as \"/folders/name/value\"" +
-                        " from \"ehr\".\"ehr\" as \"ehr_join\"" +
-                        " where (" +
-                        "   'case1'=ALL(SELECT "+ QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION+"(ehr.js_ehr(ehr_join.id,'local')::jsonb #>'{folders}') #>>'{name,value}')" +
-                        "        and " +
-                        "       \"ehr_join\".\"id\"='c2561bab-4d2b-4ffd-a893-4382e9048f8c')";
+                "select jsonb_extract_path_text(cast(ehr.xjsonb_array_elements(cast(jsonb_extract_path(cast(\"ehr\".\"js_ehr\"(\n" +
+                        "  cast(ehr_join.id as uuid), \n" +
+                        "  'local'\n" +
+                        ") as jsonb),'folders') as jsonb)) as jsonb),'name','value') as \"/folders/name/value\" from \"ehr\".\"ehr\" as \"ehr_join\", lateral (\n" +
+                        "  select jsonb_extract_path_text(cast(ehr.xjsonb_array_elements(cast(jsonb_extract_path(cast(\"ehr\".\"js_ehr\"(\n" +
+                        "  cast(ehr_join.id as uuid), \n" +
+                        "  'local'\n" +
+                        ") as jsonb),'folders') as jsonb)) as jsonb),'name','value')\n" +
+                        " AS COLUMN) as \"ARRAY\" where ('case1' = ALL ( (SELECT ARRAY.COLUMN ) )  and \"ehr_join\".\"id\" = 'c2561bab-4d2b-4ffd-a893-4382e9048f8c')";
     }
 }

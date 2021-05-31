@@ -1,6 +1,5 @@
 package org.ehrbase.aql.sql.queryimpl.attribute;
 
-import org.ehrbase.aql.sql.queryimpl.NodeIds;
 import org.ehrbase.serialisation.dbencoding.wrappers.json.I_DvTypeAdapter;
 
 import java.util.ArrayList;

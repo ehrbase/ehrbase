@@ -23,15 +23,15 @@ import java.util.*;
 
 public class MultiFieldsMap {
 
-   private final Map<String, MultiFields> multiFieldsMap;
+   private final Map<String, MultiFields> multiFieldsListAsMap;
 
     public MultiFieldsMap(List<MultiFields> multiFieldsList) {
-        this.multiFieldsMap = toMap(multiFieldsList);
+        this.multiFieldsListAsMap = toMap(multiFieldsList);
     }
 
     private Map<String, MultiFields> toMap(List<MultiFields> multiFieldsList){
 
-        Map<String, MultiFields> multiMap = new HashMap<>();
+        Map<String, MultiFields> multiMap = new LinkedHashMap<>(); //preserve order of insertion
 
         for (MultiFields multiFields: multiFieldsList){
             multiMap.put(variableIdentifierPath(multiFields.getVariableDefinition().getIdentifier(),multiFields.getVariableDefinition().getPath()), multiFields);
@@ -40,11 +40,11 @@ public class MultiFieldsMap {
     }
 
     public MultiFields get(String identifierPath){
-        return  multiFieldsMap.get(identifierPath);
+        return  multiFieldsListAsMap.get(identifierPath);
     }
 
     public MultiFields get(String variableIdentifier, String variablePath){
-        return  multiFieldsMap.get(variableIdentifierPath(variableIdentifier,variablePath));
+        return  multiFieldsListAsMap.get(variableIdentifierPath(variableIdentifier,variablePath));
     }
 
     private String variableIdentifierPath(String variableIdentifier, String variablePath){
@@ -52,7 +52,7 @@ public class MultiFieldsMap {
     }
 
     public Iterator<MultiFields> multiFieldsIterator(){
-        return multiFieldsMap.values().iterator();
+        return multiFieldsListAsMap.values().iterator();
     }
 
     /**
@@ -61,7 +61,7 @@ public class MultiFieldsMap {
     public int upperPathBoundary() {
         int upperbound = 0;
 
-        for (MultiFields multiFields : multiFieldsMap.values()) {
+        for (MultiFields multiFields : multiFieldsListAsMap.values()) {
             if (multiFields.fieldsSize() > upperbound)
                 upperbound = multiFields.fieldsSize();
         }

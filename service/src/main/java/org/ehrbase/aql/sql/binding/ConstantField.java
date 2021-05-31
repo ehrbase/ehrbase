@@ -19,10 +19,7 @@ package org.ehrbase.aql.sql.binding;
 
 import org.ehrbase.aql.definition.ConstantDefinition;
 import org.ehrbase.aql.definition.I_VariableDefinition;
-import org.ehrbase.aql.sql.queryimpl.CompositionAttributeQuery;
 import org.ehrbase.aql.sql.queryimpl.DefaultColumnId;
-import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
-import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
@@ -30,11 +27,6 @@ import org.jooq.impl.DSL;
 public class ConstantField {
 
     private final I_VariableDefinition variableDefinition;
-    private boolean containsJsonDataBlock = false;
-
-    private String rootJsonKey = null;
-    private String optionalPath = null;
-    private String jsonbItemPath = null;
 
     public ConstantField(I_VariableDefinition variableDefinition) {
         this.variableDefinition = variableDefinition;
