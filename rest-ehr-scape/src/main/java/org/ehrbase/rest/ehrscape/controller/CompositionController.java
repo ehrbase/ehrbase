@@ -134,7 +134,7 @@ public class CompositionController extends BaseController {
 
     private Meta buildMeta(String compositionUid) {
         RestHref url = new RestHref();
-        url.setUrl(getBaseEnvLinkURL() + "/rest/ecis/v1/composition" + compositionUid);
+        url.setUrl(getBaseEnvLinkURL() + "/rest/ecis/v1/composition/" + compositionUid);
         Meta meta = new Meta();
         meta.setHref(url);
         return meta;
