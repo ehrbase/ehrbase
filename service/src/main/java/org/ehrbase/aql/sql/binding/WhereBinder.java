@@ -165,7 +165,7 @@ public class WhereBinder {
         return taggedBuffer;
     }
 
-    public Condition bind(int whereCursor, MultiFieldsMap multiFieldsMap) {
+    public Condition bind(String templateId, int whereCursor, MultiFieldsMap multiFieldsMap) {
 
         boolean unresolvedVariable = false;
 
@@ -239,7 +239,7 @@ public class WhereBinder {
                 TaggedStringBuilder taggedStringBuilder = new TaggedStringBuilder();
                 if (isFollowedBySQLConditionalOperator(cursor)) {
                     TaggedStringBuilder encodedVar = encodeWhereVariable(whereCursor, multiFieldsMap, (I_VariableDefinition) item, true, null);
-                    String expanded = expandForLateral(encodedVar, (I_VariableDefinition)item );
+                    String expanded = expandForLateral(templateId, encodedVar, (I_VariableDefinition)item );
                     if (expanded != null)
                         taggedStringBuilder.append(expanded);
                     else {
@@ -260,7 +260,7 @@ public class WhereBinder {
                     } else {
                         //if the path contains node predicate expression uses a SQL syntax instead of jsquery
                         if (new VariablePath(((I_VariableDefinition) item).getPath()).hasPredicate()) {
-                            String expanded = expandForLateral(encodeWhereVariable(whereCursor, multiFieldsMap, (I_VariableDefinition) item, true, null), (I_VariableDefinition)item );
+                            String expanded = expandForLateral(templateId, encodeWhereVariable(whereCursor, multiFieldsMap, (I_VariableDefinition) item, true, null), (I_VariableDefinition)item );
                             if (expanded != null) {
                                 taggedStringBuilder.append(encodeForSubquery(expanded, inSubqueryOperator));
                                 inSubqueryOperator = false;
@@ -272,7 +272,7 @@ public class WhereBinder {
                             isFollowedBySQLConditionalOperator = true;
                             requiresJSQueryClosure = false;
                         } else {
-                            String expanded = expandForLateral(encodeWhereVariable(whereCursor, multiFieldsMap, (I_VariableDefinition) item, true, null), (I_VariableDefinition)item );
+                            String expanded = expandForLateral(templateId, encodeWhereVariable(whereCursor, multiFieldsMap, (I_VariableDefinition) item, true, null), (I_VariableDefinition)item );
                             if (expanded != null) {
                                 taggedStringBuilder.append(encodeForSubquery(expanded, inSubqueryOperator));
                                 inSubqueryOperator = false;
@@ -404,20 +404,17 @@ public class WhereBinder {
         return wrapped;
     }
 
-    private String expandForLateral( TaggedStringBuilder encodedVar, I_VariableDefinition item){
+    private String expandForLateral(String templateId, TaggedStringBuilder encodedVar, I_VariableDefinition item){
         String expanded = expandForCondition(encodedVar);
         if (new WhereSetReturningFunction(expanded).isUsed()){
-            //insert new LATERAL pseudo table to the variable if not yet defined
-            if (!item.isLateralJoin()) {
-                encodeLateral(encodedVar, item );
-            }
+            encodeLateral(templateId, encodedVar, item );
             expanded = item.getAlias();
         }
 
         return expanded;
     }
 
-    private void encodeLateral(TaggedStringBuilder encodedVar, I_VariableDefinition item){
+    private void encodeLateral(String templateId, TaggedStringBuilder encodedVar, I_VariableDefinition item){
         if (encodedVar == null)
             return;
         int hashValue = encodedVar.toString().hashCode(); //cf. SonarLint
@@ -431,7 +428,7 @@ public class WhereBinder {
         //insert the variable alias used for the lateral join expression
         encodedVar.replaceLast(")", " AS " + variableAlias + ")");
         Table<Record> table = DSL.table(encodedVar.toString()).as(tableAlias);
-        item.setLateralJoinTable(table);
+        item.setLateralJoinTable(templateId, table);
         item.setAlias(tableAlias + "." + variableAlias + " ");
     }
 

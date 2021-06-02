@@ -123,9 +123,9 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
     }
 
 
-    public Condition getWhereConditions(int whereCursor, MultiFieldsMap multiFieldsMap) {
+    public Condition getWhereConditions(String templateId, int whereCursor, MultiFieldsMap multiFieldsMap) {
 
-        return whereBinder.bind(whereCursor, multiFieldsMap);
+        return whereBinder.bind(templateId, whereCursor, multiFieldsMap);
     }
 
    public CompositionAttributeQuery getCompositionAttributeQuery() {

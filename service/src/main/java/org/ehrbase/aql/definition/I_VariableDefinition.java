@@ -38,7 +38,7 @@ public interface I_VariableDefinition extends Cloneable {
 
     String getIdentifier();
 
-    void setLateralJoinTable(Table<Record> lateralJoinTable);
+    void setLateralJoinTable(String templateId, Table<Record> lateralJoinTable);
 
     boolean isDistinct();
 
@@ -64,7 +64,7 @@ public interface I_VariableDefinition extends Cloneable {
 
     boolean isConstant();
 
-    boolean isLateralJoin();
+    boolean isLateralJoin(String templateId);
 
-    Table<Record> getLateralJoinTable();
+    Table<Record> getLateralJoinTable(String templateId);
 }

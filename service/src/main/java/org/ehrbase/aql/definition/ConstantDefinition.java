@@ -60,7 +60,7 @@ public class ConstantDefinition implements I_VariableDefinition {
     }
 
     @Override
-    public void setLateralJoinTable(Table lateralJoinTable) {
+    public void setLateralJoinTable(String templateId, Table lateralJoinTable) {
         // n/a
     }
 
@@ -75,12 +75,12 @@ public class ConstantDefinition implements I_VariableDefinition {
     }
 
     @Override
-    public boolean isLateralJoin() {
+    public boolean isLateralJoin(String templateId) {
         return false;
     }
 
     @Override
-    public Table getLateralJoinTable() {
+    public Table getLateralJoinTable(String templateId) {
         return null;
     }
 

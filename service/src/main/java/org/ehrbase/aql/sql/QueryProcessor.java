@@ -157,7 +157,7 @@ public class QueryProcessor extends TemplateMetaData {
 
                 select = new JoinBinder(domainAccess, select).addJoinClause(joinSetup);
 
-                select = setLateralJoins(select);
+                select = setLateralJoins(queryStep.getLateralJoins(), select);
 
                 //this deals with 'contains c' which adds an implicit where on template id
                 if (!queryStep.getTemplateId().equals(NIL_TEMPLATE)) {
@@ -239,11 +239,18 @@ public class QueryProcessor extends TemplateMetaData {
                     select.addSelect(multiSelectFields.getQualifiedFieldOrLast(selectCursor).getSQLField());
                 }
 
-                queryStepsList.add(new QuerySteps(select,
-                        selectBinder.getWhereConditions(whereCursor, multiWhereFieldsMap),
-                        templateId,
-                        selectBinder.getCompositionAttributeQuery(),
-                        selectBinder.getJsonDataBlock(), false));
+                Condition condition = selectBinder.getWhereConditions(templateId, whereCursor, multiWhereFieldsMap);
+                List<Table<?>> joins = lateralJoins(templateId);
+
+                queryStepsList.add(
+                        new QuerySteps(
+                                select,
+                                condition,
+                                joins,
+                                templateId,
+                                selectBinder.getCompositionAttributeQuery(),
+                                selectBinder.getJsonDataBlock(),
+                                false));
                 selectCursor++;
                 //re-initialize select
                 select = domainAccess.getContext().selectQuery();
@@ -272,6 +279,7 @@ public class QueryProcessor extends TemplateMetaData {
 
         queryStepsList.add(new QuerySteps(select,
                 DSL.condition("1 = 0"),
+                new ArrayList<>(),
                 templateId,
                 selectBinder.getCompositionAttributeQuery(),
                 selectBinder.getJsonDataBlock(), false));
@@ -281,14 +289,27 @@ public class QueryProcessor extends TemplateMetaData {
         return queryStepsList;
     }
 
-    private SelectQuery<?> setLateralJoins(SelectQuery<?> selectQuery) {
-        for (Object item : statements.getWhereClause()) {
-            if (item instanceof I_VariableDefinition && ((I_VariableDefinition) item).isLateralJoin()) {
-                selectQuery.addFrom(DSL.lateral(((I_VariableDefinition) item).getLateralJoinTable()));
-            }
+    private SelectQuery<?> setLateralJoins(List<Table<?>> lateralJoins, SelectQuery<?> selectQuery) {
+        for (Table<?> joinLateralTable : lateralJoins) {
+                selectQuery.addFrom(joinLateralTable);
         }
 
         return selectQuery;
+    }
+
+
+    private List<Table<?>> lateralJoins(String templateId) {
+        List<Table<?>> lateralJoinsList = new ArrayList<>();
+
+        for (Object item : statements.getWhereClause()) {
+            if (item instanceof I_VariableDefinition && ((I_VariableDefinition) item).isLateralJoin(templateId)) {
+                if (((I_VariableDefinition) item).getLateralJoinTable(templateId) == null)
+                    throw new IllegalStateException("unresolved lateral join for template:"+templateId+", path:"+((I_VariableDefinition) item).getPath());
+                lateralJoinsList.add(DSL.lateral(((I_VariableDefinition) item).getLateralJoinTable(templateId)));
+            }
+        }
+
+        return lateralJoinsList;
     }
 
     private Result<Record> fetchResultSet(Select<?> select, Result<Record> result) {
