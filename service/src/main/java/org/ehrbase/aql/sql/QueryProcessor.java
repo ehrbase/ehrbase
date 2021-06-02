@@ -34,7 +34,6 @@ import org.ehrbase.aql.sql.queryimpl.MultiFieldsMap;
 import org.ehrbase.aql.sql.queryimpl.TemplateMetaData;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
-import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.service.IntrospectService;
 import org.jooq.*;
 import org.jooq.conf.Settings;
@@ -273,7 +272,10 @@ public class QueryProcessor extends TemplateMetaData {
 
         SelectQuery<?> select = domainAccess.getContext().selectQuery();
 
-        select.addSelect(multiFieldsList.get(0).getQualifiedFieldOrLast(0).getSQLField());
+        for (Iterator<MultiFields> it = multiFieldsList.iterator(); it.hasNext(); ) {
+            MultiFields multiSelectFields = it.next();
+            select.addSelect(multiSelectFields.getQualifiedFieldOrLast(0).getSQLField());
+        }
 
         List<QuerySteps> queryStepsList = new ArrayList<>();
 

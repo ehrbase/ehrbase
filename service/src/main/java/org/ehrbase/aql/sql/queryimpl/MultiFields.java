@@ -44,6 +44,10 @@ public class MultiFields {
         this(variableDefinition, new QualifiedAqlField(field), templateId);
     }
 
+    public MultiFields() {
+        this(null, new QualifiedAqlField(null), null);
+    }
+
     public MultiFields(I_VariableDefinition variableDefinition, QualifiedAqlField field, String templateId) {
         fields.add(field);
         this.variableDefinition = variableDefinition;

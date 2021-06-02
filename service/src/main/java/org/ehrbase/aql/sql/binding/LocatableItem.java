@@ -47,6 +47,9 @@ public class LocatableItem {
 
         multiFields = jsonbEntryQuery.makeField(templateId, variableDefinition.getIdentifier(), variableDefinition, clause);
 
+        if (multiFields == null)
+            return new MultiFields();
+
         //iterate on the found fields
         for (int i = 0; i < multiFields.fieldsSize(); i++) {
             if (!multiFields.isEmpty()) {
