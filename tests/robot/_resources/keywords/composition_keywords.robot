@@ -286,7 +286,7 @@ commit composition
     ...                openEHR-VERSION.lifecycle_state=${lifecycle}
 
     IF    '${need_template_id}' == 'true'
-        Set To Dictionary   ${headers}   Template-Id=${template}
+        Set To Dictionary   ${headers}   openEHR-TEMPLATE_ID=${template}
     END
 
     IF   '${format}'=='RAW_JSON'
