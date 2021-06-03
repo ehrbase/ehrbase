@@ -195,6 +195,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         updatedFolderRecord.setDetails(this.getFolderDetails());
         updatedFolderRecord.setSysTransaction(transactionTime);
         updatedFolderRecord.setSysPeriod(this.getFolderSysPeriod());
+        // TODO-436: add audit
 
         // attach to context DB
         dslContext.attach(updatedFolderRecord);
@@ -303,6 +304,9 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
     public UUID commit(Timestamp transactionTime, UUID contributionId) {
 
         this.getFolderRecord().setInContribution(contributionId);
+        // TODO-436: add audit
+        // create new audit instance and set it
+        //this.getFolderRecord().setHasAudit(auditId);
 
         // Save the folder record to database
         this.getFolderRecord().store();
