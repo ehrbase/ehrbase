@@ -18,6 +18,7 @@
 
 package org.ehrbase.service;
 
+import com.nedap.archie.flattener.OperationalTemplateProvider;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rminfo.ArchieRMInfoLookup;
@@ -31,6 +32,8 @@ import org.ehrbase.terminology.openehr.TerminologyService;
 import org.ehrbase.validation.Validator;
 import org.ehrbase.validation.constraints.terminology.ExternalTerminologyValidationSupport;
 import org.ehrbase.validation.terminology.ItemStructureVisitor;
+import org.ehrbase.webtemplate.model.WebTemplate;
+import org.ehrbase.webtemplate.templateprovider.TemplateProvider;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -49,9 +52,10 @@ public class ValidationServiceImp implements ValidationService {
 
     private static final Pattern NAMESPACE_PATTERN = Pattern.compile("[a-zA-Z][a-zA-Z0-9-_:/&+?]*");
 
-    private static final RMObjectValidator RM_OBJECT_VALIDATOR = new RMObjectValidator(ArchieRMInfoLookup.getInstance());
+    private static final RMObjectValidator RM_OBJECT_VALIDATOR = new RMObjectValidator(ArchieRMInfoLookup.getInstance(), n -> null);
 
     private final I_KnowledgeCache knowledgeCache;
+    private final KnowledgeCacheService knowledgeCacheService;
 
     private final TerminologyService terminologyService;
 
@@ -60,9 +64,12 @@ public class ValidationServiceImp implements ValidationService {
     private ExternalTerminologyValidationSupport externalTerminologyValidator;
 
     @Autowired
-    public ValidationServiceImp(CacheManager cacheManager, I_KnowledgeCache knowledgeCache, TerminologyService terminologyService) {
+    public ValidationServiceImp(CacheManager cacheManager, I_KnowledgeCache knowledgeCache,
+        KnowledgeCacheService knowledgeCacheService,
+        TerminologyService terminologyService) {
         this.validatorCache = cacheManager.getCache(VALIDATOR_CACHE, UUID.class, Validator.class);
         this.knowledgeCache = knowledgeCache;
+        this.knowledgeCacheService = knowledgeCacheService;
         this.terminologyService = terminologyService;
     }
 
@@ -123,6 +130,8 @@ public class ValidationServiceImp implements ValidationService {
             throw new IllegalArgumentException("Composition missing mandatory attribute: archetype details/template_id");
 
         //check the built composition using Archie Validator
+        // TODO: fix and active invariant checks, which were introduced with Archie 1.0.0.
+        RM_OBJECT_VALIDATOR.setRunInvariantChecks(false);
         List<RMObjectValidationMessage> rmObjectValidationMessages = RM_OBJECT_VALIDATOR.validate(composition);
 
         if (!rmObjectValidationMessages.isEmpty()) {
