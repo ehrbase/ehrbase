@@ -61,6 +61,7 @@ import org.springframework.test.web.servlet.MvcResult;
     webEnvironment = SpringBootTest.WebEnvironment.MOCK,
     classes = EhrBase.class,
     properties = {"abac.enabled=true"})
+@EnabledIfEnvironmentVariable(named = "EHRBASE_ABAC_IT_TEST", matches = "true")
 @AutoConfigureMockMvc
 class AbacIntegrationTest {
 
@@ -73,7 +74,6 @@ class AbacIntegrationTest {
   private AbacConfig abacConfig;
 
   @Test
-  @EnabledIfEnvironmentVariable(named = "EHRBASE_ABAC_IT_TEST", matches = "true")
   /*
    * This test requires a new and clean DB state to run successfully.
    */
