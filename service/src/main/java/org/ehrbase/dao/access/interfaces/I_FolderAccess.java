@@ -19,6 +19,7 @@
 package org.ehrbase.dao.access.interfaces;
 
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
 import org.ehrbase.dao.access.jooq.FolderAccess;
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.directory.Folder;
@@ -132,6 +133,18 @@ public interface I_FolderAccess extends I_SimpleCRUD {
      * connected by one contribution which has been created before.
      *
      * @param transactionTime - Timestamp which will be applied to all folder sys_transaction values
+     * @param systemId System ID for audit
+     * @param committerId Committer ID for audit
+     * @param description Optional description for audit
+     * @return UUID of the new created root folder
+     */
+    UUID commit(Timestamp transactionTime, UUID systemId, UUID committerId, String description);
+
+    /**
+     * Additional commit method to store a new entry of folder to the database and get all of inserted sub folders
+     * connected by one contribution which has been created before.
+     *
+     * @param transactionTime - Timestamp which will be applied to all folder sys_transaction values
      * @param contributionId - ID of contribution for CREATE applied to all folders that will be created
      * @return UUID of the new created root folder
      */
@@ -142,9 +155,24 @@ public interface I_FolderAccess extends I_SimpleCRUD {
      * @param transactionTime Timestamp
      * @param force Optional to force the update
      * @param contribution Optional (can be set null) custom contribution to use for this update
+     * @param systemId System ID for audit
+     * @param committerId Committer ID for audit
+     * @param description Optional description for audit
+     * @param changeType Change type of the operation
      * @return success
      */
-    Boolean update(final Timestamp transactionTime, final boolean force, UUID contribution);
+    Boolean update(final Timestamp transactionTime, final boolean force, UUID contribution, UUID systemId, UUID committerId, String description, ContributionChangeType changeType);
+
+    // TODO-436: docs
+    /**
+     *
+     * @param contribution
+     * @param systemId
+     * @param committerId
+     * @param description
+     * @return
+     */
+    Integer delete(UUID contribution, UUID systemId, UUID committerId, String description);
 
     UUID getFolderId();
 
@@ -177,6 +205,10 @@ public interface I_FolderAccess extends I_SimpleCRUD {
     AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime> getFolderSysPeriod();
 
     void setFolderSysPeriod(AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime> folderSysPeriod);
+
+    UUID getAudit();
+
+    void setAudit(UUID auditId);
 
     /**
      * Invoke physical deletion.

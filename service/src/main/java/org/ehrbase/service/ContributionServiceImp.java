@@ -276,10 +276,12 @@ public class ContributionServiceImp extends BaseService implements ContributionS
                 if (!actualPreceding.equals(version.getPrecedingVersionUid().toString()))
                     throw new PreconditionFailedException("Given preceding_version_uid for FOLDER object does not match latest existing version");
                 // call modification of the given folder
-                folderService.update(version.getPrecedingVersionUid(), versionRmObject, ehrId, contributionId);
+                // TODO-526: add handlers for (default) committer and description
+                folderService.update(version.getPrecedingVersionUid(), versionRmObject, ehrId, contributionId, null, null);
                 break;
             case DELETED:   // case of deletion change type, but request also has payload (TODO: should that be even allowed? specification-wise it's not forbidden)
-                folderService.delete(version.getPrecedingVersionUid()); // TODO-396: add custom contribution overloading
+                // TODO-526: add handlers for (default) committer and description
+                folderService.delete(version.getPrecedingVersionUid(), contributionId, null, null);
                 break;
             case SYNTHESIS:     // TODO
             case UNKNOWN:       // TODO

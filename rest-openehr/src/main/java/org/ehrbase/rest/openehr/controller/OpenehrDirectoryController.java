@@ -351,7 +351,10 @@ public class OpenehrDirectoryController extends BaseController {
         Optional<FolderDto> updatedFolder = this.folderService.update(
                 folderId,
                 folder,
-                ehrId
+                ehrId,
+                null,
+                null,   // TODO-526: add default committer handling
+                null     // TODO-526: placeholder for now
         );
 
 
@@ -411,7 +414,8 @@ public class OpenehrDirectoryController extends BaseController {
         // Check version conflicts and throw precondition failed exception if not
         checkDirectoryVersionConflicts(folderId, ehrId);
 
-        this.folderService.delete(folderId);
+        // TODO-526: add default committer and description handling
+        this.folderService.delete(folderId, null, null, null);
         this.ehrService.removeDirectory(ehrId);
         return createDirectoryResponse(HttpMethod.DELETE, null, accept, null, ehrId);
     }

@@ -28,6 +28,7 @@ import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.service.FolderService;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
+import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
 import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
 import org.ehrbase.dao.access.interfaces.I_EhrAccess;
 import org.ehrbase.dao.access.interfaces.I_FolderAccess;
@@ -203,9 +204,10 @@ public class FolderServiceImp extends BaseService implements FolderService {
     public Optional<FolderDto> update(
             ObjectVersionId folderId,
             Folder update,
-            UUID ehrId
+            UUID ehrId,
+            UUID committerId
     ) {
-        return update(folderId, update, ehrId, null);
+        return update(folderId, update, ehrId, null, committerId, null);
     }
 
     /**
@@ -216,7 +218,9 @@ public class FolderServiceImp extends BaseService implements FolderService {
             ObjectVersionId folderId,
             Folder update,
             UUID ehrId,
-            UUID contribution
+            UUID contribution,
+            UUID committerId,
+            String description
     ) {
 
         Timestamp timestamp = Timestamp.from(Instant.now());
@@ -252,7 +256,9 @@ public class FolderServiceImp extends BaseService implements FolderService {
         }
 
         // Send update to access layer which updates the hierarchy recursive
-        if (folderAccess.update(timestamp, false, contribution).equals(true)) {
+        if (folderAccess.update(timestamp, false, contribution, getSystemUuid(), committerId,
+            description, ContributionChangeType.MODIFICATION)
+                .equals(true)) {
             return createDto(folderAccess, getLastVersionNumber(folderId), true);
         } else {
             return Optional.empty();
@@ -263,11 +269,11 @@ public class FolderServiceImp extends BaseService implements FolderService {
      * {@inheritDoc}
      */
     @Override
-    public LocalDateTime delete(ObjectVersionId folderId) {
+    public LocalDateTime delete(ObjectVersionId folderId, UUID contribution, UUID committerId, String description) {
 
         I_FolderAccess folderAccess = I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), folderId);
 
-        if (folderAccess.delete() > 0) {
+        if (folderAccess.delete(contribution, getSystemUuid(), committerId, description) > 0) {
             return LocalDateTime.now();
         } else {
             // Not found and bad argument exceptions are handled before thus this case can only occur on unknown errors
