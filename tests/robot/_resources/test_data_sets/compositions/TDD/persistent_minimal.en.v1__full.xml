@@ -1,0 +1,231 @@
+<Persistent_minimal xmlns="http://schemas.oceanehr.com/templates" xmlns:rm="http://schemas.openehr.org/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" template_id="persistent_minimal.en.v1">
+  <name>
+    <value>Persistent minimal</value>
+  </name>
+  <uid xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="rm:HIER_OBJECT_ID">
+    <rm:value>7e5efcce-e223-432a-9d17-6ef265cf20ac::ehrdb::1</rm:value>
+  </uid>
+  <links>
+    <rm:meaning>
+      <rm:value>meaning</rm:value>
+    </rm:meaning>
+    <rm:type>
+      <rm:value>type</rm:value>
+    </rm:type>
+    <rm:target>
+      <rm:value>target1</rm:value>
+    </rm:target>
+  </links>
+  <links>
+    <rm:meaning>
+      <rm:value>meaning</rm:value>
+    </rm:meaning>
+    <rm:type>
+      <rm:value>type</rm:value>
+    </rm:type>
+    <rm:target>
+      <rm:value>target2</rm:value>
+    </rm:target>
+  </links>
+  <language>
+    <terminology_id>
+      <value>ISO_639-1</value>
+    </terminology_id>
+    <code_string>en</code_string>
+  </language>
+  <territory>
+    <terminology_id>
+      <value>ISO_3166-1</value>
+    </terminology_id>
+    <code_string>US</code_string>
+  </territory>
+  <category>
+    <value>persistent</value>
+    <defining_code>
+      <terminology_id>
+        <value>openehr</value>
+      </terminology_id>
+      <code_string>431</code_string>
+    </defining_code>
+  </category>
+  <composer xsi:type="rm:PARTY_IDENTIFIED">
+    <rm:external_ref>
+      <rm:id xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="rm:GENERIC_ID">
+        <rm:value>value</rm:value>
+        <rm:scheme>scheme</rm:scheme>
+      </rm:id>
+      <rm:namespace>local</rm:namespace>
+      <rm:type>ANY</rm:type>
+    </rm:external_ref>
+    <rm:name>composer test value</rm:name>
+  </composer>
+  <context>
+    <start_time>
+      <rm:value>2021-05-20T16:47:47.044+03:00</rm:value>
+    </start_time>
+    <end_time>
+      <rm:value>2021-05-20T16:47:47.044+03:00</rm:value>
+    </end_time>
+    <setting>
+      <rm:value>other care</rm:value>
+      <rm:defining_code>
+        <rm:terminology_id>
+          <rm:value>openehr</rm:value>
+        </rm:terminology_id>
+        <rm:code_string>238</rm:code_string>
+      </rm:defining_code>
+    </setting>
+    <health_care_facility>
+      <rm:external_ref>
+        <rm:id xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="rm:GENERIC_ID">
+          <rm:value>7829</rm:value>
+          <rm:scheme>scheme</rm:scheme>
+        </rm:id>
+        <rm:namespace>namespace</rm:namespace>
+        <rm:type>ANY</rm:type>
+      </rm:external_ref>
+      <rm:name>Company</rm:name>
+    </health_care_facility>
+    <participations>
+      <rm:function>
+        <rm:value>unknown</rm:value>
+      </rm:function>
+      <rm:performer xsi:type="rm:PARTY_IDENTIFIED">
+        <rm:external_ref>
+          <rm:id xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="rm:GENERIC_ID">
+            <rm:value>1936</rm:value>
+            <rm:scheme>scheme</rm:scheme>
+          </rm:id>
+          <rm:namespace>namespace</rm:namespace>
+          <rm:type>ANY</rm:type>
+        </rm:external_ref>
+        <rm:name>Firstname Lastname 1</rm:name>
+      </rm:performer>
+      <rm:mode>
+        <rm:value>interactive written note</rm:value>
+        <rm:defining_code>
+          <rm:terminology_id>
+            <rm:value>openehr</rm:value>
+          </rm:terminology_id>
+          <rm:code_string>215</rm:code_string>
+        </rm:defining_code>
+      </rm:mode>
+    </participations>
+    <participations>
+      <rm:function>
+        <rm:value>unknown</rm:value>
+      </rm:function>
+      <rm:performer xsi:type="rm:PARTY_IDENTIFIED">
+        <rm:external_ref>
+          <rm:id xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="rm:GENERIC_ID">
+            <rm:value>6059</rm:value>
+            <rm:scheme>scheme</rm:scheme>
+          </rm:id>
+          <rm:namespace>namespace</rm:namespace>
+          <rm:type>ANY</rm:type>
+        </rm:external_ref>
+        <rm:name>Firstname Lastname 2</rm:name>
+      </rm:performer>
+      <rm:mode>
+        <rm:value>interpreted audio-only</rm:value>
+        <rm:defining_code>
+          <rm:terminology_id>
+            <rm:value>openehr</rm:value>
+          </rm:terminology_id>
+          <rm:code_string>222</rm:code_string>
+        </rm:defining_code>
+      </rm:mode>
+    </participations>
+  </context>
+  <Minimal>
+    <name>
+      <value>Minimal</value>
+    </name>
+    <language>
+      <terminology_id>
+        <value>ISO_639-1</value>
+      </terminology_id>
+      <code_string>en</code_string>
+    </language>
+    <encoding>
+      <terminology_id>
+        <value>IANA_character-sets</value>
+      </terminology_id>
+      <code_string>UTF-8</code_string>
+    </encoding>
+    <subject xsi:type="rm:PARTY_SELF"/>
+    <other_participations>
+      <rm:function>
+        <rm:value>unknown</rm:value>
+      </rm:function>
+      <rm:performer xsi:type="rm:PARTY_IDENTIFIED">
+        <rm:external_ref>
+          <rm:id xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="rm:GENERIC_ID">
+            <rm:value>8188</rm:value>
+            <rm:scheme>scheme</rm:scheme>
+          </rm:id>
+          <rm:namespace>namespace</rm:namespace>
+          <rm:type>ANY</rm:type>
+        </rm:external_ref>
+        <rm:name>Firstname Lastname 1</rm:name>
+      </rm:performer>
+      <rm:mode>
+        <rm:value>telephone</rm:value>
+        <rm:defining_code>
+          <rm:terminology_id>
+            <rm:value>openehr</rm:value>
+          </rm:terminology_id>
+          <rm:code_string>204</rm:code_string>
+        </rm:defining_code>
+      </rm:mode>
+    </other_participations>
+    <other_participations>
+      <rm:function>
+        <rm:value>unknown</rm:value>
+      </rm:function>
+      <rm:performer xsi:type="rm:PARTY_IDENTIFIED">
+        <rm:external_ref>
+          <rm:id xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="rm:GENERIC_ID">
+            <rm:value>4169</rm:value>
+            <rm:scheme>scheme</rm:scheme>
+          </rm:id>
+          <rm:namespace>namespace</rm:namespace>
+          <rm:type>ANY</rm:type>
+        </rm:external_ref>
+        <rm:name>Firstname Lastname 2</rm:name>
+      </rm:performer>
+      <rm:mode>
+        <rm:value>interpreted audio-only</rm:value>
+        <rm:defining_code>
+          <rm:terminology_id>
+            <rm:value>openehr</rm:value>
+          </rm:terminology_id>
+          <rm:code_string>222</rm:code_string>
+        </rm:defining_code>
+      </rm:mode>
+    </other_participations>
+    <data>
+      <origin>
+        <rm:value>2021-05-20T16:47:47.044+03:00</rm:value>
+      </origin>
+      <Cualquier_evento_as_Point_Event>
+        <name>
+          <value>Cualquier evento</value>
+        </name>
+        <time>
+          <rm:value>2021-05-20T16:47:47.044+03:00</rm:value>
+        </time>
+        <data>
+          <text>
+            <name>
+              <value>text</value>
+            </name>
+            <value>
+              <rm:value>value 1</rm:value>
+            </value>
+          </text>
+        </data>
+      </Cualquier_evento_as_Point_Event>
+    </data>
+  </Minimal>
+</Persistent_minimal>

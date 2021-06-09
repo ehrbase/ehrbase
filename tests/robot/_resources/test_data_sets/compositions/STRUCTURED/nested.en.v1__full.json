@@ -1,0 +1,171 @@
+{
+  "nesting": {
+    "_uid": [
+      "fc19eca9-1b89-44d3-a4b7-3a4a811c7643::ehrdb::1"
+    ],
+    "_link": [
+      {
+        "|meaning": "meaning",
+        "|type": "type",
+        "|target": "target1"
+      },
+      {
+        "|meaning": "meaning",
+        "|type": "type",
+        "|target": "target2"
+      }
+    ],
+    "language": [
+      {
+        "|terminology": "ISO_639-1",
+        "|code": "en"
+      }
+    ],
+    "territory": [
+      {
+        "|terminology": "ISO_3166-1",
+        "|code": "US"
+      }
+    ],
+    "category": [
+      {
+        "|value": "event",
+        "|code": "433",
+        "|terminology": "openehr"
+      }
+    ],
+    "composer": [
+      {
+        "|id_namespace": "local",
+        "|id": "value",
+        "|id_scheme": "scheme",
+        "|name": "composer test value"
+      }
+    ],
+    "context": [
+      {
+        "start_time": [
+          "2021-05-18T12:57:39.279+03:00"
+        ],
+        "_end_time": [
+          "2021-05-18T12:57:39.279+03:00"
+        ],
+        "setting": [
+          {
+            "|value": "other care",
+            "|code": "238",
+            "|terminology": "openehr"
+          }
+        ],
+        "_health_care_facility": [
+          {
+            "|id_namespace": "namespace",
+            "|id": "5220",
+            "|id_scheme": "scheme",
+            "|name": "Company"
+          }
+        ],
+        "_participation": [
+          {
+            "|function": "unknown",
+            "|id_namespace": "namespace",
+            "|id": "835",
+            "|id_scheme": "scheme",
+            "|name": "Firstname Lastname 1",
+            "|mode": "internet chat"
+          },
+          {
+            "|function": "unknown",
+            "|id_namespace": "namespace",
+            "|id": "2530",
+            "|id_scheme": "scheme",
+            "|name": "Firstname Lastname 2",
+            "|mode": "interactive written note"
+          }
+        ]
+      }
+    ],
+    "nested": [
+      {
+        "nested": [
+          {
+            "language": [
+              {
+                "|terminology": "ISO_639-1",
+                "|code": "en"
+              }
+            ],
+            "encoding": [
+              {
+                "|terminology": "IANA_character-sets",
+                "|code": "UTF-8"
+              }
+            ],
+            "_other_participation": [
+              {
+                "|function": "unknown",
+                "|id_namespace": "namespace",
+                "|id": "5434",
+                "|id_scheme": "scheme",
+                "|name": "Firstname Lastname 1",
+                "|mode": "physically present"
+              },
+              {
+                "|function": "unknown",
+                "|id_namespace": "namespace",
+                "|id": "2299",
+                "|id_scheme": "scheme",
+                "|name": "Firstname Lastname 2",
+                "|mode": "internet telephone"
+              }
+            ],
+            "narrative": [
+              "narrative"
+            ],
+            "expiry_time": [
+              "2021-05-18T12:57:39.279+03:00"
+            ],
+            "current_activity": [
+              {
+                "ordinal": [
+                  {
+                    "|ordinal": 0,
+                    "|code": "code",
+                    "|terminology_id": "local",
+                    "|value": "value"
+                  }
+                ],
+                "nested": [
+                  {
+                    "text": [
+                      "value 1"
+                    ],
+                    "date": [
+                      "2021-05-18T12:57:39.279+03:00"
+                    ],
+                    "nested2": [
+                      {
+                        "boolean": [
+                          false
+                        ],
+                        "count": [
+                          39621
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "timing": [
+                  {
+                    "|value": "R5/2008-03-01T13:00:00Z/P1Y2M10DT2H30M",
+                    "|formalism": "timing"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

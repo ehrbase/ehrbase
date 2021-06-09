@@ -1,4 +1,5 @@
-# Copyright (c) 2019 Wladislaw Wagner (Vitasystems GmbH), Pablo Pazos (Hannover Medical School).
+# Copyright (c) 2019 Wladislaw Wagner (Vitasystems GmbH), Pablo Pazos (Hannover Medical School),
+# Nataliya Flusman (Solit Clouds), Nikita Danilin (Solit Clouds)
 #
 # This file is part of Project EHRbase
 #
@@ -21,19 +22,57 @@ Documentation   Composition Integration Tests
 Metadata        TOP_TEST_SUITE    COMPOSITION
 Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Force Tags
+Suite Setup     Precondition
+Suite Teardown  restart SUT
 
+Force Tags      125    future
 
 
 *** Test Cases ***
-Alternative flow 2 create persistent COMPOSITION for the same archetype twice
-    [Tags]        125    future
+Alternative flow 2 create persistent COMPOSITION for the same archetype twice RAW_JSON
+    commit composition   format=RAW_JSON
+    ...                  composition=persistent_minimal.en.v1__full.json
+    check status_code of commit composition   201
+    commit composition   format=RAW_JSON
+    ...                  composition=persistent_minimal.en.v1__full.json
+    check status_code of commit composition   400
 
+Alternative flow 2 create persistent COMPOSITION for the same archetype twice RAW_XML
+    commit composition   format=RAW_XML
+    ...                  composition=persistent_minimal.en.v1__full.xml
+    check status_code of commit composition   201
+    commit composition   format=RAW_XML
+    ...                  composition=persistent_minimal.en.v1__full.xml
+    check status_code of commit composition   400
+
+Alternative flow 2 create persistent COMPOSITION for the same archetype twice FLAT
+    [Tags]    future
+    commit composition   format=FLAT
+    ...                  composition=persistent_minimal.en.v1__full.json
+    check status_code of commit composition   201
+    commit composition   format=FLAT
+    ...                  composition=persistent_minimal.en.v1__full.json
+    check status_code of commit composition   400
+
+Alternative flow 2 create persistent COMPOSITION for the same archetype twice TDD
+    [Tags]    future
+    commit composition   format=TDD
+    ...                  composition=persistent_minimal.en.v1__full.xml
+    check status_code of commit composition    201
+    commit composition   format=TDD
+    ...                  composition=persistent_minimal.en.v1__full.xml
+    check status_code of commit composition    400    
+
+Alternative flow 2 create persistent COMPOSITION for the same archetype twice STRUCTURED
+    [Tags]    future
+    commit composition   format=STRUCTURED
+    ...                  composition=persistent_minimal.en.v1__full.json
+    check status_code of commit composition    201
+    commit composition   format=STRUCTURED
+    ...                  composition=persistent_minimal.en.v1__full.json
+    check status_code of commit composition    400    
+
+*** Keywords ***
+Precondition
     upload OPT    minimal_persistent/persistent_minimal.opt
     create EHR
-    commit composition (JSON)    minimal_persistent/persistent_minimal.composition.extdatetime.xml
-
-    # comment: Another commit for the same persistent archetype/template to the same EHR
-    commit same composition again    minimal_persistent/persistent_minimal.composition.extdatetime.xml
-
-    [Teardown]    restart SUT

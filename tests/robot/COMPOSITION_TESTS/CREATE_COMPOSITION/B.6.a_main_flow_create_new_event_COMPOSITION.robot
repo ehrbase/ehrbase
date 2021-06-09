@@ -1,4 +1,5 @@
-# Copyright (c) 2019 Wladislaw Wagner (Vitasystems GmbH), Pablo Pazos (Hannover Medical School).
+# Copyright (c) 2019 Wladislaw Wagner (Vitasystems GmbH), Pablo Pazos (Hannover Medical School),
+# Nataliya Flusman (Solit Clouds), Nikita Danilin (Solit Clouds)
 #
 # This file is part of Project EHRbase
 #
@@ -21,25 +22,40 @@ Documentation   Composition Integration Tests
 Metadata        TOP_TEST_SUITE    COMPOSITION
 Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Force Tags
-
+Suite Setup       Precondition
+Suite Teardown  restart SUT
 
 
 *** Test Cases ***
-Main flow create new event COMPOSITION
+Main flow create new event COMPOSITION RAW_JSON
+    commit composition   format=RAW_JSON
+    ...                  composition=nested.en.v1__full_without_links.json
+    check the successful result of commit composition
 
+Main flow create new event COMPOSITION RAW_XML
+    commit composition   format=RAW_XML
+    ...                  composition=nested.en.v1__full_without_links.xml
+    check the successful result of commit composition
+
+Main flow create new event COMPOSITION FLAT
+    [Tags]    future
+    commit composition   format=FLAT
+    ...                  composition=nested.en.v1__full.json
+    check the successful result of commit composition   nesting
+
+Main flow create new event COMPOSITION TDD
+    [Tags]    future
+    commit composition   format=TDD
+    ...                  composition=nested.en.v1__full.xml
+    check the successful result of commit composition
+
+Main flow create new event COMPOSITION STRUCTURED
+    [Tags]    future
+    commit composition   format=STRUCTURED
+    ...                  composition=nested.en.v1__full.json
+    check the successful result of commit composition   nesting
+
+*** Keywords ***
+Precondition
     upload OPT    nested/nested.opt
-
     create EHR
-
-    commit composition (JSON)    nested/nested.composition.extdatetimes.xml
-
-    # Check result data
-                      Set Test Variable  ${template_id}    ${response.json()['archetype_details']['template_id']['value']}
-                      Should Be Equal    ${template_id}    nested.en.v1
-                      Set Test Variable  ${composer}       ${response.json()['composer']['name']}
-                      Should Be Equal    ${composer}       Dr. House
-                      Set Test Variable  ${setting}        ${response.json()['context']['setting']['value']}
-                      Should Be Equal    ${setting}        primary nursing care
-
-    [Teardown]    restart SUT
