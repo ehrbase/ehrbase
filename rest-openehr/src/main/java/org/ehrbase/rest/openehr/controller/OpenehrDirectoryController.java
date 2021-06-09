@@ -141,8 +141,11 @@ public class OpenehrDirectoryController extends BaseController {
         // Insert New folder
         ObjectVersionId folderId = this.folderService.create(
                 ehrId,
-                folder
-        );
+                folder,
+                null,
+                null,
+                null
+        );  // TODO-526: add default committer and description handling
 
         // Fetch inserted folder for response data
         Optional<FolderDto> newFolder = this.folderService.get(folderId, null);

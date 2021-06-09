@@ -40,9 +40,12 @@ public interface FolderService extends BaseService {
      *
      * @param ehrId - ID for the corresponding EHR
      * @param content - {@link com.nedap.archie.rm.directory.Folder} to persist
+     * @param systemId System ID for audit
+     * @param committerId Committer ID for audit
+     * @param description Optional description for audit
      * @return UUID of the new created Folder from database
      */
-    ObjectVersionId create(UUID ehrId, Folder content);
+    ObjectVersionId create(UUID ehrId, Folder content, UUID systemId, UUID committerId, String description);
 
     /**
      * Creates a new folder entry at the database from content. The provided
@@ -53,9 +56,12 @@ public interface FolderService extends BaseService {
      * @param ehrId - ID for the corresponding EHR
      * @param content - {@link com.nedap.archie.rm.directory.Folder} to persist
      * @param contribution Optional (can be null) custom contribution to use, instead of a generic new one
+     * @param systemId System ID for audit
+     * @param committerId Committer ID for audit
+     * @param description Optional description for audit
      * @return UUID of the new created Folder from database
      */
-    ObjectVersionId create(UUID ehrId, Folder content, UUID contribution);
+    ObjectVersionId create(UUID ehrId, Folder content, UUID contribution, UUID systemId, UUID committerId, String description);
 
     /**
      * Retrieves a folder from database identified by object_version_uid and
@@ -113,6 +119,7 @@ public interface FolderService extends BaseService {
      * @param update - Update content from request body
      * @param ehrId - EHR id for contribution creation
      * @param contribution - Optional (can be set null) custom contribution to use for this update
+     *                     TODO-436: add systemId too - see create
      * @param committerId - ID of committer for audit
      * @param description  - Optional description test for audit
      * @return Updated folder entry
@@ -127,6 +134,7 @@ public interface FolderService extends BaseService {
      *
      * @param folderId - Id of the target folder
      * @param contribution - Optional (can be set null) custom contribution to use for this update
+     *                     TODO-436: add systemId too - see create
      * @param committerId - ID of committer for audit
      * @param description  - Optional description test for audit
      * @return Timestamp of successful delete operation

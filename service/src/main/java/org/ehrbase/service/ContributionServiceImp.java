@@ -264,7 +264,8 @@ public class ContributionServiceImp extends BaseService implements ContributionS
         switch (changeType) {
             case CREATION:
                 // call creation of a new folder version with given input
-                folderService.create(ehrId, versionRmObject, contributionId);
+                // TODO-526: add handlers for (default) committer and description
+                folderService.create(ehrId, versionRmObject, contributionId, null, null, null);
                 break;
             case AMENDMENT: // triggers the same processing as modification // TODO-396: so far so good, but should use the type "AMENDMENT" for audit in access layer
             case MODIFICATION:

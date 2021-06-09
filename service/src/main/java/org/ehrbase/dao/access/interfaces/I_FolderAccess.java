@@ -99,9 +99,12 @@ public interface I_FolderAccess extends I_SimpleCRUD {
      * system identifier and version part.
      *
      * @param customContribution Optional ID of a custom contribution to use, instead of creating a new one. Can be null
+     * @param systemId System ID for audit
+     * @param committerId Committer ID for audit
+     * @param description Optional description for audit
      * @return Object_Version_Id for new root directory folder
      */
-    ObjectVersionId create(UUID customContribution);
+    ObjectVersionId create(UUID customContribution, UUID systemId, UUID committerId, String description);
 
     static I_FolderAccess getInstanceForExistingFolder(I_DomainAccess domainAccess, ObjectVersionId folderId){
         return FolderAccess.retrieveInstanceForExistingFolder(

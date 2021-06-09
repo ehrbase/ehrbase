@@ -71,15 +71,15 @@ public class FolderServiceImp extends BaseService implements FolderService {
      * {@inheritDoc}
      */
     @Override
-    public ObjectVersionId create(UUID ehrId, Folder content) {
-        return create(ehrId, content, null);
+    public ObjectVersionId create(UUID ehrId, Folder content, UUID systemId, UUID committerId, String description) {
+        return create(ehrId, content, null, systemId, committerId, description);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public ObjectVersionId create(UUID ehrId, Folder content, UUID contribution) {
+    public ObjectVersionId create(UUID ehrId, Folder content, UUID contribution, UUID systemId, UUID committerId, String description) {
         I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
         if (ehrAccess == null) {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
@@ -91,12 +91,21 @@ public class FolderServiceImp extends BaseService implements FolderService {
         // Save current time which will be used as transaction time
         Timestamp currentTimeStamp = Timestamp.from(Instant.now());
 
+        // Apply default systemId
+        if (systemId == null) {
+            systemId = getSystemUuid();
+        }
+
         // Contribution handling - create new one or retrieve existing, if ID is given
         I_ContributionAccess contributionAccess;
         if (contribution == null) {
             contributionAccess = I_ContributionAccess.getInstance(getDataAccess(), ehrId);
         } else {
             contributionAccess = I_ContributionAccess.retrieveInstance(getDataAccess(), contribution);
+            // Copy values from contribution to folder's audit
+            systemId = contributionAccess.getAuditsSystemId();
+            committerId = contributionAccess.getAuditsCommitter();
+            description = contributionAccess.getAuditsDescription();
         }
 
         // Get first FolderAccess instance
@@ -107,7 +116,7 @@ public class FolderServiceImp extends BaseService implements FolderService {
                 ehrId,
                 contributionAccess
         );
-        ObjectVersionId folderId = folderAccess.create(contribution);
+        ObjectVersionId folderId = folderAccess.create(contribution, systemId, committerId, description);
         // Save root directory id to ehr entry
         // TODO: Refactor to use UID
         ehrAccess.setDirectory(FolderUtils.extractUuidFromObjectVersionId(folderId));

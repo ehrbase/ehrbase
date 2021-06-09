@@ -90,7 +90,7 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
     /*************Data Access and modification methods*****************/
 
     @Override
-    public ObjectVersionId create(UUID customContribution) { return null; }
+    public ObjectVersionId create(UUID customContribution, UUID systemId, UUID committerId, String description) { return null; }
 
     @Override
     public Boolean update(Timestamp transactionTime) {

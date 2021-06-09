@@ -164,10 +164,10 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
      * {@inheritDoc}
      */
     @Override
-    public ObjectVersionId create(UUID customContribution) {
+    public ObjectVersionId create(UUID customContribution, UUID systemId, UUID committerId, String description) {
         if (customContribution == null) {
             return new ObjectVersionId(
-                    this.commit().toString()
+                    this.commit(Timestamp.from(Instant.now()), systemId, committerId, description).toString()        // TODO-436: change signature of commit()
                             + "::" + getServerConfig().getNodename()
                             + "::1"
             );
@@ -344,7 +344,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         auditDetailsAccess.setSystemId(contributionAccess.getAuditsSystemId());
         auditDetailsAccess.setCommitter(contributionAccess.getAuditsCommitter());
         auditDetailsAccess.setDescription(contributionAccess.getAuditsDescription());
-        auditDetailsAccess.setChangeType(ContributionChangeType.CREATION);
+        auditDetailsAccess.setChangeType(I_ConceptAccess.fetchContributionChangeType(this, I_ConceptAccess.ContributionChangeType.CREATION));
         UUID auditId = this.auditDetailsAccess.commit();
         this.setAudit(auditId);
 
