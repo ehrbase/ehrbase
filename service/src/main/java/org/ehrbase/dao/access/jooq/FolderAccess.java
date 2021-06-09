@@ -202,10 +202,6 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         // Copy into new instance and attach to DB context.
         FolderRecord updatedFolderRecord = new FolderRecord();
 
-        if(rootFolder) {//if it is the root folder preserve the original id, itherwise let the DB provide a new one for the overriden subfolders.
-
-            updatedFolderRecord.setId(this.getFolderId());
-        }
         updatedFolderRecord.setInContribution(newContribution);
         updatedFolderRecord.setName(this.getFolderName());
         updatedFolderRecord.setArchetypeNodeId(this.getFolderArchetypeNodeId());
@@ -226,8 +222,13 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         // attach to context DB
         dslContext.attach(updatedFolderRecord);
 
-        // Save new Folder entry to the database
-        result = updatedFolderRecord.store() > 0;
+        if(rootFolder) {//if it is the root folder preserve the original id, otherwise let the DB provide a new one for the overridden subfolders.
+            updatedFolderRecord.setId(this.getFolderId());
+            result = updatedFolderRecord.update() > 0;
+        } else {
+            // Save new Folder entry to the database
+            result = updatedFolderRecord.store() > 0;
+        }
         // Get new folder id for folder items and hierarchy
         UUID updatedFolderId = updatedFolderRecord.getId();
 
