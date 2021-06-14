@@ -43,7 +43,7 @@ public class NullField {
             cast = "::numeric";
 
         if (variableDefinition != null  && alias != null)
-            return DSL.field(DSL.val((String) null) + cast).as(variableDefinition.getAlias());
+            return DSL.field(DSL.val((String) null) + cast).as(alias);
         else
             return DSL.field(DSL.val((String) null) + cast);
     }

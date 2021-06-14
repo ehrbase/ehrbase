@@ -21,6 +21,7 @@
 
 package org.ehrbase.aql.sql.binding;
 
+import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
@@ -240,7 +241,7 @@ public class WhereBinder {
                 if (isFollowedBySQLConditionalOperator(cursor)) {
                     TaggedStringBuilder encodedVar = encodeWhereVariable(whereCursor, multiFieldsMap, (I_VariableDefinition) item, true, null);
                     String expanded = expandForLateral(templateId, encodedVar, (I_VariableDefinition)item );
-                    if (expanded != null)
+                    if (StringUtils.isNotBlank(expanded))
                         taggedStringBuilder.append(expanded);
                     else {
                         unresolvedVariable = true;
@@ -261,7 +262,7 @@ public class WhereBinder {
                         //if the path contains node predicate expression uses a SQL syntax instead of jsquery
                         if (new VariablePath(((I_VariableDefinition) item).getPath()).hasPredicate()) {
                             String expanded = expandForLateral(templateId, encodeWhereVariable(whereCursor, multiFieldsMap, (I_VariableDefinition) item, true, null), (I_VariableDefinition)item );
-                            if (expanded != null) {
+                            if (StringUtils.isNotBlank(expanded)) {
                                 taggedStringBuilder.append(encodeForSubquery(expanded, inSubqueryOperator));
                                 inSubqueryOperator = false;
                             }
@@ -273,7 +274,7 @@ public class WhereBinder {
                             requiresJSQueryClosure = false;
                         } else {
                             String expanded = expandForLateral(templateId, encodeWhereVariable(whereCursor, multiFieldsMap, (I_VariableDefinition) item, true, null), (I_VariableDefinition)item );
-                            if (expanded != null) {
+                            if (StringUtils.isNotBlank(expanded)) {
                                 taggedStringBuilder.append(encodeForSubquery(expanded, inSubqueryOperator));
                                 inSubqueryOperator = false;
                             }
@@ -305,6 +306,7 @@ public class WhereBinder {
         else
             return DSL.condition("false");
     }
+
 
 
     private String encodeForSubquery(String sqlExpression, boolean inSubqueryOperator){

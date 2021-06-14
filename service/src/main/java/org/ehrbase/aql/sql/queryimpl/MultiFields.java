@@ -44,10 +44,16 @@ public class MultiFields {
         this(variableDefinition, new QualifiedAqlField(field), templateId);
     }
 
-    public static MultiFields asNull(I_VariableDefinition variableDefinition, String templateId){
+    public static MultiFields asNull(I_VariableDefinition variableDefinition, String templateId, IQueryImpl.Clause clause){
         String alias = variableDefinition.getAlias();
-        if (alias == null)
-            alias = DefaultColumnId.value(variableDefinition);
+
+        if (clause.equals(IQueryImpl.Clause.WHERE))
+            alias = null;
+        else {
+            if (alias == null)
+                alias = DefaultColumnId.value(variableDefinition);
+        }
+
         Field<?> nullField =  new NullField(variableDefinition, alias).instance();
         return new MultiFields(variableDefinition, nullField, templateId);
     }

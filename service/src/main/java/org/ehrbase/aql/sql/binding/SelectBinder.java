@@ -100,7 +100,7 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
 
                 handleJsonDataBlock(multiFields);
 
-                if (multiFields == null) { //the field cannot be resolved with containment (f.e. empty DB)
+                if (multiFields.isEmpty()) { //the field cannot be resolved with containment (f.e. empty DB)
                     continue;
                 }
             }

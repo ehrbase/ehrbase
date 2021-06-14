@@ -146,10 +146,8 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
 
         String alias = clause.equals(Clause.WHERE) ? null : variableDefinition.getAlias();
 
-        //TODO: add a null path for each variable. the null should appear in the query
-
         if (pathSet == null || pathSet.isEmpty()) {
-            return MultiFields.asNull(variableDefinition, templateId);
+            return MultiFields.asNull(variableDefinition, templateId, clause);
         }
 
         //traverse the set of paths and create the corresponding fields
