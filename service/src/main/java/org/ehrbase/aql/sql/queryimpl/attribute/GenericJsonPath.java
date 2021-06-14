@@ -1,5 +1,7 @@
 package org.ehrbase.aql.sql.queryimpl.attribute;
 
+import org.ehrbase.aql.sql.queryimpl.JqueryPath;
+import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
 import org.ehrbase.serialisation.dbencoding.wrappers.json.I_DvTypeAdapter;
 
 import java.util.ArrayList;
@@ -37,6 +39,26 @@ public class GenericJsonPath {
         if (path == null || path.isEmpty())
             return path;
 
+        List<String> jqueryPaths = new JqueryPath(JsonbEntryQuery.PATH_PART.VARIABLE_PATH_PART, path, "0").evaluate();
+        if (!jqueryPaths.isEmpty() && jqueryPaths.get(0).startsWith("/other_details"))
+            jqueryPaths.set(0, jqueryPaths.get(0).replace("/other_details", OTHER_DETAILS));
+        else if (!jqueryPaths.isEmpty() && jqueryPaths.get(0).startsWith("/other_context"))
+            jqueryPaths.set(0, jqueryPaths.get(0).replace("/other_context", OTHER_CONTEXT));
+        else if (jqueryPaths.size() == 1) {
+                jqueryPaths.set(0, jqueryPaths.get(0).replace("/", ""));
+        }
+        return new JsonbSelect(jqueryPaths).field();
+    }
+
+    /**
+     * @deprecated 12.6.21, use a common path resolution instead.
+     * @return
+     */
+    @Deprecated
+    public String jqueryPathAttributeLevel() {
+        if (path == null || path.isEmpty())
+            return path;
+
         List<String> jqueryPaths = Arrays.asList(path.split("/|,"));
         List<String> actualPaths = new ArrayList<>();
 
@@ -69,6 +91,7 @@ public class GenericJsonPath {
 
         return new JsonbSelect(actualPaths).field();
     }
+
 
     public static boolean isTerminalValue(List<String> paths, int index) {
         return paths.size() == 1

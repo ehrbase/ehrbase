@@ -25,7 +25,7 @@ import org.ehrbase.aql.sql.PathResolver;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.jooq.DSLContext;
 
-import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by christian on 5/6/2016.
@@ -55,8 +55,12 @@ public abstract class ObjectQuery {
         return serial;
     }
 
-    public Set<String> variableTemplatePath(String templateId, String identifier){
-        return pathResolver.pathOf(templateId, identifier);
+    public String variableTemplatePath(String templateId, String identifier){
+
+        if (pathResolver.pathOf(templateId, identifier) == null)
+            return null;
+
+        return pathResolver.pathOf(templateId, identifier).stream().collect(Collectors.joining());
     }
 
     public DSLContext getContext(){

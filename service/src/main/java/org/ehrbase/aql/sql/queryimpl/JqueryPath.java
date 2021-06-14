@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery.*;
+import static org.ehrbase.aql.sql.queryimpl.attribute.eventcontext.EventContextResolver.OTHER_CONTEXT;
 
 public class JqueryPath {
 
@@ -66,7 +67,7 @@ public class JqueryPath {
         String nodeId = null;
         for (int i = offset; i < segments.size(); i++) {
             nodeId = segments.get(i);
-            nodeId = "/" + nodeId;
+            nodeId = nodeId.equals(OTHER_CONTEXT.substring(1))  ? nodeId : "/" + nodeId;
 
             encodeTreeMapNodeId(jqueryPath, nodeId);
 

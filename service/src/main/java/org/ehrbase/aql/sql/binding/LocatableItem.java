@@ -48,7 +48,7 @@ public class LocatableItem {
         multiFields = jsonbEntryQuery.makeField(templateId, variableDefinition.getIdentifier(), variableDefinition, clause);
 
         if (multiFields == null)
-            return new MultiFields();
+            return MultiFields.asNull(variableDefinition, templateId);
 
         //iterate on the found fields
         for (int i = 0; i < multiFields.fieldsSize(); i++) {
@@ -101,8 +101,12 @@ public class LocatableItem {
                 }
             }
         }
+        else if (multiFieldsInitial.getVariableDefinition().getPath().contains("other_details")){
+            //in many instances we cannot interpret the type but keep this field anyway!
+            multiFields = new MultiFields(multiFieldsInitial.getVariableDefinition(), aqlField, templateId);
+        }
         else
-            throw new IllegalArgumentException("Unresolved aql path:" + variableDefinition.getPath());
+            multiFields = MultiFields.asNull(variableDefinition, templateId);
 
         return multiFields;
     }

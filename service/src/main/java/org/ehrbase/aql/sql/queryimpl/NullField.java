@@ -39,10 +39,10 @@ public class NullField {
         //return a null field
         String cast = "";
         //force explicit type cast for DvQuantity
-        if (variableDefinition.getPath() != null && variableDefinition.getPath().endsWith(MAGNITUDE))
+        if (variableDefinition != null && variableDefinition.getPath() != null && variableDefinition.getPath().endsWith(MAGNITUDE))
             cast = "::numeric";
 
-        if (alias != null)
+        if (variableDefinition != null  && alias != null)
             return DSL.field(DSL.val((String) null) + cast).as(variableDefinition.getAlias());
         else
             return DSL.field(DSL.val((String) null) + cast);

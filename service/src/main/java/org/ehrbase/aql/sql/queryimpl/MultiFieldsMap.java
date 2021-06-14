@@ -34,7 +34,8 @@ public class MultiFieldsMap {
         Map<String, MultiFields> multiMap = new LinkedHashMap<>(); //preserve order of insertion
 
         for (MultiFields multiFields: multiFieldsList){
-            multiMap.put(variableIdentifierPath(multiFields.getVariableDefinition().getIdentifier(),multiFields.getVariableDefinition().getPath()), multiFields);
+            if (!multiFields.isEmpty())
+                multiMap.put(variableIdentifierPath(multiFields.getVariableDefinition().getIdentifier(),multiFields.getVariableDefinition().getPath()), multiFields);
         }
         return multiMap;
     }

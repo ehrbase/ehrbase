@@ -44,8 +44,12 @@ public class MultiFields {
         this(variableDefinition, new QualifiedAqlField(field), templateId);
     }
 
-    public MultiFields() {
-        this(null, new QualifiedAqlField(null), null);
+    public static MultiFields asNull(I_VariableDefinition variableDefinition, String templateId){
+        String alias = variableDefinition.getAlias();
+        if (alias == null)
+            alias = DefaultColumnId.value(variableDefinition);
+        Field<?> nullField =  new NullField(variableDefinition, alias).instance();
+        return new MultiFields(variableDefinition, nullField, templateId);
     }
 
     public MultiFields(I_VariableDefinition variableDefinition, QualifiedAqlField field, String templateId) {
@@ -75,7 +79,10 @@ public class MultiFields {
     }
 
     public QualifiedAqlField getLastQualifiedField(){
-        return fields.get(fieldsSize() - 1);
+        if (fieldsSize() > 0)
+            return fields.get(fieldsSize() - 1);
+        else
+            return new QualifiedAqlField(new NullField(variableDefinition, DefaultColumnId.value(variableDefinition)).instance());
     }
 
     public QualifiedAqlField getQualifiedFieldOrLast(int index){

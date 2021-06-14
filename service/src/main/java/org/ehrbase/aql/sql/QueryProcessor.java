@@ -129,7 +129,7 @@ public class QueryProcessor extends TemplateMetaData {
 
         if (contains.getTemplates().isEmpty()) {
             if (contains.hasContains() && contains.requiresTemplateWhereClause()) {
-                cacheQuery.put(NIL_TEMPLATE, buildNullSelect(NIL_TEMPLATE));
+                cacheQuery.put(NIL_TEMPLATE, buildQuerySteps(NIL_TEMPLATE));
                 containsJson = false;
             } else
                 cacheQuery.put(NIL_TEMPLATE, buildQuerySteps(NIL_TEMPLATE));
@@ -262,32 +262,6 @@ public class QueryProcessor extends TemplateMetaData {
             select = domainAccess.getContext().selectQuery();
 
         }
-        return queryStepsList;
-    }
-
-    private List<QuerySteps> buildNullSelect(String templateId) {
-        SelectBinder selectBinder = new SelectBinder(domainAccess, introspectCache, contains, statements, serverNodeId);
-
-        List<MultiFields> multiFieldsList = selectBinder.bind(templateId);
-
-        SelectQuery<?> select = domainAccess.getContext().selectQuery();
-
-        for (Iterator<MultiFields> it = multiFieldsList.iterator(); it.hasNext(); ) {
-            MultiFields multiSelectFields = it.next();
-            select.addSelect(multiSelectFields.getQualifiedFieldOrLast(0).getSQLField());
-        }
-
-        List<QuerySteps> queryStepsList = new ArrayList<>();
-
-        queryStepsList.add(new QuerySteps(select,
-                DSL.condition("1 = 0"),
-                new ArrayList<>(),
-                templateId,
-                selectBinder.getCompositionAttributeQuery(),
-                selectBinder.getJsonDataBlock(), false));
-
-        joinSetup.merge(selectBinder.getCompositionAttributeQuery().getJoinSetup());
-
         return queryStepsList;
     }
 

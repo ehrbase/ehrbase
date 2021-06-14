@@ -40,7 +40,7 @@ public class ContextualAttribute {
     }
 
     public MultiFields toSql(String templateId, I_VariableDefinition variableDefinition){
-        String inTemplatePath = compositionAttributeQuery.variableTemplatePath(templateId, variableDefinition.getIdentifier()).stream().toString();
+        String inTemplatePath = compositionAttributeQuery.variableTemplatePath(templateId, variableDefinition.getIdentifier());
         if (inTemplatePath.startsWith("/"))
             inTemplatePath = inTemplatePath.substring(1); //conventionally, composition attribute path have the leading '/' striped.
         String originalPath = variableDefinition.getPath();
