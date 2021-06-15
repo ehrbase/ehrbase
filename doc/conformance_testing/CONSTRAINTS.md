@@ -43,6 +43,7 @@ Combine those cases with:
 All the context structures should be valid.
 
 <style>
+
 #composition_1 tbody > tr:nth-child(1),
 #composition_1 tbody > tr:nth-child(2),
 #composition_1 tbody > tr:nth-child(3),
@@ -55,6 +56,7 @@ All the context structures should be valid.
 .accepted {
   background-color: #ccffcc;
 }
+
 </style>
 
 <div id="composition_1">
@@ -91,6 +93,7 @@ Combine those cases with:
 All the context structures should be valid.
 
 <style>
+
 #composition_2 tbody > tr:nth-child(2),
 #composition_2 tbody > tr:nth-child(3),
 #composition_2 tbody > tr:nth-child(5),
@@ -107,6 +110,7 @@ All the context structures should be valid.
 .rejected {
   background-color: #ffcccc;
 }
+
 </style>
 
 <div id="composition_2">
@@ -142,6 +146,7 @@ Combine those cases with:
 All the context structures should be valid.
 
 <style>
+
 #composition_3 tbody > tr:nth-child(3),
 #composition_3 tbody > tr:nth-child(6),
 #composition_3 tbody > tr:nth-child(9),
@@ -158,6 +163,7 @@ All the context structures should be valid.
 .rejected {
   background-color: #ffcccc;
 }
+
 </style>
 
 <div id="composition_3">
@@ -193,6 +199,7 @@ Combine those cases with:
 All the context structures should be valid.
 
 <style>
+
 #composition_4 tbody > tr:nth-child(1),
 #composition_4 tbody > tr:nth-child(2),
 #composition_4 tbody > tr:nth-child(4),
@@ -209,6 +216,7 @@ All the context structures should be valid.
 .rejected {
   background-color: #ffcccc;
 }
+
 </style>
 
 <div id="composition_4">
@@ -244,6 +252,7 @@ Combine those cases with:
 All the context structures should be valid.
 
 <style>
+
 #composition_5 tbody > tr:nth-child(2),
 #composition_5 tbody > tr:nth-child(5),
 #composition_5 tbody > tr:nth-child(8),
@@ -260,6 +269,7 @@ All the context structures should be valid.
 .rejected {
   background-color: #ffcccc;
 }
+
 </style>
 
 <div id="composition_5">
@@ -296,6 +306,7 @@ Combine those cases with:
 All the context structures should be valid.
 
 <style>
+
 #composition_6 tbody > tr:nth-child(3),
 #composition_6 tbody > tr:nth-child(6),
 #composition_6 tbody > tr:nth-child(9),
@@ -312,6 +323,7 @@ All the context structures should be valid.
 .rejected {
   background-color: #ffcccc;
 }
+
 </style>
 
 <div id="composition_6">
@@ -347,6 +359,7 @@ Combine those cases with:
 All the context structures should be valid.
 
 <style>
+
 #composition_7 tbody > tr:nth-child(4),
 #composition_7 tbody > tr:nth-child(5),
 #composition_7 tbody > tr:nth-child(6),
@@ -363,6 +376,7 @@ All the context structures should be valid.
 .rejected {
   background-color: #ffcccc;
 }
+
 </style>
 
 <div id="composition_7">
@@ -399,6 +413,7 @@ Combine those cases with:
 All the context structures should be valid.
 
 <style>
+
 #composition_8 tbody > tr:nth-child(5),
 #composition_8 tbody > tr:nth-child(6),
 #composition_8 tbody > tr:nth-child(8),
@@ -415,6 +430,7 @@ All the context structures should be valid.
 .rejected {
   background-color: #ffcccc;
 }
+
 </style>
 
 <div id="composition_8">
@@ -451,6 +467,7 @@ Combine those cases with:
 All the context structures should be valid.
 
 <style>
+
 #composition_9 tbody > tr:nth-child(6),
 #composition_9 tbody > tr:nth-child(9),
 .accepted {
@@ -467,6 +484,7 @@ All the context structures should be valid.
 .rejected {
   background-color: #ffcccc;
 }
+
 </style>
 
 <div id="composition_9">
@@ -502,6 +520,7 @@ Combine those cases with:
 All the context structures should be valid.
 
 <style>
+
 #composition_10 tbody > tr:nth-child(4),
 #composition_10 tbody > tr:nth-child(5),
 #composition_10 tbody > tr:nth-child(7),
@@ -518,6 +537,7 @@ All the context structures should be valid.
 .rejected {
   background-color: #ffcccc;
 }
+
 </style>
 
 <div id="composition_10">
@@ -553,6 +573,7 @@ Combine those cases with:
 All the context structures should be valid.
 
 <style>
+
 #composition_11 tbody > tr:nth-child(5),
 #composition_11 tbody > tr:nth-child(8),
 .accepted {
@@ -569,6 +590,7 @@ All the context structures should be valid.
 .rejected {
   background-color: #ffcccc;
 }
+
 </style>
 
 <div id="composition_11">
@@ -604,6 +626,7 @@ Combine those cases with:
 All the context structures should be valid.
 
 <style>
+
 #composition_12 tbody > tr:nth-child(6),
 #composition_12 tbody > tr:nth-child(9),
 .accepted {
@@ -620,6 +643,7 @@ All the context structures should be valid.
 .rejected {
   background-color: #ffcccc;
 }
+
 </style>
 
 <div id="composition_12">
