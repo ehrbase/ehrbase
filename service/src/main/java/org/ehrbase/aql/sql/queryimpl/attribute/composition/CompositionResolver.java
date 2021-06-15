@@ -63,6 +63,8 @@ public class CompositionResolver extends AttributeResolver
 
 
         switch (path){
+            case "uid":
+                return new FullCompositionJson(fieldResolutionContext, joinSetup).forJsonPath(new String[]{"uid", ""}).sqlField();
             case "uid/value":
                 return new CompositionUidValue(fieldResolutionContext, joinSetup).forTableField(NULL_FIELD).sqlField();
             case "name":
