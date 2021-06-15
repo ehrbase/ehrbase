@@ -79,7 +79,7 @@ All the context structures should be valid.
 COMPOSITION data sets:
 
 1. COMPOSITION with no entries (border case, fail)
-2. COMPOSITION with one entry (success)
+2. COMPOSITION with one entry (border case, success)
 3. COMPOSITION with 3 entries (success)
 
 Combine those cases with:
@@ -223,34 +223,420 @@ All the context structures should be valid.
 | three entries    | context without other_context | rejected | COMPOSITION.content: cardinality.upper |
 | no entries       | context with other_context    | accepted ||
 | one entry        | context with other_context    | accepted ||
-| three entries    | context with other_context    | reejcted | COMPOSITION.content: cardinality.upper |
+| three entries    | context with other_context    | rejected | COMPOSITION.content: cardinality.upper |
 
 </div>
 
 ### Content cardinality 1..1, no constraint over context
 
+COMPOSITION data sets:
+
+1. COMPOSITION with no entries (border case, fail)
+2. COMPOSITION with one entry (border case, success)
+3. COMPOSITION with 3 entries (fail)
+
+Combine those cases with:
+
+1. COMPOSITION with no context
+2. COMPOSITION with context but no other_context
+3. COMPOSITION with context and other_context
+
+All the context structures should be valid.
+
+<style>
+#composition_5 tbody > tr:nth-child(2),
+#composition_5 tbody > tr:nth-child(5),
+#composition_5 tbody > tr:nth-child(8),
+.accepted {
+  background-color: #ccffcc;
+}
+
+#composition_5 tbody > tr:nth-child(1),
+#composition_5 tbody > tr:nth-child(3),
+#composition_5 tbody > tr:nth-child(4),
+#composition_5 tbody > tr:nth-child(6),
+#composition_5 tbody > tr:nth-child(7),
+#composition_5 tbody > tr:nth-child(9),
+.rejected {
+  background-color: #ffcccc;
+}
+</style>
+
+<div id="composition_5">
+
+| content          | context                       | expected | constraints violated |
+|:-----------------|:------------------------------|:--------:|:---------------------|
+| no entries       | no context                    | rejected | COMPOSITION.content: cardinality.lower |
+| one entry        | no context                    | accepted ||
+| three entries    | no context                    | rejected | COMPOSITION.content: cardinality.upper |
+| no entries       | context without other_context | rejected | COMPOSITION.content: cardinality.lower |
+| one entry        | context without other_context | accepted ||
+| three entries    | context without other_context | rejected | COMPOSITION.content: cardinality.upper |
+| no entries       | context with other_context    | rejected | COMPOSITION.content: cardinality.lower |
+| one entry        | context with other_context    | accepted ||
+| three entries    | context with other_context    | rejected | COMPOSITION.content: cardinality.upper |
+
+</div>
 
 
 ### Content cardinality 3..5, no constraint over context
 
+COMPOSITION data sets:
+
+1. COMPOSITION with no entries (fail)
+2. COMPOSITION with one entry (fail)
+3. COMPOSITION with 3 entries (border case, success)
+
+Combine those cases with:
+
+1. COMPOSITION with no context
+2. COMPOSITION with context but no other_context
+3. COMPOSITION with context and other_context
+
+All the context structures should be valid.
+
+<style>
+#composition_6 tbody > tr:nth-child(3),
+#composition_6 tbody > tr:nth-child(6),
+#composition_6 tbody > tr:nth-child(9),
+.accepted {
+  background-color: #ccffcc;
+}
+
+#composition_6 tbody > tr:nth-child(1),
+#composition_6 tbody > tr:nth-child(2),
+#composition_6 tbody > tr:nth-child(4),
+#composition_6 tbody > tr:nth-child(5),
+#composition_6 tbody > tr:nth-child(7),
+#composition_6 tbody > tr:nth-child(8),
+.rejected {
+  background-color: #ffcccc;
+}
+</style>
+
+<div id="composition_6">
+
+| content          | context                       | expected | constraints violated |
+|:-----------------|:------------------------------|:--------:|:---------------------|
+| no entries       | no context                    | rejected | COMPOSITION.content: cardinality.lower |
+| one entry        | no context                    | rejected | COMPOSITION.content: cardinality.lower |
+| three entries    | no context                    | accepted ||
+| no entries       | context without other_context | rejected | COMPOSITION.content: cardinality.lower |
+| one entry        | context without other_context | rejected | COMPOSITION.content: cardinality.lower |
+| three entries    | context without other_context | accepted ||
+| no entries       | context with other_context    | rejected | COMPOSITION.content: cardinality.lower |
+| one entry        | context with other_context    | rejected | COMPOSITION.content: cardinality.lower |
+| three entries    | context with other_context    | accepted ||
+
+</div>
+
+### Content cardinality 0..*, context occurrences 1..1
+
+COMPOSITION data sets:
+
+1. COMPOSITION with no entries (border case, success)
+2. COMPOSITION with one entry (success)
+3. COMPOSITION with 3 entries (success)
+
+Combine those cases with:
+
+1. COMPOSITION with no context
+2. COMPOSITION with context but no other_context
+3. COMPOSITION with context and other_context
+
+All the context structures should be valid.
+
+<style>
+#composition_7 tbody > tr:nth-child(4),
+#composition_7 tbody > tr:nth-child(5),
+#composition_7 tbody > tr:nth-child(6),
+#composition_7 tbody > tr:nth-child(7),
+#composition_7 tbody > tr:nth-child(8),
+#composition_7 tbody > tr:nth-child(9),
+.accepted {
+  background-color: #ccffcc;
+}
+
+#composition_7 tbody > tr:nth-child(1),
+#composition_7 tbody > tr:nth-child(2),
+#composition_7 tbody > tr:nth-child(3),
+.rejected {
+  background-color: #ffcccc;
+}
+</style>
+
+<div id="composition_7">
+
+| content          | context                       | expected | constraints violated |
+|:-----------------|:------------------------------|:--------:|:---------------------|
+| no entries       | no context                    | rejected | COMPOSITION.context occurrences.lower |
+| one entry        | no context                    | rejected | COMPOSITION.context occurrences.lower |
+| three entries    | no context                    | rejected | COMPOSITION.context occurrences.lower |
+| no entries       | context without other_context | accepted ||
+| one entry        | context without other_context | accepted ||
+| three entries    | context without other_context | accepted ||
+| no entries       | context with other_context    | accepted ||
+| one entry        | context with other_context    | accepted ||
+| three entries    | context with other_context    | accepted ||
+
+</div>
 
 
-### Content cardinality 0..*, context occurrence 1..1
+### Content cardinality 1..*, context occurrences 1..1
+
+COMPOSITION data sets:
+
+1. COMPOSITION with no entries (border case, fail)
+2. COMPOSITION with one entry (border case, success)
+3. COMPOSITION with 3 entries (success)
+
+Combine those cases with:
+
+1. COMPOSITION with no context
+2. COMPOSITION with context but no other_context
+3. COMPOSITION with context and other_context
+
+All the context structures should be valid.
+
+<style>
+#composition_8 tbody > tr:nth-child(5),
+#composition_8 tbody > tr:nth-child(6),
+#composition_8 tbody > tr:nth-child(8),
+#composition_8 tbody > tr:nth-child(9),
+.accepted {
+  background-color: #ccffcc;
+}
+
+#composition_8 tbody > tr:nth-child(1),
+#composition_8 tbody > tr:nth-child(2),
+#composition_8 tbody > tr:nth-child(3),
+#composition_8 tbody > tr:nth-child(4),
+#composition_8 tbody > tr:nth-child(7),
+.rejected {
+  background-color: #ffcccc;
+}
+</style>
+
+<div id="composition_8">
+
+| content          | context                       | expected | constraints violated |
+|:-----------------|:------------------------------|:--------:|:----------------------|
+| no entries       | no context                    | rejected | COMPOSITION.content: cardinality.lower, COMPOSITION.context occurrences.lower |
+| one entry        | no context                    | rejected | COMPOSITION.context occurrences.lower |
+| three entries    | no context                    | rejected | COMPOSITION.context occurrences.lower |
+| no entries       | context without other_context | rejected | COMPOSITION.content: cardinality.lower |
+| one entry        | context without other_context | accepted ||
+| three entries    | context without other_context | accepted ||
+| no entries       | context with other_context    | rejected | COMPOSITION.content: cardinality.lower |
+| one entry        | context with other_context    | accepted ||
+| three entries    | context with other_context    | accepted ||
+
+</div>
 
 
-### Content cardinality 1..*, context occurrence 1..1
+### Content cardinality 3..*, context occurrences 1..1
 
+COMPOSITION data sets:
 
-### Content cardinality 3..*, context occurrence 1..1
+1. COMPOSITION with no entries (border case, fail)
+2. COMPOSITION with one entry (fail)
+3. COMPOSITION with 3 entries (border case, success)
 
+Combine those cases with:
 
-### Content cardinality 0..1, context occurrence 1..1
+1. COMPOSITION with no context
+2. COMPOSITION with context but no other_context
+3. COMPOSITION with context and other_context
 
+All the context structures should be valid.
 
-### Content cardinality 1..1, context occurrence 1..1
+<style>
+#composition_9 tbody > tr:nth-child(6),
+#composition_9 tbody > tr:nth-child(9),
+.accepted {
+  background-color: #ccffcc;
+}
 
+#composition_9 tbody > tr:nth-child(1),
+#composition_9 tbody > tr:nth-child(2),
+#composition_9 tbody > tr:nth-child(3),
+#composition_9 tbody > tr:nth-child(4),
+#composition_9 tbody > tr:nth-child(5),
+#composition_9 tbody > tr:nth-child(7),
+#composition_9 tbody > tr:nth-child(8),
+.rejected {
+  background-color: #ffcccc;
+}
+</style>
 
-### Content cardinality 3..5, context occurrence 1..1
+<div id="composition_9">
+
+| content          | context                       | expected | constraints violated |
+|:-----------------|:------------------------------|:--------:|:---------------------|
+| no entries       | no context                    | rejected | COMPOSITION.content: cardinality.lower, COMPOSITION.context occurrences.lower  |
+| one entry        | no context                    | rejected | COMPOSITION.content: cardinality.lower, COMPOSITION.context occurrences.lower  |
+| three entries    | no context                    | rejected | COMPOSITION.context occurrences.lower |
+| no entries       | context without other_context | rejected | COMPOSITION.content: cardinality.lower |
+| one entry        | context without other_context | rejected | COMPOSITION.content: cardinality.lower |
+| three entries    | context without other_context | accepted ||
+| no entries       | context with other_context    | rejected | COMPOSITION.content: cardinality.lower |
+| one entry        | context with other_context    | rejected | COMPOSITION.content: cardinality.lower |
+| three entries    | context with other_context    | accepted ||
+
+</div>
+
+### Content cardinality 0..1, context occurrences 1..1
+
+COMPOSITION data sets:
+
+1. COMPOSITION with no entries (border case, success)
+2. COMPOSITION with one entry (border case, success)
+3. COMPOSITION with 3 entries (fail)
+
+Combine those cases with:
+
+1. COMPOSITION with no context
+2. COMPOSITION with context but no other_context
+3. COMPOSITION with context and other_context
+
+All the context structures should be valid.
+
+<style>
+#composition_10 tbody > tr:nth-child(4),
+#composition_10 tbody > tr:nth-child(5),
+#composition_10 tbody > tr:nth-child(7),
+#composition_10 tbody > tr:nth-child(8),
+.accepted {
+  background-color: #ccffcc;
+}
+
+#composition_10 tbody > tr:nth-child(1),
+#composition_10 tbody > tr:nth-child(2),
+#composition_10 tbody > tr:nth-child(3),
+#composition_10 tbody > tr:nth-child(6),
+#composition_10 tbody > tr:nth-child(9),
+.rejected {
+  background-color: #ffcccc;
+}
+</style>
+
+<div id="composition_10">
+
+| content          | context                       | expected | constraints violated |
+|:-----------------|:------------------------------|:--------:|:---------------------|
+| no entries       | no context                    | rejected | COMPOSITION.context occurrences.lower |
+| one entry        | no context                    | rejected | COMPOSITION.context occurrences.lower |
+| three entries    | no context                    | rejected | COMPOSITION.content: cardinality.upper, COMPOSITION.context occurrences.lower |
+| no entries       | context without other_context | accepted ||
+| one entry        | context without other_context | accepted ||
+| three entries    | context without other_context | rejected | COMPOSITION.content: cardinality.upper |
+| no entries       | context with other_context    | accepted ||
+| one entry        | context with other_context    | accepted ||
+| three entries    | context with other_context    | rejected | COMPOSITION.content: cardinality.upper |
+
+</div>
+
+### Content cardinality 1..1, context occurrences 1..1
+
+COMPOSITION data sets:
+
+1. COMPOSITION with no entries (border case, fail)
+2. COMPOSITION with one entry (border case, success)
+3. COMPOSITION with 3 entries (fail)
+
+Combine those cases with:
+
+1. COMPOSITION with no context
+2. COMPOSITION with context but no other_context
+3. COMPOSITION with context and other_context
+
+All the context structures should be valid.
+
+<style>
+#composition_11 tbody > tr:nth-child(5),
+#composition_11 tbody > tr:nth-child(8),
+.accepted {
+  background-color: #ccffcc;
+}
+
+#composition_11 tbody > tr:nth-child(1),
+#composition_11 tbody > tr:nth-child(2),
+#composition_11 tbody > tr:nth-child(3),
+#composition_11 tbody > tr:nth-child(4),
+#composition_11 tbody > tr:nth-child(6),
+#composition_11 tbody > tr:nth-child(7),
+#composition_11 tbody > tr:nth-child(9),
+.rejected {
+  background-color: #ffcccc;
+}
+</style>
+
+<div id="composition_11">
+
+| content          | context                       | expected | constraints violated |
+|:-----------------|:------------------------------|:--------:|:---------------------|
+| no entries       | no context                    | rejected | COMPOSITION.content: cardinality.lower, COMPOSITION.context occurrences.lower |
+| one entry        | no context                    | rejected | COMPOSITION.context occurrences.lower |
+| three entries    | no context                    | rejected | COMPOSITION.content: cardinality.upper, COMPOSITION.context occurrences.lower |
+| no entries       | context without other_context | rejected | COMPOSITION.content: cardinality.lower |
+| one entry        | context without other_context | accepted ||
+| three entries    | context without other_context | rejected | COMPOSITION.content: cardinality.upper |
+| no entries       | context with other_context    | rejected | COMPOSITION.content: cardinality.lower |
+| one entry        | context with other_context    | accepted ||
+| three entries    | context with other_context    | rejected | COMPOSITION.content: cardinality.upper |
+
+</div>
+
+### Content cardinality 3..5, context occurrences 1..1
+
+COMPOSITION data sets:
+
+1. COMPOSITION with no entries (fail)
+2. COMPOSITION with one entry (fail)
+3. COMPOSITION with 3 entries (border case, success)
+
+Combine those cases with:
+
+1. COMPOSITION with no context
+2. COMPOSITION with context but no other_context
+3. COMPOSITION with context and other_context
+
+All the context structures should be valid.
+
+<style>
+#composition_12 tbody > tr:nth-child(6),
+#composition_12 tbody > tr:nth-child(9),
+.accepted {
+  background-color: #ccffcc;
+}
+
+#composition_12 tbody > tr:nth-child(1),
+#composition_12 tbody > tr:nth-child(2),
+#composition_12 tbody > tr:nth-child(3),
+#composition_12 tbody > tr:nth-child(4),
+#composition_12 tbody > tr:nth-child(5),
+#composition_12 tbody > tr:nth-child(7),
+#composition_12 tbody > tr:nth-child(8),
+.rejected {
+  background-color: #ffcccc;
+}
+</style>
+
+<div id="composition_12">
+
+| content          | context                       | expected | constraints violated |
+|:-----------------|:------------------------------|:--------:|:---------------------|
+| no entries       | no context                    | rejected | COMPOSITION.content: cardinality.lower, COMPOSITION.context occurrences.lower |
+| one entry        | no context                    | rejected | COMPOSITION.content: cardinality.lower, COMPOSITION.context occurrences.lower |
+| three entries    | no context                    | rejected | COMPOSITION.context occurrences.lower |
+| no entries       | context without other_context | rejected | COMPOSITION.content: cardinality.lower |
+| one entry        | context without other_context | rejected | COMPOSITION.content: cardinality.lower |
+| three entries    | context without other_context | accepted ||
+| no entries       | context with other_context    | rejected | COMPOSITION.content: cardinality.lower |
+| one entry        | context with other_context    | rejected | COMPOSITION.content: cardinality.lower |
+| three entries    | context with other_context    | accepted ||
+
+</div>
 
 
 ### COMPOSITION.content combinations
