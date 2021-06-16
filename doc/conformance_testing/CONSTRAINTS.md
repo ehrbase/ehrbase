@@ -1,17 +1,43 @@
 # openEHR Data Validation Conformance
 
+## TOC
+
+- [openEHR Data Validation Conformance](#openehr-data-validation-conformance)
+  - [TOC](#toc)
+  - [Introduction](#introduction)
+  - [Top-level class: COMPOSITION](#top-level-class-composition)
+    - [Content cardinality 0..*, no constraint over context](#content-cardinality-0-no-constraint-over-context)
+    - [Content cardinality 1..*, no constraint over context](#content-cardinality-1-no-constraint-over-context)
+    - [Content cardinality 3..*, no constraint over context](#content-cardinality-3-no-constraint-over-context)
+    - [Content cardinality 0..1, no constraint over context](#content-cardinality-01-no-constraint-over-context)
+    - [Content cardinality 1..1, no constraint over context](#content-cardinality-11-no-constraint-over-context)
+    - [Content cardinality 3..5, no constraint over context](#content-cardinality-35-no-constraint-over-context)
+    - [Content cardinality 0..*, context occurrences 1..1](#content-cardinality-0-context-occurrences-11)
+    - [Content cardinality 1..*, context occurrences 1..1](#content-cardinality-1-context-occurrences-11)
+    - [Content cardinality 3..*, context occurrences 1..1](#content-cardinality-3-context-occurrences-11)
+    - [Content cardinality 0..1, context occurrences 1..1](#content-cardinality-01-context-occurrences-11)
+    - [Content cardinality 1..1, context occurrences 1..1](#content-cardinality-11-context-occurrences-11)
+    - [Content cardinality 3..5, context occurrences 1..1](#content-cardinality-35-context-occurrences-11)
+    - [COMPOSITION.content combinations](#compositioncontent-combinations)
+      - [Case C.1.1.](#case-c11)
+      - [Case C.1.2.](#case-c12)
+      - [Case C.1.3.](#case-c13)
+      - [Case C.1.4.](#case-c14)
+      - [Case C.1.5.](#case-c15)
+      - [Case C.1.6.](#case-c16)
+
+## Introduction
+
 The test cases defined here are for creating archetypes expressing specific constraints over the openEHR RM. Then different data instances should be generated in order to test the constraints. It’s recommended to have at least one success case, one failure case and all border cases covered. That is, for each archetype constraint specified, at least three data instances should be created.
 
 Since there are many combinations of constraints possible in the AOM, we will try to separate them into different classes and focus on each constraint set class independently from the other sets. The sets are defined by:
 
-1. A top-level LOCATABLE class: COMPOSITION, EHR_STATUS, FOLDER, PARTY
-2. Constraint sets on top-level attributes for each class
-3. Constraint sets on internal attributes (at any level in the RM hierarchy in the top-level class)
+1. A top-level LOCATABLE class: COMPOSITION, EHR_STATUS, FOLDER, PARTY.
+2. Constraint sets on top-level attributes for each class.
+3. Internal LOCATABLE class: SECTION, ENTRY, HISTORY, ITEM_STRUCRTURE, ITEM, DATA_VALUE.
+4. Constraint sets on internal structures and attributes (at any level in the RM hierarchy in the internal LOCATABLE class).
 
-
-For easy reference, we could use the first letter of each top-level class to define the ID of each data set, and numbers for the other two levels of the classification.
-
-When checking a “multiple attribute” cardinality, this is a good set of combinations to test is:
+When checking a “multiple attribute” cardinality, this is a good set of combinations to test it:
 
 - 0..*
 - 1..*
@@ -23,10 +49,16 @@ When checking a “multiple attribute” cardinality, this is a good set of comb
 
 > Note: when there is no constraint defined for an attribute, it means anything is allowed on that attribute. It is recommended to include data not defined by the archetype, but valid in the RM, when generating the data instances.
 
+> Note: any class that extends LOCATABLE is a class with archetypable fields.
+
 
 ## Top-level class: COMPOSITION
 
-### Content cardinality 0..*, no constraint over context
+These cases are defined to verify the constraints defined over archetypable attributes of the top-level class COMPOSITION.
+
+> Note: the constraint combinations described in the cases below could be done in different archetypes, or we could defined very generic archetypes and define the specific constraints at the template level. That possibility might depend on the modeling tools used to create archetypes and templates.
+
+### COMPOSITION content cardinality 0..*, no constraint over context
 
 COMPOSITION data sets:
 
@@ -76,7 +108,7 @@ All the context structures should be valid.
 </div>
 
 
-### Content cardinality 1..*, no constraint over context
+### COMPOSITION content cardinality 1..*, no constraint over context
 
 COMPOSITION data sets:
 
@@ -129,7 +161,7 @@ All the context structures should be valid.
 
 </div>
 
-### Content cardinality 3..*, no constraint over context
+### COMPOSITION content cardinality 3..*, no constraint over context
 
 COMPOSITION data sets:
 
@@ -182,7 +214,7 @@ All the context structures should be valid.
 
 </div>
 
-### Content cardinality 0..1, no constraint over context
+### COMPOSITION content cardinality 0..1, no constraint over context
 
 COMPOSITION data sets:
 
@@ -235,7 +267,7 @@ All the context structures should be valid.
 
 </div>
 
-### Content cardinality 1..1, no constraint over context
+### COMPOSITION content cardinality 1..1, no constraint over context
 
 COMPOSITION data sets:
 
@@ -289,7 +321,7 @@ All the context structures should be valid.
 </div>
 
 
-### Content cardinality 3..5, no constraint over context
+### COMPOSITION content cardinality 3..5, no constraint over context
 
 COMPOSITION data sets:
 
@@ -342,7 +374,7 @@ All the context structures should be valid.
 
 </div>
 
-### Content cardinality 0..*, context occurrences 1..1
+### COMPOSITION content cardinality 0..*, context occurrences 1..1
 
 COMPOSITION data sets:
 
@@ -396,7 +428,7 @@ All the context structures should be valid.
 </div>
 
 
-### Content cardinality 1..*, context occurrences 1..1
+### COMPOSITION content cardinality 1..*, context occurrences 1..1
 
 COMPOSITION data sets:
 
@@ -450,7 +482,7 @@ All the context structures should be valid.
 </div>
 
 
-### Content cardinality 3..*, context occurrences 1..1
+### COMPOSITION content cardinality 3..*, context occurrences 1..1
 
 COMPOSITION data sets:
 
@@ -503,7 +535,7 @@ All the context structures should be valid.
 
 </div>
 
-### Content cardinality 0..1, context occurrences 1..1
+### COMPOSITION content cardinality 0..1, context occurrences 1..1
 
 COMPOSITION data sets:
 
@@ -556,7 +588,7 @@ All the context structures should be valid.
 
 </div>
 
-### Content cardinality 1..1, context occurrences 1..1
+### COMPOSITION content cardinality 1..1, context occurrences 1..1
 
 COMPOSITION data sets:
 
@@ -609,7 +641,7 @@ All the context structures should be valid.
 
 </div>
 
-### Content cardinality 3..5, context occurrences 1..1
+### COMPOSITION content cardinality 3..5, context occurrences 1..1
 
 COMPOSITION data sets:
 
@@ -663,66 +695,166 @@ All the context structures should be valid.
 </div>
 
 
-### COMPOSITION.content combinations
+## Internal LOCATABLE classes
 
-These data sets should be combined with the COMPOSITION archetype constraints mentioned above to generate the final OPTs.
+Each data set that included entries at the COMPOSITION.content in the previously defined data sets, requires some specification of the internal entry structure that will be used. Since each entry type could also have it's own archetypable fields where data validation should also be tested, the entry data sets described in this section should be combined with the COMPOSITION data sets.
 
-#### Case C.1.1.
+Also for each entry type in this section we specify a combination of constraints that should be tested against the entry data sets.
 
-Content is just OBSERVATION
+OBSERVATION data sets:
+
+1. OBSERVATION with no state and no protocol
+2. OBSERVATION with state and no protocol
+3. OBSERVATION with no state and protocol
+4. OBSERVATION with state and protocol
+
+Combine those cases with:
+
+1. EVENT with no state
+2. EVENT with state
+
+EVENT type combinations:
+
+1. EVENT is POINT_EVENT
+2. EVENT is INTERVAL_EVENT
+
+EVENT structure combinations
+
+1. EVENT.data is ITEM_TREE
+2. EVENT.data is ITEM_LIST
+3. EVENT.data is ITEM_TABLE
+4. EVENT.data is ITEM_SINGLE
+
+> Note: test with TREE first because that is the most used structure type and the rest are just parcular cases of TREE.
+
+> Note: to simplify modeling, the EVENT.data constraint could be open {*} so any instance will pass constraints at that level and only the constraints at the OBSERVATION level will be tested. 
+
+### OBSERVATION data.events cardinality = 0..*, state.existence = 0..1, protocol.existence = 0..1
+
+The table below shows combinations of different OBSERVATION options with it's HISTORY and EVENT options.
+
+TODO: since the expected repeats based on EVENT constraints it might be better to define the OBSERVATION combinations and HISTORY/EVENT combinatiosn separatelly, then state those need to be combined to create the data sets, so the expected results are also combined.
+
+<div id="obs_1">
+
+| data          | state      | protocol    | event          | event.data | event.state | expected | constraints violated |
+|:--------------|:-----------|:-----------:|:--------------:|------------|-------------|----------|----------------------|
+| no data       | no state   | no protocol | -              | -          | -           | rejected | OBSERVATION.data occurrences.lower (RM/schema constraint) |
+| present       | no state   | no protocol | POINT_EVENT    | no data    | no state    | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
+| present       | no state   | no protocol | POINT_EVENT    | present    | no state    | accepted |  |
+| present       | no state   | no protocol | POINT_EVENT    | no data    | present     | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
+| present       | no state   | no protocol | POINT_EVENT    | present    | present     | accepted |  |
+| present       | present    | no protocol | POINT_EVENT    | no data    | no state    | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
+| present       | present    | no protocol | POINT_EVENT    | present    | no state    | accepted |  |
+| present       | present    | no protocol | POINT_EVENT    | no data    | present     | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
+| present       | present    | no protocol | POINT_EVENT    | present    | present     | accepted |  |
+| present       | no state   | present     | POINT_EVENT    | no data    | no state    | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
+| present       | no state   | present     | POINT_EVENT    | present    | no state    | accepted |  |
+| present       | no state   | present     | POINT_EVENT    | no data    | present     | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
+| present       | no state   | present     | POINT_EVENT    | present    | present     | accepted |  |
+| present       | present    | present     | POINT_EVENT    | no data    | no state    | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
+| present       | present    | present     | POINT_EVENT    | present    | no state    | accepted |  |
+| present       | present    | present     | POINT_EVENT    | no data    | present     | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
+| present       | present    | present     | POINT_EVENT    | present    | present     | accepted |  |
+| present       | no state   | no protocol | INTERVAL_EVENT | no data    | no state    | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
+| present       | no state   | no protocol | INTERVAL_EVENT | present    | no state    | accepted |  |
+| present       | no state   | no protocol | INTERVAL_EVENT | no data    | present     | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
+| present       | no state   | no protocol | INTERVAL_EVENT | present    | present     | accepted |  |
+| present       | present    | no protocol | INTERVAL_EVENT | no data    | no state    | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
+| present       | present    | no protocol | INTERVAL_EVENT | present    | no state    | accepted |  |
+| present       | present    | no protocol | INTERVAL_EVENT | no data    | present     | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
+| present       | present    | no protocol | INTERVAL_EVENT | present    | present     | accepted |  |
+| present       | no state   | present     | INTERVAL_EVENT | no data    | no state    | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
+| present       | no state   | present     | INTERVAL_EVENT | present    | no state    | accepted |  |
+| present       | no state   | present     | INTERVAL_EVENT | no data    | present     | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
+| present       | no state   | present     | INTERVAL_EVENT | present    | present     | accepted |  |
+| present       | present    | present     | INTERVAL_EVENT | no data    | no state    | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
+| present       | present    | present     | INTERVAL_EVENT | present    | no state    | accepted |  |
+| present       | present    | present     | INTERVAL_EVENT | no data    | present     | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
+| present       | present    | present     | INTERVAL_EVENT | present    | present     | accepted |  |
+
+</div>
+
 - no state
 - data.events cardinality is 0..*
-- data.events are POINT_EVENT
-- POINT_EVENT has no state
-- POINT_EVENT.data is ITEM_TREE
+- data.events allow ant EVENT
+- EVENT has no state
+- EVENT.data is ITEM_TREE
 - ITEM_TREE has open constraint {*}
 
-#### Case C.1.2.
+
+### OBSERVATION data.events cardinality = 1..*, state.existence = 0..1, protocol.existence = 0..1
 
 Content is just OBSERVATION
 - no state
 - data.events cardinality is 1..*
-- data.events are POINT_EVENT
-- POINT_EVENT has no state
-- POINT_EVENT.data is ITEM_TREE
+- data.events allow ant EVENT
+- EVENT has no state
+- EVENT.data is ITEM_TREE
 - ITEM_TREE has open constraint {*}
 
-#### Case C.1.3.
-
-Content is just OBSERVATION
-- no state
-- data.events cardinality is 1..1
-- data.events are POINT_EVENT
-- POINT_EVENT has no state
-- POINT_EVENT.data is ITEM_TREE
-- ITEM_TREE has open constraint {*}
-
-#### Case C.1.4.
+### OBSERVATION events cardinality = 3..*, state.existence = 0..1, protocol.existence = 0..1
 
 Content is just OBSERVATION
 - no state
 - data.events cardinality is 3..*
-- data.events are POINT_EVENT
-- POINT_EVENT has no state
-- POINT_EVENT.data is ITEM_TREE
+- data.events allow ant EVENT
+- EVENT has no state
+- EVENT.data is ITEM_TREE
 - ITEM_TREE has open constraint {*}
 
-#### Case C.1.5.
+### OBSERVATION events cardinality = 0..1, state.existence = 0..1, protocol.existence = 0..1
 
 Content is just OBSERVATION
 - no state
 - data.events cardinality is 0..1
-- data.events are POINT_EVENT
-- POINT_EVENT has no state
-- POINT_EVENT.data is ITEM_TREE
+- data.events allow ant EVENT
+- EVENT has no state
+- EVENT.data is ITEM_TREE
 - ITEM_TREE has open constraint {*}
 
-#### Case C.1.6.
+
+### OBSERVATION events cardinality = 1..1, state.existence = 0..1, protocol.existence = 0..1
+
+Content is just OBSERVATION
+- no state
+- data.events cardinality is 1..1
+- data.events allow ant EVENT
+- EVENT has no state
+- EVENT.data is ITEM_TREE
+- ITEM_TREE has open constraint {*}
+
+### OBSERVATION events cardinality = 3..5, state.existence = 0..1, protocol.existence = 0..1
 
 Content is just OBSERVATION
 - no state
 - data.events cardinality is 3..5
-- data.events are POINT_EVENT
-- POINT_EVENT has no state
-- POINT_EVENT.data is ITEM_TREE
+- data.events allow ant EVENT
+- EVENT has no state
+- EVENT.data is ITEM_TREE
 - ITEM_TREE has open constraint {*}
+
+
+### OBSERVATION data.events cardinality = 0..*, state.existence = 1..1, protocol.existence = 0..1
+### OBSERVATION data.events cardinality = 1..*, state.existence = 1..1, protocol.existence = 0..1
+### OBSERVATION data.events cardinality = 3..*, state.existence = 1..1, protocol.existence = 0..1
+### OBSERVATION data.events cardinality = 0..1, state.existence = 1..1, protocol.existence = 0..1
+### OBSERVATION data.events cardinality = 1..1, state.existence = 1..1, protocol.existence = 0..1
+### OBSERVATION data.events cardinality = 3..5, state.existence = 1..1, protocol.existence = 0..1
+
+
+### OBSERVATION data.events cardinality = 0..*, state.existence = 0..1, protocol.existence = 1..1
+### OBSERVATION data.events cardinality = 1..*, state.existence = 0..1, protocol.existence = 1..1
+### OBSERVATION data.events cardinality = 3..*, state.existence = 0..1, protocol.existence = 1..1
+### OBSERVATION data.events cardinality = 0..1, state.existence = 0..1, protocol.existence = 1..1
+### OBSERVATION data.events cardinality = 1..1, state.existence = 0..1, protocol.existence = 1..1
+### OBSERVATION data.events cardinality = 3..5, state.existence = 0..1, protocol.existence = 1..1
+
+
+### OBSERVATION data.events cardinality = 0..*, state.existence = 1..1, protocol.existence = 1..1
+### OBSERVATION data.events cardinality = 1..*, state.existence = 1..1, protocol.existence = 1..1
+### OBSERVATION data.events cardinality = 3..*, state.existence = 1..1, protocol.existence = 1..1
+### OBSERVATION data.events cardinality = 0..1, state.existence = 1..1, protocol.existence = 1..1
+### OBSERVATION data.events cardinality = 1..1, state.existence = 1..1, protocol.existence = 1..1
+### OBSERVATION data.events cardinality = 3..5, state.existence = 1..1, protocol.existence = 1..1
+
