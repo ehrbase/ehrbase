@@ -24,17 +24,16 @@ package org.ehrbase.aql.sql.binding;
 import org.ehrbase.aql.compiler.Contains;
 import org.ehrbase.aql.compiler.Statements;
 import org.ehrbase.aql.containment.IdentifierMapper;
-import org.ehrbase.aql.definition.ConstantDefinition;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
 import org.ehrbase.aql.sql.queryimpl.*;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.service.IntrospectService;
 import org.ehrbase.service.KnowledgeCacheService;
-import org.jooq.*;
-import org.jooq.impl.DSL;
+import org.jooq.Condition;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -50,18 +49,15 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
     private final PathResolver pathResolver;
     private final VariableDefinitions variableDefinitions;
     private final List<JsonbBlockDef> jsonDataBlock = new ArrayList<>();
-    private final DSLContext context;
     private final WhereBinder whereBinder;
 
     SelectBinder(I_DomainAccess domainAccess, IntrospectService introspectCache, PathResolver pathResolver, VariableDefinitions variableDefinitions, List whereClause, String serverNodeId) {
         super(introspectCache);
-        this.context = domainAccess.getContext();
         this.pathResolver = pathResolver;
-
         this.variableDefinitions = variableDefinitions;
         this.jsonbEntryQuery = new JsonbEntryQuery(domainAccess, introspectCache, pathResolver);
         this.compositionAttributeQuery = new CompositionAttributeQuery(domainAccess, pathResolver, serverNodeId, introspectCache);
-        this.whereBinder = new WhereBinder(domainAccess, jsonbEntryQuery, compositionAttributeQuery, whereClause, pathResolver);
+        this.whereBinder = new WhereBinder(domainAccess, compositionAttributeQuery, whereClause, pathResolver);
     }
 
     private SelectBinder(I_DomainAccess domainAccess, IntrospectService introspectCache, IdentifierMapper mapper, VariableDefinitions variableDefinitions, List whereClause, String serverNodeId) {
@@ -79,31 +75,19 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
      * @param templateId
      * @return
      */
-    public SelectQuery<Record> bind(String templateId) {
+    public List<MultiFields> bind(String templateId) {
         ObjectQuery.reset();
 
-        SelectQuery<Record> selectQuery = context.selectQuery();
+        List<MultiFields> multiFieldsList = new ArrayList<>();
 
         while (variableDefinitions.hasNext()) {
             I_VariableDefinition variableDefinition = variableDefinitions.next();
-            Field<?> field;
+           MultiFields multiFields;
             if (variableDefinition.isFunction() || variableDefinition.isExtension()) {
                 continue;
             }
             else if (variableDefinition.isConstant()){
-                ConstantDefinition constantDefinition = (ConstantDefinition)variableDefinition;
-                if (constantDefinition.getValue() == null) //assume NULL
-                    field = DSL.field("NULL");
-                else
-                    field = DSL.field(DSL.val(constantDefinition.getValue()));
-
-                if (constantDefinition.getAlias() != null)
-                    field = field.as(constantDefinition.getAlias());
-                else {
-                    String defaultAlias = DefaultColumnId.value(constantDefinition);
-                    field = field.as("/"+defaultAlias);
-                    constantDefinition.setPath(defaultAlias);
-                }
+                multiFields = new MultiFields(variableDefinition, new ConstantField(variableDefinition).toSql(), templateId);
 
             }
             else {
@@ -112,38 +96,39 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
 
                 ExpressionField expressionField = new ExpressionField(variableDefinition, jsonbEntryQuery, compositionAttributeQuery);
 
-                field = expressionField.toSql(className, templateId, identifier, IQueryImpl.Clause.SELECT);
+                multiFields = expressionField.toSql(className, templateId, identifier, IQueryImpl.Clause.SELECT);
 
-                handleJsonDataBlock(expressionField, field, expressionField.getRootJsonKey(), expressionField.getOptionalPath());
+                handleJsonDataBlock(multiFields);
 
-                if (field == null) { //the field cannot be resolved with containment (f.e. empty DB)
+                if (multiFields.isEmpty()) { //the field cannot be resolved with containment (f.e. empty DB)
                     continue;
                 }
             }
-            selectQuery.addSelect(field);
+            multiFieldsList.add(multiFields);
             ObjectQuery.inc();
         }
 
-        return selectQuery;
+        return multiFieldsList;
     }
 
-    private void handleJsonDataBlock(ExpressionField expressionField, Field field, String rootJsonKey, String optionalPath){
-        if (expressionField.isContainsJsonDataBlock())
-            jsonDataBlock.add(new JsonbBlockDef(optionalPath == null ? expressionField.getJsonbItemPath() : optionalPath, field, rootJsonKey));
-    }
-
-
-    public Condition getWhereConditions(String templateId) {
-
-        return whereBinder.bind(templateId);
-    }
-
-    public boolean containsJQueryPath() {
-        return jsonbEntryQuery.isContainsJqueryPath();
+    private void handleJsonDataBlock(MultiFields multiFields){
+        if (!multiFields.isEmpty()) {
+            Iterator<QualifiedAqlField> qualifiedAqlFieldIterator = multiFields.iterator();
+            while(qualifiedAqlFieldIterator.hasNext()) {
+                QualifiedAqlField aqlField = qualifiedAqlFieldIterator.next();
+                if (aqlField.isJsonDataBlock())
+                    jsonDataBlock.add(new JsonbBlockDef(aqlField.getOptionalPath() == null ? aqlField.getJsonbItemPath() : aqlField.getOptionalPath(), aqlField.getSQLField(), multiFields.getRootJsonKey()));
+            }
+        }
     }
 
 
-    public CompositionAttributeQuery getCompositionAttributeQuery() {
+    public Condition getWhereConditions(String templateId, int whereCursor, MultiFieldsMap multiFieldsMap) {
+
+        return whereBinder.bind(templateId, whereCursor, multiFieldsMap);
+    }
+
+   public CompositionAttributeQuery getCompositionAttributeQuery() {
         return compositionAttributeQuery;
     }
 

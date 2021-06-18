@@ -140,7 +140,7 @@ public class IdentifierMapper {
         return mapped.getQueryStrategy();
     }
 
-    public String getPath(String template, String symbol) {
+    public Set<String> getPath(String template, String symbol) {
         Mapper definition = mapper.get(symbol);
         if (definition == null)
             throw new IllegalArgumentException("Could not resolve identifier:" + symbol);
@@ -152,7 +152,7 @@ public class IdentifierMapper {
         return null;
     }
 
-    public void setPath(String template, String symbol, String path) {
+    public void setPath(String template, String symbol, Set<String> path) {
         Mapper definition = mapper.get(symbol);
         Object containment = definition.getContainer();
         if (containment instanceof Containment) {

@@ -21,13 +21,11 @@
 
 package org.ehrbase.aql.sql.binding;
 
+import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
-import org.ehrbase.aql.sql.queryimpl.CompositionAttributeQuery;
-import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
-import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
-import org.ehrbase.aql.sql.queryimpl.VariablePath;
+import org.ehrbase.aql.sql.queryimpl.*;
 import org.ehrbase.aql.sql.queryimpl.value_field.ISODateTime;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.serialisation.dbencoding.CompositionSerializer;
@@ -77,7 +75,6 @@ public class WhereBinder {
     public static final String ALL = "ALL";
     private final I_DomainAccess domainAccess;
 
-    private JsonbEntryQuery jsonbEntryQuery;
     private CompositionAttributeQuery compositionAttributeQuery;
     private final List<Object> whereClause;
     private PathResolver pathResolver;
@@ -88,20 +85,21 @@ public class WhereBinder {
     private boolean isFollowedBySQLConditionalOperator = false;
     private static int seed = 1;
 
-    public WhereBinder(I_DomainAccess domainAccess, JsonbEntryQuery jsonbEntryQuery, CompositionAttributeQuery compositionAttributeQuery, List<Object> whereClause, PathResolver pathResolver) {
-        this.jsonbEntryQuery = jsonbEntryQuery;
+    public WhereBinder(I_DomainAccess domainAccess, CompositionAttributeQuery compositionAttributeQuery, List<Object> whereClause, PathResolver pathResolver) {
         this.compositionAttributeQuery = compositionAttributeQuery;
         this.whereClause = whereClause;
         this.pathResolver = pathResolver;
         this.domainAccess = domainAccess;
     }
 
-    private TaggedStringBuilder encodeWhereVariable(String templateId, I_VariableDefinition variableDefinition, boolean forceSQL, String compositionName) {
-        var identifier = variableDefinition.getIdentifier();
+    private TaggedStringBuilder encodeWhereVariable(int whereCursor, MultiFieldsMap multiFieldsMap, I_VariableDefinition variableDefinition, boolean forceSQL, String compositionName) {
+        String identifier = variableDefinition.getIdentifier();
         String className = pathResolver.classNameOf(identifier);
         if (className == null)
             throw new IllegalArgumentException("Could not bind identifier in WHERE clause:'" + identifier + "'");
-        Field<?> field;
+
+        Field<?> field = multiFieldsMap.get(variableDefinition.getIdentifier(), variableDefinition.getPath()).getQualifiedFieldOrLast(whereCursor).getSQLField();
+
         //EHR-327: if force SQL is set to true via environment, jsquery extension is not required
         //this allows to deploy on AWS since jsquery is not supported by this provider
         Boolean usePgExtensions;
@@ -113,9 +111,6 @@ public class WhereBinder {
             usePgExtensions = false;
 
         if (forceSQL || Boolean.FALSE.equals(usePgExtensions)) {
-            //EHR-327: also supports EHR attributes in WHERE clause
-            ExpressionField expressionField = new ExpressionField(variableDefinition, jsonbEntryQuery, compositionAttributeQuery);
-            field = expressionField.toSql(className, templateId, identifier, IQueryImpl.Clause.WHERE);
 
             if (field == null)
                 return null;
@@ -125,7 +120,6 @@ public class WhereBinder {
             switch (className) {
                 case COMPOSITION:
                     if (variableDefinition.getPath().startsWith(CONTENT)) {
-                        field = jsonbEntryQuery.whereField(templateId, identifier, variableDefinition);
                         TaggedStringBuilder taggedStringBuilder = new TaggedStringBuilder(field.toString(), I_TaggedStringBuilder.TagField.JSQUERY);
                         if (compositionName != null && taggedStringBuilder.startWith(CompositionSerializer.TAG_COMPOSITION)) {
                             //add the composition name into the composition predicate
@@ -135,19 +129,16 @@ public class WhereBinder {
                     }
                     break;
                 case EHR:
-                    field = compositionAttributeQuery.whereField(templateId, identifier, variableDefinition);
                     if (field == null)
                         return null;
                     isFollowedBySQLConditionalOperator = true;
                     return new TaggedStringBuilder(field.toString(), I_TaggedStringBuilder.TagField.SQLQUERY);
 
                 default:
-                    if (compositionAttributeQuery.isCompositionAttributeItemStructure(templateId, identifier)){
-                        field = new ContextualAttribute(compositionAttributeQuery, jsonbEntryQuery, IQueryImpl.Clause.WHERE).toSql(templateId, variableDefinition);
+                    if (compositionAttributeQuery.isCompositionAttributeItemStructure(multiFieldsMap.get(variableDefinition.getIdentifier(), variableDefinition.getPath()).getTemplateId(), identifier)){
                         return new TaggedStringBuilder(field.toString(), I_TaggedStringBuilder.TagField.SQLQUERY);
                     }
                     else {
-                        field = jsonbEntryQuery.whereField(templateId, identifier, variableDefinition);
                         return new TaggedStringBuilder(field.toString(), I_TaggedStringBuilder.TagField.JSQUERY);
                     }
             }
@@ -155,19 +146,19 @@ public class WhereBinder {
         }
     }
 
-    private TaggedStringBuilder buildWhereCondition(String templateId, TaggedStringBuilder taggedBuffer, List<Object> item) {
+    private TaggedStringBuilder buildWhereCondition(int whereCursor, MultiFieldsMap multiFieldsMap, TaggedStringBuilder taggedBuffer, List<Object> item) {
         for (Object part : item) {
             if (part instanceof String)
                 taggedBuffer.append((String) part);
             else if (part instanceof VariableDefinition) {
                 //substitute the identifier
-                TaggedStringBuilder taggedStringBuilder = encodeWhereVariable(templateId, (VariableDefinition) part, false, null);
+                TaggedStringBuilder taggedStringBuilder = encodeWhereVariable(whereCursor, multiFieldsMap, (VariableDefinition) part, false, null);
                 if (taggedStringBuilder != null) {
                     taggedBuffer.append(taggedStringBuilder.toString());
                     taggedBuffer.setTagField(taggedStringBuilder.getTagField());
                 }
             } else if (part instanceof List) {
-                TaggedStringBuilder taggedStringBuilder = buildWhereCondition(templateId, taggedBuffer, (List) part);
+                TaggedStringBuilder taggedStringBuilder = buildWhereCondition(whereCursor, multiFieldsMap, taggedBuffer, (List) part);
                 taggedBuffer.append(taggedStringBuilder.toString());
                 taggedBuffer.setTagField(taggedStringBuilder.getTagField());
             }
@@ -175,7 +166,7 @@ public class WhereBinder {
         return taggedBuffer;
     }
 
-    public Condition bind(String templateId) {
+    public Condition bind(String templateId, int whereCursor, MultiFieldsMap multiFieldsMap) {
 
         boolean unresolvedVariable = false;
 
@@ -187,6 +178,7 @@ public class WhereBinder {
         //work on a copy since Exist is destructive
         List<Object> whereItems = new ArrayList<>(whereClause);
         boolean notExists = false;
+        boolean inSubqueryOperator = false;
 
         for (int cursor = 0; cursor < whereItems.size(); cursor++) {
             Object item = whereItems.get(cursor);
@@ -210,6 +202,8 @@ public class WhereBinder {
                         break;
 
                     case IN: case ANY: case SOME: case ALL:
+                        if (((String) item).trim().toUpperCase().matches("ANY|SOME|ALL"))
+                            inSubqueryOperator = true;
                         taggedBuffer.append((String) item);
                         break;
 
@@ -245,9 +239,9 @@ public class WhereBinder {
                 //look ahead and check if followed by a sql operator
                 TaggedStringBuilder taggedStringBuilder = new TaggedStringBuilder();
                 if (isFollowedBySQLConditionalOperator(cursor)) {
-                    TaggedStringBuilder encodedVar = encodeWhereVariable(templateId, (I_VariableDefinition) item, true, null);
-                    String expanded = expandForLateral(encodedVar, (I_VariableDefinition)item );
-                    if (expanded != null)
+                    TaggedStringBuilder encodedVar = encodeWhereVariable(whereCursor, multiFieldsMap, (I_VariableDefinition) item, true, null);
+                    String expanded = expandForLateral(templateId, encodedVar, (I_VariableDefinition)item );
+                    if (StringUtils.isNotBlank(expanded))
                         taggedStringBuilder.append(expanded);
                     else {
                         unresolvedVariable = true;
@@ -261,15 +255,17 @@ public class WhereBinder {
                             compositionName = compositionNameValue(((I_VariableDefinition) item).getIdentifier());
 
                         if (compositionName != null) {
-                            taggedStringBuilder = encodeWhereVariable(templateId, (I_VariableDefinition) item, false, compositionName);
+                            taggedStringBuilder = encodeWhereVariable(whereCursor, multiFieldsMap, (I_VariableDefinition) item, false, compositionName);
                         } else
                             throw new IllegalArgumentException("A composition name/value is required to resolve where statement when querying for a whole composition");
                     } else {
                         //if the path contains node predicate expression uses a SQL syntax instead of jsquery
                         if (new VariablePath(((I_VariableDefinition) item).getPath()).hasPredicate()) {
-                            String expanded = expandForLateral(encodeWhereVariable(templateId, (I_VariableDefinition) item, true, null), (I_VariableDefinition)item );
-                            if (expanded != null)
-                                taggedStringBuilder.append(expanded);
+                            String expanded = expandForLateral(templateId, encodeWhereVariable(whereCursor, multiFieldsMap, (I_VariableDefinition) item, true, null), (I_VariableDefinition)item );
+                            if (StringUtils.isNotBlank(expanded)) {
+                                taggedStringBuilder.append(encodeForSubquery(expanded, inSubqueryOperator));
+                                inSubqueryOperator = false;
+                            }
                             else {
                                 unresolvedVariable = true;
                                 break;
@@ -277,9 +273,11 @@ public class WhereBinder {
                             isFollowedBySQLConditionalOperator = true;
                             requiresJSQueryClosure = false;
                         } else {
-                            String expanded = expandForLateral(encodeWhereVariable(templateId, (I_VariableDefinition) item, true, null), (I_VariableDefinition)item );
-                            if (expanded != null)
-                                taggedStringBuilder.append(expanded);
+                            String expanded = expandForLateral(templateId, encodeWhereVariable(whereCursor, multiFieldsMap, (I_VariableDefinition) item, true, null), (I_VariableDefinition)item );
+                            if (StringUtils.isNotBlank(expanded)) {
+                                taggedStringBuilder.append(encodeForSubquery(expanded, inSubqueryOperator));
+                                inSubqueryOperator = false;
+                            }
                             else {
                                 unresolvedVariable = true;
                                 break;
@@ -293,7 +291,7 @@ public class WhereBinder {
                     taggedBuffer.setTagField(taggedStringBuilder.getTagField());
                 }
             } else if (item instanceof List) {
-                TaggedStringBuilder taggedStringBuilder = buildWhereCondition(templateId, taggedBuffer, (List) item);
+                TaggedStringBuilder taggedStringBuilder = buildWhereCondition(whereCursor, multiFieldsMap, taggedBuffer, (List) item);
                 taggedBuffer.append(taggedStringBuilder.toString());
                 taggedBuffer.setTagField(taggedStringBuilder.getTagField());
             }
@@ -309,6 +307,14 @@ public class WhereBinder {
             return DSL.condition("false");
     }
 
+
+
+    private String encodeForSubquery(String sqlExpression, boolean inSubqueryOperator){
+        if (inSubqueryOperator)
+            return "(SELECT " + sqlExpression+")";
+        else
+            return sqlExpression;
+    }
 
     //look ahead for a SQL operator
     private boolean isFollowedBySQLConditionalOperator(int cursor) {
@@ -400,20 +406,17 @@ public class WhereBinder {
         return wrapped;
     }
 
-    private String expandForLateral( TaggedStringBuilder encodedVar, I_VariableDefinition item){
+    private String expandForLateral(String templateId, TaggedStringBuilder encodedVar, I_VariableDefinition item){
         String expanded = expandForCondition(encodedVar);
         if (new WhereSetReturningFunction(expanded).isUsed()){
-            //insert new LATERAL pseudo table to the variable if not yet defined
-            if (!item.isLateralJoin()) {
-                encodeLateral(encodedVar, item );
-            }
+            encodeLateral(templateId, encodedVar, item );
             expanded = item.getAlias();
         }
 
         return expanded;
     }
 
-    private void encodeLateral(TaggedStringBuilder encodedVar, I_VariableDefinition item){
+    private void encodeLateral(String templateId, TaggedStringBuilder encodedVar, I_VariableDefinition item){
         if (encodedVar == null)
             return;
         int hashValue = encodedVar.toString().hashCode(); //cf. SonarLint
@@ -427,7 +430,7 @@ public class WhereBinder {
         //insert the variable alias used for the lateral join expression
         encodedVar.replaceLast(")", " AS " + variableAlias + ")");
         Table<Record> table = DSL.table(encodedVar.toString()).as(tableAlias);
-        item.setLateralJoinTable(table);
+        item.setLateralJoinTable(templateId, table);
         item.setAlias(tableAlias + "." + variableAlias + " ");
     }
 

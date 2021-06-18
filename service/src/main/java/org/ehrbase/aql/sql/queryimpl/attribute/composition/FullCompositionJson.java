@@ -18,17 +18,14 @@
 package org.ehrbase.aql.sql.queryimpl.attribute.composition;
 
 import org.ehrbase.aql.sql.binding.JoinBinder;
-import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
-import org.ehrbase.aql.sql.queryimpl.attribute.GenericJsonPath;
-import org.ehrbase.aql.sql.queryimpl.attribute.IRMObjectAttribute;
-import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
-
+import org.ehrbase.aql.sql.queryimpl.attribute.*;
 import org.jooq.Configuration;
 import org.jooq.Field;
 import org.jooq.JSONB;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -42,6 +39,7 @@ public class FullCompositionJson extends CompositionAttribute {
 
     protected TableField tableField = COMPOSITION.ID;
     protected Optional<String> jsonPath = Optional.empty();
+    private boolean isJsonDataBlock = true; //by default, can be overriden
 
     public FullCompositionJson(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
         super(fieldContext, joinSetup);
@@ -95,6 +93,17 @@ public class FullCompositionJson extends CompositionAttribute {
         }
         this.jsonPath = Optional.of(new GenericJsonPath(jsonPath).jqueryPath());
         return this;
+    }
+
+    public FullCompositionJson forJsonPath(String[] path){
+        if (GenericJsonPath.isTerminalValue(Arrays.asList(path), path.length - 1))
+            isJsonDataBlock = false;
+        this.jsonPath = Optional.of(new JsonbSelect(Arrays.asList(path)).field());
+        return this;
+    }
+
+    public boolean isJsonDataBlock() {
+        return isJsonDataBlock;
     }
 }
 

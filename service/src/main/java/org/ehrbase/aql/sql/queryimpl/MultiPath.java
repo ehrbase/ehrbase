@@ -17,17 +17,16 @@
  *
  */
 
-package org.ehrbase.aql.sql.queryimpl.translator.testcase;
+package org.ehrbase.aql.sql.queryimpl;
 
-import org.ehrbase.aql.sql.queryimpl.translator.QueryProcessorTestBase;
+import java.util.HashSet;
+import java.util.Set;
 
-public abstract class UC6 extends QueryProcessorTestBase {
+public class MultiPath {
 
-    protected UC6(){
-        this.aql = "select a/description[at0001]/items[at0002]/value/value as description from EHR e " +
-                "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  " +
-                "contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]" +
-                "order by description ASC";
-        this.expectedOutputWithJson = false;
+    public Set<String> asSet(String singlePath){
+        Set<String> pathSet = new HashSet<>();
+        pathSet.add(singlePath);
+        return pathSet;
     }
 }

@@ -47,12 +47,13 @@ public class SuperQuery {
     private VariableDefinitions variableDefinitions;
     private SelectQuery query;
     private DSLContext context;
-    private boolean outputWithJson = true;
+    private boolean outputWithJson;
 
-    public SuperQuery(I_DomainAccess domainAccess, VariableDefinitions variableDefinitions, SelectQuery query) {
+    public SuperQuery(I_DomainAccess domainAccess, VariableDefinitions variableDefinitions, SelectQuery query, boolean containsJson) {
         this.context = domainAccess.getContext();
         this.variableDefinitions = variableDefinitions;
         this.query = query;
+        this.outputWithJson = containsJson;
     }
 
     @SuppressWarnings( "deprecation" )

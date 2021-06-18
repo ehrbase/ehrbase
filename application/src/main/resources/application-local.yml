@@ -34,9 +34,9 @@ server:
     # if true, WHERE clause is using jsquery, false uses SQL only
     useJsQuery: false
     # ignore unbounded item in path starting with one of
-    ignoreIterativeNodeList: 'activities,content'
+    ignoreIterativeNodeList: 'dummy'
     # how many embedded jsonb_array_elements(..) are acceptable? Recommended == 2
-    iterationScanDepth: 2
+    iterationScanDepth: 20
 
 security:
   authType: NONE

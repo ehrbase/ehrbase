@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.ehrbase.aql.sql.queryimpl.attribute.GenericJsonPath.OTHER_CONTEXT;
 import static org.ehrbase.serialisation.dbencoding.CompositionSerializer.TAG_UID;
 
 /**
@@ -75,10 +76,14 @@ public class EntryAttributeMapper {
      * @return
      */
     public static String map(String attribute) {
+        if (attribute.equals(OTHER_CONTEXT))
+            return OTHER_CONTEXT; //conventionally
+
         List<String> fields = new ArrayList<>();
 
         fields.addAll(Arrays.asList(attribute.split(SLASH)));
-        fields.remove(0);
+        if (!fields.get(0).equals(OTHER_CONTEXT))
+            fields.remove(0);
 
         int floor = 1;
 

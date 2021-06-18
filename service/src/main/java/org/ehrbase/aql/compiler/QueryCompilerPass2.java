@@ -63,6 +63,8 @@ public class QueryCompilerPass2 extends AqlBaseListener {
 
     private TopAttributes topAttributes = null;
 
+    private final int POSTGRESQL_ALIAS_LENGTH_LIMIT = 63;
+
     @Override
     public void exitObjectPath(AqlParser.ObjectPathContext objectPathContext) {
         logger.debug("Object Path->");
@@ -124,7 +126,7 @@ public class QueryCompilerPass2 extends AqlBaseListener {
                 AqlParser.IdentifiedPathContext pathContext = (AqlParser.IdentifiedPathContext) pathTree;
                 VariableDefinition variableDefinition = new IdentifiedPathVariable(pathContext, inSelectExprContext, false).definition();
                 //by default postgresql limits the size of column name to 63 bytes
-                if (variableDefinition.getAlias() == null || variableDefinition.getAlias().isEmpty() || variableDefinition.getAlias().length() > 63)
+                if (variableDefinition.getAlias() == null || variableDefinition.getAlias().isEmpty() || variableDefinition.getAlias().length() > POSTGRESQL_ALIAS_LENGTH_LIMIT)
                     variableDefinition.setAlias("_FCT_ARG_"+serial++);
                 pushVariableDefinition(variableDefinition);
                 parameters.add(new FuncParameter(FuncParameterType.VARIABLE, variableDefinition.getAlias() == null ? variableDefinition.getPath() : variableDefinition.getAlias()));

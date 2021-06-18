@@ -55,7 +55,7 @@ public class I_VariableDefinitionHelper {
             }
 
             @Override
-            public void setLateralJoinTable(Table lateralJoinTable) {
+            public void setLateralJoinTable(String templateId, Table lateralJoinTable) {
 
             }
 
@@ -115,12 +115,12 @@ public class I_VariableDefinitionHelper {
             }
 
             @Override
-            public boolean isLateralJoin() {
+            public boolean isLateralJoin(String templateId) {
                 return false;
             }
 
             @Override
-            public Table getLateralJoinTable() {
+            public Table getLateralJoinTable(String templateId) {
                 return null;
             }
         };

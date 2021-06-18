@@ -25,7 +25,6 @@ package org.ehrbase.aql.definition;
 import org.ehrbase.aql.sql.binding.VariableDefinitions;
 
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * Created by christian on 9/20/2017.

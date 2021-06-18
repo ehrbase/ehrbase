@@ -21,10 +21,13 @@
 
 package org.ehrbase.aql.sql.binding;
 
-import org.ehrbase.aql.sql.queryimpl.CompositionAttributeQuery;
+import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.jooq.pg.tables.records.*;
-import org.jooq.*;
+import org.jooq.Field;
+import org.jooq.JoinType;
+import org.jooq.SelectQuery;
+import org.jooq.Table;
 import org.jooq.impl.DSL;
 
 import java.util.List;
@@ -72,68 +75,68 @@ public class JoinBinder implements IJoinBinder {
      *
      * @param compositionAttributeQuery
      */
-    public SelectQuery<?> addJoinClause(CompositionAttributeQuery compositionAttributeQuery) {
+    public SelectQuery<?> addJoinClause(JoinSetup joinSetup) {
 
-        if (compositionAttributeQuery == null)
+        if (joinSetup == null)
             return selectQuery;
 
-        if (!compositionAttributeQuery.isUseEntry()  && noJoinRequired(compositionAttributeQuery)){
-            selectQuery = simpleFromClause(selectQuery, compositionAttributeQuery);
+        if (!joinSetup.isUseEntry()  && noJoinRequired(joinSetup)){
+            selectQuery = simpleFromClause(selectQuery, joinSetup);
         }
         else {
-            if (compositionAttributeQuery.isJoinSubject()) {
-                joinSubject(selectQuery, compositionAttributeQuery);
+            if (joinSetup.isJoinSubject()) {
+                joinSubject(selectQuery, joinSetup);
             }
-            if (compositionAttributeQuery.isJoinComposition()) {
+            if (joinSetup.isJoinComposition()) {
                 joinComposition(selectQuery);
             }
-            if (compositionAttributeQuery.isJoinEventContext()) {
+            if (joinSetup.isJoinEventContext()) {
                 joinEventContext(selectQuery);
             }
-            if (compositionAttributeQuery.isJoinContextFacility()) {
+            if (joinSetup.isJoinContextFacility()) {
                 joinContextFacility(selectQuery);
             }
-            if (compositionAttributeQuery.isJoinComposer()) {
+            if (joinSetup.isJoinComposer()) {
                 joinComposer(selectQuery);
             }
-            if (compositionAttributeQuery.isJoinEhr()) {
+            if (joinSetup.isJoinEhr()) {
                 joinEhr(selectQuery);
             }
-            if (compositionAttributeQuery.isJoinSystem()) {
+            if (joinSetup.isJoinSystem()) {
                 joinSystem(selectQuery);
             }
-            if (compositionAttributeQuery.isJoinEhrStatus() || compositionAttributeQuery.containsEhrStatus()) {
-                joinEhrStatus(selectQuery, compositionAttributeQuery);
+            if (joinSetup.isJoinEhrStatus()) {
+                joinEhrStatus(selectQuery, joinSetup);
             }
         }
 
         return selectQuery;
     }
 
-    private boolean noJoinRequired(CompositionAttributeQuery compositionAttributeQuery){
-        return (compositionAttributeQuery.isJoinComposer() ? 2 : 0) +
-                (compositionAttributeQuery.isJoinEventContext() ? 1 : 0) +
-                (compositionAttributeQuery.isJoinComposition() ? 2 : 0) +
-                (compositionAttributeQuery.isJoinContextFacility() ? 2 : 0) +
-                (compositionAttributeQuery.isJoinEhr() ? 1 : 0) +
-                (compositionAttributeQuery.isJoinEhrStatus() ? 2 : 0) +
-                (compositionAttributeQuery.isJoinSubject() ? 2 : 0) +
-                (compositionAttributeQuery.isJoinSystem() ? 1 : 0) == 1;
+    private boolean noJoinRequired(JoinSetup joinSetup){
+        return (joinSetup.isJoinComposer() ? 2 : 0) +
+                (joinSetup.isJoinEventContext() ? 1 : 0) +
+                (joinSetup.isJoinComposition() ? 2 : 0) +
+                (joinSetup.isJoinContextFacility() ? 2 : 0) +
+                (joinSetup.isJoinEhr() ? 1 : 0) +
+                (joinSetup.isJoinEhrStatus() ? 2 : 0) +
+                (joinSetup.isJoinSubject() ? 2 : 0) +
+                (joinSetup.isJoinSystem() ? 1 : 0) == 1;
     }
 
-    private SelectQuery<?> simpleFromClause(SelectQuery<?> selectQuery, CompositionAttributeQuery compositionAttributeQuery) {
+    private SelectQuery<?> simpleFromClause(SelectQuery<?> selectQuery, JoinSetup joinSetup) {
 
         List<Field<?>> selectFields = selectQuery.getSelect();
         SelectQuery<?> selectQuery1 = domainAccess.getContext().selectQuery();
         selectQuery1.addSelect(selectFields);
 
-        if (compositionAttributeQuery.isJoinEhr()){
+        if (joinSetup.isJoinEhr()){
             selectQuery1.addFrom(EHR_.as(EHR_JOIN));
         }
-        else if (compositionAttributeQuery.isJoinComposition()){
+        else if (joinSetup.isJoinComposition()){
             selectQuery1.addFrom(COMPOSITION.as(COMPOSITION_JOIN));
         }
-        else if (compositionAttributeQuery.isJoinSystem()){
+        else if (joinSetup.isJoinSystem()){
             selectQuery1.addFrom(SYSTEM.as(SYSTEM_JOIN));
         }
         return selectQuery1;
@@ -153,9 +156,9 @@ public class JoinBinder implements IJoinBinder {
         systemJoined = true;
     }
 
-    private void joinEhrStatus(SelectQuery<?> selectQuery, CompositionAttributeQuery compositionAttributeQuery) {
+    private void joinEhrStatus(SelectQuery<?> selectQuery, JoinSetup joinSetup) {
         if (statusJoined) return;
-        if (compositionAttributeQuery.isJoinComposition() || compositionAttributeQuery.useFromEntry()) {
+        if (joinSetup.isJoinComposition() || joinSetup.isUseEntry()) {
             joinComposition(selectQuery);
             selectQuery.addJoin(statusRecordTable,
                     DSL.field(statusRecordTable.field(STATUS.EHR_ID.getName(), UUID.class))
@@ -170,9 +173,9 @@ public class JoinBinder implements IJoinBinder {
         }
     }
 
-    private void joinSubject(SelectQuery<?> selectQuery, CompositionAttributeQuery compositionAttributeQuery) {
+    private void joinSubject(SelectQuery<?> selectQuery, JoinSetup joinSetup) {
         if (subjectJoin) return;
-        joinEhrStatus(selectQuery, compositionAttributeQuery);
+        joinEhrStatus(selectQuery, joinSetup);
         Table<PartyIdentifiedRecord> subjectTable = subjectRef;
         selectQuery.addJoin(subjectTable,
                 DSL.field(subjectTable.field(PARTY_IDENTIFIED.ID.getName(), UUID.class))

@@ -22,7 +22,7 @@ package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC26;
 import org.junit.Ignore;
 
-@Ignore
+@Ignore("unsupported CONTAINS syntax")
 public class TestUC26 extends UC26 {
 
     public TestUC26(){
