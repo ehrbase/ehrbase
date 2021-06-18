@@ -701,22 +701,309 @@ Each data set that included entries at the COMPOSITION.content in the previously
 
 Also for each entry type in this section we specify a combination of constraints that should be tested against the entry data sets.
 
+### OBSERVATION
+
 OBSERVATION data sets:
 
 1. OBSERVATION with no state and no protocol
-2. OBSERVATION with state and no protocol
-3. OBSERVATION with no state and protocol
+2. OBSERVATION with no state and protocol
+3. OBSERVATION with state and no protocol
 4. OBSERVATION with state and protocol
 
-Combine those cases with:
+For testing validation on a complete OBSERVATION, these cases should be combined with the cases for HISTORY (data, state) and ITEM_STRUCTURE (protocol).
 
-1. EVENT with no state
-2. EVENT with state
 
-EVENT type combinations:
+#### OBSERVATION state existence = 0..1, protocol existence = 0..1
+
+<div id="obs_1">
+
+| data         | state      | protocol    | expected | constraints violated |
+|:-------------|:-----------|:-----------:|----------|----------------------|
+| absent       | absent     | absent      | rejected | OBSERVATION.data existence.lower (RM/schema constraint) |
+| absent       | absent     | present     | rejected | OBSERVATION.data existence.lower (RM/schema constraint) |
+| absent       | present    | absent      | rejected | OBSERVATION.data existence.lower (RM/schema constraint) |
+| absent       | present    | present     | rejected | OBSERVATION.data existence.lower (RM/schema constraint) |
+| present      | absent     | absent      | accepted |  |
+| present      | absent     | present     | accepted |  |
+| present      | present    | absent      | accepted |  |
+| present      | present    | present     | accepted |  |
+
+</div>
+
+
+#### OBSERVATION state existence = 0..1, protocol existence = 1..1
+
+<div id="obs_2">
+
+| data         | state      | protocol    | expected | constraints violated |
+|:-------------|:-----------|:-----------:|----------|----------------------|
+| absent       | absent     | absent      | rejected | OBSERVATION.data existence.lower (RM/schema constraint), OBSERVATION.protocol existence.lower |
+| absent       | absent     | present     | rejected | OBSERVATION.data existence.lower (RM/schema constraint) |
+| absent       | present    | absent      | rejected | OBSERVATION.data existence.lower (RM/schema constraint), OBSERVATION.protocol existence.lower |
+| absent       | present    | present     | rejected | OBSERVATION.data existence.lower (RM/schema constraint) |
+| present      | absent     | absent      | rejected | OBSERVATION.protocol existence.lower |
+| present      | absent     | present     | accepted |  |
+| present      | present    | absent      | rejected | OBSERVATION.protocol existence.lower |
+| present      | present    | present     | accepted |  |
+
+</div>
+
+
+#### OBSERVATION state existence = 1..1, protocol existence = 0..1
+
+<div id="obs_3">
+
+| data         | state      | protocol    | expected | constraints violated |
+|:-------------|:-----------|:-----------:|----------|----------------------|
+| absent       | absent     | absent      | rejected | OBSERVATION.data existence.lower (RM/schema constraint), OBSERVATION.state existence.lower |
+| absent       | absent     | present     | rejected | OBSERVATION.data existence.lower (RM/schema constraint), OBSERVATION.state existence.lower |
+| absent       | present    | absent      | rejected | OBSERVATION.data existence.lower (RM/schema constraint) |
+| absent       | present    | present     | rejected | OBSERVATION.data existence.lower (RM/schema constraint) |
+| present      | absent     | absent      | rejected | OBSERVATION.state existence.lower |
+| present      | absent     | present     | rejected | OBSERVATION.state existence.lower |
+| present      | present    | absent      | accepted |  |
+| present      | present    | present     | accepted |  |
+
+</div>
+
+
+#### OBSERVATION state existence = 1..1, protocol existence = 1..1
+
+<div id="obs_4">
+
+| data         | state      | protocol    | expected | constraints violated |
+|:-------------|:-----------|:-----------:|----------|----------------------|
+| absent       | absent     | absent      | rejected | OBSERVATION.data existence.lower (RM/schema constraint), OBSERVATION.protocol existence.lower, OBSERVATION.state existence.lower |
+| absent       | absent     | present     | rejected | OBSERVATION.data existence.lower (RM/schema constraint), OBSERVATION.state existence.lower |
+| absent       | present    | absent      | rejected | OBSERVATION.data existence.lower (RM/schema constraint), OBSERVATION.protocol existence.lower |
+| absent       | present    | present     | rejected | OBSERVATION.data existence.lower (RM/schema constraint) |
+| present      | absent     | absent      | rejected | OBSERVATION.protocol existence.lower, OBSERVATION.state existence.lower |
+| present      | absent     | present     | rejected | OBSERVATION.state existence.lower |
+| present      | present    | absent      | rejected | OBSERVATION.protocol existence.lower |
+| present      | present    | present     | accepted |  |
+
+</div>
+
+
+
+
+### HISTORY
+
+
+HISTORY data sets:
+
+1. HISTORY with no events and no summary
+2. HISTORY with events and no summary
+3. HISTORY with no events and summary
+4. HISTORY with events and summary
+
+EVENT type combinations for the case of HISTORY with events:
 
 1. EVENT is POINT_EVENT
 2. EVENT is INTERVAL_EVENT
+
+> Note: the combination of the HISTORY data sets with the EVENT types shouldn't affect the result of the constraints for cardinality and existence, but will affect if the wrong type is provided. So instead of combining the expected results, we could define separate tables for each set of constraints.
+
+
+#### HISTORY events cardinality 0..*, summary existence 0..1
+
+<div id="history_1">
+
+| events           | summary         | expected | constraints violated |
+|:-----------------|:----------------|:--------:|:---------------------|
+| no events        | absent          | accepted |  |
+| one event        | absent          | accepted |  |
+| three events     | absent          | accepted |  |
+| no event         | present         | accepted |  |
+| one event        | present         | accepted |  |
+| three events     | present         | accepted |  |
+
+</div>
+
+
+#### HISTORY events cardinality 1..*, summary existence 0..1
+
+<div id="history_2">
+
+| events           | summary         | expected | constraints violated |
+|:-----------------|:----------------|:--------:|:---------------------|
+| no events        | absent          | rejected | HSITORY.events cardinality.lower |
+| one event        | absent          | accepted |  |
+| three events     | absent          | accepted |  |
+| no event         | present         | rejected | HSITORY.events cardinality.lower |
+| one event        | present         | accepted |  |
+| three events     | present         | accepted |  |
+
+</div>
+
+
+#### HISTORY events cardinality 3..*, summary existence 0..1
+
+<div id="history_3">
+
+| events           | summary         | expected | constraints violated |
+|:-----------------|:----------------|:--------:|:---------------------|
+| no events        | absent          | rejected | HSITORY.events cardinality.lower |
+| one event        | absent          | rejected | HSITORY.events cardinality.lower |
+| three events     | absent          | accepted |  |
+| no event         | present         | rejected | HSITORY.events cardinality.lower |
+| one event        | present         | rejected | HSITORY.events cardinality.lower |
+| three events     | present         | accepted |  |
+
+</div>
+
+
+#### HISTORY events cardinality 0..1, summary existence 0..1
+
+<div id="history_4">
+
+| events           | summary         | expected | constraints violated |
+|:-----------------|:----------------|:--------:|:---------------------|
+| no events        | absent          | accepted |  |
+| one event        | absent          | accepted |  |
+| three events     | absent          | rejected | HSITORY.events cardinality.upper |
+| no event         | present         | accepted |  |
+| one event        | present         | accepted |  |
+| three events     | present         | rejected | HSITORY.events cardinality.upper |
+
+</div>
+
+
+#### HISTORY events cardinality 1..1, summary existence 0..1
+
+<div id="history_5">
+
+| events           | summary         | expected | constraints violated |
+|:-----------------|:----------------|:--------:|:---------------------|
+| no events        | absent          | rejected | HSITORY.events cardinality.lower |
+| one event        | absent          | accepted |  |
+| three events     | absent          | rejected | HSITORY.events cardinality.upper |
+| no event         | present         | rejected | HSITORY.events cardinality.lower |
+| one event        | present         | accepted |  |
+| three events     | present         | rejected | HSITORY.events cardinality.upper |
+
+</div>
+
+
+#### HISTORY events cardinality 3..5, summary existence 0..1
+
+<div id="history_6">
+
+| events           | summary         | expected | constraints violated |
+|:-----------------|:----------------|:--------:|:---------------------|
+| no events        | absent          | rejected | HSITORY.events cardinality.lower |
+| one event        | absent          | rejected | HSITORY.events cardinality.lower |
+| three events     | absent          | accepted |  |
+| no event         | present         | rejected | HSITORY.events cardinality.lower |
+| one event        | present         | rejected | HSITORY.events cardinality.lower |
+| three events     | present         | accepted |  |
+
+</div>
+
+
+#### HISTORY events cardinality 0..*, summary existence 1..1
+
+<div id="history_1">
+
+| events           | summary         | expected | constraints violated |
+|:-----------------|:----------------|:--------:|:---------------------|
+| no events        | absent          | rejected | HISTORY.summary existence.lower |
+| one event        | absent          | rejected | HISTORY.summary existence.lower |
+| three events     | absent          | rejected | HISTORY.summary existence.lower |
+| no event         | present         | accepted |  |
+| one event        | present         | accepted |  |
+| three events     | present         | accepted |  |
+
+</div>
+
+
+#### HISTORY events cardinality 1..*, summary existence 1..1
+
+<div id="history_2">
+
+| events           | summary         | expected | constraints violated |
+|:-----------------|:----------------|:--------:|:---------------------|
+| no events        | absent          | rejected | HSITORY.events cardinality.lower, HISTORY.summary existence.lower |
+| one event        | absent          | rejected | HISTORY.summary existence.lower |
+| three events     | absent          | rejected | HISTORY.summary existence.lower |
+| no event         | present         | rejected | HSITORY.events cardinality.lower |
+| one event        | present         | accepted |  |
+| three events     | present         | accepted |  |
+
+</div>
+
+
+#### HISTORY events cardinality 3..*, summary existence 1..1
+
+<div id="history_3">
+
+| events           | summary         | expected | constraints violated |
+|:-----------------|:----------------|:--------:|:---------------------|
+| no events        | absent          | rejected | HSITORY.events cardinality.lower, HISTORY.summary existence.lower |
+| one event        | absent          | rejected | HSITORY.events cardinality.lower, HISTORY.summary existence.lower |
+| three events     | absent          | rejected | HISTORY.summary existence.lower |
+| no event         | present         | rejected | HSITORY.events cardinality.lower |
+| one event        | present         | rejected | HSITORY.events cardinality.lower |
+| three events     | present         | accepted |  |
+
+</div>
+
+
+#### HISTORY events cardinality 0..1, summary existence 1..1
+
+<div id="history_4">
+
+| events           | summary         | expected | constraints violated |
+|:-----------------|:----------------|:--------:|:---------------------|
+| no events        | absent          | rejected | HISTORY.summary existence.lower |
+| one event        | absent          | rejected | HISTORY.summary existence.lower |
+| three events     | absent          | rejected | HSITORY.events cardinality.upper, HISTORY.summary existence.lower |
+| no event         | present         | accepted |  |
+| one event        | present         | accepted |  |
+| three events     | present         | rejected | HSITORY.events cardinality.upper |
+
+</div>
+
+
+#### HISTORY events cardinality 1..1, summary existence 1..1
+
+<div id="history_5">
+
+| events           | summary         | expected | constraints violated |
+|:-----------------|:----------------|:--------:|:---------------------|
+| no events        | absent          | rejected | HSITORY.events cardinality.lower, HISTORY.summary existence.lower |
+| one event        | absent          | rejected | HISTORY.summary existence.lower |
+| three events     | absent          | rejected | HSITORY.events cardinality.upper, HISTORY.summary existence.lower |
+| no event         | present         | rejected | HSITORY.events cardinality.lower |
+| one event        | present         | accepted |  |
+| three events     | present         | rejected | HSITORY.events cardinality.upper |
+
+</div>
+
+
+#### HISTORY events cardinality 3..5, summary existence 1..1
+
+<div id="history_6">
+
+| events           | summary         | expected | constraints violated |
+|:-----------------|:----------------|:--------:|:---------------------|
+| no events        | absent          | rejected | HSITORY.events cardinality.lower, HISTORY.summary existence.lower |
+| one event        | absent          | rejected | HSITORY.events cardinality.lower, HISTORY.summary existence.lower |
+| three events     | absent          | rejected | HISTORY.summary existence.lower |
+| no event         | present         | rejected | HSITORY.events cardinality.lower |
+| one event        | present         | rejected | HSITORY.events cardinality.lower |
+| three events     | present         | accepted |  |
+
+</div>
+
+
+### EVENT data sets (WIP)
+
+EVENT data sets:
+
+5. EVENT with no state
+6. EVENT with state
+
 
 EVENT structure combinations
 
@@ -729,49 +1016,27 @@ EVENT structure combinations
 
 > Note: to simplify modeling, the EVENT.data constraint could be open {*} so any instance will pass constraints at that level and only the constraints at the OBSERVATION level will be tested. 
 
-### OBSERVATION data.events cardinality = 0..*, state.existence = 0..1, protocol.existence = 0..1
+#### EVENT data existence 0..1, state existence 0..1
 
-The table below shows combinations of different OBSERVATION options with it's HISTORY and EVENT options.
-
-TODO: since the expected repeats based on EVENT constraints it might be better to define the OBSERVATION combinations and HISTORY/EVENT combinatiosn separatelly, then state those need to be combined to create the data sets, so the expected results are also combined.
-
-<div id="obs_1">
-
-| data          | state      | protocol    | event          | event.data | event.state | expected | constraints violated |
-|:--------------|:-----------|:-----------:|:--------------:|------------|-------------|----------|----------------------|
-| no data       | no state   | no protocol | -              | -          | -           | rejected | OBSERVATION.data occurrences.lower (RM/schema constraint) |
-| present       | no state   | no protocol | POINT_EVENT    | no data    | no state    | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
-| present       | no state   | no protocol | POINT_EVENT    | present    | no state    | accepted |  |
-| present       | no state   | no protocol | POINT_EVENT    | no data    | present     | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
-| present       | no state   | no protocol | POINT_EVENT    | present    | present     | accepted |  |
-| present       | present    | no protocol | POINT_EVENT    | no data    | no state    | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
-| present       | present    | no protocol | POINT_EVENT    | present    | no state    | accepted |  |
-| present       | present    | no protocol | POINT_EVENT    | no data    | present     | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
-| present       | present    | no protocol | POINT_EVENT    | present    | present     | accepted |  |
-| present       | no state   | present     | POINT_EVENT    | no data    | no state    | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
-| present       | no state   | present     | POINT_EVENT    | present    | no state    | accepted |  |
-| present       | no state   | present     | POINT_EVENT    | no data    | present     | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
-| present       | no state   | present     | POINT_EVENT    | present    | present     | accepted |  |
-| present       | present    | present     | POINT_EVENT    | no data    | no state    | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
-| present       | present    | present     | POINT_EVENT    | present    | no state    | accepted |  |
-| present       | present    | present     | POINT_EVENT    | no data    | present     | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
-| present       | present    | present     | POINT_EVENT    | present    | present     | accepted |  |
-| present       | no state   | no protocol | INTERVAL_EVENT | no data    | no state    | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
-| present       | no state   | no protocol | INTERVAL_EVENT | present    | no state    | accepted |  |
-| present       | no state   | no protocol | INTERVAL_EVENT | no data    | present     | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
-| present       | no state   | no protocol | INTERVAL_EVENT | present    | present     | accepted |  |
-| present       | present    | no protocol | INTERVAL_EVENT | no data    | no state    | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
-| present       | present    | no protocol | INTERVAL_EVENT | present    | no state    | accepted |  |
-| present       | present    | no protocol | INTERVAL_EVENT | no data    | present     | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
-| present       | present    | no protocol | INTERVAL_EVENT | present    | present     | accepted |  |
-| present       | no state   | present     | INTERVAL_EVENT | no data    | no state    | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
-| present       | no state   | present     | INTERVAL_EVENT | present    | no state    | accepted |  |
-| present       | no state   | present     | INTERVAL_EVENT | no data    | present     | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
-| present       | no state   | present     | INTERVAL_EVENT | present    | present     | accepted |  |
-| present       | present    | present     | INTERVAL_EVENT | no data    | no state    | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
-| present       | present    | present     | INTERVAL_EVENT | present    | no state    | accepted |  |
-| present       | present    | present     | INTERVAL_EVENT | no data    | present     | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
-| present       | present    | present     | INTERVAL_EVENT | present    | present     | accepted |  |
+| event.data | event.state |expected | constraints violated |
+|:-----------------|:----------------|:--------:|:---------------------|
+| no data    | no state    | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
+| present    | no state    | accepted |  |
+| present     | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
+| present     | accepted |  |
+| no data    | no state    | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
+| present    | no state    | accepted |  |
+| no data    | present     | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
+| present    | present     | accepted |  |
+| no data    | no state    | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
+| present    | no state    | accepted |  |
+| no data    | present     | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
+| present    | present     | accepted |  |
+| no data    | no state    | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
+| present    | no state    | accepted |  |
+| no data    | present     | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
+| present    | present     | accepted |  |
+| no data    | no state    | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
 
 </div>
 
