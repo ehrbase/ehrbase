@@ -1,32 +1,69 @@
-# openEHR Data Validation Conformance
+openEHR Data Validation Conformance
+-----------------------------------
 
-## TOC
+# TOC
 
 - [openEHR Data Validation Conformance](#openehr-data-validation-conformance)
-  - [TOC](#toc)
-  - [Introduction](#introduction)
-  - [Top-level class: COMPOSITION](#top-level-class-composition)
-    - [Content cardinality 0..*, no constraint over context](#content-cardinality-0-no-constraint-over-context)
-    - [Content cardinality 1..*, no constraint over context](#content-cardinality-1-no-constraint-over-context)
-    - [Content cardinality 3..*, no constraint over context](#content-cardinality-3-no-constraint-over-context)
-    - [Content cardinality 0..1, no constraint over context](#content-cardinality-01-no-constraint-over-context)
-    - [Content cardinality 1..1, no constraint over context](#content-cardinality-11-no-constraint-over-context)
-    - [Content cardinality 3..5, no constraint over context](#content-cardinality-35-no-constraint-over-context)
-    - [Content cardinality 0..*, context occurrences 1..1](#content-cardinality-0-context-occurrences-11)
-    - [Content cardinality 1..*, context occurrences 1..1](#content-cardinality-1-context-occurrences-11)
-    - [Content cardinality 3..*, context occurrences 1..1](#content-cardinality-3-context-occurrences-11)
-    - [Content cardinality 0..1, context occurrences 1..1](#content-cardinality-01-context-occurrences-11)
-    - [Content cardinality 1..1, context occurrences 1..1](#content-cardinality-11-context-occurrences-11)
-    - [Content cardinality 3..5, context occurrences 1..1](#content-cardinality-35-context-occurrences-11)
-    - [COMPOSITION.content combinations](#compositioncontent-combinations)
-      - [Case C.1.1.](#case-c11)
-      - [Case C.1.2.](#case-c12)
-      - [Case C.1.3.](#case-c13)
-      - [Case C.1.4.](#case-c14)
-      - [Case C.1.5.](#case-c15)
-      - [Case C.1.6.](#case-c16)
+- [TOC](#toc)
+- [1. Introduction](#1-introduction)
+- [2. Top-level LOCATABLE class: COMPOSITION](#2-top-level-locatable-class-composition)
+  - [2.1. COMPOSITION content cardinality 0..*, no constraint over context](#21-composition-content-cardinality-0-no-constraint-over-context)
+  - [2.2. COMPOSITION content cardinality 1..*, no constraint over context](#22-composition-content-cardinality-1-no-constraint-over-context)
+  - [2.3. COMPOSITION content cardinality 3..*, no constraint over context](#23-composition-content-cardinality-3-no-constraint-over-context)
+  - [2.4. COMPOSITION content cardinality 0..1, no constraint over context](#24-composition-content-cardinality-01-no-constraint-over-context)
+  - [2.5. COMPOSITION content cardinality 1..1, no constraint over context](#25-composition-content-cardinality-11-no-constraint-over-context)
+  - [2.6. COMPOSITION content cardinality 3..5, no constraint over context](#26-composition-content-cardinality-35-no-constraint-over-context)
+  - [2.7. COMPOSITION content cardinality 0..*, context occurrences 1..1](#27-composition-content-cardinality-0-context-occurrences-11)
+  - [2.8. COMPOSITION content cardinality 1..*, context occurrences 1..1](#28-composition-content-cardinality-1-context-occurrences-11)
+  - [2.9. COMPOSITION content cardinality 3..*, context occurrences 1..1](#29-composition-content-cardinality-3-context-occurrences-11)
+  - [2.10. COMPOSITION content cardinality 0..1, context occurrences 1..1](#210-composition-content-cardinality-01-context-occurrences-11)
+  - [2.11. COMPOSITION content cardinality 1..1, context occurrences 1..1](#211-composition-content-cardinality-11-context-occurrences-11)
+  - [2.12. COMPOSITION content cardinality 3..5, context occurrences 1..1](#212-composition-content-cardinality-35-context-occurrences-11)
+- [3. Internal LOCATABLE class: OBSERVATION](#3-internal-locatable-class-observation)
+  - [3.1. OBSERVATION state existence = 0..1, protocol existence = 0..1](#31-observation-state-existence--01-protocol-existence--01)
+  - [3.2. OBSERVATION state existence = 0..1, protocol existence = 1..1](#32-observation-state-existence--01-protocol-existence--11)
+  - [3.3. OBSERVATION state existence = 1..1, protocol existence = 0..1](#33-observation-state-existence--11-protocol-existence--01)
+  - [3.4. OBSERVATION state existence = 1..1, protocol existence = 1..1](#34-observation-state-existence--11-protocol-existence--11)
+- [4. Internal LOCATABLE class: HISTORY](#4-internal-locatable-class-history)
+  - [HISTORY events cardinality 0..*, summary existence 0..1](#history-events-cardinality-0-summary-existence-01)
+  - [HISTORY events cardinality 1..*, summary existence 0..1](#history-events-cardinality-1-summary-existence-01)
+  - [HISTORY events cardinality 3..*, summary existence 0..1](#history-events-cardinality-3-summary-existence-01)
+  - [HISTORY events cardinality 0..1, summary existence 0..1](#history-events-cardinality-01-summary-existence-01)
+  - [HISTORY events cardinality 1..1, summary existence 0..1](#history-events-cardinality-11-summary-existence-01)
+  - [HISTORY events cardinality 3..5, summary existence 0..1](#history-events-cardinality-35-summary-existence-01)
+  - [HISTORY events cardinality 0..*, summary existence 1..1](#history-events-cardinality-0-summary-existence-11)
+  - [HISTORY events cardinality 1..*, summary existence 1..1](#history-events-cardinality-1-summary-existence-11)
+  - [HISTORY events cardinality 3..*, summary existence 1..1](#history-events-cardinality-3-summary-existence-11)
+  - [HISTORY events cardinality 0..1, summary existence 1..1](#history-events-cardinality-01-summary-existence-11)
+  - [HISTORY events cardinality 1..1, summary existence 1..1](#history-events-cardinality-11-summary-existence-11)
+  - [HISTORY events cardinality 3..5, summary existence 1..1](#history-events-cardinality-35-summary-existence-11)
+- [EVENT data sets (WIP)](#event-data-sets-wip)
+  - [EVENT data existence 0..1, state existence 0..1](#event-data-existence-01-state-existence-01)
+  - [OBSERVATION data.events cardinality = 1..*, state.existence = 0..1, protocol.existence = 0..1](#observation-dataevents-cardinality--1-stateexistence--01-protocolexistence--01)
+  - [OBSERVATION events cardinality = 3..*, state.existence = 0..1, protocol.existence = 0..1](#observation-events-cardinality--3-stateexistence--01-protocolexistence--01)
+  - [OBSERVATION events cardinality = 0..1, state.existence = 0..1, protocol.existence = 0..1](#observation-events-cardinality--01-stateexistence--01-protocolexistence--01)
+  - [OBSERVATION events cardinality = 1..1, state.existence = 0..1, protocol.existence = 0..1](#observation-events-cardinality--11-stateexistence--01-protocolexistence--01)
+  - [OBSERVATION events cardinality = 3..5, state.existence = 0..1, protocol.existence = 0..1](#observation-events-cardinality--35-stateexistence--01-protocolexistence--01)
+  - [OBSERVATION data.events cardinality = 0..*, state.existence = 1..1, protocol.existence = 0..1](#observation-dataevents-cardinality--0-stateexistence--11-protocolexistence--01)
+  - [OBSERVATION data.events cardinality = 1..*, state.existence = 1..1, protocol.existence = 0..1](#observation-dataevents-cardinality--1-stateexistence--11-protocolexistence--01)
+  - [OBSERVATION data.events cardinality = 3..*, state.existence = 1..1, protocol.existence = 0..1](#observation-dataevents-cardinality--3-stateexistence--11-protocolexistence--01)
+  - [OBSERVATION data.events cardinality = 0..1, state.existence = 1..1, protocol.existence = 0..1](#observation-dataevents-cardinality--01-stateexistence--11-protocolexistence--01)
+  - [OBSERVATION data.events cardinality = 1..1, state.existence = 1..1, protocol.existence = 0..1](#observation-dataevents-cardinality--11-stateexistence--11-protocolexistence--01)
+  - [OBSERVATION data.events cardinality = 3..5, state.existence = 1..1, protocol.existence = 0..1](#observation-dataevents-cardinality--35-stateexistence--11-protocolexistence--01)
+  - [OBSERVATION data.events cardinality = 0..*, state.existence = 0..1, protocol.existence = 1..1](#observation-dataevents-cardinality--0-stateexistence--01-protocolexistence--11)
+  - [OBSERVATION data.events cardinality = 1..*, state.existence = 0..1, protocol.existence = 1..1](#observation-dataevents-cardinality--1-stateexistence--01-protocolexistence--11)
+  - [OBSERVATION data.events cardinality = 3..*, state.existence = 0..1, protocol.existence = 1..1](#observation-dataevents-cardinality--3-stateexistence--01-protocolexistence--11)
+  - [OBSERVATION data.events cardinality = 0..1, state.existence = 0..1, protocol.existence = 1..1](#observation-dataevents-cardinality--01-stateexistence--01-protocolexistence--11)
+  - [OBSERVATION data.events cardinality = 1..1, state.existence = 0..1, protocol.existence = 1..1](#observation-dataevents-cardinality--11-stateexistence--01-protocolexistence--11)
+  - [OBSERVATION data.events cardinality = 3..5, state.existence = 0..1, protocol.existence = 1..1](#observation-dataevents-cardinality--35-stateexistence--01-protocolexistence--11)
+  - [OBSERVATION data.events cardinality = 0..*, state.existence = 1..1, protocol.existence = 1..1](#observation-dataevents-cardinality--0-stateexistence--11-protocolexistence--11)
+  - [OBSERVATION data.events cardinality = 1..*, state.existence = 1..1, protocol.existence = 1..1](#observation-dataevents-cardinality--1-stateexistence--11-protocolexistence--11)
+  - [OBSERVATION data.events cardinality = 3..*, state.existence = 1..1, protocol.existence = 1..1](#observation-dataevents-cardinality--3-stateexistence--11-protocolexistence--11)
+  - [OBSERVATION data.events cardinality = 0..1, state.existence = 1..1, protocol.existence = 1..1](#observation-dataevents-cardinality--01-stateexistence--11-protocolexistence--11)
+  - [OBSERVATION data.events cardinality = 1..1, state.existence = 1..1, protocol.existence = 1..1](#observation-dataevents-cardinality--11-stateexistence--11-protocolexistence--11)
+  - [OBSERVATION data.events cardinality = 3..5, state.existence = 1..1, protocol.existence = 1..1](#observation-dataevents-cardinality--35-stateexistence--11-protocolexistence--11)
 
-## Introduction
+# 1. Introduction
 
 The test cases defined here are for creating archetypes expressing specific constraints over the openEHR RM. Then different data instances should be generated in order to test the constraints. It’s recommended to have at least one success case, one failure case and all border cases covered. That is, for each archetype constraint specified, at least three data instances should be created.
 
@@ -47,18 +84,30 @@ When checking a “multiple attribute” cardinality, this is a good set of comb
 - 3..5
 
 
-> Note: when there is no constraint defined for an attribute, it means anything is allowed on that attribute. It is recommended to include data not defined by the archetype, but valid in the RM, when generating the data instances.
-
-> Note: any class that extends LOCATABLE is a class with archetypable fields.
+> Definition: any class that extends LOCATABLE is a class with archetypable fields, we also call that an "archetypable" class.
 
 
-## Top-level class: COMPOSITION
+**Implementation notes**
+
+The constraint combinations described in the cases below could be implemented in different archetypes, or in a generic archetype then defining the specific constraints at the template level. Which option to use might depend on the modeling tools used to create archetypes and templates.
+
+We would suggest to automate the archetype/template test cases generation instead of creating each constraint combination manualy.
+
+When there is no constraint defined for an attribute, it means anything is allowed on that attribute. It is recommended to include data not defined by the archetype, but valid in the RM, when generating the data instances.
+
+
+# 2. Top-level LOCATABLE class: COMPOSITION
 
 These cases are defined to verify the constraints defined over archetypable attributes of the top-level class COMPOSITION.
 
-> Note: the constraint combinations described in the cases below could be done in different archetypes, or we could defined very generic archetypes and define the specific constraints at the template level. That possibility might depend on the modeling tools used to create archetypes and templates.
+The constraints combinations describe below could be tested in two ways:
 
-### COMPOSITION content cardinality 0..*, no constraint over context
+1. Isolation: by not constraining the COMPOSITION.content at all, or adding an open/'any allowed' constraint {*} at the COMPOSITION.content in the archetype/template. This mean anything, even nothing, is accepted at the COMPOSITION.content at runtime.
+2. Combination: with constraints set for COMPOSITION.content, for any CONTENT_ITEM (SECTION or ENTRY). Below there is a specification of the constraint combinations for each class accepted at COMPOSITION.content
+
+> Note: we suggest to test with both strategies.
+
+## 2.1. COMPOSITION content cardinality 0..*, no constraint over context
 
 COMPOSITION data sets:
 
@@ -108,7 +157,7 @@ All the context structures should be valid.
 </div>
 
 
-### COMPOSITION content cardinality 1..*, no constraint over context
+## 2.2. COMPOSITION content cardinality 1..*, no constraint over context
 
 COMPOSITION data sets:
 
@@ -161,7 +210,7 @@ All the context structures should be valid.
 
 </div>
 
-### COMPOSITION content cardinality 3..*, no constraint over context
+## 2.3. COMPOSITION content cardinality 3..*, no constraint over context
 
 COMPOSITION data sets:
 
@@ -214,7 +263,7 @@ All the context structures should be valid.
 
 </div>
 
-### COMPOSITION content cardinality 0..1, no constraint over context
+## 2.4. COMPOSITION content cardinality 0..1, no constraint over context
 
 COMPOSITION data sets:
 
@@ -267,7 +316,7 @@ All the context structures should be valid.
 
 </div>
 
-### COMPOSITION content cardinality 1..1, no constraint over context
+## 2.5. COMPOSITION content cardinality 1..1, no constraint over context
 
 COMPOSITION data sets:
 
@@ -321,7 +370,7 @@ All the context structures should be valid.
 </div>
 
 
-### COMPOSITION content cardinality 3..5, no constraint over context
+## 2.6. COMPOSITION content cardinality 3..5, no constraint over context
 
 COMPOSITION data sets:
 
@@ -374,7 +423,7 @@ All the context structures should be valid.
 
 </div>
 
-### COMPOSITION content cardinality 0..*, context occurrences 1..1
+## 2.7. COMPOSITION content cardinality 0..*, context occurrences 1..1
 
 COMPOSITION data sets:
 
@@ -428,7 +477,7 @@ All the context structures should be valid.
 </div>
 
 
-### COMPOSITION content cardinality 1..*, context occurrences 1..1
+## 2.8. COMPOSITION content cardinality 1..*, context occurrences 1..1
 
 COMPOSITION data sets:
 
@@ -482,7 +531,7 @@ All the context structures should be valid.
 </div>
 
 
-### COMPOSITION content cardinality 3..*, context occurrences 1..1
+## 2.9. COMPOSITION content cardinality 3..*, context occurrences 1..1
 
 COMPOSITION data sets:
 
@@ -535,7 +584,7 @@ All the context structures should be valid.
 
 </div>
 
-### COMPOSITION content cardinality 0..1, context occurrences 1..1
+## 2.10. COMPOSITION content cardinality 0..1, context occurrences 1..1
 
 COMPOSITION data sets:
 
@@ -588,7 +637,7 @@ All the context structures should be valid.
 
 </div>
 
-### COMPOSITION content cardinality 1..1, context occurrences 1..1
+## 2.11. COMPOSITION content cardinality 1..1, context occurrences 1..1
 
 COMPOSITION data sets:
 
@@ -641,7 +690,7 @@ All the context structures should be valid.
 
 </div>
 
-### COMPOSITION content cardinality 3..5, context occurrences 1..1
+## 2.12. COMPOSITION content cardinality 3..5, context occurrences 1..1
 
 COMPOSITION data sets:
 
@@ -695,13 +744,12 @@ All the context structures should be valid.
 </div>
 
 
-## Internal LOCATABLE classes
 
-Each data set that included entries at the COMPOSITION.content in the previously defined data sets, requires some specification of the internal entry structure that will be used. Since each entry type could also have it's own archetypable fields where data validation should also be tested, the entry data sets described in this section should be combined with the COMPOSITION data sets.
+# 3. Internal LOCATABLE class: OBSERVATION
 
-Also for each entry type in this section we specify a combination of constraints that should be tested against the entry data sets.
+In this section there are specifications of constraint combinations for OBSERVATION.
 
-### OBSERVATION
+Each data set in this section could be combined with the test data sets for COMPOSITION.content defined in section 2.
 
 OBSERVATION data sets:
 
@@ -710,10 +758,16 @@ OBSERVATION data sets:
 3. OBSERVATION with state and no protocol
 4. OBSERVATION with state and protocol
 
-For testing validation on a complete OBSERVATION, these cases should be combined with the cases for HISTORY (data, state) and ITEM_STRUCTURE (protocol).
+
+The constraints combinations describe below could be tested in two ways:
+
+1. Isolation: by not constraining OBSERVATION.data, OBSERVATION.state and OBSERVATION.protocol, or using the open/'any allowed' constraint {*} for those attributes.
+2. Combination: with constraints defined at the HISTORY level (for data and state) and ITEM_STRUCTURE (for protocol). 
+
+> Note: we suggest to test with both strategies.
 
 
-#### OBSERVATION state existence = 0..1, protocol existence = 0..1
+## 3.1. OBSERVATION state existence = 0..1, protocol existence = 0..1
 
 <div id="obs_1">
 
@@ -731,7 +785,7 @@ For testing validation on a complete OBSERVATION, these cases should be combined
 </div>
 
 
-#### OBSERVATION state existence = 0..1, protocol existence = 1..1
+## 3.2. OBSERVATION state existence = 0..1, protocol existence = 1..1
 
 <div id="obs_2">
 
@@ -749,7 +803,7 @@ For testing validation on a complete OBSERVATION, these cases should be combined
 </div>
 
 
-#### OBSERVATION state existence = 1..1, protocol existence = 0..1
+## 3.3. OBSERVATION state existence = 1..1, protocol existence = 0..1
 
 <div id="obs_3">
 
@@ -767,7 +821,7 @@ For testing validation on a complete OBSERVATION, these cases should be combined
 </div>
 
 
-#### OBSERVATION state existence = 1..1, protocol existence = 1..1
+## 3.4. OBSERVATION state existence = 1..1, protocol existence = 1..1
 
 <div id="obs_4">
 
@@ -787,8 +841,12 @@ For testing validation on a complete OBSERVATION, these cases should be combined
 
 
 
-### HISTORY
 
+# 4. Internal LOCATABLE class: HISTORY
+
+In this section there are specifications of constraint combinations for HISTORY.
+
+Each data set in this section could be combined with the test data sets for HISTORY defined in section 3.
 
 HISTORY data sets:
 
@@ -797,15 +855,16 @@ HISTORY data sets:
 3. HISTORY with no events and summary
 4. HISTORY with events and summary
 
-EVENT type combinations for the case of HISTORY with events:
 
-1. EVENT is POINT_EVENT
-2. EVENT is INTERVAL_EVENT
+The constraints combinations describe below could be tested in two ways:
 
-> Note: the combination of the HISTORY data sets with the EVENT types shouldn't affect the result of the constraints for cardinality and existence, but will affect if the wrong type is provided. So instead of combining the expected results, we could define separate tables for each set of constraints.
+1. Isolation: by not constraining HISTORY.events and HISTORY.summary, or using the open/'any allowed' constraint {*} for those attributes.
+2. Combination: with constraints defined at the EVENT level (for events) and ITEM_STRUCTURE (for summary). 
+
+> Note: we suggest to test with both strategies.
 
 
-#### HISTORY events cardinality 0..*, summary existence 0..1
+## HISTORY events cardinality 0..*, summary existence 0..1
 
 <div id="history_1">
 
@@ -821,7 +880,7 @@ EVENT type combinations for the case of HISTORY with events:
 </div>
 
 
-#### HISTORY events cardinality 1..*, summary existence 0..1
+## HISTORY events cardinality 1..*, summary existence 0..1
 
 <div id="history_2">
 
@@ -837,7 +896,7 @@ EVENT type combinations for the case of HISTORY with events:
 </div>
 
 
-#### HISTORY events cardinality 3..*, summary existence 0..1
+## HISTORY events cardinality 3..*, summary existence 0..1
 
 <div id="history_3">
 
@@ -853,7 +912,7 @@ EVENT type combinations for the case of HISTORY with events:
 </div>
 
 
-#### HISTORY events cardinality 0..1, summary existence 0..1
+## HISTORY events cardinality 0..1, summary existence 0..1
 
 <div id="history_4">
 
@@ -869,7 +928,7 @@ EVENT type combinations for the case of HISTORY with events:
 </div>
 
 
-#### HISTORY events cardinality 1..1, summary existence 0..1
+## HISTORY events cardinality 1..1, summary existence 0..1
 
 <div id="history_5">
 
@@ -885,7 +944,7 @@ EVENT type combinations for the case of HISTORY with events:
 </div>
 
 
-#### HISTORY events cardinality 3..5, summary existence 0..1
+## HISTORY events cardinality 3..5, summary existence 0..1
 
 <div id="history_6">
 
@@ -901,7 +960,7 @@ EVENT type combinations for the case of HISTORY with events:
 </div>
 
 
-#### HISTORY events cardinality 0..*, summary existence 1..1
+## HISTORY events cardinality 0..*, summary existence 1..1
 
 <div id="history_1">
 
@@ -917,7 +976,7 @@ EVENT type combinations for the case of HISTORY with events:
 </div>
 
 
-#### HISTORY events cardinality 1..*, summary existence 1..1
+## HISTORY events cardinality 1..*, summary existence 1..1
 
 <div id="history_2">
 
@@ -933,7 +992,7 @@ EVENT type combinations for the case of HISTORY with events:
 </div>
 
 
-#### HISTORY events cardinality 3..*, summary existence 1..1
+## HISTORY events cardinality 3..*, summary existence 1..1
 
 <div id="history_3">
 
@@ -949,7 +1008,7 @@ EVENT type combinations for the case of HISTORY with events:
 </div>
 
 
-#### HISTORY events cardinality 0..1, summary existence 1..1
+## HISTORY events cardinality 0..1, summary existence 1..1
 
 <div id="history_4">
 
@@ -965,7 +1024,7 @@ EVENT type combinations for the case of HISTORY with events:
 </div>
 
 
-#### HISTORY events cardinality 1..1, summary existence 1..1
+## HISTORY events cardinality 1..1, summary existence 1..1
 
 <div id="history_5">
 
@@ -981,7 +1040,7 @@ EVENT type combinations for the case of HISTORY with events:
 </div>
 
 
-#### HISTORY events cardinality 3..5, summary existence 1..1
+## HISTORY events cardinality 3..5, summary existence 1..1
 
 <div id="history_6">
 
@@ -997,13 +1056,20 @@ EVENT type combinations for the case of HISTORY with events:
 </div>
 
 
-### EVENT data sets (WIP)
+# EVENT data sets (WIP)
 
 EVENT data sets:
 
 5. EVENT with no state
 6. EVENT with state
 
+
+EVENT type combinations for the case of HISTORY with events:
+
+1. EVENT is POINT_EVENT
+2. EVENT is INTERVAL_EVENT
+
+> Note: the combination of the HISTORY data sets with the EVENT types shouldn't affect the result of the constraints for cardinality and existence, but will affect if the wrong type is provided. So instead of combining the expected results, we could define separate tables for each set of constraints.
 
 EVENT structure combinations
 
@@ -1016,7 +1082,7 @@ EVENT structure combinations
 
 > Note: to simplify modeling, the EVENT.data constraint could be open {*} so any instance will pass constraints at that level and only the constraints at the OBSERVATION level will be tested. 
 
-#### EVENT data existence 0..1, state existence 0..1
+### EVENT data existence 0..1, state existence 0..1
 
 | event.data | event.state |expected | constraints violated |
 |:-----------------|:----------------|:--------:|:---------------------|
@@ -1039,6 +1105,10 @@ EVENT structure combinations
 | no data    | no state    | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
 
 </div>
+
+
+----
+**FOR REFERENCE ONLY, don't read below this for implementation purposes**
 
 - no state
 - data.events cardinality is 0..*
