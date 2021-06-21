@@ -5,7 +5,10 @@ openEHR Data Validation Conformance
 
 - [TOC](#toc)
 - [1. Introduction](#1-introduction)
+  - [Glossary](#glossary)
+  - [Implementation notes](#implementation-notes)
 - [2. Top-level LOCATABLE class: COMPOSITION](#2-top-level-locatable-class-composition)
+  - [Reference UML for COMPOSITION (latest RM)](#reference-uml-for-composition-latest-rm)
   - [2.1. COMPOSITION content cardinality 0..*, no constraint over context](#21-composition-content-cardinality-0-no-constraint-over-context)
   - [2.2. COMPOSITION content cardinality 1..*, no constraint over context](#22-composition-content-cardinality-1-no-constraint-over-context)
   - [2.3. COMPOSITION content cardinality 3..*, no constraint over context](#23-composition-content-cardinality-3-no-constraint-over-context)
@@ -24,20 +27,31 @@ openEHR Data Validation Conformance
   - [3.3. OBSERVATION state existence = 1..1, protocol existence = 0..1](#33-observation-state-existence--11-protocol-existence--01)
   - [3.4. OBSERVATION state existence = 1..1, protocol existence = 1..1](#34-observation-state-existence--11-protocol-existence--11)
 - [4. Internal LOCATABLE class: HISTORY](#4-internal-locatable-class-history)
-  - [HISTORY events cardinality 0..*, summary existence 0..1](#history-events-cardinality-0-summary-existence-01)
-  - [HISTORY events cardinality 1..*, summary existence 0..1](#history-events-cardinality-1-summary-existence-01)
-  - [HISTORY events cardinality 3..*, summary existence 0..1](#history-events-cardinality-3-summary-existence-01)
-  - [HISTORY events cardinality 0..1, summary existence 0..1](#history-events-cardinality-01-summary-existence-01)
-  - [HISTORY events cardinality 1..1, summary existence 0..1](#history-events-cardinality-11-summary-existence-01)
-  - [HISTORY events cardinality 3..5, summary existence 0..1](#history-events-cardinality-35-summary-existence-01)
-  - [HISTORY events cardinality 0..*, summary existence 1..1](#history-events-cardinality-0-summary-existence-11)
-  - [HISTORY events cardinality 1..*, summary existence 1..1](#history-events-cardinality-1-summary-existence-11)
-  - [HISTORY events cardinality 3..*, summary existence 1..1](#history-events-cardinality-3-summary-existence-11)
-  - [HISTORY events cardinality 0..1, summary existence 1..1](#history-events-cardinality-01-summary-existence-11)
-  - [HISTORY events cardinality 1..1, summary existence 1..1](#history-events-cardinality-11-summary-existence-11)
-  - [HISTORY events cardinality 3..5, summary existence 1..1](#history-events-cardinality-35-summary-existence-11)
-- [EVENT data sets (WIP)](#event-data-sets-wip)
-    - [EVENT data existence 0..1, state existence 0..1](#event-data-existence-01-state-existence-01)
+  - [4.1. Reference UML for HISTORY and ITEM_STRUCTURE (latest RM)](#41-reference-uml-for-history-and-item_structure-latest-rm)
+  - [4.2. HISTORY events cardinality 0..*, summary existence 0..1](#42-history-events-cardinality-0-summary-existence-01)
+  - [4.3. HISTORY events cardinality 1..*, summary existence 0..1](#43-history-events-cardinality-1-summary-existence-01)
+  - [4.4. HISTORY events cardinality 3..*, summary existence 0..1](#44-history-events-cardinality-3-summary-existence-01)
+  - [4.5. HISTORY events cardinality 0..1, summary existence 0..1](#45-history-events-cardinality-01-summary-existence-01)
+  - [4.6. HISTORY events cardinality 1..1, summary existence 0..1](#46-history-events-cardinality-11-summary-existence-01)
+  - [4.7. HISTORY events cardinality 3..5, summary existence 0..1](#47-history-events-cardinality-35-summary-existence-01)
+  - [4.8. HISTORY events cardinality 0..*, summary existence 1..1](#48-history-events-cardinality-0-summary-existence-11)
+  - [4.9. HISTORY events cardinality 1..*, summary existence 1..1](#49-history-events-cardinality-1-summary-existence-11)
+  - [4.10. HISTORY events cardinality 3..*, summary existence 1..1](#410-history-events-cardinality-3-summary-existence-11)
+  - [4.11. HISTORY events cardinality 0..1, summary existence 1..1](#411-history-events-cardinality-01-summary-existence-11)
+  - [4.12. HISTORY events cardinality 1..1, summary existence 1..1](#412-history-events-cardinality-11-summary-existence-11)
+  - [4.13. HISTORY events cardinality 3..5, summary existence 1..1](#413-history-events-cardinality-35-summary-existence-11)
+- [5. EVENT data sets and test cases](#5-event-data-sets-and-test-cases)
+  - [5.1. EVENT state existence 0..1](#51-event-state-existence-01)
+  - [5.2. EVENT state existence 1..1](#52-event-state-existence-11)
+  - [5.3. EVENT is EVENT](#53-event-is-event)
+  - [5.4. EVENT is POINT_EVENT](#54-event-is-point_event)
+  - [5.5. EVENT is INTERVAL_EVENT](#55-event-is-interval_event)
+- [6. ITEM_STRUCTURE data sets and test cases](#6-item_structure-data-sets-and-test-cases)
+  - [6.1. ITEM_STRUCTURE is ITEM_STRUCTURE](#61-item_structure-is-item_structure)
+  - [6.2. ITEM_STRUCTURE is ITEM_TREE](#62-item_structure-is-item_tree)
+  - [6.3. ITEM_STRUCTURE is ITEM_LIST](#63-item_structure-is-item_list)
+  - [6.4. ITEM_STRUCTURE is ITEM_TABLE](#64-item_structure-is-item_table)
+  - [6.5. ITEM_STRUCTURE is ITEM_SINGLE](#65-item_structure-is-item_single)
     - [OBSERVATION data.events cardinality = 1..*, state.existence = 0..1, protocol.existence = 0..1](#observation-dataevents-cardinality--1-stateexistence--01-protocolexistence--01)
     - [OBSERVATION events cardinality = 3..*, state.existence = 0..1, protocol.existence = 0..1](#observation-events-cardinality--3-stateexistence--01-protocolexistence--01)
     - [OBSERVATION events cardinality = 0..1, state.existence = 0..1, protocol.existence = 0..1](#observation-events-cardinality--01-stateexistence--01-protocolexistence--01)
@@ -66,7 +80,7 @@ openEHR Data Validation Conformance
 
 The test cases defined here are for creating archetypes expressing specific constraints over the openEHR RM. Then different data instances should be generated in order to test the constraints. It’s recommended to have at least one success case, one failure case and all border cases covered. That is, for each archetype constraint specified, at least three data instances should be created.
 
-Since there are many combinations of constraints possible in the AOM, we will try to separate them into different classes and focus on each constraint set class independently from the other sets. The sets are defined by:
+Since there are many combinations of constraints possible in the AOM/TOM, we will try to separate them into different classes and focus on each constraint set class independently from the other sets. The sets are defined by:
 
 1. A top-level LOCATABLE class: COMPOSITION, EHR_STATUS, FOLDER, PARTY.
 2. Constraint sets on top-level attributes for each class.
@@ -83,10 +97,17 @@ When checking a “multiple attribute” cardinality, this is a good set of comb
 - 3..5
 
 
-> Definition: any class that extends LOCATABLE is a class with archetypable fields, we also call that an "archetypable" class.
+## Glossary
+
+* Archetypable class: any class that extends LOCATABLE.
+* Archetypable field: generic fields on archetypable classes that can be constrained in archetypes.
+* SUT: System Under Test
+* RM: openEHR Reference Model
+* AOM: Archetype Object Model (model of constraints)
+* TOM: Template Object Model (model of constraints from the template 1.4 point of view)
 
 
-**Implementation notes**
+## Implementation notes
 
 The constraint combinations described in the cases below could be implemented in different archetypes, or in a generic archetype then defining the specific constraints at the template level. Which option to use might depend on the modeling tools used to create archetypes and templates.
 
@@ -99,12 +120,16 @@ When there is no constraint defined for an attribute, it means anything is allow
 
 These cases are defined to verify the constraints defined over archetypable attributes of the top-level class COMPOSITION.
 
-The constraints combinations describe below could be tested in two ways:
+The constraints combinations described below could be tested in two ways:
 
 1. Isolation: by not constraining the COMPOSITION.content at all, or adding an open/'any allowed' constraint {*} at the COMPOSITION.content in the archetype/template. This mean anything, even nothing, is accepted at the COMPOSITION.content at runtime.
 2. Combination: with constraints set for COMPOSITION.content, for any CONTENT_ITEM (SECTION or ENTRY). Below there is a specification of the constraint combinations for each class accepted at COMPOSITION.content
 
 > Note: we suggest to test with both strategies.
+
+## Reference UML for COMPOSITION (latest RM)
+
+![](https://specifications.openehr.org/releases/UML/latest/diagrams/diagram_Diagrams___18_1_83e026d_1433773264942_32842_8268.svg)
 
 ## 2.1. COMPOSITION content cardinality 0..*, no constraint over context
 
@@ -757,8 +782,10 @@ OBSERVATION data sets:
 3. OBSERVATION with state and no protocol
 4. OBSERVATION with state and protocol
 
+> Note: since data is mandatory by the RM we can't have a case for an AOM constraint with "no OBSERVATION.data". Though any OBSERVATION committed to the SUT without data will return a validation error comming from the RM/Schema, and this should be tested.
 
-The constraints combinations describe below could be tested in two ways:
+
+The constraints combinations described below could be tested in two ways:
 
 1. Isolation: by not constraining OBSERVATION.data, OBSERVATION.state and OBSERVATION.protocol, or using the open/'any allowed' constraint {*} for those attributes.
 2. Combination: with constraints defined at the HISTORY level (for data and state) and ITEM_STRUCTURE (for protocol). 
@@ -855,15 +882,19 @@ HISTORY data sets:
 4. HISTORY with events and summary
 
 
-The constraints combinations describe below could be tested in two ways:
+The constraints combinations described below could be tested in two ways:
 
 1. Isolation: by not constraining HISTORY.events and HISTORY.summary, or using the open/'any allowed' constraint {*} for those attributes.
 2. Combination: with constraints defined at the EVENT level (for events) and ITEM_STRUCTURE (for summary). 
 
 > Note: we suggest to test with both strategies.
 
+## 4.1. Reference UML for HISTORY and ITEM_STRUCTURE (latest RM)
 
-## HISTORY events cardinality 0..*, summary existence 0..1
+![](https://specifications.openehr.org/releases/UML/latest/diagrams/diagram_Diagrams___18_1_83e026d_1433773264324_187743_6733.svg)
+
+
+## 4.2. HISTORY events cardinality 0..*, summary existence 0..1
 
 <div id="history_1">
 
@@ -879,39 +910,39 @@ The constraints combinations describe below could be tested in two ways:
 </div>
 
 
-## HISTORY events cardinality 1..*, summary existence 0..1
+## 4.3. HISTORY events cardinality 1..*, summary existence 0..1
 
 <div id="history_2">
 
 | events           | summary         | expected | constraints violated |
 |:-----------------|:----------------|:--------:|:---------------------|
-| no events        | absent          | rejected | HSITORY.events cardinality.lower |
+| no events        | absent          | rejected | HISTORY.events cardinality.lower |
 | one event        | absent          | accepted |  |
 | three events     | absent          | accepted |  |
-| no event         | present         | rejected | HSITORY.events cardinality.lower |
+| no event         | present         | rejected | HISTORY.events cardinality.lower |
 | one event        | present         | accepted |  |
 | three events     | present         | accepted |  |
 
 </div>
 
 
-## HISTORY events cardinality 3..*, summary existence 0..1
+## 4.4. HISTORY events cardinality 3..*, summary existence 0..1
 
 <div id="history_3">
 
 | events           | summary         | expected | constraints violated |
 |:-----------------|:----------------|:--------:|:---------------------|
-| no events        | absent          | rejected | HSITORY.events cardinality.lower |
-| one event        | absent          | rejected | HSITORY.events cardinality.lower |
+| no events        | absent          | rejected | HISTORY.events cardinality.lower |
+| one event        | absent          | rejected | HISTORY.events cardinality.lower |
 | three events     | absent          | accepted |  |
-| no event         | present         | rejected | HSITORY.events cardinality.lower |
-| one event        | present         | rejected | HSITORY.events cardinality.lower |
+| no event         | present         | rejected | HISTORY.events cardinality.lower |
+| one event        | present         | rejected | HISTORY.events cardinality.lower |
 | three events     | present         | accepted |  |
 
 </div>
 
 
-## HISTORY events cardinality 0..1, summary existence 0..1
+## 4.5. HISTORY events cardinality 0..1, summary existence 0..1
 
 <div id="history_4">
 
@@ -919,47 +950,47 @@ The constraints combinations describe below could be tested in two ways:
 |:-----------------|:----------------|:--------:|:---------------------|
 | no events        | absent          | accepted |  |
 | one event        | absent          | accepted |  |
-| three events     | absent          | rejected | HSITORY.events cardinality.upper |
+| three events     | absent          | rejected | HISTORY.events cardinality.upper |
 | no event         | present         | accepted |  |
 | one event        | present         | accepted |  |
-| three events     | present         | rejected | HSITORY.events cardinality.upper |
+| three events     | present         | rejected | HISTORY.events cardinality.upper |
 
 </div>
 
 
-## HISTORY events cardinality 1..1, summary existence 0..1
+## 4.6. HISTORY events cardinality 1..1, summary existence 0..1
 
 <div id="history_5">
 
 | events           | summary         | expected | constraints violated |
 |:-----------------|:----------------|:--------:|:---------------------|
-| no events        | absent          | rejected | HSITORY.events cardinality.lower |
+| no events        | absent          | rejected | HISTORY.events cardinality.lower |
 | one event        | absent          | accepted |  |
-| three events     | absent          | rejected | HSITORY.events cardinality.upper |
-| no event         | present         | rejected | HSITORY.events cardinality.lower |
+| three events     | absent          | rejected | HISTORY.events cardinality.upper |
+| no event         | present         | rejected | HISTORY.events cardinality.lower |
 | one event        | present         | accepted |  |
-| three events     | present         | rejected | HSITORY.events cardinality.upper |
+| three events     | present         | rejected | HISTORY.events cardinality.upper |
 
 </div>
 
 
-## HISTORY events cardinality 3..5, summary existence 0..1
+## 4.7. HISTORY events cardinality 3..5, summary existence 0..1
 
 <div id="history_6">
 
 | events           | summary         | expected | constraints violated |
 |:-----------------|:----------------|:--------:|:---------------------|
-| no events        | absent          | rejected | HSITORY.events cardinality.lower |
-| one event        | absent          | rejected | HSITORY.events cardinality.lower |
+| no events        | absent          | rejected | HISTORY.events cardinality.lower |
+| one event        | absent          | rejected | HISTORY.events cardinality.lower |
 | three events     | absent          | accepted |  |
-| no event         | present         | rejected | HSITORY.events cardinality.lower |
-| one event        | present         | rejected | HSITORY.events cardinality.lower |
+| no event         | present         | rejected | HISTORY.events cardinality.lower |
+| one event        | present         | rejected | HISTORY.events cardinality.lower |
 | three events     | present         | accepted |  |
 
 </div>
 
 
-## HISTORY events cardinality 0..*, summary existence 1..1
+## 4.8. HISTORY events cardinality 0..*, summary existence 1..1
 
 <div id="history_1">
 
@@ -975,39 +1006,39 @@ The constraints combinations describe below could be tested in two ways:
 </div>
 
 
-## HISTORY events cardinality 1..*, summary existence 1..1
+## 4.9. HISTORY events cardinality 1..*, summary existence 1..1
 
 <div id="history_2">
 
 | events           | summary         | expected | constraints violated |
 |:-----------------|:----------------|:--------:|:---------------------|
-| no events        | absent          | rejected | HSITORY.events cardinality.lower, HISTORY.summary existence.lower |
+| no events        | absent          | rejected | HISTORY.events cardinality.lower, HISTORY.summary existence.lower |
 | one event        | absent          | rejected | HISTORY.summary existence.lower |
 | three events     | absent          | rejected | HISTORY.summary existence.lower |
-| no event         | present         | rejected | HSITORY.events cardinality.lower |
+| no event         | present         | rejected | HISTORY.events cardinality.lower |
 | one event        | present         | accepted |  |
 | three events     | present         | accepted |  |
 
 </div>
 
 
-## HISTORY events cardinality 3..*, summary existence 1..1
+## 4.10. HISTORY events cardinality 3..*, summary existence 1..1
 
 <div id="history_3">
 
 | events           | summary         | expected | constraints violated |
 |:-----------------|:----------------|:--------:|:---------------------|
-| no events        | absent          | rejected | HSITORY.events cardinality.lower, HISTORY.summary existence.lower |
-| one event        | absent          | rejected | HSITORY.events cardinality.lower, HISTORY.summary existence.lower |
+| no events        | absent          | rejected | HISTORY.events cardinality.lower, HISTORY.summary existence.lower |
+| one event        | absent          | rejected | HISTORY.events cardinality.lower, HISTORY.summary existence.lower |
 | three events     | absent          | rejected | HISTORY.summary existence.lower |
-| no event         | present         | rejected | HSITORY.events cardinality.lower |
-| one event        | present         | rejected | HSITORY.events cardinality.lower |
+| no event         | present         | rejected | HISTORY.events cardinality.lower |
+| one event        | present         | rejected | HISTORY.events cardinality.lower |
 | three events     | present         | accepted |  |
 
 </div>
 
 
-## HISTORY events cardinality 0..1, summary existence 1..1
+## 4.11. HISTORY events cardinality 0..1, summary existence 1..1
 
 <div id="history_4">
 
@@ -1015,180 +1046,212 @@ The constraints combinations describe below could be tested in two ways:
 |:-----------------|:----------------|:--------:|:---------------------|
 | no events        | absent          | rejected | HISTORY.summary existence.lower |
 | one event        | absent          | rejected | HISTORY.summary existence.lower |
-| three events     | absent          | rejected | HSITORY.events cardinality.upper, HISTORY.summary existence.lower |
+| three events     | absent          | rejected | HISTORY.events cardinality.upper, HISTORY.summary existence.lower |
 | no event         | present         | accepted |  |
 | one event        | present         | accepted |  |
-| three events     | present         | rejected | HSITORY.events cardinality.upper |
+| three events     | present         | rejected | HISTORY.events cardinality.upper |
 
 </div>
 
 
-## HISTORY events cardinality 1..1, summary existence 1..1
+## 4.12. HISTORY events cardinality 1..1, summary existence 1..1
 
 <div id="history_5">
 
 | events           | summary         | expected | constraints violated |
 |:-----------------|:----------------|:--------:|:---------------------|
-| no events        | absent          | rejected | HSITORY.events cardinality.lower, HISTORY.summary existence.lower |
+| no events        | absent          | rejected | HISTORY.events cardinality.lower, HISTORY.summary existence.lower |
 | one event        | absent          | rejected | HISTORY.summary existence.lower |
-| three events     | absent          | rejected | HSITORY.events cardinality.upper, HISTORY.summary existence.lower |
-| no event         | present         | rejected | HSITORY.events cardinality.lower |
+| three events     | absent          | rejected | HISTORY.events cardinality.upper, HISTORY.summary existence.lower |
+| no event         | present         | rejected | HISTORY.events cardinality.lower |
 | one event        | present         | accepted |  |
-| three events     | present         | rejected | HSITORY.events cardinality.upper |
+| three events     | present         | rejected | HISTORY.events cardinality.upper |
 
 </div>
 
 
-## HISTORY events cardinality 3..5, summary existence 1..1
+## 4.13. HISTORY events cardinality 3..5, summary existence 1..1
 
 <div id="history_6">
 
 | events           | summary         | expected | constraints violated |
 |:-----------------|:----------------|:--------:|:---------------------|
-| no events        | absent          | rejected | HSITORY.events cardinality.lower, HISTORY.summary existence.lower |
-| one event        | absent          | rejected | HSITORY.events cardinality.lower, HISTORY.summary existence.lower |
+| no events        | absent          | rejected | HISTORY.events cardinality.lower, HISTORY.summary existence.lower |
+| one event        | absent          | rejected | HISTORY.events cardinality.lower, HISTORY.summary existence.lower |
 | three events     | absent          | rejected | HISTORY.summary existence.lower |
-| no event         | present         | rejected | HSITORY.events cardinality.lower |
-| one event        | present         | rejected | HSITORY.events cardinality.lower |
+| no event         | present         | rejected | HISTORY.events cardinality.lower |
+| one event        | present         | rejected | HISTORY.events cardinality.lower |
 | three events     | present         | accepted |  |
 
 </div>
 
 
-# EVENT data sets (WIP)
+# 5. EVENT data sets and test cases
 
 EVENT data sets:
 
-5. EVENT with no state
-6. EVENT with state
+1. EVENT with no state
+2. EVENT with state
+
+> Note: since data is mandatory by the RM we can't have a case for an AOM constraint with "no EVENT.data". Though any EVENT committed to the SUT without data will return a validation error comming from the RM/Schema, and this should be tested.
 
 
-EVENT type combinations for the case of HISTORY with events:
+EVENT type combinations:
 
 1. EVENT is POINT_EVENT
 2. EVENT is INTERVAL_EVENT
 
-> Note: the combination of the HISTORY data sets with the EVENT types shouldn't affect the result of the constraints for cardinality and existence, but will affect if the wrong type is provided. So instead of combining the expected results, we could define separate tables for each set of constraints.
+> Note: testing both EVENT subclasses shouldn't affect the result of testing combinations with the rest of the constraints defined for EVENT or on container classes. It will affect only the type checking test if the wrong type of EVENT is provided. So instead of combining the expected results with the rest of the constraints, we will define separate test cases.
 
-EVENT structure combinations
+The constraints combinations described below could be tested in two ways:
 
-1. EVENT.data is ITEM_TREE
-2. EVENT.data is ITEM_LIST
-3. EVENT.data is ITEM_TABLE
-4. EVENT.data is ITEM_SINGLE
+1. Isolation: by not constraining EVENT.data and EVENT.state, or using the open/'any allowed' constraint {*} for those attributes.
+2. Combination: with constraints defined at the ITEM_STRUCTURE level (for data and state).
 
-> Note: test with TREE first because that is the most used structure type and the rest are just parcular cases of TREE.
+> Note: we suggest to test with both strategies.
 
-> Note: to simplify modeling, the EVENT.data constraint could be open {*} so any instance will pass constraints at that level and only the constraints at the OBSERVATION level will be tested. 
+## 5.1. EVENT state existence 0..1
 
-### EVENT data existence 0..1, state existence 0..1
+<div id="evt_1">
 
-| event.data | event.state |expected | constraints violated |
-|:-----------------|:----------------|:--------:|:---------------------|
-| no data    | no state    | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
-| present    | no state    | accepted |  |
-| present     | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
-| present     | accepted |  |
-| no data    | no state    | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
-| present    | no state    | accepted |  |
-| no data    | present     | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
-| present    | present     | accepted |  |
-| no data    | no state    | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
-| present    | no state    | accepted |  |
-| no data    | present     | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
-| present    | present     | accepted |  |
-| no data    | no state    | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
-| present    | no state    | accepted |  |
-| no data    | present     | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
-| present    | present     | accepted |  |
-| no data    | no state    | rejected | EVENT.data occurrences.lower (RM/schema constraint) |
+| data         | state      | expected | constraints violated |
+|:-------------|:-----------|----------|----------------------|
+| absent       | absent     | rejected | EVENT.data existence.lower (RM/schema constraint) |
+| absent       | present    | rejected | EVENT.data existence.lower (RM/schema constraint) |
+| present      | absent     | accepted |  |
+| present      | present    | accepted |  |
+
+</div>
+
+## 5.2. EVENT state existence 1..1
+
+<div id="evt_2">
+
+| data         | state      | expected | constraints violated |
+|:-------------|:-----------|----------|----------------------|
+| absent       | absent     | rejected | EVENT.data existence.lower (RM/schema constraint), EVENT.state existence.lower |
+| absent       | present    | rejected | EVENT.data existence.lower (RM/schema constraint) |
+| present      | absent     | rejected | EVENT.state existence.lower |
+| present      | present    | accepted |  |
+
+</div>
+
+## 5.3. EVENT is EVENT
+
+The title of this case is correct, it means, in the AOM/TOM the constraint for the EVENT type is using the abstract class EVENT, so it allows any EVENT subclass at this position at runtime.
+
+<div id="evt_3">
+
+| event          | expected | constraints violated |
+|:---------------|----------|----------------------|
+| POINT_EVENT    | accepted |  |
+| INTERVAL_EVENT | accepted |  |
+
+</div>
+
+## 5.4. EVENT is POINT_EVENT
+
+<div id="evt_3">
+
+| event          | expected | constraints violated |
+|:---------------|----------|----------------------|
+| POINT_EVENT    | accepted |  |
+| INTERVAL_EVENT | rejected | Class not allowed |
+
+</div>
+
+## 5.5. EVENT is INTERVAL_EVENT
+
+<div id="evt_3">
+
+| event          | expected | constraints violated |
+|:---------------|----------|----------------------|
+| POINT_EVENT    | rejected | Class not allowed |
+| INTERVAL_EVENT | accepted |  |
 
 </div>
 
 
-----
-**FOR REFERENCE ONLY, don't read below this for implementation purposes**
-
-- no state
-- data.events cardinality is 0..*
-- data.events allow ant EVENT
-- EVENT has no state
-- EVENT.data is ITEM_TREE
-- ITEM_TREE has open constraint {*}
+# 6. ITEM_STRUCTURE data sets and test cases
 
 
-### OBSERVATION data.events cardinality = 1..*, state.existence = 0..1, protocol.existence = 0..1
+ITEM_STRUCTURE type combinations:
 
-Content is just OBSERVATION
-- no state
-- data.events cardinality is 1..*
-- data.events allow ant EVENT
-- EVENT has no state
-- EVENT.data is ITEM_TREE
-- ITEM_TREE has open constraint {*}
+1. ITEM_STRUCTURE is ITEM_TREE
+2. ITEM_STRUCTURE is ITEM_LIST
+3. ITEM_STRUCTURE is ITEM_TABLE
+4. ITEM_STRUCTURE is ITEM_SINGLE
 
-### OBSERVATION events cardinality = 3..*, state.existence = 0..1, protocol.existence = 0..1
+> Note: testing with any of the ITEM_STRUCTURE subclasses shouldn't affect the result of testing combinations with the rest of the constraints defined on container classes. It will affect only the type checking test if the wrong type of ITEM_STRUCTRE is provided. So instead of combining the expected results with the rest of the constraints, we will define separate test cases.
 
-Content is just OBSERVATION
-- no state
-- data.events cardinality is 3..*
-- data.events allow ant EVENT
-- EVENT has no state
-- EVENT.data is ITEM_TREE
-- ITEM_TREE has open constraint {*}
+## 6.1. ITEM_STRUCTURE is ITEM_STRUCTURE
 
-### OBSERVATION events cardinality = 0..1, state.existence = 0..1, protocol.existence = 0..1
+The title of this case is correct, it means, in the AOM/TOM the constraint for the ITEM_STRUCTURE type is using the abstract class ITEM_STRUCTURE, so it allows any ITEM_STRUCTURE subclass at this position at runtime.
 
-Content is just OBSERVATION
-- no state
-- data.events cardinality is 0..1
-- data.events allow ant EVENT
-- EVENT has no state
-- EVENT.data is ITEM_TREE
-- ITEM_TREE has open constraint {*}
+<div id="str_1">
 
+| event          | expected | constraints violated |
+|:---------------|----------|----------------------|
+| ITEM_TREE      | accepted |  |
+| ITEM_LIST      | accepted |  |
+| ITEM_TABLE     | accepted |  |
+| ITEM_SINGLE    | accepted |  |
 
-### OBSERVATION events cardinality = 1..1, state.existence = 0..1, protocol.existence = 0..1
+</div>
 
-Content is just OBSERVATION
-- no state
-- data.events cardinality is 1..1
-- data.events allow ant EVENT
-- EVENT has no state
-- EVENT.data is ITEM_TREE
-- ITEM_TREE has open constraint {*}
+## 6.2. ITEM_STRUCTURE is ITEM_TREE
 
-### OBSERVATION events cardinality = 3..5, state.existence = 0..1, protocol.existence = 0..1
+<div id="str_2">
 
-Content is just OBSERVATION
-- no state
-- data.events cardinality is 3..5
-- data.events allow ant EVENT
-- EVENT has no state
-- EVENT.data is ITEM_TREE
-- ITEM_TREE has open constraint {*}
+| event          | expected | constraints violated |
+|:---------------|----------|----------------------|
+| ITEM_TREE      | accepted |  |
+| ITEM_LIST      | rejected | Class not allowed |
+| ITEM_TABLE     | rejected | Class not allowed |
+| ITEM_SINGLE    | rejected | Class not allowed |
+
+</div>
 
 
-### OBSERVATION data.events cardinality = 0..*, state.existence = 1..1, protocol.existence = 0..1
-### OBSERVATION data.events cardinality = 1..*, state.existence = 1..1, protocol.existence = 0..1
-### OBSERVATION data.events cardinality = 3..*, state.existence = 1..1, protocol.existence = 0..1
-### OBSERVATION data.events cardinality = 0..1, state.existence = 1..1, protocol.existence = 0..1
-### OBSERVATION data.events cardinality = 1..1, state.existence = 1..1, protocol.existence = 0..1
-### OBSERVATION data.events cardinality = 3..5, state.existence = 1..1, protocol.existence = 0..1
+## 6.3. ITEM_STRUCTURE is ITEM_LIST
+
+<div id="str_3">
+
+| event          | expected | constraints violated |
+|:---------------|----------|----------------------|
+| ITEM_TREE      | rejected | Class not allowed |
+| ITEM_LIST      | accepted |  |
+| ITEM_TABLE     | rejected | Class not allowed |
+| ITEM_SINGLE    | rejected | Class not allowed |
+
+</div>
 
 
-### OBSERVATION data.events cardinality = 0..*, state.existence = 0..1, protocol.existence = 1..1
-### OBSERVATION data.events cardinality = 1..*, state.existence = 0..1, protocol.existence = 1..1
-### OBSERVATION data.events cardinality = 3..*, state.existence = 0..1, protocol.existence = 1..1
-### OBSERVATION data.events cardinality = 0..1, state.existence = 0..1, protocol.existence = 1..1
-### OBSERVATION data.events cardinality = 1..1, state.existence = 0..1, protocol.existence = 1..1
-### OBSERVATION data.events cardinality = 3..5, state.existence = 0..1, protocol.existence = 1..1
+## 6.4. ITEM_STRUCTURE is ITEM_TABLE
+
+<div id="str_4">
+
+| event          | expected | constraints violated |
+|:---------------|----------|----------------------|
+| ITEM_TREE      | rejected | Class not allowed |
+| ITEM_LIST      | rejected | Class not allowed |
+| ITEM_TABLE     | accepted |  |
+| ITEM_SINGLE    | rejected | Class not allowed |
+
+</div>
 
 
-### OBSERVATION data.events cardinality = 0..*, state.existence = 1..1, protocol.existence = 1..1
-### OBSERVATION data.events cardinality = 1..*, state.existence = 1..1, protocol.existence = 1..1
-### OBSERVATION data.events cardinality = 3..*, state.existence = 1..1, protocol.existence = 1..1
-### OBSERVATION data.events cardinality = 0..1, state.existence = 1..1, protocol.existence = 1..1
-### OBSERVATION data.events cardinality = 1..1, state.existence = 1..1, protocol.existence = 1..1
-### OBSERVATION data.events cardinality = 3..5, state.existence = 1..1, protocol.existence = 1..1
+## 6.5. ITEM_STRUCTURE is ITEM_SINGLE
+
+<div id="str_5">
+
+| event          | expected | constraints violated |
+|:---------------|----------|----------------------|
+| ITEM_TREE      | rejected | Class not allowed |
+| ITEM_LIST      | rejected | Class not allowed |
+| ITEM_TABLE     | rejected | Class not allowed |
+| ITEM_SINGLE    | accepted |  |
+
+</div>
+
 
