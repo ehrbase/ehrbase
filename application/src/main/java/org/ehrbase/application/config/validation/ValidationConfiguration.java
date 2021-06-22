@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.configuration.validation;
+package org.ehrbase.application.config.validation;
 
 import org.apache.http.client.HttpClient;
 import org.ehrbase.validation.constraints.terminology.ExternalTerminologyValidationSupport;
@@ -36,6 +36,7 @@ import java.util.Map;
 @Configuration
 @ConditionalOnProperty(name = "validation.external-terminology.enabled", havingValue = "true")
 @EnableConfigurationProperties(ValidationProperties.class)
+@SuppressWarnings("java:S6212")
 public class ValidationConfiguration {
 
     private static final Logger LOG = LoggerFactory.getLogger(ValidationConfiguration.class);
