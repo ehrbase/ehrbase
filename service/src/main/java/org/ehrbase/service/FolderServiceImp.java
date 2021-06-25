@@ -245,6 +245,9 @@ public class FolderServiceImp extends BaseService implements FolderService {
         // Set update data on root folder
         FolderUtils.updateFolder(update, folderAccess);
 
+        // Delete sub folders and all their sub folder, as well as their linked entities
+        folderAccess.getSubfoldersList().forEach((sf, sa) ->
+            delete(new ObjectVersionId(sf.toString()), contribution, committerId, description));
         // Clear sub folder list
         folderAccess.getSubfoldersList().clear();
 

@@ -31,6 +31,7 @@ import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.dao.access.util.FolderUtils;
+import org.ehrbase.dao.access.util.TransactionTime;
 import org.ehrbase.jooq.binding.OtherDetailsJsonbBinder;
 import org.ehrbase.jooq.binding.SysPeriodBinder;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
@@ -150,13 +151,6 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
 
         newContribution = folderRecord.getInContribution();
 
-        // Delete so folder can be overwritten
-        // This will also delete items since cascading the delete to the items table as well as
-        // all FolderHierarchy entries
-        // TODO-436: what now? semantically a deletion should be "a soft delete this particular version". how can that be used like that?
-        // TODO-436: CREATES LOOP -> is disabled for now -> is also part of TODO-425 folder delete
-        //this.delete(folderRecord.getId());
-
         return this.update(transactionTime, force, true, null, oldContribution, newContribution, systemId, committerId, description, changeType);
     }
 
@@ -193,23 +187,9 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
 
         boolean result;
 
-        DSLContext dslContext = getContext();
-        dslContext.attach(this.folderRecord);
-
         // Set new Contribution for MODIFY
         this.setInContribution(newContribution);
 
-        // Copy into new instance and attach to DB context.
-        FolderRecord updatedFolderRecord = new FolderRecord();
-
-        updatedFolderRecord.setInContribution(newContribution);
-        updatedFolderRecord.setName(this.getFolderName());
-        updatedFolderRecord.setArchetypeNodeId(this.getFolderArchetypeNodeId());
-        updatedFolderRecord.setActive(this.isFolderActive());
-        updatedFolderRecord.setDetails(this.getFolderDetails());
-        updatedFolderRecord.setSysTransaction(transactionTime);
-        updatedFolderRecord.setSysPeriod(this.getFolderSysPeriod());
-        // TODO-436: add audit
         // create new folder audit with given values
         auditDetailsAccess = new AuditDetailsAccess(this);
         auditDetailsAccess.setSystemId(systemId);
@@ -217,20 +197,47 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         auditDetailsAccess.setDescription(description);
         auditDetailsAccess.setChangeType(I_ConceptAccess.fetchContributionChangeType(this, contributionChangeType));
         UUID auditId = this.auditDetailsAccess.commit();
-        updatedFolderRecord.setHasAudit(auditId);
-
-        // attach to context DB
-        dslContext.attach(updatedFolderRecord);
 
         if(rootFolder) {//if it is the root folder preserve the original id, otherwise let the DB provide a new one for the overridden subfolders.
-            updatedFolderRecord.setId(this.getFolderId());
-            result = updatedFolderRecord.update() > 0;
+            folderRecord.setInContribution(newContribution);
+            folderRecord.setSysTransaction(transactionTime);
+            getContext().attach(folderRecord);
+            result = folderRecord.update() > 0;
         } else {
+            // Copy into new instance and attach to DB context.
+            var updatedFolderRecord = new FolderRecord();
+
+            updatedFolderRecord.setInContribution(newContribution);
+            updatedFolderRecord.setName(this.getFolderName());
+            updatedFolderRecord.setArchetypeNodeId(this.getFolderArchetypeNodeId());
+            updatedFolderRecord.setActive(this.isFolderActive());
+            updatedFolderRecord.setDetails(this.getFolderDetails());
+            updatedFolderRecord.setSysTransaction(transactionTime);
+            updatedFolderRecord.setSysPeriod(this.getFolderSysPeriod());
+            updatedFolderRecord.setHasAudit(auditId);
+
+            // attach to context DB
+            getContext().attach(updatedFolderRecord);
             // Save new Folder entry to the database
-            result = updatedFolderRecord.store() > 0;
+            result = updatedFolderRecord.insert() > 0;
+            // Finally overwrite original FolderRecord on this FolderAccess instance to have the
+            // new data available at service layer. Thus we do not need to re-fetch the updated folder
+            // tree from DB
+            this.folderRecord = updatedFolderRecord;
+
+            // Create FolderHierarchy entries this sub folder instance
+            var updatedFhR = new FolderHierarchyRecord();
+            updatedFhR.setParentFolder(parentFolder);
+            updatedFhR.setChildFolder(updatedFolderRecord.getId());
+            updatedFhR.setInContribution(newContribution);
+            updatedFhR.setSysTransaction(transactionTime);
+            updatedFhR.setSysPeriod(folderRecord.getSysPeriod());
+            getContext().attach(updatedFhR);
+            updatedFhR.store();
+
         }
         // Get new folder id for folder items and hierarchy
-        UUID updatedFolderId = updatedFolderRecord.getId();
+        UUID updatedFolderId = this.folderRecord.getId();
 
         // Update items -> Save new list of all items in this folder
         this.saveFolderItems(updatedFolderId,
@@ -238,18 +245,6 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
                 newContribution,
                 transactionTime,
                 getContext());
-
-        // Create FolderHierarchy entries if this instance is a sub folder
-        if (!rootFolder) {
-            FolderHierarchyRecord updatedFhR = new FolderHierarchyRecord();
-            updatedFhR.setParentFolder(parentFolder);
-            updatedFhR.setChildFolder(updatedFolderId);
-            updatedFhR.setInContribution(newContribution);
-            updatedFhR.setSysTransaction(transactionTime);
-            updatedFhR.setSysPeriod(folderRecord.getSysPeriod());
-            dslContext.attach(updatedFhR);
-            updatedFhR.store();
-        }
 
         boolean anySubfolderModified = this.getSubfoldersList() // Map of sub folders with UUID
                 .values() // Get all I_FolderAccess entries
@@ -267,10 +262,6 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
                                 contributionChangeType)
                 )).reduce((b1, b2) -> b1 || b2).orElse(false);
 
-        // Finally overwrite original FolderRecord on this FolderAccess instance to have the
-        // new data available at service layer. Thus we do not need to re-fetch the updated folder
-        // tree from DB
-        this.folderRecord = updatedFolderRecord;
         return result || anySubfolderModified;
     }
 
@@ -542,8 +533,11 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
      * Deletes the FOLDER identified with the Folder.id provided and all its subfolders recursively.
      *
      * @param folderId of the {@link  com.nedap.archie.rm.directory.Folder} to delete.
-     *                 TODO-436_ docs
-     * @return number of the total {@link  com.nedap.archie.rm.directory.Folder} deleted recursively.
+     * @param contribution Optional contribution. Provide null to create a new one.
+     * @param systemId System ID for audit
+     * @param committerId Committer ID for audit
+     * @param description Optional description for audit
+     * @return number of the total folders deleted recursively.
      */
     private Integer delete(final UUID folderId, UUID contribution, UUID systemId, UUID committerId, String description) {
 
@@ -551,54 +545,74 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
             throw new IllegalArgumentException("The folder UID provided for performing a delete operation cannot be null.");
         }
 
-        // TODO-436: first update with new contribution and audit (reflecting deletion) and then actually deleting it
-        update(Timestamp.from(Instant.now()), false, contribution, systemId, committerId,
-            description, ContributionChangeType.DELETED);
+        // Collect directly linked entities before applying changes:
+        // Collect all linked hierarchy entries and linked (children) folders
+        var hierarchyRecord = getContext().fetch(FOLDER_HIERARCHY,
+            FOLDER_HIERARCHY.PARENT_FOLDER.eq(folderId)
+                .or(FOLDER_HIERARCHY.CHILD_FOLDER.eq(folderId)));
+        // Collect all linked item entries
+        var itemsRecord = getContext().fetch(FOLDER_ITEMS,
+            FOLDER_ITEMS.FOLDER_ID.eq(folderId));
 
-        /* SQL code for the recursive call generated inside the delete that retrieves children iteratively.
-         * WITH RECURSIVE subfolders AS (
-         * 		SELECT parent_folder, child_folder, in_contribution, sys_transaction
-         * 		FROM ehr.folder_hierarchy
-         * 		WHERE parent_folder = '00550555-ec91-4025-838d-09ddb4e999cb'
-         * 	UNION
-         * 		SELECT sf.parent_folder, sf.child_folder, sf.in_contribution, sf.sys_transaction
-         * 		FROM ehr.folder_hierarchy sf
-         * 		INNER JOIN subfolders s ON sf.parent_folder=s.child_folder
-         * ) SELECT * FROM subfolders
-         */
-        int result;
+        var result = 0;
 
-        Table<?> sfTable = table(
-                select()
-                        .from(FOLDER_HIERARCHY));
+        for (FolderHierarchyRecord rec : hierarchyRecord) {
+            // Delete child folder, and actual children only. While later removing all hierarchies anyway.
+            if (rec.getParentFolder().equals(folderId)) {
+                result += delete(rec.getChildFolder(), contribution, systemId, committerId,
+                    description);
+            }
+            // Delete whole hierarchy entity
+            rec.delete();
+        }
 
-        Table<?> initialTable = table(
-                select()
-                        .from(FOLDER_HIERARCHY)
-                        .where(
-                                FOLDER_HIERARCHY.PARENT_FOLDER.eq(folderId)));
+        // Delete each linked items entity
+        for (FolderItemsRecord rec : itemsRecord) {
+            rec.delete();
+        }
 
-        Field<UUID> subfolderChildFolder = field("subfolders.{0}", FOLDER_HIERARCHY.CHILD_FOLDER.getDataType(), FOLDER_HIERARCHY.CHILD_FOLDER.getUnqualifiedName());
+        // .delete() moves the old version to _history table.
+        var folderRec = getContext().fetchOne(FOLDER, FOLDER.ID.eq(folderId));
+        result += folderRec.delete();
 
-        result = this.getContext().delete(FOLDER).where(FOLDER.ID.in(this.getContext().withRecursive(
-            SUBFOLDERS).as(
-                select(initialTable.fields()).
-                        from(initialTable).
-                        union(
-                                (select(sfTable.fields()).from(sfTable).
-                                        innerJoin(SUBFOLDERS).on(sfTable.field(PARENT_FOLDER, FOLDER_HIERARCHY.PARENT_FOLDER.getType()).
-                                        eq(subfolderChildFolder))))
-                ).select()
-                        .from(table(name(SUBFOLDERS)))
-                        .fetch()
-                        .getValues(field(name(CHILD_FOLDER)))
-        ))
-                .or(FOLDER.ID.eq(folderId))
-                .execute();
+        // create new deletion audit
+        var delAudit = I_AuditDetailsAccess.getInstance(this, systemId, committerId, I_ConceptAccess.ContributionChangeType.DELETED, description);
+        UUID delAuditId = delAudit.commit();
+
+        if (contribution == null) {
+            // create new contribution for this deletion action (with embedded contribution.audit handling)
+            contributionAccess = I_ContributionAccess.getInstance(getDataAccess(),
+                contributionAccess.getEhrId()); // overwrite old contribution with new one
+            contribution = contributionAccess
+                .commit(TransactionTime.millis(), committerId, systemId, null,
+                    ContributionDef.ContributionState.COMPLETE,
+                    I_ConceptAccess.ContributionChangeType.DELETED, description);
+        }
+
+        // create new, BUT already moved to _history, version documenting the deletion
+        createAndCommitNewDeletedVersionAsHistory(folderRec, delAuditId, contribution);
 
         return result;
     }
 
+    private void createAndCommitNewDeletedVersionAsHistory(FolderRecord folderRecord, UUID delAuditId, UUID contrib) {
+        // a bit hacky: create new, BUT already moved to _history, version documenting the deletion
+        // (Normal approach of first .update() then .delete() won't work, because postgres' transaction optimizer will
+        // just skip the update if it will get deleted anyway.)
+        // so copy values, but add deletion meta data
+        FolderHistoryRecord newRecord = getDataAccess().getContext().newRecord(FOLDER_HISTORY);
+        newRecord.setId(folderRecord.getId());
+        newRecord.setInContribution(contrib);
+        newRecord.setName(folderRecord.getName());
+        newRecord.setArchetypeNodeId(folderRecord.getArchetypeNodeId());
+        newRecord.setActive(folderRecord.getActive());    // TODO-436: or would it mean deleted == false?
+        newRecord.setDetails(folderRecord.getDetails());
+        newRecord.setHasAudit(delAuditId);
+        newRecord.setSysTransaction(TransactionTime.millis());
+        newRecord.setSysPeriod(new AbstractMap.SimpleEntry<>(OffsetDateTime.now(), null));
+        if (newRecord.insert() != 1) // commit and throw error if nothing was inserted into DB
+            throw new InternalServerException("DB inconsistency");
+    }
 
     /**
      * Create a new FolderAccess that contains the full hierarchy of its corresponding {@link I_FolderAccess} children that represents the subfolders.
@@ -664,26 +678,17 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
     /**
      * Create a new FolderAccess from a {@link FolderRecord} DB record
      *
-     * @param record_      containing the information of a {@link  com.nedap.archie.rm.directory.Folder} in the DB.
+     * @param folderRecord containing the information of a {@link  com.nedap.archie.rm.directory.Folder} in the DB.
      * @param domainAccess containing the DB connection information.
      * @return FolderAccess instance corresponding to the org.ehrbase.jooq.pg.tables.records.FolderRecord provided.
      */
-    private static FolderAccess buildFolderAccessFromFolderRecord(final FolderRecord record_,
+    private static FolderAccess buildFolderAccessFromFolderRecord(final FolderRecord folderRecord,
                                                                   final I_DomainAccess domainAccess) {
-        FolderRecord record = record_;
-        FolderAccess folderAccess = new FolderAccess(domainAccess);
-        folderAccess.folderRecord = new FolderRecord();
-        folderAccess.setFolderId(record.getId());
-        folderAccess.setInContribution(record.getInContribution());
-        folderAccess.setFolderName(record.getName());
-        folderAccess.setFolderNArchetypeNodeId(record.getArchetypeNodeId());
-        folderAccess.setIsFolderActive(record.getActive());
-        folderAccess.setFolderDetails(record.getDetails());
-        folderAccess.setFolderSysTransaction(record.getSysTransaction());
-        folderAccess.setFolderSysPeriod(record.getSysPeriod());
+        var folderAccess = new FolderAccess(domainAccess);
+        folderAccess.folderRecord = folderRecord;
         folderAccess.getItems()
-                .addAll(FolderAccess.retrieveItemsByFolderAndContributionId(record.getId(),
-                        record.getInContribution(),
+                .addAll(FolderAccess.retrieveItemsByFolderAndContributionId(folderRecord.getId(),
+                        folderRecord.getInContribution(),
                         domainAccess));
         return folderAccess;
     }
