@@ -105,26 +105,13 @@ public interface FolderService extends BaseService {
      * @param folderId - Full version_uid for folder including system id and version
      * @param update - Update content from request body
      * @param ehrId - EHR id for contribution creation
-     * @param committerId - ID of committer for audit
-     * @return Updated folder entry
-     */
-    Optional<FolderDto> update(ObjectVersionId folderId, Folder update, UUID ehrId, UUID committerId);
-
-    /**
-     * Updates a target folder entry identified by the given folderId with new
-     * content. The content string will be serialized from the given source
-     * format.
-     *
-     * @param folderId - Full version_uid for folder including system id and version
-     * @param update - Update content from request body
-     * @param ehrId - EHR id for contribution creation
      * @param contribution - Optional (can be set null) custom contribution to use for this update
-     *                     TODO-436: add systemId too - see create
+     * @param systemId System ID for audit
      * @param committerId - ID of committer for audit
      * @param description  - Optional description test for audit
      * @return Updated folder entry
      */
-    Optional<FolderDto> update(ObjectVersionId folderId, Folder update, UUID ehrId, UUID contribution, UUID committerId,
+    Optional<FolderDto> update(ObjectVersionId folderId, Folder update, UUID ehrId, UUID contribution, UUID systemId, UUID committerId,
         String description);
 
     /**
@@ -134,12 +121,12 @@ public interface FolderService extends BaseService {
      *
      * @param folderId - Id of the target folder
      * @param contribution - Optional (can be set null) custom contribution to use for this update
-     *                     TODO-436: add systemId too - see create
+     * @param systemId System ID for audit
      * @param committerId - ID of committer for audit
      * @param description  - Optional description test for audit
      * @return Timestamp of successful delete operation
      */
-    LocalDateTime delete(ObjectVersionId folderId, UUID contribution, UUID committerId, String description);
+    LocalDateTime delete(ObjectVersionId folderId, UUID contribution, UUID systemId, UUID committerId, String description);
 
     /**
      * Serializes folder content from request body into a structured string

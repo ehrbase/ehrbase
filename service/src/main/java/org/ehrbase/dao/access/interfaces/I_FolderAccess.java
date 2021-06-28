@@ -166,14 +166,13 @@ public interface I_FolderAccess extends I_SimpleCRUD {
      */
     Boolean update(final Timestamp transactionTime, final boolean force, UUID contribution, UUID systemId, UUID committerId, String description, ContributionChangeType changeType);
 
-    // TODO-436: docs
     /**
-     *
-     * @param contribution
-     * @param systemId
-     * @param committerId
-     * @param description
-     * @return
+     * Invoke deletion of this folder and all its sub-folders.
+     * @param contribution Optional contribution. Provide null to create a new one.
+     * @param systemId System ID for audit
+     * @param committerId Committer ID for audit
+     * @param description Optional description for audit
+     * @return Number of deleted folders in total
      */
     Integer delete(UUID contribution, UUID systemId, UUID committerId, String description);
 

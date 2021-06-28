@@ -214,20 +214,8 @@ public class FolderServiceImp extends BaseService implements FolderService {
             ObjectVersionId folderId,
             Folder update,
             UUID ehrId,
-            UUID committerId
-    ) {
-        return update(folderId, update, ehrId, null, committerId, null);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Optional<FolderDto> update(
-            ObjectVersionId folderId,
-            Folder update,
-            UUID ehrId,
             UUID contribution,
+            UUID systemId,
             UUID committerId,
             String description
     ) {
@@ -247,7 +235,7 @@ public class FolderServiceImp extends BaseService implements FolderService {
 
         // Delete sub folders and all their sub folder, as well as their linked entities
         folderAccess.getSubfoldersList().forEach((sf, sa) ->
-            delete(new ObjectVersionId(sf.toString()), contribution, committerId, description));
+            delete(new ObjectVersionId(sf.toString()), contribution, systemId, committerId, description));
         // Clear sub folder list
         folderAccess.getSubfoldersList().clear();
 
@@ -268,7 +256,7 @@ public class FolderServiceImp extends BaseService implements FolderService {
         }
 
         // Send update to access layer which updates the hierarchy recursive
-        if (folderAccess.update(timestamp, false, contribution, getSystemUuid(), committerId,
+        if (folderAccess.update(timestamp, false, contribution, systemId, committerId,
             description, ContributionChangeType.MODIFICATION)
                 .equals(true)) {
             return createDto(folderAccess, getLastVersionNumber(folderId), true);
@@ -281,11 +269,11 @@ public class FolderServiceImp extends BaseService implements FolderService {
      * {@inheritDoc}
      */
     @Override
-    public LocalDateTime delete(ObjectVersionId folderId, UUID contribution, UUID committerId, String description) {
+    public LocalDateTime delete(ObjectVersionId folderId, UUID contribution, UUID systemId, UUID committerId, String description) {
 
         I_FolderAccess folderAccess = I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), folderId);
 
-        if (folderAccess.delete(contribution, getSystemUuid(), committerId, description) > 0) {
+        if (folderAccess.delete(contribution, systemId, committerId, description) > 0) {
             return LocalDateTime.now();
         } else {
             // Not found and bad argument exceptions are handled before thus this case can only occur on unknown errors

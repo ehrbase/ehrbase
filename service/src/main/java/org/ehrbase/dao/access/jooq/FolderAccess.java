@@ -69,6 +69,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
     public static final String SUBFOLDERS = "subfolders";
     public static final String PARENT_FOLDER = "parent_folder";
     public static final String CHILD_FOLDER = "child_folder";
+    public static final String CALLED_INVALID_ACCESS_LAYER_METHOD = "Called invalid access layer method.";
 
     // TODO: Check how to remove this unused details for confusion prevention
     private ItemStructure details;
@@ -113,16 +114,14 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
 
     @Override
     public Boolean update(Timestamp transactionTime) {
-        // TODO-436: not valid, because missing mandatory data like committer
-        //return this.update(transactionTime, true);
-        throw new InternalServerException("Called invalid access layer method.");
+        // not valid, because missing mandatory data, like committer
+        throw new InternalServerException(CALLED_INVALID_ACCESS_LAYER_METHOD);
     }
 
     @Override
     public Boolean update(final Timestamp transactionTime, final boolean force) {
-        // TODO-436: not valid, because missing mandatory data like committer
-        //return update(transactionTime, force, null);
-        throw new InternalServerException("Called invalid access layer method.");
+        // not valid, because missing mandatory data, like committer
+        throw new InternalServerException(CALLED_INVALID_ACCESS_LAYER_METHOD);
     }
 
     @Override
@@ -137,9 +136,8 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
             UUID contributionAccessEhrId = this.contributionAccess.getEhrId();
             /*save the EHR id from oldContribution since it will be the same as this is an update operation*/
             if (this.contributionAccess.getEhrId() == null) {
-                // TODO-436: remove context breaking call. extract to own contribution method, if necessary
-                final Record1<UUID> result1 = getContext().select(CONTRIBUTION.EHR_ID).from(CONTRIBUTION).where(CONTRIBUTION.ID.eq(oldContribution)).fetch().get(0);
-                contributionAccessEhrId = result1.value1();
+                ContributionRecord rec = getContext().fetchOne(CONTRIBUTION, CONTRIBUTION.ID.eq(oldContribution));
+                contributionAccessEhrId = rec.getEhrId();
             }
             this.contributionAccess.setEhrId(contributionAccessEhrId);
 
@@ -161,7 +159,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
     public ObjectVersionId create(UUID customContribution, UUID systemId, UUID committerId, String description) {
         if (customContribution == null) {
             return new ObjectVersionId(
-                    this.commit(Timestamp.from(Instant.now()), systemId, committerId, description).toString()        // TODO-436: change signature of commit()
+                    this.commit(Timestamp.from(Instant.now()), systemId, committerId, description).toString()
                             + "::" + getServerConfig().getNodename()
                             + "::1"
             );
@@ -299,7 +297,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
 
     @Override
     public UUID commit(Timestamp transactionTime) {
-        throw new InternalServerException("Called invalid access layer method.");
+        throw new InternalServerException(CALLED_INVALID_ACCESS_LAYER_METHOD);
     }
 
     /**
@@ -329,13 +327,12 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
     public UUID commit(Timestamp transactionTime, UUID contributionId) {
 
         this.getFolderRecord().setInContribution(contributionId);
-        var contributionAccess = I_ContributionAccess.retrieveInstance(this.getDataAccess(), contributionId);
-        // TODO-436: add audit
+        var inputContributionAccess = I_ContributionAccess.retrieveInstance(this.getDataAccess(), contributionId);
         // create new folder audit with given values
         auditDetailsAccess = new AuditDetailsAccess(this);
-        auditDetailsAccess.setSystemId(contributionAccess.getAuditsSystemId());
-        auditDetailsAccess.setCommitter(contributionAccess.getAuditsCommitter());
-        auditDetailsAccess.setDescription(contributionAccess.getAuditsDescription());
+        auditDetailsAccess.setSystemId(inputContributionAccess.getAuditsSystemId());
+        auditDetailsAccess.setCommitter(inputContributionAccess.getAuditsCommitter());
+        auditDetailsAccess.setDescription(inputContributionAccess.getAuditsDescription());
         auditDetailsAccess.setChangeType(I_ConceptAccess.fetchContributionChangeType(this, I_ConceptAccess.ContributionChangeType.CREATION));
         UUID auditId = this.auditDetailsAccess.commit();
         this.setAudit(auditId);
@@ -516,9 +513,8 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
 
     @Override
     public Integer delete() {
-        //return this.delete(this.getFolderId());
-        // TODO-436: error
-        throw new InternalServerException("Called invalid access layer method.");
+        // not valid, because missing mandatory data, like committer
+        throw new InternalServerException(CALLED_INVALID_ACCESS_LAYER_METHOD);
     }
 
     /**
@@ -543,6 +539,20 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
 
         if (folderId == null) {
             throw new IllegalArgumentException("The folder UID provided for performing a delete operation cannot be null.");
+        }
+
+        // create new deletion audit
+        var delAudit = I_AuditDetailsAccess.getInstance(this, systemId, committerId, I_ConceptAccess.ContributionChangeType.DELETED, description);
+        UUID delAuditId = delAudit.commit();
+
+        if (contribution == null) {
+            // create new contribution for this deletion action (with embedded contribution.audit handling)
+            contributionAccess = I_ContributionAccess.getInstance(getDataAccess(),
+                contributionAccess.getEhrId()); // overwrite old contribution with new one
+            contribution = contributionAccess
+                .commit(TransactionTime.millis(), committerId, systemId, null,
+                    ContributionDef.ContributionState.COMPLETE,
+                    I_ConceptAccess.ContributionChangeType.DELETED, description);
         }
 
         // Collect directly linked entities before applying changes:
@@ -575,20 +585,6 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         var folderRec = getContext().fetchOne(FOLDER, FOLDER.ID.eq(folderId));
         result += folderRec.delete();
 
-        // create new deletion audit
-        var delAudit = I_AuditDetailsAccess.getInstance(this, systemId, committerId, I_ConceptAccess.ContributionChangeType.DELETED, description);
-        UUID delAuditId = delAudit.commit();
-
-        if (contribution == null) {
-            // create new contribution for this deletion action (with embedded contribution.audit handling)
-            contributionAccess = I_ContributionAccess.getInstance(getDataAccess(),
-                contributionAccess.getEhrId()); // overwrite old contribution with new one
-            contribution = contributionAccess
-                .commit(TransactionTime.millis(), committerId, systemId, null,
-                    ContributionDef.ContributionState.COMPLETE,
-                    I_ConceptAccess.ContributionChangeType.DELETED, description);
-        }
-
         // create new, BUT already moved to _history, version documenting the deletion
         createAndCommitNewDeletedVersionAsHistory(folderRec, delAuditId, contribution);
 
@@ -605,7 +601,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         newRecord.setInContribution(contrib);
         newRecord.setName(folderRecord.getName());
         newRecord.setArchetypeNodeId(folderRecord.getArchetypeNodeId());
-        newRecord.setActive(folderRecord.getActive());    // TODO-436: or would it mean deleted == false?
+        newRecord.setActive(folderRecord.getActive());
         newRecord.setDetails(folderRecord.getDetails());
         newRecord.setHasAudit(delAuditId);
         newRecord.setSysTransaction(TransactionTime.millis());
