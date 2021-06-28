@@ -78,7 +78,7 @@ The current status of an openEHR Terminology component is not completely defined
 
 We'll leave both ADL and TERM test suites as placeholders here.
 
-[Knowledge Test Suite](KNWOLEDGE.md)
+[Knowledge Test Suite](KNOWLEDGE.md)
 
 
 ### EHR

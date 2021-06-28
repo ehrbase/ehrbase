@@ -61,10 +61,9 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
     }
 
     @Override
-    public Field<?> makeField(String templateId, String identifier, I_VariableDefinition variableDefinition, Clause clause) {
+    public MultiFields makeField(String templateId, String identifier, I_VariableDefinition variableDefinition, Clause clause) {
         //resolve composition attributes and/or context
         String columnAlias = variableDefinition.getPath();
-        jsonDataBlock = false;
         FieldResolutionContext fieldResolutionContext =
                 new FieldResolutionContext(domainAccess.getContext(),
                         serverNodeId,
@@ -109,69 +108,14 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
                 throw new IllegalArgumentException("INTERNAL: the following class cannot be resolved for AQL querying:" + (pathResolver.classNameOf(variableDefinition.getIdentifier())));
         }
 
-        jsonDataBlock = fieldResolutionContext.isJsonDatablock();
-        return retField;
+        QualifiedAqlField aqlField = new QualifiedAqlField(retField);
+        aqlField.setJsonDataBlock(fieldResolutionContext.isJsonDatablock());
+        return new MultiFields(variableDefinition, aqlField, templateId);
     }
 
     @Override
-    public Field<?> whereField(String templateId,String identifier, I_VariableDefinition variableDefinition) {
+    public MultiFields whereField(String templateId,String identifier, I_VariableDefinition variableDefinition) {
         return makeField(templateId, identifier, variableDefinition, Clause.WHERE);
-    }
-
-    public boolean isJoinComposition() {
-        return joinSetup.isJoinComposition();
-    }
-
-    public boolean isJoinEventContext() {
-        return joinSetup.isJoinEventContext();
-    }
-
-    public boolean isJoinSubject() {
-        return joinSetup.isJoinSubject();
-    }
-
-    public boolean isJoinEhr() {
-        return joinSetup.isJoinEhr();
-    }
-
-    public boolean isJoinSystem() {
-        return joinSetup.isJoinSystem();
-    }
-
-    public boolean isJoinEhrStatus() {
-        return joinSetup.isJoinEhrStatus();
-    }
-
-    public boolean isJoinComposer() {
-        return joinSetup.isJoinComposer();
-    }
-
-    public boolean isJoinContextFacility() {
-        return joinSetup.isJoinContextFacility();
-    }
-
-    public boolean containsEhrStatus() {
-        return joinSetup.isContainsEhrStatus();
-    }
-
-
-    @Override
-    public boolean isContainsJqueryPath() {
-        return false;
-    }
-
-    @Override
-    public String getJsonbItemPath() {
-        return null;
-    }
-
-    /**
-     * true if the expression contains path and then use ENTRY as primary from table
-     *
-     * @return
-     */
-    public boolean useFromEntry() {
-        return pathResolver.hasPathExpression();
     }
 
     public boolean isCompositionAttributeItemStructure(String templateId, String identifier){
@@ -187,5 +131,9 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
 
     public boolean isUseEntry(){
         return joinSetup.isUseEntry();
+    }
+
+    public JoinSetup getJoinSetup(){
+        return joinSetup;
     }
 }

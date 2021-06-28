@@ -63,10 +63,16 @@ public class CompositionResolver extends AttributeResolver
 
 
         switch (path){
+            case "uid":
+                return new FullCompositionJson(fieldResolutionContext, joinSetup).forJsonPath(new String[]{"uid", ""}).sqlField();
             case "uid/value":
                 return new CompositionUidValue(fieldResolutionContext, joinSetup).forTableField(NULL_FIELD).sqlField();
+            case "name":
+                //we force the path to use the single attribute 'value' from the name encoding
+                return new FullCompositionJson(fieldResolutionContext, joinSetup).forJsonPath(new String[]{"name", ""}).sqlField();
             case "name/value":
-                return new GenericJsonField(fieldResolutionContext, joinSetup).forJsonPath("value").dvCodedText(ENTRY.NAME);
+                //we force the path to use the single attribute 'value' from the name encoding
+                return new GenericJsonField(fieldResolutionContext, joinSetup).forJsonPath(new String[]{"value", ""}).dvCodedText(ENTRY.NAME);
             case "archetype_node_id":
                 return new SimpleCompositionAttribute(fieldResolutionContext, joinSetup).forTableField(ENTRY.ARCHETYPE_ID).sqlField();
             case "template_id":

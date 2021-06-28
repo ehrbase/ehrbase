@@ -69,7 +69,7 @@ public class AqlQueryHandler extends DataAccess {
 
         Statements statements = new Statements(aqlExpression.getParseTree(), contains.getIdentifierMapper(), tsAdapter).process();
 
-        QueryProcessor queryProcessor = new QueryProcessor(this, this.getKnowledgeManager(), this.getIntrospectService(), contains, statements, getDataAccess().getServerConfig().getNodename());
+        QueryProcessor queryProcessor = new QueryProcessor(this, this.getIntrospectService(), contains, statements, getDataAccess().getServerConfig().getNodename());
 
         AqlResult aqlResult = queryProcessor.execute();
 
@@ -105,7 +105,6 @@ public class AqlQueryHandler extends DataAccess {
         String columnIdentifier = variableDefinition.getAlias() != null ? variableDefinition.getAlias() : "/"+variableDefinition.getPath();
 
         for (Record record: recordResult){
-//            if (variableDefinition.getAlias() != null && !variableDefinition.getAlias().startsWith("_FCT")) { TODO: Check with @Christian
             if (variableDefinition.getAlias() == null || !variableDefinition.getAlias().startsWith("_FCT")) { //if the variable is a function parameter, ignore it (f.e. count())
                 resultSet.add(record.get(columnIdentifier));
             }

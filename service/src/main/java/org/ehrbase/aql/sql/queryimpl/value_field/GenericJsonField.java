@@ -1,9 +1,6 @@
 package org.ehrbase.aql.sql.queryimpl.value_field;
 
-import org.ehrbase.aql.sql.queryimpl.Function2;
-import org.ehrbase.aql.sql.queryimpl.Function4;
-import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
-import org.ehrbase.aql.sql.queryimpl.QueryImplConstants;
+import org.ehrbase.aql.sql.queryimpl.*;
 import org.ehrbase.aql.sql.queryimpl.attribute.*;
 import org.ehrbase.jooq.pg.Routines;
 import org.ehrbase.jooq.pg.udt.records.DvCodedTextRecord;
@@ -99,11 +96,16 @@ public class GenericJsonField extends RMObjectAttribute {
         if (jsonPath.isPresent()) {
             List<String> tokenized = Arrays.asList(jsonpathParameters(jsonPath.get()));
 
-            if (tokenized.contains(ITERATIVE_MARKER))
+            if (tokenized.contains(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER)) {
+                jsonField = new FunctionBasedNodePredicateCall(fieldContext, tokenized).resolve(function, tableFields);
+            }
+            else if (tokenized.contains(ITERATIVE_MARKER))
                 jsonField = fieldWithJsonArrayIteration(configuration, tokenized, function, tableFields);
             else
                 jsonField =
-                        DSL.field(jsonpathItemAsText(configuration, DSL.field(apply(function, tableFields).toString()).cast(JSONB.class), tokenized.toArray(new String[]{})));
+                        DSL.field(
+                                jsonpathItemAsText(configuration, DSL.field(apply(function, tableFields).toString()).cast(JSONB.class),
+                                tokenized.toArray(new String[]{})));
 
         } else
             jsonField = DSL.field(apply(function, tableFields).toString()).cast(String.class);

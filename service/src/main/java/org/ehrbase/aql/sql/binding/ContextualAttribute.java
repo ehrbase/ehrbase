@@ -18,10 +18,9 @@
 package org.ehrbase.aql.sql.binding;
 
 import org.ehrbase.aql.definition.I_VariableDefinition;
-import org.ehrbase.aql.sql.queryimpl.CompositionAttributeQuery;
-import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
-import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
-import org.jooq.Field;
+import org.ehrbase.aql.sql.queryimpl.*;
+
+import java.util.Iterator;
 
 /**
  * convert a field that is not identied as an EHR or a COMPOSITION (content or attribute). For example a CLUSTER
@@ -34,49 +33,32 @@ public class ContextualAttribute {
     private final JsonbEntryQuery jsonbEntryQuery;
     private final IQueryImpl.Clause clause;
 
-    private boolean containsJsonDataBlock;
-    private String jsonbItemPath;
-    private String optionalPath;
-
     public ContextualAttribute(CompositionAttributeQuery compositionAttributeQuery, JsonbEntryQuery jsonbEntryQuery, IQueryImpl.Clause clause) {
         this.compositionAttributeQuery = compositionAttributeQuery;
         this.jsonbEntryQuery = jsonbEntryQuery;
         this.clause = clause;
     }
 
-    public Field<?> toSql(String templateId, I_VariableDefinition variableDefinition){
+    public MultiFields toSql(String templateId, I_VariableDefinition variableDefinition){
         String inTemplatePath = compositionAttributeQuery.variableTemplatePath(templateId, variableDefinition.getIdentifier());
         if (inTemplatePath.startsWith("/"))
             inTemplatePath = inTemplatePath.substring(1); //conventionally, composition attribute path have the leading '/' striped.
         String originalPath = variableDefinition.getPath();
         variableDefinition.setPath(inTemplatePath+(variableDefinition.getPath() == null? "": "/"+variableDefinition.getPath()));
         CompositionAttribute compositionAttribute = new CompositionAttribute(compositionAttributeQuery, jsonbEntryQuery, clause);
-        Field field = compositionAttribute.toSql(variableDefinition, templateId, variableDefinition.getIdentifier());
+        MultiFields fields = compositionAttribute.toSql(variableDefinition, templateId, variableDefinition.getIdentifier());
 
         if (clause.equals(IQueryImpl.Clause.SELECT)) {
-            variableDefinition.setPath(originalPath);
-            if (originalPath != null)
-               field = field.as("/"+originalPath);
-            else
-                field = field.as(variableDefinition.getIdentifier());
+            for (Iterator<QualifiedAqlField> qualifiedAqlFieldIterator = fields.iterator(); qualifiedAqlFieldIterator.hasNext();) {
+                QualifiedAqlField field = qualifiedAqlFieldIterator.next();
+                variableDefinition.setPath(originalPath);
+                if (originalPath != null)
+                    field.setField(field.getSQLField().as("/" + originalPath));
+                else
+                    field.setField(field.getSQLField().as(variableDefinition.getIdentifier()));
+            }
         }
-
-        jsonbItemPath = compositionAttribute.getJsonbItemPath();
-        containsJsonDataBlock = compositionAttribute.isContainsJsonDataBlock();
-        optionalPath = compositionAttribute.getOptionalPath();
-
-        return field;
+        return fields;
     }
 
-    public boolean isContainsJsonDataBlock() {
-        return containsJsonDataBlock;
-    }
-
-    public String getJsonbItemPath() {
-        return jsonbItemPath;
-    }
-
-    public String getOptionalPath() {
-        return optionalPath;
-    }
 }

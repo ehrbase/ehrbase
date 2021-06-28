@@ -1,0 +1,129 @@
+{
+  "persistent_minimal": {
+    "_uid": [
+      "6cf3c1c7-0013-4696-a577-ff916901f700::ehrdb::1"
+    ],
+    "_link": [
+      {
+        "|meaning": "meaning",
+        "|type": "type",
+        "|target": "target1"
+      },
+      {
+        "|meaning": "meaning",
+        "|type": "type",
+        "|target": "target2"
+      }
+    ],
+    "language": [
+      {
+        "|terminology": "ISO_639-1",
+        "|code": "en"
+      }
+    ],
+    "territory": [
+      {
+        "|terminology": "ISO_3166-1",
+        "|code": "US"
+      }
+    ],
+    "category": [
+      {
+        "|value": "persistent",
+        "|code": "431",
+        "|terminology": "openehr"
+      }
+    ],
+    "composer": [
+      {
+        "|id_namespace": "local",
+        "|id": "value",
+        "|id_scheme": "scheme",
+        "|name": "composer test value"
+      }
+    ],
+    "context": [
+      {
+        "start_time": [
+          "2021-05-20T16:52:43.236+03:00"
+        ],
+        "_end_time": [
+          "2021-05-20T16:52:43.236+03:00"
+        ],
+        "setting": [
+          {
+            "|value": "other care",
+            "|code": "238",
+            "|terminology": "openehr"
+          }
+        ],
+        "_health_care_facility": [
+          {
+            "|id_namespace": "namespace",
+            "|id": "367",
+            "|id_scheme": "scheme",
+            "|name": "Company"
+          }
+        ],
+        "_participation": [
+          {
+            "|function": "unknown",
+            "|id_namespace": "namespace",
+            "|id": "4300",
+            "|id_scheme": "scheme",
+            "|name": "Firstname Lastname 1",
+            "|mode": "signing (face-to-face)"
+          },
+          {
+            "|function": "unknown",
+            "|id_namespace": "namespace",
+            "|id": "3161",
+            "|id_scheme": "scheme",
+            "|name": "Firstname Lastname 2",
+            "|mode": "teleconference"
+          }
+        ]
+      }
+    ],
+    "minimal": [
+      {
+        "language": [
+          {
+            "|terminology": "ISO_639-1",
+            "|code": "en"
+          }
+        ],
+        "encoding": [
+          {
+            "|terminology": "IANA_character-sets",
+            "|code": "UTF-8"
+          }
+        ],
+        "_other_participation": [
+          {
+            "|function": "unknown",
+            "|id_namespace": "namespace",
+            "|id": "2318",
+            "|id_scheme": "scheme",
+            "|name": "Firstname Lastname 1",
+            "|mode": "recorded video"
+          },
+          {
+            "|function": "unknown",
+            "|id_namespace": "namespace",
+            "|id": "4309",
+            "|id_scheme": "scheme",
+            "|name": "Firstname Lastname 2",
+            "|mode": "interactive written note"
+          }
+        ],
+        "time": [
+          "2021-05-20T16:52:43.236+03:00"
+        ],
+        "text": [
+          "value 1"
+        ]
+      }
+    ]
+  }
+}
