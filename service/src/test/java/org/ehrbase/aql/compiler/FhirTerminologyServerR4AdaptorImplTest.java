@@ -20,16 +20,21 @@ package org.ehrbase.aql.compiler;
  */
 
 import com.nedap.archie.rm.datavalues.DvCodedText;
-import org.ehrbase.configuration.client.ClientProperties;
-import org.ehrbase.configuration.client.WebClientConfiguration;
+import org.apache.http.client.HttpClient;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.TrustAllStrategy;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer;
 import org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl;
 import org.ehrbase.service.FhirTsProps;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.boot.web.reactive.function.client.WebClientCustomizer;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.util.ResourceUtils;
 
+import javax.net.ssl.SSLContext;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -52,7 +57,7 @@ public class FhirTerminologyServerR4AdaptorImplTest {
         props.setSystemPath("$[\"expansion\"][\"contains\"][*][\"system\"]");
         props.setTsUrl("https://r4.ontoserver.csiro.au/fhir/");
         try {
-            tsserver = new FhirTerminologyServerR4AdaptorImpl(WebClient.create(), props);
+            tsserver = new FhirTerminologyServerR4AdaptorImpl(HttpClients.createDefault(), props);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -77,25 +82,16 @@ public class FhirTerminologyServerR4AdaptorImplTest {
 
     @Ignore("Requires SSL configuration")
     @Test
-    public void expandValueSetUsingSsl() {
-        WebClient.Builder webClientBuilder = WebClient.builder();
+    public void expandValueSetUsingSsl() throws GeneralSecurityException, IOException {
+        SSLContext sslContext = SSLContextBuilder.create()
+                .loadKeyMaterial(ResourceUtils.getFile("test-keystore.jks"), "test".toCharArray(), "test".toCharArray())
+                .loadTrustMaterial(ResourceUtils.getFile("test-truststore.jks"), "test".toCharArray(), TrustAllStrategy.INSTANCE)
+                .build();
 
-        ClientProperties properties = new ClientProperties();
-        ClientProperties.Ssl ssl = properties.getSsl();
-//        ssl.setEnabled(true);
-//        ssl.setKeyPassword("");
-//        ssl.setKeyStore("");
-//        ssl.setKeyStorePassword("");
-//        ssl.setKeyStoreType("");
-//        ssl.setTrustStore("");
-//        ssl.setTrustStorePassword("");
-//        ssl.setTrustStoreType("");
-
-        WebClientConfiguration configuration = new WebClientConfiguration();
-        WebClientCustomizer customizer = configuration.httpClientCustomizer(properties);
-        customizer.customize(webClientBuilder);
-
-        WebClient webClient = webClientBuilder.build();
+        HttpClient httpClient = HttpClients.custom()
+                .setSSLContext(sslContext)
+                .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
+                .build();
 
         FhirTsProps props = new FhirTsProps();
         props.setCodePath("$[\"expansion\"][\"contains\"][*][\"code\"]");
@@ -103,7 +99,7 @@ public class FhirTerminologyServerR4AdaptorImplTest {
         props.setSystemPath("$[\"expansion\"][\"contains\"][*][\"system\"]");
         props.setTsUrl("https://terminology-highmed.medic.medfak.uni-koeln.de/fhir/");
         try {
-            tsserver = new FhirTerminologyServerR4AdaptorImpl(webClient, props);
+            tsserver = new FhirTerminologyServerR4AdaptorImpl(httpClient, props);
         } catch (Exception e) {
             e.printStackTrace();
         }

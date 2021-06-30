@@ -1,4 +1,4 @@
-package org.ehrbase.configuration.validation;
+package org.ehrbase.application.config.validation;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

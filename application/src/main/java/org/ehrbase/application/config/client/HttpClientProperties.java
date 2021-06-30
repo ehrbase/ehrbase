@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.configuration.client;
+package org.ehrbase.application.config.client;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -23,12 +23,61 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * {@link ConfigurationProperties} for Spring WebClient and Apache HTTP Client.
  */
 @ConfigurationProperties(prefix = "client")
-public class ClientProperties {
+public class HttpClientProperties {
+
+    private final Proxy proxy = new Proxy();
 
     private final Ssl ssl = new Ssl();
 
+    public Proxy getProxy() {
+        return proxy;
+    }
+
     public Ssl getSsl() {
         return ssl;
+    }
+
+    public static class Proxy {
+
+        private String host;
+
+        private Integer port;
+
+        private String username;
+
+        private String password;
+
+        public String getHost() {
+            return host;
+        }
+
+        public void setHost(String host) {
+            this.host = host;
+        }
+
+        public Integer getPort() {
+            return port;
+        }
+
+        public void setPort(Integer port) {
+            this.port = port;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+
+        public void setUsername(String username) {
+            this.username = username;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
     }
 
     public static class Ssl {
