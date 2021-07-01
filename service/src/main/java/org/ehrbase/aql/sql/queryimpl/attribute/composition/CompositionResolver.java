@@ -54,7 +54,7 @@ public class CompositionResolver extends AttributeResolver
                     .forJsonPath(FEEDER_AUDIT, path)
                     .feederAudit(JoinBinder.compositionRecordTable.field(FEEDER_AUDIT));
 
-            String regexpTerminalValues = ".*(id|issuer|assigner|type|original_content|system_id|name|namespace|value)$";
+            String regexpTerminalValues = ".*(id|issuer|assigner|type|formalism|system_id|name|namespace|value)$";
             if (path.matches(regexpTerminalValues))
                 fieldResolutionContext.setJsonDatablock(false);
 
