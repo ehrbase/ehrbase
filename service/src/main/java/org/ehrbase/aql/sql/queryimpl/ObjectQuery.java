@@ -25,6 +25,7 @@ import org.ehrbase.aql.sql.PathResolver;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.jooq.DSLContext;
 
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -56,8 +57,9 @@ public abstract class ObjectQuery {
     }
 
     public String variableTemplatePath(String templateId, String identifier){
+        Set<String> pathSet = pathResolver.pathOf(templateId, identifier);
 
-        if (pathResolver.pathOf(templateId, identifier) == null)
+        if (pathSet.isEmpty())
             return null;
 
         return pathResolver.pathOf(templateId, identifier).stream().collect(Collectors.joining());

@@ -129,7 +129,7 @@ public class QueryProcessor extends TemplateMetaData {
 
         if (contains.getTemplates().isEmpty()) {
             if (contains.hasContains() && contains.requiresTemplateWhereClause()) {
-                cacheQuery.put(NIL_TEMPLATE, buildQuerySteps(NIL_TEMPLATE));
+                cacheQuery.put(NIL_TEMPLATE, buildNullSelect(NIL_TEMPLATE));
                 containsJson = false;
             } else
                 cacheQuery.put(NIL_TEMPLATE, buildQuerySteps(NIL_TEMPLATE));
@@ -266,6 +266,9 @@ public class QueryProcessor extends TemplateMetaData {
     }
 
     private SelectQuery<?> setLateralJoins(List<Table<?>> lateralJoins, SelectQuery<?> selectQuery) {
+        if (lateralJoins == null)
+            return selectQuery;
+
         for (Table<?> joinLateralTable : lateralJoins) {
                 selectQuery.addFrom(joinLateralTable);
         }
@@ -321,5 +324,19 @@ public class QueryProcessor extends TemplateMetaData {
         }
         explainList.add(details);
         return explainList;
+    }
+
+    private List<QuerySteps> buildNullSelect(String templateId) {
+        SelectBinder selectBinder = new SelectBinder(domainAccess, introspectCache, contains, statements, serverNodeId);
+
+        List<QuerySteps> querySteps = new ArrayList<>();
+
+        querySteps.add(new QuerySteps(domainAccess.getContext().selectQuery(),
+                DSL.condition("1 = 0"),
+                null,
+                templateId,
+                selectBinder.getCompositionAttributeQuery(),
+                selectBinder.getJsonDataBlock(), false));
+        return querySteps;
     }
 }
