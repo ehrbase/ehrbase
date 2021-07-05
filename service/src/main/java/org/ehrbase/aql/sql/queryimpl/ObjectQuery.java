@@ -59,7 +59,7 @@ public abstract class ObjectQuery {
     public String variableTemplatePath(String templateId, String identifier){
         Set<String> pathSet = pathResolver.pathOf(templateId, identifier);
 
-        if (pathSet.isEmpty())
+        if (pathSet == null || pathSet.isEmpty())
             return null;
 
         return pathResolver.pathOf(templateId, identifier).stream().collect(Collectors.joining());
