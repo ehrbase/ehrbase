@@ -327,16 +327,14 @@ public class QueryProcessor extends TemplateMetaData {
     }
 
     private List<QuerySteps> buildNullSelect(String templateId) {
-        SelectBinder selectBinder = new SelectBinder(domainAccess, introspectCache, contains, statements, serverNodeId);
 
-        List<QuerySteps> querySteps = new ArrayList<>();
+        List<QuerySteps> queryStepsList = buildQuerySteps(templateId);
 
-        querySteps.add(new QuerySteps(domainAccess.getContext().selectQuery(),
-                DSL.condition("1 = 0"),
-                null,
-                templateId,
-                selectBinder.getCompositionAttributeQuery(),
-                selectBinder.getJsonDataBlock(), false));
-        return querySteps;
+        //force a null condition for these steps
+        for (QuerySteps querySteps: queryStepsList){
+            querySteps.setWhereCondition(DSL.condition("1 = 0"));
+        }
+
+        return queryStepsList;
     }
 }
