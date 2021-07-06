@@ -36,7 +36,7 @@ import java.util.Objects;
  */
 @Api(tags = {"Heartbeat", "Version info", "Status"})
 @RestController
-@RequestMapping(path = "/rest/openehr/v1", produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
+@RequestMapping(path = "/rest", produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
 public class StatusController extends BaseController {
 
     private final StatusService statusService;

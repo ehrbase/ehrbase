@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Api(tags = {"Admin", "Heartbeat"})
 @ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
-@RequestMapping(path = "/rest/openehr/v1/admin", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@RequestMapping(path = "/rest/admin", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrAdminController extends BaseController {
 
     @GetMapping(path = "/status")

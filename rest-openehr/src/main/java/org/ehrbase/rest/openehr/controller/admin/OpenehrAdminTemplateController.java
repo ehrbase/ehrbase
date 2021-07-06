@@ -36,7 +36,7 @@ import org.springframework.web.bind.annotation.*;
 @Api(tags = {"Admin", "Template"})
 @ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
-@RequestMapping(path = "/rest/openehr/v1/admin/template", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@RequestMapping(path = "/rest/admin/template", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrAdminTemplateController extends BaseController {
 
     TemplateService templateService;

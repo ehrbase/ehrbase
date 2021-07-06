@@ -39,7 +39,7 @@ import java.util.UUID;
 @Api(tags = {"Admin", "Contribution"})
 @ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
-@RequestMapping(path = "/rest/openehr/v1/admin/ehr", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@RequestMapping(path = "/rest/admin/ehr", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrAdminContributionController extends BaseController {
 
     private final EhrService ehrService;
