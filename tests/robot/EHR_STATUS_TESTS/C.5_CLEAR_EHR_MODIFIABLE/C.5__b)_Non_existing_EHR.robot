@@ -17,8 +17,7 @@
 
 
 *** Settings ***
-Metadata    Version    0.1.0
-Metadata    Author    *Wladislaw Wagner*
+Metadata    Authors    *Wladislaw Wagner*, *Pablo Pazos*
 Metadata    Created    2019.03.03
 
 Documentation   C.5.b) Clear EHR modifiable of non existent EHR

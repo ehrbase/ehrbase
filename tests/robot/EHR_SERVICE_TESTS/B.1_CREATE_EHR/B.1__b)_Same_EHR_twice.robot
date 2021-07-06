@@ -18,7 +18,7 @@
 
 *** Settings ***
 Metadata    Version    0.1.0
-Metadata    Author    *Wladislaw Wagner*
+Metadata    Authors    *Wladislaw Wagner*, *Pablo Pazos*
 Metadata    Created    2019.03.03
 
 Documentation   B.1.b) Alternative flow 1: Create same EHR twice
@@ -34,7 +34,6 @@ Documentation   B.1.b) Alternative flow 1: Create same EHR twice
 ...             Postconditions:
 ...                 A new EHR will exists in the system, the first one created, and be consistent with the data sets used.
 ...
-...             source: https://docs.google.com/document/d/1r_z_E8MhlNdeVZS4xecl-8KbG0JPqCzKtKMfhuL81jY/edit#heading=h.vja1suxm86z8
 Metadata        TOP_TEST_SUITE    EHR_SERVICE
 Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 
