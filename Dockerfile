@@ -137,7 +137,7 @@ RUN echo "EHRBASE_VERSION: $(cat ehrbase_version)"
 ARG DB_URL=jdbc:postgresql://ehrdb:5432/ehrbase
 ARG DB_USER="ehrbase"
 ARG DB_PASS="ehrbase"
-ARG SYSTEM_NAME=docker.ehrbase.org
+ARG SERVER_NODENAME=docker.ehrbase.org
 
 # These environment variables are also applied to startup of the container and can be overwritten by setting it with
 # the '-e' flag on 'docker run' command
@@ -145,7 +145,7 @@ ENV EHRBASE_VERSION=${EHRBASE_VERSION}
 ENV DB_USER=$DB_USER
 ENV DB_PASS=$DB_PASS
 ENV DB_URL=$DB_URL
-ENV SYSTEM_NAME=$SYSTEM_NAME
+ENV SERVER_NODENAME=$SERVER_NODENAME
 
 # Security
 ENV SECURITY_AUTHTYPE="NONE"
