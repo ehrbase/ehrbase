@@ -66,7 +66,7 @@ public class CompositionController extends BaseController {
 
         CompositionWriteRestResponseData responseData = new CompositionWriteRestResponseData();
         responseData.setAction(Action.CREATE);
-        responseData.setCompositionUid(compositionId + "::" + 1);
+        responseData.setCompositionUid(compositionId + "::" + compositionService.getServerConfig().getNodename() + "::" + 1);
         responseData.setMeta(buildMeta(responseData.getCompositionUid()));
         return ResponseEntity.ok(responseData);
     }
@@ -134,7 +134,7 @@ public class CompositionController extends BaseController {
 
     private Meta buildMeta(String compositionUid) {
         RestHref url = new RestHref();
-        url.setUrl(getBaseEnvLinkURL() + "/rest/ecis/v1/composition" + compositionUid);
+        url.setUrl(getBaseEnvLinkURL() + "/rest/ecis/v1/composition/" + compositionUid);
         Meta meta = new Meta();
         meta.setHref(url);
         return meta;
