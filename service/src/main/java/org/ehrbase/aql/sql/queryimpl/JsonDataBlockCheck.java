@@ -32,8 +32,12 @@ public class JsonDataBlockCheck {
             "(/value|/value,defining_code|/time|/time,/value|/timing,/value|/name,0|/origin|/origin,/name,0|/origin,/value|/value,mappings)|" +
             "(/value,mappings,0)(|,purpose|,target|,purpose,defining_code|,purpose,defining_code,terminology_id|,target,terminology_id)|" +
             "(/ism_transition)(|,current_state|,transition|,careflow_step)|" +
+            "(/other_details|/other_details,/name,0)|" +
+            "(/other_context|/other_context,/name,0)|" +
             // common locatable attributes
-            "(/uid,/value|/language|/language,terminology_id|/encoding|/encoding,terminology_id|/subject)";
+            "(/uid,/value|/language|/language,terminology_id|/encoding|/encoding,terminology_id|/subject)|"+
+            "(/id|/system_id|/version_id|/namespace|/issuer|/assigner|/id|/type|/start_time|/end_time|/setting|/health_care_facility|/participations)|" +
+            "(other_context)";
     
     private final List<String> jqueryPath;
 
@@ -85,7 +89,7 @@ public class JsonDataBlockCheck {
         String lastItem = StringUtils.substringAfterLast(terminalNode, ",");
 
         if (!lastItem.isEmpty())
-            return lastItem.matches("defining_code|mappings|language|encoding|terminology_id|lower|upper");
+            return lastItem.matches("defining_code|mappings|language|encoding|terminology_id|lower|upper|other_details");
         return false;
 
     }

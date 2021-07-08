@@ -87,9 +87,6 @@ public class RawJsonTransform implements IRawJsonTransform {
                                         jsonbOrigin = "{\"$array$\":" + jsonbOrigin + "}";
                                     jsonElement = new LightRawJsonEncoder(jsonbOrigin).encodeContentAsJson(jsonbBlockDef.getJsonPathRoot());
                                     if (jsonElement.getAsJsonObject().has(ARRAY_MARKER)) {
-                                        if (hasPredicate(jsonbBlockDef.getPath())) //f.e. events[at0002]
-                                            jsonElement = jsonElement.getAsJsonObject().getAsJsonArray(ARRAY_MARKER).get(0);
-                                        else //f.e. ehr/contributions -> an attribute that is an array
                                             jsonElement = jsonElement.getAsJsonObject().getAsJsonArray(ARRAY_MARKER);
 
                                     }
@@ -113,16 +110,4 @@ public class RawJsonTransform implements IRawJsonTransform {
         }
     }
 
-
-    private static boolean hasPredicate(String path){
-
-        try {
-            List<String> segments = LocatableHelper.dividePathIntoSegments(path);
-
-            return (segments.get(segments.size() - 1).contains("["));
-        }
-        catch (NoSuchElementException e) { //not an AQL path (f.e. function based)
-            return false;
-        }
-    }
 }
