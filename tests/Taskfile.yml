@@ -189,7 +189,8 @@ tasks:
       - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --skiponfailure not-ready --log None --report None --output knowld.xml --name KNOWLEDGE -v ALLOW-TEMPLATE-OVERWRITE:false robot/KNOWLEDGE_TESTS
       - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --skiponfailure not-ready --log None --report None --output aqledb.xml --name "QUERY empty_db"  -i aql_empty_db  robot/QUERY_SERVICE_TESTS
       - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --skiponfailure not-ready --log None --report None --output aqlldb.xml --name "QUERY loaded_db" -i aql_loaded_db robot/QUERY_SERVICE_TESTS
-      # TODO: add admin and security tests here (will require proper SUT setup)
+      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --skiponfailure not-ready --log None --report None --output admint.xml --name ADMIN -v SUT:ADMIN-TEST robot/ADMIN_TESTS
+      # TODO: add security tests here (will require proper SUT setup)
 
       ## consolidate results
       - rebot -e future -e circleci -e TODO -e obsolete -e libtest -d results -L TRACE --name EHRbase results/xml/*.xml
