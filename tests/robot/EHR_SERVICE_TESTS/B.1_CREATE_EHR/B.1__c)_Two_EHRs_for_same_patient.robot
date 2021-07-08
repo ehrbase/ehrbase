@@ -18,12 +18,10 @@
 
 *** Settings ***
 Metadata    Version    0.1.0
-Metadata    Author    *Wladislaw Wagner*
+Metadata    Authors    *Wladislaw Wagner*, *Pablo Pazos*
 Metadata    Created    2020.01.30
 
 Documentation   B.1.c) Alternative flow 2: Create two EHRs for the same patient
-...             
-...             source: https://docs.google.com/document/d/1r_z_E8MhlNdeVZS4xecl-8KbG0JPqCzKtKMfhuL81jY/edit#heading=h.j8svfp6lz278
 Metadata        TOP_TEST_SUITE    EHR_SERVICE
 Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 

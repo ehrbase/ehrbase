@@ -22,7 +22,7 @@ Metadata    Authors    *Wladislaw Wagner, Pablo Pazos, Jake Smolka*
 
 Documentation    COMPOSITION TEST SUITE
 ...
-...              test documentation: https://docs.google.com/document/d/1TvSWjG-Esz-iMFJE-VLfjGH8MiI9tcHE2ilVtJMPYyQ/edit?ts=5d1e49fc
+...              test documentation: https://github.com/ehrbase/ehrbase/blob/develop/doc/conformance_testing/EHR_COMPOSITION.md
 
 Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 
