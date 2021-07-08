@@ -46,6 +46,7 @@ ADMIN-TEST-OAUTH    partly                      manually start keycloak
 DEV_CONFIG = {
     "SUT": "DEV",
     "BASEURL": "http://localhost:8080/ehrbase/rest/openehr/v1",
+    "ADMIN_BASEURL": "http://localhost:8080/ehrbase/rest/admin",
     "HEARTBEAT_URL": "http://localhost:8080/ehrbase/",
     "CREDENTIALS": ["ehrbase-user", "SuperSecretPassword"],
     "SECURITY_AUTHTYPE": "BASIC",
@@ -79,6 +80,7 @@ DEV_CONFIG = {
 ADMIN_DEV_CONFIG = {
     "SUT": "ADMIN-DEV",
     "BASEURL": "http://localhost:8080/ehrbase/rest/openehr/v1",
+    "ADMIN_BASEURL": "http://localhost:8080/ehrbase/rest/admin",
     "HEARTBEAT_URL": "http://localhost:8080/ehrbase/",
     "CREDENTIALS": ["ehrbase-admin", "EvenMoreSecretPassword"],
     "SECURITY_AUTHTYPE": "BASIC",
@@ -108,6 +110,7 @@ ADMIN_DEV_CONFIG = {
 TEST_CONFIG = {
     "SUT": "TEST",
     "BASEURL": "http://localhost:8080/ehrbase/rest/openehr/v1",
+    "ADMIN_BASEURL": "http://localhost:8080/ehrbase/rest/admin",
     "HEARTBEAT_URL": "http://localhost:8080/ehrbase/",
     "CREDENTIALS": ["ehrbase-user", "SuperSecretPassword"],
     "SECURITY_AUTHTYPE": "BASIC",
@@ -137,6 +140,7 @@ TEST_CONFIG = {
 ADMIN_TEST_CONFIG = {
     "SUT": "ADMIN-TEST",
     "BASEURL": "http://localhost:8080/ehrbase/rest/openehr/v1",
+    "ADMIN_BASEURL": "http://localhost:8080/ehrbase/rest/admin",
     "HEARTBEAT_URL": "http://localhost:8080/ehrbase/",
     "CREDENTIALS": ["ehrbase-admin", "EvenMoreSecretPassword"],
     "SECURITY_AUTHTYPE": "BASIC",
