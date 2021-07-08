@@ -30,7 +30,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface FolderService extends BaseService {
+public interface FolderService extends BaseService, VersionedObjectService<Folder, FolderDto> {
 
     /**
      * Creates a new folder entry at the database from content. The provided
@@ -45,7 +45,8 @@ public interface FolderService extends BaseService {
      * @param description Optional description for audit
      * @return UUID of the new created Folder from database
      */
-    ObjectVersionId create(UUID ehrId, Folder content, UUID systemId, UUID committerId, String description);
+    //ObjectVersionId create(UUID ehrId, Folder content, UUID systemId, UUID committerId, String description);
+    // TODO-526: remove or put info somewhere else?
 
     /**
      * Creates a new folder entry at the database from content. The provided
@@ -61,7 +62,8 @@ public interface FolderService extends BaseService {
      * @param description Optional description for audit
      * @return UUID of the new created Folder from database
      */
-    ObjectVersionId create(UUID ehrId, Folder content, UUID contribution, UUID systemId, UUID committerId, String description);
+    //ObjectVersionId create(UUID ehrId, Folder content, UUID contribution, UUID systemId, UUID committerId, String description);
+    // TODO-526: remove or put info somewhere else?
 
     /**
      * Retrieves a folder from database identified by object_version_uid and
@@ -111,8 +113,9 @@ public interface FolderService extends BaseService {
      * @param description  - Optional description test for audit
      * @return Updated folder entry
      */
-    Optional<FolderDto> update(ObjectVersionId folderId, Folder update, UUID ehrId, UUID contribution, UUID systemId, UUID committerId,
-        String description);
+    /*Optional<FolderDto> update(ObjectVersionId folderId, Folder update, UUID ehrId, UUID contribution, UUID systemId, UUID committerId,
+        String description);*/
+    // TODO-526: remove or put info somewhere else?
 
     /**
      * Marks a given folder as deleted and moves it into the history table. The
@@ -126,7 +129,8 @@ public interface FolderService extends BaseService {
      * @param description  - Optional description test for audit
      * @return Timestamp of successful delete operation
      */
-    LocalDateTime delete(ObjectVersionId folderId, UUID contribution, UUID systemId, UUID committerId, String description);
+    //LocalDateTime delete(ObjectVersionId folderId, UUID contribution, UUID systemId, UUID committerId, String description);
+    // TODO-526: remove or put info somewhere else?
 
     /**
      * Serializes folder content from request body into a structured string

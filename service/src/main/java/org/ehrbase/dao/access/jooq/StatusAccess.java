@@ -32,6 +32,7 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.dao.access.interfaces.*;
+import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
@@ -426,17 +427,20 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
     }
 
     @Override
-    public void setAuditAndContributionAuditValues(UUID systemId, UUID committerId, String description) {
-        if (systemId != null)
-            this.auditDetailsAccess.setSystemId(systemId);
-
-        if (committerId != null)
-            this.auditDetailsAccess.setCommitter(committerId);
+    public void setAuditAndContributionAuditValues(UUID systemId, UUID committerId, String description, ContributionChangeType changeType) {
+        if (committerId == null || systemId == null || changeType == null)
+            throw new IllegalArgumentException("arguments not optional");
+        this.auditDetailsAccess.setCommitter(committerId);
+        this.auditDetailsAccess.setSystemId(systemId);
+        //auditDetails.setChangeType(changeType);
+        // TODO-526: does the above work or is below necessary?
+        this.auditDetailsAccess.setChangeType(I_ConceptAccess.fetchContributionChangeType(this, changeType));
 
         if (description != null)
             this.auditDetailsAccess.setDescription(description);
 
-        this.contributionAccess.setAuditDetailsValues(committerId, systemId, description);
+
+        this.contributionAccess.setAuditDetailsValues(committerId, systemId, description, changeType);
     }
 
     /**

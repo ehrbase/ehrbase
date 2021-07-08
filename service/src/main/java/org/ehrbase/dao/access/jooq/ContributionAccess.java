@@ -27,6 +27,7 @@ import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.*;
+import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
@@ -187,7 +188,8 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
             String scheme = System.getProperty("host.name");
             if (scheme == null)
                 scheme = "local";
-            committerId = new PersistedPartyProxy(this).getOrCreate(defaultUser, UUID.randomUUID().toString(), scheme, getServerConfig().getNodename(), "PARTY");
+                // TODO-526: get the (default) committer from the service layer and remove following call
+                //committerId = new PersistedPartyProxy(this).getOrCreate(defaultUser, UUID.randomUUID().toString(), scheme, getServerConfig().getNodename(), "PARTY");
         }
         auditDetails.setCommitter(committerId);
 
@@ -367,11 +369,14 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
     }
 
     @Override
-    public void setAuditDetailsValues(UUID committer, UUID system, String description) {
-        if (committer == null || system == null)
+    public void setAuditDetailsValues(UUID committer, UUID system, String description, ContributionChangeType changeType) {
+        if (committer == null || system == null || changeType == null)
             throw new IllegalArgumentException("arguments not optional");
         auditDetails.setCommitter(committer);
         auditDetails.setSystemId(system);
+        //auditDetails.setChangeType(changeType);
+        // TODO-526: does the above work or is below necessary?
+        auditDetails.setChangeType(I_ConceptAccess.fetchContributionChangeType(this, changeType));
 
         if (description != null)
             auditDetails.setDescription(description);
@@ -409,6 +414,12 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
     @Override
     public String getAuditsDescription() {
         return auditDetails.getDescription();
+    }
+
+    @Override
+    public ContributionChangeType getAuditsChangeType() {
+        // TODO-526: does this work?
+        return I_ConceptAccess.ContributionChangeType.valueOf(auditDetails.getChangeType().getName());
     }
 
     @Override

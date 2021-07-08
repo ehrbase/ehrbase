@@ -58,7 +58,7 @@ import java.util.*;
 
 @Service
 @Transactional
-public class ContributionServiceImp extends BaseService implements ContributionService {
+public class ContributionServiceImp extends BaseServiceImp implements ContributionService {
     // the version list in a contribution adds an type tag to each item, so the specific object is distinguishable
     public static final String TYPE_COMPOSITION = "COMPOSITION";
     public static final String TYPE_EHRSTATUS = "EHR_STATUS";
@@ -264,8 +264,8 @@ public class ContributionServiceImp extends BaseService implements ContributionS
         switch (changeType) {
             case CREATION:
                 // call creation of a new folder version with given input
-                // TODO-526: add handlers for (default) committer and description
-                folderService.create(ehrId, versionRmObject, contributionId, null, null, null);
+                // TODO-526: add handlers for (default) committer and description -> step 1: it is now using default values in a lean way
+                folderService.create(ehrId, versionRmObject, contributionId);
                 break;
             case AMENDMENT: // triggers the same processing as modification // TODO-396: so far so good, but should use the type "AMENDMENT" for audit in access layer
             case MODIFICATION:
@@ -277,12 +277,12 @@ public class ContributionServiceImp extends BaseService implements ContributionS
                 if (!actualPreceding.equals(version.getPrecedingVersionUid().toString()))
                     throw new PreconditionFailedException("Given preceding_version_uid for FOLDER object does not match latest existing version");
                 // call modification of the given folder
-                // TODO-526: add handlers for (default) committer and description
-                folderService.update(version.getPrecedingVersionUid(), versionRmObject, ehrId, contributionId, null, null, null);
+                // TODO-526: add handlers for (default) committer and description -> step 1: it is now using default values in a lean way
+                folderService.update(ehrId, version.getPrecedingVersionUid(), versionRmObject, contributionId);
                 break;
             case DELETED:   // case of deletion change type, but request also has payload (TODO: should that be even allowed? specification-wise it's not forbidden)
-                // TODO-526: add handlers for (default) committer and description
-                folderService.delete(version.getPrecedingVersionUid(), contributionId, null, null, null);
+                // TODO-526: add handlers for (default) committer and description -> step 1: it is now using default values in a lean way
+                folderService.delete(ehrId, version.getPrecedingVersionUid(), contributionId);
                 break;
             case SYNTHESIS:     // TODO
             case UNKNOWN:       // TODO

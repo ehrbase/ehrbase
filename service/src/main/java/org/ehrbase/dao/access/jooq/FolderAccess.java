@@ -42,7 +42,6 @@ import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.JSONB;
 import org.jooq.Record;
-import org.jooq.Record1;
 import org.jooq.Record13;
 import org.jooq.Record8;
 import org.jooq.Result;
@@ -110,70 +109,58 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         auditDetailsAccess = I_AuditDetailsAccess.getInstance(getDataAccess());
     }
 
-    /*************Data Access and modification methods*****************/
+    // *************Data Access and modification methods*****************
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public Boolean update(Timestamp transactionTime) {
-        // not valid, because missing mandatory data, like committer
-        throw new InternalServerException(CALLED_INVALID_ACCESS_LAYER_METHOD);
-    }
-
-    @Override
-    public Boolean update(final Timestamp transactionTime, final boolean force) {
-        // not valid, because missing mandatory data, like committer
-        throw new InternalServerException(CALLED_INVALID_ACCESS_LAYER_METHOD);
-    }
-
-    @Override
-    public Boolean update(final Timestamp transactionTime, final boolean force, UUID contribution,
-        UUID systemId, UUID committerId, String description, ContributionChangeType changeType) {
+    public Boolean update(final Timestamp transactionTime, UUID systemId, UUID committerId, String description, ContributionChangeType changeType) {
         /*create new contribution*/
         UUID oldContribution = this.folderRecord.getInContribution();
         UUID newContribution;
 
-        // if no custom contribution is provided create a new one, otherwise use given one
-        if (contribution == null) {
-            UUID contributionAccessEhrId = this.contributionAccess.getEhrId();
-            /*save the EHR id from oldContribution since it will be the same as this is an update operation*/
-            if (this.contributionAccess.getEhrId() == null) {
-                ContributionRecord rec = getContext().fetchOne(CONTRIBUTION, CONTRIBUTION.ID.eq(oldContribution));
-                contributionAccessEhrId = rec.getEhrId();
-            }
-            this.contributionAccess.setEhrId(contributionAccessEhrId);
-
-            this.contributionAccess.commit(transactionTime, committerId, systemId, ContributionDataType.folder, ContributionDef.ContributionState.COMPLETE, I_ConceptAccess.ContributionChangeType.MODIFICATION, description);
-            this.getFolderRecord().setInContribution(this.contributionAccess.getId());
-        } else {
-            this.getFolderRecord().setInContribution(contribution);
+        // No custom contribution is provided, so create a new one
+        UUID contributionAccessEhrId = this.contributionAccess.getEhrId();
+        /*save the EHR id from oldContribution since it will be the same as this is an update operation*/
+        if (this.contributionAccess.getEhrId() == null) {
+            ContributionRecord rec = getContext().fetchOne(CONTRIBUTION, CONTRIBUTION.ID.eq(oldContribution));
+            contributionAccessEhrId = rec.getEhrId();
         }
+        this.contributionAccess.setEhrId(contributionAccessEhrId);
+
+        this.contributionAccess.commit(transactionTime, committerId, systemId, ContributionDataType.folder, ContributionDef.ContributionState.COMPLETE, I_ConceptAccess.ContributionChangeType.MODIFICATION, description);
+        this.getFolderRecord().setInContribution(this.contributionAccess.getId());
 
         newContribution = folderRecord.getInContribution();
 
-        return this.update(transactionTime, force, true, null, oldContribution, newContribution, systemId, committerId, description, changeType);
+        return this.internalUpdate(transactionTime, true, null, oldContribution, newContribution, systemId, committerId, description, changeType);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public ObjectVersionId create(UUID customContribution, UUID systemId, UUID committerId, String description) {
-        if (customContribution == null) {
-            return new ObjectVersionId(
-                    this.commit(Timestamp.from(Instant.now()), systemId, committerId, description).toString()
-                            + "::" + getServerConfig().getNodename()
-                            + "::1"
-            );
-        } else {
-            this.contributionAccess = I_ContributionAccess.retrieveInstance(getDataAccess(), customContribution);
-            return new ObjectVersionId((this.commit(Timestamp.from(Instant.now()), this.contributionAccess.getContributionId()).toString()
-                    + "::" + getServerConfig().getNodename()
-                    + "::1"
-            ));
-        }
+    public Boolean update(final Timestamp transactionTime, UUID contribution) {
+        /*create new contribution*/
+        UUID oldContribution = this.folderRecord.getInContribution();
+        UUID newContribution;
+
+        // Custom contribution is provided, so use given one
+        this.getFolderRecord().setInContribution(contribution);
+
+        newContribution = folderRecord.getInContribution();
+
+        var newContributionAccess = I_ContributionAccess.retrieveInstance(this.getDataAccess(), newContribution);
+        UUID systemId = newContributionAccess.getAuditsSystemId();
+        UUID committerId = newContributionAccess.getAuditsCommitter();
+        String description = newContributionAccess.getAuditsDescription();
+        ContributionChangeType changeType = newContributionAccess.getAuditsChangeType();
+
+        return this.internalUpdate(transactionTime, true, null, oldContribution, newContribution, systemId, committerId, description, changeType);
     }
 
-    private Boolean update(final Timestamp transactionTime,
-                           final boolean force,
+    private Boolean internalUpdate(final Timestamp transactionTime,
                            boolean rootFolder,
                            UUID parentFolder,
                            UUID oldContribution,
@@ -248,8 +235,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
                 .values() // Get all I_FolderAccess entries
                 .stream() // Iterate over the I_FolderAccess entries
                 .map(subfolder -> ( // Update each entry and return if there has been at least one entry updated
-                        ((FolderAccess) subfolder).update(transactionTime,
-                                force,
+                        ((FolderAccess) subfolder).internalUpdate(transactionTime,
                                 false,
                                 updatedFolderId,
                                 oldContribution,
@@ -279,29 +265,16 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         }
     }
 
-    @Override
-    public Boolean update() {
-        return this.update(Timestamp.from(Instant.now()), true);
-    }
-
-    @Override
-    public Boolean update(Boolean force) {
-        return this.update(Timestamp.from(Instant.now()), force);
-    }
-
-    @Override
-    public UUID commit() {
-        Timestamp timestamp = Timestamp.from(Instant.now());
-        return this.commit(timestamp);
-    }
-
-    @Override
-    public UUID commit(Timestamp transactionTime) {
-        throw new InternalServerException(CALLED_INVALID_ACCESS_LAYER_METHOD);
-    }
-
     /**
      * {@inheritDoc}
+     * Additional commit method to store a new entry of folder to the database and get all of inserted sub folders
+     * connected by one contribution which has been created before.
+     *
+     * @param transactionTime - Timestamp which will be applied to all folder sys_transaction values
+     * @param systemId System ID for audit
+     * @param committerId Committer ID for audit
+     * @param description Optional description for audit
+     * @return UUID of the new created root folder
      */
     @Override
     public UUID commit(Timestamp transactionTime, UUID systemId, UUID committerId, String description) {
@@ -322,6 +295,12 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
 
     /**
      * {@inheritDoc}
+     * Additional commit method to store a new entry of folder to the database and get all of inserted sub folders
+     * connected by one contribution which has been created before.
+     *
+     * @param transactionTime - Timestamp which will be applied to all folder sys_transaction values
+     * @param contributionId - ID of contribution for CREATE applied to all folders that will be created
+     * @return UUID of the new created root folder
      */
     @Override
     public UUID commit(Timestamp transactionTime, UUID contributionId) {
@@ -511,17 +490,35 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         return buildFolderAccessTreeRecursively(domainAccess, folder, null, dateTime, ehrId, null);
     }
 
+    /**
+     * {@inheritDoc}
+     * <br> Includes sub-folders.
+     */
     @Override
-    public Integer delete() {
-        // not valid, because missing mandatory data, like committer
-        throw new InternalServerException(CALLED_INVALID_ACCESS_LAYER_METHOD);
+    public Integer delete(Timestamp timestamp, UUID systemId, UUID committerId, String description) {
+        // create new contribution for this deletion action (with embedded contribution.audit handling)
+        contributionAccess = I_ContributionAccess.getInstance(getDataAccess(),
+            contributionAccess.getEhrId()); // overwrite old contribution with new one
+        var contribution = contributionAccess
+            .commit(TransactionTime.millis(), committerId, systemId, null,
+                ContributionDef.ContributionState.COMPLETE,
+                I_ConceptAccess.ContributionChangeType.DELETED, description);
+
+
+        return this.delete(this.getFolderId(), contribution, systemId, committerId, description);
     }
 
     /**
      * {@inheritDoc}
+     * <br> Includes sub-folders.
      */
     @Override
-    public Integer delete(UUID contribution, UUID systemId, UUID committerId, String description) {
+    public Integer delete(Timestamp timestamp, UUID contribution) {
+        var newContributionAccess = I_ContributionAccess.retrieveInstance(this.getDataAccess(), contribution);
+        UUID systemId = newContributionAccess.getAuditsSystemId();
+        UUID committerId = newContributionAccess.getAuditsCommitter();
+        String description = newContributionAccess.getAuditsDescription();
+
         return this.delete(this.getFolderId(), contribution, systemId, committerId, description);
     }
 
@@ -544,16 +541,6 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         // create new deletion audit
         var delAudit = I_AuditDetailsAccess.getInstance(this, systemId, committerId, I_ConceptAccess.ContributionChangeType.DELETED, description);
         UUID delAuditId = delAudit.commit();
-
-        if (contribution == null) {
-            // create new contribution for this deletion action (with embedded contribution.audit handling)
-            contributionAccess = I_ContributionAccess.getInstance(getDataAccess(),
-                contributionAccess.getEhrId()); // overwrite old contribution with new one
-            contribution = contributionAccess
-                .commit(TransactionTime.millis(), committerId, systemId, null,
-                    ContributionDef.ContributionState.COMPLETE,
-                    I_ConceptAccess.ContributionChangeType.DELETED, description);
-        }
 
         // Collect directly linked entities before applying changes:
         // Collect all linked hierarchy entries and linked (children) folders

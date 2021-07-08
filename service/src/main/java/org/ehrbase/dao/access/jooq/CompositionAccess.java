@@ -692,7 +692,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         // prepare contribution with given values
         contributionAccess.setDataType(ContributionDataType.composition);
         contributionAccess.setState(ContributionDef.ContributionState.COMPLETE);
-        contributionAccess.setAuditDetailsValues(committerId, systemId, description);
+        contributionAccess.setAuditDetailsValues(committerId, systemId, description, I_ConceptAccess.ContributionChangeType.CREATION);
         // prepare composition audit with given values
         auditDetailsAccess.setSystemId(systemId);
         auditDetailsAccess.setCommitter(committerId);
@@ -793,7 +793,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         contributionAccess = new ContributionAccess(this, getEhrid());
         contributionAccess.setDataType(ContributionDataType.composition);
         contributionAccess.setState(state);
-        contributionAccess.setAuditDetailsValues(committerId, systemId, description);
+        contributionAccess.setAuditDetailsValues(committerId, systemId, description, contributionChangeType);
         contributionAccess.setAuditDetailsChangeType(I_ConceptAccess.fetchContributionChangeType(this, contributionChangeType));
         UUID contributionId = this.contributionAccess.commit();
         setContributionId(contributionId);

@@ -90,55 +90,29 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
     /*************Data Access and modification methods*****************/
 
     @Override
-    public ObjectVersionId create(UUID customContribution, UUID systemId, UUID committerId, String description) { return null; }
-
-    @Override
-    public Boolean update(Timestamp transactionTime) {
-        return null;
-    }
-
-
-    @Override
-    public Boolean update(Timestamp transactionTime, boolean force) {
-        return null;
-    }
-
-    @Override
-    public Boolean update() {
-        return null;
-    }
-
-    @Override
-    public Boolean update(Boolean force){
-        return null;
-    }
-
-    @Override
-    public Boolean update(final Timestamp transactionTime, final boolean force, UUID contribution,
-        UUID systemId, UUID committerId, String description, ContributionChangeType changeType) {
-        return null;
-    }
-
-    @Override
-    public Integer delete(){ return null; }
-
-    @Override
-    public Integer delete(UUID contribution, UUID systemId, UUID committerId, String description) {
-        return null;
-    }
-
-    @Override
-    public UUID commit(Timestamp transactionTime){
-        return null;
-    }
-
-    @Override
-    public UUID commit(){
-        return null;
-    }
-
-    @Override
     public UUID commit(Timestamp transactionTime, UUID contributionId){
+        return null;
+    }
+
+    @Override
+    public Boolean update(Timestamp timestamp, UUID committerId, UUID systemId, String description,
+        ContributionChangeType changeType) {
+        return null;
+    }
+
+    @Override
+    public Boolean update(Timestamp timestamp, UUID contribution) {
+        return null;
+    }
+
+    @Override
+    public Integer delete(Timestamp timestamp, UUID committerId, UUID systemId,
+        String description) {
+        return null;
+    }
+
+    @Override
+    public Integer delete(Timestamp timestamp, UUID contribution) {
         return null;
     }
 

@@ -24,6 +24,7 @@ import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import com.nedap.archie.rm.support.identification.UIDBasedId;
+import java.time.LocalDateTime;
 import org.apache.commons.io.IOUtils;
 import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
@@ -207,7 +208,7 @@ public class FolderAccessTest {
         assertEquals(expectedStringWriter.toString(), fa2.getFolderRecord().getDetails().toString());
 
         //commit and check returned UID is the valid one
-        UUID storedFolderUid = fa2.commit();
+        UUID storedFolderUid = fa2.commit(Timestamp.valueOf(LocalDateTime.now()), UUID.randomUUID());
         assertEquals("f8a2af65-fe89-45a4-9456-07c5e17b1634", storedFolderUid.toString());
     }
 
@@ -355,7 +356,7 @@ public class FolderAccessTest {
         printWriter.flush();
         printWriter.close();
 
-        UUID storedFolderUid = fa2.commit();
+        UUID storedFolderUid = fa2.commit(Timestamp.valueOf(LocalDateTime.now()), UUID.randomUUID());
         //commit should return the top level folderId
         assertEquals("f8a2af65-fe89-45a4-9456-07c5e17b1634", storedFolderUid.toString());
 
@@ -409,7 +410,7 @@ public class FolderAccessTest {
         //the mock data provider checks the UPDATE SQL code generated and returns 1 simulating the update of one row in the FOLDER table.
         //this way the correct sql generation is checked indirectly.
         boolean updated = false;
-        updated = fa2.update(new Timestamp(DateTime.now().getMillis()), true);
+        updated = fa2.update(Timestamp.valueOf(LocalDateTime.now()), UUID.randomUUID());
         //assertEquals(true, updated);// could not manage to mock the result "Affected row(s)          : 1" from updates" for the UPDATEE statement. The mock data provider returns 0 irrespectively of weather the record is modified in the DB or not. As a consequence this always is false in the mocked version.
     }
 
@@ -418,7 +419,7 @@ public class FolderAccessTest {
     public void shouldDeleteExistingFolder(){
         I_FolderAccess fa1 = new FolderAccess(testDomainAccess);
         fa1.setFolderId(UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb"));
-        int affectedRows = fa1.delete();
+        int affectedRows = fa1.delete(Timestamp.valueOf(LocalDateTime.now()), UUID.randomUUID());
         //assertEquals(5, affectedRows); commented since metadata indicating that affected rows are 5 could not be mocked. Now checked relyingon the Moch Data Provider that intercepts the SQL code generated.
     }
 

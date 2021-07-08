@@ -18,10 +18,12 @@
 
 package org.ehrbase.dao.access.jooq.party;
 
+import com.nedap.archie.rm.datavalues.DvIdentifier;
 import com.nedap.archie.rm.generic.PartyIdentified;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.GenericId;
 import com.nedap.archie.rm.support.identification.PartyRef;
+import java.util.List;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
@@ -89,8 +91,30 @@ public class PersistedPartyProxy {
 
     }
 
-    public UUID getOrCreate(String name, String code, String scheme, String namespace, String type){
-        PartyIdentified partyIdentified = new PartyIdentified(new PartyRef(new GenericId(code, scheme), namespace, type), name, null);
+    /**
+     * Get or create a PartyIdentified instance with the given parameters.
+     */
+    public UUID getOrCreate(String name, String code, String scheme, String namespace, String type, List<DvIdentifier> identifiers){
+        // Check conformance to openEHR spec
+        if (identifiers == null || identifiers.isEmpty()) {
+            throw new IllegalArgumentException("Can't create PartyIdentified with invalid list of identifiers.");
+        }
+        identifiers.forEach(dv -> {
+            if (!isValidDvIdentifier(dv))
+                throw new IllegalArgumentException("Can't create PartyIdentified with an invalid identifier.");
+        });
+        // Create and persist object
+        var partyIdentified = new PartyIdentified(new PartyRef(new GenericId(code, scheme), namespace, type), name, identifiers);
         return getOrCreate(partyIdentified);
+    }
+
+    /**
+     * Checks conformance to openEHR spec.<br>
+     * A DvIdentifier needs to have an ID.
+     * @param identifier Input object
+     * @return True if minimal valid object instance
+     */
+    private boolean isValidDvIdentifier(DvIdentifier identifier) {
+        return (identifier.getId() != null) && (!identifier.getId().isBlank());
     }
 }

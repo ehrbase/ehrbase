@@ -139,13 +139,17 @@ public class OpenehrDirectoryController extends BaseController {
         }
 
         // Insert New folder
-        ObjectVersionId folderId = this.folderService.create(
+        Optional<FolderDto> dtoOptional = this.folderService.create(
                 ehrId,
-                folder,
-                null,
-                null,
-                null
-        );  // TODO-526: add default committer and description handling
+                folder
+        );  // TODO-526: add default committer and description handling -> step 1: it is now using default values in a lean way
+        ObjectVersionId folderId;
+        var folderDto = dtoOptional.orElseThrow(() -> new InternalServerException("Error creating folder."));
+        if (folderDto.getUid() instanceof ObjectVersionId) {
+            folderId = (ObjectVersionId) folderDto.getUid();
+        } else {
+            throw new InternalServerException("Unexpected folder DTO ID type.");
+        }
 
         // Fetch inserted folder for response data
         Optional<FolderDto> newFolder = this.folderService.get(folderId, null);
@@ -351,14 +355,11 @@ public class OpenehrDirectoryController extends BaseController {
         checkDirectoryVersionConflicts(folderId, ehrId);
 
         // Update folder and get new version
+        // TODO-526: add default committer and description handling -> step 1: it is now using default values in a lean way
         Optional<FolderDto> updatedFolder = this.folderService.update(
-                folderId,
-                folder,
-                ehrId,
-                null,
-                null,   // TODO-526: add default committer handling
-                null,   // TODO-526: placeholder for now
-                null    // TODO-526: placeholder for now
+            ehrId,
+            folderId,
+            folder
         );
 
 
@@ -418,8 +419,8 @@ public class OpenehrDirectoryController extends BaseController {
         // Check version conflicts and throw precondition failed exception if not
         checkDirectoryVersionConflicts(folderId, ehrId);
 
-        // TODO-526: add default committer and description handling
-        this.folderService.delete(folderId, null, null, null, null);
+        // TODO-526: add default committer and description handling -> step 1: it is now using default values in a lean way
+        this.folderService.delete(ehrId, folderId);
         this.ehrService.removeDirectory(ehrId);
         return createDirectoryResponse(HttpMethod.DELETE, null, accept, null, ehrId);
     }

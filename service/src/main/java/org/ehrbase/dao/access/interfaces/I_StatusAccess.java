@@ -23,6 +23,7 @@ package org.ehrbase.dao.access.interfaces;
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
 import org.ehrbase.dao.access.jooq.StatusAccess;
 import org.ehrbase.jooq.pg.tables.records.StatusHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.StatusRecord;
@@ -150,8 +151,9 @@ public interface I_StatusAccess extends I_SimpleCRUD {
      * @param systemId ID of committing system
      * @param committerId ID of committer
      * @param description Optional description
+     * @param changeType Change type of operation
      */
-    void setAuditAndContributionAuditValues(UUID systemId, UUID committerId, String description);
+    void setAuditAndContributionAuditValues(UUID systemId, UUID committerId, String description, ContributionChangeType changeType);
 
     /**
      * Get latest version number of EHR_STATUS by versioned object UID.

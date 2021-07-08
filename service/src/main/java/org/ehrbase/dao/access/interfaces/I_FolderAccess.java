@@ -19,7 +19,6 @@
 package org.ehrbase.dao.access.interfaces;
 
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
 import org.ehrbase.dao.access.jooq.FolderAccess;
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.directory.Folder;
@@ -33,14 +32,14 @@ import java.time.OffsetDateTime;
 import java.util.*;
 
 
-/***
+/**
  *@Created by Luis Marco-Ruiz on Jun 13, 2019
  */
 
 /**
  * Data Access Object for CRUD operations on instances of {@link  com.nedap.archie.rm.directory.Folder}.
  */
-public interface I_FolderAccess extends I_SimpleCRUD {
+public interface I_FolderAccess extends I_VersionedCRUD {
 
     /**
      * Get the list of subfolders for the {@link  com.nedap.archie.rm.directory.Folder} that corresponds to this {@link  I_FolderAccess}
@@ -94,18 +93,6 @@ public interface I_FolderAccess extends I_SimpleCRUD {
         return FolderHistoryAccess.retrieveInstanceForExistingFolder(domainAccess, folderId, timestamp);
     }
 
-    /**
-     * Creates a new directory object with a given structure and returns a valid Object_Version_Id containing the given
-     * system identifier and version part.
-     *
-     * @param customContribution Optional ID of a custom contribution to use, instead of creating a new one. Can be null
-     * @param systemId System ID for audit
-     * @param committerId Committer ID for audit
-     * @param description Optional description for audit
-     * @return Object_Version_Id for new root directory folder
-     */
-    ObjectVersionId create(UUID customContribution, UUID systemId, UUID committerId, String description);
-
     static I_FolderAccess getInstanceForExistingFolder(I_DomainAccess domainAccess, ObjectVersionId folderId){
         return FolderAccess.retrieveInstanceForExistingFolder(
                 domainAccess,
@@ -130,51 +117,6 @@ public interface I_FolderAccess extends I_SimpleCRUD {
     static Set<ObjectVersionId> retrieveFolderVersionIdsInContribution(I_DomainAccess domainAccess, UUID contribution, String nodeName) {
         return FolderAccess.retrieveFolderVersionIdsInContribution(domainAccess, contribution, nodeName);
     }
-
-    /**
-     * Additional commit method to store a new entry of folder to the database and get all of inserted sub folders
-     * connected by one contribution which has been created before.
-     *
-     * @param transactionTime - Timestamp which will be applied to all folder sys_transaction values
-     * @param systemId System ID for audit
-     * @param committerId Committer ID for audit
-     * @param description Optional description for audit
-     * @return UUID of the new created root folder
-     */
-    UUID commit(Timestamp transactionTime, UUID systemId, UUID committerId, String description);
-
-    /**
-     * Additional commit method to store a new entry of folder to the database and get all of inserted sub folders
-     * connected by one contribution which has been created before.
-     *
-     * @param transactionTime - Timestamp which will be applied to all folder sys_transaction values
-     * @param contributionId - ID of contribution for CREATE applied to all folders that will be created
-     * @return UUID of the new created root folder
-     */
-    UUID commit(Timestamp transactionTime, UUID contributionId);
-
-    /**
-     * Overloaded update method to allow setting a custom contribution.
-     * @param transactionTime Timestamp
-     * @param force Optional to force the update
-     * @param contribution Optional (can be set null) custom contribution to use for this update
-     * @param systemId System ID for audit
-     * @param committerId Committer ID for audit
-     * @param description Optional description for audit
-     * @param changeType Change type of the operation
-     * @return success
-     */
-    Boolean update(final Timestamp transactionTime, final boolean force, UUID contribution, UUID systemId, UUID committerId, String description, ContributionChangeType changeType);
-
-    /**
-     * Invoke deletion of this folder and all its sub-folders.
-     * @param contribution Optional contribution. Provide null to create a new one.
-     * @param systemId System ID for audit
-     * @param committerId Committer ID for audit
-     * @param description Optional description for audit
-     * @return Number of deleted folders in total
-     */
-    Integer delete(UUID contribution, UUID systemId, UUID committerId, String description);
 
     UUID getFolderId();
 

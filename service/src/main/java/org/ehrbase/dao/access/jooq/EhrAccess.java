@@ -505,12 +505,11 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         // prepare EHR_STATUS audit with given values
 
         // prepare associated contribution (with contribution's audit embedded)
-        contributionAccess.setAuditDetailsValues(committerId, systemId, description);
+        contributionAccess.setAuditDetailsValues(committerId, systemId, description, ContributionChangeType.CREATION);
         contributionAccess.setDataType(ContributionDataType.ehr);
         contributionAccess.setState(ContributionDef.ContributionState.COMPLETE);
-        contributionAccess.setAuditDetailsChangeType(I_ConceptAccess.fetchContributionChangeType(this, I_ConceptAccess.ContributionChangeType.CREATION));
 
-        statusAccess.setAuditAndContributionAuditValues(systemId, committerId, description);
+        statusAccess.setAuditAndContributionAuditValues(systemId, committerId, description, ContributionChangeType.CREATION);
 
         return commit(timestamp);
     }
@@ -592,9 +591,8 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
      * Helper to provision a contribution access object with several data items.
      */
     private void provisionContributionAccess(I_ContributionAccess access, UUID committerId, UUID systemId, String description, ContributionDef.ContributionState state, I_ConceptAccess.ContributionChangeType contributionChangeType) {
-        access.setAuditDetailsValues(committerId, systemId, description);
+        access.setAuditDetailsValues(committerId, systemId, description, contributionChangeType);
         access.setState(state);
-        access.setAuditDetailsChangeType(I_ConceptAccess.fetchContributionChangeType(this, contributionChangeType));
         access.setDataType(ContributionDataType.ehr);
         access.setState(ContributionState.COMPLETE);
     }
