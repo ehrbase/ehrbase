@@ -305,6 +305,7 @@ upload valid OPT
     ${resp}=            Put Request    ${SUT}    /template/${template_id}
                         ...    data=${file}    headers=${headers}
                         Set Test Variable    ${response}    ${resp}
+                        Set Test Variavle    ${prefer_return}    ${prefer_return}
 
 
 validate PUT response - 200 updated
