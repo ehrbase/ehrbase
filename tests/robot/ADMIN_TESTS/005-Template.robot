@@ -341,7 +341,7 @@ validate PUT response - 422 unprocessable entity
                         prepare new request session
                         ...    Prefer=return=${prefer_return}
                         Set Test Variable    ${prefer_return}    ${prefer_return}
-    &{resp}=            REST.DELETE    ${baseurl}/admin/template/${template_id}
+    &{resp}=            REST.DELETE    ${admin_baseurl}/template/${template_id}
                         Set Test Variable    ${response}    ${resp}
                         Output Debug Info To Console
 
@@ -368,7 +368,7 @@ validate DELETE response - 422 unprocessable entity
     ...                 Depends on any KW that exposes an variable named 'template_id'
     ...                 to test or suite level scope.
                         prepare new request session
-    &{resp}=            REST.DELETE    ${baseurl}/admin/template/all
+    &{resp}=            REST.DELETE    ${admin_baseurl}/template/all
                         Set Test Variable    ${response}    ${resp}
                         Output Debug Info To Console
 

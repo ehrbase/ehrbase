@@ -76,7 +76,7 @@ admin delete directory
     ...                 Needs manualle created `${folder_versioned_uid}`.
 
 
-    &{resp}=            REST.DELETE    ${baseurl}/admin/ehr/${ehr_id}/directory/${folder_versioned_uid}
+    &{resp}=            REST.DELETE    ${admin_baseurl}/ehr/${ehr_id}/directory/${folder_versioned_uid}
                         # Should Be Equal As Strings   ${resp.status}   204
                         Integer    response status   204
                         Set Test Variable    ${response}    ${resp}
