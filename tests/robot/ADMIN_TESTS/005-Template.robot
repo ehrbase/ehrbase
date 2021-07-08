@@ -288,7 +288,7 @@ upload valid OPT
     
 
 (admin) update OPT
-    [Arguments]         ${opt_file}
+    [Arguments]         ${opt_file}    ${prefer_return}=representation
     [Documentation]     Updates OPT via admin endpoint admin_baseurl/template/${template_id} \n\n
 
                         get valid OPT file    ${opt_file}
@@ -297,7 +297,7 @@ upload valid OPT
                         Set To Dictionary    ${headers}
                         ...                  Content-Type=application/xml
                         ...                  Accept=application/xml
-                        ...                  Prefer=return=representation
+                        ...                  Prefer=return=${prefer_return}
 
                         Create Session       ${SUT}    ${ADMIN_BASEURL}    debug=2
                         ...                  auth=${CREDENTIALS}    verify=True
