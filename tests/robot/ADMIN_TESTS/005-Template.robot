@@ -288,17 +288,21 @@ upload valid OPT
     
 
 (admin) update OPT
-    [Arguments]         ${opt_file}    ${prefer_return}=representation
+    [Arguments]         ${opt_file}
     [Documentation]     Updates OPT via admin endpoint admin_baseurl/template/${template_id} \n\n
-    ...                 valid values for 'prefer_return': \n\n\
-    ...                 - representation (default) \n\n
-    ...                 - minimal
-                        prepare new request session    XML
-                        ...    Prefer=return=${prefer_return}
-                        Set Test Variable    ${prefer_return}    ${prefer_return}
+
                         get valid OPT file    ${opt_file}
-                        # upload OPT file
-    ${resp}=            Put Request    ${SUT}    ${ADMIN_BASEURL}/template/${template_id}
+    
+    &{headers}=         Create Dictionary    &{EMPTY}
+                        Set To Dictionary    ${headers}
+                        ...                  Content-Type=application/xml
+                        ...                  Accept=application/xml
+                        ...                  Prefer=return=representation
+
+                        Create Session       ${SUT}    ${ADMIN_BASEURL}    debug=2
+                        ...                  auth=${CREDENTIALS}    verify=True
+
+    ${resp}=            Put Request    ${SUT}    /template/${template_id}
                         ...    data=${file}    headers=${headers}
                         Set Test Variable    ${response}    ${resp}
 
