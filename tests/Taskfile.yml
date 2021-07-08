@@ -181,17 +181,18 @@ tasks:
   test-all:
     desc: RUN ALL ROBOT TESTS
     cmds:
-      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output compop.xml --name COMPO robot/COMPOSITION_TESTS
-      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output contri.xml --name CONTRI robot/CONTRIBUTION_TESTS
-      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output folder.xml --name FOLDER robot/DIRECTORY_TESTS
-      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output ehrser.xml --name EHRSERVICE robot/EHR_SERVICE_TESTS
-      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output ehrsta.xml --name EHRSTATUS robot/EHR_STATUS_TESTS
-      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output knowld.xml --name KNOWLEDGE robot/KNOWLEDGE_TESTS
-      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output aqledb.xml --name "QUERY empty_db"  -i empty_db  robot/QUERY_SERVICE_TESTS
-      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output aqlldb.xml --name "QUERY loaded_db" -i loaded_db robot/QUERY_SERVICE_TESTS
+      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --skiponfailure not-ready --log None --report None --output compop.xml --name COMPO robot/COMPOSITION_TESTS
+      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --skiponfailure not-ready --log None --report None --output contri.xml --name CONTRI robot/CONTRIBUTION_TESTS
+      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --skiponfailure not-ready --log None --report None --output folder.xml --name FOLDER robot/DIRECTORY_TESTS
+      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --skiponfailure not-ready --log None --report None --output ehrser.xml --name EHRSERVICE robot/EHR_SERVICE_TESTS
+      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --skiponfailure not-ready --log None --report None --output ehrsta.xml --name EHRSTATUS robot/EHR_STATUS_TESTS
+      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --skiponfailure not-ready --log None --report None --output knowld.xml --name KNOWLEDGE -v ALLOW-TEMPLATE-OVERWRITE:false robot/KNOWLEDGE_TESTS
+      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --skiponfailure not-ready --log None --report None --output aqledb.xml --name "QUERY empty_db"  -i aql_empty_db  robot/QUERY_SERVICE_TESTS
+      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --skiponfailure not-ready --log None --report None --output aqlldb.xml --name "QUERY loaded_db" -i aql_loaded_db robot/QUERY_SERVICE_TESTS
+      # TODO: add admin and security tests here (will require proper SUT setup)
 
       ## consolidate results
-      - rebot -e future -e circleci -e TODO -e obsolete -e libtest -d results -L TRACE --noncritical not-ready --name EHRbase results/xml/*.xml
+      - rebot -e future -e circleci -e TODO -e obsolete -e libtest -d results -L TRACE --name EHRbase results/xml/*.xml
       # - spd-say "Robot is ready! Check the results!"
   
   clean-aql:
