@@ -226,12 +226,19 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
         }
 
         // Send update to access layer which updates the hierarchy recursive
-        if (folderAccess.update(timestamp, contribution)
-            .equals(true)) {
+        boolean success;
+        if (contribution == null) {
+            success = folderAccess.update(timestamp, systemId, committerId, description, ContributionChangeType.MODIFICATION);
+        } else {
+            success = folderAccess.update(timestamp, contribution);
+        }
+
+        if (success) {
             return createDto(folderAccess, getLastVersionNumber(targetObjId), true);
         } else {
             return Optional.empty();
         }
+
     }
 
     /**
