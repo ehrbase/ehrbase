@@ -418,8 +418,7 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
 
     @Override
     public ContributionChangeType getAuditsChangeType() {
-        // TODO-526: does this work?
-        return I_ConceptAccess.ContributionChangeType.valueOf(auditDetails.getChangeType().getName());
+        return I_ConceptAccess.ContributionChangeType.valueOf(auditDetails.getChangeType().getLiteral().toUpperCase());
     }
 
     @Override
