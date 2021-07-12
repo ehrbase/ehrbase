@@ -64,7 +64,7 @@ public class ExpressionField {
                 else {
                     // all other that are supported as simpleClassExpr (most common resolution)
                     LocatableItem locatableItem = new LocatableItem(compositionAttributeQuery, jsonbEntryQuery, clause);
-                    aqlFields = locatableItem.toSql(templateId, variableDefinition, className);
+                    aqlFields = locatableItem.toSql(templateId, variableDefinition);
                     if (!aqlFields.isEmpty())
                         aqlFields.setUseEntryTable(true);
                 }

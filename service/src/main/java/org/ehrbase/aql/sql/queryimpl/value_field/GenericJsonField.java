@@ -23,8 +23,6 @@ public class GenericJsonField extends RMObjectAttribute {
 
     protected Optional<String> jsonPath = Optional.empty();
 
-    private boolean isJsonDataBlock = true; //by default, can be overriden
-
     private static final String ITERATIVE_MARKER = "'"+AQL_NODE_ITERATIVE_MARKER+"'";
 
     public GenericJsonField(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
@@ -85,7 +83,6 @@ public class GenericJsonField extends RMObjectAttribute {
     }
 
     public Field jsonField(String rmType, Object function, TableField... tableFields){
-        fieldContext.setJsonDatablock(isJsonDataBlock);
         fieldContext.setRmType(rmType);
         Configuration configuration = fieldContext.getContext().configuration();
 
@@ -169,7 +166,6 @@ public class GenericJsonField extends RMObjectAttribute {
         GenericJsonPath genericJsonPath = new GenericJsonPath(jsonPath);
 
         this.jsonPath = Optional.of(genericJsonPath.jqueryPath());
-        isJsonDataBlock = genericJsonPath.isJsonDataBlock();
 
         return this;
     }
@@ -180,15 +176,8 @@ public class GenericJsonField extends RMObjectAttribute {
     }
 
     public GenericJsonField forJsonPath(String[] path){
-        if (GenericJsonPath.isTerminalValue(Arrays.asList(path), path.length - 1))
-            isJsonDataBlock = false;
         this.jsonPath = Optional.of(new JsonbSelect(Arrays.asList(path)).field());
         return this;
     }
 
-
-    public GenericJsonField setJsonDataBlock(boolean jsonDataBlock) {
-        this.isJsonDataBlock = jsonDataBlock;
-        return this;
-    }
 }

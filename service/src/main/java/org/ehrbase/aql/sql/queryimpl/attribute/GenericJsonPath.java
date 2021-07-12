@@ -33,8 +33,6 @@ public class GenericJsonPath {
     public static final String ARCHETYPE_NODE_ID = "archetype_node_id";
     private final String path;
 
-    private boolean isJsonDataBlock = false;
-
     public GenericJsonPath(String path) {
         this.path = path;
     }
@@ -46,7 +44,6 @@ public class GenericJsonPath {
         JqueryPath jqueryPath = new JqueryPath(JsonbEntryQuery.PATH_PART.VARIABLE_PATH_PART, path, "0");
 
         List<String> jqueryPaths = jqueryPath.evaluate();
-        isJsonDataBlock = jqueryPath.isJsonDataBlock();
 
         if (!jqueryPaths.isEmpty() && jqueryPaths.get(0).startsWith("/other_details")) {
             jqueryPaths.set(0, jqueryPaths.get(0).replace("/other_details", OTHER_DETAILS));
@@ -116,7 +113,4 @@ public class GenericJsonPath {
                 && !paths.get(index - 1).matches(I_DvTypeAdapter.matchNodePredicate.substring(1)));
     }
 
-    public boolean isJsonDataBlock() {
-        return isJsonDataBlock;
-    }
 }
