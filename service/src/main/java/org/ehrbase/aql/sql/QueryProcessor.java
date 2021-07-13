@@ -111,8 +111,7 @@ public class QueryProcessor extends TemplateMetaData {
         Result<Record> result = fetchResultSet(aqlSelectQuery.getSelectQuery(), null);
 
         //if any jsonb data field transform them into raw json
-
-        RawJsonTransform.toRawJson(result, aqlSelectQuery.getQuerySteps());
+        RawJsonTransform.toRawJson(result);
 
         List<List<String>> explainList = buildExplain(aqlSelectQuery.getSelectQuery());
 
@@ -172,7 +171,6 @@ public class QueryProcessor extends TemplateMetaData {
                 } else
                     unionSetQuery.union(select);
 
-                containsJson = containsJson || queryStep.isContainsJson();
             }
 
         }
@@ -246,10 +244,8 @@ public class QueryProcessor extends TemplateMetaData {
                                 select,
                                 condition,
                                 joins,
-                                templateId,
-                                selectBinder.getCompositionAttributeQuery(),
-                                selectBinder.getJsonDataBlock(),
-                                false));
+                                templateId
+                            ));
                 selectCursor++;
                 //re-initialize select
                 select = domainAccess.getContext().selectQuery();

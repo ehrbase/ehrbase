@@ -195,8 +195,7 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
 
             dataTypeFromTemplate.evaluate(templateId, referenceItemPathArray);
 
-            if (!jqueryPath.isJsonDataBlock())
-                castTypeAs = dataTypeFromTemplate.getIdentifiedType();
+            castTypeAs = dataTypeFromTemplate.getIdentifiedType();
 
             Field<?> fieldPathItem;
             if (clause.equals(Clause.SELECT)) {
@@ -218,10 +217,8 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
 
             QualifiedAqlField aqlField = new QualifiedAqlField(fieldPathItem,
                                                 dataTypeFromTemplate.getItemType(),
-                                                dataTypeFromTemplate.getItemCategory(),
-                                                jqueryPath.isJsonDataBlock(),
-                                true,
-                                                toAqlPath(itemPathArray));
+                                                dataTypeFromTemplate.getItemCategory()
+                                                );
 
             fieldList.add(aqlField);
         }
@@ -291,7 +288,6 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
 
             Field<?> fieldPathItem = DSL.field(jsqueryPath.toString(), String.class);
             QualifiedAqlField qualifiedAqlField = new QualifiedAqlField(fieldPathItem);
-            qualifiedAqlField.setContainsJqueryPath(true);
             fieldList.add(qualifiedAqlField);
         }
         return new MultiFields(variableDefinition, fieldList, templateId);

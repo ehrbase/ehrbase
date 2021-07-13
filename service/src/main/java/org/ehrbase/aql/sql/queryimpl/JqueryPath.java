@@ -31,7 +31,6 @@ import static org.ehrbase.aql.sql.queryimpl.attribute.eventcontext.EventContextR
 
 public class JqueryPath {
 
-    private boolean jsonDataBlock;
     private final JsonbEntryQuery.PATH_PART pathPart;
     private final String path;
     private final String defaultIndex;
@@ -56,11 +55,9 @@ public class JqueryPath {
         //from a PL/pgSQL script. this is no more required
 
         if (path == null) { //partial path
-            jsonDataBlock = true;
             return new ArrayList<>();
         }
 
-        jsonDataBlock = false;
         int offset = 0;
         List<String> segments = LocatableHelper.dividePathIntoSegments(path);
         List<String> jqueryPath = new ArrayList<>();
@@ -121,11 +118,6 @@ public class JqueryPath {
             }
         }
 
-        //CHC 191018 EHR-163 '/value' for an ELEMENT will return a structure
-        if (pathPart.equals(JsonbEntryQuery.PATH_PART.VARIABLE_PATH_PART)) {
-            jsonDataBlock = new JsonDataBlockCheck(jqueryPath).isJsonBlock();
-        }
-
         return jqueryPath;
 
     }
@@ -150,7 +142,5 @@ public class JqueryPath {
         return false;
     }
 
-    public boolean isJsonDataBlock() {
-        return jsonDataBlock;
-    }
+
 }

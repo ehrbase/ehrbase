@@ -17,13 +17,11 @@
  */
 package org.ehrbase.aql.sql.binding;
 
-import com.nedap.archie.rm.datavalues.DataValue;
-import com.nedap.archie.rminfo.ArchieRMInfoLookup;
 import org.ehrbase.aql.definition.I_VariableDefinition;
-import org.ehrbase.aql.sql.queryimpl.*;
-import org.jooq.impl.DSL;
-
-import java.util.Objects;
+import org.ehrbase.aql.sql.queryimpl.CompositionAttributeQuery;
+import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
+import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
+import org.ehrbase.aql.sql.queryimpl.MultiFields;
 
 /**
  * evaluate the SQL expression for locatables in the ITEM_STRUCTURE: OBSERVATION, INSTRUCTION, CLUSTER etc.
@@ -42,7 +40,7 @@ public class LocatableItem {
         this.clause = clause;
     }
 
-    public MultiFields toSql(String templateId, I_VariableDefinition variableDefinition, String className) {
+    public MultiFields toSql(String templateId, I_VariableDefinition variableDefinition) {
         MultiFields multiFields;
 
         multiFields = jsonbEntryQuery.makeField(templateId, variableDefinition.getIdentifier(), variableDefinition, clause);
@@ -50,64 +48,10 @@ public class LocatableItem {
         if (multiFields == null)
             return MultiFields.asNull(variableDefinition, templateId, clause);
 
-        //iterate on the found fields
-        for (int i = 0; i < multiFields.fieldsSize(); i++) {
-            if (!multiFields.isEmpty()) {
-                QualifiedAqlField aqlField = multiFields.getQualifiedFieldOrLast(i);
-
-                if (aqlField.isJsonDataBlock())
-                    multiFields = decoratedJsonDataBlock(multiFields, aqlField, className, variableDefinition, templateId);
-            }
-        }
         return multiFields;
     }
 
     public void setUseEntry() {
         compositionAttributeQuery.setUseEntry(true);
-    }
-
-    private MultiFields decoratedJsonDataBlock(MultiFields multiFieldsInitial, QualifiedAqlField aqlField, String className, I_VariableDefinition variableDefinition, String templateId){
-
-        MultiFields multiFields = multiFieldsInitial;
-
-        if (aqlField.getItemType() != null) {
-            Class itemClass = ArchieRMInfoLookup.getInstance().getClass(aqlField.getItemType());
-
-            if (itemClass == null && className != null) //this may occur f.e. for itemType 'MULTIPLE'. try we classname
-                itemClass = ArchieRMInfoLookup.getInstance().getClass(className);
-
-            if (DataValue.class.isAssignableFrom(itemClass)) {
-                VariableAqlPath variableAqlPath = new VariableAqlPath(variableDefinition.getPath());
-                if (variableAqlPath.getSuffix().equals("value")) {
-                    if (Objects.equals(className, "COMPOSITION")) { //assumes this is a data value within an ELEMENT
-                        I_VariableDefinition variableDefinition1 = variableDefinition.duplicate();
-                        variableDefinition1.setPath(variableAqlPath.getInfix());
-                        multiFields = jsonbEntryQuery.makeField(templateId, variableDefinition.getIdentifier(), variableDefinition1, clause);
-                        multiFields.setRootJsonKey(variableAqlPath.getSuffix());
-                    } else if (aqlField.getItemCategory().equals("ELEMENT") || aqlField.getItemCategory().equals("CLUSTER")) {
-                        int cut = aqlField.getJsonbItemPath().lastIndexOf(",/value");
-                        if (cut != -1)
-                            //we keep the path that select the json element value block, and call the formatting function
-                            //to pass the actual value datatype into the json block
-                            multiFields = new MultiFields(variableDefinition, DSL.field("(ehr.js_typed_element_value(" +  aqlField.getJsonbItemPath().substring(0, cut) + "}')::jsonb))"), templateId);
-
-                        if (clause.equals(IQueryImpl.Clause.SELECT)) {
-                            String alias = variableDefinition.getAlias();
-                            if (alias == null)
-                                alias = DefaultColumnId.value(variableDefinition);
-                            aqlField.setField(aqlField.getSQLField().as(alias));
-                        }
-                    }
-                }
-            }
-        }
-        else if (multiFieldsInitial.getVariableDefinition().getPath().contains("other_details")){
-            //in many instances we cannot interpret the type but keep this field anyway!
-            multiFields = new MultiFields(multiFieldsInitial.getVariableDefinition(), aqlField, templateId);
-        }
-        else
-            multiFields = MultiFields.asNull(variableDefinition, templateId, clause);
-
-        return multiFields;
     }
 }
