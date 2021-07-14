@@ -19,11 +19,6 @@
 *** Settings ***
 Documentation   EHR Keywords
 Resource        ../suite_settings.robot
-# Resource        generic_keywords.robot
-# Library         XML
-# Library         REST
-# Library         Collections
-# Library         distutils.util
 
 
 

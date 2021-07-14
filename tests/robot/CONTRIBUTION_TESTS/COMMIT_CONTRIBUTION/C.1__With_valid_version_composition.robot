@@ -35,6 +35,7 @@ Documentation   Contribution Integration Tests
 ...         The EHR with ehr_id will have a new CONTRIBUTION.
 Metadata        TOP_TEST_SUITE    CONTRIBUTION
 
+Resource        ../../_resources/keywords/composition_keywords.robot
 Resource        ../../_resources/keywords/contribution_keywords.robot
 
 #Suite Setup  startup SUT

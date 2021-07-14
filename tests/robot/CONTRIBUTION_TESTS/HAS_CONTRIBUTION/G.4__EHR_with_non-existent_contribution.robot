@@ -32,6 +32,7 @@ Documentation   Contribution Integration Tests
 ...         None.
 Metadata        TOP_TEST_SUITE    CONTRIBUTION
 
+Resource        ../../_resources/keywords/composition_keywords.robot
 Resource        ../../_resources/keywords/contribution_keywords.robot
 
 #Suite Setup  startup SUT

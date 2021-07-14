@@ -34,6 +34,7 @@ Documentation   Contribution Integration Tests
 ...         There will be two VERSIONS of the same COMPOSITION in the EHR with ehr_id.
 Metadata        TOP_TEST_SUITE    CONTRIBUTION
 
+Resource        ../../_resources/keywords/composition_keywords.robot
 Resource        ../../_resources/keywords/contribution_keywords.robot
 
 #Suite Setup  startup SUT
