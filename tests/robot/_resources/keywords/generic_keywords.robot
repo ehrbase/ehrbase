@@ -17,10 +17,9 @@
 
 
 *** Settings ***
-Library    Collections
-Library    String
-Library    Process
-Library    OperatingSystem
+
+Resource   ../suite_settings.robot
+Resource    db_keywords.robot
 
 
 
@@ -146,6 +145,15 @@ get application version
     ${root}=  Parse Xml    ${POM_FILE}
     ${version}=  Get Element Text   ${root}  version
     Set Global Variable    ${VERSION}    ${version}
+
+
+Output Debug Info To Console
+    [Documentation]     Prints all details of a request to console in JSON style.
+    ...                 - request headers
+    ...                 - request body
+    ...                 - response headers
+    ...                 - response body
+    Output
 
 
 unzip file_repo_content.zip

@@ -22,7 +22,11 @@ Metadata    Authors    *Wladislaw Wagner*, *Jake Smolka*
 Metadata    Created    2020.09.01
 
 Metadata        TOP_TEST_SUITE    ADMIN_CONTRIBUTION
-Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
+
+Resource        ../_resources/keywords/admin_keywords.robot
+Resource        ../_resources/keywords/ehr_keywords.robot
+Resource        ../_resources/keywords/composition_keywords.robot
+Resource        ../_resources/keywords/contribution_keywords.robot
 
 Suite Setup     startup SUT
 Suite Teardown  shutdown SUT
@@ -49,8 +53,8 @@ ADMIN - Delete Contribution
     Set Test Variable  ${ehr_id}  ${response.body.ehr_id.value}
     ehr_keywords.validate POST response - 201 created ehr
     commit CONTRIBUTION (JSON)  minimal/minimal_evaluation.contribution.json
-    # Execute admin delete EHR
-    admin delete contribution
+    # Execute (admin) delete ehr
+    (admin) delete contribution
     Log To Console  ${response}
     # Test with count rows again - post check
     check contribution admin delete table counts
@@ -66,16 +70,6 @@ startup SUT
     Set Environment Variable    ADMINAPI_ACTIVE    true
     Set Environment Variable    SYSTEM_ALLOWTEMPLATEOVERWRITE    true
     generic_keywords.startup SUT
-
-
-admin delete contribution
-    [Documentation]     Admin delete of Contribution.
-    ...                 Needs `${contribution_uid}` var from e.g. `commit CONTRIBUTION (JSON)` KW.
-
-    &{resp}=            REST.DELETE    ${baseurl}/admin/ehr/${ehr_id}/contribution/${contribution_uid}
-                        Should Be Equal As Strings   ${resp.status}   204
-                        Set Test Variable    ${response}    ${resp}
-                        Output Debug Info To Console
 
 
 check contribution admin delete table counts initially

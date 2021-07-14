@@ -39,7 +39,8 @@ Documentation   Contribution Integration Tests
 ...         There will be two VERSIONS of the same COMPOSITION in the EHR with ehr_id, the VERSIONED_OBJECT
 ...         should be logically deleted (has COMPOSITION service should return false).
 Metadata        TOP_TEST_SUITE    CONTRIBUTION
-Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
+
+Resource        ../../_resources/keywords/contribution_keywords.robot
 
 #Suite Setup  startup SUT
 # Test Setup  start openehr server

@@ -34,14 +34,15 @@ Documentation   Contribution Integration Tests
 ...     Postconditions:
 ...         The EHR with ehr_id will have a new CONTRIBUTION.
 Metadata        TOP_TEST_SUITE    CONTRIBUTION
-Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
+
+Resource        ../../_resources/keywords/contribution_keywords.robot
 
 #Suite Setup  startup SUT
 # Test Setup  start openehr server
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags    refactor
+Force Tags    refactor    xxx
 
 
 

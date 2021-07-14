@@ -22,7 +22,10 @@ Metadata    Authors    *Wladislaw Wagner*, *Jake Smolka*
 Metadata    Created    2020.09.01
 
 Metadata        TOP_TEST_SUITE    ADMIN_COMPOSITION
-Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
+
+Resource        ../_resources/keywords/admin_keywords.robot
+Resource        ../_resources/keywords/ehr_keywords.robot
+Resource        ../_resources/keywords/composition_keywords.robot
 
 Suite Setup     startup SUT
 Suite Teardown  shutdown SUT
@@ -49,7 +52,7 @@ ${SUT}          ADMIN-TEST    # overriding defaults in suite_settings.robot
     Set Test Variable  ${ehr_id}  ${response.body.ehr_id.value}
     ehr_keywords.validate POST response - 201 created ehr
     commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.xml
-    # Execute admin delete EHR
+    # Execute (admin) delete ehr
     (admin) delete composition
     Log To Console  ${response}
     # Test with count rows again - post check
