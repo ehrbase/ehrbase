@@ -28,6 +28,8 @@ import org.jooq.impl.DSL;
 
 import java.util.List;
 
+import static org.ehrbase.aql.sql.queryimpl.attribute.GenericJsonPath.OTHER_CONTEXT;
+
 public class FieldConstantHandler {
     private final I_VariableDefinition variableDefinition;
 
@@ -57,6 +59,8 @@ public class FieldConstantHandler {
     }
 
     private String implicitArchetypeNodeId(String nodeId){
+        if (nodeId.equals(OTHER_CONTEXT))
+            return "at0001";
         return nodeId.substring(nodeId.indexOf("[")+1, nodeId.lastIndexOf("]"));
     }
 

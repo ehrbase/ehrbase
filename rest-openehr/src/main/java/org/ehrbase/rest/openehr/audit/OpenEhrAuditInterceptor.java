@@ -17,9 +17,6 @@
  */
 package org.ehrbase.rest.openehr.audit;
 
-import com.nedap.archie.rm.generic.PartySelf;
-import com.nedap.archie.rm.support.identification.ObjectId;
-import com.nedap.archie.rm.support.identification.PartyRef;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.service.EhrService;
@@ -148,14 +145,7 @@ public abstract class OpenEhrAuditInterceptor<T extends OpenEhrAuditDataset> imp
     protected Set<String> getPatientNumbers(HttpServletRequest request) {
         return getEhrIds(request)
                 .stream()
-                .map(ehrId -> ehrService.getEhrStatus(ehrId)
-                        .map(ehrStatus -> {
-                            PartySelf subject = ehrStatus.getSubject();
-                            PartyRef externalRef = subject.getExternalRef();
-                            ObjectId objectId = externalRef.getId();
-                            return objectId.getValue();
-                        })
-                        .orElse(null))
+                .map(ehrId -> ehrService.getSubjectExtRef(ehrId.toString()))
                 .collect(Collectors.toSet());
     }
 }

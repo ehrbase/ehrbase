@@ -813,8 +813,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     public Boolean updateWithCustomContribution(UUID committerId, UUID systemId, I_ConceptAccess.ContributionChangeType contributionChangeType, String description) {
         Timestamp timestamp = TransactionTime.millis();
 
-        // update only the audit, so it shows the modification change type. a new custom contribution is set beforehand.
-        // TODO: db-wise, this way a new audit "version" will be created which is (openEHR-)semantically wrong. but safe and processable anyway. so need to change that or is it okay?
+        // update only the audit (i.e. commit new one), so it shows the modification change type. a new custom contribution is set beforehand.
         auditDetailsAccess.update(systemId, committerId, contributionChangeType, description);
         return update(timestamp);
     }

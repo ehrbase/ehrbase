@@ -62,7 +62,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@Service
+@Service(value = "ehrService")
 @Transactional()
 public class EhrServiceImp extends BaseService implements EhrService {
     public static final String DESCRIPTION = "description";
@@ -426,5 +426,18 @@ public class EhrServiceImp extends BaseService implements EhrService {
     public void adminDeleteEhr(UUID ehrId) {
         I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
         ehrAccess.adminDeleteEhr();
+    }
+
+    @Override
+    public UUID getSubjectUuid(String ehrId) {
+        Optional<EhrStatus> status = getEhrStatus(UUID.fromString(ehrId));
+        return status.map(ehrStatus -> new PersistedPartyProxy(getDataAccess())
+            .getOrCreate(ehrStatus.getSubject())).orElse(null);
+    }
+
+    @Override
+    public String getSubjectExtRef(String ehrId) {
+        return Optional.ofNullable(new PersistedPartyProxy(getDataAccess()).retrieve(getSubjectUuid(ehrId)).getExternalRef())
+            .map(p -> p.getId().getValue()).orElse(null);
     }
 }

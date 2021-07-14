@@ -10,6 +10,11 @@ public class DefaultColumnId {
     protected static int serial = 0;
 
     public static String value(I_VariableDefinition variableDefinition){
-        return (variableDefinition.getPath() == null ? (variableDefinition.getIdentifier() == null ? ("field_"+ (serial++)) : variableDefinition.getIdentifier()) : "/"+variableDefinition.getPath());
+        if (variableDefinition == null)
+            return ("field_"+ (serial++));
+        else
+            return (variableDefinition.getPath() == null ?
+                (variableDefinition.getIdentifier() == null ? ("field_"+ (serial++)) : variableDefinition.getIdentifier())
+                : "/"+variableDefinition.getPath());
     }
 }

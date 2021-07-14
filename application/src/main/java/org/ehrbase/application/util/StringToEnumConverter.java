@@ -1,6 +1,6 @@
 package org.ehrbase.application.util;
 
-import org.ehrbase.application.config.SecurityYAMLConfig.AuthTypes;
+import org.ehrbase.application.config.security.SecurityYAMLConfig.AuthTypes;
 import org.springframework.core.convert.converter.Converter;
 
 public class StringToEnumConverter implements Converter<String, AuthTypes> {

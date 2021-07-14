@@ -1,4 +1,5 @@
-# Copyright (c) 2019 Wladislaw Wagner (Vitasystems GmbH), Pablo Pazos (Hannover Medical School).
+# Copyright (c) 2019 Wladislaw Wagner (Vitasystems GmbH), Pablo Pazos (Hannover Medical School),
+# Nataliya Flusman (Solit Clouds), Nikita Danilin (Solit Clouds)
 #
 # This file is part of Project EHRbase
 #
@@ -18,17 +19,44 @@
 
 *** Settings ***
 Documentation   Composition Integration Tests
+...             https://github.com/ehrbase/ehrbase/blob/develop/doc/conformance_testing/EHR_COMPOSITION.md#b6d-alternative-flow-3-create-new-invalid-event-composition
 Metadata        TOP_TEST_SUITE    COMPOSITION
 Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Force Tags
-
+Suite Setup     Precondition
+Suite Teardown  restart SUT
 
 
 *** Test Cases ***
-Alternative flow 3 create new invalid event COMPOSITION
+Alternative flow 3 create new invalid event COMPOSITION RAW_JSON
+    commit composition   format=RAW_JSON
+    ...                  composition=nested.en.v1__invalid_wrong_structure.json
+    check status_code of commit composition    400
 
+Alternative flow 3 create new invalid event COMPOSITION RAW_XML
+    commit composition   format=RAW_XML
+    ...                  composition=nested.en.v1__invalid_wrong_structure.xml
+    check status_code of commit composition    400
+
+Alternative flow 3 create new invalid event COMPOSITION FLAT
+    [Tags]    future
+    commit composition   format=FLAT
+    ...                  composition=nested.en.v1__invalid_wrong_structure.json
+    check status_code of commit composition    400
+
+Alternative flow 3 create new invalid event COMPOSITION TDD
+    [Tags]    future
+    commit composition   format=TDD
+    ...                  composition=nested.en.v1__invalid_wrong_structure.xml
+    check status_code of commit composition    400
+
+Alternative flow 3 create new invalid event COMPOSITION STRUCTURED
+    [Tags]    future
+    commit composition   format=STRUCTURED
+    ...                  composition=nested.en.v1__invalid_wrong_structure.json
+    check status_code of commit composition    400
+
+*** Keywords ***
+Precondition
     upload OPT    nested/nested.opt
     create EHR
-    commit invalid composition (JSON)    nested/nested.composition.extdatetimes.invalid.xml
-    [Teardown]    restart SUT

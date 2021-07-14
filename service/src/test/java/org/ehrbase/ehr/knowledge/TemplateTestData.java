@@ -21,7 +21,8 @@ package org.ehrbase.ehr.knowledge;
 import java.io.InputStream;
 
 public enum TemplateTestData {
-    IMMUNISATION_SUMMARY("IDCR - Immunisation summary.v0.opt");
+    IMMUNISATION_SUMMARY("IDCR - Immunisation summary.v0.opt"),
+    NON_UNIQUE_AQL_PATH("non_unique_aql_paths.opt");
 
 
     private final String filename;

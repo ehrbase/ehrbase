@@ -23,132 +23,136 @@ import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.support.identification.TerminologyId;
 import net.minidev.json.JSONArray;
+import org.apache.http.HttpHeaders;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.util.EntityUtils;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-/***
- *@Created by Luis Marco-Ruiz on Feb 12, 2020
+/**
+ * @author Luis Marco-Ruiz
  */
 @Component
-public class FhirTerminologyServerR4AdaptorImpl
-		implements org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer {
+@SuppressWarnings("java:S6212")
+public class FhirTerminologyServerR4AdaptorImpl implements I_OpenehrTerminologyServer {
 
-	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final String FHIR_JSON_MEDIA_TYPE = "application/fhir+json";
 
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	private FhirTsProps props;
+    private final HttpClient httpClient;
 
-	@Autowired
-	public FhirTerminologyServerR4AdaptorImpl(FhirTsProps props) {
-		super();
-		this.props = props;
+    private final FhirTsProps props;
 
-	}
+    public FhirTerminologyServerR4AdaptorImpl(HttpClient httpClient, FhirTsProps props) {
+        this.httpClient = httpClient;
+        this.props = props;
+    }
 
+    @Override
+    public List<DvCodedText> expand(final String valueSetId) {
+        String responseBody;
+        try {
+            responseBody = internalGet(valueSetId);
+        } catch (IOException e) {
+            throw new InternalServerException("An error occurred while expanding ValueSet: " + valueSetId, e);
+        }
 
-	@Override
-	public List<DvCodedText> expand(final String valueSetId) {
-		RestTemplate rest = new RestTemplate();
-		HttpHeaders headers = new HttpHeaders();
-		headers.set("accept", "application/fhir+json");
-		HttpEntity<String> entity = new HttpEntity<>(headers);
-		ResponseEntity<String> responseEntity = rest.exchange(valueSetId,
-				HttpMethod.GET,
-				entity,
-				String.class);
-		String response = responseEntity.getBody();
-		DocumentContext jsonContext = JsonPath.parse(response);
-		List<String> codeList = jsonContext.read(props.getCodePath().replace("\\", ""));
-		List<String> systemList = jsonContext.read(props.getSystemPath());
-		List<String> displayList = jsonContext.read(props.getDisplayPath());
-		
-		List<DvCodedText> expansionList = new ArrayList<>();
-		for(int i = 0; i< codeList.size(); i++) {
-			TerminologyId termId = new TerminologyId(systemList.get(i));
-			CodePhrase codePhrase = new CodePhrase(termId, codeList.get(i));
-			DvCodedText codedText = new DvCodedText(displayList.get(i), codePhrase);
-			expansionList.add(codedText);
-		}
-		return expansionList;
-	}
+        DocumentContext jsonContext = JsonPath.parse(responseBody);
+        List<String> codeList = jsonContext.read(props.getCodePath().replace("\\", ""));
+        List<String> systemList = jsonContext.read(props.getSystemPath());
+        List<String> displayList = jsonContext.read(props.getDisplayPath());
 
-	@Override
-	public List<DvCodedText> expandWithParameters(final String valueSetId, String... operationParams) {
-		//build URL
-		String urlTsServer = props.getTsUrl();
-		urlTsServer += "ValueSet/$" + operationParams[0] + "?" + valueSetId;
-		RestTemplate rest = new RestTemplate();
-		HttpHeaders headers = new HttpHeaders();
-		headers.set("accept", "application/fhir+json");
-		HttpEntity<String> entity = new HttpEntity<>(headers);
-		ResponseEntity<String> responseEntity = rest.exchange(urlTsServer.replace("'", ""),
-				HttpMethod.GET,
-				entity,
-				String.class);
-		String response = responseEntity.getBody();
-		DocumentContext jsonContext = JsonPath.parse(response);
-		List<String> codeList = jsonContext.read(props.getCodePath().replace("\\", ""));
-		List<String> systemList = jsonContext.read(props.getSystemPath());
-		List<String> displayList = jsonContext.read(props.getDisplayPath());
-		
-		List<DvCodedText> expansionList = new ArrayList<>();
-		for(int i = 0; i< codeList.size(); i++) {
-			TerminologyId termId = new TerminologyId(systemList.get(i));
-			CodePhrase codePhrase = new CodePhrase(termId, codeList.get(i));
-			DvCodedText codedText = new DvCodedText(displayList.get(i), codePhrase);
-			expansionList.add(codedText);
-		}
-		return expansionList;
-	}
+        List<DvCodedText> expansionList = new ArrayList<>();
+        for (int i = 0; i < codeList.size(); i++) {
+            TerminologyId termId = new TerminologyId(systemList.get(i));
+            CodePhrase codePhrase = new CodePhrase(termId, codeList.get(i));
+            DvCodedText codedText = new DvCodedText(displayList.get(i), codePhrase);
+            expansionList.add(codedText);
+        }
 
+        return expansionList;
+    }
 
-	@Override
-	public DvCodedText lookUp(final String conceptId) {
-		// TODO Auto-generated method stub
-		return null;
+    @Override
+    public List<DvCodedText> expandWithParameters(final String valueSetId, String... operationParams) {
+        //build URL
+        String urlTsServer = props.getTsUrl();
+        urlTsServer += "ValueSet/$" + operationParams[0] + "?url=" + valueSetId;
 
-	}
+        String responseBody;
+        try {
+            responseBody = internalGet(urlTsServer);
+        } catch (IOException e) {
+            throw new InternalServerException("An error occurred while expanding ValueSet " + valueSetId, e);
+        }
 
-	@Override
-	public Boolean validate(final DvCodedText concept, final String valueSetId) {
-		// TODO Auto-generated method stub
-		logger.debug("inside the validate method of R4 implementation");
-		return null;
-	}
+        DocumentContext jsonContext = JsonPath.parse(responseBody);
+        List<String> codeList = jsonContext.read(props.getCodePath().replace("\\", ""));
+        List<String> systemList = jsonContext.read(props.getSystemPath());
+        List<String> displayList = jsonContext.read(props.getDisplayPath());
 
-	@Override
-	public SubsumptionResult subsumes(final DvCodedText conceptA, final DvCodedText conceptB) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+        List<DvCodedText> expansionList = new ArrayList<>();
+        for (int i = 0; i < codeList.size(); i++) {
+            TerminologyId termId = new TerminologyId(systemList.get(i));
+            CodePhrase codePhrase = new CodePhrase(termId, codeList.get(i));
+            DvCodedText codedText = new DvCodedText(displayList.get(i), codePhrase);
+            expansionList.add(codedText);
+        }
+        return expansionList;
+    }
 
-	@Override
-	public Boolean validate(String... operationParams) {
-		//build URL
-		String urlTsServer = props.getTsUrl();
-		urlTsServer += "ValueSet/$" + "validate-code" + "?" + operationParams[0];
-		RestTemplate rest = new RestTemplate();
-		HttpHeaders headers = new HttpHeaders();
-				headers.set("accept","application/fhir+json");
-				HttpEntity<String> entity =  new HttpEntity<>(headers);
-				ResponseEntity<String> responseEntity = rest.exchange(urlTsServer.replace("'", ""),
-						HttpMethod.GET,
-						entity,
-						String.class);
-				String response = responseEntity.getBody();
-				DocumentContext jsonContext = JsonPath.parse(response);
-		Boolean result = (Boolean) ((JSONArray) jsonContext.read(props.getValidationResultPath()/* "$.parameter[:1].valueBoolean" */)).get(0);
-				return result;
-	}
+    @Override
+    public DvCodedText lookUp(final String conceptId) {
+        // TODO Auto-generated method stub
+        return null;
 
+    }
+
+    @Override
+    public Boolean validate(final DvCodedText concept, final String valueSetId) {
+        // TODO Auto-generated method stub
+        logger.debug("inside the validate method of R4 implementation");
+        return null;
+    }
+
+    @Override
+    public SubsumptionResult subsumes(final DvCodedText conceptA, final DvCodedText conceptB) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Boolean validate(String... operationParams) {
+        //build URL
+        String urlTsServer = props.getTsUrl();
+        urlTsServer += "ValueSet/$" + "validate-code" + "?" + operationParams[0];
+
+        String response;
+        try {
+            response = internalGet(urlTsServer);
+        } catch (IOException e) {
+            throw new InternalServerException("An error occurred while validating the code: " + operationParams[0], e);
+        }
+
+        DocumentContext jsonContext = JsonPath.parse(response);
+        return (Boolean) ((JSONArray) jsonContext.read(props.getValidationResultPath()/* "$.parameter[:1].valueBoolean" */)).get(0);
+    }
+
+    private String internalGet(String url) throws IOException {
+        HttpGet request = new HttpGet(url);
+        request.setHeader(HttpHeaders.ACCEPT, FHIR_JSON_MEDIA_TYPE);
+
+        HttpResponse response = httpClient.execute(request);
+        return EntityUtils.toString(response.getEntity());
+    }
 }

@@ -19,6 +19,7 @@
 package org.ehrbase.service;
 
 import com.nedap.archie.rm.RMObject;
+import com.nedap.archie.rm.archetyped.TemplateId;
 import com.nedap.archie.rm.changecontrol.Version;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.datatypes.CodePhrase;
@@ -263,7 +264,8 @@ public class ContributionServiceImp extends BaseService implements ContributionS
         switch (changeType) {
             case CREATION:
                 // call creation of a new folder version with given input
-                folderService.create(ehrId, versionRmObject, contributionId);
+                // TODO-526: add handlers for (default) committer and description
+                folderService.create(ehrId, versionRmObject, contributionId, null, null, null);
                 break;
             case AMENDMENT: // triggers the same processing as modification // TODO-396: so far so good, but should use the type "AMENDMENT" for audit in access layer
             case MODIFICATION:
@@ -275,10 +277,12 @@ public class ContributionServiceImp extends BaseService implements ContributionS
                 if (!actualPreceding.equals(version.getPrecedingVersionUid().toString()))
                     throw new PreconditionFailedException("Given preceding_version_uid for FOLDER object does not match latest existing version");
                 // call modification of the given folder
-                folderService.update(version.getPrecedingVersionUid(), versionRmObject, ehrId, contributionId);
+                // TODO-526: add handlers for (default) committer and description
+                folderService.update(version.getPrecedingVersionUid(), versionRmObject, ehrId, contributionId, null, null, null);
                 break;
             case DELETED:   // case of deletion change type, but request also has payload (TODO: should that be even allowed? specification-wise it's not forbidden)
-                folderService.delete(version.getPrecedingVersionUid()); // TODO-396: add custom contribution overloading
+                // TODO-526: add handlers for (default) committer and description
+                folderService.delete(version.getPrecedingVersionUid(), contributionId, null, null, null);
                 break;
             case SYNTHESIS:     // TODO
             case UNKNOWN:       // TODO
@@ -435,5 +439,50 @@ public class ContributionServiceImp extends BaseService implements ContributionS
     public void adminDelete(UUID contributionId) {
         I_ContributionAccess contributionAccess = I_ContributionAccess.retrieveInstance(getDataAccess(), contributionId);
         contributionAccess.adminDelete();
+    }
+
+    @Override
+    public Set<String> getListOfTemplates(String contribution, CompositionFormat format) {
+        List<Version> versions = ContributionServiceHelper.parseVersions(contribution, format);
+        Set<String> templates = new HashSet<>();
+        for (Version version : versions) {
+
+            Object versionData = version.getData();
+
+            // the version contains the optional "data" attribute (i.e. payload), therefore has specific object type (composition, folder,...)
+            if (versionData != null) {
+                RMObject versionRmObject;
+                if (versionData instanceof LinkedHashMap) {
+                    versionRmObject = ContributionServiceHelper
+                        .unmarshalMapContentToRmObject((LinkedHashMap) versionData, format);
+                } else {
+                    throw new IllegalArgumentException("Contribution input can't be processed");
+                }
+
+                // switch to allow acting depending on exact type
+                SupportedClasses versionClass;
+                try {
+                    versionClass = SupportedClasses
+                        .valueOf(versionRmObject.getClass().getSimpleName().toUpperCase());
+                } catch (Exception e) {
+                    throw new InvalidApiParameterException(
+                        "Invalid version object in contribution. " + versionRmObject.getClass()
+                            .getSimpleName().toUpperCase() + " not supported.");
+                }
+                switch (versionClass) {
+                    case COMPOSITION:
+                        TemplateId templateId = ((Composition) versionRmObject).getArchetypeDetails().getTemplateId();
+                        if (templateId != null) {
+                            templates.add(templateId.getValue());
+                        }
+                        break;
+                    case EHRSTATUS: // TODO: might add later, if other_details support templated content
+                    case FOLDER:
+                    default:
+                        throw new IllegalArgumentException("Contribution input contains invalid version class");
+                }
+            }
+        }
+        return templates;
     }
 }

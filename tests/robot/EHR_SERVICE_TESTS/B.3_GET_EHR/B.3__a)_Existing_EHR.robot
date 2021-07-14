@@ -18,7 +18,7 @@
 
 *** Settings ***
 Metadata    Version    0.1.0
-Metadata    Author    *Wladislaw Wagner*
+Metadata    Authors    *Wladislaw Wagner*, *Pablo Pazos*
 Metadata    Created    2019.03.03
 
 Documentation   B.3.a) Main flow: Get existing EHR

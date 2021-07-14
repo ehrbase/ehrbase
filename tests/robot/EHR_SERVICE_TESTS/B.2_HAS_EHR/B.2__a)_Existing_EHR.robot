@@ -18,11 +18,10 @@
 
 *** Settings ***
 Metadata    Version    0.1.0
-Metadata    Author    *Wladislaw Wagner*
+Metadata    Authors    *Wladislaw Wagner*, *Pablo Pazos*
 Metadata    Created    2019.03.03
 
 Documentation   B.2.a) Main flow: Check has EHR with existing EHR
-...             https://vitasystemsgmbh.atlassian.net/wiki/spaces/ETHERCIS/pages/498532998/EHR+Test+Suite#EHRTestSuite-a.Mainflow:CheckhasEHRwithexistingEHR
 Metadata        TOP_TEST_SUITE    EHR_SERVICE
 Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 

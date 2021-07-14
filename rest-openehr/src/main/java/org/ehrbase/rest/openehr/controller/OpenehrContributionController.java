@@ -35,6 +35,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -54,6 +55,9 @@ public class OpenehrContributionController extends BaseController {
     }
 
     @PostMapping(value = "/{ehr_id}/contribution", consumes = {"application/xml", "application/json"})
+    // checkAbacPre /-Post attributes (type, subject, payload, content type)
+    @PreAuthorize("checkAbacPre(@openehrContributionController.CONTRIBUTION, "
+        + "@ehrService.getSubjectExtRef(#ehrIdString), #contribution, #contentType)")
     @OperationNotesResourcesReaderOpenehr.ApiNotes("contributionPost.md")     // this utilizes a workaround, see source class for info
     @ApiOperation(value = "Create a new composition.")
     @ApiResponses(value = {

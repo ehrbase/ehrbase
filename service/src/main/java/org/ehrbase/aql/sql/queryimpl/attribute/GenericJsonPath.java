@@ -1,24 +1,21 @@
 package org.ehrbase.aql.sql.queryimpl.attribute;
 
+import org.ehrbase.aql.sql.queryimpl.JqueryPath;
+import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
+import org.ehrbase.aql.sql.queryimpl.NormalizedRmAttributePath;
 import org.ehrbase.serialisation.dbencoding.wrappers.json.I_DvTypeAdapter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import static org.ehrbase.aql.sql.queryimpl.QueryImplConstants.AQL_NODE_ITERATIVE_MARKER;
+import static org.ehrbase.serialisation.dbencoding.CompositionSerializer.TAG_OTHER_DETAILS;
 
 public class GenericJsonPath {
 
     public static final String CONTEXT = "context";
     public static final String FEEDER_AUDIT = "feeder_audit";
-    public static final String ORIGINATING_SYSTEM_ITEM_IDS = "originating_system_item_ids";
-    public static final String FEEDER_SYSTEM_ITEM_IDS = "feeder_system_item_ids";
-    public static final String ORIGINAL_CONTENT = "original_content";
-    public static final String ORIGINATING_SYSTEM_AUDIT = "originating_system_audit";
-    public static final String FEEDER_SYSTEM_AUDIT = "feeder_system_audit";
-    public static final String SETTING = "setting";
-    public static final String HEALTH_CARE_FACILITY = "health_care_facility";
     public static final String ITEMS = "items";
     public static final String CONTENT = "content";
     public static final String VALUE = "value";
@@ -40,40 +37,46 @@ public class GenericJsonPath {
         if (path == null || path.isEmpty())
             return path;
 
+        List<String> jqueryPaths = new JqueryPath(JsonbEntryQuery.PATH_PART.VARIABLE_PATH_PART, path, "0").evaluate();
+        if (!jqueryPaths.stream().filter(segment -> segment.startsWith(TAG_OTHER_DETAILS)).collect(Collectors.toList()).isEmpty()||
+                !jqueryPaths.stream().filter(segment -> segment.contains(OTHER_CONTEXT)).collect(Collectors.toList()).isEmpty()){
+            jqueryPaths = new NormalizedRmAttributePath(jqueryPaths).transformStartingAt(0);
+        }
+        else if (jqueryPaths.size() == 1) {
+                jqueryPaths.set(0, jqueryPaths.get(0).replace("/", ""));
+        }
+        return new JsonbSelect(jqueryPaths).field();
+    }
+
+    /**
+     * @deprecated 12.6.21, use a common path resolution instead.
+     * @return
+     */
+    @Deprecated
+    public String jqueryPathAttributeLevel() {
+        if (path == null || path.isEmpty())
+            return path;
+
         List<String> jqueryPaths = Arrays.asList(path.split("/|,"));
         List<String> actualPaths = new ArrayList<>();
 
-        boolean inStruct = false;
-
         for (int i = 0; i < jqueryPaths.size(); i++) {
             String segment = jqueryPaths.get(i);
-            if (segment.startsWith(ITEMS)) {
+            if ((segment.matches(NAME) && isTerminalValue(jqueryPaths, i) && jqueryPaths.get(0).equals(OTHER_DETAILS)) ||
+                    (segment.startsWith(ITEMS))) {
                 actualPaths.add("/" + segment);
                 //takes care of array expression (unless the occurrence is specified)
                 actualPaths.add("0");
             } else if (segment.startsWith(CONTENT)) {
                 actualPaths.add(CONTENT + ",/" + segment);
                 actualPaths.add("0"); //as above
-            } else if (segment.startsWith(OTHER_DETAILS)) {
-                actualPaths.add(segment);
-                inStruct = true; //as above
             } else if (segment.matches(VALUE + "|" + NAME) && !isTerminalValue(jqueryPaths, i) && !jqueryPaths.get(0).equals(CONTEXT)) {
                 actualPaths.add("/"+segment);
                 if (segment.matches(NAME))
                     actualPaths.add("0");
-            } else if (segment.matches(NAME) && isTerminalValue(jqueryPaths, i) && inStruct){
-                //keep '/name' attribute db encoding format since other_details is not related to a template and kept as is...
-                actualPaths.add("/"+segment);
-                actualPaths.add("0");
-                inStruct = false;
-
             } else if (segment.matches(ARCHETYPE_NODE_ID) && jqueryPaths.get(0).equals(OTHER_DETAILS)){
                 //keep '/name' attribute db encoding format since other_details is not related to a template and kept as is...
                 actualPaths.add("/"+segment);
-            }  else if (segment.equalsIgnoreCase(FEEDER_SYSTEM_ITEM_IDS)){
-                actualPaths.add(segment);
-                actualPaths.add(AQL_NODE_ITERATIVE_MARKER);
-                isIterative = true;
             }
             else
                 actualPaths.add(segment);

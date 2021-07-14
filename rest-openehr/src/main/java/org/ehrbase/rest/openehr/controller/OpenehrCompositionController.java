@@ -33,7 +33,6 @@ import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.StructuredString;
 import org.ehrbase.response.openehr.CompositionResponseData;
 import org.ehrbase.response.openehr.ErrorResponseData;
-import org.ehrbase.response.openehr.VersionedCompositionResponseData;
 import org.ehrbase.rest.openehr.audit.CompositionAuditInterceptor;
 import org.ehrbase.rest.openehr.audit.OpenEhrAuditInterceptor;
 import org.ehrbase.rest.openehr.controller.OperationNotesResourcesReaderOpenehr.ApiNotes;
@@ -44,6 +43,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -71,8 +72,6 @@ import java.util.function.Supplier;
 
 /**
  * Controller for /composition resource as part of the EHR sub-API of the openEHR REST API
- * <p>
- * TODO WIP state only implements endpoints from outer server side, everything else is a stub. Also with a lot of duplication at the moment, which should be reduced when implementing functionality.
  */
 @Api(tags = "Composition")
 @RestController
@@ -84,11 +83,13 @@ public class OpenehrCompositionController extends BaseController {
 
     @Autowired
     public OpenehrCompositionController(CompositionService compositionService) {
-
         this.compositionService = Objects.requireNonNull(compositionService);
     }
 
     @PostMapping(value = "/{ehr_id}/composition", consumes = {"application/xml", "application/json"})
+    // checkAbacPre /-Post attributes (type, subject, payload, content type)
+    @PreAuthorize("checkAbacPre(@openehrCompositionController.COMPOSITION, "
+        + "@ehrService.getSubjectExtRef(#ehrIdString), #composition, #contentType)")
     @ApiOperation(value = "Create a new composition.")
     @ApiNotes("compositionPost.md")     // this utilizes a workaround, see source class for info
     @ApiResponses(value = {
@@ -149,6 +150,9 @@ public class OpenehrCompositionController extends BaseController {
     }
 
     @PutMapping("/{ehr_id}/composition/{versioned_object_uid}")
+    // checkAbacPre /-Post attributes (type, subject, payload, content type)
+    @PreAuthorize("checkAbacPre(@openehrCompositionController.COMPOSITION, "
+        + "@ehrService.getSubjectExtRef(#ehrIdString), #composition, #contentType)")
     @ApiOperation(value = "Update existing composition.", response = CompositionResponseData.class)
     @ApiNotes("compositionPut.md")     // this utilizes a workaround, see source class for info
     @ApiResponses(value = {
@@ -237,6 +241,9 @@ public class OpenehrCompositionController extends BaseController {
     }
 
     @DeleteMapping("/{ehr_id}/composition/{preceding_version_uid}")
+    // checkAbacPre /-Post attributes (type, subject, payload, content type)
+    @PreAuthorize("checkAbacPre(@openehrCompositionController.COMPOSITION, "
+        + "@ehrService.getSubjectExtRef(#ehrIdString), #precedingVersionUid, null)")
     @ApiOperation(value = "Deletes existing composition.")
     @ApiResponses(value = {
             @ApiResponse(code = 204, message = "COMPOSITION was deleted.",
@@ -315,6 +322,9 @@ public class OpenehrCompositionController extends BaseController {
      * "{?version_at_time}" is hidden in swagger-ui, it only is here to be piped through.
      */
     @GetMapping("/{ehr_id}/composition/{version_uid}")
+    // checkAbacPre /-Post attributes (type, subject, payload, content type)
+    @PostAuthorize("checkAbacPost(@openehrCompositionController.COMPOSITION, "
+        + "@ehrService.getSubjectExtRef(#ehrIdString), returnObject, #accept)")
     @ApiOperation(value = "Get composition by version id.")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK.",
@@ -341,6 +351,9 @@ public class OpenehrCompositionController extends BaseController {
      * Both mappings are specified to behave almost the same, so this solution works in this case.
      */
     @GetMapping("/{ehr_id}/composition/{versioned_object_uid}{?version_at_time}")
+    // checkAbacPre /-Post attributes (type, subject, payload, content type)
+    @PostAuthorize("checkAbacPost(@openehrCompositionController.COMPOSITION, "
+        + "@ehrService.getSubjectExtRef(#ehrIdString), returnObject, #accept)")
     @ApiOperation(value = "Get composition at time.")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK.",

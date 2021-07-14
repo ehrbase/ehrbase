@@ -19,11 +19,13 @@ package org.ehrbase.aql.sql.queryimpl.attribute.composition;
 
 import org.ehrbase.aql.sql.binding.JoinBinder;
 import org.ehrbase.aql.sql.queryimpl.JsonDataBlockCheck;
+import org.ehrbase.aql.sql.queryimpl.QueryImplConstants;
 import org.ehrbase.aql.sql.queryimpl.attribute.AttributePath;
 import org.ehrbase.aql.sql.queryimpl.attribute.AttributeResolver;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.ehrbase.aql.sql.queryimpl.attribute.concept.ConceptResolver;
+import org.ehrbase.aql.sql.queryimpl.attribute.eventcontext.EventContextJson;
 import org.ehrbase.aql.sql.queryimpl.value_field.GenericJsonField;
 import org.jooq.Field;
 
@@ -31,12 +33,14 @@ import java.util.Arrays;
 
 import static org.ehrbase.jooq.pg.Tables.COMPOSITION;
 import static org.ehrbase.jooq.pg.Tables.ENTRY;
+import static org.ehrbase.jooq.pg.tables.EventContext.EVENT_CONTEXT;
 
 @SuppressWarnings("java:S1452")
 public class CompositionResolver extends AttributeResolver
 {
 
     public static final String FEEDER_AUDIT = "feeder_audit";
+    public static final String FEEDER_SYSTEM_IDS = "feeder_system_item_ids";
 
     public CompositionResolver(FieldResolutionContext fieldResolutionContext, JoinSetup joinSetup) {
         super(fieldResolutionContext, joinSetup);
@@ -52,8 +56,17 @@ public class CompositionResolver extends AttributeResolver
             return new ConceptResolver(fieldResolutionContext, joinSetup).forTableField(ENTRY.CATEGORY).sqlField(new AttributePath("category").redux(path));
 
         if (path.startsWith(FEEDER_AUDIT)) {
-
-            Field<?> retField = new GenericJsonField(fieldResolutionContext, joinSetup)
+            Field<?> retField;
+            if (path.contains(FEEDER_SYSTEM_IDS) && !path.endsWith(FEEDER_SYSTEM_IDS)) {
+                path = path.substring(path.indexOf(FEEDER_SYSTEM_IDS)+ FEEDER_SYSTEM_IDS.length()+1);
+                //we insert a tag to indicate that the path operates on a json array
+                fieldResolutionContext.setUsingSetReturningFunction(true); //to generate lateral join
+                retField = new GenericJsonField(fieldResolutionContext, joinSetup).
+                        forJsonPath(FEEDER_SYSTEM_IDS+"/"+ QueryImplConstants.AQL_NODE_ITERATIVE_MARKER+"/" + path).
+                        feederAudit(JoinBinder.compositionRecordTable.field(FEEDER_AUDIT));;
+            }
+            else
+                retField = new GenericJsonField(fieldResolutionContext, joinSetup)
                     .forJsonPath(FEEDER_AUDIT, path)
                     .feederAudit(JoinBinder.compositionRecordTable.field(FEEDER_AUDIT));
 
@@ -64,10 +77,16 @@ public class CompositionResolver extends AttributeResolver
 
 
         switch (path){
+            case "uid":
+                return new FullCompositionJson(fieldResolutionContext, joinSetup).forJsonPath(new String[]{"uid", ""}).sqlField();
             case "uid/value":
                 return new CompositionUidValue(fieldResolutionContext, joinSetup).forTableField(NULL_FIELD).sqlField();
+            case "name":
+                //we force the path to use the single attribute 'value' from the name encoding
+                return new FullCompositionJson(fieldResolutionContext, joinSetup).forJsonPath(new String[]{"name", ""}).sqlField();
             case "name/value":
-                return new GenericJsonField(fieldResolutionContext, joinSetup).forJsonPath("value").dvCodedText(ENTRY.NAME);
+                //we force the path to use the single attribute 'value' from the name encoding
+                return new GenericJsonField(fieldResolutionContext, joinSetup).forJsonPath(new String[]{"value", ""}).dvCodedText(ENTRY.NAME);
             case "archetype_node_id":
                 return new SimpleCompositionAttribute(fieldResolutionContext, joinSetup).forTableField(ENTRY.ARCHETYPE_ID).sqlField();
             case "template_id":

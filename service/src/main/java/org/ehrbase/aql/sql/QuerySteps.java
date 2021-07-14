@@ -25,6 +25,7 @@ import org.ehrbase.aql.sql.binding.JsonbBlockDef;
 import org.ehrbase.aql.sql.queryimpl.CompositionAttributeQuery;
 import org.jooq.Condition;
 import org.jooq.SelectQuery;
+import org.jooq.Table;
 
 import java.util.List;
 
@@ -35,14 +36,16 @@ import java.util.List;
 public class QuerySteps {
     private final SelectQuery selectQuery;
     private final Condition whereCondition;
+    private final List<Table<?>> lateralJoins;
     private final String templateId;
     private final CompositionAttributeQuery compositionAttributeQuery;
     private final List<JsonbBlockDef> jsonColumns;
     private final boolean containsJQueryPath;
 
-    public QuerySteps(SelectQuery selectQuery, Condition whereCondition, String templateId, CompositionAttributeQuery compositionAttributeQuery, List<JsonbBlockDef> jsonColumns, boolean containsJQueryPath) {
+    public QuerySteps(SelectQuery selectQuery, Condition whereCondition, List<Table<?>> lateralJoins, String templateId, CompositionAttributeQuery compositionAttributeQuery, List<JsonbBlockDef> jsonColumns, boolean containsJQueryPath) {
         this.selectQuery = selectQuery;
         this.whereCondition = whereCondition;
+        this.lateralJoins = lateralJoins;
         this.templateId = templateId;
         this.compositionAttributeQuery = compositionAttributeQuery;
         this.jsonColumns = jsonColumns;
@@ -81,5 +84,9 @@ public class QuerySteps {
 
     public boolean isContainsJson(){
         return jsonColumnsSize() > 0 || isContainsJQueryPath();
+    }
+
+    public List<Table<?>> getLateralJoins() {
+        return lateralJoins;
     }
 }

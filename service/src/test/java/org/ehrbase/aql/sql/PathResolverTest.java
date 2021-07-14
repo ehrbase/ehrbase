@@ -49,8 +49,8 @@ public class PathResolverTest extends TestAqlBase {
         PathResolver cut = new PathResolver(knowledge, contains.getIdentifierMapper());
 
 
-        assertThat(cut.pathOf("IDCR - Immunisation summary.v0","d")).isEqualTo("/content[openEHR-EHR-ACTION.immunisation_procedure.v1]");
-        assertThat(cut.pathOf("IDCR - Immunisation summary.v0","a")).isEqualTo("/composition[openEHR-EHR-COMPOSITION.health_summary.v1]");
+        assertThat(cut.pathOf("IDCR - Immunisation summary.v0","d").toArray()[0]).isEqualTo("/content[openEHR-EHR-ACTION.immunisation_procedure.v1]");
+        assertThat(cut.pathOf("IDCR - Immunisation summary.v0","a").toArray()[0]).isEqualTo("/composition[openEHR-EHR-COMPOSITION.health_summary.v1]");
 
     }
 }
