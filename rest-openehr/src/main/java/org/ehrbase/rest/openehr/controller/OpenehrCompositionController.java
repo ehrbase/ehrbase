@@ -18,6 +18,8 @@
 
 package org.ehrbase.rest.openehr.controller;
 
+import com.nedap.archie.rm.composition.Composition;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -119,13 +121,19 @@ public class OpenehrCompositionController extends BaseController {
                                             @ApiParam(value = "The composition to create", required = true) @RequestBody String composition,
                                             HttpServletRequest request) {
 
-        UUID ehrId = getEhrUuid(ehrIdString);
+        var ehrId = getEhrUuid(ehrIdString);
 
-        CompositionFormat compositionFormat = extractCompositionFormat(contentType);
+        var compositionFormat = extractCompositionFormat(contentType);
 
-        UUID compositionUuid = compositionService.create(ehrId, composition, compositionFormat);
+        var compoObj = compositionService.buildComposition(composition, compositionFormat, null);
 
-        URI uri = URI.create(this.encodePath(getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId.toString() + "/composition/" + compositionUuid.toString()));
+        Optional<CompositionDto> optionalCompositionDto = compositionService.create(ehrId, compoObj);
+
+        var compositionUuid = optionalCompositionDto.orElseThrow(() ->
+            new InternalServerException("Failed to create composition"))
+            .getUuid();
+
+        var uri = URI.create(this.encodePath(getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId.toString() + "/composition/" + compositionUuid.toString()));
 
         List<String> headerList = Arrays.asList(LOCATION, ETAG, LAST_MODIFIED);   // whatever is required by REST spec - CONTENT_TYPE only needed for 201, so handled separately
 
@@ -193,7 +201,8 @@ public class OpenehrCompositionController extends BaseController {
         compositionService.exists(versionedObjectUid);
 
         // If the If-Match is not the latest latest existing version, throw error
-        if (!((versionedObjectUid + "::" + compositionService.getServerConfig().getNodename() + "::" + compositionService.getLastVersionNumber(extractVersionedObjectUidFromVersionUid(versionedObjectUid.toString()))).equals(ifMatch))) {
+        if (!((versionedObjectUid + "::" + compositionService.getServerConfig().getNodename() + "::"
+            + compositionService.getLastVersionNumber(extractVersionedObjectUidFromVersionUid(versionedObjectUid.toString()))).equals(ifMatch))) {
             throw new PreconditionFailedException("If-Match header does not match latest existing version");
         }
 
@@ -209,10 +218,18 @@ public class OpenehrCompositionController extends BaseController {
 
         Optional<InternalResponse<CompositionResponseData>> respData = Optional.empty();   // variable to overload with more specific object if requested
         try {
+            Composition compoObj = compositionService.buildComposition(composition, compositionFormat, null);
             // TODO should have EHR as parameter and check for existence as precondition - see EHR-245 (no direct EHR access in this controller)
-            String compositionVersionUid = compositionService.update(versionedObjectUid, compositionFormat, composition);
+            // ifMatch header has to be tested for correctness already above
 
-            URI uri = URI.create(this.encodePath(getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId.toString() + "/composition/" + compositionVersionUid));
+            Optional<CompositionDto> dtoOptional = compositionService
+                .update(ehrId, new ObjectVersionId(ifMatch), compoObj);
+
+            var compositionVersionUid = dtoOptional.orElseThrow(() ->
+                new InternalServerException("Failed to create composition"))
+                .getComposition().getUid().toString();  // TODO-526: does this work?
+
+            var uri = URI.create(this.encodePath(getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId.toString() + "/composition/" + compositionVersionUid));
 
             List<String> headerList = Arrays.asList(LOCATION, ETAG, LAST_MODIFIED);   // whatever is required by REST spec - CONTENT_TYPE only needed for 200, so handled separately
 
@@ -295,12 +312,12 @@ public class OpenehrCompositionController extends BaseController {
         }
 
         try { // the actual deleting
-            LocalDateTime time = compositionService.delete(extractVersionedObjectUidFromVersionUid(precedingVersionUid));
+            // precedingVersionUid needs to be checked already
+            compositionService.delete(ehrId, new ObjectVersionId(precedingVersionUid));
 
-            // TODO last modified
             headers.setLocation(uri);
             headers.setETag("\"" + latestVersionId + "\"");
-            headers.setLastModified(ZonedDateTime.of(time, ZoneId.systemDefault()).toInstant().toEpochMilli());
+            headers.setLastModified(ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault()).toInstant().toEpochMilli());
 
             // Enriches request attributes with current compositionId for later audit processing
             request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, Collections.singleton(ehrId));

@@ -132,12 +132,12 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
         ObjectVersionId folderId;
         if (contribution == null) {
             folderId = new ObjectVersionId(
-                folderAccess.commit(Timestamp.from(Instant.now()), systemId, committerId, description).toString()
+                folderAccess.commit(LocalDateTime.now(), systemId, committerId, description).toString()
                     + "::" + getServerConfig().getNodename()
                     + "::1"
             );
         } else {
-            folderId = new ObjectVersionId((folderAccess.commit(Timestamp.from(Instant.now()), contribution).toString()
+            folderId = new ObjectVersionId((folderAccess.commit(LocalDateTime.now(), contribution).toString()
                 + "::" + getServerConfig().getNodename()
                 + "::1"
             ));
@@ -184,7 +184,7 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
         String description,
         UUID contribution
         ) {
-        var timestamp = Timestamp.from(Instant.now());
+        var timestamp = LocalDateTime.now();
 
         // Check of there are name conflicts on each folder level
         checkSiblingNameConflicts(objData);
@@ -272,7 +272,7 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
 
         I_FolderAccess folderAccess = I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), folderId);
 
-        var timestamp = Timestamp.valueOf(LocalDateTime.now());
+        var timestamp = LocalDateTime.now();
 
         int result;
         if (contribution == null) {

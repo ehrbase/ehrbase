@@ -47,7 +47,7 @@ import static org.ehrbase.jooq.pg.Tables.*;
  * Composition Access Layer Interface<br>
  * Interface CRUD and specific methods
  */
-public interface I_CompositionAccess extends I_SimpleCRUD {
+public interface I_CompositionAccess extends I_VersionedCRUD {
 
     //definitions of aliases used in joins
     String COMPOSITION_JOIN = "composition_join";
@@ -247,7 +247,8 @@ public interface I_CompositionAccess extends I_SimpleCRUD {
      * @throws InternalServerException  when contribution couldn't be created because of an internal problem
      * @throws IllegalArgumentException when content couldn't be committed
      */
-    UUID commit(UUID committerId, UUID systemId, String description);
+    // TODO-526: remove
+    //UUID commit(UUID committerId, UUID systemId, String description);
 
     /**
      * Unlike the basic commit it is necessary to set the contribution manually beforehand, here. This allows committing with a specific
@@ -258,9 +259,11 @@ public interface I_CompositionAccess extends I_SimpleCRUD {
      * @return ID of committed object
      * @throws IllegalArgumentException when content couldn't be committed
      */
-    UUID commitWithCustomContribution(UUID committerId, UUID systemId, String description);
+    // TODO-526: remove
+    //UUID commitWithCustomContribution(UUID committerId, UUID systemId, String description);
 
-    Boolean update(UUID committerId, UUID systemId, ContributionDef.ContributionState state, I_ConceptAccess.ContributionChangeType contributionChangeType, String description);
+    // TODO-526: remove
+    //Boolean update(UUID committerId, UUID systemId, ContributionDef.ContributionState state, I_ConceptAccess.ContributionChangeType contributionChangeType, String description);
 
     /**
      * Unlike the basic update it is necessary to set the contribution manually beforehand, here. This allows updating with a specific
@@ -271,7 +274,8 @@ public interface I_CompositionAccess extends I_SimpleCRUD {
      * @param description Updated description or NULL
      * @return Boolean to indicate success or failure of update
      */
-    Boolean updateWithCustomContribution(UUID committerId, UUID systemId, I_ConceptAccess.ContributionChangeType contributionChangeType, String description);
+    // TODO-526: remove
+    //Boolean updateWithCustomContribution(UUID committerId, UUID systemId, I_ConceptAccess.ContributionChangeType contributionChangeType, String description);
 
     /**
      * Delete a composition<br>
@@ -284,7 +288,8 @@ public interface I_CompositionAccess extends I_SimpleCRUD {
      *
      * @return
      */
-    Integer delete(UUID committerId, UUID systemId, String description);
+    // TODO-526: remove
+    //Integer delete(UUID committerId, UUID systemId, String description);
 
     /**
      * Unlike the basic delete it is necessary to set the contribution manually beforehand, here. This allows deleting with a specific
@@ -294,7 +299,8 @@ public interface I_CompositionAccess extends I_SimpleCRUD {
      * @param description Updated description or NUL
      * @return Rows affected by delete
      */
-    Integer deleteWithCustomContribution(UUID committerId, UUID systemId, String description);
+    // TODO-526: remove
+    //Integer deleteWithCustomContribution(UUID committerId, UUID systemId, String description);
 
     Timestamp getSysTransaction();
 

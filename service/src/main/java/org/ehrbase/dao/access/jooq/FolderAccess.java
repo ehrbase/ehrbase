@@ -21,6 +21,7 @@ package org.ehrbase.dao.access.jooq;
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.*;
+import java.time.LocalDateTime;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -115,7 +116,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
      * {@inheritDoc}
      */
     @Override
-    public Boolean update(final Timestamp transactionTime, UUID systemId, UUID committerId, String description, ContributionChangeType changeType) {
+    public boolean update(final LocalDateTime transactionTime, UUID systemId, UUID committerId, String description, ContributionChangeType changeType) {
         /*create new contribution*/
         UUID oldContribution = this.folderRecord.getInContribution();
         UUID newContribution;
@@ -129,19 +130,21 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         }
         this.contributionAccess.setEhrId(contributionAccessEhrId);
 
-        this.contributionAccess.commit(transactionTime, committerId, systemId, ContributionDataType.folder, ContributionDef.ContributionState.COMPLETE, I_ConceptAccess.ContributionChangeType.MODIFICATION, description);
+        this.contributionAccess.commit(Timestamp.valueOf(transactionTime), committerId, systemId,
+            ContributionDataType.folder, ContributionDef.ContributionState.COMPLETE, I_ConceptAccess.ContributionChangeType.MODIFICATION, description);
         this.getFolderRecord().setInContribution(this.contributionAccess.getId());
 
         newContribution = folderRecord.getInContribution();
 
-        return this.internalUpdate(transactionTime, true, null, oldContribution, newContribution, systemId, committerId, description, changeType);
+        return this.internalUpdate(Timestamp.valueOf(transactionTime), true, null,
+            oldContribution, newContribution, systemId, committerId, description, changeType);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Boolean update(final Timestamp transactionTime, UUID contribution) {
+    public boolean update(final LocalDateTime transactionTime, UUID contribution) {
         /*create new contribution*/
         UUID oldContribution = this.folderRecord.getInContribution();
         UUID newContribution;
@@ -157,7 +160,8 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         String description = newContributionAccess.getAuditsDescription();
         ContributionChangeType changeType = newContributionAccess.getAuditsChangeType();
 
-        return this.internalUpdate(transactionTime, true, null, oldContribution, newContribution, systemId, committerId, description, changeType);
+        return this.internalUpdate(Timestamp.valueOf(transactionTime), true, null,
+            oldContribution, newContribution, systemId, committerId, description, changeType);
     }
 
     private Boolean internalUpdate(final Timestamp transactionTime,
@@ -277,10 +281,10 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
      * @return UUID of the new created root folder
      */
     @Override
-    public UUID commit(Timestamp transactionTime, UUID systemId, UUID committerId, String description) {
+    public UUID commit(LocalDateTime transactionTime, UUID systemId, UUID committerId, String description) {
         // Create Contribution entry for all folders
         this.contributionAccess.commit(
-                transactionTime,
+                Timestamp.valueOf(transactionTime),
                 committerId,
                 systemId,
                 ContributionDataType.folder,
@@ -303,7 +307,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
      * @return UUID of the new created root folder
      */
     @Override
-    public UUID commit(Timestamp transactionTime, UUID contributionId) {
+    public UUID commit(LocalDateTime transactionTime, UUID contributionId) {
 
         this.getFolderRecord().setInContribution(contributionId);
         var inputContributionAccess = I_ContributionAccess.retrieveInstance(this.getDataAccess(), contributionId);
@@ -320,7 +324,8 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         this.getFolderRecord().store();
 
         //Save folder items
-        this.saveFolderItems(this.getFolderRecord().getId(), contributionId, contributionId, transactionTime, getContext());
+        this.saveFolderItems(this.getFolderRecord().getId(), contributionId, contributionId,
+            Timestamp.valueOf(transactionTime), getContext());
 
         // Save list of sub folders to database with parent <-> child ID relations
         this.getSubfoldersList().values().forEach(child -> {
@@ -329,7 +334,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
                     this.getFolderRecord().getId(),
                     ((FolderAccess) child).getFolderRecord().getId(),
                     contributionId,
-                    transactionTime,
+                    Timestamp.valueOf(transactionTime),
                     null
             );
             fhRecord.store();
@@ -495,7 +500,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
      * <br> Includes sub-folders.
      */
     @Override
-    public Integer delete(Timestamp timestamp, UUID systemId, UUID committerId, String description) {
+    public int delete(LocalDateTime timestamp, UUID systemId, UUID committerId, String description) {
         // create new contribution for this deletion action (with embedded contribution.audit handling)
         contributionAccess = I_ContributionAccess.getInstance(getDataAccess(),
             contributionAccess.getEhrId()); // overwrite old contribution with new one
@@ -513,7 +518,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
      * <br> Includes sub-folders.
      */
     @Override
-    public Integer delete(Timestamp timestamp, UUID contribution) {
+    public int delete(LocalDateTime timestamp, UUID contribution) {
         var newContributionAccess = I_ContributionAccess.retrieveInstance(this.getDataAccess(), contribution);
         UUID systemId = newContributionAccess.getAuditsSystemId();
         UUID committerId = newContributionAccess.getAuditsCommitter();

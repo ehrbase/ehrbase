@@ -32,7 +32,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface CompositionService extends BaseService {
+public interface CompositionService extends BaseService, VersionedObjectService<Composition, CompositionDto> {
     /**
      * @param compositionId The {@link UUID} of the composition to be returned.
      * @param version       The version to returned. If null return the latest
@@ -74,7 +74,8 @@ public interface CompositionService extends BaseService {
      * @return - UUID of new created composition entry
      * @throws InternalServerException
      */
-    UUID create(UUID ehrId, String content, CompositionFormat format);
+    // TODO-526: remove
+    //UUID create(UUID ehrId, String content, CompositionFormat format);
 
     /**
      * Creates a deserialized representation of the composition data from
@@ -88,7 +89,8 @@ public interface CompositionService extends BaseService {
      * @return - UUID of new created composition entry
      * @throws InternalServerException
      */
-    UUID create(UUID ehrId, String content, CompositionFormat format, String templateId, UUID linkUid);
+    // TODO-526: remove
+    //UUID create(UUID ehrId, String content, CompositionFormat format, String templateId, UUID linkUid);
 
     /**
      * Creates a composition which will be connected to the given existing contribution. Unlike with the general create() methods, where
@@ -99,7 +101,8 @@ public interface CompositionService extends BaseService {
      * @return UUID of newly created composition
      * @throws InternalServerException when creation failed
      */
-    UUID create(UUID ehrId, Composition composition, UUID contributionId);
+    // TODO-526: remove
+    //UUID create(UUID ehrId, Composition composition, UUID contributionId);
 
     /**
      * Overloaded wrapper function to update composition with minimal set of input. TemplateID is read from composition content.
@@ -111,7 +114,8 @@ public interface CompositionService extends BaseService {
      * @throws InternalServerException when updating failed
      * @throws ObjectNotFoundException when targeted composition couldn't be found
      */
-    String update(UUID compositionId, CompositionFormat format, String content);
+    // TODO-526: remove
+    //String update(UUID compositionId, CompositionFormat format, String content);
 
     /**
      * Updates an existing composition entry with new data. Implicitly created new contribution ad-hoc.
@@ -124,7 +128,8 @@ public interface CompositionService extends BaseService {
      * @throws InternalServerException when updating failed
      * @throws ObjectNotFoundException when targeted composition couldn't be found
      */
-    String update(UUID compositionId, CompositionFormat format, String content, String templateId);
+    // TODO-526: remove
+    //String update(UUID compositionId, CompositionFormat format, String content, String templateId);
 
     /**
      * Updates a composition which will be connected to the given existing contribution. Unlike with the general update() methods, where
@@ -136,7 +141,8 @@ public interface CompositionService extends BaseService {
      * @throws InternalServerException when updating failed
      * @throws ObjectNotFoundException when targeted composition couldn't be found
      */
-    String update(UUID compositionId, Composition composition, UUID contributionId);
+    // TODO-526: remove
+    //String update(UUID compositionId, Composition composition, UUID contributionId);
 
     /**
      * Deletes a composition, i.e. creates a new version with deleted status. Return time of deletion.
@@ -145,7 +151,8 @@ public interface CompositionService extends BaseService {
      * @throws ObjectNotFoundException  when targeted composition couldn't be found
      * @throws InternalServerException when deletion failed
      */
-    LocalDateTime delete(UUID compositionId);
+    // TODO-526: remove
+    //LocalDateTime delete(UUID compositionId);
 
     /**
      * Deletes a composition which will be connected to the given existing contribution. Unlike with the general delete() methods, where
@@ -154,7 +161,8 @@ public interface CompositionService extends BaseService {
      * @param contributionId Custom contribution UUID
      * @return Time of deletion, if successful
      */
-    LocalDateTime delete(UUID compositionId, UUID contributionId);
+    // TODO-526: remove
+    //LocalDateTime delete(UUID compositionId, UUID contributionId);
 
     Integer getLastVersionNumber(UUID compositionId);
 
@@ -225,4 +233,7 @@ public interface CompositionService extends BaseService {
      * @return Original Version container class representation.
      */
     Optional<OriginalVersion<Composition>> getOriginalVersionComposition(UUID versionedObjectUid, int version);
+
+    // TODO-526: docs
+    Composition buildComposition(String content, CompositionFormat format, String templateId);
 }

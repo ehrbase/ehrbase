@@ -50,11 +50,10 @@ import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.dao.access.interfaces.I_AttestationAccess;
 import org.ehrbase.dao.access.interfaces.I_CompoXrefAccess;
 import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
-import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
+import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
 import org.ehrbase.dao.access.interfaces.I_EntryAccess;
 import org.ehrbase.dao.access.jooq.AttestationAccess;
 import org.ehrbase.dao.access.jooq.CompoXRefAccess;
-import org.ehrbase.dao.access.util.ContributionDef.ContributionState;
 import org.ehrbase.response.ehrscape.CompositionDto;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.StructuredString;
@@ -100,6 +99,240 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
         this.ehrService = ehrService;
         this.knowledgeCacheService = knowledgeCacheService;
 
+    }
+
+    @Override
+    public Optional<CompositionDto> create(UUID ehrId, Composition objData, UUID systemId,
+        UUID committerId, String description) {
+
+        UUID compositionId = internalCreate(ehrId, objData, systemId, committerId, description, null);
+        return getCompositionDto(I_CompositionAccess.retrieveInstance(getDataAccess(), compositionId));
+    }
+
+    @Override
+    public Optional<CompositionDto> create(UUID ehrId, Composition objData, UUID contribution) {
+        UUID compositionId = internalCreate(ehrId, objData, null, null, null, contribution);
+        return getCompositionDto(I_CompositionAccess.retrieveInstance(getDataAccess(), compositionId));
+    }
+
+    @Override
+    public Optional<CompositionDto> create(UUID ehrId, Composition objData) {
+        return create(ehrId, objData, getSystemUuid(), getUserUuid(), null);
+    }
+
+    /**
+     * Creation of a new composition. With optional custom contribution, or one will be created.
+     *
+     * @param ehrId          ID of EHR
+     * @param composition    RMObject instance of the given Composition to be created
+     * @param systemId Audit system; or NULL if contribution is given
+     * @param committerId Audit committer; or NULL if contribution is given
+     * @param description (Optional) Audit description; or NULL if contribution is given
+     * @param contributionId NULL if is not needed, or ID of given custom contribution
+     * @return ID of created composition
+     * @throws InternalServerException when creation failed
+     */
+    private UUID internalCreate(UUID ehrId, Composition composition, UUID systemId,
+        UUID committerId, String description, UUID contributionId) {
+        //pre-step: validate
+        try {
+            validationService.check(composition);
+        } catch (Exception e) {
+            // rethrow if this class, but wrap all others in InternalServerException
+            if (e.getClass().equals(UnprocessableEntityException.class))
+                throw (UnprocessableEntityException) e;
+            if (e.getClass().equals(IllegalArgumentException.class))
+                throw new ValidationException(e);
+            else if (e.getClass().equals(org.ehrbase.validation.constraints.wrappers.ValidationException.class))
+                throw new ValidationException(e);
+            else
+                throw new InternalServerException(e);
+        }
+
+        //pre-step: check for valid ehrId
+        if (ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
+            throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
+        }
+
+        // actual creation
+        final UUID compositionId;
+        try {
+            var compositionAccess = I_CompositionAccess.getNewInstance(getDataAccess(), composition, ehrId);
+            var entryAccess = I_EntryAccess.getNewInstance(getDataAccess(), Objects.requireNonNull(composition.getArchetypeDetails().getTemplateId()).getValue(), 0, compositionAccess.getId(), composition);
+            compositionAccess.addContent(entryAccess);
+            if (contributionId != null) {   // in case of custom contribution, set it and invoke commit that allows custom contributions
+                compositionAccess.setContributionId(contributionId);
+                compositionId = compositionAccess.commit(LocalDateTime.now(), contributionId);
+            } else {    // else, invoke commit that ad hoc creates a new contribution for the composition
+                if (committerId == null || systemId == null) {  // mandatory fields
+                    throw new InternalServerException("Error on internal contribution handling for composition creation.");
+                }
+                compositionId = compositionAccess.commit(LocalDateTime.now(), committerId, systemId, description);
+            }
+        } catch (Exception e) {
+            if (e instanceof IllegalArgumentException)
+                throw new IllegalArgumentException(e);
+            else
+                throw new InternalServerException(e);
+        }
+        return compositionId;
+    }
+
+    @Override
+    public Optional<CompositionDto> update(UUID ehrId, ObjectVersionId targetObjId,
+        Composition objData, UUID systemId, UUID committerId, String description) {
+
+        var compoId = internalUpdate(UUID.fromString(targetObjId.getObjectId().toString()),
+            objData, systemId, committerId, description, null);
+        return getCompositionDto(I_CompositionAccess.retrieveInstance(getDataAccess(),
+            UUID.fromString(compoId.getObjectId().toString())));
+    }
+
+    @Override
+    public Optional<CompositionDto> update(UUID ehrId, ObjectVersionId targetObjId,
+        Composition objData, UUID contribution) {
+
+        var compoId = internalUpdate(UUID.fromString(targetObjId.getObjectId().toString()),
+            objData, null, null, null, contribution);
+        return getCompositionDto(I_CompositionAccess.retrieveInstance(getDataAccess(),
+            UUID.fromString(compoId.getObjectId().toString())));
+    }
+
+    @Override
+    public Optional<CompositionDto> update(UUID ehrId, ObjectVersionId targetObjId,
+        Composition objData) {
+        return update(ehrId, targetObjId, objData,  getSystemUuid(), getUserUuid(), null);
+    }
+
+    /**
+     * Update of an existing composition. With optional custom contribution, or existing one will be updated.
+     *
+     * @param compositionId  ID of existing composition
+     * @param composition    RMObject instance of the given Composition which represents the new version
+     * @param systemId Audit system; or NULL if contribution is given
+     * @param committerId Audit committer; or NULL if contribution is given
+     * @param description (Optional) Audit description; or NULL if contribution is given
+     * @param contributionId NULL if new one should be created; or ID of given custom contribution
+     * @return Version UID pointing to updated composition
+     */
+    private ObjectVersionId internalUpdate(UUID compositionId, Composition composition,
+        UUID systemId, UUID committerId, String description, UUID contributionId) {
+        boolean result;
+        try {
+            var compositionAccess = I_CompositionAccess.retrieveInstance(getDataAccess(), compositionId);
+            if (compositionAccess == null) {
+                throw new ObjectNotFoundException(I_CompositionAccess.class.getName(), "Could not find composition: " + compositionId);
+            }
+
+            //validate RM composition
+            validationService.check(composition);
+
+            // Check if template ID is not the same in existing and given data -> error
+            String existingTemplateId = compositionAccess.getContent().get(0).getTemplateId();
+            String inputTemplateId = composition.getArchetypeDetails().getTemplateId().getValue();
+            if (!existingTemplateId.equals(inputTemplateId)) {
+                // check if base template ID doesn't match  (template ID schema: "$NAME.$LANG.v$VER")
+                if (!existingTemplateId.split("\\.")[0].equals(inputTemplateId.split("\\.")[0]))
+                    throw new InvalidApiParameterException("Can't update composition to have different template.");
+                // if base matches, check if given template ID is just a new version of the correct template
+                int existingTemplateIdVersion = Integer.parseInt(existingTemplateId.split("\\.v")[1]);
+                int inputTemplateIdVersion = Integer.parseInt(inputTemplateId.substring(inputTemplateId.lastIndexOf("\\.v") + 1));
+                if (inputTemplateIdVersion < existingTemplateIdVersion) {
+                    throw new InvalidApiParameterException("Can't update composition with wrong template version bump.");
+                }
+            }
+
+            // to keep reference to entry to update: pull entry out of composition access and replace composition content with input, then write back to the original access
+            List<I_EntryAccess> contentList = compositionAccess.getContent();
+            contentList.get(0).setCompositionData(composition);
+            compositionAccess.setContent(contentList);
+            compositionAccess.setComposition(composition);
+            if (contributionId != null) {   // if custom contribution should be set
+                compositionAccess.setContributionId(contributionId);
+                result = compositionAccess.update(LocalDateTime.now(), contributionId);
+            } else {    // else existing one will be updated
+                if (committerId == null || systemId == null) {
+                    throw new InternalServerException("Failed to update composition, missing mandatory audit meta data.");
+                }
+                result = compositionAccess.update(LocalDateTime.now(), committerId, systemId,
+                    description, ContributionChangeType.MODIFICATION);
+            }
+
+        } catch (ObjectNotFoundException | InvalidApiParameterException e) {   //otherwise exceptions would always get sucked up by the catch below
+            throw e;
+        } catch (Exception e) {
+            throw new InternalServerException(e);
+        }
+
+        if (!result) {
+            throw new InternalServerException("Update failed on composition:" + compositionId);
+        }
+        return new ObjectVersionId(compositionId.toString(), this.getServerConfig().getNodename(), getLastVersionNumber(compositionId).toString());
+    }
+
+    @Override
+    public boolean delete(UUID ehrId, ObjectVersionId targetObjId, UUID systemId, UUID committerId,
+        String description) {
+        return internalDelete(UUID.fromString(targetObjId.getObjectId().toString()),
+            systemId, committerId, description, null);
+    }
+
+    @Override
+    public boolean delete(UUID ehrId, ObjectVersionId targetObjId, UUID contribution) {
+        return internalDelete(UUID.fromString(targetObjId.getObjectId().toString()),
+            null, null, null, contribution);
+    }
+
+    @Override
+    public boolean delete(UUID ehrId, ObjectVersionId targetObjId) {
+        return delete(ehrId, targetObjId, getSystemUuid(), getUserUuid(), null);
+    }
+
+    /**
+     * Deletion of an existing composition. With optional custom contribution, or existing one will be updated.
+     *
+     * @param compositionId  ID of existing composition
+     * @param systemId Audit system; or NULL if contribution is given
+     * @param committerId Audit committer; or NULL if contribution is given
+     * @param description (Optional) Audit description; or NULL if contribution is given
+     * @param contributionId NULL if is not needed, or ID of given custom contribution
+     * @return Time of deletion, if successful
+     */
+    private boolean internalDelete(UUID compositionId, UUID systemId, UUID committerId, String description, UUID contributionId) {
+        I_CompositionAccess compositionAccess;
+        try {
+            compositionAccess = I_CompositionAccess.retrieveInstance(getDataAccess(), compositionId);
+        } catch (Exception e) {
+            throw new ObjectNotFoundException(I_CompositionAccess.class.getName(), "Error while retrieving composition", e);
+        }
+        if (compositionAccess == null) {
+            throw new ObjectNotFoundException(I_CompositionAccess.class.getName(), "Could not find composition:" + compositionId);
+        }
+
+        int result;
+        if (contributionId != null) {   // if custom contribution should be set
+            compositionAccess.setContributionId(contributionId);
+            try {
+                result = compositionAccess.delete(LocalDateTime.now(), contributionId);
+            } catch (Exception e) {
+                throw new InternalServerException(e);
+            }
+        } else {    // if not continue with standard delete
+            try {
+                if (committerId == null || systemId == null) {
+                    throw new InternalServerException("Failed to update composition, missing mandatory audit meta data.");
+                }
+                result = compositionAccess.delete(LocalDateTime.now(), committerId, systemId, description);
+            } catch (Exception e) {
+                throw new InternalServerException(e);
+            }
+        }
+        if (result <= 0) {
+            throw new InternalServerException(
+                "Delete failed on composition:" + compositionAccess.getId());
+        } else {
+            return true;
+        }
     }
 
     @Override
@@ -179,82 +412,34 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
         return compositionString;
     }
 
-
-    public UUID create(UUID ehrId, String content, CompositionFormat format, String templateId) {
+    // TODO-526: remove
+    /*public UUID create(UUID ehrId, String content, CompositionFormat format, String templateId) {
 
         final Composition composition = buildComposition(content, format, templateId);
 
         return internalCreate(ehrId, composition, null);
-    }
+    }*/
 
-    @Override
+    // TODO-526: remove
+    /*@Override
     public UUID create(UUID ehrId, String content, CompositionFormat format) {
 
         return create(ehrId, content, format, null);
-    }
+    }*/
 
-    @Override
+    // TODO-526: remove
+    /*@Override
     public UUID create(UUID ehrId, String content, CompositionFormat format, String templateId, UUID linkUid) {
         return create(ehrId, content, format, templateId);
-    }
+    }*/
 
-    @Override
+    // TODO-526: remove
+    /*@Override
     public UUID create(UUID ehrId, Composition composition, UUID contributionId) {
         return internalCreate(ehrId, composition, contributionId);
-    }
+    }*/
 
-    /**
-     * Creation of a new composition. With optional custom contribution, or one will be created.
-     *
-     * @param ehrId          ID of EHR
-     * @param composition    RMObject instance of the given Composition to be created
-     * @param contributionId NULL if is not needed, or ID of given custom contribution
-     * @return ID of created composition
-     * @throws InternalServerException when creation failed
-     */
-    private UUID internalCreate(UUID ehrId, Composition composition, UUID contributionId) {
-        //pre-step: validate
-        try {
-            validationService.check(composition);
-        } catch (Exception e) {
-            // rethrow if this class, but wrap all others in InternalServerException
-            if (e.getClass().equals(UnprocessableEntityException.class))
-                throw (UnprocessableEntityException) e;
-            if (e.getClass().equals(IllegalArgumentException.class))
-                throw new ValidationException(e);
-            else if (e.getClass().equals(org.ehrbase.validation.constraints.wrappers.ValidationException.class))
-                throw new ValidationException(e);
-            else
-                throw new InternalServerException(e);
-        }
-
-        //pre-step: check for valid ehrId
-        if (ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
-            throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
-        }
-
-        // actual creation
-        final UUID compositionId;
-        try {
-            I_CompositionAccess compositionAccess = I_CompositionAccess.getNewInstance(getDataAccess(), composition, ehrId);
-            I_EntryAccess entryAccess = I_EntryAccess.getNewInstance(getDataAccess(), Objects.requireNonNull(composition.getArchetypeDetails().getTemplateId()).getValue(), 0, compositionAccess.getId(), composition);
-            compositionAccess.addContent(entryAccess);
-            if (contributionId != null) {   // in case of custom contribution, set it and invoke commit that allows custom contributions
-                compositionAccess.setContributionId(contributionId);
-                compositionId = compositionAccess.commitWithCustomContribution(getUserUuid(), getSystemUuid(), DESCRIPTION);
-            } else {    // else, invoke commit that ad hoc creates a new contribution for the composition
-                compositionId = compositionAccess.commit(getUserUuid(), getSystemUuid(), DESCRIPTION);
-            }
-        } catch (Exception e) {
-            if (e instanceof IllegalArgumentException)
-                throw new IllegalArgumentException(e);
-            else
-                throw new InternalServerException(e);
-        }
-        return compositionId;
-    }
-
-    private Composition buildComposition(String content, CompositionFormat format, String templateId) {
+    public Composition buildComposition(String content, CompositionFormat format, String templateId) {
         final Composition composition;
         switch (format) {
             case XML:
@@ -282,133 +467,40 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
         return composition;
     }
 
-    @Override
+    // TODO-526: remove
+    /*@Override
     public String update(UUID compositionId, CompositionFormat format, String content) {
         return update(compositionId, format, content, null);
-    }
+    }*/
 
-    @Override
+    // TODO-526: remove
+    /*@Override
     public String update(UUID compositionId, CompositionFormat format, String content, String templateId) {
 
         Composition composition = buildComposition(content, format, templateId);
 
         // call internalUpdate with null as contributionId to create a new ad-hoc contribution
         return internalUpdate(compositionId, composition, null);
-    }
+    }*/
 
-    @Override
+    // TODO-526: remove
+    /*@Override
     public String update(UUID compositionId, Composition composition, UUID contributionId) {
         // call internalUpdate with given contributionId to use it as contribution
         return internalUpdate(compositionId, composition, contributionId);
-    }
+    }*/
 
-    /**
-     * Update of an existing composition. With optional custom contribution, or existing one will be updated.
-     *
-     * @param compositionId  ID of existing composition
-     * @param composition    RMObject instance of the given Composition which represents the new version
-     * @param contributionId NULL if new one should be created; or ID of given custom contribution
-     * @return Version UID pointing to updated composition
-     */
-    private String internalUpdate(UUID compositionId, Composition composition, UUID contributionId) {
-        Boolean result;
-        try {
-            I_CompositionAccess compositionAccess = I_CompositionAccess.retrieveInstance(getDataAccess(), compositionId);
-            if (compositionAccess == null) {
-                throw new ObjectNotFoundException(I_CompositionAccess.class.getName(), "Could not find composition: " + compositionId);
-            }
-
-            //validate RM composition
-            validationService.check(composition);
-
-            // Check if template ID is not the same in existing and given data -> error
-            String existingTemplateId = compositionAccess.getContent().get(0).getTemplateId();
-            String inputTemplateId = composition.getArchetypeDetails().getTemplateId().getValue();
-            if (!existingTemplateId.equals(inputTemplateId)) {
-                // check if base template ID doesn't match  (template ID schema: "$NAME.$LANG.v$VER")
-                if (!existingTemplateId.split("\\.")[0].equals(inputTemplateId.split("\\.")[0]))
-                    throw new InvalidApiParameterException("Can't update composition to have different template.");
-                // if base matches, check if given template ID is just a new version of the correct template
-                int existingTemplateIdVersion = Integer.parseInt(existingTemplateId.split("\\.v")[1]);
-                int inputTemplateIdVersion = Integer.parseInt(inputTemplateId.substring(inputTemplateId.lastIndexOf("\\.v") + 1));
-                if (inputTemplateIdVersion < existingTemplateIdVersion) {
-                    throw new InvalidApiParameterException("Can't update composition with wrong template version bump.");
-                }
-            }
-
-            // to keep reference to entry to update: pull entry out of composition access and replace composition content with input, then write back to the original access
-            List<I_EntryAccess> contentList = compositionAccess.getContent();
-            contentList.get(0).setCompositionData(composition);
-            compositionAccess.setContent(contentList);
-            compositionAccess.setComposition(composition);
-            if (contributionId != null) {   // if custom contribution should be set
-                compositionAccess.setContributionId(contributionId);
-                result = compositionAccess.updateWithCustomContribution(getUserUuid(), getSystemUuid(), I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
-            } else {    // else existing one will be updated
-                result = compositionAccess.update(getUserUuid(), getSystemUuid(), ContributionState.COMPLETE, I_ConceptAccess.ContributionChangeType.MODIFICATION, DESCRIPTION);
-            }
-
-        } catch (ObjectNotFoundException | InvalidApiParameterException e) {   //otherwise exceptions would always get sucked up by the catch below
-            throw e;
-        } catch (Exception e) {
-            throw new InternalServerException(e);
-        }
-
-        if (!result) {
-            throw new InternalServerException("Update failed on composition:" + compositionId);
-        }
-        return compositionId + "::" + getLastVersionNumber(compositionId);
-    }
-
-    @Override
+    // TODO-526: remove
+    /*@Override
     public LocalDateTime delete(UUID compositionId) {
         return internalDelete(compositionId, null);
-    }
+    }*/
 
-    @Override
+    // TODO-526: remove
+    /*@Override
     public LocalDateTime delete(UUID compositionId, UUID contributionId) {
         return internalDelete(compositionId, contributionId);
-    }
-
-    /**
-     * Deletion of an existing composition. With optional custom contribution, or existing one will be updated.
-     *
-     * @param compositionId  ID of existing composition
-     * @param contributionId NULL if is not needed, or ID of given custom contribution
-     * @return Time of deletion, if successful
-     */
-    private LocalDateTime internalDelete(UUID compositionId, UUID contributionId) {
-        I_CompositionAccess compositionAccess;
-        try {
-            compositionAccess = I_CompositionAccess.retrieveInstance(getDataAccess(), compositionId);
-        } catch (Exception e) {
-            throw new ObjectNotFoundException(I_CompositionAccess.class.getName(), "Error while retrieving composition", e);
-        }
-        if (compositionAccess == null) {
-            throw new ObjectNotFoundException(I_CompositionAccess.class.getName(), "Could not find composition:" + compositionId);
-        }
-
-        Integer result;
-        if (contributionId != null) {   // if custom contribution should be set
-            compositionAccess.setContributionId(contributionId);
-            try {
-                result = compositionAccess.deleteWithCustomContribution(getUserUuid(), getSystemUuid(), DESCRIPTION);
-            } catch (Exception e) {
-                throw new InternalServerException(e);
-            }
-        } else {    // if not continue with standard delete
-            try {
-                result = compositionAccess.delete(getUserUuid(), getSystemUuid(), DESCRIPTION);
-            } catch (Exception e) {
-                throw new InternalServerException(e);
-            }
-        }
-        if (result <= 0)
-            throw new InternalServerException("Delete failed on composition:" + compositionAccess.getId());
-
-        return compositionAccess.getTimeCommitted().toLocalDateTime();
-    }
-
+    }*/
 
     @Override
     public Integer getLastVersionNumber(UUID compositionId) throws InternalServerException {

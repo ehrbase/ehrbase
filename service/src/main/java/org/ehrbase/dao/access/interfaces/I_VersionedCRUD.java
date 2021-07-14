@@ -18,7 +18,7 @@
 
 package org.ehrbase.dao.access.interfaces;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
 
@@ -40,7 +40,7 @@ public interface I_VersionedCRUD {
    * @param description
    * @return
    */
-  UUID commit(Timestamp timestamp, UUID committerId, UUID systemId, String description);
+  UUID commit(LocalDateTime timestamp, UUID committerId, UUID systemId, String description);
 
   /**
    * Commit the object with the necessary metadata, which will be derived from the contribution.
@@ -48,7 +48,7 @@ public interface I_VersionedCRUD {
    * @param contribution
    * @return
    */
-  UUID commit(Timestamp timestamp, UUID contribution);
+  UUID commit(LocalDateTime timestamp, UUID contribution);
 
   /**
    *
@@ -59,15 +59,15 @@ public interface I_VersionedCRUD {
    * @param changeType Specific change type, because there are more than DELETED.
    * @return
    */
-  Boolean update(Timestamp timestamp, UUID committerId, UUID systemId, String description, ContributionChangeType changeType);
+  boolean update(LocalDateTime timestamp, UUID committerId, UUID systemId, String description, ContributionChangeType changeType);
 
-  Boolean update(Timestamp timestamp, UUID contribution);
+  boolean update(LocalDateTime timestamp, UUID contribution);
 
   /**
    *
    */
-  Integer delete(Timestamp timestamp, UUID committerId, UUID systemId, String description);
+  int delete(LocalDateTime timestamp, UUID committerId, UUID systemId, String description);
 
-  Integer delete(Timestamp timestamp, UUID contribution);
+  int delete(LocalDateTime timestamp, UUID contribution);
 
 }

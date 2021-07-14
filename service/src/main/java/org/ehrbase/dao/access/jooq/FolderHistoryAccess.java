@@ -24,6 +24,7 @@ import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import java.time.LocalDateTime;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -90,35 +91,36 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
     /*************Data Access and modification methods*****************/
 
     @Override
-    public UUID commit(Timestamp transactionTime, UUID contributionId){
-        return null;
-    }
-
-    @Override
-    public Boolean update(Timestamp timestamp, UUID committerId, UUID systemId, String description,
-        ContributionChangeType changeType) {
-        return null;
-    }
-
-    @Override
-    public Boolean update(Timestamp timestamp, UUID contribution) {
-        return null;
-    }
-
-    @Override
-    public Integer delete(Timestamp timestamp, UUID committerId, UUID systemId,
+    public UUID commit(LocalDateTime timestamp, UUID committerId, UUID systemId,
         String description) {
         return null;
     }
 
     @Override
-    public Integer delete(Timestamp timestamp, UUID contribution) {
+    public UUID commit(LocalDateTime timestamp, UUID contribution) {
         return null;
     }
 
     @Override
-    public UUID commit(Timestamp transactionTime, UUID systemId, UUID committerId, String description) {
-        return null;
+    public boolean update(LocalDateTime timestamp, UUID committerId, UUID systemId,
+        String description, ContributionChangeType changeType) {
+        return false;
+    }
+
+    @Override
+    public boolean update(LocalDateTime timestamp, UUID contribution) {
+        return false;
+    }
+
+    @Override
+    public int delete(LocalDateTime timestamp, UUID committerId, UUID systemId,
+        String description) {
+        return 0;
+    }
+
+    @Override
+    public int delete(LocalDateTime timestamp, UUID contribution) {
+        return 0;
     }
 
 
