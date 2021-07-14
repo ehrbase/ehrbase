@@ -88,7 +88,6 @@ public class GenericJsonField extends RMObjectAttribute {
         fieldContext.setJsonDatablock(isJsonDataBlock);
         fieldContext.setRmType(rmType);
         //query the json representation of a node and cast the result as TEXT
-        StringBuilder sqlExpression = new StringBuilder();
         Configuration configuration = fieldContext.getContext().configuration();
 
         Field jsonField;
@@ -110,7 +109,7 @@ public class GenericJsonField extends RMObjectAttribute {
         } else
             jsonField = DSL.field(apply(function, tableFields).toString()).cast(String.class);
 
-        if (sqlExpression.toString().contains(QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION) && fieldContext.getClause().equals(IQueryImpl.Clause.WHERE))
+        if (jsonField.toString().contains(QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION) && fieldContext.getClause().equals(IQueryImpl.Clause.WHERE))
             jsonField = DSL.field(DSL.select(jsonField));
 
         return as(DSL.field(jsonField));
@@ -166,13 +165,15 @@ public class GenericJsonField extends RMObjectAttribute {
             this.jsonPath = Optional.empty();
             return this;
         }
-
-        this.jsonPath = Optional.of(new GenericJsonPath(jsonPath).jqueryPath());
+        GenericJsonPath genericJsonPath = new GenericJsonPath(jsonPath);
+        this.jsonPath = Optional.of(genericJsonPath.jqueryPath());
+        fieldContext.setUsingSetReturningFunction(genericJsonPath.isIterative());
         return this;
     }
 
     public GenericJsonField forJsonPath(String root, String jsonPath){
         String actualPath = new AttributePath(root).redux(jsonPath);
+
         return forJsonPath(actualPath);
     }
 

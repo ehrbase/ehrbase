@@ -46,6 +46,7 @@ public class SettingResolver extends AttributeResolver
         if (!path.equals(MAPPINGS) && path.startsWith(MAPPINGS)) {
             path = path.substring(path.indexOf(MAPPINGS)+ MAPPINGS.length()+1);
             //we insert a tag to indicate that the path operates on a json array
+            fieldResolutionContext.setUsingSetReturningFunction(true); //to generate lateral join
             retField = new EventContextJson(fieldResolutionContext, joinSetup).forJsonPath("setting/mappings/"+ QueryImplConstants.AQL_NODE_ITERATIVE_MARKER+"/" + path).forTableField(EVENT_CONTEXT.SETTING).sqlField();
         }
         else {

@@ -37,6 +37,7 @@ public class FieldResolutionContext {
     private final IntrospectService introspectCache;
     private final String entryRoot;
     private boolean jsonDatablock = false;
+    private boolean isUsingSetReturningFunction = false;
     private String rmType;
 
     public FieldResolutionContext(DSLContext context, String serverNodeId, String identifier, I_VariableDefinition variableDefinition, IQueryImpl.Clause clause, PathResolver pathResolver, IntrospectService introspectCache, String entryRoot) {
@@ -110,5 +111,13 @@ public class FieldResolutionContext {
 
     public void setWithAlias(boolean b) {
         withAlias = b;
+    }
+
+    public boolean isUsingSetReturningFunction() {
+        return isUsingSetReturningFunction;
+    }
+
+    public void setUsingSetReturningFunction(boolean usingSetReturningFunction) {
+        isUsingSetReturningFunction = usingSetReturningFunction;
     }
 }

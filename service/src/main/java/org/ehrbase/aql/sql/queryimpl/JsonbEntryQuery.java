@@ -29,20 +29,22 @@ import org.apache.logging.log4j.Logger;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
 import org.ehrbase.aql.sql.binding.JoinBinder;
+import org.ehrbase.aql.sql.queryimpl.value_field.NodePredicate;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
+import org.ehrbase.ehr.util.LocatableHelper;
 import org.ehrbase.serialisation.dbencoding.CompositionSerializer;
 import org.ehrbase.service.IntrospectService;
 import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.ehrbase.aql.sql.queryimpl.QueryImplConstants.AQL_NODE_ITERATIVE_MARKER;
-import static org.ehrbase.jooq.pg.Tables.*;
+import static org.ehrbase.jooq.pg.Tables.ENTRY;
+import static org.ehrbase.jooq.pg.Tables.EVENT_CONTEXT;
+import static org.ehrbase.jooq.pg.Tables.STATUS;
+import static org.ehrbase.serialisation.dbencoding.CompositionSerializer.TAG_OTHER_DETAILS;
 
 /**
  * Generate an SQL field corresponding to a JSONB data value query
@@ -61,10 +63,14 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
 
 
     //OTHER_DETAILS (Ehr Status Query)
-    private static final String SELECT_EHR_OTHER_DETAILS_MACRO = JoinBinder.statusRecordTable.field(STATUS.OTHER_DETAILS) + "->('" + CompositionSerializer.TAG_OTHER_DETAILS + "')";
+    private static final String SELECT_EHR_OTHER_DETAILS_MACRO = JoinBinder.statusRecordTable.field(STATUS.OTHER_DETAILS) + "->('" + TAG_OTHER_DETAILS + "')";
+    private static final String JSONB_SELECTOR_EHR_OTHER_DETAILS_OPEN = SELECT_EHR_OTHER_DETAILS_MACRO + JSONB_PATH_SELECTOR_EXPR;
+
 
     //OTHER_CONTEXT (Composition context other_context Query)
     private static final String SELECT_EHR_OTHER_CONTEXT_MACRO = EVENT_CONTEXT.OTHER_CONTEXT + "->('" + CompositionSerializer.TAG_OTHER_CONTEXT + "[at0001]" + "')";
+    private static final String JSONB_SELECTOR_EHR_OTHER_CONTEXT_OPEN = SELECT_EHR_OTHER_CONTEXT_MACRO + JSONB_PATH_SELECTOR_EXPR;
+    public static final String JSQUERY_EHR_OTHER_CONTEXT_OPEN = SELECT_EHR_OTHER_CONTEXT_MACRO + JSONB_AT_AT_SELECTOR_EXPR;
 
     public static final String COMPOSITION = "composition";
     public static final String CONTENT = "content";
@@ -103,7 +109,13 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
     public static final String TAG_CONTENT = "/" + CONTENT;
     public static final String TAG_ITEMS = "/" + ITEMS;
 
-//    private boolean containsJqueryPath = false; //true if at leas one AQL path is contained in expression
+    private static final String[] listIdentifier = {
+            TAG_CONTENT,
+            TAG_ITEMS,
+            TAG_ACTIVITIES,
+            TAG_EVENTS
+    };
+
     private boolean ignoreUnresolvedIntrospect = false;
 
     private static String ENV_IGNORE_UNRESOLVED_INTROSPECT = "aql.ignoreUnresolvedIntrospect";
@@ -116,10 +128,100 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
         ignoreUnresolvedIntrospect = Boolean.parseBoolean(System.getProperty(ENV_IGNORE_UNRESOLVED_INTROSPECT, "false"));
     }
 
+    private static boolean isList(String predicate) {
+        if (predicate.equals(TAG_ACTIVITIES))
+            return false;
+        for (String identifier : listIdentifier)
+            if (predicate.startsWith(identifier)) return true;
+        return false;
+    }
+
     public enum PATH_PART {IDENTIFIER_PATH_PART, VARIABLE_PATH_PART}
 
     public enum OTHER_ITEM {OTHER_DETAILS, OTHER_CONTEXT}
 
+    //deals with special tree based entities
+    //this is required to encode structure like events of events
+    //the same is applicable to activities. These are in fact pseudo arrays.
+    private static void encodeTreeMapNodeId(List<String> jqueryPath, String nodeId) {
+        if (nodeId.startsWith(TAG_EVENTS)) {
+            //this is an exception since events are represented in an event tree
+            jqueryPath.add(TAG_EVENTS);
+        } else if (nodeId.startsWith(TAG_ACTIVITIES)) {
+            jqueryPath.add(TAG_ACTIVITIES);
+        }
+    }
+
+    public List<String> jqueryPath(PATH_PART pathPart, String path, String defaultIndex) {
+        //CHC 160607: this offset (1 or 0) was required due to a bug in generating the containment table
+        //from a PL/pgSQL script. this is no more required
+
+        if (path == null) { //partial path
+            return new ArrayList<>();
+        }
+
+        int offset = 0;
+        List<String> segments = LocatableHelper.dividePathIntoSegments(path);
+        List<String> jqueryPath = new ArrayList<>();
+        String nodeId = null;
+        for (int i = offset; i < segments.size(); i++) {
+            nodeId = segments.get(i);
+            nodeId = "/" + nodeId;
+
+            encodeTreeMapNodeId(jqueryPath, nodeId);
+
+            //CHC, 180502. See CR#95 for more on this.
+            //IDENTIFIER_PATH_PART is provided by CONTAINMENT.
+            NodePredicate nodePredicate = new NodePredicate(nodeId);
+            if (pathPart.equals(PATH_PART.IDENTIFIER_PATH_PART)) {
+                nodeId = nodePredicate.removeNameValuePredicate();
+                jqueryPath.add(nodeId);
+                if (i <= segments.size() - 1 && isList(nodeId))
+                    jqueryPath.add(defaultIndex);
+            }
+            //VARIABLE_PATH_PART is provided by the user. It may contain name/value node predicate
+            //see http://www.openehr.org/releases/QUERY/latest/docs/AQL/AQL.html#_node_predicate
+            else if (pathPart.equals(PATH_PART.VARIABLE_PATH_PART)) {
+
+                if (nodePredicate.hasPredicate()) {
+                    //do the formatting to allow name/value node predicate processing
+                    jqueryPath = new NodeNameValuePredicate(nodePredicate).path(jqueryPath, nodeId);
+                } else {
+                    nodeId = nodePredicate.removeNameValuePredicate();
+                    jqueryPath.add(nodeId);
+                }
+
+                if (isList(nodeId))
+                    jqueryPath.add(defaultIndex);
+            }
+
+        }
+
+        if (pathPart.equals(PATH_PART.VARIABLE_PATH_PART)) {
+            StringBuilder stringBuilder = new StringBuilder();
+            for (int i = jqueryPath.size() - 1; i >= 0; i--) {
+                if (jqueryPath.get(i).matches("[0-9]*|#") || jqueryPath.get(i).contains("[") ||jqueryPath.get(i).startsWith("'"))
+                    break;
+                String item = jqueryPath.remove(i);
+                stringBuilder.insert(0, item);
+            }
+            nodeId = EntryAttributeMapper.map(stringBuilder.toString());
+            if (nodeId != null) {
+                if (defaultIndex.equals("#")) { //jsquery
+                    if (nodeId.contains(",")) {
+                        String[] parts = nodeId.split(",");
+                        jqueryPath.addAll(Arrays.asList(parts));
+                    } else {
+                        jqueryPath.add(nodeId);
+                    }
+                } else {
+                    jqueryPath.add(nodeId);
+                }
+            }
+        }
+
+        return jqueryPath;
+    }
 
     private int retrieveIndex(String nodeId) {
         if (nodeId.contains("#")) {
@@ -161,7 +263,7 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
                 itemPathArray.addAll(new JqueryPath(PATH_PART.IDENTIFIER_PATH_PART, path, "0").evaluate());
 
             JqueryPath jqueryPath = new JqueryPath(PATH_PART.VARIABLE_PATH_PART, variableDefinition.getPath(), "0");
-            itemPathArray.addAll(jqueryPath.evaluate());
+            itemPathArray.addAll(new NormalizedRmAttributePath(jqueryPath.evaluate()).transformStartingAt(1));
 
             try {
                 IterativeNode iterativeNode = new IterativeNode(domainAccess, templateId, introspectCache);
@@ -326,4 +428,6 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
             return open + itemPath + close;
 
     }
+
+
 }

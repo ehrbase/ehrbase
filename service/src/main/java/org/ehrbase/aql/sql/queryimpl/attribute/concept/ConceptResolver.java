@@ -45,6 +45,7 @@ public class ConceptResolver extends AttributeResolver
         if (!path.equals(MAPPINGS) && path.startsWith(MAPPINGS)) {
             path = path.substring(path.indexOf(MAPPINGS)+ MAPPINGS.length()+1);
             //we insert a tag to indicate that the path operates on a json array
+            fieldResolutionContext.setUsingSetReturningFunction(true); //to generate lateral join
             return new ConceptJson(fieldResolutionContext, joinSetup).forJsonPath("mappings/"+ QueryImplConstants.AQL_NODE_ITERATIVE_MARKER+"/" + path).forTableField(tableField).sqlField();
         }
         else if (Arrays.asList("value", MAPPINGS, "defining_code", "defining_code/terminology_id", "defining_code/terminology_id/value", "defining_code/code_string").contains(path)) {
