@@ -182,20 +182,20 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
     public Optional<CompositionDto> update(UUID ehrId, ObjectVersionId targetObjId,
         Composition objData, UUID systemId, UUID committerId, String description) {
 
-        var compoId = internalUpdate(UUID.fromString(targetObjId.getObjectId().toString()),
+        var compoId = internalUpdate(UUID.fromString(targetObjId.getObjectId().getValue()),
             objData, systemId, committerId, description, null);
         return getCompositionDto(I_CompositionAccess.retrieveInstance(getDataAccess(),
-            UUID.fromString(compoId.getObjectId().toString())));
+            UUID.fromString(compoId.getObjectId().getValue())));
     }
 
     @Override
     public Optional<CompositionDto> update(UUID ehrId, ObjectVersionId targetObjId,
         Composition objData, UUID contribution) {
 
-        var compoId = internalUpdate(UUID.fromString(targetObjId.getObjectId().toString()),
+        var compoId = internalUpdate(UUID.fromString(targetObjId.getObjectId().getValue()),
             objData, null, null, null, contribution);
         return getCompositionDto(I_CompositionAccess.retrieveInstance(getDataAccess(),
-            UUID.fromString(compoId.getObjectId().toString())));
+            UUID.fromString(compoId.getObjectId().getValue())));
     }
 
     @Override
@@ -273,13 +273,13 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
     @Override
     public boolean delete(UUID ehrId, ObjectVersionId targetObjId, UUID systemId, UUID committerId,
         String description) {
-        return internalDelete(UUID.fromString(targetObjId.getObjectId().toString()),
+        return internalDelete(UUID.fromString(targetObjId.getObjectId().getValue()),
             systemId, committerId, description, null);
     }
 
     @Override
     public boolean delete(UUID ehrId, ObjectVersionId targetObjId, UUID contribution) {
-        return internalDelete(UUID.fromString(targetObjId.getObjectId().toString()),
+        return internalDelete(UUID.fromString(targetObjId.getObjectId().getValue()),
             null, null, null, contribution);
     }
 
