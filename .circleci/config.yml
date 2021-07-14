@@ -1001,7 +1001,8 @@ commands:
     steps:
       - run:
           command: |
-            pip install robotframework==v4.0b1
+            cd tests
+            pip install -r requirements.txt
       - run:
           name: POST PROCESS & MERGE TEST RESULTS
           when: always
