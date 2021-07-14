@@ -187,14 +187,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
      */
     @Override
     public UUID commit(LocalDateTime timestamp, UUID committerId, UUID systemId, String description) {
-        // prepare contribution with given values
-        contributionAccess.setDataType(ContributionDataType.composition);
-        contributionAccess.setState(ContributionDef.ContributionState.COMPLETE);
-        contributionAccess.setAuditDetailsValues(committerId, systemId, description, I_ConceptAccess.ContributionChangeType.CREATION);
-
-        contributionAccess.commit(Timestamp.valueOf(timestamp));
-
-        return commit(timestamp, contributionAccess.getId());
+        return internalCreate(timestamp, committerId, systemId, description, null);
     }
 
     /**
@@ -202,11 +195,31 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
      */
     @Override
     public UUID commit(LocalDateTime timestamp, UUID contribution) {
-        // Retrieve audit metadata from given contribution
-        var newContributionAccess = I_ContributionAccess.retrieveInstance(this.getDataAccess(), contribution);
-        UUID systemId = newContributionAccess.getAuditsSystemId();
-        UUID committerId = newContributionAccess.getAuditsCommitter();
-        String description = newContributionAccess.getAuditsDescription();
+        return internalCreate(timestamp, null, null, null, contribution);
+    }
+
+    private UUID internalCreate(LocalDateTime timestamp, UUID committerId, UUID systemId,
+        String description, UUID contribution) {
+
+        // check if custom contribution is already set, because changing it would yield updating in DB which is not desired (creates wrong new "version")
+        // TODO-526: does this work?
+        //if (getContributionId() != null) {
+        if (contribution != null) {
+            // Retrieve audit metadata from given contribution
+            var newContributionAccess = I_ContributionAccess.retrieveInstance(this.getDataAccess(), contribution);
+            systemId = newContributionAccess.getAuditsSystemId();
+            committerId = newContributionAccess.getAuditsCommitter();
+            description = newContributionAccess.getAuditsDescription();
+        } else {
+            // if not set, create DB entry of contribution so it can get referenced in this composition
+            // prepare contribution with given values
+            contributionAccess.setDataType(ContributionDataType.composition);
+            contributionAccess.setState(ContributionDef.ContributionState.COMPLETE);
+            contributionAccess.setAuditDetailsValues(committerId, systemId, description, I_ConceptAccess.ContributionChangeType.CREATION);
+
+            UUID contributionId = this.contributionAccess.commit();
+            setContributionId(contributionId);
+        }
 
         // create DB entry of prepared auditDetails so it can get referenced in this composition
         auditDetailsAccess.setChangeType(I_ConceptAccess.fetchContributionChangeType(this, I_ConceptAccess.ContributionChangeType.CREATION));
@@ -216,17 +229,6 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         auditDetailsAccess.setDescription(description);
         UUID auditId = this.auditDetailsAccess.commit();
         compositionRecord.setHasAudit(auditId);
-
-        // check if custom contribution is already set, because changing it would yield updating in DB which is not desired (creates wrong new "version")
-        if (getContributionId() != null) {
-            // check if set contribution is sane
-            Optional.ofNullable(I_ContributionAccess.retrieveInstance(this, getContributionId())).orElseThrow(IllegalArgumentException::new);
-        } else {
-            // if not set, create DB entry of contribution so it can get referenced in this composition
-            contributionAccess.setAuditDetailsChangeType(I_ConceptAccess.fetchContributionChangeType(this, I_ConceptAccess.ContributionChangeType.CREATION));
-            UUID contributionId = this.contributionAccess.commit();
-            setContributionId(contributionId);
-        }
 
         compositionRecord.setSysTransaction(Timestamp.valueOf(timestamp));
         compositionRecord.store();
