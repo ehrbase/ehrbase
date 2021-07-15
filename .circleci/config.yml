@@ -987,7 +987,6 @@ commands:
           root: /home/circleci
           paths:
             - projects/tests/results/<< parameters.suite-results-folder-name >>
-            - projects/tests/requirements.txt
 
 
   restore-test-results-folder:
@@ -1330,6 +1329,7 @@ commands:
             - projects/rest-openehr/target
             - projects/service/target
             - projects/test-coverage/target
+            - projects/tests/requirements.txt
 
  
   restore-packaged-ehrbase-jar:
