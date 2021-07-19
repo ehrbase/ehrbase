@@ -43,7 +43,7 @@ Resource        ../../_resources/keywords/contribution_keywords.robot
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags    refactor    xxx
+Force Tags    refactor
 
 
 
