@@ -23,7 +23,8 @@ Metadata    Authors    *Jake Smolka*, *Wladislaw Wagner*
 Metadata    Created    2021.01.26
 
 Metadata        TOP_TEST_SUITE    EHR_STATUS
-Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
+
+Resource        ../../_resources/keywords/composition_keywords.robot
 
 # Suite Setup  startup SUT
 # Suite Teardown  shutdown SUT
@@ -36,8 +37,6 @@ Force Tags      COMPOSITION_get_versioned
 1. Get Versioned Composition Of Existing EHR by Version UID (JSON)
     [Documentation]    Simple, valid request
 
-    prepare new request session    JSON    Prefer=return=representation
-
     create EHR and commit a composition for versioned composition tests
 
     get version of versioned composition of EHR by UID    ${versioned_object_uid}    ${version_uid}
@@ -47,8 +46,6 @@ Force Tags      COMPOSITION_get_versioned
 
 1b. Get Versioned Composition Of Existing EHR With 2 Versions by Version UID (JSON)
     [Documentation]    Simple, valid request
-
-    prepare new request session    JSON    Prefer=return=representation
 
     create EHR and commit a composition for versioned composition tests
 
@@ -64,8 +61,6 @@ Force Tags      COMPOSITION_get_versioned
 1c. Get Versioned Composition Of Existing EHR With 2 Versions by Invalid Version UID (JSON)
     [Documentation]    Simple, valid EHR_ID but invalid (non-existent) version
 
-    prepare new request session    JSON    Prefer=return=representation
-
     create EHR and commit a composition for versioned composition tests	
 
     update a composition for versioned composition tests
@@ -78,8 +73,6 @@ Force Tags      COMPOSITION_get_versioned
 
 1d. Get Versioned Composition Of Existing EHR by Invalid Version UID (JSON)
     [Documentation]    Simple, invalid (negative) version number
-
-    prepare new request session    JSON    Prefer=return=representation
 
     create EHR and commit a composition for versioned composition tests
 
@@ -94,8 +87,6 @@ Force Tags      COMPOSITION_get_versioned
 1e. Get Versioned Composition Of Existing EHR by Invalid Version UID (JSON)
     [Documentation]    Simple, invalid (floating point) version number
 
-    prepare new request session    JSON    Prefer=return=representation
-
     create EHR and commit a composition for versioned composition tests
 
     update a composition for versioned composition tests
@@ -109,9 +100,6 @@ Force Tags      COMPOSITION_get_versioned
 1f. Get Versioned Composition Of Existing EHR by Invalid Version UID (JSON)
     [Documentation]    Simple, invalid (random) version UID
 
-
-    prepare new request session    JSON    Prefer=return=representation
-
     create EHR and commit a composition for versioned composition tests
     
     generate random version_uid
@@ -122,8 +110,6 @@ Force Tags      COMPOSITION_get_versioned
 2. Get Versioned Composition Of EHR by Version UID Invalid EHR (JSON)
     [Documentation]    Simple, invalid EHR_ID (non-existent)
 
-    prepare new request session    JSON    Prefer=return=representation
-
     create EHR and commit a composition for versioned composition tests
     generate random ehr_id
 
@@ -133,8 +119,6 @@ Force Tags      COMPOSITION_get_versioned
 
 3. Get Versioned Composition Of EHR by Version UID Invalid Versioned Object UID (JSON)
     [Documentation]    Simple, invalid EHR_ID (non-existent)
-
-    prepare new request session    JSON    Prefer=return=representation
 
     create EHR and commit a composition for versioned composition tests
     # comment: save orginal version uid
@@ -150,8 +134,6 @@ Force Tags      COMPOSITION_get_versioned
 4. Get Versioned Composition Of Existing EHR by Version UID Invalid Version UID (JSON)
     [Documentation]    Simple, valid EHR_ID but invalid version_uid
 
-    prepare new request session    JSON    Prefer=return=representation
-
     create EHR and commit a composition for versioned composition tests
 
     # comment: alter version uid to invalid one
@@ -163,8 +145,6 @@ Force Tags      COMPOSITION_get_versioned
 
 5. Get Versioned Composition Of Existing EHR With 2 Versions by Version UID Invalid Version UID (JSON)
     [Documentation]    Simple, valid EHR_ID but invalid version_uid
-
-    prepare new request session    JSON    Prefer=return=representation
 
     create EHR and commit a composition for versioned composition tests
 

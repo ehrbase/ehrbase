@@ -21,7 +21,8 @@
 Documentation   Composition Integration Tests
 ...             https://github.com/ehrbase/ehrbase/blob/develop/doc/conformance_testing/EHR_COMPOSITION.md#b6f-alternative-flow-5-create-new-event-composition-referenced-opt-doesnt-exist
 Metadata        TOP_TEST_SUITE    COMPOSITION
-Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
+
+Resource        ../../_resources/keywords/composition_keywords.robot
 
 Suite Setup     Precondition
 Suite Teardown  restart SUT

@@ -23,7 +23,8 @@ Metadata    Created    2019.03.10
 
 Documentation   B.1.a) Main flow: Create new EHR
 Metadata        TOP_TEST_SUITE    EHR_SERVICE
-Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
+
+Resource        ../../_resources/keywords/ehr_keywords.robot
 
 # Suite Setup  startup SUT
 # Suite Teardown  shutdown SUT

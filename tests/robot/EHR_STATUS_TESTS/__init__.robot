@@ -24,7 +24,7 @@ Metadata    Updated    2021.06.10
 
 Documentation    https://github.com/ehrbase/ehrbase/blob/develop/doc/conformance_testing/EHR.md#c-ehr_status-test-cases
 
-Resource   ${EXECDIR}/robot/_resources/suite_settings.robot
+Resource   ../_resources/suite_settings.robot
 
 Suite Setup    startup SUT
 Suite Teardown    shutdown SUT

@@ -29,7 +29,8 @@ Documentation   Main flow: execute ad-hoc QUERY where data exists
 ...     Postconditions:
 ...         None (system state is not altered)
 Metadata        TOP_TEST_SUITE    AQL
-Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
+
+Resource       ../../_resources/keywords/aql_query_keywords.robot
 
 Suite Setup    aql_query_keywords.Establish Preconditions
 # Test Setup  Establish Preconditions

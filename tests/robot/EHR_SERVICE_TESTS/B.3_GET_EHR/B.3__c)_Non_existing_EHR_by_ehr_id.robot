@@ -23,7 +23,8 @@ Metadata    Created    2019.03.03
 
 Documentation   B.3.c) Alternative flow 2: Get non existing EHR
 Metadata        TOP_TEST_SUITE    EHR_SERVICE
-Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
+
+Resource        ../../_resources/keywords/ehr_keywords.robot
 
 # Suite Setup  startup SUT
 # Suite Teardown  shutdown SUT

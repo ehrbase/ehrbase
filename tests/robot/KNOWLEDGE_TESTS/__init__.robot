@@ -30,7 +30,7 @@ Documentation    KNOWLEDGE TEST SUITE
 ...               2. DB container started
 ...               3. openehr-server started
 
-Resource    ${CURDIR}${/}../_resources/suite_settings.robot
+Resource    ../_resources/suite_settings.robot
 
 Suite Setup  startup SUT
 Suite Teardown  shutdown SUT

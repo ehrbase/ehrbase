@@ -24,7 +24,7 @@ Metadata    Updated    2020.07.14
 
 Documentation  Testing authentication with Keycloak OAuth Server
 
-Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
+Resource        ../../_resources/suite_settings.robot
 
 
 

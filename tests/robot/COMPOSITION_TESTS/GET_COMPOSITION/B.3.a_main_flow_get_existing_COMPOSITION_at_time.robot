@@ -20,7 +20,7 @@
 Documentation   Composition Integration Tests
 Metadata        TOP_TEST_SUITE    COMPOSITION
 
-Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
+Resource        ../../_resources/keywords/composition_keywords.robot
 
 
 

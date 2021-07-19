@@ -22,7 +22,8 @@ Metadata    Created    2019.03.03
 
 Documentation   C.4.b) Clear EHR queryable of non existent EHR
 Metadata        TOP_TEST_SUITE    EHR_STATUS
-Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
+
+Resource        ../../_resources/keywords/ehr_keywords.robot
 
 # Suite Setup  startup SUT
 # Suite Teardown  shutdown SUT

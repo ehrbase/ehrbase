@@ -20,7 +20,8 @@
 Documentation   QUERY SERVICE Integration Tests
 ...
 Metadata        TOP_TEST_SUITE    AQL
-Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
+
+Resource       ../../_resources/keywords/aql_query_keywords.robot
 
 # Test Setup  start openehr server
 # Test Teardown  restore clean SUT state

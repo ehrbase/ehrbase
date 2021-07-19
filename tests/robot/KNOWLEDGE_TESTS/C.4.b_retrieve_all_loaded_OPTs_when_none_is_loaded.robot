@@ -35,7 +35,8 @@ Documentation   OPT1.4 integration tests
 ...                 1. Invoke the retrieve OPTs service
 ...                 2. The service should return an empty set and should not fail.
 Metadata        TOP_TEST_SUITE    EHR_STATUS
-Resource        ${CURDIR}${/}../_resources/suite_settings.robot
+
+Resource        ../_resources/keywords/template_opt1.4_keywords.robot
 
 # Suite Setup  startup OPT SUT
 Suite Teardown  Delete All Templates

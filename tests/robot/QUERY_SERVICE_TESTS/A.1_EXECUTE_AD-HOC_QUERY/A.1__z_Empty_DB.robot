@@ -29,7 +29,8 @@ Documentation   Alternative flow (AF): execute ad-hoc QUERY where DB is EMPTY
 ...     Postconditions:
 ...         None (system state is not altered)
 Metadata        TOP_TEST_SUITE    AQL
-Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
+
+Resource       ../../_resources/keywords/aql_query_keywords.robot
 
 Suite Setup  Establish Preconditions for Scenario: EMPTY DB
 # Test Teardown  restore clean SUT state

@@ -32,7 +32,9 @@ Documentation   Contribution Integration Tests
 ...     Postconditions:
 ...         None
 Metadata        TOP_TEST_SUITE    CONTRIBUTION
-Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
+
+Resource        ../../_resources/keywords/composition_keywords.robot
+Resource        ../../_resources/keywords/contribution_keywords.robot
 
 #Suite Setup  startup SUT
 # Test Setup  start openehr server

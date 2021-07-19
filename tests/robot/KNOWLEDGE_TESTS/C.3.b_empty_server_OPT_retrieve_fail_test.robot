@@ -36,7 +36,8 @@ Documentation   OPT1.4 integration tests
 ...                 2. The service should return an error related to the non existence
 ...                    of the requested OPT
 Metadata        TOP_TEST_SUITE    EHR_STATUS
-Resource        ${CURDIR}${/}../_resources/suite_settings.robot
+
+Resource        ../_resources/keywords/template_opt1.4_keywords.robot
 
 # Suite Setup  startup OPT SUT
 Suite Teardown  Delete All Templates

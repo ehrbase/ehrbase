@@ -35,7 +35,8 @@ Documentation   B.1.b) Alternative flow 1: Create same EHR twice
 ...                 A new EHR will exists in the system, the first one created, and be consistent with the data sets used.
 ...
 Metadata        TOP_TEST_SUITE    EHR_SERVICE
-Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
+
+Resource        ../../_resources/keywords/ehr_keywords.robot
 
 # Suite Setup    startup SUT
 # Suite Teardown    shutdown SUT

@@ -17,9 +17,7 @@
 
 
 *** Settings ***
-Library           DatabaseLibrary
-Library           OperatingSystem
-Library           Collections
+Resource    ../suite_settings.robot
 
 
 

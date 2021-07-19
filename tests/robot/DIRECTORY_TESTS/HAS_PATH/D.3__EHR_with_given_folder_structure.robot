@@ -43,7 +43,9 @@ Documentation    Alternative flow 2: has path on EHR with given folder structure
 ...         DS 09 | /random_path                         | false   |
 ...         DS 10 | /foldername-w-special-chars          | true    |
 Metadata        TOP_TEST_SUITE    DIRECTORY
-Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
+
+Resource        ../../_resources/keywords/directory_keywords.robot
+Resource        ../../_resources/keywords/composition_keywords.robot
 
 Suite Setup    Establish Preconditions
 # Test Setup  start openehr server

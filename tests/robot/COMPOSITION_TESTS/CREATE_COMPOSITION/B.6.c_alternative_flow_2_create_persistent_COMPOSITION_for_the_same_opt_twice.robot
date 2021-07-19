@@ -21,7 +21,8 @@
 Documentation   Composition Integration Tests
 ...             https://github.com/ehrbase/ehrbase/blob/develop/doc/conformance_testing/EHR_COMPOSITION.md#b6c-alternative-flow-2-create-persistent-composition-for-the-same-opt-twice
 Metadata        TOP_TEST_SUITE    COMPOSITION
-Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
+
+Resource        ../../_resources/keywords/composition_keywords.robot
 
 Suite Setup     Precondition
 Suite Teardown  restart SUT

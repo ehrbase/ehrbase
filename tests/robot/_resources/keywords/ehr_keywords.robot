@@ -18,11 +18,7 @@
 
 *** Settings ***
 Documentation   EHR Keywords
-Resource        generic_keywords.robot
-Library         XML
-Library         REST
-Library         Collections
-Library         distutils.util
+Resource        ../suite_settings.robot
 
 
 
@@ -772,13 +768,13 @@ modify ehr_status is_modifiable to
                         Set Test Variable    ${ehr_status}    ${ehr_status}
 
 
-Output Debug Info To Console
-    [Documentation]     Prints all details of a request to console in JSON style.
-    ...                 - request headers
-    ...                 - request body
-    ...                 - response headers
-    ...                 - response body
-    Output
+# Output Debug Info To Console
+#     [Documentation]     Prints all details of a request to console in JSON style.
+#     ...                 - request headers
+#     ...                 - request body
+#     ...                 - response headers
+#     ...                 - response body
+#     Output
 
 
 

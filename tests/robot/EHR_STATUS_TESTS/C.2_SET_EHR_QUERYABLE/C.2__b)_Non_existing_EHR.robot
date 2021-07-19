@@ -32,7 +32,8 @@ Documentation   C.2.b) Alternative flow: Set EHR queryable of non existing EHR
 ...                 2. The result should be negative and the result should include
 ...                    an error related to "EHR with ehr_id doesn't exists".
 Metadata        TOP_TEST_SUITE    EHR_STATUS
-Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
+
+Resource        ../../_resources/keywords/ehr_keywords.robot
 
 # Suite Setup  startup SUT
 # Suite Teardown  shutdown SUT
