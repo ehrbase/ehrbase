@@ -191,7 +191,7 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
                 itemPath = wrapQuery(itemPath, JSONB_SELECTOR_COMPOSITION_OPEN, JSONB_SELECTOR_CLOSE);
 
 
-            DataTypeFromTemplate dataTypeFromTemplate = new DataTypeFromTemplate(introspectCache, ignoreUnresolvedIntrospect);
+            DataTypeFromTemplate dataTypeFromTemplate = new DataTypeFromTemplate(introspectCache, ignoreUnresolvedIntrospect, clause);
 
             dataTypeFromTemplate.evaluate(templateId, referenceItemPathArray);
 

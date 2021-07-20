@@ -31,10 +31,12 @@ public class DataTypeFromTemplate {
     private String itemCategory;
     private DataType identifiedType = null;
     private final boolean ignoreUnresolvedIntrospect;
+    private final IQueryImpl.Clause clause;
 
-    public DataTypeFromTemplate(IntrospectService introspectCache, boolean ignoreUnresolvedIntrospect) {
+    public DataTypeFromTemplate(IntrospectService introspectCache, boolean ignoreUnresolvedIntrospect, IQueryImpl.Clause clause) {
         this.introspectCache = introspectCache;
         this.ignoreUnresolvedIntrospect = ignoreUnresolvedIntrospect;
+        this.clause = clause;
     }
 
     public void evaluate(String templateId, List<String> referenceItemPathArray){
@@ -49,10 +51,10 @@ public class DataTypeFromTemplate {
                 itemType = info.getItemType();
                 itemCategory = info.getItemCategory();
                 if (itemType != null) {
-                    identifiedType = new PGType(referenceItemPathArray).forRmType(itemType);
+                    identifiedType = new PGType(referenceItemPathArray, clause).forRmType(itemType);
                 }
                 else {
-                    identifiedType = new PGType(referenceItemPathArray).forRmType("UNKNOWN");
+                    identifiedType = new PGType(referenceItemPathArray, clause).forRmType("UNKNOWN");
                 }
             }
         } catch (Exception e) {
