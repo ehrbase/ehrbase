@@ -30,6 +30,8 @@ import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectId;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -480,7 +482,9 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
 
             // status is attached to EHR, so always same contribution when creating both together
             statusAccess.setContributionId(contributionId);
-            statusAccess.commitWithCustomContribution(transactionTime, ehrRecord.getId(), otherDetails);
+            statusAccess.setEhrId(ehrRecord.getId());
+            statusAccess.setOtherDetails(otherDetails);
+            statusAccess.commit(transactionTime.toLocalDateTime(), contributionId);
         }
 
         return ehrRecord.getId();
@@ -538,7 +542,8 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             this.contributionAccess.getAuditsSystemId(), this.contributionAccess.getAuditsCommitter(),
             ContributionChangeType.MODIFICATION, this.contributionAccess.getAuditsDescription()));
 
-        result = statusAccess.update(otherDetails, transactionTime, force);
+        statusAccess.setOtherDetails(otherDetails);
+        result = statusAccess.update(LocalDateTime.ofInstant(transactionTime.toInstant(), ZoneId.systemDefault()), this.contributionAccess.getId());
 
         if (force || ehrRecord.changed()) {
             ehrRecord.setDateCreated(transactionTime);

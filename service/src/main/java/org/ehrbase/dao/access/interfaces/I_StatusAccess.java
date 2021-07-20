@@ -29,7 +29,6 @@ import org.ehrbase.jooq.pg.tables.records.StatusHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.StatusRecord;
 
 import java.sql.Timestamp;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -38,7 +37,7 @@ import java.util.UUID;
  * the status entry holds data pertaining to an Ehr owner, generally a patient
  * Created by Christian Chevalley on 4/21/2015.
  */
-public interface I_StatusAccess extends I_SimpleCRUD {
+public interface I_StatusAccess extends I_VersionedCRUD {
 
     /**
      * retrieve a status by given status ID
@@ -106,7 +105,8 @@ public interface I_StatusAccess extends I_SimpleCRUD {
      * @param otherDetails Object representation of otherDetails
      * @return ID of DB entry if successful
      */
-    UUID commit(Timestamp transactionTime, UUID ehrId, ItemStructure otherDetails);
+    // TODO-526: remove
+    //UUID commit(Timestamp transactionTime, UUID ehrId, ItemStructure otherDetails);
 
     /**
      * commit this instance, which has contribution already set with setContributionId(...) beforehand
@@ -115,7 +115,8 @@ public interface I_StatusAccess extends I_SimpleCRUD {
      * @param otherDetails Object representation of otherDetails
      * @return ID of DB entry if successful
      */
-    UUID commitWithCustomContribution(Timestamp transactionTime, UUID ehrId, ItemStructure otherDetails);
+    // TODO-526: remove
+    //UUID commitWithCustomContribution(Timestamp transactionTime, UUID ehrId, ItemStructure otherDetails);
 
     /**
      * Update this status instance.
@@ -124,7 +125,8 @@ public interface I_StatusAccess extends I_SimpleCRUD {
      * @param force Option to force
      * @return True if successful
      */
-    Boolean update(ItemStructure otherDetails, Timestamp transactionTime, boolean force);
+    // TODO-526: remove
+    //Boolean update(ItemStructure otherDetails, Timestamp transactionTime, boolean force);
 
     UUID getId();
 
@@ -204,4 +206,12 @@ public interface I_StatusAccess extends I_SimpleCRUD {
      * @return Current status object
      */
     EhrStatus getStatus();
+
+    void setOtherDetails(ItemStructure otherDetails);
+
+    ItemStructure getOtherDetails();
+
+    void setEhrId(UUID ehrId);
+
+    UUID getEhrId();
 }

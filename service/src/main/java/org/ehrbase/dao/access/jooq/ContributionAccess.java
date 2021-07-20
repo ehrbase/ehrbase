@@ -402,6 +402,21 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
     }
 
     @Override
+    public void setAuditDetailsCommitter(UUID committer) {
+        auditDetails.setCommitter(committer);
+    }
+
+    @Override
+    public void setAuditDetailsSystemId(UUID system) {
+        auditDetails.setSystemId(system);
+    }
+
+    @Override
+    public void setAuditDetailsDescription(String description) {
+        auditDetails.setDescription(description);
+    }
+
+    @Override
     public UUID getAuditsCommitter() {
         return auditDetails.getCommitter();
     }
