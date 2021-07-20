@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.ehrbase.rest.openehr.controller;
+package org.ehrbase.rest.openehr;
 
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
@@ -29,7 +29,9 @@ import org.ehrbase.response.ehrscape.ContributionDto;
 import org.ehrbase.response.openehr.CompositionResponseData;
 import org.ehrbase.response.openehr.ContributionResponseData;
 import org.ehrbase.response.openehr.ErrorResponseData;
-import org.ehrbase.rest.openehr.util.InternalResponse;
+import org.ehrbase.rest.BaseController;
+import org.ehrbase.rest.util.InternalResponse;
+import org.ehrbase.rest.util.OperationNotesResourcesReaderOpenehr;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;

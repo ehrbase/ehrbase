@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.ehrbase.rest.openehr.controller;
+package org.ehrbase.rest.openehr;
 
 import io.swagger.annotations.*;
 import org.apache.commons.lang3.StringUtils;
@@ -29,7 +29,8 @@ import org.ehrbase.response.openehr.ErrorResponseData;
 import org.ehrbase.response.openehr.ResponseData;
 import org.ehrbase.response.openehr.TemplateResponseData;
 import org.ehrbase.response.openehr.TemplatesResponseData;
-import org.ehrbase.rest.openehr.util.InternalResponse;
+import org.ehrbase.rest.BaseController;
+import org.ehrbase.rest.util.InternalResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
