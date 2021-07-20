@@ -33,6 +33,7 @@ public class PGType {
 
     public static final String MAGNITUDE = "magnitude";
     public static final String VALUE = "value";
+    public static final String VALUE_VALUE = "/value,value";
     public static final String NUMERATOR = "numerator";
     public static final String DENOMINATOR = "denominator";
     List<String> segmentedPath;
@@ -67,7 +68,7 @@ public class PGType {
                         pgtype = BIGINT;
                     break;
                 case "DV_ORDINAL":
-                    if (StringUtils.endsWith(attribute, VALUE))
+                    if (attribute.equals(VALUE_VALUE))
                         pgtype = BIGINT;
                     break;
                 case "DV_BOOLEAN":
