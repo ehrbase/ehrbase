@@ -53,7 +53,7 @@ Variables   ${EXECDIR}/robot/_resources/variables/sut_config.py
 # ${template_id}    IDCR%20-%20Immunisation%20summary.v0        # TODO: @wlad rm if nothing breaks
 # ${invalid_ehr_id}    123
 ${BASE_URL}              http://localhost:8080/ehrbase/rest/openehr/v1
-${ADMIN_BASE_URL}        http://localhost:8080/ehrbase/rest/admin
+# ${ADMIN_BASE_URL}        http://localhost:8080/ehrbase/rest/admin
 ${PROJECT_ROOT}          ${EXECDIR}${/}..
 ${POM_FILE}              ${PROJECT_ROOT}${/}pom.xml
 ${CREATING_SYSTEM_ID}    ${NODENAME}
