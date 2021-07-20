@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.ehrbase.rest.openehr.controller;
+package org.ehrbase.rest.openehr;
 
 import java.net.URI;
 import java.sql.Timestamp;
@@ -38,7 +38,8 @@ import org.ehrbase.api.service.FolderService;
 import org.ehrbase.response.ehrscape.FolderDto;
 import org.ehrbase.response.openehr.DirectoryResponseData;
 import org.ehrbase.response.openehr.ErrorResponseData;
-import org.ehrbase.rest.openehr.controller.OperationNotesResourcesReaderOpenehr.ApiNotes;
+import org.ehrbase.rest.BaseController;
+import org.ehrbase.rest.util.OperationNotesResourcesReaderOpenehr.ApiNotes;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;

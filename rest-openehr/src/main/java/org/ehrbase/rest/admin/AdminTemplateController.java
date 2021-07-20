@@ -15,13 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.rest.openehr.controller.admin;
+package org.ehrbase.rest.admin;
 
 import io.swagger.annotations.*;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.response.openehr.admin.AdminDeleteResponseData;
 import org.ehrbase.response.openehr.admin.AdminStatusResponseData;
-import org.ehrbase.rest.openehr.controller.BaseController;
+import org.ehrbase.rest.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
@@ -36,13 +36,13 @@ import org.springframework.web.bind.annotation.*;
 @Api(tags = {"Admin", "Template"})
 @ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
-@RequestMapping(path = "/rest/openehr/v1/admin/template", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-public class OpenehrAdminTemplateController extends BaseController {
+@RequestMapping(path = "/rest/admin/template", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+public class AdminTemplateController extends BaseController {
 
     TemplateService templateService;
 
     @Autowired
-    OpenehrAdminTemplateController(TemplateService templateService) {
+    AdminTemplateController(TemplateService templateService) {
         this.templateService = templateService;
     }
 

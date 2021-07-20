@@ -8,7 +8,7 @@ labels: bug
 
 <!-- To reproduce your problem is is mandatory to give the following information. You can get all of
 them in one step by starting the EHRbase and requesting a GET on 
-`%ehrbaseBaseUri%/ehrbase/rest/openehr/v1/status`.  -->
+`%ehrbaseBaseUri%/ehrbase/rest/status`.  -->
 
 - EHRbase version:
 - openEHR_SDK version:

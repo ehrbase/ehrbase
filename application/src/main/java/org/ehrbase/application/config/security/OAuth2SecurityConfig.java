@@ -64,8 +64,8 @@ public class OAuth2SecurityConfig extends WebSecurityConfigurerAdapter {
     http.cors()
         .and()
         .authorizeRequests()
-        // Specific routes with ../admin/.. and actuator /status/.. endpoints require admin role
-        .antMatchers("/rest/openehr/v1/admin/**", "/status/**")
+        // Specific routes with ../admin/.. and actuator /management/.. endpoints require admin role
+        .antMatchers("/rest/admin/**", "/management/**")
         .hasRole(ADMIN)
         // Everything else is open to all users of role admin and user
         .antMatchers("/**")

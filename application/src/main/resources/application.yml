@@ -87,8 +87,8 @@ abac:
       parameters: 'organization, patient, template'
 
 httpclient:
-  #proxy: 'localhost'
-  #proxyPort: 1234
+#proxy: 'localhost'
+#proxyPort: 1234
 
 cache:
   config-path: '/ehcache.xml'
@@ -138,7 +138,7 @@ management:
     # Disable all endpoint by default to opt-in enabled endpoints
     enabled-by-default: false
     web:
-      base-path: '/status'
+      base-path: '/management'
       exposure:
         include: 'env, health, info, metrics, prometheus'
   # Per endpoint settings

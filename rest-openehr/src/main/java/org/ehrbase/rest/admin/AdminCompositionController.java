@@ -15,14 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.rest.openehr.controller.admin;
+package org.ehrbase.rest.admin;
 
 import io.swagger.annotations.*;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.response.openehr.admin.AdminDeleteResponseData;
-import org.ehrbase.rest.openehr.controller.BaseController;
+import org.ehrbase.rest.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
@@ -41,14 +41,14 @@ import java.util.UUID;
 @Api(tags = {"Admin", "Composition"})
 @ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
-@RequestMapping(path = "/rest/openehr/v1/admin/ehr", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-public class OpenehrAdminCompositionController extends BaseController {
+@RequestMapping(path = "/rest/admin/ehr", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+public class AdminCompositionController extends BaseController {
 
     private final EhrService ehrService;
     private final CompositionService compositionService;
 
     @Autowired
-    public OpenehrAdminCompositionController(EhrService ehrService, CompositionService compositionService) {
+    public AdminCompositionController(EhrService ehrService, CompositionService compositionService) {
         this.ehrService = Objects.requireNonNull(ehrService);
         this.compositionService = Objects.requireNonNull(compositionService);
     }

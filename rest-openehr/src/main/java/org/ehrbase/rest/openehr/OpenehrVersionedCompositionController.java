@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.ehrbase.rest.openehr.controller;
+package org.ehrbase.rest.openehr;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.composition.Composition;
@@ -44,6 +44,7 @@ import org.ehrbase.response.ehrscape.ContributionDto;
 import org.ehrbase.response.openehr.OriginalVersionResponseData;
 import org.ehrbase.response.openehr.RevisionHistoryResponseData;
 import org.ehrbase.response.openehr.VersionedObjectResponseData;
+import org.ehrbase.rest.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
@@ -63,7 +64,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Api
 @RestController
 @RequestMapping(path = "/rest/openehr/v1/ehr/{ehr_id}/versioned_composition", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-public class OpenehrVersionedCompositionController extends BaseController{
+public class OpenehrVersionedCompositionController extends BaseController {
 
     private final EhrService ehrService;
     private final CompositionService compositionService;

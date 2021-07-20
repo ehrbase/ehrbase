@@ -16,12 +16,16 @@
  * limitations under the License.
  */
 
-package org.ehrbase.rest.openehr;
+package org.ehrbase.rest;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ComponentScan(basePackages = "org.ehrbase.rest.openehr")
-public class RestOpenehrModuleConfiguration {
+@ComponentScan(basePackages = {
+        "org.ehrbase.rest",
+        "org.ehrbase.rest.admin",
+        "org.ehrbase.rest.openehr"
+})
+public class RestModuleConfiguration {
 }

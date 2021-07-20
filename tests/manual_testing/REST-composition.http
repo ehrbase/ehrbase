@@ -4,8 +4,8 @@
 # KEYBOARD SHORTCUT: Ctrl + Alt + R (trigger request focused by cursor)
 
 
-
-@ehrbase_url = http://localhost:8080/ehrbase/rest/openehr/v1
+@ehrbase_base_url = http://localhost:8080/ehrbase/rest
+@ehrbase_url = {{ehrbase_base_url}}/openehr/v1
 @uuid = {{$guid}}
 @subject_namespace = {{$randomInt 001 10000}}
 @subject_id = {{create_ehr.response.body.ehr_status.subject.external_ref.id.value}}
@@ -27,7 +27,7 @@
 #//////////////////////////////////////
 
 # @name get_ehrbase_version
-GET {{ehrbase_url}}/status HTTP/1.1
+GET {{ehrbase_base_url}}/status HTTP/1.1
 content-type: application/json
 Accept: application/json
 Prefer: return=representation

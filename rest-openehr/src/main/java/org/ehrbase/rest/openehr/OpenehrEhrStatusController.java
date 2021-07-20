@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.ehrbase.rest.openehr.controller;
+package org.ehrbase.rest.openehr;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.ehr.EhrStatus;
@@ -28,7 +28,9 @@ import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.response.openehr.EhrStatusResponseData;
-import org.ehrbase.rest.openehr.util.InternalResponse;
+import org.ehrbase.rest.BaseController;
+import org.ehrbase.rest.util.InternalResponse;
+import org.ehrbase.rest.util.OperationNotesResourcesReaderOpenehr;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
