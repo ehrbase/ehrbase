@@ -588,6 +588,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         } else {
             this.contributionAccess = new ContributionAccess(this, getEhrRecord().getId());
             provisionContributionAccess(contributionAccess, committerId, systemId, description, state, contributionChangeType);
+            this.contributionAccess.commit();
         }
         return update(timestamp);
     }
