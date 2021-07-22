@@ -60,8 +60,8 @@ public class BaseServiceImp implements BaseService {
   }
 
   /**
-   * Get default system UUID.<br>
-   * Internally makes use of configured local system's node name.
+   * Get default system UUID.<br> Internally makes use of configured local system's node name.
+   *
    * @return Default system UUID.
    */
   public UUID getSystemUuid() {
@@ -69,8 +69,9 @@ public class BaseServiceImp implements BaseService {
   }
 
   /**
-   * Get default user UUID, derived from authenticated user via Spring Security.<br>
-   * Internally checks and retrieves the matching user UUID, if it already exists with given info.
+   * Get default user UUID, derived from authenticated user via Spring Security.<br> Internally
+   * checks and retrieves the matching user UUID, if it already exists with given info.
+   *
    * @return UUID of default user, derived from authenticated user.
    */
   protected UUID getUserUuid() {

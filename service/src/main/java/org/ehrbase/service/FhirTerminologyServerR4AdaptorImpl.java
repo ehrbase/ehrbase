@@ -23,13 +23,18 @@ import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.support.identification.TerminologyId;
 import net.minidev.json.JSONArray;
+import org.apache.http.HttpHeaders;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.util.EntityUtils;
+import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,31 +42,32 @@ import java.util.List;
  * @author Luis Marco-Ruiz
  */
 @Component
+@SuppressWarnings("java:S6212")
 public class FhirTerminologyServerR4AdaptorImpl implements I_OpenehrTerminologyServer {
 
     private static final String FHIR_JSON_MEDIA_TYPE = "application/fhir+json";
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final WebClient webClient;
+    private final HttpClient httpClient;
 
     private final FhirTsProps props;
 
-    public FhirTerminologyServerR4AdaptorImpl(WebClient webClient, FhirTsProps props) {
-        this.webClient = webClient;
+    public FhirTerminologyServerR4AdaptorImpl(HttpClient httpClient, FhirTsProps props) {
+        this.httpClient = httpClient;
         this.props = props;
     }
 
     @Override
     public List<DvCodedText> expand(final String valueSetId) {
-        String response = webClient.get()
-                .uri(valueSetId)
-                .header(HttpHeaders.ACCEPT, FHIR_JSON_MEDIA_TYPE)
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
+        String responseBody;
+        try {
+            responseBody = internalGet(valueSetId);
+        } catch (IOException e) {
+            throw new InternalServerException("An error occurred while expanding ValueSet: " + valueSetId, e);
+        }
 
-        DocumentContext jsonContext = JsonPath.parse(response);
+        DocumentContext jsonContext = JsonPath.parse(responseBody);
         List<String> codeList = jsonContext.read(props.getCodePath().replace("\\", ""));
         List<String> systemList = jsonContext.read(props.getSystemPath());
         List<String> displayList = jsonContext.read(props.getDisplayPath());
@@ -83,14 +89,14 @@ public class FhirTerminologyServerR4AdaptorImpl implements I_OpenehrTerminologyS
         String urlTsServer = props.getTsUrl();
         urlTsServer += "ValueSet/$" + operationParams[0] + "?url=" + valueSetId;
 
-        String response = webClient.get()
-                .uri(urlTsServer.replace("'", ""))
-                .header(HttpHeaders.ACCEPT, FHIR_JSON_MEDIA_TYPE)
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
+        String responseBody;
+        try {
+            responseBody = internalGet(urlTsServer);
+        } catch (IOException e) {
+            throw new InternalServerException("An error occurred while expanding ValueSet " + valueSetId, e);
+        }
 
-        DocumentContext jsonContext = JsonPath.parse(response);
+        DocumentContext jsonContext = JsonPath.parse(responseBody);
         List<String> codeList = jsonContext.read(props.getCodePath().replace("\\", ""));
         List<String> systemList = jsonContext.read(props.getSystemPath());
         List<String> displayList = jsonContext.read(props.getDisplayPath());
@@ -131,14 +137,22 @@ public class FhirTerminologyServerR4AdaptorImpl implements I_OpenehrTerminologyS
         String urlTsServer = props.getTsUrl();
         urlTsServer += "ValueSet/$" + "validate-code" + "?" + operationParams[0];
 
-        String response = webClient.get()
-                .uri(urlTsServer.replace("'", ""))
-                .header(HttpHeaders.ACCEPT, FHIR_JSON_MEDIA_TYPE)
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
+        String response;
+        try {
+            response = internalGet(urlTsServer);
+        } catch (IOException e) {
+            throw new InternalServerException("An error occurred while validating the code: " + operationParams[0], e);
+        }
 
         DocumentContext jsonContext = JsonPath.parse(response);
         return (Boolean) ((JSONArray) jsonContext.read(props.getValidationResultPath()/* "$.parameter[:1].valueBoolean" */)).get(0);
+    }
+
+    private String internalGet(String url) throws IOException {
+        HttpGet request = new HttpGet(url);
+        request.setHeader(HttpHeaders.ACCEPT, FHIR_JSON_MEDIA_TYPE);
+
+        HttpResponse response = httpClient.execute(request);
+        return EntityUtils.toString(response.getEntity());
     }
 }
