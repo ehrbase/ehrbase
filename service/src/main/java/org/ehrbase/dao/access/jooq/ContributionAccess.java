@@ -181,7 +181,13 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
         setState(Objects.requireNonNullElse(state, ContributionDef.ContributionState.COMPLETE));
 
         // audit attributes
-        if (committerId == null) {
+        // TODO-526: does this work?
+        if (committerId != null) {
+            auditDetails.setCommitter(committerId);
+        } else {
+            throw new InternalServerException("Missing mandatory committer ID");
+        }
+        /*if (committerId == null) {
             //get current user from JVM
             String defaultUser = System.getProperty("user.name");
             //check for that user in the DB
@@ -191,12 +197,12 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
                 // TODO-526: get the (default) committer from the service layer and remove following call
                 //committerId = new PersistedPartyProxy(this).getOrCreate(defaultUser, UUID.randomUUID().toString(), scheme, getServerConfig().getNodename(), "PARTY");
         }
-        auditDetails.setCommitter(committerId);
+        auditDetails.setCommitter(committerId);*/
 
         if (systemId != null) {
             auditDetails.setSystemId(systemId);
         } else {
-            auditDetails.setSystemId(I_SystemAccess.createOrRetrieveLocalSystem(this));
+            throw new InternalServerException("Missing mandatory system ID");
         }
 
         if (contributionChangeType != null)
