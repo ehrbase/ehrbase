@@ -37,42 +37,60 @@ import java.util.UUID;
 
 public class BaseServiceImp implements BaseService {
 
-    public static final String DEMOGRAPHIC = "DEMOGRAPHIC";
-    public static final String PARTY = "PARTY";
+  public static final String DEMOGRAPHIC = "DEMOGRAPHIC";
+  public static final String PARTY = "PARTY";
 
-    private final ServerConfig serverConfig;
-    private final KnowledgeCacheService knowledgeCacheService;
-    private final DSLContext context;
+  private final ServerConfig serverConfig;
+  private final KnowledgeCacheService knowledgeCacheService;
+  private final DSLContext context;
 
-    @Autowired
-    private IAuthenticationFacade authenticationFacade;
+  @Autowired
+  private IAuthenticationFacade authenticationFacade;
 
-    public BaseServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig) {
-		this.knowledgeCacheService = knowledgeCacheService;
-        this.context = context;
-        this.serverConfig = serverConfig;
-    }
+  public BaseServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context,
+      ServerConfig serverConfig) {
+    this.knowledgeCacheService = knowledgeCacheService;
+    this.context = context;
+    this.serverConfig = serverConfig;
+  }
 
-    protected I_DomainAccess getDataAccess() {
-        return new ServiceDataAccess(context, knowledgeCacheService, knowledgeCacheService, this.serverConfig);
-    }
+  protected I_DomainAccess getDataAccess() {
+    return new ServiceDataAccess(context, knowledgeCacheService, knowledgeCacheService,
+        this.serverConfig);
+  }
 
-    public UUID getSystemUuid() {
-        return I_SystemAccess.createOrRetrieveLocalSystem(getDataAccess());
-    }
+  /**
+   * Get default system UUID.<br>
+   * Internally makes use of configured local system's node name.
+   * @return Default system UUID.
+   */
+  public UUID getSystemUuid() {
+    return I_SystemAccess.createOrRetrieveLocalSystem(getDataAccess());
+  }
 
-    protected UUID getUserUuid() {
-        // TODO-526: READ from Spring Security
-        var name = authenticationFacade.getAuthentication().getName();
-        List<DvIdentifier> identifiers = new ArrayList<>();
-        var identifier = new DvIdentifier();
-        identifier.setId(name); // TODO-526: is `id` the semantically correct place for the name/user?
-        identifiers.add(identifier);
-        return new PersistedPartyProxy(getDataAccess()).getOrCreate(null, "cbf741ff-9480-4792-8894-13fc5f818b6d", DEMOGRAPHIC, "User", PARTY, identifiers);
-    }
+  /**
+   * Get default user UUID, derived from authenticated user via Spring Security.<br>
+   * Internally checks and retrieves the matching user UUID, if it already exists with given info.
+   * @return UUID of default user, derived from authenticated user.
+   */
+  protected UUID getUserUuid() {
+    var name = authenticationFacade.getAuthentication().getName();
+    List<DvIdentifier> identifiers = new ArrayList<>();
+    var identifier = new DvIdentifier();
+    identifier.setId(name);
+    identifier.setIssuer("EHRbase");
+    identifier.setAssigner("EHRbase");
+    identifier.setType("EHRbase Security Authentication User");
+    identifiers.add(identifier);
+    // Following getOrCreate will check for matching party with given UUID, but as it is random, it also checks
+    // for matching name + identifiers. So it will find already created parties for existing users.
+    return new PersistedPartyProxy(getDataAccess())
+        .getOrCreate("EHRbase Internal " + name, UUID.randomUUID().toString(), DEMOGRAPHIC, "User",
+            PARTY, identifiers);
+  }
 
-    public ServerConfig getServerConfig() {
-        return this.serverConfig;
-    }
+  public ServerConfig getServerConfig() {
+    return this.serverConfig;
+  }
 
 }
