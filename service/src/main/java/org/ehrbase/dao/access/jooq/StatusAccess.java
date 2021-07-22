@@ -37,9 +37,6 @@ import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
-import org.ehrbase.dao.access.util.TransactionTime;
-import org.ehrbase.jooq.pg.tables.records.CompositionHistoryRecord;
-import org.ehrbase.jooq.pg.tables.records.CompositionRecord;
 import org.ehrbase.jooq.pg.tables.records.StatusHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.StatusRecord;
 import org.apache.logging.log4j.LogManager;
@@ -114,24 +111,6 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
         return statusRecord.getId();
     }
 
-    // TODO-526: remove
-    /*@Override
-    public UUID commit(Timestamp transactionTime, UUID ehrId, ItemStructure otherDetails) {
-        contributionAccess.setAuditDetailsChangeType(I_ConceptAccess.fetchContributionChangeType(this, I_ConceptAccess.ContributionChangeType.CREATION));
-        if (contributionAccess.getAuditsCommitter() == null || contributionAccess.getAuditsSystemId() == null)
-            throw new InternalServerException("Illegal to commit the contribution's AuditDetailsAccess without setting mandatory fields.");
-        UUID contributionId = this.contributionAccess.commit();
-        setContributionId(contributionId);
-
-        return internalCommit(transactionTime, ehrId, otherDetails);
-    }
-
-    // TODO-526: remove
-    @Override
-    public UUID commitWithCustomContribution(Timestamp transactionTime, UUID ehrId, ItemStructure otherDetails) {
-        return internalCommit(transactionTime, ehrId, otherDetails);
-    }*/
-
     @Override
     public boolean update(LocalDateTime timestamp, UUID committerId, UUID systemId,
         String description, ContributionChangeType changeType) {
@@ -153,33 +132,16 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
     }
 
     private Boolean internalUpdate(LocalDateTime transactionTime) {
-        // TODO-526: cleanup
-        //if (force || statusRecord.changed()) {
-            // TODO-526: does this work?
-            // update both contribution (incl its audit) and the status' own audit
-            /*if (contributionAccess.getId() == null) {
-                // new contribution
-                contributionAccess.commit(transactionTime);
-            } else {
-                // use existing for batch contribution
-                contributionAccess.update(transactionTime, null, null, null, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
-            }
-            statusRecord.setInContribution(contributionAccess.getId());*/
-            auditDetailsAccess.commit();
-            statusRecord.setHasAudit(auditDetailsAccess.getId()); // new audit ID
+        auditDetailsAccess.commit();
+        statusRecord.setHasAudit(auditDetailsAccess.getId()); // new audit ID
 
-            /*if (otherDetails != null) {
-                statusRecord.setOtherDetails(otherDetails);
-            }*/
-            statusRecord.setSysTransaction(Timestamp.valueOf(transactionTime));
+        statusRecord.setSysTransaction(Timestamp.valueOf(transactionTime));
 
-            try {
-                return statusRecord.update() > 0;
-            } catch (RuntimeException e) {
-                throw new InvalidApiParameterException("Couldn't marshall given EHR_STATUS / OTHER_DETAILS, content probably breaks RM rules");
-            }
-        //}
-        //return false;   // if updated technically worked but jooq reports no update was necessary
+        try {
+            return statusRecord.update() > 0;
+        } catch (RuntimeException e) {
+            throw new InvalidApiParameterException("Couldn't marshall given EHR_STATUS / OTHER_DETAILS, content probably breaks RM rules");
+        }
     }
 
     @Override
@@ -209,8 +171,6 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
     }
 
     private Integer internalDelete(LocalDateTime timestamp, UUID committerId, UUID systemId, String description) {
-        // TODO-526: missing version handling
-        // TODO-526: missing audit handling
         statusRecord.setSysTransaction(Timestamp.valueOf(timestamp));
         statusRecord.delete();
 
@@ -506,8 +466,6 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
             throw new IllegalArgumentException("arguments not optional");
         this.auditDetailsAccess.setCommitter(committerId);
         this.auditDetailsAccess.setSystemId(systemId);
-        //auditDetails.setChangeType(changeType);
-        // TODO-526: does the above work or is below necessary?
         this.auditDetailsAccess.setChangeType(I_ConceptAccess.fetchContributionChangeType(this, changeType));
 
         if (description != null)

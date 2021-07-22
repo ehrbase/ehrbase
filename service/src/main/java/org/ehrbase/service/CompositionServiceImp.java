@@ -412,33 +412,6 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
         return compositionString;
     }
 
-    // TODO-526: remove
-    /*public UUID create(UUID ehrId, String content, CompositionFormat format, String templateId) {
-
-        final Composition composition = buildComposition(content, format, templateId);
-
-        return internalCreate(ehrId, composition, null);
-    }*/
-
-    // TODO-526: remove
-    /*@Override
-    public UUID create(UUID ehrId, String content, CompositionFormat format) {
-
-        return create(ehrId, content, format, null);
-    }*/
-
-    // TODO-526: remove
-    /*@Override
-    public UUID create(UUID ehrId, String content, CompositionFormat format, String templateId, UUID linkUid) {
-        return create(ehrId, content, format, templateId);
-    }*/
-
-    // TODO-526: remove
-    /*@Override
-    public UUID create(UUID ehrId, Composition composition, UUID contributionId) {
-        return internalCreate(ehrId, composition, contributionId);
-    }*/
-
     public Composition buildComposition(String content, CompositionFormat format, String templateId) {
         final Composition composition;
         switch (format) {
@@ -466,41 +439,6 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
         }
         return composition;
     }
-
-    // TODO-526: remove
-    /*@Override
-    public String update(UUID compositionId, CompositionFormat format, String content) {
-        return update(compositionId, format, content, null);
-    }*/
-
-    // TODO-526: remove
-    /*@Override
-    public String update(UUID compositionId, CompositionFormat format, String content, String templateId) {
-
-        Composition composition = buildComposition(content, format, templateId);
-
-        // call internalUpdate with null as contributionId to create a new ad-hoc contribution
-        return internalUpdate(compositionId, composition, null);
-    }*/
-
-    // TODO-526: remove
-    /*@Override
-    public String update(UUID compositionId, Composition composition, UUID contributionId) {
-        // call internalUpdate with given contributionId to use it as contribution
-        return internalUpdate(compositionId, composition, contributionId);
-    }*/
-
-    // TODO-526: remove
-    /*@Override
-    public LocalDateTime delete(UUID compositionId) {
-        return internalDelete(compositionId, null);
-    }*/
-
-    // TODO-526: remove
-    /*@Override
-    public LocalDateTime delete(UUID compositionId, UUID contributionId) {
-        return internalDelete(compositionId, contributionId);
-    }*/
 
     @Override
     public Integer getLastVersionNumber(UUID compositionId) throws InternalServerException {

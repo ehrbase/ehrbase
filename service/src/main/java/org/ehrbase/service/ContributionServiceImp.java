@@ -203,7 +203,7 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
                 compositionService.update(ehrId, new ObjectVersionId(actualPreceding), versionRmObject, contributionId);
                 break;
             case DELETED:   // case of deletion change type, but request also has payload (TODO: should that be even allowed? specification-wise it's not forbidden)
-                String actualPreceding2 = getAndCheckActualPreceding(version); // TODO-526: does this work?
+                String actualPreceding2 = getAndCheckActualPreceding(version);
                 compositionService.delete(ehrId, new ObjectVersionId(actualPreceding2), contributionId);
                 break;
             case SYNTHESIS:     // TODO
@@ -272,7 +272,6 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
         switch (changeType) {
             case CREATION:
                 // call creation of a new folder version with given input
-                // TODO-526: add handlers for (default) committer and description -> step 1: it is now using default values in a lean way
                 folderService.create(ehrId, versionRmObject, contributionId);
                 break;
             case AMENDMENT: // triggers the same processing as modification // TODO-396: so far so good, but should use the type "AMENDMENT" for audit in access layer
@@ -285,11 +284,9 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
                 if (!actualPreceding.equals(version.getPrecedingVersionUid().toString()))
                     throw new PreconditionFailedException("Given preceding_version_uid for FOLDER object does not match latest existing version");
                 // call modification of the given folder
-                // TODO-526: add handlers for (default) committer and description -> step 1: it is now using default values in a lean way
                 folderService.update(ehrId, version.getPrecedingVersionUid(), versionRmObject, contributionId);
                 break;
             case DELETED:   // case of deletion change type, but request also has payload (TODO: should that be even allowed? specification-wise it's not forbidden)
-                // TODO-526: add handlers for (default) committer and description -> step 1: it is now using default values in a lean way
                 folderService.delete(ehrId, version.getPrecedingVersionUid(), contributionId);
                 break;
             case SYNTHESIS:     // TODO

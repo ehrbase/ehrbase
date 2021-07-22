@@ -374,8 +374,6 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
             throw new IllegalArgumentException("arguments not optional");
         auditDetails.setCommitter(committer);
         auditDetails.setSystemId(system);
-        //auditDetails.setChangeType(changeType);
-        // TODO-526: does the above work or is below necessary?
         auditDetails.setChangeType(I_ConceptAccess.fetchContributionChangeType(this, changeType));
 
         if (description != null)

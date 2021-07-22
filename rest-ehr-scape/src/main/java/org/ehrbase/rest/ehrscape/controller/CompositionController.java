@@ -133,7 +133,7 @@ public class CompositionController extends BaseController {
 
         var compositionVersionUid = dtoOptional.orElseThrow(() ->
             new InternalServerException("Failed to create composition"))
-            .getComposition().getUid().toString();  // TODO-526: does this work?
+            .getComposition().getUid().toString();
         ActionRestResponseData responseData = new ActionRestResponseData();
         responseData.setAction(Action.UPDATE);
         responseData.setMeta(buildMeta(compositionVersionUid));

@@ -98,36 +98,6 @@ public interface I_StatusAccess extends I_VersionedCRUD {
         return StatusAccess.retrieveInstanceByContribution(domainAccess, contributionId, node);
     }
 
-    /**
-     * Commit this status instance.
-     * @param transactionTime Time of transaction
-     * @param ehrId Associated EHR
-     * @param otherDetails Object representation of otherDetails
-     * @return ID of DB entry if successful
-     */
-    // TODO-526: remove
-    //UUID commit(Timestamp transactionTime, UUID ehrId, ItemStructure otherDetails);
-
-    /**
-     * commit this instance, which has contribution already set with setContributionId(...) beforehand
-     * @param transactionTime Time of transaction
-     * @param ehrId Associated EHR
-     * @param otherDetails Object representation of otherDetails
-     * @return ID of DB entry if successful
-     */
-    // TODO-526: remove
-    //UUID commitWithCustomContribution(Timestamp transactionTime, UUID ehrId, ItemStructure otherDetails);
-
-    /**
-     * Update this status instance.
-     * @param otherDetails Object representation of otherDetails
-     * @param transactionTime Time of transaction
-     * @param force Option to force
-     * @return True if successful
-     */
-    // TODO-526: remove
-    //Boolean update(ItemStructure otherDetails, Timestamp transactionTime, boolean force);
-
     UUID getId();
 
     void setStatusRecord(StatusRecord record);

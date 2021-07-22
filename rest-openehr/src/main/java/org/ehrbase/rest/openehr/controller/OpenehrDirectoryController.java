@@ -142,7 +142,7 @@ public class OpenehrDirectoryController extends BaseController {
         Optional<FolderDto> dtoOptional = this.folderService.create(
                 ehrId,
                 folder
-        );  // TODO-526: add default committer and description handling -> step 1: it is now using default values in a lean way
+        );
         ObjectVersionId folderId;
         var folderDto = dtoOptional.orElseThrow(() -> new InternalServerException("Error creating folder."));
         if (folderDto.getUid() instanceof ObjectVersionId) {
@@ -355,7 +355,6 @@ public class OpenehrDirectoryController extends BaseController {
         checkDirectoryVersionConflicts(folderId, ehrId);
 
         // Update folder and get new version
-        // TODO-526: add default committer and description handling -> step 1: it is now using default values in a lean way
         Optional<FolderDto> updatedFolder = this.folderService.update(
             ehrId,
             folderId,
@@ -419,7 +418,6 @@ public class OpenehrDirectoryController extends BaseController {
         // Check version conflicts and throw precondition failed exception if not
         checkDirectoryVersionConflicts(folderId, ehrId);
 
-        // TODO-526: add default committer and description handling -> step 1: it is now using default values in a lean way
         this.folderService.delete(ehrId, folderId);
         this.ehrService.removeDirectory(ehrId);
         return createDirectoryResponse(HttpMethod.DELETE, null, accept, null, ehrId);

@@ -247,7 +247,6 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
     @Override
     public boolean delete(UUID ehrId, ObjectVersionId targetObjId, UUID systemId, UUID committerId,
         String description) {
-        // TODO-526: make use of ehrId
         return internalDelete(targetObjId, systemId, committerId, description, null);
     }
 
@@ -256,7 +255,6 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
      */
     @Override
     public boolean delete(UUID ehrId, ObjectVersionId targetObjId, UUID contribution) {
-        // TODO-526: make use of ehrId
         return internalDelete(targetObjId, null, null, null, contribution);
     }
 

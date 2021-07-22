@@ -227,7 +227,7 @@ public class OpenehrCompositionController extends BaseController {
 
             var compositionVersionUid = dtoOptional.orElseThrow(() ->
                 new InternalServerException("Failed to create composition"))
-                .getComposition().getUid().toString();  // TODO-526: does this work?
+                .getComposition().getUid().toString();
 
             var uri = URI.create(this.encodePath(getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId.toString() + "/composition/" + compositionVersionUid));
 

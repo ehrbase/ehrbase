@@ -22,52 +22,64 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
 
-// TODO-526: omitting `force` attributes for now. great change they are only called with like `false` anyway. Add one method with `force` each, if necessary.
-
 /**
  * Common interface for versioned objects, like compositions, folders and statuses.
- *
  */
 public interface I_VersionedCRUD {
 
-  // TODO-526: add docs etc.
-
   /**
    * Commit the object with the necessary metadata.
-   * @param timestamp
-   * @param committerId
-   * @param systemId
-   * @param description
-   * @return
+   * @param timestamp Time of operation
+   * @param committerId Audit committer
+   * @param systemId Audit system
+   * @param description (Optional) Audit description
+   * @return ID of object
    */
   UUID commit(LocalDateTime timestamp, UUID committerId, UUID systemId, String description);
 
   /**
    * Commit the object with the necessary metadata, which will be derived from the contribution.
-   * @param timestamp
-   * @param contribution
-   * @return
+   * @param timestamp Time of operation
+   * @param contribution Given contribution to use and derive audit data from
+   * @return ID of object
    */
   UUID commit(LocalDateTime timestamp, UUID contribution);
 
   /**
-   *
-   * @param timestamp
-   * @param committerId
-   * @param systemId
-   * @param description
+   * Update the object with the necessary metadata.
+   * @param timestamp Time of operation
+   * @param committerId Audit committer
+   * @param systemId Audit system
+   * @param description (Optional) Audit description
    * @param changeType Specific change type, because there are more than DELETED.
-   * @return
+   * @return Boolean representing success of update
    */
   boolean update(LocalDateTime timestamp, UUID committerId, UUID systemId, String description, ContributionChangeType changeType);
 
+  /**
+   * Update the object with the necessary metadata, which will be derived from the contribution.
+   * @param timestamp Time of operation
+   * @param contribution Given contribution to use and derive audit data from
+   * @return Boolean representing success of update
+   */
   boolean update(LocalDateTime timestamp, UUID contribution);
 
   /**
-   *
+   * Delete the object with the necessary metadata.
+   * @param timestamp Time of operation
+   * @param committerId Audit committer
+   * @param systemId Audit system
+   * @param description (Optional) Audit description
+   * @return Number of deleted objects
    */
   int delete(LocalDateTime timestamp, UUID committerId, UUID systemId, String description);
 
+  /**
+   * Delete the object with the necessary metadata, which will be derived from the contribution.
+   * @param timestamp Time of operation
+   * @param contribution Given contribution to use and derive audit data from
+   * @return Number of deleted objects
+   */
   int delete(LocalDateTime timestamp, UUID contribution);
 
 }
