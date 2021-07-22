@@ -65,6 +65,15 @@ Resource        template_opt1.4_keywords.robot
                         Set Test Variable    ${response}    ${resp}
                         Output Debug Info To Console
 
+(admin) delete all OPTs
+    [Documentation]     Admin delete OPT on server.
+    ...                 Depends on any KW that exposes an variable named 'template_id'
+    ...                 to test or suite level scope.
+                        prepare new request session
+    &{resp}=            REST.DELETE    ${baseurl}/admin/template/all
+                        Set Test Variable    ${response}    ${resp}
+                        Output Debug Info To Console
+
 
 (admin) delete composition
     [Documentation]     Admin delete of Composition.
@@ -74,6 +83,27 @@ Resource        template_opt1.4_keywords.robot
                         Should Be Equal As Strings   ${resp.status}   204
                         Set Test Variable    ${response}    ${resp}
                         Output Debug Info To Console
+
+
+check composition admin delete table counts
+    Connect With DB
+
+    ${contr_records}=   Count Rows In DB Table    ehr.contribution
+                        # Should Be Equal As Integers    ${contr_records}     ${1}    # from creation of the EHR, which will not be deleted
+    ${audit_records}=   Count Rows In DB Table    ehr.audit_details
+                        # Should Be Equal As Integers    ${audit_records}     ${2}    # from creation of the EHR (1 for status, 1 for the wrapping contribution)
+    ${compo_records}=   Count Rows In DB Table    ehr.composition
+                        Should Be Equal As Integers    ${compo_records}     ${0}
+    ${compo_h_records}=  Count Rows In DB Table    ehr.composition_history
+                        Should Be Equal As Integers    ${compo_h_records}     ${0}
+    ${entry_records}=   Count Rows In DB Table    ehr.entry
+                        Should Be Equal As Integers    ${entry_records}     ${0}
+    ${entry_h_records}=  Count Rows In DB Table    ehr.entry_history
+                        Should Be Equal As Integers    ${entry_h_records}     ${0}
+    ${event_context_records}=   Count Rows In DB Table    ehr.event_context
+                        Should Be Equal As Integers    ${event_context_records}     ${0}
+    ${entry_participation_records}=   Count Rows In DB Table    ehr.participation
+                        Should Be Equal As Integers    ${entry_participation_records}     ${0}
 
 
 (admin) delete contribution

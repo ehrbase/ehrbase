@@ -212,6 +212,26 @@ POST /query/aql
                         Output    ${response.json()}
 
 
+POST /query/aql (REST)
+    [Arguments]         ${format}
+    [Documentation]     Executes HTTP method POST on /query/aql endpoint
+    ...                 DEPENDENCY: following variables have to be in test-level scope:
+    ...                 `${payload}`
+
+                        prepare new request session    ${format}
+    ${resp}=            REST.POST   /query/aql    ${payload}
+                        ...         headers=${headers}
+
+                        Integer    response status    200
+                        # Set Test Variable   ${response}    ${resp}
+                        # Set Test Variable   ${response body}    ${resp.content}
+    
+    # UNCOMMENT NEXT BLOCK FOR DEBUGGING (BETTER OUTPUT IN CONSOLE)
+    # TODO: rm/comment it out when test stable
+                        Log To Console  \n//////////// ACTUAL //////////////////////////////
+                        Output    response body
+
+
 POST /query/{qualified_query_name}/{version}
     No Operation
 

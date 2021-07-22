@@ -333,14 +333,14 @@ validate DELETE response - 422 unprocessable entity
                         ...        pattern=Cannot delete template minimal_admin.en.v1 since the following compositions are still using it.*
 
 
-(admin) delete all OPTs
-    [Documentation]     Admin delete OPT on server.
-    ...                 Depends on any KW that exposes an variable named 'template_id'
-    ...                 to test or suite level scope.
-                        prepare new request session
-    &{resp}=            REST.DELETE    ${baseurl}/admin/template/all
-                        Set Test Variable    ${response}    ${resp}
-                        Output Debug Info To Console
+# (admin) delete all OPTs
+#     [Documentation]     Admin delete OPT on server.
+#     ...                 Depends on any KW that exposes an variable named 'template_id'
+#     ...                 to test or suite level scope.
+#                         prepare new request session
+#     &{resp}=            REST.DELETE    ${baseurl}/admin/template/all
+#                         Set Test Variable    ${response}    ${resp}
+#                         Output Debug Info To Console
 
 
 validate DELETE ALL response - 204 deleted ${amount}
