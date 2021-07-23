@@ -72,7 +72,7 @@ ALTER TABLE ehr.folder_history
     ALTER COLUMN has_audit SET NOT NULL;
 
 -- Backup of function to just use the oldest audit
-/*CREATE OR REPLACE FUNCTION ehr.migrate_folder_audit()
+CREATE OR REPLACE FUNCTION ehr.migrate_folder_audit()
   RETURNS UUID AS
 $$
 BEGIN
