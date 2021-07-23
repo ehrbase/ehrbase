@@ -46,9 +46,6 @@ admin-api:
   active: true
   allowDeleteAll: true
 
-system:
-  type: LOCAL
-
 terminology_server:
   tsUrl: 'https://r4.ontoserver.csiro.au/fhir/'
   codePath: '$["expansion"]["contains"][*]["code"]'

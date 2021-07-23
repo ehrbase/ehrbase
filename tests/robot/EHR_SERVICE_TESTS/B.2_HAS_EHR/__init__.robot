@@ -18,6 +18,7 @@
 
 *** Settings ***
 Documentation    Has EHR related tests
+...              https://github.com/ehrbase/ehrbase/blob/develop/doc/conformance_testing/EHR.md#b2-has-ehr
 
 Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 

@@ -40,9 +40,12 @@ public interface FolderService extends BaseService {
      *
      * @param ehrId - ID for the corresponding EHR
      * @param content - {@link com.nedap.archie.rm.directory.Folder} to persist
+     * @param systemId System ID for audit
+     * @param committerId Committer ID for audit
+     * @param description Optional description for audit
      * @return UUID of the new created Folder from database
      */
-    ObjectVersionId create(UUID ehrId, Folder content);
+    ObjectVersionId create(UUID ehrId, Folder content, UUID systemId, UUID committerId, String description);
 
     /**
      * Creates a new folder entry at the database from content. The provided
@@ -53,9 +56,12 @@ public interface FolderService extends BaseService {
      * @param ehrId - ID for the corresponding EHR
      * @param content - {@link com.nedap.archie.rm.directory.Folder} to persist
      * @param contribution Optional (can be null) custom contribution to use, instead of a generic new one
+     * @param systemId System ID for audit
+     * @param committerId Committer ID for audit
+     * @param description Optional description for audit
      * @return UUID of the new created Folder from database
      */
-    ObjectVersionId create(UUID ehrId, Folder content, UUID contribution);
+    ObjectVersionId create(UUID ehrId, Folder content, UUID contribution, UUID systemId, UUID committerId, String description);
 
     /**
      * Retrieves a folder from database identified by object_version_uid and
@@ -99,22 +105,14 @@ public interface FolderService extends BaseService {
      * @param folderId - Full version_uid for folder including system id and version
      * @param update - Update content from request body
      * @param ehrId - EHR id for contribution creation
-     * @return Updated folder entry
-     */
-    Optional<FolderDto> update(ObjectVersionId folderId, Folder update, UUID ehrId);
-
-    /**
-     * Updates a target folder entry identified by the given folderId with new
-     * content. The content string will be serialized from the given source
-     * format.
-     *
-     * @param folderId - Full version_uid for folder including system id and version
-     * @param update - Update content from request body
-     * @param ehrId - EHR id for contribution creation
      * @param contribution - Optional (can be set null) custom contribution to use for this update
+     * @param systemId System ID for audit
+     * @param committerId - ID of committer for audit
+     * @param description  - Optional description test for audit
      * @return Updated folder entry
      */
-    Optional<FolderDto> update(ObjectVersionId folderId, Folder update, UUID ehrId, UUID contribution);
+    Optional<FolderDto> update(ObjectVersionId folderId, Folder update, UUID ehrId, UUID contribution, UUID systemId, UUID committerId,
+        String description);
 
     /**
      * Marks a given folder as deleted and moves it into the history table. The
@@ -122,9 +120,13 @@ public interface FolderService extends BaseService {
      * available.
      *
      * @param folderId - Id of the target folder
+     * @param contribution - Optional (can be set null) custom contribution to use for this update
+     * @param systemId System ID for audit
+     * @param committerId - ID of committer for audit
+     * @param description  - Optional description test for audit
      * @return Timestamp of successful delete operation
      */
-    LocalDateTime delete(ObjectVersionId folderId);
+    LocalDateTime delete(ObjectVersionId folderId, UUID contribution, UUID systemId, UUID committerId, String description);
 
     /**
      * Serializes folder content from request body into a structured string
