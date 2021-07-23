@@ -19,11 +19,69 @@
 
 -- Adds commit_audit to each folder version
 
+-- Migration function to create new dummy audits
+CREATE OR REPLACE FUNCTION ehr.migrate_folder_audit(OUT ret_id UUID) AS
+$$
+BEGIN
+    -- Copy the values of the oldest/initial audit and change description to "migration_dummy"
+    INSERT INTO ehr.audit_details (
+        -- id will get generated
+        system_id,
+        committer,
+        -- time_committed will get default value
+        time_committed_tzid,
+        change_type,
+        description
+    )
+    SELECT
+        system_id,
+        committer,
+        time_committed_tzid,
+        change_type,
+        'migration_dummy'
+    FROM ehr.audit_details
+    WHERE id IN (
+        SELECT id FROM ehr.audit_details ORDER BY time_committed asc LIMIT 1
+        )
+
+    -- Finally take and return the ID of the inserted row
+    RETURNING id
+    INTO  ret_id;  -- returned at the end automatically
+END
+$$
+LANGUAGE plpgsql;
+
 ALTER TABLE ehr.folder
-    ADD COLUMN has_audit UUID NOT NULL references ehr.audit_details(id) ON DELETE CASCADE; -- has this audit_details instance
+    ADD COLUMN has_audit UUID references ehr.audit_details(id) ON DELETE CASCADE; -- has this audit_details instance
+
+ALTER TABLE ehr.folder
+    -- Set the type (again), to be able to call the migration function
+    ALTER COLUMN has_audit TYPE UUID
+    USING ehr.migrate_folder_audit(),
+    -- And finally set the column to NOT NULL
+    ALTER COLUMN has_audit SET NOT NULL;
 
 ALTER TABLE ehr.folder_history
-    ADD COLUMN has_audit UUID NOT NULL references ehr.audit_details(id) ON DELETE CASCADE; -- has this audit_details instance
+    ADD COLUMN has_audit UUID references ehr.audit_details(id) ON DELETE CASCADE; -- has this audit_details instance
+
+ALTER TABLE ehr.folder_history
+    -- Set the type (again), to be able to call the migration function
+    ALTER COLUMN has_audit TYPE UUID
+    USING ehr.migrate_folder_audit(),
+    -- And finally set the column to NOT NULL
+    ALTER COLUMN has_audit SET NOT NULL;
+
+-- Backup of function to just use the oldest audit
+/*CREATE OR REPLACE FUNCTION ehr.migrate_folder_audit()
+  RETURNS UUID AS
+$$
+BEGIN
+RETURN (
+    SELECT id FROM ehr.audit_details ORDER BY time_committed asc LIMIT 1
+    );
+END
+$$
+LANGUAGE plpgsql;
 
 -- Also modify the admin deletion of a folder function to include the new audits.
 DROP FUNCTION admin_delete_folder(uuid);
