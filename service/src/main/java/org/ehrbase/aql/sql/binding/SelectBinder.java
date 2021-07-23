@@ -33,7 +33,6 @@ import org.ehrbase.service.KnowledgeCacheService;
 import org.jooq.Condition;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -48,7 +47,6 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
     private final CompositionAttributeQuery compositionAttributeQuery;
     private final PathResolver pathResolver;
     private final VariableDefinitions variableDefinitions;
-    private final List<JsonbBlockDef> jsonDataBlock = new ArrayList<>();
     private final WhereBinder whereBinder;
 
     SelectBinder(I_DomainAccess domainAccess, IntrospectService introspectCache, PathResolver pathResolver, VariableDefinitions variableDefinitions, List whereClause, String serverNodeId) {
@@ -98,8 +96,6 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
 
                 multiFields = expressionField.toSql(className, templateId, identifier, IQueryImpl.Clause.SELECT);
 
-                handleJsonDataBlock(multiFields);
-
                 if (multiFields.isEmpty()) { //the field cannot be resolved with containment (f.e. empty DB)
                     continue;
                 }
@@ -111,17 +107,6 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
         return multiFieldsList;
     }
 
-    private void handleJsonDataBlock(MultiFields multiFields){
-        if (!multiFields.isEmpty()) {
-            Iterator<QualifiedAqlField> qualifiedAqlFieldIterator = multiFields.iterator();
-            while(qualifiedAqlFieldIterator.hasNext()) {
-                QualifiedAqlField aqlField = qualifiedAqlFieldIterator.next();
-                if (aqlField.isJsonDataBlock())
-                    jsonDataBlock.add(new JsonbBlockDef(aqlField.getOptionalPath() == null ? aqlField.getJsonbItemPath() : aqlField.getOptionalPath(), aqlField.getSQLField(), multiFields.getRootJsonKey()));
-            }
-        }
-    }
-
 
     public Condition getWhereConditions(String templateId, int whereCursor, MultiFieldsMap multiFieldsMap) {
 
@@ -130,10 +115,6 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
 
    public CompositionAttributeQuery getCompositionAttributeQuery() {
         return compositionAttributeQuery;
-    }
-
-    public List<JsonbBlockDef> getJsonDataBlock() {
-        return jsonDataBlock;
     }
 
 }
