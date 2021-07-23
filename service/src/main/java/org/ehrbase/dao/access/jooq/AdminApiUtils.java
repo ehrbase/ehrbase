@@ -105,6 +105,8 @@ public class AdminApiUtils {
         HashSet<UUID> folders = new HashSet<>();
         // contributions are used to clean object_ref_history table later
         HashSet<UUID> contribs = new HashSet<>();
+        // audits are used to clean audit table later
+        HashSet<UUID> audits = new HashSet<>();
 
         // initially add this scope's root folder ID
         folders.add(id);
@@ -113,6 +115,7 @@ public class AdminApiUtils {
         records.forEach(rec -> {
             folders.add(rec.getChild());
             contribs.add(rec.getContribution());
+            audits.add(rec.getAudit());
         });
 
         // invoke both *_HISTORY cleaning functions
@@ -122,5 +125,8 @@ public class AdminApiUtils {
         // invoke contribution deletion - if set to true
         if (deleteContributions.equals(true))
             contribs.forEach(contrib -> deleteContribution(contrib, null, false));
+
+        // invoke audit deletion
+        audits.forEach(audit -> deleteAudit(audit, "Folder", false));
     }
 }

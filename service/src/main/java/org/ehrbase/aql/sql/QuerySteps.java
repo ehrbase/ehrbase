@@ -33,7 +33,7 @@ import java.util.List;
 @SuppressWarnings({"java:S3740"})
 public class QuerySteps {
     private final SelectQuery selectQuery;
-    private final Condition whereCondition;
+    private Condition whereCondition; //can be force to a NULL condition (f.e. 1 = 0)
     private final List<Table<?>> lateralJoins;
     private final String templateId;
 
@@ -58,5 +58,9 @@ public class QuerySteps {
 
     public List<Table<?>> getLateralJoins() {
         return lateralJoins;
+    }
+
+    public void setWhereCondition(Condition whereCondition){
+        this.whereCondition = whereCondition;
     }
 }
