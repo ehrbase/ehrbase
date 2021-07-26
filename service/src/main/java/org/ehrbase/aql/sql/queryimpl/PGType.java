@@ -85,18 +85,18 @@ public class PGType {
                     pgtype = BIGINT;
                 break;
             case "DV_ORDINAL":
-                if (StringUtils.endsWith(attribute, VALUE))
+                if (StringUtils.endsWith(attribute, COMMA_VALUE))
                     pgtype = BIGINT;
                 break;
             case "DV_BOOLEAN":
-                if (StringUtils.endsWith(attribute, VALUE))
+                if (StringUtils.endsWith(attribute, COMMA_VALUE))
                     pgtype = BOOLEAN;
                 break;
             case "DV_DURATION":
                 //we cast to pg interval only in WHERE clause
                 //interval type is handled by jOOQ with a built-in type and
                 //wrongly formatted when rendering as it looses the ISO_8601 formatting (YearToSecond jOOQ class)
-                if (clause.equals(IQueryImpl.Clause.WHERE) && StringUtils.endsWith(attribute, VALUE))
+                if (clause.equals(IQueryImpl.Clause.WHERE) && StringUtils.endsWith(attribute, COMMA_VALUE))
                     pgtype = INTERVAL;
                 break;
             default:
