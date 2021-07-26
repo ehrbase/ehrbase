@@ -23,7 +23,39 @@
 CREATE OR REPLACE FUNCTION ehr.migrate_folder_audit(OUT ret_id UUID) AS
 $$
 BEGIN
-    -- Copy the values of the oldest/initial audit and change description to "migration_dummy"
+    -- Add migration dummy party entry, only if not existing already
+    INSERT INTO ehr.party_identified (
+        -- id will get generated
+        name,
+        party_type,
+        object_id_type
+    )
+    SELECT 'migration_dummy',
+           'party_self',
+           'undefined'
+    WHERE NOT EXISTS (
+		SELECT 1 FROM ehr.party_identified WHERE name='migration_dummy'
+	);
+
+    -- Helper queries to:
+    -- 1) Find the oldest audit to copy two attributes from
+    -- (Note: There will always be an audit, because this migration function is only run for existing folder, which require and EHR, which will have a Status, which will have an Audit.
+    WITH audits AS (
+        SELECT ad.system_id,
+               ad.time_committed_tzid
+        FROM ehr.audit_details AS ad
+        WHERE ad.id IN (
+            SELECT id FROM ehr.audit_details ORDER BY time_committed asc LIMIT 1
+        )
+
+        ),
+    -- 2) Find the dummy party
+        party AS (
+            SELECT id FROM ehr.party_identified WHERE name  = 'migration_dummy' LIMIT 1
+        )
+
+    -- Copy the values of the oldest/initial audit
+    -- and change committer to the dummy party and the description to "migration_dummy"
     INSERT INTO ehr.audit_details (
         -- id will get generated
         system_id,
@@ -34,15 +66,12 @@ BEGIN
         description
     )
     SELECT
-        system_id,
-        committer,
-        time_committed_tzid,
-        change_type,
-        'migration_dummy'
-    FROM ehr.audit_details
-    WHERE id IN (
-        SELECT id FROM ehr.audit_details ORDER BY time_committed asc LIMIT 1
-        )
+        a.system_id,
+        p.id,               -- set dummy committer
+        a.time_committed_tzid,
+        'Unknown',          -- change type set to unknown
+        'migration_dummy'   -- description to mark entry as dummy
+    FROM audits AS a, party AS p
 
     -- Finally take and return the ID of the inserted row
     RETURNING id
