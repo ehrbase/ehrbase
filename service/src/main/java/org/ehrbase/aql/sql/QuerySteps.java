@@ -21,8 +21,6 @@
 
 package org.ehrbase.aql.sql;
 
-import org.ehrbase.aql.sql.binding.JsonbBlockDef;
-import org.ehrbase.aql.sql.queryimpl.CompositionAttributeQuery;
 import org.jooq.Condition;
 import org.jooq.SelectQuery;
 import org.jooq.Table;
@@ -35,21 +33,15 @@ import java.util.List;
 @SuppressWarnings({"java:S3740"})
 public class QuerySteps {
     private final SelectQuery selectQuery;
-    private final Condition whereCondition;
+    private Condition whereCondition; //can be force to a NULL condition (f.e. 1 = 0)
     private final List<Table<?>> lateralJoins;
     private final String templateId;
-    private final CompositionAttributeQuery compositionAttributeQuery;
-    private final List<JsonbBlockDef> jsonColumns;
-    private final boolean containsJQueryPath;
 
-    public QuerySteps(SelectQuery selectQuery, Condition whereCondition, List<Table<?>> lateralJoins, String templateId, CompositionAttributeQuery compositionAttributeQuery, List<JsonbBlockDef> jsonColumns, boolean containsJQueryPath) {
+    public QuerySteps(SelectQuery selectQuery, Condition whereCondition, List<Table<?>> lateralJoins, String templateId) {
         this.selectQuery = selectQuery;
         this.whereCondition = whereCondition;
         this.lateralJoins = lateralJoins;
         this.templateId = templateId;
-        this.compositionAttributeQuery = compositionAttributeQuery;
-        this.jsonColumns = jsonColumns;
-        this.containsJQueryPath = containsJQueryPath;
     }
 
     public SelectQuery getSelectQuery() {
@@ -64,29 +56,11 @@ public class QuerySteps {
         return templateId;
     }
 
-    public CompositionAttributeQuery getCompositionAttributeQuery() {
-        return compositionAttributeQuery;
-    }
-
-    public List<JsonbBlockDef> getJsonColumns() {
-        return jsonColumns;
-    }
-
-    public Integer jsonColumnsSize() {
-        if (jsonColumns == null)
-            return 0;
-        return jsonColumns.size();
-    }
-
-    public boolean isContainsJQueryPath() {
-        return containsJQueryPath;
-    }
-
-    public boolean isContainsJson(){
-        return jsonColumnsSize() > 0 || isContainsJQueryPath();
-    }
-
     public List<Table<?>> getLateralJoins() {
         return lateralJoins;
+    }
+
+    public void setWhereCondition(Condition whereCondition){
+        this.whereCondition = whereCondition;
     }
 }
