@@ -21,10 +21,10 @@ public class GenericJsonPathTest {
     @Test
     public void jqueryPathOtherDetails() {
 
-        assertEquals("'{other_details,/items[at0111],0,/value}'", new GenericJsonPath("other_details/items[at0111]/value").jqueryPath());
-        assertEquals("'{other_details,/items[at0111],0,/name,0}'", new GenericJsonPath("other_details/items[at0111]/name").jqueryPath());
-        assertEquals("'{other_details,/items[at0111],0,/value,value}'", new GenericJsonPath("other_details/items[at0111]/value/value").jqueryPath());
-        assertEquals("'{other_details,/items[at0111],0,/name,0,value}'", new GenericJsonPath("other_details/items[at0111]/name/value").jqueryPath());
+        assertEquals("'{other_details,/items[at0111],$AQL_NODE_ITERATIVE$,/value}'", new GenericJsonPath("other_details/items[at0111]/value").jqueryPath());
+        assertEquals("'{other_details,/items[at0111],$AQL_NODE_ITERATIVE$,/name,0}'", new GenericJsonPath("other_details/items[at0111]/name").jqueryPath());
+        assertEquals("'{other_details,/items[at0111],$AQL_NODE_ITERATIVE$,/value,value}'", new GenericJsonPath("other_details/items[at0111]/value/value").jqueryPath());
+        assertEquals("'{other_details,/items[at0111],$AQL_NODE_ITERATIVE$,/name,0,value}'", new GenericJsonPath("other_details/items[at0111]/name/value").jqueryPath());
 
     }
 }

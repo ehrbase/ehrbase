@@ -2,7 +2,7 @@ package org.ehrbase.aql.sql.queryimpl.attribute;
 
 import org.ehrbase.aql.sql.queryimpl.JqueryPath;
 import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
-import org.ehrbase.aql.sql.queryimpl.NormalizedRmAttributePath;
+import org.ehrbase.aql.sql.queryimpl.QueryImplConstants;
 import org.ehrbase.serialisation.dbencoding.wrappers.json.I_DvTypeAdapter;
 
 import java.util.ArrayList;
@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.ehrbase.serialisation.dbencoding.CompositionSerializer.TAG_OTHER_DETAILS;
+import java.util.stream.Collectors;
 
 public class GenericJsonPath {
 
@@ -27,7 +28,6 @@ public class GenericJsonPath {
     public static final String TARGET = "target";
     public static final String ARCHETYPE_NODE_ID = "archetype_node_id";
     private final String path;
-    private boolean isIterative = false;
 
     public GenericJsonPath(String path) {
         this.path = path;
@@ -37,11 +37,19 @@ public class GenericJsonPath {
         if (path == null || path.isEmpty())
             return path;
 
-        List<String> jqueryPaths = new JqueryPath(JsonbEntryQuery.PATH_PART.VARIABLE_PATH_PART, path, "0").evaluate();
-        if (!jqueryPaths.stream().filter(segment -> segment.startsWith(TAG_OTHER_DETAILS)).collect(Collectors.toList()).isEmpty()||
-                !jqueryPaths.stream().filter(segment -> segment.contains(OTHER_CONTEXT)).collect(Collectors.toList()).isEmpty()){
-            jqueryPaths = new NormalizedRmAttributePath(jqueryPaths).transformStartingAt(0);
+        JqueryPath jqueryPath = new JqueryPath(JsonbEntryQuery.PATH_PART.VARIABLE_PATH_PART, path, "0");
+
+        List<String> jqueryPaths = jqueryPath.evaluate();
+
+        if (!jqueryPaths.isEmpty() && jqueryPaths.get(0).startsWith("/other_details")) {
+            jqueryPaths.set(0, jqueryPaths.get(0).replace("/other_details", OTHER_DETAILS));
+            //substitute all fixed indexes by an iterative marker forcing an array elements fct in SQL expression
+            if (jqueryPaths.contains("0")){
+                jqueryPaths = jqueryPaths.stream().map(s -> s.equals("0") ? QueryImplConstants.AQL_NODE_ITERATIVE_MARKER : s).collect(Collectors.toList());
+            }
         }
+        else if (!jqueryPaths.isEmpty() && jqueryPaths.get(0).startsWith("/other_context"))
+            jqueryPaths.set(0, jqueryPaths.get(0).replace("/other_context", OTHER_CONTEXT));
         else if (jqueryPaths.size() == 1) {
                 jqueryPaths.set(0, jqueryPaths.get(0).replace("/", ""));
         }
@@ -52,7 +60,7 @@ public class GenericJsonPath {
      * @deprecated 12.6.21, use a common path resolution instead.
      * @return
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public String jqueryPathAttributeLevel() {
         if (path == null || path.isEmpty())
             return path;
@@ -86,6 +94,7 @@ public class GenericJsonPath {
         return new JsonbSelect(actualPaths).field();
     }
 
+
     public static boolean isTerminalValue(List<String> paths, int index) {
         return paths.size() == 1
                 || (paths.size() > 1
@@ -98,7 +107,4 @@ public class GenericJsonPath {
         );
     }
 
-    public boolean isIterative() {
-        return isIterative;
-    }
 }

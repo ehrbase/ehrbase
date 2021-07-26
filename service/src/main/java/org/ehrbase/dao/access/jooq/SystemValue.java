@@ -35,6 +35,7 @@ public enum SystemValue {
     CONTEXT("context"),
     CATEGORY("category"),
     NAME("name"),
+    RM_VERSION("rm_version"),
     UID("uid"),
     FEEDER_AUDIT("feeder_audit"),
     LINKS("links");
@@ -44,11 +45,11 @@ public enum SystemValue {
     private static final Map<String, SystemValue> idMap;
 
     static {
-        SystemValue[] list = {LANGUAGE, CHARSET, TERMINOLOGY_SERVICE,
+        SystemValue[] list = {LANGUAGE, CHARSET, ENCODING, TERMINOLOGY_SERVICE,
                 MEASUREMENT_SERVICE, SUBJECT, PROVIDER, COMPOSER, TERRITORY, CONTEXT,
-                CATEGORY, UID, FEEDER_AUDIT, LINKS
+                CATEGORY, NAME, RM_VERSION, UID, FEEDER_AUDIT, LINKS
         };
-        idMap = new HashMap<String, SystemValue>();
+        idMap = new HashMap<>();
         for (SystemValue value : list) {
             idMap.put(value.id(), value);
         }
