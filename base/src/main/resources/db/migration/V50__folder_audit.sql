@@ -30,11 +30,11 @@ BEGIN
         party_type,
         object_id_type
     )
-    SELECT 'migration_dummy',
+    SELECT 'migration_dummy_65a3da3a-476f-4b1e-ab04-fa1c42edeac0',
            'party_self',
            'undefined'
     WHERE NOT EXISTS (
-		SELECT 1 FROM ehr.party_identified WHERE name='migration_dummy'
+		SELECT 1 FROM ehr.party_identified WHERE name='migration_dummy_65a3da3a-476f-4b1e-ab04-fa1c42edeac0'
 	);
 
     -- Helper queries to:
@@ -51,7 +51,7 @@ BEGIN
         ),
     -- 2) Find the dummy party
         party AS (
-            SELECT id FROM ehr.party_identified WHERE name  = 'migration_dummy' LIMIT 1
+            SELECT id FROM ehr.party_identified WHERE name  = 'migration_dummy_65a3da3a-476f-4b1e-ab04-fa1c42edeac0' LIMIT 1
         )
 
     -- Copy the values of the oldest/initial audit
@@ -99,18 +99,6 @@ ALTER TABLE ehr.folder_history
     USING ehr.migrate_folder_audit(),
     -- And finally set the column to NOT NULL
     ALTER COLUMN has_audit SET NOT NULL;
-
--- Backup of function to just use the oldest audit
-CREATE OR REPLACE FUNCTION ehr.migrate_folder_audit()
-  RETURNS UUID AS
-$$
-BEGIN
-RETURN (
-    SELECT id FROM ehr.audit_details ORDER BY time_committed asc LIMIT 1
-    );
-END
-$$
-LANGUAGE plpgsql;
 
 -- Also modify the admin deletion of a folder function to include the new audits.
 DROP FUNCTION admin_delete_folder(uuid);
