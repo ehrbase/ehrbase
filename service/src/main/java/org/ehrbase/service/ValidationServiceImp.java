@@ -64,6 +64,8 @@ public class ValidationServiceImp implements ValidationService {
         this.validatorCache = cacheManager.getCache(VALIDATOR_CACHE, UUID.class, Validator.class);
         this.knowledgeCache = knowledgeCache;
         this.terminologyService = terminologyService;
+
+        RM_OBJECT_VALIDATOR.setRunInvariantChecks(false);
     }
 
     @Override
