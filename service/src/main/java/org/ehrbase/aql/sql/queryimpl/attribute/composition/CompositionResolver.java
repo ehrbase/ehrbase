@@ -18,22 +18,17 @@
 package org.ehrbase.aql.sql.queryimpl.attribute.composition;
 
 import org.ehrbase.aql.sql.binding.JoinBinder;
-import org.ehrbase.aql.sql.queryimpl.JsonDataBlockCheck;
 import org.ehrbase.aql.sql.queryimpl.QueryImplConstants;
 import org.ehrbase.aql.sql.queryimpl.attribute.AttributePath;
 import org.ehrbase.aql.sql.queryimpl.attribute.AttributeResolver;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.ehrbase.aql.sql.queryimpl.attribute.concept.ConceptResolver;
-import org.ehrbase.aql.sql.queryimpl.attribute.eventcontext.EventContextJson;
 import org.ehrbase.aql.sql.queryimpl.value_field.GenericJsonField;
 import org.jooq.Field;
 
-import java.util.Arrays;
-
 import static org.ehrbase.jooq.pg.Tables.COMPOSITION;
 import static org.ehrbase.jooq.pg.Tables.ENTRY;
-import static org.ehrbase.jooq.pg.tables.EventContext.EVENT_CONTEXT;
 
 @SuppressWarnings("java:S1452")
 public class CompositionResolver extends AttributeResolver
@@ -63,14 +58,12 @@ public class CompositionResolver extends AttributeResolver
                 fieldResolutionContext.setUsingSetReturningFunction(true); //to generate lateral join
                 retField = new GenericJsonField(fieldResolutionContext, joinSetup).
                         forJsonPath(FEEDER_SYSTEM_IDS+"/"+ QueryImplConstants.AQL_NODE_ITERATIVE_MARKER+"/" + path).
-                        feederAudit(JoinBinder.compositionRecordTable.field(FEEDER_AUDIT));;
+                        feederAudit(JoinBinder.compositionRecordTable.field(FEEDER_AUDIT));
             }
             else
                 retField = new GenericJsonField(fieldResolutionContext, joinSetup)
                     .forJsonPath(FEEDER_AUDIT, path)
                     .feederAudit(JoinBinder.compositionRecordTable.field(FEEDER_AUDIT));
-
-            fieldResolutionContext.setJsonDatablock(new JsonDataBlockCheck(Arrays.asList(path.split("/").clone())).isJsonBlockStaticAttributeForm());
 
             return retField;
         }

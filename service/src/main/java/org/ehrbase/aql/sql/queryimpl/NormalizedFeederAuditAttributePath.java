@@ -37,7 +37,8 @@ public class NormalizedFeederAuditAttributePath extends NormalizedRmAttributePat
         if (pathSegments.size() == 1 && pathSegments.get(0).contains(FEEDER_SYSTEM_ITEM_IDS) && !pathSegments.get(0).endsWith(FEEDER_SYSTEM_ITEM_IDS)) {
             resultingPaths.addAll(Arrays.asList(pathSegments.get(0).split(",")));
             int i = resultingPaths.indexOf(FEEDER_SYSTEM_ITEM_IDS);
-            resultingPaths.add(i + 1, AQL_NODE_ITERATIVE_MARKER);
+            if (i >= 0)
+                resultingPaths.add(i + 1, AQL_NODE_ITERATIVE_MARKER);
 
         }
 

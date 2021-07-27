@@ -2,6 +2,7 @@ package org.ehrbase.aql.sql.queryimpl.attribute;
 
 import org.ehrbase.aql.sql.queryimpl.JqueryPath;
 import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
+import org.ehrbase.aql.sql.queryimpl.NormalizedRmAttributePath;
 import org.ehrbase.aql.sql.queryimpl.QueryImplConstants;
 import org.ehrbase.serialisation.dbencoding.wrappers.json.I_DvTypeAdapter;
 
@@ -11,7 +12,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.ehrbase.serialisation.dbencoding.CompositionSerializer.TAG_OTHER_DETAILS;
-import java.util.stream.Collectors;
 
 public class GenericJsonPath {
 
@@ -28,6 +28,7 @@ public class GenericJsonPath {
     public static final String TARGET = "target";
     public static final String ARCHETYPE_NODE_ID = "archetype_node_id";
     private final String path;
+    private boolean isIterative = false;
 
     public GenericJsonPath(String path) {
         this.path = path;
@@ -39,20 +40,24 @@ public class GenericJsonPath {
 
         JqueryPath jqueryPath = new JqueryPath(JsonbEntryQuery.PATH_PART.VARIABLE_PATH_PART, path, "0");
 
-        List<String> jqueryPaths = jqueryPath.evaluate();
+        List<String> jqueryPaths = new NormalizedRmAttributePath(jqueryPath.evaluate()).transformStartingAt(0);
 
-        if (!jqueryPaths.isEmpty() && jqueryPaths.get(0).startsWith("/other_details")) {
-            jqueryPaths.set(0, jqueryPaths.get(0).replace("/other_details", OTHER_DETAILS));
-            //substitute all fixed indexes by an iterative marker forcing an array elements fct in SQL expression
-            if (jqueryPaths.contains("0")){
-                jqueryPaths = jqueryPaths.stream().map(s -> s.equals("0") ? QueryImplConstants.AQL_NODE_ITERATIVE_MARKER : s).collect(Collectors.toList());
-            }
+        if (!jqueryPaths.isEmpty() && jqueryPaths.get(0).startsWith(TAG_OTHER_DETAILS)) {
+            jqueryPaths.set(0, jqueryPaths.get(0).replace(TAG_OTHER_DETAILS, OTHER_DETAILS));
         }
         else if (!jqueryPaths.isEmpty() && jqueryPaths.get(0).startsWith("/other_context"))
             jqueryPaths.set(0, jqueryPaths.get(0).replace("/other_context", OTHER_CONTEXT));
-        else if (jqueryPaths.size() == 1) {
+        else if (!jqueryPaths.isEmpty() && jqueryPaths.get(0).startsWith("/feeder_system_item_ids"))
+            jqueryPaths.set(0, jqueryPaths.get(0).replace("/feeder_system_item_ids", "feeder_system_item_ids"));
+        else if (jqueryPaths.size() == 1 && !jqueryPaths.get(0).startsWith(OTHER_DETAILS) && !jqueryPaths.get(0).startsWith(OTHER_CONTEXT)) {
                 jqueryPaths.set(0, jqueryPaths.get(0).replace("/", ""));
         }
+
+        //substitute all fixed indexes by an iterative marker forcing an array elements fct in SQL expression
+        if (jqueryPaths.contains("0")){
+            jqueryPaths = jqueryPaths.stream().map(s -> s.equals("0") ? QueryImplConstants.AQL_NODE_ITERATIVE_MARKER : s).collect(Collectors.toList());
+        }
+
         return new JsonbSelect(jqueryPaths).field();
     }
 
@@ -82,6 +87,11 @@ public class GenericJsonPath {
                 actualPaths.add("/"+segment);
                 if (segment.matches(NAME))
                     actualPaths.add("0");
+            } else if (segment.matches(NAME) && isTerminalValue(jqueryPaths, i) && jqueryPaths.get(0).equals(OTHER_DETAILS)){
+                //keep '/name' attribute db encoding format since other_details is not related to a template and kept as is...
+                actualPaths.add("/"+segment);
+                actualPaths.add("0");
+
             } else if (segment.matches(ARCHETYPE_NODE_ID) && jqueryPaths.get(0).equals(OTHER_DETAILS)){
                 //keep '/name' attribute db encoding format since other_details is not related to a template and kept as is...
                 actualPaths.add("/"+segment);
@@ -107,4 +117,7 @@ public class GenericJsonPath {
         );
     }
 
+    public boolean isIterative() {
+        return isIterative;
+    }
 }
