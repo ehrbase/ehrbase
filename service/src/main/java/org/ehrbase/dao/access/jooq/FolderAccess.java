@@ -131,7 +131,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         this.contributionAccess.setEhrId(contributionAccessEhrId);
 
         this.contributionAccess.commit(Timestamp.valueOf(transactionTime), committerId, systemId,
-            ContributionDataType.folder, ContributionDef.ContributionState.COMPLETE, I_ConceptAccess.ContributionChangeType.MODIFICATION, description);
+            ContributionDataType.folder, ContributionDef.ContributionState.COMPLETE, changeType, description);
         this.getFolderRecord().setInContribution(this.contributionAccess.getId());
 
         newContribution = folderRecord.getInContribution();
