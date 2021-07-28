@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.ehrbase.rest.openehr.controller;
+package org.ehrbase.rest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.BadGatewayException;
@@ -68,25 +68,25 @@ public abstract class BaseController {
     public static final String RESP_CONTENT_TYPE_DESC = "Format of response";
     // Audit
     public static final String REST_OPERATION = "RestOperation";
-    static final String RETURN_MINIMAL = "return=minimal";
-    static final String RETURN_REPRESENTATION = "return=representation";
-    static final String LOCATION = HttpHeaders.LOCATION;
-    static final String ETAG = HttpHeaders.ETAG;
-    static final String LAST_MODIFIED = HttpHeaders.LAST_MODIFIED;
-    static final String PREFER = "PREFER";
-    static final String IF_MATCH = HttpHeaders.IF_MATCH;
-    static final String IF_NONE_MATCH = HttpHeaders.IF_NONE_MATCH;
+    public static final String RETURN_MINIMAL = "return=minimal";
+    public static final String RETURN_REPRESENTATION = "return=representation";
+    public static final String LOCATION = HttpHeaders.LOCATION;
+    public static final String ETAG = HttpHeaders.ETAG;
+    public static final String LAST_MODIFIED = HttpHeaders.LAST_MODIFIED;
+    public static final String PREFER = "PREFER";
+    public static final String IF_MATCH = HttpHeaders.IF_MATCH;
+    public static final String IF_NONE_MATCH = HttpHeaders.IF_NONE_MATCH;
     // Configuration of swagger-ui description fields
     // request headers
-    static final String REQ_OPENEHR_VERSION = "Optional custom request header for versioning";
-    static final String REQ_OPENEHR_AUDIT = "Optional custom request header for auditing";
-    static final String REQ_PREFER = "May be used by clients for resource representation negotiation";
-    static final String RESP_LOCATION_DESC = "Location of resource";
-    static final String RESP_ETAG_DESC = "Entity tag for resource";
-    static final String RESP_LAST_MODIFIED_DESC = "Time of last modification of resource";
+    public static final String REQ_OPENEHR_VERSION = "Optional custom request header for versioning";
+    public static final String REQ_OPENEHR_AUDIT = "Optional custom request header for auditing";
+    public static final String REQ_PREFER = "May be used by clients for resource representation negotiation";
+    public static final String RESP_LOCATION_DESC = "Location of resource";
+    public static final String RESP_ETAG_DESC = "Entity tag for resource";
+    public static final String RESP_LAST_MODIFIED_DESC = "Time of last modification of resource";
     // common response description fields
-    static final String RESP_NOT_ACCEPTABLE_DESC = "Not Acceptable - Service can not fulfill requested format via accept header.";
-    static final String RESP_UNSUPPORTED_MEDIA_DESC = "Unsupported Media Type - request's content-type not supported.";
+    public static final String RESP_NOT_ACCEPTABLE_DESC = "Not Acceptable - Service can not fulfill requested format via accept header.";
+    public static final String RESP_UNSUPPORTED_MEDIA_DESC = "Unsupported Media Type - request's content-type not supported.";
 
     // constants of all API resources
     public static final String EHR = "ehr";

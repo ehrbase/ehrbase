@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.ehrbase.rest.openehr.controller;
+package org.ehrbase.rest.util;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
