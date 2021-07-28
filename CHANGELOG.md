@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Folder handling (update, delete and missing audits) (see: https://github.com/ehrbase/ehrbase/pull/529)
+- proper canonical json encoding of composition with feeder_audit (was missing)
 
 
 
