@@ -1,4 +1,4 @@
-package org.ehrbase.rest.openehr.controller;
+package org.ehrbase.rest.openehr;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.ehr.EhrStatus;
@@ -15,6 +15,7 @@ import org.ehrbase.response.ehrscape.ContributionDto;
 import org.ehrbase.response.openehr.OriginalVersionResponseData;
 import org.ehrbase.response.openehr.RevisionHistoryResponseData;
 import org.ehrbase.response.openehr.VersionedObjectResponseData;
+import org.ehrbase.rest.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
@@ -35,7 +36,7 @@ import java.util.UUID;
 @Api
 @RestController
 @RequestMapping(path = "/rest/openehr/v1/ehr/{ehr_id}/versioned_ehr_status", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-public class OpenehrVersionedEhrStatusController extends BaseController{
+public class OpenehrVersionedEhrStatusController extends BaseController {
 
     private final EhrService ehrService;
     private final ContributionService contributionService;

@@ -14,12 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support AQL array resolution in EHR_STATUS::other_details
 
 ### Changed
-
+- Update paths for Admin API, Management API and `/status` endpoint (see: https://github.com/ehrbase/ehrbase/pull/541) 
 
 ### Fixed
 - Folder handling (update, delete and missing audits) (see: https://github.com/ehrbase/ehrbase/pull/529)
-
-
 
 ## [0.16.0] (beta)
 

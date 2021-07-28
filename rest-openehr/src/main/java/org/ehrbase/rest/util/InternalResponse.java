@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.ehrbase.rest.openehr.util;
+package org.ehrbase.rest.util;
 
 import org.springframework.http.HttpHeaders;
 
