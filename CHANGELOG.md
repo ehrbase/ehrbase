@@ -11,11 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Implement validation of compositions using external FHIR TS (see: https://github.com/ehrbase/ehrbase/pull/493)
 - Support for Attribute-based Access Control (see: https://github.com/ehrbase/ehrbase/pull/499)
+- Support AQL array resolution in EHR_STATUS::other_details
 
 ### Changed
 
 
 ### Fixed
+- Folder handling (update, delete and missing audits) (see: https://github.com/ehrbase/ehrbase/pull/529)
 
 
 

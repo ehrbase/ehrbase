@@ -17,13 +17,12 @@
 
 
 *** Settings ***
-Metadata    Version    0.1.0
-Metadata    Author    *Wladislaw Wagner*
+Metadata    Version    0.2.0
+Metadata    Authors    *Wladislaw Wagner*, *Pablo Pazos*
 
 Documentation    KNOWLEDGE TEST SUITE
 ...
-...             https://docs.google.com/document/d/1wdklJROuC2UQQK6x1cjPkF1l9Na2spfEIBjRbNVK-Q0
-...             https://vitasystemsgmbh.atlassian.net/wiki/spaces/ETHERCIS/pages/520912897/Knowledge+Test+Suite
+...             https://github.com/ehrbase/ehrbase/blob/develop/doc/conformance_testing/KNOWLEDGE.md
 ...
 ...             OPT = operational template
 ...

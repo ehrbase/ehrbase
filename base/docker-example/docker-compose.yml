@@ -10,7 +10,7 @@ services:
       DB_URL: "jdbc:postgresql://postgres:5432/ehrbase"
       DB_USER: postgres
       DB_PASS: postgres
-      SYSTEM_NAME: local
+      SERVER_NODENAME: local
       OUTH2_REALM_NAME: demo
       OUTH2_CLIENT_NAME: myclient
       OUTH2_SERVER_URL: "http://keycloak:8080/auth"

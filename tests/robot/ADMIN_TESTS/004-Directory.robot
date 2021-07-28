@@ -18,8 +18,7 @@
 
 *** Settings ***
 Metadata    Version    0.1.0
-Metadata    Author    *Wladislaw Wagner*
-Metadata    Author    *Jake Smolka*
+Metadata    Authors    *Wladislaw Wagner*, *Jake Smolka*
 Metadata    Created    2020.09.01
 
 Metadata        TOP_TEST_SUITE    ADMIN_DIRECTORY

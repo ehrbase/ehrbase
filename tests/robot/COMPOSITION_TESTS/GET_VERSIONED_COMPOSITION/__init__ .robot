@@ -19,12 +19,13 @@
 
 
 *** Settings ***
-Metadata    Version    0.1.0
+Metadata    Version    1.0
 Metadata    Authors    *Jake Smolka*, *Wladislaw Wagner*
 Metadata    Created    2019.02.26
-Metadata    Updated    2020.01.30
+Metadata    Updated    2021.06.10
 
-Documentation    https://wiki.vitagroup.ag/display/ETHERCIS/Versioned+COMPOSITION
+Documentation          https://github.com/ehrbase/ehrbase/blob/develop/doc/conformance_testing/EHR_COMPOSITION.md#b5-get-versioned-composition
+...                    https://wiki.vitagroup.ag/display/ETHERCIS/Versioned+COMPOSITION
 
 Resource   ${EXECDIR}/robot/_resources/suite_settings.robot
 

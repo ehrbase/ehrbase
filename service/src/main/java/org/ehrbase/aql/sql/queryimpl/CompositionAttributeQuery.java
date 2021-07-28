@@ -109,7 +109,7 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
         }
 
         QualifiedAqlField aqlField = new QualifiedAqlField(retField);
-        aqlField.setJsonDataBlock(fieldResolutionContext.isJsonDatablock());
+
         return new MultiFields(variableDefinition, aqlField, templateId);
     }
 

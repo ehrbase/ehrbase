@@ -17,13 +17,12 @@
 
 
 *** Settings ***
-Metadata    Version    0.1.0
-Metadata    Author    *Pablo Pazos*
-Metadata    Author    *Wladislaw Wagner*
+Metadata    Version    1.0
+Metadata    Authors    *Wladislaw Wagner*, *Pablo Pazos*
 
 Documentation    CONTRIBUTION SERVICE TEST SUITE
 ...
-...              test documentation: https://docs.google.com/document/d/1TvSWjG-Esz-iMFJE-VLfjGH8MiI9tcHE2ilVtJMPYyQ
+...              test documentation: https://github.com/ehrbase/ehrbase/blob/develop/doc/conformance_testing/EHR_CONTRIBUTION.md
 
 Resource    ${CURDIR}${/}../_resources/suite_settings.robot
 

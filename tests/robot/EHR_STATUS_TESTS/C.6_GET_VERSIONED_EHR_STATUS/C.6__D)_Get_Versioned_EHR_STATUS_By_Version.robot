@@ -19,7 +19,6 @@
 
 
 *** Settings ***
-Metadata    Version    0.1.0
 Metadata    Authors    *Jake Smolka*, *Wladislaw Wagner*
 Metadata    Created    2021.01.26
 

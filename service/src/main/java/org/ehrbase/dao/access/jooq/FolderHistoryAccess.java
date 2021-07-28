@@ -29,6 +29,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
 import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_FolderAccess;
@@ -89,7 +90,7 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
     /*************Data Access and modification methods*****************/
 
     @Override
-    public ObjectVersionId create(UUID customContribution) { return null; }
+    public ObjectVersionId create(UUID customContribution, UUID systemId, UUID committerId, String description) { return null; }
 
     @Override
     public Boolean update(Timestamp transactionTime) {
@@ -113,12 +114,18 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
     }
 
     @Override
-    public Boolean update(final Timestamp transactionTime, final boolean force, UUID contribution) {
+    public Boolean update(final Timestamp transactionTime, final boolean force, UUID contribution,
+        UUID systemId, UUID committerId, String description, ContributionChangeType changeType) {
         return null;
     }
 
     @Override
     public Integer delete(){ return null; }
+
+    @Override
+    public Integer delete(UUID contribution, UUID systemId, UUID committerId, String description) {
+        return null;
+    }
 
     @Override
     public UUID commit(Timestamp transactionTime){
@@ -132,6 +139,11 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
 
     @Override
     public UUID commit(Timestamp transactionTime, UUID contributionId){
+        return null;
+    }
+
+    @Override
+    public UUID commit(Timestamp transactionTime, UUID systemId, UUID committerId, String description) {
         return null;
     }
 
@@ -461,6 +473,16 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
     public void setFolderSysPeriod(AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime> folderSysPeriod){
 
         this.folderRecord.setSysPeriod(folderSysPeriod);
+    }
+
+    @Override
+    public UUID getAudit() {
+        return this.getFolderRecord().getHasAudit();
+    }
+
+    @Override
+    public void setAudit(UUID auditId) {
+        this.getFolderRecord().setHasAudit(auditId);
     }
 
     @Override
