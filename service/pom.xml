@@ -134,6 +134,10 @@
             <groupId>org.ehrbase.openehr</groupId>
             <artifactId>rest-openehr</artifactId>
         </dependency>
+        <dependency>
+            <groupId>jakarta.json</groupId>
+            <artifactId>jakarta.json-api</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
