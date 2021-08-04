@@ -20,6 +20,9 @@
 package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC15;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 //@Ignore("TODO: BUG - fix it")
 public class TestUC15 extends UC15 {
@@ -34,5 +37,10 @@ public class TestUC15 extends UC15 {
                         " right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\"" +
                         " join \"ehr\".\"status\" as \"status_join\" on \"status_join\".\"ehr_id\" = \"ehr_join\".\"id\"" +
                         " where (\"ehr_join\".\"id\"='2a3b673f-d1b1-44c5-9e38-dcadf67ff2fc')) as \"\"";
+    }
+
+    @Test
+    public void testIt(){
+        assertThat(testAqlSelectQuery()).isTrue();
     }
 }

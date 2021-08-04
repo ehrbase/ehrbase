@@ -20,15 +20,20 @@
 package org.ehrbase.aql.sql.queryimpl.translator.testcase;
 
 import org.ehrbase.aql.sql.queryimpl.translator.QueryProcessorTestBase;
-import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
+/**
+ * test predicates in composition attributes
+ */
+public abstract class UC42 extends QueryProcessorTestBase {
 
-public abstract class UC1 extends QueryProcessorTestBase {
-
-    protected UC1(){
-        this.aql = "select e/ehr_id/value from EHR e";
+    protected UC42(){
+        this.aql = "SELECT\n" +
+                "  \t  c[name/value = 'Diagnose']/uid/value as Diagnose,\n" +
+                "  \t  c[composer/external_ref/id/value = 'Dr Mabuse']/uid/value as MabuseComposition,\n" +
+                "  \t  c[context/start_time/value > '2020-01-01']/uid/value as NewerComposition\n" +
+                "\tFROM\n" +
+                "  \t  EHR e\n" +
+                "  \t  contains COMPOSITION c[openEHR-EHR-COMPOSITION.report-result.v1]";
         this.expectedOutputWithJson = false;
     }
-
 }

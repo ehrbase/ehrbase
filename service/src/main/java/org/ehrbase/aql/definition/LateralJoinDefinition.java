@@ -17,23 +17,31 @@
  *
  */
 
-package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
+package org.ehrbase.aql.definition;
 
-import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC41;
-import org.junit.Test;
+import org.jooq.*;
 
-import static org.assertj.core.api.Assertions.assertThat;
+public class LateralJoinDefinition {
 
-public class TestUC41 extends UC41 {
+    private final Table<?> table;
+    private final JoinType joinType;
+    private final Condition condition;
 
-    public TestUC41(){
-        super();
-        this.expectedSqlExpression =
-                "select ? as \"constant\" from \"ehr\".\"entry\"";
+    public LateralJoinDefinition(Table<?> table, JoinType joinType, Condition condition) {
+        this.table = table;
+        this.joinType = joinType;
+        this.condition = condition;
     }
 
-    @Test
-    public void testIt(){
-        assertThat(testAqlSelectQuery()).isTrue();
+    public Table<?> getTable(){
+        return table;
+    }
+
+    public JoinType getJoinType() {
+        return joinType;
+    }
+
+    public Condition getCondition(){
+        return condition;
     }
 }

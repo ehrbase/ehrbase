@@ -20,6 +20,9 @@
 package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC24;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestUC24 extends UC24 {
 
@@ -31,5 +34,10 @@ public class TestUC24 extends UC24 {
                         " where (\"ehr\".\"entry\".\"template_id\" = ? and ((\n" +
                         "  select \"ehr\".\"entry\".\"entry\" #>> '{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ADMIN_ENTRY.hospitalization.v0],0}' \n" +
                         ")IS  NULL ))";
+    }
+
+    @Test
+    public void testIt(){
+        assertThat(testAqlSelectQuery()).isTrue();
     }
 }

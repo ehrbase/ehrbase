@@ -21,6 +21,9 @@ package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 
 import org.ehrbase.aql.sql.queryimpl.QueryImplConstants;
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC18;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestUC18 extends UC18 {
 
@@ -32,5 +35,10 @@ public class TestUC18 extends UC18 {
                         "where (\"ehr\".\"entry\".\"template_id\" = ? " +
                         "and (\"ehr\".\"entry\".\"template_id\"='openEHR-EHR-COMPOSITION.health_summary.v1' " +
                         "and \"ehr_join\".\"id\"='4a7c01cf-bb1c-4d3d-8385-4ae0674befb1'))";
+    }
+
+    @Test
+    public void testIt(){
+        assertThat(testAqlSelectQuery()).isTrue();
     }
 }

@@ -21,6 +21,9 @@ package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC26;
 import org.junit.Ignore;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Ignore("unsupported CONTAINS syntax")
 public class TestUC26 extends UC26 {
@@ -32,5 +35,10 @@ public class TestUC26 extends UC26 {
                         " from \"ehr\".\"entry\"" +
                         " right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\"" +
                         " right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\") as \"\"";
+    }
+
+    @Test
+    public void testIt(){
+        assertThat(testAqlSelectQuery()).isTrue();
     }
 }

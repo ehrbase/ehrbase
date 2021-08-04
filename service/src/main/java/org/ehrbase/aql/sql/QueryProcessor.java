@@ -26,11 +26,13 @@ import org.ehrbase.aql.compiler.Contains;
 import org.ehrbase.aql.compiler.Statements;
 import org.ehrbase.aql.compiler.TopAttributes;
 import org.ehrbase.aql.definition.I_VariableDefinition;
+import org.ehrbase.aql.definition.LateralJoinDefinition;
 import org.ehrbase.aql.definition.Variables;
 import org.ehrbase.aql.sql.binding.*;
 import org.ehrbase.aql.sql.postprocessing.RawJsonTransform;
 import org.ehrbase.aql.sql.queryimpl.MultiFields;
 import org.ehrbase.aql.sql.queryimpl.MultiFieldsMap;
+import org.ehrbase.aql.sql.queryimpl.MultiFieldsMultiMap;
 import org.ehrbase.aql.sql.queryimpl.TemplateMetaData;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
@@ -206,7 +208,7 @@ public class QueryProcessor extends TemplateMetaData {
 
         SelectBinder selectBinder = new SelectBinder(domainAccess, introspectCache, contains, statements, serverNodeId);
 
-        MultiFieldsMap multiSelectFieldsMap = new MultiFieldsMap(selectBinder.bind(templateId));
+        MultiFieldsMultiMap multiSelectFieldsMap = new MultiFieldsMultiMap(selectBinder.bind(templateId));
 
         joinSetup = joinSetup.merge(selectBinder.getCompositionAttributeQuery().getJoinSetup());
 
@@ -237,7 +239,7 @@ public class QueryProcessor extends TemplateMetaData {
                 }
 
                 Condition condition = selectBinder.getWhereConditions(templateId, whereCursor, multiWhereFieldsMap);
-                List<Table<?>> joins = lateralJoins(templateId);
+                List<LateralJoinDefinition> joins = lateralJoins(templateId);
 
                 queryStepsList.add(
                         new QuerySteps(
@@ -261,26 +263,48 @@ public class QueryProcessor extends TemplateMetaData {
         return queryStepsList;
     }
 
-    private SelectQuery<?> setLateralJoins(List<Table<?>> lateralJoins, SelectQuery<?> selectQuery) {
+    private SelectQuery<?> setLateralJoins(List<LateralJoinDefinition> lateralJoins, SelectQuery<?> selectQuery) {
         if (lateralJoins == null)
             return selectQuery;
 
-        for (Table<?> joinLateralTable : lateralJoins) {
-                selectQuery.addFrom(joinLateralTable);
+        for (LateralJoinDefinition lateralJoinDefinition : lateralJoins) {
+            if (lateralJoinDefinition.getCondition() == null)
+                selectQuery.addJoin(lateralJoinDefinition.getTable(), lateralJoinDefinition.getJoinType());
+            else
+                selectQuery.addJoin(lateralJoinDefinition.getTable(), lateralJoinDefinition.getJoinType(), lateralJoinDefinition.getCondition());
         }
 
         return selectQuery;
     }
 
 
-    private List<Table<?>> lateralJoins(String templateId) {
-        List<Table<?>> lateralJoinsList = new ArrayList<>();
+    private List<LateralJoinDefinition> lateralJoins(String templateId) {
+        List<LateralJoinDefinition> lateralJoinsList = new ArrayList<>();
+
+        //traverse the lateral joins derived from SELECT clause
+        for (VariableDefinitions it = statements.getVariables(); it.hasNext(); ) {
+            Object item = it.next();
+            if (item instanceof I_VariableDefinition && ((I_VariableDefinition) item).isLateralJoin(NIL_TEMPLATE)) {
+                LateralJoinDefinition encapsulatedLateralJoinDefinition = ((I_VariableDefinition)item).getLateralJoinDefinition(NIL_TEMPLATE);
+                LateralJoinDefinition lateralJoinDefinition = new LateralJoinDefinition(
+                        DSL.lateral(encapsulatedLateralJoinDefinition.getTable()),
+                        encapsulatedLateralJoinDefinition.getJoinType(),
+                        encapsulatedLateralJoinDefinition.getCondition()
+                );
+                lateralJoinsList.add(lateralJoinDefinition);
+            }
+        }
+
 
         for (Object item : statements.getWhereClause()) {
             if (item instanceof I_VariableDefinition && ((I_VariableDefinition) item).isLateralJoin(templateId)) {
-                if (((I_VariableDefinition) item).getLateralJoinTable(templateId) == null)
+                if (((I_VariableDefinition) item).getLateralJoinDefinition(templateId) == null)
                     throw new IllegalStateException("unresolved lateral join for template:"+templateId+", path:"+((I_VariableDefinition) item).getPath());
-                lateralJoinsList.add(DSL.lateral(((I_VariableDefinition) item).getLateralJoinTable(templateId)));
+                lateralJoinsList.add(
+                        new LateralJoinDefinition(
+                                DSL.lateral(((I_VariableDefinition) item).getLateralJoinDefinition(templateId).getTable()),
+                                JoinType.JOIN, null)
+                );
             }
         }
 

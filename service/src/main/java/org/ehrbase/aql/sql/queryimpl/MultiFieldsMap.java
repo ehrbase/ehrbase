@@ -23,10 +23,13 @@ import java.util.*;
 
 public class MultiFieldsMap {
 
-   private final Map<String, MultiFields> multiFieldsListAsMap;
+   protected Map<String, MultiFields> multiFieldsListAsMap;
 
     public MultiFieldsMap(List<MultiFields> multiFieldsList) {
         this.multiFieldsListAsMap = toMap(multiFieldsList);
+    }
+
+    public MultiFieldsMap() {
     }
 
     private Map<String, MultiFields> toMap(List<MultiFields> multiFieldsList){

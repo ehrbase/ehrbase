@@ -20,6 +20,9 @@
 package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC2;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestUC2 extends UC2 {
 
@@ -30,5 +33,10 @@ public class TestUC2 extends UC2 {
                 "      select \"ehr_join\".\"id\" as \"/ehr_id/value\" from \"ehr\".\"ehr\" as \"ehr_join\" " +
                 "           where (\"ehr_join\".\"id\"='30580007')" +
                 ") as \"\"";
+    }
+
+    @Test
+    public void testIt(){
+        assertThat(testAqlSelectQuery()).isTrue();
     }
 }

@@ -23,6 +23,9 @@ import org.ehrbase.aql.sql.queryimpl.QueryImplConstants;
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC39;
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC40;
 import org.junit.Ignore;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 //@Ignore
 public class TestUC40 extends UC40 {
@@ -33,5 +36,10 @@ public class TestUC40 extends UC40 {
                 "select  CAST (\"max_magnitude\" AS FLOAT ) as \"max_magnitude\"" +
                         " from (select cast((ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0004],0,/value,magnitude}') as bigint)" +
                         " as \"max_magnitude\" from \"ehr\".\"entry\" where \"ehr\".\"entry\".\"template_id\" = ?) as \"\"";
+    }
+
+    @Test
+    public void testIt(){
+        assertThat(testAqlSelectQuery()).isTrue();
     }
 }

@@ -20,6 +20,9 @@
 package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC34;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestUC34 extends UC34 {
 
@@ -30,5 +33,10 @@ public class TestUC34 extends UC34 {
                         "  \"ehr_join\".\"date_created\", \n" +
                         "  \"ehr_join\".\"date_created_tzid\"\n" +
                         ") as varchar) as \"_FCT_ARG_0\" from \"ehr\".\"ehr\" as \"ehr_join\") as \"\"";
+    }
+
+    @Test
+    public void testIt(){
+        assertThat(testAqlSelectQuery()).isTrue();
     }
 }

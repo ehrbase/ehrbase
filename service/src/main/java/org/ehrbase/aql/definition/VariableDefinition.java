@@ -21,6 +21,8 @@
 
 package org.ehrbase.aql.definition;
 
+import org.jooq.Condition;
+import org.jooq.JoinType;
 import org.jooq.Table;
 
 import java.util.ArrayList;
@@ -37,9 +39,11 @@ public class VariableDefinition implements I_VariableDefinition {
     private String path;
     private String alias;
     private String identifier;
+    private String substituteFieldVariable;
     private boolean isDistinct;
     private boolean isHidden;
-    private Map<String, Table<?>> lateralJoinTable = new HashMap<>();
+    private Map<String, LateralJoinDefinition> lateralJoinDefinition = new HashMap<>();
+    private PredicateDefinition predicateDefinition;
 
     public VariableDefinition(String path, String alias, String identifier, boolean isDistinct) {
         this.path = path;
@@ -47,6 +51,15 @@ public class VariableDefinition implements I_VariableDefinition {
         this.identifier = identifier;
         this.isDistinct = isDistinct;
         this.isHidden = false;
+    }
+
+    public VariableDefinition(String path, String alias, String identifier, boolean isDistinct, PredicateDefinition predicateDefinition) {
+        this.path = path;
+        this.alias = alias;
+        this.identifier = identifier;
+        this.isDistinct = isDistinct;
+        this.isHidden = false;
+        this.predicateDefinition = predicateDefinition;
     }
 
     /**
@@ -92,17 +105,17 @@ public class VariableDefinition implements I_VariableDefinition {
 
     @Override
     public boolean isLateralJoin(String templateId) {
-        return !lateralJoinTable.isEmpty() && lateralJoinTable.get(templateId) != null;
+        return !lateralJoinDefinition.isEmpty() && lateralJoinDefinition.get(templateId) != null;
     }
 
     @Override
-    public Table getLateralJoinTable(String templateId) {
-        return lateralJoinTable.get(templateId);
+    public LateralJoinDefinition getLateralJoinDefinition(String templateId) {
+        return lateralJoinDefinition.get(templateId);
     }
 
     @Override
-    public void setLateralJoinTable(String templateId, Table lateralJoinTable) {
-        this.lateralJoinTable.put(templateId, lateralJoinTable);
+    public void setLateralJoinTable(String templateId, Table lateralJoinTable, JoinType joinType, Condition condition) {
+        this.lateralJoinDefinition.put(templateId, new LateralJoinDefinition(lateralJoinTable, joinType, condition));
     }
 
     @Override
@@ -153,5 +166,17 @@ public class VariableDefinition implements I_VariableDefinition {
     @Override
     public void setAlias(String alias) {
         this.alias = alias;
+    }
+
+    public PredicateDefinition getPredicateDefinition() {
+        return predicateDefinition;
+    }
+
+    public String getSubstituteFieldVariable() {
+        return substituteFieldVariable;
+    }
+
+    public void setSubstituteFieldVariable(String substituteFieldVariable) {
+        this.substituteFieldVariable = substituteFieldVariable;
     }
 }

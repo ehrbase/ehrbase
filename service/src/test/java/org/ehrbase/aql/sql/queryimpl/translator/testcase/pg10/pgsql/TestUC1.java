@@ -20,6 +20,7 @@
 package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC1;
+import org.junit.Test;
 
 public class TestUC1 extends UC1 {
 

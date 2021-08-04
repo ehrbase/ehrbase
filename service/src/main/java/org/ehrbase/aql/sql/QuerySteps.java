@@ -21,9 +21,9 @@
 
 package org.ehrbase.aql.sql;
 
+import org.ehrbase.aql.definition.LateralJoinDefinition;
 import org.jooq.Condition;
 import org.jooq.SelectQuery;
-import org.jooq.Table;
 
 import java.util.List;
 
@@ -34,10 +34,10 @@ import java.util.List;
 public class QuerySteps {
     private final SelectQuery selectQuery;
     private Condition whereCondition; //can be force to a NULL condition (f.e. 1 = 0)
-    private final List<Table<?>> lateralJoins;
+    private final List<LateralJoinDefinition> lateralJoins;
     private final String templateId;
 
-    public QuerySteps(SelectQuery selectQuery, Condition whereCondition, List<Table<?>> lateralJoins, String templateId) {
+    public QuerySteps(SelectQuery selectQuery, Condition whereCondition, List<LateralJoinDefinition> lateralJoins, String templateId) {
         this.selectQuery = selectQuery;
         this.whereCondition = whereCondition;
         this.lateralJoins = lateralJoins;
@@ -56,7 +56,7 @@ public class QuerySteps {
         return templateId;
     }
 
-    public List<Table<?>> getLateralJoins() {
+    public List<LateralJoinDefinition> getLateralJoins() {
         return lateralJoins;
     }
 

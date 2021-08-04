@@ -123,7 +123,7 @@ public class ContainmentTest extends TestAqlBase {
         AqlExpression aqlExpression = new AqlExpression().parse(query);
         Contains contains = new Contains(aqlExpression.getParseTree(), knowledge).process();
 
-        assertFalse(contains.requiresTemplateWhereClause());
+        assertTrue(contains.requiresTemplateWhereClause());
     }
 
     @Test

@@ -22,6 +22,8 @@
 
 package org.ehrbase.aql.definition;
 
+import org.jooq.Condition;
+import org.jooq.JoinType;
 import org.jooq.Record;
 import org.jooq.Table;
 
@@ -38,7 +40,7 @@ public interface I_VariableDefinition extends Cloneable {
 
     String getIdentifier();
 
-    void setLateralJoinTable(String templateId, Table<Record> lateralJoinTable);
+    void setLateralJoinTable(String templateId, Table<Record> lateralJoinTable, JoinType joinType, Condition condition);
 
     boolean isDistinct();
 
@@ -66,5 +68,11 @@ public interface I_VariableDefinition extends Cloneable {
 
     boolean isLateralJoin(String templateId);
 
-    Table<Record> getLateralJoinTable(String templateId);
+    LateralJoinDefinition getLateralJoinDefinition(String templateId);
+
+    PredicateDefinition getPredicateDefinition();
+
+    void setSubstituteFieldVariable(String variableAlias);
+
+    String getSubstituteFieldVariable();
 }

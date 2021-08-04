@@ -22,6 +22,9 @@ package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 import org.ehrbase.aql.sql.queryimpl.QueryImplConstants;
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC29;
 import org.junit.Ignore;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 //@Ignore("ANY expects an array: introduce SELECT on lateral join values")
 public class TestUC29 extends UC29 {
@@ -32,11 +35,16 @@ public class TestUC29 extends UC29 {
                 "select jsonb_extract_path_text(cast(ehr.xjsonb_array_elements(cast(jsonb_extract_path(cast(\"ehr\".\"js_ehr\"(\n" +
                         "  cast(ehr_join.id as uuid), \n" +
                         "  'local'\n" +
-                        ") as jsonb),'folders') as jsonb)) as jsonb),'name','value') as \"/folders/name/value\" from \"ehr\".\"ehr\" as \"ehr_join\", lateral (\n" +
+                        ") as jsonb),'folders') as jsonb)) as jsonb),'name','0','value') as \"/folders/name/value\" from \"ehr\".\"ehr\" as \"ehr_join\" join lateral (\n" +
                         "  select jsonb_extract_path_text(cast(ehr.xjsonb_array_elements(cast(jsonb_extract_path(cast(\"ehr\".\"js_ehr\"(\n" +
                         "  cast(ehr_join.id as uuid), \n" +
                         "  'local'\n" +
-                        ") as jsonb),'folders') as jsonb)) as jsonb),'name','value')\n" +
-                        " AS COLUMN) as \"ARRAY\" where (\"ehr_join\".\"id\" = 'c2561bab-4d2b-4ffd-a893-4382e9048f8c' and 'case1' = ANY ( (SELECT ARRAY.COLUMN ) ) )";
+                        ") as jsonb),'folders') as jsonb)) as jsonb),'name','0','value')\n" +
+                        " AS COLUMN) as \"ARRAY\" on 1 = 1 where (\"ehr_join\".\"id\" = 'c2561bab-4d2b-4ffd-a893-4382e9048f8c' and 'case1' = ANY ( (SELECT ARRAY.COLUMN ) ) )";
+    }
+
+    @Test
+    public void testIt(){
+        assertThat(testAqlSelectQuery()).isTrue();
     }
 }

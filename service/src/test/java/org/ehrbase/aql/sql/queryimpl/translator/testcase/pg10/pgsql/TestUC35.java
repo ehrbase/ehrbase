@@ -20,6 +20,9 @@
 package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC35;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestUC35 extends UC35 {
 
@@ -30,5 +33,10 @@ public class TestUC35 extends UC35 {
                         "  cast(ehr_join.id as uuid), \n" +
                         "  'local'\n" +
                         ") as jsonb),'directory') as jsonb) as \"/directory\" from \"ehr\".\"ehr\" as \"ehr_join\"";
+    }
+
+    @Test
+    public void testIt(){
+        assertThat(testAqlSelectQuery()).isTrue();
     }
 }

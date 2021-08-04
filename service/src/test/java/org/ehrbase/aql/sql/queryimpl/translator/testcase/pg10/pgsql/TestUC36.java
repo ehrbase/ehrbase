@@ -20,6 +20,9 @@
 package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC36;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestUC36 extends UC36 {
 
@@ -31,5 +34,10 @@ public class TestUC36 extends UC36 {
                         "  ?\n" +
                         ") as varchar) as \"e\"\n" +
                         "from \"ehr\".\"ehr\" as \"ehr_join\"";
+    }
+
+    @Test
+    public void testIt(){
+        assertThat(testAqlSelectQuery()).isTrue();
     }
 }

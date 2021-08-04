@@ -20,6 +20,10 @@
 package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC14;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 //@Ignore("TODO: BUG - fix it")
 public class TestUC14 extends UC14 {
@@ -32,5 +36,10 @@ public class TestUC14 extends UC14 {
                         " on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" join \"ehr\".\"party_identified\" as \"composer_ref\"" +
                         " on \"composition_join\".\"composer\" = \"composer_ref\".\"id\"" +
                         " where (1 = 0)";
+    }
+
+    @Test
+    public void testIt(){
+        assertThat(testAqlSelectQuery()).isTrue();
     }
 }

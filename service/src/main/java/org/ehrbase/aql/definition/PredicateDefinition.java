@@ -17,23 +17,29 @@
  *
  */
 
-package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
+package org.ehrbase.aql.definition;
 
-import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC41;
-import org.junit.Test;
+public class PredicateDefinition {
 
-import static org.assertj.core.api.Assertions.assertThat;
+    private final String operand1;
+    private final String operator;
+    private final String operand2;
 
-public class TestUC41 extends UC41 {
-
-    public TestUC41(){
-        super();
-        this.expectedSqlExpression =
-                "select ? as \"constant\" from \"ehr\".\"entry\"";
+    public PredicateDefinition(String operand1, String operator, String operand2) {
+        this.operand1 = operand1;
+        this.operator = operator;
+        this.operand2 = operand2;
     }
 
-    @Test
-    public void testIt(){
-        assertThat(testAqlSelectQuery()).isTrue();
+    public String getOperand1() {
+        return operand1;
+    }
+
+    public String getOperator() {
+        return operator;
+    }
+
+    public String getOperand2() {
+        return operand2;
     }
 }

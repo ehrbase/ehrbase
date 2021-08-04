@@ -29,10 +29,7 @@ import org.ehrbase.aql.sql.queryimpl.*;
 import org.ehrbase.aql.sql.queryimpl.value_field.ISODateTime;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.serialisation.dbencoding.CompositionSerializer;
-import org.jooq.Condition;
-import org.jooq.Field;
-import org.jooq.Record;
-import org.jooq.Table;
+import org.jooq.*;
 import org.jooq.impl.DSL;
 
 import java.util.*;
@@ -430,7 +427,7 @@ public class WhereBinder {
         //insert the variable alias used for the lateral join expression
         encodedVar.replaceLast(")", " AS " + variableAlias + ")");
         Table<Record> table = DSL.table(encodedVar.toString()).as(tableAlias);
-        item.setLateralJoinTable(templateId, table);
+        item.setLateralJoinTable(templateId, table, JoinType.JOIN, null);
         item.setAlias(tableAlias + "." + variableAlias + " ");
     }
 

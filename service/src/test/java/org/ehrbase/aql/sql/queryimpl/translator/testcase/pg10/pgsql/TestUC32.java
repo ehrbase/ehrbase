@@ -22,6 +22,9 @@ package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 import org.ehrbase.aql.sql.queryimpl.QueryImplConstants;
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC32;
 import org.junit.Ignore;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Ignore ("not yet supported")
 public class TestUC32 extends UC32 {
@@ -35,5 +38,10 @@ public class TestUC32 extends UC32 {
                         "   'case1' IN (SELECT regexp_split_to_array('case1,case2', ','))" +
                         "        and " +
                         "       \"ehr_join\".\"id\"='c2561bab-4d2b-4ffd-a893-4382e9048f8c')";
+    }
+
+    @Test
+    public void testIt(){
+        assertThat(testAqlSelectQuery()).isTrue();
     }
 }

@@ -21,6 +21,8 @@
 
 package org.ehrbase.aql.definition;
 
+import org.jooq.Condition;
+import org.jooq.JoinType;
 import org.jooq.Table;
 
 import java.util.ArrayList;
@@ -60,7 +62,7 @@ public class ConstantDefinition implements I_VariableDefinition {
     }
 
     @Override
-    public void setLateralJoinTable(String templateId, Table lateralJoinTable) {
+    public void setLateralJoinTable(String templateId, Table lateralJoinTable, JoinType joinType, Condition condition) {
         // n/a
     }
 
@@ -80,7 +82,22 @@ public class ConstantDefinition implements I_VariableDefinition {
     }
 
     @Override
-    public Table getLateralJoinTable(String templateId) {
+    public LateralJoinDefinition getLateralJoinDefinition(String templateId) {
+        return null;
+    }
+
+    @Override
+    public PredicateDefinition getPredicateDefinition() {
+        return null;
+    }
+
+    @Override
+    public void setSubstituteFieldVariable(String variableAlias) {
+        // na
+    }
+
+    @Override
+    public String getSubstituteFieldVariable() {
         return null;
     }
 

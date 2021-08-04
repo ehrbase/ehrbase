@@ -21,6 +21,9 @@ package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 
 import org.ehrbase.aql.sql.queryimpl.QueryImplConstants;
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC33;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestUC33 extends UC33 {
 
@@ -30,7 +33,12 @@ public class TestUC33 extends UC33 {
                 "select jsonb_extract_path_text(cast("+ QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION+"(cast(jsonb_extract_path(cast(\"ehr\".\"js_ehr\"(\n" +
                         "  cast(ehr_join.id as uuid), \n" +
                         "  'local'\n" +
-                        ") as jsonb),'folders') as jsonb)) as jsonb),'name','value') as \"/folders/name/value\" from \"ehr\".\"ehr\" as \"ehr_join\"" +
+                        ") as jsonb),'folders') as jsonb)) as jsonb),'name','0','value') as \"/folders/name/value\" from \"ehr\".\"ehr\" as \"ehr_join\"" +
                         " where ('case1'IN('case1','case2') and \"ehr_join\".\"id\"='c2561bab-4d2b-4ffd-a893-4382e9048f8c')";
+    }
+
+    @Test
+    public void testIt(){
+        assertThat(testAqlSelectQuery()).isTrue();
     }
 }
