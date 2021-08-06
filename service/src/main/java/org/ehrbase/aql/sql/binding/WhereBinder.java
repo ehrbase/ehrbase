@@ -427,7 +427,7 @@ public class WhereBinder {
         //insert the variable alias used for the lateral join expression
         encodedVar.replaceLast(")", " AS " + variableAlias + ")");
         Table<Record> table = DSL.table(encodedVar.toString()).as(tableAlias);
-        item.setLateralJoinTable(templateId, table, JoinType.JOIN, null);
+        item.setLateralJoinTable(templateId, table, variableAlias, JoinType.JOIN, null, IQueryImpl.Clause.WHERE);
         item.setAlias(tableAlias + "." + variableAlias + " ");
     }
 

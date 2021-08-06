@@ -30,10 +30,7 @@ import org.ehrbase.aql.definition.LateralJoinDefinition;
 import org.ehrbase.aql.definition.Variables;
 import org.ehrbase.aql.sql.binding.*;
 import org.ehrbase.aql.sql.postprocessing.RawJsonTransform;
-import org.ehrbase.aql.sql.queryimpl.MultiFields;
-import org.ehrbase.aql.sql.queryimpl.MultiFieldsMap;
-import org.ehrbase.aql.sql.queryimpl.MultiFieldsMultiMap;
-import org.ehrbase.aql.sql.queryimpl.TemplateMetaData;
+import org.ehrbase.aql.sql.queryimpl.*;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.service.IntrospectService;
@@ -163,9 +160,15 @@ public class QueryProcessor extends TemplateMetaData {
                 if (!queryStep.getTemplateId().equals(NIL_TEMPLATE)) {
                     select.addConditions(ENTRY.TEMPLATE_ID.eq(queryStep.getTemplateId()));
                 }
-                Condition condition = queryStep.getWhereCondition();
-                if (condition != null)
-                    select.addConditions(Operator.AND, condition);
+                Condition whereCondition = queryStep.getWhereCondition();
+                if (whereCondition != null)
+                    select.addConditions(Operator.AND, whereCondition);
+
+                //for lateral joins used in SELECT add a condition to eliminate null from cartesian product
+                Condition lateralDerivedCondition = lateralCartesianNotNullConditions(queryStep.getLateralJoins());
+
+                if (lateralDerivedCondition != null)
+                    select.addConditions(Operator.AND, lateralDerivedCondition);
 
                 if (first) {
                     unionSetQuery = select;
@@ -200,6 +203,24 @@ public class QueryProcessor extends TemplateMetaData {
         unionSetQuery = limitBinding.bind();
 
         return new AqlSelectQuery(unionSetQuery, cacheQuery.values(), containsJson);
+    }
+
+    private Condition lateralCartesianNotNullConditions(List<LateralJoinDefinition> lateralJoins) {
+
+        Condition conditions = null;
+
+        for (Iterator<LateralJoinDefinition> joins = lateralJoins.iterator(); joins.hasNext();){
+            LateralJoinDefinition lateralJoinDefinition = joins.next();
+            if (lateralJoinDefinition.getClause().equals(IQueryImpl.Clause.SELECT)) {
+                Condition condition = DSL.field(lateralJoinDefinition.getTable().getName()+"."+lateralJoinDefinition.getLateralVariable()).isNotNull();
+                if (conditions == null)
+                    conditions = condition;
+                else
+                    conditions = conditions.or(condition);
+            }
+        }
+
+        return conditions;
     }
 
     private List<QuerySteps> buildQuerySteps(String templateId) {
@@ -288,8 +309,10 @@ public class QueryProcessor extends TemplateMetaData {
                 LateralJoinDefinition encapsulatedLateralJoinDefinition = ((I_VariableDefinition)item).getLateralJoinDefinition(NIL_TEMPLATE);
                 LateralJoinDefinition lateralJoinDefinition = new LateralJoinDefinition(
                         DSL.lateral(encapsulatedLateralJoinDefinition.getTable()),
+                        encapsulatedLateralJoinDefinition.getLateralVariable(),
                         encapsulatedLateralJoinDefinition.getJoinType(),
-                        encapsulatedLateralJoinDefinition.getCondition()
+                        encapsulatedLateralJoinDefinition.getCondition(),
+                        encapsulatedLateralJoinDefinition.getClause()
                 );
                 lateralJoinsList.add(lateralJoinDefinition);
             }
@@ -303,7 +326,11 @@ public class QueryProcessor extends TemplateMetaData {
                 lateralJoinsList.add(
                         new LateralJoinDefinition(
                                 DSL.lateral(((I_VariableDefinition) item).getLateralJoinDefinition(templateId).getTable()),
-                                JoinType.JOIN, null)
+                                ((I_VariableDefinition)item).getSubstituteFieldVariable(),
+                                JoinType.JOIN,
+                                null,
+                                IQueryImpl.Clause.WHERE
+                        )
                 );
             }
         }

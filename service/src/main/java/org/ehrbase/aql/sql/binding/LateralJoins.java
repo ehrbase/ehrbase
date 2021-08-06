@@ -20,6 +20,7 @@
 package org.ehrbase.aql.sql.binding;
 
 import org.ehrbase.aql.definition.I_VariableDefinition;
+import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
 import org.jooq.*;
 import org.jooq.impl.DSL;
 
@@ -41,11 +42,11 @@ public class LateralJoins {
         //insert the variable alias used for the lateral join expression
         encodedVar.replaceLast(")", " AS " + variableAlias + ")");
         Table<Record> table = DSL.table(encodedVar.toString()).as(tableAlias);
-        item.setLateralJoinTable(templateId, table, JoinType.JOIN, null);
+        item.setLateralJoinTable(templateId, table, variableAlias, JoinType.JOIN, null, IQueryImpl.Clause.WHERE);
         item.setAlias(tableAlias + "." + variableAlias + " ");
     }
 
-    public void create(String templateId, SelectQuery selectSelectStep, I_VariableDefinition item){
+    public void create(String templateId, SelectQuery selectSelectStep, I_VariableDefinition item, IQueryImpl.Clause clause){
         if (selectSelectStep == null)
             return;
         int hashValue = selectSelectStep.hashCode(); //cf. SonarLint
@@ -60,7 +61,7 @@ public class LateralJoins {
         SelectSelectStep wrappedSelectSelectStep = DSL.select(DSL.field(selectSelectStep).as(variableAlias));
 
         Table<Record> table = DSL.table(wrappedSelectSelectStep).as(tableAlias);
-        item.setLateralJoinTable(templateId, table, JoinType.LEFT_OUTER_JOIN, DSL.condition(true));
+        item.setLateralJoinTable(templateId, table, variableAlias, JoinType.LEFT_OUTER_JOIN, DSL.condition(true), clause);
         item.setSubstituteFieldVariable(variableAlias);
     }
 

@@ -19,6 +19,7 @@
 
 package org.ehrbase.aql.definition;
 
+import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
 import org.jooq.*;
 
 public class LateralJoinDefinition {
@@ -26,11 +27,15 @@ public class LateralJoinDefinition {
     private final Table<?> table;
     private final JoinType joinType;
     private final Condition condition;
+    private final IQueryImpl.Clause clause;
+    private final String lateralVariable;
 
-    public LateralJoinDefinition(Table<?> table, JoinType joinType, Condition condition) {
+    public LateralJoinDefinition(Table<?> table, String lateralVariable, JoinType joinType, Condition condition, IQueryImpl.Clause clause) {
         this.table = table;
+        this.lateralVariable = lateralVariable;
         this.joinType = joinType;
         this.condition = condition;
+        this.clause = clause;
     }
 
     public Table<?> getTable(){
@@ -43,5 +48,13 @@ public class LateralJoinDefinition {
 
     public Condition getCondition(){
         return condition;
+    }
+
+    public IQueryImpl.Clause getClause() {
+        return clause;
+    }
+
+    public String getLateralVariable() {
+        return lateralVariable;
     }
 }

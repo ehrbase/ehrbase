@@ -162,8 +162,10 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
 
         //encode a pseudo variable to get the predicate in the where clause
         VariableDefinition pseudoVar = new VariableDefinition(variableDefinition.getPredicateDefinition().getOperand1(), null, variableDefinition.getIdentifier(), false);
-        MultiFields wherePredicate = new CompositionAttributeQuery(this.domainAccess, this.pathResolver, this.serverNodeId, this.introspectCache).
-                makeField(NIL_TEMPLATE, variableDefinition.getIdentifier(), pseudoVar, Clause.WHERE);
+        CompositionAttributeQuery compositionAttributeQuery = new CompositionAttributeQuery(this.domainAccess, this.pathResolver, this.serverNodeId, this.introspectCache);
+        MultiFields wherePredicate = compositionAttributeQuery.makeField(NIL_TEMPLATE, variableDefinition.getIdentifier(), pseudoVar, Clause.WHERE);
+
+        joinSetup.merge(compositionAttributeQuery.getJoinSetup());
 
         SelectQuery selectQuery = domainAccess.getContext().selectQuery();
 
@@ -176,7 +178,7 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
                 compare(comparator, DSL.field(variableDefinition.getPredicateDefinition().getOperand2()).cast(String.class))
         );
 
-        new LateralJoins().create(NIL_TEMPLATE, selectQuery, variableDefinition);
+        new LateralJoins().create(NIL_TEMPLATE, selectQuery, variableDefinition, Clause.SELECT);
 
     }
 
