@@ -65,9 +65,15 @@ public class GenericJsonField extends RMObjectAttribute {
         return jsonField(rmType, function, (TableField)dateTime, (TableField)timeZoneId);
     }
 
+    public Field ehrStatus(Field<UUID> uuidField, Field<String> serverId){
+        String rmType = null;
+        Function2<Field<UUID>, Field<String>, Field<JSON>> function = Routines::jsEhrStatus2;
+        return jsonField(rmType, function, (TableField)uuidField, (TableField) serverId);
+    }
+
     public Field ehrStatus(Field<UUID> uuidField){
         String rmType = null;
-        Function<Field<UUID>, Field<JSON>> function = Routines::jsEhrStatus;
+        Function<Field<UUID>, Field<JSON>> function = Routines::jsEhrStatus1;
         return jsonField(rmType, function, (TableField)uuidField);
     }
 
