@@ -18,11 +18,24 @@
 
 *** Settings ***
 Metadata    Version    0.1.0
-Metadata    Authors    *Wladislaw Wagner*
+Metadata    Authors    *Wladislaw Wagner, Stefan Spiska*
 Metadata    Created    2021.07.13
-Metadata    Command    robot -d results -L TRACE -i cache robot/CACHE_TESTS
+Metadata    Updated    2021.08.09
+Metadata    Command    robot -d results -L TRACE -i cache robot/ADMIN_TESTS
+Metadata    TOP_TEST_SUITE    CACHE
 
-Metadata        TOP_TEST_SUITE    CACHE
+Documentation    Tests related to caching \n\n
+...              How to run these tests locally \n\n
+...              ============================== \n\n
+...
+...              robot -d results/ -L TRACE -i CACHE robot/ADMIN_TESTS/
+...              OR
+...              robot -v SUT:ADMIN-TEST -d results/ -L TRACE -i cache robot/ADMIN_TESTS/
+...              OR (when you have started EHRbase + DB manually)
+...              robot -v SUT:ADMIN-DEV -d results/ -L TRACE -i cache robot/ADMIN_TESTS/
+...
+...              Thanks to Stefan Spiska for providing the documentation for this test in \n\n
+...              https://github.com/ehrbase/project_management/issues/451
 
 Resource        ../_resources/keywords/admin_keywords.robot
 Resource        ../_resources/keywords/ehr_keywords.robot
@@ -40,7 +53,7 @@ Force Tags     cache    cache_template_update
 *** Variables ***
 # comment: overriding defaults in suite_settings.robot
 ${SUT}                         ADMIN-TEST
-${CACHE-ENABLED}               ${TRUE}
+${CACHE-ENABLED}               ${FALSE}
 ${ALLOW-TEMPLATE-OVERWRITE}    ${FALSE}
 
 ${VALID DATA SETS}     ${PROJECT_ROOT}${/}tests${/}robot${/}_resources${/}test_data_sets${/}valid_templates
@@ -54,13 +67,12 @@ Commit Composition After Template Update (Cache Enabled)
     01) Run ehrbase with cache enabled true
     02) Upload Template Containing Node With Specific Archetype_ID
     03) Upload Composition Containing Entity Corresponding To Specific Archetype_ID
-    04a) Check That: Get Opt / Get Web-Template Contains Specific Archetype_ID
-    04b) Check That: Aql Query With Specific Archetype_ID Retunrs The Composition
+    04) Conduct Checks via 'GET Opt' and 'AQL Queries'
     05) Update Template Changing The Specific Archetype_ID To NEW Archetype_ID
     06) Upload Composition (To Updated Template) Containing Entity Corresponding To NEW Specific Archetype_ID
-    07. Check That: Get Opt / Get Web-Template Contains The NEW Specific Archetype_ID
-    08. Restart ehrbase
-    09. Check That: Get Opt Contains The NEW Specific Archetype_ID
+    07) Conduct Checks via 'GET Opt' and 'AQL Queries'
+    08) Restart ehrbase
+    09) Conduct Checks To Validate Cache Works Correctly
     # 10. Check That: Get Opt / Get Web-Template Contains The NEW Specific Archetype_ID    # TODO: clarify w/ @Stefan
 
     # [Teardown]    CLEAN UP
@@ -84,6 +96,7 @@ startup SUT
     Set Environment Variable    ADMINAPI_ALLOWDELETEALL    true
     generic_keywords.startup SUT
 
+
 01) Run ehrbase with cache enabled true
     Log    Robot takes care of this as long as you start the test with
     Log    robot -d results -L TRACE -i cache robot/ADMIN_TESTS
@@ -102,36 +115,34 @@ startup SUT
     commit composition (XML)    minimal/cache_composition.xml
 
 
-04a) Check That: Get Opt / Get Web-Template Contains Specific Archetype_ID
+04) Conduct Checks via 'GET Opt' and 'AQL Queries'
 
-    ${xml}=              retrieve OPT by template_id    cache_test.v1
-    ${archetype_id1}=    Get Element Text    ${xml}    xpath=definition/archetype_id/value
-                         Should Be Equal As Strings    ${archetype_id1}    openEHR-EHR-COMPOSITION.minimal.v1
+    # comment: Check That - Get Opt / Get Web-Template Contains Specific Archetype_ID
+                            prepare new request session    XML    Prefer=return=representation
+        ${xml}=             retrieve OPT by template_id    cache_test.v1
+        ${archetype_id1}=   Get Element Text    ${xml}    xpath=definition/archetype_id/value
+                            Should Be Equal As Strings    ${archetype_id1}    openEHR-EHR-COMPOSITION.minimal.v1
 
-    ${archetype_id2}=    Get Element Text    ${xml}    xpath=definition/attributes[2]/children/archetype_id/value
-                         Should Be Equal As Strings    ${archetype_id2}    openEHR-EHR-ADMIN_ENTRY.minimal.v1
+        ${archetype_id2}=   Get Element Text    ${xml}    xpath=definition/attributes[2]/children/archetype_id/value
+                            Should Be Equal As Strings    ${archetype_id2}    openEHR-EHR-ADMIN_ENTRY.minimal.v1
 
 
-04b) Check That: Aql Query With Specific Archetype_ID Retunrs The Composition
-
-    # comment: execute AQL query
-    ${query1}=    Catenate
-    ...           SELECT
-    ...             c/uid/value, c/name/value, c/archetype_node_id, c/composer/name
-    ...           FROM
-    ...             EHR e
-    ...           CONTAINS
-    ...             COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1]
-    Set Test Variable    ${payload}    {"q": "${query1}"}
-    POST /query/aql (REST)     JSON
-
-    # comment: valiate AQL result
-    String    $.rows[0][0]    ${version_uid}
-    String    $.rows[0][1]    Cache Test
-    String    $.rows[0][2]    openEHR-EHR-COMPOSITION.minimal.v1
-    String    $.rows[0][3]    Dr. Robot
-
-    
+    # comment: Check That - Aql Query With Specific Archetype_ID Retunrs The Composition
+        # comment: create AQL string and execute AQL query
+        ${query1}=    Catenate
+        ...           SELECT
+        ...             c/uid/value, c/name/value, c/archetype_node_id, c/composer/name
+        ...           FROM
+        ...             EHR e
+        ...           CONTAINS
+        ...             COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1]
+        Set Test Variable    ${payload}    {"q": "${query1}"}
+        POST /query/aql (REST)     JSON
+        # comment: valiate AQL result
+        String    $.rows[0][0]    ${version_uid}
+        String    $.rows[0][1]    Cache Test
+        String    $.rows[0][2]    openEHR-EHR-COMPOSITION.minimal.v1
+        String    $.rows[0][3]    Dr. Robot
 
 
 05) Update Template Changing The Specific Archetype_ID To New Archetype_ID
@@ -139,61 +150,65 @@ startup SUT
     #          via the opt and the admin endpoints
 
     (admin) update OPT    minimal/cache_updated.opt
-    prepare new request session    XML
-    ${xml}=              retrieve OPT by template_id    cache_test.v1
-    ${archetype_id1}=    Get Element Text    ${xml}    xpath=definition/archetype_id/value
-                         Should Be Equal As Strings    ${archetype_id1}    openEHR-EHR-COMPOSITION.minimal.v1
-    ${archetype_id2}=    Get Element Text    ${xml}    xpath=definition/attributes[2]/children/archetype_id/value
-                         Should Be Equal As Strings    ${archetype_id2}    openEHR-EHR-EVALUATION.minimal.v1
+    Should Be Equal As Strings   ${response.status_code}   200
 
-    # TODO: DIESE WERTE SOLLTEN NICHT MEHR EXESTIEREN?
-    # ${xml}=              retrieve OPT by template_id    minimal_observation.en.v1
-    # ${archetype_id1}=    Get Element Text    ${xml}    xpath=definition/archetype_id/value
-    #                      Should Be Equal As Strings    ${archetype_id1}    openEHR-EHR-COMPOSITION.minimal.v1
-    # ${archetype_id2}=    Get Element Text    ${xml}    xpath=definition/attributes[2]/children/archetype_id/value
-    #                      Should Be Equal As Strings    ${archetype_id2}    openEHR-EHR-ADMIN_ENTRY.minimal.v1
 
-    
 06) Upload Composition (To Updated Template) Containing Entity Corresponding To NEW Specific Archetype_ID
 
+    prepare new request session    XML    Prefer=return=representation
     create new EHR (XML)
     commit composition (XML)   minimal/cache_composition_updated.xml
 
-    ${query1}=    Catenate
-    ...           SELECT
-    ...             c/uid/value, c/name/value, c/archetype_node_id, c/composer/name
-    ...           FROM
-    ...             EHR e
-    ...           CONTAINS
-    ...             COMPOSITION c [openEHR-EHR-EVALUATION.minimal.v1]
-    Set Test Variable    ${payload}    {"q": "${query1}"}
-    POST /query/aql (REST)     JSON
 
-    # comment: valiate AQL result
-    String    $.rows[1][0]    ${version_uid}
-    String    $.rows[1][1]    Cache Test Updated
-    String    $.rows[1][2]    openEHR-EHR-COMPOSITION.minimal.v1
-    String    $.rows[1][3]    Dr. Robot Updated
+07) Conduct Checks via 'GET Opt' and 'AQL Queries'
+
+    # comment: Check That - Get Opt / Get Web-Template Contains The NEW Specific Archetype_ID
+                            prepare new request session    XML    Prefer=return=representation
+        ${xml}=             retrieve OPT by template_id    cache_test.v1
+        ${archetype_id1}=   Get Element Text    ${xml}    xpath=definition/archetype_id/value
+                            Should Be Equal As Strings    ${archetype_id1}    openEHR-EHR-COMPOSITION.minimal.v1
+        ${archetype_id2}=   Get Element Text    ${xml}    xpath=definition/attributes[2]/children/archetype_id/value
+                            Should Be Equal As Strings    ${archetype_id2}    openEHR-EHR-EVALUATION.minimal.v1
+
+    # comment: Check That - Aql Query With Specific Archetype_id Returns No Entry
+        # TODO: clarify w/ @stefan.spiska which query to use for this
+
+    # comment: Check That - Aql Query With New Specific Archetype_id Returns The Composition
+        ${query1}=    Catenate
+        ...           SELECT
+        ...             c/uid/value, c/name/value, c/archetype_node_id, c/composer/name
+        ...           FROM
+        ...             EHR e
+        ...           CONTAINS
+        ...             COMPOSITION c [openEHR-EHR-EVALUATION.minimal.v1]
+        Set Test Variable    ${payload}    {"q": "${query1}"}
+        POST /query/aql (REST)     JSON
+        # comment: valiate AQL result
+        String    $.rows[1][0]    ${version_uid}
+        String    $.rows[1][1]    Cache Test Updated
+        String    $.rows[1][2]    openEHR-EHR-COMPOSITION.minimal.v1
+        String    $.rows[1][3]    Dr. Robot Updated
 
 
-07. Check That : Get Opt / Get Web-Template Contains The NEW Specific Archetype_ID
-    Log    All validation happen directly in the steps above
-    # Check That: Get Opt / Get Web-Template Contains The NEW Specific Archetype_ID
-    # Check That: Aql Query With Specific Archetype_id Returns No Entry;
-    # Check That: Aql Query With New Specific Archetype_id Returns The Composition
-
-
-08. Restart Ehrbase
+08) Restart Ehrbase
     stop openehr server
     log    ${CACHE-ENABLED}
     start openehr server
     log    ${CACHE-ENABLED}
 
 
-09. Check That: Get Opt Contains The NEW Specific Archetype_ID
+08) Restart Ehrbase (With Cache Disabled)
+    stop openehr server
+    Set Suite Variable    ${CACHE-ENABLED}    ${FALSE}
+    log    ${CACHE-ENABLED}
+    start openehr server
+    log    ${CACHE-ENABLED}
+
+
+09) Conduct Checks To Validate Cache Works Correctly
     # comment: Check That: Get Opt Contains The NEW Specific Archetype_ID
         prepare new request session    XML
-        ${xml}=    retrieve OPT by template_id    cache_test.v1
+        ${xml}=     retrieve OPT by template_id    cache_test.v1
         ${archetype_id1}=    Get Element Text    ${xml}    xpath=definition/archetype_id/value
         Should Be Equal As Strings    ${archetype_id1}    openEHR-EHR-COMPOSITION.minimal.v1
 
@@ -201,8 +216,8 @@ startup SUT
         Should Be Equal As Strings    ${archetype_id2}    openEHR-EHR-EVALUATION.minimal.v1
     
     # comment: Check That: AQL query with specific archetype_ID returns no entry
-
-        # TODO: need proper query
+    
+        # TODO: clarify w/ @stefan.spiska which query to use for this
 
         # comment: execute AQL query
         ${query1}=    Catenate
@@ -216,7 +231,6 @@ startup SUT
         POST /query/aql (REST)     JSON
 
         # comment: valiate AQL result
-        # String    $.rows[0][0]    ${version_uid}
         String    $.rows[0][1]    Cache Test
         String    $.rows[0][2]    openEHR-EHR-COMPOSITION.minimal.v1
         String    $.rows[0][3]    Dr. Robot
@@ -241,14 +255,8 @@ startup SUT
         String    $.rows[1][3]    Dr. Robot Updated
 
 
-10. Check That: Get Opt / Get Web-Template Contains The NEW Specific Archetype_ID
+10) Check That: Get Opt / Get Web-Template Contains The NEW Specific Archetype_ID
     # TODO: clarify with @Stefan - seems to be just a duplication of step 9
-
-
-
-
-
-
 
 
 
