@@ -28,7 +28,7 @@ Resource        template_opt1.4_keywords.robot
     [Documentation]     Admin delete of EHR record with a given ehr_id.
     ...                 DEPENDENCY: `prepare new request session`
 
-    &{resp}=            REST.DELETE    ${baseurl}/admin/ehr/${ehr_id}
+    &{resp}=            REST.DELETE    ${admin_baseurl}/ehr/${ehr_id}
                         Should Be Equal As Strings   ${resp.status}   204
                         Set Test Variable    ${response}    ${resp}
                         Output Debug Info To Console
@@ -36,18 +36,23 @@ Resource        template_opt1.4_keywords.robot
 
 (admin) update OPT
     [Arguments]         ${opt_file}    ${prefer_return}=representation
-    [Documentation]     Updates OPT via admin endpoint /admin/template/${template_id} \n\n
-    ...                 valid values for 'prefer_return': \n\n\
-    ...                 - representation (default) \n\n
-    ...                 - minimal
-                        prepare new request session    XML
-                        ...    Prefer=return=${prefer_return}
-                        Set Test Variable    ${prefer_return}    ${prefer_return}
+    [Documentation]     Updates OPT via admin endpoint admin_baseurl/template/${template_id} \n\n
+
                         get valid OPT file    ${opt_file}
-                        # upload OPT file
-    ${resp}=            Put Request    ${SUT}    /admin/template/${template_id}
+    
+    &{headers}=         Create Dictionary    &{EMPTY}
+                        Set To Dictionary    ${headers}
+                        ...                  Content-Type=application/xml
+                        ...                  Accept=application/xml
+                        ...                  Prefer=return=${prefer_return}
+
+                        Create Session       ${SUT}    ${ADMIN_BASEURL}    debug=2
+                        ...                  auth=${CREDENTIALS}    verify=True
+
+    ${resp}=            Put Request    ${SUT}    /template/${template_id}
                         ...    data=${file}    headers=${headers}
                         Set Test Variable    ${response}    ${resp}
+                        Set Test Variable    ${prefer_return}    ${prefer_return}
 
 
 (admin) delete OPT
@@ -61,7 +66,7 @@ Resource        template_opt1.4_keywords.robot
                         prepare new request session
                         ...    Prefer=return=${prefer_return}
                         Set Test Variable    ${prefer_return}    ${prefer_return}
-    &{resp}=            REST.DELETE    ${baseurl}/admin/template/${template_id}
+    &{resp}=            REST.DELETE    ${admin_baseurl}/template/${template_id}
                         Set Test Variable    ${response}    ${resp}
                         Output Debug Info To Console
 
@@ -70,7 +75,7 @@ Resource        template_opt1.4_keywords.robot
     ...                 Depends on any KW that exposes an variable named 'template_id'
     ...                 to test or suite level scope.
                         prepare new request session
-    &{resp}=            REST.DELETE    ${baseurl}/admin/template/all
+    &{resp}=            REST.DELETE    ${admin_baseurl}/template/all
                         Set Test Variable    ${response}    ${resp}
                         Output Debug Info To Console
 
@@ -79,7 +84,7 @@ Resource        template_opt1.4_keywords.robot
     [Documentation]     Admin delete of Composition.
     ...                 Needs `${versioned_object_uid}` var from e.g. `commit composition (JSON)` KW.
 
-    &{resp}=            REST.DELETE    ${baseurl}/admin/ehr/${ehr_id}/composition/${versioned_object_uid}
+    &{resp}=            REST.DELETE    ${admin_baseurl}/ehr/${ehr_id}/composition/${versioned_object_uid}
                         Should Be Equal As Strings   ${resp.status}   204
                         Set Test Variable    ${response}    ${resp}
                         Output Debug Info To Console
@@ -110,7 +115,7 @@ check composition admin delete table counts
     [Documentation]     Admin delete of Contribution.
     ...                 Needs `${contribution_uid}` var from e.g. `commit CONTRIBUTION (JSON)` KW.
 
-    &{resp}=            REST.DELETE    ${baseurl}/admin/ehr/${ehr_id}/contribution/${contribution_uid}
+    &{resp}=            REST.DELETE    ${admin_baseurl}/ehr/${ehr_id}/contribution/${contribution_uid}
                         Should Be Equal As Strings   ${resp.status}   204
                         Set Test Variable    ${response}    ${resp}
                         Output Debug Info To Console
@@ -121,7 +126,7 @@ check composition admin delete table counts
     ...                 Needs manualle created `${folder_versioned_uid}`.
 
 
-    &{resp}=            REST.DELETE    ${baseurl}/admin/ehr/${ehr_id}/directory/${folder_versioned_uid}
+    &{resp}=            REST.DELETE    ${admin_baseurl}/ehr/${ehr_id}/directory/${folder_versioned_uid}
                         # Should Be Equal As Strings   ${resp.status}   204
                         Integer    response status   204
                         Set Test Variable    ${response}    ${resp}
