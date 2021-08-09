@@ -92,7 +92,7 @@ ${CACHE-ENABLED}        ${FALSE}
 
 005 ADMIN - Delete Non-Existing Template
                         prepare new request session    XML
-    ${resp}=            REST.DELETE    /admin/template/foo
+    ${resp}=            REST.DELETE    ${ADMIN_BASEURL}/template/foo
                         Integer    response status    404
                         String     response body    pattern= .*Operational template with id foo not found
                         Output     response body
@@ -100,7 +100,7 @@ ${CACHE-ENABLED}        ${FALSE}
 
 006 ADMIN - Invalid Usage of Delete Endpoint
                         prepare new request session    XML
-    ${resp}=            REST.DELETE    /admin/template/
+    ${resp}=            REST.DELETE    ${ADMIN_BASEURL}/template/
                         Integer    response status    404
                         Output     response body
     
@@ -215,21 +215,21 @@ ${CACHE-ENABLED}        ${FALSE}
 
 012 ADMIN - Invalid Usage of Update Endpoint
                         prepare new request session    XML
-    ${resp}=            REST.PUT    /admin/template/
+    ${resp}=            REST.PUT    ${ADMIN_BASEURL}/template/
                         Integer    response status    404
                         Output     response body
 
 
 013 ADMIN - Invalid Usage of Update Endpoint
                         prepare new request session    XML
-    ${resp}=            REST.PUT    /admin/template/foo
+    ${resp}=            REST.PUT    ${ADMIN_BASEURL}/template/foo
                         Integer    response status    400
                         Output     response body
 
 
 014 ADMIN - Invalid Usage of Update Endpoint
                         prepare new request session    XML
-    ${resp}=            REST.PUT    /admin/template/foo    {"foo": "bar"}
+    ${resp}=            REST.PUT    ${ADMIN_BASEURL}/template/foo    {"foo": "bar"}
                         Integer    response status    404
                         Output     response body
                         String     response body    pattern=.*Template with id foo does not exist
@@ -237,7 +237,7 @@ ${CACHE-ENABLED}        ${FALSE}
 
 015 ADMIN - Invalid Usage of Update Endpoint
                         prepare new request session    XML
-    ${resp}=            REST.PUT    /admin/template/${123}    {"foo": "bar"}
+    ${resp}=            REST.PUT    ${ADMIN_BASEURL}/template/${123}    {"foo": "bar"}
                         Integer    response status    404
                         Output     response body
                         String     response body    pattern=.*Template with id 123 does not exist
@@ -287,6 +287,27 @@ upload valid OPT
     upload OPT file
     Set Test Variable    ${response}    ${response}
     server accepted OPT
+    
+
+(admin) update OPT
+    [Arguments]         ${opt_file}    ${prefer_return}=representation
+    [Documentation]     Updates OPT via admin endpoint admin_baseurl/template/${template_id} \n\n
+
+                        get valid OPT file    ${opt_file}
+    
+    &{headers}=         Create Dictionary    &{EMPTY}
+                        Set To Dictionary    ${headers}
+                        ...                  Content-Type=application/xml
+                        ...                  Accept=application/xml
+                        ...                  Prefer=return=${prefer_return}
+
+                        Create Session       ${SUT}    ${ADMIN_BASEURL}    debug=2
+                        ...                  auth=${CREDENTIALS}    verify=True
+
+    ${resp}=            Put Request    ${SUT}    /template/${template_id}
+                        ...    data=${file}    headers=${headers}
+                        Set Test Variable    ${response}    ${resp}
+                        Set Test Variable    ${prefer_return}    ${prefer_return}
 
 
 validate PUT response - 200 updated
@@ -316,6 +337,22 @@ validate PUT response - 422 unprocessable entity
                         Should Match    ${response.text}    *Template with id ${template_id} is used by X composition(s)*
 
 
+(admin) delete OPT
+    [Arguments]         ${prefer_return}=representation
+    [Documentation]     Admin delete OPT on server.
+    ...                 Depends on any KW that exposes an variable named 'template_id'
+    ...                 to test or suite level scope. \n\n
+    ...                 valid values for 'prefer_return': \n\n\
+    ...                 - representation (default) \n\n
+    ...                 - minimal
+                        prepare new request session
+                        ...    Prefer=return=${prefer_return}
+                        Set Test Variable    ${prefer_return}    ${prefer_return}
+    &{resp}=            REST.DELETE    ${admin_baseurl}/template/${template_id}
+                        Set Test Variable    ${response}    ${resp}
+                        Output Debug Info To Console
+
+
 validate DELETE response - 204 deleted
                         Integer    response status   204
 
@@ -333,14 +370,14 @@ validate DELETE response - 422 unprocessable entity
                         ...        pattern=Cannot delete template minimal_admin.en.v1 since the following compositions are still using it.*
 
 
-# (admin) delete all OPTs
-#     [Documentation]     Admin delete OPT on server.
-#     ...                 Depends on any KW that exposes an variable named 'template_id'
-#     ...                 to test or suite level scope.
-#                         prepare new request session
-#     &{resp}=            REST.DELETE    ${baseurl}/admin/template/all
-#                         Set Test Variable    ${response}    ${resp}
-#                         Output Debug Info To Console
+(admin) delete all OPTs
+    [Documentation]     Admin delete OPT on server.
+    ...                 Depends on any KW that exposes an variable named 'template_id'
+    ...                 to test or suite level scope.
+                        prepare new request session
+    &{resp}=            REST.DELETE    ${admin_baseurl}/template/all
+                        Set Test Variable    ${response}    ${resp}
+                        Output Debug Info To Console
 
 
 validate DELETE ALL response - 204 deleted ${amount}
@@ -374,16 +411,16 @@ validate DELETE ALL response - 422 unprocessable entity
 
 
 # VARIANTS
-# PUT /admin/template/{template_id}    200
-# PUT /admin/template/{template_id}    404
-# PUT /admin/template/{template_id}    422
-# PUT /admin/template/                 404
-# PUT /admin/template/123              404
-# PUT /admin/template/foobar           404
+# PUT admin_baseurl/template/{template_id}    200
+# PUT admin_baseurl/template/{template_id}    404
+# PUT admin_baseurl/template/{template_id}    422
+# PUT admin_baseurl/template/                 404
+# PUT admin_baseurl/template/123              404
+# PUT admin_baseurl/template/foobar           404
 
-# DELETE /admin/template/{template_id}    204
-# DELETE /admin/template/{template_id}    422
-# DELETE /admin/template/all              200
-# DELETE /admin/template/all              422
-# DELETE /admin/template/all              200 (ohne vorher opts hochzuladen)
-# DELETE /admin/template/all              200 (nur 1 opt vorher hochgeladen)
+# DELETE admin_baseurl/template/{template_id}    204
+# DELETE admin_baseurl/template/{template_id}    422
+# DELETE admin_baseurl/template/all              200
+# DELETE admin_baseurl/template/all              422
+# DELETE admin_baseurl/template/all              200 (ohne vorher opts hochzuladen)
+# DELETE admin_baseurl/template/all              200 (nur 1 opt vorher hochgeladen)

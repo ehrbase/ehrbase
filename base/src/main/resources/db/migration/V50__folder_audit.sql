@@ -19,11 +19,86 @@
 
 -- Adds commit_audit to each folder version
 
+-- Migration function to create new dummy audits
+CREATE OR REPLACE FUNCTION ehr.migrate_folder_audit(OUT ret_id UUID) AS
+$$
+BEGIN
+    -- Add migration dummy party entry, only if not existing already
+    INSERT INTO ehr.party_identified (
+        -- id will get generated
+        name,
+        party_type,
+        object_id_type
+    )
+    SELECT 'migration_dummy_65a3da3a-476f-4b1e-ab04-fa1c42edeac0',
+           'party_self',
+           'undefined'
+    WHERE NOT EXISTS (
+		SELECT 1 FROM ehr.party_identified WHERE name='migration_dummy_65a3da3a-476f-4b1e-ab04-fa1c42edeac0'
+	);
+
+    -- Helper queries to:
+    -- 1) Find the oldest audit to copy two attributes from
+    -- (Note: There will always be an audit, because this migration function is only run for existing folder, which require and EHR, which will have a Status, which will have an Audit.
+    WITH audits AS (
+        SELECT ad.system_id,
+               ad.time_committed_tzid
+        FROM ehr.audit_details AS ad
+        WHERE ad.id IN (
+            SELECT id FROM ehr.audit_details ORDER BY time_committed asc LIMIT 1
+        )
+
+        ),
+    -- 2) Find the dummy party
+        party AS (
+            SELECT id FROM ehr.party_identified WHERE name  = 'migration_dummy_65a3da3a-476f-4b1e-ab04-fa1c42edeac0' LIMIT 1
+        )
+
+    -- Copy the values of the oldest/initial audit
+    -- and change committer to the dummy party and the description to "migration_dummy"
+    INSERT INTO ehr.audit_details (
+        -- id will get generated
+        system_id,
+        committer,
+        -- time_committed will get default value
+        time_committed_tzid,
+        change_type,
+        description
+    )
+    SELECT
+        a.system_id,
+        p.id,               -- set dummy committer
+        a.time_committed_tzid,
+        'Unknown',          -- change type set to unknown
+        'migration_dummy'   -- description to mark entry as dummy
+    FROM audits AS a, party AS p
+
+    -- Finally take and return the ID of the inserted row
+    RETURNING id
+    INTO  ret_id;  -- returned at the end automatically
+END
+$$
+LANGUAGE plpgsql;
+
 ALTER TABLE ehr.folder
-    ADD COLUMN has_audit UUID NOT NULL references ehr.audit_details(id) ON DELETE CASCADE; -- has this audit_details instance
+    ADD COLUMN has_audit UUID references ehr.audit_details(id) ON DELETE CASCADE; -- has this audit_details instance
+
+ALTER TABLE ehr.folder
+    -- Set the type (again), to be able to call the migration function
+    ALTER COLUMN has_audit TYPE UUID
+    USING ehr.migrate_folder_audit(),
+    -- And finally set the column to NOT NULL
+    ALTER COLUMN has_audit SET NOT NULL;
 
 ALTER TABLE ehr.folder_history
-    ADD COLUMN has_audit UUID NOT NULL references ehr.audit_details(id) ON DELETE CASCADE; -- has this audit_details instance
+    ADD COLUMN has_audit UUID references ehr.audit_details(id) ON DELETE CASCADE; -- has this audit_details instance
+
+ALTER TABLE ehr.folder_history
+    -- Set the type (again), to be able to call the migration function
+    ALTER COLUMN has_audit TYPE UUID
+    USING ehr.migrate_folder_audit(),
+    -- And finally set the column to NOT NULL
+    ALTER COLUMN has_audit SET NOT NULL;
 
 -- Also modify the admin deletion of a folder function to include the new audits.
 DROP FUNCTION admin_delete_folder(uuid);

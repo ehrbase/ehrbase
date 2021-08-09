@@ -15,14 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.rest.openehr.controller.admin;
+package org.ehrbase.rest.admin;
 
 import io.swagger.annotations.*;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.response.openehr.admin.AdminDeleteResponseData;
 import org.ehrbase.response.openehr.admin.AdminUpdateResponseData;
-import org.ehrbase.rest.openehr.controller.BaseController;
+import org.ehrbase.rest.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
@@ -39,13 +39,13 @@ import java.util.UUID;
 @Api(tags = {"Admin", "EHR"})
 @ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
-@RequestMapping(path = "/rest/openehr/v1/admin/ehr", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-public class OpenehrAdminEhrController extends BaseController {
+@RequestMapping(path = "/rest/admin/ehr", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+public class AdminEhrController extends BaseController {
 
     private final EhrService ehrService;
 
     @Autowired
-    public OpenehrAdminEhrController(EhrService ehrService) {
+    public AdminEhrController(EhrService ehrService) {
         this.ehrService = ehrService;
     }
 

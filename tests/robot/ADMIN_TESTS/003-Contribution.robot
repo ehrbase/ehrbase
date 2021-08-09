@@ -72,6 +72,16 @@ startup SUT
     generic_keywords.startup SUT
 
 
+admin delete contribution
+    [Documentation]     Admin delete of Contribution.
+    ...                 Needs `${contribution_uid}` var from e.g. `commit CONTRIBUTION (JSON)` KW.
+
+    &{resp}=            REST.DELETE    ${admin_baseurl}/ehr/${ehr_id}/contribution/${contribution_uid}
+                        Should Be Equal As Strings   ${resp.status}   204
+                        Set Test Variable    ${response}    ${resp}
+                        Output Debug Info To Console
+
+
 check contribution admin delete table counts initially
 
     ${contr_records}=   Count Rows In DB Table    ehr.contribution

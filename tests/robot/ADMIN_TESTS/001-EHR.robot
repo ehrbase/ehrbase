@@ -128,6 +128,16 @@ startup SUT
     generic_keywords.startup SUT
 
 
+admin delete ehr
+    [Documentation]     Admin delete of EHR record with a given ehr_id.
+    ...                 DEPENDENCY: `prepare new request session`
+
+    &{resp}=            REST.DELETE    ${admin_baseurl}/ehr/${ehr_id}
+                        Should Be Equal As Strings   ${resp.status}   204
+                        Set Test Variable    ${response}    ${resp}
+                        Output Debug Info To Console
+
+
 check ehr admin delete table counts
 
     ${ehr_records}=     Count Rows In DB Table    ehr.ehr
