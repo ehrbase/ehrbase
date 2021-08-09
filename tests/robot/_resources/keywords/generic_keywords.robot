@@ -186,8 +186,13 @@ empty operational_templates folder
 
 start openehr server
     get application version
-    run keyword if  '${CODE_COVERAGE}' == 'True'   start server process with coverage
-    run keyword if  '${CODE_COVERAGE}' == 'False'  start server process without coverage
+
+    IF    '${CODE_COVERAGE}' == 'True'
+        start server process with coverage
+    ELSE
+        start server process without coverage
+    END
+
     Wait For Process  ehrserver  timeout=25  on_timeout=continue
 
     # comment: log EHRbase's stack trace
@@ -209,8 +214,12 @@ start openehr server
 
 start server process without coverage
                         Set Environment Variable    SECURITY_AUTHTYPE    ${SECURITY_AUTHTYPE}
-                        Run Keyword If    '${SECURITY_AUTHTYPE}' == 'OAUTH'    Set Environment Variable
-                        ...               SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI    ${JWT_ISSUERURI}    
+                        IF    '${SECURITY_AUTHTYPE}' == 'OAUTH'
+                              Set Environment Variable
+                              ...    SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI    ${JWT_ISSUERURI}
+                        END
+
+
     ${result}=          Start Process  java  -jar  ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
                         ...                  --cache.enabled\=${CACHE-ENABLED}
                         ...                  --system.allow-template-overwrite\=${ALLOW-TEMPLATE-OVERWRITE}
