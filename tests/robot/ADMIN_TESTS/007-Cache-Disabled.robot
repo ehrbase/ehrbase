@@ -53,7 +53,7 @@ Force Tags     cache    cache_template_update
 *** Variables ***
 # comment: overriding defaults in suite_settings.robot
 ${SUT}                         ADMIN-TEST
-${CACHE-ENABLED}               ${TRUE}
+${CACHE-ENABLED}               ${FALSE}
 ${ALLOW-TEMPLATE-OVERWRITE}    ${FALSE}
 
 ${VALID DATA SETS}     ${PROJECT_ROOT}${/}tests${/}robot${/}_resources${/}test_data_sets${/}valid_templates
@@ -61,7 +61,7 @@ ${VALID DATA SETS}     ${PROJECT_ROOT}${/}tests${/}robot${/}_resources${/}test_d
 
 
 *** Test Cases ***
-Commit Composition After Template Update (Cache Enabled)
+Commit Composition After Template Update (Cache Disabled)
     [Tags]    
     
     01) Run ehrbase with cache enabled true
@@ -73,7 +73,7 @@ Commit Composition After Template Update (Cache Enabled)
     07) Conduct Checks via 'GET Opt' and 'AQL Queries'
     08) Restart ehrbase
     09) Conduct Checks To Validate Cache Works Correctly
-    # 10. Check That: Get Opt / Get Web-Template Contains The NEW Specific Archetype_ID    # TODO: clarify w/ @Stefan
+
 
     # [Teardown]    CLEAN UP
 
@@ -104,27 +104,26 @@ startup SUT
 
 02) Upload Template Containing Node With Specific Archetype_ID
 
-    upload valid OPT    minimal/cache.opt
-    retrieve OPT by template_id    cache_test.v1
+    upload valid OPT    cache/case.opt
+    retrieve OPT by template_id    Case
 
 
 03) Upload Composition Containing Entity Corresponding To Specific Archetype_ID
 
     prepare new request session    XML    Prefer=return=representation
     create new EHR (XML)
-    commit composition (XML)    minimal/cache_composition.xml
+    commit composition (XML)    cache/case_composition.xml
 
 
 04) Conduct Checks via 'GET Opt' and 'AQL Queries'
 
     # comment: Check That - Get Opt / Get Web-Template Contains Specific Archetype_ID
                             prepare new request session    XML    Prefer=return=representation
-        ${xml}=             retrieve OPT by template_id    cache_test.v1
+        ${xml}=             retrieve OPT by template_id    Case
         ${archetype_id1}=   Get Element Text    ${xml}    xpath=definition/archetype_id/value
-                            Should Be Equal As Strings    ${archetype_id1}    openEHR-EHR-COMPOSITION.minimal.v1
+                            Should Be Equal As Strings    ${archetype_id1}    openEHR-EHR-COMPOSITION.event_summary.v0
 
-        ${archetype_id2}=   Get Element Text    ${xml}    xpath=definition/attributes[2]/children/archetype_id/value
-                            Should Be Equal As Strings    ${archetype_id2}    openEHR-EHR-ADMIN_ENTRY.minimal.v1
+
 
 
     # comment: Check That - Aql Query With Specific Archetype_ID Retunrs The Composition
@@ -149,7 +148,7 @@ startup SUT
     # comment: without restarting ehrbase!
     #          via the opt and the admin endpoints
 
-    (admin) update OPT    minimal/cache_updated.opt
+    (admin) update OPT    cache/case2.opt
     Should Be Equal As Strings   ${response.status_code}   200
 
 
@@ -157,18 +156,18 @@ startup SUT
 
     prepare new request session    XML    Prefer=return=representation
     create new EHR (XML)
-    commit composition (XML)   minimal/cache_composition_updated.xml
+    commit composition (XML)   cache/case_composition_updated.xml
+
 
 
 07) Conduct Checks via 'GET Opt' and 'AQL Queries'
 
     # comment: Check That - Get Opt / Get Web-Template Contains The NEW Specific Archetype_ID
                             prepare new request session    XML    Prefer=return=representation
-        ${xml}=             retrieve OPT by template_id    cache_test.v1
+        ${xml}=             retrieve OPT by template_id    Case
         ${archetype_id1}=   Get Element Text    ${xml}    xpath=definition/archetype_id/value
-                            Should Be Equal As Strings    ${archetype_id1}    openEHR-EHR-COMPOSITION.minimal.v1
-        ${archetype_id2}=   Get Element Text    ${xml}    xpath=definition/attributes[2]/children/archetype_id/value
-                            Should Be Equal As Strings    ${archetype_id2}    openEHR-EHR-EVALUATION.minimal.v1
+                            Should Be Equal As Strings    ${archetype_id1}    openEHR-EHR-COMPOSITION.event_summary.v0
+        
 
     # comment: Check That - Aql Query With Specific Archetype_id Returns No Entry
         # TODO: clarify w/ @stefan.spiska which query to use for this
@@ -197,23 +196,12 @@ startup SUT
     log    ${CACHE-ENABLED}
 
 
-08) Restart Ehrbase (With Cache Disabled)
-    stop openehr server
-    Set Suite Variable    ${CACHE-ENABLED}    ${FALSE}
-    log    ${CACHE-ENABLED}
-    start openehr server
-    log    ${CACHE-ENABLED}
-
-
 09) Conduct Checks To Validate Cache Works Correctly
     # comment: Check That: Get Opt Contains The NEW Specific Archetype_ID
         prepare new request session    XML
-        ${xml}=     retrieve OPT by template_id    cache_test.v1
+        ${xml}=     retrieve OPT by template_id    Case
         ${archetype_id1}=    Get Element Text    ${xml}    xpath=definition/archetype_id/value
-        Should Be Equal As Strings    ${archetype_id1}    openEHR-EHR-COMPOSITION.minimal.v1
-
-        ${archetype_id2}=    Get Element Text    ${xml}    xpath=definition/attributes[2]/children/archetype_id/value
-        Should Be Equal As Strings    ${archetype_id2}    openEHR-EHR-EVALUATION.minimal.v1
+        Should Be Equal As Strings    ${archetype_id1}    openEHR-EHR-COMPOSITION.event_summary.v0
     
     # comment: Check That: AQL query with specific archetype_ID returns no entry
     
@@ -252,10 +240,6 @@ startup SUT
         String    $.rows[1][3]    Dr. Robot Updated
 
 
-10) Check That: Get Opt / Get Web-Template Contains The NEW Specific Archetype_ID
-    # TODO: clarify with @Stefan - seems to be just a duplication of step 9
-
-
 CLEAN UP
     admin_keywords.(admin) delete composition
     admin_keywords.check composition admin delete table counts
@@ -281,114 +265,3 @@ validate DELETE ALL response - 204 deleted ${amount}
                         Integer    response status   200
                         Integer    response body deleted    ${amount}
 
-
-
-
-
-
-
-
-
-
-
-# oooooooooo.        .o.         .oooooo.   oooo    oooo ooooo     ooo ooooooooo.
-# `888'   `Y8b      .888.       d8P'  `Y8b  `888   .8P'  `888'     `8' `888   `Y88.
-#  888     888     .8"888.     888           888  d8'     888       8   888   .d88'
-#  888oooo888'    .8' `888.    888           88888[       888       8   888ooo88P'
-#  888    `88b   .88ooo8888.   888           888`88b.     888       8   888
-#  888    .88P  .8'     `888.  `88b    ooo   888  `88b.   `88.    .8'   888
-# o888bood8P'  o88o     o8888o  `Y8bood8P'  o888o  o888o    `YbodP'    o888o
-#
-# [ BACKUP ]
-
-    # execute ad-hoc query    D/300_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
-    # AQL_query_keywords.check response: is positive
-
-    # execute ad-hoc query    D/302_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
-    # AQL_query_keywords.check response: is positive
-
-    # execute ad-hoc query    D/304_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
-    # AQL_query_keywords.check response: is positive
-
-    # execute ad-hoc query    D/306_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
-    # AQL_query_keywords.check response: is positive
-
-
-
-## VERSCHIEDENE AQL QUERIES:
-
-    # ${query}=    Catenate
-    # ...           SELECT
-    # ...             c
-    # ...           FROM
-    # ...             COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1]
-    # Set Test Variable    ${payload}    {"q": "${query}"}
-    # POST2 /query/AQL     JSON
-    # String    $.rows[0][0].content[0].archetype_node_id    openEHR-EHR-ADMIN_ENTRY.minimal.v1
-    # String    $.rows[0][0].archetype_node_id    openEHR-EHR-COMPOSITION.minimal.v1
-    # String    $.rows[0][0].archetype_details.archetype_id.value    openEHR-EHR-COMPOSITION.minimal.v1
-
-    # ${query}=    Catenate
-    # ...           SELECT
-    # ...             c/uid/value, c/name/value, c/archetype_node_id
-    # ...           FROM
-    # ...             EHR e
-    # ...           CONTAINS
-    # ...             COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1]
-    # Set Test Variable    ${payload}    {"q": "${query}"}
-    # POST2 /query/AQL     JSON
-
-    # ${query}=    Catenate
-    # ...           SELECT
-    # ...             c/uid/value,
-    # ...             c/archetype_node_id,
-    # ...             c/archetype_details/template_id/value,
-    # ...             c/name/value,
-    # ...             a/data[at0001]/items[at0002]/value/value as int,
-    # ...             a/name/value
-    # ...           FROM
-    # ...             EHR e
-    # ...           CONTAINS
-    # ...             COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1]
-    # ...           CONTAINS
-    # ...             ADMIN_ENTRY a [openEHR-EHR-ADMIN_ENTRY.minimal.v1]
-    # Set Test Variable    ${payload}    {"q": "${query}"}
-    # POST2 /query/AQL     JSON
-
-
-    # ${query}=    Catenate
-    # ...           SELECT
-    # ...             c
-    # ...           FROM
-    # ...             EHR e
-    # ...           CONTAINS
-    # ...             COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1]
-    # ...           CONTAINS
-    # ...             EVALUATION ev [openEHR-EHR-EVALUATION.minimal.v1]
-    # Set Test Variable    ${payload}    {"q": "${query}"}
-    # POST2 /query/AQL     JSON
-    # String    $.rows[0][0].content[0].archetype_node_id    openEHR-EHR-ADMIN_ENTRY.minimal.v1
-    # String    $.rows[0][0].archetype_node_id    openEHR-EHR-COMPOSITION.minimal.v1
-    # String    $.rows[0][0].archetype_details.archetype_id.value    openEHR-EHR-COMPOSITION.minimal.v1
-
-
-    # ${query}=    Catenate
-    # ...           SELECT
-    # ...             c/uid/value, c/name/value, c/archetype_node_id
-    # ...           FROM
-    # ...             EHR e
-    # ...           CONTAINS
-    # ...             COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1]
-    # Set Test Variable    ${payload}    {"q": "${query}"}
-    # POST2 /query/AQL     JSON
-
-    # ${query}=    Catenate
-    # ...           SELECT
-    # ...             c
-    # ...           FROM
-    # ...             COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1]
-    # Set Test Variable    ${payload}    {"q": "${query}"}
-    # POST2 /query/AQL     JSON
-    # # String    $.rows[0][0].content[0].archetype_node_id    openEHR-EHR-ADMIN_ENTRY.minimal.v1
-    # # String    $.rows[0][0].archetype_node_id    openEHR-EHR-COMPOSITION.minimal.v1
-    # # String    $.rows[0][0].archetype_details.archetype_id.value    openEHR-EHR-COMPOSITION.minimal.v1

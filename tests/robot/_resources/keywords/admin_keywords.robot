@@ -29,7 +29,8 @@ Resource        template_opt1.4_keywords.robot
     ...                 DEPENDENCY: `prepare new request session`
 
     &{resp}=            REST.DELETE    ${admin_baseurl}/ehr/${ehr_id}
-                        Should Be Equal As Strings   ${resp.status}   204
+                        # Should Be Equal As Strings   ${resp.status}   204
+                        Integer    response status    204
                         Set Test Variable    ${response}    ${resp}
                         Output Debug Info To Console
 
@@ -85,7 +86,8 @@ Resource        template_opt1.4_keywords.robot
     ...                 Needs `${versioned_object_uid}` var from e.g. `commit composition (JSON)` KW.
 
     &{resp}=            REST.DELETE    ${admin_baseurl}/ehr/${ehr_id}/composition/${versioned_object_uid}
-                        Should Be Equal As Strings   ${resp.status}   204
+                        # Should Be Equal As Strings   ${resp.status}   204
+                        Integer    response status    204
                         Set Test Variable    ${response}    ${resp}
                         Output Debug Info To Console
 
@@ -116,7 +118,8 @@ check composition admin delete table counts
     ...                 Needs `${contribution_uid}` var from e.g. `commit CONTRIBUTION (JSON)` KW.
 
     &{resp}=            REST.DELETE    ${admin_baseurl}/ehr/${ehr_id}/contribution/${contribution_uid}
-                        Should Be Equal As Strings   ${resp.status}   204
+                        # Should Be Equal As Strings   ${resp.status}   204
+                        Integer    response status    204
                         Set Test Variable    ${response}    ${resp}
                         Output Debug Info To Console
 
