@@ -134,7 +134,7 @@ startup SUT
         ...           FROM
         ...             EHR e
         ...           CONTAINS
-        ...             COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1]
+        ...             COMPOSITION c [openEHR-EHR-COMPOSITION.asdfsomegibberish.v1]
         Set Test Variable    ${payload}    {"q": "${query1}"}
         POST /query/aql (REST)     JSON
         # comment: valiate AQL result
