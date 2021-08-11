@@ -58,7 +58,7 @@ import java.util.*;
 
 @Service
 @Transactional
-public class ContributionServiceImp extends BaseService implements ContributionService {
+public class ContributionServiceImp extends BaseServiceImp implements ContributionService {
     // the version list in a contribution adds an type tag to each item, so the specific object is distinguishable
     public static final String TYPE_COMPOSITION = "COMPOSITION";
     public static final String TYPE_EHRSTATUS = "EHR_STATUS";
@@ -198,18 +198,13 @@ public class ContributionServiceImp extends BaseService implements ContributionS
                 break;
             case AMENDMENT: // triggers the same processing as modification // TODO-396: so far so good, but should use the type "AMENDMENT" for audit in access layer
             case MODIFICATION:
-                // preceding_version_uid check
-                Integer latestVersion = compositionService.getLastVersionNumber(getVersionedUidFromVersion(version));
-                String id = version.getPrecedingVersionUid().toString();
-                // remove version number after "::" and add queried version number to compare with given one
-                String actualPreceding = id.substring(0, id.lastIndexOf("::") + 2).concat(latestVersion.toString());
-                if (!actualPreceding.equals(version.getPrecedingVersionUid().toString()))
-                    throw new PreconditionFailedException("Given preceding_version_uid for COMPOSITION object does not match latest existing version");
+                String actualPreceding = getAndCheckActualPreceding(version);
                 // call modification of the given composition
-                compositionService.update(getVersionedUidFromVersion(version), versionRmObject, contributionId);
+                compositionService.update(ehrId, new ObjectVersionId(actualPreceding), versionRmObject, contributionId);
                 break;
             case DELETED:   // case of deletion change type, but request also has payload (TODO: should that be even allowed? specification-wise it's not forbidden)
-                compositionService.delete(getVersionedUidFromVersion(version), contributionId);
+                String actualPreceding2 = getAndCheckActualPreceding(version);
+                compositionService.delete(ehrId, new ObjectVersionId(actualPreceding2), contributionId);
                 break;
             case SYNTHESIS:     // TODO
             case UNKNOWN:       // TODO
@@ -217,6 +212,19 @@ public class ContributionServiceImp extends BaseService implements ContributionS
                 throw new UnexpectedSwitchCaseException(changeType);
         }
     }
+
+    private String getAndCheckActualPreceding(Version version) {
+        // preceding_version_uid check
+        Integer latestVersion = compositionService.getLastVersionNumber(getVersionedUidFromVersion(
+            version));
+        var id = version.getPrecedingVersionUid().toString();
+        // remove version number after "::" and add queried version number to compare with given one
+        String actualPreceding = id.substring(0, id.lastIndexOf("::") + 2).concat(latestVersion.toString());
+        if (!actualPreceding.equals(version.getPrecedingVersionUid().toString()))
+            throw new PreconditionFailedException("Given preceding_version_uid for COMPOSITION object does not match latest existing version");
+        return actualPreceding;
+    }
+
 
     /**
      * Helper function to process a version of composition type
@@ -264,8 +272,7 @@ public class ContributionServiceImp extends BaseService implements ContributionS
         switch (changeType) {
             case CREATION:
                 // call creation of a new folder version with given input
-                // TODO-526: add handlers for (default) committer and description
-                folderService.create(ehrId, versionRmObject, contributionId, null, null, null);
+                folderService.create(ehrId, versionRmObject, contributionId);
                 break;
             case AMENDMENT: // triggers the same processing as modification // TODO-396: so far so good, but should use the type "AMENDMENT" for audit in access layer
             case MODIFICATION:
@@ -277,12 +284,10 @@ public class ContributionServiceImp extends BaseService implements ContributionS
                 if (!actualPreceding.equals(version.getPrecedingVersionUid().toString()))
                     throw new PreconditionFailedException("Given preceding_version_uid for FOLDER object does not match latest existing version");
                 // call modification of the given folder
-                // TODO-526: add handlers for (default) committer and description
-                folderService.update(version.getPrecedingVersionUid(), versionRmObject, ehrId, contributionId, null, null, null);
+                folderService.update(ehrId, version.getPrecedingVersionUid(), versionRmObject, contributionId);
                 break;
             case DELETED:   // case of deletion change type, but request also has payload (TODO: should that be even allowed? specification-wise it's not forbidden)
-                // TODO-526: add handlers for (default) committer and description
-                folderService.delete(version.getPrecedingVersionUid(), contributionId, null, null, null);
+                folderService.delete(ehrId, version.getPrecedingVersionUid(), contributionId);
                 break;
             case SYNTHESIS:     // TODO
             case UNKNOWN:       // TODO
@@ -341,7 +346,8 @@ public class ContributionServiceImp extends BaseService implements ContributionS
                 try {
                     // throw exception to signal no matching composition was found
                     CompositionDto compo = compositionService.retrieve(objectUid, null).orElseThrow(Exception::new);
-                    compositionService.delete(compo.getUuid(), contributionId);
+                    String actualPreceding = getAndCheckActualPreceding(version);
+                    compositionService.delete(ehrId, new ObjectVersionId(actualPreceding), contributionId);
                 } catch (Exception e) { // given version ID is not of type composition - ignoring the exception because it is expected possible outcome
                     try {
                         // TODO-396: add folder handling

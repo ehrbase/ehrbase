@@ -24,6 +24,7 @@ import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import java.time.LocalDateTime;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -90,61 +91,36 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
     /*************Data Access and modification methods*****************/
 
     @Override
-    public ObjectVersionId create(UUID customContribution, UUID systemId, UUID committerId, String description) { return null; }
-
-    @Override
-    public Boolean update(Timestamp transactionTime) {
-        return null;
-    }
-
-
-    @Override
-    public Boolean update(Timestamp transactionTime, boolean force) {
+    public UUID commit(LocalDateTime timestamp, UUID committerId, UUID systemId,
+        String description) {
         return null;
     }
 
     @Override
-    public Boolean update() {
+    public UUID commit(LocalDateTime timestamp, UUID contribution) {
         return null;
     }
 
     @Override
-    public Boolean update(Boolean force){
-        return null;
+    public boolean update(LocalDateTime timestamp, UUID committerId, UUID systemId,
+        String description, ContributionChangeType changeType) {
+        return false;
     }
 
     @Override
-    public Boolean update(final Timestamp transactionTime, final boolean force, UUID contribution,
-        UUID systemId, UUID committerId, String description, ContributionChangeType changeType) {
-        return null;
+    public boolean update(LocalDateTime timestamp, UUID contribution) {
+        return false;
     }
 
     @Override
-    public Integer delete(){ return null; }
-
-    @Override
-    public Integer delete(UUID contribution, UUID systemId, UUID committerId, String description) {
-        return null;
+    public int delete(LocalDateTime timestamp, UUID committerId, UUID systemId,
+        String description) {
+        return 0;
     }
 
     @Override
-    public UUID commit(Timestamp transactionTime){
-        return null;
-    }
-
-    @Override
-    public UUID commit(){
-        return null;
-    }
-
-    @Override
-    public UUID commit(Timestamp transactionTime, UUID contributionId){
-        return null;
-    }
-
-    @Override
-    public UUID commit(Timestamp transactionTime, UUID systemId, UUID committerId, String description) {
-        return null;
+    public int delete(LocalDateTime timestamp, UUID contribution) {
+        return 0;
     }
 
 

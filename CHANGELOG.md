@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Folder handling (update, delete and missing audits) (see: https://github.com/ehrbase/ehrbase/pull/529)
+- Fixed and refactored handling of audits and versioned objects (see: https://github.com/ehrbase/ehrbase/pull/552/)
 
 ## [0.16.0] (beta)
 

@@ -27,7 +27,6 @@ import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.dao.access.jooq.CompositionAccess;
-import org.ehrbase.dao.access.util.ContributionDef;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.composition.EventContext;
 import org.ehrbase.jooq.pg.tables.records.*;
@@ -47,7 +46,7 @@ import static org.ehrbase.jooq.pg.Tables.*;
  * Composition Access Layer Interface<br>
  * Interface CRUD and specific methods
  */
-public interface I_CompositionAccess extends I_SimpleCRUD {
+public interface I_CompositionAccess extends I_VersionedCRUD {
 
     //definitions of aliases used in joins
     String COMPOSITION_JOIN = "composition_join";
@@ -242,59 +241,6 @@ public interface I_CompositionAccess extends I_SimpleCRUD {
     static boolean isValidLanguageCode(I_DomainAccess domainAccess, String languageCode) {
         return !domainAccess.getContext().selectFrom(LANGUAGE).where(LANGUAGE.CODE.equal(languageCode)).fetch().isEmpty();
     }
-
-    /**
-     * @throws InternalServerException  when contribution couldn't be created because of an internal problem
-     * @throws IllegalArgumentException when content couldn't be committed
-     */
-    UUID commit(UUID committerId, UUID systemId, String description);
-
-    /**
-     * Unlike the basic commit it is necessary to set the contribution manually beforehand, here. This allows committing with a specific
-     * contribution ID, which could be used to process several objects at once.
-     * @param committerId Committer ID (PartyIdentified)
-     * @param description  Description text
-     * @param systemId System ID
-     * @return ID of committed object
-     * @throws IllegalArgumentException when content couldn't be committed
-     */
-    UUID commitWithCustomContribution(UUID committerId, UUID systemId, String description);
-
-    Boolean update(UUID committerId, UUID systemId, ContributionDef.ContributionState state, I_ConceptAccess.ContributionChangeType contributionChangeType, String description);
-
-    /**
-     * Unlike the basic update it is necessary to set the contribution manually beforehand, here. This allows updating with a specific
-     * contribution ID, which could be used to process several objects at once.
-     * @param committerId Committer of this change
-     * @param systemId System of origin of this change
-     * @param contributionChangeType Change type of this change
-     * @param description Updated description or NULL
-     * @return Boolean to indicate success or failure of update
-     */
-    Boolean updateWithCustomContribution(UUID committerId, UUID systemId, I_ConceptAccess.ContributionChangeType contributionChangeType, String description);
-
-    /**
-     * Delete a composition<br>
-     * Delete by simulating an SQL CASCADE wherever appropriate<br>
-     * <ul>
-     * <li>delete entry first</li>
-     * <li>delete the corresponding version entry</li>
-     * <li>delete the composition record</li>
-     * </ul>
-     *
-     * @return
-     */
-    Integer delete(UUID committerId, UUID systemId, String description);
-
-    /**
-     * Unlike the basic delete it is necessary to set the contribution manually beforehand, here. This allows deleting with a specific
-     * contribution ID, which could be used to process several objects at once.
-     * @param committerId Committer of this change
-     * @param systemId System of origin of this change
-     * @param description Updated description or NUL
-     * @return Rows affected by delete
-     */
-    Integer deleteWithCustomContribution(UUID committerId, UUID systemId, String description);
 
     Timestamp getSysTransaction();
 

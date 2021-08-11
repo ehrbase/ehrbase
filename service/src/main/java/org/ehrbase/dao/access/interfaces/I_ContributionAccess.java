@@ -23,6 +23,7 @@ package org.ehrbase.dao.access.interfaces;
 
 import com.nedap.archie.rm.generic.AuditDetails;
 import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
 import org.ehrbase.dao.access.jooq.ContributionAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
@@ -195,18 +196,27 @@ public interface I_ContributionAccess extends I_SimpleCRUD {
      * @param committer     committer ID (Party Identified)
      * @param system        system on which this is initiated
      * @param description   description
+     * @param changeType    change type
      */
-    void setAuditDetailsValues(UUID committer, UUID system, String description);
+    void setAuditDetailsValues(UUID committer, UUID system, String description, ContributionChangeType changeType);
 
     void setAuditDetailsValues(AuditDetails auditObject);
 
     void setAuditDetailsChangeType(UUID changeType);
+
+    void setAuditDetailsCommitter(UUID committer);
+
+    void setAuditDetailsSystemId(UUID system);
+
+    void setAuditDetailsDescription(String description);
 
     UUID getAuditsCommitter();
 
     UUID getAuditsSystemId();
 
     String getAuditsDescription();
+
+    ContributionChangeType getAuditsChangeType();
 
     void setHasAuditDetails(UUID auditId);
 

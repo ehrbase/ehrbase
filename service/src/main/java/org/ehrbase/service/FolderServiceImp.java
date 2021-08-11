@@ -27,7 +27,6 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.service.FolderService;
-import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
 import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
 import org.ehrbase.dao.access.interfaces.I_EhrAccess;
@@ -57,7 +56,7 @@ import static org.ehrbase.dao.access.util.FolderUtils.checkSiblingNameConflicts;
 
 @Service
 @Transactional
-public class FolderServiceImp extends BaseService implements FolderService {
+public class FolderServiceImp extends BaseServiceImp implements FolderService {
 
     @Autowired
     FolderServiceImp(
@@ -71,30 +70,40 @@ public class FolderServiceImp extends BaseService implements FolderService {
      * {@inheritDoc}
      */
     @Override
-    public ObjectVersionId create(UUID ehrId, Folder content, UUID systemId, UUID committerId, String description) {
-        return create(ehrId, content, null, systemId, committerId, description);
+    public Optional<FolderDto> create(UUID ehrId, Folder objData, UUID systemId, UUID committerId,
+        String description) {
+        return internalCreate(ehrId, objData, systemId, committerId, description, null);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public ObjectVersionId create(UUID ehrId, Folder content, UUID contribution, UUID systemId, UUID committerId, String description) {
+    public Optional<FolderDto> create(UUID ehrId, Folder objData, UUID contribution) {
+        return internalCreate(ehrId, objData, null, null, null, contribution);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Optional<FolderDto> create(UUID ehrId, Folder objData) {
+        return create(ehrId, objData, getSystemUuid(), getUserUuid(), null);
+    }
+
+    private Optional<FolderDto> internalCreate(UUID ehrId, Folder objData, UUID systemId, UUID committerId,
+        String description, UUID contribution) {
+
         I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
         if (ehrAccess == null) {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
         }
 
         // Check of there are name conflicts on each folder level
-        checkSiblingNameConflicts(content);
+        checkSiblingNameConflicts(objData);
 
         // Save current time which will be used as transaction time
         Timestamp currentTimeStamp = Timestamp.from(Instant.now());
-
-        // Apply default systemId
-        if (systemId == null) {
-            systemId = getSystemUuid();
-        }
 
         // Contribution handling - create new one or retrieve existing, if ID is given
         I_ContributionAccess contributionAccess;
@@ -108,20 +117,175 @@ public class FolderServiceImp extends BaseService implements FolderService {
             description = contributionAccess.getAuditsDescription();
         }
 
+        if (systemId == null || committerId == null) {
+            throw new InternalServerException("Error on contribution handling for folder creation.");
+        }
+
         // Get first FolderAccess instance
         I_FolderAccess folderAccess = FolderAccess.buildNewFolderAccessHierarchy(
-                getDataAccess(),
-                content,
-                currentTimeStamp,
-                ehrId,
-                contributionAccess
+            getDataAccess(),
+            objData,
+            currentTimeStamp,
+            ehrId,
+            contributionAccess
         );
-        ObjectVersionId folderId = folderAccess.create(contribution, systemId, committerId, description);
+        ObjectVersionId folderId;
+        if (contribution == null) {
+            folderId = new ObjectVersionId(
+                folderAccess.commit(LocalDateTime.now(), systemId, committerId, description).toString()
+                    + "::" + getServerConfig().getNodename()
+                    + "::1"
+            );
+        } else {
+            folderId = new ObjectVersionId((folderAccess.commit(LocalDateTime.now(), contribution).toString()
+                + "::" + getServerConfig().getNodename()
+                + "::1"
+            ));
+        }
         // Save root directory id to ehr entry
         // TODO: Refactor to use UID
         ehrAccess.setDirectory(FolderUtils.extractUuidFromObjectVersionId(folderId));
-        ehrAccess.update(getUserUuid(), getSystemUuid(), null, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, EhrServiceImp.DESCRIPTION);
-        return folderId;
+        ehrAccess.update(getUserUuid(), getSystemUuid(), null, null, ContributionChangeType.MODIFICATION, EhrServiceImp.DESCRIPTION);
+
+        return get(folderId, null);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Optional<FolderDto> update(UUID ehrId, ObjectVersionId targetObjId, Folder objData, UUID systemId, UUID committerId,
+        String description) {
+        return internalUpdate(ehrId, targetObjId, objData, systemId, committerId, description, null);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Optional<FolderDto> update(UUID ehrId, ObjectVersionId targetObjId, Folder objData, UUID contribution) {
+        return internalUpdate(ehrId, targetObjId, objData, null, null, null, contribution);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Optional<FolderDto> update(UUID ehrId, ObjectVersionId targetObjId, Folder objData) {
+        return update(ehrId, targetObjId, objData, getSystemUuid(), getUserUuid(), null);
+    }
+
+    private Optional<FolderDto> internalUpdate(
+        UUID ehrId,
+        ObjectVersionId targetObjId,
+        Folder objData,
+        UUID systemId,
+        UUID committerId,
+        String description,
+        UUID contribution
+        ) {
+        var timestamp = LocalDateTime.now();
+
+        // Check of there are name conflicts on each folder level
+        checkSiblingNameConflicts(objData);
+
+        // Get existing root folder
+        I_FolderAccess
+            folderAccess
+            = I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), targetObjId);
+
+        // Set update data on root folder
+        FolderUtils.updateFolder(objData, folderAccess);
+
+        // Delete sub folders and all their sub folder, as well as their linked entities
+        if (contribution == null) {
+            folderAccess.getSubfoldersList().forEach((sf, sa) ->
+                delete(ehrId, new ObjectVersionId(sf.toString()), systemId,
+                    committerId, description));
+        } else {
+            folderAccess.getSubfoldersList().forEach((sf, sa) ->
+                delete(ehrId, new ObjectVersionId(sf.toString()), contribution));
+        }
+        // Clear sub folder list
+        folderAccess.getSubfoldersList().clear();
+
+        // Create FolderAccess instances for sub folders if there are any
+        if (objData.getFolders() != null && !objData.getFolders().isEmpty()) {
+
+            // Create new sub folders list
+            objData.getFolders()
+                .forEach(childFolder -> folderAccess.getSubfoldersList()
+                    .put(
+                        UUID.randomUUID(),
+                        FolderAccess.buildNewFolderAccessHierarchy(
+                            getDataAccess(),
+                            childFolder,
+                            Timestamp.from(Instant.now()),
+                            ehrId,
+                            ((FolderAccess) folderAccess).getContributionAccess())));
+        }
+
+        // Send update to access layer which updates the hierarchy recursive
+        boolean success;
+        if (contribution == null) {
+            success = folderAccess.update(timestamp, systemId, committerId, description, ContributionChangeType.MODIFICATION);
+        } else {
+            success = folderAccess.update(timestamp, contribution);
+        }
+
+        if (success) {
+            return createDto(folderAccess, getLastVersionNumber(targetObjId), true);
+        } else {
+            return Optional.empty();
+        }
+
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean delete(UUID ehrId, ObjectVersionId targetObjId, UUID systemId, UUID committerId,
+        String description) {
+        return internalDelete(targetObjId, systemId, committerId, description, null);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean delete(UUID ehrId, ObjectVersionId targetObjId, UUID contribution) {
+        return internalDelete(targetObjId, null, null, null, contribution);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean delete(UUID ehrId, ObjectVersionId targetObjId) {
+        return delete(ehrId, targetObjId, getSystemUuid(), getUserUuid(), null);
+    }
+
+    private boolean internalDelete(ObjectVersionId folderId, UUID systemId, UUID committerId, String description, UUID contribution) {
+
+        I_FolderAccess folderAccess = I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), folderId);
+
+        var timestamp = LocalDateTime.now();
+
+        int result;
+        if (contribution == null) {
+            result = folderAccess.delete(timestamp, systemId, committerId, description);
+        } else {
+            result = folderAccess.delete(timestamp, contribution);
+        }
+
+        if (result > 0) {
+            return true;
+        } else {
+            // Not found and bad argument exceptions are handled before thus this case can only occur on unknown errors
+            // On the server side
+            throw new InternalServerException("Error during deletion of folder " + folderId);
+        }
     }
 
     /**
@@ -204,82 +368,6 @@ public class FolderServiceImp extends BaseService implements FolderService {
         }
 
         return createDto(folderAccess, version, path == null || path.equals("/"));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Optional<FolderDto> update(
-            ObjectVersionId folderId,
-            Folder update,
-            UUID ehrId,
-            UUID contribution,
-            UUID systemId,
-            UUID committerId,
-            String description
-    ) {
-
-        Timestamp timestamp = Timestamp.from(Instant.now());
-
-        // Check of there are name conflicts on each folder level
-        checkSiblingNameConflicts(update);
-
-        // Get existing root folder
-        I_FolderAccess
-                folderAccess
-                = I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), folderId);
-
-        // Set update data on root folder
-        FolderUtils.updateFolder(update, folderAccess);
-
-        // Delete sub folders and all their sub folder, as well as their linked entities
-        folderAccess.getSubfoldersList().forEach((sf, sa) ->
-            delete(new ObjectVersionId(sf.toString()), contribution, systemId, committerId, description));
-        // Clear sub folder list
-        folderAccess.getSubfoldersList().clear();
-
-        // Create FolderAccess instances for sub folders if there are any
-        if (update.getFolders() != null && !update.getFolders().isEmpty()) {
-
-            // Create new sub folders list
-            update.getFolders()
-                    .forEach(childFolder -> folderAccess.getSubfoldersList()
-                            .put(
-                                    UUID.randomUUID(),
-                                    FolderAccess.buildNewFolderAccessHierarchy(
-                                            getDataAccess(),
-                                            childFolder,
-                                            Timestamp.from(Instant.now()),
-                                            ehrId,
-                                            ((FolderAccess) folderAccess).getContributionAccess())));
-        }
-
-        // Send update to access layer which updates the hierarchy recursive
-        if (folderAccess.update(timestamp, false, contribution, systemId, committerId,
-            description, ContributionChangeType.MODIFICATION)
-                .equals(true)) {
-            return createDto(folderAccess, getLastVersionNumber(folderId), true);
-        } else {
-            return Optional.empty();
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public LocalDateTime delete(ObjectVersionId folderId, UUID contribution, UUID systemId, UUID committerId, String description) {
-
-        I_FolderAccess folderAccess = I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), folderId);
-
-        if (folderAccess.delete(contribution, systemId, committerId, description) > 0) {
-            return LocalDateTime.now();
-        } else {
-            // Not found and bad argument exceptions are handled before thus this case can only occur on unknown errors
-            // On the server side
-            throw new InternalServerException("Error during deletion of folder " + folderId);
-        }
     }
 
     /**
