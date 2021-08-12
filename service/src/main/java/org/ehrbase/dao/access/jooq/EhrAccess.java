@@ -21,15 +21,14 @@
  */
 package org.ehrbase.dao.access.jooq;
 
-import com.nedap.archie.rm.archetyped.Archetyped;
-import com.nedap.archie.rm.archetyped.Locatable;
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.HierObjectId;
-import com.nedap.archie.rm.support.identification.ObjectId;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -74,6 +73,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     public static final String COULD_NOT_RETRIEVE_EHR_FOR_PARTY = "Could not retrieve EHR for party:";
     private EhrRecord ehrRecord;
     private boolean isNew = false;
+    private boolean hasStatusChanged = false;
 
     //holds the non serialized ItemStructure other_details structure
     private ItemStructure otherDetails = null;
@@ -476,11 +476,16 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
 
         UUID contributionId = contributionAccess.commit(transactionTime);
 
-        if (isNew && getStatusAccess().getStatusRecord() != null) {
+        if (isNew && getStatusAccess().getStatusRecord() != null && hasStatusChanged) {
 
             // status is attached to EHR, so always same contribution when creating both together
             statusAccess.setContributionId(contributionId);
-            statusAccess.commitWithCustomContribution(transactionTime, ehrRecord.getId(), otherDetails);
+            statusAccess.setEhrId(ehrRecord.getId());
+            statusAccess.setOtherDetails(otherDetails);
+            statusAccess.commit(transactionTime.toLocalDateTime(), contributionId);
+
+            // reset
+            hasStatusChanged = false;
         }
 
         return ehrRecord.getId();
@@ -505,12 +510,11 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         // prepare EHR_STATUS audit with given values
 
         // prepare associated contribution (with contribution's audit embedded)
-        contributionAccess.setAuditDetailsValues(committerId, systemId, description);
+        contributionAccess.setAuditDetailsValues(committerId, systemId, description, ContributionChangeType.CREATION);
         contributionAccess.setDataType(ContributionDataType.ehr);
         contributionAccess.setState(ContributionDef.ContributionState.COMPLETE);
-        contributionAccess.setAuditDetailsChangeType(I_ConceptAccess.fetchContributionChangeType(this, I_ConceptAccess.ContributionChangeType.CREATION));
 
-        statusAccess.setAuditAndContributionAuditValues(systemId, committerId, description);
+        statusAccess.setAuditAndContributionAuditValues(systemId, committerId, description, ContributionChangeType.CREATION);
 
         return commit(timestamp);
     }
@@ -530,16 +534,26 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
      */
     @Override
     public Boolean update(Timestamp transactionTime, boolean force) {
-        boolean result;
+        boolean result = false;
 
-        statusAccess.setContributionAccess(this.contributionAccess);
+        if (hasStatusChanged) {
+            statusAccess.setContributionAccess(this.contributionAccess);
 
-        // create new audit for this update
-        statusAccess.setAuditDetailsAccess(new AuditDetailsAccess(this,
-            this.contributionAccess.getAuditsSystemId(), this.contributionAccess.getAuditsCommitter(),
-            ContributionChangeType.MODIFICATION, this.contributionAccess.getAuditsDescription()));
+            // create new audit for this update
+            statusAccess.setAuditDetailsAccess(new AuditDetailsAccess(this,
+                this.contributionAccess.getAuditsSystemId(),
+                this.contributionAccess.getAuditsCommitter(),
+                ContributionChangeType.MODIFICATION,
+                this.contributionAccess.getAuditsDescription()));
 
-        result = statusAccess.update(otherDetails, transactionTime, force);
+            statusAccess.setOtherDetails(otherDetails);
+            result = statusAccess.update(
+                LocalDateTime.ofInstant(transactionTime.toInstant(), ZoneId.systemDefault()),
+                this.contributionAccess.getId());
+
+            // reset
+            hasStatusChanged = false;
+        }
 
         if (force || ehrRecord.changed()) {
             ehrRecord.setDateCreated(transactionTime);
@@ -581,9 +595,12 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
                 this.contributionAccess = access;
             } else
                 throw new InternalServerException("Can't update status with invalid contribution ID.");
-        } else {
+        // Status check, because a contribution is needed only IF a versioned object is changed.
+        // So the plain EHR object change, e.g. only with new directory reference, shall not have a separate contribution.
+        } else if (hasStatusChanged) {
             this.contributionAccess = new ContributionAccess(this, getEhrRecord().getId());
             provisionContributionAccess(contributionAccess, committerId, systemId, description, state, contributionChangeType);
+            this.contributionAccess.commit();
         }
         return update(timestamp);
     }
@@ -592,9 +609,8 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
      * Helper to provision a contribution access object with several data items.
      */
     private void provisionContributionAccess(I_ContributionAccess access, UUID committerId, UUID systemId, String description, ContributionDef.ContributionState state, I_ConceptAccess.ContributionChangeType contributionChangeType) {
-        access.setAuditDetailsValues(committerId, systemId, description);
+        access.setAuditDetailsValues(committerId, systemId, description, contributionChangeType);
         access.setState(state);
-        access.setAuditDetailsChangeType(I_ConceptAccess.fetchContributionChangeType(this, contributionChangeType));
         access.setDataType(ContributionDataType.ehr);
         access.setState(ContributionState.COMPLETE);
     }
@@ -746,6 +762,8 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
 
         UUID subjectUuid = new PersistedPartyProxy(getDataAccess()).getOrCreate(status.getSubject());
         setParty(subjectUuid);
+
+        hasStatusChanged = true;
     }
 
     @Override   // get latest status

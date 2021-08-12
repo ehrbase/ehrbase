@@ -27,6 +27,7 @@ import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.*;
+import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
@@ -180,21 +181,16 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
         setState(Objects.requireNonNullElse(state, ContributionDef.ContributionState.COMPLETE));
 
         // audit attributes
-        if (committerId == null) {
-            //get current user from JVM
-            String defaultUser = System.getProperty("user.name");
-            //check for that user in the DB
-            String scheme = System.getProperty("host.name");
-            if (scheme == null)
-                scheme = "local";
-            committerId = new PersistedPartyProxy(this).getOrCreate(defaultUser, UUID.randomUUID().toString(), scheme, getServerConfig().getNodename(), "PARTY");
+        if (committerId != null) {
+            auditDetails.setCommitter(committerId);
+        } else {
+            throw new InternalServerException("Missing mandatory committer ID");
         }
-        auditDetails.setCommitter(committerId);
 
         if (systemId != null) {
             auditDetails.setSystemId(systemId);
         } else {
-            auditDetails.setSystemId(I_SystemAccess.createOrRetrieveLocalSystem(this));
+            throw new InternalServerException("Missing mandatory system ID");
         }
 
         if (contributionChangeType != null)
@@ -367,11 +363,12 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
     }
 
     @Override
-    public void setAuditDetailsValues(UUID committer, UUID system, String description) {
-        if (committer == null || system == null)
+    public void setAuditDetailsValues(UUID committer, UUID system, String description, ContributionChangeType changeType) {
+        if (committer == null || system == null || changeType == null)
             throw new IllegalArgumentException("arguments not optional");
         auditDetails.setCommitter(committer);
         auditDetails.setSystemId(system);
+        auditDetails.setChangeType(I_ConceptAccess.fetchContributionChangeType(this, changeType));
 
         if (description != null)
             auditDetails.setDescription(description);
@@ -397,6 +394,21 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
     }
 
     @Override
+    public void setAuditDetailsCommitter(UUID committer) {
+        auditDetails.setCommitter(committer);
+    }
+
+    @Override
+    public void setAuditDetailsSystemId(UUID system) {
+        auditDetails.setSystemId(system);
+    }
+
+    @Override
+    public void setAuditDetailsDescription(String description) {
+        auditDetails.setDescription(description);
+    }
+
+    @Override
     public UUID getAuditsCommitter() {
         return auditDetails.getCommitter();
     }
@@ -409,6 +421,11 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
     @Override
     public String getAuditsDescription() {
         return auditDetails.getDescription();
+    }
+
+    @Override
+    public ContributionChangeType getAuditsChangeType() {
+        return I_ConceptAccess.ContributionChangeType.valueOf(auditDetails.getChangeType().getLiteral().toUpperCase());
     }
 
     @Override
