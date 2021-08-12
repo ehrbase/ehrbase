@@ -15,12 +15,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.17.1] (beta)
 
+### Added
+- Default handling for audit metadata (see: https://github.com/ehrbase/ehrbase/pull/552)
+
 ### Changed
 - Updated the SDK dependency to the latest version (see: https://github.com/ehrbase/ehrbase/pull/565)
+- Refactored versioned object (interfaces) on service and access layer (see: https://github.com/ehrbase/ehrbase/pull/552)
 
 ### Fixed
 - Assigner in DV_IDENTIFIER not selected in aql (see: https://github.com/ehrbase/ehrbase/pull/561)
 - ehr_status.uuid not selects via aql (see: https://github.com/ehrbase/ehrbase/pull/561)
+- DB migration file conflict (see: https://github.com/ehrbase/ehrbase/pull/564)
+- Ddmin delete of multiple status versions (see: https://github.com/ehrbase/ehrbase/pull/552)
 
 ## [0.17.0] (beta)
 
