@@ -20,7 +20,7 @@
     <packaging>pom</packaging>
     <groupId>org.ehrbase.openehr</groupId>
     <artifactId>server</artifactId>
-    <version>0.17.0</version>
+    <version>0.17.1</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>EHRbase is a Free, Libre, Open Source openEHR Clinical Data Repository</description>
