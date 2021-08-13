@@ -1,4 +1,4 @@
-package org.ehrbase.rest.openehr.controller;
+package org.ehrbase.rest.openehr;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -7,6 +7,7 @@ import org.ehrbase.api.service.QueryService;
 import org.ehrbase.response.openehr.ErrorBodyPayload;
 import org.ehrbase.response.openehr.QueryDefinitionListResponseData;
 import org.ehrbase.response.openehr.QueryDefinitionResponseData;
+import org.ehrbase.rest.BaseController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

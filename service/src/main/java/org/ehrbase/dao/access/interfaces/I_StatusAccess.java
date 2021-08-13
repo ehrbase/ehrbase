@@ -23,12 +23,12 @@ package org.ehrbase.dao.access.interfaces;
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
 import org.ehrbase.dao.access.jooq.StatusAccess;
 import org.ehrbase.jooq.pg.tables.records.StatusHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.StatusRecord;
 
 import java.sql.Timestamp;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -37,7 +37,7 @@ import java.util.UUID;
  * the status entry holds data pertaining to an Ehr owner, generally a patient
  * Created by Christian Chevalley on 4/21/2015.
  */
-public interface I_StatusAccess extends I_SimpleCRUD {
+public interface I_StatusAccess extends I_VersionedCRUD {
 
     /**
      * retrieve a status by given status ID
@@ -98,33 +98,6 @@ public interface I_StatusAccess extends I_SimpleCRUD {
         return StatusAccess.retrieveInstanceByContribution(domainAccess, contributionId, node);
     }
 
-    /**
-     * Commit this status instance.
-     * @param transactionTime Time of transaction
-     * @param ehrId Associated EHR
-     * @param otherDetails Object representation of otherDetails
-     * @return ID of DB entry if successful
-     */
-    UUID commit(Timestamp transactionTime, UUID ehrId, ItemStructure otherDetails);
-
-    /**
-     * commit this instance, which has contribution already set with setContributionId(...) beforehand
-     * @param transactionTime Time of transaction
-     * @param ehrId Associated EHR
-     * @param otherDetails Object representation of otherDetails
-     * @return ID of DB entry if successful
-     */
-    UUID commitWithCustomContribution(Timestamp transactionTime, UUID ehrId, ItemStructure otherDetails);
-
-    /**
-     * Update this status instance.
-     * @param otherDetails Object representation of otherDetails
-     * @param transactionTime Time of transaction
-     * @param force Option to force
-     * @return True if successful
-     */
-    Boolean update(ItemStructure otherDetails, Timestamp transactionTime, boolean force);
-
     UUID getId();
 
     void setStatusRecord(StatusRecord record);
@@ -150,8 +123,9 @@ public interface I_StatusAccess extends I_SimpleCRUD {
      * @param systemId ID of committing system
      * @param committerId ID of committer
      * @param description Optional description
+     * @param changeType Change type of operation
      */
-    void setAuditAndContributionAuditValues(UUID systemId, UUID committerId, String description);
+    void setAuditAndContributionAuditValues(UUID systemId, UUID committerId, String description, ContributionChangeType changeType);
 
     /**
      * Get latest version number of EHR_STATUS by versioned object UID.
@@ -202,4 +176,12 @@ public interface I_StatusAccess extends I_SimpleCRUD {
      * @return Current status object
      */
     EhrStatus getStatus();
+
+    void setOtherDetails(ItemStructure otherDetails);
+
+    ItemStructure getOtherDetails();
+
+    void setEhrId(UUID ehrId);
+
+    UUID getEhrId();
 }

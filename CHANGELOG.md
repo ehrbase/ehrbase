@@ -5,8 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-
 ## [Unreleased]
+
+### Added
+
+### Changed
+
+### Fixed
+
+## [0.17.0] (beta)
 
 ### Added
 - Implement validation of compositions using external FHIR TS (see: https://github.com/ehrbase/ehrbase/pull/493)
@@ -14,10 +21,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support AQL array resolution in EHR_STATUS::other_details
 
 ### Changed
-
+- Update paths for Admin API, Management API and `/status` endpoint (see: https://github.com/ehrbase/ehrbase/pull/541) 
 
 ### Fixed
 - Folder handling (update, delete and missing audits) (see: https://github.com/ehrbase/ehrbase/pull/529)
+- Fixed and refactored handling of audits and versioned objects (see: https://github.com/ehrbase/ehrbase/pull/552/)
 - proper canonical json encoding of composition with feeder_audit (was missing)
 
 
