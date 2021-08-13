@@ -920,7 +920,7 @@ capture point in time
     [Documentation]     Admin delete of Composition.
     ...                 Needs `${versioned_object_uid}` var from e.g. `commit composition (JSON)` KW.
 
-    &{resp}=            REST.DELETE    ${baseurl}/admin/ehr/${ehr_id}/composition/${versioned_object_uid}
+    &{resp}=            REST.DELETE    ${admin_baseurl}/ehr/${ehr_id}/composition/${versioned_object_uid}
                         Should Be Equal As Strings   ${resp.status}   204
                         Set Test Variable    ${response}    ${resp}
                         Output Debug Info To Console

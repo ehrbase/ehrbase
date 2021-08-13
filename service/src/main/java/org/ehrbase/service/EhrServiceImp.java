@@ -22,7 +22,6 @@ package org.ehrbase.service;
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
-import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.ehr.VersionedEhrStatus;
@@ -30,14 +29,12 @@ import com.nedap.archie.rm.generic.*;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import com.nedap.archie.rm.support.identification.TerminologyId;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.*;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.jooq.AttestationAccess;
-import org.ehrbase.dao.access.jooq.StatusAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyRef;
 import org.ehrbase.response.ehrscape.CompositionFormat;
@@ -64,7 +61,7 @@ import java.util.UUID;
 
 @Service(value = "ehrService")
 @Transactional()
-public class EhrServiceImp extends BaseService implements EhrService {
+public class EhrServiceImp extends BaseServiceImp implements EhrService {
     public static final String DESCRIPTION = "description";
     private Logger logger = LoggerFactory.getLogger(getClass());
     private final ValidationService validationService;

@@ -27,6 +27,7 @@ import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.composition.EventContext;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import java.time.LocalDateTime;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.definitions.ServerConfig;
@@ -179,6 +180,234 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
     CompositionAccess(I_DomainAccess domainAccess) {
         super(domainAccess);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public UUID commit(LocalDateTime timestamp, UUID committerId, UUID systemId, String description) {
+        return internalCreate(timestamp, committerId, systemId, description, null);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public UUID commit(LocalDateTime timestamp, UUID contribution) {
+        return internalCreate(timestamp, null, null, null, contribution);
+    }
+
+    private UUID internalCreate(LocalDateTime timestamp, UUID committerId, UUID systemId,
+        String description, UUID contribution) {
+
+        // check if custom contribution is already set, because changing it would yield updating in DB which is not desired (creates wrong new "version")
+        if (contribution != null) {
+            // Retrieve audit metadata from given contribution
+            var newContributionAccess = I_ContributionAccess.retrieveInstance(this.getDataAccess(), contribution);
+            systemId = newContributionAccess.getAuditsSystemId();
+            committerId = newContributionAccess.getAuditsCommitter();
+            description = newContributionAccess.getAuditsDescription();
+        } else {
+            // if not set, create DB entry of contribution so it can get referenced in this composition
+            // prepare contribution with given values
+            contributionAccess.setDataType(ContributionDataType.composition);
+            contributionAccess.setState(ContributionDef.ContributionState.COMPLETE);
+            contributionAccess.setAuditDetailsValues(committerId, systemId, description, I_ConceptAccess.ContributionChangeType.CREATION);
+
+            UUID contributionId = this.contributionAccess.commit();
+            setContributionId(contributionId);
+        }
+
+        // create DB entry of prepared auditDetails so it can get referenced in this composition
+        auditDetailsAccess.setChangeType(I_ConceptAccess.fetchContributionChangeType(this, I_ConceptAccess.ContributionChangeType.CREATION));
+        // prepare composition audit with given values
+        auditDetailsAccess.setSystemId(systemId);
+        auditDetailsAccess.setCommitter(committerId);
+        auditDetailsAccess.setDescription(description);
+        UUID auditId = this.auditDetailsAccess.commit();
+        compositionRecord.setHasAudit(auditId);
+
+        compositionRecord.setSysTransaction(Timestamp.valueOf(timestamp));
+        compositionRecord.store();
+
+        if (content.isEmpty())
+            log.warn("Composition has no content:");
+
+        try {
+            for (I_EntryAccess entryAccess : content)
+                entryAccess.commit(Timestamp.valueOf(timestamp));
+        } catch (Exception exception) {
+            log.error("Problem in committing content, rolling back, exception:" + exception);
+            throw new IllegalArgumentException("Could not commit content:" + exception);
+        }
+
+        if (!composition.getCategory().getDefiningCode().getCodeString().equals("431")) {
+            EventContext eventContext = composition.getContext();
+            I_ContextAccess contextAccess = I_ContextAccess.getInstance(this, eventContext);
+            if (!contextAccess.isVoid()) {
+                contextAccess.setCompositionId(compositionRecord.getId());
+                contextAccess.commit(Timestamp.valueOf(timestamp));
+            }
+        }
+        return compositionRecord.getId();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean update(LocalDateTime timestamp, UUID committerId, UUID systemId, String description, I_ConceptAccess.ContributionChangeType changeType) {
+        // create new contribution (and its audit) for this operation
+        contributionAccess = new ContributionAccess(this, getEhrid());
+        contributionAccess.setDataType(ContributionDataType.composition);
+        contributionAccess.setAuditDetailsValues(committerId, systemId, description, changeType);
+        contributionAccess.setAuditDetailsChangeType(I_ConceptAccess.fetchContributionChangeType(this, changeType));
+        UUID contributionId = this.contributionAccess.commit();
+        setContributionId(contributionId);
+        // create new composition audit with given values
+        auditDetailsAccess = new AuditDetailsAccess(this);
+        auditDetailsAccess.setSystemId(systemId);
+        auditDetailsAccess.setCommitter(committerId);
+        auditDetailsAccess.setDescription(description);
+        auditDetailsAccess.setChangeType(I_ConceptAccess.fetchContributionChangeType(this, changeType));
+        UUID auditID = this.auditDetailsAccess.commit();
+        setAuditDetailsId(auditID);
+
+        return internalUpdate(Timestamp.valueOf(timestamp));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean update(LocalDateTime timestamp, UUID contribution) {
+        // Retrieve audit metadata from given contribution
+        var newContributionAccess = I_ContributionAccess.retrieveInstance(this.getDataAccess(), contribution);
+        UUID systemId = newContributionAccess.getAuditsSystemId();
+        UUID committerId = newContributionAccess.getAuditsCommitter();
+        String description = newContributionAccess.getAuditsDescription();
+        I_ConceptAccess.ContributionChangeType changeType = newContributionAccess.getAuditsChangeType();
+
+        // update only the audit (i.e. commit new one), so it shows the modification change type. a new custom contribution is set beforehand.
+        auditDetailsAccess.update(systemId, committerId, changeType, description);
+        return internalUpdate(Timestamp.valueOf(timestamp));
+
+    }
+
+    // root update
+    boolean internalUpdate(Timestamp transactionTime) {
+        var result = false;
+
+        //we assume the composition has been amended locally
+
+        if (!compositionRecord.changed()) {
+            compositionRecord.changed(true);
+            //jOOQ limited support of TSTZRANGE, exclude sys_period from updateComposition!
+            compositionRecord.changed(COMPOSITION.SYS_PERIOD, false);
+        }
+
+        compositionRecord.setSysTransaction(transactionTime);
+
+        //update attributes
+        updateCompositionData(composition);
+
+        result = compositionRecord.update() > 0;
+
+        //updateComposition each entry if required
+        for (I_EntryAccess entryAccess : content) {
+            entryAccess.setCompositionData(composition);
+            entryAccess.update(transactionTime, true);
+        }
+
+        //update context
+        //context
+        Optional<UUID> contextId = getContextId();
+        I_ContextAccess contextAccess;
+
+        if (contextId.isEmpty()){
+            EventContext context = new EventContextFactory().makeNull();
+            contextAccess = I_ContextAccess.getInstance(this, context);
+            contextAccess.commit(transactionTime);
+        }
+        else
+            contextAccess = I_ContextAccess.retrieveInstance(this, contextId.get());
+
+        var newEventContext = composition.getContext();
+
+        if (contextId.isPresent()) {
+            contextAccess.setRecordFields(contextId.get(), newEventContext);
+            contextAccess.update(transactionTime, true);
+        }
+
+        return result;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int delete(LocalDateTime timestamp, UUID committerId, UUID systemId, String description) {
+        // .delete() moves the old version to _history table.
+        int delRows = compositionRecord.delete();
+
+        // create new deletion audit
+        var delAudit = I_AuditDetailsAccess.getInstance(this, systemId, committerId, I_ConceptAccess.ContributionChangeType.DELETED, description);
+        UUID delAuditId = delAudit.commit();
+
+        // create new contribution for this deletion action (with embedded contribution.audit handling)
+        contributionAccess = I_ContributionAccess.getInstance(getDataAccess(), contributionAccess.getEhrId()); // overwrite old contribution with new one
+        UUID contrib = contributionAccess.commit(TransactionTime.millis(), committerId, systemId, null, ContributionDef.ContributionState.COMPLETE, I_ConceptAccess.ContributionChangeType.DELETED, description);
+
+        // create new, BUT already moved to _history, version documenting the deletion
+        createAndCommitNewDeletedVersionAsHistory(delAuditId, contrib);
+
+        return delRows;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int delete(LocalDateTime timestamp, UUID contribution) {
+        // Retrieve audit metadata from given contribution
+        var newContributionAccess = I_ContributionAccess.retrieveInstance(this.getDataAccess(), contribution);
+        UUID systemId = newContributionAccess.getAuditsSystemId();
+        UUID committerId = newContributionAccess.getAuditsCommitter();
+        String description = newContributionAccess.getAuditsDescription();
+
+        // .delete() moves the old version to _history table.
+        int delRows = compositionRecord.delete();
+
+        // create new deletion audit
+        var delAudit = I_AuditDetailsAccess.getInstance(this, systemId, committerId, I_ConceptAccess.ContributionChangeType.DELETED, description);
+        UUID delAuditId = delAudit.commit();
+
+        // create new, BUT already moved to _history, version documenting the deletion
+        createAndCommitNewDeletedVersionAsHistory(delAuditId, compositionRecord.getInContribution());
+
+        return delRows;
+    }
+
+    private void createAndCommitNewDeletedVersionAsHistory(UUID delAuditId, UUID contrib) {
+        // a bit hacky: create new, BUT already moved to _history, version documenting the deletion
+        // (Normal approach of first .update() then .delete() won't work, because postgres' transaction optimizer will
+        // just skip the update if it will get deleted anyway.)
+        // so copy values, but add deletion meta data
+        var newDeletedVersionAsHistoryAccess = new CompositionHistoryAccess(getDataAccess());
+        CompositionHistoryRecord newRecord = getDataAccess().getContext().newRecord(COMPOSITION_HISTORY);
+        newRecord.setId(compositionRecord.getId());
+        newRecord.setEhrId(compositionRecord.getEhrId());
+        newRecord.setInContribution(contrib);
+        newRecord.setActive(compositionRecord.getActive());
+        newRecord.setIsPersistent(compositionRecord.getIsPersistent());
+        newRecord.setLanguage(compositionRecord.getLanguage());
+        newRecord.setTerritory(compositionRecord.getTerritory());
+        newRecord.setComposer(compositionRecord.getComposer());
+        newRecord.setHasAudit(delAuditId);
+        newDeletedVersionAsHistoryAccess.setRecord(newRecord);
+        if (newDeletedVersionAsHistoryAccess.commit() == null) // commit and throw error if nothing was inserted into DB
+            throw new InternalServerException("DB inconsistency");
     }
 
     /**
@@ -624,260 +853,6 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         }
 
         return entryList;
-    }
-
-    /**
-     * Commit composition (incl embedded audit).
-     * The composition' contribution (incl. its audit) and the composition's own audit are assumed to be prepared correctly before executing this commitment.
-     *
-     * @throws IllegalArgumentException when content couldn't be committed or requirements aren't met
-     */
-    @Override   // root commit
-    public UUID commit(Timestamp transactionTime) {
-
-        // create DB entry of prepared auditDetails so it can get referenced in this composition
-        auditDetailsAccess.setChangeType(I_ConceptAccess.fetchContributionChangeType(this, I_ConceptAccess.ContributionChangeType.CREATION));
-        UUID auditId = this.auditDetailsAccess.commit();
-        compositionRecord.setHasAudit(auditId);
-
-        // check if custom contribution is already set, because changing it would yield updating in DB which is not desired (creates wrong new "version")
-        if (getContributionId() != null) {
-            // check if set contribution is sane
-            Optional.ofNullable(I_ContributionAccess.retrieveInstance(this, getContributionId())).orElseThrow(IllegalArgumentException::new);
-        } else {
-            // if not set, create DB entry of contribution so it can get referenced in this composition
-            contributionAccess.setAuditDetailsChangeType(I_ConceptAccess.fetchContributionChangeType(this, I_ConceptAccess.ContributionChangeType.CREATION));
-            UUID contributionId = this.contributionAccess.commit();
-            setContributionId(contributionId);
-        }
-
-        compositionRecord.setSysTransaction(transactionTime);
-        compositionRecord.store();
-
-        if (content.isEmpty())
-            log.warn("Composition has no content:");
-
-        try {
-            for (I_EntryAccess entryAccess : content)
-                entryAccess.commit(transactionTime);
-        } catch (Exception exception) {
-            log.error("Problem in committing content, rolling back, exception:" + exception);
-            throw new IllegalArgumentException("Could not commit content:" + exception);
-        }
-
-        if (!composition.getCategory().getDefiningCode().getCodeString().equals("431")) {
-            EventContext eventContext = composition.getContext();
-            I_ContextAccess contextAccess = I_ContextAccess.getInstance(this, eventContext);
-            if (!contextAccess.isVoid()) {
-                contextAccess.setCompositionId(compositionRecord.getId());
-                contextAccess.commit(transactionTime);
-            }
-        }
-        return compositionRecord.getId();
-    }
-
-    /**
-     * @deprecated
-     */
-    @Deprecated
-    @Override
-    public UUID commit() {
-        // audit details need some data like systemId and committerId, so this won't do
-        throw new UnsupportedOperationException("this commit() signature is not supported");
-    }
-
-    @Override
-    public UUID commit(UUID committerId, UUID systemId, String description) {
-        Timestamp timestamp = TransactionTime.millis();
-        // prepare contribution with given values
-        contributionAccess.setDataType(ContributionDataType.composition);
-        contributionAccess.setState(ContributionDef.ContributionState.COMPLETE);
-        contributionAccess.setAuditDetailsValues(committerId, systemId, description);
-        // prepare composition audit with given values
-        auditDetailsAccess.setSystemId(systemId);
-        auditDetailsAccess.setCommitter(committerId);
-        auditDetailsAccess.setDescription(description);
-
-        return commit(timestamp);
-    }
-
-    // commit with composition that has contribution already set with setContributionId(...) beforehand
-    @Override
-    public UUID commitWithCustomContribution(UUID committerId, UUID systemId, String description) {
-        // prepare composition audit with given values
-        auditDetailsAccess.setSystemId(systemId);
-        auditDetailsAccess.setCommitter(committerId);
-        auditDetailsAccess.setDescription(description);
-
-        Timestamp timestamp = TransactionTime.millis();
-        return commit(timestamp);
-    }
-
-    @Override
-    public Boolean update(Timestamp transactionTime) {
-        return update(transactionTime, false);
-    }
-
-    @Override       // root update
-    public Boolean update(Timestamp transactionTime, boolean force) {
-        boolean result = false;
-
-        if (force || compositionRecord.changed()) {
-            //we assume the composition has been amended locally
-
-            if (!compositionRecord.changed()) {
-                compositionRecord.changed(true);
-                //jOOQ limited support of TSTZRANGE, exclude sys_period from updateComposition!
-                compositionRecord.changed(COMPOSITION.SYS_PERIOD, false);
-            }
-
-            compositionRecord.setSysTransaction(transactionTime);
-
-            //update attributes
-            updateCompositionData(composition);
-
-            result = compositionRecord.update() > 0;
-
-            //updateComposition each entry if required
-            for (I_EntryAccess entryAccess : content) {
-                entryAccess.setCompositionData(composition);
-                entryAccess.update(transactionTime, true);
-            }
-
-            //update context
-            //context
-            Optional<UUID> contextId = getContextId();
-            I_ContextAccess contextAccess;
-
-            if (contextId.isEmpty()){
-                EventContext context = new EventContextFactory().makeNull();
-                contextAccess = I_ContextAccess.getInstance(this, context);
-                contextAccess.commit(transactionTime);
-            }
-            else
-                contextAccess = I_ContextAccess.retrieveInstance(this, contextId.get());
-
-            EventContext newEventContext = composition.getContext();
-
-            if (contextId.isPresent()) {
-                contextAccess.setRecordFields(contextId.get(), newEventContext);
-                contextAccess.update(transactionTime, true);
-            }
-        }
-
-        return result;
-    }
-
-    @Override
-    public Boolean update() {
-        Timestamp timestamp = TransactionTime.millis();
-        // update both contribution (incl its audit) and the composition's own audit
-        contributionAccess.update(timestamp, null, null, null, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
-        auditDetailsAccess.update(null, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
-        return update(timestamp);
-    }
-
-    @Override
-    public Boolean update(Boolean force) {
-        Timestamp timestamp = TransactionTime.millis();
-        // update both contribution (incl its audit) and the composition's own audit
-        contributionAccess.update(timestamp, null, null, null, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
-        auditDetailsAccess.update(null, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
-        return update(timestamp, force);
-    }
-
-    @Override
-    public Boolean update(UUID committerId, UUID systemId, ContributionDef.ContributionState state, I_ConceptAccess.ContributionChangeType contributionChangeType, String description) {
-        Timestamp timestamp = TransactionTime.millis();
-        // create new contribution (and its audit) for this operation
-        contributionAccess = new ContributionAccess(this, getEhrid());
-        contributionAccess.setDataType(ContributionDataType.composition);
-        contributionAccess.setState(state);
-        contributionAccess.setAuditDetailsValues(committerId, systemId, description);
-        contributionAccess.setAuditDetailsChangeType(I_ConceptAccess.fetchContributionChangeType(this, contributionChangeType));
-        UUID contributionId = this.contributionAccess.commit();
-        setContributionId(contributionId);
-        // create new composition audit with given values
-        auditDetailsAccess = new AuditDetailsAccess(this);
-        auditDetailsAccess.setSystemId(systemId);
-        auditDetailsAccess.setCommitter(committerId);
-        auditDetailsAccess.setDescription(description);
-        auditDetailsAccess.setChangeType(I_ConceptAccess.fetchContributionChangeType(this, contributionChangeType));
-        UUID auditID = this.auditDetailsAccess.commit();
-        setAuditDetailsId(auditID);
-
-        return update(timestamp, true);
-    }
-
-    @Override
-    public Boolean updateWithCustomContribution(UUID committerId, UUID systemId, I_ConceptAccess.ContributionChangeType contributionChangeType, String description) {
-        Timestamp timestamp = TransactionTime.millis();
-
-        // update only the audit (i.e. commit new one), so it shows the modification change type. a new custom contribution is set beforehand.
-        auditDetailsAccess.update(systemId, committerId, contributionChangeType, description);
-        return update(timestamp);
-    }
-
-    @Override
-    public Integer delete() {
-
-        return delete(null, null, null);
-
-    }
-
-    @Override
-    public Integer delete(UUID committerId, UUID systemId, String description) {
-        // .delete() moves the old version to _history table.
-        int delRows = compositionRecord.delete();
-
-        // create new deletion audit
-        I_AuditDetailsAccess delAudit = I_AuditDetailsAccess.getInstance(this, systemId, committerId, I_ConceptAccess.ContributionChangeType.DELETED, description);
-        UUID delAuditId = delAudit.commit();
-
-        // create new contribution for this deletion action (with embedded contribution.audit handling)
-        contributionAccess = I_ContributionAccess.getInstance(getDataAccess(), contributionAccess.getEhrId()); // overwrite old contribution with new one
-        UUID contrib = contributionAccess.commit(TransactionTime.millis(), committerId, systemId, null, ContributionDef.ContributionState.COMPLETE, I_ConceptAccess.ContributionChangeType.DELETED, description);
-
-        // create new, BUT already moved to _history, version documenting the deletion
-        createAndCommitNewDeletedVersionAsHistory(delAuditId, contrib);
-
-        return delRows;
-    }
-
-    @Override
-    public Integer deleteWithCustomContribution(UUID committerId, UUID systemId, String description) {
-        // .delete() moves the old version to _history table.
-        int delRows = compositionRecord.delete();
-
-        // create new deletion audit
-        I_AuditDetailsAccess delAudit = I_AuditDetailsAccess.getInstance(this, systemId, committerId, I_ConceptAccess.ContributionChangeType.DELETED, description);
-        UUID delAuditId = delAudit.commit();
-
-        // create new, BUT already moved to _history, version documenting the deletion
-        createAndCommitNewDeletedVersionAsHistory(delAuditId, compositionRecord.getInContribution());
-
-        return delRows;
-    }
-
-    private void createAndCommitNewDeletedVersionAsHistory(UUID delAuditId, UUID contrib) {
-        // a bit hacky: create new, BUT already moved to _history, version documenting the deletion
-        // (Normal approach of first .update() then .delete() won't work, because postgres' transaction optimizer will
-        // just skip the update if it will get deleted anyway.)
-        // so copy values, but add deletion meta data
-        CompositionHistoryAccess newDeletedVersionAsHistoryAccess = new CompositionHistoryAccess(getDataAccess());
-        CompositionHistoryRecord newRecord = getDataAccess().getContext().newRecord(COMPOSITION_HISTORY);
-        newRecord.setId(compositionRecord.getId());
-        newRecord.setEhrId(compositionRecord.getEhrId());
-        newRecord.setInContribution(contrib);
-        newRecord.setActive(compositionRecord.getActive());
-        newRecord.setIsPersistent(compositionRecord.getIsPersistent());
-        newRecord.setLanguage(compositionRecord.getLanguage());
-        newRecord.setTerritory(compositionRecord.getTerritory());
-        newRecord.setComposer(compositionRecord.getComposer());
-        newRecord.setHasAudit(delAuditId);
-        newDeletedVersionAsHistoryAccess.setRecord(newRecord);
-        if (newDeletedVersionAsHistoryAccess.commit() == null) // commit and throw error if nothing was inserted into DB
-            throw new InternalServerException("DB inconsistency");
     }
 
     @Override
