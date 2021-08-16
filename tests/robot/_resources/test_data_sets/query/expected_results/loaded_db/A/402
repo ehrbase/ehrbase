@@ -1,0 +1,46 @@
+{
+    "meta": {
+        "_type": "RESULTSET",
+        "_created": "2019-10-17T23:33:56.896Z",
+        "_executed_aql": "SELECT e/ehr_id/value as uid FROM EHR e CONTAINS COMPOSITION c WHERE c/archetype_node_id matches {'openEHR-EHR-COMPOSITION.minimal.v1'}"
+    },
+    "q": "SELECT e/ehr_id/value as uid FROM EHR e CONTAINS COMPOSITION c WHERE c/archetype_node_id matches {'openEHR-EHR-COMPOSITION.minimal.v1'}",
+    "columns": [
+        {
+            "name": "uid",
+            "path": "/ehr_id/value"
+        }
+    ],
+    "rows": [
+        [
+            "b43eb9e1-3181-4724-aaa3-2b03ebc0c074"
+        ],
+        [
+            "47e1647f-1f7d-4746-a9f8-48005e9d9274"
+        ],
+        [
+            "47291cf4-680b-4de8-b9cc-b61971f7658f"
+        ],
+        [
+            "9ec345f4-750a-43d1-ade3-2d74bd57172e"
+        ],
+        [
+            "0d282769-00fb-4141-be69-93ae682ad24d"
+        ],
+        [
+            "4a687c1e-450b-455b-b262-8127f0295758"
+        ],
+        [
+            "16004b63-3062-419d-9a70-9bd24140beb0"
+        ],
+        [
+            "0bf30443-9740-42f2-b452-fa05586a6196"
+        ],
+        [
+            "138ceed4-a694-4a9a-be0d-30dc6ca5c533"
+        ],
+        [
+            "390ee925-62dd-49fb-8052-e0834396128f"
+        ]
+    ]
+}
