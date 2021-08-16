@@ -28,16 +28,15 @@ import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import java.time.LocalDateTime;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.dao.access.interfaces.*;
+import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
-import org.ehrbase.dao.access.util.TransactionTime;
-import org.ehrbase.jooq.pg.tables.records.CompositionHistoryRecord;
-import org.ehrbase.jooq.pg.tables.records.CompositionRecord;
 import org.ehrbase.jooq.pg.tables.records.StatusHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.StatusRecord;
 import org.apache.logging.log4j.LogManager;
@@ -73,6 +72,159 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
 
         // associate status' own audit with this status access instance
         auditDetailsAccess = I_AuditDetailsAccess.getInstance(getDataAccess());
+    }
+
+    @Override
+    public UUID commit(LocalDateTime timestamp, UUID committerId, UUID systemId,
+        String description) {
+        createAndSetContribution(committerId, systemId, description,
+            ContributionChangeType.CREATION);
+
+        return internalCommit(timestamp);
+    }
+
+    @Override
+    public UUID commit(LocalDateTime timestamp, UUID contribution) {
+        if (contribution == null) {
+            throw new InternalServerException("Invalid null valued contribution.");
+        }
+        setContributionId(contribution);
+
+        return internalCommit(timestamp);
+    }
+
+    private UUID internalCommit(LocalDateTime transactionTime) {
+        auditDetailsAccess.setChangeType(I_ConceptAccess.fetchContributionChangeType(this, I_ConceptAccess.ContributionChangeType.CREATION));
+        if (auditDetailsAccess.getChangeType() == null || auditDetailsAccess.getSystemId() == null || auditDetailsAccess.getCommitter() == null)
+            throw new InternalServerException("Illegal to commit AuditDetailsAccess without setting mandatory fields.");
+        UUID auditId = auditDetailsAccess.commit();
+        statusRecord.setHasAudit(auditId);
+
+        statusRecord.setSysTransaction(Timestamp.valueOf(transactionTime));
+
+        statusRecord.setHasAudit(auditId);
+
+        if (statusRecord.store() == 0) {
+            throw new InvalidApiParameterException("Input EHR couldn't be stored; Storing EHR_STATUS failed");
+        }
+
+        return statusRecord.getId();
+    }
+
+    @Override
+    public boolean update(LocalDateTime timestamp, UUID committerId, UUID systemId,
+        String description, ContributionChangeType changeType) {
+
+        createAndSetContribution(committerId, systemId, description,
+            ContributionChangeType.MODIFICATION);
+
+        return internalUpdate(timestamp);
+    }
+
+    @Override
+    public boolean update(LocalDateTime timestamp, UUID contribution) {
+        if (contribution == null) {
+            throw new InternalServerException("Invalid null valued contribution.");
+        }
+        setContributionId(contribution);
+
+        return internalUpdate(timestamp);
+    }
+
+    private Boolean internalUpdate(LocalDateTime transactionTime) {
+        auditDetailsAccess.commit();
+        statusRecord.setHasAudit(auditDetailsAccess.getId()); // new audit ID
+
+        statusRecord.setSysTransaction(Timestamp.valueOf(transactionTime));
+
+        try {
+            return statusRecord.update() > 0;
+        } catch (RuntimeException e) {
+            throw new InvalidApiParameterException("Couldn't marshall given EHR_STATUS / OTHER_DETAILS, content probably breaks RM rules");
+        }
+    }
+
+    @Override
+    public int delete(LocalDateTime timestamp, UUID committerId, UUID systemId,
+        String description) {
+
+        createAndSetContribution(committerId, systemId, description,
+            ContributionChangeType.DELETED);
+
+        return internalDelete(timestamp, committerId, systemId, description);
+    }
+
+    @Override
+    public int delete(LocalDateTime timestamp, UUID contribution) {
+        if (contribution == null) {
+            throw new InternalServerException("Invalid null valued contribution.");
+        }
+        setContributionId(contribution);
+
+        // Retrieve audit metadata from given contribution
+        var newContributionAccess = I_ContributionAccess.retrieveInstance(this.getDataAccess(), contribution);
+        UUID systemId = newContributionAccess.getAuditsSystemId();
+        UUID committerId = newContributionAccess.getAuditsCommitter();
+        String description = newContributionAccess.getAuditsDescription();
+
+        return internalDelete(timestamp, committerId, systemId, description);
+    }
+
+    private Integer internalDelete(LocalDateTime timestamp, UUID committerId, UUID systemId, String description) {
+        statusRecord.setSysTransaction(Timestamp.valueOf(timestamp));
+        statusRecord.delete();
+
+        // create new deletion audit
+        var delAudit = I_AuditDetailsAccess.getInstance(this, systemId, committerId, I_ConceptAccess.ContributionChangeType.DELETED, description);
+        UUID delAuditId = delAudit.commit();
+
+        // create new, BUT already moved to _history, version documenting the deletion
+        return createAndCommitNewDeletedVersionAsHistory(delAuditId, statusRecord.getInContribution());
+    }
+
+    private int createAndCommitNewDeletedVersionAsHistory(UUID delAuditId, UUID contrib) {
+        // a bit hacky: create new, BUT already moved to _history, version documenting the deletion
+        // (Normal approach of first .update() then .delete() won't work, because postgres' transaction optimizer will
+        // just skip the update if it will get deleted anyway.)
+        // so copy values, but add deletion meta data
+        StatusHistoryRecord newRecord = getDataAccess().getContext().newRecord(STATUS_HISTORY);
+        newRecord.setId(statusRecord.getId());
+        newRecord.setEhrId(statusRecord.getEhrId());
+        newRecord.setInContribution(contrib);
+        newRecord.setArchetypeNodeId(statusRecord.getArchetypeNodeId());
+        newRecord.setAttestationRef(statusRecord.getAttestationRef());
+        newRecord.setName(statusRecord.getName());
+        newRecord.setIsModifiable(statusRecord.getIsModifiable());
+        newRecord.setIsQueryable(statusRecord.getIsQueryable());
+        newRecord.setOtherDetails(statusRecord.getOtherDetails());
+        newRecord.setParty(statusRecord.getParty());
+        newRecord.setHasAudit(delAuditId);
+
+        getDataAccess().getContext().attach(newRecord);
+        if (newRecord.insert() != 1) {
+            throw new InternalServerException("DB inconsistency");
+        } else {
+            return 1;
+        }
+    }
+
+    private void createAndSetContribution(UUID committerId, UUID systemId, String description,
+        ContributionChangeType changeType) {
+        contributionAccess
+            .setAuditDetailsChangeType(I_ConceptAccess.fetchContributionChangeType(this, changeType));
+        if (contributionAccess.getAuditsCommitter() == null
+            || contributionAccess.getAuditsSystemId() == null) {
+            if (committerId == null || systemId == null) {
+                throw new InternalServerException(
+                    "Illegal to commit the contribution's AuditDetailsAccess without setting mandatory fields.");
+            } else {
+                contributionAccess.setAuditDetailsCommitter(committerId);
+                contributionAccess.setAuditDetailsSystemId(systemId);
+                contributionAccess.setAuditDetailsDescription(description);
+            }
+        }
+        UUID contributionId = this.contributionAccess.commit();
+        setContributionId(contributionId);
     }
 
     public static I_StatusAccess retrieveInstance(I_DomainAccess domainAccess, UUID statusId) {
@@ -244,123 +396,6 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
         return statusRecord.getId();
     }
 
-    /**
-     * @throws InternalServerException because inherited interface function isn't implemented in this class
-     * @deprecated
-     */
-    @Deprecated
-    @Override
-    public UUID commit(Timestamp transactionTime) {
-        throw new InternalServerException("INTERNAL: commit is not valid");
-    }
-
-    /**
-     * @throws InternalServerException because inherited interface function isn't implemented in this class
-     * @deprecated
-     */
-    @Deprecated
-    @Override
-    public UUID commit()  {
-        throw new InternalServerException("INTERNAL: commit without transaction time is not legal");
-    }
-
-    @Override
-    public UUID commit(Timestamp transactionTime, UUID ehrId, ItemStructure otherDetails) {
-        contributionAccess.setAuditDetailsChangeType(I_ConceptAccess.fetchContributionChangeType(this, I_ConceptAccess.ContributionChangeType.CREATION));
-        if (contributionAccess.getAuditsCommitter() == null || contributionAccess.getAuditsSystemId() == null)
-            throw new InternalServerException("Illegal to commit the contribution's AuditDetailsAccess without setting mandatory fields.");
-        UUID contributionId = this.contributionAccess.commit();
-        setContributionId(contributionId);
-
-        return internalCommit(transactionTime, ehrId, otherDetails);
-    }
-
-    @Override
-    public UUID commitWithCustomContribution(Timestamp transactionTime, UUID ehrId, ItemStructure otherDetails) {
-        return internalCommit(transactionTime, ehrId, otherDetails);
-    }
-
-    private UUID internalCommit(Timestamp transactionTime, UUID ehrId, ItemStructure otherDetails) {
-        auditDetailsAccess.setChangeType(I_ConceptAccess.fetchContributionChangeType(this, I_ConceptAccess.ContributionChangeType.CREATION));
-        if (auditDetailsAccess.getChangeType() == null || auditDetailsAccess.getSystemId() == null || auditDetailsAccess.getCommitter() == null)
-            throw new InternalServerException("Illegal to commit AuditDetailsAccess without setting mandatory fields.");
-        UUID auditId = auditDetailsAccess.commit();
-        statusRecord.setHasAudit(auditId);
-
-        statusRecord.setEhrId(ehrId);
-        if (otherDetails != null) {
-            statusRecord.setOtherDetails(otherDetails);
-        }
-        statusRecord.setSysTransaction(transactionTime);
-
-        statusRecord.setHasAudit(auditId);
-
-        if (statusRecord.store() == 0) {
-            throw new InvalidApiParameterException("Input EHR couldn't be stored; Storing EHR_STATUS failed");
-        }
-
-        return statusRecord.getId();
-    }
-
-    @Override
-    public Boolean update(Timestamp transactionTime) {
-        return update(null, transactionTime, false);
-    }
-
-    @Override
-    public Boolean update(Timestamp transactionTime, boolean force) {
-        return update(null, transactionTime, force);
-    }
-
-    @Override
-    public Boolean update(Boolean force) {
-        return update(null, TransactionTime.millis(), force);
-    }
-
-    @Override   // root update()
-    public Boolean update(ItemStructure otherDetails, Timestamp transactionTime, boolean force) {
-        if (force || statusRecord.changed()) {
-            // update both contribution (incl its audit) and the status' own audit
-            if (contributionAccess.getId() == null) {
-                // new contribution
-                contributionAccess.commit(transactionTime);
-            } else {
-                // use existing for batch contribution
-                contributionAccess.update(transactionTime, null, null, null, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, null);
-            }
-            statusRecord.setInContribution(contributionAccess.getId());
-            auditDetailsAccess.commit();
-            statusRecord.setHasAudit(auditDetailsAccess.getId()); // new audit ID
-
-            if (otherDetails != null) {
-                statusRecord.setOtherDetails(otherDetails);
-            }
-            statusRecord.setSysTransaction(transactionTime);
-
-            try {
-                return statusRecord.update() > 0;
-            } catch (RuntimeException e) {
-                throw new InvalidApiParameterException("Couldn't marshall given EHR_STATUS / OTHER_DETAILS, content probably breaks RM rules");
-            }
-        }
-        return false;   // if updated technically worked but jooq reports no update was necessary
-    }
-
-    /**
-     * @throws InternalServerException because inherited interface function isn't implemented in this class
-     * @deprecated
-     */
-    @Deprecated
-    @Override
-    public Boolean update() {
-        throw new InternalServerException("INTERNAL: this update signature is not valid");
-    }
-
-    @Override
-    public Integer delete() {
-        return statusRecord.delete();
-    }
-
     @Override
     public DataAccess getDataAccess() {
         return this;
@@ -426,17 +461,18 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
     }
 
     @Override
-    public void setAuditAndContributionAuditValues(UUID systemId, UUID committerId, String description) {
-        if (systemId != null)
-            this.auditDetailsAccess.setSystemId(systemId);
-
-        if (committerId != null)
-            this.auditDetailsAccess.setCommitter(committerId);
+    public void setAuditAndContributionAuditValues(UUID systemId, UUID committerId, String description, ContributionChangeType changeType) {
+        if (committerId == null || systemId == null || changeType == null)
+            throw new IllegalArgumentException("arguments not optional");
+        this.auditDetailsAccess.setCommitter(committerId);
+        this.auditDetailsAccess.setSystemId(systemId);
+        this.auditDetailsAccess.setChangeType(I_ConceptAccess.fetchContributionChangeType(this, changeType));
 
         if (description != null)
             this.auditDetailsAccess.setDescription(description);
 
-        this.contributionAccess.setAuditDetailsValues(committerId, systemId, description);
+
+        this.contributionAccess.setAuditDetailsValues(committerId, systemId, description, changeType);
     }
 
     /**
@@ -551,5 +587,27 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
         status.setSubject(partySelf);
 
         return status;
+    }
+
+    @Override
+    public void setOtherDetails(ItemStructure otherDetails) {
+        if (otherDetails != null) {
+            statusRecord.setOtherDetails(otherDetails);
+        }
+    }
+
+    @Override
+    public ItemStructure getOtherDetails() {
+        return this.statusRecord.getOtherDetails();
+    }
+
+    @Override
+    public void setEhrId(UUID ehrId) {
+        this.statusRecord.setEhrId(ehrId);
+    }
+
+    @Override
+    public UUID getEhrId() {
+        return this.statusRecord.getEhrId();
     }
 }
