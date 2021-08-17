@@ -120,7 +120,7 @@ These are the data set classes:
 
 - missing is_queryable, is_modifiable
 - empty is_queryable, is_modifiable
-- missing subject
+- missing or empty subject
 - invalid subject
 - invalid other_details
 
