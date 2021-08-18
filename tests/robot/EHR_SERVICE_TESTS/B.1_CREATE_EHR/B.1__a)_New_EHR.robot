@@ -28,17 +28,24 @@ Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 # Suite Setup  startup SUT
 # Suite Teardown  shutdown SUT
 
-Force Tags      refactor
+Force Tags      refactor    xxx
 
 
 Library    REST
 
 *** Test Cases ***
+
+#///////////////////////////////////////////////
+#                                             //
+# CASES WITH VALID DATA SETS                  //
+#                                             //
+#///////////////////////////////////////////////
+
 001 - Create EHR (Valid Data Sets)
     [Documentation]    Create EHR providing a valid payload as input.\n\n
     ...                Check https://github.com/ehrbase/ehrbase/blob/develop/doc/conformance_testing/EHR.md#b1-create-ehr
     ...                for more details.
-    [Tags]             xxx
+    [Tags]             
     [Template]         Create EHR From Valid Data Set
 
     #No.  is_queryable  is_modifiable  subject     other_details  ehr_id
@@ -60,40 +67,166 @@ Library    REST
     16	  false	        false	       provided    provided       provided
 
 
-003 - POST /ehr (no accept header, content-type=xml)
-    prepare new request session    no accept header xml
-    create supernew ehr
-    ehr_keywords.validate POST response - 204 no content
+
+MF-019 - Create new EHR (valid ehr_status with other_details)
+    [Documentation]     Covers happy path with "other_details" _type ITEM_TREE
+    [Tags]              161    not-ready
+    prepare new request session    JSON    Prefer=return=representation
+    ${body}=     randomize subject_id in test-data-set    valid/002_ehr_status_with_other_details_item_tree.json
+    POST /ehr    ${body}
+    Integer    response status    201
+
+    ${actual_ehr_status}=    Object    response body ehr_status
+    Set Test Variable    ${expected_ehr_status}    ${body}
+    &{diff}=            compare json-strings    ${actual_ehr_status}[0]  ${expected_ehr_status}
+                        ...    exclude_paths=root['uid']
+
+        TRACE GITHUB ISSUE  161  bug
+
+                        Log To Console    \n\n&{diff}
+                        Should Be Empty    ${diff}    msg=DIFF DETECTED!
 
 
-004 - POST /ehr (no content header)
-    prepare new request session    no content header
-    create supernew ehr
-    ehr_keywords.validate POST response - 204 no content
+MF-020 - Create new EHR (valid ehr_status with other_details)
+    [Documentation]     Covers happy path with "other_details" _type ITEM_LIST
+    [Tags]              161    not-ready
+    prepare new request session    JSON    Prefer=return=representation
+    ${body}=     randomize subject_id in test-data-set    valid/003_ehr_status_with_other_details_item_list.json
+    POST /ehr    ${body}
+    Integer    response status    201
+
+    ${actual_ehr_status}=    Object    response body ehr_status
+    Set Test Variable    ${expected_ehr_status}    ${body}
+
+    &{diff}=            compare json-strings    ${actual_ehr_status}[0]  ${expected_ehr_status}
+                        ...    exclude_paths=root['uid']
+    
+        TRACE GITHUB ISSUE  161  bug
+
+                        Should Be Empty    ${diff}    msg=DIFF DETECTED!
 
 
-005 - POST /ehr (no accept/content-type headers)
-    prepare new request session    no accept/content headers
-    create supernew ehr
-    ehr_keywords.validate POST response - 204 no content
-
-
-006 - POST /ehr (no headers)
-    prepare new request session    no headers
-    create supernew ehr
-    ehr_keywords.validate POST response - 204 no content
-
-
-MF-001 - Create new EHR (w/o Prefer header)
+MF-021 - Create new EHR (valid ehr_status with other_details)
+    [Documentation]     Covers happy path with "other_details" _type ITEM_SINGLE
     [Tags]
+    prepare new request session    JSON    Prefer=return=representation
+    ${body}=     randomize subject_id in test-data-set    valid/004_ehr_status_with_other_details_item_single.json
+    POST /ehr    ${body}
+    Integer    response status    201
+
+
+MF-022 - Create new EHR (valid ehr_status with other_details)
+    [Documentation]     Covers happy path with "other_details" _type ITEM_TABLE
+    [Tags]              162    not-ready
+    prepare new request session    JSON    Prefer=return=representation
+    ${body}=     randomize subject_id in test-data-set    valid/005_ehr_status_with_other_details_item_table.json
+    POST /ehr    ${body}
+
+        TRACE GITHUB ISSUE  162  bug
+
+    Integer    response status    201
+
+
+MF-051 - Create new EHR providing an ehr_id (valid ehr_status with other_details)
+    [Documentation]     Covers happy path with "other_details" _type ITEM_TREE
+    [Tags]              161    not-ready
+    prepare new request session    JSON    Prefer=return=representation
+    ${body}=     randomize subject_id in test-data-set    valid/002_ehr_status_with_other_details_item_tree.json
+    PUT /ehr/ehr_id    body=${body}
+    Integer    response status    201
+
+    ${actual_ehr_status}=    Object    response body ehr_status
+    Set Test Variable    ${expected_ehr_status}    ${body}
+
+    &{diff}=            compare json-strings    ${actual_ehr_status}[0]  ${expected_ehr_status}
+                        ...    exclude_paths=root['uid']
+
+        TRACE GITHUB ISSUE  161  bug
+
+                        Should Be Empty    ${diff}    msg=DIFF DETECTED!
+
+
+MF-052 - Create new EHR providing an ehr_id (valid ehr_status with other_details)
+    [Documentation]     Covers happy path with "other_details" _type ITEM_LIST
+    [Tags]              161    not-ready
     prepare new request session    JSON
+    ${body}=     randomize subject_id in test-data-set    valid/003_ehr_status_with_other_details_item_list.json
+    PUT /ehr/ehr_id    body=${body}
+    Integer    response status    201
+
+    ${actual_ehr_status}=    Object    response body ehr_status
+    Set Test Variable    ${expected_ehr_status}    ${body}
+
+    &{diff}=            compare json-strings    ${actual_ehr_status}[0]  ${expected_ehr_status}
+                        ...    exclude_paths=root['uid']
+
+        TRACE GITHUB ISSUE  161  bug
+
+                        Should Be Empty    ${diff}    msg=DIFF DETECTED!
+
+
+MF-053 - Create new EHR providing an ehr_id (valid ehr_status with other_details)
+    [Documentation]     Covers happy path with "other_details" _type ITEM_SINGLE
+    [Tags]
+    prepare new request session    JSON    Prefer=return=representation
+    ${body}=     randomize subject_id in test-data-set    valid/004_ehr_status_with_other_details_item_single.json
+    PUT /ehr/ehr_id    body=${body}
+    Integer    response status    201
+
+
+MF-054 - Create new EHR providing an ehr_id (valid ehr_status with other_details)
+    [Documentation]     Covers happy path with "other_details" _type ITEM_TABLE
+    [Tags]              162    not-ready
+    prepare new request session    JSON    Prefer=return=representation
+    ${body}=     randomize subject_id in test-data-set    valid/005_ehr_status_with_other_details_item_table.json
+    PUT /ehr/ehr_id    body=${body}
+
+        TRACE GITHUB ISSUE  162  bug
+
+    Integer    response status    201
+
+
+
+#///////////////////////////////////////////////
+#                                             //
+# CASES WITH DIFFERENT REQUEST HEADERS        //
+#                                             //
+#///////////////////////////////////////////////
+
+002 - POST /ehr (no accept header, content-type=xml)
+    prepare new request session    no accept header xml    Prefer=${None}
     create supernew ehr
     ehr_keywords.validate POST response - 204 no content
 
 
-MF-001a - Create new EHR (w/o Prefer and Accept header)
+003 - POST /ehr (no content header)
+    prepare new request session    no content header    Prefer=${None}
+    create supernew ehr
+    ehr_keywords.validate POST response - 204 no content
+
+
+004 - POST /ehr (no accept/content-type headers)
+    prepare new request session    no accept/content headers    Prefer=${None}
+    create supernew ehr
+    ehr_keywords.validate POST response - 204 no content
+
+
+005 - POST /ehr (no headers)
+    prepare new request session    no headers    Prefer=WLADISLAW
+    create supernew ehr
+    ehr_keywords.validate POST response - 204 no content
+
+
+MF-001 - Create new EHR (without Prefer header)
     [Tags]
-    prepare new request session    no accept header
+    prepare new request session    JSON    Prefer=${None}
+    create supernew ehr
+    ehr_keywords.validate POST response - 204 no content
+
+
+MF-001a - Create new EHR (without Prefer and Accept header)
+    [Tags]
+    prepare new request session    no accept header    Prefer=${None}
     create supernew ehr
     ehr_keywords.validate POST response - 204 no content
 
@@ -114,14 +247,6 @@ MF-003 - Create new EHR (XML, Prefer header: minimal)
     ehr_keywords.validate POST response - 204 no content
 
 
-MF-004 - Create new EHR (Prefer header: representation)
-    [Tags]
-    prepare new request session    JSON    Prefer=return=representation
-    create new EHR
-    # comment: check step
-    Object    response body
-
-
 MF-005 - Create new EHR (XML, Prefer header: representation)
     [tags]    EHR_STATUS_create_xml
     prepare new request session    XML    Prefer=return=representation
@@ -131,6 +256,55 @@ MF-005 - Create new EHR (XML, Prefer header: representation)
     String    response body    pattern=<ehr_id><value>
     # String    response body    pattern=<ehr_status><name><value>EHR Status</value></name><uid
 
+
+MF-033 - Create new EHR providing an ehr_id (without Prefer header)
+    [Tags]
+    # TODO: @WLAD update as soon as RESTInstance allows unsetting/clearing headers
+    #       remove "Prefer=${None}"
+    prepare new request session    JSON    Prefer=${None}
+    PUT /ehr/ehr_id
+    ehr_keywords.validate PUT response - 204 no content
+
+
+MF-034 - Create new EHR providing an ehr_id (Prefer header: minimal)
+    [Tags]
+    [Documentation]     This test should behave equqly to MF-033
+    prepare new request session    JSON    Prefer=return=minimal
+    PUT /ehr/ehr_id
+    ehr_keywords.validate PUT response - 204 no content
+
+
+MF-035 - Create new EHR providing an ehr_id (XML, Prefer header: minimal)
+    [Tags]
+    prepare new request session    XML    Prefer=return=minimal
+    PUT /ehr/ehr_id
+    ehr_keywords.validate PUT response - 204 no content
+
+
+MF-036 - Create new EHR providing an ehr_id (Prefer header: representation)
+    [Tags]
+    prepare new request session    JSON    Prefer=return=representation
+    PUT /ehr/ehr_id
+    # comment: check step
+    Object    response body
+
+
+MF-037 - Create new EHR providing an ehr_id (XML, Prefer header: representation)
+    [tags]    EHR_STATUS_create_xml
+    prepare new request session    XML    Prefer=return=representation
+    PUT /ehr/ehr_id
+    # comment: check steps
+    String    response body    pattern=<?xml version
+    String    response body    pattern=<ehr_id><value>
+    # String    response body    pattern=<ehr_status><name><value>EHR Status</value></name><uid
+
+
+
+#///////////////////////////////////////////////
+#                                             //
+# CASES WITH INVALID DATA SETS                //
+#                                             //
+#///////////////////////////////////////////////
 
 MF-006 - Create new EHR (invalid ehr_status)
     [Documentation]     Covers case where provided ehr_staus is just empty json
@@ -257,85 +431,6 @@ MF-016 - Create new EHR (invalid ehr_status)
     Integer    response status    400
 
 
-MF-017 - Create new EHR (valid ehr_status)
-    [Documentation]     Covers happy path: valid ehr_status as body payload
-    [Tags]
-    prepare new request session    JSON    Prefer=return=representation
-    ${body}=     randomize subject_id in test-data-set    valid/000_ehr_status.json
-    POST /ehr    ${body}
-    Integer    response status    201
-
-
-MF-019 - Create new EHR (valid ehr_status with other_details)
-    [Documentation]     Covers happy path w/ "other_details" _type ITEM_TREE
-    [Tags]              161    not-ready
-    prepare new request session    JSON    Prefer=return=representation
-    ${body}=     randomize subject_id in test-data-set    valid/002_ehr_status_with_other_details_item_tree.json
-    POST /ehr    ${body}
-    Integer    response status    201
-
-    ${actual_ehr_status}=    Object    response body ehr_status
-    Set Test Variable    ${expected_ehr_status}    ${body}
-    &{diff}=            compare json-strings    ${actual_ehr_status}[0]  ${expected_ehr_status}
-                        ...    exclude_paths=root['uid']
-
-        TRACE GITHUB ISSUE  161  bug
-
-                        Log To Console    \n\n&{diff}
-                        Should Be Empty    ${diff}    msg=DIFF DETECTED!
-
-
-MF-020 - Create new EHR (valid ehr_status with other_details)
-    [Documentation]     Covers happy path w/ "other_details" _type ITEM_LIST
-    [Tags]              161    not-ready
-    prepare new request session    JSON    Prefer=return=representation
-    ${body}=     randomize subject_id in test-data-set    valid/003_ehr_status_with_other_details_item_list.json
-    POST /ehr    ${body}
-    Integer    response status    201
-
-    ${actual_ehr_status}=    Object    response body ehr_status
-    Set Test Variable    ${expected_ehr_status}    ${body}
-
-    &{diff}=            compare json-strings    ${actual_ehr_status}[0]  ${expected_ehr_status}
-                        ...    exclude_paths=root['uid']
-    
-        TRACE GITHUB ISSUE  161  bug
-
-                        Should Be Empty    ${diff}    msg=DIFF DETECTED!
-
-
-MF-021 - Create new EHR (valid ehr_status with other_details)
-    [Documentation]     Covers happy path w/ "other_details" _type ITEM_SINGLE
-    [Tags]
-    prepare new request session    JSON    Prefer=return=representation
-    ${body}=     randomize subject_id in test-data-set    valid/004_ehr_status_with_other_details_item_single.json
-    POST /ehr    ${body}
-    Integer    response status    201
-
-
-MF-022 - Create new EHR (valid ehr_status with other_details)
-    [Documentation]     Covers happy path w/ "other_details" _type ITEM_TABLE
-    [Tags]              162    not-ready
-    prepare new request session    JSON    Prefer=return=representation
-    ${body}=     randomize subject_id in test-data-set    valid/005_ehr_status_with_other_details_item_table.json
-    POST /ehr    ${body}
-
-        TRACE GITHUB ISSUE  162  bug
-
-    Integer    response status    201
-
-
-MF-023 - Create new EHR (POST /ehr valid variants)
-    [Tags]
-    [Template]          create ehr from data table
-
-  # SUBJECT    IS_MODIFIABLE   IS_QUERYABLE   R.CODE
-    given      true            true           201
-    given      true            false          201
-    given      false           false          201
-    given      false           true           201
-
-
 MF-024 - Create new EHR (POST /ehr invalid ehr_status variants)
     [Tags]    295    not-ready
     [Template]          create ehr from data table (invalid)
@@ -386,20 +481,9 @@ MF-025 - Create new EHR (POST /ehr invalid subject variants)
     [Teardown]      TRACE GITHUB ISSUE  295  bug
 
 
-MF-030 - Create new EHR w/ given ehr_id (PUT /ehr/ehr_id variants)
-    [Tags]
-    [Template]          create ehr w/ given ehr_id from data table
-
-  # EHR_ID  SUBJECT    IS_MODIFIABLE   IS_QUERYABLE   R.CODE
-    given   given      true            true           201
-    given   given      true            false          201
-    given   given      false           false          201
-    given   given      false           true           201
-
-
-MF-031 - Create new EHR w/ given ehr_id (PUT /ehr/ehr_id invalid variants)
+MF-031 - Create new EHR providing an ehr_id (PUT /ehr/ehr_id invalid variants)
     [Tags]              295    not-ready
-    [Template]          create ehr w/ given ehr_id but invalid subject from data table
+    [Template]          create ehr with given ehr_id but invalid subject from data table
 
   # EHR_ID  SUBJECT    IS_MODIFIABLE   IS_QUERYABLE   R.CODE
     given   given      ${EMPTY}        true           400
@@ -421,9 +505,9 @@ MF-031 - Create new EHR w/ given ehr_id (PUT /ehr/ehr_id invalid variants)
     [Teardown]      TRACE GITHUB ISSUE  295  bug
 
 
-MF-032 - Create new EHR w/ invalid ehr_id (PUT /ehr/ehr_id variants)
+MF-032 - Create new EHR with invalid ehr_id (PUT /ehr/ehr_id variants)
     [Tags]
-    [Template]          create ehr w/ invalid ehr_id from data table
+    [Template]          create ehr with invalid ehr_id from data table
 
   # INVALID EHR_ID                                                SUBJECT   IS_MODIFIABLE  IS_QUERYABLE  R.CODE
     ${{ ''.join(random.choices(string.ascii_lowercase, k=10)) }}  ${EMPTY}  true           true          400
@@ -431,48 +515,6 @@ MF-032 - Create new EHR w/ invalid ehr_id (PUT /ehr/ehr_id variants)
     ${{ ''.join(random.choices(string.digits, k=10)) }}           ${EMPTY}  ${EMPTY}       true          400
     ${{ ''.join(random.choices(string.digits, k=10)) }}           ${EMPTY}  ${EMPTY}       false         400
     0000000${{random.randint(1,1000)}}                            ${EMPTY}  false          ${EMPTY}      400
-
-
-MF-033 - Create new EHR w/ given ehr_id (w/o Prefer header)
-    [Tags]
-    # TODO: @WLAD update as soon as RESTInstance allows unsetting/clearing headers
-    #       remove "Prefer=${None}"
-    prepare new request session    JSON    Prefer=${None}
-    PUT /ehr/ehr_id
-    ehr_keywords.validate PUT response - 204 no content
-
-
-MF-034 - Create new EHR w/ given ehr_id (Prefer header: minimal)
-    [Tags]
-    [Documentation]     This test should behave equqly to MF-033
-    prepare new request session    JSON    Prefer=return=minimal
-    PUT /ehr/ehr_id
-    ehr_keywords.validate PUT response - 204 no content
-
-
-MF-035 - Create new EHR w/ given ehr_id (XML, Prefer header: minimal)
-    [Tags]
-    prepare new request session    XML    Prefer=return=minimal
-    PUT /ehr/ehr_id
-    ehr_keywords.validate PUT response - 204 no content
-
-
-MF-036 - Create new EHR w/ given ehr_id (Prefer header: representation)
-    [Tags]
-    prepare new request session    JSON    Prefer=return=representation
-    PUT /ehr/ehr_id
-    # comment: check step
-    Object    response body
-
-
-MF-037 - Create new EHR w/ given ehr_id (XML, Prefer header: representation)
-    [tags]    EHR_STATUS_create_xml
-    prepare new request session    XML    Prefer=return=representation
-    PUT /ehr/ehr_id
-    # comment: check steps
-    String    response body    pattern=<?xml version
-    String    response body    pattern=<ehr_id><value>
-    # String    response body    pattern=<ehr_status><name><value>EHR Status</value></name><uid
 
 
 MF-038 - Create new EHR providing an ehr_id (invalid ehr_status)
@@ -599,16 +641,7 @@ MF-048 - Create new EHR providing an ehr_id (invalid ehr_status)
     Integer    response status    400
 
 
-MF-049 - Create new EHR providing an ehr_id (valid ehr_status)
-    [Documentation]     Covers happy path: valid ehr_status as body payload
-    [Tags]
-    prepare new request session    JSON    Prefer=return=representation
-    ${body}=     randomize subject_id in test-data-set    valid/000_ehr_status.json
-    PUT /ehr/ehr_id    body=${body}
-    Integer    response status    201
-
-
-MF-050 - Create new EHR providing an ehr_id (valid ehr_status)
+MF-050 - Create new EHR providing an ehr_id (invalid ehr_status)
     [Documentation]     Covers INVALID case where subject is empty JSON
     [Tags]              295    not-ready
     prepare new request session    JSON    Prefer=return=representation
@@ -620,63 +653,7 @@ MF-050 - Create new EHR providing an ehr_id (valid ehr_status)
     Integer    response status    400
 
 
-MF-051 - Create new EHR providing an ehr_id (valid ehr_status with other_details)
-    [Documentation]     Covers happy path w/ "other_details" _type ITEM_TREE
-    [Tags]              161    not-ready
-    prepare new request session    JSON    Prefer=return=representation
-    ${body}=     randomize subject_id in test-data-set    valid/002_ehr_status_with_other_details_item_tree.json
-    PUT /ehr/ehr_id    body=${body}
-    Integer    response status    201
 
-    ${actual_ehr_status}=    Object    response body ehr_status
-    Set Test Variable    ${expected_ehr_status}    ${body}
-
-    &{diff}=            compare json-strings    ${actual_ehr_status}[0]  ${expected_ehr_status}
-                        ...    exclude_paths=root['uid']
-
-        TRACE GITHUB ISSUE  161  bug
-
-                        Should Be Empty    ${diff}    msg=DIFF DETECTED!
-
-
-MF-052 - Create new EHR providing an ehr_id (valid ehr_status with other_details)
-    [Documentation]     Covers happy path w/ "other_details" _type ITEM_LIST
-    [Tags]              161    not-ready
-    prepare new request session    JSON
-    ${body}=     randomize subject_id in test-data-set    valid/003_ehr_status_with_other_details_item_list.json
-    PUT /ehr/ehr_id    body=${body}
-    Integer    response status    201
-
-    ${actual_ehr_status}=    Object    response body ehr_status
-    Set Test Variable    ${expected_ehr_status}    ${body}
-
-    &{diff}=            compare json-strings    ${actual_ehr_status}[0]  ${expected_ehr_status}
-                        ...    exclude_paths=root['uid']
-
-        TRACE GITHUB ISSUE  161  bug
-
-                        Should Be Empty    ${diff}    msg=DIFF DETECTED!
-
-
-MF-053 - Create new EHR providing an ehr_id (valid ehr_status with other_details)
-    [Documentation]     Covers happy path w/ "other_details" _type ITEM_SINGLE
-    [Tags]
-    prepare new request session    JSON    Prefer=return=representation
-    ${body}=     randomize subject_id in test-data-set    valid/004_ehr_status_with_other_details_item_single.json
-    PUT /ehr/ehr_id    body=${body}
-    Integer    response status    201
-
-
-MF-054 - Create new EHR providing an ehr_id (valid ehr_status with other_details)
-    [Documentation]     Covers happy path w/ "other_details" _type ITEM_TABLE
-    [Tags]              162    not-ready
-    prepare new request session    JSON    Prefer=return=representation
-    ${body}=     randomize subject_id in test-data-set    valid/005_ehr_status_with_other_details_item_table.json
-    PUT /ehr/ehr_id    body=${body}
-
-        TRACE GITHUB ISSUE  162  bug
-
-    Integer    response status    201
 
 
 
@@ -715,14 +692,6 @@ MF-054 - Create new EHR providing an ehr_id (valid ehr_status with other_details
                         Log To Console    \nRESPONSE BODY: ${response.content}
 
 
-000 - POST /ehr (no accept header, content-type=json)
-    [Documentation]     NOTE: this test is not executed on CI!
-    [Tags]              libtest
-    prepare new request session    no accept header
-    create supernew ehr
-    ehr_keywords.validate POST response - 204 no content
-
-
 
 
 
@@ -754,7 +723,7 @@ compose ehr payload
     [Arguments]     ${No.}    ${other_details}    ${modifiable}    ${queryable}
                     Log To Console    \n\nData Set No.: ${No.} \n\n
 
-    # comment: use 000_ehr_status.json as blueprint for payload w/o other_details
+    # comment: use 000_ehr_status.json as blueprint for payload witho other_details
     IF    "${other_details}" == "not provided"
         ${payload}=    randomize subject_id in test-data-set    valid/000_ehr_status.json
 
@@ -835,7 +804,7 @@ create ehr from data table (invalid)
                         check response (invalid)    ${status_code}
 
 
-create ehr w/ given ehr_id from data table
+create ehr with given ehr_id from data table
     [Arguments]         ${ehr_id}  ${subject}  ${is_modifiable}  ${is_queryable}  ${status_code}
 
                         prepare new request session    Prefer=return=representation
@@ -847,7 +816,7 @@ create ehr w/ given ehr_id from data table
                         check response    ${status_code}    ${is_modifiable}    ${is_queryable}
 
 
-create ehr w/ given ehr_id but invalid subject from data table
+create ehr with given ehr_id but invalid subject from data table
     [Arguments]         ${ehr_id}  ${subject}  ${is_modifiable}  ${is_queryable}  ${status_code}
 
                         prepare new request session    Prefer=return=representation
@@ -859,7 +828,7 @@ create ehr w/ given ehr_id but invalid subject from data table
                         check response (invalid)    ${status_code}
 
 
-create ehr w/ invalid ehr_id from data table
+create ehr with invalid ehr_id from data table
     [Arguments]         ${ehr_id}  ${subject}  ${is_modifiable}  ${is_queryable}  ${status_code}
 
                         prepare new request session    Prefer=return=representation
@@ -897,28 +866,10 @@ set ehr_status subject
                         ELSE IF    $subject=="invalid"
                             create randomly invalid subject    ${ehr_status}
 
-                        # comment: else - a valid ehr_status w/ random subject..id is exposed
+                        # comment: else - a valid ehr_status with random subject..id is exposed
                         ELSE
                             Set Test Variable    ${ehr_status}    ${ehr_status}
                         END
-
-
-
-
-                        # # comment: INVALID because empty subject
-                        # Run Keyword And Return If    $subject=="${EMPTY}"
-                        # ...    delete subject.external_ref from ehr_status    ${ehr_status}
-
-                        # # commment: missing subject (makes ehr_status invalid)
-                        # Run Keyword And Return If    $subject=="missing"
-                        # ...    delete subject from ehr_status    ${ehr_status}
-
-                        # # comment: invalid subject (makes ehr_status invalid)
-                        # Run Keyword And Return If    $subject=="invalid"
-                        # ...    create randomly invalid subject    ${ehr_status}
-
-                        # # comment: else - a valid ehr_status w/ random subject..id is exposed
-                        # Set Test Variable    ${ehr_status}    ${ehr_status}
 
 
 create randomly invalid subject
@@ -948,7 +899,7 @@ delete subject from ehr_status
 
 
 delete subject.external_ref from ehr_status
-    [Documentation]     Creates and exposes an ehr_status w/ an empty but valid subject
+    [Documentation]     Creates and exposes an ehr_status with an empty but valid subject
     [Arguments]         ${ehr_status}
 
     ${ehr_status}=      Delete Object From Json    ${ehr_status}    $..subject.external_ref
