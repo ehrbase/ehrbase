@@ -21,7 +21,7 @@ package org.ehrbase.aql.sql.binding;
 
 import static org.ehrbase.aql.sql.queryimpl.QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION;
 
-public class WhereSetReturningFunction {
+public class SetReturningFunction {
 
     private final String expression;
 
@@ -34,7 +34,7 @@ public class WhereSetReturningFunction {
                     "|regexp_match|regexp_matches|regexp_split_to_array|regexp_split_to_table"+
             ")\\b.*";
 
-    public WhereSetReturningFunction(String expression) {
+    public SetReturningFunction(String expression) {
         this.expression = expression;
     }
 

@@ -405,34 +405,12 @@ public class WhereBinder {
 
     private String expandForLateral(String templateId, TaggedStringBuilder encodedVar, I_VariableDefinition item){
         String expanded = expandForCondition(encodedVar);
-        if (new WhereSetReturningFunction(expanded).isUsed()){
-            encodeLateral(templateId, encodedVar, item );
+        if (new SetReturningFunction(expanded).isUsed()){
+            new LateralJoins().create(templateId, encodedVar, item );
             expanded = item.getAlias();
         }
 
         return expanded;
-    }
-
-    private void encodeLateral(String templateId, TaggedStringBuilder encodedVar, I_VariableDefinition item){
-        if (encodedVar == null)
-            return;
-        int hashValue = encodedVar.toString().hashCode(); //cf. SonarLint
-        int abs;
-        if (hashValue != 0)
-            abs = Math.abs(hashValue);
-        else
-            abs = 0;
-        String tableAlias = "array_" + abs + "_" + inc();
-        String variableAlias = "var_" + abs + "_" + inc();
-        //insert the variable alias used for the lateral join expression
-        encodedVar.replaceLast(")", " AS " + variableAlias + ")");
-        Table<Record> table = DSL.table(encodedVar.toString()).as(tableAlias);
-        item.setLateralJoinTable(templateId, table, variableAlias, JoinType.JOIN, null, IQueryImpl.Clause.WHERE);
-        item.setAlias(tableAlias + "." + variableAlias + " ");
-    }
-
-    private static synchronized int inc(){
-        return seed++;
     }
 
 }

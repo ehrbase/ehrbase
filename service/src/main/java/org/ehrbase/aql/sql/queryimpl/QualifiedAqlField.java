@@ -44,4 +44,8 @@ public class QualifiedAqlField {
     public void setField(Field<?> field) {
         this.field = field;
     }
+
+    public QualifiedAqlField duplicate() {
+        return new QualifiedAqlField(this.getSQLField(), this.itemType, this.itemCategory);
+    }
 }
