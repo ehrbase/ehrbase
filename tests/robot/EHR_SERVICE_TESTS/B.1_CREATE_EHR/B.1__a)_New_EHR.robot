@@ -70,7 +70,7 @@ Library    REST
 
 MF-019 - Create new EHR (valid ehr_status with other_details)
     [Documentation]     Covers happy path with "other_details" _type ITEM_TREE
-    [Tags]              161    not-ready
+    [Tags]              
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/002_ehr_status_with_other_details_item_tree.json
     POST /ehr    ${body}
@@ -78,18 +78,17 @@ MF-019 - Create new EHR (valid ehr_status with other_details)
 
     ${actual_ehr_status}=    Object    response body ehr_status
     Set Test Variable    ${expected_ehr_status}    ${body}
+
+    ${exclude_paths}    Create List    root['uid']  root['name']['_type']  root['subject']['_type']
     &{diff}=            compare json-strings    ${actual_ehr_status}[0]  ${expected_ehr_status}
-                        ...    exclude_paths=root['uid']
-
-        TRACE GITHUB ISSUE  161  bug
-
+                        ...    exclude_paths=${exclude_paths}
                         Log To Console    \n\n&{diff}
                         Should Be Empty    ${diff}    msg=DIFF DETECTED!
 
 
 MF-020 - Create new EHR (valid ehr_status with other_details)
     [Documentation]     Covers happy path with "other_details" _type ITEM_LIST
-    [Tags]              161    not-ready
+    [Tags]              
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/003_ehr_status_with_other_details_item_list.json
     POST /ehr    ${body}
@@ -98,11 +97,9 @@ MF-020 - Create new EHR (valid ehr_status with other_details)
     ${actual_ehr_status}=    Object    response body ehr_status
     Set Test Variable    ${expected_ehr_status}    ${body}
 
+    ${exclude_paths}    Create List    root['uid']  root['name']['_type']  root['subject']['_type']
     &{diff}=            compare json-strings    ${actual_ehr_status}[0]  ${expected_ehr_status}
-                        ...    exclude_paths=root['uid']
-    
-        TRACE GITHUB ISSUE  161  bug
-
+                        ...    exclude_paths=${exclude_paths}
                         Should Be Empty    ${diff}    msg=DIFF DETECTED!
 
 
@@ -129,7 +126,7 @@ MF-022 - Create new EHR (valid ehr_status with other_details)
 
 MF-051 - Create new EHR providing an ehr_id (valid ehr_status with other_details)
     [Documentation]     Covers happy path with "other_details" _type ITEM_TREE
-    [Tags]              161    not-ready
+    [Tags]              
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/002_ehr_status_with_other_details_item_tree.json
     PUT /ehr/ehr_id    body=${body}
@@ -138,17 +135,15 @@ MF-051 - Create new EHR providing an ehr_id (valid ehr_status with other_details
     ${actual_ehr_status}=    Object    response body ehr_status
     Set Test Variable    ${expected_ehr_status}    ${body}
 
+    ${exclude_paths}    Create List    root['uid']  root['name']['_type']  root['subject']['_type']
     &{diff}=            compare json-strings    ${actual_ehr_status}[0]  ${expected_ehr_status}
-                        ...    exclude_paths=root['uid']
-
-        TRACE GITHUB ISSUE  161  bug
-
+                        ...    exclude_paths=${exclude_paths}
                         Should Be Empty    ${diff}    msg=DIFF DETECTED!
 
 
 MF-052 - Create new EHR providing an ehr_id (valid ehr_status with other_details)
     [Documentation]     Covers happy path with "other_details" _type ITEM_LIST
-    [Tags]              161    not-ready
+    [Tags]              
     prepare new request session    JSON
     ${body}=     randomize subject_id in test-data-set    valid/003_ehr_status_with_other_details_item_list.json
     PUT /ehr/ehr_id    body=${body}
@@ -157,11 +152,9 @@ MF-052 - Create new EHR providing an ehr_id (valid ehr_status with other_details
     ${actual_ehr_status}=    Object    response body ehr_status
     Set Test Variable    ${expected_ehr_status}    ${body}
 
+    ${exclude_paths}    Create List    root['uid']  root['name']['_type']  root['subject']['_type']
     &{diff}=            compare json-strings    ${actual_ehr_status}[0]  ${expected_ehr_status}
-                        ...    exclude_paths=root['uid']
-
-        TRACE GITHUB ISSUE  161  bug
-
+                        ...    exclude_paths=${exclude_paths}
                         Should Be Empty    ${diff}    msg=DIFF DETECTED!
 
 
