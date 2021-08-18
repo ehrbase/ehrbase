@@ -102,8 +102,8 @@ system:
   allow-template-overwrite: false
 
 admin-api:
-  active: false
-  allowDeleteAll: false
+  active: true
+  allowDeleteAll: true
 
 logging:
   level:
