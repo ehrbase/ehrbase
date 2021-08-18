@@ -28,7 +28,7 @@ Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 # Suite Setup  startup SUT
 # Suite Teardown  shutdown SUT
 
-Force Tags      refactor    xxx
+Force Tags      refactor
 
 
 Library    REST
@@ -731,19 +731,6 @@ compose ehr payload
                     Set Test Variable    ${payload}    ${payload}
 
 
-compose ehr payload (without other_details)
-    [Arguments]     ${modifiable}    ${queryable}
-    ${payload}=     randomize subject_id in test-data-set    valid/000_ehr_status.json
-    ${payload}=     Update Value To Json    ${payload}  $.is_queryable    ${queryable}
-    ${payload=}     Update Value To Json    ${payload}  $.is_modifiable    ${modifiable}
-                    Set Test Variable    ${payload}    ${payload}
-
-compose ehr payload (with other_details)
-    [Arguments]     ${modifiable}    ${queryable}
-    ${payload}=     randomize subject_id in test-data-set    valid/000_ehr_status_with_other_details.json
-                    Set Test Variable    ${payload}    ${payload}
-
-
 create ehr
     [Arguments]     ${ehrid}
     IF    "${ehrid}" == "provided"
@@ -795,18 +782,6 @@ create ehr from data table (invalid)
                         compose ehr_status    ${subject}    ${is_modifiable}    ${is_queryable}
                         POST /ehr    ${ehr_status}
                         check response (invalid)    ${status_code}
-
-
-create ehr with given ehr_id from data table
-    [Arguments]         ${ehr_id}  ${subject}  ${is_modifiable}  ${is_queryable}  ${status_code}
-
-                        prepare new request session    Prefer=return=representation
-
-    ${ehr_id}=          Set Variable If    $ehr_id=="given"    ${{str(uuid.uuid4())}}    invalid_ehr_id
-
-                        compose ehr_status    ${subject}    ${is_modifiable}    ${is_queryable}
-                        PUT /ehr/ehr_id    ${ehr_id}    ${ehr_status}
-                        check response    ${status_code}    ${is_modifiable}    ${is_queryable}
 
 
 create ehr with given ehr_id but invalid subject from data table
