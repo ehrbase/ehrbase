@@ -128,6 +128,9 @@ public class AdminEhrController extends BaseController {
 
         ehrService.adminDeleteEhr(ehrUuid);
 
+        //purge party_identified following the delete (which deletes also composition, etc.)
+        ehrService.adminPurgePartyIdentified();
+
         return ResponseEntity.noContent().build();
     }
 }

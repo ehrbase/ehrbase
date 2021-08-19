@@ -159,6 +159,8 @@ public interface EhrService extends BaseService {
      */
     void adminDeleteEhr(UUID ehrId);
 
+    void adminPurgePartyIdentified();
+
     /**
      * Helper to directly get the linked subject ID to given EHR.
      * @param ehrId Given EHR ID
