@@ -88,3 +88,74 @@ add constraint identifier_party_fkey
 -- garbage collection: delete all party_identified where usage count is 0
 --	DELETE FROM party_identified WHERE  ehr.party_usage(party_identified.id) = 0;
 
+-- MODIFICATION of existing function: fixes deletion of participation_history and event_context_history
+-- ====================================================================
+-- Description: Function to delete event_contexts and participations for a composition and return their parties (event_context.facility and participation.performer).
+-- Parameters:
+--    @compo_id_input - UUID of super composition
+-- Returns: '1' and linked party UUID
+-- Requires: Afterwards deletion of returned party.
+-- =====================================================================
+CREATE OR REPLACE FUNCTION ehr.admin_delete_event_context_for_compo(compo_id_input UUID)
+    RETURNS TABLE (num integer, party UUID) AS $$
+DECLARE
+    results RECORD;
+BEGIN
+    RETURN QUERY WITH
+                     linked_events(id) AS ( -- get linked EVENT_CONTEXT entities -- 0..1
+                         SELECT id, facility FROM ehr.event_context WHERE composition_id = compo_id_input
+                     ),
+                     linked_event_history(id) AS ( -- get linked EVENT_CONTEXT entities -- 0..1
+                         SELECT id, facility FROM ehr.event_context_history WHERE composition_id = compo_id_input
+                     ),
+                     linked_participations_for_events(id) AS ( -- get linked EVENT_CONTEXT entities -- for 0..1 events, each with * participations
+                         SELECT id, performer FROM ehr.participation WHERE event_context IN (SELECT linked_events.id  FROM linked_events)
+                     ),
+                     linked_participations_for_events_history(id) AS ( -- get linked EVENT_CONTEXT entities -- for 0..1 events, each with * participations
+                         SELECT id, performer FROM ehr.participation_history WHERE event_context IN (SELECT linked_event_history.id  FROM linked_event_history)
+                     ),
+                     parties(id) AS (
+                         SELECT facility FROM linked_events
+                         UNION
+                         SELECT performer FROM linked_participations_for_events
+                     ),
+                     delete_participation AS (
+                         DELETE FROM ehr.participation WHERE ehr.participation.id IN (SELECT linked_participations_for_events.id  FROM linked_participations_for_events)
+                     ),
+                     delete_participation_history AS (
+                         DELETE FROM ehr.participation_history WHERE ehr.participation.id IN (SELECT linked_participations_for_events_history.id  FROM linked_participations_for_events_history)
+                     ),
+                     delete_event_contexts AS (
+                         DELETE FROM ehr.event_context WHERE ehr.event_context.id IN (SELECT linked_events.id  FROM linked_events)
+                     ),
+                     delete_event_contexts_history AS (
+                         DELETE FROM ehr.event_context_history WHERE ehr.event_context.id IN (SELECT linked_event_history.id  FROM linked_event_history)
+                     )
+                 SELECT 1, parties.id FROM parties;
+
+    -- logging:
+
+    -- looping query is reconstructed from above CTEs, because they can't be reused here
+    FOR results IN (
+        SELECT b.id  FROM (
+                              SELECT id, performer FROM ehr.participation WHERE event_context IN (SELECT a.id  FROM (
+                                                                                                                        SELECT id, facility FROM ehr.event_context WHERE composition_id = compo_id_input
+                                                                                                                    ) AS a )
+                          ) AS b
+    )
+        LOOP
+            RAISE NOTICE 'Admin deletion - Type: % - ID: % - Time: %', 'PARTICIPATION', results.id, now();
+        END LOOP;
+
+    -- looping query is reconstructed from above CTEs, because they can't be reused here
+    FOR results IN (
+        SELECT id, facility
+        FROM ehr.event_context
+        WHERE composition_id = compo_id_input)
+        LOOP
+            RAISE NOTICE 'Admin deletion - Type: % - ID: % - Time: %', 'EVENT_CONTEXT', results.id, now();
+        END LOOP;
+
+END;
+$$ LANGUAGE plpgsql
+    RETURNS NULL ON NULL INPUT;
