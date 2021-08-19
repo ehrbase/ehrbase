@@ -22,7 +22,12 @@ Metadata    Authors    *Jake Smolka*, *Wladislaw Wagner*
 Metadata    Created    2020.09.01
 
 Metadata        TOP_TEST_SUITE    ADMIN_EHR
-Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
+
+Resource        ../_resources/keywords/admin_keywords.robot
+Resource        ../_resources/keywords/db_keywords.robot
+Resource        ../_resources/keywords/ehr_keywords.robot
+Resource        ../_resources/keywords/directory_keywords.robot
+Resource        ../_resources/keywords/composition_keywords.robot
 
 Suite Setup     startup SUT
 Suite Teardown  shutdown SUT
@@ -49,8 +54,8 @@ ADMIN - Delete EHR
     Set Test Variable  ${ehr_id}  ${response.body.ehr_id.value}
     ehr_keywords.validate POST response - 201 created ehr
 
-    # comment: Execute admin delete EHR
-    admin delete ehr
+    # comment: Execute (admin) delete ehr
+    (admin) delete ehr
     Log To Console  ${response}
 
     # comment: Test with count rows again - post check
@@ -68,8 +73,8 @@ ADMIN - Delete EHR with composition
     Set Test Variable  ${ehr_id}  ${response.body.ehr_id.value}
     ehr_keywords.validate POST response - 201 created ehr
     commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.xml
-    # Execute admin delete EHR
-    admin delete ehr
+    # Execute (admin) delete ehr
+    (admin) delete ehr
     Log To Console  ${response}
     # Test with count rows again - post check
     check ehr admin delete table counts
@@ -87,8 +92,8 @@ ADMIN - Delete EHR with two compositions
     ehr_keywords.validate POST response - 201 created ehr
     commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.xml
     commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.xml
-    # Execute admin delete EHR
-    admin delete ehr
+    # Execute (admin) delete ehr
+    (admin) delete ehr
     Log To Console  ${response}
     # Test with count rows again - post check
     check ehr admin delete table counts
@@ -105,8 +110,8 @@ ADMIN - Delete EHR with directory
     Set Test Variable  ${ehr_id}  ${response.body.ehr_id.value}
     ehr_keywords.validate POST response - 201 created ehr
     create DIRECTORY (JSON)    subfolders_in_directory.json
-    # Execute admin delete EHR
-    admin delete ehr
+    # Execute (admin) delete ehr
+    (admin) delete ehr
     Log To Console  ${response}
     # Test with count rows again - post check
     check ehr admin delete table counts
@@ -121,16 +126,6 @@ startup SUT
     Set Environment Variable    ADMINAPI_ACTIVE    true
     Set Environment Variable    SYSTEM_ALLOWTEMPLATEOVERWRITE    true
     generic_keywords.startup SUT
-
-
-admin delete ehr
-    [Documentation]     Admin delete of EHR record with a given ehr_id.
-    ...                 DEPENDENCY: `prepare new request session`
-
-    &{resp}=            REST.DELETE    ${admin_baseurl}/ehr/${ehr_id}
-                        Should Be Equal As Strings   ${resp.status}   204
-                        Set Test Variable    ${response}    ${resp}
-                        Output Debug Info To Console
 
 
 check ehr admin delete table counts

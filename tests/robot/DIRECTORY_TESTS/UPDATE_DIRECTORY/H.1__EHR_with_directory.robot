@@ -32,7 +32,9 @@ Documentation   Main flow: update directory from EHR with directory
 ...             Postconditions:
 ...                 The EHR ehr_id has the updated directory structure.
 Metadata        TOP_TEST_SUITE    DIRECTORY
-Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
+
+Resource        ../../_resources/keywords/directory_keywords.robot
+Resource        ../../_resources/keywords/composition_keywords.robot
 
 Test Setup              Preconditions
 Test Teardown           Postconditions
