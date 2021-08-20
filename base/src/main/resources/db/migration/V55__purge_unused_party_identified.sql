@@ -101,6 +101,10 @@ CREATE OR REPLACE FUNCTION ehr.admin_delete_event_context_for_compo(compo_id_inp
 DECLARE
     results RECORD;
 BEGIN
+    -- since for this admin op, we don't want to generate a history record for each delete!
+    ALTER TABLE ehr.event_context DISABLE TRIGGER ALL;
+    ALTER TABLE ehr.participation DISABLE TRIGGER ALL;
+
     RETURN QUERY WITH
                      linked_events(id) AS ( -- get linked EVENT_CONTEXT entities -- 0..1
                          SELECT id, facility FROM ehr.event_context WHERE composition_id = compo_id_input
@@ -123,13 +127,13 @@ BEGIN
                          DELETE FROM ehr.participation WHERE ehr.participation.id IN (SELECT linked_participations_for_events.id  FROM linked_participations_for_events)
                      ),
                      delete_participation_history AS (
-                         DELETE FROM ehr.participation_history WHERE ehr.participation.id IN (SELECT linked_participations_for_events_history.id  FROM linked_participations_for_events_history)
+                         DELETE FROM ehr.participation_history WHERE ehr.participation_history.id IN (SELECT linked_participations_for_events_history.id  FROM linked_participations_for_events_history)
                      ),
                      delete_event_contexts AS (
                          DELETE FROM ehr.event_context WHERE ehr.event_context.id IN (SELECT linked_events.id  FROM linked_events)
                      ),
                      delete_event_contexts_history AS (
-                         DELETE FROM ehr.event_context_history WHERE ehr.event_context.id IN (SELECT linked_event_history.id  FROM linked_event_history)
+                         DELETE FROM ehr.event_context_history WHERE ehr.event_context_history.id IN (SELECT linked_event_history.id  FROM linked_event_history)
                      )
                  SELECT 1, parties.id FROM parties;
 
@@ -138,9 +142,10 @@ BEGIN
     -- looping query is reconstructed from above CTEs, because they can't be reused here
     FOR results IN (
         SELECT b.id  FROM (
-                              SELECT id, performer FROM ehr.participation WHERE event_context IN (SELECT a.id  FROM (
-                                                                                                                        SELECT id, facility FROM ehr.event_context WHERE composition_id = compo_id_input
-                                                                                                                    ) AS a )
+                              SELECT id, performer FROM ehr.participation
+                                    WHERE event_context IN (SELECT a.id  FROM (
+                                                                SELECT id, facility FROM ehr.event_context WHERE composition_id = compo_id_input
+                                                            ) AS a )
                           ) AS b
     )
         LOOP
@@ -156,6 +161,34 @@ BEGIN
             RAISE NOTICE 'Admin deletion - Type: % - ID: % - Time: %', 'EVENT_CONTEXT', results.id, now();
         END LOOP;
 
+    -- restore disabled triggers
+    ALTER TABLE ehr.event_context ENABLE TRIGGER ALL;
+    ALTER TABLE ehr.participation ENABLE TRIGGER ALL;
+
 END;
 $$ LANGUAGE plpgsql
     RETURNS NULL ON NULL INPUT;
+
+-- delete remaining history records from deleted parents
+CREATE OR REPLACE FUNCTION ehr.delete_orphan_history()
+  RETURNS BOOLEAN AS
+$$
+	WITH
+		delete_orphan_compo_history as (
+			delete from ehr.composition_history where not exists(select 1 from ehr.composition where id = ehr.composition_history.id)
+		),
+		delete_orphan_event_context_history as (
+			delete from ehr.event_context_history where not exists(select 1 from ehr.event_context where event_context.composition_id = ehr.event_context_history.composition_id)
+		),
+		delete_orphan_participation_history as (
+			delete from ehr.participation_history where not exists(select 1 from ehr.participation where participation.event_context = ehr.participation_history.event_context)
+		),
+        delete_orphan_entry_history as (
+            delete from ehr.entry_history where not exists(select 1 from ehr.composition where composition.id = ehr.entry_history.composition_id)
+        ),
+		delete_orphan_party_identified as (
+			DELETE FROM ehr.party_identified WHERE  ehr.party_usage(party_identified.id) = 0
+		)
+	select true;
+$$
+LANGUAGE sql;
