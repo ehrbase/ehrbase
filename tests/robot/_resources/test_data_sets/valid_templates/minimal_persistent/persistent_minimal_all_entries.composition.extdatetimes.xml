@@ -43,6 +43,15 @@
       <name>Dr. House</name>
     </composer>
     <content archetype_node_id="openEHR-EHR-OBSERVATION.minimal.v1" xsi:type="OBSERVATION">
+      <archetype_details>
+        <archetype_id>
+          <value>openEHR-EHR-OBSERVATION.minimal.v1</value>
+        </archetype_id>
+        <template_id>
+          <value>persistent_minimal_all_entries.en.v1</value>
+        </template_id>
+        <rm_version>1.0.2</rm_version>
+      </archetype_details>
       <name>
         <value>Minimal</value>
       </name>
@@ -54,7 +63,7 @@
       </language>
       <encoding>
         <terminology_id>
-          <value>Unicode</value>
+          <value>IANA_character-sets</value>
         </terminology_id>
         <code_string>UTF-8</code_string>
       </encoding>
@@ -90,6 +99,15 @@
       </data>
     </content>
     <content archetype_node_id="openEHR-EHR-EVALUATION.minimal.v1" xsi:type="EVALUATION">
+      <archetype_details>
+        <archetype_id>
+          <value>openEHR-EHR-EVALUATION.minimal.v1</value>
+        </archetype_id>
+        <template_id>
+          <value>persistent_minimal_all_entries.en.v1</value>
+        </template_id>
+        <rm_version>1.0.2</rm_version>
+      </archetype_details>
       <name>
         <value>Minimal</value>
       </name>
@@ -101,7 +119,7 @@
       </language>
       <encoding>
         <terminology_id>
-          <value>Unicode</value>
+          <value>IANA_character-sets</value>
         </terminology_id>
         <code_string>UTF-8</code_string>
       </encoding>
@@ -122,6 +140,15 @@
       </data>
     </content>
     <content archetype_node_id="openEHR-EHR-INSTRUCTION.minimal.v1" xsi:type="INSTRUCTION">
+      <archetype_details>
+        <archetype_id>
+          <value>openEHR-EHR-INSTRUCTION.minimal.v1</value>
+        </archetype_id>
+        <template_id>
+          <value>persistent_minimal_all_entries.en.v1</value>
+        </template_id>
+        <rm_version>1.0.2</rm_version>
+      </archetype_details>
       <name>
         <value>Minimal</value>
       </name>
@@ -133,7 +160,7 @@
       </language>
       <encoding>
         <terminology_id>
-          <value>Unicode</value>
+          <value>IANA_character-sets</value>
         </terminology_id>
         <code_string>UTF-8</code_string>
       </encoding>
@@ -166,6 +193,15 @@
       </activities>
     </content>
     <content archetype_node_id="openEHR-EHR-ACTION.minimal.v1" xsi:type="ACTION">
+      <archetype_details>
+        <archetype_id>
+          <value>openEHR-EHR-ACTION.minimal.v1</value>
+        </archetype_id>
+        <template_id>
+          <value>persistent_minimal_all_entries.en.v1</value>
+        </template_id>
+        <rm_version>1.0.2</rm_version>
+      </archetype_details>
       <name>
         <value>Minimal</value>
       </name>
@@ -177,7 +213,7 @@
       </language>
       <encoding>
         <terminology_id>
-          <value>Unicode</value>
+          <value>IANA_character-sets</value>
         </terminology_id>
         <code_string>UTF-8</code_string>
       </encoding>
@@ -218,6 +254,15 @@
       </ism_transition>
     </content>
     <content archetype_node_id="openEHR-EHR-ADMIN_ENTRY.minimal.v1" xsi:type="ADMIN_ENTRY">
+      <archetype_details>
+        <archetype_id>
+          <value>openEHR-EHR-ADMIN_ENTRY.minimal.v1</value>
+        </archetype_id>
+        <template_id>
+          <value>persistent_minimal_all_entries.en.v1</value>
+        </template_id>
+        <rm_version>1.0.2</rm_version>
+      </archetype_details>
       <name>
         <value>Minimal</value>
       </name>
@@ -229,7 +274,7 @@
       </language>
       <encoding>
         <terminology_id>
-          <value>Unicode</value>
+          <value>IANA_character-sets</value>
         </terminology_id>
         <code_string>UTF-8</code_string>
       </encoding>

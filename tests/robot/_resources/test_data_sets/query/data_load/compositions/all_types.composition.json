@@ -96,7 +96,7 @@
       			"_type": "CODE_PHRASE",
       			"terminology_id": {
       				"_type": "TERMINOLOGY_ID",
-      				"value": "Unicode"
+      				"value": "IANA_character-sets"
       			},
       			"code_string": "UTF-8"
       		},
@@ -356,7 +356,7 @@
       			"_type": "CODE_PHRASE",
       			"terminology_id": {
       				"_type": "TERMINOLOGY_ID",
-      				"value": "Unicode"
+      				"value": "IANA_character-sets"
       			},
       			"code_string": "UTF-8"
       		},
@@ -528,7 +528,7 @@
       						"_type": "CODE_PHRASE",
       						"terminology_id": {
       							"_type": "TERMINOLOGY_ID",
-      							"value": "Unicode"
+      							"value": "IANA_character-sets"
       						},
       						"code_string": "UTF-8"
       					},
@@ -603,7 +603,7 @@
       						"_type": "CODE_PHRASE",
       						"terminology_id": {
       							"_type": "TERMINOLOGY_ID",
-      							"value": "Unicode"
+      							"value": "IANA_character-sets"
       						},
       						"code_string": "UTF-8"
       					},
@@ -693,7 +693,7 @@
       					"_type": "CODE_PHRASE",
       					"terminology_id": {
       						"_type": "TERMINOLOGY_ID",
-      						"value": "Unicode"
+      						"value": "IANA_character-sets"
       					},
       					"code_string": "UTF-8"
       				},
