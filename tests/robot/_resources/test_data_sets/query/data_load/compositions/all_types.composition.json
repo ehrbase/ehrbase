@@ -343,7 +343,7 @@
       							"numerator": 1.5,
       							"denominator": 1.0,
       							"type": 1,
-      							"precision": 0
+      							"precision": 1
       						}
       					}]
       				}
@@ -355,6 +355,18 @@
       			"_type": "DV_TEXT",
       			"value": "Test all types"
       		},
+					"archetype_details": {
+						"_type": "ARCHETYPED",
+						"archetype_id": {
+							"_type": "ARCHETYPE_ID",
+							"value": "openEHR-EHR-EVALUATION.test_all_types.v1"
+						},
+						"template_id": {
+							"_type": "TEMPLATE_ID",
+							"value": "test_all_types.en.v1"
+						},
+						"rm_version": "1.0.2"
+					},
       		"archetype_node_id": "openEHR-EHR-EVALUATION.test_all_types.v1",
       		"language": {
       			"_type": "CODE_PHRASE",
@@ -388,6 +400,15 @@
       					"_type": "DV_TEXT",
       					"value": "uri"
       				},
+							"null_flavour": {
+								"value": "no information",
+								"defining_code": {
+									"terminology_id": {
+										"value": "openehr"
+									},
+									"code_string": "271"
+								}
+							},
       				"archetype_node_id": "at0002"
       			}, {
       				"_type": "ELEMENT",
@@ -527,6 +548,18 @@
       						"_type": "DV_TEXT",
       						"value": "Test all types"
       					},
+								"archetype_details": {
+									"_type": "ARCHETYPED",
+									"archetype_id": {
+										"_type": "ARCHETYPE_ID",
+										"value": "openEHR-EHR-INSTRUCTION.test_all_types.v1"
+									},
+									"template_id": {
+										"_type": "TEMPLATE_ID",
+										"value": "test_all_types.en.v1"
+									},
+									"rm_version": "1.0.2"
+								},
       					"archetype_node_id": "openEHR-EHR-INSTRUCTION.test_all_types.v1",
       					"language": {
       						"_type": "CODE_PHRASE",
@@ -602,6 +635,18 @@
       						"_type": "DV_TEXT",
       						"value": "Test all types"
       					},
+								"archetype_details": {
+									"_type": "ARCHETYPED",
+									"archetype_id": {
+										"_type": "ARCHETYPE_ID",
+										"value": "openEHR-EHR-ACTION.test_all_types.v1"
+									},
+									"template_id": {
+										"_type": "TEMPLATE_ID",
+										"value": "test_all_types.en.v1"
+									},
+									"rm_version": "1.0.2"
+								},
       					"archetype_node_id": "openEHR-EHR-ACTION.test_all_types.v1",
       					"language": {
       						"_type": "CODE_PHRASE",
@@ -692,6 +737,18 @@
       					"_type": "DV_TEXT",
       					"value": "Test all types"
       				},
+							"archetype_details": {
+								"_type": "ARCHETYPED",
+								"archetype_id": {
+									"_type": "ARCHETYPE_ID",
+									"value": "openEHR-EHR-ADMIN_ENTRY.test_all_types.v1"
+								},
+								"template_id": {
+									"_type": "TEMPLATE_ID",
+									"value": "test_all_types.en.v1"
+								},
+								"rm_version": "1.0.2"
+							},
       				"archetype_node_id": "openEHR-EHR-ADMIN_ENTRY.test_all_types.v1",
       				"language": {
       					"_type": "CODE_PHRASE",
