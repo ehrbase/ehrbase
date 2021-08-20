@@ -148,6 +148,18 @@
       	},
       	"content": [{
       		"_type": "INSTRUCTION",
+					"archetype_details": {
+						"_type": "ARCHETYPED",
+						"archetype_id": {
+							"_type": "ARCHETYPE_ID",
+							"value": "openEHR-EHR-INSTRUCTION.minimal.v1"
+						},
+						"template_id": {
+							"_type": "TEMPLATE_ID",
+							"value": "non_existent_template.v1"
+						},
+						"rm_version": "1.0.2"
+					},
       		"name": {
       			"_type": "DV_TEXT",
       			"value": "Minimal"
@@ -373,6 +385,18 @@
       			"_type": "DV_TEXT",
       			"value": "Minimal"
       		},
+					"archetype_details": {
+						"_type": "ARCHETYPED",
+						"archetype_id": {
+							"_type": "ARCHETYPE_ID",
+							"value": "openEHR-EHR-INSTRUCTION.minimal.v1"
+						},
+						"template_id": {
+							"_type": "TEMPLATE_ID",
+							"value": "non_existent_template.v1"
+						},
+						"rm_version": "1.0.2"
+					},
       		"archetype_node_id": "openEHR-EHR-INSTRUCTION.minimal.v1",
       		"language": {
       			"_type": "CODE_PHRASE",
