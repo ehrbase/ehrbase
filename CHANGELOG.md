@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 ### Fixed
+- Terminology Service calls from within AQL queries does not work (see: https://github.com/ehrbase/ehrbase/pull/572)
 
 ## [0.17.1] (beta)
 
