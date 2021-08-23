@@ -102,8 +102,8 @@ DECLARE
     results RECORD;
 BEGIN
     -- since for this admin op, we don't want to generate a history record for each delete!
-    ALTER TABLE ehr.event_context DISABLE TRIGGER ALL;
-    ALTER TABLE ehr.participation DISABLE TRIGGER ALL;
+    ALTER TABLE ehr.event_context DISABLE TRIGGER versioning_trigger;
+    ALTER TABLE ehr.participation DISABLE TRIGGER versioning_trigger;
 
     RETURN QUERY WITH
                      linked_events(id) AS ( -- get linked EVENT_CONTEXT entities -- 0..1
@@ -162,8 +162,8 @@ BEGIN
         END LOOP;
 
     -- restore disabled triggers
-    ALTER TABLE ehr.event_context ENABLE TRIGGER ALL;
-    ALTER TABLE ehr.participation ENABLE TRIGGER ALL;
+    ALTER TABLE ehr.event_context ENABLE TRIGGER versioning_trigger;
+    ALTER TABLE ehr.participation ENABLE TRIGGER versioning_trigger;
 
 END;
 $$ LANGUAGE plpgsql
