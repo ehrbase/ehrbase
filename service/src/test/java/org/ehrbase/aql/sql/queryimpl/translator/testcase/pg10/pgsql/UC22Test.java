@@ -31,7 +31,15 @@ public class UC22Test extends UC22 {
         super();
         this.expectedSqlExpression =
                 "select count(\"_FCT_ARG_0\",\"_FCT_ARG_1\") as \"count\"" +
-                        " from (select ("+ QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION+"((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[openEHR-EHR-CLUSTER.test_all_types.v1],0,/items[at0001],0,/items[at0002],0,/items[at0004],0,/value,value}') as \"_FCT_ARG_1\", ("+ QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION+"((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[openEHR-EHR-CLUSTER.test_all_types.v1],0,/items[at0001],0,/items[at0002],0,/items[at0003],0,/value,value}') as \"_FCT_ARG_0\" from \"ehr\".\"entry\" where \"ehr\".\"entry\".\"template_id\" = ?) as \"\"";
+                        " from (select ARRAY.COLUMN as \"_FCT_ARG_1\", ARRAY.COLUMN as \"_FCT_ARG_0\"" +
+                        " from \"ehr\".\"entry\"" +
+                        " join lateral (\n" +
+                        "  select (ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[openEHR-EHR-CLUSTER.test_all_types.v1],0,/items[at0001],0,/items[at0002],0,/items[at0004],0,/value,value}') \n" +
+                        " AS COLUMN) as \"ARRAY\" on 1 = 1" +
+                        " join lateral (\n" +
+                        "  select (ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[openEHR-EHR-CLUSTER.test_all_types.v1],0,/items[at0001],0,/items[at0002],0,/items[at0003],0,/value,value}') \n" +
+                        " AS COLUMN) as \"ARRAY\" on 1 = 1" +
+                        " where (\"ehr\".\"entry\".\"template_id\" = ? and (ARRAY.COLUMN is not null or ARRAY.COLUMN is not null))) as \"\"";
     }
 
     @Test

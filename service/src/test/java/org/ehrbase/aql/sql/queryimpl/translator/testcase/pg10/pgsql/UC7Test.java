@@ -30,16 +30,14 @@ public class UC7Test extends UC7 {
     public UC7Test(){
         super();
         this.expectedSqlExpression =
-                "select (ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\" #>>\n" +
-                        "                                   '{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb) #>>\n" +
-                        "        '{/description[at0001],/items[at0002],0,/value,value}') as \"/description[at0001]/items[at0002]/value/value\"\n" +
-                        "from \"ehr\".\"entry\"\n" +
-                        "     join lateral (\n" +
-                        "         select (ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\" #>>\n" +
-                        "                                            '{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb) #>>\n" +
-                        "                 '{/description[at0001],/items[at0002],0,/value,value}')\n" +
-                        "                    AS COLUMN) as \"ARRAY\" on 1 = 1 \n" +
-                        "where (\"ehr\".\"entry\".\"template_id\" = ? and (ARRAY.COLUMN = 'Hepatitis A'))";
+                "select ARRAY.COLUMN as \"/description[at0001]/items[at0002]/value/value\"" +
+                        " from \"ehr\".\"entry\" join lateral (\n" +
+                        "  select (ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') \n" +
+                        " AS COLUMN) as \"ARRAY\" on 1 = 1" +
+                        " join lateral (\n" +
+                        "  select (ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') \n" +
+                        " AS COLUMN) as \"ARRAY\" on 1 = 1" +
+                        " where (\"ehr\".\"entry\".\"template_id\" = ? and (ARRAY.COLUMN  = 'Hepatitis A') and ARRAY.COLUMN is not null)";
     }
 
     @Test

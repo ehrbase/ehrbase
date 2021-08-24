@@ -32,15 +32,22 @@ public class UC28Test extends UC28 {
     public UC28Test(){
         super();
         this.expectedSqlExpression =
-                "select jsonb_extract_path_text(cast(ehr.xjsonb_array_elements(cast(jsonb_extract_path(cast(\"ehr\".\"js_ehr\"(\n" +
-                        "  cast(ehr_join.id as uuid), \n" +
-                        "  'local'\n" +
-                        ") as jsonb),'folders') as jsonb)) as jsonb),'name','0','value') as \"/folders/name/value\" from \"ehr\".\"ehr\" as \"ehr_join\" join lateral (\n" +
+                "select ARRAY.COLUMN as \"/folders/name/value\" from \"ehr\".\"ehr\" as \"ehr_join\" join lateral (\n" +
                         "  select jsonb_extract_path_text(cast(ehr.xjsonb_array_elements(cast(jsonb_extract_path(cast(\"ehr\".\"js_ehr\"(\n" +
                         "  cast(ehr_join.id as uuid), \n" +
                         "  'local'\n" +
                         ") as jsonb),'folders') as jsonb)) as jsonb),'name','0','value')\n" +
-                        " AS COLUMN) as \"ARRAY\" on 1 = 1 where (\"ehr_join\".\"id\" = 'c2561bab-4d2b-4ffd-a893-4382e9048f8c' and 'case1' = SOME ( (SELECT ARRAY.COLUMN ) ) )";
+                        " AS COLUMN) as \"ARRAY\" on 1 = 1 join lateral (\n" +
+                        "  select jsonb_extract_path_text(cast(ehr.xjsonb_array_elements(cast(jsonb_extract_path(cast(\"ehr\".\"js_ehr\"(\n" +
+                        "  cast(ehr_join.id as uuid), \n" +
+                        "  'local'\n" +
+                        ") as jsonb),'folders') as jsonb)) as jsonb),'name','0','value')\n" +
+                        " AS COLUMN) as \"ARRAY\" on 1 = 1 join lateral (\n" +
+                        "  select jsonb_extract_path_text(cast(ehr.xjsonb_array_elements(cast(jsonb_extract_path(cast(\"ehr\".\"js_ehr\"(\n" +
+                        "  cast(ehr_join.id as uuid), \n" +
+                        "  'local'\n" +
+                        ") as jsonb),'folders') as jsonb)) as jsonb),'name','0','value')\n" +
+                        " AS COLUMN) as \"ARRAY\" on 1 = 1 where ((\"ehr_join\".\"id\" = 'c2561bab-4d2b-4ffd-a893-4382e9048f8c' and 'case1' = SOME ( (SELECT ARRAY.COLUMN ) ) ) and (ARRAY.COLUMN is not null or ARRAY.COLUMN is not null))";
     }
 
     @Test
