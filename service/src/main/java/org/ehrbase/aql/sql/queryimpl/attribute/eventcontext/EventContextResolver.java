@@ -68,10 +68,6 @@ public class EventContextResolver extends AttributeResolver
             return new ParticipationsJson(fieldResolutionContext, joinSetup).forJsonPath(new AttributePath(CONTEXT_PARTICIPATIONS).redux(path)).sqlField();
         }
 
-        if (path.equals(CONTEXT_HEALTH_CARE_FACILITY)){
-            return new EventContextJson(fieldResolutionContext, joinSetup).forJsonPath(HEALTH_CARE_FACILITY).sqlField();
-        }
-
         if (path.equals(CONTEXT_HEALTH_CARE_FACILITY_EXTERNAL_REF)){
             return new EventContextJson(fieldResolutionContext, joinSetup).forJsonPath(HEALTH_CARE_FACILITY_EXTERNAL_REF).sqlField();
         }
