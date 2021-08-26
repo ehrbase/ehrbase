@@ -58,7 +58,7 @@ public class I_VariableDefinitionHelper {
             }
 
             @Override
-            public void setLateralJoinTable(String templateId, Table lateralJoinTable, String lateralVariable, JoinType joinType, Condition condition, IQueryImpl.Clause clause) {
+            public void setLateralJoinTable(String templateId, LateralJoinDefinition lateralJoinDefinition) {
 
             }
 

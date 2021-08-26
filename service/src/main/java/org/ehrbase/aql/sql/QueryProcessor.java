@@ -216,7 +216,7 @@ public class QueryProcessor extends TemplateMetaData {
                 if (conditions == null)
                     conditions = condition;
                 else
-                    conditions = conditions.or(condition);
+                    conditions = conditions.and(condition);
             }
         }
 
@@ -234,7 +234,7 @@ public class QueryProcessor extends TemplateMetaData {
 
         // process SELECT and check to reconciliate where and select columns
         SelectBinder selectBinder = new SelectBinder(domainAccess, introspectCache, contains, statements, serverNodeId);
-        MultiFieldsMultiMap multiSelectFieldsMap = new MultiFieldsMultiMap(selectBinder.bind(templateId, multiWhereFieldsMap));
+        MultiFieldsMultiMap multiSelectFieldsMap = new MultiFieldsMultiMap(selectBinder.bind(templateId));
         joinSetup = joinSetup.merge(selectBinder.getCompositionAttributeQuery().getJoinSetup());
 
         int selectCursor = 0;
@@ -258,12 +258,14 @@ public class QueryProcessor extends TemplateMetaData {
                     select.addSelect(multiSelectFields.getQualifiedFieldOrLast(selectCursor).getSQLField());
                 }
 
-                Condition condition = selectBinder.getWhereConditions(templateId, whereCursor, multiWhereFieldsMap);
+                Condition condition = selectBinder.getWhereConditions(templateId, whereCursor, multiWhereFieldsMap, multiSelectFieldsMap);
                 List<LateralJoinDefinition> joins = new ArrayList<>();
 
                 joins.addAll(lateralJoinsSelectClause(NIL_TEMPLATE)); //composition attributes
-                joins.addAll(lateralJoinsSelectClause(templateId)); //select clause fields
-                joins.addAll(lateralJoinsWhereClause(templateId)); //where clause fields
+                if (!templateId.equals(NIL_TEMPLATE)) {
+                    joins.addAll(lateralJoinsSelectClause(templateId)); //select clause fields
+                    joins.addAll(lateralJoinsWhereClause(templateId)); //where clause fields
+                }
 
                 queryStepsList.add(
                         new QuerySteps(
@@ -331,6 +333,10 @@ public class QueryProcessor extends TemplateMetaData {
             if (item instanceof I_VariableDefinition && ((I_VariableDefinition) item).isLateralJoin(templateId)) {
                 if (((I_VariableDefinition) item).getLateralJoinDefinition(templateId) == null)
                     throw new IllegalStateException("unresolved lateral join for template:"+templateId+", path:"+((I_VariableDefinition) item).getPath());
+                //check if lateral join is borrowed from SELECT clause, if so, don't add
+                else if (((I_VariableDefinition) item).getLateralJoinDefinition(templateId).getClause().equals(IQueryImpl.Clause.SELECT))
+                    continue;
+
                 lateralJoinsList.add(
                         new LateralJoinDefinition(
                                 DSL.lateral(((I_VariableDefinition) item).getLateralJoinDefinition(templateId).getTable()),

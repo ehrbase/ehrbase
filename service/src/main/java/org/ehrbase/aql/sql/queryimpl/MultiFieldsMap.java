@@ -20,6 +20,7 @@
 package org.ehrbase.aql.sql.queryimpl;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class MultiFieldsMap {
 
@@ -48,7 +49,16 @@ public class MultiFieldsMap {
     }
 
     public MultiFields get(String variableIdentifier, String variablePath){
-        return  multiFieldsListAsMap.get(variableIdentifierPath(variableIdentifier,variablePath));
+        //seek for multifields where the variable matches identifier and path
+        List<MultiFields> result = multiFieldsListAsMap.
+                values().
+                stream().
+                filter(v -> v.getVariableDefinition().getIdentifier().equals(variableIdentifier) && v.getVariableDefinition().getPath() != null && v.getVariableDefinition().getPath().equals(variablePath)).
+                collect(Collectors.toList());
+        if (result.isEmpty())
+            return null;
+        else
+            return result.get(0); //by construction, the result is unique
     }
 
     private String variableIdentifierPath(String variableIdentifier, String variablePath){

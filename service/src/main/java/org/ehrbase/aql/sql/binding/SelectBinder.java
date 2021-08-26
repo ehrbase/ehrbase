@@ -32,7 +32,6 @@ import org.ehrbase.service.IntrospectService;
 import org.ehrbase.service.KnowledgeCacheService;
 import org.jooq.Condition;
 import org.jooq.Field;
-import org.jooq.SelectFieldOrAsterisk;
 import org.jooq.SelectQuery;
 import org.jooq.impl.DSL;
 
@@ -40,7 +39,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.ehrbase.aql.sql.QueryProcessor.NIL_TEMPLATE;
 import static org.ehrbase.aql.sql.queryimpl.IQueryImpl.Clause.SELECT;
 
 /**
@@ -83,8 +81,7 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
      * @param templateId
      * @return
      */
-    //TODO: reconciliate where fields laterals with select column
-    public List<MultiFields> bind(String templateId, MultiFieldsMap multiWhereFieldsMap) {
+    public List<MultiFields> bind(String templateId) {
         ObjectQuery.reset();
 
         List<MultiFields> multiFieldsList = new ArrayList<>();
@@ -121,9 +118,8 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
     }
 
 
-    public Condition getWhereConditions(String templateId, int whereCursor, MultiFieldsMap multiFieldsMap) {
-
-        return whereBinder.bind(templateId, whereCursor, multiFieldsMap);
+    public Condition getWhereConditions(String templateId, int whereCursor, MultiFieldsMap multiWhereFieldsMap, MultiFieldsMap multiSelectFieldsMap) {
+        return whereBinder.bind(templateId, whereCursor, multiWhereFieldsMap, multiSelectFieldsMap);
     }
 
    public CompositionAttributeQuery getCompositionAttributeQuery() {
@@ -131,7 +127,6 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
     }
 
    private void encodeForLateral(String className, String templateId, I_VariableDefinition variableDefinition, MultiFields multiFields){
-        //TODO: traverse where condition to identify already used lateral for the same variable.
         for (Iterator<QualifiedAqlField> it = multiFields.iterator(); it.hasNext(); ) {
             QualifiedAqlField qualifiedAqlField = it.next();
             Field sqlField = qualifiedAqlField.getSQLField();
@@ -139,7 +134,6 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
             selectQuery.addSelect(sqlField);
             if (new SetReturningFunction(selectQuery.toString()).isUsed()){
                 String alias = sqlField.getName();
-                //TODO: re-create a field that we can use in a lateral join
                 MultiFields unaliasedFields = new ExpressionField(variableDefinition, jsonbEntryQuery, compositionAttributeQuery).toSql(className, templateId, variableDefinition.getIdentifier(), IQueryImpl.Clause.WHERE);
                 //TODO: evaluate for multiple paths in a single template!
                 TaggedStringBuilder taggedStringBuilder = new TaggedStringBuilder();

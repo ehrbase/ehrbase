@@ -22,11 +22,6 @@
 
 package org.ehrbase.aql.definition;
 
-import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
-import org.jooq.Condition;
-import org.jooq.JoinType;
-import org.jooq.Table;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,7 +59,7 @@ public class ExtensionDefinition implements I_VariableDefinition {
     }
 
     @Override
-    public void setLateralJoinTable(String templateId, Table lateralJoinTable, String lateralVariable, JoinType joinType, Condition condition, IQueryImpl.Clause clause) {
+    public void setLateralJoinTable(String templateId, LateralJoinDefinition lateralJoinDefinition) {
         // n/a
     }
 

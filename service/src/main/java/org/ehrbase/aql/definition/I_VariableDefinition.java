@@ -22,12 +22,6 @@
 
 package org.ehrbase.aql.definition;
 
-import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
-import org.jooq.Condition;
-import org.jooq.JoinType;
-import org.jooq.Record;
-import org.jooq.Table;
-
 import java.util.List;
 
 /**
@@ -41,7 +35,7 @@ public interface I_VariableDefinition extends Cloneable {
 
     String getIdentifier();
 
-    void setLateralJoinTable(String templateId, Table<Record> lateralJoinTable, String lateralVariable, JoinType joinType, Condition condition, IQueryImpl.Clause clause);
+    void setLateralJoinTable(String templateId, LateralJoinDefinition lateralJoinDefinition);
 
     boolean isDistinct();
 

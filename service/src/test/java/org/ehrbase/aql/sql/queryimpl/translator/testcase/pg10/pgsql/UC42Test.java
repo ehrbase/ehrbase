@@ -53,7 +53,7 @@ public class UC42Test extends UC42 {
                         "    event_context.START_TIME_TZID, \n" +
                         "    'UTC'\n" +
                         "  )\n" +
-                        ") as jsonb),'value') as varchar) > cast('2020-01-01' as varchar)) as \"COLUMN\") as \"ARRAY\" on ? where (\"ehr\".\"entry\".\"template_id\" = ? and (ARRAY.COLUMN is not null or ARRAY.COLUMN is not null or ARRAY.COLUMN is not null))) union (select ARRAY.COLUMN as \"Diagnose\", ARRAY.COLUMN as \"MabuseComposition\", ARRAY.COLUMN as \"NewerComposition\" from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" join \"ehr\".\"event_context\" on \"ehr\".\"event_context\".\"composition_id\" = \"ehr\".\"entry\".\"composition_id\" join \"ehr\".\"party_identified\" as \"composer_ref\" on \"composition_join\".\"composer\" = \"composer_ref\".\"id\" left outer join lateral (select (select \"composition_join\".\"id\"||'::'||'local'||'::'||1 + COALESCE(\n" +
+                        ") as jsonb),'value') as varchar) > cast('2020-01-01' as varchar)) as \"COLUMN\") as \"ARRAY\" on ? where (\"ehr\".\"entry\".\"template_id\" = ? and ARRAY.COLUMN is not null and ARRAY.COLUMN is not null and ARRAY.COLUMN is not null)) union (select ARRAY.COLUMN as \"Diagnose\", ARRAY.COLUMN as \"MabuseComposition\", ARRAY.COLUMN as \"NewerComposition\" from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" join \"ehr\".\"event_context\" on \"ehr\".\"event_context\".\"composition_id\" = \"ehr\".\"entry\".\"composition_id\" join \"ehr\".\"party_identified\" as \"composer_ref\" on \"composition_join\".\"composer\" = \"composer_ref\".\"id\" left outer join lateral (select (select \"composition_join\".\"id\"||'::'||'local'||'::'||1 + COALESCE(\n" +
                         "(select count(*)\n" +
                         "from \"ehr\".\"composition_history\"\n" +
                         "where \"composition_join\".\"id\" = \"ehr\".\"composition_history\".\"id\"\n" +
@@ -76,7 +76,7 @@ public class UC42Test extends UC42 {
                         "    event_context.START_TIME_TZID, \n" +
                         "    'UTC'\n" +
                         "  )\n" +
-                        ") as jsonb),'value') as varchar) > cast('2020-01-01' as varchar)) as \"COLUMN\") as \"ARRAY\" on ? where (\"ehr\".\"entry\".\"template_id\" = ? and (ARRAY.COLUMN is not null or ARRAY.COLUMN is not null or ARRAY.COLUMN is not null)))";
+                        ") as jsonb),'value') as varchar) > cast('2020-01-01' as varchar)) as \"COLUMN\") as \"ARRAY\" on ? where (\"ehr\".\"entry\".\"template_id\" = ? and ARRAY.COLUMN is not null and ARRAY.COLUMN is not null and ARRAY.COLUMN is not null))";
     }
 
     @Test
