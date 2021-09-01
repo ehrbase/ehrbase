@@ -21,10 +21,9 @@
 
 package org.ehrbase.aql.definition;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.jooq.DataType;
+
+import java.util.*;
 
 /**
  * Container of a variable (symbol) with its path and alias (AS 'alias')
@@ -38,8 +37,9 @@ public class VariableDefinition implements I_VariableDefinition {
     private String substituteFieldVariable;
     private boolean isDistinct;
     private boolean isHidden;
-    private Map<String, LateralJoinDefinition> lateralJoinDefinition = new HashMap<>();
+    private Map<String, Set<LateralJoinDefinition>> lateralJoinDefinitions = new HashMap<>();
     private PredicateDefinition predicateDefinition;
+    private DataType selectDataType;
 
     public VariableDefinition(String path, String alias, String identifier, boolean isDistinct) {
         this.path = path;
@@ -101,17 +101,51 @@ public class VariableDefinition implements I_VariableDefinition {
 
     @Override
     public boolean isLateralJoin(String templateId) {
-        return !lateralJoinDefinition.isEmpty() && lateralJoinDefinition.get(templateId) != null;
+        return !lateralJoinDefinitions.isEmpty() && lateralJoinDefinitions.get(templateId) != null;
     }
 
     @Override
-    public LateralJoinDefinition getLateralJoinDefinition(String templateId) {
-        return lateralJoinDefinition.get(templateId);
+    public Set<LateralJoinDefinition> getLateralJoinDefinitions(String templateId) {
+        return lateralJoinDefinitions.get(templateId);
     }
+
+    @Override
+    public LateralJoinDefinition getLateralJoinDefinition(String templateId, int index) {
+        Set<LateralJoinDefinition> definitions = getLateralJoinDefinitions(templateId);
+        if (index > definitions.size() - 1)
+            return null;
+        return definitions.toArray(new LateralJoinDefinition[]{})[index];
+    }
+
+    @Override
+    public int getLateralJoinsSize(String templateId) {
+        if (isLateralJoinsEmpty(templateId))
+            return 0;
+        return lateralJoinDefinitions.get(templateId).size();
+    }
+
+    @Override
+    public boolean isLateralJoinsEmpty(String templateId) {
+        if (lateralJoinDefinitions.isEmpty() || lateralJoinDefinitions.get(templateId) == null || lateralJoinDefinitions.get(templateId).isEmpty())
+            return true;
+        return false;
+    }
+
+
+    @Override
+    public LateralJoinDefinition getLastLateralJoin(String templateId) {
+        if (isLateralJoinsEmpty(templateId))
+            return null;
+        return Arrays.asList(lateralJoinDefinitions.get(templateId).toArray(new LateralJoinDefinition[]{})).get(getLateralJoinsSize(templateId) - 1);
+    }
+
 
     @Override
     public void setLateralJoinTable(String templateId, LateralJoinDefinition lateralJoinDefinition) {
-        this.lateralJoinDefinition.put(templateId, lateralJoinDefinition);
+        lateralJoinDefinitions.computeIfAbsent(templateId, k -> new HashSet<>());
+
+        //do not add duplicate join
+        this.lateralJoinDefinitions.get(templateId).add(lateralJoinDefinition);
     }
 
     @Override
@@ -174,5 +208,13 @@ public class VariableDefinition implements I_VariableDefinition {
 
     public void setSubstituteFieldVariable(String substituteFieldVariable) {
         this.substituteFieldVariable = substituteFieldVariable;
+    }
+
+    public void setSelectType(DataType sqlDataType){
+        this.selectDataType = sqlDataType;
+    }
+
+    public DataType getSelectType(){
+        return this.selectDataType;
     }
 }

@@ -138,13 +138,18 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
                 //TODO: evaluate for multiple paths in a single template!
                 TaggedStringBuilder taggedStringBuilder = new TaggedStringBuilder();
                 taggedStringBuilder.append(unaliasedFields.getLastQualifiedField().getSQLField().toString());
-                new LateralJoins().create(templateId, taggedStringBuilder, variableDefinition);
+                new LateralJoins().create(templateId, taggedStringBuilder, variableDefinition, SELECT);
 
                 //substitute the field to use the lateral join with the same alias!
-                variableDefinition.getLateralJoinDefinition(templateId).setClause(SELECT);
-                String sqlToLateralJoin = variableDefinition.getLateralJoinDefinition(templateId).getTable().getName()+"."+variableDefinition.getLateralJoinDefinition(templateId).getLateralVariable();
+                variableDefinition.getLastLateralJoin(templateId).setClause(SELECT);
+                String sqlToLateralJoin = variableDefinition.getLastLateralJoin(templateId).getTable().getName()+"."+variableDefinition.getLastLateralJoin(templateId).getLateralVariable();
                 variableDefinition.setAlias(alias);
-                multiFields.replaceField(qualifiedAqlField, DSL.field(sqlToLateralJoin).as(alias));
+                Field substituteField = DSL.field(sqlToLateralJoin).as(alias);
+
+                if (variableDefinition.getSelectType() != null)
+                    substituteField = DSL.field(sqlToLateralJoin+"::"+variableDefinition.getSelectType().getCastTypeName()).as(alias);
+
+                multiFields.replaceField(qualifiedAqlField, substituteField);
             }
         }
     }

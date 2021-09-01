@@ -18,12 +18,10 @@
 
 package org.ehrbase.aql.definition;
 
-import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
-import org.jooq.Condition;
-import org.jooq.JoinType;
-import org.jooq.Table;
+import org.jooq.DataType;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -55,6 +53,26 @@ public class I_VariableDefinitionHelper {
             @Override
             public String getIdentifier() {
                 return identifier;
+            }
+
+            @Override
+            public LateralJoinDefinition getLateralJoinDefinition(String templateId, int index) {
+                return null;
+            }
+
+            @Override
+            public int getLateralJoinsSize(String templateId) {
+                return 0;
+            }
+
+            @Override
+            public boolean isLateralJoinsEmpty(String templateId) {
+                return false;
+            }
+
+            @Override
+            public LateralJoinDefinition getLastLateralJoin(String templateId) {
+                return null;
             }
 
             @Override
@@ -123,7 +141,7 @@ public class I_VariableDefinitionHelper {
             }
 
             @Override
-            public LateralJoinDefinition getLateralJoinDefinition(String templateId) {
+            public Set<LateralJoinDefinition> getLateralJoinDefinitions(String templateId) {
                 return null;
             }
 
@@ -139,6 +157,16 @@ public class I_VariableDefinitionHelper {
 
             @Override
             public String getSubstituteFieldVariable() {
+                return null;
+            }
+
+            @Override
+            public void setSelectType(DataType castTypeAs) {
+
+            }
+
+            @Override
+            public DataType getSelectType() {
                 return null;
             }
         };

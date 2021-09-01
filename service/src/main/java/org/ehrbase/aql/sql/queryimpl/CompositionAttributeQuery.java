@@ -125,7 +125,7 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
 //                             ) as "var_433911319_4"
 //                    ) as "array_433911319_3"
 //                            on true
-            String sqlToLateralJoin = variableDefinition.getLateralJoinDefinition(NIL_TEMPLATE).getTable().getName()+"."+variableDefinition.getSubstituteFieldVariable();
+            String sqlToLateralJoin = variableDefinition.getLastLateralJoin(NIL_TEMPLATE).getTable().getName()+"."+variableDefinition.getSubstituteFieldVariable();
             retField = DSL.field(sqlToLateralJoin).as(retField.getName());
         }
 

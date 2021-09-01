@@ -21,6 +21,7 @@ package org.ehrbase.aql.sql.binding;
 
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.LateralJoinDefinition;
+import org.ehrbase.aql.definition.LateralVariable;
 import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
 import org.jooq.*;
 import org.jooq.impl.DSL;
@@ -29,9 +30,23 @@ public class LateralJoins {
 
     private static int seed = 1;
 
-    public void create(String templateId, TaggedStringBuilder encodedVar, I_VariableDefinition item){
-        if (encodedVar == null)
+    public void create(String templateId, TaggedStringBuilder encodedVar, I_VariableDefinition item, IQueryImpl.Clause clause){
+        var originalSqlExpression = encodedVar.toString();
+
+        if (originalSqlExpression.isBlank())
             return;
+
+        //check for existing lateral join in variable definition
+        if (item.getLateralJoinDefinitions(templateId) != null && !item.getLateralJoinDefinitions(templateId).isEmpty()) {
+            for (LateralJoinDefinition lateralJoinDefinition : item.getLateralJoinDefinitions(templateId)) {
+                if (lateralJoinDefinition.getSqlExpression().equals(originalSqlExpression)) {
+                    //use this definition instead of creating a new redundant one
+                    item.setAlias(new LateralVariable(lateralJoinDefinition.getTable().getName(), lateralJoinDefinition.getLateralVariable()).alias());
+                    return;
+                }
+            }
+        }
+
         int hashValue = encodedVar.toString().hashCode(); //cf. SonarLint
         int abs;
         if (hashValue != 0)
@@ -43,8 +58,9 @@ public class LateralJoins {
         //insert the variable alias used for the lateral join expression
         encodedVar.replaceLast(")", " AS " + variableAlias + ")");
         Table<Record> table = DSL.table(encodedVar.toString()).as(tableAlias);
-        item.setLateralJoinTable(templateId, new LateralJoinDefinition(table, variableAlias, JoinType.JOIN, null, IQueryImpl.Clause.WHERE));
-        item.setAlias(tableAlias + "." + variableAlias + " ");
+        item.setLateralJoinTable(templateId, new LateralJoinDefinition(originalSqlExpression, table, variableAlias, JoinType.JOIN, null, clause));
+        item.setAlias(new LateralVariable(tableAlias, variableAlias).alias());
+
     }
 
     public void create(String templateId, SelectQuery selectSelectStep, I_VariableDefinition item, IQueryImpl.Clause clause){
@@ -62,7 +78,7 @@ public class LateralJoins {
         SelectSelectStep wrappedSelectSelectStep = DSL.select(DSL.field(selectSelectStep).as(variableAlias));
 
         Table<Record> table = DSL.table(wrappedSelectSelectStep).as(tableAlias);
-        item.setLateralJoinTable(templateId, new LateralJoinDefinition(table, variableAlias, JoinType.LEFT_OUTER_JOIN, DSL.condition(true), clause));
+        item.setLateralJoinTable(templateId, new LateralJoinDefinition(selectSelectStep.getSQL(), table, variableAlias, JoinType.LEFT_OUTER_JOIN, DSL.condition(true), clause));
         item.setSubstituteFieldVariable(variableAlias);
     }
 

@@ -96,8 +96,12 @@ public class PGType {
                 //we cast to pg interval only in WHERE clause
                 //interval type is handled by jOOQ with a built-in type and
                 //wrongly formatted when rendering as it looses the ISO_8601 formatting (YearToSecond jOOQ class)
-                if (clause.equals(IQueryImpl.Clause.WHERE) && StringUtils.endsWith(attribute, COMMA_VALUE))
-                    pgtype = INTERVAL;
+                if (StringUtils.endsWith(attribute, COMMA_VALUE)) {
+                    if (clause.equals(IQueryImpl.Clause.WHERE))
+                        pgtype = INTERVAL;
+                    else
+                        pgtype = VARCHAR;
+                }
                 break;
             default:
                 break;

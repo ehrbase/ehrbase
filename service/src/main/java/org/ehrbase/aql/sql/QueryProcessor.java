@@ -111,6 +111,7 @@ public class QueryProcessor extends TemplateMetaData {
 
         //if any jsonb data field transform them into raw json
         RawJsonTransform.toRawJson(result);
+        DurationFormatter.toISO8601(result);
 
         List<List<String>> explainList = buildExplain(aqlSelectQuery.getSelectQuery());
 
@@ -252,28 +253,42 @@ public class QueryProcessor extends TemplateMetaData {
 
         while (whereCursorMax == 0 || whereCursor < whereCursorMax) {
 
+            //iterate on variable
             while (selectCursor < selectCursorMax) {
+                //iterate on paths for the variable
                 for (Iterator<MultiFields> it = multiSelectFieldsMap.multiFieldsIterator(); it.hasNext(); ) {
                     MultiFields multiSelectFields = it.next();
                     select.addSelect(multiSelectFields.getQualifiedFieldOrLast(selectCursor).getSQLField());
                 }
 
                 Condition condition = selectBinder.getWhereConditions(templateId, whereCursor, multiWhereFieldsMap, multiSelectFieldsMap);
+                if (condition != null && condition.equals(DSL.falseCondition()))
+                    break; //do not add since it is always false
+
                 List<LateralJoinDefinition> joins = new ArrayList<>();
 
-                joins.addAll(lateralJoinsSelectClause(NIL_TEMPLATE)); //composition attributes
+                joins.addAll(lateralJoinsSelectClause(NIL_TEMPLATE, 0)); //composition attributes
                 if (!templateId.equals(NIL_TEMPLATE)) {
-                    joins.addAll(lateralJoinsSelectClause(templateId)); //select clause fields
-                    joins.addAll(lateralJoinsWhereClause(templateId)); //where clause fields
+                    joins.addAll(lateralJoinsSelectClause(templateId, selectCursor)); //select clause fields
+                    joins.addAll(lateralJoinsWhereClause(templateId, whereCursor)); //where clause fields
                 }
 
-                queryStepsList.add(
-                        new QuerySteps(
-                                select,
-                                condition,
-                                joins,
-                                templateId
-                            ));
+                //check whether the *same* query step is already in the list
+                QuerySteps querySteps = new QuerySteps(
+                        select,
+                        condition,
+                        joins,
+                        templateId
+                );
+                if (QuerySteps.isIncludedInList(querySteps, queryStepsList)) {
+                    //re-initialize select
+                    selectCursor++;
+                    select = domainAccess.getContext().selectQuery();
+
+                    continue;
+                }
+
+                queryStepsList.add(querySteps);
                 selectCursor++;
                 //re-initialize select
                 select = domainAccess.getContext().selectQuery();
@@ -304,15 +319,19 @@ public class QueryProcessor extends TemplateMetaData {
     }
 
 
-    private List<LateralJoinDefinition> lateralJoinsSelectClause(String templateId) {
+    private List<LateralJoinDefinition> lateralJoinsSelectClause(String templateId, int cursor) {
         List<LateralJoinDefinition> lateralJoinsList = new ArrayList<>();
 
         //traverse the lateral joins derived from SELECT clause
         for (VariableDefinitions it = statements.getVariables(); it.hasNext(); ) {
             Object item = it.next();
             if (item instanceof I_VariableDefinition && ((I_VariableDefinition) item).isLateralJoin(templateId)) {
-                LateralJoinDefinition encapsulatedLateralJoinDefinition = ((I_VariableDefinition)item).getLateralJoinDefinition(templateId);
+                Set<LateralJoinDefinition> listOfLaterals = ((I_VariableDefinition)item).getLateralJoinDefinitions(templateId);
+                int index = cursor < listOfLaterals.size() ? cursor : listOfLaterals.size() - 1;
+                LateralJoinDefinition encapsulatedLateralJoinDefinition =
+                        ((I_VariableDefinition)item).getLateralJoinDefinition(templateId, index);
                 LateralJoinDefinition lateralJoinDefinition = new LateralJoinDefinition(
+                        encapsulatedLateralJoinDefinition.getSqlExpression(),
                         DSL.lateral(encapsulatedLateralJoinDefinition.getTable()),
                         encapsulatedLateralJoinDefinition.getLateralVariable(),
                         encapsulatedLateralJoinDefinition.getJoinType(),
@@ -326,20 +345,24 @@ public class QueryProcessor extends TemplateMetaData {
        return lateralJoinsList;
     }
 
-    private List<LateralJoinDefinition> lateralJoinsWhereClause(String templateId) {
+    private List<LateralJoinDefinition> lateralJoinsWhereClause(String templateId, int cursor) {
         List<LateralJoinDefinition> lateralJoinsList = new ArrayList<>();
 
         for (Object item : statements.getWhereClause()) {
             if (item instanceof I_VariableDefinition && ((I_VariableDefinition) item).isLateralJoin(templateId)) {
-                if (((I_VariableDefinition) item).getLateralJoinDefinition(templateId) == null)
+                if (((I_VariableDefinition) item).getLateralJoinDefinitions(templateId) == null)
                     throw new IllegalStateException("unresolved lateral join for template:"+templateId+", path:"+((I_VariableDefinition) item).getPath());
+
+                else if (cursor > ((I_VariableDefinition) item).getLateralJoinDefinitions(templateId).size() - 1)
+                    continue;
                 //check if lateral join is borrowed from SELECT clause, if so, don't add
-                else if (((I_VariableDefinition) item).getLateralJoinDefinition(templateId).getClause().equals(IQueryImpl.Clause.SELECT))
+                else if (((I_VariableDefinition) item).getLateralJoinDefinition(templateId, cursor).getClause().equals(IQueryImpl.Clause.SELECT))
                     continue;
 
                 lateralJoinsList.add(
                         new LateralJoinDefinition(
-                                DSL.lateral(((I_VariableDefinition) item).getLateralJoinDefinition(templateId).getTable()),
+                                ((I_VariableDefinition) item).getLateralJoinDefinition(templateId, cursor).getSqlExpression(),
+                                DSL.lateral(((I_VariableDefinition) item).getLateralJoinDefinition(templateId, cursor).getTable()),
                                 ((I_VariableDefinition)item).getSubstituteFieldVariable(),
                                 JoinType.JOIN,
                                 null,

@@ -26,6 +26,7 @@ import org.jooq.Condition;
 import org.jooq.SelectQuery;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 /**
  * Created by christian on 2/17/2017.
@@ -62,5 +63,31 @@ public class QuerySteps {
 
     public void setWhereCondition(Condition whereCondition){
         this.whereCondition = whereCondition;
+    }
+
+    public static boolean compare(QuerySteps querySteps1, QuerySteps querySteps2){
+
+        if (!querySteps1.getTemplateId().equals(querySteps2.getTemplateId()))
+            return false;
+        //compare select part
+        if (!querySteps1.getSelectQuery().getSQL().equals(querySteps2.getSelectQuery().getSQL()))
+            return false;
+        if (querySteps1.getLateralJoins().size() != querySteps2.getLateralJoins().size())
+            return false;
+        boolean isEquals = IntStream.
+                range(0, querySteps1.getLateralJoins().size()).
+                allMatch(j -> querySteps1.getLateralJoins().get(j).getSqlExpression().equals(querySteps2.getLateralJoins().get(j).getSqlExpression()));
+        if (!isEquals)
+            return false;
+        //check condition
+        return querySteps1.getWhereCondition().toString().equals(querySteps2.getWhereCondition().toString());
+    }
+
+    public static boolean isIncludedInList(QuerySteps querySteps, List<QuerySteps> queryStepsList){
+        for (QuerySteps queryStepsToCompare: queryStepsList){
+            if (compare(querySteps, queryStepsToCompare))
+                return true;
+        }
+        return false;
     }
 }

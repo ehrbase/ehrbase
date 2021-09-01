@@ -29,8 +29,10 @@ public class LateralJoinDefinition {
     private final Condition condition;
     private IQueryImpl.Clause clause;
     private final String lateralVariable;
+    private final String sqlExpression;
 
-    public LateralJoinDefinition(Table<?> table, String lateralVariable, JoinType joinType, Condition condition, IQueryImpl.Clause clause) {
+    public LateralJoinDefinition(String sqlExpression, Table<?> table, String lateralVariable, JoinType joinType, Condition condition, IQueryImpl.Clause clause) {
+        this.sqlExpression = sqlExpression;
         this.table = table;
         this.lateralVariable = lateralVariable;
         this.joinType = joinType;
@@ -60,5 +62,9 @@ public class LateralJoinDefinition {
 
     public void setClause(IQueryImpl.Clause clause) {
         this.clause = clause;
+    }
+
+    public String getSqlExpression() {
+        return sqlExpression;
     }
 }

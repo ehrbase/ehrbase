@@ -24,6 +24,7 @@ package org.ehrbase.aql.sql.binding;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.LateralJoinDefinition;
+import org.ehrbase.aql.definition.LateralVariable;
 import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
 import org.ehrbase.aql.sql.queryimpl.*;
@@ -301,7 +302,7 @@ public class WhereBinder {
             return DSL.condition(taggedBuffer.toString());
         }
         else
-            return DSL.condition("false");
+            return DSL.falseCondition();
     }
 
 
@@ -408,21 +409,38 @@ public class WhereBinder {
         if (new SetReturningFunction(expanded).isUsed()){
 
             //check if this variable is already defined as a lateral join from the projection (SELECT)
-            MultiFields multiFields = multiSelectFieldsMap.get(variableDefinition.getIdentifier(), variableDefinition.getPath());
+            MultiFields selectFields = multiSelectFieldsMap.get(variableDefinition.getIdentifier(), variableDefinition.getPath());
 
-            if (multiFields != null && multiFields.getVariableDefinition().getLateralJoinDefinition(templateId) != null) {
-                LateralJoinDefinition lateralJoinDefinition = multiFields.getVariableDefinition().getLateralJoinDefinition(templateId);
+            if (selectFields != null && selectFields.getVariableDefinition().getLateralJoinDefinitions(templateId) != null) {
+                //TODO: get the matching lateral join... not the LAST!
+                LateralJoinDefinition lateralJoinDefinition = reconciliateWithAliasedTable(expanded, selectFields.getVariableDefinition(), templateId);
+                if (lateralJoinDefinition == null)
+                   return null;
                 variableDefinition.setLateralJoinTable(templateId, lateralJoinDefinition);
                 //NB: white space at the end is required since the clause is built with a string builder and space(s) is important!
-                variableDefinition.setAlias(lateralJoinDefinition.getTable().getName() + "." + lateralJoinDefinition.getLateralVariable()+" ");
+                variableDefinition.setAlias(new LateralVariable(lateralJoinDefinition.getTable().getName(),lateralJoinDefinition.getLateralVariable()).alias());
             }
             else
-                new LateralJoins().create(templateId, encodedVar, variableDefinition );
+                new LateralJoins().create(templateId, encodedVar, variableDefinition, IQueryImpl.Clause.WHERE );
 
             expanded = variableDefinition.getAlias();
         }
 
         return expanded;
+    }
+
+    private LateralJoinDefinition reconciliateWithAliasedTable(String expanded, I_VariableDefinition variableDefinition, String templateId){
+
+        Set<LateralJoinDefinition> definedLateralJoins = variableDefinition.getLateralJoinDefinitions(templateId);
+
+        for (LateralJoinDefinition lateralJoinDefinition: definedLateralJoins){
+            if (lateralJoinDefinition.getSqlExpression().replace("\n", "").replace(" ", "").
+                    contains(expanded.substring(0, expanded.length() - 1).substring(1).replace("\n", "").replace(" ", "")))
+                return lateralJoinDefinition;
+        }
+
+        return null;
+
     }
 
 }

@@ -22,8 +22,11 @@
 
 package org.ehrbase.aql.definition;
 
+import org.jooq.DataType;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by christian on 9/20/2016.
@@ -55,6 +58,26 @@ public class ExtensionDefinition implements I_VariableDefinition {
 
     @Override
     public String getIdentifier() {
+        return null;
+    }
+
+    @Override
+    public LateralJoinDefinition getLateralJoinDefinition(String templateId, int index) {
+        return null;
+    }
+
+    @Override
+    public int getLateralJoinsSize(String templateId) {
+        return 0;
+    }
+
+    @Override
+    public boolean isLateralJoinsEmpty(String templateId) {
+        return false;
+    }
+
+    @Override
+    public LateralJoinDefinition getLastLateralJoin(String templateId) {
         return null;
     }
 
@@ -124,7 +147,7 @@ public class ExtensionDefinition implements I_VariableDefinition {
     }
 
     @Override
-    public LateralJoinDefinition getLateralJoinDefinition(String templateId) {
+    public Set<LateralJoinDefinition> getLateralJoinDefinitions(String templateId) {
         return null;
     }
 
@@ -140,6 +163,16 @@ public class ExtensionDefinition implements I_VariableDefinition {
 
     @Override
     public String getSubstituteFieldVariable() {
+        return null;
+    }
+
+    @Override
+    public void setSelectType(DataType castTypeAs) {
+
+    }
+
+    @Override
+    public DataType getSelectType() {
         return null;
     }
 }

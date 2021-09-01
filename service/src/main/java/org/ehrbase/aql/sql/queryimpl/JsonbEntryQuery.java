@@ -199,6 +199,9 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
 
             Field<?> fieldPathItem;
             if (clause.equals(Clause.SELECT)) {
+                //set the determined type with the variable
+                variableDefinition.setSelectType(castTypeAs);
+
                 if (StringUtils.isNotEmpty(alias))
                     fieldPathItem = buildFieldWithCast(itemPath, castTypeAs, alias);
                 else {
@@ -241,17 +244,6 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
 
         return fieldPathItem;
     }
-
-    private String toAqlPath(List<String> itemPathArray) {
-        List<String> aqlPath = new ArrayList<>();
-        for (String path : itemPathArray) {
-            if (!path.startsWith(TAG_COMPOSITION) && !path.matches("[0-9]*")) {
-                aqlPath.add(path);
-            }
-        }
-        return StringUtils.join(aqlPath.toArray(new String[]{}));
-    }
-
 
     @Override
     public MultiFields whereField(String templateId, String identifier, I_VariableDefinition variableDefinition) {

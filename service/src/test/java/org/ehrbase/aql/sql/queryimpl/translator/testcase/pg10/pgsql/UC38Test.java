@@ -31,13 +31,9 @@ public class UC38Test extends UC38 {
     public UC38Test(){
         super();
         this.expectedSqlExpression =
-                "select min(\"min_magnitude\") as \"min_magnitude\"" +
-                        " from (" +
-                        "       select ARRAY.COLUMN as \"min_magnitude\"" +
-                        "            from \"ehr\".\"entry\" join lateral (\n" +
-                        "               select cast((ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0004],0,/value,magnitude}') as bigint) \n" +
-                        "               AS COLUMN) as \"ARRAY\" on 1 = 1" +
-                        " where (\"ehr\".\"entry\".\"template_id\" = ? and ARRAY.COLUMN is not null)) as \"\"";
+                "select min(\"min_magnitude\") as \"min_magnitude\" from (select ARRAY.COLUMN::bigint as \"min_magnitude\" from \"ehr\".\"entry\" join lateral (\n" +
+                        "  select cast((ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0004],0,/value,magnitude}') as bigint) \n" +
+                        " AS COLUMN) as \"ARRAY\" on 1 = 1 where (\"ehr\".\"entry\".\"template_id\" = ? and ARRAY.COLUMN is not null)) as \"\"";
     }
 
     @Test
