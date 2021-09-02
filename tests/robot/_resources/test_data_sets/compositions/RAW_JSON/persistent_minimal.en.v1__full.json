@@ -321,7 +321,7 @@
       },
       "target": {
         "_type": "DV_EHR_URI",
-        "value": "target1"
+        "value": "ehr://target1"
       }
     },
     {
@@ -336,7 +336,7 @@
       },
       "target": {
         "_type": "DV_EHR_URI",
-        "value": "target2"
+        "value": "ehr://target2"
       }
     }
   ],

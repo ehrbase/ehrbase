@@ -14,7 +14,7 @@
         <value>type</value>
       </type>
       <target>
-        <value>target1</value>
+        <value>ehr://target1</value>
       </target>
     </links>
     <links>
@@ -25,7 +25,7 @@
         <value>type</value>
       </type>
       <target>
-        <value>target2</value>
+        <value>ehr://target2</value>
       </target>
     </links>
     <archetype_details>
