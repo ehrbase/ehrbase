@@ -64,9 +64,6 @@ public class ValidationServiceImp implements ValidationService {
         this.validatorCache = cacheManager.getCache(VALIDATOR_CACHE, UUID.class, Validator.class);
         this.knowledgeCache = knowledgeCache;
         this.terminologyService = terminologyService;
-
-        // TODO-527: remove when fixed
-        //RM_OBJECT_VALIDATOR.setRunInvariantChecks(false);
     }
 
     @Override
