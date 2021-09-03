@@ -23,6 +23,7 @@ import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rminfo.ArchieRMInfoLookup;
 import com.nedap.archie.rmobjectvalidator.RMObjectValidationMessage;
 import com.nedap.archie.rmobjectvalidator.RMObjectValidator;
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.ValidationService;
@@ -32,6 +33,8 @@ import org.ehrbase.validation.Validator;
 import org.ehrbase.validation.constraints.terminology.ExternalTerminologyValidationSupport;
 import org.ehrbase.validation.terminology.ItemStructureVisitor;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -47,6 +50,8 @@ import static org.ehrbase.configuration.CacheConfiguration.VALIDATOR_CACHE;
 @Service
 public class ValidationServiceImp implements ValidationService {
 
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
     private static final Pattern NAMESPACE_PATTERN = Pattern.compile("[a-zA-Z][a-zA-Z0-9-_:/&+?]*");
 
     private static final RMObjectValidator RM_OBJECT_VALIDATOR = new RMObjectValidator(ArchieRMInfoLookup.getInstance(),s -> null);
@@ -60,10 +65,15 @@ public class ValidationServiceImp implements ValidationService {
     private ExternalTerminologyValidationSupport externalTerminologyValidator;
 
     @Autowired
-    public ValidationServiceImp(CacheManager cacheManager, I_KnowledgeCache knowledgeCache, TerminologyService terminologyService) {
+    public ValidationServiceImp(CacheManager cacheManager, I_KnowledgeCache knowledgeCache, TerminologyService terminologyService, ServerConfig serverConfig) {
         this.validatorCache = cacheManager.getCache(VALIDATOR_CACHE, UUID.class, Validator.class);
         this.knowledgeCache = knowledgeCache;
         this.terminologyService = terminologyService;
+
+        if (serverConfig.isDisableStrictValidation()) {
+            logger.warn("Disabling strict invariant validation. Caution is advised.");
+            RM_OBJECT_VALIDATOR.setRunInvariantChecks(false);
+        }
     }
 
     @Override
