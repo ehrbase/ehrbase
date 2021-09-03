@@ -4,6 +4,11 @@ EHRbase is an [openEHR](openehr.org) Clinical Data Repository, providing a stand
 
 ## Release Notes
 
+##### WIP: 2021, XYZ 00
+v?.?.? - (...)
+
+**Important:** Please note that this release introduces [Archie's](https://github.com/openEHR/archie) new strict invariant checks. Depending on existing data and clients this might be a breaking change. Please carefully check the EHRbase output and update your input data if EHRbase rejects it.
+
 ##### 2021, Aug 12
 v0.17.1 - **beta** release. Default handling for audit metadata, bug fixes and SDK version update.
 Please check the [CHANGELOG](https://github.com/ehrbase/ehrbase/blob/develop/CHANGELOG.md) for more details.
