@@ -18,6 +18,7 @@
 package org.ehrbase.aql.sql.queryimpl.attribute.composition;
 
 import org.ehrbase.aql.sql.binding.JoinBinder;
+import org.ehrbase.aql.sql.queryimpl.QueryImplConstants;
 import org.ehrbase.aql.sql.queryimpl.attribute.AttributePath;
 import org.ehrbase.aql.sql.queryimpl.attribute.AttributeResolver;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
@@ -34,6 +35,7 @@ public class CompositionResolver extends AttributeResolver
 {
 
     public static final String FEEDER_AUDIT = "feeder_audit";
+    public static final String FEEDER_SYSTEM_IDS = "feeder_system_item_ids";
 
     public CompositionResolver(FieldResolutionContext fieldResolutionContext, JoinSetup joinSetup) {
         super(fieldResolutionContext, joinSetup);
@@ -49,12 +51,21 @@ public class CompositionResolver extends AttributeResolver
             return new ConceptResolver(fieldResolutionContext, joinSetup).forTableField(ENTRY.CATEGORY).sqlField(new AttributePath("category").redux(path));
 
         if (path.startsWith(FEEDER_AUDIT)) {
-
-            Field<?> retField = new GenericJsonField(fieldResolutionContext, joinSetup)
+            Field<?> retField;
+            if (path.contains(FEEDER_SYSTEM_IDS) && !path.endsWith(FEEDER_SYSTEM_IDS)) {
+                path = path.substring(path.indexOf(FEEDER_SYSTEM_IDS)+ FEEDER_SYSTEM_IDS.length()+1);
+                //we insert a tag to indicate that the path operates on a json array
+                fieldResolutionContext.setUsingSetReturningFunction(true); //to generate lateral join
+                retField = new GenericJsonField(fieldResolutionContext, joinSetup).
+                        forJsonPath(FEEDER_SYSTEM_IDS+"/"+ QueryImplConstants.AQL_NODE_ITERATIVE_MARKER+"/" + path).
+                        feederAudit(JoinBinder.compositionRecordTable.field(FEEDER_AUDIT));
+            }
+            else
+                retField = new GenericJsonField(fieldResolutionContext, joinSetup)
                     .forJsonPath(FEEDER_AUDIT, path)
                     .feederAudit(JoinBinder.compositionRecordTable.field(FEEDER_AUDIT));
 
-            String regexpTerminalValues = ".*(id|issuer|assigner|type|original_content|system_id|name|namespace|value)$";
+            String regexpTerminalValues = ".*(id|issuer|assigner|type|formalism|system_id|name|namespace|value)$";
             if (path.matches(regexpTerminalValues))
                 fieldResolutionContext.setJsonDatablock(false);
 

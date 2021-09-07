@@ -67,7 +67,6 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
 
     @Override
     public MultiFields makeField(String templateId, String identifier, I_VariableDefinition variableDefinition, Clause clause) {
-
         //resolve composition attributes and/or context
         String columnAlias = variableDefinition.getPath();
         FieldResolutionContext fieldResolutionContext =
@@ -128,6 +127,8 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
             String sqlToLateralJoin = variableDefinition.getLastLateralJoin(NIL_TEMPLATE).getTable().getName()+"."+variableDefinition.getSubstituteFieldVariable();
             retField = DSL.field(sqlToLateralJoin).as(retField.getName());
         }
+        else if (fieldResolutionContext.isUsingSetReturningFunction())
+            retField = DSL.field(DSL.select(retField));
 
         QualifiedAqlField aqlField = new QualifiedAqlField(retField);
 
@@ -137,6 +138,15 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
     @Override
     public MultiFields whereField(String templateId,String identifier, I_VariableDefinition variableDefinition) {
         return makeField(templateId, identifier, variableDefinition, Clause.WHERE);
+    }
+
+    /**
+     * true if the expression contains path and then use ENTRY as primary from table
+     *
+     * @return
+     */
+    public boolean useFromEntry() {
+        return pathResolver.hasPathExpression();
     }
 
     public boolean isCompositionAttributeItemStructure(String templateId, String identifier){
