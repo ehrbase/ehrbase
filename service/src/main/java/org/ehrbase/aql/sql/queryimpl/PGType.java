@@ -32,6 +32,8 @@ import static org.jooq.impl.SQLDataType.*;
 public class PGType {
 
     public static final String MAGNITUDE = "magnitude";
+    public static final String VALUE = "value";
+    public static final String VALUE_VALUE = "/value,value";
     public static final String COMMA_VALUE = ",value";
     public static final String NUMERATOR = "numerator";
     public static final String DENOMINATOR = "denominator";
@@ -85,7 +87,7 @@ public class PGType {
                     pgtype = BIGINT;
                 break;
             case "DV_ORDINAL":
-                if (StringUtils.endsWith(attribute, COMMA_VALUE))
+                if (StringUtils.endsWith(attribute, VALUE_VALUE))
                     pgtype = BIGINT;
                 break;
             case "DV_BOOLEAN":
@@ -106,6 +108,10 @@ public class PGType {
             default:
                 break;
             }
+
+
+        if (pgtype == null && attribute.endsWith(MAGNITUDE)) //this may happen when we have a choice...
+            pgtype = NUMERIC;
 
         return pgtype;
     }

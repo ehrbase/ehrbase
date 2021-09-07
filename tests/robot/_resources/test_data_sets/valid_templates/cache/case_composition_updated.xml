@@ -1,0 +1,117 @@
+<composition xmlns="http://schemas.openehr.org/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" archetype_node_id="openEHR-EHR-COMPOSITION.minimal.v1">
+  <name>
+    <value>Cache Test Updated</value>
+  </name>
+  <archetype_details>
+    <archetype_id>
+      <value>openEHR-EHR-COMPOSITION.minimal.v1</value>
+    </archetype_id>
+    <template_id>
+      <value>Case</value>
+    </template_id>
+    <rm_version>1.0.2</rm_version>
+  </archetype_details>
+  <language>
+    <terminology_id>
+      <value>ISO_639-1</value>
+    </terminology_id>
+    <code_string>en</code_string>
+  </language>
+  <territory>
+    <terminology_id>
+      <value>ISO_3166-1</value>
+    </terminology_id>
+    <code_string>UY</code_string>
+  </territory>
+  <category>
+    <value>event</value>
+    <defining_code>
+      <terminology_id>
+        <value>openehr</value>
+      </terminology_id>
+      <code_string>433</code_string>
+    </defining_code>
+  </category>
+  <composer xsi:type="PARTY_IDENTIFIED">
+    <external_ref>
+      <id xsi:type="HIER_OBJECT_ID">
+        <value>830f2fb4-1bbf-4376-9d52-77ef4b8f92e8</value>
+      </id>
+      <namespace>DEMOGRAPHIC</namespace>
+      <type>PERSON</type>
+    </external_ref>
+    <name>Dr. Robot Updated</name>
+  </composer>
+  <context>
+    <start_time>
+      <value>2019-01-28T21:22:19,979+00:00</value>
+    </start_time>
+    <setting>
+      <value>primary nursing care</value>
+      <defining_code>
+        <terminology_id>
+          <value>openehr</value>
+        </terminology_id>
+        <code_string>229</code_string>
+      </defining_code>
+    </setting>
+    <participations>
+      <function>
+        <value>companion</value>
+      </function>
+      <performer xsi:type="PARTY_RELATED">
+        <name>Betty Bix</name>
+        <relationship>
+          <value>sister</value>
+          <defining_code>
+            <terminology_id>
+              <value>openehr</value>
+            </terminology_id>
+            <code_string>24</code_string>
+          </defining_code>
+        </relationship>
+      </performer>
+      <mode>
+        <value>not specified</value>
+        <defining_code>
+          <terminology_id>
+            <value>openehr</value>
+          </terminology_id>
+          <code_string>193</code_string>
+        </defining_code>
+      </mode>
+    </participations>
+  </context>
+  <content archetype_node_id="openEHR-EHR-EVALUATION.minimal.v1" xsi:type="EVALUATION">
+    <name>
+      <value>Minimal</value>
+    </name>
+    <language>
+      <terminology_id>
+        <value>ISO_639-1</value>
+      </terminology_id>
+      <code_string>en</code_string>
+    </language>
+    <encoding>
+      <terminology_id>
+        <value>Unicode</value>
+      </terminology_id>
+      <code_string>UTF-8</code_string>
+    </encoding>
+    <subject xsi:type="PARTY_SELF" />
+    <data archetype_node_id="at0001" xsi:type="ITEM_TREE">
+      <name>
+        <value>Arbol</value>
+      </name>
+      <items archetype_node_id="at0002" xsi:type="ELEMENT">
+        <name>
+          <value>quantity</value>
+        </name>
+        <value xsi:type="DV_QUANTITY">
+          <magnitude>78.5</magnitude>
+          <units>kg</units>
+        </value>
+      </items>
+    </data>
+  </content>
+</composition>

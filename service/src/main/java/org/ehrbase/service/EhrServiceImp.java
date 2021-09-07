@@ -37,12 +37,16 @@ import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.jooq.AttestationAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyRef;
+import org.ehrbase.jooq.pg.Routines;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.EhrStatusDto;
 import org.ehrbase.response.ehrscape.StructuredString;
 import org.ehrbase.response.ehrscape.StructuredStringFormat;
 import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
 import org.jooq.DSLContext;
+import org.jooq.Record;
+import org.jooq.Result;
+import org.jooq.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +62,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import static org.ehrbase.jooq.pg.Routines.partyUsage;
+import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
 
 @Service(value = "ehrService")
 @Transactional()
@@ -424,6 +431,19 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
         ehrAccess.adminDeleteEhr();
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Override
+    public void adminPurgePartyIdentified() {
+        getDataAccess().getContext().deleteFrom(PARTY_IDENTIFIED).where(partyUsage(PARTY_IDENTIFIED.ID).eq(0L)).execute();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Override
+    public void adminDeleteOrphanHistory() {
+        Routines.deleteOrphanHistory(getDataAccess().getContext().configuration());
+    }
+
 
     @Override
     public UUID getSubjectUuid(String ehrId) {
