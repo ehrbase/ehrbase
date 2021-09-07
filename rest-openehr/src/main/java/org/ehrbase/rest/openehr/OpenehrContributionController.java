@@ -79,7 +79,7 @@ public class OpenehrContributionController extends BaseController {
             @ApiResponse(code = 400, response = ErrorResponseData.class, message = "Bad request: validation errors in one of the attached locatables, modification type doesn’t match the operation - i.e. first version of a composition with MODIFICATION."),
             @ApiResponse(code = 404, response = ErrorResponseData.class, message = "Not Found - The EHR with the supplied ehr_id did not exist.")})
     @ResponseStatus(value = HttpStatus.CREATED)    // overwrites default 200, fixes the wrong listing of 200 in swagger-ui (EHR-56)
-    public ResponseEntity createContribution(@ApiParam(value = REQ_OPENEHR_VERSION) @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
+    public ResponseEntity<ContributionResponseData> createContribution(@ApiParam(value = REQ_OPENEHR_VERSION) @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
                                             @ApiParam(value = REQ_OPENEHR_AUDIT) @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
                                             @ApiParam(value = REQ_CONTENT_TYPE_BODY, required = true) @RequestHeader(value = CONTENT_TYPE) String contentType,
                                             @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
@@ -121,7 +121,7 @@ public class OpenehrContributionController extends BaseController {
                             @ResponseHeader(name = LAST_MODIFIED, description = RESP_LAST_MODIFIED_DESC, response = long.class)
                     }),
             @ApiResponse(code = 404, response = ErrorResponseData.class, message = "Not Found - No EHR with the supplied ehr_id or no Contribution with the supplied contribution_uid was found.")})
-    public ResponseEntity getContribution(@ApiParam(value = REQ_OPENEHR_VERSION) @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
+    public ResponseEntity<ContributionResponseData> getContribution(@ApiParam(value = REQ_OPENEHR_VERSION) @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
                                              @ApiParam(value = REQ_OPENEHR_AUDIT) @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
                                              @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
                                              @ApiParam(value = "EHR identifier taken from EHR.ehr_id.value", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
@@ -172,7 +172,7 @@ public class OpenehrContributionController extends BaseController {
         // if response data objects was created as "representation" do all task from wider scope, too
         if (minimalOrRepresentation != null) {
             // when this "if" is true the following casting can be executed and data manipulated by reference (handled by temporary variable)
-            ContributionResponseData objByReference = (ContributionResponseData) minimalOrRepresentation;
+            ContributionResponseData objByReference = minimalOrRepresentation;
 
             // retrieve contribution
             Optional<ContributionDto> contribution = contributionService.getContribution(ehrId, contributionId);
@@ -186,10 +186,6 @@ public class OpenehrContributionController extends BaseController {
                     ));
             objByReference.setVersions(refs);
             objByReference.setAudit(contribution.get().getAuditDetails());
-
-            // if accept is empty fall back to XML
-            if (accept.equals("*/*") || accept.isEmpty())
-                accept = MediaType.APPLICATION_JSON.toString();
 
             CompositionFormat format = extractCompositionFormat(accept);
 

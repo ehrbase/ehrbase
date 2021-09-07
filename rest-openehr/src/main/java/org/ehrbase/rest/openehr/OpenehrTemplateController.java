@@ -284,13 +284,12 @@ public class OpenehrTemplateController extends BaseController {
         }
 
         // parse and set accepted format. with XML as fallback for empty header and error for non supported header
+        MediaType mediaType = resolveContentType(accept, MediaType.APPLICATION_XML);
         OperationalTemplateFormat format;
-        if (MediaType.parseMediaType(accept).isCompatibleWith(MediaType.APPLICATION_XML)) {
+        if (mediaType.equals(MediaType.APPLICATION_XML)) {
             format = OperationalTemplateFormat.XML;
-        } else if (MediaType.parseMediaType(accept).isCompatibleWith(MediaType.APPLICATION_JSON)) {
+        } else if (mediaType.equals(MediaType.APPLICATION_JSON)) {
             format = OperationalTemplateFormat.JSON;
-        } else if (StringUtils.isBlank(accept) || "*/*".equals(accept)) {
-            format = OperationalTemplateFormat.XML;
         } else {
             throw new NotAcceptableException("Currently only xml (or emtpy for fallback) is allowed");
         }

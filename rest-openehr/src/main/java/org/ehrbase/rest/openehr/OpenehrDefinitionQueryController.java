@@ -25,8 +25,9 @@ import java.util.Optional;
 @RequestMapping(path = "/rest/openehr/v1/definition/query", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrDefinitionQueryController extends BaseController {
 
-    final static Logger log = LoggerFactory.getLogger(OpenehrDefinitionQueryController.class);
-    private QueryService queryService;
+    static final Logger log = LoggerFactory.getLogger(OpenehrDefinitionQueryController.class);
+
+    private final QueryService queryService;
 
     @Autowired
     public OpenehrDefinitionQueryController(QueryService queryService) {
@@ -41,7 +42,7 @@ public class OpenehrDefinitionQueryController extends BaseController {
      * @param qualifiedQueryName
      * @return
      */
-    @RequestMapping(value = {"/{qualified_query_name}", ""}, method = RequestMethod.GET)
+    @GetMapping(value = {"/{qualified_query_name}", ""})
     @ApiOperation(value = "List stored queries", response = QueryDefinitionResponseData.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Success.",
@@ -60,7 +61,7 @@ public class OpenehrDefinitionQueryController extends BaseController {
         return ResponseEntity.ok(responseData);
     }
 
-    @RequestMapping(value = {"/{qualified_query_name}/{version}"}, method = RequestMethod.GET)   //
+    @GetMapping(value = {"/{qualified_query_name}/{version}"})   //
     @ApiOperation(value = "Get stored query and info/metadata", response = QueryDefinitionResponseData.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Success.",
@@ -83,7 +84,7 @@ public class OpenehrDefinitionQueryController extends BaseController {
         return ResponseEntity.ok(queryDefinitionResponseData);
     }
 
-    @RequestMapping(value = {"/{qualified_query_name}/{version}{?type}", "/{qualified_query_name}{?type}"}, method = RequestMethod.PUT)
+    @PutMapping(value = {"/{qualified_query_name}/{version}{?type}", "/{qualified_query_name}{?type}"})
     @ApiOperation(value = "Store a query", response = QueryDefinitionResponseData.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Success.",
@@ -112,13 +113,13 @@ public class OpenehrDefinitionQueryController extends BaseController {
         if (aql == null || aql.isEmpty())
             return new ResponseEntity(new ErrorBodyPayload("Invalid query", "no aql query provided in payload").toString(), HttpStatus.BAD_REQUEST);
 
-        QueryDefinitionResponseData queryDefinitionResponseData = new QueryDefinitionResponseData(queryService.createStoredQuery(qualifiedQueryName, version.isPresent() ? version.get() : null, aql));
+        QueryDefinitionResponseData queryDefinitionResponseData = new QueryDefinitionResponseData(queryService.createStoredQuery(qualifiedQueryName, version.orElse(null), aql));
 
         return ResponseEntity.ok(queryDefinitionResponseData);
 
     }
 
-    @RequestMapping(value = {"/{qualified_query_name}/{version}"}, method = RequestMethod.DELETE)
+    @DeleteMapping(value = {"/{qualified_query_name}/{version}"})
     @ApiOperation(value = "Delete a query", response = QueryDefinitionResponseData.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Success.",
@@ -134,7 +135,7 @@ public class OpenehrDefinitionQueryController extends BaseController {
 
     ) {
 
-        log.debug("deleteStoredQuery for the following input: " +  qualifiedQueryName + ", version:"+version);
+        log.debug("deleteStoredQuery for the following input: {} , version: {}", qualifiedQueryName, version);
 
         QueryDefinitionResponseData queryDefinitionResponseData = new QueryDefinitionResponseData(queryService.deleteStoredQuery(qualifiedQueryName, version));
 

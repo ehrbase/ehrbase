@@ -194,7 +194,7 @@ public class OpenehrQueryController extends BaseController {
     }
 
     private Integer double2int(String value) {
-        return (Double.valueOf(value.toString())).intValue();
+        return (Double.valueOf(value)).intValue();
     }
 
     @GetMapping(value = {"/{qualified_query_name}/{version}{?offset,fetch,query_parameter}", "/{qualified_query_name}{?offset,fetch,query_parameter}"})
@@ -306,7 +306,7 @@ public class OpenehrQueryController extends BaseController {
     }
 
     public ResponseEntity badRequestResponseEntity(String qualifiedQueryName, Optional<String> version) {
-        String errorBody = new ErrorBodyPayload("Invalid query", "could not retrieve query identified by:" + qualifiedQueryName + "/" + (version.isPresent() ? version.get() : "LATEST")).toString();
+        String errorBody = new ErrorBodyPayload("Invalid query", "could not retrieve query identified by:" + qualifiedQueryName + "/" + version.orElse("LATEST")).toString();
         return new ResponseEntity(errorBody, HttpStatus.BAD_REQUEST);
     }
 

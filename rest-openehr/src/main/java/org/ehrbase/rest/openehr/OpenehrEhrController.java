@@ -27,7 +27,6 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.ResponseHeader;
-import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -100,7 +99,7 @@ public class OpenehrEhrController extends BaseController {
     @ResponseStatus(value = HttpStatus.CREATED)
     // overwrites default 200, fixes the wrong listing of 200 in swagger-ui (EHR-56)
     // TODO auditing headers (openehr*) ignored until auditing is implemented
-    public ResponseEntity createEhr(@ApiParam(value = REQ_OPENEHR_VERSION) @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
+    public ResponseEntity<EhrResponseData> createEhr(@ApiParam(value = REQ_OPENEHR_VERSION) @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
                                     @ApiParam(value = REQ_OPENEHR_AUDIT) @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
                                     @ApiParam(value = REQ_CONTENT_TYPE_BODY) @RequestHeader(value = CONTENT_TYPE, required = false) String contentType,    // TODO when working on EHR_STATUS
                                     @ApiParam(value = "Client should specify expected response format") @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
@@ -270,26 +269,11 @@ public class OpenehrEhrController extends BaseController {
      */
     private <T extends EhrResponseData> Optional<InternalResponse<T>> buildEhrResponseData(Supplier<T> factory, UUID ehrId, /*Action create,*/ String accept, List<String> headerList) {
         // check for valid format header to produce content accordingly
-        MediaType contentTypeHeaderInput;  // to prepare header input if this header is needed later
-        if (StringUtils.isBlank(accept) || accept.equals("*/*")) {  // "*/*" is standard for "any mime-type"
-            // assign default if no header was set
-            contentTypeHeaderInput = MediaType.APPLICATION_JSON;
-        } else {
-            // if header was set process it
-            MediaType mediaType = MediaType.parseMediaType(accept);
-
-            if (mediaType.isCompatibleWith(MediaType.APPLICATION_JSON)) {
-                contentTypeHeaderInput = MediaType.APPLICATION_JSON;
-            } else if (mediaType.isCompatibleWith(MediaType.APPLICATION_XML)) {
-                contentTypeHeaderInput = MediaType.APPLICATION_XML;
-            } else {
-                throw new InvalidApiParameterException("Wrong Content-Type header in request");
-            }
-        }
+        MediaType contentType = resolveContentType(accept);
 
         //Optional<EhrStatusDto> ehrStatus = ehrService.getEhrStatusEhrScape(ehrId, CompositionFormat.FLAT);    // older, keep until rework of formatting
         Optional<EhrStatus> ehrStatus = ehrService.getEhrStatus(ehrId);
-        if (!ehrStatus.isPresent()) {
+        if (ehrStatus.isEmpty()) {
             return Optional.empty();
         }
 
@@ -314,7 +298,7 @@ public class OpenehrEhrController extends BaseController {
             switch (header) {
                 case CONTENT_TYPE:
                     if (minimalOrRepresentation != null)    // if response is going to have a body
-                        respHeaders.setContentType(contentTypeHeaderInput);
+                        respHeaders.setContentType(contentType);
                     break;
                 case LOCATION:
                     try {

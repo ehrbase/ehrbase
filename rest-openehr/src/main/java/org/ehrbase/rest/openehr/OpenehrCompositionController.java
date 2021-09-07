@@ -472,11 +472,6 @@ public class OpenehrCompositionController extends BaseController {
             // when this "if" is true the following casting can be executed and data manipulated by reference (handled by temporary variable)
             CompositionResponseData objByReference = (CompositionResponseData) minimalOrRepresentation;
 
-            // if accept is empty fall back to XML
-            if (accept.equals("*/*") || accept.isEmpty())
-                accept = MediaType.APPLICATION_JSON.toString();
-
-
             CompositionFormat format = extractCompositionFormat(accept);
 
             // version handling allows to request specific version

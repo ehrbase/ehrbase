@@ -49,6 +49,7 @@ import org.springframework.web.util.UriUtils;
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -164,7 +165,7 @@ public abstract class BaseController {
 
     // Internal abstraction layer helper, so calling methods above can invoke with meaningful error messages depending on context.
     private UUID extractUUIDFromStringWithError(String uuidString, String type, String error) {
-        UUID uuid = null;
+        UUID uuid;
         try {
             uuid = UUID.fromString(uuidString);
         } catch (IllegalArgumentException e) {
@@ -183,30 +184,15 @@ public abstract class BaseController {
     protected CompositionFormat extractCompositionFormat(String contentType) {
         final CompositionFormat compositionFormat;
 
-        if (MediaType.parseMediaType(contentType).isCompatibleWith(MediaType.APPLICATION_XML)) {
+        MediaType mediaType = resolveContentType(contentType);
+        if (mediaType.equals(MediaType.APPLICATION_XML)) {
             compositionFormat = CompositionFormat.XML;
-        } else if (MediaType.parseMediaType(contentType).isCompatibleWith(MediaType.APPLICATION_JSON)) {
+        } else if (mediaType.equals(MediaType.APPLICATION_JSON)) {
             compositionFormat = CompositionFormat.JSON;
         } else {
             throw new NotAcceptableException("Only compositions in XML or JSON are supported at the moment");
         }
         return compositionFormat;
-    }
-
-
-    protected MediaType extractMediaType(String accept) {
-        final MediaType mediaType;
-
-        if (StringUtils.isBlank(accept) || "*/*".equals(accept)) {
-            return MediaType.APPLICATION_XML;
-        } else if (MediaType.parseMediaType(accept).isCompatibleWith(MediaType.APPLICATION_XML)) {
-            mediaType = MediaType.APPLICATION_XML;
-        } else if (MediaType.parseMediaType(accept).isCompatibleWith(MediaType.APPLICATION_JSON)) {
-            mediaType = MediaType.APPLICATION_JSON;
-        } else {
-            throw new NotAcceptableException("Only  XML or JSON are supported at the moment");
-        }
-        return mediaType;
     }
 
     /**
@@ -254,17 +240,55 @@ public abstract class BaseController {
             return 0; //current version
         // extract the version from string of format "$UUID::$SYSTEM::$VERSION"
         // via making a substring starting at last occurrence of "::" + 2
-        return Integer.valueOf(versionUid.substring(versionUid.lastIndexOf("::") + 2));
+        return Integer.parseInt(versionUid.substring(versionUid.lastIndexOf("::") + 2));
     }
 
     /**
      * Add attribute to the current request.
+     *
      * @param attributeName
      * @param value
      */
     protected void enrichRequestAttribute(String attributeName, Object value) {
         RequestContextHolder.currentRequestAttributes()
                 .setAttribute(attributeName, value, RequestAttributes.SCOPE_REQUEST);
+    }
+
+    /**
+     * Resolves the Content-Type based on Accept header.
+     *
+     * @param acceptHeader Accept header value
+     * @return Content-Type of the response
+     */
+    protected MediaType resolveContentType(String acceptHeader) {
+        return resolveContentType(acceptHeader, MediaType.APPLICATION_JSON);
+    }
+
+    /**
+     * Resolves the Content-Type based on Accept header.
+     *
+     * @param acceptHeader     Accept header value
+     * @param defaultMediaType Default Content-Type
+     * @return Content-Type of the response
+     */
+    protected MediaType resolveContentType(String acceptHeader, MediaType defaultMediaType) {
+        List<MediaType> mediaTypes = MediaType.parseMediaTypes(acceptHeader);
+        if (mediaTypes.isEmpty()) {
+            return defaultMediaType;
+        }
+
+        MediaType.sortBySpecificityAndQuality(mediaTypes);
+        MediaType contentType = mediaTypes.stream()
+                .filter(mediaType -> mediaType.isCompatibleWith(MediaType.APPLICATION_JSON) ||
+                        mediaType.isCompatibleWith(MediaType.APPLICATION_XML))
+                .findFirst()
+                .orElseThrow(() -> new InvalidApiParameterException("Wrong Content-Type header in request"));
+
+        if (contentType.equals(MediaType.ALL)) {
+            return defaultMediaType;
+        }
+
+        return contentType;
     }
 
     /*

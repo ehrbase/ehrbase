@@ -21,7 +21,6 @@ package org.ehrbase.rest.openehr;
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import io.swagger.annotations.*;
-import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -221,27 +220,12 @@ public class OpenehrEhrStatusController extends BaseController {
         T minimalOrRepresentation = factory.get();
 
         // check for valid format header to produce content accordingly
-        MediaType contentTypeHeaderInput;  // to prepare header input if this header is needed later
-        if (StringUtils.isBlank(accept) || accept.equals("*/*")) {  // "*/*" is standard for "any mime-type"
-            // assign default if no header was set
-            contentTypeHeaderInput = MediaType.APPLICATION_JSON;
-        } else {
-            // if header was set process it
-            MediaType mediaType = MediaType.parseMediaType(accept);
-
-            if (mediaType.isCompatibleWith(MediaType.APPLICATION_JSON)) {
-                contentTypeHeaderInput = MediaType.APPLICATION_JSON;
-            } else if (mediaType.isCompatibleWith(MediaType.APPLICATION_XML)) {
-                contentTypeHeaderInput = MediaType.APPLICATION_XML;
-            } else {
-                throw new InvalidApiParameterException("Wrong Content-Type header in request");
-            }
-        }
+        MediaType contentType = resolveContentType(accept);  // to prepare header input if this header is needed later
 
         Optional<OriginalVersion<EhrStatus>> ehrStatus = ehrService.getEhrStatusAtVersion(ehrId, ehrStatusId, version);
         if (minimalOrRepresentation != null) {
             // when this "if" is true the following casting can be executed and data manipulated by reference (handled by temporary variable)
-            EhrStatusResponseData objByReference = (EhrStatusResponseData) minimalOrRepresentation;
+            EhrStatusResponseData objByReference = minimalOrRepresentation;
 
             if (ehrStatus.isPresent()) {
                 objByReference.setArchetypeNodeId(ehrStatus.get().getData().getArchetypeNodeId());
@@ -261,7 +245,7 @@ public class OpenehrEhrStatusController extends BaseController {
         for (String header : headerList) {
             switch (header) {
                 case CONTENT_TYPE:
-                    respHeaders.setContentType(contentTypeHeaderInput);
+                    respHeaders.setContentType(contentType);
                     break;
                 case LOCATION:
                     try {
@@ -277,6 +261,8 @@ public class OpenehrEhrStatusController extends BaseController {
                 case LAST_MODIFIED:
                     ehrStatus.ifPresent(ehrStatusOriginalVersion -> respHeaders.setLastModified(ehrStatusOriginalVersion.getCommitAudit().getTimeCommitted().getMagnitude()));
                     break;
+                default:
+                    throw new IllegalArgumentException("Unsupported response header: " + header);
             }
         }
 
