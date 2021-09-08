@@ -37,6 +37,11 @@ public class SegmentedPath {
 
         for (String segment : segmentedPathExpression) {
 
+            if (segment.startsWith("/feeder_audit")) {
+                stringBuilder.append("/feeder_audit"); //sub-field are undecidable including type in other_details
+                break;
+            }
+
             if (segment.startsWith("/composition")||
                     segment.startsWith("/value")||
                     (!segment.contains("[") && !segment.contains("]")) ||

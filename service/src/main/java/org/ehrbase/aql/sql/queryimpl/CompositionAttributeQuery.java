@@ -36,6 +36,7 @@ import org.ehrbase.aql.sql.queryimpl.attribute.eventcontext.EventContextResolver
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.service.IntrospectService;
 import org.jooq.Field;
+import org.jooq.impl.DSL;
 
 import static org.ehrbase.aql.sql.QueryProcessor.NIL_TEMPLATE;
 
@@ -108,6 +109,9 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
                 throw new IllegalArgumentException("INTERNAL: the following class cannot be resolved for AQL querying:" + (pathResolver.classNameOf(variableDefinition.getIdentifier())));
         }
 
+        if (fieldResolutionContext.isUsingSetReturningFunction())
+            retField = DSL.field(DSL.select(retField));
+
         QualifiedAqlField aqlField = new QualifiedAqlField(retField);
 
         return new MultiFields(variableDefinition, aqlField, templateId);
@@ -116,6 +120,15 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
     @Override
     public MultiFields whereField(String templateId,String identifier, I_VariableDefinition variableDefinition) {
         return makeField(templateId, identifier, variableDefinition, Clause.WHERE);
+    }
+
+    /**
+     * true if the expression contains path and then use ENTRY as primary from table
+     *
+     * @return
+     */
+    public boolean useFromEntry() {
+        return pathResolver.hasPathExpression();
     }
 
     public boolean isCompositionAttributeItemStructure(String templateId, String identifier){
