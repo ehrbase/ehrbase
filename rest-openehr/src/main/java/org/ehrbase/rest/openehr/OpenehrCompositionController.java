@@ -452,7 +452,7 @@ public class OpenehrCompositionController extends BaseController {
         // create and supplement headers with data depending on which headers are requested
         HttpHeaders respHeaders = new HttpHeaders();
         for (String header : headerList) {
-            switch (header) {   // no default because everything else can be ignored
+            switch (header) {
                 case LOCATION:
                     respHeaders.setLocation(uri);
                     break;
@@ -463,6 +463,8 @@ public class OpenehrCompositionController extends BaseController {
                     // TODO should be VERSION.commit_audit.time_committed.value which is not implemented yet - mock for now
                     respHeaders.setLastModified(123124442);
                     break;
+                default:
+                    // Ignore header
             }
         }
 

@@ -137,7 +137,7 @@ public class OpenehrQueryController extends BaseController {
                                                             @ApiParam(value = "AQL query to be executed", required = true) @RequestBody String query,
                                                             HttpServletRequest request) {
 
-        log.debug("Got following input: " + query);
+        log.debug("Got following input: {}", query);
 
         //get the query and parameters if any
         Gson gson = new GsonBuilder().create();

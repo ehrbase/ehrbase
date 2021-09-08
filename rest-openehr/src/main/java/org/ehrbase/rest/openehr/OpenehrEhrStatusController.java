@@ -262,7 +262,7 @@ public class OpenehrEhrStatusController extends BaseController {
                     ehrStatus.ifPresent(ehrStatusOriginalVersion -> respHeaders.setLastModified(ehrStatusOriginalVersion.getCommitAudit().getTimeCommitted().getMagnitude()));
                     break;
                 default:
-                    throw new IllegalArgumentException("Unsupported response header: " + header);
+                    // Ignore header
             }
         }
 

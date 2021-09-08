@@ -185,9 +185,9 @@ public abstract class BaseController {
         final CompositionFormat compositionFormat;
 
         MediaType mediaType = resolveContentType(contentType);
-        if (mediaType.equals(MediaType.APPLICATION_XML)) {
+        if (mediaType.isCompatibleWith(MediaType.APPLICATION_XML)) {
             compositionFormat = CompositionFormat.XML;
-        } else if (mediaType.equals(MediaType.APPLICATION_JSON)) {
+        } else if (mediaType.isCompatibleWith(MediaType.APPLICATION_JSON)) {
             compositionFormat = CompositionFormat.JSON;
         } else {
             throw new NotAcceptableException("Only compositions in XML or JSON are supported at the moment");

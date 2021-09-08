@@ -316,7 +316,7 @@ public class OpenehrEhrController extends BaseController {
                     respHeaders.setLastModified(123124442);
                     break;
                 default:
-                    break;
+                    // Ignore header
             }
         }
 
