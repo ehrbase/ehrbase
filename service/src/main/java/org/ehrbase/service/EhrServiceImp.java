@@ -43,10 +43,8 @@ import org.ehrbase.response.ehrscape.EhrStatusDto;
 import org.ehrbase.response.ehrscape.StructuredString;
 import org.ehrbase.response.ehrscape.StructuredStringFormat;
 import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
+import org.ehrbase.util.PartyUtils;
 import org.jooq.DSLContext;
-import org.jooq.Record;
-import org.jooq.Result;
-import org.jooq.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +52,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -72,11 +71,17 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     public static final String DESCRIPTION = "description";
     private Logger logger = LoggerFactory.getLogger(getClass());
     private final ValidationService validationService;
+    private UUID emptyParty;
 
     @Autowired
     public EhrServiceImp(KnowledgeCacheService knowledgeCacheService, ValidationService validationService, DSLContext context, ServerConfig serverConfig) {
         super(knowledgeCacheService, context, serverConfig);
         this.validationService = validationService;
+    }
+
+    @PostConstruct
+    public void init() {
+        emptyParty = new PersistedPartyProxy(getDataAccess()).getOrCreate(new PartySelf());
     }
 
     @Override
@@ -106,10 +111,16 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         }
         status.setUid(new HierObjectId(UUID.randomUUID().toString()));  // server sets own new UUID in both cases (new or given status)
 
-        UUID subjectUuid = new PersistedPartyProxy(getDataAccess()).getOrCreate(status.getSubject());
+        UUID subjectUuid;
+        if (PartyUtils.isEmpty(status.getSubject())) {
+            subjectUuid = emptyParty;
+        } else {
+            subjectUuid = new PersistedPartyProxy(getDataAccess()).getOrCreate(status.getSubject());
 
-        if (status.getSubject().getExternalRef() != null && I_EhrAccess.checkExist(getDataAccess(), subjectUuid))
-            throw new StateConflictException("Specified party has already an EHR set (partyId=" + subjectUuid + ")");
+            if (I_EhrAccess.checkExist(getDataAccess(), subjectUuid)) {
+                throw new StateConflictException("Specified party has already an EHR set (partyId=" + subjectUuid + ")");
+            }
+        }
 
         UUID systemId = getSystemUuid();
         UUID committerId = getUserUuid();

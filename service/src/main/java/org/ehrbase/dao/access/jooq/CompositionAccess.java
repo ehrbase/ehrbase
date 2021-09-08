@@ -45,6 +45,7 @@ import org.ehrbase.jooq.pg.tables.records.*;
 import org.ehrbase.serialisation.dbencoding.rmobject.FeederAuditEncoding;
 import org.ehrbase.serialisation.dbencoding.rmobject.LinksEncoding;
 import org.ehrbase.service.IntrospectService;
+import org.ehrbase.util.PartyUtils;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import org.jooq.Record;
@@ -90,8 +91,6 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         String territoryCode = composition.getTerritory().getCodeString();
         String languageCode = composition.getLanguage().getCodeString();
 
-        UUID composerId = seekComposerId(composition.getComposer());
-
         compositionRecord = context.newRecord(COMPOSITION);
         compositionRecord.setId(UUID.randomUUID());
 
@@ -99,8 +98,9 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
         compositionRecord.setLanguage(seekLanguageCode(languageCode));
         compositionRecord.setActive(true);
-        compositionRecord.setComposer(composerId);
         compositionRecord.setEhrId(ehrId);
+
+        compositionRecord.setComposer(seekComposerId(composition.getComposer()));
 
         //new Locatable attributes
         if (composition.getFeederAudit() != null)
@@ -653,7 +653,11 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
      * @throws IllegalArgumentException when composer in composition is not supported
      */
     private UUID seekComposerId(PartyProxy composer) {
-        return new PersistedPartyProxy(this).getOrCreate(composer);
+        if (PartyUtils.isEmpty(composer)) {
+            return new PersistedPartyProxy(this).create(composer);
+        } else {
+            return new PersistedPartyProxy(this).getOrCreate(composer);
+        }
     }
 
     /**
