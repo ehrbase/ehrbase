@@ -24,6 +24,7 @@ package org.ehrbase.aql.compiler;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNodeImpl;
+import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.parser.AqlBaseVisitor;
 import org.ehrbase.aql.parser.AqlParser;
@@ -152,21 +153,21 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
         assert (ctx.OPEN_PAR().getText().equals("("));
         assert (ctx.CLOSE_PAR().getText().equals(")"));
         List<String> codesList = new ArrayList<>();
-        final String operationId = ctx.STRING(0).getText();
-        final String adapter = ctx.STRING(1).getText();
-        final String parametters = ctx.STRING(2).getText();
-        if (operationId.replace("'", "").equals("expand")) {
+        final String operation = ctx.STRING(0).getText().replace("'", "");
+        // final String adapter = ctx.STRING(1).getText();
+        final String parameters = ctx.STRING(2).getText().replace("'", "");
+        if (StringUtils.equals(operation, "expand")) {
             try {
 
-                List<DvCodedText> expansion = tsAdapter.expandWithParameters(parametters, operationId);
+                List<DvCodedText> expansion = tsAdapter.expandWithParameters(parameters, operation);
                 expansion.forEach((DvCodedText dvCode) -> codesList.add("'" + dvCode.getDefiningCode().getCodeString() + "'"));
                 invokeExpr.addAll(codesList);
             } catch (Exception e) {
                 throw new IllegalArgumentException("Terminology server operation failed:'" + e.getMessage() + "'");
             }
-        } else if (operationId.replace("'", "").equals("validate")) {
+        } else if (StringUtils.equals(operation, "validate")) {
             try {
-                Boolean expansion = tsAdapter.validate(parametters);
+                Boolean expansion = tsAdapter.validate(parameters);
                 invokeExpr.add(expansion);
             } catch (Exception e) {
                 throw new IllegalArgumentException("Terminology server operation failed:'" + e.getMessage() + "'");
@@ -215,7 +216,7 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
             } else if (tree instanceof AqlParser.IdentifiedPathContext) {
                 parsePathContext((AqlParser.IdentifiedPathContext) tree);
             } else if (tree instanceof AqlParser.IdentifiedExprContext) {
-                visitIdentifiedExpr((AqlParser.IdentifiedExprContext)tree);
+                visitIdentifiedExpr((AqlParser.IdentifiedExprContext) tree);
             }
         }
 

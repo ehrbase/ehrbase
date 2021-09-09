@@ -25,6 +25,7 @@ import com.nedap.archie.rm.support.identification.TerminologyId;
 import net.minidev.json.JSONArray;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
@@ -153,6 +154,12 @@ public class FhirTerminologyServerR4AdaptorImpl implements I_OpenehrTerminologyS
         request.setHeader(HttpHeaders.ACCEPT, FHIR_JSON_MEDIA_TYPE);
 
         HttpResponse response = httpClient.execute(request);
-        return EntityUtils.toString(response.getEntity());
+        String responseBody = EntityUtils.toString(response.getEntity());
+        int statusCode = response.getStatusLine().getStatusCode();
+        if (statusCode != HttpStatus.SC_OK) {
+            throw new InternalServerException("Error response received from FHIR terminology server. HTTP status: " + statusCode + ". Body: " + responseBody);
+        }
+
+        return responseBody;
     }
 }
