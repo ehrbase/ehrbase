@@ -1,4 +1,4 @@
-name: Build & Deploy Docker Image (latest)
+name: Build & Deploy Docker Image (version-tag)
 
 on:
   push:
