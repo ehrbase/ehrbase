@@ -38,25 +38,25 @@ Use one of below commands to update the version in all POMs at once:
 
 
 - bump **major version** (suitable for releases with backwards incompatible changes - ie. 0.14.0 --> 1.0.0)
-    ```
-    mvn build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.nextMajorVersion}.0.0 versions:commit
-    ```
+```
+mvn build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.nextMajorVersion}.0.0 versions:commit
+```
 
 - bump **minor version** (i.e. 0.14.0 --> 0.15.0)
-    ```
-    mvn build-helper:parse-version versions:set \
-        -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.nextMinorVersion}.0 \
-        versions:commit
-    ```
+```
+mvn build-helper:parse-version versions:set \
+    -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.nextMinorVersion}.0 \
+    versions:commit
+```
 
 
 - bump **patch version** (i.e. 0.14.0 --> 0.14.1)
-    ```
-    mvn build-helper:parse-version \
-      versions:set \
-      -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion} \
-      versions:commit
-    ```
+```
+mvn build-helper:parse-version \
+  versions:set \
+  -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion} \
+  versions:commit
+```
 
 - [ ] done 
     
