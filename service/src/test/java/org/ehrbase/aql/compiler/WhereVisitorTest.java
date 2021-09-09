@@ -18,17 +18,24 @@
 
 package org.ehrbase.aql.compiler;
 
+import com.nedap.archie.rm.datatypes.CodePhrase;
+import com.nedap.archie.rm.datavalues.DvCodedText;
+import com.nedap.archie.rm.support.identification.TerminologyId;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.I_VariableDefinitionHelper;
 import org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl;
+import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class WhereVisitorTest {
 
@@ -212,5 +219,53 @@ public class WhereVisitorTest {
         assertThat(whereExpression).size().isEqualTo(2);
 
 //        assertEquals(whereExpression.toString(), "[(, (, e::ehr_id/value, =, '1111', AND, e::ehr_id/value, =, '2222', ), OR, (, e::ehr_id/value, =, '333', OR, e::ehr_id/value, =, '444', ), )]");
+    }
+
+    @Test
+    public void testTerminologyWhereStatement() {
+        FhirTerminologyServerR4AdaptorImpl mock = mock(FhirTerminologyServerR4AdaptorImpl.class);
+        List<DvCodedText> result = new ArrayList<>();
+        TerminologyId terminologyId = new TerminologyId("http://fhir.de/CodeSystem/dimdi/atc");
+        result.add(new DvCodedText("Heparingruppe", new CodePhrase(terminologyId, "B01AB")));
+        result.add(new DvCodedText("Heparin", new CodePhrase(terminologyId, "B01AB01")));
+        result.add(new DvCodedText("Antithrombin III, Antithrombin alfa", new CodePhrase(terminologyId, "B01AB02")));
+        result.add(new DvCodedText("Dalteparin", new CodePhrase(terminologyId, "B01AB04")));
+        result.add(new DvCodedText("Nadroparin", new CodePhrase(terminologyId, "B01AB06")));
+
+        when(mock.expandWithParameters("https: //www.netzwerk-universitaetsmedizin.de/fhir/ValueSet/anticoagulants-atc", "expand"))
+                .thenReturn(result);
+
+        WhereVisitor cut = new WhereVisitor(mock);
+        String aql = "select  a_a/data[at0002]/items[at0022] " +
+                "from EHR e " +
+                "contains COMPOSITION a " +
+                "contains EVALUATION a_a[openEHR-EHR-EVALUATION.gender.v1] " +
+                "WHERE a_a/data[at0002]/items[at0022]/value/defining_code/code_string matches{TERMINOLOGY('expand', 'hl7.org/fhir/R4', 'https: //www.netzwerk-universitaetsmedizin.de/fhir/ValueSet/anticoagulants-atc')}";
+        ParseTree tree = QueryHelper.setupParseTree(aql);
+        cut.visit(tree);
+
+        List<Object> whereExpression = cut.getWhereExpression();
+        assertThat(whereExpression).size().isEqualTo(13);
+    }
+
+    @Test
+    public void testTerminologyWhereStatementNotSupported() {
+        FhirTerminologyServerR4AdaptorImpl mock = mock(FhirTerminologyServerR4AdaptorImpl.class);
+
+        when(mock.expandWithParameters("http://hl7.org/fhir/ValueSet/animal-breeds", "expand"))
+                .thenThrow(new InternalServerException("Terminology server operation failed:'Error response received from FHIR terminology server. " +
+                        "HTTP status: 404. Body: {\\\"resourceType\\\":\\\"OperationOutcome\\\",\\\"issue\\\":[{\\\"severity\\\":\\\"error\\\",\\\"code\\\":\\\"not-found\\\",\\\"diagnostics\\\":\\\"" +
+                        "[5389b21a-d873-41d0-8c79-4390796c40bc]: Could not find value set http://hl7.org/fhir/ValueSet/animal-breeds. If this is an implicit value set please make sure the url is correct. " +
+                        "Implicit values sets for different code systems are specified in https://www.hl7.org/fhir/terminologies-systems.html .\\\"}]}'"));
+
+        WhereVisitor cut = new WhereVisitor(mock);
+        String aql = "select  a_a/data[at0002]/items[at0022] " +
+                "from EHR e " +
+                "contains COMPOSITION a " +
+                "contains EVALUATION a_a[openEHR-EHR-EVALUATION.gender.v1] " +
+                "WHERE a_a/data[at0002]/items[at0022]/value/defining_code/code_string matches{TERMINOLOGY('expand', 'hl7.org/fhir/R4', 'http://hl7.org/fhir/ValueSet/animal-breeds')}";
+        ParseTree tree = QueryHelper.setupParseTree(aql);
+
+        Assert.assertThrows(IllegalArgumentException.class, () -> cut.visit(tree));
     }
 }
