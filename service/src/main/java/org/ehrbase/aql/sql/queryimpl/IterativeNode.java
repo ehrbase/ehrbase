@@ -26,6 +26,7 @@ import java.util.*;
 
 import static org.ehrbase.aql.sql.queryimpl.IterativeNodeConstants.ENV_AQL_ARRAY_DEPTH;
 import static org.ehrbase.aql.sql.queryimpl.IterativeNodeConstants.ENV_AQL_ARRAY_IGNORE_NODE;
+import static org.ehrbase.aql.sql.queryimpl.QueryImplConstants.AQL_NODE_ITERATIVE_MARKER;
 
 /**
  * Created by christian on 5/9/2018.
@@ -100,9 +101,9 @@ public class IterativeNode implements IIterativeNode {
 
         for (Integer pos : clipPos) {
             if (pos == resultingPath.size())
-                resultingPath.add(QueryImplConstants.AQL_NODE_ITERATIVE_MARKER);
+                resultingPath.add(AQL_NODE_ITERATIVE_MARKER);
             else if (!resultingPath.get(pos).equals(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER))
-                    resultingPath.set(pos, QueryImplConstants.AQL_NODE_ITERATIVE_MARKER);
+                    resultingPath.set(pos, AQL_NODE_ITERATIVE_MARKER);
         }
         return resultingPath;
 
@@ -190,4 +191,27 @@ public class IterativeNode implements IIterativeNode {
             depth = 1;
     }
 
+    public List<String> iterativeForArrayAttributeValues(List<String> itemPathArray) {
+        List<String> resultingPath = new ArrayList<>();
+
+        for (String node : itemPathArray) {
+            if (node.contains("feeder_system_item_ids")){
+                List<String> faItems = Arrays.asList(node.split(",").clone());
+                if (faItems.size() > 2){
+                    //insert a iterative marker for function resolution
+                    for (String faNode: faItems) {
+                        resultingPath.add(faNode);
+                        if (faNode.equals("feeder_system_item_ids")){
+                            resultingPath.add(AQL_NODE_ITERATIVE_MARKER);
+                        }
+                    }
+                }
+                else
+                    resultingPath.add(node);
+            }
+            else
+                resultingPath.add(node);
+        }
+        return resultingPath;
+    }
 }

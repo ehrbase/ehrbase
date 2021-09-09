@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.ehrbase.aql.sql.queryimpl.attribute.GenericJsonPath.OTHER_DETAILS;
 import static org.ehrbase.aql.sql.queryimpl.attribute.GenericJsonPath.OTHER_CONTEXT;
 import static org.ehrbase.serialisation.dbencoding.CompositionSerializer.TAG_UID;
 
@@ -155,6 +156,26 @@ public class EntryAttributeMapper {
         if (("/"+fields.get(0)).equals(TAG_UID)){
             fields.add(1, SLASH_VALUE);
         }
+
+        boolean inItemStruct = false;
+        boolean inNameAttribute = false;
+
+        for (int i = 0; i < fields.size(); i++) {
+            if (fields.get(i).contains("[") && !fields.get(i).startsWith(OTHER_DETAILS)) {
+                fields.set(i, "/"+fields.get(i));
+                inItemStruct = true;
+            }
+            if (fields.get(i).equals(NAME)){
+                inNameAttribute = true;
+            }
+            if (fields.get(i).equals(VALUE) && inItemStruct){
+                fields.set(i, (inNameAttribute ? "" : "/")+fields.get(i));
+                if (inNameAttribute)
+                    inNameAttribute = false;
+                inItemStruct = false;
+            }
+        }
+
         return fields;
     }
 

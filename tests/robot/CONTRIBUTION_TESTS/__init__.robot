@@ -24,7 +24,7 @@ Documentation    CONTRIBUTION SERVICE TEST SUITE
 ...
 ...              test documentation: https://github.com/ehrbase/ehrbase/blob/develop/doc/conformance_testing/EHR_CONTRIBUTION.md
 
-Resource    ${CURDIR}${/}../_resources/suite_settings.robot
+Resource    ../_resources/suite_settings.robot
 
 Suite Setup  startup SUT
 Suite Teardown  shutdown SUT

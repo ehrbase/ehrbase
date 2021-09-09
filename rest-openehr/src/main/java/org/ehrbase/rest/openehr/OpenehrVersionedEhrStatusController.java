@@ -5,7 +5,6 @@ import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.ehr.VersionedEhrStatus;
 import com.nedap.archie.rm.generic.RevisionHistory;
 import io.swagger.annotations.*;
-import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -72,7 +71,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController {
         VersionedObjectResponseData<EhrStatus> response = new VersionedObjectResponseData<>(versionedEhrStatus);
 
         HttpHeaders respHeaders = new HttpHeaders();
-        respHeaders.setContentType(getMediaType(accept));
+        respHeaders.setContentType(resolveContentType(accept));
 
         return ResponseEntity.ok().headers(respHeaders).body(response);
     }
@@ -102,7 +101,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController {
         RevisionHistoryResponseData response = new RevisionHistoryResponseData(revisionHistory);
 
         HttpHeaders respHeaders = new HttpHeaders();
-        respHeaders.setContentType(getMediaType(accept));
+        respHeaders.setContentType(resolveContentType(accept));
 
         return ResponseEntity.ok().headers(respHeaders).body(response);
     }
@@ -150,7 +149,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController {
         OriginalVersionResponseData<EhrStatus> originalVersionResponseData = new OriginalVersionResponseData<>(ehrStatusOriginalVersion.get(), contributionDto);
 
         HttpHeaders respHeaders = new HttpHeaders();
-        respHeaders.setContentType(getMediaType(accept));
+        respHeaders.setContentType(resolveContentType(accept));
 
         return ResponseEntity.ok().headers(respHeaders).body(originalVersionResponseData);
     }
@@ -207,28 +206,8 @@ public class OpenehrVersionedEhrStatusController extends BaseController {
         OriginalVersionResponseData<EhrStatus> originalVersionResponseData = new OriginalVersionResponseData<>(ehrStatusOriginalVersion.get(), contributionDto);
 
         HttpHeaders respHeaders = new HttpHeaders();
-        respHeaders.setContentType(getMediaType(accept));
+        respHeaders.setContentType(resolveContentType(accept));
 
         return ResponseEntity.ok().headers(respHeaders).body(originalVersionResponseData);
-    }
-
-    private MediaType getMediaType(@RequestHeader(value = HttpHeaders.ACCEPT, required = false) @ApiParam("Client should specify expected response format") String accept) {
-        MediaType contentTypeHeaderInput;  // to prepare header input if this header is needed later
-        if (StringUtils.isBlank(accept) || accept.equals("*/*")) {  // "*/*" is standard for "any mime-type"
-            // assign default if no header was set
-            contentTypeHeaderInput = MediaType.APPLICATION_JSON;
-        } else {
-            // if header was set process it
-            MediaType mediaType = MediaType.parseMediaType(accept);
-
-            if (mediaType.isCompatibleWith(MediaType.APPLICATION_JSON)) {
-                contentTypeHeaderInput = MediaType.APPLICATION_JSON;
-            } else if (mediaType.isCompatibleWith(MediaType.APPLICATION_XML)) {
-                contentTypeHeaderInput = MediaType.APPLICATION_XML;
-            } else {
-                throw new InvalidApiParameterException("Wrong Content-Type header in request");
-            }
-        }
-        return contentTypeHeaderInput;
     }
 }

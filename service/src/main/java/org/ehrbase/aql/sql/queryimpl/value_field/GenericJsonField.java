@@ -8,10 +8,7 @@ import org.jooq.*;
 import org.jooq.impl.DSL;
 
 import java.sql.Timestamp;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 
 import static org.ehrbase.aql.sql.queryimpl.AqlRoutines.*;
@@ -98,6 +95,8 @@ public class GenericJsonField extends RMObjectAttribute {
             List<String> tokenized = Arrays.asList(jsonpathParameters(jsonPath.get()));
 
             if (tokenized.contains(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER)) {
+                //replace the ITERATIVE_MARKERs by default index
+                Collections.replaceAll(tokenized, ITERATIVE_MARKER, "'0'");
                 jsonField = new FunctionBasedNodePredicateCall(fieldContext, tokenized).resolve(function, tableFields);
             }
             else if (tokenized.contains(ITERATIVE_MARKER))
@@ -172,6 +171,7 @@ public class GenericJsonField extends RMObjectAttribute {
         GenericJsonPath genericJsonPath = new GenericJsonPath(jsonPath);
 
         this.jsonPath = Optional.of(genericJsonPath.jqueryPath());
+        fieldContext.setUsingSetReturningFunction(genericJsonPath.isIterative());
 
         return this;
     }

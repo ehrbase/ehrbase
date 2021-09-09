@@ -38,7 +38,8 @@ Documentation   OPT1.4 integration tests
 ...                 3. Invoke the upload service with the same OPT as in 1.
 ...                 4. The result should be negative (the server rejected the OPT)
 Metadata        TOP_TEST_SUITE    EHR_STATUS
-Resource        ${CURDIR}${/}../_resources/suite_settings.robot
+
+Resource        ../_resources/keywords/template_opt1.4_keywords.robot
 
 # Suite Setup  startup OPT SUT
 Suite Teardown  Delete All Templates

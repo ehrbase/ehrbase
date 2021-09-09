@@ -24,7 +24,7 @@ Metadata    Updated    2021.06.10
 
 Documentation    https://github.com/ehrbase/ehrbase/blob/develop/doc/conformance_testing/EHR.md#c3-set-ehr-modifiable
 
-Resource   ${EXECDIR}/robot/_resources/suite_settings.robot
+# Resource   ${EXECDIR}/robot/_resources/suite_settings.robot
 
 # Suite Setup    startup SUT
 # Suite Teardown    shutdown SUT

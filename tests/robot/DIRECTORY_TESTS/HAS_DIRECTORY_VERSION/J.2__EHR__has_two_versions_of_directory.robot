@@ -33,7 +33,10 @@ Documentation    Alternative flow 1: has directory from existent EHR that has tw
 ...     Postconditions:
 ...         None
 Metadata        TOP_TEST_SUITE    DIRECTORY
-Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
+
+Resource        ../../_resources/keywords/directory_keywords.robot
+Resource        ../../_resources/keywords/ehr_keywords.robot
+Resource        ../../_resources/keywords/composition_keywords.robot
 
 #Suite Setup  startup SUT
 # Test Setup  start openehr server

@@ -38,7 +38,8 @@ Documentation   C.1.a) Main flow: Get status of an existing EHR
 ...                    b) has correct value for is_modifiable
 ...                    c) has correct value for is_queryable
 Metadata        TOP_TEST_SUITE    EHR_STATUS
-Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
+
+Resource        ../../_resources/keywords/ehr_keywords.robot
 
 # Suite Setup  startup SUT
 # Suite Teardown  shutdown SUT

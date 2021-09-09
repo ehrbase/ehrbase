@@ -23,7 +23,8 @@ Metadata    Created    2019.03.03
 
 Documentation   B.3.b) Alternative flow 1: Get existing EHR by subject_id
 Metadata        TOP_TEST_SUITE    EHR_SERVICE
-Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
+
+Resource        ../../_resources/keywords/ehr_keywords.robot
 
 # Suite Setup  startup SUT
 # Suite Teardown  shutdown SUT

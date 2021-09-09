@@ -1,4 +1,8 @@
-FROM postgres:13.3-alpine AS builder
+# syntax=docker/dockerfile:1
+FROM --platform=$BUILDPLATFORM postgres:13.3-alpine AS builder
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+RUN echo "Running on $BUILDPLATFORM, building EHRbase for $TARGETPLATFORM" > /log
 
 # SHOW POSTGRES SERVER AND CLIENT VERSION
 RUN postgres -V && \
@@ -61,13 +65,13 @@ RUN mvn compile dependency:go-offline \
 
 # START DB AND COMPILE EHRBASE
 RUN su - postgres -c "pg_ctl -D ${PGDATA} -w start" && \
-    mvn compile && \
+    mvn compile -Dmaven.test.skip && \
     su - postgres -c "pg_ctl -D ${PGDATA} -w stop"
 
 # START DB AND PACKAGE EHRBASE .JAR
 RUN ls -la; \
     su - postgres -c "pg_ctl -D ${PGDATA} -w start" && \
-    mvn package -Dmaven.javadoc.skip=true -Djacoco.skip=true && \
+    mvn package -Dmaven.javadoc.skip=true -Djacoco.skip=true -Dmaven.test.skip && \
     su - postgres -c "pg_ctl -D ${PGDATA} -w stop"
 
 # WRITE EHRBASE VERSION TO A FILE
@@ -84,7 +88,7 @@ RUN ls -la; \
 
 
 # FINAL EHRBASE IMAGE WITH JRE AND JAR ONLY
-FROM openjdk:11-jre-slim AS final
+FROM --platform=$BUILDPLATFORM openjdk:11-jre-slim AS final
 COPY --from=builder /tmp/ehrbase.jar .
 COPY --from=builder /tmp/ehrbase_version .
 COPY .docker_scripts/docker-entrypoint.sh .
