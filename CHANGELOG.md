@@ -14,7 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - `Accept` header with multiple MIME types causes an IllegalArgumentException (see: https://github.com/ehrbase/ehrbase/pull/583)
+- Composition version Uid schema in EhrScape API (see: https://github.com/ehrbase/ehrbase/pull/520)
 - Terminology Service calls from within AQL queries does not work (see: https://github.com/ehrbase/ehrbase/pull/572)
+
 
 ## [0.17.1] (beta)
 
