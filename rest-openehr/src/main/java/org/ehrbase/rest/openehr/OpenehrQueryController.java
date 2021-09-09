@@ -60,7 +60,7 @@ import java.util.Set;
 
 @Api(tags = "Query")
 @RestController
-@RequestMapping(path = "/rest/openehr/v1/query", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(path = "${openehr-api.context-path:/rest/openehr}/v1/query", produces = MediaType.APPLICATION_JSON_VALUE)
 public class OpenehrQueryController extends BaseController {
 
     final static Logger log = LoggerFactory.getLogger(OpenehrQueryController.class);

@@ -22,7 +22,7 @@ import java.util.Optional;
 
 @Api(tags = "Stored Query")
 @RestController
-@RequestMapping(path = "/rest/openehr/v1/definition/query", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@RequestMapping(path = "${openehr-api.context-path:/rest/openehr}/v1/definition/query", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrDefinitionQueryController extends BaseController {
 
     final static Logger log = LoggerFactory.getLogger(OpenehrDefinitionQueryController.class);

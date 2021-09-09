@@ -49,7 +49,7 @@ import java.util.function.Supplier;
  */
 @Api(tags = {"Template"})
 @RestController
-@RequestMapping(path = "/rest/openehr/v1/definition/template", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@RequestMapping(path = "${openehr-api.context-path:/rest/openehr}/v1/definition/template", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrTemplateController extends BaseController {
 
     private final TemplateService templateService;

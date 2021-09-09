@@ -71,7 +71,7 @@ import io.swagger.annotations.ResponseHeader;
  */
 @Api(tags = "Directory")
 @RestController
-@RequestMapping(path = "/rest/openehr/v1/ehr")
+@RequestMapping(path = "${openehr-api.context-path:/rest/openehr}/v1/ehr")
 public class OpenehrDirectoryController extends BaseController {
 
     private final FolderService folderService;
