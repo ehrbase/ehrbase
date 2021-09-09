@@ -64,7 +64,7 @@ public interface I_FolderAccess extends I_SimpleCRUD {
      * Get the items references stored as a part of the given {@link  com.nedap.archie.rm.directory.Folder}
      * @return items of the {@link  com.nedap.archie.rm.directory.Folder} that corresponds to this {@link  I_FolderAccess}
      */
-    List<ObjectRef<?>> getItems();
+    List<ObjectRef> getItems();
 
     /**
      * Builds the {@link I_FolderAccess} for persisting the {@link  com.nedap.archie.rm.directory.Folder} provided as param.
