@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Changed
+- Removes SELECT statement when PartyProxy object is empty (see: https://github.com/ehrbase/ehrbase/pull/581)
 
 ### Fixed
 - Terminology Service calls from within AQL queries does not work (see: https://github.com/ehrbase/ehrbase/pull/572)

@@ -37,11 +37,13 @@ import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.jooq.AttestationAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyRef;
+import org.ehrbase.jooq.pg.Routines;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.EhrStatusDto;
 import org.ehrbase.response.ehrscape.StructuredString;
 import org.ehrbase.response.ehrscape.StructuredStringFormat;
 import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
+import org.ehrbase.util.PartyUtils;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +52,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -59,17 +62,26 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.ehrbase.jooq.pg.Routines.partyUsage;
+import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
+
 @Service(value = "ehrService")
 @Transactional()
 public class EhrServiceImp extends BaseServiceImp implements EhrService {
     public static final String DESCRIPTION = "description";
     private Logger logger = LoggerFactory.getLogger(getClass());
     private final ValidationService validationService;
+    private UUID emptyParty;
 
     @Autowired
     public EhrServiceImp(KnowledgeCacheService knowledgeCacheService, ValidationService validationService, DSLContext context, ServerConfig serverConfig) {
         super(knowledgeCacheService, context, serverConfig);
         this.validationService = validationService;
+    }
+
+    @PostConstruct
+    public void init() {
+        emptyParty = new PersistedPartyProxy(getDataAccess()).getOrCreate(new PartySelf());
     }
 
     @Override
@@ -99,10 +111,16 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         }
         status.setUid(new HierObjectId(UUID.randomUUID().toString()));  // server sets own new UUID in both cases (new or given status)
 
-        UUID subjectUuid = new PersistedPartyProxy(getDataAccess()).getOrCreate(status.getSubject());
+        UUID subjectUuid;
+        if (PartyUtils.isEmpty(status.getSubject())) {
+            subjectUuid = emptyParty;
+        } else {
+            subjectUuid = new PersistedPartyProxy(getDataAccess()).getOrCreate(status.getSubject());
 
-        if (status.getSubject().getExternalRef() != null && I_EhrAccess.checkExist(getDataAccess(), subjectUuid))
-            throw new StateConflictException("Specified party has already an EHR set (partyId=" + subjectUuid + ")");
+            if (I_EhrAccess.checkExist(getDataAccess(), subjectUuid)) {
+                throw new StateConflictException("Specified party has already an EHR set (partyId=" + subjectUuid + ")");
+            }
+        }
 
         UUID systemId = getSystemUuid();
         UUID committerId = getUserUuid();
@@ -424,6 +442,19 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
         ehrAccess.adminDeleteEhr();
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Override
+    public void adminPurgePartyIdentified() {
+        getDataAccess().getContext().deleteFrom(PARTY_IDENTIFIED).where(partyUsage(PARTY_IDENTIFIED.ID).eq(0L)).execute();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Override
+    public void adminDeleteOrphanHistory() {
+        Routines.deleteOrphanHistory(getDataAccess().getContext().configuration());
+    }
+
 
     @Override
     public UUID getSubjectUuid(String ehrId) {
