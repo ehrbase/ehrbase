@@ -75,7 +75,7 @@ public class CompositionController extends BaseController {
 
         CompositionWriteRestResponseData responseData = new CompositionWriteRestResponseData();
         responseData.setAction(Action.CREATE);
-        responseData.setCompositionUid(compositionId + "::" + compositionService.getServerConfig().getNodename() + "::" + 1);
+        responseData.setCompositionUid(compositionUuid + "::" + compositionService.getServerConfig().getNodename() + "::" + 1);
         responseData.setMeta(buildMeta(responseData.getCompositionUid()));
         return ResponseEntity.ok(responseData);
     }
