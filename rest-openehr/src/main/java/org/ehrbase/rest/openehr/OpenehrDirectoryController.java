@@ -442,7 +442,7 @@ public class OpenehrDirectoryController extends BaseController {
         DirectoryResponseData body;
 
         if (prefer != null && prefer.equals(RETURN_REPRESENTATION)) {
-            headers.setContentType(extractMediaType(accept));
+            headers.setContentType(resolveContentType(accept, MediaType.APPLICATION_XML));
             body = buildResponse(folderDto);
             successStatus = getSuccessStatus(method);
         } else {
@@ -525,7 +525,7 @@ public class OpenehrDirectoryController extends BaseController {
         // TODO: Change column 'directory' in EHR to String with ObjectVersionId
         String directoryId = String.format(
                 "%s::%s::%d",
-                directoryUuid.toString(),
+                directoryUuid,
                 this.ehrService.getServerConfig().getNodename(),
                 latestVersion
         );
