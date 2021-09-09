@@ -17,9 +17,7 @@ mvn clean package    # remember to start ehrbase DB before
 ```
 git checkout -b release/v0.15.0
 ```
-NOTE: exact syntax is important (i.e. `v` before version number). Otherwise, if branch name does not match properly, build rules on Docker Hub won't apply, when you push your commit.
-
-![docker hub build rules](img/release_dockerhub_autobuilds.png)
+NOTE: exact syntax is important (i.e. `v` before version number). Otherwise, if branch name does not match properly, [Github Actions workflows](https://github.com/ehrbase/ehrbase/tree/develop/.github/workflows) won't be triggered properly, when you push your commit.
 
 - [ ] done
 
@@ -91,11 +89,11 @@ mvn build-helper:parse-version \
 ## 05. Commit changes with proper message and push to remote
     
 ```
-git commit -m "Updated release version to v0.15.0"
+git commit -m "RELEASE v0.15.0"
 git push --set-upstream origin release/v0.15.0
 ```
 
-NOTE: This will trigger a Docker Hub build creating the image **ehrbase/ehrbase:0.15.0**
+NOTE: This will trigger a Github Actions workflow building and pushing the image **ehrbase/ehrbase:0.15.0** to Docker Hub
 
 - [ ] done
 
@@ -103,13 +101,12 @@ NOTE: This will trigger a Docker Hub build creating the image **ehrbase/ehrbase:
 
 - [ ] In Github's UI create a PR (Pull Request) from release branch into develop
 - [ ] wait for CI to succeed - all checks have to pass!!!
-- [ ] especially make sure that DockerHub build from step 5. succeeds
 - [ ] if needed continue committing to release branch until all CI checks pass
 
 ![CI checks pass](img/release_pr_checks_pass.png)
 
 NOTES:
-- a Docker Hub build creating the image **ehrbase/ehrbase:next** will be triggert after merge of pull request. Make sure it succeeds.
+- a Docke image **ehrbase/ehrbase:next** will be created and pushed to Docker Hub via Github Actions after merge of pull request.
 - remote release branch will be deleted automatically after merge
 - your local release branch has to be deleted manually (do it at the end of the whole procedure)
 
@@ -124,9 +121,7 @@ git merge --no-ff release/v0.15.0
 git push
 ```
 
-NOTE: This will trigger a Docker Hub build creating the image **ehrbase/ehrbase:latest**. Make sure it succeeds.
-
-![CI checks pass](img/release_dockerhub_build_progress.png)
+NOTE: This will trigger a Github Actions workflow creating and pushing the image **ehrbase/ehrbase:latest** to Docker Hub.
 
 - [ ] done
 
