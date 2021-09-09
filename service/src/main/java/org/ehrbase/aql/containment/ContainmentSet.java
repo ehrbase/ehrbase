@@ -36,13 +36,10 @@ import java.util.List;
  */
 public class ContainmentSet {
 
-    private String label;
     private int serial; //for debugging purpose only
     private Containment enclosing;
     private ContainmentSet parentSet;
     private ListOrderedSet<Object> containmentList = new ListOrderedSet<>();
-    private int operatorSlot = -1; //the last position where to insert an operator, -1 initially
-
 
     public ContainmentSet(int serial, Containment enclosing) {
         this.serial = serial;
@@ -62,11 +59,11 @@ public class ContainmentSet {
     }
 
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
 
         sb.append(serial + "|");
 
-        if (containmentList.size() > 0) {
+        if (!containmentList.isEmpty()) {
             boolean comma = false;
             for (Object item : containmentList) {
                 if (comma)

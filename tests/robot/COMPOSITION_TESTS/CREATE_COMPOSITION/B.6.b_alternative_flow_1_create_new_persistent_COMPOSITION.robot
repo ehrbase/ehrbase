@@ -1,4 +1,5 @@
-# Copyright (c) 2019 Wladislaw Wagner (Vitasystems GmbH), Pablo Pazos (Hannover Medical School).
+# Copyright (c) 2019 Wladislaw Wagner (Vitasystems GmbH), Pablo Pazos (Hannover Medical School),
+# Nataliya Flusman (Solit Clouds), Nikita Danilin (Solit Clouds)
 #
 # This file is part of Project EHRbase
 #
@@ -18,20 +19,45 @@
 
 *** Settings ***
 Documentation   Composition Integration Tests
+...             https://github.com/ehrbase/ehrbase/blob/develop/doc/conformance_testing/EHR_COMPOSITION.md#b6b-alternative-flow-1-create-new-persistent-composition
 Metadata        TOP_TEST_SUITE    COMPOSITION
-Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Force Tags
+Resource        ../../_resources/keywords/composition_keywords.robot
 
+Suite Setup     Precondition
+Suite Teardown  restart SUT
 
 
 *** Test Cases ***
-Alternative flow 1 create new persistent COMPOSITION
+Alternative flow 1 create new persistent COMPOSITION RAW_JSON
+    commit composition   format=RAW_JSON
+    ...                  composition=persistent_minimal.en.v1__full_without_links.json
+    check the successful result of commit composition
 
+Alternative flow 1 create new persistent COMPOSITION RAW_XML
+    commit composition   format=RAW_XML
+    ...                  composition=persistent_minimal.en.v1__full_without_links.xml
+    check the successful result of commit composition
+
+Alternative flow 1 create new persistent COMPOSITION FLAT
+    [Tags]    future
+    commit composition   format=FLAT
+    ...                  composition=persistent_minimal.en.v1__full.json
+    check the successful result of commit composition   persistent_minimal
+
+Alternative flow 1 create new persistent COMPOSITION TDD
+    [Tags]    future
+    commit composition   format=TDD
+    ...                  composition=persistent_minimal.en.v1__full.xml
+    check the successful result of commit composition
+
+Alternative flow 1 create new persistent COMPOSITION STRUCTURED
+    [Tags]    future
+    commit composition   format=STRUCTURED
+    ...                  composition=persistent_minimal.en.v1__full.json
+    check the successful result of commit composition   persistent_minimal
+
+*** Keywords ***
+Precondition
     upload OPT    minimal_persistent/persistent_minimal.opt
-
     create EHR
-
-    commit composition (JSON)    minimal_persistent/persistent_minimal.composition.extdatetime.xml
-
-    [Teardown]    restart SUT

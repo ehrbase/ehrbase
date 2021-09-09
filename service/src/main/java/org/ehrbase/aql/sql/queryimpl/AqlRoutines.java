@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import static org.ehrbase.aql.sql.queryimpl.QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION;
+import static org.ehrbase.aql.sql.queryimpl.QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER;
 
 public class AqlRoutines extends AqlDialects {
 
@@ -72,7 +73,8 @@ public class AqlRoutines extends AqlDialects {
         String parametersFormatted  = StringUtils.remove(
                     StringUtils.remove(rawParameters,"'{"),"}'");
         return Arrays.stream(parametersFormatted.split(","))
-                .map(s -> "'"+s+"'")
+                .map(s -> (s.startsWith("'") ? s.replace("'", "") : s))
+                .map(s -> (!s.equals(AQL_NODE_NAME_PREDICATE_MARKER) ? "'"+s+"'" : s))
                 .collect(Collectors.toList())
                 .toArray(new String[]{});
     }

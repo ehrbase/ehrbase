@@ -18,10 +18,13 @@
 
 package org.ehrbase.rest.ehrscape.controller;
 
+import com.nedap.archie.rm.composition.Composition;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
+import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.response.ehrscape.CompositionDto;
@@ -62,7 +65,13 @@ public class CompositionController extends BaseController {
             throw new InvalidApiParameterException(String.format("Template Id needs to specified for format %s", format));
         }
 
-        UUID compositionId = compositionService.create(ehrId, content, format, templateId, linkId);
+        var compoObj = compositionService.buildComposition(content, format, templateId);
+
+        Optional<CompositionDto> optionalCompositionDto = compositionService.create(ehrId, compoObj);
+
+        var compositionUuid = optionalCompositionDto.orElseThrow(() ->
+            new InternalServerException("Failed to create composition"))
+            .getUuid();
 
         CompositionWriteRestResponseData responseData = new CompositionWriteRestResponseData();
         responseData.setAction(Action.CREATE);
@@ -114,10 +123,20 @@ public class CompositionController extends BaseController {
         if ((format == CompositionFormat.FLAT || format == CompositionFormat.ECISFLAT) && StringUtils.isEmpty(templateId)) {
             throw new InvalidApiParameterException(String.format("Template Id needs to specified for format %s", format));
         }
-        String fullComposeId = compositionService.update(compositionId, format, content, templateId);
+
+        var compoObj = compositionService.buildComposition(content, format, templateId);
+        ObjectVersionId latestVersionId = getLatestVersionId(compositionId);
+        UUID ehrId = getEhrId(compositionId);
+        // Actual update
+        Optional<CompositionDto> dtoOptional = compositionService
+            .update(ehrId, latestVersionId, compoObj);
+
+        var compositionVersionUid = dtoOptional.orElseThrow(() ->
+            new InternalServerException("Failed to create composition"))
+            .getComposition().getUid().toString();
         ActionRestResponseData responseData = new ActionRestResponseData();
         responseData.setAction(Action.UPDATE);
-        responseData.setMeta(buildMeta(fullComposeId));
+        responseData.setMeta(buildMeta(compositionVersionUid));
         return ResponseEntity.ok(responseData);
     }
 
@@ -125,11 +144,29 @@ public class CompositionController extends BaseController {
     @ApiOperation(value = "Delete a Composition")
     public ResponseEntity<ActionRestResponseData> delete(@ApiParam(value = "UUID of the Composition ") @PathVariable("id") UUID compositionId) {
 
-        compositionService.delete(compositionId);
+        ObjectVersionId latestVersionId = getLatestVersionId(compositionId);
+        UUID ehrId = getEhrId(compositionId);
+        compositionService.delete(ehrId, latestVersionId);
         ActionRestResponseData responseData = new ActionRestResponseData();
         responseData.setAction(Action.DELETE);
         responseData.setMeta(buildMeta(""));
         return ResponseEntity.ok(responseData);
+    }
+
+    private UUID getEhrId(UUID compositionId) {
+        // EhrScape API doesn't have access to the EHR ID here, so it needs to be retrieved.
+        // Version 1 is enough because EHR never changes & it is always available.
+        Optional<CompositionDto> dtoOptionalForEhr = compositionService.retrieve(compositionId, 1);
+        return dtoOptionalForEhr
+            .orElseThrow(() -> new InvalidApiParameterException("Invalid composition ID."))
+            .getEhrId();
+    }
+
+    private ObjectVersionId getLatestVersionId(UUID compositionId) {
+        // EhrScape API doesn't have access to the "If-Match" header or previous version, so it needs to be retrieved.
+        return new ObjectVersionId(compositionId.toString(),
+            compositionService.getServerConfig().getNodename(),
+            compositionService.getLastVersionNumber(compositionId).toString());
     }
 
     private Meta buildMeta(String compositionUid) {

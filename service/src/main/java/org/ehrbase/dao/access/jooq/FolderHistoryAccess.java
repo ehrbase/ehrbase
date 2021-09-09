@@ -24,11 +24,13 @@ import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import java.time.LocalDateTime;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
 import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_FolderAccess;
@@ -89,50 +91,36 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
     /*************Data Access and modification methods*****************/
 
     @Override
-    public ObjectVersionId create(UUID customContribution) { return null; }
-
-    @Override
-    public Boolean update(Timestamp transactionTime) {
-        return null;
-    }
-
-
-    @Override
-    public Boolean update(Timestamp transactionTime, boolean force) {
+    public UUID commit(LocalDateTime timestamp, UUID committerId, UUID systemId,
+        String description) {
         return null;
     }
 
     @Override
-    public Boolean update() {
+    public UUID commit(LocalDateTime timestamp, UUID contribution) {
         return null;
     }
 
     @Override
-    public Boolean update(Boolean force){
-        return null;
+    public boolean update(LocalDateTime timestamp, UUID committerId, UUID systemId,
+        String description, ContributionChangeType changeType) {
+        return false;
     }
 
     @Override
-    public Boolean update(final Timestamp transactionTime, final boolean force, UUID contribution) {
-        return null;
+    public boolean update(LocalDateTime timestamp, UUID contribution) {
+        return false;
     }
 
     @Override
-    public Integer delete(){ return null; }
-
-    @Override
-    public UUID commit(Timestamp transactionTime){
-        return null;
+    public int delete(LocalDateTime timestamp, UUID committerId, UUID systemId,
+        String description) {
+        return 0;
     }
 
     @Override
-    public UUID commit(){
-        return null;
-    }
-
-    @Override
-    public UUID commit(Timestamp transactionTime, UUID contributionId){
-        return null;
+    public int delete(LocalDateTime timestamp, UUID contribution) {
+        return 0;
     }
 
 
@@ -461,6 +449,16 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
     public void setFolderSysPeriod(AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime> folderSysPeriod){
 
         this.folderRecord.setSysPeriod(folderSysPeriod);
+    }
+
+    @Override
+    public UUID getAudit() {
+        return this.getFolderRecord().getHasAudit();
+    }
+
+    @Override
+    public void setAudit(UUID auditId) {
+        this.getFolderRecord().setHasAudit(auditId);
     }
 
     @Override

@@ -28,6 +28,6 @@ public abstract class UC6 extends QueryProcessorTestBase {
                 "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  " +
                 "contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]" +
                 "order by description ASC";
-        this.expectedOutputWithJson = true;
+        this.expectedOutputWithJson = false;
     }
 }

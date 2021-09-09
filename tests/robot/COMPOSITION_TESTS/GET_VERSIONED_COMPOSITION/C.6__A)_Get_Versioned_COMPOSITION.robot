@@ -19,12 +19,12 @@
 
 
 *** Settings ***
-Metadata    Version    0.1.0
 Metadata    Authors    *Jake Smolka*, *Wladislaw Wagner* 
 Metadata    Created    2021.01.26
 
 Metadata        TOP_TEST_SUITE    COMPOSITION
-Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
+
+Resource        ../../_resources/keywords/composition_keywords.robot
 
 # Suite Setup  startup SUT
 # Suite Teardown  shutdown SUT
@@ -39,7 +39,7 @@ Force Tags      COMPOSITION_get_versioned
 *** Test Cases ***
 1. Get Versioned Composition Of Existing EHR (JSON)
 
-    prepare new request session    JSON    Prefer=return=representation
+    # prepare new request session    JSON    Prefer=return=representation
 
     create EHR and commit a composition for versioned composition tests
 
@@ -51,7 +51,7 @@ Force Tags      COMPOSITION_get_versioned
 
 2. Get Versioned Composition Of Existing EHR With Two Status Versions (JSON)
 
-    prepare new request session    JSON    Prefer=return=representation
+    # prepare new request session    JSON    Prefer=return=representation
 
     create EHR and commit a composition for versioned composition tests
 
@@ -65,8 +65,6 @@ Force Tags      COMPOSITION_get_versioned
 
 3. Get Versioned Composition Of Non-Existing EHR (JSON)
 
-    prepare new request session    JSON    Prefer=return=representation
-
     create EHR and commit a composition for versioned composition tests
 
     create fake EHR
@@ -76,8 +74,6 @@ Force Tags      COMPOSITION_get_versioned
 
 
 4. Get Versioned Composition Of Invalid EHR_ID (JSON)
-
-    prepare new request session    JSON    Prefer=return=representation
 
     create EHR and commit a composition for versioned composition tests
 
@@ -90,8 +86,6 @@ Force Tags      COMPOSITION_get_versioned
 
 5. Get Versioned Composition Of Non-Existing Composition (JSON)
 
-    prepare new request session    JSON    Prefer=return=representation
-
     create EHR and commit a composition for versioned composition tests
 
     create fake composition
@@ -101,8 +95,6 @@ Force Tags      COMPOSITION_get_versioned
 
 
 6. Get Versioned Composition Of Invalid Composition ID (JSON)
-
-    prepare new request session    JSON    Prefer=return=representation
 
     create EHR and commit a composition for versioned composition tests
 

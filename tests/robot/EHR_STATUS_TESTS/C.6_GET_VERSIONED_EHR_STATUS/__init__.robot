@@ -26,7 +26,7 @@ Metadata    Updated    2020.01.30
 
 Documentation    https://wiki.vitagroup.ag/pages/viewpage.action?spaceKey=ETHERCIS&title=Versioned+EHR_STATUS
 
-Resource   ${EXECDIR}/robot/_resources/suite_settings.robot
+# Resource   ${EXECDIR}/robot/_resources/suite_settings.robot
 
 # Suite Setup    startup SUT
 # Suite Teardown    shutdown SUT

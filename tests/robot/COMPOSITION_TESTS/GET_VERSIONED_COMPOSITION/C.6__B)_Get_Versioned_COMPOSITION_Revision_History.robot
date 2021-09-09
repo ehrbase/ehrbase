@@ -19,12 +19,12 @@
 
 
 *** Settings ***
-Metadata    Version    0.1.0
 Metadata    Authors    *Jake Smolka*, *Wladislaw Wagner*
 Metadata    Created    2021.01.26
 
 Metadata        TOP_TEST_SUITE    COMPOSITION
-Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
+
+Resource        ../../_resources/keywords/composition_keywords.robot
 
 # Suite Setup  startup SUT
 # Suite Teardown  shutdown SUT
@@ -36,8 +36,6 @@ Force Tags      COMPOSITION_get_versioned
 *** Test Cases ***
 1. Get Revision History of Versioned Composition Of Existing EHR (JSON)
     [Documentation]    Simple test
-
-    prepare new request session    JSON    Prefer=return=representation
 
     create EHR and commit a composition for versioned composition tests
 
@@ -52,8 +50,6 @@ Force Tags      COMPOSITION_get_versioned
 
 2. Get Revision History of Versioned Composition Of Existing EHR With Two Composition Versions (JSON)
     [Documentation]    Testing with two versions, so the result should list two history entries.
-
-    prepare new request session    JSON    Prefer=return=representation
 
     create EHR and commit a composition for versioned composition tests
 
@@ -73,8 +69,6 @@ Force Tags      COMPOSITION_get_versioned
 
 3. Get Correct Ordered Revision History of Versioned Composition Of Existing EHR With Two Composition Versions (JSON)
     [Documentation]     Testing with two versions like above, but checking the response more thoroughly.
-
-    prepare new request session    JSON    Prefer=return=representation
 
     create EHR and commit a composition for versioned composition tests
 
@@ -113,8 +107,6 @@ Force Tags      COMPOSITION_get_versioned
 4. Get Revision History of Versioned Composition Of Non-Existing EHR (JSON)
     [Documentation]    Simple test
 
-    prepare new request session    JSON    Prefer=return=representation
-
     create EHR and commit a composition for versioned composition tests
     create fake EHR
 
@@ -124,8 +116,6 @@ Force Tags      COMPOSITION_get_versioned
 
 5. Get Revision History of Versioned Composition Of Non-Existing Composition (JSON)
     [Documentation]    Simple test
-
-    prepare new request session    JSON    Prefer=return=representation
 
     create EHR and commit a composition for versioned composition tests
     create fake composition

@@ -56,7 +56,7 @@ import java.util.Set;
 
 @Service
 @SuppressWarnings("unchecked")
-public class QueryServiceImp extends BaseService implements QueryService {
+public class QueryServiceImp extends BaseServiceImp implements QueryService {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     private final FhirTerminologyServerR4AdaptorImpl tsAdapter;

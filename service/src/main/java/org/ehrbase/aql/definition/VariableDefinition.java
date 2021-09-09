@@ -24,7 +24,9 @@ package org.ehrbase.aql.definition;
 import org.jooq.Table;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Container of a variable (symbol) with its path and alias (AS 'alias')
@@ -37,7 +39,7 @@ public class VariableDefinition implements I_VariableDefinition {
     private String identifier;
     private boolean isDistinct;
     private boolean isHidden;
-    private Table<?> lateralJoinTable;
+    private Map<String, Table<?>> lateralJoinTable = new HashMap<>();
 
     public VariableDefinition(String path, String alias, String identifier, boolean isDistinct) {
         this.path = path;
@@ -89,18 +91,18 @@ public class VariableDefinition implements I_VariableDefinition {
     }
 
     @Override
-    public boolean isLateralJoin() {
-        return lateralJoinTable != null;
+    public boolean isLateralJoin(String templateId) {
+        return !lateralJoinTable.isEmpty() && lateralJoinTable.get(templateId) != null;
     }
 
     @Override
-    public Table getLateralJoinTable() {
-        return lateralJoinTable;
+    public Table getLateralJoinTable(String templateId) {
+        return lateralJoinTable.get(templateId);
     }
 
     @Override
-    public void setLateralJoinTable(Table lateralJoinTable) {
-        this.lateralJoinTable = lateralJoinTable;
+    public void setLateralJoinTable(String templateId, Table lateralJoinTable) {
+        this.lateralJoinTable.put(templateId, lateralJoinTable);
     }
 
     @Override

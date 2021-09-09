@@ -36,13 +36,14 @@ import com.nedap.archie.rm.support.identification.TerminologyId;
 import com.nedap.archie.rm.support.identification.UIDBasedId;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.dao.access.interfaces.*;
+import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
+import org.ehrbase.dao.access.interfaces.I_ContextAccess;
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
+import org.ehrbase.dao.access.interfaces.I_EntryAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.query.AsyncSqlQuery;
 import org.ehrbase.dao.access.support.DataAccess;
-import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.jooq.pg.enums.EntryType;
 import org.ehrbase.jooq.pg.tables.records.EntryHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EntryRecord;
@@ -50,10 +51,12 @@ import org.ehrbase.jooq.pg.udt.records.DvCodedTextRecord;
 import org.ehrbase.serialisation.dbencoding.RawJson;
 import org.ehrbase.serialisation.dbencoding.rmobject.FeederAuditEncoding;
 import org.ehrbase.serialisation.dbencoding.rmobject.LinksEncoding;
-import org.ehrbase.service.IntrospectService;
 import org.ehrbase.service.RecordedDvCodedText;
 import org.ehrbase.service.RecordedDvText;
-import org.jooq.*;
+import org.jooq.JSONB;
+import org.jooq.Record;
+import org.jooq.Result;
+import org.jooq.UpdateQuery;
 import org.jooq.impl.DSL;
 
 import java.sql.Timestamp;
@@ -72,26 +75,8 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
     public static final String DB_INCONSISTENCY = "DB inconsistency:";
 
     private EntryRecord entryRecord;
-//    private I_ContainmentAccess containmentAccess;
 
     private Composition composition;
-
-    /**
-     * Basic constructor for entry.
-     *
-     * @param context         DB context object of current server context
-     * @param knowledge       Knowledge cache object of current server context
-     * @param introspectCache Introspect cache object of current server context
-     * @param serverConfig    Server config object of current server context
-     * @param templateId      Template ID of this entry
-     * @param sequence        Sequence number of this entry
-     * @param compositionId   Linked composition ID
-     * @param composition     Object representation of linked composition
-     */
-    public EntryAccess(DSLContext context, I_KnowledgeCache knowledge, IntrospectService introspectCache, ServerConfig serverConfig, String templateId, Integer sequence, UUID compositionId, Composition composition) {
-        super(context, knowledge, introspectCache, serverConfig);
-        setFields(templateId, sequence, compositionId, composition);
-    }
 
     /**
      * Constructor with convenient {@link I_DomainAccess} parameter, for better readability.
@@ -202,9 +187,6 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
         values.put(SystemValue.TERRITORY, new CodePhrase(new TerminologyId("ISO_3166-1"), territory2letters));
 
         values.put(SystemValue.FEEDER_AUDIT, new FeederAuditEncoding().fromDB(compositionHistoryAccess.getFeederAudit()));
-        /* TODO: uncomment when LINKS is fully implemented
-        values.put(SystemValue.LINKS, new LinksEncoding().fromDB(compositionHistoryAccess.getFeederAudit()));
-         */
 
         List<I_EntryAccess> content = new ArrayList<>();
 
@@ -216,7 +198,6 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
                 UUID compositionId = compositionHistoryAccess.getId();
                 values.put(SystemValue.UID, new ObjectVersionId(compositionId.toString() + "::" + domainAccess.getServerConfig().getNodename() + "::" + version));
 
-//                EntryAccess entry = new EntryAccess();
                 entryAccess.entryRecord = domainAccess.getContext().newRecord(ENTRY);
                 entryAccess.entryRecord.from(record);
                 entryAccess.composition = new RawJson().unmarshal(record.getEntry().data(), Composition.class);
@@ -225,7 +206,6 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
                 buildArchetypeDetails(entryAccess);
 
                 content.add(entryAccess);
-//                entry.committed = true;
             }
         } catch (Exception e) {
             log.error(DB_INCONSISTENCY + e);
@@ -270,6 +250,10 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
                     composition.setName((DvText) systemValue.getValue());
                     break;
 
+                case RM_VERSION:
+                    composition.getArchetypeDetails().setRmVersion((String)systemValue.getValue());
+                    break;
+
                 case FEEDER_AUDIT:
                     composition.setFeederAudit((FeederAudit) systemValue.getValue());
                     break;
@@ -292,14 +276,12 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
      * <li>archetype node Id</li>
      * <li>entry content (json)</li>
      * </ul>
-     * TODO: memory only until committed, correct?
      *
      * @param record      Target {@link EntryRecord}
      * @param composition input data in {@link Composition} representation
      */
     private void setCompositionFields(EntryRecord record, Composition composition) {
 
-        Integer categoryId = Integer.parseInt(composition.getCategory().getDefiningCode().getCodeString());
         record.setCategory(record.getCategory());
 
         if (composition.getContent() != null && !composition.getContent().isEmpty()) {
@@ -325,7 +307,6 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
     /**
      * Sets the field of a new Entry record (as part of the calling {@link EntryAccess} instance) with given parameters. The
      * Composition of the calling {@link EntryAccess} will be updated with the given {@link Composition} as a result.
-     * TODO: memory only until committed, correct?
      *
      * @param templateId    ID of template
      * @param sequence      Sequence number
@@ -339,6 +320,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
         entryRecord.setTemplateId(templateId);
         entryRecord.setSequence(sequence);
         entryRecord.setCompositionId(compositionId);
+        entryRecord.setRmVersion(composition.getArchetypeDetails().getRmVersion());
         new RecordedDvCodedText().toDB(entryRecord, ENTRY.CATEGORY, composition.getCategory());
         setCompositionFields(entryRecord, composition);
 
@@ -366,7 +348,8 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
                         ENTRY.CATEGORY,
                         ENTRY.ENTRY_,
                         ENTRY.SYS_TRANSACTION,
-                        ENTRY.NAME)
+                        ENTRY.NAME,
+                        ENTRY.RM_VERSION)
                 .values(DSL.val(getSequence()),
                         DSL.val(getCompositionId()),
                         DSL.val(getTemplateId()),
@@ -375,17 +358,12 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
                         DSL.val(getCategory()),
                         DSL.val(getEntryJson()),
                         DSL.val(transactionTime),
-                        DSL.val(getCompositionName()))
+                        DSL.val(getCompositionName()),
+                        DSL.val(getRmVersion()))
                 .returning(ENTRY.ID)
                 .fetchOne();
 
-//        if (containmentAccess != null) {
-//            containmentAccess.setCompositionId(entryRecord.getCompositionId());
-//            containmentAccess.update();
-//        }
-
         return result.getValue(ENTRY.ID);
-        //return entryRecord.getId(); // TODO: part of WIP refactoring from above
     }
 
     /**
@@ -426,15 +404,11 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
         updateQuery.addValue(ENTRY.ENTRY_, DSL.field(DSL.val(getEntryJson())));
         updateQuery.addValue(ENTRY.SYS_TRANSACTION, DSL.field(DSL.val(transactionTime)));
         updateQuery.addValue(ENTRY.NAME, DSL.field(DSL.val(getCompositionName())));
+        updateQuery.addValue(ENTRY.RM_VERSION, DSL.field(DSL.val(getRmVersion())));
         updateQuery.addConditions(ENTRY.ID.eq(getId()));
 
 
         log.debug("Update done...");
-
-//        if (containmentAccess != null) {
-//            containmentAccess.setCompositionId(entryRecord.getCompositionId());
-//            containmentAccess.update();
-//        }
 
         return updateQuery.execute() > 0;
     }

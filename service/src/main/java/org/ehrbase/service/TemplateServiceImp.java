@@ -51,7 +51,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
-public class TemplateServiceImp extends BaseService implements TemplateService {
+public class TemplateServiceImp extends BaseServiceImp implements TemplateService {
 
     private final KnowledgeCacheService knowledgeCacheService;
     private final CompositionService compositionService;

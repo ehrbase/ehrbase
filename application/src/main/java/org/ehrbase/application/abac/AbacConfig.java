@@ -19,25 +19,27 @@
 package org.ehrbase.application.abac;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpRequest;
-import java.net.http.HttpRequest.BodyPublishers;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
-import java.util.Map;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.application.config.HttpClientConfig;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.io.IOException;
+import java.net.URI;
+import java.util.Map;
+
 @ConditionalOnProperty(name = "abac.enabled")
 @Configuration
 @EnableConfigurationProperties
 @ConfigurationProperties(prefix = "abac")
+@SuppressWarnings("java:S6212")
 public class AbacConfig {
 
   public enum AbacType {
@@ -74,15 +76,9 @@ public class AbacConfig {
   private String patientClaim;
   private Map<AbacType, Policy> policy;
 
-  private final HttpClientConfig httpClientConfig;
-
-  public AbacConfig(HttpClientConfig httpClientConfig) {
-    this.httpClientConfig = httpClientConfig;
-  }
-
   @Bean
-  public AbacCheck abacCheck() {
-    return new AbacCheck(this.httpClientConfig);
+  public AbacCheck abacCheck(HttpClient httpClient) {
+    return new AbacCheck(httpClient);
   }
 
   public URI getServer() {
@@ -124,10 +120,10 @@ public class AbacConfig {
  */
   public static class AbacCheck {
 
-    private final HttpClientConfig httpClientConfig;
+    private final HttpClient httpClient;
 
-    public AbacCheck(HttpClientConfig httpClientConfig) {
-      this.httpClientConfig = httpClientConfig;
+    public AbacCheck(HttpClient httpClient) {
+      this.httpClient = httpClient;
     }
 
     /**
@@ -137,38 +133,32 @@ public class AbacConfig {
      * @param bodyMap Map of attributes for the request
      * @return HTTP response
      * @throws IOException          On error during attribute or HTTP handling
-     * @throws InterruptedException On error during HTTP handling
      */
-    public boolean  execute(String url, Map<String, String> bodyMap)
-        throws IOException, InterruptedException {
+    public boolean execute(String url, Map<String, String> bodyMap)
+        throws IOException {
       return evaluateResponse(send(url, bodyMap));
     }
 
-    private HttpResponse<?> send(String url, Map<String, String> bodyMap)
-        throws IOException, InterruptedException {
+    private HttpResponse send(String url, Map<String, String> bodyMap)
+        throws IOException {
       // convert bodyMap to JSON
       ObjectMapper objectMapper = new ObjectMapper();
       String requestBody = objectMapper
           .writerWithDefaultPrettyPrinter()
           .writeValueAsString(bodyMap);
 
-      HttpRequest request = HttpRequest.newBuilder()
-          .uri(URI.create(url))
-          .header("Content-Type", "application/json")
-          .POST(BodyPublishers.ofString(requestBody))
-          .build();
+      HttpPost request = new HttpPost(url);
+      request.setEntity(new StringEntity(requestBody, ContentType.APPLICATION_JSON));
 
       try {
-        return httpClientConfig.getClient().send(request, BodyHandlers.ofString());
-      } catch (InterruptedException e) {
-        throw e;
+        return httpClient.execute(request);
       } catch (Exception e) {
         throw new InternalServerException("ABAC: Connection with ABAC server failed. Check configuration. Error: " + e.getMessage());
       }
     }
 
-    private boolean evaluateResponse(HttpResponse<?> response) {
-      return response.statusCode() == 200;
+    private boolean evaluateResponse(HttpResponse response) {
+      return response.getStatusLine().getStatusCode() == 200;
     }
   }
 }

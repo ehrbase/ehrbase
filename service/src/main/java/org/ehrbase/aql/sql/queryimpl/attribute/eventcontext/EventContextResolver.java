@@ -34,7 +34,8 @@ public class EventContextResolver extends AttributeResolver
     public static final String HEALTH_CARE_FACILITY = "health_care_facility";
     public static final String EXTERNAL_REF = "external_ref";
 
-    public static final String CONTEXT_OTHER_CONTEXT = CONTEXT+"/other_context";
+    public static final String OTHER_CONTEXT = "/other_context";
+    public static final String CONTEXT_OTHER_CONTEXT = CONTEXT+OTHER_CONTEXT;
     public static final String CONTEXT_PARTICIPATIONS = CONTEXT+"/participations";
 
     public static final String CONTEXT_HEALTH_CARE_FACILITY = CONTEXT+"/"+HEALTH_CARE_FACILITY;
@@ -65,10 +66,6 @@ public class EventContextResolver extends AttributeResolver
 
         if (path.startsWith(CONTEXT_PARTICIPATIONS)) {
             return new ParticipationsJson(fieldResolutionContext, joinSetup).forJsonPath(new AttributePath(CONTEXT_PARTICIPATIONS).redux(path)).sqlField();
-        }
-
-        if (path.equals(CONTEXT_HEALTH_CARE_FACILITY)){
-            return new EventContextJson(fieldResolutionContext, joinSetup).forJsonPath(HEALTH_CARE_FACILITY).sqlField();
         }
 
         if (path.equals(CONTEXT_HEALTH_CARE_FACILITY_EXTERNAL_REF)){

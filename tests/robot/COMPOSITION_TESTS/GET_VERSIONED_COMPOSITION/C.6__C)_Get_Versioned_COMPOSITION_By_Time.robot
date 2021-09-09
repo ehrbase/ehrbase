@@ -19,12 +19,12 @@
 
 
 *** Settings ***
-Metadata    Version    0.1.0
 Metadata    Authors    *Jake Smolka*, *Wladislaw Wagner*
 Metadata    Created    2021.01.26
 
 Metadata        TOP_TEST_SUITE    EHR_STATUS
-Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
+
+Resource        ../../_resources/keywords/composition_keywords.robot
 
 # Suite Setup  startup SUT
 # Suite Teardown  shutdown SUT
@@ -37,8 +37,6 @@ Force Tags      COMPOSITION_get_versioned
 1. Get Composition via Versioned Composition Of Existing EHR by Time Without Query (JSON)
     [Documentation]    Simple test without query param
 
-    prepare new request session    JSON    Prefer=return=representation
-
     create EHR and commit a composition for versioned composition tests
 
     get version of versioned composition of EHR by UID and time    ${versioned_object_uid}
@@ -48,8 +46,6 @@ Force Tags      COMPOSITION_get_versioned
 
 2. Get Composition via Versioned Composition Of Existing EHR by Time With Query (JSON)
     [Documentation]    Test with query param
-
-    prepare new request session    JSON    Prefer=return=representation
 
     create EHR and commit a composition for versioned composition tests
 
@@ -64,8 +60,6 @@ Force Tags      COMPOSITION_get_versioned
 
 3. Get Composition via Versioned Composition Of Existing EHR by Time With Query (JSON)
     [Documentation]    Test with and without query param and multiple versions
-
-    prepare new request session    JSON    Prefer=return=representation
 
     create EHR and commit a composition for versioned composition tests
     # comment: save orginal version uid
@@ -102,8 +96,6 @@ Force Tags      COMPOSITION_get_versioned
 4. Get Composition via Versioned Composition Of Existing EHR by Time Check Lifecycle State (JSON)
     [Documentation]    Simple, but checking lifecycle state
 
-    prepare new request session    JSON    Prefer=return=representation
-
     create EHR and commit a composition for versioned composition tests
 
     get version of versioned composition of EHR by UID and time    ${versioned_object_uid}
@@ -115,8 +107,6 @@ Force Tags      COMPOSITION_get_versioned
 5a. Get Composition via Versioned Composition Of Existing EHR by Time Check Preceding Version (JSON)
     [Documentation]    Simple, but checking preceding version uid - with one version
 
-    prepare new request session    JSON    Prefer=return=representation
-
     create EHR and commit a composition for versioned composition tests
     
     get version of versioned composition of EHR by UID and time    ${versioned_object_uid}
@@ -127,8 +117,6 @@ Force Tags      COMPOSITION_get_versioned
 
 5b. Get Composition via Versioned Composition Of Existing EHR by Time Check Preceding Version (JSON)
     [Documentation]    Simple, but checking preceding version uid - with two versions
-
-    prepare new request session    JSON    Prefer=return=representation
 
     create EHR and commit a composition for versioned composition tests
     # comment: save orginal version uid
@@ -146,8 +134,6 @@ Force Tags      COMPOSITION_get_versioned
     [Documentation]    Simple, but checking object data - with two versions
     [Tags]
 
-    prepare new request session    JSON    Prefer=return=representation
-
     create EHR and commit a composition for versioned composition tests
 
     update a composition for versioned composition tests
@@ -164,8 +150,6 @@ Force Tags      COMPOSITION_get_versioned
 7a. Get Composition via Versioned Composition Of Existing EHR by Time With Parameter Check (JSON)
     [Documentation]    Checking for expected responses with and without valid parameters
 
-    prepare new request session    JSON    Prefer=return=representation
-
     create EHR and commit a composition for versioned composition tests
 
     # comment: set the query parameter to current data in openEHR REST spec conformant timestamp
@@ -178,8 +162,6 @@ Force Tags      COMPOSITION_get_versioned
 
 7b. Get Composition via Versioned Composition Of Existing EHR With Invalid Timestamp As Parameter (JSON)
     [Documentation]    Checking for expected responses with invalid parameters
-
-    prepare new request session    JSON    Prefer=return=representation
 
     create EHR and commit a composition for versioned composition tests
 
@@ -194,8 +176,6 @@ Force Tags      COMPOSITION_get_versioned
 7c. Get Composition via Versioned Composition Of Non-Existent EHR by Time With Parameter Check (JSON)
     [Documentation]    Checking for expected responses with and without valid parameters
 
-    prepare new request session    JSON    Prefer=return=representation
-
     create EHR and commit a composition for versioned composition tests
 
     create fake EHR
@@ -207,8 +187,6 @@ Force Tags      COMPOSITION_get_versioned
 7d. Get Composition via Versioned Composition Of Non-Existent Composition by Time With Parameter Check (JSON)
     [Documentation]    Checking for expected responses with and without valid parameters
 
-    prepare new request session    JSON    Prefer=return=representation
-
     create EHR and commit a composition for versioned composition tests
     create fake composition
 
@@ -218,8 +196,6 @@ Force Tags      COMPOSITION_get_versioned
 
 7e. Get Composition via Versioned Composition Of Existing EHR by Timestamp From The Past As Parameter (JSON)
     [Documentation]    Checking for expected responses with and without valid parameters
-
-    prepare new request session    JSON    Prefer=return=representation
 
     create EHR and commit a composition for versioned composition tests
 
@@ -233,8 +209,6 @@ Force Tags      COMPOSITION_get_versioned
 
 7f. Get Composition via Versioned Composition Of Existing EHR by Timestamp From The Future As Parameter (JSON)
     [Documentation]    Checking for expected responses with and without valid parameters
-
-    prepare new request session    JSON    Prefer=return=representation
 
     create EHR and commit a composition for versioned composition tests
 

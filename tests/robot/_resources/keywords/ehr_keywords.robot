@@ -18,11 +18,7 @@
 
 *** Settings ***
 Documentation   EHR Keywords
-Resource        generic_keywords.robot
-Library         XML
-Library         REST
-Library         Collections
-Library         distutils.util
+Resource        ../suite_settings.robot
 
 
 
@@ -267,6 +263,22 @@ create new EHR with subject_id (JSON)
                         extract ehr_id from response (JSON)
                         extract system_id from response (JSON)
                         extract ehr_status from response (JSON)
+
+
+create new EHR can't be modified 
+
+    prepare new request session   Prefer=return=representation
+    generate random subject_id
+
+    ${ehr_status_json}  Load JSON From File   ${VALID EHR DATA SETS}/ehr_can_not_be_modifyable.json
+                        Update Value To Json  ${ehr_status_json}   $.subject.external_ref.id.value
+                        ...                   ${subject_id}
+
+    &{resp}=            REST.POST    ${baseurl}/ehr    ${ehr_status_json}
+                        Set Suite Variable    ${response}    ${resp}
+                        Output Debug Info To Console
+
+                        extract ehr_id from response (JSON)
 
 
 check content of created EHR (JSON)
@@ -639,12 +651,27 @@ create fake EHR
     generate random subject_id
 
 
+create fake EHR not hexadecimal
+    [Documentation]     Set invalid ehr_id that is not hexadecimal (for alternative scenarios)
+
+    ${ehr_id}=          Set Variable   XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+    Set Test Variable   ${ehr_id}    ${ehr_id}
+
+
+create fake EHR not match pattern
+    [Documentation]     Set invalid ehr_id that is not match the UUID pattern 8-4-4-4-12 (for alternative scenarios)
+
+    ${ehr_id}=          Evaluate    str(uuid.uuid4())    uuid
+    ${ehr_id}=          Get Substring    ${ehr_id}    0    -2
+    Set Test Variable   ${ehr_id}    ${ehr_id}
+
+
 generate random ehr_id
     [Documentation]     Generates a random UUIDv4 spec conform `ehr_id`
     ...                 and exposes it as Test Variable
 
     ${ehr_id}=          Evaluate    str(uuid.uuid4())    uuid
-                        Set Test Variable    ${ehr_id}    ${ehr_id}
+                        Set Suite Variable    ${ehr_id}    ${ehr_id}
 
 
 generate random subject_id
@@ -652,7 +679,7 @@ generate random subject_id
     ...                 and exposes it as Test Variable
 
     ${subjectid}=       Evaluate    str(uuid.uuid4())    uuid
-                        Set Test Variable    ${subject_id}    ${subjectid}
+                        Set Suite Variable    ${subject_id}    ${subjectid}
 
 
 generate fake ehr_status
@@ -741,13 +768,13 @@ modify ehr_status is_modifiable to
                         Set Test Variable    ${ehr_status}    ${ehr_status}
 
 
-Output Debug Info To Console
-    [Documentation]     Prints all details of a request to console in JSON style.
-    ...                 - request headers
-    ...                 - request body
-    ...                 - response headers
-    ...                 - response body
-    Output
+# Output Debug Info To Console
+#     [Documentation]     Prints all details of a request to console in JSON style.
+#     ...                 - request headers
+#     ...                 - request body
+#     ...                 - response headers
+#     ...                 - response body
+#     Output
 
 
 

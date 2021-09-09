@@ -21,21 +21,17 @@
 
 package org.ehrbase.aql.sql.postprocessing;
 
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import org.ehrbase.aql.sql.QuerySteps;
-import org.ehrbase.aql.sql.binding.JsonbBlockDef;
-import org.ehrbase.ehr.util.LocatableHelper;
-import org.ehrbase.serialisation.dbencoding.EncodeUtilArchie;
 import org.ehrbase.serialisation.dbencoding.rawjson.LightRawJsonEncoder;
+import org.jooq.Field;
+import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Result;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.NoSuchElementException;
+import javax.json.Json;
+import javax.json.JsonException;
+import javax.json.JsonReader;
+import java.io.StringReader;
 
 /**
  * Created by christian on 2/21/2017.
@@ -48,76 +44,54 @@ public class RawJsonTransform implements IRawJsonTransform {
 
     private RawJsonTransform(){}
 
-    public static void toRawJson(Result<Record> result, Collection<QuerySteps> querySteps) {
+    public static void toRawJson(Result<Record> result) {
 
+        if (result.isEmpty())
+            return;
 
-        for (QuerySteps queryStep : querySteps) {
+        for (Record record : result) {
 
-            if (queryStep.jsonColumnsSize() > 0) {
-                result.forEach(record -> {
-                    List<JsonbBlockDef> deleteList = new ArrayList<>();
-                    for (JsonbBlockDef jsonbBlockDef : queryStep.getJsonColumns()) {
-
-                        if (record.getValue(jsonbBlockDef.getField()) == null)
-                            continue;
-
-                        String jsonbOrigin = record.getValue(jsonbBlockDef.getField()).toString();
-
-                        //apply the transformation
+            for (Field field : record.fields()) {
+                //get associated value
+                if (record.getValue(field) instanceof String || record.getValue(field) instanceof JSONB) {
+                    String value = record.getValue(field).toString();
+                    String jsonbOrigin = null;
+                    if (value.startsWith("[")) {
+                        //check if this is a valid array
+                        JsonReader jsonReader =  Json.createReader(new StringReader(value));
                         try {
-                            JsonElement jsonElement;
-                            if (new ResultBlock(jsonbBlockDef).isCanonical()) {
-                                GsonBuilder gsonRaw = EncodeUtilArchie.getGsonBuilderInstance();
-                                JsonElement item = gsonRaw.create().toJsonTree(gsonRaw.create().fromJson(jsonbOrigin, List.class));
-                                if (item instanceof JsonArray)
-                                    jsonElement = item.getAsJsonArray();
-                                else
-                                    jsonElement = item.getAsJsonObject();
-                            }
-                            else {
-                                //this allows to deal with json array without impacting the structure of json transform
-                                //as it deals with complex arrays such as items[...], content[...] etc.
-                                //hence, we pass the array as a a simple key-value and then retrieve the value part
-                                //referenced by "$array$"
-                                if (jsonbOrigin.startsWith("[") && jsonbOrigin.endsWith("]"))
-                                    jsonbOrigin = "{\"$array$\":"+jsonbOrigin+"}";
-                                jsonElement = new LightRawJsonEncoder(jsonbOrigin).encodeContentAsJson(jsonbBlockDef.getJsonPathRoot());
-                                if (jsonElement.getAsJsonObject().has(ARRAY_MARKER)) {
-                                    if (hasPredicate(jsonbBlockDef.getPath())) //f.e. events[at0002]
-                                        jsonElement = jsonElement.getAsJsonObject().getAsJsonArray(ARRAY_MARKER).get(0);
-                                    else //f.e. ehr/contributions -> an attribute that is an array
-                                        jsonElement = jsonElement.getAsJsonObject().getAsJsonArray(ARRAY_MARKER);
-
-                                }
-                            }
-
-                            record.setValue(jsonbBlockDef.getField(), jsonElement);
-
-                        } catch (Exception e) {
-                            //assumes this is not a json element
-                            record.setValue(jsonbBlockDef.getField(), jsonbOrigin);
-                            deleteList.add(jsonbBlockDef);
+                            jsonReader.readArray();
+                            jsonbOrigin = "{\"$array$\":" + value + "}";
+                        } catch (JsonException e) {
+                            //not a json array, do nothing
                         }
+                        finally {
+                            jsonReader.close();
+                        }
+                    } else if (value.startsWith("{")) {
+                        JsonReader jsonReader =  Json.createReader(new StringReader(value));
+                        try {
+                            jsonReader.readObject();
+                            jsonbOrigin = value;
+                        } catch (JsonException e) {
+                            //not a json object, do nothing
+                        }
+                        finally {
+                            jsonReader.close();
+                        }
+                    }
+                    //apply the transformation
+                    if (jsonbOrigin != null) {
+                        JsonElement jsonElement = new LightRawJsonEncoder(jsonbOrigin).encodeContentAsJson(null);
+                        if (jsonElement.getAsJsonObject().has(ARRAY_MARKER)) {
+                            jsonElement = jsonElement.getAsJsonObject().getAsJsonArray(ARRAY_MARKER);
 
+                        }
+                        record.setValue(field, jsonElement);
                     }
-                    for (JsonbBlockDef deleteBlock : deleteList) {
-                        queryStep.getJsonColumns().remove(deleteBlock);
-                    }
-                });
+                }
             }
         }
     }
 
-
-    private static boolean hasPredicate(String path){
-
-        try {
-            List<String> segments = LocatableHelper.dividePathIntoSegments(path);
-
-            return (segments.get(segments.size() - 1).contains("["));
-        }
-        catch (NoSuchElementException e) { //not an AQL path (f.e. function based)
-            return false;
-        }
-    }
 }

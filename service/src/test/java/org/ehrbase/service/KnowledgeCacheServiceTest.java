@@ -19,15 +19,18 @@
 package org.ehrbase.service;
 
 import org.apache.commons.io.IOUtils;
+import org.ehrbase.aql.containment.JsonPathQueryResult;
 import org.ehrbase.configuration.CacheConfiguration;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
-import org.ehrbase.opt.query.TemplateTestData;
+import org.ehrbase.ehr.knowledge.TemplateTestData;
 import org.ehrbase.test_data.operationaltemplate.OperationalTemplateTestData;
+import org.ehrbase.webtemplate.parser.NodeId;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -60,6 +63,21 @@ public class KnowledgeCacheServiceTest {
 
 
         assertThat(knowledge.getQueryOptMetaData("IDCR - Immunisation summary.v0")).isNotNull();
+    }
+
+    @Test
+    public void testNonUniqueAqlPathsTemplateId() throws Exception {
+        KnowledgeCacheService knowledge = buildKnowledgeCache(testFolder, cacheRule);
+        knowledge.addOperationalTemplate(IOUtils.toByteArray(TemplateTestData.NON_UNIQUE_AQL_PATH.getStream()));
+        // a node with two paths
+        NodeId nodeId = new NodeId("ACTION", "openEHR-EHR-ACTION.procedure.v1");
+        List<NodeId> nodeIds = new ArrayList<>();
+        nodeIds.add(nodeId);
+
+        //resolve
+        JsonPathQueryResult jsonPathQueryResult = knowledge.resolveForTemplate("non_unique_aql_paths", nodeIds);
+        assertThat(jsonPathQueryResult).isNotNull();
+
     }
 
     @Test

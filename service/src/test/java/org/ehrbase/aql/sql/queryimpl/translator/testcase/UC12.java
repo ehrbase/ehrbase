@@ -28,6 +28,6 @@ public abstract class UC12 extends QueryProcessorTestBase {
                 "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  " +
                 "contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]" +
                 "where a/description[at0001]/items[at0002]/value/value matches {'Hepatitis A','Hepatitis B'} ";
-        this.expectedOutputWithJson = true;
+        this.expectedOutputWithJson = false;
     }
 }

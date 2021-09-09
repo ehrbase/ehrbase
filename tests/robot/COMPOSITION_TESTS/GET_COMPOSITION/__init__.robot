@@ -17,12 +17,12 @@
 
 
 *** Settings ***
-Metadata    Version    0.1.0
+Metadata    Version    1.0
 Metadata    Authors    *Wladislaw Wagner*, *Pablo Pazos*  
 
 Documentation    COMPOSITION TEST SUITE
 ...
-...              test documentation: https://docs.google.com/document/d/1TvSWjG-Esz-iMFJE-VLfjGH8MiI9tcHE2ilVtJMPYyQ/edit?ts=5d1e49fc
+...              test documentation: https://github.com/ehrbase/ehrbase/blob/develop/doc/conformance_testing/EHR_COMPOSITION.md#b2-get-composition-latest
 
 # Suite Setup  startup SUT
 # Suite Teardown  shutdown SUT
