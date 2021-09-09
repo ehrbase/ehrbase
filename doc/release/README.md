@@ -154,11 +154,12 @@ NOTE: This will trigger a Github Actions workflow creating and pushing the image
 
 - navigate to '**Releases**' in EHRbase's repository
 - click on '**Draft a new release**'
-- input the tag created in step 7. (including `v` i.e. `v0.15.0`)
+- input release title (i.e. `0.15.0 (beta)`)
+- select tag created in step 6. (i.e. `v0.15.0`)
 
     NOTE: the input field provides autosuggestion to avoid typos
 
-- select '**Target: master**'
+- select '**Target: master**' (optional)
 - give it a proper description
 - click '**Publish release**'
 
