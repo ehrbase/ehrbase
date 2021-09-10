@@ -32,6 +32,7 @@ public class ServerConfigImp implements org.ehrbase.api.definitions.ServerConfig
     private int port;
     private String nodename = "local.ehrbase.org";
     private AqlConfig aqlConfig;
+    private boolean disableStrictValidation = false;
 
     public int getPort() {
         return port;
@@ -106,5 +107,14 @@ public class ServerConfigImp implements org.ehrbase.api.definitions.ServerConfig
         public void setIterationScanDepth(Integer iterationScanDepth) {
             this.iterationScanDepth = iterationScanDepth;
         }
+    }
+
+    @Override
+    public boolean isDisableStrictValidation() {
+        return disableStrictValidation;
+    }
+
+    public void setDisableStrictValidation(boolean disableStrictValidation) {
+        this.disableStrictValidation = disableStrictValidation;
     }
 }

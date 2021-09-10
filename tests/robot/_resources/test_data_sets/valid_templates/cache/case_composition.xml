@@ -57,6 +57,15 @@
     </setting>
   </context>
   <content archetype_node_id="openEHR-EHR-ADMIN_ENTRY.minimal.v1" xsi:type="ADMIN_ENTRY">
+    <archetype_details>
+      <archetype_id>
+        <value>openEHR-EHR-ADMIN_ENTRY.minimal.v1</value>
+      </archetype_id>
+      <template_id>
+        <value>Case</value>
+      </template_id>
+      <rm_version>1.0.2</rm_version>
+    </archetype_details>
     <name>
       <value>Minimal</value>
     </name>
@@ -68,7 +77,7 @@
     </language>
     <encoding>
       <terminology_id>
-        <value>Unicode</value>
+        <value>IANA_character-sets</value>
       </terminology_id>
       <code_string>UTF-8</code_string>
     </encoding>

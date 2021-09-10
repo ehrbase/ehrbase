@@ -13,7 +13,7 @@
       <rm:value>type</rm:value>
     </rm:type>
     <rm:target>
-      <rm:value>target1</rm:value>
+      <rm:value>ehr://target1</rm:value>
     </rm:target>
   </links>
   <links>
@@ -24,7 +24,7 @@
       <rm:value>type</rm:value>
     </rm:type>
     <rm:target>
-      <rm:value>target2</rm:value>
+      <rm:value>ehr://target2</rm:value>
     </rm:target>
   </links>
   <language>

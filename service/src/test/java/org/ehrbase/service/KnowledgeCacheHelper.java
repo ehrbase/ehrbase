@@ -90,6 +90,11 @@ public class KnowledgeCacheHelper {
             public void setUseJsQuery(boolean b) {
                 this.useJsQuery = b;
             }
+
+            @Override
+            public boolean isDisableStrictValidation() {
+                return false;
+            }
         };
     }
 
