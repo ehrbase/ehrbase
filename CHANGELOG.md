@@ -13,6 +13,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+
+
+## [0.17.2]
+
+### Added
+- Github Action worklows to deploy multiarch images (`latest`, `next`, `version-tag`) to Docker Hub (see: https://github.com/ehrbase/ehrbase/pull/578)
+
+### Changed
+- Removes SELECT statement when PartyProxy object is empty (see: https://github.com/ehrbase/ehrbase/pull/581)
+
+### Fixed
+- `Accept` header with multiple MIME types causes an IllegalArgumentException (see: https://github.com/ehrbase/ehrbase/pull/583)
+- Composition version Uid schema in EhrScape API (see: https://github.com/ehrbase/ehrbase/pull/520)
+- Terminology Service calls from within AQL queries does not work (see: https://github.com/ehrbase/ehrbase/pull/572)
+
+
 ## [0.17.1] (beta)
 
 ### Added
@@ -28,6 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - DB migration file conflict (see: https://github.com/ehrbase/ehrbase/pull/564)
 - Ddmin delete of multiple status versions (see: https://github.com/ehrbase/ehrbase/pull/552)
 
+
 ## [0.17.0] (beta)
 
 ### Added
@@ -41,6 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Folder handling (update, delete and missing audits) (see: https://github.com/ehrbase/ehrbase/pull/529)
 - Fixed and refactored handling of audits and versioned objects (see: https://github.com/ehrbase/ehrbase/pull/552/)
+
 
 ## [0.16.0] (beta)
 
@@ -174,7 +192,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix terminal value test for non DataValue 'value' attribute (see: https://github.com/ehrbase/ehrbase/pull/189)
 
 
-
 ## [0.11.0] (alpha)
 
 **Note:** Due to the transition to this changelog the following list is not complete. 
@@ -237,6 +254,7 @@ Starting with the next release this file will provide a proper overview.
 - Fixed error regarding DISTINCT operator in AQL (https://github.com/ehrbase/ehrbase/issues/50)
 - Fixed null pointer exceptions that could occur in persistent compositions
 
+
 ## [0.9.0] (pre-alpha)
 
 ### Added
@@ -257,7 +275,8 @@ Starting with the next release this file will provide a proper overview.
 - Fixed error regarding DISTINCT operator in AQL (https://github.com/ehrbase/ehrbase/issues/50)
 - Fixed null pointer exceptions that could occur in persistent compositions
 
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.17.1...HEAD
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.17.2...HEAD
+[0.17.2]: https://github.com/ehrbase/ehrbase/compare/v0.17.1...v0.17.2
 [0.17.1]: https://github.com/ehrbase/ehrbase/compare/v0.17.0...v0.17.1
 [0.17.0]: https://github.com/ehrbase/ehrbase/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/ehrbase/ehrbase/compare/v0.15.0...v0.16.0
