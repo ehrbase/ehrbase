@@ -1,6 +1,6 @@
 # EHRbase Release Checklist
 
-This is a quick 10 step checklist to create and publish a new Github Release version of EHRbase. It's the bare minimal only - no Maven Central deployment involved. 
+This is a quick 10 step checklist to create and publish a new Github Release version of EHRbase, which also trigger an automatic Docker Hub deployment. It's the bare minimal only - no Maven Central deployment involved.
 
 ## 01. Checkout, fetch develop branch and make sure project builds
 
@@ -17,9 +17,7 @@ mvn clean package    # remember to start ehrbase DB before
 ```
 git checkout -b release/v0.15.0
 ```
-NOTE: exact syntax is important (i.e. `v` before version number). Otherwise, if branch name does not match properly, build rules on Docker Hub won't apply, when you push your commit.
-
-![docker hub build rules](img/release_dockerhub_autobuilds.png)
+NOTE: exact syntax is important (i.e. `v` before version number). Otherwise, if branch name does not match exactly, [Github Actions workflows](https://github.com/ehrbase/ehrbase/tree/develop/.github/workflows) won't be triggered, when you push your commit.
 
 - [ ] done
 
@@ -38,17 +36,22 @@ As of writing this (2021-02-25) the following POM files have to be updated
 
 Use one of below commands to update the version in all POMs at once:
 
-```
-# use this to bump major version (for releases with backwards incompatible changes) - ie. 0.14.0 --> 1.0.0
-mvn build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.nextMajorVersion}.0.0 versions:commit
 
-# OR use this to bump minor version - i.e. 0.14. --> 0.15.0
+- bump **major version** (suitable for releases with backwards incompatible changes - ie. 0.14.0 --> 1.0.0)
+```
+mvn build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.nextMajorVersion}.0.0 versions:commit
+```
+
+- bump **minor version** (i.e. 0.14.0 --> 0.15.0)
+```
 mvn build-helper:parse-version versions:set \
     -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.nextMinorVersion}.0 \
     versions:commit
+```
 
 
-# bumping patch version is probably not suiteable for a new release but if you want - i.e. 0.14.0 --> 0.14.1
+- bump **patch version** (i.e. 0.14.0 --> 0.14.1)
+```
 mvn build-helper:parse-version \
   versions:set \
   -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion} \
@@ -91,52 +94,18 @@ mvn build-helper:parse-version \
 ## 05. Commit changes with proper message and push to remote
     
 ```
-git commit -m "Updated release version to v0.15.0"
+git commit -m "RELEASE v0.15.0"
 git push --set-upstream origin release/v0.15.0
 ```
 
-NOTE: This will trigger a Docker Hub build creating the image **ehrbase/ehrbase:0.15.0**
+NOTE: This will trigger a Github Actions workflow building and pushing the image **ehrbase/ehrbase:0.15.0** to Docker Hub
 
 - [ ] done
 
-## 06. Merge into develop
 
-- [ ] In Github's UI create a PR (Pull Request) from release branch into develop
-- [ ] wait for CI to succeed - all checks have to pass!!!
-- [ ] especially make sure that DockerHub build from step 5. succeeds
-- [ ] if needed continue committing to release branch until all CI checks pass
-
-![CI checks pass](img/release_pr_checks_pass.png)
-
-NOTES:
-- a Docker Hub build creating the image **ehrbase/ehrbase:next** will be triggert after merge of pull request. Make sure it succeeds.
-- remote release branch will be deleted automatically after merge
-- your local release branch has to be deleted manually (do it at the end of the whole procedure)
-
-- [ ] done
-
-## 07. Merge into master
+## 06. Add an annotated Git tag and push to remote
 
 ```
-git checkout master
-git pull
-git merge --no-ff release/v0.15.0
-git push
-```
-
-NOTE: This will trigger a Docker Hub build creating the image **ehrbase/ehrbase:latest**. Make sure it succeeds.
-
-![CI checks pass](img/release_dockerhub_build_progress.png)
-
-- [ ] done
-
-## 08. Add an annotated Git tag and push to remote
-
-- After all checks have passed on develop and master finalize the release by giving it a proper Git tag
-
-```
-git checkout master
-git pull
 git tag -a v0.15.0 -m "Beta Release v0.15.0"
 git push origin v0.15.0
 ```
@@ -150,16 +119,47 @@ git tag --delete v0.15.0
 # delte a remote tag
 git push --delete origin v0.15.0
 ```
+
+
+## 07. Merge into develop
+
+- [ ] In Github's UI create a PR (Pull Request) from release branch into develop
+- [ ] wait for CI to succeed - all checks have to pass!!!
+- [ ] if needed continue committing to release branch until all CI checks pass
+
+![CI checks pass](img/release_pr_checks_pass.png)
+
+NOTES:
+- a Docker image **ehrbase/ehrbase:next** will be created and pushed to Docker Hub via Github Actions after merge of pull request
+- remote release branch will be deleted automatically after merge
+- your local release branch has to be deleted manually (do it at the end of the whole procedure)
+
+- [ ] done
+
+## 08. Merge into master
+
+```
+git checkout master
+git pull
+git merge --no-ff release/v0.15.0
+git push
+```
+
+NOTE: This will trigger a Github Actions workflow creating and pushing the image **ehrbase/ehrbase:latest** to Docker Hub.
+
+- [ ] done
+
     
 ## 09. Create a Release in Github UI
 
 - navigate to '**Releases**' in EHRbase's repository
 - click on '**Draft a new release**'
-- input the tag created in step 7. (including `v` i.e. `v0.15.0`)
+- input release title (i.e. `0.15.0 (beta)`)
+- select tag created in step 6. (i.e. `v0.15.0`)
 
     NOTE: the input field provides autosuggestion to avoid typos
 
-- select '**Target: master**'
+- select '**Target: master**' (optional)
 - give it a proper description
 - click '**Publish release**'
 

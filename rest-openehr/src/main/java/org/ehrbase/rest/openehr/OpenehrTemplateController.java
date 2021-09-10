@@ -269,7 +269,7 @@ public class OpenehrTemplateController extends BaseController {
         // create and supplement headers with data depending on which headers are requested
         HttpHeaders respHeaders = new HttpHeaders();
         for (String header : headerList) {
-            switch (header) {   // no default because everything else can be ignored
+            switch (header) {
                 case LOCATION:
                     respHeaders.setLocation(uri);
                     break;
@@ -280,17 +280,18 @@ public class OpenehrTemplateController extends BaseController {
                     // TODO should be VERSION.commit_audit.time_committed.value which is not implemented yet - mock for now
                     respHeaders.setLastModified(123124442);
                     break;
+                default:
+                    // Ignore header
             }
         }
 
         // parse and set accepted format. with XML as fallback for empty header and error for non supported header
+        MediaType mediaType = resolveContentType(accept, MediaType.APPLICATION_XML);
         OperationalTemplateFormat format;
-        if (MediaType.parseMediaType(accept).isCompatibleWith(MediaType.APPLICATION_XML)) {
+        if (mediaType.isCompatibleWith(MediaType.APPLICATION_XML)) {
             format = OperationalTemplateFormat.XML;
-        } else if (MediaType.parseMediaType(accept).isCompatibleWith(MediaType.APPLICATION_JSON)) {
+        } else if (mediaType.isCompatibleWith(MediaType.APPLICATION_JSON)) {
             format = OperationalTemplateFormat.JSON;
-        } else if (StringUtils.isBlank(accept) || "*/*".equals(accept)) {
-            format = OperationalTemplateFormat.XML;
         } else {
             throw new NotAcceptableException("Currently only xml (or emtpy for fallback) is allowed");
         }

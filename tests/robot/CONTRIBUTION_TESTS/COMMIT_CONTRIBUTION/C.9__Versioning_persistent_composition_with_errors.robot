@@ -39,7 +39,9 @@ Documentation   Contribution Integration Tests
 ...     Postconditions:
 ...         There will be just one VERSION in the EHR with ehr_id.
 Metadata        TOP_TEST_SUITE    CONTRIBUTION
-Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
+
+Resource        ../../_resources/keywords/composition_keywords.robot
+Resource        ../../_resources/keywords/contribution_keywords.robot
 
 #Suite Setup  startup SUT
 # Test Setup  start openehr server

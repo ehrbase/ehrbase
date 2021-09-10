@@ -22,12 +22,14 @@ Metadata    Authors    *Wladislaw Wagner*, *Axel Siebert"
 Metadata    Created    2020.12.28
 
 Metadata        TOP_TEST_SUITE    ADMIN_TEMPLATE
-Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
+
+Resource        ../_resources/keywords/admin_keywords.robot
+Resource        ../_resources/keywords/composition_keywords.robot
 
 Suite Setup     startup SUT
 Suite Teardown  shutdown SUT
 
-Force Tags     template
+Force Tags     ADMIN_template
 
 
 
@@ -285,27 +287,6 @@ upload valid OPT
     upload OPT file
     Set Test Variable    ${response}    ${response}
     server accepted OPT
-    
-
-(admin) update OPT
-    [Arguments]         ${opt_file}    ${prefer_return}=representation
-    [Documentation]     Updates OPT via admin endpoint admin_baseurl/template/${template_id} \n\n
-
-                        get valid OPT file    ${opt_file}
-    
-    &{headers}=         Create Dictionary    &{EMPTY}
-                        Set To Dictionary    ${headers}
-                        ...                  Content-Type=application/xml
-                        ...                  Accept=application/xml
-                        ...                  Prefer=return=${prefer_return}
-
-                        Create Session       ${SUT}    ${ADMIN_BASEURL}    debug=2
-                        ...                  auth=${CREDENTIALS}    verify=True
-
-    ${resp}=            Put Request    ${SUT}    /template/${template_id}
-                        ...    data=${file}    headers=${headers}
-                        Set Test Variable    ${response}    ${resp}
-                        Set Test Variable    ${prefer_return}    ${prefer_return}
 
 
 validate PUT response - 200 updated
@@ -335,22 +316,6 @@ validate PUT response - 422 unprocessable entity
                         Should Match    ${response.text}    *Template with id ${template_id} is used by X composition(s)*
 
 
-(admin) delete OPT
-    [Arguments]         ${prefer_return}=representation
-    [Documentation]     Admin delete OPT on server.
-    ...                 Depends on any KW that exposes an variable named 'template_id'
-    ...                 to test or suite level scope. \n\n
-    ...                 valid values for 'prefer_return': \n\n\
-    ...                 - representation (default) \n\n
-    ...                 - minimal
-                        prepare new request session
-                        ...    Prefer=return=${prefer_return}
-                        Set Test Variable    ${prefer_return}    ${prefer_return}
-    &{resp}=            REST.DELETE    ${admin_baseurl}/template/${template_id}
-                        Set Test Variable    ${response}    ${resp}
-                        Output Debug Info To Console
-
-
 validate DELETE response - 204 deleted
                         Integer    response status   204
 
@@ -366,16 +331,6 @@ validate DELETE response - 422 unprocessable entity
                         Integer    response status   422
                         String     response body error
                         ...        pattern=Cannot delete template minimal_admin.en.v1 since the following compositions are still using it.*
-
-
-(admin) delete all OPTs
-    [Documentation]     Admin delete OPT on server.
-    ...                 Depends on any KW that exposes an variable named 'template_id'
-    ...                 to test or suite level scope.
-                        prepare new request session
-    &{resp}=            REST.DELETE    ${admin_baseurl}/template/all
-                        Set Test Variable    ${response}    ${resp}
-                        Output Debug Info To Console
 
 
 validate DELETE ALL response - 204 deleted ${amount}

@@ -33,7 +33,6 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -102,7 +101,7 @@ public class OpenehrVersionedCompositionController extends BaseController {
         VersionedObjectResponseData<Composition> response = new VersionedObjectResponseData<>(versionedComposition);
 
         HttpHeaders respHeaders = new HttpHeaders();
-        respHeaders.setContentType(getMediaType(accept));
+        respHeaders.setContentType(resolveContentType(accept));
 
         return ResponseEntity.ok().headers(respHeaders).body(response);
     }
@@ -132,7 +131,7 @@ public class OpenehrVersionedCompositionController extends BaseController {
         RevisionHistoryResponseData response = new RevisionHistoryResponseData(revisionHistory);
 
         HttpHeaders respHeaders = new HttpHeaders();
-        respHeaders.setContentType(getMediaType(accept));
+        respHeaders.setContentType(resolveContentType(accept));
 
         return ResponseEntity.ok().headers(respHeaders).body(response);
     }
@@ -215,26 +214,6 @@ public class OpenehrVersionedCompositionController extends BaseController {
         return getOriginalVersionResponseDataResponseEntity(accept, ehrId, versionedCompoUid, version);
     }
 
-    private MediaType getMediaType(@RequestHeader(value = HttpHeaders.ACCEPT, required = false) @ApiParam("Client should specify expected response format") String accept) {
-        MediaType contentTypeHeaderInput;  // to prepare header input if this header is needed later
-        if (StringUtils.isBlank(accept) || accept.equals("*/*")) {  // "*/*" is standard for "any mime-type"
-            // assign default if no header was set
-            contentTypeHeaderInput = MediaType.APPLICATION_JSON;
-        } else {
-            // if header was set process it
-            MediaType mediaType = MediaType.parseMediaType(accept);
-
-            if (mediaType.isCompatibleWith(MediaType.APPLICATION_JSON)) {
-                contentTypeHeaderInput = MediaType.APPLICATION_JSON;
-            } else if (mediaType.isCompatibleWith(MediaType.APPLICATION_XML)) {
-                contentTypeHeaderInput = MediaType.APPLICATION_XML;
-            } else {
-                throw new InvalidApiParameterException("Wrong Content-Type header in request");
-            }
-        }
-        return contentTypeHeaderInput;
-    }
-
     private void checkForValidEhrAndCompositionParameter(UUID ehrId, UUID versionedCompoUid) {
         // check if EHR is valid
         if(ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
@@ -263,7 +242,7 @@ public class OpenehrVersionedCompositionController extends BaseController {
             contributionDto);
 
         HttpHeaders respHeaders = new HttpHeaders();
-        respHeaders.setContentType(getMediaType(accept));
+        respHeaders.setContentType(resolveContentType(accept));
 
         return ResponseEntity.ok().headers(respHeaders).body(originalVersionResponseData);
     }

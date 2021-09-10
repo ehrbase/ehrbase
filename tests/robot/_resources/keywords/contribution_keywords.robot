@@ -18,14 +18,9 @@
 
 *** Settings ***
 Documentation    CONTRIBUTION Specific Keywords
-Library          XML
-Library          String
 
-Resource    ${CURDIR}${/}../suite_settings.robot
-Resource    generic_keywords.robot
-Resource    template_opt1.4_keywords.robot
+Resource    ../suite_settings.robot
 Resource    ehr_keywords.robot
-Resource    composition_keywords.robot
 
 
 

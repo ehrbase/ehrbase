@@ -59,13 +59,6 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
     private static final String JSONB_SELECTOR_COMPOSITION_OPEN = ENTRY.ENTRY_ + JSONB_PATH_SELECTOR_EXPR;
     public static final String JSQUERY_COMPOSITION_OPEN = ENTRY.ENTRY_ + JSONB_AT_AT_SELECTOR_EXPR;
 
-
-    //OTHER_DETAILS (Ehr Status Query)
-    private static final String SELECT_EHR_OTHER_DETAILS_MACRO = JoinBinder.statusRecordTable.field(STATUS.OTHER_DETAILS) + "->('" + CompositionSerializer.TAG_OTHER_DETAILS + "')";
-
-    //OTHER_CONTEXT (Composition context other_context Query)
-    private static final String SELECT_EHR_OTHER_CONTEXT_MACRO = EVENT_CONTEXT.OTHER_CONTEXT + "->('" + CompositionSerializer.TAG_OTHER_CONTEXT + "[at0001]" + "')";
-
     public static final String COMPOSITION = "composition";
     public static final String CONTENT = "content";
     public static final String ACTIVITIES = "activities";
@@ -103,7 +96,13 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
     public static final String TAG_CONTENT = "/" + CONTENT;
     public static final String TAG_ITEMS = "/" + ITEMS;
 
-//    private boolean containsJqueryPath = false; //true if at leas one AQL path is contained in expression
+    private static final String[] listIdentifier = {
+            TAG_CONTENT,
+            TAG_ITEMS,
+            TAG_ACTIVITIES,
+            TAG_EVENTS
+    };
+
     private boolean ignoreUnresolvedIntrospect = false;
 
     private static String ENV_IGNORE_UNRESOLVED_INTROSPECT = "aql.ignoreUnresolvedIntrospect";
@@ -161,7 +160,7 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
                 itemPathArray.addAll(new JqueryPath(PATH_PART.IDENTIFIER_PATH_PART, path, "0").evaluate());
 
             JqueryPath jqueryPath = new JqueryPath(PATH_PART.VARIABLE_PATH_PART, variableDefinition.getPath(), "0");
-            itemPathArray.addAll(jqueryPath.evaluate());
+            itemPathArray.addAll(new NormalizedRmAttributePath(jqueryPath.evaluate()).transformStartingAt(1));
 
             try {
                 IterativeNode iterativeNode = new IterativeNode(domainAccess, templateId, introspectCache);
@@ -241,17 +240,6 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
 
         return fieldPathItem;
     }
-
-    private String toAqlPath(List<String> itemPathArray) {
-        List<String> aqlPath = new ArrayList<>();
-        for (String path : itemPathArray) {
-            if (!path.startsWith(TAG_COMPOSITION) && !path.matches("[0-9]*")) {
-                aqlPath.add(path);
-            }
-        }
-        return StringUtils.join(aqlPath.toArray(new String[]{}));
-    }
-
 
     @Override
     public MultiFields whereField(String templateId, String identifier, I_VariableDefinition variableDefinition) {

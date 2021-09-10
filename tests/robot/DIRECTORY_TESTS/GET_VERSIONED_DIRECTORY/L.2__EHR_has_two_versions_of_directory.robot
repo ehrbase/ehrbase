@@ -30,7 +30,9 @@ Documentation    Alternative flow 1: get versioned directory from existent EHR t
 ...     Postconditions:
 ...         None
 Metadata        TOP_TEST_SUITE    DIRECTORY
-Resource        ${CURDIR}${/}../../_resources/suite_settings.robot
+
+Resource        ../../_resources/keywords/directory_keywords.robot
+Resource        ../../_resources/keywords/composition_keywords.robot
 
 #Suite Setup  startup SUT
 # Test Setup  start openehr server
