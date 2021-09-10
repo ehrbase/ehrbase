@@ -77,7 +77,7 @@
     </language>
     <encoding>
       <terminology_id>
-        <value>Unicode</value>
+        <value>IANA_character-sets</value>
       </terminology_id>
       <code_string>UTF-8</code_string>
     </encoding>
