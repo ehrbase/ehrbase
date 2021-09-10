@@ -18,6 +18,7 @@
 package org.ehrbase.aql.sql.queryimpl.attribute.composition;
 
 import org.ehrbase.aql.sql.binding.JoinBinder;
+import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
 import org.ehrbase.aql.sql.queryimpl.QueryImplConstants;
 import org.ehrbase.aql.sql.queryimpl.attribute.AttributePath;
 import org.ehrbase.aql.sql.queryimpl.attribute.AttributeResolver;
@@ -76,7 +77,13 @@ public class CompositionResolver extends AttributeResolver
             case "uid":
                 return new FullCompositionJson(fieldResolutionContext, joinSetup).forJsonPath(new String[]{"uid", ""}).sqlField();
             case "uid/value":
-                return new FullCompositionJson(fieldResolutionContext, joinSetup).forJsonPath(new String[]{"uid", "value"}).sqlField();
+                //this is an optimization
+                //in WHERE clause, we can only select on UUID without versioning as it is not supported at this time
+                if (fieldResolutionContext.getClause().equals(IQueryImpl.Clause.WHERE))
+                    return new CompositionUidValue(fieldResolutionContext, joinSetup).forTableField(NULL_FIELD).sqlField();
+                else
+                    //in SELECT we do return the full versioned composition id (as a UID_BASED_ID)
+                    return new FullCompositionJson(fieldResolutionContext, joinSetup).forJsonPath(new String[]{"uid", "value"}).sqlField();
             case "name":
                 //we force the path to use the single attribute 'value' from the name encoding
                 return new FullCompositionJson(fieldResolutionContext, joinSetup).forJsonPath(new String[]{"name", ""}).sqlField();
