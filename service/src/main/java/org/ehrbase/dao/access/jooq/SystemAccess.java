@@ -29,10 +29,6 @@ import org.ehrbase.dao.access.interfaces.I_SystemAccess;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.jooq.pg.tables.records.SystemRecord;
 import org.joda.time.DateTime;
-import org.jooq.DSLContext;
-import org.jooq.Record;
-import org.jooq.Record1;
-import org.jooq.Result;
 
 import java.sql.Timestamp;
 import java.util.Optional;
@@ -45,8 +41,6 @@ import static org.ehrbase.jooq.pg.Tables.SYSTEM;
  */
 public class SystemAccess extends DataAccess implements I_SystemAccess {
 
-
-    private static final Logger log = LogManager.getLogger(SystemAccess.class);
     private SystemRecord systemRecord;
 
     public SystemAccess(I_DomainAccess domainAccess) {
@@ -93,7 +87,7 @@ public class SystemAccess extends DataAccess implements I_SystemAccess {
         UUID uuid;
 
         try {
-            uuid = Optional.ofNullable(domainAccess.getContext().fetchOne(SYSTEM, SYSTEM.SETTINGS.eq(settings))).map(SystemRecord::getId).orElse(null);
+            uuid = Optional.ofNullable(domainAccess.getContext().fetchAny(SYSTEM, SYSTEM.SETTINGS.eq(settings))).map(SystemRecord::getId).orElse(null);
 
             if (uuid == null) {
                 return null;
