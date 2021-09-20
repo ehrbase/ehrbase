@@ -88,7 +88,7 @@ ALTER FUNCTION ehr.js_party_ref(text, text, text, text)
     OWNER TO ehrbase;
 
 -- create index
-create index  concurrently if not exists ehr_subject_id_index on ehr.party_identified(jsonb_extract_path_text(cast("ehr"."js_party_ref"(
+create index if not exists ehr_subject_id_index on ehr.party_identified(jsonb_extract_path_text(cast("ehr"."js_party_ref"(
         ehr.party_identified.party_ref_value,
         ehr.party_identified.party_ref_scheme,
         ehr.party_identified.party_ref_namespace,
