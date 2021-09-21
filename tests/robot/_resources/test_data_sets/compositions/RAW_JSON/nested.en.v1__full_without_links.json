@@ -1,444 +1,290 @@
 {
-  "_type": "COMPOSITION",
-  "language": {
-    "_type": "CODE_PHRASE",
-    "terminology_id": {
-      "_type": "TERMINOLOGY_ID",
-      "value": "ISO_639-1"
+    "_type": "COMPOSITION",
+    "name": {
+        "_type": "DV_TEXT",
+        "value": "Nesting"
     },
-    "code_string": "en"
-  },
-  "territory": {
-    "_type": "CODE_PHRASE",
-    "terminology_id": {
-      "_type": "TERMINOLOGY_ID",
-      "value": "ISO_3166-1"
+    "archetype_details": {
+        "archetype_id": {
+            "value": "openEHR-EHR-COMPOSITION.nesting.v1"
+        },
+        "template_id": {
+            "value": "nested.en.v1"
+        },
+        "rm_version": "1.0.2"
     },
-    "code_string": "US"
-  },
-  "category": {
-    "_type": "DV_CODED_TEXT",
-    "defining_code": {
-      "_type": "CODE_PHRASE",
-      "terminology_id": {
-        "_type": "TERMINOLOGY_ID",
-        "value": "openehr"
-      },
-      "code_string": "433"
-    },
-    "value": "event"
-  },
-  "composer": {
-    "_type": "PARTY_IDENTIFIED",
-    "name": "composer test value",
-    "external_ref": {
-      "_type": "PARTY_REF",
-      "id": {
-        "_type": "GENERIC_ID",
-        "scheme": "scheme",
-        "value": "value"
-      },
-      "namespace": "local",
-      "type": "PARTY"
-    }
-  },
-  "context": {
-    "_type": "EVENT_CONTEXT",
-    "start_time": {
-      "_type": "DV_DATE_TIME",
-      "value": "2021-05-18T13:13:09.780+03:00"
-    },
-    "end_time": {
-      "_type": "DV_DATE_TIME",
-      "value": "2021-05-18T13:13:09.780+03:00"
-    },
-    "setting": {
-      "_type": "DV_CODED_TEXT",
-      "defining_code": {
-        "_type": "CODE_PHRASE",
+    "archetype_node_id": "openEHR-EHR-COMPOSITION.nesting.v1",
+    "language": {
         "terminology_id": {
-          "_type": "TERMINOLOGY_ID",
-          "value": "openehr"
+            "value": "ISO_639-1"
         },
-        "code_string": "238"
-      },
-      "value": "other care"
+        "code_string": "en"
     },
-    "health_care_facility": {
-      "_type": "PARTY_IDENTIFIED",
-      "name": "Company",
-      "external_ref": {
-        "_type": "PARTY_REF",
-        "id": {
-          "_type": "GENERIC_ID",
-          "scheme": "scheme",
-          "value": "5112"
+    "territory": {
+        "terminology_id": {
+            "value": "ISO_3166-1"
         },
-        "namespace": "namespace",
-        "type": "PARTY"
-      }
+        "code_string": "UY"
     },
-    "participations": [
-      {
-        "_type": "PARTICIPATION",
-        "function": {
-          "_type": "DV_TEXT",
-          "value": "unknown"
-        },
-        "performer": {
-          "_type": "PARTY_IDENTIFIED",
-          "name": "Firstname Lastname 1",
-          "external_ref": {
-            "_type": "PARTY_REF",
-            "id": {
-              "_type": "GENERIC_ID",
-              "scheme": "scheme",
-              "value": "4734"
-            },
-            "namespace": "namespace",
-            "type": "PARTY"
-          }
-        },
-        "mode": {
-          "_type": "DV_CODED_TEXT",
-          "defining_code": {
-            "_type": "CODE_PHRASE",
+    "category": {
+        "value": "event",
+        "defining_code": {
             "terminology_id": {
-              "_type": "TERMINOLOGY_ID",
-              "value": "openehr"
+                "value": "openehr"
             },
-            "code_string": "218"
-          },
-          "value": "signing over video"
+            "code_string": "433"
         }
-      },
-      {
-        "_type": "PARTICIPATION",
-        "function": {
-          "_type": "DV_TEXT",
-          "value": "unknown"
-        },
-        "performer": {
-          "_type": "PARTY_IDENTIFIED",
-          "name": "Firstname Lastname 2",
-          "external_ref": {
-            "_type": "PARTY_REF",
+    },
+    "composer": {
+        "_type": "PARTY_IDENTIFIED",
+        "external_ref": {
             "id": {
-              "_type": "GENERIC_ID",
-              "scheme": "scheme",
-              "value": "7809"
+                "_type": "HIER_OBJECT_ID",
+                "value": "35c4a519-4ed9-4521-8750-8b86b22318f2"
             },
-            "namespace": "namespace",
-            "type": "PARTY"
-          }
+            "namespace": "DEMOGRAPHIC",
+            "type": "PERSON"
         },
-        "mode": {
-          "_type": "DV_CODED_TEXT",
-          "defining_code": {
-            "_type": "CODE_PHRASE",
-            "terminology_id": {
-              "_type": "TERMINOLOGY_ID",
-              "value": "openehr"
-            },
-            "code_string": "194"
-          },
-          "value": "asynchronous audiovisual; recorded video"
-        }
-      }
-    ]
-  },
-  "content": [
-    {
-      "_type": "SECTION",
-      "items": [
-        {
-          "_type": "INSTRUCTION",
-          "narrative": {
-            "_type": "DV_TEXT",
-            "value": "narrative"
-          },
-          "expiry_time": {
-            "_type": "DV_DATE_TIME",
-            "value": "2021-05-18T13:13:09.780+03:00"
-          },
-          "activities": [
+        "name": "Dr. Yamamoto"
+    },
+    "context": {
+        "start_time": {
+            "value": "2021-09-20T21:23:31.935-0300"
+        },
+        "setting": {
+            "value": "home",
+            "defining_code": {
+                "terminology_id": {
+                    "value": "openehr"
+                },
+                "code_string": "225"
+            }
+        },
+        "participations": [
             {
-              "_type": "ACTIVITY",
-              "description": {
-                "_type": "ITEM_TREE",
-                "items": [
-                  {
-                    "_type": "ELEMENT",
-                    "value": {
-                      "_type": "DV_ORDINAL",
-                      "value": 0,
-                      "symbol": {
-                        "_type": "DV_CODED_TEXT",
+                "function": {
+                    "value": "legal guardian consent author"
+                },
+                "performer": {
+                    "_type": "PARTY_RELATED",
+                    "name": "Charles Connor",
+                    "relationship": {
+                        "value": "father",
                         "defining_code": {
-                          "_type": "CODE_PHRASE",
-                          "terminology_id": {
-                            "_type": "TERMINOLOGY_ID",
-                            "value": "local"
-                          },
-                          "code_string": "code"
+                            "terminology_id": {
+                                "value": "openehr"
+                            },
+                            "code_string": "9"
+                        }
+                    }
+                },
+                "mode": {
+                    "value": "not specified",
+                    "defining_code": {
+                        "terminology_id": {
+                            "value": "openehr"
                         },
-                        "value": "value"
-                      }
-                    },
+                        "code_string": "193"
+                    }
+                }
+            }
+        ]
+    },
+    "content": [
+        {
+            "_type": "SECTION",
+            "name": {
+                "_type": "DV_TEXT",
+                "value": "Nested"
+            },
+            "archetype_details": {
+                "archetype_id": {
+                    "value": "openEHR-EHR-SECTION.nested.v1"
+                },
+                "template_id": {
+                    "value": "nested.en.v1"
+                },
+                "rm_version": "1.0.2"
+            },
+            "archetype_node_id": "openEHR-EHR-SECTION.nested.v1",
+            "items": [
+                {
+                    "_type": "INSTRUCTION",
                     "name": {
-                      "_type": "DV_TEXT",
-                      "value": "ordinal"
-                    },
-                    "archetype_node_id": "at0002"
-                  },
-                  {
-                    "_type": "CLUSTER",
-                    "items": [
-                      {
-                        "_type": "ELEMENT",
-                        "value": {
-                          "_type": "DV_TEXT",
-                          "value": "value 1"
-                        },
-                        "name": {
-                          "_type": "DV_TEXT",
-                          "value": "text"
-                        },
-                        "archetype_node_id": "at0001"
-                      },
-                      {
-                        "_type": "ELEMENT",
-                        "value": {
-                          "_type": "DV_DATE_TIME",
-                          "value": "2021-05-18T13:13:09.780+03:00"
-                        },
-                        "name": {
-                          "_type": "DV_TEXT",
-                          "value": "date"
-                        },
-                        "archetype_node_id": "at0002"
-                      },
-                      {
-                        "_type": "CLUSTER",
-                        "items": [
-                          {
-                            "_type": "ELEMENT",
-                            "value": {
-                              "_type": "DV_BOOLEAN",
-                              "value": false
-                            },
-                            "name": {
-                              "_type": "DV_TEXT",
-                              "value": "boolean"
-                            },
-                            "archetype_node_id": "at0001"
-                          },
-                          {
-                            "_type": "ELEMENT",
-                            "value": {
-                              "_type": "DV_COUNT",
-                              "magnitude": 10980
-                            },
-                            "name": {
-                              "_type": "DV_TEXT",
-                              "value": "count"
-                            },
-                            "archetype_node_id": "at0002"
-                          }
-                        ],
-                        "name": {
-                          "_type": "DV_TEXT",
-                          "value": "Nested2"
-                        },
-                        "archetype_details": {
-                          "_type": "ARCHETYPED",
-                          "archetype_id": {
-                            "_type": "ARCHETYPE_ID",
-                            "value": "openEHR-EHR-CLUSTER.nested2.v1"
-                          },
-                          "rm_version": "1.0.1"
-                        },
-                        "archetype_node_id": "openEHR-EHR-CLUSTER.nested2.v1"
-                      }
-                    ],
-                    "name": {
-                      "_type": "DV_TEXT",
-                      "value": "Nested"
+                        "_type": "DV_TEXT",
+                        "value": "Nested"
                     },
                     "archetype_details": {
-                      "_type": "ARCHETYPED",
-                      "archetype_id": {
-                        "_type": "ARCHETYPE_ID",
-                        "value": "openEHR-EHR-CLUSTER.nested.v1"
-                      },
-                      "rm_version": "1.0.1"
+                        "archetype_id": {
+                            "value": "openEHR-EHR-INSTRUCTION.nested.v1"
+                        },
+                        "template_id": {
+                            "value": "nested.en.v1"
+                        },
+                        "rm_version": "1.0.2"
                     },
-                    "archetype_node_id": "openEHR-EHR-CLUSTER.nested.v1"
-                  }
-                ],
-                "name": {
-                  "_type": "DV_TEXT",
-                  "value": "Nested"
-                },
-                "archetype_details": {
-                  "_type": "ARCHETYPED",
-                  "archetype_id": {
-                    "_type": "ARCHETYPE_ID",
-                    "value": "openEHR-EHR-ITEM_TREE.nested.v1"
-                  },
-                  "rm_version": "1.0.1"
-                },
-                "archetype_node_id": "openEHR-EHR-ITEM_TREE.nested.v1"
-              },
-              "timing": {
-                "_type": "DV_PARSABLE",
-                "value": "R5/2008-03-01T13:00:00Z/P1Y2M10DT2H30M",
-                "formalism": "timing"
-              },
-              "action_archetype_id": "/.*/",
-              "name": {
-                "_type": "DV_TEXT",
-                "value": "Current Activity"
-              },
-              "archetype_node_id": "at0001"
-            }
-          ],
-          "name": {
-            "_type": "DV_TEXT",
-            "value": "Nested"
-          },
-          "language": {
-            "_type": "CODE_PHRASE",
-            "terminology_id": {
-              "_type": "TERMINOLOGY_ID",
-              "value": "ISO_639-1"
-            },
-            "code_string": "en"
-          },
-          "encoding": {
-            "_type": "CODE_PHRASE",
-            "terminology_id": {
-              "_type": "TERMINOLOGY_ID",
-              "value": "IANA_character-sets"
-            },
-            "code_string": "UTF-8"
-          },
-          "subject": {
-            "_type": "PARTY_SELF"
-          },
-          "archetype_details": {
-            "_type": "ARCHETYPED",
-            "archetype_id": {
-              "_type": "ARCHETYPE_ID",
-              "value": "openEHR-EHR-INSTRUCTION.nested.v1"
-            },
-            "rm_version": "1.0.1"
-          },
-          "archetype_node_id": "openEHR-EHR-INSTRUCTION.nested.v1",
-          "other_participations": [
-            {
-              "_type": "PARTICIPATION",
-              "function": {
-                "_type": "DV_TEXT",
-                "value": "unknown"
-              },
-              "performer": {
-                "_type": "PARTY_IDENTIFIED",
-                "name": "Firstname Lastname 1",
-                "external_ref": {
-                  "_type": "PARTY_REF",
-                  "id": {
-                    "_type": "GENERIC_ID",
-                    "scheme": "scheme",
-                    "value": "3001"
-                  },
-                  "namespace": "namespace",
-                  "type": "PARTY"
+                    "archetype_node_id": "openEHR-EHR-INSTRUCTION.nested.v1",
+                    "language": {
+                        "terminology_id": {
+                            "value": "ISO_639-1"
+                        },
+                        "code_string": "en"
+                    },
+                    "encoding": {
+                        "terminology_id": {
+                            "value": "IANA_character-sets"
+                        },
+                        "code_string": "UTF-8"
+                    },
+                    "subject": {
+                        "_type": "PARTY_SELF"
+                    },
+                    "narrative": {
+                        "value": "KHZkXV.rVDmXksPYYqxWqKCpEKiVoo.GdVKQfXzVQZBt.AgqDVvdkHeFgfcxEdOzHsufWXdlRvlBDQIpivGeemHVGHHfWgkvSQuaUSerJvNqlGNyIVUGdgqzOdk.srmNEskaaZjpJOaP.bEcFyoKolSua x.AEQgGVRlgiwtjjTnlGK.rjMvbEm,BtvjIInwOSvpnObDV.JpZWQwYMzmEriWNSiqdeQKPecyUXuVbxUEpCBYxCWJRbBxeflJiDv"
+                    },
+                    "activities": [
+                        {
+                            "_type": "ACTIVITY",
+                            "name": {
+                                "_type": "DV_TEXT",
+                                "value": "Current Activity"
+                            },
+                            "archetype_node_id": "at0001",
+                            "description": {
+                                "_type": "ITEM_TREE",
+                                "name": {
+                                    "_type": "DV_TEXT",
+                                    "value": "Nested"
+                                },
+                                "archetype_details": {
+                                    "archetype_id": {
+                                        "value": "openEHR-EHR-ITEM_TREE.nested.v1"
+                                    },
+                                    "template_id": {
+                                        "value": "nested.en.v1"
+                                    },
+                                    "rm_version": "1.0.2"
+                                },
+                                "archetype_node_id": "openEHR-EHR-ITEM_TREE.nested.v1",
+                                "items": [
+                                    {
+                                        "_type": "ELEMENT",
+                                        "name": {
+                                            "_type": "DV_TEXT",
+                                            "value": "ordinal"
+                                        },
+                                        "archetype_node_id": "at0002",
+                                        "value": {
+                                            "_type": "DV_ORDINAL",
+                                            "value": 1,
+                                            "symbol": {
+                                                "value": "autogenerated (node doesn't have a constraint)",
+                                                "defining_code": {
+                                                    "terminology_id": {
+                                                        "value": "com.cabolabs.openehr.opt"
+                                                    },
+                                                    "code_string": "IJERMJYYKO"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "_type": "CLUSTER",
+                                        "name": {
+                                            "_type": "DV_TEXT",
+                                            "value": "Nested"
+                                        },
+                                        "archetype_details": {
+                                            "archetype_id": {
+                                                "value": "openEHR-EHR-CLUSTER.nested.v1"
+                                            },
+                                            "template_id": {
+                                                "value": "nested.en.v1"
+                                            },
+                                            "rm_version": "1.0.2"
+                                        },
+                                        "archetype_node_id": "openEHR-EHR-CLUSTER.nested.v1",
+                                        "items": [
+                                            {
+                                                "_type": "ELEMENT",
+                                                "name": {
+                                                    "_type": "DV_TEXT",
+                                                    "value": "text"
+                                                },
+                                                "archetype_node_id": "at0001",
+                                                "value": {
+                                                    "_type": "DV_TEXT",
+                                                    "value": "qMIyyOzKg.SkeVKGHxRTtLxzRvotLZdiYtVXZkIlLUBaiT,liGtdMuhGtpwGvAeJUVrMeGlZRcuCuGuZsTIgPbzKgjMMKcuH owr,kueDjACdaXjHgGWhY.ZuoGnrI.LsigL OiSxKJSHJMAbOFVtjQceFmDFjPKekAIuuKHxVAYWBDDztqOO.PflrcR.jh.IXA.cFZsuPdDK,GrZ.rs haFVyzKhwfEQAhpJIEHgEnoTgQdUMATjJNbXTAFAStkYR,FCsZEwjTWKYfRx yBUCxXUApflHBfTfxknDhhTb,H"
+                                                }
+                                            },
+                                            {
+                                                "_type": "ELEMENT",
+                                                "name": {
+                                                    "_type": "DV_TEXT",
+                                                    "value": "date"
+                                                },
+                                                "archetype_node_id": "at0002",
+                                                "value": {
+                                                    "_type": "DV_DATE_TIME",
+                                                    "value": "2021-09-20T21:23:32.099-0300"
+                                                }
+                                            },
+                                            {
+                                                "_type": "CLUSTER",
+                                                "name": {
+                                                    "_type": "DV_TEXT",
+                                                    "value": "Nested2"
+                                                },
+                                                "archetype_details": {
+                                                    "archetype_id": {
+                                                        "value": "openEHR-EHR-CLUSTER.nested2.v1"
+                                                    },
+                                                    "template_id": {
+                                                        "value": "nested.en.v1"
+                                                    },
+                                                    "rm_version": "1.0.2"
+                                                },
+                                                "archetype_node_id": "openEHR-EHR-CLUSTER.nested2.v1",
+                                                "items": [
+                                                    {
+                                                        "_type": "ELEMENT",
+                                                        "name": {
+                                                            "_type": "DV_TEXT",
+                                                            "value": "boolean"
+                                                        },
+                                                        "archetype_node_id": "at0001",
+                                                        "value": {
+                                                            "_type": "DV_BOOLEAN",
+                                                            "value": true
+                                                        }
+                                                    },
+                                                    {
+                                                        "_type": "ELEMENT",
+                                                        "name": {
+                                                            "_type": "DV_TEXT",
+                                                            "value": "count"
+                                                        },
+                                                        "archetype_node_id": "at0002",
+                                                        "value": {
+                                                            "_type": "DV_COUNT",
+                                                            "magnitude": 6
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            "timing": {
+                                "value": "P1D",
+                                "formalism": "ISO8601"
+                            },
+                            "action_archetype_id": "openEHR-EHR-ACTION\\.sample_action\\.v1"
+                        }
+                    ]
                 }
-              },
-              "mode": {
-                "_type": "DV_CODED_TEXT",
-                "defining_code": {
-                  "_type": "CODE_PHRASE",
-                  "terminology_id": {
-                    "_type": "TERMINOLOGY_ID",
-                    "value": "openehr"
-                  },
-                  "code_string": "202"
-                },
-                "value": "live audio-only; telephone; internet phone; teleconference"
-              }
-            },
-            {
-              "_type": "PARTICIPATION",
-              "function": {
-                "_type": "DV_TEXT",
-                "value": "unknown"
-              },
-              "performer": {
-                "_type": "PARTY_IDENTIFIED",
-                "name": "Firstname Lastname 2",
-                "external_ref": {
-                  "_type": "PARTY_REF",
-                  "id": {
-                    "_type": "GENERIC_ID",
-                    "scheme": "scheme",
-                    "value": "9481"
-                  },
-                  "namespace": "namespace",
-                  "type": "PARTY"
-                }
-              },
-              "mode": {
-                "_type": "DV_CODED_TEXT",
-                "defining_code": {
-                  "_type": "CODE_PHRASE",
-                  "terminology_id": {
-                    "_type": "TERMINOLOGY_ID",
-                    "value": "openehr"
-                  },
-                  "code_string": "212"
-                },
-                "value": "live text-only; internet chat; SMS chat; interactive written note"
-              }
-            }
-          ]
+            ]
         }
-      ],
-      "name": {
-        "_type": "DV_TEXT",
-        "value": "Nested"
-      },
-      "archetype_details": {
-        "_type": "ARCHETYPED",
-        "archetype_id": {
-          "_type": "ARCHETYPE_ID",
-          "value": "openEHR-EHR-SECTION.nested.v1"
-        },
-        "rm_version": "1.0.1"
-      },
-      "archetype_node_id": "openEHR-EHR-SECTION.nested.v1"
-    }
-  ],
-  "name": {
-    "_type": "DV_TEXT",
-    "value": "Nesting"
-  },
-  "uid": {
-    "_type": "HIER_OBJECT_ID",
-    "value": "378d91ec-7a4b-4042-bcb0-ef1871188268::ehrdb::1"
-  },
-  "archetype_details": {
-    "_type": "ARCHETYPED",
-    "archetype_id": {
-      "_type": "ARCHETYPE_ID",
-      "value": "openEHR-EHR-COMPOSITION.nesting.v1"
-    },
-    "template_id": {
-      "_type": "TEMPLATE_ID",
-      "value": "nested.en.v1"
-    },
-    "rm_version": "1.0.1"
-  },
-  "archetype_node_id": "openEHR-EHR-COMPOSITION.nesting.v1"
+    ]
 }

@@ -1,0 +1,324 @@
+{
+  "_type": "COMPOSITION",
+  "language": {
+    "_type": "CODE_PHRASE",
+    "terminology_id": {
+      "_type": "TERMINOLOGY_ID",
+      "value": "ISO_639-1"
+    },
+    "code_string": "en"
+  },
+  "territory": {
+    "_type": "CODE_PHRASE",
+    "terminology_id": {
+      "_type": "TERMINOLOGY_ID",
+      "value": "ISO_3166-1"
+    },
+    "code_string": "US"
+  },
+  "category": {
+    "_type": "DV_CODED_TEXT",
+    "defining_code": {
+      "_type": "CODE_PHRASE",
+      "terminology_id": {
+        "_type": "TERMINOLOGY_ID",
+        "value": "openehr"
+      },
+      "code_string": "431"
+    },
+    "value": "persistent"
+  },
+  "composer": {
+    "_type": "PARTY_IDENTIFIED",
+    "name": "composer test value",
+    "external_ref": {
+      "_type": "PARTY_REF",
+      "id": {
+        "_type": "GENERIC_ID",
+        "scheme": "scheme",
+        "value": "value"
+      },
+      "namespace": "local",
+      "type": "PARTY"
+    }
+  },
+  "context": {
+    "_type": "EVENT_CONTEXT",
+    "start_time": {
+      "_type": "DV_DATE_TIME",
+      "value": "2021-05-20T16:08:17.470+03:00"
+    },
+    "end_time": {
+      "_type": "DV_DATE_TIME",
+      "value": "2021-05-20T16:08:17.470+03:00"
+    },
+    "setting": {
+      "_type": "DV_CODED_TEXT",
+      "defining_code": {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "openehr"
+        },
+        "code_string": "238"
+      },
+      "value": "other care"
+    },
+    "health_care_facility": {
+      "_type": "PARTY_IDENTIFIED",
+      "name": "Company",
+      "external_ref": {
+        "_type": "PARTY_REF",
+        "id": {
+          "_type": "GENERIC_ID",
+          "scheme": "scheme",
+          "value": "8778"
+        },
+        "namespace": "namespace",
+        "type": "PARTY"
+      }
+    },
+    "participations": [
+      {
+        "_type": "PARTICIPATION",
+        "function": {
+          "_type": "DV_TEXT",
+          "value": "unknown"
+        },
+        "performer": {
+          "_type": "PARTY_IDENTIFIED",
+          "name": "Firstname Lastname 1",
+          "external_ref": {
+            "_type": "PARTY_REF",
+            "id": {
+              "_type": "GENERIC_ID",
+              "scheme": "scheme",
+              "value": "9440"
+            },
+            "namespace": "namespace",
+            "type": "PARTY"
+          }
+        },
+        "mode": {
+          "_type": "DV_CODED_TEXT",
+          "defining_code": {
+            "_type": "CODE_PHRASE",
+            "terminology_id": {
+              "_type": "TERMINOLOGY_ID",
+              "value": "openehr"
+            },
+            "code_string": "212"
+          },
+          "value": "live text-only; internet chat; SMS chat; interactive written note"
+        }
+      },
+      {
+        "_type": "PARTICIPATION",
+        "function": {
+          "_type": "DV_TEXT",
+          "value": "unknown"
+        },
+        "performer": {
+          "_type": "PARTY_IDENTIFIED",
+          "name": "Firstname Lastname 2",
+          "external_ref": {
+            "_type": "PARTY_REF",
+            "id": {
+              "_type": "GENERIC_ID",
+              "scheme": "scheme",
+              "value": "8873"
+            },
+            "namespace": "namespace",
+            "type": "PARTY"
+          }
+        },
+        "mode": {
+          "_type": "DV_CODED_TEXT",
+          "defining_code": {
+            "_type": "CODE_PHRASE",
+            "terminology_id": {
+              "_type": "TERMINOLOGY_ID",
+              "value": "openehr"
+            },
+            "code_string": "216"
+          },
+          "value": "face-to-face communication"
+        }
+      }
+    ]
+  },
+  "content": [
+    {
+      "_type": "OBSERVATION",
+      "data": {
+        "_type": "HISTORY",
+        "origin": {
+          "_type": "DV_DATE_TIME",
+          "value": "2021-05-20T16:08:17.470+03:00"
+        },
+        "events": [
+          {
+            "_type": "POINT_EVENT",
+            "name": {
+              "_type": "DV_TEXT",
+              "value": "Cualquier evento"
+            },
+            "time": {
+              "_type": "DV_DATE_TIME",
+              "value": "2021-05-20T16:08:17.470+03:00"
+            },
+            "data": {
+              "_type": "ITEM_TREE",
+              "items": [
+                {
+                  "_type": "ELEMENT",
+                  "value": {
+                    "_type": "DV_TEXT",
+                    "value": "value 1"
+                  },
+                  "name": {
+                    "_type": "DV_TEXT",
+                    "value": "text"
+                  },
+                  "archetype_node_id": "at0004"
+                }
+              ],
+              "name": {
+                "_type": "DV_TEXT",
+                "value": "Arbol"
+              },
+              "archetype_node_id": "at0003"
+            },
+            "archetype_node_id": "at0002"
+          }
+        ],
+        "name": {
+          "_type": "DV_TEXT",
+          "value": "Event Series"
+        },
+        "archetype_node_id": "at0001"
+      },
+      "name": {
+        "_type": "DV_TEXT",
+        "value": "Minimal"
+      },
+      "language": {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "ISO_639-1"
+        },
+        "code_string": "en"
+      },
+      "encoding": {
+        "_type": "CODE_PHRASE",
+        "terminology_id": {
+          "_type": "TERMINOLOGY_ID",
+          "value": "IANA_character-sets"
+        },
+        "code_string": "UTF-8"
+      },
+      "subject": {
+        "_type": "PARTY_SELF"
+      },
+      "archetype_details": {
+        "_type": "ARCHETYPED",
+        "archetype_id": {
+          "_type": "ARCHETYPE_ID",
+          "value": "openEHR-EHR-OBSERVATION.minimal.v1"
+        },
+        "rm_version": "1.0.1"
+      },
+      "archetype_node_id": "openEHR-EHR-OBSERVATION.minimal.v1",
+      "other_participations": [
+        {
+          "_type": "PARTICIPATION",
+          "function": {
+            "_type": "DV_TEXT",
+            "value": "unknown"
+          },
+          "performer": {
+            "_type": "PARTY_IDENTIFIED",
+            "name": "Firstname Lastname 1",
+            "external_ref": {
+              "_type": "PARTY_REF",
+              "id": {
+                "_type": "GENERIC_ID",
+                "scheme": "scheme",
+                "value": "4379"
+              },
+              "namespace": "namespace",
+              "type": "PARTY"
+            }
+          },
+          "mode": {
+            "_type": "DV_CODED_TEXT",
+            "defining_code": {
+              "_type": "CODE_PHRASE",
+              "terminology_id": {
+                "_type": "TERMINOLOGY_ID",
+                "value": "openehr"
+              },
+              "code_string": "221"
+            },
+            "value": "translated text"
+          }
+        },
+        {
+          "_type": "PARTICIPATION",
+          "function": {
+            "_type": "DV_TEXT",
+            "value": "unknown"
+          },
+          "performer": {
+            "_type": "PARTY_IDENTIFIED",
+            "name": "Firstname Lastname 2",
+            "external_ref": {
+              "_type": "PARTY_REF",
+              "id": {
+                "_type": "GENERIC_ID",
+                "scheme": "scheme",
+                "value": "9787"
+              },
+              "namespace": "namespace",
+              "type": "PARTY"
+            }
+          },
+          "mode": {
+            "_type": "DV_CODED_TEXT",
+            "defining_code": {
+              "_type": "CODE_PHRASE",
+              "terminology_id": {
+                "_type": "TERMINOLOGY_ID",
+                "value": "openehr"
+              },
+              "code_string": "224"
+            },
+            "value": "interpreted video communication"
+          }
+        }
+      ]
+    }
+  ],
+  "name": {
+    "_type": "DV_TEXT",
+    "value": "Persistent minimal"
+  },
+  "uid": {
+    "_type": "HIER_OBJECT_ID",
+    "value": "f1a1a1b4-4851-4e8b-8e32-42968ef5537d::ehrdb::1"
+  },
+  "archetype_details": {
+    "_type": "ARCHETYPED",
+    "archetype_id": {
+      "_type": "ARCHETYPE_ID",
+      "value": "openEHR-EHR-COMPOSITION.persistent_minimal.v1"
+    },
+    "template_id": {
+      "_type": "TEMPLATE_ID",
+      "value": "persistent_minimal.en.v1"
+    },
+    "rm_version": "1.0.1"
+  },
+  "archetype_node_id": "openEHR-EHR-COMPOSITION.persistent_minimal.v1"
+}
