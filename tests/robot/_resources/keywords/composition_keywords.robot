@@ -271,7 +271,7 @@ commit composition
     ...
     ...                 ENDPOINT: POST /ehr/${ehr_id}/composition
     ...
-    ...                 FORMAT VARIABLES: FLAT, TDD, STRUCTURED, RAW_JSON, RAW_XML
+    ...                 FORMAT VARIABLES: FLAT, TDD, STRUCTURED, CANONICAL_JSON, CANONICAL_XML
 
     @{template}=        Split String    ${composition}   __
     ${template}=        Get From List   ${template}      0
@@ -285,10 +285,10 @@ commit composition
         Set To Dictionary   ${headers}   openEHR-TEMPLATE_ID=${template}
     END
 
-    IF   '${format}'=='RAW_JSON'
+    IF   '${format}'=='CANONICAL_JSON'
         Set To Dictionary   ${headers}   Content-Type=application/json
         Set To Dictionary   ${headers}   Accept=application/json    
-    ELSE IF   '${format}'=='RAW_XML'
+    ELSE IF   '${format}'=='CANONICAL_XML'
         Set To Dictionary   ${headers}   Content-Type=application/xml
         Set To Dictionary   ${headers}   Accept=application/xml
     ELSE IF   '${format}'=='FLAT'
@@ -322,14 +322,14 @@ check the successful result of commit composition
     ${Location}   Set Variable    ${response.headers}[Location]
     ${ETag}       Get Substring   ${response.headers}[ETag]    1    -1
 
-    IF  '${format}' == 'RAW_JSON'
+    IF  '${format}' == 'CANONICAL_JSON'
         ${composition_uid}=   Set Variable   ${response.json()}[uid][value]
         ${template_id}=       Set Variable   ${response.json()}[archetype_details][template_id][value]
         ${composer}           Set Variable   ${response.json()}[composer][name]
         # @ndanilin: EhrBase don't return context for persistent composition.
         #            It seems to us that it's wrong so a setting check is disabled yet.
         # ${setting}            Set variable   ${response.json()}[context][setting][value]
-    ELSE IF   '${format}' == 'RAW_XML'
+    ELSE IF   '${format}' == 'CANONICAL_XML'
         ${xresp}=             Parse Xml             ${response.text}
         ${composition_uid}=   Get Element Text      ${xresp}   uid/value
         ${template_id}=       Get Element Text      ${xresp}   archetype_details/template_id/value
