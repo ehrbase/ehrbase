@@ -40,12 +40,12 @@
         "external_ref": {
             "id": {
                 "_type": "HIER_OBJECT_ID",
-                "value": "7883499c-0eaa-4ce0-bbac-75c521b2190b"
+                "value": "79a14a08-10ef-400a-962f-d2442c184967"
             },
             "namespace": "DEMOGRAPHIC",
             "type": "PERSON"
         },
-        "name": "composer test value"
+        "name": "Dr. House"
     },
     "content": [
         {
@@ -88,7 +88,7 @@
                 "archetype_node_id": "at0001",
                 "origin": {
                     "_type": "DV_DATE_TIME",
-                    "value": "2021-09-20T19:21:10.958-0300"
+                    "value": "2021-09-21T21:11:27.466-03:00"
                 },
                 "events": [
                     {
@@ -100,7 +100,7 @@
                         "archetype_node_id": "at0002",
                         "time": {
                             "_type": "DV_DATE_TIME",
-                            "value": "2021-09-20T19:21:11.009-0300"
+                            "value": "2021-09-21T21:11:27.522-03:00"
                         },
                         "data": {
                             "_type": "ITEM_TREE",
@@ -119,7 +119,7 @@
                                     "archetype_node_id": "at0004",
                                     "value": {
                                         "_type": "DV_TEXT",
-                                        "value": "citFzbCO,CLlhOB.yFwi.QPYvAWU GtfeHpxehGuPUpmyBUBqaOeLVX.IfAfyZpZhyDlubhFznysNTUCfOMeEgjlOTeMGcNTGzLcnleGDctbGwPCZwHNYthVNggqRsvAGBAUHhVBfNhEcYVnuzahmWMcvsSeWqPzhfTXkJOMvAHWdvVAozWOB.NdJXSRpCBLtrEqpiSRPSaFoIZEVKxCpeC uIIaqys.iwIlgbmgiUicift EPqzQvRHxFb aXqs,YHnIsactjtDqeFOkVLUeRgHNCvwM,QnCDIUAvEgrajY"
+                                        "value": "mZuaaqmqaTrdKLzBlCGGpgGMPwKviHMXm,xZLQTTUPViNByMBMOvJNEgwdLxIoYlmGyPEFspiXJvlIlvYThXru.aOxzCjeqKc.sUdDCuBfkzlNvpBzHXIcJOdkvJGpUgAfijSPGXKKGyQuPQRtdGQFGJNnDWlfNTbnsJQSDod,GVIaeYSkvWs EhedKs.tJickka,zbAYQvdVbyuXolfVgTtvj.liDyRNW,vXxTsGAwWsKXvx O..MfwvaHStwDOdCgkph.JOumFVkcWBSjPUvqNUMX.jejUkv jmfkZgsf."
                                     }
                                 }
                             ]

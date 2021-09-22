@@ -2,6 +2,17 @@
   <name xsi:type="DV_TEXT">
     <value>Persistent minimal</value>
   </name>
+  <links>
+    <meaning>
+      <value>meaning</value>
+    </meaning>
+    <type>
+      <value>type</value>
+    </type>
+    <target>
+      <value>ehr://target1</value>
+    </target>
+  </links>
   <archetype_details>
     <archetype_id>
       <value>openEHR-EHR-COMPOSITION.persistent_minimal.v1</value>
@@ -35,7 +46,7 @@
   <composer xsi:type="PARTY_IDENTIFIED">
     <external_ref>
       <id xsi:type="HIER_OBJECT_ID">
-        <value>bbbe4355-6672-4da4-82b3-4a79993194a3</value>
+        <value>c0760d23-a581-4ecf-b2ef-164e90917736</value>
       </id>
       <namespace>DEMOGRAPHIC</namespace>
       <type>PERSON</type>
@@ -73,14 +84,14 @@
         <value>Event Series</value>
       </name>
       <origin>
-        <value>2021-09-20T19:42:33.481-0300</value>
+        <value>2021-09-21T21:11:36.652-03:00</value>
       </origin>
       <events xsi:type="POINT_EVENT" archetype_node_id="at0002">
         <name xsi:type="DV_TEXT">
           <value>Cualquier evento</value>
         </name>
         <time>
-          <value>2021-09-20T19:42:33.496-0300</value>
+          <value>2021-09-21T21:11:36.700-03:00</value>
         </time>
         <data xsi:type="ITEM_TREE" archetype_node_id="at0003">
           <name xsi:type="DV_TEXT">
@@ -91,7 +102,7 @@
               <value>text</value>
             </name>
             <value xsi:type="DV_TEXT">
-              <value>veR.lTZCADTnBnvAmYwAGikJWuHToBLKIcrDdafXrWhRCVamw LwyJFHUdjiO.vZNefyS,vC bfgNWhSge.ExRBlqQyQbfaoKgjDgZEYzyvv J.idStPGnCinSSbiIdfmOsMBa kLmumbmlwkFuxVfFZkvMhQsDssjOKovYlZ,iJzQCYMyO,zOegNuSYWqUucXf, jAfqSoqzu.GDkTYUHZoWFFqTqlwnlDsmDNfNFy sHwSpHPyfUKfhagdawp</value>
+              <value>jRslTRgvKovHdWdFVHDbhcMgoyPV,QapctdDxzfGSIFCTzrsrHFlJRHhRt YHhnv  vI.GjNEZwhrFXIrv.pdxWtsxQU.emgKIgfNARxBwckLuwnLBrFcoe.Q BoSEMKtrQBXDjwbEwFRbJcygcRNbafGRNp hiktSlSOJqWRPEwyW.TGlBtnCMEIItMfqKqxaGEonOMde.PpqQcmxT.OGdoBkxGSogtusbARiySosTFutWPxXfpocNNOfGENuP</value>
             </value>
           </items>
         </data>
