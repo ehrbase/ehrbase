@@ -45,7 +45,7 @@
             "namespace": "DEMOGRAPHIC",
             "type": "PERSON"
         },
-        "name": "Dr. House"
+        "name": "composer test value"
     },
     "context": {
         "start_time": {
