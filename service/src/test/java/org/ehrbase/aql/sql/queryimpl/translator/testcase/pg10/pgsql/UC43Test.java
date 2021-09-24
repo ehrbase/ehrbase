@@ -29,23 +29,19 @@ public class UC43Test extends UC43 {
     public UC43Test(){
         super();
         this.expectedSqlExpression =
-                "(select ARRAY.COLUMN as \"uid1\", ARRAY.COLUMN as \"uid2\" from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" left outer join lateral (select (select \"composition_join\".\"id\"||'::'||'local'||'::'||1 + COALESCE(\n" +
-                        "(select count(*)\n" +
-                        "from \"ehr\".\"composition_history\"\n" +
-                        "where \"composition_join\".\"id\" = \"ehr\".\"composition_history\".\"id\"\n" +
-                        "group by \"ehr\".\"composition_history\".\"id\"), 0) as \"uid1\" where cast(jsonb_extract_path_text(cast(\"ehr\".\"js_dv_coded_text_inner\"(\"ehr\".\"entry\".\"name\") as jsonb),'value') as varchar) = cast('Laborbefund-1' as varchar)) as \"COLUMN\") as \"ARRAY\" on ? left outer join lateral (select (select \"composition_join\".\"id\"||'::'||'local'||'::'||1 + COALESCE(\n" +
-                        "(select count(*)\n" +
-                        "from \"ehr\".\"composition_history\"\n" +
-                        "where \"composition_join\".\"id\" = \"ehr\".\"composition_history\".\"id\"\n" +
-                        "group by \"ehr\".\"composition_history\".\"id\"), 0) as \"uid2\" where cast(jsonb_extract_path_text(cast(\"ehr\".\"js_dv_coded_text_inner\"(\"ehr\".\"entry\".\"name\") as jsonb),'value') as varchar) = cast('Laborbefund-2' as varchar)) as \"COLUMN\") as \"ARRAY\" on ? where (\"ehr\".\"entry\".\"template_id\" = ? and ARRAY.COLUMN is not null and ARRAY.COLUMN is not null)) union (select ARRAY.COLUMN as \"uid1\", ARRAY.COLUMN as \"uid2\" from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" left outer join lateral (select (select \"composition_join\".\"id\"||'::'||'local'||'::'||1 + COALESCE(\n" +
-                        "(select count(*)\n" +
-                        "from \"ehr\".\"composition_history\"\n" +
-                        "where \"composition_join\".\"id\" = \"ehr\".\"composition_history\".\"id\"\n" +
-                        "group by \"ehr\".\"composition_history\".\"id\"), 0) as \"uid1\" where cast(jsonb_extract_path_text(cast(\"ehr\".\"js_dv_coded_text_inner\"(\"ehr\".\"entry\".\"name\") as jsonb),'value') as varchar) = cast('Laborbefund-1' as varchar)) as \"COLUMN\") as \"ARRAY\" on ? left outer join lateral (select (select \"composition_join\".\"id\"||'::'||'local'||'::'||1 + COALESCE(\n" +
-                        "(select count(*)\n" +
-                        "from \"ehr\".\"composition_history\"\n" +
-                        "where \"composition_join\".\"id\" = \"ehr\".\"composition_history\".\"id\"\n" +
-                        "group by \"ehr\".\"composition_history\".\"id\"), 0) as \"uid2\" where cast(jsonb_extract_path_text(cast(\"ehr\".\"js_dv_coded_text_inner\"(\"ehr\".\"entry\".\"name\") as jsonb),'value') as varchar) = cast('Laborbefund-2' as varchar)) as \"COLUMN\") as \"ARRAY\" on ? where (\"ehr\".\"entry\".\"template_id\" = ? and ARRAY.COLUMN is not null and ARRAY.COLUMN is not null))";
+                "(select ARRAY.COLUMN as \"uid1\", ARRAY.COLUMN as \"uid2\" from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" left outer join lateral (select (select jsonb_extract_path_text(cast(\"ehr\".\"js_composition\"(\n" +
+                        "  cast(composition_join.id as uuid), \n" +
+                        "  'local'\n" +
+                        ") as jsonb),'uid','value') as \"uid1\" where cast(jsonb_extract_path_text(cast(\"ehr\".\"js_dv_coded_text_inner\"(\"ehr\".\"entry\".\"name\") as jsonb),'value') as varchar) = cast('Laborbefund-1' as varchar)) as \"COLUMN\") as \"ARRAY\" on ? left outer join lateral (select (select jsonb_extract_path_text(cast(\"ehr\".\"js_composition\"(\n" +
+                        "  cast(composition_join.id as uuid), \n" +
+                        "  'local'\n" +
+                        ") as jsonb),'uid','value') as \"uid2\" where cast(jsonb_extract_path_text(cast(\"ehr\".\"js_dv_coded_text_inner\"(\"ehr\".\"entry\".\"name\") as jsonb),'value') as varchar) = cast('Laborbefund-2' as varchar)) as \"COLUMN\") as \"ARRAY\" on ? where (\"ehr\".\"entry\".\"template_id\" = ? and ARRAY.COLUMN is not null and ARRAY.COLUMN is not null)) union (select ARRAY.COLUMN as \"uid1\", ARRAY.COLUMN as \"uid2\" from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" left outer join lateral (select (select jsonb_extract_path_text(cast(\"ehr\".\"js_composition\"(\n" +
+                        "  cast(composition_join.id as uuid), \n" +
+                        "  'local'\n" +
+                        ") as jsonb),'uid','value') as \"uid1\" where cast(jsonb_extract_path_text(cast(\"ehr\".\"js_dv_coded_text_inner\"(\"ehr\".\"entry\".\"name\") as jsonb),'value') as varchar) = cast('Laborbefund-1' as varchar)) as \"COLUMN\") as \"ARRAY\" on ? left outer join lateral (select (select jsonb_extract_path_text(cast(\"ehr\".\"js_composition\"(\n" +
+                        "  cast(composition_join.id as uuid), \n" +
+                        "  'local'\n" +
+                        ") as jsonb),'uid','value') as \"uid2\" where cast(jsonb_extract_path_text(cast(\"ehr\".\"js_dv_coded_text_inner\"(\"ehr\".\"entry\".\"name\") as jsonb),'value') as varchar) = cast('Laborbefund-2' as varchar)) as \"COLUMN\") as \"ARRAY\" on ? where (\"ehr\".\"entry\".\"template_id\" = ? and ARRAY.COLUMN is not null and ARRAY.COLUMN is not null))";
     }
 
     @Test

@@ -30,47 +30,41 @@ public class UC42Test extends UC42 {
     public UC42Test(){
         super();
         this.expectedSqlExpression =
-                "(select ARRAY.COLUMN as \"Diagnose\", ARRAY.COLUMN as \"MabuseComposition\", ARRAY.COLUMN as \"NewerComposition\" from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" join \"ehr\".\"event_context\" on \"ehr\".\"event_context\".\"composition_id\" = \"ehr\".\"entry\".\"composition_id\" join \"ehr\".\"party_identified\" as \"composer_ref\" on \"composition_join\".\"composer\" = \"composer_ref\".\"id\" left outer join lateral (select (select \"composition_join\".\"id\"||'::'||'local'||'::'||1 + COALESCE(\n" +
-                        "(select count(*)\n" +
-                        "from \"ehr\".\"composition_history\"\n" +
-                        "where \"composition_join\".\"id\" = \"ehr\".\"composition_history\".\"id\"\n" +
-                        "group by \"ehr\".\"composition_history\".\"id\"), 0) as \"Diagnose\" where cast(jsonb_extract_path_text(cast(\"ehr\".\"js_dv_coded_text_inner\"(\"ehr\".\"entry\".\"name\") as jsonb),'value') as varchar) = cast('Diagnose' as varchar)) as \"COLUMN\") as \"ARRAY\" on ? left outer join lateral (select (select \"composition_join\".\"id\"||'::'||'local'||'::'||1 + COALESCE(\n" +
-                        "(select count(*)\n" +
-                        "from \"ehr\".\"composition_history\"\n" +
-                        "where \"composition_join\".\"id\" = \"ehr\".\"composition_history\".\"id\"\n" +
-                        "group by \"ehr\".\"composition_history\".\"id\"), 0) as \"MabuseComposition\" where cast(jsonb_extract_path_text(cast(\"ehr\".\"js_party_ref\"(\n" +
+                "(select ARRAY.COLUMN as \"Diagnose\", ARRAY.COLUMN as \"MabuseComposition\", ARRAY.COLUMN as \"NewerComposition\" from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" join \"ehr\".\"event_context\" on \"ehr\".\"event_context\".\"composition_id\" = \"ehr\".\"entry\".\"composition_id\" join \"ehr\".\"party_identified\" as \"composer_ref\" on \"composition_join\".\"composer\" = \"composer_ref\".\"id\" left outer join lateral (select (select jsonb_extract_path_text(cast(\"ehr\".\"js_composition\"(\n" +
+                        "  cast(composition_join.id as uuid), \n" +
+                        "  'local'\n" +
+                        ") as jsonb),'uid','value') as \"Diagnose\" where cast(jsonb_extract_path_text(cast(\"ehr\".\"js_dv_coded_text_inner\"(\"ehr\".\"entry\".\"name\") as jsonb),'value') as varchar) = cast('Diagnose' as varchar)) as \"COLUMN\") as \"ARRAY\" on ? left outer join lateral (select (select jsonb_extract_path_text(cast(\"ehr\".\"js_composition\"(\n" +
+                        "  cast(composition_join.id as uuid), \n" +
+                        "  'local'\n" +
+                        ") as jsonb),'uid','value') as \"MabuseComposition\" where cast(jsonb_extract_path_text(cast(\"ehr\".\"js_party_ref\"(\n" +
                         "  \"composer_ref\".\"party_ref_value\", \n" +
                         "  \"composer_ref\".\"party_ref_scheme\", \n" +
                         "  \"composer_ref\".\"party_ref_namespace\", \n" +
                         "  \"composer_ref\".\"party_ref_type\"\n" +
-                        ") as jsonb),'id','value') as varchar) = cast('Dr Mabuse' as varchar)) as \"COLUMN\") as \"ARRAY\" on ? left outer join lateral (select (select \"composition_join\".\"id\"||'::'||'local'||'::'||1 + COALESCE(\n" +
-                        "(select count(*)\n" +
-                        "from \"ehr\".\"composition_history\"\n" +
-                        "where \"composition_join\".\"id\" = \"ehr\".\"composition_history\".\"id\"\n" +
-                        "group by \"ehr\".\"composition_history\".\"id\"), 0) as \"NewerComposition\" where cast(jsonb_extract_path_text(cast(\"ehr\".\"js_dv_date_time\"(\n" +
+                        ") as jsonb),'id','value') as varchar) = cast('Dr Mabuse' as varchar)) as \"COLUMN\") as \"ARRAY\" on ? left outer join lateral (select (select jsonb_extract_path_text(cast(\"ehr\".\"js_composition\"(\n" +
+                        "  cast(composition_join.id as uuid), \n" +
+                        "  'local'\n" +
+                        ") as jsonb),'uid','value') as \"NewerComposition\" where cast(jsonb_extract_path_text(cast(\"ehr\".\"js_dv_date_time\"(\n" +
                         "  \"ehr\".\"event_context\".\"start_time\", \n" +
                         "  coalesce(\n" +
                         "    event_context.START_TIME_TZID, \n" +
                         "    'UTC'\n" +
                         "  )\n" +
-                        ") as jsonb),'value') as varchar) > cast('2020-01-01' as varchar)) as \"COLUMN\") as \"ARRAY\" on ? where (\"ehr\".\"entry\".\"template_id\" = ? and ARRAY.COLUMN is not null and ARRAY.COLUMN is not null and ARRAY.COLUMN is not null)) union (select ARRAY.COLUMN as \"Diagnose\", ARRAY.COLUMN as \"MabuseComposition\", ARRAY.COLUMN as \"NewerComposition\" from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" join \"ehr\".\"event_context\" on \"ehr\".\"event_context\".\"composition_id\" = \"ehr\".\"entry\".\"composition_id\" join \"ehr\".\"party_identified\" as \"composer_ref\" on \"composition_join\".\"composer\" = \"composer_ref\".\"id\" left outer join lateral (select (select \"composition_join\".\"id\"||'::'||'local'||'::'||1 + COALESCE(\n" +
-                        "(select count(*)\n" +
-                        "from \"ehr\".\"composition_history\"\n" +
-                        "where \"composition_join\".\"id\" = \"ehr\".\"composition_history\".\"id\"\n" +
-                        "group by \"ehr\".\"composition_history\".\"id\"), 0) as \"Diagnose\" where cast(jsonb_extract_path_text(cast(\"ehr\".\"js_dv_coded_text_inner\"(\"ehr\".\"entry\".\"name\") as jsonb),'value') as varchar) = cast('Diagnose' as varchar)) as \"COLUMN\") as \"ARRAY\" on ? left outer join lateral (select (select \"composition_join\".\"id\"||'::'||'local'||'::'||1 + COALESCE(\n" +
-                        "(select count(*)\n" +
-                        "from \"ehr\".\"composition_history\"\n" +
-                        "where \"composition_join\".\"id\" = \"ehr\".\"composition_history\".\"id\"\n" +
-                        "group by \"ehr\".\"composition_history\".\"id\"), 0) as \"MabuseComposition\" where cast(jsonb_extract_path_text(cast(\"ehr\".\"js_party_ref\"(\n" +
+                        ") as jsonb),'value') as varchar) > cast('2020-01-01' as varchar)) as \"COLUMN\") as \"ARRAY\" on ? where (\"ehr\".\"entry\".\"template_id\" = ? and ARRAY.COLUMN is not null and ARRAY.COLUMN is not null and ARRAY.COLUMN is not null)) union (select ARRAY.COLUMN as \"Diagnose\", ARRAY.COLUMN as \"MabuseComposition\", ARRAY.COLUMN as \"NewerComposition\" from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" join \"ehr\".\"event_context\" on \"ehr\".\"event_context\".\"composition_id\" = \"ehr\".\"entry\".\"composition_id\" join \"ehr\".\"party_identified\" as \"composer_ref\" on \"composition_join\".\"composer\" = \"composer_ref\".\"id\" left outer join lateral (select (select jsonb_extract_path_text(cast(\"ehr\".\"js_composition\"(\n" +
+                        "  cast(composition_join.id as uuid), \n" +
+                        "  'local'\n" +
+                        ") as jsonb),'uid','value') as \"Diagnose\" where cast(jsonb_extract_path_text(cast(\"ehr\".\"js_dv_coded_text_inner\"(\"ehr\".\"entry\".\"name\") as jsonb),'value') as varchar) = cast('Diagnose' as varchar)) as \"COLUMN\") as \"ARRAY\" on ? left outer join lateral (select (select jsonb_extract_path_text(cast(\"ehr\".\"js_composition\"(\n" +
+                        "  cast(composition_join.id as uuid), \n" +
+                        "  'local'\n" +
+                        ") as jsonb),'uid','value') as \"MabuseComposition\" where cast(jsonb_extract_path_text(cast(\"ehr\".\"js_party_ref\"(\n" +
                         "  \"composer_ref\".\"party_ref_value\", \n" +
                         "  \"composer_ref\".\"party_ref_scheme\", \n" +
                         "  \"composer_ref\".\"party_ref_namespace\", \n" +
                         "  \"composer_ref\".\"party_ref_type\"\n" +
-                        ") as jsonb),'id','value') as varchar) = cast('Dr Mabuse' as varchar)) as \"COLUMN\") as \"ARRAY\" on ? left outer join lateral (select (select \"composition_join\".\"id\"||'::'||'local'||'::'||1 + COALESCE(\n" +
-                        "(select count(*)\n" +
-                        "from \"ehr\".\"composition_history\"\n" +
-                        "where \"composition_join\".\"id\" = \"ehr\".\"composition_history\".\"id\"\n" +
-                        "group by \"ehr\".\"composition_history\".\"id\"), 0) as \"NewerComposition\" where cast(jsonb_extract_path_text(cast(\"ehr\".\"js_dv_date_time\"(\n" +
+                        ") as jsonb),'id','value') as varchar) = cast('Dr Mabuse' as varchar)) as \"COLUMN\") as \"ARRAY\" on ? left outer join lateral (select (select jsonb_extract_path_text(cast(\"ehr\".\"js_composition\"(\n" +
+                        "  cast(composition_join.id as uuid), \n" +
+                        "  'local'\n" +
+                        ") as jsonb),'uid','value') as \"NewerComposition\" where cast(jsonb_extract_path_text(cast(\"ehr\".\"js_dv_date_time\"(\n" +
                         "  \"ehr\".\"event_context\".\"start_time\", \n" +
                         "  coalesce(\n" +
                         "    event_context.START_TIME_TZID, \n" +
