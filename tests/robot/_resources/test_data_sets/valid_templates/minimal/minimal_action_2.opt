@@ -266,7 +266,7 @@
                         </occurrences>
                         <node_id />
                         <item xsi:type="C_BOOLEAN">
-                          <true_valid>false</true_valid>
+                          <true_valid>true</true_valid>
                           <false_valid>true</false_valid>
                         </item>
                       </children>

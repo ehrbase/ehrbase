@@ -125,6 +125,9 @@ server:
     # how many embedded jsonb_array_elements(..) are acceptable? Recommended == 2
     iterationScanDepth: 2
 
+  # Option to disable strict invariant validation.
+  # disable-strict-validation: true
+
 
 terminology-server:
   tsUrl: 'https://r4.ontoserver.csiro.au/fhir/'

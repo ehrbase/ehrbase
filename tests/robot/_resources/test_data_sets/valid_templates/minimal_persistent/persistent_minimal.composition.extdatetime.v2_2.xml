@@ -43,6 +43,15 @@
       <name>Dr. Yamamoto</name>
     </composer>
     <content archetype_node_id="openEHR-EHR-OBSERVATION.minimal.v1" xsi:type="OBSERVATION">
+      <archetype_details>
+        <archetype_id>
+          <value>openEHR-EHR-OBSERVATION.minimal.v1</value>
+        </archetype_id>
+        <template_id>
+          <value>persistent_minimal_2.en.v1</value>
+        </template_id>
+        <rm_version>1.0.2</rm_version>
+      </archetype_details>
       <name>
         <value>Minimal</value>
       </name>
@@ -54,7 +63,7 @@
       </language>
       <encoding>
         <terminology_id>
-          <value>Unicode</value>
+          <value>IANA_character-sets</value>
         </terminology_id>
         <code_string>UTF-8</code_string>
       </encoding>

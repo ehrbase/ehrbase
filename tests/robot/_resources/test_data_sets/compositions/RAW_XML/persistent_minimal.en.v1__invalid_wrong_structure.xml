@@ -14,7 +14,7 @@
         <value>type</value>
       </type>
       <target>
-        <value>target1</value>
+        <value>ehr://target1</value>
       </target>
     </links>
     <links>
@@ -25,7 +25,7 @@
         <value>type</value>
       </type>
       <target>
-        <value>target2</value>
+        <value>ehr://target2</value>
       </target>
     </links>
     <archetype_details>
@@ -65,7 +65,7 @@
           <scheme>scheme</scheme>
         </id>
         <namespace>local</namespace>
-        <type>ANY</type>
+        <type>PARTY</type>
       </external_ref>
       <name>composer test value</name>
     </composer>
@@ -92,7 +92,7 @@
             <scheme>scheme</scheme>
           </id>
           <namespace>namespace</namespace>
-          <type>ANY</type>
+          <type>PARTY</type>
         </external_ref>
         <name>Company</name>
       </health_care_facility>
@@ -107,7 +107,7 @@
               <scheme>scheme</scheme>
             </id>
             <namespace>namespace</namespace>
-            <type>ANY</type>
+            <type>PARTY</type>
           </external_ref>
           <name>Firstname Lastname 1</name>
         </performer>
@@ -132,7 +132,7 @@
               <scheme>scheme</scheme>
             </id>
             <namespace>namespace</namespace>
-            <type>ANY</type>
+            <type>PARTY</type>
           </external_ref>
           <name>Firstname Lastname 2</name>
         </performer>
@@ -181,7 +181,7 @@
               <scheme>scheme</scheme>
             </id>
             <namespace>namespace</namespace>
-            <type>ANY</type>
+            <type>PARTY</type>
           </external_ref>
           <name>Firstname Lastname 1</name>
         </performer>
@@ -206,7 +206,7 @@
               <scheme>scheme</scheme>
             </id>
             <namespace>namespace</namespace>
-            <type>ANY</type>
+            <type>PARTY</type>
           </external_ref>
           <name>Firstname Lastname 2</name>
         </performer>

@@ -88,6 +88,18 @@
         "_type": "DV_TEXT",
         "value": "Minimal 2"
       },
+      "archetype_details": {
+        "_type": "ARCHETYPED",
+        "archetype_id": {
+          "_type": "ARCHETYPE_ID",
+          "value": "openEHR-EHR-ACTION.minimal_2.v1"
+        },
+        "template_id": {
+          "_type": "TEMPLATE_ID",
+          "value": "Minimal action 2"
+        },
+        "rm_version": "1.0.2"
+      },
       "archetype_node_id": "openEHR-EHR-ACTION.minimal_2.v1",
       "language": {
         "_type": "CODE_PHRASE",
@@ -101,7 +113,7 @@
         "_type": "CODE_PHRASE",
         "terminology_id": {
           "_type": "TERMINOLOGY_ID",
-          "value": "Unicode"
+          "value": "IANA_character-sets"
         },
         "code_string": "UTF-8"
       },

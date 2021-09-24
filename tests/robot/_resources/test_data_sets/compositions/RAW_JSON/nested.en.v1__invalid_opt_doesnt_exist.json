@@ -39,7 +39,7 @@
         "value": "value"
       },
       "namespace": "local",
-      "type": "ANY"
+      "type": "PARTY"
     }
   },
   "context": {
@@ -75,7 +75,7 @@
           "value": "5112"
         },
         "namespace": "namespace",
-        "type": "ANY"
+        "type": "PARTY"
       }
     },
     "participations": [
@@ -96,7 +96,7 @@
               "value": "4734"
             },
             "namespace": "namespace",
-            "type": "ANY"
+            "type": "PARTY"
           }
         },
         "mode": {
@@ -129,7 +129,7 @@
               "value": "7809"
             },
             "namespace": "namespace",
-            "type": "ANY"
+            "type": "PARTY"
           }
         },
         "mode": {
@@ -353,7 +353,7 @@
                     "value": "3001"
                   },
                   "namespace": "namespace",
-                  "type": "ANY"
+                  "type": "PARTY"
                 }
               },
               "mode": {
@@ -386,7 +386,7 @@
                     "value": "9481"
                   },
                   "namespace": "namespace",
-                  "type": "ANY"
+                  "type": "PARTY"
                 }
               },
               "mode": {
@@ -441,7 +441,7 @@
       },
       "target": {
         "_type": "DV_EHR_URI",
-        "value": "target1"
+        "value": "ehr://target1"
       }
     },
     {
@@ -456,7 +456,7 @@
       },
       "target": {
         "_type": "DV_EHR_URI",
-        "value": "target2"
+        "value": "ehr://target2"
       }
     }
   ],

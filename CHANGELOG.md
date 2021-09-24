@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Migrated to Archie openEHR library version > 1.0.0, incl. its new strict invariant checks (see: https://github.com/ehrbase/ehrbase/pull/570)
 
 ### Changed
 
