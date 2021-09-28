@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 ### Fixed
-
+- Missing details in response returned by Directory REST API (see: https://github.com/ehrbase/ehrbase/pull/605)
 
 
 ## [0.17.2]
