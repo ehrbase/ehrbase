@@ -4,38 +4,38 @@
         "_type": "DV_TEXT",
         "value": "Nesting"
     },
-  "links": [
-    {
-      "_type": "LINK",
-      "meaning": {
-        "_type": "DV_TEXT",
-        "value": "meaning"
+    "links": [
+      {
+        "_type": "LINK",
+        "meaning": {
+          "_type": "DV_TEXT",
+          "value": "meaning"
+        },
+        "type": {
+          "_type": "DV_TEXT",
+          "value": "type"
+        },
+        "target": {
+          "_type": "DV_EHR_URI",
+          "value": "ehr://target1"
+        }
       },
-      "type": {
-        "_type": "DV_TEXT",
-        "value": "type"
-      },
-      "target": {
-        "_type": "DV_EHR_URI",
-        "value": "ehr://target1"
+      {
+        "_type": "LINK",
+        "meaning": {
+          "_type": "DV_TEXT",
+          "value": "meaning"
+        },
+        "type": {
+          "_type": "DV_TEXT",
+          "value": "type"
+        },
+        "target": {
+          "_type": "DV_EHR_URI",
+          "value": "ehr://target2"
+        }
       }
-    },
-    {
-      "_type": "LINK",
-      "meaning": {
-        "_type": "DV_TEXT",
-        "value": "meaning"
-      },
-      "type": {
-        "_type": "DV_TEXT",
-        "value": "type"
-      },
-      "target": {
-        "_type": "DV_EHR_URI",
-        "value": "ehr://target2"
-      }
-    }
-  ],
+    ],
     "archetype_details": {
         "archetype_id": {
             "value": "openEHR-EHR-COMPOSITION.nesting.v1"
