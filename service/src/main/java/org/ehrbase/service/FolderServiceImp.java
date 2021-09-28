@@ -468,7 +468,7 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
                 ),
                 folderAccess.getFolderArchetypeNodeId(),
                 new DvText(folderAccess.getFolderName()),
-                folderAccess.getDetails(),
+                folderAccess.getFolderDetails(),
                 null,
                 null,
                 null,
