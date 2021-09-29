@@ -381,11 +381,6 @@
                 <artifactId>jakarta.json-api</artifactId>
                 <version>2.0.0</version>
             </dependency>
-            <dependency>
-                <groupId>net.bull.javamelody</groupId>
-                <artifactId>javamelody-spring-boot-starter</artifactId>
-                <version>1.88.0</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 

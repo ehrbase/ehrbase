@@ -16,11 +16,9 @@
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/ehrbase
-#    url: jdbc:postgresql://10.216.24.131:5000,10.216.24.132:5000,10.216.24.133:5000,10.216.24.134:5000,10.216.24.135:5000/ehrbase?targetServerType=primary
     driver-class-name: org.postgresql.Driver
     username: ehrbase
     password: ehrbase
-#    password: PMbWoLv5on54
     tomcat:
       maxIdle: 10
       max-active: 50
