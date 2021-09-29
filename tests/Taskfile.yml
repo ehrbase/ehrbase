@@ -121,7 +121,7 @@ tasks:
                    -e POSTGRES_PASSWORD=postgres \
                    -e DISABLE_SECURITY \
                    -d -p 5432:5432 \
-                   ehrbase/ehrbase-postgres:13.3
+                   ehrbase/ehrbase-postgres:13.4
 
         echo ... DB server started.
 
