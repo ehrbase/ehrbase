@@ -142,6 +142,7 @@ workflows:
             - COMPOSITION-tests-2
             - COMPOSITION-tests-3
             - COMPOSITION-tests-4
+            - COMPOSITION-tests-5
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -279,6 +280,7 @@ workflows:
             - COMPOSITION-tests-2
             - COMPOSITION-tests-3
             - COMPOSITION-tests-4
+            - COMPOSITION-tests-5
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -463,6 +465,7 @@ workflows:
             - COMPOSITION-tests-2
             - COMPOSITION-tests-3
             - COMPOSITION-tests-4
+            - COMPOSITION-tests-5
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
