@@ -16,7 +16,6 @@
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/ehrbase
-    driver-class-name: org.postgresql.Driver
     username: ehrbase
     password: ehrbase
     tomcat:
