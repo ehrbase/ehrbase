@@ -1505,7 +1505,8 @@ commands:
                         -e POSTGRES_USER=$POSTGRES_USER \
                         -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD -d \
                         -e DISABLE_SECURITY=true \
-                        -p 5432:5432 ehrbase/ehrbase-postgres:13.3-v2
+                        -e PGDATA=/tmp \
+                        -p 5432:5432 ehrbase/ehrbase-postgres:13.4
 
 
   setup-file-repo:
@@ -1842,13 +1843,14 @@ executors:
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
-      - image: ehrbase/ehrbase-postgres:13.3-v2
+      - image: ehrbase/ehrbase-postgres:13.4
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
         environment:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
+          PGDATA: /tmp
 
   machine-ubuntu-1604:
     description: |
