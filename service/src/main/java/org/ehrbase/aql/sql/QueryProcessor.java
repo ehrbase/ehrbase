@@ -148,12 +148,14 @@ public class QueryProcessor extends TemplateMetaData {
 
                 SelectQuery select = queryStep.getSelectQuery();
 
-                select.addFrom(ENTRY);
-
                 if (!queryStep.getTemplateId().equalsIgnoreCase(NIL_TEMPLATE))
                     joinSetup.setUseEntry(true);
 
-                select = new JoinBinder(domainAccess, select).addJoinClause(joinSetup);
+                JoinBinder joinBinder = new JoinBinder(domainAccess, joinSetup);
+
+                select.addFrom(joinBinder.initialFrom());
+
+                select = joinBinder.addJoinClause(select);
 
                 select = setLateralJoins(queryStep.getLateralJoins(), select);
 
