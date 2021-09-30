@@ -71,7 +71,7 @@ import java.util.function.Supplier;
  */
 @Api(tags = {"EHR"})
 @RestController
-@RequestMapping(path = "/rest/openehr/v1/ehr", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@RequestMapping(path = "${openehr-api.context-path:/rest/openehr}/v1/ehr", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrEhrController extends BaseController {
 
     private final EhrService ehrService;

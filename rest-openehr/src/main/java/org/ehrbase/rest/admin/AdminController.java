@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Api(tags = {"Admin", "Heartbeat"})
 @ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
-@RequestMapping(path = "/rest/admin", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@RequestMapping(path = "${admin-api.context-path:/rest/admin}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class AdminController extends BaseController {
 
     @GetMapping(path = "/status")
