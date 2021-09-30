@@ -39,7 +39,7 @@ import java.util.UUID;
 @Api(tags = {"Admin", "Contribution"})
 @ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
-@RequestMapping(path = "/rest/admin/ehr", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@RequestMapping(path = "${admin-api.context-path:/rest/admin}/ehr", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class AdminContributionController extends BaseController {
 
     private final EhrService ehrService;

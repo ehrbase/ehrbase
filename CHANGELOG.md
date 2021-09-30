@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Removes SELECT statement when PartyProxy object is empty (see: https://github.com/ehrbase/ehrbase/pull/581)
-
+- Provide configuration properties for configuring context paths of openEHR REST API and Admin API (see: https://github.com/ehrbase/ehrbase/pull/585)
 ### Fixed
 - `Accept` header with multiple MIME types causes an IllegalArgumentException (see: https://github.com/ehrbase/ehrbase/pull/583)
 - Composition version Uid schema in EhrScape API (see: https://github.com/ehrbase/ehrbase/pull/520)

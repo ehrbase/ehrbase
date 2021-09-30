@@ -61,21 +61,20 @@ public class JoinBinder implements IJoinBinder {
     private boolean ehrJoined = false;
     private boolean systemJoined = false;
 
-    SelectQuery<?> selectQuery;
+    private final I_DomainAccess domainAccess;
+    private final JoinSetup joinSetup;
 
-    I_DomainAccess domainAccess;
-
-    public JoinBinder(I_DomainAccess domainAccess,  SelectQuery<?> selectQuery) {
+    public JoinBinder(I_DomainAccess domainAccess,  JoinSetup joinSetup) {
         this.domainAccess = domainAccess;
-        this.selectQuery = selectQuery;
+        this.joinSetup = joinSetup;
     }
 
     /**
      * Warning: JOIN sequence is important!
      *
-     * @param compositionAttributeQuery
+     * @param  selectQuery
      */
-    public SelectQuery<?> addJoinClause(JoinSetup joinSetup) {
+    public SelectQuery<?> addJoinClause(SelectQuery<?> selectQuery) {
 
         if (joinSetup == null)
             return selectQuery;
@@ -124,6 +123,24 @@ public class JoinBinder implements IJoinBinder {
                 (joinSetup.isJoinSystem() ? 1 : 0) == 1;
     }
 
+    /**
+     * identify the initial from table to use (ENTRY or EHR)
+     * @return
+     */
+    public Table initialFrom(){
+        if (joinSetup.isUseEntry())
+            return ENTRY;
+        else {
+            if (joinSetup.isJoinEhrStatus() || joinSetup.isJoinSubject()) {
+                joinSetup.setJoinEhr(false); //since this is the initial table
+                return EHR_.as(EHR_JOIN); //we keep the logic re ref table ids
+            }
+            else
+                return ENTRY;
+        }
+    }
+
+
     private SelectQuery<?> simpleFromClause(SelectQuery<?> selectQuery, JoinSetup joinSetup) {
 
         List<Field<?>> selectFields = selectQuery.getSelect();
@@ -165,7 +182,8 @@ public class JoinBinder implements IJoinBinder {
                             .eq(DSL.field(compositionRecordTable.field(COMPOSITION.EHR_ID.getName(), UUID.class))));
             statusJoined = true;
         } else {//assume it is joined on EHR
-            joinEhr(selectQuery);
+            if (joinSetup.isJoinEhr())
+                joinEhr(selectQuery);
             selectQuery.addJoin(statusRecordTable,
                     DSL.field(statusRecordTable.field(STATUS.EHR_ID.getName(), UUID.class))
                             .eq(DSL.field(ehrRecordTable.field(EHR_.ID.getName(), UUID.class))));
