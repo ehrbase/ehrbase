@@ -55,10 +55,7 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
 
     private static final Logger log = LogManager.getLogger(FolderHistoryAccess.class);
 
-    // TODO: Check how to remove this unused details for confusion prevention
-    private ItemStructure details;
-
-    private List<ObjectRef<?>> items = new ArrayList<>();
+    private List<ObjectRef<? extends ObjectId>> items = new ArrayList<>();
     private Map<UUID, I_FolderAccess> subfoldersList = new TreeMap<>();
     private I_ContributionAccess contributionAccess;
     private UUID ehrId;
@@ -360,15 +357,7 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
         return this.subfoldersList;
     }
 
-    public  void setDetails(final ItemStructure details){
-        this.details = details;}
-
-    @Override
-    public ItemStructure getDetails() {
-        return null;
-    }
-
-    public  List<ObjectRef<?>> getItems(){
+    public  List<ObjectRef<? extends ObjectId>> getItems(){
         return this.items;
     }
 
