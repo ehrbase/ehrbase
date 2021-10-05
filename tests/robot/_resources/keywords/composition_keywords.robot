@@ -915,7 +915,7 @@ capture point in time
     #       issue https://github.com/ehrbase/project_management/issues/353
     # ${timeurlencoded}=  Replace String    ${time}    :    %3A
     # ${timeurlencoded}=  Replace String    ${timeurlencoded}    +    %2B
-                        Set Suite Variable   ${time_${point_in_time}}   ${timeurlencoded}
+                        Set Suite Variable   ${time_${point_in_time}}   ${time}
 
                         Sleep               1
 
