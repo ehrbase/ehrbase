@@ -899,15 +899,24 @@ capture time before first commit
 
 capture point in time
     [Arguments]         ${point_in_time}
-    [Documentation]     :point_in_time: integer [0, 1, 2]
-    ...                 exposes to test level scope a variable e.g. `${time_1}`
-    ...                 which's value is a given time in the extended ISO8601 format
+    [Documentation]     :point_in_time: integer (0, 1, 2) or string (i.e. initial_version, first_version, etc.)
+    ...                 Gets the current date/time when this keyword is called and
+    ...                 exposes it as a variable to test level scope with whatever name was given
+    ...                 to point_in_time parameter, i.e. ${time_0}, ${time_initial_version}, etc.
+    ...
+    ...                 The value of the exposed variable is a timestamp in extended ISO8601 format
     ...                 e.g. 2015-01-20T19:30:22.765+01:00
     ...                 s. http://robotframework.org/robotframework/latest/libraries/DateTime.html
     ...                 for DateTime Library docs
 
-    ${time}=            Get Current Date    result_format=%Y-%m-%dT%H:%M:%S.%f
-                        Set Suite Variable   ${time_${point_in_time}}   ${time}+00:00
+    ${time}=            Get Current Date    result_format=%Y-%m-%dT%H:%M:%S.%f+00:00
+    # TODO: uncomment or remove the next two lines below this comment depending on the outcome of
+    #       issue https://github.com/ehrbase/ehrbase/issues/619 and
+    #       issue https://github.com/ehrbase/project_management/issues/353
+    # ${timeurlencoded}=  Replace String    ${time}    :    %3A
+    # ${timeurlencoded}=  Replace String    ${timeurlencoded}    +    %2B
+                        Set Suite Variable   ${time_${point_in_time}}   ${timeurlencoded}
+
                         Sleep               1
 
 
