@@ -138,7 +138,7 @@
         <database.pass>ehrbase</database.pass>
         <database.port>5432</database.port>
         <database.host>localhost</database.host>
-        <spring-boot.version>2.5.5.RELEASE</spring-boot.version>
+        <spring-boot.version>2.5.5</spring-boot.version>
         <jacoco.version>0.8.6</jacoco.version>
         <surefire.version>3.0.0-M5</surefire.version>
         <failsafe.version>3.0.0-M5</failsafe.version>
