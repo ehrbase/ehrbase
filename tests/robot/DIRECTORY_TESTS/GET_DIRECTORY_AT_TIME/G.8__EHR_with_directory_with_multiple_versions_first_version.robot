@@ -40,7 +40,7 @@ Resource        ../../_resources/keywords/composition_keywords.robot
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags    353    not-ready
+Force Tags    353
 
 
 
