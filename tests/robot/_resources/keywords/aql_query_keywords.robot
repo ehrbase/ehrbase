@@ -199,7 +199,7 @@ POST /query/aql
     ...                 `${test_data}`
 
                         prepare new request session    ${format}
-    ${resp}=            Post Request        ${SUT}   /query/aql
+    ${resp}=            POST On Session     ${SUT}   /query/aql   expected_status=anything
                         ...                 data=${test_data}
                         ...                 headers=${headers}
                         Set Test Variable   ${response}    ${resp}
