@@ -419,8 +419,9 @@ public class OpenehrDirectoryController extends BaseController {
         // Check version conflicts and throw precondition failed exception if not
         checkDirectoryVersionConflicts(folderId, ehrId);
 
-        this.folderService.delete(ehrId, folderId);
         this.ehrService.removeDirectory(ehrId);
+        this.folderService.delete(ehrId, folderId);
+
         return createDirectoryResponse(HttpMethod.DELETE, null, accept, null, ehrId);
     }
 
