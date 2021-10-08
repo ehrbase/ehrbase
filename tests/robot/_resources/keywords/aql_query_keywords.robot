@@ -315,6 +315,7 @@ check response (LOADED DB): returns correct content
     # ...                 meta    path    foo        # comment: example of how to add additional
                                                      #          properties to be ignored
     ...                 report_repetition=${TRUE}
+    ...                 ignore_string_case=${TRUE}
 
                         Should Be Empty  ${diff}  msg=DIFF DETECTED!
 
@@ -893,6 +894,16 @@ Update Temp Query-Data-Set
                         Output    ${query}    ${VALID QUERY DATA SETS}/${dataset}_query.tmp.json
 
 
+Update Temp Query-Data-Set (COMPO)
+    [Documentation]     Updates 'q' with real ehr_id
+    [Arguments]         ${dataset}
+                        Load Temp Query-Data-Set    ${dataset}
+    ${q}=               Get Value From Json    ${query}    $.q
+    ${q}=               Replace String    ${q}[0]    __MODIFY_COMPO_UID_1__    ${compo_uid_value}
+                        Update Value To Json   ${query}    $.q    ${q}
+                        Output    ${query}    ${VALID QUERY DATA SETS}/${dataset}_query.tmp.json
+
+
 Update Query-Parameter in Temp Query-Data-Set
     [Documentation]     Exposes {q} to test-suite level scope.
     [Arguments]         ${dataset}
@@ -922,9 +933,20 @@ Update 'q' and 'meta' in Temp Result-Data-Set
     ...                 Condition ensures the update is not repeated unnecessary.
 
     ${q}=               Get Value From Json    ${expected}    $.q
-    ${q}=               Replace String    ${q}[0]    __MODIFY_EHR_ID_1__    ${ehr_id}
-                        Update Value To Json   ${expected}    $.q    ${q}
-                        Update Value To Json   ${expected}    $.meta._executed_aql    ${q}
+
+    IF    '__MODIFY_EHR_ID_1__' in '''${q}'''
+            ${q}=   Replace String    ${q}[0]    __MODIFY_EHR_ID_1__    ${ehr_id}
+                    Update Value To Json   ${expected}    $.q    ${q}
+                    Update Value To Json   ${expected}    $.meta._executed_aql    ${q}
+    ELSE IF    '__MODIFY_COMPO_UID_1__' in '''${q}'''
+            ${q}=   Replace String    ${q}[0]    __MODIFY_COMPO_UID_1__    ${compo_uid_value}
+                    Update Value To Json   ${expected}    $.q    ${q}
+                    Update Value To Json   ${expected}    $.meta._executed_aql    ${q}
+    END
+
+    # ${q}=               Replace String    ${q}[0]    __MODIFY_EHR_ID_1__    ${ehr_id}
+                        # Update Value To Json   ${expected}    $.q    ${q}
+                        # Update Value To Json   ${expected}    $.meta._executed_aql    ${q}
                         Set Suite Variable    ${expected}    ${expected}
 
 
@@ -1704,8 +1726,9 @@ D/504
     ...                 Here we are interested only in EHR record number 1 and all of it's compositions.
     ...                 1. Don't do anything if {ehr_index} is not 1.
     ...                 2. Update query-data-set ONLY on FIRST iteration to avoid unnecessary repetitions.
-                        Return From Keyword If    not ${ehr_index}==1    NOTHING TO DO HERE!
-                        Run Keyword if    ${ehr_index}==1 and ${compo_index}==1    Update Temp Query-Data-Set    D/504
+                        Return From Keyword If    not ${ehr_index}==1   NOTHING TO DO HERE!
+                        Return From Keyword If    not ${compo_index}==1   NOTHING TO DO HERE!
+                        Run Keyword if    ${ehr_index}==1 and ${compo_index}==1    Update Temp Query-Data-Set (COMPO)    D/504
                         Create Temp List    ${compo_archetype_details}
 
                         Update 'rows', 'q' and 'meta' in Temp Result-Data-Set    D/504

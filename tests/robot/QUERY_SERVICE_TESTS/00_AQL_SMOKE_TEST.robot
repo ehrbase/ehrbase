@@ -220,14 +220,6 @@ D-501 Execute Ad-HOc Query - Get Data
     [Teardown]          TRACE GITHUB ISSUE  361  bug
 
 
-D-504 Execute Ad-HOc Query - Get archetype_details
-    [Documentation]     Get Data related query.
-    [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              464    not-ready
-    D/504_query.tmp.json    D/504.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  464  bug
-
-
 CLEAN UP SUT
     [Documentation]     ATTENTION: ALWAYS INCLUDE '-i AQL_smoke' and '-i AQL_tempANDissue_id'
     ...                 when you run test from this suite!!!

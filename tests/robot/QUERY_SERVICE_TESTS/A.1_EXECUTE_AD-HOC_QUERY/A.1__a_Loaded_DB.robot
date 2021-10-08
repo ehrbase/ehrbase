@@ -445,10 +445,8 @@ D-503 Execute Ad-HOc Query - Get Data
 D-504 Execute Ad-HOc Query - Get archetype_details
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              464    not-ready
+    [Tags]
     D/504_query.tmp.json    D/504.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  464  bug
-
 
 
 
@@ -526,7 +524,7 @@ C-500 Execute Ad-Hoc Query - Get Entries from EHR
 # SPECIAL CASES / REGRESSION TEST QUERIES
 
 Query For Not-Existing Composition Should Return Empty Result
-    [tags]    xxx
+    [tags]    
     Query For Not-Existing Composition Name
 
     # comment: validate response
