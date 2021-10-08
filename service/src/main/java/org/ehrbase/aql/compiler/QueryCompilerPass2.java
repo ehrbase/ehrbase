@@ -22,6 +22,7 @@
 
 package org.ehrbase.aql.compiler;
 
+import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.lang3.StringUtils;
@@ -58,6 +59,7 @@ public class QueryCompilerPass2 extends AqlBaseListener {
 
     private Deque<I_VariableDefinition> variableStack = new ArrayDeque<>();
     private Deque<OrderAttribute> orderAttributes = null;
+    private Map<AqlParser.SelectExprContext, PredicateDefinition> predicateDefinitionMap = new HashMap<>();
     private Integer limitAttribute = null;
     private Integer offsetAttribute = null;
 
@@ -83,7 +85,8 @@ public class QueryCompilerPass2 extends AqlBaseListener {
         }
 
         if (identifiedPathContext != null) {
-            VariableDefinition variableDefinition = new IdentifiedPathVariable(identifiedPathContext, selectExprContext, isDistinct).definition();
+            VariableDefinition variableDefinition;
+            variableDefinition = new IdentifiedPathVariable(identifiedPathContext, selectExprContext, isDistinct, predicateDefinitionMap.get(selectExprContext)).definition();
             pushVariableDefinition(variableDefinition);
         } else if (selectExprContext.stdExpression() != null) {
             //function handling
@@ -105,6 +108,38 @@ public class QueryCompilerPass2 extends AqlBaseListener {
             throw new IllegalArgumentException("Could not interpret select context");
     }
 
+    @Override
+    public void exitNodePredicateComparable(AqlParser.NodePredicateComparableContext nodePredicateComparableContext){
+        String operand1;
+        String operand2 = null;
+        String operator = null;
+
+        if (nodePredicateComparableContext.predicateOperand().isEmpty())
+            return;
+
+        operand1 = nodePredicateComparableContext.predicateOperand(0).getText();
+
+        if (nodePredicateComparableContext.predicateOperand().size() > 1)
+            operand2 = nodePredicateComparableContext.predicateOperand(1).getText();
+
+        if (nodePredicateComparableContext.children.size() >= 1)
+            operator = nodePredicateComparableContext.getChild(1).getText();
+
+        //identify the matching variable
+        AqlParser.SelectExprContext selectExprContext;
+        RuleContext ruleContext = nodePredicateComparableContext.getParent();
+
+        //traverse the parent until reaching the Select context or no more parent
+        while (!(ruleContext instanceof AqlParser.SelectExprContext) && ruleContext != null)
+          ruleContext = ruleContext.getParent();
+
+        if (ruleContext instanceof AqlParser.SelectExprContext) {
+            PredicateDefinition predicateDefinition = new PredicateDefinition(operand1, operator, operand2);
+            predicateDefinitionMap.put((AqlParser.SelectExprContext)ruleContext, predicateDefinition );
+        }
+
+    }
+
     private void pushVariableDefinition(I_VariableDefinition variableDefinition){
         isUnique(variableDefinition);
         variableStack.push(variableDefinition);
@@ -124,7 +159,7 @@ public class QueryCompilerPass2 extends AqlBaseListener {
         for (ParseTree pathTree : functionContext.children) {
             if (pathTree instanceof AqlParser.IdentifiedPathContext) {
                 AqlParser.IdentifiedPathContext pathContext = (AqlParser.IdentifiedPathContext) pathTree;
-                VariableDefinition variableDefinition = new IdentifiedPathVariable(pathContext, inSelectExprContext, false).definition();
+                VariableDefinition variableDefinition = new IdentifiedPathVariable(pathContext, inSelectExprContext, false, null).definition();
                 //by default postgresql limits the size of column name to 63 bytes
                 if (variableDefinition.getAlias() == null || variableDefinition.getAlias().isEmpty() || variableDefinition.getAlias().length() > POSTGRESQL_ALIAS_LENGTH_LIMIT)
                     variableDefinition.setAlias("_FCT_ARG_"+serial++);
@@ -158,7 +193,7 @@ public class QueryCompilerPass2 extends AqlBaseListener {
         for (ParseTree pathTree : cast_functionContext.children) {
             if (pathTree instanceof AqlParser.IdentifiedPathContext) {
                 AqlParser.IdentifiedPathContext pathContext = (AqlParser.IdentifiedPathContext) pathTree;
-                VariableDefinition variableDefinition = new IdentifiedPathVariable(pathContext, inSelectExprContext, false).definition();
+                VariableDefinition variableDefinition = new IdentifiedPathVariable(pathContext, inSelectExprContext, false, null).definition();
                 //by default postgresql limits the size of column name to 63 bytes
                 if (variableDefinition.getAlias() == null || variableDefinition.getAlias().isEmpty() || variableDefinition.getAlias().length() > 63)
                     variableDefinition.setAlias("_FCT_ARG_"+serial++);

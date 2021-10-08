@@ -17,6 +17,13 @@
 
 
 *** Settings ***
+Metadata    Version    0.1.0
+Metadata    Authors    *Wladislaw Wagner, Pablo Pazos*
+Metadata    Created    2019
+Metadata    Updated    2021.10.05
+Metadata    TOP_TEST_SUITE    AQL
+Metadata    Command    robot -d results -L TRACE -i AQL_loaded_db robot/QUERY_SERVICE_TESTS
+
 Documentation   Main flow: execute ad-hoc QUERY where data exists
 ...
 ...     Preconditions:
@@ -28,7 +35,6 @@ Documentation   Main flow: execute ad-hoc QUERY where data exists
 ...
 ...     Postconditions:
 ...         None (system state is not altered)
-Metadata        TOP_TEST_SUITE    AQL
 
 Resource       ../../_resources/keywords/aql_query_keywords.robot
 
@@ -513,6 +519,37 @@ C-500 Execute Ad-Hoc Query - Get Entries from EHR
     [Template]          execute ad-hoc query and check result (loaded DB)
     [Tags]              AQL_entry    future
     C/500_query.tmp.json    C/500.tmp.json
+
+
+
+
+# SPECIAL CASES / REGRESSION TEST QUERIES
+
+Query For Not-Existing Composition Should Return Empty Result
+    [tags]    xxx
+    Query For Not-Existing Composition Name
+
+    # comment: validate response
+    Integer    response status    200
+    Array      $.rows    []
+
+
+
+
+
+*** Keywords ***
+Query For Not-Existing Composition Name
+        # comment: create AQL string and execute AQL query
+        ${query1}=    Catenate
+        ...           SELECT
+        ...             c/uid/value, c/name/value, c/archetype_node_id, c/composer/name
+        ...           FROM
+        ...             EHR e
+        ...           CONTAINS
+        ...             COMPOSITION c [openEHR-EHR-COMPOSITION.asdfsomegibberish.v1]
+        Set Test Variable    ${payload}    {"q": "${query1}"}
+        POST /query/aql (REST)     JSON
+
 
 
 

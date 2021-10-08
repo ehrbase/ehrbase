@@ -31,12 +31,14 @@ public class IdentifiedPathVariable {
 
     private AqlParser.IdentifiedPathContext identifiedPathContext;
     private AqlParser.SelectExprContext selectExprContext;
+    private final PredicateDefinition predicateDefinition;
     private boolean isDistinct;
 
-    public IdentifiedPathVariable(AqlParser.IdentifiedPathContext identifiedPathContext, AqlParser.SelectExprContext selectExprContext, boolean isDistinct) {
+    public IdentifiedPathVariable(AqlParser.IdentifiedPathContext identifiedPathContext, AqlParser.SelectExprContext selectExprContext, boolean isDistinct, PredicateDefinition predicateDefinition) {
         this.identifiedPathContext = identifiedPathContext;
         this.selectExprContext = selectExprContext;
         this.isDistinct = isDistinct;
+        this.predicateDefinition = predicateDefinition;
     }
 
     public VariableDefinition definition() {
@@ -50,7 +52,12 @@ public class IdentifiedPathVariable {
             alias = selectExprContext.IDENTIFIER().getText();
         }
 
-        VariableDefinition variableDefinition = new VariableDefinition(path, alias, identifier, isDistinct);
+        VariableDefinition variableDefinition;
+        if (predicateDefinition == null)
+            variableDefinition = new VariableDefinition(path, alias, identifier, isDistinct);
+        else
+            variableDefinition = new VariableDefinition(path, alias, identifier, isDistinct, predicateDefinition);
         return variableDefinition;
     }
+
 }
