@@ -302,7 +302,8 @@ GET /query/{qualified_query_name}/{version}?ehr_id?query_parameter
 # [ POSITIVE RESPONSE CHECKS ]
 
 check response: is positive
-    Should Be Equal As Strings   ${response.status_code}   200
+    Integer    response status    200
+    # Should Be Equal As Strings   ${response.status_code}   200
 
 
 check response (LOADED DB): returns correct content
