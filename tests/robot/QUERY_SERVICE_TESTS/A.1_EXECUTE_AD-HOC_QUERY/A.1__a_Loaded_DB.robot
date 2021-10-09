@@ -521,10 +521,10 @@ C-500 Execute Ad-Hoc Query - Get Entries from EHR
 
 
 
-# SPECIAL CASES / REGRESSION TEST QUERIES
+# SPECIAL CASES / REGRESSION TEST (RT) QUERIES
 
-Query For Not-Existing Composition Should Return Empty Result
-    [tags]    
+RT-001 - Query For Not-Existing Composition Should Return Empty Result
+    [Tags]    
     Query For Not-Existing Composition Name
 
     # comment: validate response

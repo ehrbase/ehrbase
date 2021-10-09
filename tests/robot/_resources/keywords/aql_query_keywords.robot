@@ -125,7 +125,8 @@ execute ad-hoc query
     [Arguments]         ${valid_test_data_set}
                         Set Test Variable  ${KEYWORD NAME}  AD-HOC QUERY
                         load valid query test-data-set    ${valid_test_data_set}
-                        POST /query/aql    JSON
+                        # POST /query/aql    JSON
+                        POST /query/aql (REST)    JSON
 
 
 execute invalid ad-hoc query
@@ -140,6 +141,7 @@ load valid query test-data-set
 
     ${file} =           Load JSON From File    ${VALID QUERY DATA SETS}/${valid_test_data_set}
                         Set Test Variable      ${test_data}    ${file}
+                        Set Test Variable      ${payload}    ${file}
 
 
 load invalid query test-data-set

@@ -325,6 +325,68 @@ D-504 Execute Ad-Hoc Query - Get archetype_details
 
 
 
+
+
+
+
+
+
+
+# SPECIAL CASES / REGRESSION TEST (RT) QUERIES
+RT-002 - AQL Null Select Test
+    [Tags]    xxx   576
+    prepare new request session    XML    Prefer=return=representation
+    upload valid OPT    minimal/minimal_admin.opt
+    create new EHR (XML)
+    commit composition (XML)    minimal/minimal_admin.composition.extdatetimes.xml
+
+    # comment: queries from below data-sets should all return empty rows list as result
+    execute ad-hoc query    A/600_get_ehrs_by_contains_composition_contains_entry_with_archetype.json
+    # comment: validate response
+    Integer    response status    200
+    Array      $.rows    []
+
+    execute ad-hoc query    B/400_get_compositions_contains_section_with_archetype_from_all_ehrs.json
+    Integer    response status    200
+    Array      $.rows    []
+
+    execute ad-hoc query    B/500_get_compositions_by_contains_entry_of_type_from_all_ehrs.json
+    Integer    response status    200
+    Array      $.rows    []
+
+    execute ad-hoc query    B/501_get_compositions_by_contains_entry_of_type_from_all_ehrs.json
+    Integer    response status    200
+    Array      $.rows    []
+
+    execute ad-hoc query    B/502_get_compositions_by_contains_entry_of_type_from_all_ehrs.json
+    Integer    response status    200
+    Array      $.rows    []
+
+    execute ad-hoc query    B/503_get_compositions_by_contains_entry_of_type_from_all_ehrs.json
+    Integer    response status    200
+    Array      $.rows    []
+
+    execute ad-hoc query    B/600_get_compositions_by_contains_entry_with_archetype_from_all_ehrs.json
+    Integer    response status    200
+    Array      $.rows    []
+
+    # comment: following query MUST NOT return empty result
+    ${query}=           Catenate
+    ...                 SELECT
+    ...                   c/uid/value, c/name/value, c/archetype_node_id
+    ...                 FROM
+    ...                   EHR e
+    ...                 CONTAINS
+    ...                   COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1]
+
+    Set Test Variable    ${payload}    {"q": "${query}"}
+
+    POST /query/aql (REST)    JSON
+    Integer    response status    200
+    Array      $.rows    [["${composition_uid}", "Minimal", "openEHR-EHR-COMPOSITION.minimal.v1"]]
+
+
+
 *** Keywords ***
 Establish Preconditions for Scenario: EMPTY DB
     Check DB is empty
