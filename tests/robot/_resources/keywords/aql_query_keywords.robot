@@ -225,13 +225,13 @@ POST /query/aql (REST)
                         ...         headers=${headers}
 
                         Integer    response status    200
-                        # Set Test Variable   ${response}    ${resp}
-                        # Set Test Variable   ${response body}    ${resp.content}
+                        Set Test Variable   ${response}    ${resp}
     
     # UNCOMMENT NEXT BLOCK FOR DEBUGGING (BETTER OUTPUT IN CONSOLE)
     # TODO: rm/comment it out when test stable
                         Log To Console  \n//////////// ACTUAL //////////////////////////////
-                        Output    response body
+    ${resp_body}=       Output    response body
+                        Set Test Variable   ${response body}    ${resp_body}
 
 
 POST /query/{qualified_query_name}/{version}
