@@ -18,9 +18,10 @@
 
 package org.ehrbase.aql.definition;
 
-import org.jooq.Table;
+import org.jooq.DataType;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -55,7 +56,27 @@ public class I_VariableDefinitionHelper {
             }
 
             @Override
-            public void setLateralJoinTable(String templateId, Table lateralJoinTable) {
+            public LateralJoinDefinition getLateralJoinDefinition(String templateId, int index) {
+                return null;
+            }
+
+            @Override
+            public int getLateralJoinsSize(String templateId) {
+                return 0;
+            }
+
+            @Override
+            public boolean isLateralJoinsEmpty(String templateId) {
+                return false;
+            }
+
+            @Override
+            public LateralJoinDefinition getLastLateralJoin(String templateId) {
+                return null;
+            }
+
+            @Override
+            public void setLateralJoinTable(String templateId, LateralJoinDefinition lateralJoinDefinition) {
 
             }
 
@@ -120,7 +141,32 @@ public class I_VariableDefinitionHelper {
             }
 
             @Override
-            public Table getLateralJoinTable(String templateId) {
+            public Set<LateralJoinDefinition> getLateralJoinDefinitions(String templateId) {
+                return null;
+            }
+
+            @Override
+            public PredicateDefinition getPredicateDefinition() {
+                return null;
+            }
+
+            @Override
+            public void setSubstituteFieldVariable(String variableAlias) {
+                // na
+            }
+
+            @Override
+            public String getSubstituteFieldVariable() {
+                return null;
+            }
+
+            @Override
+            public void setSelectType(DataType castTypeAs) {
+
+            }
+
+            @Override
+            public DataType getSelectType() {
                 return null;
             }
         };

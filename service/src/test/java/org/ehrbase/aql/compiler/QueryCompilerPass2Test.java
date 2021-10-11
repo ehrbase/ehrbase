@@ -23,11 +23,13 @@ import org.ehrbase.aql.definition.I_VariableDefinitionHelper;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.assertj.core.api.Assertions;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.PREDICATE;
 
 public class QueryCompilerPass2Test {
 
@@ -262,6 +264,25 @@ public class QueryCompilerPass2Test {
             walker.walk(cut, tree);
 
             I_VariableDefinition expected = I_VariableDefinitionHelper.build("context/start_time/value", null, "a", false, false, false);
+            assertThat(expected).isNotNull();
         }
+    }
+
+    @Test
+    @Ignore("in progress")
+    public void testCompositionNodeWithPredicate(){
+        ParseTreeWalker walker = new ParseTreeWalker();
+        QueryCompilerPass2 cut = new QueryCompilerPass2();
+        String aql = "SELECT\n" +
+                "  \t  c[name/value = 'Diagnose']/uid/value as Diagnose,\n" +
+                "  \t  c[composer/external_ref/id/value = 'Dr Mabuse']/uid/value as MabuseComposition,\n" +
+                "  \t  c[context/start_time/value > '2020-01-01']/uid/value as NewerComposition\n" +
+                "\tFROM\n" +
+                "  \t  EHR e\n" +
+                "  \t  contains COMPOSITION c[openEHR-EHR-COMPOSITION.report.v1]";
+        ParseTree tree = QueryHelper.setupParseTree(aql);
+        walker.walk(cut, tree);
+        Integer actual = cut.getOffsetAttribute();
+        assertThat(actual).isEqualTo(6);
     }
 }

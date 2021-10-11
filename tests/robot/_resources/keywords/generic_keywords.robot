@@ -255,7 +255,14 @@ wait until openehr server is online
 openehr server is online
     prepare new request session  JSON
     REST.GET    ${HEARTBEAT_URL}
-    Integer     response status    404    200
+    Output    response body
+
+    Integer   response status    200
+    String    response body ehrbase_version
+    String    response body jvm_version
+    String    response body openehr_sdk_version
+    String    response body os_version
+    String    response body postgres_version
 
 
 abort test execution

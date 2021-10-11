@@ -120,6 +120,7 @@ tasks:
                    -e POSTGRES_USER=postgres \
                    -e POSTGRES_PASSWORD=postgres \
                    -e DISABLE_SECURITY \
+                   -e PGDATA=/tmp \
                    -d -p 5432:5432 \
                    ehrbase/ehrbase-postgres:13.4
 
