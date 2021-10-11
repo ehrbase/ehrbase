@@ -51,6 +51,3 @@ terminology_server:
   codePath: '$["expansion"]["contains"][*]["code"]'
   systemPath: '$["expansion"]["contains"][*]["system"]'
   displayPath: '$["expansion"]["contains"][*]["display"]'
-
-javamelody:
-  enabled: true
