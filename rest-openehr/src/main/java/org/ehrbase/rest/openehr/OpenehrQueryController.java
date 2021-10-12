@@ -64,6 +64,8 @@ import java.util.Set;
 public class OpenehrQueryController extends BaseController {
 
     final static Logger log = LoggerFactory.getLogger(OpenehrQueryController.class);
+    public static final String EHR_ID_VALUE = "ehr_id/value";
+    public static final String LATEST = "LATEST";
     private final String QUERY_PARAMETERS = "query_parameters";
     private QueryService queryService;
 
@@ -110,7 +112,7 @@ public class OpenehrQueryController extends BaseController {
 
             // Enriches request attributes with EhrId(s) for later audit processing
             Map<String, Set<Object>> auditResultMap = queryService.getAuditResultMap();
-            request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, auditResultMap.get("ehr_id/value"));
+            request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, auditResultMap.get(EHR_ID_VALUE));
 
             if (queryResponseData.getRows().size() > 0)
                 return ResponseEntity.ok(queryResponseData);
@@ -165,13 +167,11 @@ public class OpenehrQueryController extends BaseController {
 
         // Enriches request attributes with EhrId(s) for later audit processing
         Map<String, Set<Object>> auditResultMap = queryService.getAuditResultMap();
-        request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, auditResultMap.get("ehr_id/value"));
+        request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, auditResultMap.get(EHR_ID_VALUE));
 
         if (queryResponseData == null)
             return ResponseEntity.noContent().build();
             //NB. Empty result -> HTTP 200 with empty columns and rows (EtherCIS previously returned 204, but I think it's wrong)
-//        else if (queryResponseData.getRows().size() == 0)
-//            return ResponseEntity.noContent().build();
         else
             return ResponseEntity.ok(queryResponseData);
 
@@ -182,7 +182,30 @@ public class OpenehrQueryController extends BaseController {
     }
 
     private String withFetch(String query, Integer value) {
-        return query + " LIMIT " + value;
+        return orderedLimitOffset(query, "LIMIT", value);
+    }
+
+    private String orderedLimitOffset(String query, String keyword, Integer value){
+        String queryFormatted;
+
+        if (query.replace(" ","").toUpperCase().contains("ORDERBY")){
+            //insert LIMIT before ORDER BY clause!
+            String[] strings = query.split("(?i)ORDER");
+            //assemble
+            StringBuilder queryBuilder = new StringBuilder();
+            queryBuilder.append(strings[0]);
+            queryBuilder.append(keyword.toUpperCase());
+            queryBuilder.append(" ");
+            queryBuilder.append(value);
+            queryBuilder.append(" ORDER");
+            queryBuilder.append(strings[1]);
+            queryFormatted = queryBuilder.toString();
+        }
+        else
+            queryFormatted = query + " "+keyword+" " + value;
+
+        return queryFormatted;
+
     }
 
     private String withOffset(String query, String value) {
@@ -190,7 +213,7 @@ public class OpenehrQueryController extends BaseController {
     }
 
     private String withOffset(String query, Integer value) {
-        return query + " OFFSET " + value;
+        return orderedLimitOffset(query, "OFFSET", value);
     }
 
     private Integer double2int(String value) {
@@ -219,7 +242,7 @@ public class OpenehrQueryController extends BaseController {
         request.setAttribute(QueryAuditInterceptor.QUERY_ID_ATTRIBUTE, qualifiedQueryName);
 
         //retrieve the stored query for execution
-        QueryDefinitionResultDto queryDefinitionResultDto = queryService.retrieveStoredQuery(qualifiedQueryName, version.isPresent() ? version.get() : "LATEST");
+        QueryDefinitionResultDto queryDefinitionResultDto = queryService.retrieveStoredQuery(qualifiedQueryName, version.isPresent() ? version.get() : LATEST);
 
         String query = queryDefinitionResultDto.getQueryText();
 
@@ -272,7 +295,7 @@ public class OpenehrQueryController extends BaseController {
         //retrieve the stored query for execution
         request.setAttribute(QueryAuditInterceptor.QUERY_ID_ATTRIBUTE, qualifiedQueryName);
 
-        QueryDefinitionResultDto queryDefinitionResultDto = queryService.retrieveStoredQuery(qualifiedQueryName, version.isPresent() ? version.get() : "LATEST");
+        QueryDefinitionResultDto queryDefinitionResultDto = queryService.retrieveStoredQuery(qualifiedQueryName, version.isPresent() ? version.get() : LATEST);
 
         String query = queryDefinitionResultDto.getQueryText();
 
@@ -306,7 +329,7 @@ public class OpenehrQueryController extends BaseController {
     }
 
     public ResponseEntity badRequestResponseEntity(String qualifiedQueryName, Optional<String> version) {
-        String errorBody = new ErrorBodyPayload("Invalid query", "could not retrieve query identified by:" + qualifiedQueryName + "/" + version.orElse("LATEST")).toString();
+        String errorBody = new ErrorBodyPayload("Invalid query", "could not retrieve query identified by:" + qualifiedQueryName + "/" + version.orElse(LATEST)).toString();
         return new ResponseEntity(errorBody, HttpStatus.BAD_REQUEST);
     }
 
@@ -327,7 +350,7 @@ public class OpenehrQueryController extends BaseController {
 
         // Enriches request attributes with EhrId(s) for later audit processing
         Map<String, Set<Object>> auditResultMap = queryService.getAuditResultMap();
-        request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, auditResultMap.get("ehr_id/value"));
+        request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, auditResultMap.get(EHR_ID_VALUE));
 
         return queryResponseData;
     }
