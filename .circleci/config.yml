@@ -142,6 +142,7 @@ workflows:
             - COMPOSITION-tests-2
             - COMPOSITION-tests-3
             - COMPOSITION-tests-4
+            - COMPOSITION-tests-5
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -279,6 +280,7 @@ workflows:
             - COMPOSITION-tests-2
             - COMPOSITION-tests-3
             - COMPOSITION-tests-4
+            - COMPOSITION-tests-5
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -463,6 +465,7 @@ workflows:
             - COMPOSITION-tests-2
             - COMPOSITION-tests-3
             - COMPOSITION-tests-4
+            - COMPOSITION-tests-5
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -1505,7 +1508,7 @@ commands:
                         -e POSTGRES_USER=$POSTGRES_USER \
                         -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD -d \
                         -e DISABLE_SECURITY=true \
-                        -p 5432:5432 ehrbase/ehrbase-postgres:13.3
+                        -p 5432:5432 ehrbase/ehrbase-postgres:13.4
 
 
   setup-file-repo:
@@ -1842,13 +1845,14 @@ executors:
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
-      - image: ehrbase/ehrbase-postgres:13.3
+      - image: ehrbase/ehrbase-postgres:13.4
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
         environment:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
+          PGDATA: /tmp
 
   machine-ubuntu-1604:
     description: |

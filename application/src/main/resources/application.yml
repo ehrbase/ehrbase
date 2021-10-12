@@ -101,9 +101,12 @@ cache:
 system:
   allow-template-overwrite: false
 
+openehr-api:
+  context-path: /rest/openehr
 admin-api:
   active: false
   allowDeleteAll: false
+  context-path: /rest/admin
 
 logging:
   level:

@@ -71,10 +71,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
     public static final String CHILD_FOLDER = "child_folder";
     public static final String CALLED_INVALID_ACCESS_LAYER_METHOD = "Called invalid access layer method.";
 
-    // TODO: Check how to remove this unused details for confusion prevention
-    private ItemStructure details;
-
-    private List<ObjectRef<?>> items = new ArrayList<>();
+    private List<ObjectRef<? extends ObjectId>> items = new ArrayList<>();
     private Map<UUID, I_FolderAccess> subfoldersList = new TreeMap<>();
     private I_ContributionAccess contributionAccess;
     private I_AuditDetailsAccess auditDetailsAccess;  // audit associated with this folder version
@@ -1046,17 +1043,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
     }
 
     @Override
-    public void setDetails(final ItemStructure details) {
-        this.details = details;
-    }
-
-    @Override
-    public ItemStructure getDetails() {
-        return null;
-    }
-
-    @Override
-    public List<ObjectRef<?>> getItems() {
+    public List<ObjectRef<? extends ObjectId>> getItems() {
         return this.items;
     }
 

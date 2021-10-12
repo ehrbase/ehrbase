@@ -330,7 +330,8 @@ prepare new request session
                         ...                 &{extra_headers}
 
                         # case: no headers
-                        Run Keyword If      $headers=='no headers'    set request headers  
+                        Run Keyword If      $headers=='no headers'    set request headers
+                        ...                 &{extra_headers}
 
                         # case: mixed cases like JSON/XML or XML/JSON can be added here!
 

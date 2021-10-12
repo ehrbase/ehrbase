@@ -22,10 +22,10 @@ import org.ehrbase.aql.sql.queryimpl.attribute.AttributeResolver;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.ehrbase.aql.sql.queryimpl.attribute.ehr.ehrstatus.subject.SubjectResolver;
-import org.ehrbase.aql.sql.queryimpl.attribute.eventcontext.SimpleEventContextAttribute;
 import org.jooq.Field;
 
 import static org.ehrbase.jooq.pg.Tables.STATUS;
+
 @SuppressWarnings({"java:S3740","java:S1452"})
 public class StatusResolver extends AttributeResolver
 {
@@ -44,9 +44,9 @@ public class StatusResolver extends AttributeResolver
             } else if (path.isEmpty()) {
                 return new EhrStatusJson(fieldResolutionContext, joinSetup).sqlField();
             } else if (path.equals("is_queryable")){
-                return new SimpleEventContextAttribute(fieldResolutionContext, joinSetup).forTableField(STATUS.IS_QUERYABLE).sqlField();
+                return new SimpleEhrStatusAttribute(fieldResolutionContext, joinSetup).forTableField(STATUS.IS_QUERYABLE).sqlField();
             } else if (path.equals("is_modifiable")){
-                return new SimpleEventContextAttribute(fieldResolutionContext, joinSetup).forTableField(STATUS.IS_MODIFIABLE).sqlField();
+                return new SimpleEhrStatusAttribute(fieldResolutionContext, joinSetup).forTableField(STATUS.IS_MODIFIABLE).sqlField();
             } else
                 return new EhrStatusJson(fieldResolutionContext, joinSetup).forJsonPath(path).sqlField();
         }
