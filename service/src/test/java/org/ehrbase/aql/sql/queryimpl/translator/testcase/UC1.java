@@ -20,6 +20,9 @@
 package org.ehrbase.aql.sql.queryimpl.translator.testcase;
 
 import org.ehrbase.aql.sql.queryimpl.translator.QueryProcessorTestBase;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public abstract class UC1 extends QueryProcessorTestBase {
 
@@ -27,4 +30,5 @@ public abstract class UC1 extends QueryProcessorTestBase {
         this.aql = "select e/ehr_id/value from EHR e";
         this.expectedOutputWithJson = false;
     }
+
 }

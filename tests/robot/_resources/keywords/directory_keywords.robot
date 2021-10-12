@@ -430,8 +430,8 @@ POST /ehr/ehr_id/directory
                         prepare new request session    ${headers}
                         ...                 Prefer=return=representation
 
-    ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/directory
-                        ...                 data=${test_data}
+    ${resp}=            POST On Session     ${SUT}   /ehr/${ehr_id}/directory   expected_status=anything
+                        ...                 json=${test_data}
                         ...                 headers=${headers}
 
                         Set Suite Variable   ${response}    ${resp}
@@ -448,8 +448,8 @@ POST /ehr/ehr_id/directory (w/ headers)
 
                         prepare new request session    ${headers}
 
-    ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/directory
-                        ...                 data=${test_data}
+    ${resp}=            POST On Session     ${SUT}   /ehr/${ehr_id}/directory   expected_status=anything
+                        ...                 json=${test_data}
                         ...                 headers=${headers}
 
                         Set Test Variable   ${response}    ${resp}
@@ -1052,7 +1052,7 @@ load valid dir test-data-set
 load invalid dir test-data-set
     [Arguments]        ${invalid_test_data_set}
 
-    ${file}=            Get File    ${INVALID DIR DATA SETS}/${invalid_test_data_set}
+    ${file}=            Load JSON From File   ${INVALID DIR DATA SETS}/${invalid_test_data_set}
 
                         Set Suite Variable    ${test_data}    ${file}
 

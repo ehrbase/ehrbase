@@ -96,7 +96,7 @@ upload OPT file
     [Documentation]     Uploads OPT file which was obtained with one of the Keywords
     ...                 `get valid OPT file` or `get invalid OPT file`
 
-    ${resp}=            Post Request         ${SUT}    /definition/template/adl1.4
+    ${resp}=            POST On Session      ${SUT}    /definition/template/adl1.4   expected_status=anything
                         ...                  data=${file}    headers=${headers}
                         Set Suite Variable    ${response}    ${resp}
                         # Log To Console      ${resp.content}
@@ -240,7 +240,7 @@ upload valid template (XML)
     Create Session  ethlocal  ${baseurl}
     ${file}=  Get File  ${VALID DATA SETS}${template}
     &{headers}=  Create Dictionary  Content-Type=application/xml
-    ${resp}=  Post Request  ethlocal  /template  data=${file}  headers=${headers}
+    ${resp}=  POST On Session  ethlocal  /template  data=${file}  headers=${headers}   expected_status=anything
     Log  ${resp.json()}
     Run Keyword If   ${resp.status_code} != 201  Log  Wrong Status Code  WARN
     Run Keyword If   ${resp.status_code} != 201  Set Tags  not-ready

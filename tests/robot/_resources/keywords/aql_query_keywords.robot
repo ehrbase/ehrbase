@@ -199,8 +199,8 @@ POST /query/aql
     ...                 `${test_data}`
 
                         prepare new request session    ${format}
-    ${resp}=            Post Request        ${SUT}   /query/aql
-                        ...                 data=${test_data}
+    ${resp}=            POST On Session     ${SUT}   /query/aql   expected_status=anything
+                        ...                 json=${test_data}
                         ...                 headers=${headers}
                         Set Test Variable   ${response}    ${resp}
                         Set Test Variable   ${response body}    ${resp.content}

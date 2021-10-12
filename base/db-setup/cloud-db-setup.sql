@@ -18,6 +18,9 @@ CREATE EXTENSION IF NOT EXISTS "ltree" SCHEMA ext;
 
 -- setup the search_patch so the extensions can be found
 ALTER DATABASE ehrbase SET search_path TO "$user",public,ext;
+-- ensure INTERVAL is ISO8601 encoded
+alter database ehrbase SET intervalstyle = 'iso_8601';
+
 GRANT ALL ON ALL FUNCTIONS IN SCHEMA ext TO ehrbase;
 
 -- load the temporal_tables PLPG/SQL functions to emulate the coded extension

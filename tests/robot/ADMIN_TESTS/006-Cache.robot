@@ -46,7 +46,17 @@ Resource        ../_resources/keywords/aql_query_keywords.robot
 Suite Setup     startup SUT
 Suite Teardown  shutdown SUT
 
-Force Tags     cache    cache_template_update
+Force Tags     cache    cache_template_update    TODO
+
+# NOTE: because of serious concerns about the template update feature
+#       this test is deactiated and excluded from CI execution (via TODO tag)
+#       (see https://wiki.vitagroup.ag/pages/viewpage.action?pageId=59973991 for details)
+#       Consider reusing it to test template update feature in the future.
+#       
+#       Originally the sense of this test was not to test the template update feature, though.
+#       Instead it was meant to test proper working of EHRbase's cache.
+#       Thus a proper replacement for this test should be considered which
+#       requires providing a new test design/documentation for Cache testing scenario.
 
 
 
@@ -300,95 +310,3 @@ validate DELETE ALL response - 204 deleted ${amount}
 # o888bood8P'  o88o     o8888o  `Y8bood8P'  o888o  o888o    `YbodP'    o888o
 #
 # [ BACKUP ]
-
-    # execute ad-hoc query    D/300_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
-    # AQL_query_keywords.check response: is positive
-
-    # execute ad-hoc query    D/302_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
-    # AQL_query_keywords.check response: is positive
-
-    # execute ad-hoc query    D/304_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
-    # AQL_query_keywords.check response: is positive
-
-    # execute ad-hoc query    D/306_select_data_values_from_all_ehrs_contains_composition_with_archetype.json
-    # AQL_query_keywords.check response: is positive
-
-
-
-## VERSCHIEDENE AQL QUERIES:
-
-    # ${query}=    Catenate
-    # ...           SELECT
-    # ...             c
-    # ...           FROM
-    # ...             COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1]
-    # Set Test Variable    ${payload}    {"q": "${query}"}
-    # POST2 /query/AQL     JSON
-    # String    $.rows[0][0].content[0].archetype_node_id    openEHR-EHR-ADMIN_ENTRY.minimal.v1
-    # String    $.rows[0][0].archetype_node_id    openEHR-EHR-COMPOSITION.minimal.v1
-    # String    $.rows[0][0].archetype_details.archetype_id.value    openEHR-EHR-COMPOSITION.minimal.v1
-
-    # ${query}=    Catenate
-    # ...           SELECT
-    # ...             c/uid/value, c/name/value, c/archetype_node_id
-    # ...           FROM
-    # ...             EHR e
-    # ...           CONTAINS
-    # ...             COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1]
-    # Set Test Variable    ${payload}    {"q": "${query}"}
-    # POST2 /query/AQL     JSON
-
-    # ${query}=    Catenate
-    # ...           SELECT
-    # ...             c/uid/value,
-    # ...             c/archetype_node_id,
-    # ...             c/archetype_details/template_id/value,
-    # ...             c/name/value,
-    # ...             a/data[at0001]/items[at0002]/value/value as int,
-    # ...             a/name/value
-    # ...           FROM
-    # ...             EHR e
-    # ...           CONTAINS
-    # ...             COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1]
-    # ...           CONTAINS
-    # ...             ADMIN_ENTRY a [openEHR-EHR-ADMIN_ENTRY.minimal.v1]
-    # Set Test Variable    ${payload}    {"q": "${query}"}
-    # POST2 /query/AQL     JSON
-
-
-    # ${query}=    Catenate
-    # ...           SELECT
-    # ...             c
-    # ...           FROM
-    # ...             EHR e
-    # ...           CONTAINS
-    # ...             COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1]
-    # ...           CONTAINS
-    # ...             EVALUATION ev [openEHR-EHR-EVALUATION.minimal.v1]
-    # Set Test Variable    ${payload}    {"q": "${query}"}
-    # POST2 /query/AQL     JSON
-    # String    $.rows[0][0].content[0].archetype_node_id    openEHR-EHR-ADMIN_ENTRY.minimal.v1
-    # String    $.rows[0][0].archetype_node_id    openEHR-EHR-COMPOSITION.minimal.v1
-    # String    $.rows[0][0].archetype_details.archetype_id.value    openEHR-EHR-COMPOSITION.minimal.v1
-
-
-    # ${query}=    Catenate
-    # ...           SELECT
-    # ...             c/uid/value, c/name/value, c/archetype_node_id
-    # ...           FROM
-    # ...             EHR e
-    # ...           CONTAINS
-    # ...             COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1]
-    # Set Test Variable    ${payload}    {"q": "${query}"}
-    # POST2 /query/AQL     JSON
-
-    # ${query}=    Catenate
-    # ...           SELECT
-    # ...             c
-    # ...           FROM
-    # ...             COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1]
-    # Set Test Variable    ${payload}    {"q": "${query}"}
-    # POST2 /query/AQL     JSON
-    # # String    $.rows[0][0].content[0].archetype_node_id    openEHR-EHR-ADMIN_ENTRY.minimal.v1
-    # # String    $.rows[0][0].archetype_node_id    openEHR-EHR-COMPOSITION.minimal.v1
-    # # String    $.rows[0][0].archetype_details.archetype_id.value    openEHR-EHR-COMPOSITION.minimal.v1
