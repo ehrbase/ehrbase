@@ -9,7 +9,7 @@
             "value": "openEHR-EHR-COMPOSITION.minimal.v1"
         },
         "template_id": {
-            "value": "Minimal action 2"
+            "value": "minimal_action_2"
         },
         "rm_version": "1.0.2"
     },
@@ -18,7 +18,7 @@
         "terminology_id": {
             "value": "ISO_639-1"
         },
-        "code_string": "es"
+        "code_string": "en"
     },
     "territory": {
         "terminology_id": {
@@ -27,7 +27,7 @@
         "code_string": "UY"
     },
     "category": {
-        "value": "evento",
+        "value": "event",
         "defining_code": {
             "terminology_id": {
                 "value": "openehr"
@@ -40,7 +40,7 @@
         "external_ref": {
             "id": {
                 "_type": "HIER_OBJECT_ID",
-                "value": "4c7533d4-c2fb-44c5-83fb-5419e9463f73"
+                "value": "2461ccd2-e50b-4d01-9cd6-3432924c7900"
             },
             "namespace": "DEMOGRAPHIC",
             "type": "PERSON"
@@ -49,15 +49,15 @@
     },
     "context": {
         "start_time": {
-            "value": "2021-09-22T22:26:50.118-03:00"
+            "value": "2021-10-12T20:29:59.258-03:00"
         },
         "setting": {
-            "value": "atenci\u00f3n m\u00e9dica primaria",
+            "value": "emergency care",
             "defining_code": {
                 "terminology_id": {
                     "value": "openehr"
                 },
-                "code_string": "228"
+                "code_string": "227"
             }
         },
         "participations": [
@@ -102,7 +102,7 @@
                     "value": "openEHR-EHR-ACTION.minimal_2.v1"
                 },
                 "template_id": {
-                    "value": "Minimal action 2"
+                    "value": "minimal_action_2"
                 },
                 "rm_version": "1.0.2"
             },
@@ -111,7 +111,7 @@
                 "terminology_id": {
                     "value": "ISO_639-1"
                 },
-                "code_string": "es"
+                "code_string": "en"
             },
             "encoding": {
                 "terminology_id": {
@@ -124,13 +124,13 @@
             },
             "time": {
                 "_type": "DV_DATE_TIME",
-                "value": "2021-09-22T22:26:50.321-03:00"
+                "value": "2021-10-12T20:29:59.329-03:00"
             },
             "description": {
                 "_type": "ITEM_TREE",
                 "name": {
                     "_type": "DV_TEXT",
-                    "value": "Arbol"
+                    "value": "Tree"
                 },
                 "archetype_node_id": "at0001",
                 "items": [
