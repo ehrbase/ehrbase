@@ -51,7 +51,6 @@ workflows:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-1
           # post-steps:
           #   - provide-test-status-report-via-slack #
 
@@ -59,55 +58,46 @@ workflows:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-1
 
       - COMPOSITION-tests-3:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-1
 
       - COMPOSITION-tests-4:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-1
       
       - COMPOSITION-tests-5:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-1
 
       - CONTRIBUTION-test:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-1
 
       - DIRECTORY-test:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-1
 
       - EHRSERVICE-test:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-1
 
       - EHRSTATUS-test:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-1
 
       - KNOWLEDGE-test:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-1
 
       - QUERYSERVICE-test-1:
           context: org-global
@@ -128,7 +118,6 @@ workflows:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-1
 
       - ADMIN-test:
           context: org-global
@@ -195,7 +184,6 @@ workflows:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-2
           # post-steps:
           #   - provide-test-status-report-via-slack #
 
@@ -203,55 +191,46 @@ workflows:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-2
 
       - COMPOSITION-tests-3:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-2
 
       - COMPOSITION-tests-4:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-2
       
       - COMPOSITION-tests-5:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-2
 
       - CONTRIBUTION-test:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-2
 
       - DIRECTORY-test:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-2
 
       - EHRSERVICE-test:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-2
 
       - EHRSTATUS-test:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-2
 
       - KNOWLEDGE-test:
           context: org-global
           requires:
             - build-ehrbase
-            - QUERYSERVICE-test-2
 
       - QUERYSERVICE-test-1:
           context: org-global
