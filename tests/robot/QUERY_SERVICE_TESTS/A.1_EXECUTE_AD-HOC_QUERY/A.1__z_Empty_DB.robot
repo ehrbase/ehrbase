@@ -138,7 +138,6 @@ B-100 Execute Ad-Hoc Query - Get Composition(s)
     [Template]          execute ad-hoc query and check result (empty DB)
     [Tags]              
     B/100_get_compositions_from_all_ehrs.json
-    B/101_get_compositions_top_5.json
     B/102_get_compositions_orderby_name.json
 
 

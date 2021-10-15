@@ -595,7 +595,6 @@ Query For Not-Existing Composition Name
 
 #     # COMPOSITIONs
 #     B/100_get_compositions_from_all_ehrs.json
-#     B/101_get_compositions_top_5.json
 #     B/102_get_compositions_orderby_name.json
 #     B/103_get_compositions_within_timewindow.json
 #     B/200_get_compositions_from_ehr_by_id.json
