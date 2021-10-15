@@ -174,7 +174,7 @@ com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
 
-# RF tests
+# ROBOT FRAMEWORK tests
 results
 venv
 ZZZ_bdd_examples
@@ -184,6 +184,11 @@ output.xml
 report.html
 std*
 *.tmp.json
+tests/DBDUMP_STDERR
+tests/DBRESTORE_STDERR
+tests/DBRESTORE_STDOUT
+tests/DBSTDOUT
+
 
 ### VisualStudioCode ###
 .vscode/*
