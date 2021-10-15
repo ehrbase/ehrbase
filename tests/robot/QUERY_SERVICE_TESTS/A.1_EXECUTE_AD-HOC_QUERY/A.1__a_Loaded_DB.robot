@@ -154,23 +154,16 @@ A-600 Execute Ad-Hoc Query - Get EHRs Which Have Compositions
 
 B-100 Execute Ad-Hoc Query - Get Compositions From All EHRs
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              not-ready    not-ready_test-issue
-    # comment: note-ready_test-issue because huge payloads to compare,
-    #          it's nearly impossible to get the diff to zero
+    [Tags]              586    not-ready
     B/100_get_compositions_from_all_ehrs.json    B/100.tmp.json
-
-
-B-101 Execute Ad-Hoc Query - Get Compositions (filtered: top 5)
-    [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TODO   # @WLAD will be replaced by B-104/105
-    B/101_get_compositions_top_5.json    B/101.tmp.json
+    [Teardown]          TRACE GITHUB ISSUE  586  bug
 
 
 B-102 Execute Ad-Hoc Query - Get Compositions (ordered by: name)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TODO
+    [Tags]              586    not-ready
     B/102_get_compositions_orderby_name.json    B/102.tmp.json
-    ## comment: check SMOKE test suite
+    [Teardown]          TRACE GITHUB ISSUE  586  bug
 
 
 B-103 Execute Ad-Hoc Query - Get Compositions (filtered: timewindow)

@@ -334,7 +334,7 @@ D-504 Execute Ad-Hoc Query - Get archetype_details
 
 # SPECIAL CASES / REGRESSION TEST (RT) QUERIES
 RT-002 - AQL Null Select Test
-    [Tags]    xxx   576
+    [Tags]
     prepare new request session    XML    Prefer=return=representation
     upload valid OPT    minimal/minimal_admin.opt
     create new EHR (XML)

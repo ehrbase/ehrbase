@@ -2,7 +2,7 @@
     "_type": "COMPOSITION",
     "name": {
         "_type": "DV_TEXT",
-        "value": "Minimal"
+        "value": "E_Minimal"
     },
     "archetype_details": {
         "archetype_id": {

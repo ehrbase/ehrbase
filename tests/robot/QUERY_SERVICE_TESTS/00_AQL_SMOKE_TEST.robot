@@ -164,14 +164,6 @@ B-100 Execute Ad-Hoc Query - Get Compositions From All EHRs
     B/100_get_compositions_from_all_ehrs.json    B/100.tmp.json
 
 
-B-102 Execute Ad-Hoc Query - Get Compositions (ordered by: name)
-    [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TODO    not-ready_test-issue
-    B/102_get_compositions_orderby_name.json    B/102.tmp.json
-    # execute ad-hoc query    B/102_get_compositions_orderby_name.json
-    # check response (LOADED DB): returns correct ordered content    B/102.tmp.json
-
-
 B-200 Execute Ad-Hoc Query - Get Compositions From All EHRs
     [Template]          execute ad-hoc query and check result (loaded DB)
     [Tags]              357  358  359

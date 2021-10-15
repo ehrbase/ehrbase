@@ -329,25 +329,6 @@ check response (LOADED DB): returns correct content
 #     &{diff}=            compare json-strings  ${response body}  ${expected result}  exclude_paths=root['meta']
 
 
-check response (LOADED DB): returns correct ordered content
-    [Documentation]     expected result is generated at runtime and saved as .tmp.json
-    ...                 in the same folder as the related blueprint
-    [Arguments]         ${path_to_expected_result}
-                        load expected results-data-set (LOADED DB)    ${path_to_expected_result}
-
-                        Log To Console  \n/////////// EXPECTED //////////////////////////////
-                        Output    ${expected result}
-    
-    # TODO: probably need to sort the expected result before comparison
-    
-    &{diff}             compare_jsons_ignoring_properties    ${response body}    ${expected result}
-    ...                 meta    path
-    ...                 ignore_order=${FALSE}
-    ...                 report_repetition=${TRUE}
-
-                        Should Be Empty    ${diff}    msg=DIFF DETECTED!
-
-
 check response (EMPTY DB): returns correct content for
     [Arguments]         ${aql_payload}
 
@@ -444,7 +425,6 @@ Preconditions (PART 1) - Load Blueprints of Queries and Expected-Results
                         ...            A/602_get_ehrs_by_contains_composition_contains_entry_with_archetype.json
                         ...            A/603_get_ehrs_by_contains_composition_contains_entry_with_archetype.json
                         ...            B/100_get_compositions_from_all_ehrs.json
-                        ...            B/101_get_compositions_top_5.json
                         ...            B/102_get_compositions_orderby_name.json
                         ...            B/103_get_compositions_within_timewindow.json
                         ...            B/300_get_compositions_with_archetype_from_all_ehrs.json
@@ -658,7 +638,6 @@ Commit Compo
         Log To Console  \nCOMPOSITION ${compo_index}(${ehr_index}) ////////////////////////////////////
 
                         Set Suite Variable    ${compo_index}    ${compo_index}
-                        # Set Suite Variable    ${ehr_index}    ${ehr_index}    # TODO: @WLAD REMOVE
 
     &{resp}=            REST.POST    ${baseurl}/ehr/${ehr_id}/composition    ${compo_file}
                         # Output Debug Info To Console
@@ -669,11 +648,15 @@ Commit Compo
     #          That's exactly what we need to inject into expected-result blueprint most of the time.
     #          In cases where you need the object itself use index 0 on that list: ${compo_in_list}[0]
     @{body}=            Object     response body
+
+    # comment: here we expose things from response to test suite scope for later use
                         Set Suite Variable    ${compo_in_list}    ${body}
                         Set Suite Variable    ${compo_uid_value}    ${response.body.uid.value}
                         Set Suite Variable    ${compo_uid}    ${response.body.uid}    
                         Set Suite Variable    ${compo_name_value}    ${response.body.name.value}
                         Set Suite Variable    ${compo_name}    ${response.body.name}
+                        # comment: makes response body accessible by a variable name like ${A_Minimal_1}        
+                        Set Suite Variable    ${${compo_name_value}_${ehr_index}}    ${body}
                         Set Suite Variable    ${compo_archetype_id_value}     ${response.body.archetype_details.archetype_id.value}
                         Set Suite Variable    ${compo_archetype_id}     ${response.body.archetype_details.archetype_id}
                         Set Suite Variable    ${compo_archetype_node_id}    ${response.body.archetype_node_id}
@@ -781,11 +764,6 @@ Commit Compo
 
     # BACKLOG / DATA GENERATION NOT READY/POSSIBLE OR NOT CLEAR HOW TO DO
     # ===================================================================
-
-    # # NOT READY - not clear yet what is definition of TOP 5 COMPOSITIONS (GITHUB #103)
-    # ${B/101}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/B/101.tmp.json
-    # ${B/101}=           Add Object To Json     ${B/101}    $.rows    ${response.body}
-    #                     Output    ${B/101}     ${QUERY RESULTS LOADED DB}/B/101.tmp.json
 
     # # NOT READY - "TIMEWINDOW" not implemented (GITHUB #106)
     # ${B/103}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/B/103.tmp.json
@@ -1135,11 +1113,47 @@ B/100
     ${B/100}=           Add Object To Json     ${B/100}    $.rows    ${compo_in_list}
                         Output    ${B/100}     ${QUERY RESULTS LOADED DB}/B/100.tmp.json
 
+
+
+
+
+
 B/102
-    Return From Keyword If    (${ehr_index}>=5)    nothing to do here!
-    ${B/102}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/B/102.tmp.json
-    ${B/102}=           Add Object To Json     ${B/102}    $.rows    ${compo_in_list}
+    [Documentation]     This KW is executed at the end of all iterations in
+    ...                 'establish precondition' step only. At this point all
+    ...                 composition names and their content exist in memory and
+    ...                 are accessible via variable names like \${A_Minimal_1}, \${A_Minimal_2},
+    ...                 \${B_Minimal_1}, \${A_Minimal_2}, etc.\n\n
+    ...                 NOTE:  Adjust ehr_index and compo_index accordingly to any changes in
+    ...                        'establish precondition' KW. They must both be set to max values,
+    ...                        i.e. if there are max 2 EHRs and max 18 Compositions created in the
+    ...                        the precondition step, then set them to 2 and 18.
+
+    IF    (${ehr_index} == 2) and (${compo_index} == 18)
+        ${B/102}=       Load JSON From File    ${QUERY RESULTS LOADED DB}/B/102.tmp.json
+        @{resultset}=   Create List     ${A_Minimal_1}
+                        ...             ${A_Minimal_2}
+                        ...             ${B_Minimal_1}
+                        ...             ${B_Minimal_2}
+                        ...             ${C_Minimal_1}
+                        ...             ${C_Minimal_2}
+                        ...             ${D_Minimal_1}
+                        ...             ${D_Minimal_2}
+                        ...             ${E_Minimal_1}
+                        ...             ${E_Minimal_2}
+                        ...             ${F_Minimal_1}
+                        ...             ${F_Minimal_2}
+                        ...             ${G_Minimal_1}
+                        ...             ${G_Minimal_2}
+                        ...             ${H_Minimal_1}
+                        ...             ${H_Minimal_2}
+                        ...             ${I_Minimal_1}
+                        ...             ${I_Minimal_2}
+                        ...             ${J_Minimal_1}
+                        ...             ${J_Minimal_2}
+        ${B/102}=       Update Value To Json    ${B/102}    $.rows    ${resultset}
                         Output    ${B/102}     ${QUERY RESULTS LOADED DB}/B/102.tmp.json
+    END
 
 B/200
     Return From Keyword If    not (${ehr_index}==1)    nothing to do here!
