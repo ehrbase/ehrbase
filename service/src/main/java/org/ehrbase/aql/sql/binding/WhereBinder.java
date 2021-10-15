@@ -23,16 +23,15 @@ package org.ehrbase.aql.sql.binding;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.aql.definition.I_VariableDefinition;
+import org.ehrbase.aql.definition.LateralJoinDefinition;
+import org.ehrbase.aql.definition.LateralVariable;
 import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
 import org.ehrbase.aql.sql.queryimpl.*;
 import org.ehrbase.aql.sql.queryimpl.value_field.ISODateTime;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.serialisation.dbencoding.CompositionSerializer;
-import org.jooq.Condition;
-import org.jooq.Field;
-import org.jooq.Record;
-import org.jooq.Table;
+import org.jooq.*;
 import org.jooq.impl.DSL;
 
 import java.util.*;
@@ -83,7 +82,6 @@ public class WhereBinder {
     private String sqlConditionalFunctionalOperatorRegexp = "(?i)(like|ilike|substr|in|not in)"; //list of subquery and operators
     private boolean requiresJSQueryClosure = false;
     private boolean isFollowedBySQLConditionalOperator = false;
-    private static int seed = 1;
 
     public WhereBinder(I_DomainAccess domainAccess, CompositionAttributeQuery compositionAttributeQuery, List<Object> whereClause, PathResolver pathResolver) {
         this.compositionAttributeQuery = compositionAttributeQuery;
@@ -166,7 +164,7 @@ public class WhereBinder {
         return taggedBuffer;
     }
 
-    public Condition bind(String templateId, int whereCursor, MultiFieldsMap multiFieldsMap) {
+    public Condition bind(String templateId, int whereCursor, MultiFieldsMap multiWhereFieldsMap, MultiFieldsMap multiSelectFieldsMap) {
 
         boolean unresolvedVariable = false;
 
@@ -239,8 +237,8 @@ public class WhereBinder {
                 //look ahead and check if followed by a sql operator
                 TaggedStringBuilder taggedStringBuilder = new TaggedStringBuilder();
                 if (isFollowedBySQLConditionalOperator(cursor)) {
-                    TaggedStringBuilder encodedVar = encodeWhereVariable(whereCursor, multiFieldsMap, (I_VariableDefinition) item, true, null);
-                    String expanded = expandForLateral(templateId, encodedVar, (I_VariableDefinition)item );
+                    TaggedStringBuilder encodedVar = encodeWhereVariable(whereCursor, multiWhereFieldsMap, (I_VariableDefinition) item, true, null);
+                    String expanded = expandForLateral(templateId, encodedVar, (I_VariableDefinition)item, multiSelectFieldsMap );
                     if (StringUtils.isNotBlank(expanded))
                         taggedStringBuilder.append(expanded);
                     else {
@@ -255,13 +253,13 @@ public class WhereBinder {
                             compositionName = compositionNameValue(((I_VariableDefinition) item).getIdentifier());
 
                         if (compositionName != null) {
-                            taggedStringBuilder = encodeWhereVariable(whereCursor, multiFieldsMap, (I_VariableDefinition) item, false, compositionName);
+                            taggedStringBuilder = encodeWhereVariable(whereCursor, multiWhereFieldsMap, (I_VariableDefinition) item, false, compositionName);
                         } else
                             throw new IllegalArgumentException("A composition name/value is required to resolve where statement when querying for a whole composition");
                     } else {
                         //if the path contains node predicate expression uses a SQL syntax instead of jsquery
                         if (new VariablePath(((I_VariableDefinition) item).getPath()).hasPredicate()) {
-                            String expanded = expandForLateral(templateId, encodeWhereVariable(whereCursor, multiFieldsMap, (I_VariableDefinition) item, true, null), (I_VariableDefinition)item );
+                            String expanded = expandForLateral(templateId, encodeWhereVariable(whereCursor, multiWhereFieldsMap, (I_VariableDefinition) item, true, null), (I_VariableDefinition)item, multiSelectFieldsMap );
                             if (StringUtils.isNotBlank(expanded)) {
                                 taggedStringBuilder.append(encodeForSubquery(expanded, inSubqueryOperator));
                                 inSubqueryOperator = false;
@@ -273,7 +271,7 @@ public class WhereBinder {
                             isFollowedBySQLConditionalOperator = true;
                             requiresJSQueryClosure = false;
                         } else {
-                            String expanded = expandForLateral(templateId, encodeWhereVariable(whereCursor, multiFieldsMap, (I_VariableDefinition) item, true, null), (I_VariableDefinition)item );
+                            String expanded = expandForLateral(templateId, encodeWhereVariable(whereCursor, multiWhereFieldsMap, (I_VariableDefinition) item, true, null), (I_VariableDefinition)item, multiSelectFieldsMap );
                             if (StringUtils.isNotBlank(expanded)) {
                                 taggedStringBuilder.append(encodeForSubquery(expanded, inSubqueryOperator));
                                 inSubqueryOperator = false;
@@ -291,7 +289,7 @@ public class WhereBinder {
                     taggedBuffer.setTagField(taggedStringBuilder.getTagField());
                 }
             } else if (item instanceof List) {
-                TaggedStringBuilder taggedStringBuilder = buildWhereCondition(whereCursor, multiFieldsMap, taggedBuffer, (List) item);
+                TaggedStringBuilder taggedStringBuilder = buildWhereCondition(whereCursor, multiWhereFieldsMap, taggedBuffer, (List) item);
                 taggedBuffer.append(taggedStringBuilder.toString());
                 taggedBuffer.setTagField(taggedStringBuilder.getTagField());
             }
@@ -304,7 +302,7 @@ public class WhereBinder {
             return DSL.condition(taggedBuffer.toString());
         }
         else
-            return DSL.condition("false");
+            return DSL.falseCondition();
     }
 
 
@@ -406,36 +404,43 @@ public class WhereBinder {
         return wrapped;
     }
 
-    private String expandForLateral(String templateId, TaggedStringBuilder encodedVar, I_VariableDefinition item){
+    private String expandForLateral(String templateId, TaggedStringBuilder encodedVar, I_VariableDefinition variableDefinition, MultiFieldsMap multiSelectFieldsMap ){
         String expanded = expandForCondition(encodedVar);
-        if (new WhereSetReturningFunction(expanded).isUsed()){
-            encodeLateral(templateId, encodedVar, item );
-            expanded = item.getAlias();
+        if (new SetReturningFunction(expanded).isUsed()){
+
+            //check if this variable is already defined as a lateral join from the projection (SELECT)
+            MultiFields selectFields = multiSelectFieldsMap.get(variableDefinition.getIdentifier(), variableDefinition.getPath());
+
+            if (selectFields != null && selectFields.getVariableDefinition().getLateralJoinDefinitions(templateId) != null) {
+                //TODO: get the matching lateral join... not the LAST!
+                LateralJoinDefinition lateralJoinDefinition = reconciliateWithAliasedTable(expanded, selectFields.getVariableDefinition(), templateId);
+                if (lateralJoinDefinition == null)
+                   return null;
+                variableDefinition.setLateralJoinTable(templateId, lateralJoinDefinition);
+                //NB: white space at the end is required since the clause is built with a string builder and space(s) is important!
+                variableDefinition.setAlias(new LateralVariable(lateralJoinDefinition.getTable().getName(),lateralJoinDefinition.getLateralVariable()).alias());
+            }
+            else
+                new LateralJoins().create(templateId, encodedVar, variableDefinition, IQueryImpl.Clause.WHERE );
+
+            expanded = variableDefinition.getAlias();
         }
 
         return expanded;
     }
 
-    private void encodeLateral(String templateId, TaggedStringBuilder encodedVar, I_VariableDefinition item){
-        if (encodedVar == null)
-            return;
-        int hashValue = encodedVar.toString().hashCode(); //cf. SonarLint
-        int abs;
-        if (hashValue != 0)
-            abs = Math.abs(hashValue);
-        else
-            abs = 0;
-        String tableAlias = "array_" + abs + "_" + inc();
-        String variableAlias = "var_" + abs + "_" + inc();
-        //insert the variable alias used for the lateral join expression
-        encodedVar.replaceLast(")", " AS " + variableAlias + ")");
-        Table<Record> table = DSL.table(encodedVar.toString()).as(tableAlias);
-        item.setLateralJoinTable(templateId, table);
-        item.setAlias(tableAlias + "." + variableAlias + " ");
-    }
+    private LateralJoinDefinition reconciliateWithAliasedTable(String expanded, I_VariableDefinition variableDefinition, String templateId){
 
-    private static synchronized int inc(){
-        return seed++;
+        Set<LateralJoinDefinition> definedLateralJoins = variableDefinition.getLateralJoinDefinitions(templateId);
+
+        for (LateralJoinDefinition lateralJoinDefinition: definedLateralJoins){
+            if (lateralJoinDefinition.getSqlExpression().replace("\n", "").replace(" ", "").
+                    contains(expanded.substring(0, expanded.length() - 1).substring(1).replace("\n", "").replace(" ", "")))
+                return lateralJoinDefinition;
+        }
+
+        return null;
+
     }
 
 }

@@ -69,4 +69,15 @@ public class VariableDefinitions implements Iterator<I_VariableDefinition>{
         return false;
     }
 
+    public boolean hasDistinctOperator(){
+        Iterator<I_VariableDefinition> variableDefinitionIterator = variableDefinitionList.iterator();
+
+        while (variableDefinitionIterator.hasNext()){
+            I_VariableDefinition variableDefinition = variableDefinitionIterator.next();
+            if (variableDefinition.isDistinct())
+                return true;
+        }
+        return false;
+    }
+
 }

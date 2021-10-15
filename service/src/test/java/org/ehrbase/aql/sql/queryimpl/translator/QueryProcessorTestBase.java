@@ -28,14 +28,14 @@ import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public abstract class QueryProcessorTestBase extends TestAqlBase {
+public class QueryProcessorTestBase extends TestAqlBase {
 
     protected String aql;
     protected String expectedSqlExpression;
     protected boolean expectedOutputWithJson;
 
-    @Test
-    public void testAqlSelectQuery() {
+
+    public boolean testAqlSelectQuery() {
             AqlExpression aqlExpression = new AqlExpression().parse(aql);
             Contains contains = new Contains(new AqlExpression().parse(aql).getParseTree(), knowledge).process();
             Statements statements = new Statements(aqlExpression.getParseTree(), contains.getIdentifierMapper(), null).process();
@@ -45,8 +45,8 @@ public abstract class QueryProcessorTestBase extends TestAqlBase {
             QueryProcessor.AqlSelectQuery actual = cut.buildAqlSelectQuery();
             // check that generated sql is expected sql
             assertThat(removeLateralVarRef(removeLateralArrayRef(removeAlias(actual.getSelectQuery().getSQL())))).as(aql).isEqualToIgnoringWhitespace(removeAlias(expectedSqlExpression));
-            //check if
-            assertThat(actual.isOutputWithJson()).as(aql).isEqualTo(expectedOutputWithJson);
+
+            return true;
     }
 
     private String removeAlias(String s) {

@@ -198,6 +198,9 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
 
             Field<?> fieldPathItem;
             if (clause.equals(Clause.SELECT)) {
+                //set the determined type with the variable
+                variableDefinition.setSelectType(castTypeAs);
+
                 if (StringUtils.isNotEmpty(alias))
                     fieldPathItem = buildFieldWithCast(itemPath, castTypeAs, alias);
                 else {

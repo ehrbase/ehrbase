@@ -84,7 +84,7 @@ commit invalid composition (JSON)
                         ...                 Accept=application/json
                         ...                 Prefer=return=representation
 
-    ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
+    ${resp}=            POST On Session     ${SUT}   /ehr/${ehr_id}/composition   expected_status=anything   data=${file}   headers=${headers}
                         log to console      ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   400
 
@@ -103,7 +103,7 @@ commit invalid composition (XML)
                         ...                 Accept=application/json
                         ...                 Prefer=return=representation
 
-    ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
+    ${resp}=            POST On Session     ${SUT}   /ehr/${ehr_id}/composition   expected_status=anything   data=${file}   headers=${headers}
                         log to console      ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   400
 
@@ -117,7 +117,7 @@ commit composition - no referenced OPT
                         # TODO: FIX ME! Rename KW properly
                         get valid OPT file  ${composition}
 
-    ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
+    ${resp}=            POST On Session       ${SUT}   /ehr/${ehr_id}/composition   expected_status=anything   data=${file}   headers=${headers}
                         # log to console      ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   422
 
@@ -133,7 +133,7 @@ commit composition - no referenced EHR
 
                         prepare new request session    XML    Prefer=return=representation
 
-    ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
+    ${resp}=            POST On Session     ${SUT}   /ehr/${ehr_id}/composition   expected_status=anything   data=${file}   headers=${headers}
                         log to console      ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   404
 
@@ -152,7 +152,7 @@ commit composition (JSON)
                         ...                 Accept=application/json
                         ...                 Prefer=return=representation
 
-    ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
+    ${resp}=            POST On Session     ${SUT}   /ehr/${ehr_id}/composition   expected_status=anything   data=${file}   headers=${headers}
                         log to console      ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   201
 
@@ -182,7 +182,7 @@ commit composition without accept header
     &{headers}=         Create Dictionary   Content-Type=application/xml
                         ...                 Prefer=return=representation
 
-    ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
+    ${resp}=            POST On Session     ${SUT}   /ehr/${ehr_id}/composition   expected_status=anything   data=${file}   headers=${headers}
                         log to console      ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   201
 
@@ -216,7 +216,7 @@ commit composition (XML)
                         ...                 Accept=application/xml
                         ...                 Prefer=return=representation
 
-    ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
+    ${resp}=            POST On Session     ${SUT}   /ehr/${ehr_id}/composition   expected_status=anything   data=${file}   headers=${headers}
                         log to console      ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   201
 
@@ -259,7 +259,7 @@ commit same composition again
 
         TRACE GITHUB ISSUE  125  bug
 
-    ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
+    ${resp}=            POST On Session     ${SUT}   /ehr/${ehr_id}/composition   expected_status=anything   data=${file}   headers=${headers}
                         log to console      ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   400
 
@@ -302,7 +302,7 @@ commit composition
         Set To Dictionary   ${headers}   Accept=application/openehr.wt.structured+json
     END
 
-    ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
+    ${resp}=            POST On Session     ${SUT}   /ehr/${ehr_id}/composition   expected_status=anything   data=${file}   headers=${headers}
 
     Set Test Variable   ${response}     ${resp}
     Set Test Variable   ${format}       ${format}
@@ -952,7 +952,7 @@ update a composition for versioned composition tests
 #
 #     ${file}=            Get File           ${CURDIR}/../test_data_sets/xml_compositions/${xml_composition}
 #     &{headers}=         Create Dictionary  Content-Type=application/xml  Prefer=return=representation  Accept=application/xml
-#     ${resp}=            Post Request       ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
+#     ${resp}=            POST On Session       ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
 #                         Should Be Equal As Strings   ${resp.status_code}   201
 #
 #     ${xresp}=           Parse Xml          ${resp.text}

@@ -180,7 +180,7 @@ Resource        ../../_resources/suite_settings.robot
 Request Access Token
                         Create Session    keycloak   ${KEYCLOAK_URL}   verify=${False}    debug=3
     &{headers}=         Create Dictionary    Content-Type=application/x-www-form-urlencoded
-    ${resp}=            Post Request    keycloak   /realms/ehrbase/protocol/openid-connect/token
+    ${resp}=            POST On Session    keycloak   /realms/ehrbase/protocol/openid-connect/token   expected_status=anything
                         ...             data=${OAUTH_ACCESS_GRANT}   headers=${headers}
                         # NOTE: ${OAUTH_ACCESS_GRANT} comes from variables file: sut_config.py
                         Set Test Variable    ${response}    ${resp}
