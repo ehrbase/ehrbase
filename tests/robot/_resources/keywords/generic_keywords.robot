@@ -455,7 +455,7 @@ remind to restart manual test environment
     Log    ${EMPTY}                                                                             level=WARN
     Log    /////////////////////////////////////////////////////////////////////                level=WARN
     Log    //${SPACE * 64}///                                                                   level=WARN
-    Log    //${SPACE * 13}REMBER TO PROPERLY RESTART YOUR SUT! ${SPACE * 13} ///                level=WARN
+    Log    //${SPACE * 13}REMEMBER TO PROPERLY RESTART YOUR SUT! ${SPACE * 13} ///              level=WARN
     Log    //${SPACE * 64}///                                                                   level=WARN
     Log    /////////////////////////////////////////////////////////////////////                level=WARN
     Log    ${EMPTY}                                                                             level=WARN

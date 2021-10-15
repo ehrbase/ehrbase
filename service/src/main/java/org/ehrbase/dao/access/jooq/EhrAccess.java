@@ -794,41 +794,10 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
 
     @Override
     public void adminDeleteEhr() {
-        AdminApiUtils adminApi = new AdminApiUtils(getContext());
-
-        // retrieve linked entities
-        Result<AdminGetLinkedCompositionsRecord> linkedCompositions = Routines.adminGetLinkedCompositions(getContext().configuration(), this.getId());
-        Result<AdminGetLinkedContributionsRecord> linkedContributions = Routines.adminGetLinkedContributions(getContext().configuration(), this.getId());
-
-        // remove linked directory folder
-        // TODO: get linked folders from "folder" attribute, once this RM 1.1.0 attribute is implemented
-        if (getDirectoryId() != null)
-            adminApi.deleteFolder(getDirectoryId(), false); // contribs will be deleted by EHR later
-
-        // handling of existing composition
-        linkedCompositions.forEach(compo -> adminApi.deleteComposition(compo.getComposition()));
-
-        // delete EHR itself
-        Result<AdminDeleteEhrRecord> adminDeleteEhr = Routines.adminDeleteEhr(getContext().configuration(), this.getId());
-        if (adminDeleteEhr.isEmpty()) {
-            throw new InternalServerException("Admin deletion of EHR failed! Unexpected result.");
+        Result<AdminDeleteEhrFullRecord> result = Routines.adminDeleteEhrFull(getContext().configuration(), this.getId());
+        if (result.isEmpty() || !Boolean.TRUE.equals(result.get(0).getDeleted())) {
+            throw new InternalServerException("Admin deletion of EHR failed!");
         }
-
-        // adminDeleteEhr returns all linked contributions, audits and statuses - go through and delete them
-        adminDeleteEhr.forEach(response -> {
-            UUID statusAudit = response.getStatusAudit();
-
-            // delete status audit
-            adminApi.deleteAudit(statusAudit, "Status", false);
-
-            // delete linked contributions
-            linkedContributions.forEach(contrib -> adminApi.deleteContribution(contrib.getContribution(), contrib.getAudit(), true));
-
-            // final cleanup of auxiliary objects
-            int res = getContext().selectQuery(new AdminDeleteEhrHistory().call(this.getId())).execute();
-            if (res != 1)
-                throw new InternalServerException("Admin deletion of EHR failed!");
-        });
     }
 
     public static boolean hasEhr(I_DomainAccess domainAccess, UUID ehrId) {
