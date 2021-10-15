@@ -230,7 +230,7 @@ B-502 Execute Ad-Hoc Query - Get Composition(s)
 
 B-503 Execute Ad-Hoc Query - Get Composition(s)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              586    629    not-ready
+    [Tags]              586    not-ready
     B/503_get_compositions_by_contains_entry_of_type_from_all_ehrs.json    B/503.tmp.json
     [Teardown]          TRACE GITHUB ISSUE  586  bug
 
