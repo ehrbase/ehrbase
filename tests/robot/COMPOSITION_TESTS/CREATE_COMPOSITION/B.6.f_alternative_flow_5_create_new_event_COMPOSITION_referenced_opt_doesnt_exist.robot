@@ -29,13 +29,13 @@ Suite Teardown  restart SUT
 
 
 *** Test Cases ***
-Alternative flow 5 create new event COMPOSITION referenced opt doesnt exist RAW_JSON
-    commit composition   format=RAW_JSON
+Alternative flow 5 create new event COMPOSITION referenced opt doesnt exist CANONICAL_JSON
+    commit composition   format=CANONICAL_JSON
     ...                  composition=nested.en.v1__invalid_opt_doesnt_exist.json
     check status_code of commit composition    422
 
-Alternative flow 5 create new event COMPOSITION referenced opt doesnt exist RAW_XML
-    commit composition   format=RAW_XML
+Alternative flow 5 create new event COMPOSITION referenced opt doesnt exist CANONICAL_XML
+    commit composition   format=CANONICAL_XML
     ...                  composition=nested.en.v1__invalid_opt_doesnt_exist.xml
     check status_code of commit composition    422
 
