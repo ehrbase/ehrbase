@@ -204,22 +204,6 @@ D-312 Execute Ad-HOc Query - Get Data
     D/312_select_data_values_from_all_ehrs_contains_composition_with_archetype_top_5.json    D/312.tmp.json
 
 
-D-500 Execute Ad-HOc Query - Get Data
-    [Documentation]     Get Data related query.
-    [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              361    not-ready
-    D/500_query.tmp.json    D/500.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  361  bug
-
-
-D-501 Execute Ad-HOc Query - Get Data
-    [Documentation]     Get Data related query.
-    [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              361    not-ready
-    D/501_query.tmp.json    D/501.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  361  bug
-
-
 CLEAN UP SUT
     [Documentation]     ATTENTION: ALWAYS INCLUDE '-i AQL_smoke' and '-i AQL_tempANDissue_id'
     ...                 when you run test from this suite!!!
@@ -245,75 +229,6 @@ CLEAN UP SUT
 # o888o  o888o o888ooooood8     o888o           `8'      `8'        `Y8bood8P'  o888o  o888o o888bood8P'   8""88888P'
 #
 # [ THIS KWs OVERIDE EXISTING KWs IN RESOURCE FILE TO WORK PROPERLY IN SMOKE TEST ]
-
-D/500
-    [Documentation]     Condition: compo must be an Observation and must belong to first EHR record.
-    ${is_observation}=  Set Variable if  ("${compo_content_archetype_node_id}"=="openEHR-EHR-OBSERVATION.minimal.v1")  ${TRUE}
-    ${is_from_ehr_1}=   Set Variable If  ${ehr_index}==1  ${TRUE}
-                        Return From Keyword If    not (${is_observation} and ${is_from_ehr_1})    NOTHING TO DO HERE!
-                        Run Keyword if    ${ehr_index}==1 and ${compo_index}==4    Update Temp Query-Data-Set    D/500
-                        Create Temp List    ${compo_uid_value}
-                        ...                 ${compo_name_value}
-                        ...                 ${compo_data_origin_value}
-                        ...                 ${compo_events_time_value}
-                        ...                 ${compo_events_items_value_value}
-                        Update 'rows', 'q' and 'meta' in Temp Result-Data-Set    D/500
-
-
-D/501
-    [Documentation]     Same flow as D/500, different content in 'rows'
-    ${is_observation}=  Set Variable if  ("${compo_content_archetype_node_id}"=="openEHR-EHR-OBSERVATION.minimal.v1")  ${TRUE}
-    ${is_from_ehr_1}=   Set Variable If  ${ehr_index}==1  ${TRUE}
-                        Return From Keyword If    not (${is_observation} and ${is_from_ehr_1})    NOTHING TO DO HERE!
-                        Run Keyword if    ${ehr_index}==1 and ${compo_index}==4    Update Temp Query-Data-Set    D/501
-                        Create Temp List    ${compo_uid}
-                        ...                 ${compo_name}
-                        ...                 ${compo_data_origin}
-                        ...                 ${compo_events_time}
-                        ...                 ${compo_events_items_value}
-                        Update 'rows', 'q' and 'meta' in Temp Result-Data-Set    D/501
-
-
-D/502
-    [Documentation]     Similar flow as D/500, but different element is replaced in query-data-set.
-    ...                 Condition: compo must be an Observation and must belong to first EHR record.
-    ${is_observation}=  Set Variable if  ("${compo_content_archetype_node_id}"=="openEHR-EHR-OBSERVATION.minimal.v1")  ${TRUE}
-    ${is_from_ehr_1}=   Set Variable If  ${ehr_index}==1  ${TRUE}
-                        Return From Keyword If    not (${is_observation} and ${is_from_ehr_1})    NOTHING TO DO HERE!
-                        Run Keyword if    ${ehr_index}==1 and ${compo_index}==4    Update Query-Parameter in Temp Query-Data-Set    D/502
-                        Create Temp List    ${compo_uid_value}
-                        ...                 ${compo_name_value}
-                        ...                 ${compo_data_origin_value}
-                        ...                 ${compo_events_time_value}
-                        ...                 ${compo_events_items_value_value}
-                        Load Temp Result-Data-Set    D/502
-    ${meta_exec_aql}=   Get Value From Json    ${expected}    $.meta._executed_aql
-    ${meta_exec_aql}=   Replace String    ${meta_exec_aql}[0]    __MODIFY_EHR_ID_1__    ${ehr_id}
-                        Update Value To Json   ${expected}    $.meta._executed_aql    ${meta_exec_aql}
-                        Output    ${expected}     ${QUERY RESULTS LOADED DB}/D/502.tmp.json
-                        Update 'rows' in Temp Result-Data-Set    D/502
-
-
-D/503
-    [Documentation]     Similar flow as D/500, but different element is replaced in query-data-set.
-    ...                 Condition: compo must be an Observation and must belong to first EHR record.
-    ${is_observation}=  Set Variable if  ("${compo_content_archetype_node_id}"=="openEHR-EHR-OBSERVATION.minimal.v1")  ${TRUE}
-    ${is_from_ehr_1}=   Set Variable If  ${ehr_index}==1  ${TRUE}
-                        Return From Keyword If    not (${is_observation} and ${is_from_ehr_1})    NOTHING TO DO HERE!
-                        Run Keyword if    ${ehr_index}==1 and ${compo_index}==4    Update Query-Parameter in Temp Query-Data-Set    D/503
-                        Create Temp List    ${compo_uid}
-                        ...                 ${compo_name}
-                        ...                 ${compo_data_origin}
-                        ...                 ${compo_events_time}
-                        ...                 ${compo_events_items_value}
-                        Load Temp Result-Data-Set    D/503
-    ${meta_exec_aql}=   Get Value From Json    ${expected}    $.meta._executed_aql
-    ${meta_exec_aql}=   Replace String    ${meta_exec_aql}[0]    __MODIFY_EHR_ID_1__    ${ehr_id}
-                        Update Value To Json   ${expected}    $.meta._executed_aql    ${meta_exec_aql}
-                        # Set Suite Variable    ${expected}    ${expected}
-                        Output    ${expected}     ${QUERY RESULTS LOADED DB}/D/503.tmp.json
-                        Update 'rows' in Temp Result-Data-Set    D/503
-
 
 
 Establish Preconditions
