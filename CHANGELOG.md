@@ -20,6 +20,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Add foreign key between `folder` and `ehr` tables (see: https://github.com/ehrbase/ehrbase/pull/616)
 - Improves 'Admin Delete EHR' performance (see https://github.com/ehrbase/ehrbase/pull/626)
 - many fixes to the flat support (see https://github.com/ehrbase/ehrbase/pull/627)
+- Fix conversion between `DvDateTime` and `Timestamp` (see https://github.com/ehrbase/ehrbase/pull/634)
 
 ## [0.17.2]
 

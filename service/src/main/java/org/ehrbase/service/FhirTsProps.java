@@ -13,7 +13,7 @@ public class FhirTsProps {
 	private String systemPath = "$[\"expansion\"][\"contains\"][*][\"system\"]";
 	private String displayPath = "$[\"expansion\"][\"contains\"][*][\"display\"]";
 	private String tsUrl = "https://r4.ontoserver.csiro.au/fhir/";
-	private String validationResultPath = "$.parameter[:1].valueBoolean";
+	private String validationResultPath = "$.parameter[?(@.name='result')].valueBoolean";
 
 	public String getValidationResultPath() {
 		return validationResultPath;
