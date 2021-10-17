@@ -427,6 +427,9 @@ Preconditions (PART 1) - Load Blueprints of Queries and Expected-Results
                         ...            B/100_get_compositions_from_all_ehrs.json
                         ...            B/102_get_compositions_orderby_name.json
                         ...            B/103_get_compositions_within_timewindow.json
+                        ...            B/104_get_compositions_top_5_ordered_by_starttime_asc.json
+                        ...            B/105_get_compositions_top_5_ordered_by_starttime_desc.json
+                        ...            B/106_get_compositions_top_5_ordered_by_starttimevalue_asc.json
                         ...            B/300_get_compositions_with_archetype_from_all_ehrs.json
                         ...            B/400_get_compositions_contains_section_with_archetype_from_all_ehrs.json
                         ...            B/500_get_compositions_by_contains_entry_of_type_from_all_ehrs.json
@@ -702,6 +705,9 @@ Commit Compo
 
     B/100
     B/102
+    B/104
+    B/105
+    B/106
     B/200
     B/300
     B/400
@@ -821,24 +827,23 @@ Load Temp Query-Data-Set
                         Set Suite Variable    ${query}    ${query}
 
 
+# TODO: Make ONE KW from next two, use IF/ELSE
 Update Temp Query-Data-Set
     [Documentation]     Updates 'q' with real ehr_id
     [Arguments]         ${dataset}
                         Load Temp Query-Data-Set    ${dataset}
     ${q}=               Get Value From Json    ${query}    $.q
-    ${q}=               Replace String    ${q}[0]    __MODIFY_EHR_ID_1__    ${ehr_id}
+
+    IF    '__MODIFY_EHR_ID_1__' in '''${q}'''
+        ${q}=           Replace String    ${q}[0]    __MODIFY_EHR_ID_1__    ${ehr_id}
                         Update Value To Json   ${query}    $.q    ${q}
                         Output    ${query}    ${VALID QUERY DATA SETS}/${dataset}_query.tmp.json
 
-
-Update Temp Query-Data-Set (COMPO)
-    [Documentation]     Updates 'q' with real ehr_id
-    [Arguments]         ${dataset}
-                        Load Temp Query-Data-Set    ${dataset}
-    ${q}=               Get Value From Json    ${query}    $.q
-    ${q}=               Replace String    ${q}[0]    __MODIFY_COMPO_UID_1__    ${compo_uid_value}
+    ELSE IF    '__MODIFY_COMPO_UID_1__' in '''${q}'''
+        ${q}=           Replace String    ${q}[0]    __MODIFY_COMPO_UID_1__    ${compo_uid_value}
                         Update Value To Json   ${query}    $.q    ${q}
                         Output    ${query}    ${VALID QUERY DATA SETS}/${dataset}_query.tmp.json
+    END
 
 
 Update Query-Parameter in Temp Query-Data-Set
@@ -872,18 +877,15 @@ Update 'q' and 'meta' in Temp Result-Data-Set
     ${q}=               Get Value From Json    ${expected}    $.q
 
     IF    '__MODIFY_EHR_ID_1__' in '''${q}'''
-            ${q}=   Replace String    ${q}[0]    __MODIFY_EHR_ID_1__    ${ehr_id}
-                    Update Value To Json   ${expected}    $.q    ${q}
-                    Update Value To Json   ${expected}    $.meta._executed_aql    ${q}
-    ELSE IF    '__MODIFY_COMPO_UID_1__' in '''${q}'''
-            ${q}=   Replace String    ${q}[0]    __MODIFY_COMPO_UID_1__    ${compo_uid_value}
-                    Update Value To Json   ${expected}    $.q    ${q}
-                    Update Value To Json   ${expected}    $.meta._executed_aql    ${q}
-    END
+            ${q}=       Replace String    ${q}[0]    __MODIFY_EHR_ID_1__    ${ehr_id}
+                        Update Value To Json   ${expected}    $.q    ${q}
+                        Update Value To Json   ${expected}    $.meta._executed_aql    ${q}
 
-    # ${q}=               Replace String    ${q}[0]    __MODIFY_EHR_ID_1__    ${ehr_id}
-                        # Update Value To Json   ${expected}    $.q    ${q}
-                        # Update Value To Json   ${expected}    $.meta._executed_aql    ${q}
+    ELSE IF    '__MODIFY_COMPO_UID_1__' in '''${q}'''
+            ${q}=       Replace String    ${q}[0]    __MODIFY_COMPO_UID_1__    ${compo_uid_value}
+                        Update Value To Json   ${expected}    $.q    ${q}
+                        Update Value To Json   ${expected}    $.meta._executed_aql    ${q}
+    END
                         Set Suite Variable    ${expected}    ${expected}
 
 
@@ -1113,17 +1115,12 @@ B/100
     ${B/100}=           Add Object To Json     ${B/100}    $.rows    ${compo_in_list}
                         Output    ${B/100}     ${QUERY RESULTS LOADED DB}/B/100.tmp.json
 
-
-
-
-
-
 B/102
     [Documentation]     This KW is executed at the end of all iterations in
     ...                 'establish precondition' step only. At this point all
     ...                 composition names and their content exist in memory and
     ...                 are accessible via variable names like \${A_Minimal_1}, \${A_Minimal_2},
-    ...                 \${B_Minimal_1}, \${A_Minimal_2}, etc.\n\n
+    ...                 \${B_Minimal_1}, \${B_Minimal_2}, etc.\n\n
     ...                 NOTE:  Adjust ehr_index and compo_index accordingly to any changes in
     ...                        'establish precondition' KW. They must both be set to max values,
     ...                        i.e. if there are max 2 EHRs and max 18 Compositions created in the
@@ -1153,6 +1150,53 @@ B/102
                         ...             ${J_Minimal_2}
         ${B/102}=       Update Value To Json    ${B/102}    $.rows    ${resultset}
                         Output    ${B/102}     ${QUERY RESULTS LOADED DB}/B/102.tmp.json
+    END
+
+B/104
+    [Documentation]     Generates expected-result-set for query\n\n
+    ...                 SELECT TOP 5 c FROM COMPOSITION c ORDER BY c/context/start_time ASC
+
+    IF    (${ehr_index} == 2) and (${compo_index} == 18)
+        ${B/104}=       Load JSON From File    ${QUERY RESULTS LOADED DB}/B/104.tmp.json
+        @{resultset}=   Create List     ${A_Minimal_2}
+                        ...             ${A_Minimal_1}
+                        ...             ${B_Minimal_2}
+                        ...             ${B_Minimal_1}
+                        ...             ${C_Minimal_2}
+        ${B/104}=       Update Value To Json    ${B/104}    $.rows    ${resultset}
+                        Output    ${B/104}     ${QUERY RESULTS LOADED DB}/B/104.tmp.json
+    END
+
+B/105
+    [Documentation]     Generates expected-result-set for query\n\n
+    ...                 SELECT TOP 5 c FROM COMPOSITION c ORDER BY c/context/start_time DESC \n\n
+    ...
+    ...                 NOTE: ehr_index and compo_idex must be set to max values
+
+    IF    (${ehr_index} == 2) and (${compo_index} == 18)
+        ${B/105}=       Load JSON From File    ${QUERY RESULTS LOADED DB}/B/105.tmp.json
+        @{resultset}=   Create List     ${J_Minimal_1}
+                        ...             ${J_Minimal_2}
+                        ...             ${I_Minimal_1}
+                        ...             ${I_Minimal_2}
+                        ...             ${H_Minimal_2}
+        ${B/105}=       Update Value To Json    ${B/105}    $.rows    ${resultset}
+                        Output    ${B/105}     ${QUERY RESULTS LOADED DB}/B/105.tmp.json
+    END
+
+B/106
+    [Documentation]     Generates expected-result-set for query\n\n
+    ...                 SELECT TOP 5 c FROM COMPOSITION c ORDER BY c/context/start_time ASC
+
+    IF    (${ehr_index} == 2) and (${compo_index} == 18)
+        ${B/106}=       Load JSON From File    ${QUERY RESULTS LOADED DB}/B/106.tmp.json
+        @{resultset}=   Create List     ${A_Minimal_2}
+                        ...             ${A_Minimal_1}
+                        ...             ${B_Minimal_2}
+                        ...             ${B_Minimal_1}
+                        ...             ${C_Minimal_2}
+        ${B/106}=       Update Value To Json    ${B/106}    $.rows    ${resultset}
+                        Output    ${B/106}     ${QUERY RESULTS LOADED DB}/B/106.tmp.json
     END
 
 B/200
@@ -1691,7 +1735,7 @@ D/504
     ...                 2. Update query-data-set ONLY on FIRST iteration to avoid unnecessary repetitions.
                         Return From Keyword If    not ${ehr_index}==1   NOTHING TO DO HERE!
                         Return From Keyword If    not ${compo_index}==1   NOTHING TO DO HERE!
-                        Run Keyword if    ${ehr_index}==1 and ${compo_index}==1    Update Temp Query-Data-Set (COMPO)    D/504
+                        Run Keyword if    ${ehr_index}==1 and ${compo_index}==1    Update Temp Query-Data-Set    D/504
                         Create Temp List    ${compo_archetype_details}
 
                         Update 'rows', 'q' and 'meta' in Temp Result-Data-Set    D/504
