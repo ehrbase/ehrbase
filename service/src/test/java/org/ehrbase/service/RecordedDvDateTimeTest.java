@@ -26,16 +26,16 @@ public class RecordedDvDateTimeTest {
 
     @Test
     public void testDecodeDvDateTime() {
-        ZoneId zoneId;
-        DvDateTime dateTime;
+        ZoneId zoneId = ZoneId.of("America/Los_Angeles");
         Instant now = Instant.now();
 
-        zoneId = ZoneId.systemDefault();
-        dateTime = new RecordedDvDateTime().decodeDvDateTime(Timestamp.from(now), zoneId.getId());
-        assertEquals(OffsetDateTime.ofInstant(now, zoneId), dateTime.getValue());
+        DvDateTime dateTime;
 
         dateTime = new RecordedDvDateTime().decodeDvDateTime(Timestamp.valueOf(LocalDateTime.ofInstant(now, zoneId)), zoneId.getId());
         assertEquals(OffsetDateTime.ofInstant(now, zoneId), dateTime.getValue());
+
+        dateTime = new RecordedDvDateTime().decodeDvDateTime(Timestamp.from(now), null);
+        assertEquals(OffsetDateTime.ofInstant(now, ZoneId.systemDefault()), dateTime.getValue());
 
         dateTime = new RecordedDvDateTime().decodeDvDateTime(Timestamp.from(now), zoneId.getId());
         assertNotEquals(OffsetDateTime.ofInstant(now, ZoneOffset.UTC), dateTime.getValue());
