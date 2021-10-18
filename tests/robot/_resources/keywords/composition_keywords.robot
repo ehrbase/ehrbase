@@ -827,7 +827,7 @@ delete composition
     [Arguments]         ${uid}
     [Documentation]     :uid: preceding_version_uid (format of version_uid)
 
-    ${resp}=            Delete Request          ${SUT}   /ehr/${ehr_id}/composition/${uid}
+    ${resp}=            Delete On Session       ${SUT}   /ehr/${ehr_id}/composition/${uid}   expected_status=anything
                         log to console          ${resp.headers}
                         log to console          ${resp.content}
 
@@ -852,7 +852,7 @@ delete non-existent composition
     [Documentation]     DEPENDENCY `prepare new request session`, `generate random composition_uid`
 
                         prepare new request session
-    ${resp}=            Delete Request        ${SUT}   /ehr/${ehr_id}/composition/${preceding_version_uid}
+    ${resp}=            Delete On Session      ${SUT}   /ehr/${ehr_id}/composition/${preceding_version_uid}   expected_status=anything
                         log to console    ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   404
 
