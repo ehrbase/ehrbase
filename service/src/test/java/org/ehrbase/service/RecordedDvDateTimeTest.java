@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -33,8 +34,7 @@ public class RecordedDvDateTimeTest {
         dateTime = new RecordedDvDateTime().decodeDvDateTime(Timestamp.from(now), zoneId.getId());
         assertEquals(OffsetDateTime.ofInstant(now, zoneId), dateTime.getValue());
 
-        zoneId = ZoneId.of("Europe/Paris");
-        dateTime = new RecordedDvDateTime().decodeDvDateTime(Timestamp.from(now), zoneId.getId());
+        dateTime = new RecordedDvDateTime().decodeDvDateTime(Timestamp.valueOf(LocalDateTime.from(now)), zoneId.getId());
         assertEquals(OffsetDateTime.ofInstant(now, zoneId), dateTime.getValue());
 
         dateTime = new RecordedDvDateTime().decodeDvDateTime(Timestamp.from(now), zoneId.getId());
