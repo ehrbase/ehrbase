@@ -1835,8 +1835,6 @@ executors:
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
-        environment:
-           TZ: "Europe/Berlin"
 
   docker-py3-java11-postgres:
     working_directory: ~/projects
@@ -1847,8 +1845,6 @@ executors:
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
-        environment:
-           TZ: "Europe/Berlin"
       - image: ehrbase/ehrbase-postgres:13.4
         auth:
           username: $DOCKER_USER
@@ -1857,7 +1853,6 @@ executors:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           PGDATA: /tmp
-          TZ: "Europe/Berlin"
 
   machine-ubuntu-1604:
     description: |
@@ -1871,7 +1866,6 @@ executors:
     environment:
       PIPELINE_ID: << pipeline.id >>
       BRANCH_NAME: << pipeline.git.branch >>
-      TZ: "Europe/Berlin"
     machine:
       # image: circleci/classic:201808-01
       # image: ubuntu-1604:201903-01
@@ -1907,7 +1901,6 @@ executors:
     environment:
       PIPELINE_ID: << pipeline.id >>
       BRANCH_NAME: << pipeline.git.branch >>
-      TZ: "Europe/Berlin"
     machine:
       image: ubuntu-2004:202008-01
 
