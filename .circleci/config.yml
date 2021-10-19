@@ -1736,7 +1736,7 @@ commands:
     description: Save all caches in building artifacts job
     steps:
       - save_cache:
-          key: job-build-ehrbase-v1-mvn-dependencies-{{ checksum "~/projects/pom.xml" }}
+          key: job-build-ehrbase-v2-mvn-dependencies-{{ checksum "~/projects/pom.xml" }}
           paths:
             - ~/.m2/repository
 
@@ -1745,8 +1745,8 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - job-build-ehrbase-v1-mvn-dependencies-{{ checksum "~/projects/pom.xml" }}
-            - job-build-ehrbase-v1-mvn-dependencies
+            - job-build-ehrbase-v2-mvn-dependencies-{{ checksum "~/projects/pom.xml" }}
+            - job-build-ehrbase-v2-mvn-dependencies
 
   save-sonar-analysis-job-caches:
     description: Save all caches in dependency check job
