@@ -496,11 +496,6 @@ jobs:
     executor: docker-python3-java11
     steps:
       - checkout
-      - run:
-          name: Change TimeZone
-          command: |
-            timedatectl
-            sudo timedatectl set-timezone Europe/Berlin
       - install-maven
       - git-clone-sdk-repo
       - git-checkout-sdk-sync-branch
@@ -517,11 +512,6 @@ jobs:
     executor: docker-py3-java11-postgres
     steps:
       - checkout
-      - run:
-          name: Change TimeZone
-          command: |
-            timedatectl
-            sudo timedatectl set-timezone Europe/Berlin
       - install-maven
       - restore-local-sdk-installation
       - cache-out-ehrbase-m2-dependencies-syncbranch
@@ -537,11 +527,6 @@ jobs:
     executor: docker-py3-java11-postgres
     steps:
       - checkout
-      - run:
-          name: Change TimeZone
-          command: |
-            timedatectl
-            sudo timedatectl set-timezone Europe/Berlin
       - install-maven
       - restore-local-sdk-installation
       - restore-packaged-ehrbase-jar
@@ -556,11 +541,6 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - run:
-          name: Change TimeZone
-          command: |
-            timedatectl
-            sudo timedatectl set-timezone Europe/Berlin
       - install-maven
       - restore-build-ehrbase-job-caches
       - maven-package
@@ -578,11 +558,6 @@ jobs:
     executor: docker-py3-java11-postgres
     steps:
       - checkout
-      - run:
-          name: Change TimeZone
-          command: |
-            timedatectl
-            sudo timedatectl set-timezone Europe/Berlin
       - attach-target-folder
       - setup-jacoco-distribution
       - git-clone-sdk-repo
@@ -711,11 +686,6 @@ jobs:
     executor: docker-py3-java11-postgres
     steps:
       - checkout
-      - run:
-          name: Change TimeZone
-          command: |
-            timedatectl
-            sudo timedatectl set-timezone Europe/Berlin
       - restore-packaged-ehrbase-jar
       - run-robot-tests:
           include-tags: "aql_adhoc-queryANDaql_empty_db"
@@ -730,11 +700,6 @@ jobs:
       SUT: TEST
     steps:
       - checkout
-      - run:
-          name: Change TimeZone
-          command: |
-            timedatectl
-            sudo timedatectl set-timezone Europe/Berlin
       - restore-packaged-ehrbase-jar
       # - cache-out-ehrbase-workspace       # USE FOR PIPELINE DEBUGGING ONLY
       - restore_cache:
@@ -799,11 +764,6 @@ jobs:
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI: "http://localhost:8081/auth/realms/ehrbase"
     steps:
       - checkout
-      - run:
-          name: Change TimeZone
-          command: |
-            timedatectl
-            sudo timedatectl set-timezone Europe/Berlin
       - install-and-configure-keycloak
       - restore-packaged-ehrbase-jar
       - run-robot-tests:
@@ -1776,7 +1736,7 @@ commands:
     description: Save all caches in building artifacts job
     steps:
       - save_cache:
-          key: job-build-ehrbase-v1-mvn-dependencies-{{ checksum "~/projects/pom.xml" }}
+          key: job-build-ehrbase-v2-mvn-dependencies-{{ checksum "~/projects/pom.xml" }}
           paths:
             - ~/.m2/repository
 
@@ -1785,8 +1745,8 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - job-build-ehrbase-v1-mvn-dependencies-{{ checksum "~/projects/pom.xml" }}
-            - job-build-ehrbase-v1-mvn-dependencies
+            - job-build-ehrbase-v2-mvn-dependencies-{{ checksum "~/projects/pom.xml" }}
+            - job-build-ehrbase-v2-mvn-dependencies
 
   save-sonar-analysis-job-caches:
     description: Save all caches in dependency check job
@@ -1875,6 +1835,8 @@ executors:
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
+        environment:
+           TZ: "Europe/Berlin"
 
   docker-py3-java11-postgres:
     working_directory: ~/projects
@@ -1885,6 +1847,8 @@ executors:
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
+        environment:
+           TZ: "Europe/Berlin"
       - image: ehrbase/ehrbase-postgres:13.4
         auth:
           username: $DOCKER_USER
@@ -1893,6 +1857,7 @@ executors:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           PGDATA: /tmp
+          TZ: "Europe/Berlin"
 
   machine-ubuntu-1604:
     description: |
@@ -1906,6 +1871,7 @@ executors:
     environment:
       PIPELINE_ID: << pipeline.id >>
       BRANCH_NAME: << pipeline.git.branch >>
+      TZ: "Europe/Berlin"
     machine:
       # image: circleci/classic:201808-01
       # image: ubuntu-1604:201903-01
@@ -1941,6 +1907,7 @@ executors:
     environment:
       PIPELINE_ID: << pipeline.id >>
       BRANCH_NAME: << pipeline.git.branch >>
+      TZ: "Europe/Berlin"
     machine:
       image: ubuntu-2004:202008-01
 
