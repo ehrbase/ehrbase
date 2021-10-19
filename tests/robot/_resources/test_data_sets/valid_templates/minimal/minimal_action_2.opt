@@ -245,33 +245,6 @@
                       </children>
                     </attributes>
                     <attributes xsi:type="C_SINGLE_ATTRIBUTE">
-                      <rm_attribute_name>is_integral</rm_attribute_name>
-                      <existence>
-                        <lower_included>true</lower_included>
-                        <upper_included>true</upper_included>
-                        <lower_unbounded>false</lower_unbounded>
-                        <upper_unbounded>false</upper_unbounded>
-                        <lower>1</lower>
-                        <upper>1</upper>
-                      </existence>
-                      <children xsi:type="C_PRIMITIVE_OBJECT">
-                        <rm_type_name>BOOLEAN</rm_type_name>
-                        <occurrences>
-                          <lower_included>true</lower_included>
-                          <upper_included>true</upper_included>
-                          <lower_unbounded>false</lower_unbounded>
-                          <upper_unbounded>false</upper_unbounded>
-                          <lower>1</lower>
-                          <upper>1</upper>
-                        </occurrences>
-                        <node_id />
-                        <item xsi:type="C_BOOLEAN">
-                          <true_valid>false</true_valid>
-                          <false_valid>true</false_valid>
-                        </item>
-                      </children>
-                    </attributes>
-                    <attributes xsi:type="C_SINGLE_ATTRIBUTE">
                       <rm_attribute_name>type</rm_attribute_name>
                       <existence>
                         <lower_included>true</lower_included>
