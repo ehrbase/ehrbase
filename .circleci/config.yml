@@ -496,6 +496,9 @@ jobs:
     executor: docker-python3-java11
     steps:
       - checkout
+      - command: |
+        timedatectl
+        sudo timedatectl set-timezone Europe/Berlin
       - install-maven
       - git-clone-sdk-repo
       - git-checkout-sdk-sync-branch
@@ -512,6 +515,9 @@ jobs:
     executor: docker-py3-java11-postgres
     steps:
       - checkout
+      - command: |
+        timedatectl
+        sudo timedatectl set-timezone Europe/Berlin
       - install-maven
       - restore-local-sdk-installation
       - cache-out-ehrbase-m2-dependencies-syncbranch
@@ -527,6 +533,9 @@ jobs:
     executor: docker-py3-java11-postgres
     steps:
       - checkout
+      - command: |
+        timedatectl
+        sudo timedatectl set-timezone Europe/Berlin
       - install-maven
       - restore-local-sdk-installation
       - restore-packaged-ehrbase-jar
@@ -541,6 +550,9 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
+      - command: |
+        timedatectl
+        sudo timedatectl set-timezone Europe/Berlin
       - install-maven
       - restore-build-ehrbase-job-caches
       - maven-package
@@ -558,6 +570,9 @@ jobs:
     executor: docker-py3-java11-postgres
     steps:
       - checkout
+      - command: |
+        timedatectl
+        sudo timedatectl set-timezone Europe/Berlin
       - attach-target-folder
       - setup-jacoco-distribution
       - git-clone-sdk-repo
@@ -686,6 +701,9 @@ jobs:
     executor: docker-py3-java11-postgres
     steps:
       - checkout
+      - command: |
+        timedatectl
+        sudo timedatectl set-timezone Europe/Berlin
       - restore-packaged-ehrbase-jar
       - run-robot-tests:
           include-tags: "aql_adhoc-queryANDaql_empty_db"
@@ -700,6 +718,9 @@ jobs:
       SUT: TEST
     steps:
       - checkout
+      - command: |
+        timedatectl
+        sudo timedatectl set-timezone Europe/Berlin
       - restore-packaged-ehrbase-jar
       # - cache-out-ehrbase-workspace       # USE FOR PIPELINE DEBUGGING ONLY
       - restore_cache:
@@ -764,6 +785,9 @@ jobs:
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI: "http://localhost:8081/auth/realms/ehrbase"
     steps:
       - checkout
+      - command: |
+        timedatectl
+        sudo timedatectl set-timezone Europe/Berlin
       - install-and-configure-keycloak
       - restore-packaged-ehrbase-jar
       - run-robot-tests:
