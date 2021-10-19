@@ -497,8 +497,8 @@ jobs:
     steps:
       - checkout
       - command: |
-        timedatectl
-        sudo timedatectl set-timezone Europe/Berlin
+          timedatectl
+          sudo timedatectl set-timezone Europe/Berlin
       - install-maven
       - git-clone-sdk-repo
       - git-checkout-sdk-sync-branch
@@ -516,8 +516,8 @@ jobs:
     steps:
       - checkout
       - command: |
-        timedatectl
-        sudo timedatectl set-timezone Europe/Berlin
+          timedatectl
+          sudo timedatectl set-timezone Europe/Berlin
       - install-maven
       - restore-local-sdk-installation
       - cache-out-ehrbase-m2-dependencies-syncbranch
@@ -534,8 +534,8 @@ jobs:
     steps:
       - checkout
       - command: |
-        timedatectl
-        sudo timedatectl set-timezone Europe/Berlin
+          timedatectl
+          sudo timedatectl set-timezone Europe/Berlin
       - install-maven
       - restore-local-sdk-installation
       - restore-packaged-ehrbase-jar
@@ -551,8 +551,8 @@ jobs:
     steps:
       - checkout
       - command: |
-        timedatectl
-        sudo timedatectl set-timezone Europe/Berlin
+          timedatectl
+          sudo timedatectl set-timezone Europe/Berlin
       - install-maven
       - restore-build-ehrbase-job-caches
       - maven-package
@@ -571,8 +571,8 @@ jobs:
     steps:
       - checkout
       - command: |
-        timedatectl
-        sudo timedatectl set-timezone Europe/Berlin
+          timedatectl
+          sudo timedatectl set-timezone Europe/Berlin
       - attach-target-folder
       - setup-jacoco-distribution
       - git-clone-sdk-repo
@@ -702,8 +702,8 @@ jobs:
     steps:
       - checkout
       - command: |
-        timedatectl
-        sudo timedatectl set-timezone Europe/Berlin
+          timedatectl
+          sudo timedatectl set-timezone Europe/Berlin
       - restore-packaged-ehrbase-jar
       - run-robot-tests:
           include-tags: "aql_adhoc-queryANDaql_empty_db"
@@ -719,8 +719,8 @@ jobs:
     steps:
       - checkout
       - command: |
-        timedatectl
-        sudo timedatectl set-timezone Europe/Berlin
+          timedatectl
+          sudo timedatectl set-timezone Europe/Berlin
       - restore-packaged-ehrbase-jar
       # - cache-out-ehrbase-workspace       # USE FOR PIPELINE DEBUGGING ONLY
       - restore_cache:
@@ -786,8 +786,8 @@ jobs:
     steps:
       - checkout
       - command: |
-        timedatectl
-        sudo timedatectl set-timezone Europe/Berlin
+          timedatectl
+          sudo timedatectl set-timezone Europe/Berlin
       - install-and-configure-keycloak
       - restore-packaged-ehrbase-jar
       - run-robot-tests:
