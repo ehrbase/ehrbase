@@ -130,7 +130,7 @@
         <swagger.version>1.6.2</swagger.version>
         <swagger-snapshot.version>2.0.0-rc2</swagger-snapshot.version>
         <postgressql.version>42.2.18</postgressql.version>
-        <ehrbase.sdk.version>846b675</ehrbase.sdk.version>
+        <ehrbase.sdk.version>30e3c81</ehrbase.sdk.version>
         <flyway.version>7.11.3</flyway.version>
         <joda.version>2.10.6</joda.version>
         <database.name>ehrbase</database.name>
@@ -144,6 +144,8 @@
         <failsafe.version>3.0.0-M5</failsafe.version>
         <prometheus.version>1.6.1</prometheus.version>
         <antlr4.version>4.9.1</antlr4.version>
+        <javamelody.version>1.88.0</javamelody.version>
+        <json-api.version>2.0.0</json-api.version>
 
         <skipIntegrationTests>true</skipIntegrationTests>
         <include.tests>**/*Test.java</include.tests>
@@ -379,7 +381,12 @@
             <dependency>
                 <groupId>jakarta.json</groupId>
                 <artifactId>jakarta.json-api</artifactId>
-                <version>2.0.0</version>
+                <version>${json-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.bull.javamelody</groupId>
+                <artifactId>javamelody-spring-boot-starter</artifactId>
+                <version>${javamelody.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
