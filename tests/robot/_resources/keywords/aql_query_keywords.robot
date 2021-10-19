@@ -562,7 +562,7 @@ Populate SUT with Test-Data and Prepare Expected Results
     Commit Compo     5    ${ehr_index}    ${compo data sets}/minimal_evaluation_2.composition.json
     # Commit Compo     6    ${ehr_index}    ${compo data sets}/minimal_evaluation_3.composition.json
     # Commit Compo     7    ${ehr_index}    ${compo data sets}/minimal_evaluation_4.composition.json
-###    Commit Compo     8    ${ehr_index}    ${compo data sets}/all_types.composition.json
+    Commit Compo     8    ${ehr_index}    ${compo data sets}/all_types.composition.json
 
     Commit Compo     9    ${ehr_index}    ${compo data sets}/minimal_instruction_1.composition.json
     Commit Compo    10    ${ehr_index}    ${compo data sets}/minimal_instruction_2.composition.json
