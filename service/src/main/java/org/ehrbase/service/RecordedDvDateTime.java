@@ -23,12 +23,7 @@ public class RecordedDvDateTime {
 
     public Timestamp toTimestamp() {
         TemporalAccessor temporal = dateTime.getValue();
-
-        if (temporal instanceof OffsetDateTime) {
-            return Timestamp.from(((OffsetDateTime) temporal).toInstant());
-        } else {
-            return Timestamp.valueOf(LocalDateTime.from(temporal));
-        }
+        return Timestamp.valueOf(LocalDateTime.from(temporal));
     }
 
     public String zoneId() {
@@ -36,7 +31,7 @@ public class RecordedDvDateTime {
         if (accessor instanceof OffsetDateTime) {
             return ((OffsetDateTime) accessor).getOffset().getId();
         } else {
-            return ZoneId.systemDefault().getId();
+            return OffsetDateTime.now().getOffset().getId();
         }
     }
 
@@ -53,7 +48,7 @@ public class RecordedDvDateTime {
             return null;
         }
         ZoneId zoneId = timezone != null ? ZoneId.of(timezone) : ZoneId.systemDefault();
-        ZonedDateTime zonedDateTime = timestamp.toInstant().atZone(zoneId);
+        ZonedDateTime zonedDateTime = timestamp.toLocalDateTime().atZone(zoneId);
         return new DvDateTime(DateTimeFormatters.ISO_8601_DATE_TIME.format(zonedDateTime));
     }
 }

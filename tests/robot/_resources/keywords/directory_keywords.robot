@@ -535,7 +535,7 @@ DELETE /ehr/ehr_id/directory
                         prepare new request session    ${format}
                         ...             If-Match=${preceding_version_uid}
 
-    ${resp}=            Delete Request      ${SUT}   /ehr/${ehr_id}/directory
+    ${resp}=            Delete On Session   ${SUT}   /ehr/${ehr_id}/directory   expected_status=anything
                         ...                 headers=${headers}
 
                         Set Test Variable   ${response}    ${resp}
