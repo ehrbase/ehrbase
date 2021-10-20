@@ -29,13 +29,13 @@ Suite Teardown  restart SUT
 
 
 *** Test Cases ***
-Main flow create new event COMPOSITION RAW_JSON
-    commit composition   format=RAW_JSON
+Main flow create new event COMPOSITION CANONICAL_JSON
+    commit composition   format=CANONICAL_JSON
     ...                  composition=nested.en.v1__full_without_links.json
     check the successful result of commit composition
 
-Main flow create new event COMPOSITION RAW_XML
-    commit composition   format=RAW_XML
+Main flow create new event COMPOSITION CANONICAL_XML
+    commit composition   format=CANONICAL_XML
     ...                  composition=nested.en.v1__full_without_links.xml
     check the successful result of commit composition
 

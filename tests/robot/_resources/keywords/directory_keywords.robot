@@ -482,8 +482,8 @@ PUT /ehr/ehr_id/directory
                         ...                 Prefer=return=representation
                         ...                 If-Match=${preceding_version_uid}
 
-    ${resp}=            Put Request        ${SUT}   /ehr/${ehr_id}/directory
-                        ...                 data=${test_data}
+    ${resp}=            Put On Session      ${SUT}   /ehr/${ehr_id}/directory   expected_status=anything
+                        ...                 json=${test_data}
                         ...                 headers=${headers}
 
                         Set Test Variable   ${response}    ${resp}
@@ -502,8 +502,8 @@ PUT /ehr/ehr_id/directory (w/ headers)
                         prepare new request session    ${headers}
                         ...                 If-Match=${preceding_version_uid}
 
-    ${resp}=            Put Request        ${SUT}   /ehr/${ehr_id}/directory
-                        ...                 data=${test_data}
+    ${resp}=            Put On Session      ${SUT}   /ehr/${ehr_id}/directory   expected_status=anything
+                        ...                 json=${test_data}
                         ...                 headers=${headers}
 
                         Set Test Variable   ${response}    ${resp}
@@ -535,7 +535,7 @@ DELETE /ehr/ehr_id/directory
                         prepare new request session    ${format}
                         ...             If-Match=${preceding_version_uid}
 
-    ${resp}=            Delete Request      ${SUT}   /ehr/${ehr_id}/directory
+    ${resp}=            Delete On Session   ${SUT}   /ehr/${ehr_id}/directory   expected_status=anything
                         ...                 headers=${headers}
 
                         Set Test Variable   ${response}    ${resp}

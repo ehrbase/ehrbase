@@ -271,7 +271,7 @@ commit composition
     ...
     ...                 ENDPOINT: POST /ehr/${ehr_id}/composition
     ...
-    ...                 FORMAT VARIABLES: FLAT, TDD, STRUCTURED, RAW_JSON, RAW_XML
+    ...                 FORMAT VARIABLES: FLAT, TDD, STRUCTURED, CANONICAL_JSON, CANONICAL_XML
 
     @{template}=        Split String    ${composition}   __
     ${template}=        Get From List   ${template}      0
@@ -285,10 +285,10 @@ commit composition
         Set To Dictionary   ${headers}   openEHR-TEMPLATE_ID=${template}
     END
 
-    IF   '${format}'=='RAW_JSON'
+    IF   '${format}'=='CANONICAL_JSON'
         Set To Dictionary   ${headers}   Content-Type=application/json
         Set To Dictionary   ${headers}   Accept=application/json    
-    ELSE IF   '${format}'=='RAW_XML'
+    ELSE IF   '${format}'=='CANONICAL_XML'
         Set To Dictionary   ${headers}   Content-Type=application/xml
         Set To Dictionary   ${headers}   Accept=application/xml
     ELSE IF   '${format}'=='FLAT'
@@ -322,14 +322,14 @@ check the successful result of commit composition
     ${Location}   Set Variable    ${response.headers}[Location]
     ${ETag}       Get Substring   ${response.headers}[ETag]    1    -1
 
-    IF  '${format}' == 'RAW_JSON'
+    IF  '${format}' == 'CANONICAL_JSON'
         ${composition_uid}=   Set Variable   ${response.json()}[uid][value]
         ${template_id}=       Set Variable   ${response.json()}[archetype_details][template_id][value]
         ${composer}           Set Variable   ${response.json()}[composer][name]
         # @ndanilin: EhrBase don't return context for persistent composition.
         #            It seems to us that it's wrong so a setting check is disabled yet.
         # ${setting}            Set variable   ${response.json()}[context][setting][value]
-    ELSE IF   '${format}' == 'RAW_XML'
+    ELSE IF   '${format}' == 'CANONICAL_XML'
         ${xresp}=             Parse Xml             ${response.text}
         ${composition_uid}=   Get Element Text      ${xresp}   uid/value
         ${template_id}=       Get Element Text      ${xresp}   archetype_details/template_id/value
@@ -387,7 +387,7 @@ update composition (JSON)
                         ...                 Prefer=return=representation
                         ...                 If-Match=${preceding_version_uid}
 
-    ${resp}=            Put Request         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   headers=${headers}
+    ${resp}=            PUT On Session         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   expected_status=anything   headers=${headers}
                         log to console      ${resp.content}
                         Set Test Variable   ${composition_uid_v2}    ${resp.json()['uid']['value']}    # TODO: remove
                         Set Test Variable   ${version_uid_v2}    ${resp.json()['uid']['value']}
@@ -416,7 +416,7 @@ update composition - invalid opt reference (JSON)
                         ...                 Prefer=return=representation
                         ...                 If-Match=${preceding_version_uid}
 
-    ${resp}=            Put Request         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   headers=${headers}
+    ${resp}=            PUT On Session         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   expected_status=anything   headers=${headers}
                         Log To Console      \nREQUEST HEADERS:\n${resp.request.headers}
                         Log To Console      \nRESPONSE:\n${resp.content}
                         Set Test Variable   ${response}    ${resp}
@@ -434,7 +434,7 @@ update composition - invalid opt reference (XML)
                         ...                 Prefer=return=representation
                         ...                 If-Match=${preceding_version_uid}
 
-    ${resp}=            Put Request         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   headers=${headers}
+    ${resp}=            PUT On Session         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   expected_status=anything   headers=${headers}
                         Log To Console      \nREQUEST HEADERS:\n${resp.request.headers}
                         Log To Console      \nRESPONSE:\n${resp.content}
                         Set Test Variable   ${response}    ${resp}
@@ -472,7 +472,7 @@ update composition (XML)
                         ...                 Accept=application/xml
                         ...                 Prefer=return=representation
                         ...                 If-Match=${preceding_version_uid}   # TODO: must be ${preceding_version_uid} - has same format as `version_uid`
-    ${resp}=            Put Request         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   headers=${headers}
+    ${resp}=            PUT On Session         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   expected_status=anything   headers=${headers}
                         log to console      ${resp.content}
 
     # compo.uid.value has the version_uid
@@ -513,7 +513,7 @@ update non-existent composition (JSON)
                         ...                 Prefer=return=representation
 
                         ...                 If-Match=${preceding_version_uid}
-    ${resp}=            Put Request         ${SUT}   /ehr/${ehr_id}/composition/${versioned_object_uid}   data=${file}   headers=${headers}
+    ${resp}=            PUT On Session         ${SUT}   /ehr/${ehr_id}/composition/${versioned_object_uid}   data=${file}   expected_status=anything    headers=${headers}
                         log to console      ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   404
 
@@ -531,7 +531,7 @@ update non-existent composition (XML)
                         ...                 Prefer=return=representation
 
                         ...                 If-Match=${preceding_version_uid}
-    ${resp}=            Put Request         ${SUT}   /ehr/${ehr_id}/composition/${versioned_object_uid}   data=${file}   headers=${headers}
+    ${resp}=            PUT On Session         ${SUT}   /ehr/${ehr_id}/composition/${versioned_object_uid}   data=${file}   expected_status=anything   headers=${headers}
                         log to console      ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   404
 
@@ -827,7 +827,7 @@ delete composition
     [Arguments]         ${uid}
     [Documentation]     :uid: preceding_version_uid (format of version_uid)
 
-    ${resp}=            Delete Request          ${SUT}   /ehr/${ehr_id}/composition/${uid}
+    ${resp}=            Delete On Session       ${SUT}   /ehr/${ehr_id}/composition/${uid}   expected_status=anything
                         log to console          ${resp.headers}
                         log to console          ${resp.content}
 
@@ -852,7 +852,7 @@ delete non-existent composition
     [Documentation]     DEPENDENCY `prepare new request session`, `generate random composition_uid`
 
                         prepare new request session
-    ${resp}=            Delete Request        ${SUT}   /ehr/${ehr_id}/composition/${preceding_version_uid}
+    ${resp}=            Delete On Session      ${SUT}   /ehr/${ehr_id}/composition/${preceding_version_uid}   expected_status=anything
                         log to console    ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   404
 
