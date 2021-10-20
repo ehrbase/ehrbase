@@ -646,7 +646,7 @@ GET /ehr/ehr_id/directory?version_at_time&path
 
                         prepare new request session    ${format}
 
-    ${resp}=            GET On Session         ${SUT}   /ehr/${ehr_id}/directory?version_at_time=${version_at_time}&paht=${path}   expected_status=anything
+    ${resp}=            GET On Session         ${SUT}   /ehr/${ehr_id}/directory   params=version_at_time=${version_at_time}   params=path=${path}  expected_status=anything
                         ...                 headers=${headers}
 
                         Set Test Variable   ${response}    ${resp}
