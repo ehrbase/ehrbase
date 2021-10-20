@@ -80,10 +80,20 @@ A-103 Execute Ad-Hoc Query - Get EHRs
 
 
 A-105 Execute Ad-Hoc Query - Get EHRs
+    [Documentation]     Execute AQL query\n\n
+    ...                 SELECT e/ehr_id, e/time_created, e/system_id FROM EHR e
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TODO
+    [Tags]              
     A/105_get_ehrs.json    A/105.tmp.json
+
+
+A-106 Execute Ad-Hoc Query - Get EHRs
+    [Documentation]     Execute AQL query\n\n
+    ...                 SELECT e/ehr_id, e/time_created, e/system_id, e/ehr_status FROM EHR e
+    [Template]          execute ad-hoc query and check result (loaded DB)
+    [Tags]              642
     A/106_get_ehrs.json    A/106.tmp.json
+    [Teardown]          TRACE GITHUB ISSUE  642
 
 
 A-107 Execute Ad-Hoc Query - Get EHRs (filtered: top 5)
