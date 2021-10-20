@@ -18,14 +18,9 @@
 
 *** Settings ***
 Documentation    CONTRIBUTION Specific Keywords
-Library          XML
-Library          String
 
-Resource    ${CURDIR}${/}../suite_settings.robot
-Resource    generic_keywords.robot
-Resource    template_opt1.4_keywords.robot
+Resource    ../suite_settings.robot
 Resource    ehr_keywords.robot
-Resource    composition_keywords.robot
 
 
 
@@ -269,8 +264,8 @@ POST /ehr/ehr_id/contribution
                         Run Keyword If      $format=='XML'    prepare new request session
                         ...                 XML    Prefer=return=representation
 
-    ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/contribution
-                        ...                 data=${test_data}
+    ${resp}=            POST On Session     ${SUT}   /ehr/${ehr_id}/contribution   expected_status=anything
+                        ...                 json=${test_data}
                         ...                 headers=${headers}
 
                         Set Test Variable   ${response}    ${resp}
@@ -292,8 +287,8 @@ POST /ehr/ehr_id/contribution without accept header
 
                         Remove From Dictionary    ${headers}    Accept
 
-    ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/contribution
-                        ...                 data=${test_data}
+    ${resp}=            POST On Session     ${SUT}   /ehr/${ehr_id}/contribution   expected_status=anything
+                        ...                 json=${test_data}
                         ...                 headers=${headers}
 
                         Set Test Variable   ${response}    ${resp}
@@ -385,7 +380,7 @@ extract contribution_uid from response (JSON)
 load valid test-data-set
     [Arguments]        ${valid_test_data_set}
 
-    ${file}=            Get File            ${VALID CONTRI DATA SETS}/${valid_test_data_set}
+    ${file}=            Load JSON from File             ${VALID CONTRI DATA SETS}/${valid_test_data_set}
 
                         Set Test Variable    ${test_data}    ${file}
 
@@ -393,7 +388,7 @@ load valid test-data-set
 load invalid test-data-set
     [Arguments]        ${invalid_test_data_set}
 
-    ${file}=            Get File            ${INVALID CONTRI DATA SETS}/${invalid_test_data_set}
+    ${file}=            Load JSON from File             ${INVALID CONTRI DATA SETS}/${invalid_test_data_set}
 
                         Set Test Variable    ${test_data}    ${file}
 

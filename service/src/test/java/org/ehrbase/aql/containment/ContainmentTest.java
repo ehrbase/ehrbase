@@ -123,7 +123,7 @@ public class ContainmentTest extends TestAqlBase {
         AqlExpression aqlExpression = new AqlExpression().parse(query);
         Contains contains = new Contains(aqlExpression.getParseTree(), knowledge).process();
 
-        assertFalse(contains.requiresTemplateWhereClause());
+        assertTrue(contains.requiresTemplateWhereClause());
     }
 
     @Test
@@ -172,8 +172,8 @@ public class ContainmentTest extends TestAqlBase {
         assertTrue(contains.getTemplates().contains("Patientenaufenthalt"));
 
         //check that *both* o and l have resolved path
-        assertEquals("/content[openEHR-EHR-ADMIN_ENTRY.hospitalization.v0]", ((Containment) contains.getIdentifierMapper().getContainer("o")).getPath("Patientenaufenthalt"));
-        assertNotNull("/content[openEHR-EHR-ADMIN_ENTRY.hospitalization.v0]/data[at0001]/items[openEHR-EHR-CLUSTER.location.v1]", ((Containment) contains.getIdentifierMapper().getContainer("l")).getPath("Patientenaufenthalt"));
+        assertEquals("/content[openEHR-EHR-ADMIN_ENTRY.hospitalization.v0]", ((Containment) contains.getIdentifierMapper().getContainer("o")).getPath("Patientenaufenthalt").toArray()[0]);
+        assertNotNull("/content[openEHR-EHR-ADMIN_ENTRY.hospitalization.v0]/data[at0001]/items[openEHR-EHR-CLUSTER.location.v1]", ((Containment) contains.getIdentifierMapper().getContainer("l")).getPath("Patientenaufenthalt").toArray()[0]);
     }
 
     @Test
@@ -191,7 +191,7 @@ public class ContainmentTest extends TestAqlBase {
         assertTrue(contains.getTemplates().contains("Patientenaufenthalt"));
 
         //check that *both* o and l have resolved path
-        assertNotNull("/content[openEHR-EHR-ADMIN_ENTRY.hospitalization.v0]/data[at0001]/items[openEHR-EHR-CLUSTER.location.v1]", ((Containment) contains.getIdentifierMapper().getContainer("l")).getPath("Patientenaufenthalt"));
+        assertNotNull("/content[openEHR-EHR-ADMIN_ENTRY.hospitalization.v0]/data[at0001]/items[openEHR-EHR-CLUSTER.location.v1]", ((Containment) contains.getIdentifierMapper().getContainer("l")).getPath("Patientenaufenthalt").toArray()[0]);
     }
 
     @Test

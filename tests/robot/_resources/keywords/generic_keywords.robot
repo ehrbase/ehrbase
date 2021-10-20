@@ -17,10 +17,9 @@
 
 
 *** Settings ***
-Library    Collections
-Library    String
-Library    Process
-Library    OperatingSystem
+
+Resource   ../suite_settings.robot
+Resource    db_keywords.robot
 
 
 
@@ -148,6 +147,15 @@ get application version
     Set Global Variable    ${VERSION}    ${version}
 
 
+Output Debug Info To Console
+    [Documentation]     Prints all details of a request to console in JSON style.
+    ...                 - request headers
+    ...                 - request body
+    ...                 - response headers
+    ...                 - response body
+    Output
+
+
 unzip file_repo_content.zip
     Start Process  unzip  -o  ${PROJECT_ROOT}${/}.circleci/file_repo_content.zip
     ...                       alias=unzip  cwd=${PROJECT_ROOT}
@@ -178,9 +186,19 @@ empty operational_templates folder
 
 start openehr server
     get application version
-    run keyword if  '${CODE_COVERAGE}' == 'True'   start server process with coverage
-    run keyword if  '${CODE_COVERAGE}' == 'False'  start server process without coverage
+
+    IF    '${CODE_COVERAGE}' == 'True'
+        start server process with coverage
+    ELSE
+        start server process without coverage
+    END
+
     Wait For Process  ehrserver  timeout=25  on_timeout=continue
+
+    # comment: log EHRbase's stack trace
+    Log File    ../stderr.txt
+    Log File    ../stdout.txt
+    
     Is Process Running  ehrserver
     ${status}=      Run Keyword And Return Status    Process Should Be Running    ehrserver
                     Run Keyword If    ${status}==${FALSE}    Fatal Error    Server failed to start!
@@ -196,8 +214,12 @@ start openehr server
 
 start server process without coverage
                         Set Environment Variable    SECURITY_AUTHTYPE    ${SECURITY_AUTHTYPE}
-                        Run Keyword If    '${SECURITY_AUTHTYPE}' == 'OAUTH'    Set Environment Variable
-                        ...               SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI    ${JWT_ISSUERURI}    
+                        IF    '${SECURITY_AUTHTYPE}' == 'OAUTH'
+                              Set Environment Variable
+                              ...    SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI    ${JWT_ISSUERURI}
+                        END
+
+
     ${result}=          Start Process  java  -jar  ${PROJECT_ROOT}${/}application/target/application-${VERSION}.jar
                         ...                  --cache.enabled\=${CACHE-ENABLED}
                         ...                  --system.allow-template-overwrite\=${ALLOW-TEMPLATE-OVERWRITE}
@@ -233,7 +255,14 @@ wait until openehr server is online
 openehr server is online
     prepare new request session  JSON
     REST.GET    ${HEARTBEAT_URL}
-    Integer     response status    404    200
+    Output    response body
+
+    Integer   response status    200
+    String    response body ehrbase_version
+    String    response body jvm_version
+    String    response body openehr_sdk_version
+    String    response body os_version
+    String    response body postgres_version
 
 
 abort test execution
@@ -308,7 +337,8 @@ prepare new request session
                         ...                 &{extra_headers}
 
                         # case: no headers
-                        Run Keyword If      $headers=='no headers'    set request headers  
+                        Run Keyword If      $headers=='no headers'    set request headers
+                        ...                 &{extra_headers}
 
                         # case: mixed cases like JSON/XML or XML/JSON can be added here!
 
@@ -425,7 +455,7 @@ remind to restart manual test environment
     Log    ${EMPTY}                                                                             level=WARN
     Log    /////////////////////////////////////////////////////////////////////                level=WARN
     Log    //${SPACE * 64}///                                                                   level=WARN
-    Log    //${SPACE * 13}REMBER TO PROPERLY RESTART YOUR SUT! ${SPACE * 13} ///                level=WARN
+    Log    //${SPACE * 13}REMEMBER TO PROPERLY RESTART YOUR SUT! ${SPACE * 13} ///              level=WARN
     Log    //${SPACE * 64}///                                                                   level=WARN
     Log    /////////////////////////////////////////////////////////////////////                level=WARN
     Log    ${EMPTY}                                                                             level=WARN

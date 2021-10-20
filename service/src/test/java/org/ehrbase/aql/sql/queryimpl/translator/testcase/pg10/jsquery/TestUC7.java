@@ -19,6 +19,7 @@
 
 package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.jsquery;
 
+import org.ehrbase.aql.sql.queryimpl.QueryImplConstants;
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC7;
 
 public class TestUC7 extends UC7 {
@@ -26,10 +27,16 @@ public class TestUC7 extends UC7 {
     public TestUC7(){
         super();
         this.expectedSqlExpression =
-                "select (jsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') as \"/description[at0001]/items[at0002]/value/value\" " +
-                        "from \"ehr\".\"entry\" " +
-                        "where (\"ehr\".\"entry\".\"template_id\" = ? " +
-                        "and (\"ehr\".\"entry\".\"entry\" @@ '\"/composition[openEHR-EHR-COMPOSITION.health_summary.v1]\".\"/content[openEHR-EHR-ACTION.immunisation_procedure.v1]\".#.\"/description[at0001]\".\"/items[at0002]\".#.\"/value\".\"value\"=\"Hepatitis A\" '::jsquery))";
+                "select (ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\" #>>\n" +
+                        "                                   '{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb) #>>\n" +
+                        "        '{/description[at0001],/items[at0002],0,/value,value}') as \"/description[at0001]/items[at0002]/value/value\"\n" +
+                        "from \"ehr\".\"entry\",\n" +
+                        "     lateral (\n" +
+                        "         select (ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\" #>>\n" +
+                        "                                            '{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb) #>>\n" +
+                        "                 '{/description[at0001],/items[at0002],0,/value,value}')\n" +
+                        "                    AS COLUMN) as \"ARRAY\"\n" +
+                        "where (\"ehr\".\"entry\".\"template_id\" = ? and (ARRAY.COLUMN = 'Hepatitis A'))";
         testDomainAccess.getServerConfig().setUseJsQuery(true);
     }
 }

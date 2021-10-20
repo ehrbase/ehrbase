@@ -21,7 +21,9 @@
 
 package org.ehrbase.aql.definition;
 
-import java.util.List;
+import org.jooq.DataType;
+
+import java.util.*;
 
 /**
  * Container of a variable (symbol) with its path and alias (AS 'alias')
@@ -32,8 +34,12 @@ public class VariableDefinition implements I_VariableDefinition {
     private String path;
     private String alias;
     private String identifier;
+    private String substituteFieldVariable;
     private boolean isDistinct;
     private boolean isHidden;
+    private Map<String, Set<LateralJoinDefinition>> lateralJoinDefinitions = new HashMap<>();
+    private PredicateDefinition predicateDefinition;
+    private DataType selectDataType;
 
     public VariableDefinition(String path, String alias, String identifier, boolean isDistinct) {
         this.path = path;
@@ -41,6 +47,15 @@ public class VariableDefinition implements I_VariableDefinition {
         this.identifier = identifier;
         this.isDistinct = isDistinct;
         this.isHidden = false;
+    }
+
+    public VariableDefinition(String path, String alias, String identifier, boolean isDistinct, PredicateDefinition predicateDefinition) {
+        this.path = path;
+        this.alias = alias;
+        this.identifier = identifier;
+        this.isDistinct = isDistinct;
+        this.isHidden = false;
+        this.predicateDefinition = predicateDefinition;
     }
 
     /**
@@ -80,6 +95,60 @@ public class VariableDefinition implements I_VariableDefinition {
     }
 
     @Override
+    public boolean isConstant() {
+        return false;
+    }
+
+    @Override
+    public boolean isLateralJoin(String templateId) {
+        return !lateralJoinDefinitions.isEmpty() && lateralJoinDefinitions.get(templateId) != null;
+    }
+
+    @Override
+    public Set<LateralJoinDefinition> getLateralJoinDefinitions(String templateId) {
+        return lateralJoinDefinitions.get(templateId);
+    }
+
+    @Override
+    public LateralJoinDefinition getLateralJoinDefinition(String templateId, int index) {
+        Set<LateralJoinDefinition> definitions = getLateralJoinDefinitions(templateId);
+        if (index > definitions.size() - 1)
+            return null;
+        return definitions.toArray(new LateralJoinDefinition[]{})[index];
+    }
+
+    @Override
+    public int getLateralJoinsSize(String templateId) {
+        if (isLateralJoinsEmpty(templateId))
+            return 0;
+        return lateralJoinDefinitions.get(templateId).size();
+    }
+
+    @Override
+    public boolean isLateralJoinsEmpty(String templateId) {
+        if (lateralJoinDefinitions.isEmpty() || lateralJoinDefinitions.get(templateId) == null || lateralJoinDefinitions.get(templateId).isEmpty())
+            return true;
+        return false;
+    }
+
+
+    @Override
+    public LateralJoinDefinition getLastLateralJoin(String templateId) {
+        if (isLateralJoinsEmpty(templateId))
+            return null;
+        return Arrays.asList(lateralJoinDefinitions.get(templateId).toArray(new LateralJoinDefinition[]{})).get(getLateralJoinsSize(templateId) - 1);
+    }
+
+
+    @Override
+    public void setLateralJoinTable(String templateId, LateralJoinDefinition lateralJoinDefinition) {
+        lateralJoinDefinitions.computeIfAbsent(templateId, k -> new HashSet<>());
+
+        //do not add duplicate join
+        this.lateralJoinDefinitions.get(templateId).add(lateralJoinDefinition);
+    }
+
+    @Override
     public boolean isDistinct() {
         return isDistinct;
     }
@@ -101,7 +170,7 @@ public class VariableDefinition implements I_VariableDefinition {
 
     @Override
     public List<FuncParameter> getFuncParameters() {
-        return null;
+        return new ArrayList<>();
     }
 
     @Override
@@ -120,12 +189,32 @@ public class VariableDefinition implements I_VariableDefinition {
     }
 
     @Override
-    public I_VariableDefinition clone(){
+    public I_VariableDefinition duplicate(){
         return new VariableDefinition(this.path, this.alias, this.identifier, this.isDistinct, this.isHidden);
     }
 
     @Override
     public void setAlias(String alias) {
         this.alias = alias;
+    }
+
+    public PredicateDefinition getPredicateDefinition() {
+        return predicateDefinition;
+    }
+
+    public String getSubstituteFieldVariable() {
+        return substituteFieldVariable;
+    }
+
+    public void setSubstituteFieldVariable(String substituteFieldVariable) {
+        this.substituteFieldVariable = substituteFieldVariable;
+    }
+
+    public void setSelectType(DataType sqlDataType){
+        this.selectDataType = sqlDataType;
+    }
+
+    public DataType getSelectType(){
+        return this.selectDataType;
     }
 }

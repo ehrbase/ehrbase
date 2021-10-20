@@ -22,8 +22,10 @@
 package org.ehrbase.aql.sql.queryimpl;
 
 import org.ehrbase.aql.definition.I_VariableDefinition;
+import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
 import org.ehrbase.aql.sql.binding.IJoinBinder;
+import org.ehrbase.aql.sql.binding.LateralJoins;
 import org.ehrbase.aql.sql.queryimpl.attribute.AttributePath;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
@@ -35,7 +37,10 @@ import org.ehrbase.aql.sql.queryimpl.attribute.ehr.FullEhrJson;
 import org.ehrbase.aql.sql.queryimpl.attribute.eventcontext.EventContextResolver;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.service.IntrospectService;
+import org.jooq.Comparator;
 import org.jooq.Field;
+import org.jooq.SelectQuery;
+import org.jooq.impl.DSL;
 
 import static org.ehrbase.aql.sql.QueryProcessor.NIL_TEMPLATE;
 
@@ -61,10 +66,9 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
     }
 
     @Override
-    public Field<?> makeField(String templateId, String identifier, I_VariableDefinition variableDefinition, Clause clause) {
+    public MultiFields makeField(String templateId, String identifier, I_VariableDefinition variableDefinition, Clause clause) {
         //resolve composition attributes and/or context
         String columnAlias = variableDefinition.getPath();
-        jsonDataBlock = false;
         FieldResolutionContext fieldResolutionContext =
                 new FieldResolutionContext(domainAccess.getContext(),
                         serverNodeId,
@@ -109,60 +113,31 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
                 throw new IllegalArgumentException("INTERNAL: the following class cannot be resolved for AQL querying:" + (pathResolver.classNameOf(variableDefinition.getIdentifier())));
         }
 
-        jsonDataBlock = fieldResolutionContext.isJsonDatablock();
-        return retField;
+        //generate a lateral table for this select field
+        if (variableDefinition.getPredicateDefinition() != null && retField != null) {
+            deriveLateralJoinForPredicate(variableDefinition, retField);
+            //edit the return field to point to the lateral join
+            //the equivalent select field is the lateral join table '.' the pseudo variable used as ref in the join
+            //f.e. select array_433911319_3.var_433911319_4 with a join as:
+//                    left outer join lateral (
+//                            ...
+//                             ) as "var_433911319_4"
+//                    ) as "array_433911319_3"
+//                            on true
+            String sqlToLateralJoin = variableDefinition.getLastLateralJoin(NIL_TEMPLATE).getTable().getName()+"."+variableDefinition.getSubstituteFieldVariable();
+            retField = DSL.field(sqlToLateralJoin).as(retField.getName());
+        }
+        else if (fieldResolutionContext.isUsingSetReturningFunction())
+            retField = DSL.field(DSL.select(retField));
+
+        QualifiedAqlField aqlField = new QualifiedAqlField(retField);
+
+        return new MultiFields(variableDefinition, aqlField, templateId);
     }
 
     @Override
-    public Field<?> whereField(String templateId,String identifier, I_VariableDefinition variableDefinition) {
+    public MultiFields whereField(String templateId,String identifier, I_VariableDefinition variableDefinition) {
         return makeField(templateId, identifier, variableDefinition, Clause.WHERE);
-    }
-
-    public boolean isJoinComposition() {
-        return joinSetup.isJoinComposition();
-    }
-
-    public boolean isJoinEventContext() {
-        return joinSetup.isJoinEventContext();
-    }
-
-    public boolean isJoinSubject() {
-        return joinSetup.isJoinSubject();
-    }
-
-    public boolean isJoinEhr() {
-        return joinSetup.isJoinEhr();
-    }
-
-    public boolean isJoinSystem() {
-        return joinSetup.isJoinSystem();
-    }
-
-    public boolean isJoinEhrStatus() {
-        return joinSetup.isJoinEhrStatus();
-    }
-
-    public boolean isJoinComposer() {
-        return joinSetup.isJoinComposer();
-    }
-
-    public boolean isJoinContextFacility() {
-        return joinSetup.isJoinContextFacility();
-    }
-
-    public boolean containsEhrStatus() {
-        return joinSetup.isContainsEhrStatus();
-    }
-
-
-    @Override
-    public boolean isContainsJqueryPath() {
-        return false;
-    }
-
-    @Override
-    public String getJsonbItemPath() {
-        return null;
     }
 
     /**
@@ -187,5 +162,41 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
 
     public boolean isUseEntry(){
         return joinSetup.isUseEntry();
+    }
+
+    public JoinSetup getJoinSetup(){
+        return joinSetup;
+    }
+
+    private void deriveLateralJoinForPredicate(I_VariableDefinition variableDefinition, Field retField){
+
+        //encode a pseudo variable to get the predicate in the where clause
+        VariableDefinition pseudoVar = new VariableDefinition(variableDefinition.getPredicateDefinition().getOperand1(), null, variableDefinition.getIdentifier(), false);
+        CompositionAttributeQuery compositionAttributeQuery = new CompositionAttributeQuery(this.domainAccess, this.pathResolver, this.serverNodeId, this.introspectCache);
+        MultiFields wherePredicate = compositionAttributeQuery.makeField(NIL_TEMPLATE, variableDefinition.getIdentifier(), pseudoVar, Clause.WHERE);
+
+        joinSetup.merge(compositionAttributeQuery.getJoinSetup());
+
+        SelectQuery selectQuery = domainAccess.getContext().selectQuery();
+
+        //generate a lateral table for this select field
+        selectQuery.addSelect(retField);
+        Comparator comparator = comparatorFromSQL(variableDefinition.getPredicateDefinition().getOperator());
+
+        selectQuery.addConditions(
+                wherePredicate.getLastQualifiedField().getSQLField().cast(String.class).
+                compare(comparator, DSL.field(variableDefinition.getPredicateDefinition().getOperand2()).cast(String.class))
+        );
+
+        new LateralJoins().create(NIL_TEMPLATE, selectQuery, variableDefinition, Clause.SELECT);
+
+    }
+
+    private Comparator comparatorFromSQL(String sql){
+        for (Comparator comparator: Comparator.values()){
+            if (sql.equals(comparator.toSQL()))
+                return comparator;
+        }
+        return null;
     }
 }

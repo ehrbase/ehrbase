@@ -24,13 +24,13 @@ tasks:
     desc: START SUT (NO CACHE)
     cmds:
       - task: startdb
-      - sleep 1
-      - task: starteb
+      - sleep 2
+      - task: startehrdocker
 
   stop:
     desc: STOP SUT
     cmds:
-      - task: stopeb
+      - task: stopehrdocker
       - task: stopdb
 
   starteb:
@@ -53,6 +53,8 @@ tasks:
                     --security.authType="BASIC" \
                     --security.authUser="myuser" \
                     --security.authPassword="myPassword432" \
+                    --security.authAdminUser="myadmin" \
+                    --security.authAdminPassword="mySuperAwesomePassword123" \
                     --cache.enabled=true \
                     --system.allow-template-overwrite=true \
                     --server.nodename=manual.execution.org > ehrbase-log &
@@ -97,7 +99,9 @@ tasks:
     cmds:
       - |
         cd ..
-        EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+        EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" \
+                                 -Dexec.args='${project.version}' \
+                                 --non-recursive exec:exec)
         echo "EHRbase_VERSION:" ${EHRbase_VERSION}
         kill -9 $(jps | grep application-${EHRbase_VERSION}.jar | awk '{print $1}')
         echo ... EHRbase server stopped.
@@ -105,18 +109,55 @@ tasks:
   startdb:
     desc: START POSTGRES DB DOCKER CONTAINER
     cmds:
-      - echo ... starting DB server ...
-      # - docker run --name ehrdb -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e DISABLE_SECURITY=true -d -p 5432:5432 ehrbase/ehrbase-postgres:11.10
-      - docker run --name ehrdb -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e DISABLE_SECURITY=true -d -p 5432:5432 ehrbase/ehrbase-postgres:latest
-      # - docker run --name ehrdb -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e DISABLE_SECURITY=true -d -p 5432:5432 postgres:11.5-alpine
-      - echo ... DB server started.
+      - |
+        echo ... starting DB server ...
 
+        docker network remove ehrnet
+        docker network create ehrnet
+
+        docker run --name ehrdb \
+                   --network ehrnet \
+                   -e POSTGRES_USER=postgres \
+                   -e POSTGRES_PASSWORD=postgres \
+                   -e DISABLE_SECURITY \
+                   -e PGDATA=/tmp \
+                   -d -p 5432:5432 \
+                   ehrbase/ehrbase-postgres:13.4
+
+        echo ... DB server started.
+
+  
   stopdb:
     desc: KILL POSTGRES DB DOCKER CONTAINER
     cmds:
       - docker container rm -f ehrdb
       - rm -rf /tmp/file/*
       - echo ... DB server stopped.
+  
+
+  startehrdocker:
+    desc: START EHRBASE DOCKER CONTAINER
+    cmds:
+      - |
+        echo ... starting EHRBASE server ...
+        docker run --name ehrdocker \
+                   --network ehrnet \
+                   -e DB_URL=jdbc:postgresql://ehrdb:5432/ehrbase \
+                   -e DB_USER=ehrbase \
+                   -e DB_PASS=ehrbase \
+                   -e SYSTEM_ALLOW_TEMPLATE_OVERWRITE=true \
+                   -e SERVER_NODENAME=manual.execution.org \
+                   -p 8080:8080 \
+                   ehrbase/ehrbase:13.3
+        echo ... EHRBASE server started.
+
+
+  stopehrdocker:
+    desc: KILL EHRBASE DOCKER CONTAINER
+    cmds:
+      - docker container rm -f ehrdocker
+      - echo ... EHRBASE server stopped.
+
 
   package:
     desc: mvn package -Dmaven.javadoc.skip=true
@@ -126,7 +167,7 @@ tasks:
   cpackage:
     desc: mvn clean package -Dmaven.javadoc.skip=true
     cmds:
-      - cd .. && mvn clean package -Dmaven.javadoc.skip=true
+      - cd .. && mvn clean package -X -Dmaven.javadoc.skip=true
 
   test:
     desc: RUN SPECIFIED TESTS
@@ -141,17 +182,19 @@ tasks:
   test-all:
     desc: RUN ALL ROBOT TESTS
     cmds:
-      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output compop.xml --name COMPO robot/COMPOSITION_TESTS
-      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output contri.xml --name CONTRI robot/CONTRIBUTION_TESTS
-      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output folder.xml --name FOLDER robot/DIRECTORY_TESTS
-      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output ehrser.xml --name EHRSERVICE robot/EHR_SERVICE_TESTS
-      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output ehrsta.xml --name EHRSTATUS robot/EHR_STATUS_TESTS
-      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output knowld.xml --name KNOWLEDGE robot/KNOWLEDGE_TESTS
-      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output aqledb.xml --name "QUERY empty_db"  -i empty_db  robot/QUERY_SERVICE_TESTS
-      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --noncritical not-ready --log None --report None --output aqlldb.xml --name "QUERY loaded_db" -i loaded_db robot/QUERY_SERVICE_TESTS
+      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --skiponfailure not-ready --log None --report None --output compop.xml --name COMPO robot/COMPOSITION_TESTS
+      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --skiponfailure not-ready --log None --report None --output contri.xml --name CONTRI robot/CONTRIBUTION_TESTS
+      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --skiponfailure not-ready --log None --report None --output folder.xml --name FOLDER robot/DIRECTORY_TESTS
+      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --skiponfailure not-ready --log None --report None --output ehrser.xml --name EHRSERVICE robot/EHR_SERVICE_TESTS
+      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --skiponfailure not-ready --log None --report None --output ehrsta.xml --name EHRSTATUS robot/EHR_STATUS_TESTS
+      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --skiponfailure not-ready --log None --report None --output knowld.xml --name KNOWLEDGE -v ALLOW-TEMPLATE-OVERWRITE:false robot/KNOWLEDGE_TESTS
+      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --skiponfailure not-ready --log None --report None --output aqledb.xml --name "QUERY empty_db"  -i aql_empty_db  robot/QUERY_SERVICE_TESTS
+      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --skiponfailure not-ready --log None --report None --output aqlldb.xml --name "QUERY loaded_db" -i aql_loaded_db robot/QUERY_SERVICE_TESTS
+      - robot -e future -e circleci -e TODO -e obsolete -e libtest -d results/xml -L TRACE --skiponfailure not-ready --log None --report None --output admint.xml --name ADMIN -v SUT:ADMIN-TEST robot/ADMIN_TESTS
+      # TODO: add security tests here (will require proper SUT setup)
 
       ## consolidate results
-      - rebot -e future -e circleci -e TODO -e obsolete -e libtest -d results -L TRACE --noncritical not-ready --name EHRbase results/xml/*.xml
+      - rebot -e future -e circleci -e TODO -e obsolete -e libtest -d results -L TRACE --name EHRbase results/xml/*.xml
       # - spd-say "Robot is ready! Check the results!"
   
   clean-aql:

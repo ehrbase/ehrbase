@@ -17,7 +17,6 @@
  */
 package org.ehrbase.application.config;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
@@ -31,8 +30,9 @@ public class ServerConfigImp implements org.ehrbase.api.definitions.ServerConfig
     @Min(1025)
     @Max(65536)
     private int port;
-    private String nodename;
+    private String nodename = "local.ehrbase.org";
     private AqlConfig aqlConfig;
+    private boolean disableStrictValidation = false;
 
     public int getPort() {
         return port;
@@ -43,8 +43,6 @@ public class ServerConfigImp implements org.ehrbase.api.definitions.ServerConfig
     }
 
     public String getNodename() {
-        if (StringUtils.isBlank(nodename))
-            return "local.ehrbase.org";
         return nodename;
     }
 
@@ -72,11 +70,11 @@ public class ServerConfigImp implements org.ehrbase.api.definitions.ServerConfig
         aqlConfig.setUseJsQuery(b);
     }
 
-    public AqlConfig getAqlConfig(){
+    public AqlConfig getAqlConfig() {
         return aqlConfig;
     }
 
-    public void setAqlConfig(AqlConfig aqlConfig){
+    public void setAqlConfig(AqlConfig aqlConfig) {
         this.aqlConfig = aqlConfig;
     }
 
@@ -109,5 +107,14 @@ public class ServerConfigImp implements org.ehrbase.api.definitions.ServerConfig
         public void setIterationScanDepth(Integer iterationScanDepth) {
             this.iterationScanDepth = iterationScanDepth;
         }
+    }
+
+    @Override
+    public boolean isDisableStrictValidation() {
+        return disableStrictValidation;
+    }
+
+    public void setDisableStrictValidation(boolean disableStrictValidation) {
+        this.disableStrictValidation = disableStrictValidation;
     }
 }

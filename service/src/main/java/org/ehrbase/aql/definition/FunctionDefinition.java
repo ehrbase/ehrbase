@@ -21,7 +21,10 @@
 
 package org.ehrbase.aql.definition;
 
+import org.jooq.DataType;
+
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by christian on 9/20/2016.
@@ -40,10 +43,6 @@ public class FunctionDefinition implements I_VariableDefinition {
         this.parameters = parameters;
     }
 
-    public List<FuncParameter> getParameters() {
-        return parameters;
-    }
-
     @Override
     public String getAlias() {
         return alias;
@@ -59,6 +58,31 @@ public class FunctionDefinition implements I_VariableDefinition {
     @Override
     public String getIdentifier() {
         return identifier;
+    }
+
+    @Override
+    public LateralJoinDefinition getLateralJoinDefinition(String templateId, int index) {
+        return null;
+    }
+
+    @Override
+    public int getLateralJoinsSize(String templateId) {
+        return 0;
+    }
+
+    @Override
+    public boolean isLateralJoinsEmpty(String templateId) {
+        return false;
+    }
+
+    @Override
+    public LateralJoinDefinition getLastLateralJoin(String templateId) {
+        return null;
+    }
+
+    @Override
+    public void setLateralJoinTable(String templateId, LateralJoinDefinition lateralJoinDefinition) {
+        // n/a
     }
 
     @Override
@@ -87,8 +111,7 @@ public class FunctionDefinition implements I_VariableDefinition {
     }
 
     @Override
-    public I_VariableDefinition clone() throws CloneNotSupportedException {
-        super.clone();
+    public I_VariableDefinition duplicate() {
         return new FunctionDefinition(this.identifier, this.alias, this.path, this.parameters);
     }
 
@@ -99,16 +122,56 @@ public class FunctionDefinition implements I_VariableDefinition {
 
     @Override
     public void setDistinct(boolean distinct) {
-
+        // n/a
     }
 
     @Override
     public void setHidden(boolean hidden) {
-
+        // n/a
     }
 
     @Override
     public void setAlias(String alias) {
+        // n/a
+    }
 
+    @Override
+    public boolean isConstant() {
+        return false;
+    }
+
+    @Override
+    public boolean isLateralJoin(String templateId) {
+        return false;
+    }
+
+    @Override
+    public Set<LateralJoinDefinition> getLateralJoinDefinitions(String templateId) {
+        return null;
+    }
+
+    @Override
+    public PredicateDefinition getPredicateDefinition() {
+        return null;
+    }
+
+    @Override
+    public void setSubstituteFieldVariable(String variableAlias) {
+        // na
+    }
+
+    @Override
+    public String getSubstituteFieldVariable() {
+        return null;
+    }
+
+    @Override
+    public void setSelectType(DataType castTypeAs) {
+
+    }
+
+    @Override
+    public DataType getSelectType() {
+        return null;
     }
 }

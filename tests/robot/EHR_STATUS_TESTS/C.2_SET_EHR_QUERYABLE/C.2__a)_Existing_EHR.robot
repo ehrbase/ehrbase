@@ -17,8 +17,7 @@
 
 
 *** Settings ***
-Metadata    Version    0.1.0
-Metadata    Author    *Wladislaw Wagner*
+Metadata    Authors    *Wladislaw Wagner*, *Pablo Pazos*
 Metadata    Created    2019.03.03
 
 Documentation   C.2.a) Main flow: Set EHR queryable of an existing EHR
@@ -34,7 +33,8 @@ Documentation   C.2.a) Main flow: Set EHR queryable of an existing EHR
 ...             Postconditions:
 ...                 EHR_STATUS.is_queryable, for the EHR with known ehr_id, should be true
 Metadata        TOP_TEST_SUITE    EHR_STATUS
-Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
+
+Resource        ../../_resources/keywords/ehr_keywords.robot
 
 # Suite Setup  startup SUT
 # Suite Teardown  shutdown SUT

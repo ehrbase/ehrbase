@@ -25,6 +25,7 @@ import org.ehrbase.aql.definition.FromEhrDefinition;
 import org.ehrbase.aql.definition.FromForeignDataDefinition;
 import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -140,7 +141,7 @@ public class IdentifierMapper {
         return mapped.getQueryStrategy();
     }
 
-    public String getPath(String template, String symbol) {
+    public Set<String> getPath(String template, String symbol) {
         Mapper definition = mapper.get(symbol);
         if (definition == null)
             throw new IllegalArgumentException("Could not resolve identifier:" + symbol);
@@ -149,10 +150,10 @@ public class IdentifierMapper {
         if (containment instanceof Containment) {
             return ((Containment) containment).getPath(template);
         }
-        return null;
+        return Collections.emptySet();
     }
 
-    public void setPath(String template, String symbol, String path) {
+    public void setPath(String template, String symbol, Set<String> path) {
         Mapper definition = mapper.get(symbol);
         Object containment = definition.getContainer();
         if (containment instanceof Containment) {
@@ -177,7 +178,7 @@ public class IdentifierMapper {
     public String getClassName(String symbol) {
         Mapper definition = mapper.get(symbol);
         if (definition == null)
-            throw new IllegalArgumentException("Identifier is not defined in FROM/CONTAIN clause:" + symbol);
+                throw new IllegalArgumentException("Identifier is not defined in FROM/CONTAIN clause:" + symbol);
 
         Object containment = definition.getContainer();
         if (containment instanceof Containment) {
@@ -205,16 +206,16 @@ public class IdentifierMapper {
 
     public boolean requiresTemplateWhereClause() {
         boolean resolveTemplateRequired = false;
+
         for (Map.Entry map: mapper.entrySet()){
             Mapper mapper1 = (Mapper)map.getValue();
             if (mapper1.getContainer() instanceof Containment){
                 Containment containment = (Containment)mapper1.getContainer();
                 //check if this containment specifies an archetype (triggering a template resolution)
                 //f.e. COMPOSITION a [openEHR-EHR-COMPOSITION.report-result.v1] contains OBSERVATION
-                if (!containment.getClassName().equalsIgnoreCase(COMPOSITION) //anything else: OBSERVATION, EVALUATION...
-                        && containment.getArchetypeId() != null && !containment.getArchetypeId().isBlank()) //archetype is defined
-                {
-                        resolveTemplateRequired = true;
+                if (!containment.getClassName().equals(COMPOSITION) || containment.getArchetypeId() != null) {
+                    resolveTemplateRequired = true; //a composition node constrained with an archetype
+                    break;
                 }
             }
         }

@@ -18,50 +18,63 @@
 
 package org.ehrbase.service;
 
+import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rminfo.ArchieRMInfoLookup;
 import com.nedap.archie.rmobjectvalidator.RMObjectValidationMessage;
 import com.nedap.archie.rmobjectvalidator.RMObjectValidator;
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.terminology.openehr.TerminologyService;
 import org.ehrbase.validation.Validator;
-import com.nedap.archie.rm.composition.Composition;
+import org.ehrbase.validation.constraints.terminology.ExternalTerminologyValidationSupport;
 import org.ehrbase.validation.terminology.ItemStructureVisitor;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.cache.Cache;
 import javax.cache.CacheManager;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
-
 
 import static org.ehrbase.configuration.CacheConfiguration.VALIDATOR_CACHE;
 
 @Service
 public class ValidationServiceImp implements ValidationService {
 
-    private Cache<UUID, Validator> validatorCache;
-    private final I_KnowledgeCache knowledgeCache;
-    private final TerminologyService terminologyService;
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private static final Pattern NAMESPACE_PATTERN = Pattern.compile("[a-zA-Z][a-zA-Z0-9-_:/&+?]*");
-    private static final RMObjectValidator RM_OBJECT_VALIDATOR = new RMObjectValidator(ArchieRMInfoLookup.getInstance());
+
+    private static final RMObjectValidator RM_OBJECT_VALIDATOR = new RMObjectValidator(ArchieRMInfoLookup.getInstance(),s -> null);
+
+    private final I_KnowledgeCache knowledgeCache;
+
+    private final TerminologyService terminologyService;
+
+    private final Cache<UUID, Validator> validatorCache;
+
+    private ExternalTerminologyValidationSupport externalTerminologyValidator;
 
     @Autowired
-    public ValidationServiceImp(CacheManager cacheManager, I_KnowledgeCache knowledgeCache, TerminologyService terminologyService) {
+    public ValidationServiceImp(CacheManager cacheManager, I_KnowledgeCache knowledgeCache, TerminologyService terminologyService, ServerConfig serverConfig) {
         this.validatorCache = cacheManager.getCache(VALIDATOR_CACHE, UUID.class, Validator.class);
         this.knowledgeCache = knowledgeCache;
         this.terminologyService = terminologyService;
-    }
 
+        if (serverConfig.isDisableStrictValidation()) {
+            logger.warn("Disabling strict invariant validation. Caution is advised.");
+            RM_OBJECT_VALIDATOR.setRunInvariantChecks(false);
+        }
+    }
 
     @Override
     public void check(UUID templateUUID, Composition composition) throws Exception {
@@ -69,16 +82,18 @@ public class ValidationServiceImp implements ValidationService {
         //check if a validator is already in the cache
         Validator validator = validatorCache.get(templateUUID);
 
-        if (validator == null){
+        if (validator == null) {
             //create a new one for template
             Optional<OPERATIONALTEMPLATE> operationaltemplate = knowledgeCache.retrieveOperationalTemplate(templateUUID);
-            if (operationaltemplate.isEmpty()){
+            if (operationaltemplate.isEmpty()) {
                 throw new IllegalArgumentException("Not found template uuid:" + templateUUID);
             }
             validator = new Validator(operationaltemplate.get());
             //add to cache
             validatorCache.put(templateUUID, validator);
         }
+        // Set the external terminology validator
+        validator.setExternalTerminologyValidator(externalTerminologyValidator);
 
         //perform the validation
         validator.check(composition);
@@ -86,9 +101,7 @@ public class ValidationServiceImp implements ValidationService {
         //check codephrases against terminologies
         ItemStructureVisitor itemStructureVisitor = new ItemStructureVisitor(terminologyService);
         itemStructureVisitor.validate(composition);
-
     }
-
 
     @Override
     public void check(String templateID, Composition composition) throws Exception {
@@ -122,15 +135,14 @@ public class ValidationServiceImp implements ValidationService {
         //check the built composition using Archie Validator
         List<RMObjectValidationMessage> rmObjectValidationMessages = RM_OBJECT_VALIDATOR.validate(composition);
 
-        if (!rmObjectValidationMessages.isEmpty()){
+        if (!rmObjectValidationMessages.isEmpty()) {
             StringBuilder stringBuilder = new StringBuilder();
-            for (RMObjectValidationMessage rmObjectValidationMessage: rmObjectValidationMessages){
+            for (RMObjectValidationMessage rmObjectValidationMessage : rmObjectValidationMessages) {
                 stringBuilder.append(rmObjectValidationMessage.toString());
                 stringBuilder.append("\n");
             }
             throw new IllegalArgumentException(stringBuilder.toString());
         }
-
 
         check(composition.getArchetypeDetails().getTemplateId().getValue(), composition);
     }
@@ -145,9 +157,9 @@ public class ValidationServiceImp implements ValidationService {
         //first, check the built EhrStatus using the general Archie RM-Validator
         List<RMObjectValidationMessage> rmObjectValidationMessages = RM_OBJECT_VALIDATOR.validate(ehrStatus);
 
-        if (!rmObjectValidationMessages.isEmpty()){
+        if (!rmObjectValidationMessages.isEmpty()) {
             StringBuilder stringBuilder = new StringBuilder();
-            for (RMObjectValidationMessage rmObjectValidationMessage: rmObjectValidationMessages){
+            for (RMObjectValidationMessage rmObjectValidationMessage : rmObjectValidationMessages) {
                 stringBuilder.append(rmObjectValidationMessage.toString());
                 stringBuilder.append("\n");
             }
@@ -170,12 +182,15 @@ public class ValidationServiceImp implements ValidationService {
             } else if (!NAMESPACE_PATTERN.matcher(ehrStatus.getSubject().getExternalRef().getNamespace()).matches())
                 throw new ValidationException("Subject's namespace format invalid");
         }
-
     }
 
     @Override
-    public void invalidate(){
+    public void invalidate() {
         validatorCache.removeAll();
     }
 
+    @Autowired(required = false)
+    public void setExternalTerminologyValidator(ExternalTerminologyValidationSupport externalTerminologyValidator) {
+        this.externalTerminologyValidator = externalTerminologyValidator;
+    }
 }

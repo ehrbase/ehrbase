@@ -26,36 +26,10 @@ import org.ehrbase.response.ehrscape.StructuredString;
 import org.ehrbase.response.ehrscape.StructuredStringFormat;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface FolderService extends BaseService {
-
-    /**
-     * Creates a new folder entry at the database from content. The provided
-     * content from request payload will be serialized before corresponding to
-     * the given source format. The folder will be linked to the EHR addressed
-     * by the request.
-     *
-     * @param ehrId - ID for the corresponding EHR
-     * @param content - {@link com.nedap.archie.rm.directory.Folder} to persist
-     * @return UUID of the new created Folder from database
-     */
-    ObjectVersionId create(UUID ehrId, Folder content);
-
-    /**
-     * Creates a new folder entry at the database from content. The provided
-     * content from request payload will be serialized before corresponding to
-     * the given source format. The folder will be linked to the EHR addressed
-     * by the request.
-     *
-     * @param ehrId - ID for the corresponding EHR
-     * @param content - {@link com.nedap.archie.rm.directory.Folder} to persist
-     * @param contribution Optional (can be null) custom contribution to use, instead of a generic new one
-     * @return UUID of the new created Folder from database
-     */
-    ObjectVersionId create(UUID ehrId, Folder content, UUID contribution);
+public interface FolderService extends BaseService, VersionedObjectService<Folder, FolderDto> {
 
     /**
      * Retrieves a folder from database identified by object_version_uid and
@@ -90,41 +64,6 @@ public interface FolderService extends BaseService {
      * @return FolderDTO for further usage in other layers
      */
     Optional<FolderDto> getByTimeStamp(ObjectVersionId folderId, Timestamp timestamp, String path);
-
-    /**
-     * Updates a target folder entry identified by the given folderId with new
-     * content. The content string will be serialized from the given source
-     * format.
-     *
-     * @param folderId - Full version_uid for folder including system id and version
-     * @param update - Update content from request body
-     * @param ehrId - EHR id for contribution creation
-     * @return Updated folder entry
-     */
-    Optional<FolderDto> update(ObjectVersionId folderId, Folder update, UUID ehrId);
-
-    /**
-     * Updates a target folder entry identified by the given folderId with new
-     * content. The content string will be serialized from the given source
-     * format.
-     *
-     * @param folderId - Full version_uid for folder including system id and version
-     * @param update - Update content from request body
-     * @param ehrId - EHR id for contribution creation
-     * @param contribution - Optional (can be set null) custom contribution to use for this update
-     * @return Updated folder entry
-     */
-    Optional<FolderDto> update(ObjectVersionId folderId, Folder update, UUID ehrId, UUID contribution);
-
-    /**
-     * Marks a given folder as deleted and moves it into the history table. The
-     * folder will no longer be accessible without time or version information
-     * available.
-     *
-     * @param folderId - Id of the target folder
-     * @return Timestamp of successful delete operation
-     */
-    LocalDateTime delete(ObjectVersionId folderId);
 
     /**
      * Serializes folder content from request body into a structured string

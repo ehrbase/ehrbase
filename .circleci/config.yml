@@ -142,6 +142,7 @@ workflows:
             - COMPOSITION-tests-2
             - COMPOSITION-tests-3
             - COMPOSITION-tests-4
+            - COMPOSITION-tests-5
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -279,6 +280,7 @@ workflows:
             - COMPOSITION-tests-2
             - COMPOSITION-tests-3
             - COMPOSITION-tests-4
+            - COMPOSITION-tests-5
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -463,6 +465,7 @@ workflows:
             - COMPOSITION-tests-2
             - COMPOSITION-tests-3
             - COMPOSITION-tests-4
+            - COMPOSITION-tests-5
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -1001,7 +1004,8 @@ commands:
     steps:
       - run:
           command: |
-            pip install robotframework==v4.0b1
+            cd tests
+            pip install -r requirements.txt
       - run:
           name: POST PROCESS & MERGE TEST RESULTS
           when: always
@@ -1328,6 +1332,7 @@ commands:
             - projects/rest-openehr/target
             - projects/service/target
             - projects/test-coverage/target
+            - projects/tests/requirements.txt
 
  
   restore-packaged-ehrbase-jar:
@@ -1503,7 +1508,7 @@ commands:
                         -e POSTGRES_USER=$POSTGRES_USER \
                         -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD -d \
                         -e DISABLE_SECURITY=true \
-                        -p 5432:5432 ehrbase/ehrbase-postgres:11.10
+                        -p 5432:5432 ehrbase/ehrbase-postgres:13.4
 
 
   setup-file-repo:
@@ -1731,7 +1736,7 @@ commands:
     description: Save all caches in building artifacts job
     steps:
       - save_cache:
-          key: job-build-ehrbase-v1-mvn-dependencies-{{ checksum "~/projects/pom.xml" }}
+          key: job-build-ehrbase-v2-mvn-dependencies-{{ checksum "~/projects/pom.xml" }}
           paths:
             - ~/.m2/repository
 
@@ -1740,8 +1745,8 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - job-build-ehrbase-v1-mvn-dependencies-{{ checksum "~/projects/pom.xml" }}
-            - job-build-ehrbase-v1-mvn-dependencies
+            - job-build-ehrbase-v2-mvn-dependencies-{{ checksum "~/projects/pom.xml" }}
+            - job-build-ehrbase-v2-mvn-dependencies
 
   save-sonar-analysis-job-caches:
     description: Save all caches in dependency check job
@@ -1840,13 +1845,14 @@ executors:
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
-      - image: ehrbase/ehrbase-postgres:11.10
+      - image: ehrbase/ehrbase-postgres:13.4
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
         environment:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
+          PGDATA: /tmp
 
   machine-ubuntu-1604:
     description: |

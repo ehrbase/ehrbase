@@ -28,29 +28,37 @@ import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public abstract class QueryProcessorTestBase extends TestAqlBase {
+public class QueryProcessorTestBase extends TestAqlBase {
 
     protected String aql;
     protected String expectedSqlExpression;
     protected boolean expectedOutputWithJson;
 
-    @Test
-    public void testAqlSelectQuery() {
+
+    public boolean testAqlSelectQuery() {
             AqlExpression aqlExpression = new AqlExpression().parse(aql);
             Contains contains = new Contains(new AqlExpression().parse(aql).getParseTree(), knowledge).process();
             Statements statements = new Statements(aqlExpression.getParseTree(), contains.getIdentifierMapper(), null).process();
 
-            QueryProcessor cut = new QueryProcessor(testDomainAccess, knowledge.getKnowledge(), knowledge, contains, statements, "local");
+            QueryProcessor cut = new QueryProcessor(testDomainAccess, knowledge, contains, statements, "local");
 
             QueryProcessor.AqlSelectQuery actual = cut.buildAqlSelectQuery();
             // check that generated sql is expected sql
-            assertThat(removeAlias(actual.getSelectQuery().getSQL())).as(aql).isEqualToIgnoringWhitespace(removeAlias(expectedSqlExpression));
-            //check if
-            assertThat(actual.isOutputWithJson()).as(aql).isEqualTo(expectedOutputWithJson);
+            assertThat(removeLateralVarRef(removeLateralArrayRef(removeAlias(actual.getSelectQuery().getSQL())))).as(aql).isEqualToIgnoringWhitespace(removeAlias(expectedSqlExpression));
+
+            return true;
     }
 
     private String removeAlias(String s) {
         return s.replaceAll("alias_\\d+", "");
+    }
+
+    private String removeLateralArrayRef(String s) {
+        return s.replaceAll("array_\\d+_\\d+", "ARRAY");
+    }
+
+    private String removeLateralVarRef(String s) {
+        return s.replaceAll("var_\\d+_\\d+", "COLUMN");
     }
 
 //    @Test

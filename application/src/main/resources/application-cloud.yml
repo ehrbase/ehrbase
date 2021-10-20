@@ -27,7 +27,3 @@ server:
 
   servlet:
     context-path: /ehrbase
-
-system:
-  type: LOCAL
-

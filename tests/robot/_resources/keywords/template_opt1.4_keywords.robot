@@ -18,7 +18,7 @@
 
 *** Settings ***
 Documentation    OPT1.4 Specific Keywords
-Library          XML
+Resource         ../suite_settings.robot
 
 # Resource    generic_keywords.robot
 
@@ -96,10 +96,20 @@ upload OPT file
     [Documentation]     Uploads OPT file which was obtained with one of the Keywords
     ...                 `get valid OPT file` or `get invalid OPT file`
 
-    ${resp}=            Post Request         ${SUT}    /definition/template/adl1.4
+    ${resp}=            POST On Session      ${SUT}    /definition/template/adl1.4   expected_status=anything
                         ...                  data=${file}    headers=${headers}
                         Set Suite Variable    ${response}    ${resp}
                         # Log To Console      ${resp.content}
+
+
+upload OPT file with version parameter
+    # to be implemented
+    Fail    msg=Break it till you make it!
+
+
+upload same OPT with version parameter
+    # to be implemented
+    Fail    msg=Break it till you make it!
 
 
 retrieve versioned OPT
@@ -114,6 +124,11 @@ retrieve versioned OPT
     retrieve OPT by template_id         ${template_id}
     verify server response
     [Teardown]                          Clean Up Suite Variables
+
+
+verify server response
+    # to be implemented
+    Fail    msg=Brake it till you make it!
 
 
 server accepted OPT
@@ -156,6 +171,7 @@ retrieve OPT by template_id
                         Should Be Equal As Strings   ${resp.status_code}   200
     ${xml}=             Parse Xml            ${resp.text}
                         Set Suite Variable    ${actual}    ${xml}
+    [Return]    ${xml}
 
 
 verify content of OPT
@@ -224,7 +240,7 @@ upload valid template (XML)
     Create Session  ethlocal  ${baseurl}
     ${file}=  Get File  ${VALID DATA SETS}${template}
     &{headers}=  Create Dictionary  Content-Type=application/xml
-    ${resp}=  Post Request  ethlocal  /template  data=${file}  headers=${headers}
+    ${resp}=  POST On Session  ethlocal  /template  data=${file}  headers=${headers}   expected_status=anything
     Log  ${resp.json()}
     Run Keyword If   ${resp.status_code} != 201  Log  Wrong Status Code  WARN
     Run Keyword If   ${resp.status_code} != 201  Set Tags  not-ready

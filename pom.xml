@@ -20,7 +20,7 @@
     <packaging>pom</packaging>
     <groupId>org.ehrbase.openehr</groupId>
     <artifactId>server</artifactId>
-    <version>0.15.0</version>
+    <version>0.17.2</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>EHRbase is a Free, Libre, Open Source openEHR Clinical Data Repository</description>
@@ -117,9 +117,9 @@
         <maven.compiler.release>11</maven.compiler.release>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-        <commons.io.version>2.6</commons.io.version>
+        <commons.io.version>2.7</commons.io.version>
         <commons.lang3.version>3.11</commons.lang3.version>
-        <archie.version>5a4a9442e5e2516aed5f25636ac236682aace7b9</archie.version>
+        <archie.version>1.0.3</archie.version>
         <assertj.core>3.11.1</assertj.core>
         <json.path.version>2.4.0</json.path.version>
         <jooq.version>3.12.3</jooq.version>
@@ -127,20 +127,22 @@
         <keycloak.version>4.0.0.Final</keycloak.version>
         <springdoc-openapi.version>1.5.3</springdoc-openapi.version>
         <postgressql.version>42.2.18</postgressql.version>
-        <ehrbase.sdk.version>f7a75b2</ehrbase.sdk.version>
-        <flyway.version>6.5.7</flyway.version>
+        <ehrbase.sdk.version>30e3c81</ehrbase.sdk.version>
+        <flyway.version>7.11.3</flyway.version>
         <joda.version>2.10.6</joda.version>
         <database.name>ehrbase</database.name>
         <database.user>ehrbase</database.user>
         <database.pass>ehrbase</database.pass>
         <database.port>5432</database.port>
         <database.host>localhost</database.host>
-        <spring-boot.version>2.3.5.RELEASE</spring-boot.version>
+        <spring-boot.version>2.5.5</spring-boot.version>
         <jacoco.version>0.8.6</jacoco.version>
         <surefire.version>3.0.0-M5</surefire.version>
         <failsafe.version>3.0.0-M5</failsafe.version>
         <prometheus.version>1.6.1</prometheus.version>
         <antlr4.version>4.9.1</antlr4.version>
+        <javamelody.version>1.88.0</javamelody.version>
+        <json-api.version>2.0.0</json-api.version>
 
         <skipIntegrationTests>true</skipIntegrationTests>
         <include.tests>**/*Test.java</include.tests>
@@ -151,7 +153,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.3.5.RELEASE</version>
+        <version>2.5.5</version>
         <relativePath/>
         <!-- lookup parent from repository -->
     </parent>
@@ -331,6 +333,11 @@
                 <version>${spring-boot.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-security</artifactId>
+                <version>${spring-boot.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-web</artifactId>
                 <version>${spring-security.version}</version>
@@ -345,6 +352,16 @@
                 <groupId>joda-time</groupId>
                 <artifactId>joda-time</artifactId>
                 <version>${joda.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.json</groupId>
+                <artifactId>jakarta.json-api</artifactId>
+                <version>${json-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.bull.javamelody</groupId>
+                <artifactId>javamelody-spring-boot-starter</artifactId>
+                <version>${javamelody.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -362,6 +379,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <version>${spring-boot.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -622,6 +644,9 @@
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
+                    <configuration>
+                        <mainClass>org.ehrbase.application.EhrBase</mainClass>
+                    </configuration>
                     <executions>
                         <execution>
                             <id>build-info</id>

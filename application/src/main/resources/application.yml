@@ -23,18 +23,20 @@
 # E.g. if you want to allow the delete all endpoints in the admin api set an environment variable like this:
 # ADMINAPI_ALLOWDELETEALL=true
 #
-# See https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-external-config-relaxed-binding-from-environment-variables
+# See https://docs.spring.io/spring-boot/docs/2.5.0/reference/html/features.html#features.external-config.typesafe-configuration-properties.relaxed-binding.environment-variables
 # for official documentation on this feature.
+#
+# Also see the documentation on externalized configuration in general:
+# https://docs.spring.io/spring-boot/docs/2.5.0/reference/html/features.html#features.external-config
 
 spring:
   application:
-    name: ehrbase-client
+    name: ehrbase
   security:
     oauth2:
       resourceserver:
         jwt:
-          #issuer-uri: http://localhost:8081/auth/realms/ehrbase  # Example issuer URI - or set via env var
-          issuer-uri:
+          issuer-uri: # http://localhost:8081/auth/realms/ehrbase  # Example issuer URI - or set via env var
   profiles:
     active: local
   datasource:
@@ -53,6 +55,41 @@ security:
   authAdminUser: ehrbase-admin
   authAdminPassword: EvenMoreSecretPassword
 
+# Attribute Based Access Control
+abac:
+  enabled: false
+  # Server URL incl. trailing "/"!
+  server: http://localhost:3001/rest/v1/policy/execute/name/
+  # Definition of the JWT claim which contains the organization ID.
+  organizationClaim: 'organization_id'
+  # Definition of the JWT claim which contains the patient ID. Falls back to the EHR's subject.
+  patientClaim: 'patient_id'
+  # Policies need to be named and configured for each resource. Available parameters are
+  # - organization
+  # - patient
+  # - template
+  policy:
+    ehr:
+      name: 'has_consent_patient'
+      parameters: 'organization, patient'
+    ehrstatus:
+      name: 'has_consent_patient'
+      parameters: 'organization, patient'
+    composition:
+      name: 'has_consent_template'
+      parameters: 'organization, patient, template'
+      #parameters: 'template'  # for manual testing, doesn't depend on real claims in JWT
+    contribution:
+      name: 'has_consent_template'
+      parameters: 'organization, patient, template'
+    query:
+      name: 'has_consent_template'
+      parameters: 'organization, patient, template'
+
+httpclient:
+#proxy: 'localhost'
+#proxyPort: 1234
+
 cache:
   config-path: '/ehcache.xml'
   enabled: true
@@ -64,9 +101,12 @@ cache:
 system:
   allow-template-overwrite: false
 
+openehr-api:
+  context-path: /rest/openehr
 admin-api:
   active: false
   allowDeleteAll: false
+  context-path: /rest/admin
 
 logging:
   level:
@@ -88,6 +128,9 @@ server:
     # how many embedded jsonb_array_elements(..) are acceptable? Recommended == 2
     iterationScanDepth: 2
 
+  # Option to disable strict invariant validation.
+  # disable-strict-validation: true
+
 
 terminology-server:
   tsUrl: 'https://r4.ontoserver.csiro.au/fhir/'
@@ -101,7 +144,7 @@ management:
     # Disable all endpoint by default to opt-in enabled endpoints
     enabled-by-default: false
     web:
-      base-path: '/status'
+      base-path: '/management'
       exposure:
         include: 'env, health, info, metrics, prometheus'
   # Per endpoint settings
@@ -139,3 +182,22 @@ management:
     export:
       prometheus:
         enabled: true
+
+# Audit Properties
+ipf:
+  atna:
+    audit-enabled: false
+
+# External Terminology Validation Properties
+validation:
+  external-terminology:
+    enabled: false
+
+# SSL Properties (used by Spring WebClient and Apache HTTP Client)
+client:
+  ssl:
+    enabled: false
+
+# JavaMelody
+javamelody:
+  enabled: false

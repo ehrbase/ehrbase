@@ -1,4 +1,0 @@
-ipf:
-  atna:
-    audit-enabled: true
-    audit-repository-port: 3001

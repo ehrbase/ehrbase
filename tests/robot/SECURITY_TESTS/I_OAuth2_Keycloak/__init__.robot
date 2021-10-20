@@ -19,7 +19,7 @@
 *** Settings ***
 Documentation    OAuth2 / OpenID-Connect w/ Keycloak
 
-Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
+Resource    ../../_resources/suite_settings.robot
 
 Suite Setup    startup SUT
 Suite Teardown    shutdown SUT

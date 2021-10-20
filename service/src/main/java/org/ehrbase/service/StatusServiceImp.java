@@ -30,7 +30,7 @@ import java.lang.management.ManagementFactory;
 
 @Service
 @Transactional
-public class StatusServiceImp extends BaseService implements StatusService {
+public class StatusServiceImp extends BaseServiceImp implements StatusService {
 
     @Autowired
     private BuildProperties buildProperties;

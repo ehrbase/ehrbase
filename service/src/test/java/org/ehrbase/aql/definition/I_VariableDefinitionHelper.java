@@ -18,7 +18,10 @@
 
 package org.ehrbase.aql.definition;
 
+import org.jooq.DataType;
+
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -53,6 +56,31 @@ public class I_VariableDefinitionHelper {
             }
 
             @Override
+            public LateralJoinDefinition getLateralJoinDefinition(String templateId, int index) {
+                return null;
+            }
+
+            @Override
+            public int getLateralJoinsSize(String templateId) {
+                return 0;
+            }
+
+            @Override
+            public boolean isLateralJoinsEmpty(String templateId) {
+                return false;
+            }
+
+            @Override
+            public LateralJoinDefinition getLastLateralJoin(String templateId) {
+                return null;
+            }
+
+            @Override
+            public void setLateralJoinTable(String templateId, LateralJoinDefinition lateralJoinDefinition) {
+
+            }
+
+            @Override
             public boolean isDistinct() {
                 return distinct;
             }
@@ -78,8 +106,7 @@ public class I_VariableDefinitionHelper {
             }
 
             @Override
-            public I_VariableDefinition clone() throws CloneNotSupportedException {
-                super.clone();
+            public I_VariableDefinition duplicate() {
                 return I_VariableDefinitionHelper.build(path, alias, identifier, distinct, function, extension);
             }
 
@@ -101,6 +128,46 @@ public class I_VariableDefinitionHelper {
             @Override
             public void setAlias(String alias) {
 
+            }
+
+            @Override
+            public boolean isConstant() {
+                return false;
+            }
+
+            @Override
+            public boolean isLateralJoin(String templateId) {
+                return false;
+            }
+
+            @Override
+            public Set<LateralJoinDefinition> getLateralJoinDefinitions(String templateId) {
+                return null;
+            }
+
+            @Override
+            public PredicateDefinition getPredicateDefinition() {
+                return null;
+            }
+
+            @Override
+            public void setSubstituteFieldVariable(String variableAlias) {
+                // na
+            }
+
+            @Override
+            public String getSubstituteFieldVariable() {
+                return null;
+            }
+
+            @Override
+            public void setSelectType(DataType castTypeAs) {
+
+            }
+
+            @Override
+            public DataType getSelectType() {
+                return null;
             }
         };
     }

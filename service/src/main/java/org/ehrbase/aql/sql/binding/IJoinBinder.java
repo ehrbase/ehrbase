@@ -21,10 +21,6 @@
 
 package org.ehrbase.aql.sql.binding;
 
-import static org.ehrbase.jooq.pg.Tables.*;
-
-import org.ehrbase.jooq.pg.tables.records.*;
-import org.jooq.Table;
 /**
  * Created by christian on 11/1/2016.
  */

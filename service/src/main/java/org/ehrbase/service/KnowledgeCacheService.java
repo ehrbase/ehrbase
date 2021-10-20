@@ -328,7 +328,10 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     @Override
     public Optional<OPERATIONALTEMPLATE> retrieveOperationalTemplate(String key) {
         log.debug("retrieveOperationalTemplate({})", key);
-        OPERATIONALTEMPLATE template = getFromCache(key, atOptCache);
+        //CCH, 29.3.21: systematically retrieve the operational template from the DB.
+//        OPERATIONALTEMPLATE template = getFromCache(key, atOptCache);
+        OPERATIONALTEMPLATE template = null;
+
         if (template == null) {     // null if not in cache already, which triggers the following retrieval and putting into cache
             template = getOperationaltemplateFromFileStorage(key);
         }
@@ -502,19 +505,12 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
                         .collect(Collectors.toList());
             }
 
-            final String aql;
+//            final String aql;
             Set<String> uniquePaths = new TreeSet<>();
             webTemplateNodeList.stream().map(n -> n.getAqlPath(false)).forEach(uniquePaths::add);
-            if (uniquePaths.size() == 1) {
-                aql = uniquePaths.iterator().next();
-            } else if (webTemplateNodeList.size() > 1) {
-                aql = uniquePaths.iterator().next();
-                log.warn(String.format("Aql Path not unique for template %s and path %s ", templateId, nodeIds));
-            } else {
-                aql = null;
-            }
-            if (aql != null) {
-                jsonPathQueryResult = new JsonPathQueryResult(templateId, aql);
+
+            if (!uniquePaths.isEmpty()) {
+                jsonPathQueryResult = new JsonPathQueryResult(templateId, uniquePaths);
             } else {
                 //dummy result since null can not be path of a cache
                 jsonPathQueryResult = new JsonPathQueryResult(null, Collections.emptyMap());

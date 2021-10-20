@@ -22,8 +22,7 @@ Library    String
 Library    Process
 Library    OperatingSystem
 
-Resource    ${CURDIR}${/}../suite_settings.robot
-Resource    generic_keywords.robot
+Resource    ../suite_settings.robot
 Resource    template_opt1.4_keywords.robot
 Resource    ehr_keywords.robot
 Resource    composition_keywords.robot
@@ -200,8 +199,8 @@ POST /query/aql
     ...                 `${test_data}`
 
                         prepare new request session    ${format}
-    ${resp}=            Post Request        ${SUT}   /query/aql
-                        ...                 data=${test_data}
+    ${resp}=            POST On Session     ${SUT}   /query/aql   expected_status=anything
+                        ...                 json=${test_data}
                         ...                 headers=${headers}
                         Set Test Variable   ${response}    ${resp}
                         Set Test Variable   ${response body}    ${resp.content}
@@ -211,6 +210,26 @@ POST /query/aql
     # TODO: rm/comment it out when test stable
                         Log To Console  \n//////////// ACTUAL //////////////////////////////
                         Output    ${response.json()}
+
+
+POST /query/aql (REST)
+    [Arguments]         ${format}
+    [Documentation]     Executes HTTP method POST on /query/aql endpoint
+    ...                 DEPENDENCY: following variables have to be in test-level scope:
+    ...                 `${payload}`
+
+                        prepare new request session    ${format}
+    ${resp}=            REST.POST   /query/aql    ${payload}
+                        ...         headers=${headers}
+
+                        Integer    response status    200
+                        # Set Test Variable   ${response}    ${resp}
+                        # Set Test Variable   ${response body}    ${resp.content}
+    
+    # UNCOMMENT NEXT BLOCK FOR DEBUGGING (BETTER OUTPUT IN CONSOLE)
+    # TODO: rm/comment it out when test stable
+                        Log To Console  \n//////////// ACTUAL //////////////////////////////
+                        Output    response body
 
 
 POST /query/{qualified_query_name}/{version}
@@ -543,7 +562,7 @@ Populate SUT with Test-Data and Prepare Expected Results
     Commit Compo     5    ${ehr_index}    ${compo data sets}/minimal_evaluation_2.composition.json
     # Commit Compo     6    ${ehr_index}    ${compo data sets}/minimal_evaluation_3.composition.json
     # Commit Compo     7    ${ehr_index}    ${compo data sets}/minimal_evaluation_4.composition.json
-    Commit Compo     8    ${ehr_index}    ${compo data sets}/all_types.composition.json
+###    Commit Compo     8    ${ehr_index}    ${compo data sets}/all_types.composition.json
 
     Commit Compo     9    ${ehr_index}    ${compo data sets}/minimal_instruction_1.composition.json
     Commit Compo    10    ${ehr_index}    ${compo data sets}/minimal_instruction_2.composition.json

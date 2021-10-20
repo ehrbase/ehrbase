@@ -47,12 +47,13 @@ public class SuperQuery {
     private VariableDefinitions variableDefinitions;
     private SelectQuery query;
     private DSLContext context;
-    private boolean outputWithJson = true;
+    private boolean outputWithJson;
 
-    public SuperQuery(I_DomainAccess domainAccess, VariableDefinitions variableDefinitions, SelectQuery query) {
+    public SuperQuery(I_DomainAccess domainAccess, VariableDefinitions variableDefinitions, SelectQuery query, boolean containsJson) {
         this.context = domainAccess.getContext();
         this.variableDefinitions = variableDefinitions;
         this.query = query;
+        this.outputWithJson = containsJson;
     }
 
     @SuppressWarnings( "deprecation" )
@@ -61,14 +62,15 @@ public class SuperQuery {
         List<Field> fields = new ArrayList<>();
         Iterator<I_VariableDefinition> iterator = variableDefinitions.iterator();
 
+        //check if the list of variable contains at least ONE distinct statement
+        if (!variableDefinitions.hasDistinctOperator())
+            return fields;
+
         while (iterator.hasNext()) {
             I_VariableDefinition variableDefinition = iterator.next();
-            if (!variableDefinition.isDistinct()) {
-                continue;
-            }
             if (variableDefinition instanceof FunctionDefinition) {
                 StringBuilder stringBuilder = new StringBuilder();
-                for (FuncParameter funcParameter : ((FunctionDefinition) variableDefinition).getParameters()) {
+                for (FuncParameter funcParameter : variableDefinition.getFuncParameters()) {
                     stringBuilder.append(funcParameter.getValue());
                 }
                 fields.add(DSL.fieldByName(stringBuilder.toString()));

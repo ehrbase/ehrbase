@@ -25,12 +25,14 @@ package org.ehrbase.aql.sql;
 import org.ehrbase.aql.compiler.Contains;
 import org.ehrbase.aql.compiler.Statements;
 import org.ehrbase.aql.compiler.TopAttributes;
+import org.ehrbase.aql.definition.I_VariableDefinition;
+import org.ehrbase.aql.definition.LateralJoinDefinition;
 import org.ehrbase.aql.definition.Variables;
 import org.ehrbase.aql.sql.binding.*;
 import org.ehrbase.aql.sql.postprocessing.RawJsonTransform;
-import org.ehrbase.aql.sql.queryimpl.TemplateMetaData;
+import org.ehrbase.aql.sql.queryimpl.*;
+import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
-import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.service.IntrospectService;
 import org.jooq.*;
 import org.jooq.conf.Settings;
@@ -60,14 +62,15 @@ public class QueryProcessor extends TemplateMetaData {
     public static final String NIL_TEMPLATE = "*";
 
     /**
+     *
      */
     public static class AqlSelectQuery {
         private final SelectQuery<Record> selectQuery;
-        private final Collection<QuerySteps> querySteps;
+        private final Collection<List<QuerySteps>> querySteps;
         private boolean outputWithJson;
 
 
-        AqlSelectQuery(SelectQuery<Record> selectQuery, Collection<QuerySteps> querySteps, boolean outputWithJson) {
+        AqlSelectQuery(SelectQuery<Record> selectQuery, Collection<List<QuerySteps>> querySteps, boolean outputWithJson) {
             this.selectQuery = selectQuery;
             this.querySteps = querySteps;
             this.outputWithJson = outputWithJson;
@@ -81,21 +84,20 @@ public class QueryProcessor extends TemplateMetaData {
             return outputWithJson;
         }
 
-        Collection<QuerySteps> getQuerySteps() {
+        Collection<List<QuerySteps>> getQuerySteps() {
             return querySteps;
         }
     }
 
     private final I_DomainAccess domainAccess;
-    private final I_KnowledgeCache knowledgeCache;
     private final Contains contains;
     private Statements statements;
     private final String serverNodeId;
+    private JoinSetup joinSetup = new JoinSetup();
 
-    public QueryProcessor(I_DomainAccess domainAccess, I_KnowledgeCache knowledgeCache, IntrospectService introspectCache, Contains contains, Statements statements, String serverNodeId) {
+    public QueryProcessor(I_DomainAccess domainAccess, IntrospectService introspectCache, Contains contains, Statements statements, String serverNodeId) {
         super(introspectCache);
         this.domainAccess = domainAccess;
-        this.knowledgeCache = knowledgeCache;
         this.contains = contains;
         this.statements = statements;
         this.serverNodeId = serverNodeId;
@@ -108,9 +110,8 @@ public class QueryProcessor extends TemplateMetaData {
         Result<Record> result = fetchResultSet(aqlSelectQuery.getSelectQuery(), null);
 
         //if any jsonb data field transform them into raw json
-        if (aqlSelectQuery.isOutputWithJson() && knowledgeCache != null) {
-            RawJsonTransform.toRawJson(result, aqlSelectQuery.getQuerySteps());
-        }
+        RawJsonTransform.toRawJson(result);
+        DurationFormatter.toISO8601(result);
 
         List<List<String>> explainList = buildExplain(aqlSelectQuery.getSelectQuery());
 
@@ -119,19 +120,19 @@ public class QueryProcessor extends TemplateMetaData {
 
     public AqlSelectQuery buildAqlSelectQuery() {
 
-        Map<String, QuerySteps> cacheQuery = new HashMap<>();
+        Map<String, List<QuerySteps>> cacheQuery = new HashMap<>();
 
-        boolean isOutputWithJson = true;
+        boolean containsJson = false;
 
         statements = new OrderByField(statements).merge();
 
-        if (contains.getTemplates().isEmpty()){
-            if (contains.hasContains() && contains.requiresTemplateWhereClause())
+        if (contains.getTemplates().isEmpty()) {
+            if (contains.hasContains() && contains.requiresTemplateWhereClause()) {
                 cacheQuery.put(NIL_TEMPLATE, buildNullSelect(NIL_TEMPLATE));
-            else
+                containsJson = false;
+            } else
                 cacheQuery.put(NIL_TEMPLATE, buildQuerySteps(NIL_TEMPLATE));
-        }
-        else {
+        } else {
             for (String templateId : contains.getTemplates()) {
                 cacheQuery.put(templateId, buildQuerySteps(templateId));
             }
@@ -140,45 +141,60 @@ public class QueryProcessor extends TemplateMetaData {
         //assemble the query from the cache
         SelectQuery unionSetQuery = domainAccess.getContext().selectQuery();
         boolean first = true;
-        for (QuerySteps queryStep : cacheQuery.values()) {
 
-            SelectQuery select = queryStep.getSelectQuery();
+        for (List<QuerySteps> queryStepList : cacheQuery.values()) {
 
-            select.addFrom(ENTRY);
+            for (QuerySteps queryStep : queryStepList) {
 
-            if (!queryStep.getTemplateId().equalsIgnoreCase(NIL_TEMPLATE))
-                queryStep.getCompositionAttributeQuery().setUseEntry(true);
+                SelectQuery select = queryStep.getSelectQuery();
 
-            select = new JoinBinder(domainAccess, select).addJoinClause(queryStep.getCompositionAttributeQuery());
+                if (!queryStep.getTemplateId().equalsIgnoreCase(NIL_TEMPLATE))
+                    joinSetup.setUseEntry(true);
 
-            //this deals with 'contains c' which adds an implicit where on template id
-            if (!queryStep.getTemplateId().equals(NIL_TEMPLATE)) {
-                select.addConditions(ENTRY.TEMPLATE_ID.eq(queryStep.getTemplateId()));
+                JoinBinder joinBinder = new JoinBinder(domainAccess, joinSetup);
+
+                select.addFrom(joinBinder.initialFrom());
+
+                select = joinBinder.addJoinClause(select);
+
+                select = setLateralJoins(queryStep.getLateralJoins(), select);
+
+                //this deals with 'contains c' which adds an implicit where on template id
+                if (!queryStep.getTemplateId().equals(NIL_TEMPLATE)) {
+                    select.addConditions(ENTRY.TEMPLATE_ID.eq(queryStep.getTemplateId()));
+                }
+                Condition whereCondition = queryStep.getWhereCondition();
+                if (whereCondition != null)
+                    select.addConditions(Operator.AND, whereCondition);
+
+                //for lateral joins used in SELECT add a condition to eliminate null from cartesian product
+                Condition lateralDerivedCondition = lateralCartesianNotNullConditions(queryStep.getLateralJoins());
+
+                if (lateralDerivedCondition != null)
+                    select.addConditions(Operator.AND, lateralDerivedCondition);
+
+                if (first) {
+                    unionSetQuery = select;
+                    first = false;
+                } else
+                    unionSetQuery.union(select);
+
             }
-            Condition condition = queryStep.getWhereCondition();
-            if (condition != null)
-                select.addConditions(Operator.AND, condition);
-
-            if (first) {
-                unionSetQuery = select;
-                first = false;
-            } else
-                unionSetQuery.unionAll(select);
 
         }
 
 
         // Add function or Distinct
+        SuperQuery superQuery = new SuperQuery(domainAccess, statements.getVariables(), unionSetQuery, containsJson);
         if (new Variables(statements.getVariables()).hasDefinedDistinct() || new Variables(statements.getVariables()).hasDefinedFunction()) {
-            SuperQuery superQuery = new SuperQuery(domainAccess, statements.getVariables(), unionSetQuery);
             unionSetQuery = superQuery.select();
-            if (statements.getOrderAttributes() != null && !statements.getOrderAttributes().isEmpty()){
+            if (statements.getOrderAttributes() != null && !statements.getOrderAttributes().isEmpty()) {
                 unionSetQuery = superQuery.setOrderBy(statements.getOrderAttributes(), unionSetQuery);
             }
-            isOutputWithJson = superQuery.isOutputWithJson();
-        }
-        else if (statements.getOrderAttributes() != null && !statements.getOrderAttributes().isEmpty()) {
-            unionSetQuery = new SuperQuery(domainAccess, statements.getVariables(), unionSetQuery).selectOrderBy(statements.getOrderAttributes());
+            containsJson = superQuery.isOutputWithJson();
+        } else if (statements.getOrderAttributes() != null && !statements.getOrderAttributes().isEmpty()) {
+            unionSetQuery = superQuery.selectOrderBy(statements.getOrderAttributes());
+            containsJson = superQuery.isOutputWithJson();
         }
 
         // Add Top , Limit or Offset; Top and Limit can not be both present.
@@ -189,40 +205,183 @@ public class QueryProcessor extends TemplateMetaData {
 
         unionSetQuery = limitBinding.bind();
 
-        if (!isOutputWithJson) //superceded by aggregate
-            return new AqlSelectQuery(unionSetQuery, cacheQuery.values(), isOutputWithJson);
-        else
-            return new AqlSelectQuery(unionSetQuery, cacheQuery.values(), cacheQuery.values().stream().anyMatch(QuerySteps::isContainsJson));
+        return new AqlSelectQuery(unionSetQuery, cacheQuery.values(), containsJson);
     }
 
-    private QuerySteps buildQuerySteps(String templateId) {
+    private Condition lateralCartesianNotNullConditions(List<LateralJoinDefinition> lateralJoins) {
+
+        Condition conditions = null;
+
+        for (Iterator<LateralJoinDefinition> joins = lateralJoins.iterator(); joins.hasNext();){
+            LateralJoinDefinition lateralJoinDefinition = joins.next();
+            if (lateralJoinDefinition.getClause().equals(IQueryImpl.Clause.SELECT)) {
+                Condition condition = DSL.field(lateralJoinDefinition.getTable().getName()+"."+lateralJoinDefinition.getLateralVariable()).isNotNull();
+                if (conditions == null)
+                    conditions = condition;
+                else
+                    conditions = conditions.and(condition);
+            }
+        }
+
+        return conditions;
+    }
+
+    private List<QuerySteps> buildQuerySteps(String templateId) {
+
+        List<QuerySteps> queryStepsList = new ArrayList<>();
+
+        // process WHERE clause first
+        WhereMultiFields whereMultiFields = new WhereMultiFields(domainAccess, introspectCache, contains, statements.getWhereClause(), serverNodeId);
+        MultiFieldsMap multiWhereFieldsMap = new MultiFieldsMap(whereMultiFields.bind(templateId));
+        joinSetup = joinSetup.merge(whereMultiFields.getJoinSetup());
+
+        // process SELECT and check to reconciliate where and select columns
         SelectBinder selectBinder = new SelectBinder(domainAccess, introspectCache, contains, statements, serverNodeId);
+        MultiFieldsMultiMap multiSelectFieldsMap = new MultiFieldsMultiMap(selectBinder.bind(templateId));
+        joinSetup = joinSetup.merge(selectBinder.getCompositionAttributeQuery().getJoinSetup());
 
-        SelectQuery<?> select = selectBinder.bind(templateId);
-        return new QuerySteps(select,
-                selectBinder.getWhereConditions(templateId),
-                templateId,
-                selectBinder.getCompositionAttributeQuery(),
-                selectBinder.getJsonDataBlock(), selectBinder.containsJQueryPath());
+        int selectCursor = 0;
+        int whereCursor = 0;
+
+        int selectCursorMax = multiSelectFieldsMap.upperPathBoundary();
+        int whereCursorMax = multiWhereFieldsMap.upperPathBoundary();
+
+
+        //build the actual sets of fields depending on the generated multi fields
+        //...
+
+        SelectQuery<?> select = domainAccess.getContext().selectQuery();
+
+
+        while (whereCursorMax == 0 || whereCursor < whereCursorMax) {
+
+            //iterate on variable
+            while (selectCursor < selectCursorMax) {
+                //iterate on paths for the variable
+                for (Iterator<MultiFields> it = multiSelectFieldsMap.multiFieldsIterator(); it.hasNext(); ) {
+                    MultiFields multiSelectFields = it.next();
+                    select.addSelect(multiSelectFields.getQualifiedFieldOrLast(selectCursor).getSQLField());
+                }
+
+                Condition condition = selectBinder.getWhereConditions(templateId, whereCursor, multiWhereFieldsMap, multiSelectFieldsMap);
+                if (condition != null && condition.equals(DSL.falseCondition()))
+                    break; //do not add since it is always false
+
+                List<LateralJoinDefinition> joins = new ArrayList<>();
+
+                joins.addAll(lateralJoinsSelectClause(NIL_TEMPLATE, 0)); //composition attributes
+                if (!templateId.equals(NIL_TEMPLATE)) {
+                    joins.addAll(lateralJoinsSelectClause(templateId, selectCursor)); //select clause fields
+                    joins.addAll(lateralJoinsWhereClause(templateId, whereCursor)); //where clause fields
+                }
+
+                //check whether the *same* query step is already in the list
+                QuerySteps querySteps = new QuerySteps(
+                        select,
+                        condition,
+                        joins,
+                        templateId
+                );
+                if (QuerySteps.isIncludedInList(querySteps, queryStepsList)) {
+                    //re-initialize select
+                    selectCursor++;
+                    select = domainAccess.getContext().selectQuery();
+
+                    continue;
+                }
+
+                queryStepsList.add(querySteps);
+                selectCursor++;
+                //re-initialize select
+                select = domainAccess.getContext().selectQuery();
+            }
+            if (whereCursorMax == 0) //no where clause
+                break;
+            whereCursor++;
+            selectCursor = 0;
+            //re-initialize select
+            select = domainAccess.getContext().selectQuery();
+
+        }
+        return queryStepsList;
     }
 
-    private QuerySteps buildNullSelect(String templateId) {
-        SelectBinder selectBinder = new SelectBinder(domainAccess, introspectCache, contains, statements, serverNodeId);
+    private SelectQuery<?> setLateralJoins(List<LateralJoinDefinition> lateralJoins, SelectQuery<?> selectQuery) {
+        if (lateralJoins == null)
+            return selectQuery;
 
-        SelectQuery<?> select = selectBinder.bind(templateId);
-        return new QuerySteps(select,
-                DSL.condition("1 = 0"),
-                templateId,
-                selectBinder.getCompositionAttributeQuery(),
-                selectBinder.getJsonDataBlock(), selectBinder.containsJQueryPath());
+        for (LateralJoinDefinition lateralJoinDefinition : lateralJoins) {
+            if (lateralJoinDefinition.getCondition() == null)
+                selectQuery.addJoin(lateralJoinDefinition.getTable(), lateralJoinDefinition.getJoinType());
+            else
+                selectQuery.addJoin(lateralJoinDefinition.getTable(), lateralJoinDefinition.getJoinType(), lateralJoinDefinition.getCondition());
+        }
+
+        return selectQuery;
     }
 
+
+    private List<LateralJoinDefinition> lateralJoinsSelectClause(String templateId, int cursor) {
+        List<LateralJoinDefinition> lateralJoinsList = new ArrayList<>();
+
+        //traverse the lateral joins derived from SELECT clause
+        for (VariableDefinitions it = statements.getVariables(); it.hasNext(); ) {
+            Object item = it.next();
+            if (item instanceof I_VariableDefinition && ((I_VariableDefinition) item).isLateralJoin(templateId)) {
+                Set<LateralJoinDefinition> listOfLaterals = ((I_VariableDefinition)item).getLateralJoinDefinitions(templateId);
+                int index = cursor < listOfLaterals.size() ? cursor : listOfLaterals.size() - 1;
+                LateralJoinDefinition encapsulatedLateralJoinDefinition =
+                        ((I_VariableDefinition)item).getLateralJoinDefinition(templateId, index);
+                LateralJoinDefinition lateralJoinDefinition = new LateralJoinDefinition(
+                        encapsulatedLateralJoinDefinition.getSqlExpression(),
+                        DSL.lateral(encapsulatedLateralJoinDefinition.getTable()),
+                        encapsulatedLateralJoinDefinition.getLateralVariable(),
+                        encapsulatedLateralJoinDefinition.getJoinType(),
+                        encapsulatedLateralJoinDefinition.getCondition(),
+                        encapsulatedLateralJoinDefinition.getClause()
+                );
+                lateralJoinsList.add(lateralJoinDefinition);
+            }
+        }
+
+       return lateralJoinsList;
+    }
+
+    private List<LateralJoinDefinition> lateralJoinsWhereClause(String templateId, int cursor) {
+        List<LateralJoinDefinition> lateralJoinsList = new ArrayList<>();
+
+        for (Object item : statements.getWhereClause()) {
+            if (item instanceof I_VariableDefinition && ((I_VariableDefinition) item).isLateralJoin(templateId)) {
+                if (((I_VariableDefinition) item).getLateralJoinDefinitions(templateId) == null)
+                    throw new IllegalStateException("unresolved lateral join for template:"+templateId+", path:"+((I_VariableDefinition) item).getPath());
+
+                else if (cursor > ((I_VariableDefinition) item).getLateralJoinDefinitions(templateId).size() - 1)
+                    continue;
+                //check if lateral join is borrowed from SELECT clause, if so, don't add
+                else if (((I_VariableDefinition) item).getLateralJoinDefinition(templateId, cursor).getClause().equals(IQueryImpl.Clause.SELECT))
+                    continue;
+
+                lateralJoinsList.add(
+                        new LateralJoinDefinition(
+                                ((I_VariableDefinition) item).getLateralJoinDefinition(templateId, cursor).getSqlExpression(),
+                                DSL.lateral(((I_VariableDefinition) item).getLateralJoinDefinition(templateId, cursor).getTable()),
+                                ((I_VariableDefinition)item).getSubstituteFieldVariable(),
+                                JoinType.JOIN,
+                                null,
+                                IQueryImpl.Clause.WHERE
+                        )
+                );
+            }
+        }
+
+        return lateralJoinsList;
+    }
 
     private Result<Record> fetchResultSet(Select<?> select, Result<Record> result) {
         Result<Record> intermediary;
         try {
             intermediary = (Result<Record>) select.fetch();
-        } catch (Exception e){
+        } catch (Exception e) {
 
             String reason = "Could not perform SQL query:" + e.getCause() +
                     ", AQL expression:" +
@@ -251,5 +410,17 @@ public class QueryProcessor extends TemplateMetaData {
         }
         explainList.add(details);
         return explainList;
+    }
+
+    private List<QuerySteps> buildNullSelect(String templateId) {
+
+        List<QuerySteps> queryStepsList = buildQuerySteps(templateId);
+
+        //force a null condition for these steps
+        for (QuerySteps querySteps: queryStepsList){
+            querySteps.setWhereCondition(DSL.condition("1 = 0"));
+        }
+
+        return queryStepsList;
     }
 }

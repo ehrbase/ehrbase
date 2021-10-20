@@ -34,19 +34,20 @@ server:
     # if true, WHERE clause is using jsquery, false uses SQL only
     useJsQuery: false
     # ignore unbounded item in path starting with one of
-    ignoreIterativeNodeList: 'activities,content'
+    ignoreIterativeNodeList: 'dummy'
     # how many embedded jsonb_array_elements(..) are acceptable? Recommended == 2
-    iterationScanDepth: 2
+    iterationScanDepth: 20
 
 security:
   authType: NONE
 
-system:
-  type: LOCAL
+#use admin for cleaning up the db during tests
+admin-api:
+  active: true
+  allowDeleteAll: true
 
 terminology_server:
   tsUrl: 'https://r4.ontoserver.csiro.au/fhir/'
   codePath: '$["expansion"]["contains"][*]["code"]'
   systemPath: '$["expansion"]["contains"][*]["system"]'
   displayPath: '$["expansion"]["contains"][*]["display"]'
-

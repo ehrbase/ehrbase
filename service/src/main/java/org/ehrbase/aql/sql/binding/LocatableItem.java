@@ -17,103 +17,38 @@
  */
 package org.ehrbase.aql.sql.binding;
 
-import com.nedap.archie.rm.datavalues.DataValue;
-import com.nedap.archie.rminfo.ArchieRMInfoLookup;
-import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.aql.definition.I_VariableDefinition;
-import org.ehrbase.aql.sql.queryimpl.*;
-import org.jooq.Field;
-import org.jooq.impl.DSL;
-
-import java.util.Objects;
+import org.ehrbase.aql.sql.queryimpl.CompositionAttributeQuery;
+import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
+import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
+import org.ehrbase.aql.sql.queryimpl.MultiFields;
 
 /**
  * evaluate the SQL expression for locatables in the ITEM_STRUCTURE: OBSERVATION, INSTRUCTION, CLUSTER etc.
  * NB. At the moment, direct resolution of ELEMENT is not supported.
  */
-@SuppressWarnings({"java:S3776","java:S3740","java:S1452"})
+@SuppressWarnings({"java:S3776", "java:S3740", "java:S1452"})
 public class LocatableItem {
 
     private final CompositionAttributeQuery compositionAttributeQuery;
     private final JsonbEntryQuery jsonbEntryQuery;
-    private boolean containsJsonDataBlock;
-    private String jsonbItemPath;
-    private String optionalPath;
-    private String rootJsonKey;
     private IQueryImpl.Clause clause;
 
-    public LocatableItem(CompositionAttributeQuery compositionAttributeQuery, JsonbEntryQuery jsonbEntryQuery,  IQueryImpl.Clause clause) {
+    public LocatableItem(CompositionAttributeQuery compositionAttributeQuery, JsonbEntryQuery jsonbEntryQuery, IQueryImpl.Clause clause) {
         this.compositionAttributeQuery = compositionAttributeQuery;
         this.jsonbEntryQuery = jsonbEntryQuery;
         this.clause = clause;
     }
 
-    public Field<?> toSql(String templateId, I_VariableDefinition variableDefinition, String className){
-        Field<?> field;
+    public MultiFields toSql(String templateId, I_VariableDefinition variableDefinition) {
+        MultiFields multiFields;
 
-        field = jsonbEntryQuery.makeField(templateId, variableDefinition.getIdentifier(), variableDefinition, clause);
-        jsonbItemPath = jsonbEntryQuery.getJsonbItemPath();
-        containsJsonDataBlock |= jsonbEntryQuery.isJsonDataBlock();
-        if (jsonbEntryQuery.isJsonDataBlock() ) {
+        multiFields = jsonbEntryQuery.makeField(templateId, variableDefinition.getIdentifier(), variableDefinition, clause);
 
-            if (jsonbEntryQuery.getItemType() != null){
-                Class itemClass = ArchieRMInfoLookup.getInstance().getClass(jsonbEntryQuery.getItemType());
+        if (multiFields == null)
+            return MultiFields.asNull(variableDefinition, templateId, clause);
 
-                if (itemClass == null && className != null) //this may occur f.e. for itemType 'MULTIPLE'. try we classname
-                    itemClass = ArchieRMInfoLookup.getInstance().getClass(className);
-
-                if (DataValue.class.isAssignableFrom(itemClass)) {
-                    VariableAqlPath variableAqlPath = new VariableAqlPath(variableDefinition.getPath());
-                    if (variableAqlPath.getSuffix().equals("value")){
-                        if (Objects.equals(className, "COMPOSITION")) { //assumes this is a data value within an ELEMENT
-                            try {
-                                I_VariableDefinition variableDefinition1 = variableDefinition.clone();
-                                variableDefinition1.setPath(variableAqlPath.getInfix());
-                                field = jsonbEntryQuery.makeField(templateId, variableDefinition.getIdentifier(), variableDefinition1, clause);
-                                jsonbItemPath = jsonbEntryQuery.getJsonbItemPath();
-                                rootJsonKey = variableAqlPath.getSuffix();
-                            } catch (CloneNotSupportedException e) {
-                                throw new InternalServerException("Couldn't handle variable:" + variableDefinition.toString() + "Code error:" + e);
-                            }
-                        }
-                        else if (jsonbEntryQuery.getItemCategory().equals("ELEMENT") || jsonbEntryQuery.getItemCategory().equals("CLUSTER")){
-                            int cut = jsonbItemPath.lastIndexOf(",/value");
-                            if (cut != -1)
-                                //we keep the path that select the json element value block, and call the formatting function
-                                //to pass the actual value datatype into the json block
-                                field = DSL.field("(ehr.js_typed_element_value(" + jsonbItemPath.substring(0, cut) + "}')::jsonb))");
-
-                            if (clause.equals(IQueryImpl.Clause.SELECT)) {
-                                String alias = variableDefinition.getAlias();
-                                if (alias == null)
-                                    alias = DefaultColumnId.value(variableDefinition);
-                                field = field.as(alias);
-                            }
-                        }
-                    }
-
-                }
-            }
-            else
-                throw new IllegalStateException("Internal: unsupported item type for:"+variableDefinition);
-        }
-        return field;
-    }
-
-    public boolean isContainsJsonDataBlock() {
-        return containsJsonDataBlock;
-    }
-
-    public String getJsonbItemPath() {
-        return jsonbItemPath;
-    }
-
-    public String getOptionalPath() {
-        return optionalPath;
-    }
-
-    public String getRootJsonKey() {
-        return rootJsonKey;
+        return multiFields;
     }
 
     public void setUseEntry() {

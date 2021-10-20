@@ -32,7 +32,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface CompositionService extends BaseService {
+public interface CompositionService extends BaseService, VersionedObjectService<Composition, CompositionDto> {
     /**
      * @param compositionId The {@link UUID} of the composition to be returned.
      * @param version       The version to returned. If null return the latest
@@ -65,97 +65,6 @@ public interface CompositionService extends BaseService {
      */
     StructuredString serialize(CompositionDto composition, CompositionFormat format);
 
-    /**
-     * Overloaded wrapper function to create composition with minimal set of input. TemplateID is read from composition content.
-     *
-     * @param ehrId - Target EHR
-     * @param content - String representation of content
-     * @param format - Format of data within the string representation
-     * @return - UUID of new created composition entry
-     * @throws InternalServerException
-     */
-    UUID create(UUID ehrId, String content, CompositionFormat format);
-
-    /**
-     * Creates a deserialized representation of the composition data from
-     * source format and stores these data into the corresponding tables.
-     *
-     * @param ehrId      - Target EHR
-     * @param content    - String representation of content
-     * @param format     - Format of data within the string representation
-     * @param templateId - Template id for usage with Marand's composition converter
-     * @param linkUid    - UUID of link for compo_xref entry master
-     * @return - UUID of new created composition entry
-     * @throws InternalServerException
-     */
-    UUID create(UUID ehrId, String content, CompositionFormat format, String templateId, UUID linkUid);
-
-    /**
-     * Creates a composition which will be connected to the given existing contribution. Unlike with the general create() methods, where
-     * the contribution will be created ad hoc.
-     * @param ehrId Target EHR
-     * @param composition Composition as RM object
-     * @param contributionId ID of the contribution this composition is part of
-     * @return UUID of newly created composition
-     * @throws InternalServerException when creation failed
-     */
-    UUID create(UUID ehrId, Composition composition, UUID contributionId);
-
-    /**
-     * Overloaded wrapper function to update composition with minimal set of input. TemplateID is read from composition content.
-     *
-     * @param compositionId
-     * @param format
-     * @param content
-     * @return Versioned id string of updated composition
-     * @throws InternalServerException when updating failed
-     * @throws ObjectNotFoundException when targeted composition couldn't be found
-     */
-    String update(UUID compositionId, CompositionFormat format, String content);
-
-    /**
-     * Updates an existing composition entry with new data. Implicitly created new contribution ad-hoc.
-     *
-     * @param compositionId - Target composition UUID to update
-     * @param format        - Source format of content
-     * @param content       - String representation of payload data
-     * @param templateId    - Corresponding template id
-     * @return - Versioned id string of updated composition
-     * @throws InternalServerException when updating failed
-     * @throws ObjectNotFoundException when targeted composition couldn't be found
-     */
-    String update(UUID compositionId, CompositionFormat format, String content, String templateId);
-
-    /**
-     * Updates a composition which will be connected to the given existing contribution. Unlike with the general update() methods, where
-     * the contribution will be created ad hoc.
-     * @param compositionId Target composition UUID to update
-     * @param composition Composition as RM object
-     * @param contributionId ID of the contribution this composition is part of
-     * @return Versioned id string of updated composition
-     * @throws InternalServerException when updating failed
-     * @throws ObjectNotFoundException when targeted composition couldn't be found
-     */
-    String update(UUID compositionId, Composition composition, UUID contributionId);
-
-    /**
-     * Deletes a composition, i.e. creates a new version with deleted status. Return time of deletion.
-     * @param compositionId - Target composition UUID
-     * @return Time of deletion on database level
-     * @throws ObjectNotFoundException  when targeted composition couldn't be found
-     * @throws InternalServerException when deletion failed
-     */
-    LocalDateTime delete(UUID compositionId);
-
-    /**
-     * Deletes a composition which will be connected to the given existing contribution. Unlike with the general delete() methods, where
-     * the contribution will be created ad hoc.
-     * @param compositionId Target composition UUID
-     * @param contributionId Custom contribution UUID
-     * @return Time of deletion, if successful
-     */
-    LocalDateTime delete(UUID compositionId, UUID contributionId);
-
     Integer getLastVersionNumber(UUID compositionId);
 
     /**
@@ -165,6 +74,14 @@ public interface CompositionService extends BaseService {
      * @return The UUID or null when not available.
      */
     String getUidFromInputComposition(String content, CompositionFormat format);
+
+    /**
+     * Helper function to read the template ID from given composition input in stated format.
+     * @param content Composition input
+     * @param format Composition format
+     * @return The UUID or null when not available.
+     */
+    String getTemplateIdFromInputComposition(String content, CompositionFormat format);
 
     /**
      * Gets the version of a composition that is closest in time before timestamp
@@ -217,4 +134,6 @@ public interface CompositionService extends BaseService {
      * @return Original Version container class representation.
      */
     Optional<OriginalVersion<Composition>> getOriginalVersionComposition(UUID versionedObjectUid, int version);
+
+    Composition buildComposition(String content, CompositionFormat format, String templateId);
 }

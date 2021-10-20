@@ -24,7 +24,7 @@ Metadata    Updated    2020.07.14
 
 Documentation  Testing authentication with Keycloak OAuth Server
 
-Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
+Resource        ../../_resources/suite_settings.robot
 
 
 
@@ -161,6 +161,13 @@ Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
         Integer         response status    401
 
 
+08 Private resources are available with valid token
+        Set Headers     { "Authorization": "Bearer ${ACCESS_TOKEN}" }
+        REST.GET        ${BASEURL}/ehr/cd05e77d-63f8-4074-9937-80c4d4406bff
+                        Output
+        Integer         response status    404
+
+
 # 7) Private resources are available after auth
 #    This is tested by reusing existing tests with changed settings on the CI 
 #    For details check .circleci/config.yml --> search "SECURITY-test"
@@ -173,7 +180,7 @@ Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
 Request Access Token
                         Create Session    keycloak   ${KEYCLOAK_URL}   verify=${False}    debug=3
     &{headers}=         Create Dictionary    Content-Type=application/x-www-form-urlencoded
-    ${resp}=            Post Request    keycloak   /realms/ehrbase/protocol/openid-connect/token
+    ${resp}=            POST On Session    keycloak   /realms/ehrbase/protocol/openid-connect/token   expected_status=anything
                         ...             data=${OAUTH_ACCESS_GRANT}   headers=${headers}
                         # NOTE: ${OAUTH_ACCESS_GRANT} comes from variables file: sut_config.py
                         Set Test Variable    ${response}    ${resp}

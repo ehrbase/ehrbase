@@ -18,12 +18,15 @@
 
 *** Settings ***
 Metadata    Version    0.1.0
-Metadata    Author    *Wladislaw Wagner*
-Metadata    Author    *Jake Smolka*
+Metadata    Authors    *Wladislaw Wagner*, *Jake Smolka*
 Metadata    Created    2020.09.01
 
 Metadata        TOP_TEST_SUITE    ADMIN_DIRECTORY
-Resource        ${EXECDIR}/robot/_resources/suite_settings.robot
+
+Resource        ../_resources/keywords/admin_keywords.robot
+Resource        ../_resources/keywords/ehr_keywords.robot
+Resource        ../_resources/keywords/composition_keywords.robot
+Resource        ../_resources/keywords/directory_keywords.robot
 
 Suite Setup     startup SUT
 Suite Teardown  shutdown SUT
@@ -52,8 +55,8 @@ ADMIN - Delete Directory
     create DIRECTORY (JSON)    subfolders_in_directory.json
     ${versioned_uid}=   Fetch From Left  ${version_uid}  ::
     Set Test Variable  ${folder_versioned_uid}  ${versioned_uid}
-    # Execute admin delete EHR
-    admin delete directory
+    # Execute (admin) delete ehr
+    (admin) delete directory
     Log To Console  ${response}
     # Test with count rows again - post check
     check directory admin delete table counts
@@ -69,18 +72,6 @@ startup SUT
     Set Environment Variable    ADMINAPI_ACTIVE    true
     Set Environment Variable    SYSTEM_ALLOWTEMPLATEOVERWRITE    true
     generic_keywords.startup SUT
-
-
-admin delete directory
-    [Documentation]     Admin delete of Directory.
-    ...                 Needs manualle created `${folder_versioned_uid}`.
-
-
-    &{resp}=            REST.DELETE    ${baseurl}/admin/ehr/${ehr_id}/directory/${folder_versioned_uid}
-                        # Should Be Equal As Strings   ${resp.status}   204
-                        Integer    response status   204
-                        Set Test Variable    ${response}    ${resp}
-                        Output Debug Info To Console
 
 
 check directory admin delete table counts initially

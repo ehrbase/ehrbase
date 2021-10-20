@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.ehrbase.aql.sql.queryimpl.attribute.GenericJsonPath.OTHER_DETAILS;
+import static org.ehrbase.aql.sql.queryimpl.attribute.GenericJsonPath.OTHER_CONTEXT;
 import static org.ehrbase.serialisation.dbencoding.CompositionSerializer.TAG_UID;
 
 /**
@@ -43,6 +45,7 @@ public class EntryAttributeMapper {
     public static final String NAME = "name";
     public static final String TIME = "time";
     public static final String ORIGIN = "origin";
+    public static final String TIMING = "timing";
     public static final String OTHER_PARTICIPATIONS = "other_participations";
     public static final String SLASH_VALUE = "/value";
     public static final String VALUE = "value";
@@ -74,10 +77,14 @@ public class EntryAttributeMapper {
      * @return
      */
     public static String map(String attribute) {
+        if (attribute.equals(OTHER_CONTEXT))
+            return OTHER_CONTEXT; //conventionally
+
         List<String> fields = new ArrayList<>();
 
         fields.addAll(Arrays.asList(attribute.split(SLASH)));
-        fields.remove(0);
+        if (!fields.get(0).equals(OTHER_CONTEXT))
+            fields.remove(0);
 
         int floor = 1;
 
@@ -85,16 +92,7 @@ public class EntryAttributeMapper {
             return null; //this happens when a non specified value is queried f.e. the whole json body
 
         //deals with the tricky ones first...
-        if (fields.get(0).equals(ISM_TRANSITION)) {
-            //get the next key and concatenate...
-            String subfield = fields.get(1);
-            fields.remove(0);
-            fields.set(0, ISM_TRANSITION + SLASH + subfield);
-            if (!fields.get(1).equals(NAME)) {
-                fields.add(1, SLASH_VALUE);
-            }
-            floor = 2;
-        } else if (fields.get(0).equals(OTHER_PARTICIPATIONS)) { //insert a tag value
+        if (fields.get(0).equals(OTHER_PARTICIPATIONS)) { //insert a tag value
             fields.set(0, OTHER_PARTICIPATIONS);
             fields.add(1, "0");
             fields.add(2, SLASH_VALUE);
@@ -103,10 +101,13 @@ public class EntryAttributeMapper {
             fields.add(1, "0"); //name is now formatted as /name -> array of values! Required to deal with cluster items
         } else if (fields.size() >= 2 && fields.get(1).equals(MAPPINGS)) {
             fields.add(2, "0"); //mappings is now formatted as /mappings -> array of values!
-        }else if (fields.get(0).equals(TIME) || fields.get(0).equals(ORIGIN)) {
+        }else if (fields.get(0).equals(TIME) || fields.get(0).equals(ORIGIN) || fields.get(0).equals(TIMING)) {
             if (fields.size() > 1 && fields.get(1).equals(VALUE)) {
                 fields.add(VALUE); //time is formatted with 2 values: string value and epoch_offset
                 fields.set(1, SLASH_VALUE);
+            }
+            else {
+                fields.add(1, SLASH_VALUE);
             }
         } else if (LocatableAttributes.isLocatableAttribute("/"+fields.get(0))){
             fields = setLocatableField(fields);
@@ -117,13 +118,9 @@ public class EntryAttributeMapper {
             Integer match = firstOccurence(0, fields, VALUE);
 
             if (match != null) { //deals with "/value/value"
-                Integer ndxInterval;
-
-                if ((ndxInterval = intervalValueIndex(fields)) > 0) { //interval
-                    fields.add(ndxInterval, INTERVAL);
-                } else if (match != 0) {
+                if (match != 0) {
                     //deals with name/value (name value is contained into a list conventionally)
-                    if (match > 1 && fields.get(match - 1).matches("name|time"))
+                    if (match > 1 && fields.get(match - 1).matches("name|time|current_state|transition|careflow_step|reason|terminology_id"))
                         fields.set(match, VALUE);
                     else
                         //usual /value
@@ -137,12 +134,6 @@ public class EntryAttributeMapper {
             }
         }
 
-        //deals with snake vs camel case
-        boolean useCamelCase = true;
-
-        if (FEEDER_AUDIT.equalsIgnoreCase(fields.get(0)))
-            useCamelCase = false;
-
         //prefix the first element
         fields.set(0, SLASH + fields.get(0));
 
@@ -154,26 +145,37 @@ public class EntryAttributeMapper {
                 fields.set(i, "/name,0");
             }
             else
-                fields.set(i, useCamelCase ? NodeIds.toCamelCase(fields.get(i)) : fields.get(i));
+                fields.set(i, fields.get(i));
 
         }
 
         return StringUtils.join(fields, COMMA);
     }
 
-    private static Integer intervalValueIndex(List<String> fields) {
-        for (int i = 0; i < fields.size(); i++) {
-            if (fields.get(i).matches("^lower|^upper")) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
     private static List<String> setLocatableField(List<String> fields){
         if (("/"+fields.get(0)).equals(TAG_UID)){
             fields.add(1, SLASH_VALUE);
         }
+
+        boolean inItemStruct = false;
+        boolean inNameAttribute = false;
+
+        for (int i = 0; i < fields.size(); i++) {
+            if (fields.get(i).contains("[") && !fields.get(i).startsWith(OTHER_DETAILS)) {
+                fields.set(i, "/"+fields.get(i));
+                inItemStruct = true;
+            }
+            if (fields.get(i).equals(NAME)){
+                inNameAttribute = true;
+            }
+            if (fields.get(i).equals(VALUE) && inItemStruct){
+                fields.set(i, (inNameAttribute ? "" : "/")+fields.get(i));
+                if (inNameAttribute)
+                    inNameAttribute = false;
+                inItemStruct = false;
+            }
+        }
+
         return fields;
     }
 

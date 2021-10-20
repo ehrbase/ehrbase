@@ -126,4 +126,20 @@ public class JoinSetup {
     public boolean isUseEntry() {
         return useEntry;
     }
+    
+    public JoinSetup merge(JoinSetup anotherJoinSetup){
+        joinComposition = joinComposition || anotherJoinSetup.isJoinComposition();
+        joinComposer = joinComposer || anotherJoinSetup.isJoinComposer();
+        joinEventContext = joinEventContext || anotherJoinSetup.isJoinEventContext();
+        joinSubject = joinSubject || anotherJoinSetup.isJoinSubject();
+        joinEhr = joinEhr || anotherJoinSetup.isJoinEhr();
+        joinEhrStatus = joinEhrStatus || anotherJoinSetup.isJoinEhrStatus();
+        joinComposer = joinComposer || anotherJoinSetup.joinComposer;
+        joinContextFacility = joinContextFacility || anotherJoinSetup.isJoinContextFacility();
+        joinSystem = joinSystem || anotherJoinSetup.isJoinSystem();
+        containsEhrStatus = containsEhrStatus || anotherJoinSetup.isContainsEhrStatus();
+        useEntry = useEntry || anotherJoinSetup.isUseEntry();
+        
+        return this;
+    }
 }

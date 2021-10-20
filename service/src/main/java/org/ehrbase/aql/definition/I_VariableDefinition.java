@@ -22,7 +22,10 @@
 
 package org.ehrbase.aql.definition;
 
+import org.jooq.DataType;
+
 import java.util.List;
+import java.util.Set;
 
 /**
  * Represents a AQL Select Variable
@@ -35,6 +38,16 @@ public interface I_VariableDefinition extends Cloneable {
 
     String getIdentifier();
 
+    LateralJoinDefinition getLateralJoinDefinition(String templateId, int index);
+
+    int getLateralJoinsSize(String templateId);
+
+    boolean isLateralJoinsEmpty(String templateId);
+
+    LateralJoinDefinition getLastLateralJoin(String templateId);
+
+    void setLateralJoinTable(String templateId, LateralJoinDefinition lateralJoinDefinition);
+
     boolean isDistinct();
 
     boolean isFunction();
@@ -45,7 +58,7 @@ public interface I_VariableDefinition extends Cloneable {
 
     List<FuncParameter> getFuncParameters();
 
-    I_VariableDefinition clone() throws CloneNotSupportedException;
+    I_VariableDefinition duplicate();
 
     void setPath(String path); //used to modify the path in case of struct query (canonical json).
 
@@ -56,4 +69,21 @@ public interface I_VariableDefinition extends Cloneable {
     void setAlias(String alias);
 
     String toString();
+
+    boolean isConstant();
+
+    boolean isLateralJoin(String templateId);
+
+    Set<LateralJoinDefinition> getLateralJoinDefinitions(String templateId);
+
+    PredicateDefinition getPredicateDefinition();
+
+    void setSubstituteFieldVariable(String variableAlias);
+
+    String getSubstituteFieldVariable();
+
+    void setSelectType(DataType castTypeAs);
+
+    DataType getSelectType();
+
 }

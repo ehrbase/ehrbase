@@ -30,20 +30,15 @@ Library     Process
 Library     XML
 Library     JSONLibrary
 Library     DateTime
+Library     DatabaseLibrary
+Library     distutils.util
 
-Library     ${EXECDIR}/robot/_resources/libraries/dockerlib.py
-Library     ${EXECDIR}/robot/_resources/libraries/jsonlib.py
-Library     ${EXECDIR}/robot/_resources/libraries/token_decoder.py
+Library     libraries/dockerlib.py
+Library     libraries/jsonlib.py
+Library     libraries/token_decoder.py
 
-Resource    ${EXECDIR}/robot/_resources/keywords/generic_keywords.robot
-Resource    ${EXECDIR}/robot/_resources/keywords/aql_query_keywords.robot
-Resource    ${EXECDIR}/robot/_resources/keywords/composition_keywords.robot
-Resource    ${EXECDIR}/robot/_resources/keywords/contribution_keywords.robot
-Resource    ${EXECDIR}/robot/_resources/keywords/db_keywords.robot
-Resource    ${EXECDIR}/robot/_resources/keywords/directory_keywords.robot
-Resource    ${EXECDIR}/robot/_resources/keywords/ehr_keywords.robot
-Resource    ${EXECDIR}/robot/_resources/keywords/template_opt1.4_keywords.robot
-Variables   ${EXECDIR}/robot/_resources/variables/sut_config.py
+Resource    keywords/generic_keywords.robot
+Variables   variables/sut_config.py
             ...    ${SUT}    ${AUTH_TYPE}    ${NODOCKER}
 
 
@@ -53,6 +48,7 @@ Variables   ${EXECDIR}/robot/_resources/variables/sut_config.py
 # ${template_id}    IDCR%20-%20Immunisation%20summary.v0        # TODO: @wlad rm if nothing breaks
 # ${invalid_ehr_id}    123
 ${BASE_URL}              http://localhost:8080/ehrbase/rest/openehr/v1
+# ${ADMIN_BASE_URL}        http://localhost:8080/ehrbase/rest/admin
 ${PROJECT_ROOT}          ${EXECDIR}${/}..
 ${POM_FILE}              ${PROJECT_ROOT}${/}pom.xml
 ${CREATING_SYSTEM_ID}    ${NODENAME}

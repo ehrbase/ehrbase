@@ -52,13 +52,16 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 @SuppressWarnings("unchecked")
-public class QueryServiceImp extends BaseService implements QueryService {
+public class QueryServiceImp extends BaseServiceImp implements QueryService {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     private final FhirTerminologyServerR4AdaptorImpl tsAdapter;
+
+    private Map<String, Set<Object>> auditResultMap;
 
     @Autowired
     public QueryServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig, FhirTerminologyServerR4AdaptorImpl tsAdapter) {
@@ -123,6 +126,7 @@ public class QueryServiceImp extends BaseService implements QueryService {
         if (explain) {
             dto.setExplain(aqlResult.getExplain());
         }
+
         return dto;
     }
 
@@ -131,7 +135,7 @@ public class QueryServiceImp extends BaseService implements QueryService {
 
             AqlQueryHandler queryHandler = new AqlQueryHandler(getDataAccess(), tsAdapter);
             AqlResult aqlResult = queryHandler.process(queryString);
-
+            auditResultMap = aqlResult.getAuditResultMap();
             return formatResult(aqlResult, queryString, explain);
         } catch (DataAccessException dae){
             throw new GeneralRequestProcessingException("Data Access Error:"+dae.getCause().getMessage());
@@ -146,7 +150,7 @@ public class QueryServiceImp extends BaseService implements QueryService {
         try {
             AqlQueryHandler queryHandler = new AqlQueryHandler(getDataAccess(), tsAdapter);
             AqlResult aqlResult = queryHandler.process(queryString, parameters);
-
+            auditResultMap = aqlResult.getAuditResultMap();
             return formatResult(aqlResult, queryString, explain);
         } catch(RestClientException rce) {
         	throw new BadGatewayException("Bad gateway exception: "+rce.getCause().getMessage());
@@ -281,6 +285,11 @@ public class QueryServiceImp extends BaseService implements QueryService {
         } catch (Exception e){
             throw new InternalServerException(e.getMessage());
         }
+    }
+
+    @Override
+    public Map<String, Set<Object>> getAuditResultMap() {
+        return auditResultMap;
     }
 
     private QueryDefinitionResultDto mapToQueryDefinitionDto(I_StoredQueryAccess storedQueryAccess) {

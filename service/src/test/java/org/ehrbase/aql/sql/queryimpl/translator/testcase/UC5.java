@@ -26,6 +26,6 @@ public abstract class UC5 extends QueryProcessorTestBase {
     protected UC5(){
         this.aql = "select a/description[at0001]/items[at0002]/value/value from EHR e " +
                 "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]";
-        this.expectedOutputWithJson = true;
+        this.expectedOutputWithJson = false;
     }
 }

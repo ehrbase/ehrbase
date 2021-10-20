@@ -18,7 +18,7 @@
 
 *** Settings ***
 Metadata    Version    0.1.0
-Metadata    Author    *Wladislaw Wagner* www.trustincode.de
+Metadata    Authors    *Wladislaw Wagner*, *Pablo Pazos* www.trustincode.de
 Metadata    Created    2020.07.10
 Metadata    Updated    2020.07.13
 
