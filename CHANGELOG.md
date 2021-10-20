@@ -21,6 +21,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Improves 'Admin Delete EHR' performance (see https://github.com/ehrbase/ehrbase/pull/626)
 - many fixes to the flat support (see https://github.com/ehrbase/ehrbase/pull/627)
 - Fix conversion between `DvDateTime` and `Timestamp` (see https://github.com/ehrbase/ehrbase/pull/634)
+- Fix FLAT format does not return the archetype data if the archetype_id contains the letters "and"
 
 ## [0.17.2]
 
@@ -187,8 +188,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Refactored support of PartyProxy and ObjectId in both CRUD and AQL operations (
   see https://github.com/ehrbase/ehrbase/pull/248)
 -
-    - fix support of mandatory attributes in ENTRY specialization including rm_version (
-      see https://github.com/ehrbase/ehrbase/pull/247)
+  - fix support of mandatory attributes in ENTRY specialization including rm_version (
+    see https://github.com/ehrbase/ehrbase/pull/247)
 
 #### DIRECTORY
 
