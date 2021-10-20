@@ -1,5 +1,5 @@
 robotframework == v4.0.3
-tzlocal == 4.0.1b1
+tzlocal == 4.0.1
 
 robotframework-jsonlibrary == 0.3.1
 robotframework-requests == 0.9.1
