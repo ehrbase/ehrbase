@@ -121,4 +121,12 @@ public class MultiFields {
     public String getTemplateId() {
         return templateId;
     }
+
+    public void replaceField(QualifiedAqlField originalField, Field newField) {
+        int index = fields.indexOf(originalField);
+        QualifiedAqlField originalAqlField = fields.get(index);
+        QualifiedAqlField clonedQualifiedField = originalAqlField.duplicate();
+        clonedQualifiedField.setField(newField);
+        fields.set(fields.indexOf(originalField), clonedQualifiedField);
+    }
 }

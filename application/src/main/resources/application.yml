@@ -197,3 +197,7 @@ validation:
 client:
   ssl:
     enabled: false
+
+# JavaMelody
+javamelody:
+  enabled: false

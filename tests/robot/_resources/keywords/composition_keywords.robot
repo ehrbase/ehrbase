@@ -387,7 +387,7 @@ update composition (JSON)
                         ...                 Prefer=return=representation
                         ...                 If-Match=${preceding_version_uid}
 
-    ${resp}=            Put Request         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   headers=${headers}
+    ${resp}=            PUT On Session         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   expected_status=anything   headers=${headers}
                         log to console      ${resp.content}
                         Set Test Variable   ${composition_uid_v2}    ${resp.json()['uid']['value']}    # TODO: remove
                         Set Test Variable   ${version_uid_v2}    ${resp.json()['uid']['value']}
@@ -416,7 +416,7 @@ update composition - invalid opt reference (JSON)
                         ...                 Prefer=return=representation
                         ...                 If-Match=${preceding_version_uid}
 
-    ${resp}=            Put Request         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   headers=${headers}
+    ${resp}=            PUT On Session         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   expected_status=anything   headers=${headers}
                         Log To Console      \nREQUEST HEADERS:\n${resp.request.headers}
                         Log To Console      \nRESPONSE:\n${resp.content}
                         Set Test Variable   ${response}    ${resp}
@@ -434,7 +434,7 @@ update composition - invalid opt reference (XML)
                         ...                 Prefer=return=representation
                         ...                 If-Match=${preceding_version_uid}
 
-    ${resp}=            Put Request         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   headers=${headers}
+    ${resp}=            PUT On Session         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   expected_status=anything   headers=${headers}
                         Log To Console      \nREQUEST HEADERS:\n${resp.request.headers}
                         Log To Console      \nRESPONSE:\n${resp.content}
                         Set Test Variable   ${response}    ${resp}
@@ -472,7 +472,7 @@ update composition (XML)
                         ...                 Accept=application/xml
                         ...                 Prefer=return=representation
                         ...                 If-Match=${preceding_version_uid}   # TODO: must be ${preceding_version_uid} - has same format as `version_uid`
-    ${resp}=            Put Request         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   headers=${headers}
+    ${resp}=            PUT On Session         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   expected_status=anything   headers=${headers}
                         log to console      ${resp.content}
 
     # compo.uid.value has the version_uid
@@ -513,7 +513,7 @@ update non-existent composition (JSON)
                         ...                 Prefer=return=representation
 
                         ...                 If-Match=${preceding_version_uid}
-    ${resp}=            Put Request         ${SUT}   /ehr/${ehr_id}/composition/${versioned_object_uid}   data=${file}   headers=${headers}
+    ${resp}=            PUT On Session         ${SUT}   /ehr/${ehr_id}/composition/${versioned_object_uid}   data=${file}   expected_status=anything    headers=${headers}
                         log to console      ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   404
 
@@ -531,7 +531,7 @@ update non-existent composition (XML)
                         ...                 Prefer=return=representation
 
                         ...                 If-Match=${preceding_version_uid}
-    ${resp}=            Put Request         ${SUT}   /ehr/${ehr_id}/composition/${versioned_object_uid}   data=${file}   headers=${headers}
+    ${resp}=            PUT On Session         ${SUT}   /ehr/${ehr_id}/composition/${versioned_object_uid}   data=${file}   expected_status=anything   headers=${headers}
                         log to console      ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   404
 
