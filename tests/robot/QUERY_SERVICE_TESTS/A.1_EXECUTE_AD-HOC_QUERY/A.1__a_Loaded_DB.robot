@@ -184,21 +184,21 @@ B-103 Execute Ad-Hoc Query - Get Compositions (filtered: timewindow)
 
 B-104 Get Compositions (filtered: top 5, ordered by: start_time ASC)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              635    586    554
+    [Tags]              635    586
     B/104_get_compositions_top_5_ordered_by_starttime_asc.json    B/104.tmp.json
     [Teardown]          TRACE GITHUB ISSUE  635
 
 
 B-105 Get Compositions (filtered: top 5, ordered by: start_time DESC)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              586    554
+    [Tags]              586
     B/105_get_compositions_top_5_ordered_by_starttime_desc.json    B/105.tmp.json
     [Teardown]          TRACE GITHUB ISSUE  586  bug
 
 
 B-106 Get Compositions (filtered: top 5, ordered by: start_time value ASC)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              586    554
+    [Tags]              586
     B/106_get_compositions_top_5_ordered_by_starttimevalue_asc.json    B/106.tmp.json
     [Teardown]          TRACE GITHUB ISSUE  586  bug
 
