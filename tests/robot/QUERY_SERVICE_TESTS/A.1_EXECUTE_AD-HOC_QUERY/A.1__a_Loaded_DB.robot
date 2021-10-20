@@ -220,9 +220,10 @@ B-300 Execute Ad-Hoc Query - Get Compositions From All EHRs
 B-400 Execute Ad-Hoc Query - Get Composition(s)
     [Documentation]     Test w/ "all_types.composition.json" commit
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              586    587    not-ready
+    [Tags]              586    587    not-ready    false-positive
     B/400_get_compositions_contains_section_with_archetype_from_all_ehrs.json    B/400.tmp.json
     [Teardown]          TRACE GITHUB ISSUE  586  bug
+    ### TODO: retest when https://github.com/ehrbase/project_management/issues/588 is resolved
 
 
 B-500 Execute Ad-Hoc Query - Get Composition(s)
