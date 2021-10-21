@@ -33,6 +33,7 @@ public class VariableDefinition implements I_VariableDefinition {
 
     private String path;
     private String alias;
+    private boolean isVoidAlias = true;
     private String identifier;
     private String substituteFieldVariable;
     private boolean isDistinct;
@@ -216,5 +217,15 @@ public class VariableDefinition implements I_VariableDefinition {
 
     public DataType getSelectType(){
         return this.selectDataType;
+    }
+
+    @Override
+    public boolean isVoidAlias() {
+        return isVoidAlias;
+    }
+
+    @Override
+    public void setVoidAlias(boolean isVoidAlias) {
+        this.isVoidAlias = isVoidAlias;
     }
 }
