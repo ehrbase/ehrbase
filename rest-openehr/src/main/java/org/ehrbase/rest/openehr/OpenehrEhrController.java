@@ -21,6 +21,8 @@ package org.ehrbase.rest.openehr;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.support.identification.HierObjectId;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -29,6 +31,7 @@ import org.ehrbase.api.service.EhrService;
 import org.ehrbase.response.openehr.EhrResponseData;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.audit.OpenEhrAuditInterceptor;
+import org.ehrbase.rest.openehr.specification.EhrApiSpecification;
 import org.ehrbase.rest.util.InternalResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -61,7 +64,7 @@ import java.util.function.Supplier;
  */
 @RestController
 @RequestMapping(path = "${openehr-api.context-path:/rest/openehr}/v1/ehr", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-public class OpenehrEhrController extends BaseController {
+public class OpenehrEhrController extends BaseController implements EhrApiSpecification {
 
     private final EhrService ehrService;
 
@@ -73,8 +76,8 @@ public class OpenehrEhrController extends BaseController {
 
     @PostMapping//(consumes = {"application/xml", "application/json"})
     @ResponseStatus(value = HttpStatus.CREATED)
-    // overwrites default 200, fixes the wrong listing of 200 in swagger-ui (EHR-56)
     // TODO auditing headers (openehr*) ignored until auditing is implemented
+    @Override
     public ResponseEntity createEhr(@RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
                                     @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
                                     @RequestHeader(value = CONTENT_TYPE, required = false) String contentType,    // TODO when working on EHR_STATUS
@@ -94,7 +97,7 @@ public class OpenehrEhrController extends BaseController {
 
     @PutMapping(path = "/{ehr_id}")
     @ResponseStatus(value = HttpStatus.CREATED)
-    // overwrites default 200, fixes the wrong listing of 200 in swagger-ui (EHR-56)
+    @Override
     public ResponseEntity<EhrResponseData> createEhrWithId(@RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
                                                            @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
                                                            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
@@ -145,8 +148,8 @@ public class OpenehrEhrController extends BaseController {
 
         // returns 201 with body + headers, 204 only with headers or 500 error depending on what processing above yields
         return respData.map(i -> Optional.ofNullable(i.getResponseData()).map(j -> ResponseEntity.created(url).headers(i.getHeaders()).body(j))
-                // when the body is empty
-                .orElse(ResponseEntity.noContent().headers(i.getHeaders()).build()))
+                        // when the body is empty
+                        .orElse(ResponseEntity.noContent().headers(i.getHeaders()).build()))
                 // when no response could be created at all
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
@@ -155,6 +158,7 @@ public class OpenehrEhrController extends BaseController {
      * Returns EHR by ID
      */
     @GetMapping(path = "/{ehr_id}")
+    @Override
     public ResponseEntity<EhrResponseData> retrieveEhrById(@RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
                                                            @PathVariable(value = "ehr_id") String ehrIdString,
                                                            HttpServletRequest request) {
@@ -172,6 +176,7 @@ public class OpenehrEhrController extends BaseController {
      * Returns EHR by subject (id and namespace)
      */
     @GetMapping(params = {"subject_id", "subject_namespace"})
+    @Override
     public ResponseEntity<EhrResponseData> retrieveEhrBySubject(@RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
                                                                 @RequestParam(value = "subject_id") String subjectId,
                                                                 @RequestParam(value = "subject_namespace") String subjectNamespace,

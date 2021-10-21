@@ -21,12 +21,15 @@ package org.ehrbase.rest.openehr;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.ContributionDto;
 import org.ehrbase.response.openehr.ContributionResponseData;
 import org.ehrbase.rest.BaseController;
+import org.ehrbase.rest.openehr.specification.ContributionApiSpecification;
 import org.ehrbase.rest.util.InternalResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -54,7 +57,7 @@ import java.util.function.Supplier;
 
 @RestController
 @RequestMapping(path = "${openehr-api.context-path:/rest/openehr}/v1/ehr", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-public class OpenehrContributionController extends BaseController {
+public class OpenehrContributionController extends BaseController implements ContributionApiSpecification {
 
     private final ContributionService contributionService;
 
@@ -68,6 +71,7 @@ public class OpenehrContributionController extends BaseController {
     @PreAuthorize("checkAbacPre(@openehrContributionController.CONTRIBUTION, "
             + "@ehrService.getSubjectExtRef(#ehrIdString), #contribution, #contentType)")
     @ResponseStatus(value = HttpStatus.CREATED)    // overwrites default 200, fixes the wrong listing of 200 in swagger-ui (EHR-56)
+    @Override
     public ResponseEntity createContribution(@RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
                                             @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
                                             @RequestHeader(value = CONTENT_TYPE) String contentType,
@@ -100,6 +104,7 @@ public class OpenehrContributionController extends BaseController {
     }
 
     @GetMapping(value = "/{ehr_id}/contribution/{contribution_uid}")
+    @Override
     public ResponseEntity getContribution(@RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
                                              @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
                                              @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,

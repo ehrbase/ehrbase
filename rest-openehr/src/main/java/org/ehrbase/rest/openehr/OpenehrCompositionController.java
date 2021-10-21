@@ -31,6 +31,7 @@ import org.ehrbase.response.openehr.CompositionResponseData;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.audit.CompositionAuditInterceptor;
 import org.ehrbase.rest.openehr.audit.OpenEhrAuditInterceptor;
+import org.ehrbase.rest.openehr.specification.CompositionApiSpecification;
 import org.ehrbase.rest.util.InternalResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -70,7 +71,7 @@ import java.util.function.Supplier;
  */
 @RestController
 @RequestMapping(path = "${openehr-api.context-path:/rest/openehr}/v1/ehr", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-public class OpenehrCompositionController extends BaseController {
+public class OpenehrCompositionController extends BaseController implements CompositionApiSpecification {
 
 
     final CompositionService compositionService;
@@ -85,7 +86,7 @@ public class OpenehrCompositionController extends BaseController {
     @PreAuthorize("checkAbacPre(@openehrCompositionController.COMPOSITION, "
             + "@ehrService.getSubjectExtRef(#ehrIdString), #composition, #contentType)")
     @ResponseStatus(value = HttpStatus.CREATED)
-    // overwrites default 200, fixes the wrong listing of 200 in swagger-ui (EHR-56)
+    @Override
     public ResponseEntity createComposition(@RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
                                             @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
                                             @RequestHeader(value = CONTENT_TYPE) String contentType,
@@ -135,6 +136,7 @@ public class OpenehrCompositionController extends BaseController {
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrCompositionController.COMPOSITION, "
             + "@ehrService.getSubjectExtRef(#ehrIdString), #composition, #contentType)")
+    @Override
     public ResponseEntity updateComposition(String openehrVersion,
                                             @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
                                             @RequestHeader(value = CONTENT_TYPE, required = false) String contentType,
@@ -216,7 +218,7 @@ public class OpenehrCompositionController extends BaseController {
     @PreAuthorize("checkAbacPre(@openehrCompositionController.COMPOSITION, "
             + "@ehrService.getSubjectExtRef(#ehrIdString), #precedingVersionUid, null)")
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    // overwrites default 200, fixes the wrong listing of 200 in swagger-ui (EHR-56)
+    @Override
     public ResponseEntity deleteComposition(@RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
                                             @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
                                             @PathVariable(value = "ehr_id") String ehrIdString,
@@ -281,6 +283,7 @@ public class OpenehrCompositionController extends BaseController {
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PostAuthorize("checkAbacPost(@openehrCompositionController.COMPOSITION, "
             + "@ehrService.getSubjectExtRef(#ehrIdString), returnObject, #accept)")
+    @Override
     public ResponseEntity<CompositionResponseData> getCompositionByVersionId(@RequestHeader(value = ACCEPT, required = false) String accept,
                                                                              @PathVariable(value = "ehr_id") String ehrIdString,
                                                                              @PathVariable(value = "version_uid") String versionUid,
@@ -298,6 +301,7 @@ public class OpenehrCompositionController extends BaseController {
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PostAuthorize("checkAbacPost(@openehrCompositionController.COMPOSITION, "
             + "@ehrService.getSubjectExtRef(#ehrIdString), returnObject, #accept)")
+    @Override
     public ResponseEntity getCompositionByTime(@RequestHeader(value = ACCEPT, required = false) String accept,
                                                @PathVariable(value = "ehr_id") String ehrIdString,
                                                @PathVariable(value = "versioned_object_uid") String versionedObjectUid,

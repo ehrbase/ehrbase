@@ -18,29 +18,40 @@
 
 package org.ehrbase.rest.openehr;
 
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import org.apache.commons.lang3.StringUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.ehrbase.api.definitions.OperationalTemplateFormat;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.response.ehrscape.TemplateMetaDataDto;
-import org.ehrbase.response.openehr.ErrorResponseData;
 import org.ehrbase.response.openehr.ResponseData;
 import org.ehrbase.response.openehr.TemplateResponseData;
 import org.ehrbase.response.openehr.TemplatesResponseData;
 import org.ehrbase.rest.BaseController;
+import org.ehrbase.rest.openehr.specification.TemplateApiSpecification;
 import org.ehrbase.rest.util.InternalResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
@@ -48,7 +59,7 @@ import java.util.function.Supplier;
  */
 @RestController
 @RequestMapping(path = "${openehr-api.context-path:/rest/openehr}/v1/definition/template", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-public class OpenehrTemplateController extends BaseController {
+public class OpenehrTemplateController extends BaseController implements TemplateApiSpecification {
 
     private final TemplateService templateService;
 
@@ -62,7 +73,7 @@ public class OpenehrTemplateController extends BaseController {
      */
     @PostMapping("/adl1.4")
     @ResponseStatus(value = HttpStatus.CREATED)
-    // overwrites default 200, fixes the wrong listing of 200 in swagger-ui (EHR-56)
+    @Override
     public ResponseEntity createTemplateClassic(@RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion, // TODO, see EHR-267
                                                 @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails, // TODO, see EHR-267
                                                 @RequestHeader(value = CONTENT_TYPE) String contentType,
@@ -92,14 +103,15 @@ public class OpenehrTemplateController extends BaseController {
         // TODO remove 204?
         // returns 201 with body + headers, 204 only with headers or 500 error depending on what processing above yields
         return respData.map(i -> Optional.ofNullable(i.getResponseData()).map(j -> ResponseEntity.created(uri).headers(i.getHeaders()).body(j.get()))
-                // when the body is empty
-                .orElse(ResponseEntity.noContent().headers(i.getHeaders()).build()))
+                        // when the body is empty
+                        .orElse(ResponseEntity.noContent().headers(i.getHeaders()).build()))
                 // when no response could be created at all
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
     // Note: based on latest-branch of 1.1.0 release of openEHR REST API, because this endpoint was changed significantly
     @GetMapping("/adl1.4")
+    @Override
     public ResponseEntity getTemplatesClassic(@RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion, // TODO, see EHR-267
                                               @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails, // TODO, see EHR-267
                                               @RequestHeader(value = ACCEPT, required = false) String accept) {
@@ -117,6 +129,7 @@ public class OpenehrTemplateController extends BaseController {
 
     // Note: based on latest-branch of 1.1.0 release of openEHR REST API, because this endpoint was changed significantly
     @GetMapping("/adl1.4/{template_id}")
+    @Override
     public ResponseEntity getTemplateClassic(@RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion, // TODO, see EHR-267
                                              @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails, // TODO, see EHR-267
                                              @RequestHeader(value = ACCEPT, required = false) String accept,
@@ -138,7 +151,7 @@ public class OpenehrTemplateController extends BaseController {
      */
     @PostMapping("/adl2/{?version}")
     @ResponseStatus(value = HttpStatus.CREATED)
-    // overwrites default 200, fixes the wrong listing of 200 in swagger-ui (EHR-56)
+    @Override
     public ResponseEntity<TemplateResponseData> createTemplateNew(@RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion, // TODO, see EHR-267
                                                                   @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails, // TODO, see EHR-267
                                                                   @RequestHeader(value = CONTENT_TYPE, required = false) String contentType,
@@ -168,6 +181,7 @@ public class OpenehrTemplateController extends BaseController {
     // Note: based on latest-branch of 1.1.0 release of openEHR REST API, because this endpoint was changed significantly
     // also, this endpoint combines what is listed as two endpoints: https://specifications.openehr.org/releases/ITS-REST/latest/definitions.html#definitions-adl-2-template-get
     @GetMapping("/adl2/{template_id}/{version_pattern}")
+    @Override
     public ResponseEntity<TemplateResponseData> getTemplateNew(@RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion, // TODO, see EHR-267
                                                                @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails, // TODO, see EHR-267
                                                                @RequestHeader(value = ACCEPT, required = false) String accept,

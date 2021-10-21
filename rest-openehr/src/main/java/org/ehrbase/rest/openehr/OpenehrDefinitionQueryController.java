@@ -2,11 +2,14 @@ package org.ehrbase.rest.openehr;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.ehrbase.api.service.QueryService;
 import org.ehrbase.response.openehr.ErrorBodyPayload;
 import org.ehrbase.response.openehr.QueryDefinitionListResponseData;
 import org.ehrbase.response.openehr.QueryDefinitionResponseData;
 import org.ehrbase.rest.BaseController;
+import org.ehrbase.rest.openehr.specification.DefinitionQueryApiSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +24,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping(path = "${openehr-api.context-path:/rest/openehr}/v1/definition/query", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-public class OpenehrDefinitionQueryController extends BaseController {
+public class OpenehrDefinitionQueryController extends BaseController implements DefinitionQueryApiSpecification {
 
     static final Logger log = LoggerFactory.getLogger(OpenehrDefinitionQueryController.class);
 
@@ -36,13 +39,15 @@ public class OpenehrDefinitionQueryController extends BaseController {
 
     /**
      * Get a stored query
+     *
      * @param accept
      * @param qualifiedQueryName
      * @return
      */
     @RequestMapping(value = {"/{qualified_query_name}", ""}, method = RequestMethod.GET)
-    public ResponseEntity<QueryDefinitionListResponseData>getStoredQueryList(@RequestHeader(value = ACCEPT, required = false) String accept,
-                                                                             @PathVariable(value = "qualified_query_name", required = false) String qualifiedQueryName) {
+    @Override
+    public ResponseEntity<QueryDefinitionListResponseData> getStoredQueryList(@RequestHeader(value = ACCEPT, required = false) String accept,
+                                                                              @PathVariable(value = "qualified_query_name", required = false) String qualifiedQueryName) {
 
         log.debug("getStoredQueryList invoked with the following input: " + qualifiedQueryName);
 
@@ -51,11 +56,12 @@ public class OpenehrDefinitionQueryController extends BaseController {
     }
 
     @RequestMapping(value = {"/{qualified_query_name}/{version}"}, method = RequestMethod.GET)   //
+    @Override
     public ResponseEntity<QueryDefinitionResponseData> getStoredQueryVersion(@RequestHeader(value = ACCEPT, required = false) String accept,
                                                                              @PathVariable(value = "qualified_query_name") String qualifiedQueryName,
                                                                              @PathVariable(value = "version") Optional<String> version) {
 
-        log.debug("getStoredQueryVersion invoked with the following input: " +  qualifiedQueryName + ", version:"+version);
+        log.debug("getStoredQueryVersion invoked with the following input: " + qualifiedQueryName + ", version:" + version);
 
         QueryDefinitionResponseData queryDefinitionResponseData = new QueryDefinitionResponseData(queryService.retrieveStoredQuery(qualifiedQueryName, version.isPresent() ? version.get() : null));
 
@@ -63,13 +69,14 @@ public class OpenehrDefinitionQueryController extends BaseController {
     }
 
     @RequestMapping(value = {"/{qualified_query_name}/{version}{?type}", "/{qualified_query_name}{?type}"}, method = RequestMethod.PUT)
+    @Override
     public ResponseEntity<QueryDefinitionResponseData> putStoreQuery(@RequestHeader(value = ACCEPT, required = false) String accept,
-                                                          @PathVariable(value = "qualified_query_name") String qualifiedQueryName,
-                                                          @PathVariable(value = "version") Optional<String> version,
-                                                          @RequestParam(value = "type", required=false, defaultValue = "AQL") String type,
-                                                          @RequestBody String queryPayload) {
+                                                                     @PathVariable(value = "qualified_query_name") String qualifiedQueryName,
+                                                                     @PathVariable(value = "version") Optional<String> version,
+                                                                     @RequestParam(value = "type", required = false, defaultValue = "AQL") String type,
+                                                                     @RequestBody String queryPayload) {
 
-        log.debug("putStoreQuery invoked with the following input: " +  qualifiedQueryName + ", version:"+version+", query:"+queryPayload+", type="+type);
+        log.debug("putStoreQuery invoked with the following input: " + qualifiedQueryName + ", version:" + version + ", query:" + queryPayload + ", type=" + type);
 
         //use the payload from adhoc POST:
         //get the query and parameters if any
@@ -88,9 +95,10 @@ public class OpenehrDefinitionQueryController extends BaseController {
     }
 
     @RequestMapping(value = {"/{qualified_query_name}/{version}"}, method = RequestMethod.DELETE)
+    @Override
     public ResponseEntity<QueryDefinitionResponseData> deleteStoredQuery(@RequestHeader(value = ACCEPT, required = false) String accept,
-                                                                     @PathVariable(value = "qualified_query_name") String qualifiedQueryName,
-                                                                     @PathVariable(value = "version") String version) {
+                                                                         @PathVariable(value = "qualified_query_name") String qualifiedQueryName,
+                                                                         @PathVariable(value = "version") String version) {
 
         log.debug("deleteStoredQuery for the following input: {} , version: {}", qualifiedQueryName, version);
 

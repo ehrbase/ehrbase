@@ -20,6 +20,9 @@ package org.ehrbase.rest.openehr;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import io.swagger.v3.oas.annotations.ExternalDocumentation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.ehrbase.api.definitions.QueryMode;
 import org.ehrbase.api.service.QueryService;
 import org.ehrbase.response.ehrscape.QueryDefinitionResultDto;
@@ -28,6 +31,7 @@ import org.ehrbase.response.openehr.QueryResponseData;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.audit.OpenEhrAuditInterceptor;
 import org.ehrbase.rest.openehr.audit.QueryAuditInterceptor;
+import org.ehrbase.rest.openehr.specification.QueryApiSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +57,7 @@ import java.util.Set;
 
 @RestController
 @RequestMapping(path = "${openehr-api.context-path:/rest/openehr}/v1/query", produces = MediaType.APPLICATION_JSON_VALUE)
-public class OpenehrQueryController extends BaseController {
+public class OpenehrQueryController extends BaseController implements QueryApiSpecification {
 
     final static Logger log = LoggerFactory.getLogger(OpenehrQueryController.class);
     public static final String EHR_ID_VALUE = "ehr_id/value";
@@ -67,6 +71,7 @@ public class OpenehrQueryController extends BaseController {
     }
 
     @GetMapping("/aql{?q, offset, fetch, query_parameter}")
+    @Override
     public ResponseEntity<QueryResponseData> getAdhocQuery(@RequestHeader(value = ACCEPT, required = false) String accept,
                                                            @RequestParam(value = "q") String query,
                                                            @RequestParam(value = "offset", required = false) Integer offset,
@@ -106,6 +111,7 @@ public class OpenehrQueryController extends BaseController {
 
     @PostMapping("/aql")
     @PostAuthorize("checkAbacPostQuery(@queryServiceImp.getAuditResultMap())")
+    @Override
     public ResponseEntity<QueryResponseData> postAdhocQuery(@RequestHeader(value = ACCEPT, required = false) String accept,
                                                             @RequestHeader(value = CONTENT_TYPE) String contentType,
                                                             @RequestBody String query,
@@ -193,6 +199,7 @@ public class OpenehrQueryController extends BaseController {
 
     @GetMapping(value = {"/{qualified_query_name}/{version}{?offset,fetch,query_parameter}", "/{qualified_query_name}{?offset,fetch,query_parameter}"})
     @PostAuthorize("checkAbacPostQuery(@queryServiceImp.getAuditResultMap())")
+    @Override
     public ResponseEntity<QueryResponseData> getStoredQuery(@RequestHeader(value = ACCEPT, required = false) String accept,
                                                             @PathVariable(value = "qualified_query_name") String qualifiedQueryName,
                                                             @PathVariable(value = "version") Optional<String> version,
@@ -236,6 +243,7 @@ public class OpenehrQueryController extends BaseController {
 
     @PostMapping(value = {"/{qualified_query_name}/{version}", "/{qualified_query_name}"})
     @PostAuthorize("checkAbacPostQuery(@queryServiceImp.getAuditResultMap())")
+    @Override
     public ResponseEntity<QueryResponseData> postStoredQuery(@RequestHeader(value = ACCEPT, required = false) String accept,
                                                              @RequestHeader(value = CONTENT_TYPE) String contentType,
                                                              // TODO: what is this header about? couldn't be clarified and will be discussed with openEHR REST API people

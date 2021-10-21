@@ -20,6 +20,8 @@ package org.ehrbase.rest.openehr;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.ehr.EhrStatus;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -27,6 +29,7 @@ import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.response.openehr.EhrStatusResponseData;
 import org.ehrbase.rest.BaseController;
+import org.ehrbase.rest.openehr.specification.EhrStatusApiSpecification;
 import org.ehrbase.rest.util.InternalResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -58,7 +61,7 @@ import java.util.function.Supplier;
  */
 @RestController
 @RequestMapping(path = "${openehr-api.context-path:/rest/openehr}/v1/ehr/{ehr_id}/ehr_status", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-public class OpenehrEhrStatusController extends BaseController {
+public class OpenehrEhrStatusController extends BaseController implements EhrStatusApiSpecification {
 
     private final EhrService ehrService;
 
@@ -71,6 +74,7 @@ public class OpenehrEhrStatusController extends BaseController {
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, "
             + "@ehrService.getSubjectExtRef(#ehrIdString))")
+    @Override
     public ResponseEntity<EhrStatusResponseData> retrieveEhrStatusByTime(
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "ehr_id") String ehrIdString,
@@ -99,6 +103,7 @@ public class OpenehrEhrStatusController extends BaseController {
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, "
             + "@ehrService.getSubjectExtRef(#ehrIdString))")
+    @Override
     public ResponseEntity<EhrStatusResponseData> retrieveEhrStatusById(
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "ehr_id") String ehrIdString,
@@ -132,6 +137,7 @@ public class OpenehrEhrStatusController extends BaseController {
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, "
             + "@ehrService.getSubjectExtRef(#ehrIdString))")
+    @Override
     public ResponseEntity<EhrStatusResponseData> updateEhrStatus(
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @RequestHeader(value = HttpHeaders.CONTENT_TYPE, required = false) String contentType,
@@ -158,7 +164,7 @@ public class OpenehrEhrStatusController extends BaseController {
         String[] split = latestVersionUid.split("::");
         if (latestVersionUid.equals(newLatestVersionUid) || split.length != 3)
             throw new InvalidApiParameterException("Update of EHR_STATUS failed");
-        int version = Integer.parseInt(split[split.length-1]) + 1;
+        int version = Integer.parseInt(split[split.length - 1]) + 1;
 
         List<String> headerList = Arrays.asList(CONTENT_TYPE, LOCATION, ETAG, LAST_MODIFIED);   // whatever is required by REST spec
         Optional<InternalResponse<EhrStatusResponseData>> respData;   // variable to overload with more specific object if requested
@@ -176,13 +182,13 @@ public class OpenehrEhrStatusController extends BaseController {
     /**
      * Builder method to prepare appropriate HTTP response. Flexible to either allow minimal or full representation of resource.
      *
-     * @param factory       Lambda function to constructor of desired object
-     * @param ehrId         Ehr reference
-     * @param ehrStatusId   EhrStatus versioned object ID
-     * @param version       EhrStatus version number
-     * @param accept        Requested content format
-     * @param headerList    Requested headers that need to be set
-     * @param <T>           Either only header response or specific class EhrStatusResponseData
+     * @param factory     Lambda function to constructor of desired object
+     * @param ehrId       Ehr reference
+     * @param ehrStatusId EhrStatus versioned object ID
+     * @param version     EhrStatus version number
+     * @param accept      Requested content format
+     * @param headerList  Requested headers that need to be set
+     * @param <T>         Either only header response or specific class EhrStatusResponseData
      * @return
      */
     private <T extends EhrStatusResponseData> Optional<InternalResponse<T>> buildEhrStatusResponseData(Supplier<T> factory, UUID ehrId, UUID ehrStatusId, int version, String accept, List<String> headerList) {

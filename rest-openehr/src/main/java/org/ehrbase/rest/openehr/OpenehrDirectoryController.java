@@ -18,17 +18,8 @@
 
 package org.ehrbase.rest.openehr;
 
-import java.net.URI;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.regex.Pattern;
-
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
-
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
@@ -38,6 +29,7 @@ import org.ehrbase.api.service.FolderService;
 import org.ehrbase.response.ehrscape.FolderDto;
 import org.ehrbase.response.openehr.DirectoryResponseData;
 import org.ehrbase.rest.BaseController;
+import org.ehrbase.rest.openehr.specification.DirectoryApiSpecification;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -57,12 +49,20 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.net.URI;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.regex.Pattern;
+
 /**
  * Controller for openEHR /directory endpoints
  */
 @RestController
 @RequestMapping(path = "${openehr-api.context-path:/rest/openehr}/v1/ehr")
-public class OpenehrDirectoryController extends BaseController {
+public class OpenehrDirectoryController extends BaseController implements DirectoryApiSpecification {
 
     private final FolderService folderService;
     private final EhrService ehrService;
@@ -75,6 +75,7 @@ public class OpenehrDirectoryController extends BaseController {
 
     @PostMapping(value = "/{ehr_id}/directory")
     @ResponseStatus(value = HttpStatus.CREATED)
+    @Override
     public ResponseEntity<DirectoryResponseData> createFolder(
             @RequestHeader(value = "openEHR-VERSION", required = false) String openEhrVersion,
             @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openEhrAuditDetails,
@@ -121,6 +122,7 @@ public class OpenehrDirectoryController extends BaseController {
     }
 
     @GetMapping(path = "/{ehr_id}/directory/{version_uid}{?path}")
+    @Override
     public ResponseEntity<DirectoryResponseData> getFolder(
             @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
             @PathVariable(value = "ehr_id") UUID ehrId,
@@ -155,6 +157,7 @@ public class OpenehrDirectoryController extends BaseController {
     }
 
     @GetMapping(path = "/{ehr_id}/directory{?version_at_time,path}")
+    @Override
     public ResponseEntity<DirectoryResponseData> getFolderVersionAtTime(
             @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
             @PathVariable(value = "ehr_id") UUID ehrId,
@@ -203,6 +206,7 @@ public class OpenehrDirectoryController extends BaseController {
     }
 
     @PutMapping(path = "/{ehr_id}/directory")
+    @Override
     public ResponseEntity<DirectoryResponseData> updateFolder(
             @RequestHeader(value = "openEHR-VERSION", required = false) String openEhrVersion,
             @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openEhrAuditDetails,
@@ -222,9 +226,9 @@ public class OpenehrDirectoryController extends BaseController {
 
         // Update folder and get new version
         Optional<FolderDto> updatedFolder = this.folderService.update(
-            ehrId,
-            folderId,
-            folder
+                ehrId,
+                folderId,
+                folder
         );
 
 
@@ -238,6 +242,7 @@ public class OpenehrDirectoryController extends BaseController {
     }
 
     @DeleteMapping(path = "/{ehr_id}/directory")
+    @Override
     public ResponseEntity<DirectoryResponseData> deleteFolder(
             @RequestHeader(value = "openEHR-VERSION", required = false) String openEhrVersion,
             @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openEhrAuditDetails,

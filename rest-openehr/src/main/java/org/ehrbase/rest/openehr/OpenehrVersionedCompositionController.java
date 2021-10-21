@@ -27,6 +27,9 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -38,6 +41,7 @@ import org.ehrbase.response.openehr.OriginalVersionResponseData;
 import org.ehrbase.response.openehr.RevisionHistoryResponseData;
 import org.ehrbase.response.openehr.VersionedObjectResponseData;
 import org.ehrbase.rest.BaseController;
+import org.ehrbase.rest.openehr.specification.VersionedCompositionApiSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
@@ -56,7 +60,8 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping(path = "${openehr-api.context-path:/rest/openehr}/v1/ehr/{ehr_id}/versioned_composition", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-public class OpenehrVersionedCompositionController extends BaseController {
+public class OpenehrVersionedCompositionController extends BaseController
+        implements VersionedCompositionApiSpecification {
 
     private final EhrService ehrService;
     private final CompositionService compositionService;
@@ -70,6 +75,7 @@ public class OpenehrVersionedCompositionController extends BaseController {
     }
 
     @GetMapping(path = "/{versioned_object_uid}")
+    @Override
     public ResponseEntity<VersionedObjectResponseData<Composition>> retrieveVersionedCompositionByVersionedObjectUid(
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "ehr_id") String ehrIdString,
@@ -92,6 +98,7 @@ public class OpenehrVersionedCompositionController extends BaseController {
     }
 
     @GetMapping(path = "/{versioned_object_uid}/revision_history")
+    @Override
     public ResponseEntity<RevisionHistoryResponseData> retrieveVersionedCompositionRevisionHistoryByEhr(
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "ehr_id") String ehrIdString,
@@ -117,6 +124,7 @@ public class OpenehrVersionedCompositionController extends BaseController {
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PostAuthorize("checkAbacPost(@openehrVersionedCompositionController.COMPOSITION, "
             + "@ehrService.getSubjectExtRef(#ehrIdString), returnObject, #accept)")
+    @Override
     public ResponseEntity<OriginalVersionResponseData<Composition>> retrieveVersionOfCompositionByVersionUid(
         @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
         @PathVariable(value = "ehr_id") String ehrIdString,
@@ -153,6 +161,7 @@ public class OpenehrVersionedCompositionController extends BaseController {
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PostAuthorize("checkAbacPost(@openehrVersionedCompositionController.COMPOSITION, "
             + "@ehrService.getSubjectExtRef(#ehrIdString), returnObject, #accept)")
+    @Override
     public ResponseEntity<OriginalVersionResponseData<Composition>> retrieveVersionOfCompositionByTime(
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "ehr_id") String ehrIdString,

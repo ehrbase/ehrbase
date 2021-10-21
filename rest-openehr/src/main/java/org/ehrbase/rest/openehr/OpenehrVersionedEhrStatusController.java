@@ -4,7 +4,8 @@ import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.ehr.VersionedEhrStatus;
 import com.nedap.archie.rm.generic.RevisionHistory;
-import org.apache.commons.lang3.StringUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -15,7 +16,7 @@ import org.ehrbase.response.openehr.OriginalVersionResponseData;
 import org.ehrbase.response.openehr.RevisionHistoryResponseData;
 import org.ehrbase.response.openehr.VersionedObjectResponseData;
 import org.ehrbase.rest.BaseController;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.ehrbase.rest.openehr.specification.VersionedEhrStatusApiSpecification;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -38,22 +39,24 @@ import java.util.UUID;
  * Controller for /ehr/{ehrId}/versioned_ehr_status resource of openEHR REST API
  */
 @RestController
-@RequestMapping(path = "${openehr-api.context-path:/rest/openehr}/v1/ehr/{ehr_id}/versioned_ehr_status", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-public class OpenehrVersionedEhrStatusController extends BaseController {
+@RequestMapping(path = "${openehr-api.context-path:/rest/openehr}/v1/ehr/{ehr_id}/versioned_ehr_status",
+        produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+public class OpenehrVersionedEhrStatusController extends BaseController implements VersionedEhrStatusApiSpecification {
 
-    private final EhrService ehrService;
     private final ContributionService contributionService;
 
-    @Autowired
+    private final EhrService ehrService;
+
     public OpenehrVersionedEhrStatusController(EhrService ehrService, ContributionService contributionService) {
         this.ehrService = Objects.requireNonNull(ehrService);
         this.contributionService = Objects.requireNonNull(contributionService);
     }
 
     @GetMapping
+    @Override
     public ResponseEntity<VersionedObjectResponseData<EhrStatus>> retrieveVersionedEhrStatusByEhr(
-            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-            @PathVariable(value = "ehr_id") String ehrIdString) {
+            @PathVariable(value = "ehr_id") String ehrIdString,
+            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
 
@@ -73,6 +76,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController {
     }
 
     @GetMapping(path = "/revision_history")
+    @Override
     public ResponseEntity<RevisionHistoryResponseData> retrieveVersionedEhrStatusRevisionHistoryByEhr(
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "ehr_id") String ehrIdString) {
@@ -98,6 +102,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController {
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrVersionedEhrStatusController.EHR_STATUS, "
             + "@ehrService.getSubjectExtRef(#ehrIdString), null, null)")
+    @Override
     public ResponseEntity<OriginalVersionResponseData<EhrStatus>> retrieveVersionOfEhrStatusByTime(
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "ehr_id") String ehrIdString,
@@ -138,6 +143,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController {
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrVersionedEhrStatusController.EHR_STATUS, "
             + "@ehrService.getSubjectExtRef(#ehrIdString), null, null)")
+    @Override
     public ResponseEntity<OriginalVersionResponseData<EhrStatus>> retrieveVersionOfEhrStatusByVersionUid(
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "ehr_id") String ehrIdString,
