@@ -1,0 +1,18 @@
+{
+  "persistent_minimal/language|code" : "en",
+  "persistent_minimal/language|terminology" : "ISO_639-1",
+  "persistent_minimal/territory|code" : "UY",
+  "persistent_minimal/territory|terminology" : "ISO_3166-1",
+  "persistent_minimal/minimal:0/text" : "Z bubfpoLpewFSdjkLstJBMERtoRXB,obFzwMnZWZNOOCERqpWjQRwXQQGhXpfbppBYwJ cOxhWefhuQbYrDdiNVNkBOOODFvJKxJgei VSv ufevztyWxBeStOMqHpcMHMyBO,MRsStiAbBn bhSuZnjCI hYazALlPgH,oTiMU,XpkYcZpqsQkhtEcRPNMzFCpwBhsGRmERPJVbDxzdNkNbXJffibb NNJXdmffHNgFaKgMdTa.HoZbhJWcLL",
+  "persistent_minimal/minimal:0/time" : "2021-10-18T22:33:14.061-03:00",
+  "persistent_minimal/minimal:0/language|code" : "en",
+  "persistent_minimal/minimal:0/language|terminology" : "ISO_639-1",
+  "persistent_minimal/minimal:0/encoding|code" : "UTF-8",
+  "persistent_minimal/minimal:0/encoding|terminology" : "IANA_character-sets",
+  "persistent_minimal/category|code" : "431",
+  "persistent_minimal/category|value" : "persistent",
+  "persistent_minimal/category|terminology" : "openehr",
+  "persistent_minimal/composer|id" : "204465be-a6c2-44fa-99c9-fa20b1072caf",
+  "persistent_minimal/composer|id_namespace" : "DEMOGRAPHIC",
+  "persistent_minimal/composer|name" : "Dr. House"
+}

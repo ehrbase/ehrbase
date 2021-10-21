@@ -1,0 +1,18 @@
+{
+  "minimal/language|code" : "en",
+  "minimal/language|terminology" : "ISO_639-1",
+  "minimal/territory|code" : "UY",
+  "minimal/territory|terminology" : "ISO_3166-1",
+  "minimal/minimal:0/text" : "RiHVUSqlHR.oJyCSSsgPpvOtWIROiTrtXalwbEGMfbTXTlZOFF,.R,pfwOdaOaz.aBpj,gXWV,purlzlVRbOBFAqTgTlirJTnuFlFkzDOX jhbax PMpIiIh.wFfPQsCaptGAdIspDwbe,BIpVcI heXKTxPcdHhCs.yCgFYaVJ cpwfltpjfzAeQfMoMpdsbttlL.TcacAuuADTgCTaaVSrGInUXbtP.SV.nTWLFRC.UrxZI.HAKXATttjfsVx",
+  "minimal/minimal:0/time" : "2021-10-18T22:27:56.4-03:00",
+  "minimal/minimal:0/language|code" : "en",
+  "minimal/minimal:0/language|terminology" : "ISO_639-1",
+  "minimal/minimal:0/encoding|code" : "UTF-8",
+  "minimal/minimal:0/encoding|terminology" : "IANA_character-sets",
+  "minimal/category|code" : "433",
+  "minimal/category|value" : "event",
+  "minimal/category|terminology" : "openehr",
+  "minimal/composer|id" : "8e920edb-0ccd-4fed-b1d7-7e4f5ea1aaef",
+  "minimal/composer|id_namespace" : "DEMOGRAPHIC",
+  "minimal/composer|name" : "Dr. Yamamoto"
+}
