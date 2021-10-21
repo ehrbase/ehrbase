@@ -534,7 +534,9 @@ Preconditions (PART 2) - Generate Test-Data and Expected-Results
     upload OPT      minimal/minimal_evaluation.opt
     upload OPT      minimal/minimal_action.opt
     upload OPT      minimal/minimal_action_2.opt
-    upload OPT      all_types/Test_all_types.opt
+    ### REL TO https://github.com/ehrbase/ehrbase/issues/643
+    ###upload OPT      all_types/Test_all_types.opt
+    upload OPT    all_types/Test_all_types_v2.opt
 
     Populate SUT with Test-Data and Prepare Expected Results    1    ${ehr data sets}/ehr_status_01.json
     Populate SUT with Test-Data and Prepare Expected Results    2    ${ehr data sets}/ehr_status_02.json
@@ -562,7 +564,9 @@ Populate SUT with Test-Data and Prepare Expected Results
     Commit Compo     5    ${ehr_index}    ${compo data sets}/minimal_evaluation_2.composition.json
     # Commit Compo     6    ${ehr_index}    ${compo data sets}/minimal_evaluation_3.composition.json
     # Commit Compo     7    ${ehr_index}    ${compo data sets}/minimal_evaluation_4.composition.json
-    Commit Compo     8    ${ehr_index}    ${compo data sets}/all_types.composition.json
+    ### REL TO https://github.com/ehrbase/ehrbase/issues/643
+    ### Commit Compo     8    ${ehr_index}    ${compo data sets}/all_types.composition.json
+    Commit Compo     8    ${ehr_index}    ${compo data sets}/all_types_v2.composition.json
 
     Commit Compo     9    ${ehr_index}    ${compo data sets}/minimal_instruction_1.composition.json
     Commit Compo    10    ${ehr_index}    ${compo data sets}/minimal_instruction_2.composition.json
