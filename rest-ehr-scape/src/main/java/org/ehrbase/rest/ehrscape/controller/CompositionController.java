@@ -19,9 +19,6 @@
 package org.ehrbase.rest.ehrscape.controller;
 
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -54,7 +51,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping(path = "/rest/ecis/v1/composition", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-@Api(value = "Composition Endpoint")
 public class CompositionController extends BaseController {
 
     private final CompositionService compositionService;
@@ -66,11 +62,10 @@ public class CompositionController extends BaseController {
     }
 
     @PostMapping()
-    @ApiOperation(value = "Add a Composition to an EHR")
-    public ResponseEntity<CompositionWriteRestResponseData> createComposition(@ApiParam(value = "Format of the Composition", allowableValues = "XML, ECISFLAT, FLAT") @RequestParam(value = "format", defaultValue = "XML") CompositionFormat format,
+    public ResponseEntity<CompositionWriteRestResponseData> createComposition(@RequestParam(value = "format", defaultValue = "XML") CompositionFormat format,
                                                                               @RequestParam(value = "templateId", required = false) String templateId,
                                                                               @RequestParam(value = "link", required = false) UUID linkId,
-                                                                              @ApiParam(value = "Id of the EHR to which the Composition is added") @RequestParam(value = "ehrId") UUID ehrId,
+                                                                              @RequestParam(value = "ehrId") UUID ehrId,
                                                                               @RequestBody String content) {
 
         if ((format == CompositionFormat.FLAT || format == CompositionFormat.ECISFLAT) && StringUtils.isEmpty(templateId)) {
@@ -94,10 +89,7 @@ public class CompositionController extends BaseController {
 
 
     @GetMapping(path = "/{uid}")
-    @ApiOperation(value = "Retrieve a Composition by Id")
-    public ResponseEntity<CompositionResponseData> getComposition(@ApiParam(value = "Id of the Composition in the form uuid::version") @PathVariable("uid") String compositionUid,
-                                                                  @ApiParam(value = "Format of the Composition", allowableValues = "XML, ECISFLAT, FLAT, RAW") @RequestParam(value = "format", defaultValue = "XML") CompositionFormat format) {
-
+    public ResponseEntity<CompositionResponseData> getComposition(@PathVariable("uid") String compositionUid, @RequestParam(value = "format", defaultValue = "XML") CompositionFormat format) {
         UUID identifier = getCompositionIdentifier(compositionUid);
         Integer version = null;
 
@@ -127,9 +119,7 @@ public class CompositionController extends BaseController {
     }
 
     @PutMapping(path = "/{uid}")
-    @ApiOperation(value = "Update a Composition")
-    public ResponseEntity<ActionRestResponseData> update(@ApiParam(value = "UID of the Composition") @PathVariable("uid") String compositionUid,
-                                                         @ApiParam(value = "Format of the Composition", allowableValues = "XML, ECISFLAT, FLAT") @RequestParam(value = "format", defaultValue = "XML") CompositionFormat format,
+    public ResponseEntity<ActionRestResponseData> update(@PathVariable("uid") String compositionUid, @RequestParam(value = "format", defaultValue = "XML") CompositionFormat format,
                                                          @RequestParam(value = "templateId", required = false) String templateId,
                                                          @RequestBody String content) {
 
@@ -157,8 +147,7 @@ public class CompositionController extends BaseController {
     }
 
     @DeleteMapping(path = "/{uid}")
-    @ApiOperation(value = "Delete a Composition")
-    public ResponseEntity<ActionRestResponseData> delete(@ApiParam(value = "UID of the Composition") @PathVariable("uid") String compositionUid) {
+    public ResponseEntity<ActionRestResponseData> delete(@PathVariable("uid") String compositionUid) {
 
         ObjectVersionId objectVersionId = getObjectVersionId(compositionUid);
         UUID compositionIdentifier = getCompositionIdentifier(compositionUid);
