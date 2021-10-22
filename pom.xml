@@ -125,12 +125,9 @@
         <jooq.version>3.12.3</jooq.version>
         <jackson.version>2.11.2</jackson.version>
         <keycloak.version>4.0.0.Final</keycloak.version>
-        <springfox.version>2.9.2</springfox.version>
-        <springfox-snapshot.version>3.0.0-SNAPSHOT</springfox-snapshot.version>
-        <swagger.version>1.6.2</swagger.version>
-        <swagger-snapshot.version>2.0.0-rc2</swagger-snapshot.version>
+        <springdoc-openapi.version>1.5.11</springdoc-openapi.version>
         <postgressql.version>42.2.18</postgressql.version>
-        <ehrbase.sdk.version>30e3c81</ehrbase.sdk.version>
+        <ehrbase.sdk.version>340fff3</ehrbase.sdk.version>
         <flyway.version>7.11.3</flyway.version>
         <joda.version>2.10.6</joda.version>
         <database.name>ehrbase</database.name>
@@ -302,36 +299,9 @@
                 <version>1.5</version>
             </dependency>
             <dependency>
-                <groupId>io.springfox</groupId>
-                <artifactId>springfox-swagger2</artifactId>
-                <version>${springfox.version}</version>
-                <!-- excluding and adding them with a custom version later resolves:
-                https://github.com/springfox/springfox/issues/2265#issuecomment-413286451 -->
-                <exclusions>
-                    <exclusion>
-                        <groupId>io.swagger</groupId>
-                        <artifactId>swagger-annotations</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>io.swagger</groupId>
-                        <artifactId>swagger-models</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.swagger</groupId>
-                <artifactId>swagger-annotations</artifactId>
-                <version>${swagger.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.swagger</groupId>
-                <artifactId>swagger-models</artifactId>
-                <version>${swagger.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.springfox</groupId>
-                <artifactId>springfox-swagger-ui</artifactId>
-                <version>${springfox.version}</version>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-ui</artifactId>
+                <version>${springdoc-openapi.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.flywaydb</groupId>
