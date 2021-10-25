@@ -127,7 +127,7 @@
         <keycloak.version>4.0.0.Final</keycloak.version>
         <springdoc-openapi.version>1.5.11</springdoc-openapi.version>
         <postgressql.version>42.2.18</postgressql.version>
-        <ehrbase.sdk.version>7060793</ehrbase.sdk.version>
+        <ehrbase.sdk.version>321ef09</ehrbase.sdk.version>
         <flyway.version>7.11.3</flyway.version>
         <joda.version>2.10.6</joda.version>
         <database.name>ehrbase</database.name>
