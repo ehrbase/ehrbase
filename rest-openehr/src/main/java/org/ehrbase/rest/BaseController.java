@@ -19,9 +19,18 @@
 package org.ehrbase.rest;
 
 import org.apache.commons.lang3.StringUtils;
-import org.assertj.core.data.Offset;
-import org.checkerframework.checker.nullness.Opt;
-import org.ehrbase.api.exception.*;
+import org.ehrbase.api.exception.BadGatewayException;
+import org.ehrbase.api.exception.DuplicateObjectException;
+import org.ehrbase.api.exception.GeneralRequestProcessingException;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.InvalidApiParameterException;
+import org.ehrbase.api.exception.NotAcceptableException;
+import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.exception.PreconditionFailedException;
+import org.ehrbase.api.exception.StateConflictException;
+import org.ehrbase.api.exception.UnprocessableEntityException;
+import org.ehrbase.api.exception.UnsupportedMediaTypeException;
+import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.serialisation.exception.UnmarshalException;
 import org.springframework.http.HttpHeaders;
@@ -29,7 +38,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.RequestAttributes;
@@ -42,9 +50,7 @@ import org.springframework.web.util.UriUtils;
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.time.temporal.TemporalAccessor;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -325,10 +331,11 @@ public abstract class BaseController {
             .getQueryParams()
             .toSingleValueMap();
 
-    if (!queryParams.containsKey("version_at_time")) {
+    String versionAtTime = queryParams.get("version_at_time");
+    if (StringUtils.isBlank(versionAtTime)) {
         return Optional.empty();
     }
-    String versionAtTime = queryParams.get("version_at_time");
+
     try {
         return Optional.of(OffsetDateTime.parse(versionAtTime));
     } catch (DateTimeParseException e) {
