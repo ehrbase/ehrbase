@@ -41,12 +41,12 @@ public interface CompositionApiSpecification {
             externalDocs = @ExternalDocumentation(url = "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#composition-composition-get")
     )
     ResponseEntity<CompositionResponseData> getCompositionByVersionId(String accept, String ehrIdString, String versionUid,
-                                                                      LocalDateTime versionAtTime, HttpServletRequest request);
+                                                                      String versionAtTime, HttpServletRequest request);
 
     @Operation(
             summary = "Get composition at time",
             externalDocs = @ExternalDocumentation(url = "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#composition-composition-get-1")
     )
     ResponseEntity getCompositionByTime(String accept, String ehrIdString, String versionedObjectUid,
-                                        LocalDateTime versionAtTime, HttpServletRequest request);
+                                        String versionAtTime, HttpServletRequest request);
 }

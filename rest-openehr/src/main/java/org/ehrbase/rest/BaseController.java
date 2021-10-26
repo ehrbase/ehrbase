@@ -19,6 +19,8 @@
 package org.ehrbase.rest;
 
 import org.apache.commons.lang3.StringUtils;
+import org.assertj.core.data.Offset;
+import org.checkerframework.checker.nullness.Opt;
 import org.ehrbase.api.exception.*;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.serialisation.exception.UnmarshalException;
@@ -27,19 +29,26 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.TemporalAccessor;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -47,6 +56,18 @@ import java.util.UUID;
  * includes error handling and utils.
  */
 public abstract class BaseController {
+
+  // HTTP Headers
+
+  public static final String OPENEHR_AUDIT_DETAILS = "openEHR-AUDIT_DETAILS";
+
+  public static final String OPENEHR_VERSION = "openEHR-VERSION";
+
+  public static final String PREFER = "Prefer";
+
+  public static final String RETURN_MINIMAL = "return=minimal";
+
+  public static final String RETURN_REPRESENTATION = "return=representation";
 
   // Fixed header identifiers
   public static final String CONTENT_TYPE = HttpHeaders.CONTENT_TYPE;
@@ -58,12 +79,11 @@ public abstract class BaseController {
   public static final String RESP_CONTENT_TYPE_DESC = "Format of response";
   // Audit
   public static final String REST_OPERATION = "RestOperation";
-  public static final String RETURN_MINIMAL = "return=minimal";
-  public static final String RETURN_REPRESENTATION = "return=representation";
+
   public static final String LOCATION = HttpHeaders.LOCATION;
   public static final String ETAG = HttpHeaders.ETAG;
   public static final String LAST_MODIFIED = HttpHeaders.LAST_MODIFIED;
-  public static final String PREFER = "PREFER";
+
   public static final String IF_MATCH = HttpHeaders.IF_MATCH;
   public static final String IF_NONE_MATCH = HttpHeaders.IF_NONE_MATCH;
   // Configuration of swagger-ui description fields
@@ -298,6 +318,23 @@ public abstract class BaseController {
     }
 
     return contentType;
+  }
+
+  protected Optional<OffsetDateTime> getVersionAtTimeParam() {
+    Map<String, String> queryParams = ServletUriComponentsBuilder.fromCurrentRequest().build()
+            .getQueryParams()
+            .toSingleValueMap();
+
+    if (!queryParams.containsKey("version_at_time")) {
+        return Optional.empty();
+    }
+    String versionAtTime = queryParams.get("version_at_time");
+    try {
+        return Optional.of(OffsetDateTime.parse(versionAtTime));
+    } catch (DateTimeParseException e) {
+      throw new IllegalArgumentException("Value '" + versionAtTime + "' is not valid for version_at_time parameter. " +
+              "Value must be in the extended ISO 8601 format.", e);
+    }
   }
 
   /*
