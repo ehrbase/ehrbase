@@ -49,6 +49,7 @@ import org.springframework.web.util.UriUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
@@ -337,7 +338,7 @@ public abstract class BaseController {
     }
 
     try {
-        return Optional.of(OffsetDateTime.parse(versionAtTime));
+        return Optional.of(OffsetDateTime.parse(UriUtils.decode(versionAtTime, StandardCharsets.UTF_8)));
     } catch (DateTimeParseException e) {
       throw new IllegalArgumentException("Value '" + versionAtTime + "' is not valid for version_at_time parameter. " +
               "Value must be in the extended ISO 8601 format.", e);
