@@ -1,0 +1,19 @@
+{
+  "alternative_types/language|code" : "en",
+  "alternative_types/language|terminology" : "ISO_639-1",
+  "alternative_types/territory|code" : "UY",
+  "alternative_types/territory|terminology" : "ISO_3166-1",
+  "alternative_types/alternative_types:0/alternative_types/quantity_value|magnitude" : 268.9,
+  "alternative_types/alternative_types:0/alternative_types/quantity_value|unit" : "_no_constraint_defined_",
+  "alternative_types/alternative_types:0/time" : "2021-10-18T22:20:43.515-03:00",
+  "alternative_types/alternative_types:0/language|code" : "en",
+  "alternative_types/alternative_types:0/language|terminology" : "ISO_639-1",
+  "alternative_types/alternative_types:0/encoding|code" : "UTF-8",
+  "alternative_types/alternative_types:0/encoding|terminology" : "IANA_character-sets",
+  "alternative_types/category|code" : "433",
+  "alternative_types/category|value" : "event",
+  "alternative_types/category|terminology" : "openehr",
+  "alternative_types/composer|id" : "ce488a53-fe17-46d2-8503-8c38655a534f",
+  "alternative_types/composer|id_namespace" : "DEMOGRAPHIC",
+  "alternative_types/composer|name" : "Dr. Yamamoto"
+}
