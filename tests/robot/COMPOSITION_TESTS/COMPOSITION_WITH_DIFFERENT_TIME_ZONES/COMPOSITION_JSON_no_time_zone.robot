@@ -21,24 +21,41 @@ Documentation   Composition Integration Tests
 Metadata        TOP_TEST_SUITE    COMPOSITION
 
 Resource        ../../_resources/keywords/composition_keywords.robot
-
+Resource        ../../_resources/keywords/aql_query_keywords.robot
 
 
 Force Tags
 
-
-
 *** Test Cases ***
-COMPOSITION JSON with no time zone
-    [Tags]    
+COMPOSITION JSON with no time zone using Get
+    [Tags]    dtz
 
     upload OPT    minimal/minimal_observation.opt
 
     create EHR
 
     commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes_no_time_zone.xml
-
     get versioned composition - version at time    ${time_1}
     check content of compositions version at time (JSON)    time_1    original value
+
+
+    [Teardown]    restart SUT
+
+
+COMPOSITION JSON with no time zone using AQL
+    [Tags]    dtz
+
+    upload OPT    minimal/minimal_observation.opt
+
+    create EHR
+
+    commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes_no_time_zone.xml
+    Replace Uid With Actual  ${VALID QUERY DATA SETS}/${TIME QUERY DATA SET}  ${composition_uid}  ${VALID QUERY DATA SETS}/actual_uid_replaced.json
+    Replace Uid With Actual  ${QUERY RESULTS LOADED DB}/${No Time Zone Expected DATA SET}  ${composition_uid}  ${QUERY RESULTS LOADED DB}/expected_uid_replaced.json
+    execute ad-hoc query and check result (loaded DB)   actual_uid_replaced.json  expected_uid_replaced.json
+    Remove File  ${VALID QUERY DATA SETS}/actual_uid_replaced.json
+    Remove File  ${QUERY RESULTS LOADED DB}/expected_uid_replaced.json
+
+
 
     [Teardown]    restart SUT
