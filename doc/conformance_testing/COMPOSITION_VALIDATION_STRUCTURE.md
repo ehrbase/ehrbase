@@ -1,10 +1,10 @@
-openEHR Data Validation Conformance
------------------------------------
+Composition Structural Validation (Conformance Testing)
+--------------------------------------------------------
 
 | Author                                           | Version          | Comments                                                   |
 |:------------------------------------------------:|:----------------:|:----------------------------------------------------------:|
-| Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 0.1 (2019-03-12) | First version with different cardinality constraints for each container attribute in the RM |
-||||
+| Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 0.1 (2021-06-21) | First version with different cardinality constraints for each container attribute in the RM |
+| Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 0.2 (2021-11-03) | Updated style for cases accepted/rejected and index |
 ||||
 
 # Index
@@ -777,7 +777,7 @@ OBSERVATION data sets:
 3. OBSERVATION with state and no protocol
 4. OBSERVATION with state and protocol
 
-> Note: since data is mandatory by the RM we can't have a case for an AOM constraint with "no OBSERVATION.data". Though any OBSERVATION committed to the SUT without data will return a validation error comming from the RM/Schema, and this should be tested.
+> Note: since OBSERVATION.data is mandatory by the RM we can't have a case for an AOM constraint with "no OBSERVATION.data". Though any OBSERVATION committed to the SUT without data will return a validation error comming from the RM/Schema, and this should be tested.
 
 
 The constraints combinations described below could be tested in two ways:
@@ -1374,12 +1374,16 @@ The constraints combinations described below could be tested in two ways:
 
 # 5. EVENT data sets and test cases
 
+## Reference UML
+
+![](https://specifications.openehr.org/releases/RM/Release-1.1.0/UML/diagrams/RM-data_structures.svg)
+
 EVENT data sets:
 
 1. EVENT with no state
 2. EVENT with state
 
-> Note: since data is mandatory by the RM we can't have a case for an AOM constraint with "no EVENT.data". Though any EVENT committed to the SUT without data will return a validation error comming from the RM/Schema, and this should be tested.
+> Note: since EVENT.data is mandatory by the RM we can't have a case for an AOM constraint with "no EVENT.data". Though any EVENT committed to the SUT without data will return a validation error comming from the RM/Schema, and this should be tested.
 
 
 EVENT type combinations:
@@ -1422,9 +1426,9 @@ The constraints combinations described below could be tested in two ways:
 
 </div>
 
-## 5.3. EVENT is EVENT
+## 5.3. EVENT is EVENT (type validation)
 
-The title of this case is correct, it means, in the AOM/TOM the constraint for the EVENT type is using the abstract class EVENT, so it allows any EVENT subclass at this position at runtime.
+The title of this case is correct, it means: in the AOM/TOM the constraint for the EVENT type is using the abstract class EVENT, so it allows any EVENT subclass at runtime.
 
 <div id="evt_3">
 
@@ -1435,7 +1439,7 @@ The title of this case is correct, it means, in the AOM/TOM the constraint for t
 
 </div>
 
-## 5.4. EVENT is POINT_EVENT
+## 5.4. EVENT is POINT_EVENT (type validation)
 
 <div id="evt_3">
 
@@ -1446,7 +1450,7 @@ The title of this case is correct, it means, in the AOM/TOM the constraint for t
 
 </div>
 
-## 5.5. EVENT is INTERVAL_EVENT
+## 5.5. EVENT is INTERVAL_EVENT (type validation)
 
 <div id="evt_3">
 
@@ -1460,7 +1464,6 @@ The title of this case is correct, it means, in the AOM/TOM the constraint for t
 
 # 6. ITEM_STRUCTURE data sets and test cases
 
-
 ITEM_STRUCTURE type combinations:
 
 1. ITEM_STRUCTURE is ITEM_TREE
@@ -1470,7 +1473,7 @@ ITEM_STRUCTURE type combinations:
 
 > Note: testing with any of the ITEM_STRUCTURE subclasses shouldn't affect the result of testing combinations with the rest of the constraints defined on container classes. It will affect only the type checking test if the wrong type of ITEM_STRUCTRE is provided. So instead of combining the expected results with the rest of the constraints, we will define separate test cases.
 
-## 6.1. ITEM_STRUCTURE is ITEM_STRUCTURE
+## 6.1. ITEM_STRUCTURE is ITEM_STRUCTURE (type validation)
 
 The title of this case is correct, it means, in the AOM/TOM the constraint for the ITEM_STRUCTURE type is using the abstract class ITEM_STRUCTURE, so it allows any ITEM_STRUCTURE subclass at this position at runtime.
 
@@ -1485,7 +1488,7 @@ The title of this case is correct, it means, in the AOM/TOM the constraint for t
 
 </div>
 
-## 6.2. ITEM_STRUCTURE is ITEM_TREE
+## 6.2. ITEM_STRUCTURE is ITEM_TREE (type validation)
 
 <div id="str_2">
 
@@ -1499,7 +1502,7 @@ The title of this case is correct, it means, in the AOM/TOM the constraint for t
 </div>
 
 
-## 6.3. ITEM_STRUCTURE is ITEM_LIST
+## 6.3. ITEM_STRUCTURE is ITEM_LIST (type validation)
 
 <div id="str_3">
 
@@ -1513,7 +1516,7 @@ The title of this case is correct, it means, in the AOM/TOM the constraint for t
 </div>
 
 
-## 6.4. ITEM_STRUCTURE is ITEM_TABLE
+## 6.4. ITEM_STRUCTURE is ITEM_TABLE (type validation)
 
 <div id="str_4">
 
@@ -1527,7 +1530,7 @@ The title of this case is correct, it means, in the AOM/TOM the constraint for t
 </div>
 
 
-## 6.5. ITEM_STRUCTURE is ITEM_SINGLE
+## 6.5. ITEM_STRUCTURE is ITEM_SINGLE (type validation)
 
 <div id="str_5">
 
@@ -1540,4 +1543,44 @@ The title of this case is correct, it means, in the AOM/TOM the constraint for t
 
 </div>
 
+## 6.6. ITEM_TREE.items cardinality 0..*
+## 6.7. ITEM_TREE.items cardinality 1..*
+## 6.8. ITEM_TREE.items cardinality 3..*
+## 6.9. ITEM_TREE.items cardinality 0..1
+## 6.10. ITEM_TREE.items cardinality 1..1
+## 6.11. ITEM_TREE.items cardinality 3..5
 
+## 6.12. ITEM_LIST.items cardinality 0..*
+## 6.13. ITEM_LIST.items cardinality 1..*
+## 6.14. ITEM_LIST.items cardinality 3..*
+## 6.15. ITEM_LIST.items cardinality 0..1
+## 6.16. ITEM_LIST.items cardinality 1..1
+## 6.17. ITEM_LIST.items cardinality 3..5
+
+## 6.18. ITEM_TABLE.rows cardinality 0..*
+## 6.19. ITEM_TABLE.rows cardinality 1..*
+## 6.20. ITEM_TABLE.rows cardinality 3..*
+## 6.21. ITEM_TABLE.rows cardinality 0..1
+## 6.22. ITEM_TABLE.rows cardinality 1..1
+## 6.23. ITEM_TABLE.rows cardinality 3..5
+
+
+# 7. ITEM data sets and test cases
+
+## 7.1. ITEM is ITEM (type validation)
+## 7.2. ITEM is CLUSTER (type validation)
+## 7.3. ITEM is ELEMENT (type validation)
+
+## 7.4. CLUSTER.items cardinality 0..*
+## 7.5. CLUSTER.items cardinality 1..*
+## 7.6. CLUSTER.items cardinality 3..*
+## 7.7. CLUSTER.items cardinality 0..1
+## 7.8. CLUSTER.items cardinality 1..1
+## 7.9. CLUSTER.items cardinality 3..5
+
+## 7.8. ELEMENT.value existence = 0..1
+## 7.9. ELEMENT.value existence = 1..1
+## 7.10. ELEMENT.null_flavour existence = 0..1
+## 7.11. ELEMENT.null_flavour existence = 1..1
+
+> We need to consider the invariant of value XOR null_flavour
