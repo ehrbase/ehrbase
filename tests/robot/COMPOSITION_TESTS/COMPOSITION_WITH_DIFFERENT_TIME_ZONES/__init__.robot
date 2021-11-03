@@ -27,4 +27,4 @@ Documentation    COMPOSITION TEST SUITE
 # Suite Setup  startup SUT
 # Suite Teardown  shutdown SUT
 
-Force Tags    COMPOSITION_get
+Force Tags    COMPOSITION_dtz

@@ -79,6 +79,12 @@ workflows:
             - build-ehrbase
             - QUERYSERVICE-test-1
 
+      - COMPOSITION-tests-6:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
       - CONTRIBUTION-test:
           context: org-global
           requires:
@@ -143,6 +149,7 @@ workflows:
             - COMPOSITION-tests-3
             - COMPOSITION-tests-4
             - COMPOSITION-tests-5
+            - COMPOSITION-tests-6
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -223,6 +230,12 @@ workflows:
             - build-ehrbase
             - QUERYSERVICE-test-2
 
+      - COMPOSITION-tests-6:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-2
+
       - CONTRIBUTION-test:
           context: org-global
           requires:
@@ -281,6 +294,7 @@ workflows:
             - COMPOSITION-tests-3
             - COMPOSITION-tests-4
             - COMPOSITION-tests-5
+            - COMPOSITION-tests-6
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -422,6 +436,10 @@ workflows:
           context: org-global
           requires:
             - build package ehrbase with locally installed sdk
+      - COMPOSITION-tests-6:
+          context: org-global
+          requires:
+            - build package ehrbase with locally installed sdk
       - CONTRIBUTION-test:
           context: org-global
           requires:
@@ -466,6 +484,7 @@ workflows:
             - COMPOSITION-tests-3
             - COMPOSITION-tests-4
             - COMPOSITION-tests-5
+            - COMPOSITION-tests-6
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -626,6 +645,17 @@ jobs:
           include-tags: "compositionANDcomposition_delete"
           test-suite-path: "COMPOSITION_TESTS"
           test-suite-name: "COMPOSITION_5"
+
+  COMPOSITION-tests-6:
+    executor: docker-py3-java11-postgres
+    # executor: machine-ubuntu-2004
+    steps:
+      - checkout
+      - restore-packaged-ehrbase-jar
+      - run-robot-tests:
+          include-tags: "compositionANDcomposition_dtz"
+          test-suite-path: "COMPOSITION_TESTS"
+          test-suite-name: "COMPOSITION_6"
 
   CONTRIBUTION-test:
     executor: docker-py3-java11-postgres
