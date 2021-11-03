@@ -56,6 +56,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
@@ -287,7 +288,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
     public ResponseEntity<CompositionResponseData> getCompositionByVersionId(@RequestHeader(value = ACCEPT, required = false) String accept,
                                                                              @PathVariable(value = "ehr_id") String ehrIdString,
                                                                              @PathVariable(value = "version_uid") String versionUid,
-                                                                             @RequestParam(value = "version_at_time", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime versionAtTime,
+                                                                             @RequestParam(value = "version_at_time", required = false) String versionAtTime,
                                                                              HttpServletRequest request) {
         return getCompositionByTime(accept, ehrIdString, versionUid, versionAtTime, request);
     }
@@ -305,7 +306,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
     public ResponseEntity getCompositionByTime(@RequestHeader(value = ACCEPT, required = false) String accept,
                                                @PathVariable(value = "ehr_id") String ehrIdString,
                                                @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
-                                               @RequestParam(value = "version_at_time", required = false) LocalDateTime versionAtTime,
+                                               @RequestParam(value = "version_at_time", required = false) String versionAtTime,
                                                HttpServletRequest request) {
         UUID ehrId = getEhrUuid(ehrIdString);
 
@@ -322,9 +323,11 @@ public class OpenehrCompositionController extends BaseController implements Comp
             version = extractVersionFromVersionUid(versionedObjectUid);
         } else {
             // case GET {versioned_object_uid}{?version_at_time}
-            if (versionAtTime != null) {
+            Optional<OffsetDateTime> temporal = getVersionAtTimeParam();
+            if (versionAtTime != null && temporal.isPresent()) {
                 // when optional request parameter was provided, retrieve version according to given time
-                Optional<Integer> versionFromTimestamp = Optional.ofNullable(compositionService.getVersionByTimestamp(compositionUid, versionAtTime));
+
+                Optional<Integer> versionFromTimestamp = Optional.ofNullable(compositionService.getVersionByTimestamp(compositionUid, temporal.get().toLocalDateTime()));
                 version = versionFromTimestamp.orElseThrow(() -> new ObjectNotFoundException("composition", "No composition version matching the timestamp condition"));
             } // else continue with fallback: latest version
         }

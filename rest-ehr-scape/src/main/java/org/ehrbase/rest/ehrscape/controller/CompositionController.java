@@ -26,188 +26,197 @@ import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.response.ehrscape.CompositionDto;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.StructuredString;
-import org.ehrbase.rest.ehrscape.responsedata.Action;
-import org.ehrbase.rest.ehrscape.responsedata.ActionRestResponseData;
-import org.ehrbase.rest.ehrscape.responsedata.CompositionResponseData;
-import org.ehrbase.rest.ehrscape.responsedata.CompositionWriteRestResponseData;
-import org.ehrbase.rest.ehrscape.responsedata.Meta;
-import org.ehrbase.rest.ehrscape.responsedata.RestHref;
+import org.ehrbase.rest.ehrscape.responsedata.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
 @RestController
-@RequestMapping(path = "/rest/ecis/v1/composition", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@RequestMapping(
+    path = "/rest/ecis/v1/composition",
+    produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class CompositionController extends BaseController {
 
-    private final CompositionService compositionService;
+  private final CompositionService compositionService;
 
-    @Autowired
-    public CompositionController(CompositionService compositionService) {
+  @Autowired
+  public CompositionController(CompositionService compositionService) {
 
-        this.compositionService = Objects.requireNonNull(compositionService);
+    this.compositionService = Objects.requireNonNull(compositionService);
+  }
+
+  @PostMapping()
+  public ResponseEntity<CompositionWriteRestResponseData> createComposition(
+      @RequestParam(value = "format", defaultValue = "XML") CompositionFormat format,
+      @RequestParam(value = "templateId", required = false) String templateId,
+      @RequestParam(value = "link", required = false) UUID linkId,
+      @RequestParam(value = "ehrId") UUID ehrId,
+      @RequestBody String content) {
+
+    if ((format == CompositionFormat.FLAT
+            || format == CompositionFormat.STRUCTURED
+            || format == CompositionFormat.ECISFLAT)
+        && StringUtils.isEmpty(templateId)) {
+      throw new InvalidApiParameterException(
+          String.format("Template Id needs to specified for format %s", format));
     }
 
-    @PostMapping()
-    public ResponseEntity<CompositionWriteRestResponseData> createComposition(@RequestParam(value = "format", defaultValue = "XML") CompositionFormat format,
-                                                                              @RequestParam(value = "templateId", required = false) String templateId,
-                                                                              @RequestParam(value = "link", required = false) UUID linkId,
-                                                                              @RequestParam(value = "ehrId") UUID ehrId,
-                                                                              @RequestBody String content) {
+    var compoObj = compositionService.buildComposition(content, format, templateId);
 
-        if ((format == CompositionFormat.FLAT || format == CompositionFormat.ECISFLAT) && StringUtils.isEmpty(templateId)) {
-            throw new InvalidApiParameterException(String.format("Template Id needs to specified for format %s", format));
-        }
+    Optional<CompositionDto> optionalCompositionDto = compositionService.create(ehrId, compoObj);
 
-        var compoObj = compositionService.buildComposition(content, format, templateId);
+    var compositionUuid =
+        optionalCompositionDto
+            .orElseThrow(() -> new InternalServerException("Failed to create composition"))
+            .getUuid();
 
-        Optional<CompositionDto> optionalCompositionDto = compositionService.create(ehrId, compoObj);
+    CompositionWriteRestResponseData responseData = new CompositionWriteRestResponseData();
+    responseData.setAction(Action.CREATE);
+    responseData.setCompositionUid(
+        compositionUuid + "::" + compositionService.getServerConfig().getNodename() + "::" + 1);
+    responseData.setMeta(buildMeta(responseData.getCompositionUid()));
+    return ResponseEntity.ok(responseData);
+  }
 
-        var compositionUuid = optionalCompositionDto.orElseThrow(() ->
-                        new InternalServerException("Failed to create composition"))
-                .getUuid();
+  @GetMapping(path = "/{uid}")
+  public ResponseEntity<CompositionResponseData> getComposition(
+      @PathVariable("uid") String compositionUid,
+      @RequestParam(value = "format", defaultValue = "XML") CompositionFormat format) {
+    UUID identifier = getCompositionIdentifier(compositionUid);
+    Integer version = null;
 
-        CompositionWriteRestResponseData responseData = new CompositionWriteRestResponseData();
-        responseData.setAction(Action.CREATE);
-        responseData.setCompositionUid(compositionUuid + "::" + compositionService.getServerConfig().getNodename() + "::" + 1);
-        responseData.setMeta(buildMeta(responseData.getCompositionUid()));
-        return ResponseEntity.ok(responseData);
+    if (isFullCompositionUid(compositionUid)) {
+      version = getCompositionVersion(compositionUid); // version number is inorder: 1, 2, 3 etc.
     }
 
+    Optional<CompositionDto> compositionDto = compositionService.retrieve(identifier, version);
+    if (compositionDto.isPresent()) {
 
-    @GetMapping(path = "/{uid}")
-    public ResponseEntity<CompositionResponseData> getComposition(@PathVariable("uid") String compositionUid, @RequestParam(value = "format", defaultValue = "XML") CompositionFormat format) {
-        UUID identifier = getCompositionIdentifier(compositionUid);
-        Integer version = null;
+      // Serialize onto target format
+      StructuredString serialize = compositionService.serialize(compositionDto.get(), format);
 
-        if (isFullCompositionUid(compositionUid)) {
-            version = getCompositionVersion(compositionUid); //version number is inorder: 1, 2, 3 etc.
-        }
+      CompositionResponseData responseDto = new CompositionResponseData();
+      responseDto.setComposition(serialize);
+      responseDto.setAction(Action.RETRIEVE);
+      responseDto.setFormat(format);
+      responseDto.setTemplateId(compositionDto.get().getTemplateId());
+      responseDto.setCompositionUid(compositionDto.get().getUuid().toString());
+      responseDto.setEhrId(compositionDto.get().getEhrId());
+      Meta meta = buildMeta(responseDto.getCompositionUid());
+      responseDto.setMeta(meta);
+      return ResponseEntity.ok(responseDto);
+    } else {
+      return ResponseEntity.notFound().build();
+    }
+  }
 
-        Optional<CompositionDto> compositionDto = compositionService.retrieve(identifier, version);
-        if (compositionDto.isPresent()) {
+  @PutMapping(path = "/{uid}")
+  public ResponseEntity<ActionRestResponseData> update(
+      @PathVariable("uid") String compositionUid,
+      @RequestParam(value = "format", defaultValue = "XML") CompositionFormat format,
+      @RequestParam(value = "templateId", required = false) String templateId,
+      @RequestBody String content) {
 
-            // Serialize onto target format
-            StructuredString serialize = compositionService.serialize(compositionDto.get(), format);
-
-            CompositionResponseData responseDto = new CompositionResponseData();
-            responseDto.setComposition(serialize);
-            responseDto.setAction(Action.RETRIEVE);
-            responseDto.setFormat(format);
-            responseDto.setTemplateId(compositionDto.get().getTemplateId());
-            responseDto.setCompositionUid(compositionDto.get().getUuid().toString());
-            responseDto.setEhrId(compositionDto.get().getEhrId());
-            Meta meta = buildMeta(responseDto.getCompositionUid());
-            responseDto.setMeta(meta);
-            return ResponseEntity.ok(responseDto);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    if ((format == CompositionFormat.FLAT
+            || format == CompositionFormat.STRUCTURED
+            || format == CompositionFormat.ECISFLAT)
+        && StringUtils.isEmpty(templateId)) {
+      throw new InvalidApiParameterException(
+          String.format("Template Id needs to specified for format %s", format));
     }
 
-    @PutMapping(path = "/{uid}")
-    public ResponseEntity<ActionRestResponseData> update(@PathVariable("uid") String compositionUid, @RequestParam(value = "format", defaultValue = "XML") CompositionFormat format,
-                                                         @RequestParam(value = "templateId", required = false) String templateId,
-                                                         @RequestBody String content) {
+    ObjectVersionId objectVersionId = getObjectVersionId(compositionUid);
+    UUID compositionIdentifier = getCompositionIdentifier(compositionUid);
+    UUID ehrId = getEhrId(compositionIdentifier);
 
-        if ((format == CompositionFormat.FLAT || format == CompositionFormat.ECISFLAT) && StringUtils.isEmpty(templateId)) {
-            throw new InvalidApiParameterException(String.format("Template Id needs to specified for format %s", format));
-        }
+    var compoObj = compositionService.buildComposition(content, format, templateId);
 
-        ObjectVersionId objectVersionId = getObjectVersionId(compositionUid);
-        UUID compositionIdentifier = getCompositionIdentifier(compositionUid);
-        UUID ehrId = getEhrId(compositionIdentifier);
+    // Actual update
+    Optional<CompositionDto> dtoOptional =
+        compositionService.update(ehrId, objectVersionId, compoObj);
 
-        var compoObj = compositionService.buildComposition(content, format, templateId);
+    var compositionVersionUid =
+        dtoOptional
+            .orElseThrow(() -> new InternalServerException("Failed to create composition"))
+            .getComposition()
+            .getUid()
+            .toString();
+    ActionRestResponseData responseData = new ActionRestResponseData();
+    responseData.setAction(Action.UPDATE);
+    responseData.setMeta(buildMeta(compositionVersionUid));
+    return ResponseEntity.ok(responseData);
+  }
 
-        // Actual update
-        Optional<CompositionDto> dtoOptional = compositionService
-                .update(ehrId, objectVersionId, compoObj);
+  @DeleteMapping(path = "/{uid}")
+  public ResponseEntity<ActionRestResponseData> delete(@PathVariable("uid") String compositionUid) {
 
-        var compositionVersionUid = dtoOptional.orElseThrow(() ->
-                        new InternalServerException("Failed to create composition"))
-                .getComposition().getUid().toString();
-        ActionRestResponseData responseData = new ActionRestResponseData();
-        responseData.setAction(Action.UPDATE);
-        responseData.setMeta(buildMeta(compositionVersionUid));
-        return ResponseEntity.ok(responseData);
+    ObjectVersionId objectVersionId = getObjectVersionId(compositionUid);
+    UUID compositionIdentifier = getCompositionIdentifier(compositionUid);
+    UUID ehrId = getEhrId(compositionIdentifier);
+
+    compositionService.delete(ehrId, objectVersionId);
+    ActionRestResponseData responseData = new ActionRestResponseData();
+    responseData.setAction(Action.DELETE);
+    responseData.setMeta(buildMeta(""));
+    return ResponseEntity.ok(responseData);
+  }
+
+  private UUID getEhrId(UUID compositionId) {
+    // EhrScape API doesn't have access to the EHR ID here, so it needs to be retrieved.
+    // Version 1 is enough because EHR never changes & it is always available.
+    Optional<CompositionDto> dtoOptionalForEhr = compositionService.retrieve(compositionId, 1);
+    return dtoOptionalForEhr
+        .orElseThrow(() -> new InvalidApiParameterException("Invalid composition ID."))
+        .getEhrId();
+  }
+
+  private ObjectVersionId getLatestVersionId(UUID compositionId) {
+    // EhrScape API doesn't have access to the "If-Match" header or previous version, so it needs to
+    // be retrieved.
+    return new ObjectVersionId(
+        compositionId.toString(),
+        compositionService.getServerConfig().getNodename(),
+        compositionService.getLastVersionNumber(compositionId).toString());
+  }
+
+  private Meta buildMeta(String compositionUid) {
+    RestHref url = new RestHref();
+    url.setUrl(getBaseEnvLinkURL() + "/rest/ecis/v1/composition/" + compositionUid);
+    Meta meta = new Meta();
+    meta.setHref(url);
+    return meta;
+  }
+
+  private boolean isFullCompositionUid(String compositionUid) {
+    return StringUtils.contains(compositionUid, "::");
+  }
+
+  private UUID getCompositionIdentifier(String compositionUid) {
+    if (isFullCompositionUid(compositionUid)) {
+      return UUID.fromString(compositionUid.substring(0, compositionUid.indexOf("::")));
+    } else {
+      return UUID.fromString(compositionUid);
     }
+  }
 
-    @DeleteMapping(path = "/{uid}")
-    public ResponseEntity<ActionRestResponseData> delete(@PathVariable("uid") String compositionUid) {
-
-        ObjectVersionId objectVersionId = getObjectVersionId(compositionUid);
-        UUID compositionIdentifier = getCompositionIdentifier(compositionUid);
-        UUID ehrId = getEhrId(compositionIdentifier);
-
-        compositionService.delete(ehrId, objectVersionId);
-        ActionRestResponseData responseData = new ActionRestResponseData();
-        responseData.setAction(Action.DELETE);
-        responseData.setMeta(buildMeta(""));
-        return ResponseEntity.ok(responseData);
+  private int getCompositionVersion(String compositionUid) {
+    if (!compositionUid.contains("::")) {
+      throw new IllegalArgumentException(
+          "UID of the composition does not contain domain and version parts");
     }
+    return Integer.parseInt(compositionUid.substring(compositionUid.lastIndexOf("::") + 2));
+  }
 
-    private UUID getEhrId(UUID compositionId) {
-        // EhrScape API doesn't have access to the EHR ID here, so it needs to be retrieved.
-        // Version 1 is enough because EHR never changes & it is always available.
-        Optional<CompositionDto> dtoOptionalForEhr = compositionService.retrieve(compositionId, 1);
-        return dtoOptionalForEhr
-                .orElseThrow(() -> new InvalidApiParameterException("Invalid composition ID."))
-                .getEhrId();
+  private ObjectVersionId getObjectVersionId(String compositionUid) {
+    if (isFullCompositionUid(compositionUid)) {
+      return new ObjectVersionId(compositionUid);
+    } else {
+      return getLatestVersionId(UUID.fromString(compositionUid));
     }
-
-    private ObjectVersionId getLatestVersionId(UUID compositionId) {
-        // EhrScape API doesn't have access to the "If-Match" header or previous version, so it needs to be retrieved.
-        return new ObjectVersionId(compositionId.toString(),
-                compositionService.getServerConfig().getNodename(),
-                compositionService.getLastVersionNumber(compositionId).toString());
-    }
-
-    private Meta buildMeta(String compositionUid) {
-        RestHref url = new RestHref();
-        url.setUrl(getBaseEnvLinkURL() + "/rest/ecis/v1/composition/" + compositionUid);
-        Meta meta = new Meta();
-        meta.setHref(url);
-        return meta;
-    }
-
-    private boolean isFullCompositionUid(String compositionUid) {
-        return StringUtils.contains(compositionUid, "::");
-    }
-
-    private UUID getCompositionIdentifier(String compositionUid) {
-        if (isFullCompositionUid(compositionUid)) {
-            return UUID.fromString(compositionUid.substring(0, compositionUid.indexOf("::")));
-        } else {
-            return UUID.fromString(compositionUid);
-        }
-    }
-
-    private int getCompositionVersion(String compositionUid) {
-        if (!compositionUid.contains("::")) {
-            throw new IllegalArgumentException("UID of the composition does not contain domain and version parts");
-        }
-        return Integer.parseInt(compositionUid.substring(compositionUid.lastIndexOf("::") + 2));
-    }
-
-    private ObjectVersionId getObjectVersionId(String compositionUid) {
-        if (isFullCompositionUid(compositionUid)) {
-            return new ObjectVersionId(compositionUid);
-        } else {
-            return getLatestVersionId(UUID.fromString(compositionUid));
-        }
-    }
+  }
 }

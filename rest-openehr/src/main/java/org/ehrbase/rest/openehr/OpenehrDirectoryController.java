@@ -31,7 +31,6 @@ import org.ehrbase.response.openehr.DirectoryResponseData;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.DirectoryApiSpecification;
 import org.joda.time.DateTime;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -51,7 +50,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
 import java.sql.Timestamp;
-import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -65,9 +64,9 @@ import java.util.regex.Pattern;
 public class OpenehrDirectoryController extends BaseController implements DirectoryApiSpecification {
 
     private final FolderService folderService;
+
     private final EhrService ehrService;
 
-    @Autowired
     public OpenehrDirectoryController(FolderService folderService, EhrService ehrService) {
         this.folderService = Objects.requireNonNull(folderService);
         this.ehrService = Objects.requireNonNull(ehrService);
@@ -77,12 +76,12 @@ public class OpenehrDirectoryController extends BaseController implements Direct
     @ResponseStatus(value = HttpStatus.CREATED)
     @Override
     public ResponseEntity<DirectoryResponseData> createFolder(
-            @RequestHeader(value = "openEHR-VERSION", required = false) String openEhrVersion,
-            @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openEhrAuditDetails,
-            @RequestHeader(value = CONTENT_TYPE) String contentType,
-            @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
-            @RequestHeader(value = PREFER, required = false, defaultValue = RETURN_MINIMAL) String prefer,
             @PathVariable(value = "ehr_id") UUID ehrId,
+            @RequestHeader(value = OPENEHR_VERSION, required = false) String openEhrVersion,
+            @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
+            @RequestHeader(value = HttpHeaders.CONTENT_TYPE) String contentType,
+            @RequestHeader(value = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
+            @RequestHeader(value = PREFER, defaultValue = RETURN_MINIMAL) String prefer,
             @RequestBody Folder folder) {
 
         // Check for existence of EHR record
@@ -121,100 +120,16 @@ public class OpenehrDirectoryController extends BaseController implements Direct
         return createDirectoryResponse(HttpMethod.POST, prefer, accept, newFolder.get(), ehrId);
     }
 
-    @GetMapping(path = "/{ehr_id}/directory/{version_uid}{?path}")
-    @Override
-    public ResponseEntity<DirectoryResponseData> getFolder(
-            @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
-            @PathVariable(value = "ehr_id") UUID ehrId,
-            @PathVariable(value = "version_uid") ObjectVersionId folderId,
-            @RequestParam(value = "path", required = false) String path) {
-
-        // Path value
-        if (path != null && !isValidPath(path)) {
-            throw new IllegalArgumentException("Value for path is malformed. Expecting a unix like notation, e.g. '/episodes/a/b/c'");
-        }
-
-        // Check if EHR for the folder exists
-        checkEhrExists(ehrId);
-        checkEhrExists(ehrId);
-
-        // Get the folder entry from database
-        Optional<FolderDto> foundFolder = folderService.get(
-                folderId,
-                path
-        );
-        if (foundFolder.isEmpty()) {
-            throw new ObjectNotFoundException(
-                    "DIRECTORY",
-                    String.format(
-                            "Folder with id %s does not exist.",
-                            folderId.toString()
-                    )
-            );
-        }
-
-        return createDirectoryResponse(HttpMethod.GET, RETURN_REPRESENTATION, accept, foundFolder.get(), ehrId);
-    }
-
-    @GetMapping(path = "/{ehr_id}/directory{?version_at_time,path}")
-    @Override
-    public ResponseEntity<DirectoryResponseData> getFolderVersionAtTime(
-            @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
-            @PathVariable(value = "ehr_id") UUID ehrId,
-            @RequestParam(value = "version_at_time", required = false) Instant versionAtTime,
-            @RequestParam(value = "path", required = false) String path) {
-        // Check path string if they are valid
-        if (path != null && !isValidPath(path)) {
-            throw new IllegalArgumentException("Value for path is malformed. Expecting a unix like notation, e.g. '/episodes/a/b/c'");
-        }
-
-        // Check ehr exists
-        checkEhrExists(ehrId);
-
-        // Get directory root entry for ehr
-        UUID directoryUuid = ehrService.getDirectoryId(ehrId);
-        if (directoryUuid == null) {
-            throw new ObjectNotFoundException(
-                    "DIRECTORY",
-                    String.format(
-                            "There is no directory stored for EHR with id %s. Maybe it has been deleted?",
-                            ehrId.toString()
-                    )
-            );
-        }
-        ObjectVersionId directoryId = new ObjectVersionId(directoryUuid.toString());
-
-        final Optional<FolderDto> foundFolder;
-        // Get the folder entry from database
-        if (versionAtTime != null) {
-            foundFolder = folderService.getByTimeStamp(
-                    directoryId,
-                    Timestamp.from(versionAtTime),
-                    path
-            );
-        } else {
-            foundFolder = folderService.getLatest(directoryId, path);
-        }
-        if (foundFolder.isEmpty()) {
-            throw new ObjectNotFoundException("folder",
-                    "The FOLDER for ehrId " +
-                            ehrId.toString() +
-                            " does not exist.");
-        }
-
-        return createDirectoryResponse(HttpMethod.GET, RETURN_REPRESENTATION, accept, foundFolder.get(), ehrId);
-    }
-
     @PutMapping(path = "/{ehr_id}/directory")
     @Override
     public ResponseEntity<DirectoryResponseData> updateFolder(
-            @RequestHeader(value = "openEHR-VERSION", required = false) String openEhrVersion,
-            @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openEhrAuditDetails,
-            @RequestHeader(value = CONTENT_TYPE) String contentType,
-            @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
-            @RequestHeader(value = PREFER, required = false, defaultValue = RETURN_MINIMAL) String prefer,
-            @RequestHeader(value = IF_MATCH) ObjectVersionId folderId,
             @PathVariable(value = "ehr_id") UUID ehrId,
+            @RequestHeader(value = OPENEHR_VERSION, required = false) String openEhrVersion,
+            @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
+            @RequestHeader(value = HttpHeaders.CONTENT_TYPE) String contentType,
+            @RequestHeader(value = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
+            @RequestHeader(value = PREFER, defaultValue = RETURN_MINIMAL) String prefer,
+            @RequestHeader(value = HttpHeaders.IF_MATCH) ObjectVersionId folderId,
             @RequestBody Folder folder) {
 
         // Check if directory is set and ehr exists
@@ -244,11 +159,11 @@ public class OpenehrDirectoryController extends BaseController implements Direct
     @DeleteMapping(path = "/{ehr_id}/directory")
     @Override
     public ResponseEntity<DirectoryResponseData> deleteFolder(
-            @RequestHeader(value = "openEHR-VERSION", required = false) String openEhrVersion,
-            @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openEhrAuditDetails,
-            @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
-            @RequestHeader(value = IF_MATCH) ObjectVersionId folderId,
-            @PathVariable(value = "ehr_id") String ehrIdString) {
+            @PathVariable(value = "ehr_id") String ehrIdString,
+            @RequestHeader(value = OPENEHR_VERSION, required = false) String openEhrVersion,
+            @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
+            @RequestHeader(value = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
+            @RequestHeader(value = HttpHeaders.IF_MATCH) ObjectVersionId folderId) {
         UUID ehrId = getEhrUuid(ehrIdString);
 
         // Check if directory is set and ehr exists
@@ -262,6 +177,92 @@ public class OpenehrDirectoryController extends BaseController implements Direct
         this.folderService.delete(ehrId, folderId);
 
         return createDirectoryResponse(HttpMethod.DELETE, null, accept, null, ehrId);
+    }
+
+    @GetMapping(path = "/{ehr_id}/directory/{version_uid}")
+    @Override
+    public ResponseEntity<DirectoryResponseData> getFolder(
+            @PathVariable(value = "ehr_id") UUID ehrId,
+            @PathVariable(value = "version_uid") ObjectVersionId folderId,
+            @RequestParam(value = "path", required = false) String path,
+            @RequestHeader(value = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept) {
+
+        // Path value
+        if (path != null && !isValidPath(path)) {
+            throw new IllegalArgumentException("Value for path is malformed. Expecting a unix like notation, e.g. '/episodes/a/b/c'");
+        }
+
+        // Check if EHR for the folder exists
+        checkEhrExists(ehrId);
+        checkEhrExists(ehrId);
+
+        // Get the folder entry from database
+        Optional<FolderDto> foundFolder = folderService.get(
+                folderId,
+                path
+        );
+        if (foundFolder.isEmpty()) {
+            throw new ObjectNotFoundException(
+                    "DIRECTORY",
+                    String.format(
+                            "Folder with id %s does not exist.",
+                            folderId.toString()
+                    )
+            );
+        }
+
+        return createDirectoryResponse(HttpMethod.GET, RETURN_REPRESENTATION, accept, foundFolder.get(), ehrId);
+    }
+
+    @GetMapping(path = "/{ehr_id}/directory")
+    @Override
+    public ResponseEntity<DirectoryResponseData> getFolderVersionAtTime(
+            @PathVariable(value = "ehr_id") UUID ehrId,
+            @RequestParam(value = "version_at_time", required = false) String versionAtTime,
+            @RequestParam(value = "path", required = false) String path,
+            @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept) {
+
+        // Check path string if they are valid
+        if (path != null && !isValidPath(path)) {
+            throw new IllegalArgumentException("Value for path is malformed. Expecting a unix like notation, e.g. '/episodes/a/b/c'");
+        }
+
+        // Check ehr exists
+        checkEhrExists(ehrId);
+
+        // Get directory root entry for ehr
+        UUID directoryUuid = ehrService.getDirectoryId(ehrId);
+        if (directoryUuid == null) {
+            throw new ObjectNotFoundException(
+                    "DIRECTORY",
+                    String.format(
+                            "There is no directory stored for EHR with id %s. Maybe it has been deleted?",
+                            ehrId.toString()
+                    )
+            );
+        }
+        ObjectVersionId directoryId = new ObjectVersionId(directoryUuid.toString());
+
+        final Optional<FolderDto> foundFolder;
+        // Get the folder entry from database
+        Optional<OffsetDateTime> temporal = getVersionAtTimeParam();
+        if (versionAtTime != null && temporal.isPresent()) {
+            foundFolder = folderService.getByTimeStamp(
+                    directoryId,
+                    Timestamp.from(temporal.get().toInstant()),
+                    path
+            );
+        } else {
+            foundFolder = folderService.getLatest(directoryId, path);
+        }
+        if (foundFolder.isEmpty()) {
+            throw new ObjectNotFoundException("folder",
+                    "The FOLDER for ehrId " +
+                            ehrId.toString() +
+                            " does not exist.");
+        }
+
+        return createDirectoryResponse(HttpMethod.GET, RETURN_REPRESENTATION, accept, foundFolder.get(), ehrId);
     }
 
     private DirectoryResponseData buildResponse(FolderDto folderDto) {
