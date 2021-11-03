@@ -1865,7 +1865,7 @@ executors:
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
-          environment:
+        environment:
             TZ: "Europe/Berlin"
 
   docker-py3-java11-postgres:
@@ -1877,7 +1877,7 @@ executors:
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
-          environment:
+        environment:
             TZ: "Europe/Berlin"
       - image: ehrbase/ehrbase-postgres:13.4
         auth:
