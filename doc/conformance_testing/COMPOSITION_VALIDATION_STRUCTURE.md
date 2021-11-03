@@ -1584,3 +1584,9 @@ The title of this case is correct, it means, in the AOM/TOM the constraint for t
 ## 7.11. ELEMENT.null_flavour existence = 1..1
 
 > We need to consider the invariant of value XOR null_flavour
+
+TODO: The cases for the different ELEMENT.value types will be in the data types component
+
+TODO: Add type test case for LOCATABLE.name having it's type defined as DV_CODED_TEXT
+
+TODO: Add occurrences test cases for items contained in container attributes (miultiple attributes)
