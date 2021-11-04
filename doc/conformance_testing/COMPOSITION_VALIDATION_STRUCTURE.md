@@ -1473,9 +1473,9 @@ ITEM_STRUCTURE type combinations:
 
 > Note: testing with any of the ITEM_STRUCTURE subclasses shouldn't affect the result of testing combinations with the rest of the constraints defined on container classes. It will affect only the type checking test if the wrong type of ITEM_STRUCTRE is provided. So instead of combining the expected results with the rest of the constraints, we will define separate test cases.
 
-## 6.1. ITEM_STRUCTURE is ITEM_STRUCTURE (type validation)
+## 6.1. ITEM_STRUCTURE is any ITEM_STRUCTURE (type validation)
 
-The title of this case is correct, it means, in the AOM/TOM the constraint for the ITEM_STRUCTURE type is using the abstract class ITEM_STRUCTURE, so it allows any ITEM_STRUCTURE subclass at this position at runtime.
+The title of this case is correct, it means, in the AOM/TOM the constraint for the ITEM_STRUCTURE type is using an open constraint, so it allows any ITEM_STRUCTURE subclass at this position at runtime.
 
 <div id="str_1">
 
@@ -1567,7 +1567,7 @@ The title of this case is correct, it means, in the AOM/TOM the constraint for t
 
 # 7. ITEM data sets and test cases
 
-## 7.1. ITEM is ITEM (type validation)
+## 7.1. ITEM is any ITEM (type validation)
 ## 7.2. ITEM is CLUSTER (type validation)
 ## 7.3. ITEM is ELEMENT (type validation)
 
