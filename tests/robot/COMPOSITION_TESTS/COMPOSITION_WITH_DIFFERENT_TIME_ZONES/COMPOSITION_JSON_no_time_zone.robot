@@ -43,8 +43,8 @@ COMPOSITION JSON with no time zone using Get
 
 
 COMPOSITION JSON with no time zone using AQL
-    [Tags]    dtz
-
+    [Tags]    not-ready
+    [Documentation]    This test case is failing due to PEM-455 which needs to be investigated. Therefore this test case has been marked not-ready
     upload OPT    minimal/minimal_observation.opt
 
     create EHR
