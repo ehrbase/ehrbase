@@ -1887,7 +1887,7 @@ executors:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           PGDATA: /tmp
-          TZ: "Europe/Berlin"
+          TZ: "Asia/Shanghai"
 
   machine-ubuntu-1604:
     description: |
