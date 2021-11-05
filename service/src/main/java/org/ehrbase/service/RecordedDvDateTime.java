@@ -1,14 +1,13 @@
 package org.ehrbase.service;
 
-import com.nedap.archie.datetime.DateTimeFormatters;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.ZoneOffset;
 import java.time.temporal.TemporalAccessor;
+import java.util.Optional;
 
 public class RecordedDvDateTime {
 
@@ -26,12 +25,13 @@ public class RecordedDvDateTime {
         return Timestamp.valueOf(LocalDateTime.from(temporal));
     }
 
-    public String zoneId() {
+    public Optional<String> zoneId() {
         TemporalAccessor accessor = dateTime.getValue();
         if (accessor instanceof OffsetDateTime) {
-            return ((OffsetDateTime) accessor).getOffset().getId();
+            ZoneOffset offset = ((OffsetDateTime) accessor).getOffset();
+            return Optional.of(offset.getId());
         } else {
-            return OffsetDateTime.now().getOffset().getId();
+            return Optional.empty();
         }
     }
 
@@ -47,8 +47,13 @@ public class RecordedDvDateTime {
         if (timestamp == null) {
             return null;
         }
-        ZoneId zoneId = timezone != null ? ZoneId.of(timezone) : ZoneId.systemDefault();
-        ZonedDateTime zonedDateTime = timestamp.toLocalDateTime().atZone(zoneId);
-        return new DvDateTime(DateTimeFormatters.ISO_8601_DATE_TIME.format(zonedDateTime));
+
+        TemporalAccessor temporal;
+        if (timezone != null) {
+            temporal = timestamp.toLocalDateTime().atOffset(ZoneOffset.of(timezone));
+        } else {
+            temporal = timestamp.toLocalDateTime();
+        }
+        return new DvDateTime(temporal);
     }
 }
