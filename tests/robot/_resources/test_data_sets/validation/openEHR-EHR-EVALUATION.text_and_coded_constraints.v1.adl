@@ -21,7 +21,7 @@ description
 	lifecycle_state = <"0">
 	other_contributors = <>
 	other_details = <
-		["MD5-CAM-1.0.1"] = <"C42D8CFE9B9E5EF0A6145B1AD0520A44">
+		["MD5-CAM-1.0.1"] = <"4C32EED46AEBB1C8C0DEA346DABCAD6C">
 	>
 
 definition
@@ -73,7 +73,7 @@ definition
 	}
 
 ontology
-	terminologies_available = <"ICD10CM", ...>
+	terminologies_available = <"ICD10CM", "ICD10AM_2000">
 	term_definitions = <
 		["en"] = <
 			items = <
@@ -138,6 +138,11 @@ ontology
 		["ICD10CM"] = <
 			items = <
 				["ac0002"] = <terminology:ICD10CM>
+			>
+		>
+		["ICD10AM_2000"] = <
+			items = <
+				["ac0002"] = <terminology:ICD10AM_2000>
 			>
 		>
 	>

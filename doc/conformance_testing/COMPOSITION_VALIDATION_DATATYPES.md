@@ -175,7 +175,7 @@ In ADL this would mean the C_OBJECT for DV_CODED_TEXT matches {\*}.
 | ABC         | NULL           | NULL                    | NULL                         | rejected | RM/Schema mandatory terminology_id |
 | NULL        | local          | NULL                    | NULL                         | rejected | RM/Schema mandatory code_string |
 | ABC         | local          | NULL                    | NULL                         | accepted | |
-| 82272006    | SNOMED CT      | NULL                    | NULL                         | accepted | |
+| 82272006    | SNOMED-CT      | NULL                    | NULL                         | accepted | |
 
 
 ### 2.3.2. Test case DV_CODED_TEXT with local codes
@@ -188,27 +188,74 @@ In ADL this would mean the C_OBJECT for DV_CODED_TEXT matches {\*}.
 | ABC         | NULL           | [ABC, OPQ]              | local                        | rejected | RM/Schema mandatory terminology_id |
 | NULL        | local          | [ABC, OPQ]              | local                        | rejected | RM/Schema mandatory code_string |
 | ABC         | local          | [ABC, OPQ]              | local                        | accepted | |
-| 82272006    | SNOMED CT      | [ABC, OPQ]              | local                        | rejected | C_CODE_PHRASE.terminology_id |
+| 82272006    | SNOMED-CT      | [ABC, OPQ]              | local                        | rejected | C_CODE_PHRASE.terminology_id |
 
 
 ### 2.3.3. Test case DV_CODED_TEXT with external terminology (constraint reference)
 
+In this case the DV_CODED_TEXT is constrained by a CONSTRAINT_REF. For the CONSTRAINT_REF to be valid in the template, there shoudld be a constraint_binding entry in the template ontology for the acNNNN code of the CONSTRAINT_REF. Without that, the SUT doesn't know which terminology_id can be used in that DV_CODED_TEXT. Note that multiple bindings are possible, so there could be more than one terminology_id for the coded text. The cases where there are no constraint_bindings are not tested here, that should be part of the OPT validation.
 
+> NOTE: the COSNTRAINT_REF in ADL is transformed by the Template Designer into a C_CODE_REFERENCE in OPT, which is a C_CODE_PHRASE subclass with an extra referenceSetUri attribute.
+
+| code_string | terminology_id | CONSTRAINT_REF.reference | constraint_bindings | expected | constraints violated |
+|:------------|:---------------|--------------------------|---------------------|----------|----------------------|
+| NULL        | NULL           | ac0001                   | [SNOMED_CT]         | rejected | RM/Schema mandatory both code_String and terminology_id |
+| ABC         | NULL           | ac0001                   | [SNOMED_CT]         | rejected | RM/Schema mandatory terminology_id |
+| NULL        | local          | ac0001                   | [SNOMED_CT]         | rejected | RM/Schema mandatory code_string |
+| ABC         | local          | ac0001                   | [SNOMED_CT]         | rejected | constraint_binding: terminology_id not found |
+| 82272006    | SNOMED-CT      | ac0001                   | [SNOMED_CT]         | accepted | |
 
 
 ## 2.4. text.DV_PARAGRAPH
 
 // TBD
 
-# quantity
 
-## Reference UML
+# 3. quantity
+
+## 3.1. Reference UML
 
 ![](https://specifications.openehr.org/releases/RM/Release-1.1.0/UML/diagrams/RM-data_types.quantity.svg)
 
-## quantity.DV_SCALE
 
-## quantity.DV_ORDINAL
+## 3.2. quantity.DV_ORDINAL
+
+DV_ORDINAL is constrained by C_DV_ORDINAL from AOP (https://specifications.openehr.org/releases/1.0.2/architecture/am/openehr_archetype_profile.pdf), which contains a list of DV_ORDINAL that could be empty.
+
+
+### 3.3.1. Test case DV_ORDINAL without constraints
+
+> NOTE: at the OPT level this case should be invalid, since is like defining a constraint for a DV_CODED_TEXT with terminology_id `local` but no given codes, since all codes in a C_DV_ORDINAL have terminology_id `local`, at least one code in the list is required at the OPT level. This constraint is valid at the archetypel evel. See commend on 2.3.2.
+
+| symbol         | value | C_DV_ORDINAL.list | expected | constraints violated |
+|:---------------|:------|-------------------|----------|----------------------|
+| NULL           | NULL  | []                | rejected | RM/Schema both value and symbol are mandatory |
+| NULL           | 1     | []                | rejected | RM/Schema symbol is mandatory |
+| local::at0005  | NULL  | []                | rejected | RM/Schema value is mandatory |
+| local::at0005  | 1     | []                | ? | ? |
+| local::at0005  | 666   | []                | ? | ? |
+
+
+### 3.3.2. Test case DV_ORDINAL with constraints
+
+| symbol         | value | C_DV_ORDINAL.list                    | expected | constraints violated |
+|:---------------|:------|--------------------------------------|----------|----------------------|
+| NULL           | NULL  | 1|[local::at0005], 2|[local::at0006] | rejected | RM/Schema both value and symbol are mandatory |
+| NULL           | 1     | 1|[local::at0005], 2|[local::at0006] | rejected | RM/Schema symbol is mandatory         |
+| local::at0005  | NULL  | 1|[local::at0005], 2|[local::at0006] | rejected | RM/Schema value is mandatory          |
+| local::at0005  | 1     | 1|[local::at0005], 2|[local::at0006] | accepted |                                       |
+| local::at0005  | 666   | 1|[local::at0005], 2|[local::at0006] | rejected | C_DV_ORDINAL.list: no matching value  |
+| local::at0666  | 1     | 1|[local::at0005], 2|[local::at0006] | rejected | C_DV_ORDINAL.list: no matching symbol |
+
+
+
+## 3.3. quantity.DV_SCALE
+
+DV_SCALE was introduced to the RM 1.1.0 (https://openehr.atlassian.net/browse/SPECRM-19), it is analogous to DV_ORDINAL with a Real value. So test cases for DV_SCALE and DV_ORDINAL are similar.
+
+// TBD
+
+
 
 ## quantity.DV_PROPORTION
 
@@ -219,7 +266,8 @@ In ADL this would mean the C_OBJECT for DV_CODED_TEXT matches {\*}.
 ## quantity.DV_INTERVAL
 
 
-# quantity.date_time
+
+# 4. quantity.date_time
 
 ## Reference UML
 
@@ -235,7 +283,7 @@ In ADL this would mean the C_OBJECT for DV_CODED_TEXT matches {\*}.
 
 
 
-# time_specification
+# 5. time_specification
 
 ## Reference UML
 
@@ -247,7 +295,7 @@ In ADL this would mean the C_OBJECT for DV_CODED_TEXT matches {\*}.
 
 
 
-# encapsulated
+# 6. encapsulated
 
 ## Reference UML
 
@@ -259,7 +307,7 @@ In ADL this would mean the C_OBJECT for DV_CODED_TEXT matches {\*}.
 
 
 
-# uri
+# 7. uri
 
 ## Reference UML
 
