@@ -256,12 +256,114 @@ DV_SCALE was introduced to the RM 1.1.0 (https://openehr.atlassian.net/browse/SP
 // TBD
 
 
+## 3.4. quantity.DV_COUNT
+
+Internally this type is constrained by a C_INTEGER which could contain a range or a list of values.
+
+### 3.4.1. Test case DV_COUNT open constraint
+
+This case represents the DV_COUNT matching {*}, in this case the C_INTEGER is not present in the OPT.
+
+| magnitude      | C_INTEGER.range | C_INTEGER.list    | expected | constraints violated |
+|:---------------|:----------------|-------------------|----------|----------------------|
+| NULL           | NULL            | NULL              | rejected | RM/Schema magnitude is mandatory |
+| 0              | NULL            | NULL              | accepted |  |
+| 1              | NULL            | NULL              | accepted |  |
+| 15             | NULL            | NULL              | accepted |  |
+| 30             | NULL            | NULL              | accepted |  |
+
+### 3.4.2. Test case DV_COUNT range constraint
+
+| magnitude      | C_INTEGER.range | C_INTEGER.list    | expected | constraints violated |
+|:---------------|:----------------|-------------------|----------|----------------------|
+| NULL           | 10..20          | NULL              | rejected | RM/Schema magnitude is mandatory |
+| 0              | 10..20          | NULL              | rejected | C_INTEGER.range |
+| 1              | 10..20          | NULL              | rejected | C_INTEGER.range |
+| 15             | 10..20          | NULL              | accepted |  |
+| 30             | 10..20          | NULL              | rejected | C_INTEGER.range |
+
+### 3.4.3. Test case DV_COUNT list constraint
+
+> NOTE: some modeling tools might not support the list constraint.
+
+| magnitude      | C_INTEGER.range | C_INTEGER.list    | expected | constraints violated |
+|:---------------|:----------------|-------------------|----------|----------------------|
+| NULL           | NULL            | [10,15,20]        | rejected | RM/Schema magnitude is mandatory |
+| 0              | NULL            | [10,15,20]        | rejected | C_INTEGER.list |
+| 1              | NULL            | [10,15,20]        | rejected | C_INTEGER.list |
+| 15             | NULL            | [10,15,20]        | accepted |  |
+| 30             | NULL            | [10,15,20]        | rejected | C_INTEGER.list |
+
+
+## 3.5. quantity.DV_QUANTITY
+
+Internally DV_QUANTITY is constrained by a C_DV_QUANTITY, which allows to specify an optional physical property and a list of C_QUANTITY_ITEM, which can contain a mandatory units and optional interval constraints for magnitude and precision.
+
+### 3.5.1. Test case DV_QUANTITY open constraint
+
+This case represents the DV_QUANTITY matching {*}, in this case the C_DV_QUANTITY is not present in the OPT.
+
+| magnitude | units | C_DV_QUANTITY.property | C_DV_QUANTITY.list    | expected | constraints violated |
+|:----------|:------|:-----------------------|-------------------|----------|----------------------|
+| NULL      | NULL  | NULL                   | NULL              | rejected | RM/Schema both magnitude and untis are mandatory |
+| NULL      | cm    | NULL                   | NULL              | rejected | RM/Schema magnitude is mandatory |
+| 1.0       | NULL  | NULL                   | NULL              | rejected | RM/Schema untis is mandatory |
+| 0.0       | cm    | NULL                   | NULL              | accepted |  |
+| 1.0       | cm    | NULL                   | NULL              | accepted |  |
+| 5.7       | cm    | NULL                   | NULL              | accepted |  |
+| 10.0      | cm    | NULL                   | NULL              | accepted |  |
+
+
+### 3.5.2. Test case DV_QUANTITY only property is constrained
+
+The C_DV_QUANTITY is present in the OPT and has a value for `property`, but doesn't have a list of C_QUANTITY_ITEM.
+
+> NOTE: in this case all units for the `property` are allowed, so the validation should look into UCUM for all the possible units of measure or that physical property (the possible values are not un the OPT).
+
+| magnitude | units | C_DV_QUANTITY.property  | C_DV_QUANTITY.list    | expected | constraints violated |
+|:----------|:------|:------------------------|-------------------|----------|----------------------|
+| NULL      | NULL  | openehr::122 (length)   | NULL              | rejected | RM/Schema both magnitude and untis are mandatory |
+| NULL      | cm    | openehr::122 (length)   | NULL              | rejected | RM/Schema magnitude is mandatory |
+| 1.0       | NULL  | openehr::122 (length)   | NULL              | rejected | RM/Schema untis is mandatory |
+| 0.0       | mg    | openehr::122 (length)   | NULL              | rejected | C_DV_QUANTITY.property: `mg` is not a length unit |
+| 0.0       | cm    | openehr::122 (length)   | NULL              | accepted |  |
+| 1.0       | cm    | openehr::122 (length)   | NULL              | accepted |  |
+| 5.7       | cm    | openehr::122 (length)   | NULL              | accepted |  |
+| 10.0      | cm    | openehr::122 (length)   | NULL              | accepted |  |
+
+
+### 3.5.3. Test case DV_QUANTITY property and units are constrained, without magnitude range
+
+| magnitude | units | C_DV_QUANTITY.property  | C_DV_QUANTITY.list    | expected | constraints violated |
+|:----------|:------|:------------------------|-------------------|----------|----------------------|
+| NULL      | NULL  | openehr::122 (length)   | [cm, m]           | rejected | RM/Schema both magnitude and untis are mandatory |
+| NULL      | cm    | openehr::122 (length)   | [cm, m]           | rejected | RM/Schema magnitude is mandatory |
+| 1.0       | NULL  | openehr::122 (length)   | [cm, m]           | rejected | RM/Schema untis is mandatory |
+| 0.0       | mg    | openehr::122 (length)   | [cm, m]           | rejected | C_DV_QUANTITY.property: `mg` is not a length unit |
+| 0.0       | cm    | openehr::122 (length)   | [cm, m]           | accepted |  |
+| 0.0       | km    | openehr::122 (length)   | [cm, m]           | rejected | C_DV_QUANTITY.list: `km` is not allowed |
+| 1.0       | cm    | openehr::122 (length)   | [cm, m]           | accepted |  |
+| 5.7       | cm    | openehr::122 (length)   | [cm, m]           | accepted |  |
+| 10.0      | cm    | openehr::122 (length)   | [cm, m]           | accepted |  |
+
+
+### 3.5.4. Test case DV_QUANTITY property and units are constrained, with magnitude range
+
+| magnitude | units | C_DV_QUANTITY.property  | C_DV_QUANTITY.list    | expected | constraints violated |
+|:----------|:------|:------------------------|-----------------------|----------|----------------------|
+| NULL      | NULL  | openehr::122 (length)   | [cm 5.0..10.0, m]     | rejected | RM/Schema both magnitude and untis are mandatory |
+| NULL      | cm    | openehr::122 (length)   | [cm 5.0..10.0, m]     | rejected | RM/Schema magnitude is mandatory |
+| 1.0       | NULL  | openehr::122 (length)   | [cm 5.0..10.0, m]     | rejected | RM/Schema untis is mandatory |
+| 0.0       | mg    | openehr::122 (length)   | [cm 5.0..10.0, m]     | rejected | C_DV_QUANTITY.property: `mg` is not a length unit |
+| 0.0       | cm    | openehr::122 (length)   | [cm 5.0..10.0, m]     | rejected | C_DV_QUANTITY.list: magnitude not in range for unit  |
+| 0.0       | km    | openehr::122 (length)   | [cm 5.0..10.0, m]     | rejected | C_DV_QUANTITY.list: `km` is not allowed |
+| 1.0       | cm    | openehr::122 (length)   | [cm 5.0..10.0, m]     | rejected | C_DV_QUANTITY.list: magnitude not in range for unit |
+| 5.7       | cm    | openehr::122 (length)   | [cm 5.0..10.0, m]     | accepted |  |
+| 10.0      | cm    | openehr::122 (length)   | [cm 5.0..10.0, m]     | accepted |  |
 
 ## quantity.DV_PROPORTION
 
-## quantity.DV_COUNT
 
-## quantity.DV_QUANTITY
 
 ## quantity.DV_INTERVAL
 
