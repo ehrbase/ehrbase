@@ -24,6 +24,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Fix conversion between `DvDateTime` and `Timestamp` (see https://github.com/ehrbase/ehrbase/pull/634)
 - Fix FLAT format does not return the archetype data if the archetype_id contains the letters "and"
 - Datetime inconsistent handling (see https://github.com/ehrbase/ehrbase/pull/649)
+- Fix issue using DV_DATE_TIME without time-zone (see https://github.com/ehrbase/ehrbase/pull/658)
 
 ## [0.17.2]
 
