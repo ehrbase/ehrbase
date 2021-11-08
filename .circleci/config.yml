@@ -2133,8 +2133,8 @@ executors:
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
-          environment:
-            TZ: "Europe/Berlin"
+        environment:
+          TZ: "Europe/Berlin"
       - image: ehrbase/ehrbase-postgres:13.4
         auth:
           username: $DOCKER_USER
@@ -2154,8 +2154,8 @@ executors:
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
-          environment:
-            TZ: "Europe/Berlin"
+        environment:
+          TZ: "Europe/Berlin"
       - image: ehrbase/ehrbase-postgres:13.4
         auth:
           username: $DOCKER_USER
@@ -2175,8 +2175,8 @@ executors:
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
-          environment:
-            TZ: "Europe/Berlin"
+        environment:
+          TZ: "Europe/Berlin"
       - image: ehrbase/ehrbase-postgres:13.4
         auth:
           username: $DOCKER_USER
@@ -2196,8 +2196,8 @@ executors:
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
-          environment:
-            TZ: "UTC"
+        environment:
+          TZ: "UTC"
       - image: ehrbase/ehrbase-postgres:13.4
         auth:
           username: $DOCKER_USER
@@ -2217,8 +2217,8 @@ executors:
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
-          environment:
-            TZ: "UTC"
+        environment:
+          TZ: "UTC"
       - image: ehrbase/ehrbase-postgres:13.4
         auth:
           username: $DOCKER_USER
@@ -2238,8 +2238,8 @@ executors:
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
-          environment:
-            TZ: "UTC"
+        environment:
+          TZ: "UTC"
       - image: ehrbase/ehrbase-postgres:13.4
         auth:
           username: $DOCKER_USER
@@ -2259,8 +2259,8 @@ executors:
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
-          environment:
-            TZ: "Asia/Shanghai"
+        environment:
+          TZ: "Asia/Shanghai"
       - image: ehrbase/ehrbase-postgres:13.4
         auth:
           username: $DOCKER_USER
@@ -2280,8 +2280,8 @@ executors:
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
-          environment:
-            TZ: "Asia/Shanghai"
+        environment:
+          TZ: "Asia/Shanghai"
       - image: ehrbase/ehrbase-postgres:13.4
         auth:
           username: $DOCKER_USER
@@ -2301,8 +2301,8 @@ executors:
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
-          environment:
-            TZ: "Asia/Shanghai"
+        environment:
+          TZ: "Asia/Shanghai"
       - image: ehrbase/ehrbase-postgres:13.4
         auth:
           username: $DOCKER_USER
