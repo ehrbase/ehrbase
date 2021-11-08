@@ -887,7 +887,7 @@ jobs:
           test-suite-name: "COMPOSITION_CI_TIMEZONE_SHANGHAI_POSTGRES_TIMEZONE_UTC"
 
   COMPOSITION-tests-14:
-    executor: ocker-py3-java11-postgres-ci-timezone-shanghai-postgres-timezone-shanghai
+    executor: docker-py3-java11-postgres-ci-timezone-shanghai-postgres-timezone-shanghai
     # executor: machine-ubuntu-2004
     steps:
       - checkout
