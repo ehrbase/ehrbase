@@ -1,0 +1,127 @@
+archetype (adl_version=1.4)
+	openEHR-EHR-ACTION.proportion.v1
+
+concept
+	[at0000]	-- Proportion
+language
+	original_language = <[ISO_639-1::en]>
+description
+	original_author = <
+		["name"] = <"">
+	>
+	details = <
+		["en"] = <
+			language = <[ISO_639-1::en]>
+			purpose = <"">
+			use = <"">
+			misuse = <"">
+			copyright = <"">
+		>
+	>
+	lifecycle_state = <"0">
+	other_contributors = <>
+	other_details = <
+		["MD5-CAM-1.0.1"] = <"4A1CBE776FA60E3A270375AFB82FB25B">
+	>
+
+definition
+	ACTION[at0000] matches {	-- Proportion
+		description matches {
+			ITEM_TREE[at0001] matches {	-- Tree
+				items cardinality matches {0..*; unordered} matches {
+					ELEMENT[at0002] occurrences matches {0..1} matches {	-- proportion open
+						value matches {
+							DV_PROPORTION matches {*}
+						}
+					}
+					ELEMENT[at0003] occurrences matches {0..1} matches {	-- proportion ratio
+						value matches {
+							DV_PROPORTION matches {
+								type matches {0}
+							}
+						}
+					}
+					ELEMENT[at0004] occurrences matches {0..1} matches {	-- proportion unitary
+						value matches {
+							DV_PROPORTION matches {
+								type matches {1}
+							}
+						}
+					}
+					ELEMENT[at0005] occurrences matches {0..1} matches {	-- proportion percent
+						value matches {
+							DV_PROPORTION matches {
+								type matches {2}
+							}
+						}
+					}
+					ELEMENT[at0006] occurrences matches {0..1} matches {	-- proportion fraction
+						value matches {
+							DV_PROPORTION matches {
+								type matches {3}
+							}
+						}
+					}
+					ELEMENT[at0007] occurrences matches {0..1} matches {	-- proportion integer fraction
+						value matches {
+							DV_PROPORTION matches {
+								type matches {4}
+							}
+						}
+					}
+					ELEMENT[at0008] occurrences matches {0..1} matches {	-- proportion fraction or integer fraction
+						value matches {
+							DV_PROPORTION matches {
+								numerator matches {|>=0.0|}
+								type matches {3, 4}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+ontology
+	term_definitions = <
+		["en"] = <
+			items = <
+				["at0000"] = <
+					text = <"Proportion">
+					description = <"unknown">
+				>
+				["at0001"] = <
+					text = <"Tree">
+					description = <"@ internal @">
+				>
+				["at0002"] = <
+					text = <"proportion open">
+					description = <"*">
+				>
+				["at0003"] = <
+					text = <"proportion ratio">
+					description = <"*">
+				>
+				["at0004"] = <
+					text = <"proportion unitary">
+					description = <"*">
+				>
+				["at0005"] = <
+					text = <"proportion percent">
+					description = <"*">
+				>
+				["at0006"] = <
+					text = <"proportion fraction">
+					description = <"*">
+				>
+				["at0007"] = <
+					text = <"proportion integer fraction">
+					description = <"*">
+				>
+				["at0008"] = <
+					text = <"proportion fraction or integer fraction">
+					description = <"*">
+				>
+			>
+		>
+	>

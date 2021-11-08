@@ -21,7 +21,7 @@ description
 	lifecycle_state = <"0">
 	other_contributors = <>
 	other_details = <
-		["MD5-CAM-1.0.1"] = <"F0D618E4E4644B1A383988087DAF5DCE">
+		["MD5-CAM-1.0.1"] = <"9E272D6CE0605A0D647749E415E95F78">
 	>
 
 definition
@@ -31,10 +31,18 @@ definition
 				defining_code matches {[openehr::433]}
 			}
 		}
-		content cardinality matches {0..*; unordered} matches {
+		content cardinality matches {1..*; unordered} matches {
 			allow_archetype EVALUATION occurrences matches {0..*} matches {
 				include
 					archetype_id/value matches {/openEHR-EHR-EVALUATION\.text_and_coded_constraints\.v1/}
+			}
+			allow_archetype INSTRUCTION occurrences matches {0..*} matches {
+				include
+					archetype_id/value matches {/openEHR-EHR-INSTRUCTION\.quantity\.v1/}
+			}
+			allow_archetype ACTION occurrences matches {0..*} matches {
+				include
+					archetype_id/value matches {/openEHR-EHR-ACTION\.proportion\.v1/}
 			}
 		}
 	}

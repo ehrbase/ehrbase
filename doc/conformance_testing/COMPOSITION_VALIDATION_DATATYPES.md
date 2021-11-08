@@ -361,21 +361,137 @@ The C_DV_QUANTITY is present in the OPT and has a value for `property`, but does
 | 5.7       | cm    | openehr::122 (length)   | [cm 5.0..10.0, m]     | accepted |  |
 | 10.0      | cm    | openehr::122 (length)   | [cm 5.0..10.0, m]     | accepted |  |
 
-## quantity.DV_PROPORTION
+
+## 3.6. quantity.DV_PROPORTION
+
+The DV_PROPORTION is contrained by a C_COMPLEX_OBJECT, which internally has C_REAL constraints for `numerator` and `denominator`. C_REAL defines two types of constraints: range and list of values. Though current modeling tools only allow range contraints. For the `type` atribute, a C_INTEGER constraint is used, which can hold list and range constraints but modeling tools only use the list.
+
+This type has intrinsic constraints that should be semantically consistent depending on the value of the numerator, denominator, precision and type attributes. For instance, this if type = 2, the denominator value should be 100 and can't be anything else. In te table below we express the valid combinations of attribute values.
+
+| type | meaning (kind)   | numerator | denominator  | precision | comment |
+|:----:|------------------|-----------|--------------|-----------|---------|
+| 0    | ratio            | any       | any != 0     | any       |         |
+| 1    | unitary          | any       | 1            | any       |         |
+| 2    | percent          | any       | 100          | any       |         |
+| 3    | fraction         | integer   | integer != 0 | 0         | presentation is num/den |
+| 4    | integer fraction | integer   | integer != 0 | 0         | presentation is integral(num/den) decimal(num/den), e.g. for num=3 den=2: 1 1/2 |
+
+> NOTE: the difference between fraction and integer fraction is the presentation, the data and constraints are the same.
 
 
+### 3.6.1. Test case DV_PROPORTION open constraint, validate RM rules
 
-## quantity.DV_INTERVAL
+This test case is used to check the internal rules of the DV_PROPORTION are correctly implemented by the SUT.
+
+| type | meaning (kind)   | numerator | denominator | precision | expected | constraints violated             |
+|:----:|------------------|-----------|-------------|-----------|----------|----------------------------------|
+| 0    | ratio            | 10        | 500         | 0         | accepted |                                  |
+| 0    | ratio            | 10        | 0           | 0         | rejected | valid_denominator (invariant)    |
+| 1    | unitary          | 10        | 1           | 0         | accepted |                                  |
+| 1    | unitary          | 10        | 0           | 0         | rejected | valid_denominator (invariant)    |
+| 1    | unitary          | 10        | 500         | 0         | rejected | unitary_validity (invariant)     |
+| 2    | percent          | 10        | 0           | 0         | rejected | valid_denominator (invariant)    |
+| 2    | percent          | 10        | 100         | 0         | accepted |                                  |
+| 2    | percent          | 10        | 500         | 0         | rejected | percent_validity (invariant)     |
+| 3    | fraction         | 10        | 0           | 0         | rejected | valid_denominator (invariant)    |
+| 3    | fraction         | 10        | 100         | 0         | accepted |                                  |
+| 3    | fraction         | 10        | 500         | 1         | rejected | fraction_validity (invariant)    |
+| 3    | fraction         | 10.5      | 500         | 1         | rejected | is_integral_validity (invariant) |
+| 3    | fraction         | 10        | 500.5       | 1         | rejected | is_integral_validity (invariant) |
+| 4    | integer fraction | 10        | 0           | 0         | rejected | valid_denominator (invariant)    |
+| 4    | integer fraction | 10        | 100         | 0         | accepted |                                  |
+| 4    | integer fraction | 10        | 500         | 1         | rejected | fraction_validity (invariant)    |
+| 4    | integer fraction | 10.5      | 500         | 1         | rejected | is_integral_validity (invariant) |
+| 4    | integer fraction | 10        | 500.5       | 1         | rejected | is_integral_validity (invariant) |
+| 666  |                  | 10        | 500         | 0         | rejected | type_validity (invariant)        |
+
+
+### 3.6.2. Test case DV_PROPORTION ratio
+
+The C_INTEGER constraint applies to the `type` attribute.
+
+| type | meaning (kind)   | numerator | denominator | precision | C_INTEGER.list | expected | constraints violated             |
+|:----:|------------------|-----------|-------------|-----------|----------------|----------|----------------------------------|
+| 0    | ratio            | 10        | 500         | 0         | [0]            | accepted |                                  |
+| 1    | unitary          | 10        | 1           | 0         | [0]            | rejected | C_INTEGER.list                   |
+| 2    | percent          | 10        | 100         | 0         | [0]            | rejected | C_INTEGER.list                   |
+| 3    | fraction         | 10        | 500         | 0         | [0]            | rejected | C_INTEGER.list                   |
+| 4    | integer fraction | 10        | 500         | 0         | [0]            | rejected | C_INTEGER.list                   |
+
+> NOTE: all the fail cases related with invariants were already contemplated in 3.6.1.
+
+### 3.6.3. Test case DV_PROPORTION unitary
+
+The C_INTEGER constraint applies to the `type` attribute.
+
+| type | meaning (kind)   | numerator | denominator | precision | C_INTEGER.list | expected | constraints violated             |
+|:----:|------------------|-----------|-------------|-----------|----------------|----------|----------------------------------|
+| 0    | ratio            | 10        | 500         | 0         | [1]            | reejcted | C_INTEGER.list                   |
+| 1    | unitary          | 10        | 1           | 0         | [1]            | accepted |                                  |
+| 2    | percent          | 10        | 100         | 0         | [1]            | rejected | C_INTEGER.list                   |
+| 3    | fraction         | 10        | 500         | 0         | [1]            | rejected | C_INTEGER.list                   |
+| 4    | integer fraction | 10        | 500         | 0         | [1]            | rejected | C_INTEGER.list                   |
+
+### 3.6.4. Test case DV_PROPORTION percent
+
+The C_INTEGER constraint applies to the `type` attribute.
+
+| type | meaning (kind)   | numerator | denominator | precision | C_INTEGER.list | expected | constraints violated             |
+|:----:|------------------|-----------|-------------|-----------|----------------|----------|----------------------------------|
+| 0    | ratio            | 10        | 500         | 0         | [2]            | reejcted | C_INTEGER.list                   |
+| 1    | unitary          | 10        | 1           | 0         | [2]            | rejected | C_INTEGER.list                   |
+| 2    | percent          | 10        | 100         | 0         | [2]            | accepted |                                  |
+| 3    | fraction         | 10        | 500         | 0         | [2]            | rejected | C_INTEGER.list                   |
+| 4    | integer fraction | 10        | 500         | 0         | [2]            | rejected | C_INTEGER.list                   |
+
+### 3.6.5. Test case DV_PROPORTION fraction
+
+The C_INTEGER constraint applies to the `type` attribute.
+
+| type | meaning (kind)   | numerator | denominator | precision | C_INTEGER.list | expected | constraints violated             |
+|:----:|------------------|-----------|-------------|-----------|----------------|----------|----------------------------------|
+| 0    | ratio            | 10        | 500         | 0         | [3]            | reejcted | C_INTEGER.list                   |
+| 1    | unitary          | 10        | 1           | 0         | [3]            | rejected | C_INTEGER.list                   |
+| 2    | percent          | 10        | 100         | 0         | [3]            | rejected | C_INTEGER.list                   |
+| 3    | fraction         | 10        | 500         | 0         | [3]            | accepted |                                  |
+| 4    | integer fraction | 10        | 500         | 0         | [3]            | rejected | C_INTEGER.list                   |
+
+### 3.6.6. Test case DV_PROPORTION integer fraction
+
+The C_INTEGER constraint applies to the `type` attribute.
+
+| type | meaning (kind)   | numerator | denominator | precision | C_INTEGER.list | expected | constraints violated             |
+|:----:|------------------|-----------|-------------|-----------|----------------|----------|----------------------------------|
+| 0    | ratio            | 10        | 500         | 0         | [4]            | reejcted | C_INTEGER.list                   |
+| 1    | unitary          | 10        | 1           | 0         | [4]            | rejected | C_INTEGER.list                   |
+| 2    | percent          | 10        | 100         | 0         | [4]            | rejected | C_INTEGER.list                   |
+| 3    | fraction         | 10        | 500         | 0         | [4]            | rejected | C_INTEGER.list                   |
+| 4    | integer fraction | 10        | 500         | 0         | [4]            | accepted |                                  |
+
+### 3.6.7. Test case DV_PROPORTION fraction or integer fraction
+
+This case is similar to the previous one, it just tests a combination of possible types for the proportion.
+
+| type | meaning (kind)   | numerator | denominator | precision | C_INTEGER.list | expected | constraints violated             |
+|:----:|------------------|-----------|-------------|-----------|----------------|----------|----------------------------------|
+| 0    | ratio            | 10        | 500         | 0         | [3, 4]         | reejcted | C_INTEGER.list                   |
+| 1    | unitary          | 10        | 1           | 0         | [3, 4]         | rejected | C_INTEGER.list                   |
+| 2    | percent          | 10        | 100         | 0         | [3, 4]         | rejected | C_INTEGER.list                   |
+| 3    | fraction         | 10        | 500         | 0         | [3, 4]         | accepted |                                  |
+| 4    | integer fraction | 10        | 500         | 0         | [3, 4]         | accepted |                                  |
+
+
+## 3.7. quantity.DV_INTERVAL
 
 
 
 # 4. quantity.date_time
 
-## Reference UML
+## 4.1. Reference UML
 
 ![](https://specifications.openehr.org/releases/RM/Release-1.1.0/UML/diagrams/RM-data_types.quantity.date_time.svg)
 
-## quantity.date_time.DV_DURATION
+## 4.2. quantity.date_time.DV_DURATION
 
 ## quantity.date_time.DV_TIME
 
