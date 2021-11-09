@@ -480,8 +480,53 @@ This case is similar to the previous one, it just tests a combination of possibl
 | 3    | fraction         | 10        | 500         | 0         | [3, 4]         | accepted |                                  |
 | 4    | integer fraction | 10        | 500         | 0         | [3, 4]         | accepted |                                  |
 
+### 3.6.8. Test case DV_PROPORTION ratio with range limits
 
-## 3.7. quantity.DV_INTERVAL
+The C_INTEGER constraint applies to the `type` attribute. The C_REAL constraints apply to numerator and denominator respectively.
+
+| type | meaning (kind)   | numerator | denominator | precision | C_INTEGER.list | C_REAL.range (num) | C_REAL.range (den) | expected | constraints violated |
+|:----:|------------------|-----------|-------------|-----------|----------------|--------------------|--------------------|----------|----------------------|
+| 0    | ratio            | 10        | 500         | 0         | [0]            | 5..20              | 200..600           | accepted |                      |
+| 0    | ratio            | 10        | 1           | 0         | [0]            | 5..20              | 200..600           | rejected | C_REAL.range (den)   |
+| 0    | ratio            | 30        | 500         | 0         | [0]            | 5..20              | 200..600           | rejected | C_REAL.range (num)   |
+| 0    | ratio            | 3         | 1000        | 0         | [0]            | 5..20              | 200..600           | rejected | C_REAL.range (num), C_REAL.range (den) |
+
+
+
+## 3.7. quantity.DV_INTERVAL<DV_COUNT>
+
+### 3.7.1. Test case DV_INTERVAL<DV_COUNT> open constraint
+
+The DV_INTERVAL<DV_COUNT> constraint is {*}.
+
+TBD
+
+### 3.7.2. Test case DV_INTERVAL<DV_COUNT> lower and upper range constraint.
+
+Lower and upper are DV_COUNT, which are constrainted internally by C_INTEGER. C_INTEGER has range and list constriants.
+
+TBD
+
+### 3.7.3. Test case DV_INTERVAL<DV_COUNT> lower and upper list constraint.
+
+Lower and upper are DV_COUNT, which are constrainted internally by C_INTEGER. C_INTEGER has range and list constriants.
+
+> NOTE: not all modeling tools allow a list constraint for the lower and upper attributes of the DV_INTERVAL.
+
+TBD
+
+
+## 3.8. quantity.DV_INTERVAL<DV_QUANTITY>
+
+## 3.9. quantity.DV_INTERVAL<DV_DATE_TIME>
+
+## 3.10. quantity.DV_INTERVAL<DV_DATE>
+
+## 3.11. quantity.DV_INTERVAL<DV_TIME>
+
+## 3.12. quantity.DV_INTERVAL<DV_DURATION>
+
+// TBD: interval of DV_ORDINAL, DV_SCALE, DV_PROPORTION are valid? https://discourse.openehr.org/t/dv-interval-of-any-dv-ordered-subclass-does-it-make-sense/2049
 
 
 
