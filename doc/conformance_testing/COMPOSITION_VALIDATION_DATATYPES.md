@@ -630,18 +630,164 @@ The DV_INTERVAL<DV_DATE_TIME> constraint is {*}.
 
 ## 4.2. quantity.date_time.DV_DURATION
 
+
+
 ## 4.3. quantity.date_time.DV_TIME
 
 DV_TIME constraints are defined by C_TIME, which specifies two types of constraints: validity kind and range. The validity kind constraints are expressed in terms of mandatory/optional/prohibited flags for each part of the time expression: minute, second, millisecond and timezone. The range constraint is an Interval<Time>.
+
+### 4.3.1. Test case DV_TIME open constraint
+
+This case is when DV_TIME matches {*}.
+
+> NOTE 1: the decimal mark for the seconds fraction could be `,` (comma) or `.` (period) at in-memory and storage representations of time expressions, but since in most popular exchange formats the `.` is preferred, and considering the implementation of these test cases will surelly use those exchange formats, we only specify test data sets which use the decimal mark `.`. Nevetheless, the `,` is totally valid at in-memory and storage levels.
+> In the same line, basic and extended formats are allowed at in-memory and storage representations. Basic format being the time parts without any separators and the extended being the parts with separatos `:` (colon). The extended format is also preferred by the most common exchange fornats, so only test data sets using extended format will be specified.
+
+> NOTE 2: "There is no limit on the number of decimal places for the decimal fraction. However, the number of decimal places needs to be agreed to by the communicating parties." [REF](https://en.wikipedia.org/wiki/ISO_8601#Times)
+
+> NOTE 3: the time marker `T` can be ommitted for the extended format in ISO8601:2019, because there is no risk of ambiguity.
+
+> NOTE 4: if no timezone information is included, the time expression is considered `local time`.
+
+> NOTE 5: one clarification about the seconds fraction in ISO8601 is that is not exactly an expression of milliseconds as the AOM specification implies considering the `millisecond_validity` fields. For instance `.5` represents half a second, which is indeed 500 milliseconds but `.5` is not syntactically `500 ms`, or `.333333` represents one third of a second, and syntactilclly `333333` goes beyond the precision of milliseconds which is just 3 digits long. Consider `.33333` is totally valid in ISO8601 for the seconds fraction (see NOTE 2).
+
+| value                  | expected | violated constraints          |
+|------------------------|----------|-------------------------------|
+| NULL                   | rejected | RM/Schema: value is mandatory |
+| ''                     | rejected | ISO8601: at least minutes are required |
+| T10                    | accepted |                               |
+| T48                    | rejected | ISO8601: hours in 0..23       |
+| T10:30                 | accepted |                               |
+| T10:95                 | rejected | ISO8601: minutes in 0..59     |
+| T10:30:47              | accepted |                               |
+| T10:30:78              | rejected | ISO8601: seconds in 0..59     |
+| T10:30:47.5            | accepted |                               |
+| T10:30:47.333          | accepted |                               |
+| T10:30:47.333333       | accepted |                               |
+| T10:30:47Z             | accepted |                               |
+| T10:30:78Z             | rejected | ISO8601: seconds in 0..59     |
+| T10:30:47.5Z           | accepted |                               |
+| T10:30:47.333Z         | accepted |                               |
+| T10:30:47.333333Z      | accepted |                               |
+| T10:30:47-03:00        | accepted |                               |
+| T10:30:78-03:00        | rejected | ISO8601: seconds in 0..59     |
+| T10:30:47.5-03:00      | accepted |                               |
+| T10:30:47.333-03:00    | accepted |                               |
+| T10:30:47.333333-03:00 | accepted |                               |
+
+
+### 4.3.2. Test case DV_TIME validity kind constraint
+
+| value                  | minute_validity | second_validity | millisecond_validity | timezone_validity | expected | violated constraints          |
+|------------------------|-----------------|-----------------|----------------------|-------------------|----------|-------------------------------|
+| T10                    | mandatory       | mandatory       | mandatory            | mandatory         | rejected | minute_validity, second_validity, millisecond_validity, timezone_validity |
+| T10                    | mandatory       | mandatory       | mandatory            | optional          | rejected | minute_validity, second_validity, millisecond_validity |
+| T10                    | mandatory       | mandatory       | optional             | optional          | rejected | minute_validity, second_validity |
+| T10                    | mandatory       | optional        | optional             | optional          | rejected | minute_validity               |
+| T10                    | optional        | optional        | optional             | optional          | accepted |                               |
+| T10                    | mandatory       | mandatory       | mandatory            | prohibited        | rejected | minute_validity, second_validity, millisecond_validity |
+| T10                    | mandatory       | mandatory       | prohibited           | prohibited        | rejected | minute_validity, second_validity |
+| T10                    | mandatory       | prohibited      | prohibited           | prohibited        | rejected | minute_validity               |
+| T10                    | prohibited      | prohibited      | prohibited           | prohibited        | accepted |                               |
+
+| value                  | minute_validity | second_validity | millisecond_validity | timezone_validity | expected | violated constraints          |
+|------------------------|-----------------|-----------------|----------------------|-------------------|----------|-------------------------------|
+| T10:30                 | mandatory       | mandatory       | mandatory            | mandatory         | rejected | second_validity, millisecond_validity, timezone_validity |
+| T10:30                 | mandatory       | mandatory       | mandatory            | optional          | rejected | second_validity, millisecond_validity |
+| T10:30                 | mandatory       | mandatory       | optional             | optional          | rejected | second_validity               |
+| T10:30                 | mandatory       | optional        | optional             | optional          | accepted |                               |
+| T10:30                 | optional        | optional        | optional             | optional          | accepted |                               |
+| T10:30                 | mandatory       | mandatory       | mandatory            | prohibited        | rejected | second_validity, millisecond_validity |
+| T10:30                 | mandatory       | mandatory       | prohibited           | prohibited        | rejected | second_validity               |
+| T10:30                 | mandatory       | prohibited      | prohibited           | prohibited        | accepted |                               |
+| T10:30                 | prohibited      | prohibited      | prohibited           | prohibited        | rejected | minute_validity               |
+
+| value                  | minute_validity | second_validity | millisecond_validity | timezone_validity | expected | violated constraints          |
+|------------------------|-----------------|-----------------|----------------------|-------------------|----------|-------------------------------|
+| T10:30:47              | mandatory       | mandatory       | mandatory            | mandatory         | rejected | millisecond_validity, timezone_validity |
+| T10:30:47              | mandatory       | mandatory       | mandatory            | optional          | rejected | millisecond_validity          |
+| T10:30:47              | mandatory       | mandatory       | optional             | optional          | accepted |                               |
+| T10:30:47              | mandatory       | optional        | optional             | optional          | accepted |                               |
+| T10:30:47              | optional        | optional        | optional             | optional          | accepted |                               |
+| T10:30:47              | mandatory       | mandatory       | mandatory            | prohibited        | rejected | millisecond_validity             |
+| T10:30:47              | mandatory       | mandatory       | prohibited           | prohibited        | accepted |                                  |
+| T10:30:47              | mandatory       | prohibited      | prohibited           | prohibited        | rejected | second_validity                  |
+| T10:30:47              | prohibited      | prohibited      | prohibited           | prohibited        | rejected | minute_validity, second_validity |
+
+| value                  | minute_validity | second_validity | millisecond_validity | timezone_validity | expected | violated constraints             |
+|------------------------|-----------------|-----------------|----------------------|-------------------|----------|----------------------------------|
+| T10:30:47.5            | mandatory       | mandatory       | mandatory            | mandatory         | rejected | timezone_validity                |
+| T10:30:47.5            | mandatory       | mandatory       | mandatory            | optional          | accepted |                                  |
+| T10:30:47.5            | mandatory       | mandatory       | optional             | optional          | accepted |                                  |
+| T10:30:47.5            | mandatory       | optional        | optional             | optional          | accepted |                                  |
+| T10:30:47.5            | optional        | optional        | optional             | optional          | accepted |                                  |
+| T10:30:47.5            | mandatory       | mandatory       | mandatory            | prohibited        | accepted |                                  |
+| T10:30:47.5            | mandatory       | mandatory       | prohibited           | prohibited        | rejected | millisecond_validity             |
+| T10:30:47.5            | mandatory       | prohibited      | prohibited           | prohibited        | rejected | second_validity, millisecond_validity |
+| T10:30:47.5            | prohibited      | prohibited      | prohibited           | prohibited        | rejected | minute_validity, second_validity, millisecond_validity |
+
+
+
+
+
+| T10:30:47Z             |                 |                 |                      |                   | accepted |                               |
+| T10:30:47.5Z           |                 |                 |                      |                   | accepted |                               |
+| T10:30:47.5-03:00      |                 |                 |                      |                   | accepted |                               |
+
+
+### 4.3.3. Test case DV_TIME range constraint
+
+TBD
+
+
 
 ## 4.4. quantity.date_time.DV_DATE
 
 DV_DATE constraints are defined by C_DATE, which specifies two types of constraints: validity kind and range. The validity kind constraints are expressed in terms of mandatory/optional/prohibited flags for each part of the date expression: day and month. The range constraint is an Interval<Date>.
 
+> NOTE 1: the basic and extended formats are allowed at in-memory and storage representations. Basic format being the time parts without any separators and the extended being the parts with separatos `-` (hyphen). Since most popular exchange formats use the extended format, and considering the implementation of these test cases will surelly use those exchange formats, we only specify test data sets which use the extended format.
+
+> NOTE 2: by the ISO8601 standard, only years >1582 are valid, since that was the year in which the Gregorian Calendar was put in place. For representing other years, there should be a mutual agreement between information interchange partners.
+
+### 4.4.1. Test case DV_DATE open constraint
+
+| value                  | expected | violated constraints          |
+|------------------------|----------|-------------------------------|
+| NULL                   | rejected | RM/Schema: value is mandatory |
+| 2021                   | accepted |                               |
+| 2021-10                | accepted |                               |
+| 2021-00                | rejected | ISO8601: month in 01..12      |
+| 2021-13                | rejected | ISO8601: month in 01..12      |
+| 2021-10-24             | accepted |                               |
+| 2021-10-00             | rejected | ISO8601: day in 01..31        |
+| 2021-10-32             | rejected | ISO8601: day in 01..31        |
+
+
+### 4.4.2. Test Case DV_DATE validity kind constraint
+
+TBD
+
+### 4.4.3. Test Case DV_DATE validity range
+
+TBD
+
+
+
 ## 4.5. quantity.date_time.DV_DATE_TIME
 
 DV_DATE_TIME constraints are defined by C_DATE_TIME, which specifies two types of constraints: validity kind and range. The validity kind constraints are expressed in terms of mandatory/optional/prohibited flags for each part of the date expression: hour, minute, second, millisecond, timezone, day and month. The range constraint is an Interval<DateTime>.
 
+### 4.5.1. Test case DV_DATE_TIME open constraint
+
+TBD
+
+### 4.5.2. Test Case DV_DATE_TIME validity kind constraint
+
+TBD
+
+### 4.5.3. Test Case DV_DATE_TIME validity range
+
+TBD
 
 
 # 5. time_specification
