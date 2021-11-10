@@ -220,7 +220,7 @@ In this case the DV_CODED_TEXT is constrained by a CONSTRAINT_REF. For the CONST
 
 ## 3.2. quantity.DV_ORDINAL
 
-DV_ORDINAL is constrained by C_DV_ORDINAL from AOP (https://specifications.openehr.org/releases/1.0.2/architecture/am/openehr_archetype_profile.pdf), which contains a list of DV_ORDINAL that could be empty.
+DV_ORDINAL is constrained by C_DV_ORDINAL from AP (https://specifications.openehr.org/releases/1.0.2/architecture/am/openehr_archetype_profile.pdf), which contains a list of DV_ORDINAL that could be empty.
 
 
 ### 3.3.1. Test case DV_ORDINAL without constraints
@@ -499,26 +499,108 @@ The C_INTEGER constraint applies to the `type` attribute. The C_REAL constraints
 
 The DV_INTERVAL<DV_COUNT> constraint is {*}.
 
-TBD
+> NOTE: the failure instance for this test case are related with violated interval semantics.
+
+| lower | upper | lower_unbounded | upper_unbounded | lower_included | upper_included | expected | constraints violated |
+|-------|-------|-----------------|-----------------|----------------|----------------|----------|----------------------|
+| NULL  | NULL  | true            | true            | false          | false          | accepted |                      |
+| NULL  | 100   | true            | false           | false          | false          | accepted |                      |
+| NULL  | 100   | true            | false           | false          | true           | accepted |                      |
+| 0     | NULL  | false           | true            | false          | false          | accepted |                      |
+| 0     | NULL  | false           | true            | true           | false          | accepted |                      |
+| -20   | -5    | false           | false           | false          | false          | accepted |                      |
+| 0     | 100   | false           | false           | true           | true           | accepted |                      |
+| 10    | 100   | false           | false           | true           | true           | accepted |                      |
+| -50   | 50    | false           | false           | true           | true           | accepted |                      |
+| NULL  | NULL  | true            | true            | true           | false          | rejected | lower_included_valid (invariant) |
+| 0     | NULL  | false           | true            | false          | true           | rejected | upper_included_valid (invariant) |
+| 200   | 100   | false           | false           | true           | true           | rejected | limits_consistent (invariant) |
+
+
 
 ### 3.7.2. Test case DV_INTERVAL<DV_COUNT> lower and upper range constraint.
 
-Lower and upper are DV_COUNT, which are constrainted internally by C_INTEGER. C_INTEGER has range and list constriants.
+Lower and upper are DV_COUNT, which are constrainted internally by C_INTEGER. C_INTEGER has range and list constraints.
 
-TBD
+> NOTE: the lower and upper limits are not constrained in terms of existence or occurrences, so both are optional. 
+
+| lower | upper | lower_unbounded | upper_unbounded | lower_included | upper_included | C_INTEGER.range (lower) | C_INTEGER.range (upper) | expected | constraints violated |
+|-------|-------|-----------------|-----------------|----------------|----------------|-------------------------|-------------------------|----------|----------------------|
+| NULL  | NULL  | true            | true            | false          | false          | 0..100                  | 0..100                  | accepted |                      |
+| 0     | NULL  | false           | true            | true           | false          | 0..100                  | 0..100                  | accepted |                      |
+| NULL  | 100   | true            | false           | false          | true           | 0..100                  | 0..100                  | accepted |                      |
+| 0     | 100   | false           | false           | true           | true           | 0..100                  | 0..100                  | accepted |                      |
+| -10   | 100   | false           | false           | true           | true           | 0..100                  | 0..100                  | rejected | C_INTEGER.range (lower) |
+| 0     | 200   | false           | false           | true           | true           | 0..100                  | 0..100                  | rejected | C_INTEGER.range (upper) |
+| -10   | 200   | false           | false           | true           | true           | 0..100                  | 0..100                  | rejected | C_INTEGER.range (lower), C_INTEGER.range (upper) |
+
 
 ### 3.7.3. Test case DV_INTERVAL<DV_COUNT> lower and upper list constraint.
 
-Lower and upper are DV_COUNT, which are constrainted internally by C_INTEGER. C_INTEGER has range and list constriants.
+Lower and upper are DV_COUNT, which are constrainted internally by C_INTEGER. C_INTEGER has range and list constraints.
 
 > NOTE: not all modeling tools allow a list constraint for the lower and upper attributes of the DV_INTERVAL.
 
-TBD
+| lower | upper | lower_unbounded | upper_unbounded | lower_included | upper_included | C_INTEGER.list (lower)  | C_INTEGER.list (upper)  | expected | constraints violated |
+|-------|-------|-----------------|-----------------|----------------|----------------|-------------------------|-------------------------|----------|----------------------|
+| NULL  | NULL  | true            | true            | false          | false          | [0, 5, 10, 100]         | [0, 5, 10, 100]         | accepted |                      |
+| 0     | NULL  | false           | true            | true           | false          | [0, 5, 10, 100]         | [0, 5, 10, 100]         | accepted |                      |
+| NULL  | 100   | true            | false           | false          | true           | [0, 5, 10, 100]         | [0, 5, 10, 100]         | accepted |                      |
+| 0     | 100   | false           | false           | true           | true           | [0, 5, 10, 100]         | [0, 5, 10, 100]         | accepted |                      |
+| -10   | 100   | false           | false           | true           | true           | [0, 5, 10, 100]         | [0, 5, 10, 100]         | rejected | C_INTEGER.list (lower) |
+| 0     | 200   | false           | false           | true           | true           | [0, 5, 10, 100]         | [0, 5, 10, 100]         | rejected | C_INTEGER.list (upper) |
+| -10   | 200   | false           | false           | true           | true           | [0, 5, 10, 100]         | [0, 5, 10, 100]         | rejected | C_INTEGER.list (lower), C_INTEGER.list (upper) |
 
 
 ## 3.8. quantity.DV_INTERVAL<DV_QUANTITY>
 
+### 3.8.1. Test case DV_INTERVAL<DV_QUANTITY> open constraint
+
+The DV_INTERVAL<DV_QUANTITY> constraint is {*}.
+
+> NOTE: the failure instance for this test case are related with violated interval semantics.
+
+| lower  | upper  | lower_unbounded | upper_unbounded | lower_included | upper_included | expected | constraints violated |
+|--------|--------|-----------------|-----------------|----------------|----------------|----------|----------------------|
+| NULL   | NULL   | true            | true            | false          | false          | accepted |                      |
+| NULL   | 100 mg | true            | false           | false          | false          | accepted |                      |
+| NULL   | 100 mg | true            | false           | false          | true           | accepted |                      |
+| 0 mg   | NULL   | false           | true            | false          | false          | accepted |                      |
+| 0 mg   | NULL   | false           | true            | true           | false          | accepted |                      |
+| 0 mg   | 100 mg | false           | false           | true           | true           | accepted |                      |
+| 10 mg  | 100 mg | false           | false           | true           | true           | accepted |                      |
+| NULL   | NULL   | true            | true            | true           | false          | rejected | lower_included_valid (invariant) |
+| 0 mg   | NULL   | false           | true            | false          | true           | rejected | upper_included_valid (invariant) |
+| 200 mg | 100 mg | false           | false           | true           | true           | rejected | limits_consistent (invariant) |
+
+
+### 3.8.2. Test case DV_INTERVAL<DV_QUANTITY> lower and upper constraints present
+
+The lower and upper constraints are C_DV_QUANTITY.
+
+> NOTE: in all cases the C_DV_QUANTITY.property referes to `temperature` to keep tests as simple as possible and be able to use negative values (for other physical properties negative values don't make sense). All temperatures will be measured in degree Celsius (`Cel` in UCUM).
+
+| lower     | upper   | lower_unbounded | upper_unbounded | lower_included | upper_included | C_DV_QUANTITY.list (lower) | C_DV_QUANTITY.list (upper) | expected | constraints violated  |
+|:---------:|:-------:|-----------------|-----------------|----------------|----------------|----------------------------|----------------------------|----------|-----------------------|
+| NULL      | NULL    | true            | true            | false          | false          | [0..100 Cel]               | [0..100 Cel]               | accepted |                       |
+| 0 Cel     | NULL    | false           | true            | true           | false          | [0..100 Cel]               | [0..100 Cel]               | accepted |                       |
+| NULL      | 100 Cel | true            | false           | false          | true           | [0..100 Cel]               | [0..100 Cel]               | accepted |                       |
+| 0 Cel     | 100 Cel | false           | false           | true           | true           | [0..100 Cel]               | [0..100 Cel]               | accepted |                       |
+| -10 Cel   | 100 Cel | false           | false           | true           | true           | [0..100 Cel]               | [0..100 Cel]               | rejected | C_DV_QUANTITY (lower) |
+| 0 Cel     | 200 Cel | false           | false           | true           | true           | [0..100 Cel]               | [0..100 Cel]               | rejected | C_DV_QUANTITY (upper) |
+| -10 Cel   | 200 Cel | false           | false           | true           | true           | [0..100 Cel]               | [0..100 Cel]               | rejected | C_DV_QUANTITY (lower),C_DV_QUANTITY (upper) |
+
+
 ## 3.9. quantity.DV_INTERVAL<DV_DATE_TIME>
+
+### 3.9.1. Test case DV_INTERVAL<DV_DATE_TIME> open constraint
+
+The DV_INTERVAL<DV_DATE_TIME> constraint is {*}.
+
+### 3.9.2. Test case DV_INTERVAL<DV_DATE_TIME> lower and upper constraints are validity kind
+
+### 3.9.3. Test case DV_INTERVAL<DV_DATE_TIME> lower and upper constraints are range
+
 
 ## 3.10. quantity.DV_INTERVAL<DV_DATE>
 
@@ -526,7 +608,17 @@ TBD
 
 ## 3.12. quantity.DV_INTERVAL<DV_DURATION>
 
-// TBD: interval of DV_ORDINAL, DV_SCALE, DV_PROPORTION are valid? https://discourse.openehr.org/t/dv-interval-of-any-dv-ordered-subclass-does-it-make-sense/2049
+## 3.13. quantity.DV_INTERVAL<DV_ORDINAL>
+
+> NOTE: some modeling tools don't support representing DV_INTERVAL<DV_ORDINAL>.
+
+## 3.14. quantity.DV_INTERVAL<DV_SCALE>
+
+> NOTE: some modeling tools don't support representing DV_INTERVAL<DV_SCALE>.
+
+## 3.15. quantity.DV_INTERVAL<DV_PROPORTION>
+
+> NOTE: some modeling tools don't support representing DV_INTERVAL<DV_PROPORTION>.
 
 
 
@@ -538,11 +630,17 @@ TBD
 
 ## 4.2. quantity.date_time.DV_DURATION
 
-## quantity.date_time.DV_TIME
+## 4.3. quantity.date_time.DV_TIME
 
-## quantity.date_time.DV_DATE
+DV_TIME constraints are defined by C_TIME, which specifies two types of constraints: validity kind and range. The validity kind constraints are expressed in terms of mandatory/optional/prohibited flags for each part of the time expression: minute, second, millisecond and timezone. The range constraint is an Interval<Time>.
 
-## quantity.date_time.DV_DATE_TIME
+## 4.4. quantity.date_time.DV_DATE
+
+DV_DATE constraints are defined by C_DATE, which specifies two types of constraints: validity kind and range. The validity kind constraints are expressed in terms of mandatory/optional/prohibited flags for each part of the date expression: day and month. The range constraint is an Interval<Date>.
+
+## 4.5. quantity.date_time.DV_DATE_TIME
+
+DV_DATE_TIME constraints are defined by C_DATE_TIME, which specifies two types of constraints: validity kind and range. The validity kind constraints are expressed in terms of mandatory/optional/prohibited flags for each part of the date expression: hour, minute, second, millisecond, timezone, day and month. The range constraint is an Interval<DateTime>.
 
 
 
