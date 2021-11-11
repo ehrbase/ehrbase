@@ -36,7 +36,10 @@ ${QUERY RESULTS LOADED DB}   ${PROJECT_ROOT}/tests/robot/_resources/test_data_se
 ${QUERY RESULTS EMPTY DB}    ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/query/expected_results/empty_db
 
 ${aql_queries}    ${VALID QUERY DATA SETS}
-
+${TIME QUERY DATA SET}     get_time_from_ehr.json
+${Berlin Time Zone Expected DATA SET}     get_time_from_ehr_Berlin_time_zone.json
+${No Time Zone Expected DATA SET}     get_time_from_ehr_no_time_zone.json
+${UTC Time Zone Expected DATA SET}     get_time_from_ehr_utc_time_zone.json
 
 
 *** Keywords ***
@@ -161,6 +164,14 @@ load expected results-data-set (EMPTY DB)
 
     ${file}=            Load JSON From File    ${QUERY RESULTS EMPTY DB}/${expected_result_data_set}
                         Set Test Variable      ${expected_result}    ${file}
+
+Replace Uid With Actual
+    [Arguments]    ${input file}  ${uid}  ${output file}
+    [Documentation]     Takes the uid and aql file as input and replace the string 'replaceme' with the uid
+    ${template} = 	Get File 	${input file}
+    ${replaced_template}=  Replace String  ${template}  replaceme  ${uid}
+    Create File     ${output file}    ${replaced_template}
+    Output Debug Info To Console
 
 
 

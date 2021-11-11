@@ -31,10 +31,7 @@ public class UC4Test extends UC4 {
         this.expectedSqlExpression =
                 "select \"\".\"/composer/name\", \"\".\"/context/start_time/value\" from (select \"composer_ref\".\"name\" as \"/composer/name\", jsonb_extract_path_text(cast(\"ehr\".\"js_dv_date_time\"(\n" +
                         "  \"ehr\".\"event_context\".\"start_time\", \n" +
-                        "  coalesce(\n" +
-                        "    event_context.START_TIME_TZID, \n" +
-                        "    'UTC'\n" +
-                        "  )\n" +
+                        "    event_context.START_TIME_TZID\n" +
                         ") as jsonb),'value') as \"/context/start_time/value\"" +
                         " from \"ehr\".\"entry\" " +
                         "join \"ehr\".\"event_context\" on \"ehr\".\"event_context\".\"composition_id\" = \"ehr\".\"entry\".\"composition_id\"" +
