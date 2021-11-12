@@ -222,27 +222,26 @@ In this case the DV_CODED_TEXT is constrained by a CONSTRAINT_REF. For the CONST
 
 DV_ORDINAL is constrained by C_DV_ORDINAL from AP (https://specifications.openehr.org/releases/1.0.2/architecture/am/openehr_archetype_profile.pdf), which contains a list of DV_ORDINAL that could be empty.
 
-
-### 3.3.1. Test case DV_ORDINAL without constraints
-
-> NOTE: at the OPT level this case should be invalid, since is like defining a constraint for a DV_CODED_TEXT with terminology_id `local` but no given codes, since all codes in a C_DV_ORDINAL have terminology_id `local`, at least one code in the list is required at the OPT level. This constraint is valid at the archetypel evel. See commend on 2.3.2.
-
-| symbol         | value | C_DV_ORDINAL.list | expected | constraints violated |
-|:---------------|:------|-------------------|----------|----------------------|
-| NULL           | NULL  | []                | rejected | RM/Schema both value and symbol are mandatory |
-| NULL           | 1     | []                | rejected | RM/Schema symbol is mandatory |
-| local::at0005  | NULL  | []                | rejected | RM/Schema value is mandatory |
-| local::at0005  | 1     | []                | ? | ? |
-| local::at0005  | 666   | []                | ? | ? |
+> NOTE: in ADL it is possible to have a C_DV_ORDINAL constraint with an empty list constraint. At the OPT level this case should be invalid, since is like defining a constraint for a DV_CODED_TEXT with terminology_id `local` but no given codes, since all codes in a C_DV_ORDINAL have terminology_id `local`, at least one code in the list is required at the OPT level. This constraint is valid at the archetypel evel. See commend on 2.3.2.
 
 
-### 3.3.2. Test case DV_ORDINAL with constraints
+### 3.2.1. Test case DV_ORDINAL open constraint
+
+This case is when the ADL has `DV_ORDINAL matches {*}`
+
+| symbol         | value | expected | constraints violated |
+|:---------------|:------|----------|----------------------|
+| NULL           | NULL  | rejected | RM/Schema value and symbol are mandatory |
+| NULL           | 1     | rejected | RM/Schema symbol is mandatory            |
+| local::at0005  | NULL  | rejected | RM/Schema value is mandatory             |
+| local::at0005  | 1     | accepted |                                          |
+| local::at0005  | 666   | accepted |                                          |
+
+
+### 3.2.2. Test case DV_ORDINAL with constraints
 
 | symbol         | value | C_DV_ORDINAL.list                    | expected | constraints violated |
 |:---------------|:------|--------------------------------------|----------|----------------------|
-| NULL           | NULL  | 1|[local::at0005], 2|[local::at0006] | rejected | RM/Schema both value and symbol are mandatory |
-| NULL           | 1     | 1|[local::at0005], 2|[local::at0006] | rejected | RM/Schema symbol is mandatory         |
-| local::at0005  | NULL  | 1|[local::at0005], 2|[local::at0006] | rejected | RM/Schema value is mandatory          |
 | local::at0005  | 1     | 1|[local::at0005], 2|[local::at0006] | accepted |                                       |
 | local::at0005  | 666   | 1|[local::at0005], 2|[local::at0006] | rejected | C_DV_ORDINAL.list: no matching value  |
 | local::at0666  | 1     | 1|[local::at0005], 2|[local::at0006] | rejected | C_DV_ORDINAL.list: no matching symbol |
@@ -253,7 +252,27 @@ DV_ORDINAL is constrained by C_DV_ORDINAL from AP (https://specifications.openeh
 
 DV_SCALE was introduced to the RM 1.1.0 (https://openehr.atlassian.net/browse/SPECRM-19), it is analogous to DV_ORDINAL with a Real value. So test cases for DV_SCALE and DV_ORDINAL are similar.
 
-// TBD
+### 3.3.1. Test case DV_SCALE open constraint
+
+This case is when the ADL has `DV_SCALE matches {*}`
+
+| symbol         | value | expected | constraints violated |
+|:---------------|:------|----------|----------------------|
+| NULL           | NULL  | rejected | RM/Schema value and symbol are mandatory |
+| NULL           | 1.5   | rejected | RM/Schema symbol is mandatory            |
+| local::at0005  | NULL  | rejected | RM/Schema value is mandatory             |
+| local::at0005  | 1.5   | accepted |                                          |
+| local::at0005  | 666   | accepted |                                          |
+
+### 3.3.2. Test case DV_SCALE with constraints
+
+> NOTE: there is no current C_DV_SCALE constraint in the Archetype Profile, so modeling tools are not yet supporting constraints for this type. This is a [known issue](https://openehr.atlassian.net/browse/SPECPR-381). Though we can assume the constraint type will be analogous to the C_DV_ORDINAL.
+
+| symbol         | value | C_DV_SCALE.list                          | expected | constraints violated                |
+|:---------------|:------|------------------------------------------|----------|-------------------------------------|
+| local::at0005  | 1.5   | 1.5|[local::at0005], 2.0|[local::at0006] | accepted |                                     |
+| local::at0005  | 66.6  | 1.5|[local::at0005], 2.0|[local::at0006] | rejected | C_DV_SCALE.list: no matching value  |
+| local::at0666  | 1.5   | 1.5|[local::at0005], 2.0|[local::at0006] | rejected | C_DV_SCALE.list: no matching symbol |
 
 
 ## 3.4. quantity.DV_COUNT
@@ -597,24 +616,39 @@ The lower and upper constraints are C_DV_QUANTITY.
 
 The DV_INTERVAL<DV_DATE_TIME> constraint is {*}.
 
+TBD: this will use the test cases and data sets defined for the DV_DATE_TIME tests.
+
 ### 3.9.2. Test case DV_INTERVAL<DV_DATE_TIME> lower and upper constraints are validity kind
 
+TBD
+
 ### 3.9.3. Test case DV_INTERVAL<DV_DATE_TIME> lower and upper constraints are range
+
+TBD
 
 
 ## 3.10. quantity.DV_INTERVAL<DV_DATE>
 
+TBD: this will use the test cases and data sets defined for the DV_DATE tests.
+
+
 ## 3.11. quantity.DV_INTERVAL<DV_TIME>
 
+TBD: this will use the test cases and data sets defined for the DV_TIME tests.
+
+
 ## 3.12. quantity.DV_INTERVAL<DV_DURATION>
+
 
 ## 3.13. quantity.DV_INTERVAL<DV_ORDINAL>
 
 > NOTE: some modeling tools don't support representing DV_INTERVAL<DV_ORDINAL>.
 
+
 ## 3.14. quantity.DV_INTERVAL<DV_SCALE>
 
 > NOTE: some modeling tools don't support representing DV_INTERVAL<DV_SCALE>.
+
 
 ## 3.15. quantity.DV_INTERVAL<DV_PROPORTION>
 
@@ -634,7 +668,11 @@ The DV_INTERVAL<DV_DATE_TIME> constraint is {*}.
 
 ## 4.3. quantity.date_time.DV_TIME
 
-DV_TIME constraints are defined by C_TIME, which specifies two types of constraints: validity kind and range. The validity kind constraints are expressed in terms of mandatory/optional/prohibited flags for each part of the time expression: minute, second, millisecond and timezone. The range constraint is an Interval<Time>.
+DV_TIME constraints are defined by C_TIME, which specifies two types of constraints: validity kind and range. The validity kind constraints are expressed in terms of mandatory/optional/prohibited flags for each part of the time expression: minute, second, millisecond and timezone. The range constraint is an Interval<Time>, which are both [Foundation Types](https://specifications.openehr.org/releases/BASE/Release-1.2.0/foundation_types.html).
+
+> NOTE: the Time class mentioned in the AOM specification is actually the [Iso8601_date_time](https://specifications.openehr.org/releases/BASE/Release-1.2.0/foundation_types.html#_iso8601_date_time_class) class. This is a known bug in the specs.
+
+Note that time expressions in openEHR are considered an absolute point in time from the start of the current day, that is `T10` represents `10:00:00.000` AM in the local timezone.
 
 ### 4.3.1. Test case DV_TIME open constraint
 
@@ -645,7 +683,7 @@ This case is when DV_TIME matches {*}.
 
 > NOTE 2: "There is no limit on the number of decimal places for the decimal fraction. However, the number of decimal places needs to be agreed to by the communicating parties." [REF](https://en.wikipedia.org/wiki/ISO_8601#Times)
 
-> NOTE 3: the time marker `T` can be ommitted for the extended format in ISO8601:2019, because there is no risk of ambiguity.
+> NOTE 3: the time marker `T` can be ommitted for the extended format in ISO8601:2019, because there is no risk of ambiguity. Since this is nor mandatory, our test data sets all include the `T` time marker.
 
 > NOTE 4: if no timezone information is included, the time expression is considered `local time`.
 
@@ -678,67 +716,316 @@ This case is when DV_TIME matches {*}.
 
 ### 4.3.2. Test case DV_TIME validity kind constraint
 
-| value                  | minute_validity | second_validity | millisecond_validity | timezone_validity | expected | violated constraints          |
-|------------------------|-----------------|-----------------|----------------------|-------------------|----------|-------------------------------|
+| value                  | minute_validity | second_validity | millisecond_validity | timezone_validity | expected | violated constraints               |
+|------------------------|-----------------|-----------------|----------------------|-------------------|----------|------------------------------------|
 | T10                    | mandatory       | mandatory       | mandatory            | mandatory         | rejected | minute_validity, second_validity, millisecond_validity, timezone_validity |
 | T10                    | mandatory       | mandatory       | mandatory            | optional          | rejected | minute_validity, second_validity, millisecond_validity |
-| T10                    | mandatory       | mandatory       | optional             | optional          | rejected | minute_validity, second_validity |
-| T10                    | mandatory       | optional        | optional             | optional          | rejected | minute_validity               |
-| T10                    | optional        | optional        | optional             | optional          | accepted |                               |
+| T10                    | mandatory       | mandatory       | optional             | optional          | rejected | minute_validity, second_validity   |
+| T10                    | mandatory       | optional        | optional             | optional          | rejected | minute_validity                    |
+| T10                    | optional        | optional        | optional             | optional          | accepted |                                    |
 | T10                    | mandatory       | mandatory       | mandatory            | prohibited        | rejected | minute_validity, second_validity, millisecond_validity |
-| T10                    | mandatory       | mandatory       | prohibited           | prohibited        | rejected | minute_validity, second_validity |
-| T10                    | mandatory       | prohibited      | prohibited           | prohibited        | rejected | minute_validity               |
-| T10                    | prohibited      | prohibited      | prohibited           | prohibited        | accepted |                               |
+| T10                    | mandatory       | mandatory       | prohibited           | prohibited        | rejected | minute_validity, second_validity   |
+| T10                    | mandatory       | prohibited      | prohibited           | prohibited        | rejected | minute_validity                    |
+| T10                    | prohibited      | prohibited      | prohibited           | prohibited        | accepted |                                    |
 
-| value                  | minute_validity | second_validity | millisecond_validity | timezone_validity | expected | violated constraints          |
-|------------------------|-----------------|-----------------|----------------------|-------------------|----------|-------------------------------|
+| value                  | minute_validity | second_validity | millisecond_validity | timezone_validity | expected | violated constraints               |
+|------------------------|-----------------|-----------------|----------------------|-------------------|----------|------------------------------------|
 | T10:30                 | mandatory       | mandatory       | mandatory            | mandatory         | rejected | second_validity, millisecond_validity, timezone_validity |
 | T10:30                 | mandatory       | mandatory       | mandatory            | optional          | rejected | second_validity, millisecond_validity |
-| T10:30                 | mandatory       | mandatory       | optional             | optional          | rejected | second_validity               |
-| T10:30                 | mandatory       | optional        | optional             | optional          | accepted |                               |
-| T10:30                 | optional        | optional        | optional             | optional          | accepted |                               |
+| T10:30                 | mandatory       | mandatory       | optional             | optional          | rejected | second_validity                    |
+| T10:30                 | mandatory       | optional        | optional             | optional          | accepted |                                    |
+| T10:30                 | optional        | optional        | optional             | optional          | accepted |                                    |
 | T10:30                 | mandatory       | mandatory       | mandatory            | prohibited        | rejected | second_validity, millisecond_validity |
-| T10:30                 | mandatory       | mandatory       | prohibited           | prohibited        | rejected | second_validity               |
-| T10:30                 | mandatory       | prohibited      | prohibited           | prohibited        | accepted |                               |
-| T10:30                 | prohibited      | prohibited      | prohibited           | prohibited        | rejected | minute_validity               |
+| T10:30                 | mandatory       | mandatory       | prohibited           | prohibited        | rejected | second_validity                    |
+| T10:30                 | mandatory       | prohibited      | prohibited           | prohibited        | accepted |                                    |
+| T10:30                 | prohibited      | prohibited      | prohibited           | prohibited        | rejected | minute_validity                    |
 
-| value                  | minute_validity | second_validity | millisecond_validity | timezone_validity | expected | violated constraints          |
-|------------------------|-----------------|-----------------|----------------------|-------------------|----------|-------------------------------|
+| value                  | minute_validity | second_validity | millisecond_validity | timezone_validity | expected | violated constraints               |
+|------------------------|-----------------|-----------------|----------------------|-------------------|----------|------------------------------------|
 | T10:30:47              | mandatory       | mandatory       | mandatory            | mandatory         | rejected | millisecond_validity, timezone_validity |
-| T10:30:47              | mandatory       | mandatory       | mandatory            | optional          | rejected | millisecond_validity          |
-| T10:30:47              | mandatory       | mandatory       | optional             | optional          | accepted |                               |
-| T10:30:47              | mandatory       | optional        | optional             | optional          | accepted |                               |
-| T10:30:47              | optional        | optional        | optional             | optional          | accepted |                               |
-| T10:30:47              | mandatory       | mandatory       | mandatory            | prohibited        | rejected | millisecond_validity             |
-| T10:30:47              | mandatory       | mandatory       | prohibited           | prohibited        | accepted |                                  |
-| T10:30:47              | mandatory       | prohibited      | prohibited           | prohibited        | rejected | second_validity                  |
-| T10:30:47              | prohibited      | prohibited      | prohibited           | prohibited        | rejected | minute_validity, second_validity |
+| T10:30:47              | mandatory       | mandatory       | mandatory            | optional          | rejected | millisecond_validity               |
+| T10:30:47              | mandatory       | mandatory       | optional             | optional          | accepted |                                    |
+| T10:30:47              | mandatory       | optional        | optional             | optional          | accepted |                                    |
+| T10:30:47              | optional        | optional        | optional             | optional          | accepted |                                    |
+| T10:30:47              | mandatory       | mandatory       | mandatory            | prohibited        | rejected | millisecond_validity               |
+| T10:30:47              | mandatory       | mandatory       | prohibited           | prohibited        | accepted |                                    |
+| T10:30:47              | mandatory       | prohibited      | prohibited           | prohibited        | rejected | second_validity                    |
+| T10:30:47              | prohibited      | prohibited      | prohibited           | prohibited        | rejected | minute_validity, second_validity   |
 
-| value                  | minute_validity | second_validity | millisecond_validity | timezone_validity | expected | violated constraints             |
-|------------------------|-----------------|-----------------|----------------------|-------------------|----------|----------------------------------|
-| T10:30:47.5            | mandatory       | mandatory       | mandatory            | mandatory         | rejected | timezone_validity                |
-| T10:30:47.5            | mandatory       | mandatory       | mandatory            | optional          | accepted |                                  |
-| T10:30:47.5            | mandatory       | mandatory       | optional             | optional          | accepted |                                  |
-| T10:30:47.5            | mandatory       | optional        | optional             | optional          | accepted |                                  |
-| T10:30:47.5            | optional        | optional        | optional             | optional          | accepted |                                  |
-| T10:30:47.5            | mandatory       | mandatory       | mandatory            | prohibited        | accepted |                                  |
-| T10:30:47.5            | mandatory       | mandatory       | prohibited           | prohibited        | rejected | millisecond_validity             |
+| value                  | minute_validity | second_validity | millisecond_validity | timezone_validity | expected | violated constraints               |
+|------------------------|-----------------|-----------------|----------------------|-------------------|----------|------------------------------------|
+| T10:30:47.5            | mandatory       | mandatory       | mandatory            | mandatory         | rejected | timezone_validity                  |
+| T10:30:47.5            | mandatory       | mandatory       | mandatory            | optional          | accepted |                                    |
+| T10:30:47.5            | mandatory       | mandatory       | optional             | optional          | accepted |                                    |
+| T10:30:47.5            | mandatory       | optional        | optional             | optional          | accepted |                                    |
+| T10:30:47.5            | optional        | optional        | optional             | optional          | accepted |                                    |
+| T10:30:47.5            | mandatory       | mandatory       | mandatory            | prohibited        | accepted |                                    |
+| T10:30:47.5            | mandatory       | mandatory       | prohibited           | prohibited        | rejected | millisecond_validity               |
 | T10:30:47.5            | mandatory       | prohibited      | prohibited           | prohibited        | rejected | second_validity, millisecond_validity |
 | T10:30:47.5            | prohibited      | prohibited      | prohibited           | prohibited        | rejected | minute_validity, second_validity, millisecond_validity |
 
+| value                  | minute_validity | second_validity | millisecond_validity | timezone_validity | expected | violated constraints               |
+|------------------------|-----------------|-----------------|----------------------|-------------------|----------|------------------------------------|
+| T10:30:47Z             | mandatory       | mandatory       | mandatory            | mandatory         | rejected | millisecond_validity               |
+| T10:30:47Z             | mandatory       | mandatory       | mandatory            | optional          | rejected | millisecond_validity               |
+| T10:30:47Z             | mandatory       | mandatory       | optional             | optional          | accepted |                                    |
+| T10:30:47Z             | mandatory       | optional        | optional             | optional          | accepted |                                    |
+| T10:30:47Z             | optional        | optional        | optional             | optional          | accepted |                                    |
+| T10:30:47Z             | mandatory       | mandatory       | mandatory            | prohibited        | rejected | millisecond_validity, timezone_validity |
+| T10:30:47Z             | mandatory       | mandatory       | prohibited           | prohibited        | rejected | timezone_validity                  |
+| T10:30:47Z             | mandatory       | prohibited      | prohibited           | prohibited        | rejected | second_validity, timezone_validity |
+| T10:30:47Z             | prohibited      | prohibited      | prohibited           | prohibited        | rejected | minute_validity, second_validity, timezone_validity |
 
+| value                  | minute_validity | second_validity | millisecond_validity | timezone_validity | expected | violated constraints               |
+|------------------------|-----------------|-----------------|----------------------|-------------------|----------|------------------------------------|
+| T10:30:47.5Z           | mandatory       | mandatory       | mandatory            | mandatory         | accepted |                                    |
+| T10:30:47.5Z           | mandatory       | mandatory       | mandatory            | optional          | accepted |                                    |
+| T10:30:47.5Z           | mandatory       | mandatory       | optional             | optional          | accepted |                                    |
+| T10:30:47.5Z           | mandatory       | optional        | optional             | optional          | accepted |                                    |
+| T10:30:47.5Z           | optional        | optional        | optional             | optional          | accepted |                                    |
+| T10:30:47.5Z           | mandatory       | mandatory       | mandatory            | prohibited        | rejected | timezone_validity                  |
+| T10:30:47.5Z           | mandatory       | mandatory       | prohibited           | prohibited        | rejected | millisecond_validity, timezone_validity                  |
+| T10:30:47.5Z           | mandatory       | prohibited      | prohibited           | prohibited        | rejected | second_validity, millisecond_validity, timezone_validity |
+| T10:30:47.5Z           | prohibited      | prohibited      | prohibited           | prohibited        | rejected | minute_validity, second_validity, millisecond_validity, timezone_validity |
 
+| value                  | minute_validity | second_validity | millisecond_validity | timezone_validity | expected | violated constraints               |
+|------------------------|-----------------|-----------------|----------------------|-------------------|----------|------------------------------------|
+| T10:30:47.5-03:00      | mandatory       | mandatory       | mandatory            | mandatory         | accepted |                                    |
+| T10:30:47.5-03:00      | mandatory       | mandatory       | mandatory            | optional          | accepted |                                    |
+| T10:30:47.5-03:00      | mandatory       | mandatory       | optional             | optional          | accepted |                                    |
+| T10:30:47.5-03:00      | mandatory       | optional        | optional             | optional          | accepted |                                    |
+| T10:30:47.5-03:00      | optional        | optional        | optional             | optional          | accepted |                                    |
+| T10:30:47.5-03:00      | mandatory       | mandatory       | mandatory            | prohibited        | rejected | timezone_validity                  |
+| T10:30:47.5-03:00      | mandatory       | mandatory       | prohibited           | prohibited        | rejected | millisecond_validity, timezone_validity                  |
+| T10:30:47.5-03:00      | mandatory       | prohibited      | prohibited           | prohibited        | rejected | second_validity, millisecond_validity, timezone_validity |
+| T10:30:47.5-03:00      | prohibited      | prohibited      | prohibited           | prohibited        | rejected | minute_validity, second_validity, millisecond_validity, timezone_validity |
 
-
-| T10:30:47Z             |                 |                 |                      |                   | accepted |                               |
-| T10:30:47.5Z           |                 |                 |                      |                   | accepted |                               |
-| T10:30:47.5-03:00      |                 |                 |                      |                   | accepted |                               |
 
 
 ### 4.3.3. Test case DV_TIME range constraint
 
-TBD
+The C_TIME.range constraint is an Interval<Time>, which are both [Foundation Types](https://specifications.openehr.org/releases/BASE/Release-1.2.0/foundation_types.html).
 
+> NOTE: the Time class mentioned in the AOM specification is actually the [Iso8601_time](https://specifications.openehr.org/releases/BASE/Release-1.2.0/foundation_types.html#_time_types) class. This is a [known bug](https://openehr.atlassian.net/browse/SPECPR-380) in the specs.
+
+| value                  | C_TIME.range               | expected | violated constraints          |
+|------------------------|----------------------------|----------|-------------------------------|
+| T10                    | T00..T23                   | accepted |                               |
+| T10                    | T00:00..T23:59             | accepted |                               |
+| T10                    | T00:00:00..T23:59:59       | accepted |                               |
+| T10                    | T00:00:00.0..T23:59:59.999 | accepted |                               |
+| T10                    | T11..T23                   | rejected | C_TIME.range                  |
+| T10                    | T11:00..T23:59             | rejected | C_TIME.range                  |
+| T10                    | T11:00:00..T23:59:59       | rejected | C_TIME.range                  |
+| T10                    | T11:00:00.0..T23:59:59.999 | rejected | C_TIME.range                  |
+| T10                    | T00..T09                   | rejected | C_TIME.range                  |
+| T10                    | T00:00..T09:59             | rejected | C_TIME.range                  |
+| T10                    | T00:00:00..T09:59:59       | rejected | C_TIME.range                  |
+| T10                    | T00:00:00.0..T09:59:59.999 | rejected | C_TIME.range                  |
+| T10                    | >=T00                      | accepted |                               |
+| T10                    | >=T00:00                   | accepted |                               |
+| T10                    | >=T00:00:00                | accepted |                               |
+| T10                    | >=T00:00:00.0              | accepted |                               |
+| T10                    | >=T11                      | rejected | C_TIME.range                  |
+| T10                    | >=T11:00                   | rejected | C_TIME.range                  |
+| T10                    | >=T11:00:00                | rejected | C_TIME.range                  |
+| T10                    | >=T11:00:00.0              | rejected | C_TIME.range                  |
+| T10                    | <=T09                      | rejected | C_TIME.range                  |
+| T10                    | <=T09:59                   | rejected | C_TIME.range                  |
+| T10                    | <=T09:59:59                | rejected | C_TIME.range                  |
+| T10                    | <=T09:59:59.999            | rejected | C_TIME.range                  |
+
+> NOTE: the range with the timezone included doesn't make sense when the time value doesn't have a timezone, since will compare a local time (without TZ) with a global time (with TZ). This case should be considered an error at the archetype level.  Analogously, if the DV_TIME value has a timezome, the C_TIME.range constraints should include the timezone.
+
+
+| value                  | C_TIME.range               | expected | violated constraints          |
+|------------------------|----------------------------|----------|-------------------------------|
+| T10:30                 | T00..T23                   | accepted |                               |
+| T10:30                 | T00:00..T23:59             | accepted |                               |
+| T10:30                 | T00:00:00..T23:59:59       | accepted |                               |
+| T10:30                 | T00:00:00.0..T23:59:59.999 | accepted |                               |
+| T10:30                 | T11..T23                   | rejected | C_TIME.range                  |
+| T10:30                 | T11:00..T23:59             | rejected | C_TIME.range                  |
+| T10:30                 | T11:00:00..T23:59:59       | rejected | C_TIME.range                  |
+| T10:30                 | T11:00:00.0..T23:59:59.999 | rejected | C_TIME.range                  |
+| T10:30                 | T00..T09                   | rejected | C_TIME.range                  |
+| T10:30                 | T00:00..T09:59             | rejected | C_TIME.range                  |
+| T10:30                 | T00:00:00..T09:59:59       | rejected | C_TIME.range                  |
+| T10:30                 | T00:00:00.0..T09:59:59.999 | rejected | C_TIME.range                  |
+| T10:30                 | >=T00                      | accepted |                               |
+| T10:30                 | >=T00:00                   | accepted |                               |
+| T10:30                 | >=T00:00:00                | accepted |                               |
+| T10:30                 | >=T00:00:00.0              | accepted |                               |
+| T10:30                 | >=T11                      | rejected | C_TIME.range                  |
+| T10:30                 | >=T11:00                   | rejected | C_TIME.range                  |
+| T10:30                 | >=T11:00:00                | rejected | C_TIME.range                  |
+| T10:30                 | >=T11:00:00.0              | rejected | C_TIME.range                  |
+| T10:30                 | <=T09                      | rejected | C_TIME.range                  |
+| T10:30                 | <=T09:59                   | rejected | C_TIME.range                  |
+| T10:30                 | <=T09:59:59                | rejected | C_TIME.range                  |
+| T10:30                 | <=T09:59:59.999            | rejected | C_TIME.range                  |
+
+| value                  | C_TIME.range               | expected | violated constraints          |
+|------------------------|----------------------------|----------|-------------------------------|
+| T10:30:47              | T00..T23                   | accepted |                               |
+| T10:30:47              | T00:00..T23:59             | accepted |                               |
+| T10:30:47              | T00:00:00..T23:59:59       | accepted |                               |
+| T10:30:47              | T00:00:00.0..T23:59:59.999 | accepted |                               |
+| T10:30:47              | T11..T23                   | rejected | C_TIME.range                  |
+| T10:30:47              | T11:00..T23:59             | rejected | C_TIME.range                  |
+| T10:30:47              | T11:00:00..T23:59:59       | rejected | C_TIME.range                  |
+| T10:30:47              | T11:00:00.0..T23:59:59.999 | rejected | C_TIME.range                  |
+| T10:30:47              | T00..T09                   | rejected | C_TIME.range                  |
+| T10:30:47              | T00:00..T09:59             | rejected | C_TIME.range                  |
+| T10:30:47              | T00:00:00..T09:59:59       | rejected | C_TIME.range                  |
+| T10:30:47              | T00:00:00.0..T09:59:59.999 | rejected | C_TIME.range                  |
+| T10:30:47              | >=T00                      | accepted |                               |
+| T10:30:47              | >=T00:00                   | accepted |                               |
+| T10:30:47              | >=T00:00:00                | accepted |                               |
+| T10:30:47              | >=T00:00:00.0              | accepted |                               |
+| T10:30:47              | >=T11                      | rejected | C_TIME.range                  |
+| T10:30:47              | >=T11:00                   | rejected | C_TIME.range                  |
+| T10:30:47              | >=T11:00:00                | rejected | C_TIME.range                  |
+| T10:30:47              | >=T11:00:00.0              | rejected | C_TIME.range                  |
+| T10:30:47              | <=T09                      | rejected | C_TIME.range                  |
+| T10:30:47              | <=T09:59                   | rejected | C_TIME.range                  |
+| T10:30:47              | <=T09:59:59                | rejected | C_TIME.range                  |
+| T10:30:47              | <=T09:59:59.999            | rejected | C_TIME.range                  |
+
+| value                  | C_TIME.range               | expected | violated constraints          |
+|------------------------|----------------------------|----------|-------------------------------|
+| T10:30:47.5            | T00..T23                   | accepted |                               |
+| T10:30:47.5            | T00:00..T23:59             | accepted |                               |
+| T10:30:47.5            | T00:00:00..T23:59:59       | accepted |                               |
+| T10:30:47.5            | T00:00:00.0..T23:59:59.999 | accepted |                               |
+| T10:30:47.5            | T11..T23                   | rejected | C_TIME.range                  |
+| T10:30:47.5            | T11:00..T23:59             | rejected | C_TIME.range                  |
+| T10:30:47.5            | T11:00:00..T23:59:59       | rejected | C_TIME.range                  |
+| T10:30:47.5            | T11:00:00.0..T23:59:59.999 | rejected | C_TIME.range                  |
+| T10:30:47.5            | T00..T09                   | rejected | C_TIME.range                  |
+| T10:30:47.5            | T00:00..T09:59             | rejected | C_TIME.range                  |
+| T10:30:47.5            | T00:00:00..T09:59:59       | rejected | C_TIME.range                  |
+| T10:30:47.5            | T00:00:00.0..T09:59:59.999 | rejected | C_TIME.range                  |
+| T10:30:47.5            | >=T00                      | accepted |                               |
+| T10:30:47.5            | >=T00:00                   | accepted |                               |
+| T10:30:47.5            | >=T00:00:00                | accepted |                               |
+| T10:30:47.5            | >=T00:00:00.0              | accepted |                               |
+| T10:30:47.5            | >=T11                      | rejected | C_TIME.range                  |
+| T10:30:47.5            | >=T11:00                   | rejected | C_TIME.range                  |
+| T10:30:47.5            | >=T11:00:00                | rejected | C_TIME.range                  |
+| T10:30:47.5            | >=T11:00:00.0              | rejected | C_TIME.range                  |
+| T10:30:47.5            | <=T09                      | rejected | C_TIME.range                  |
+| T10:30:47.5            | <=T09:59                   | rejected | C_TIME.range                  |
+| T10:30:47.5            | <=T09:59:59                | rejected | C_TIME.range                  |
+| T10:30:47.5            | <=T09:59:59.999            | rejected | C_TIME.range                  |
+
+| value                  | C_TIME.range                 | expected | violated constraints          |
+|------------------------|------------------------------|----------|-------------------------------|
+| T10:30:47Z             | T00Z..T23Z                   | accepted |                               |
+| T10:30:47Z             | T00:00Z..T23:59Z             | accepted |                               |
+| T10:30:47Z             | T00:00:00Z..T23:59:59Z       | accepted |                               |
+| T10:30:47Z             | T00:00:00.0Z..T23:59:59.999Z | accepted |                               |
+| T10:30:47Z             | T11Z..T23Z                   | rejected | C_TIME.range                  |
+| T10:30:47Z             | T11:00Z..T23:59Z             | rejected | C_TIME.range                  |
+| T10:30:47Z             | T11:00:00Z..T23:59:59Z       | rejected | C_TIME.range                  |
+| T10:30:47Z             | T11:00:00.0Z..T23:59:59.999Z | rejected | C_TIME.range                  |
+| T10:30:47Z             | T00Z..T09Z                   | rejected | C_TIME.range                  |
+| T10:30:47Z             | T00:00Z..T09:59Z             | rejected | C_TIME.range                  |
+| T10:30:47Z             | T00:00:00Z..T09:59:59Z       | rejected | C_TIME.range                  |
+| T10:30:47Z             | T00:00:00.0Z..T09:59:59.999Z | rejected | C_TIME.range                  |
+| T10:30:47Z             | >=T00Z                       | accepted |                               |
+| T10:30:47Z             | >=T00:00Z                    | accepted |                               |
+| T10:30:47Z             | >=T00:00:00Z                 | accepted |                               |
+| T10:30:47Z             | >=T00:00:00.0Z               | accepted |                               |
+| T10:30:47Z             | >=T11Z                       | rejected | C_TIME.range                  |
+| T10:30:47Z             | >=T11:00Z                    | rejected | C_TIME.range                  |
+| T10:30:47Z             | >=T11:00:00Z                 | rejected | C_TIME.range                  |
+| T10:30:47Z             | >=T11:00:00.0Z               | rejected | C_TIME.range                  |
+| T10:30:47Z             | <=T09Z                       | rejected | C_TIME.range                  |
+| T10:30:47Z             | <=T09:59Z                    | rejected | C_TIME.range                  |
+| T10:30:47Z             | <=T09:59:59Z                 | rejected | C_TIME.range                  |
+| T10:30:47Z             | <=T09:59:59.999Z             | rejected | C_TIME.range                  |
+
+| value                  | C_TIME.range                 | expected | violated constraints          |
+|------------------------|------------------------------|----------|-------------------------------|
+| T10:30:47.5Z           | T00Z..T23Z                   | accepted |                               |
+| T10:30:47.5Z           | T00:00Z..T23:59Z             | accepted |                               |
+| T10:30:47.5Z           | T00:00:00Z..T23:59:59Z       | accepted |                               |
+| T10:30:47.5Z           | T00:00:00.0Z..T23:59:59.999Z | accepted |                               |
+| T10:30:47.5Z           | T11Z..T23Z                   | rejected | C_TIME.range                  |
+| T10:30:47.5Z           | T11:00Z..T23:59Z             | rejected | C_TIME.range                  |
+| T10:30:47.5Z           | T11:00:00Z..T23:59:59Z       | rejected | C_TIME.range                  |
+| T10:30:47.5Z           | T11:00:00.0Z..T23:59:59.999Z | rejected | C_TIME.range                  |
+| T10:30:47.5Z           | T00Z..T09Z                   | rejected | C_TIME.range                  |
+| T10:30:47.5Z           | T00:00Z..T09:59Z             | rejected | C_TIME.range                  |
+| T10:30:47.5Z           | T00:00:00Z..T09:59:59Z       | rejected | C_TIME.range                  |
+| T10:30:47.5Z           | T00:00:00.0Z..T09:59:59.999Z | rejected | C_TIME.range                  |
+| T10:30:47.5Z           | >=T00Z                       | accepted |                               |
+| T10:30:47.5Z           | >=T00:00Z                    | accepted |                               |
+| T10:30:47.5Z           | >=T00:00:00Z                 | accepted |                               |
+| T10:30:47.5Z           | >=T00:00:00.0Z               | accepted |                               |
+| T10:30:47.5Z           | >=T11Z                       | rejected | C_TIME.range                  |
+| T10:30:47.5Z           | >=T11:00Z                    | rejected | C_TIME.range                  |
+| T10:30:47.5Z           | >=T11:00:00Z                 | rejected | C_TIME.range                  |
+| T10:30:47.5Z           | >=T11:00:00.0Z               | rejected | C_TIME.range                  |
+| T10:30:47.5Z           | <=T09Z                       | rejected | C_TIME.range                  |
+| T10:30:47.5Z           | <=T09:59Z                    | rejected | C_TIME.range                  |
+| T10:30:47.5Z           | <=T09:59:59Z                 | rejected | C_TIME.range                  |
+| T10:30:47.5Z           | <=T09:59:59.999Z             | rejected | C_TIME.range                  |
+
+| value                  | C_TIME.range                           | expected | violated constraints          |
+|------------------------|----------------------------------------|----------|-------------------------------|
+| T10:30:47-03:00        | T00-03:00..T23-03:00                   | accepted |                               |
+| T10:30:47-03:00        | T00:00-03:00..T23:59-03:00             | accepted |                               |
+| T10:30:47-03:00        | T00:00:00-03:00..T23:59:59-03:00       | accepted |                               |
+| T10:30:47-03:00        | T00:00:00.0-03:00..T23:59:59.999-03:00 | accepted |                               |
+| T10:30:47-03:00        | T11-03:00..T23-03:00                   | rejected | C_TIME.range                  |
+| T10:30:47-03:00        | T11:00-03:00..T23:59-03:00             | rejected | C_TIME.range                  |
+| T10:30:47-03:00        | T11:00:00-03:00..T23:59:59-03:00       | rejected | C_TIME.range                  |
+| T10:30:47-03:00        | T11:00:00.0-03:00..T23:59:59.999-03:00 | rejected | C_TIME.range                  |
+| T10:30:47-03:00        | T00-03:00..T09-03:00                   | rejected | C_TIME.range                  |
+| T10:30:47-03:00        | T00:00-03:00..T09:59-03:00             | rejected | C_TIME.range                  |
+| T10:30:47-03:00        | T00:00:00-03:00..T09:59:59-03:00       | rejected | C_TIME.range                  |
+| T10:30:47-03:00        | T00:00:00.0-03:00..T09:59:59.999-03:00 | rejected | C_TIME.range                  |
+| T10:30:47-03:00        | >=T00-03:00                            | accepted |                               |
+| T10:30:47-03:00        | >=T00:00-03:00                         | accepted |                               |
+| T10:30:47-03:00        | >=T00:00:00-03:00                      | accepted |                               |
+| T10:30:47-03:00        | >=T00:00:00.0-03:00                    | accepted |                               |
+| T10:30:47-03:00        | >=T11-03:00                            | rejected | C_TIME.range                  |
+| T10:30:47-03:00        | >=T11:00-03:00                         | rejected | C_TIME.range                  |
+| T10:30:47-03:00        | >=T11:00:00-03:00                      | rejected | C_TIME.range                  |
+| T10:30:47-03:00        | >=T11:00:00.0-03:00                    | rejected | C_TIME.range                  |
+| T10:30:47-03:00        | <=T09-03:00                            | rejected | C_TIME.range                  |
+| T10:30:47-03:00        | <=T09:59-03:00                         | rejected | C_TIME.range                  |
+| T10:30:47-03:00        | <=T09:59:59-03:00                      | rejected | C_TIME.range                  |
+| T10:30:47-03:00        | <=T09:59:59.999-03:00                  | rejected | C_TIME.range                  |
+
+| value                  | C_TIME.range                           | expected | violated constraints          |
+|------------------------|----------------------------------------|----------|-------------------------------|
+| T10:30:47.5-03:00      | T00-03:00..T23-03:00                   | accepted |                               |
+| T10:30:47.5-03:00      | T00:00-03:00..T23:59-03:00             | accepted |                               |
+| T10:30:47.5-03:00      | T00:00:00-03:00..T23:59:59-03:00       | accepted |                               |
+| T10:30:47.5-03:00      | T00:00:00.0-03:00..T23:59:59.999-03:00 | accepted |                               |
+| T10:30:47.5-03:00      | T11-03:00..T23-03:00                   | rejected | C_TIME.range                  |
+| T10:30:47.5-03:00      | T11:00-03:00..T23:59-03:00             | rejected | C_TIME.range                  |
+| T10:30:47.5-03:00      | T11:00:00-03:00..T23:59:59-03:00       | rejected | C_TIME.range                  |
+| T10:30:47.5-03:00      | T11:00:00.0-03:00..T23:59:59.999-03:00 | rejected | C_TIME.range                  |
+| T10:30:47.5-03:00      | T00-03:00..T09-03:00                   | rejected | C_TIME.range                  |
+| T10:30:47.5-03:00      | T00:00-03:00..T09:59-03:00             | rejected | C_TIME.range                  |
+| T10:30:47.5-03:00      | T00:00:00-03:00..T09:59:59-03:00       | rejected | C_TIME.range                  |
+| T10:30:47.5-03:00      | T00:00:00.0-03:00..T09:59:59.999-03:00 | rejected | C_TIME.range                  |
+| T10:30:47.5-03:00      | >=T00-03:00                            | accepted |                               |
+| T10:30:47.5-03:00      | >=T00:00-03:00                         | accepted |                               |
+| T10:30:47.5-03:00      | >=T00:00:00-03:00                      | accepted |                               |
+| T10:30:47.5-03:00      | >=T00:00:00.0-03:00                    | accepted |                               |
+| T10:30:47.5-03:00      | >=T11-03:00                            | rejected | C_TIME.range                  |
+| T10:30:47.5-03:00      | >=T11:00-03:00                         | rejected | C_TIME.range                  |
+| T10:30:47.5-03:00      | >=T11:00:00-03:00                      | rejected | C_TIME.range                  |
+| T10:30:47.5-03:00      | >=T11:00:00.0-03:00                    | rejected | C_TIME.range                  |
+| T10:30:47.5-03:00      | <=T09-03:00                            | rejected | C_TIME.range                  |
+| T10:30:47.5-03:00      | <=T09:59-03:00                         | rejected | C_TIME.range                  |
+| T10:30:47.5-03:00      | <=T09:59:59-03:00                      | rejected | C_TIME.range                  |
+| T10:30:47.5-03:00      | <=T09:59:59.999-03:00                  | rejected | C_TIME.range                  |
 
 
 ## 4.4. quantity.date_time.DV_DATE
@@ -754,6 +1041,7 @@ DV_DATE constraints are defined by C_DATE, which specifies two types of constrai
 | value                  | expected | violated constraints          |
 |------------------------|----------|-------------------------------|
 | NULL                   | rejected | RM/Schema: value is mandatory |
+| ''                     | rejected | ISO8601: at least year is required <sup id="empty_date">[1](#footnote1)</sup> |
 | 2021                   | accepted |                               |
 | 2021-10                | accepted |                               |
 | 2021-00                | rejected | ISO8601: month in 01..12      |
@@ -763,14 +1051,56 @@ DV_DATE constraints are defined by C_DATE, which specifies two types of constrai
 | 2021-10-32             | rejected | ISO8601: day in 01..31        |
 
 
+<b id="footnote1">1</b>: this is the author's interpretation of a minimal valid date in the context of openEHR noting the description of [C_DATE](https://specifications.openehr.org/releases/AM/Release-2.2.0/AOM1.4.html#_c_date_class): "There is no validity flag for ‘year’, since it must always be by definition mandatory in order to have a sensible date at all.". Though the ISO standard seems to allow partial year expressions. [↩](#empty_date)
+
+
 ### 4.4.2. Test Case DV_DATE validity kind constraint
 
-TBD
+| value                  | month_validity | day_validity   | expected | violated constraints          |
+|------------------------|----------------|----------------|----------|-------------------------------|
+| 2021                   | mandatory      | mandatory      | rejected | month_validity, day_validity  |
+| 2021                   | mandatory      | optional       | rejected | month_validity                |
+| 2021                   | optional       | optional       | accepted |                               |
+| 2021                   | mandatory      | prohibited     | rejected | month_validity                |
+| 2021                   | prohibited     | prohibited     | accepted |                               |
+| 2021-10                | mandatory      | mandatory      | rejected | day_validity                  |
+| 2021-10                | mandatory      | optional       | accepted |                               |
+| 2021-10                | optional       | optional       | accepted |                               |
+| 2021-10                | mandatory      | prohibited     | accepted |                               |
+| 2021-10                | prohibited     | prohibited     | rejected | month_validity                |
+| 2021-10-24             | mandatory      | mandatory      | accepted |                               |
+| 2021-10-24             | mandatory      | optional       | accepted |                               |
+| 2021-10-24             | optional       | optional       | accepted |                               |
+| 2021-10-24             | mandatory      | prohibited     | rejected | day_validity                  |
+| 2021-10-24             | prohibited     | prohibited     | rejected | month_validity, day_validity  |
+
+
 
 ### 4.4.3. Test Case DV_DATE validity range
 
-TBD
+The C_DATE.range constraint is an Interval<Date>, which are both [Foundation Types](https://specifications.openehr.org/releases/BASE/Release-1.2.0/foundation_types.html).
 
+> NOTE: the Date class mentioned in the AOM specification is actually the [Iso8601_date](https://specifications.openehr.org/releases/BASE/Release-1.2.0/foundation_types.html#_time_types) class. This is a [known bug](https://openehr.atlassian.net/browse/SPECPR-380) in the specs.
+
+| value                  | C_DATE.range               | expected | violated constraints          |
+|------------------------|----------------------------|----------|-------------------------------|
+| 2021                   | 1900..2030                 | accepted |                               |
+| 2021                   | 2022..2030                 | rejected | C_DATE.range                  |
+| 2021                   | 1900..2020                 | rejected | C_DATE.range                  |
+
+| value                  | C_DATE.range               | expected | violated constraints          |
+|------------------------|----------------------------|----------|-------------------------------|
+| 2021-10                | 1900-03..2030-07           | accepted |                               |
+| 2021-10                | 2022-03..2030-07           | rejected | C_DATE.range                  |
+| 2021-10                | 1900-03..2020-07           | rejected | C_DATE.range                  |
+
+| value                  | C_DATE.range               | expected | violated constraints          |
+|------------------------|----------------------------|----------|-------------------------------|
+| 2021-10-24             | 1900-03-13..2030-07-09     | accepted |                               |
+| 2021-10-24             | 2022-03-13..2030-07-09     | rejected | C_DATE.range                  |
+| 2021-10-24             | 1900-03-13..2020-07-09     | rejected | C_DATE.range                  |
+
+> NOTE: the DV_DATE value and the C_DATE.range limits should be comparable, that means the value and range limits should have the same components, for instance a year-only date 2021 can't be compared to a year+month date like 2021-10, because 2021 refers to a whole year, and 2021-10 refers to a month in that year, but it's not possible to say if 2021 < 2021-10 or 2021 > 2021-10, since both are refering to different things. What we could say is 2020 < 2021, and 2021-10 < 2021-11.
 
 
 ## 4.5. quantity.date_time.DV_DATE_TIME
@@ -779,15 +1109,66 @@ DV_DATE_TIME constraints are defined by C_DATE_TIME, which specifies two types o
 
 ### 4.5.1. Test case DV_DATE_TIME open constraint
 
-TBD
+| value                            | expected | violated constraints               |
+|----------------------------------|----------|------------------------------------|
+| NULL                             | rejected | RM/Schema: value is mandatory      |
+| ''                               | rejected | ISO8601: at least year is required |
+| 2021                             | accepted |                                    |
+| 2021-10                          | accepted |                                    |
+| 2021-00                          | rejected | ISO8601: month in 01..12           |
+| 2021-13                          | rejected | ISO8601: month in 01..12           |
+| 2021-10-24                       | accepted |                                    |
+| 2021-10-00                       | rejected | ISO8601: day in 01..31             |
+| 2021-10-32                       | rejected | ISO8601: day in 01..31             |
+| 2021-10-24T10                    | accepted |                                    |
+| 2021-10-24T48                    | rejected | ISO8601: hours in 0..23            |
+| 2021-10-24T10:30                 | accepted |                                    |
+| 2021-10-24T10:95                 | rejected | ISO8601: minutes in 0..59          |
+| 2021-10-24T10:30:47              | accepted |                                    |
+| 2021-10-24T10:30:78              | rejected | ISO8601: seconds in 0..59          |
+| 2021-10-24T10:30:47.5            | accepted |                                    |
+| 2021-10-24T10:30:47.333          | accepted |                                    |
+| 2021-10-24T10:30:47.333333       | accepted |                                    |
+| 2021-10-24T10:30:47Z             | accepted |                                    |
+| 2021-10-24T10:30:78Z             | rejected | ISO8601: seconds in 0..59          |
+| 2021-10-24T10:30:47.5Z           | accepted |                                    |
+| 2021-10-24T10:30:47.333Z         | accepted |                                    |
+| 2021-10-24T10:30:47.333333Z      | accepted |                                    |
+| 2021-10-24T10:30:47-03:00        | accepted |                                    |
+| 2021-10-24T10:30:78-03:00        | rejected | ISO8601: seconds in 0..59          |
+| 2021-10-24T10:30:47.5-03:00      | accepted |                                    |
+| 2021-10-24T10:30:47.333-03:00    | accepted |                                    |
+| 2021-10-24T10:30:47.333333-03:00 | accepted |                                    |
+
+> NOTE: to verify the date time expressiosn we used this [regex](https://regex101.com/r/pYQJaW/1), you will note the rejected values don't match the regex.
+
 
 ### 4.5.2. Test Case DV_DATE_TIME validity kind constraint
 
-TBD
+| value                  | month_validity | day_validity | hour_validity | minute_validity | second_validity | millisecond_validity | timezone_validity | expected | violated constraints               |
+|------------------------|----------------|--------------|---------------|-----------------|-----------------|----------------------|-------------------|----------|------------------------------------|
+| 2021                   | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | mandatory         | rejected | month_validity, day_validity, hour_validity, minute_validity, second_validity, millisecond_validity, timezone_validity |
+| 2021                   | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | optional          | rejected | month_validity, day_validity, hour_validity, minute_validity, second_validity, millisecond_validity |
+| 2021                   | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | optional             | optional          | rejected | month_validity, day_validity, hour_validity, minute_validity, second_validity   |
+| 2021                   | mandatory      | mandatory    | mandatory     | mandatory       | optional        | optional             | optional          | rejected | month_validity, day_validity, hour_validity, minute_validity                    |
+| 2021                   | mandatory      | mandatory    | mandatory     | optional        | optional        | optional             | optional          | rejected | month_validity, day_validity, hour_validity      |
+| 2021                   | mandatory      | mandatory    | optional      | optional        | optional        | optional             | optional          | rejected | month_validity, day_validity                     |
+| 2021                   | mandatory      | optional     | optional      | optional        | optional        | optional             | optional          | rejected | month_validity                                   |
+| 2021                   | optional       | optional     | optional      | optional        | optional        | optional             | optional          | accepted |                                                  |
+| 2021                   | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | prohibited        | rejected | month_validity, day_validity, hour_validity, minute_validity, second_validity, millisecond_validity |
+| 2021                   | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | prohibited           | prohibited        | rejected | month_validity, day_validity, hour_validity, minute_validity, second_validity   |
+| 2021                   | mandatory      | mandatory    | mandatory     | mandatory       | prohibited      | prohibited           | prohibited        | rejected | month_validity, day_validity, hour_validity, minute_validity                    |
+| 2021                   | mandatory      | mandatory    | mandatory     | prohibited      | prohibited      | prohibited           | prohibited        | rejected | month_validity, day_validity, hour_validity                    |
+| 2021                   | mandatory      | mandatory    | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | rejected | month_validity, day_validity                                   |
+| 2021                   | mandatory      | prohibited   | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | rejected | month_validity                                                 |
+| 2021                   | prohibited     | prohibited   | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | accepted |                                                                |
+
+
+TBD: need to mix more cases from date and time
 
 ### 4.5.3. Test Case DV_DATE_TIME validity range
 
-TBD
+TBD> mix of cases from date and time
 
 
 # 5. time_specification
