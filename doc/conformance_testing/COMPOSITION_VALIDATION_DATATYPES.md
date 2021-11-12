@@ -283,13 +283,13 @@ Internally this type is constrained by a C_INTEGER which could contain a range o
 
 This case represents the DV_COUNT matching {*}, in this case the C_INTEGER is not present in the OPT.
 
-| magnitude      | C_INTEGER.range | C_INTEGER.list    | expected | constraints violated |
-|:---------------|:----------------|-------------------|----------|----------------------|
-| NULL           | NULL            | NULL              | rejected | RM/Schema magnitude is mandatory |
-| 0              | NULL            | NULL              | accepted |  |
-| 1              | NULL            | NULL              | accepted |  |
-| 15             | NULL            | NULL              | accepted |  |
-| 30             | NULL            | NULL              | accepted |  |
+| magnitude      | expected | constraints violated |
+|:---------------|----------|----------------------|
+| NULL           | rejected | RM/Schema magnitude is mandatory |
+| 0              | accepted |                      |
+| 1              | accepted |                      |
+| 15             | accepted |                      |
+| 30             | accepted |                      |
 
 ### 3.4.2. Test case DV_COUNT range constraint
 
@@ -322,15 +322,15 @@ Internally DV_QUANTITY is constrained by a C_DV_QUANTITY, which allows to specif
 
 This case represents the DV_QUANTITY matching {*}, in this case the C_DV_QUANTITY is not present in the OPT.
 
-| magnitude | units | C_DV_QUANTITY.property | C_DV_QUANTITY.list    | expected | constraints violated |
-|:----------|:------|:-----------------------|-------------------|----------|----------------------|
-| NULL      | NULL  | NULL                   | NULL              | rejected | RM/Schema both magnitude and untis are mandatory |
-| NULL      | cm    | NULL                   | NULL              | rejected | RM/Schema magnitude is mandatory |
-| 1.0       | NULL  | NULL                   | NULL              | rejected | RM/Schema untis is mandatory |
-| 0.0       | cm    | NULL                   | NULL              | accepted |  |
-| 1.0       | cm    | NULL                   | NULL              | accepted |  |
-| 5.7       | cm    | NULL                   | NULL              | accepted |  |
-| 10.0      | cm    | NULL                   | NULL              | accepted |  |
+| magnitude | units | expected | constraints violated |
+|:----------|:------|----------|----------------------|
+| NULL      | NULL  | rejected | RM/Schema both magnitude and untis are mandatory |
+| NULL      | cm    | rejected | RM/Schema magnitude is mandatory |
+| 1.0       | NULL  | rejected | RM/Schema untis is mandatory |
+| 0.0       | cm    | accepted |                      |
+| 1.0       | cm    | accepted |                      |
+| 5.7       | cm    | accepted |                      |
+| 10.0      | cm    | accepted |                      |
 
 
 ### 3.5.2. Test case DV_QUANTITY only property is constrained
@@ -590,7 +590,7 @@ The DV_INTERVAL<DV_QUANTITY> constraint is {*}.
 | 10 mg  | 100 mg | false           | false           | true           | true           | accepted |                      |
 | NULL   | NULL   | true            | true            | true           | false          | rejected | lower_included_valid (invariant) |
 | 0 mg   | NULL   | false           | true            | false          | true           | rejected | upper_included_valid (invariant) |
-| 200 mg | 100 mg | false           | false           | true           | true           | rejected | limits_consistent (invariant) |
+| 200 mg | 100 mg | false           | false           | true           | true           | rejected | limits_consistent (invariant)    |
 
 
 ### 3.8.2. Test case DV_INTERVAL<DV_QUANTITY> lower and upper constraints present
@@ -807,6 +807,10 @@ This case is when DV_TIME matches {*}.
 The C_TIME.range constraint is an Interval<Time>, which are both [Foundation Types](https://specifications.openehr.org/releases/BASE/Release-1.2.0/foundation_types.html).
 
 > NOTE: the Time class mentioned in the AOM specification is actually the [Iso8601_time](https://specifications.openehr.org/releases/BASE/Release-1.2.0/foundation_types.html#_time_types) class. This is a [known bug](https://openehr.atlassian.net/browse/SPECPR-380) in the specs.
+
+TBD: we need to clarify if T10 is referring to the whole 10th hour or to 10:00:00 omitting the rest of the time components, because it could be a similar case as we have with the date expressions: can only compare expressions that have exactly the same components.
+
+TBD: there is an open question about strictly comparability between time expressions with different components. Is "T10" comparable to "T00:00"?
 
 | value                  | C_TIME.range               | expected | violated constraints          |
 |------------------------|----------------------------|----------|-------------------------------|
@@ -1163,12 +1167,241 @@ DV_DATE_TIME constraints are defined by C_DATE_TIME, which specifies two types o
 | 2021                   | mandatory      | prohibited   | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | rejected | month_validity                                                 |
 | 2021                   | prohibited     | prohibited   | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | accepted |                                                                |
 
+| value                  | month_validity | day_validity | hour_validity | minute_validity | second_validity | millisecond_validity | timezone_validity | expected | violated constraints               |
+|------------------------|----------------|--------------|---------------|-----------------|-----------------|----------------------|-------------------|----------|------------------------------------|
+| 2021-10                | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | mandatory         | rejected | day_validity, hour_validity, minute_validity, second_validity, millisecond_validity, timezone_validity |
+| 2021-10                | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | optional          | rejected | day_validity, hour_validity, minute_validity, second_validity, millisecond_validity |
+| 2021-10                | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | optional             | optional          | rejected | day_validity, hour_validity, minute_validity, second_validity   |
+| 2021-10                | mandatory      | mandatory    | mandatory     | mandatory       | optional        | optional             | optional          | rejected | day_validity, hour_validity, minute_validity                    |
+| 2021-10                | mandatory      | mandatory    | mandatory     | optional        | optional        | optional             | optional          | rejected | day_validity, hour_validity        |
+| 2021-10                | mandatory      | mandatory    | optional      | optional        | optional        | optional             | optional          | rejected | day_validity                       |
+| 2021-10                | mandatory      | optional     | optional      | optional        | optional        | optional             | optional          | accepted |                                    |
+| 2021-10                | optional       | optional     | optional      | optional        | optional        | optional             | optional          | accepted |                                                  |
+| 2021-10                | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | prohibited        | rejected | day_validity, hour_validity, minute_validity, second_validity, millisecond_validity |
+| 2021-10                | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | prohibited           | prohibited        | rejected | day_validity, hour_validity, minute_validity, second_validity   |
+| 2021-10                | mandatory      | mandatory    | mandatory     | mandatory       | prohibited      | prohibited           | prohibited        | rejected | day_validity, hour_validity, minute_validity                    |
+| 2021-10                | mandatory      | mandatory    | mandatory     | prohibited      | prohibited      | prohibited           | prohibited        | rejected | day_validity, hour_validity                    |
+| 2021-10                | mandatory      | mandatory    | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | rejected | day_validity                                   |
+| 2021-10                | mandatory      | prohibited   | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | accepted |                                                |
+| 2021-10                | prohibited     | prohibited   | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | rejected | month_validity                                 |
 
-TBD: need to mix more cases from date and time
+| value                  | month_validity | day_validity | hour_validity | minute_validity | second_validity | millisecond_validity | timezone_validity | expected | violated constraints               |
+|------------------------|----------------|--------------|---------------|-----------------|-----------------|----------------------|-------------------|----------|------------------------------------|
+| 2021-10-24             | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | mandatory         | rejected | hour_validity, minute_validity, second_validity, millisecond_validity, timezone_validity |
+| 2021-10-24             | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | optional          | rejected | hour_validity, minute_validity, second_validity, millisecond_validity |
+| 2021-10-24             | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | optional             | optional          | rejected | hour_validity, minute_validity, second_validity |
+| 2021-10-24             | mandatory      | mandatory    | mandatory     | mandatory       | optional        | optional             | optional          | rejected | hour_validity, minute_validity                  |
+| 2021-10-24             | mandatory      | mandatory    | mandatory     | optional        | optional        | optional             | optional          | rejected | hour_validity                      |
+| 2021-10-24             | mandatory      | mandatory    | optional      | optional        | optional        | optional             | optional          | accepted |                                    |
+| 2021-10-24             | mandatory      | optional     | optional      | optional        | optional        | optional             | optional          | accepted |                                    |
+| 2021-10-24             | optional       | optional     | optional      | optional        | optional        | optional             | optional          | accepted |                                    |
+| 2021-10-24             | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | prohibited        | rejected | hour_validity, minute_validity, second_validity, millisecond_validity |
+| 2021-10-24             | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | prohibited           | prohibited        | rejected | hour_validity, minute_validity, second_validity |
+| 2021-10-24             | mandatory      | mandatory    | mandatory     | mandatory       | prohibited      | prohibited           | prohibited        | rejected | hour_validity, minute_validity                  |
+| 2021-10-24             | mandatory      | mandatory    | mandatory     | prohibited      | prohibited      | prohibited           | prohibited        | rejected | hour_validity                                   |
+| 2021-10-24             | mandatory      | mandatory    | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | accepted |                                                 |
+| 2021-10-24             | mandatory      | prohibited   | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | rejected | day_validity                                    |
+| 2021-10-24             | prohibited     | prohibited   | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | rejected | month_validity, day_validity                    |
+
+| value                  | month_validity | day_validity | hour_validity | minute_validity | second_validity | millisecond_validity | timezone_validity | expected | violated constraints               |
+|------------------------|----------------|--------------|---------------|-----------------|-----------------|----------------------|-------------------|----------|------------------------------------|
+| 2021-10-24T10          | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | mandatory         | rejected | minute_validity, second_validity, millisecond_validity, timezone_validity |
+| 2021-10-24T10          | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | optional          | rejected | minute_validity, second_validity, millisecond_validity |
+| 2021-10-24T10          | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | optional             | optional          | rejected | minute_validity, second_validity            |
+| 2021-10-24T10          | mandatory      | mandatory    | mandatory     | mandatory       | optional        | optional             | optional          | rejected | minute_validity                             |
+| 2021-10-24T10          | mandatory      | mandatory    | mandatory     | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10          | mandatory      | mandatory    | optional      | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10          | mandatory      | optional     | optional      | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10          | optional       | optional     | optional      | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10          | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | prohibited        | rejected | minute_validity, second_validity, millisecond_validity |
+| 2021-10-24T10          | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | prohibited           | prohibited        | rejected | minute_validity, second_validity            |
+| 2021-10-24T10          | mandatory      | mandatory    | mandatory     | mandatory       | prohibited      | prohibited           | prohibited        | rejected | minute_validity                             |
+| 2021-10-24T10          | mandatory      | mandatory    | mandatory     | prohibited      | prohibited      | prohibited           | prohibited        | accepted |                                             |
+| 2021-10-24T10          | mandatory      | mandatory    | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | rejected | hour_validity                               |
+| 2021-10-24T10          | mandatory      | prohibited   | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | rejected | day_validity, hour_validity                 |
+| 2021-10-24T10          | prohibited     | prohibited   | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | rejected | month_validity, day_validity, hour_validity |
+
+| value                  | month_validity | day_validity | hour_validity | minute_validity | second_validity | millisecond_validity | timezone_validity | expected | violated constraints               |
+|------------------------|----------------|--------------|---------------|-----------------|-----------------|----------------------|-------------------|----------|------------------------------------|
+| 2021-10-24T10:30       | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | mandatory         | rejected | second_validity, millisecond_validity, timezone_validity |
+| 2021-10-24T10:30       | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | optional          | rejected | second_validity, millisecond_validity |
+| 2021-10-24T10:30       | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | optional             | optional          | rejected | second_validity            |
+| 2021-10-24T10:30       | mandatory      | mandatory    | mandatory     | mandatory       | optional        | optional             | optional          | accepted |                            |
+| 2021-10-24T10:30       | mandatory      | mandatory    | mandatory     | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30       | mandatory      | mandatory    | optional      | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30       | mandatory      | optional     | optional      | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30       | optional       | optional     | optional      | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30       | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | prohibited        | rejected | second_validity, millisecond_validity       |
+| 2021-10-24T10:30       | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | prohibited           | prohibited        | rejected | second_validity                             |
+| 2021-10-24T10:30       | mandatory      | mandatory    | mandatory     | mandatory       | prohibited      | prohibited           | prohibited        | accepted |                                             |
+| 2021-10-24T10:30       | mandatory      | mandatory    | mandatory     | prohibited      | prohibited      | prohibited           | prohibited        | rejected | minute_validity                                        |
+| 2021-10-24T10:30       | mandatory      | mandatory    | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | rejected | hour_validity, minute_validity                         |
+| 2021-10-24T10:30       | mandatory      | prohibited   | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | rejected | day_validity, hour_validity, minute_validity           |
+| 2021-10-24T10:30       | prohibited     | prohibited   | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | rejected | month_validity, day_validity, hour_validity, minute_validity |
+
+| value                  | month_validity | day_validity | hour_validity | minute_validity | second_validity | millisecond_validity | timezone_validity | expected | violated constraints                        |
+|------------------------|----------------|--------------|---------------|-----------------|-----------------|----------------------|-------------------|----------|---------------------------------------------|
+| 2021-10-24T10:30:47    | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | mandatory         | rejected | millisecond_validity, timezone_validity     |
+| 2021-10-24T10:30:47    | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | optional          | rejected | millisecond_validity                        |
+| 2021-10-24T10:30:47    | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47    | mandatory      | mandatory    | mandatory     | mandatory       | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47    | mandatory      | mandatory    | mandatory     | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47    | mandatory      | mandatory    | optional      | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47    | mandatory      | optional     | optional      | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47    | optional       | optional     | optional      | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47    | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | prohibited        | rejected | millisecond_validity                        |
+| 2021-10-24T10:30:47    | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | prohibited           | prohibited        | accepted |                                             |
+| 2021-10-24T10:30:47    | mandatory      | mandatory    | mandatory     | mandatory       | prohibited      | prohibited           | prohibited        | rejected | second_validity                             |
+| 2021-10-24T10:30:47    | mandatory      | mandatory    | mandatory     | prohibited      | prohibited      | prohibited           | prohibited        | rejected | minute_validity, second_validity                                              |
+| 2021-10-24T10:30:47    | mandatory      | mandatory    | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | rejected | hour_validity, minute_validity, second_validity                               |
+| 2021-10-24T10:30:47    | mandatory      | prohibited   | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | rejected | day_validity, hour_validity, minute_validity, second_validity                 |
+| 2021-10-24T10:30:47    | prohibited     | prohibited   | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | rejected | month_validity, day_validity, hour_validity, minute_validity, second_validity |
+
+| value                  | month_validity | day_validity | hour_validity | minute_validity | second_validity | millisecond_validity | timezone_validity | expected | violated constraints                        |
+|------------------------|----------------|--------------|---------------|-----------------|-----------------|----------------------|-------------------|----------|---------------------------------------------|
+| 2021-10-24T10:30:47.5  | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | mandatory         | rejected | timezone_validity                           |
+| 2021-10-24T10:30:47.5  | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | optional          | accepted |                                             |
+| 2021-10-24T10:30:47.5  | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47.5  | mandatory      | mandatory    | mandatory     | mandatory       | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47.5  | mandatory      | mandatory    | mandatory     | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47.5  | mandatory      | mandatory    | optional      | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47.5  | mandatory      | optional     | optional      | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47.5  | optional       | optional     | optional      | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47.5  | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | prohibited        | accepted |                                             |
+| 2021-10-24T10:30:47.5  | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | prohibited           | prohibited        | rejected | millisecond_validity                        |
+| 2021-10-24T10:30:47.5  | mandatory      | mandatory    | mandatory     | mandatory       | prohibited      | prohibited           | prohibited        | rejected | second_validity, millisecond_validity       |
+| 2021-10-24T10:30:47.5  | mandatory      | mandatory    | mandatory     | prohibited      | prohibited      | prohibited           | prohibited        | rejected | minute_validity, second_validity, millisecond_validity                                              |
+| 2021-10-24T10:30:47.5  | mandatory      | mandatory    | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | rejected | hour_validity, minute_validity, second_validity, millisecond_validity                               |
+| 2021-10-24T10:30:47.5  | mandatory      | prohibited   | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | rejected | day_validity, hour_validity, minute_validity, second_validity, millisecond_validity                 |
+| 2021-10-24T10:30:47.5  | prohibited     | prohibited   | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | rejected | month_validity, day_validity, hour_validity, minute_validity, second_validity, millisecond_validity |
+
+| value                  | month_validity | day_validity | hour_validity | minute_validity | second_validity | millisecond_validity | timezone_validity | expected | violated constraints                        |
+|------------------------|----------------|--------------|---------------|-----------------|-----------------|----------------------|-------------------|----------|---------------------------------------------|
+| 2021-10-24T10:30:47.5Z | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | mandatory         | accepted |                                             |
+| 2021-10-24T10:30:47.5Z | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | optional          | accepted |                                             |
+| 2021-10-24T10:30:47.5Z | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47.5Z | mandatory      | mandatory    | mandatory     | mandatory       | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47.5Z | mandatory      | mandatory    | mandatory     | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47.5Z | mandatory      | mandatory    | optional      | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47.5Z | mandatory      | optional     | optional      | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47.5Z | optional       | optional     | optional      | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47.5Z | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | prohibited        | rejected | timezone_validity                                              |
+| 2021-10-24T10:30:47.5Z | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | prohibited           | prohibited        | rejected | millisecond_validity, timezone_validity                        |
+| 2021-10-24T10:30:47.5Z | mandatory      | mandatory    | mandatory     | mandatory       | prohibited      | prohibited           | prohibited        | rejected | second_validity, millisecond_validity, timezone_validity       |
+| 2021-10-24T10:30:47.5Z | mandatory      | mandatory    | mandatory     | prohibited      | prohibited      | prohibited           | prohibited        | rejected | minute_validity, second_validity, millisecond_validity, timezone_validity                                              |
+| 2021-10-24T10:30:47.5Z | mandatory      | mandatory    | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | rejected | hour_validity, minute_validity, second_validity, millisecond_validity, timezone_validity                               |
+| 2021-10-24T10:30:47.5Z | mandatory      | prohibited   | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | rejected | day_validity, hour_validity, minute_validity, second_validity, millisecond_validity, timezone_validity                 |
+| 2021-10-24T10:30:47.5Z | prohibited     | prohibited   | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | rejected | month_validity, day_validity, hour_validity, minute_validity, second_validity, millisecond_validity, timezone_validity |
+
+| value                  | month_validity | day_validity | hour_validity | minute_validity | second_validity | millisecond_validity | timezone_validity | expected | violated constraints                        |
+|------------------------|----------------|--------------|---------------|-----------------|-----------------|----------------------|-------------------|----------|---------------------------------------------|
+| 2021-10-24T10:30:47Z   | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | mandatory         | rejected | millisecond_validity                        |
+| 2021-10-24T10:30:47Z   | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | optional          | rejected | millisecond_validity                        |
+| 2021-10-24T10:30:47Z   | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47Z   | mandatory      | mandatory    | mandatory     | mandatory       | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47Z   | mandatory      | mandatory    | mandatory     | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47Z   | mandatory      | mandatory    | optional      | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47Z   | mandatory      | optional     | optional      | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47Z   | optional       | optional     | optional      | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47Z   | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | prohibited        | rejected | millisecond_validity, timezone_validity     |
+| 2021-10-24T10:30:47Z   | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | prohibited           | prohibited        | rejected | timezone_validity                           |
+| 2021-10-24T10:30:47Z   | mandatory      | mandatory    | mandatory     | mandatory       | prohibited      | prohibited           | prohibited        | rejected | second_validity, timezone_validity          |
+| 2021-10-24T10:30:47Z   | mandatory      | mandatory    | mandatory     | prohibited      | prohibited      | prohibited           | prohibited        | rejected | minute_validity, second_validity, timezone_validity                                              |
+| 2021-10-24T10:30:47Z   | mandatory      | mandatory    | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | rejected | hour_validity, minute_validity, second_validity, timezone_validity                               |
+| 2021-10-24T10:30:47Z   | mandatory      | prohibited   | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | rejected | day_validity, hour_validity, minute_validity, second_validity, timezone_validity                 |
+| 2021-10-24T10:30:47Z   | prohibited     | prohibited   | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | rejected | month_validity, day_validity, hour_validity, minute_validity, second_validity, timezone_validity |
+
+| value                       | month_validity | day_validity | hour_validity | minute_validity | second_validity | millisecond_validity | timezone_validity | expected | violated constraints                        |
+|-----------------------------|----------------|--------------|---------------|-----------------|-----------------|----------------------|-------------------|----------|---------------------------------------------|
+| 2021-10-24T10:30:47.5-03:00 | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | mandatory         | accepted |                                             |
+| 2021-10-24T10:30:47.5-03:00 | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | optional          | accepted |                                             |
+| 2021-10-24T10:30:47.5-03:00 | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47.5-03:00 | mandatory      | mandatory    | mandatory     | mandatory       | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47.5-03:00 | mandatory      | mandatory    | mandatory     | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47.5-03:00 | mandatory      | mandatory    | optional      | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47.5-03:00 | mandatory      | optional     | optional      | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47.5-03:00 | optional       | optional     | optional      | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47.5-03:00 | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | prohibited        | rejected | timezone_validity                                              |
+| 2021-10-24T10:30:47.5-03:00 | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | prohibited           | prohibited        | rejected | millisecond_validity, timezone_validity                        |
+| 2021-10-24T10:30:47.5-03:00 | mandatory      | mandatory    | mandatory     | mandatory       | prohibited      | prohibited           | prohibited        | rejected | second_validity, millisecond_validity, timezone_validity       |
+| 2021-10-24T10:30:47.5-03:00 | mandatory      | mandatory    | mandatory     | prohibited      | prohibited      | prohibited           | prohibited        | rejected | minute_validity, second_validity, millisecond_validity, timezone_validity                                              |
+| 2021-10-24T10:30:47.5-03:00 | mandatory      | mandatory    | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | rejected | hour_validity, minute_validity, second_validity, millisecond_validity, timezone_validity                               |
+| 2021-10-24T10:30:47.5-03:00 | mandatory      | prohibited   | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | rejected | day_validity, hour_validity, minute_validity, second_validity, millisecond_validity, timezone_validity                 |
+| 2021-10-24T10:30:47.5-03:00 | prohibited     | prohibited   | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | rejected | month_validity, day_validity, hour_validity, minute_validity, second_validity, millisecond_validity, timezone_validity |
+
+| value                     | month_validity | day_validity | hour_validity | minute_validity | second_validity | millisecond_validity | timezone_validity | expected | violated constraints                        |
+|---------------------------|----------------|--------------|---------------|-----------------|-----------------|----------------------|-------------------|----------|---------------------------------------------|
+| 2021-10-24T10:30:47-03:00 | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | mandatory         | rejected | millisecond_validity                        |
+| 2021-10-24T10:30:47-03:00 | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | optional          | rejected | millisecond_validity                        |
+| 2021-10-24T10:30:47-03:00 | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47-03:00 | mandatory      | mandatory    | mandatory     | mandatory       | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47-03:00 | mandatory      | mandatory    | mandatory     | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47-03:00 | mandatory      | mandatory    | optional      | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47-03:00 | mandatory      | optional     | optional      | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47-03:00 | optional       | optional     | optional      | optional        | optional        | optional             | optional          | accepted |                                             |
+| 2021-10-24T10:30:47-03:00 | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | mandatory            | prohibited        | rejected | millisecond_validity, timezone_validity     |
+| 2021-10-24T10:30:47-03:00 | mandatory      | mandatory    | mandatory     | mandatory       | mandatory       | prohibited           | prohibited        | rejected | timezone_validity                           |
+| 2021-10-24T10:30:47-03:00 | mandatory      | mandatory    | mandatory     | mandatory       | prohibited      | prohibited           | prohibited        | rejected | second_validity, timezone_validity          |
+| 2021-10-24T10:30:47-03:00 | mandatory      | mandatory    | mandatory     | prohibited      | prohibited      | prohibited           | prohibited        | rejected | minute_validity, second_validity, timezone_validity                                              |
+| 2021-10-24T10:30:47-03:00 | mandatory      | mandatory    | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | rejected | hour_validity, minute_validity, second_validity, timezone_validity                               |
+| 2021-10-24T10:30:47-03:00 | mandatory      | prohibited   | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | rejected | day_validity, hour_validity, minute_validity, second_validity, timezone_validity                 |
+| 2021-10-24T10:30:47-03:00 | prohibited     | prohibited   | prohibited    | prohibited      | prohibited      | prohibited           | prohibited        | rejected | month_validity, day_validity, hour_validity, minute_validity, second_validity, timezone_validity |
+
 
 ### 4.5.3. Test Case DV_DATE_TIME validity range
 
-TBD> mix of cases from date and time
+The C_DATE_TIME.range constraint is an Interval<Date_time>, which are both [Foundation Types](https://specifications.openehr.org/releases/BASE/Release-1.2.0/foundation_types.html).
+
+> NOTE: the Date_time class mentioned in the AOM specification is actually the [Iso8601_date_time](https://specifications.openehr.org/releases/BASE/Release-1.2.0/foundation_types.html#_time_types) class. This is a [known bug](https://openehr.atlassian.net/browse/SPECPR-380) in the specs.
+
+
+| value                  | C_DATE_TIME.range               | expected | violated constraints          |
+|------------------------|---------------------------------|----------|-------------------------------|
+| 2021                   | 1900..2030                      | accepted |                               |
+| 2021                   | 2022..2030                      | rejected | C_DATE_TIME.range             |
+| 2021                   | 1900..2020                      | rejected | C_DATE_TIME.range             |
+
+| value                  | C_DATE_TIME.range               | expected | violated constraints          |
+|------------------------|---------------------------------|----------|-------------------------------|
+| 2021-10                | 1900-03..2030-07                | accepted |                               |
+| 2021-10                | 2022-03..2030-07                | rejected | C_DATE_TIME.range             |
+| 2021-10                | 1900-03..2020-07                | rejected | C_DATE_TIME.range             |
+
+| value                  | C_DATE_TIME.range               | expected | violated constraints          |
+|------------------------|---------------------------------|----------|-------------------------------|
+| 2021-10-24             | 1900-03-13..2030-07-09          | accepted |                               |
+| 2021-10-24             | 2022-03-13..2030-07-09          | rejected | C_DATE_TIME.range             |
+| 2021-10-24             | 1900-03-13..2020-07-09          | rejected | C_DATE_TIME.range             |
+
+
+TBD: there is an open question about strictly comparability between time expressions with different components. Is "T10" comparable to "T00:00"?
+
+| value                  | C_DATE_TIME.range                              | expected | violated constraints          |
+|------------------------|------------------------------------------------|----------|-------------------------------|
+| 2021-10-24T10          | 1900-03-13T00..1900-03-13T23                   | accepted |                               |
+| 2021-10-24T10          | 1900-03-13T00:00..1900-03-13T23:59             | accepted |                               |
+| 2021-10-24T10          | 1900-03-13T00:00:00..1900-03-13T23:59:59       | accepted |                               |
+| 2021-10-24T10          | 1900-03-13T00:00:00.0..1900-03-13T23:59:59.999 | accepted |                               |
+| 2021-10-24T10          | 1900-03-13T11..1900-03-13T23                   | rejected | C_DATE_TIME.range                  |
+| 2021-10-24T10          | 1900-03-13T11:00..1900-03-13T23:59             | rejected | C_DATE_TIME.range                  |
+| 2021-10-24T10          | 1900-03-13T11:00:00..1900-03-13T23:59:59       | rejected | C_DATE_TIME.range                  |
+| 2021-10-24T10          | 1900-03-13T11:00:00.0..1900-03-13T23:59:59.999 | rejected | C_DATE_TIME.range                  |
+| 2021-10-24T10          | 1900-03-13T00..1900-03-13T09                   | rejected | C_DATE_TIME.range                  |
+| 2021-10-24T10          | 1900-03-13T00:00..1900-03-13T09:59             | rejected | C_DATE_TIME.range                  |
+| 2021-10-24T10          | 1900-03-13T00:00:00..1900-03-13T09:59:59       | rejected | C_DATE_TIME.range                  |
+| 2021-10-24T10          | 1900-03-13T00:00:00.0..1900-03-13T09:59:59.999 | rejected | C_DATE_TIME.range                  |
+| 2021-10-24T10          | >=1900-03-13T00                                | accepted |                               |
+| 2021-10-24T10          | >=1900-03-13T00:00                             | accepted |                               |
+| 2021-10-24T10          | >=1900-03-13T00:00:00                          | accepted |                               |
+| 2021-10-24T10          | >=1900-03-13T00:00:00.0                        | accepted |                               |
+| 2021-10-24T10          | >=1900-03-13T11                                | rejected | C_DATE_TIME.range                  |
+| 2021-10-24T10          | >=1900-03-13T11:00                             | rejected | C_DATE_TIME.range                  |
+| 2021-10-24T10          | >=1900-03-13T11:00:00                          | rejected | C_DATE_TIME.range                  |
+| 2021-10-24T10          | >=1900-03-13T11:00:00.0                        | rejected | C_DATE_TIME.range                  |
+| 2021-10-24T10          | <=1900-03-13T09                                | rejected | C_DATE_TIME.range                  |
+| 2021-10-24T10          | <=1900-03-13T09:59                             | rejected | C_DATE_TIME.range                  |
+| 2021-10-24T10          | <=1900-03-13T09:59:59                          | rejected | C_DATE_TIME.range                  |
+| 2021-10-24T10          | <=1900-03-13T09:59:59.999                      | rejected | C_DATE_TIME.range                  |
 
 
 # 5. time_specification
