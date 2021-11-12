@@ -1,6 +1,7 @@
 package org.ehrbase.service;
 
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
+import org.apache.tomcat.jni.Local;
 import org.junit.Test;
 
 import java.sql.Timestamp;
@@ -26,7 +27,7 @@ public class RecordedDvDateTimeTest {
 
     @Test
     public void testDecodeDvDateTime() {
-        ZoneId zoneId = ZoneId.of("America/Los_Angeles");
+        ZoneOffset zoneId = ZoneOffset.of("-06:00");
         Instant now = Instant.now();
 
         DvDateTime dateTime;
@@ -35,7 +36,7 @@ public class RecordedDvDateTimeTest {
         assertEquals(OffsetDateTime.ofInstant(now, zoneId), dateTime.getValue());
 
         dateTime = new RecordedDvDateTime().decodeDvDateTime(Timestamp.from(now), null);
-        assertEquals(OffsetDateTime.ofInstant(now, ZoneId.systemDefault()), dateTime.getValue());
+        assertEquals(LocalDateTime.ofInstant(now, ZoneId.systemDefault()), dateTime.getValue());
 
         dateTime = new RecordedDvDateTime().decodeDvDateTime(Timestamp.from(now), zoneId.getId());
         assertNotEquals(OffsetDateTime.ofInstant(now, ZoneOffset.UTC), dateTime.getValue());

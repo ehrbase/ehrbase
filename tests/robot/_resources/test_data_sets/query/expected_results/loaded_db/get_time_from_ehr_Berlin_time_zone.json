@@ -1,0 +1,24 @@
+{
+   "columns":[
+      {
+         "name":"#0",
+         "path":"/context/start_time/value"
+      },
+      {
+         "name":"/data[at0001]/origin/value",
+         "path":"/data[at0001]/origin/value"
+      },
+      {
+         "name":"/data[at0001]/events[at0002]/time/value",
+         "path":"/data[at0001]/events[at0002]/time/value"
+      }
+   ],
+   "q":"SELECT a/context/start_time/value , o/data[at0001]/origin/value,o/data[at0001]/events[at0002]/time/value  from EHR e  contains COMPOSITION a[openEHR-EHR-COMPOSITION.minimal.v1] contains OBSERVATION o [openEHR-EHR-OBSERVATION.minimal.v1]  where a/uid/value ='replaceme'",
+   "rows":[
+      [
+         "2019-01-28T21:22:19.501+01:00",
+         "2019-01-28T21:22:19.552+01:00",
+         "2019-01-28T21:22:19.562+01:00"
+      ]
+   ]
+}

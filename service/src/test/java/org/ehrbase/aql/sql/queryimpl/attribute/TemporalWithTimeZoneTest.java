@@ -58,10 +58,7 @@ public class TemporalWithTimeZoneTest extends TestAqlBase {
                 .isEqualToIgnoringWhitespace(
                     "select jsonb_extract_path_text(cast(\"ehr\".\"js_dv_date_time\"(\n" +
                             "  \"ehr\".\"event_context\".\"start_time\", \n" +
-                            "  coalesce(\n" +
-                            "    event_context.START_TIME_TZID, \n" +
-                            "    'UTC'\n" +
-                            "  )\n" +
+                            "  event_context.START_TIME_TZID\n" +
                             ") as jsonb),'value') \"/test\""
                 );
     }
