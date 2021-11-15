@@ -36,7 +36,7 @@ public class UC31Test extends UC31 {
                         "  cast(ehr_join.id as uuid), \n" +
                         "  'local'\n" +
                         ") as jsonb),'folders') as jsonb)) as jsonb),'name','0','value')\n" +
-                        " AS COLUMN) as \"ARRAY\" on 1 = 1 where (('case1' = ALL ( (SELECT ARRAY.COLUMN) )  and \"ehr_join\".\"id\" = 'c2561bab-4d2b-4ffd-a893-4382e9048f8c') and ARRAY.COLUMN is not null)";
+                        " AS COLUMN) as \"ARRAY\" on 1 = 1 where ('case1' = ALL ( (SELECT ARRAY.COLUMN) )  and \"ehr_join\".\"id\" = 'c2561bab-4d2b-4ffd-a893-4382e9048f8c')";
     }
 
     @Test

@@ -33,7 +33,7 @@ public class UC46Test extends UC46 {
                         "  select (ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') \n" +
                         " AS COLUMN) as \"ARRAY\" on 1 = 1 join lateral (\n" +
                         "  select (ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/time,/value}') \n" +
-                        " AS COLUMN) as \"ARRAY\" on 1 = 1 where (\"ehr\".\"entry\".\"template_id\" = ? and ARRAY.COLUMN is not null and ARRAY.COLUMN is not null)) as \"\" order by \"description\" asc";
+                        " AS COLUMN) as \"ARRAY\" on 1 = 1 where \"ehr\".\"entry\".\"template_id\" = ?) as \"\" order by \"description\" asc";
     }
 
     @Test
