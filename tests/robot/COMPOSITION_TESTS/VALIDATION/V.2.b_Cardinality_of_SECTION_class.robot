@@ -23,7 +23,7 @@ Resource        ../../_resources/keywords/composition_keywords.robot
 Suite Setup       Precondition
 Suite Teardown    Postcondition
 
-Force Tags      future
+Force Tags      282    not-ready    bug
 
 
 *** Variables ***

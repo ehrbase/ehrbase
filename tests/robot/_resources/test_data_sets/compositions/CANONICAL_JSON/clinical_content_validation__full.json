@@ -39,7 +39,7 @@
         "value": "value"
       },
       "namespace": "local",
-      "type": "ANY"
+      "type": "PERSON"
     }
   },
   "context": {
@@ -75,7 +75,7 @@
           "value": "9905"
         },
         "namespace": "namespace",
-        "type": "ANY"
+        "type": "ORGANISATION"
       }
     },
     "participations": [
@@ -96,7 +96,7 @@
               "value": "8469"
             },
             "namespace": "namespace",
-            "type": "ANY"
+            "type": "PERSON"
           }
         },
         "mode": {
@@ -129,7 +129,7 @@
               "value": "4873"
             },
             "namespace": "namespace",
-            "type": "ANY"
+            "type": "PERSON"
           }
         },
         "mode": {
@@ -223,7 +223,7 @@
                     "value": "5116"
                   },
                   "namespace": "namespace",
-                  "type": "ANY"
+                  "type": "PERSON"
                 }
               },
               "mode": {
@@ -256,7 +256,7 @@
                     "value": "8674"
                   },
                   "namespace": "namespace",
-                  "type": "ANY"
+                  "type": "PERSON"
                 }
               },
               "mode": {
@@ -361,7 +361,7 @@
                 "value": "5622"
               },
               "namespace": "namespace",
-              "type": "ANY"
+              "type": "PERSON"
             }
           },
           "mode": {
@@ -394,7 +394,7 @@
                 "value": "9915"
               },
               "namespace": "namespace",
-              "type": "ANY"
+              "type": "PERSON"
             }
           },
           "mode": {
@@ -530,7 +530,7 @@
                 "value": "4213"
               },
               "namespace": "namespace",
-              "type": "ANY"
+              "type": "PERSON"
             }
           },
           "mode": {
@@ -563,7 +563,7 @@
                 "value": "8141"
               },
               "namespace": "namespace",
-              "type": "ANY"
+              "type": "PERSON"
             }
           },
           "mode": {
@@ -679,7 +679,7 @@
                 "value": "1246"
               },
               "namespace": "namespace",
-              "type": "ANY"
+              "type": "PERSON"
             }
           },
           "mode": {
@@ -712,7 +712,7 @@
                 "value": "8834"
               },
               "namespace": "namespace",
-              "type": "ANY"
+              "type": "PERSON"
             }
           },
           "mode": {
@@ -846,7 +846,7 @@
                 "value": "7812"
               },
               "namespace": "namespace",
-              "type": "ANY"
+              "type": "PERSON"
             }
           },
           "mode": {
@@ -879,7 +879,7 @@
                 "value": "5230"
               },
               "namespace": "namespace",
-              "type": "ANY"
+              "type": "PERSON"
             }
           },
           "mode": {
@@ -995,7 +995,7 @@
                 "value": "1290"
               },
               "namespace": "namespace",
-              "type": "ANY"
+              "type": "PERSON"
             }
           },
           "mode": {
@@ -1028,7 +1028,7 @@
                 "value": "3169"
               },
               "namespace": "namespace",
-              "type": "ANY"
+              "type": "PERSON"
             }
           },
           "mode": {
@@ -1075,7 +1075,19 @@
         "archetype_node_id": "at0001"
       },
       "ism_transition": {
-        "_type": "ISM_TRANSITION"
+        "_type": "ISM_TRANSITION",
+		"current_state": {
+			"_type": "DV_CODED_TEXT",
+			"value": "planned",
+			"defining_code": {
+				"_type": "CODE_PHRASE",
+				"terminology_id": {
+					"_type": "TERMINOLOGY_ID",
+					"value": "openehr"
+				},
+			"code_string": "526"
+			}
+		}
       },
       "name": {
         "_type": "DV_TEXT",
@@ -1127,7 +1139,7 @@
                 "value": "5934"
               },
               "namespace": "namespace",
-              "type": "ANY"
+              "type": "PERSON"
             }
           },
           "mode": {
@@ -1160,7 +1172,7 @@
                 "value": "1086"
               },
               "namespace": "namespace",
-              "type": "ANY"
+              "type": "PERSON"
             }
           },
           "mode": {
@@ -1278,7 +1290,7 @@
                 "value": "5895"
               },
               "namespace": "namespace",
-              "type": "ANY"
+              "type": "PERSON"
             }
           },
           "mode": {
@@ -1311,7 +1323,7 @@
                 "value": "5961"
               },
               "namespace": "namespace",
-              "type": "ANY"
+              "type": "PERSON"
             }
           },
           "mode": {
@@ -1351,7 +1363,7 @@
       },
       "target": {
         "_type": "DV_EHR_URI",
-        "value": "target1"
+        "value": "ehr:/target1"
       }
     },
     {
@@ -1366,7 +1378,7 @@
       },
       "target": {
         "_type": "DV_EHR_URI",
-        "value": "target2"
+        "value": "ehr:/target2"
       }
     }
   ],
