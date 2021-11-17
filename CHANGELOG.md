@@ -12,6 +12,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Migrated to Archie openEHR library version > 1.0.0, incl. its new strict invariant checks (
   see: https://github.com/ehrbase/ehrbase/pull/570)
 - Support Structured format on ecis composition endpoints (see https://github.com/ehrbase/ehrbase/pull/648)
+- Add new configuration options to customise user/admin role names when using OAuth authentication
+(see https://github.com/ehrbase/ehrbase/pull/667)
 
 ### Changed
 
