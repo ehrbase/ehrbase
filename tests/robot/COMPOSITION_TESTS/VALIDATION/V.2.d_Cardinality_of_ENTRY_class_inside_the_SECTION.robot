@@ -57,6 +57,10 @@ Cardinality of ENTRY class inside the SECTION
     Evaluation #5    content[5].items    1        422
     Evaluation #5    content[5].items    3        201
 
+    [Teardown]    TRACE GITHUB ISSUE    282
+
+
+
 *** Keywords ***
 Cardinality of ENTRY class inside the SECTION with parameters
     [Arguments]    ${item_name}    ${array_path}    ${expected_count}   ${status_code}

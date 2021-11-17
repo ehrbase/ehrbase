@@ -18,7 +18,7 @@
 
 *** Settings ***
 
-Resource   ../suite_settings.robot
+# Resource   ../suite_settings.robot
 Resource    db_keywords.robot
 
 

@@ -23,7 +23,7 @@ Resource        ../../_resources/keywords/composition_keywords.robot
 Suite Setup     Precondition
 Suite Teardown  Postcondition
 
-Force Tags      future
+Force Tags      281    666    not-ready
 
 
 *** Variables ***
@@ -36,8 +36,8 @@ Validation test of COMPOSITION class
     [Template]    Validate of compositions
 
     #language    territory    category    composer    status_code
-    exist        exist        exist       exist       201
-    exist        not_exist    not_exist   not_exist   422
+    exist        exist        exist       exist       201      # BUG 281 TODO: remove comments when fixed
+    exist        not_exist    not_exist   not_exist   422      # BUG 666
     exist        invalid      invalid     invalid     400
     not_exist    not_exist    invalid     exist       400
     not_exist    invalid      exist       invalid     400
@@ -46,12 +46,16 @@ Validation test of COMPOSITION class
     invalid      exist        not_exist   not_exist   400
     invalid      not_exist    exist       invalid     400
 
+    [Teardown]    TRACE GITHUB ISSUE    281
+
+
+
 *** Keywords ***
 Validate of compositions
     [Arguments]    ${language}   ${territory}   ${category}   ${composer}   ${status_code}
 
     ${file}=   Get File    ${COMPOSITIONS_PATH}/clinical_content_validation__full.json
-    ${file}=   Modify Of Composition High Lavel Items   json_str=${file}
+    ${file}=   Modify Of Composition High Level Items   json_str=${file}
     ...                                                 language=${language}
     ...                                                 territory=${territory}
     ...                                                 category=${category}

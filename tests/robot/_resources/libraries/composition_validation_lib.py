@@ -56,7 +56,7 @@ def make_expected_count_items_by_name(json_str: str, array_path: str, item_name:
     return json.dumps(data, ensure_ascii=False, indent=2)
 
 
-def modify_of_composition_high_lavel_items(json_str, language='exist', territory='exist', category='exist', composer='exist'):
+def modify_of_composition_high_level_items(json_str, language='exist', territory='exist', category='exist', composer='exist'):
     """This method modifies json for validation tests of composition class.
     Available_values for parameters:
         - exist

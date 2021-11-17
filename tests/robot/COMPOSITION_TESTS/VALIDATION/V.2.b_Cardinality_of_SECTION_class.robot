@@ -57,6 +57,10 @@ Cardinality of SECTION class
     Validation section test #5    1          422
     Validation section test #5    3          201
 
+    [Teardown]    TRACE GITHUB ISSUE    282
+
+
+
 *** Keywords ***
 Cardinality of SECTION class with parameters
     [Arguments]    ${item_name}    ${expected_count}   ${status_code}
