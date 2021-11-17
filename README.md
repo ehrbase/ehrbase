@@ -127,8 +127,11 @@ Environment variable `SECURITY_AUTHTYPE=OAUTH` is enabling OAuth2 authentication
 Additionally, setting the following variable to point to the existing OAuth2 server and realm is necessary:
 `SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI=http://localhost:8081/auth/realms/ehrbase`
 
-In the given OAuth2 server configuration the roles `user` and `admin` are expected to be configured. 
-Users should have their roles assigned accordingly.
+
+Two roles are available: a user role, and admin role. By default, these roles are expected to be named `USER` and
+`ADMIN`. The names of these roles can be customised through the `SECURITY_OAUTH2USERROLE` and `SECURITY_OAUTH2ADMINROLE`
+environment variables. Users should have their roles assigned accordingly, either in the `realm_access.roles` or `scope`
+claim of the JWT used for authentication.
 
 ## Running the tests
 
