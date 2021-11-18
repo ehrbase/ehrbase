@@ -167,12 +167,6 @@ public class QueryProcessor extends TemplateMetaData {
                 if (whereCondition != null)
                     select.addConditions(Operator.AND, whereCondition);
 
-                //for lateral joins used in SELECT add a condition to eliminate null from cartesian product
-                Condition lateralDerivedCondition = lateralCartesianNotNullConditions(queryStep.getLateralJoins());
-
-                if (lateralDerivedCondition != null)
-                    select.addConditions(Operator.AND, lateralDerivedCondition);
-
                 if (first) {
                     unionSetQuery = select;
                     first = false;
@@ -206,24 +200,6 @@ public class QueryProcessor extends TemplateMetaData {
         unionSetQuery = limitBinding.bind();
 
         return new AqlSelectQuery(unionSetQuery, cacheQuery.values(), containsJson);
-    }
-
-    private Condition lateralCartesianNotNullConditions(List<LateralJoinDefinition> lateralJoins) {
-
-        Condition conditions = null;
-
-        for (Iterator<LateralJoinDefinition> joins = lateralJoins.iterator(); joins.hasNext();){
-            LateralJoinDefinition lateralJoinDefinition = joins.next();
-            if (lateralJoinDefinition.getClause().equals(IQueryImpl.Clause.SELECT)) {
-                Condition condition = DSL.field(lateralJoinDefinition.getTable().getName()+"."+lateralJoinDefinition.getLateralVariable()).isNotNull();
-                if (conditions == null)
-                    conditions = condition;
-                else
-                    conditions = conditions.and(condition);
-            }
-        }
-
-        return conditions;
     }
 
     private List<QuerySteps> buildQuerySteps(String templateId) {
