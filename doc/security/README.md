@@ -64,14 +64,20 @@ information about the role of each user.
 To start EHRbase with OAuth2 support and configure the external server use one of the following
 configuration methods:
 
-| ENV                                                 | .yml                                                 | Value to set        | Default                                   |
-| --------------------------------------------------- | ---------------------------------------------------- | ------------------- | ----------------------------------------- |
-| SECURITY_AUTHTYPE                                   | security.authType                                    | OAUTH               | NONE                                      |
-| SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI | spring.security.oauth2.resourceserver.jwt.issuer-uri | Your realm base url | http://localhost:8081/auth/realms/ehrbase |
+| ENV                                                 | .yml                                                 | Value to set            | Default                                   |
+| --------------------------------------------------- | ---------------------------------------------------- | ----------------------- | ----------------------------------------- |
+| SECURITY_AUTHTYPE                                   | security.authType                                    | OAUTH                   | NONE                                      |
+| SECURITY_OAUTH2USERROLE                             | security.oauth2UserRole                              | Desired user role name  | USER                                      |
+| SECURITY_OAUTH2ADMINROLE                            | security.oauth2AdminRole                             | Desired admin role name | ADMIN                                     |
+| SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI | spring.security.oauth2.resourceserver.jwt.issuer-uri | Your realm base url     | http://localhost:8081/auth/realms/ehrbase |
 
 The realm, client and all other settings must be done inside the corresponding authentication
 server. A basic example on how to do this with Keycloak from JBoss can be found in the [appendix](#keycloak-with-ehrbase) of
 this page.
+
+The user and admin role names are configurable, enabling compatibility with authentication servers which are opinionated
+on the names of custom OAuth roles or scopes. EHRBase will look for the admin/user role in the `realm_access.roles` and
+`scope` claims of the JWT provided on an authenticated request.
 
 The clients must be implemented / configured to use the external authentication server as well.
 There are multiple libraries for many frameworks available that can be used for this.

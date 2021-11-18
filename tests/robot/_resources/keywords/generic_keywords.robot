@@ -215,6 +215,8 @@ start openehr server
 start server process without coverage
                         Set Environment Variable    SECURITY_AUTHTYPE    ${SECURITY_AUTHTYPE}
                         IF    '${SECURITY_AUTHTYPE}' == 'OAUTH'
+                              Set Environment Variable    SECURITY_OAUTH2USERROLE    ${OAUTH_USER_ROLE}
+                              Set Environment Variable    SECURITY_OAUTH2ADMINROLE    ${OAUTH_ADMIN_ROLE}
                               Set Environment Variable
                               ...    SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI    ${JWT_ISSUERURI}
                         END
@@ -365,15 +367,15 @@ set request headers
                         Set To Dictionary    ${headers}
                         ...                  Content-Type=${content}
                         ...                  Accept=${accept}
+                        ...                  &{authorization}
                         ...                  &{extra_headers}
 
     # comment: headers for RESTinstance Library
     &{headers}=         Set Headers         ${headers}
-                        Set Headers         ${authorization}
 
     # comment: headers for RequestLibrary
                         Create Session      ${SUT}    ${BASEURL}    debug=2
-                        ...                 auth=${CREDENTIALS}    verify=True
+                        ...                 headers=${headers}    verify=True
 
                         Set Suite Variable   ${headers}    ${headers}
 
