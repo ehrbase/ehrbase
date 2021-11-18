@@ -91,12 +91,10 @@ httpclient:
 #proxyPort: 1234
 
 cache:
-  config-path: '/ehcache.xml'
   enabled: true
+  config: classpath:/ehcache.xml
   pre-build-queries: true
   pre-build-queries-depth: 4
-
-
 
 system:
   allow-template-overwrite: false

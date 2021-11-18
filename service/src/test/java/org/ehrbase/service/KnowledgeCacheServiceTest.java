@@ -20,7 +20,7 @@ package org.ehrbase.service;
 
 import org.apache.commons.io.IOUtils;
 import org.ehrbase.aql.containment.JsonPathQueryResult;
-import org.ehrbase.configuration.CacheConfiguration;
+import org.ehrbase.cache.CacheOptions;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.ehrbase.ehr.knowledge.TemplateTestData;
 import org.ehrbase.test_data.operationaltemplate.OperationalTemplateTestData;
@@ -109,7 +109,7 @@ public class KnowledgeCacheServiceTest {
         TemplateFileStorageService templateFileStorageService = new TemplateFileStorageService();
         templateFileStorageService.setOptPath(operationalTemplatesemplates.getPath());
 
-        return new KnowledgeCacheService(templateFileStorageService, cacheRule.cacheManager, new CacheConfiguration());
+        return new KnowledgeCacheService(templateFileStorageService, cacheRule.cacheManager, new CacheOptions());
     }
 
 
