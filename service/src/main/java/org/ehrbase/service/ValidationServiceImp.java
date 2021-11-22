@@ -27,6 +27,7 @@ import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.ValidationService;
+import org.ehrbase.cache.CacheOptions;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.terminology.openehr.TerminologyService;
 import org.ehrbase.validation.Validator;
@@ -44,8 +45,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
-
-import static org.ehrbase.configuration.CacheConfiguration.VALIDATOR_CACHE;
 
 @Service
 public class ValidationServiceImp implements ValidationService {
@@ -66,7 +65,7 @@ public class ValidationServiceImp implements ValidationService {
 
     @Autowired
     public ValidationServiceImp(CacheManager cacheManager, I_KnowledgeCache knowledgeCache, TerminologyService terminologyService, ServerConfig serverConfig) {
-        this.validatorCache = cacheManager.getCache(VALIDATOR_CACHE, UUID.class, Validator.class);
+        this.validatorCache = cacheManager.getCache(CacheOptions.VALIDATOR_CACHE, UUID.class, Validator.class);
         this.knowledgeCache = knowledgeCache;
         this.terminologyService = terminologyService;
 
