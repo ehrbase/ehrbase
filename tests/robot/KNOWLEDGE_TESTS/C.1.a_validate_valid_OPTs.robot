@@ -51,7 +51,9 @@ All Types
     [Documentation]    TODO: description from business perspective
     [Template]         validate valid OPT
 
-    all_types/Test_all_types.opt
+    ### REL TO https://github.com/ehrbase/ehrbase/issues/643
+    ###all_types/Test_all_types.opt
+    all_types/Test_all_types_v2.opt
 
 
 Minimal
