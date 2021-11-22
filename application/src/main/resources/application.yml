@@ -54,6 +54,8 @@ security:
   authPassword: SuperSecretPassword
   authAdminUser: ehrbase-admin
   authAdminPassword: EvenMoreSecretPassword
+  oauth2UserRole: USER
+  oauth2AdminRole: ADMIN
 
 # Attribute Based Access Control
 abac:
