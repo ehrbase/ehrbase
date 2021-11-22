@@ -325,12 +325,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     log.debug("retrieveOperationalTemplate({})", key);
     // CCH, 29.3.21: systematically retrieve the operational template from the DB.
     //        OPERATIONALTEMPLATE template = getFromCache(key, atOptCache);
-    OPERATIONALTEMPLATE template = null;
-
-    if (template == null) { // null if not in cache already, which triggers the following retrieval and putting into cache
-      template = getOperationaltemplateFromFileStorage(key);
-    }
-    return Optional.ofNullable(template);
+    return Optional.ofNullable(getOperationaltemplateFromFileStorage(key));
   }
 
   @Override
@@ -358,37 +353,21 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
   }
 
   private String findTemplateIdByUuid(UUID uuid) {
-    String templateId = idxCacheUuidToTemplateId.get(uuid);
-
-    if (templateId == null) {
-      templateId =
-          listAllOperationalTemplates().stream()
-              .filter(t -> t.getErrorList().isEmpty())
-              .filter(t -> t.getOperationaltemplate().getUid().getValue().equals(uuid.toString()))
-              .map(t -> t.getOperationaltemplate().getTemplateId().getValue())
-              .findFirst()
-              .orElse(null);
-      idxCacheUuidToTemplateId.put(uuid, templateId);
-    }
-
-    return templateId;
+    return idxCacheUuidToTemplateId.computeIfAbsent(uuid, templateUuid -> listAllOperationalTemplates().stream()
+            .filter(t -> t.getErrorList().isEmpty())
+            .filter(t -> t.getOperationaltemplate().getUid().getValue().equals(templateUuid.toString()))
+            .map(t -> t.getOperationaltemplate().getTemplateId().getValue())
+            .findFirst()
+            .orElse(null));
   }
 
   private UUID findUuidByTemplateId(String templateId) {
-    UUID uuid = idxCacheTemplateIdToUuid.get(templateId);
-    if (uuid == null) {
-      uuid =
-          UUID.fromString(
-              retrieveOperationalTemplate(templateId)
-                  .orElseThrow(
-                      () ->
-                          new IllegalArgumentException(
+    return idxCacheTemplateIdToUuid.computeIfAbsent(templateId, id ->
+          UUID.fromString(retrieveOperationalTemplate(id)
+                  .orElseThrow(() -> new IllegalArgumentException(
                               String.format("Unknown template %s", templateId)))
                   .getUid()
-                  .getValue());
-      idxCacheTemplateIdToUuid.put(templateId, uuid);
-    }
-    return uuid;
+                  .getValue()));
   }
 
   @Override
