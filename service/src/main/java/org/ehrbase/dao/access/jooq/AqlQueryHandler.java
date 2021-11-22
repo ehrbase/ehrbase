@@ -87,7 +87,7 @@ public class AqlQueryHandler extends DataAccess {
             }
 
             if (!variableDefinition.isHidden())
-                variables.put(variableDefinition.getAlias() == null ? "#" + serial++ : variableDefinition.getAlias(), StringUtils.isNotBlank(variableDefinition.getPath()) ? "/" + variableDefinition.getPath() : variableDefinition.getIdentifier());
+                variables.put(variableDefinition.getAlias() == null || variableDefinition.isVoidAlias() ? "#" + serial++ : variableDefinition.getAlias(), StringUtils.isNotBlank(variableDefinition.getPath()) ? "/" + variableDefinition.getPath() : variableDefinition.getIdentifier());
         }
         aqlResult.setVariables(variables);
         aqlResult.setAuditResultMap(auditResultMap);

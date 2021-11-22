@@ -5,11 +5,11 @@
          "path":"/context/start_time/value"
       },
       {
-         "name":"/data[at0001]/origin/value",
+         "name":"#1",
          "path":"/data[at0001]/origin/value"
       },
       {
-         "name":"/data[at0001]/events[at0002]/time/value",
+         "name":"#2",
          "path":"/data[at0001]/events[at0002]/time/value"
       }
    ],
