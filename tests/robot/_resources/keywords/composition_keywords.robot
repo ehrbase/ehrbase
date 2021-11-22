@@ -547,7 +547,7 @@ get composition by composition_uid
     # the uid param in the doc is verioned_object.uid but is really the version.uid,
     # because the response from the create compo has this endpoint in the Location header
 
-    ${resp}=            Get Request         ${SUT}    /ehr/${ehr_id}/composition/${uid}    headers=${headers}
+    ${resp}=            GET On Session         ${SUT}    /ehr/${ehr_id}/composition/${uid}    expected_status=anything   headers=${headers}
                         log to console      ${resp.content}
                         Set Test Variable   ${response}    ${resp}
 
@@ -562,7 +562,7 @@ get versioned composition by uid
 
                         prepare new request session    ${format}
 
-    ${resp}=            Get Request         ${SUT}    /ehr/${ehr_id}/versioned_composition/${uid}    headers=${headers}
+    ${resp}=            GET On Session         ${SUT}    /ehr/${ehr_id}/versioned_composition/${uid}    expected_status=anything   headers=${headers}
                         log to console      ${resp.content}
                         Set Test Variable   ${response}    ${resp}
 
@@ -669,7 +669,7 @@ get composition - latest version
     ...                 format: JSON or XML for accept/content headers
 
                         prepare new request session    ${format}    Prefer=return=representation
-    ${resp}=            Get Request           ${SUT}   /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version    headers=${headers}
+    ${resp}=            GET On Session           ${SUT}   /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version    expected_status=anything   headers=${headers}
                         log to console        ${resp.text}
                         Set Test Variable     ${response}    ${resp}
 
@@ -722,7 +722,7 @@ get versioned composition - version at time
 
     # Get version at time 1, should exist and be COMPO 1
     &{params}=          Create Dictionary     version_at_time=${time_x}
-    ${resp}=            Get Request           ${SUT}   /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version
+    ${resp}=            GET On Session           ${SUT}   /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version   expected_status=anything
                         ...                   params=${params}
 
                         log to console        ${resp.content}
@@ -740,7 +740,7 @@ get composition - version at time (XML)
 
     &{params}=          Create Dictionary     version_at_time=${time_x}
     &{headers}=         Create Dictionary     Accept=application/xml
-    ${resp}=            Get Request           ${SUT}   /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version
+    ${resp}=            GET On Session           ${SUT}   /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version   expected_status=anything
                         ...                   params=${params}   headers=${headers}
 
                         log to console        ${resp.content}
@@ -843,7 +843,7 @@ get deleted composition
     [Documentation]     The deleted compo should not exist
     ...                 204 is the code for deleted - as per openEHR REST spec
 
-    ${resp}=            Get Request           ${SUT}   /ehr/${ehr_id}/composition/${del_version_uid}
+    ${resp}=            GET On Session           ${SUT}   /ehr/${ehr_id}/composition/${del_version_uid}   expected_status=anything
                         log to console        ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   204
 
@@ -970,7 +970,7 @@ update a composition for versioned composition tests
 #     # because the response from the create compo has this endpoint in the Location header
 #
 #     &{headers}=         Create Dictionary   Content-Type=application/xml   Accept=application/xml    Prefer=return=representation
-#     ${resp}=            Get Request         ${SUT}   /ehr/${ehr_id}/composition/${uid}    headers=${headers}
+#     ${resp}=            GET On Session         ${SUT}   /ehr/${ehr_id}/composition/${uid}    headers=${headers}
 #                         log to console      ${resp.content}
 #                         Set Test Variable   ${response}    ${resp}
 
