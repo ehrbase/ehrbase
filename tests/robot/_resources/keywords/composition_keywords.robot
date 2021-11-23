@@ -908,11 +908,12 @@ capture point in time
     ...                 e.g. 2015-01-20T19:30:22.765+01:00
     ...                 s. http://robotframework.org/robotframework/latest/libraries/DateTime.html
     ...                 for DateTime Library docs
-
-    ${time}=            Get Current Date    result_format=%Y-%m-%dT%H:%M:%S.%f+00:00
+                        Sleep    1   # gives DB some time to finish it's operation
+    ${zone}=            Set Suite Variable    ${time_zone}    ${{ tzlocal.get_localzone() }}
+    ${time}=            Set Variable    ${{ datetime.datetime.now(tz=tzlocal.get_localzone()).isoformat() }}
+    ${offset}=          Set Suite Variable    ${utc_offset}    ${time}[-6:]
                         Set Suite Variable   ${time_${point_in_time}}   ${time}
 
-                        Sleep               1
 
 
 create EHR and commit a composition for versioned composition tests
