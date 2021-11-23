@@ -50,10 +50,10 @@ Alternative flow 2 create persistent COMPOSITION for the same opt twice CANONICA
 Alternative flow 2 create persistent COMPOSITION for the same opt twice FLAT
     [Tags]    not-ready
     commit composition   format=FLAT
-    ...                  composition=persistent_minimal.en.v1__full.json
+    ...                  composition=persistent_minimal.en.v1__full.xml.flat.json
     check status_code of commit composition   201
     commit composition   format=FLAT
-    ...                  composition=persistent_minimal.en.v1__full.json
+    ...                  composition=persistent_minimal.en.v1__full.xml.flat.json
     check status_code of commit composition   400
 
 Alternative flow 2 create persistent COMPOSITION for the same opt twice TDD
