@@ -20,7 +20,7 @@
 Metadata    Version    0.1.0
 Metadata    Author    *Wladislaw Wagner* www.trustincode.de
 Metadata    Created    2020.07.10
-Metadata    Updated    2020.07.14
+Metadata    Updated    2021.11.12
 
 Documentation  Testing authentication with Keycloak OAuth Server
 
@@ -51,19 +51,31 @@ Resource        ../../_resources/suite_settings.robot
         String     response body public_key
     
 
-04 Access Token is retrievable
-        Request Access Token
+04 Access token with role in realm_access field is retrievable
+        # NOTE: ${OAUTH_ACCESS_GRANT} comes from variables file: sut_config.py
+        Request Access Token    ${OAUTH_ACCESS_GRANT}
         Status Code    200
-        Access Token length is greater than    100
-        Decode JWT Access Token
+        Set Suite Variable    ${password_access_token}    ${response.json()['access_token']}
+        Access Token length is greater than    100    ${password_access_token}
+        Decode JWT Password Access Token
 
-05 Base URL is secured
+
+05 Access token with role in scope field is retrievable
+        Request Access Token    ${client_credentials_grant}
+        Status Code    200
+        Set Suite Variable    ${client_credentials_access_token}    ${response.json()['access_token']}
+        Access Token length is greater than    100    ${client_credentials_access_token}
+        Decode JWT Client Credentials Access Token
+
+
+06 Base URL is secured
     [Documentation]     Checks private resource is NOT accessible without auth.
                         Create Session    secured    ${BASEURL}
     ${response}         Get Request    secured    /
                         Should Be Equal As Strings 	  ${response.status_code}    401
 
-06 API endpoints are secured
+
+07 API endpoints are secured
     [Documentation]     Checks private resources are NOT accessible without auth.
     # EHR /EHR_STATUS
         REST.GET        ${BASEURL}/ehr
@@ -154,15 +166,22 @@ Resource        ../../_resources/suite_settings.robot
         Integer         response status    401
 
 
-07 Private resources are NOT available with invalid/expired token
+08 Private resources are NOT available with invalid/expired token
         Set Headers     { "Authorization": "Bearer ${expired_token}" }
         REST.GET        ${BASEURL}/ehr
                         Output
         Integer         response status    401
 
 
-08 Private resources are available with valid token
-        Set Headers     { "Authorization": "Bearer ${ACCESS_TOKEN}" }
+09 Private resources are available with valid token when using password grant
+        Set Headers     { "Authorization": "Bearer ${password_access_token}" }
+        REST.GET        ${BASEURL}/ehr/cd05e77d-63f8-4074-9937-80c4d4406bff
+                        Output
+        Integer         response status    404
+
+
+10 Private resources are available with valid token when using client credentials grant
+        Set Headers     { "Authorization": "Bearer ${client_credentials_access_token}" }
         REST.GET        ${BASEURL}/ehr/cd05e77d-63f8-4074-9937-80c4d4406bff
                         Output
         Integer         response status    404
@@ -178,13 +197,12 @@ Resource        ../../_resources/suite_settings.robot
 
 *** Keywords ***
 Request Access Token
+    [Arguments]         ${grant}
                         Create Session    keycloak   ${KEYCLOAK_URL}   verify=${False}    debug=3
     &{headers}=         Create Dictionary    Content-Type=application/x-www-form-urlencoded
-    ${resp}=            Post Request    keycloak   /realms/ehrbase/protocol/openid-connect/token
-                        ...             data=${OAUTH_ACCESS_GRANT}   headers=${headers}
-                        # NOTE: ${OAUTH_ACCESS_GRANT} comes from variables file: sut_config.py
+    ${resp}=            POST On Session    keycloak   /realms/ehrbase/protocol/openid-connect/token   expected_status=anything
+                        ...             data=${grant}   headers=${headers}
                         Set Test Variable    ${response}    ${resp}
-
 
 Status Code
     [Arguments]         ${expected}
@@ -192,15 +210,13 @@ Status Code
 
 
 Access Token length is greater than
-    [Arguments]         ${expected}
-    ${length} = 	    Get Length   ${response.json()['access_token']}
+    [Arguments]         ${expected}    ${token}
+    ${length} = 	    Get Length   ${token}
                         Should be true     ${length} > ${expected}
-                        Set Suite Variable    ${access_token}    ${response.json()['access_token']}
-                        # Log To Console    ${access_token}
 
 
-Decode JWT Access Token
-    &{decoded_token}=   decode token      ${ACCESS_TOKEN}
+Decode JWT Password Access Token
+    &{decoded_token}=   decode token      ${password_access_token}
                         Log To Console    \nNAME: ${decoded_token.name}
                         Log To Console    EMAIL: ${decoded_token.email}
                         Log To Console    USERNAME: ${decoded_token.preferred_username}
@@ -210,8 +226,17 @@ Decode JWT Access Token
                         Dictionary Should Contain Item    ${decoded_token}    typ   Bearer
 
 
+Decode JWT Client Credentials Access Token
+    &{decoded_token}=   decode token      ${client_credentials_access_token}
+                        Log To Console    \nCLIENT: ${decoded_token.azp}
+                        Log To Console    SCOPE: ${decoded_token.scope}
+                        Log To Console    \nDECODED TOKEN: ${decoded_token}
+                        Dictionary Should Contain Item    ${decoded_token}    typ   Bearer
 
 
 
-***Variables***
-${expired_token}        eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJSSXc4WUN0MGdVZGtJU2VOSVA3SUhLSVlsMzU5cVBJcWNxb004azBFOU9ZIn0.eyJleHAiOjE1OTQ4NDEyODcsImlhdCI6MTU5NDg0MDk4NywianRpIjoiMTM0NGJlZmItZDMwZi00ZTQ3LWI1MWQtYjRmMThlOWY2NjU1IiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgxL2F1dGgvcmVhbG1zL2VocmJhc2UiLCJhdWQiOiJhY2NvdW50Iiwic3ViIjoiYjU4M2RhNjgtOTg5Zi00Mjk3LWE4OWMtYjQzN2M1MjhkZDEzIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiZWhyYmFzZS1yb2JvdCIsInNlc3Npb25fc3RhdGUiOiJiNzI3ZDI5Ny1jNmE5LTQ4MGItYjYxMi1jMzQ4ZmYwMjE5MjAiLCJhY3IiOiIxIiwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iLCJBZG1pbiIsInVzZXIiXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6Im9wZW5pZCBwcm9maWxlIGVtYWlsIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiUm9ib3QgRnJhbWV3b3JrIiwicHJlZmVycmVkX3VzZXJuYW1lIjoicm9ib3QiLCJnaXZlbl9uYW1lIjoiUm9ib3QiLCJmYW1pbHlfbmFtZSI6IkZyYW1ld29yayIsImVtYWlsIjoicm9ib3RAZWhyYmFzZS5vcmcifQ.AqnaJrFVGOZjuDPPGaNpY1bwSC5i0gLrRicwy2gc6w_FjoGGTyWcVWhd_Krt5WZKxpRarycy4RYfzCniSjo5UgLCZzmkwo_RiBOTUuTVV1uGj3EHKIRXaSRCECRi7RMlQsIGIKXF61BnDAQtleB0RQIhMFbGnQUclVqXDFj8F7fp-FloucV2lOBpK92_x1NRh46shZAvSjoGgjwyLlZI7EJgpPT4HNIQElE5Gc4j8MmzRZpAoYXcj7uqlSRqhvWN1XunGulo9YWmCrEJNSf066aUxF1q7329YSpTL_PlNSg85ceZ16r5vd1uWQqUouzAhUy7LXcRvZS8HkJurZ26ng
+*** Variables ***
+${expired_token}               eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJSSXc4WUN0MGdVZGtJU2VOSVA3SUhLSVlsMzU5cVBJcWNxb004azBFOU9ZIn0.eyJleHAiOjE2MzY3MzYwMTUsImlhdCI6MTYzNjczNTcxNSwianRpIjoiNTNjNDQ3NTktNTYwNC00ZWNjLWI4NjktNDZlYjg4MjdiZjY3IiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgyL2F1dGgvcmVhbG1zL2VocmJhc2UiLCJhdWQiOiJhY2NvdW50Iiwic3ViIjoiYjU4M2RhNjgtOTg5Zi00Mjk3LWE4OWMtYjQzN2M1MjhkZDEzIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiZWhyYmFzZS1yb2JvdCIsInNlc3Npb25fc3RhdGUiOiIwZjI1NGE5Zi0zMDNiLTQ1MDgtYjE3Ny04NjJmOTlhNjc4NzgiLCJhY3IiOiIxIiwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImVocmJhc2Uub3JnL3VzZXIiLCJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIiwiZWhyYmFzZS5vcmcvYWRtaW5pc3RyYXRvciJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsIm5hbWUiOiJSb2JvdCBGcmFtZXdvcmsiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJyb2JvdCIsImdpdmVuX25hbWUiOiJSb2JvdCIsImZhbWlseV9uYW1lIjoiRnJhbWV3b3JrIiwiZW1haWwiOiJyb2JvdEBlaHJiYXNlLm9yZyJ9.D1bfUldXErEZEuooyhUNo9jpQAJ9VmZJnejCfFOshcMx573NBUYFHILsU-R-twprct-XuO8TdPW6PyBDeF1SFpFIyq8RhUvNLxjCBUPGas2FxovQ2d_P5pWL86vu7zk0IIm5nSrawqq4UzZ0rwTEP116YsJIHkdG89MVBzolmHkVnFN8ervisLmGy-xxhB_OLeRl-SRdn6oRxH1msVReeKmBv42OKdRLhLkaKefO8Hs_kl8VgE8UdBDwlg40m3S78p-hSmd9vdQ1XPwg2l5bklk0dBJsD_2mBM6Wfq5qnbG-u28oKQ-JmAj0Px_OWa2lLMGut-_Rnv95NAjnmaOV3g
+
+# Client ID and secret come from the 'ehrbase-custom-user' client defined in Keycloak
+${client_credentials_grant}    grant_type=client_credentials&client_id=ehrbase-custom-user&client_secret=5d49493b-8bfb-47f9-aa0f-43653370bf6f

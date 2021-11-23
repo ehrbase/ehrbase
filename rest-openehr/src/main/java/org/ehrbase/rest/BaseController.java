@@ -44,463 +44,531 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
- * This base controller implements the basic functionality for all specific controllers. This includes error handling
- * and utils.
+ * This base controller implements the basic functionality for all specific controllers. This
+ * includes error handling and utils.
  */
 public abstract class BaseController {
 
-    // Fixed header identifiers
-    public static final String CONTENT_TYPE = HttpHeaders.CONTENT_TYPE;
-    public static final String ACCEPT = HttpHeaders.ACCEPT;
-    public static final String REQ_CONTENT_TYPE = "Client may request content format";
-    public static final String REQ_CONTENT_TYPE_BODY = "Format of transferred body";
-    public static final String REQ_ACCEPT = "Client should specify expected format";
-    // response headers
-    public static final String RESP_CONTENT_TYPE_DESC = "Format of response";
-    // Audit
-    public static final String REST_OPERATION = "RestOperation";
-    public static final String RETURN_MINIMAL = "return=minimal";
-    public static final String RETURN_REPRESENTATION = "return=representation";
-    public static final String LOCATION = HttpHeaders.LOCATION;
-    public static final String ETAG = HttpHeaders.ETAG;
-    public static final String LAST_MODIFIED = HttpHeaders.LAST_MODIFIED;
-    public static final String PREFER = "PREFER";
-    public static final String IF_MATCH = HttpHeaders.IF_MATCH;
-    public static final String IF_NONE_MATCH = HttpHeaders.IF_NONE_MATCH;
-    // Configuration of swagger-ui description fields
-    // request headers
-    public static final String REQ_OPENEHR_VERSION = "Optional custom request header for versioning";
-    public static final String REQ_OPENEHR_AUDIT = "Optional custom request header for auditing";
-    public static final String REQ_PREFER = "May be used by clients for resource representation negotiation";
-    public static final String RESP_LOCATION_DESC = "Location of resource";
-    public static final String RESP_ETAG_DESC = "Entity tag for resource";
-    public static final String RESP_LAST_MODIFIED_DESC = "Time of last modification of resource";
-    // common response description fields
-    public static final String RESP_NOT_ACCEPTABLE_DESC = "Not Acceptable - Service can not fulfill requested format via accept header.";
-    public static final String RESP_UNSUPPORTED_MEDIA_DESC = "Unsupported Media Type - request's content-type not supported.";
+  // HTTP Headers
 
-    // constants of all API resources
-    public static final String EHR = "ehr";
-    public static final String EHR_STATUS = "ehrstatus";
-    public static final String COMPOSITION = "composition";
-    public static final String DIRECTORY = "directory";
-    public static final String CONTRIBUTION = "contribution";
-    public static final String QUERY = "query";
-    public static final String DEFINITION = "definition";
+  public static final String OPENEHR_AUDIT_DETAILS = "openEHR-AUDIT_DETAILS";
 
-    public Map<String, Map<String, String>> add2MetaMap(Map<String, Map<String, String>> metaMap, String key, String value) {
-        Map<String, String> contentMap;
+  public static final String OPENEHR_VERSION = "openEHR-VERSION";
 
-        if (metaMap == null) {
-            metaMap = new HashMap<>();
-            contentMap = new HashMap<>();
-            metaMap.put("meta", contentMap);
-        } else
-            contentMap = metaMap.get("meta");
+  public static final String PREFER = "Prefer";
 
-        contentMap.put(key, value);
-        return metaMap;
+  public static final String RETURN_MINIMAL = "return=minimal";
+
+  public static final String RETURN_REPRESENTATION = "return=representation";
+
+  // Fixed header identifiers
+  public static final String CONTENT_TYPE = HttpHeaders.CONTENT_TYPE;
+  public static final String ACCEPT = HttpHeaders.ACCEPT;
+  public static final String REQ_CONTENT_TYPE = "Client may request content format";
+  public static final String REQ_CONTENT_TYPE_BODY = "Format of transferred body";
+  public static final String REQ_ACCEPT = "Client should specify expected format";
+  // response headers
+  public static final String RESP_CONTENT_TYPE_DESC = "Format of response";
+  // Audit
+  public static final String REST_OPERATION = "RestOperation";
+
+  public static final String LOCATION = HttpHeaders.LOCATION;
+  public static final String ETAG = HttpHeaders.ETAG;
+  public static final String LAST_MODIFIED = HttpHeaders.LAST_MODIFIED;
+
+  public static final String IF_MATCH = HttpHeaders.IF_MATCH;
+  public static final String IF_NONE_MATCH = HttpHeaders.IF_NONE_MATCH;
+  // Configuration of swagger-ui description fields
+  // request headers
+  public static final String REQ_OPENEHR_VERSION = "Optional custom request header for versioning";
+  public static final String REQ_OPENEHR_AUDIT = "Optional custom request header for auditing";
+  public static final String REQ_PREFER =
+      "May be used by clients for resource representation negotiation";
+  public static final String RESP_LOCATION_DESC = "Location of resource";
+  public static final String RESP_ETAG_DESC = "Entity tag for resource";
+  public static final String RESP_LAST_MODIFIED_DESC = "Time of last modification of resource";
+  // common response description fields
+  public static final String RESP_NOT_ACCEPTABLE_DESC =
+      "Not Acceptable - Service can not fulfill requested format via accept header.";
+  public static final String RESP_UNSUPPORTED_MEDIA_DESC =
+      "Unsupported Media Type - request's content-type not supported.";
+
+  // constants of all API resources
+  public static final String EHR = "ehr";
+  public static final String EHR_STATUS = "ehrstatus";
+  public static final String COMPOSITION = "composition";
+  public static final String DIRECTORY = "directory";
+  public static final String CONTRIBUTION = "contribution";
+  public static final String QUERY = "query";
+  public static final String DEFINITION = "definition";
+
+  public Map<String, Map<String, String>> add2MetaMap(
+      Map<String, Map<String, String>> metaMap, String key, String value) {
+    Map<String, String> contentMap;
+
+    if (metaMap == null) {
+      metaMap = new HashMap<>();
+      contentMap = new HashMap<>();
+      metaMap.put("meta", contentMap);
+    } else contentMap = metaMap.get("meta");
+
+    contentMap.put(key, value);
+    return metaMap;
+  }
+
+  protected String getBaseEnvLinkURL() {
+    String baseEnvLinkURL = null;
+    HttpServletRequest currentRequest =
+        ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+    // lazy about determining protocol but can be done too
+    baseEnvLinkURL = "http://" + currentRequest.getLocalName();
+    if (currentRequest.getLocalPort() != 80) {
+      baseEnvLinkURL += ":" + currentRequest.getLocalPort();
+    }
+    if (!StringUtils.isEmpty(currentRequest.getContextPath())) {
+      baseEnvLinkURL += currentRequest.getContextPath();
+    }
+    return baseEnvLinkURL;
+  }
+
+  /**
+   * Helper to allow string UUID input from controllers, which throws an ObjectNotFound exception
+   * when no UUID representation can be created. This case is equal to no matching object.
+   *
+   * @param ehrIdString Input String representation of the ehrId
+   * @return UUID representation of the ehrId
+   * @throws ObjectNotFoundException when no UUID can't be created from input
+   */
+  protected UUID getEhrUuid(String ehrIdString) {
+    return extractUUIDFromStringWithError(
+        ehrIdString, "ehr", "EHR not found, in fact, only UUID-type IDs are supported");
+  }
+
+  /**
+   * Helper to allow string UUID input from controllers, which throws an ObjectNotFound exception
+   * when no UUID representation can be created. This case is equal to no matching object.
+   *
+   * @param compositionVersionedObjectUidString Input String representation
+   * @return UUID representation
+   * @throws ObjectNotFoundException when no UUID can't be created from input
+   */
+  protected UUID getCompositionVersionedObjectUidString(
+      String compositionVersionedObjectUidString) {
+    return extractUUIDFromStringWithError(
+        compositionVersionedObjectUidString,
+        "composition",
+        "Composition not found, in fact, only UUID-type versionedObjectUids are supported");
+  }
+
+  /**
+   * Helper to allow string UUID input from controllers, which throws an ObjectNotFound exception
+   * when no UUID representation can be created. This case is equal to no matching object.
+   *
+   * @param compositionVersionedObjectUidString Input String representation
+   * @return UUID representation
+   * @throws ObjectNotFoundException when no UUID can't be created from input
+   */
+  protected UUID getContributionVersionedObjectUidString(
+      String compositionVersionedObjectUidString) {
+    return extractUUIDFromStringWithError(
+        compositionVersionedObjectUidString,
+        "contribution",
+        "Contribution not found, in fact, only UUID-type versionedObjectUids are supported");
+  }
+
+  // Internal abstraction layer helper, so calling methods above can invoke with meaningful error
+  // messages depending on context.
+  private UUID extractUUIDFromStringWithError(String uuidString, String type, String error) {
+    UUID uuid;
+    try {
+      uuid = UUID.fromString(uuidString);
+    } catch (IllegalArgumentException e) {
+      throw new ObjectNotFoundException(type, error);
+    }
+    return uuid;
+  }
+
+  /**
+   * Extracts the {@link CompositionFormat} from the REST request's input {@link MediaType} style
+   * content type header string.
+   *
+   * @param contentType String representation of REST request's input {@link MediaType} style
+   *     content type header
+   * @return {@link CompositionFormat} expressing the content type
+   * @throws NotAcceptableException when content type is not supported or input is invalid
+   */
+  protected CompositionFormat extractCompositionFormat(String contentType) {
+    final CompositionFormat compositionFormat;
+
+    MediaType mediaType = resolveContentType(contentType);
+    if (mediaType.isCompatibleWith(MediaType.APPLICATION_XML)) {
+      compositionFormat = CompositionFormat.XML;
+    } else if (mediaType.isCompatibleWith(MediaType.APPLICATION_JSON)) {
+      compositionFormat = CompositionFormat.JSON;
+    } else {
+      throw new NotAcceptableException(
+          "Only compositions in XML or JSON are supported at the moment");
+    }
+    return compositionFormat;
+  }
+
+  /**
+   * Convenience helper to encode path strings to URI-safe strings
+   *
+   * @param path input
+   * @return URI-safe escaped string
+   * @throws InternalServerException when encoding failed
+   */
+  public String encodePath(String path) {
+
+    path = UriUtils.encodePath(path, "UTF-8");
+
+    return path;
+  }
+
+  protected ResponseEntity<Map<String, String>> createErrorResponse(
+      String message, HttpStatus status) {
+    Map<String, String> error = new HashMap<>();
+    error.put("error", message);
+    error.put("status", status.getReasonPhrase());
+    return new ResponseEntity<>(error, status);
+  }
+
+  protected ResponseEntity<Map<String, String>> createErrorResponse(
+      String message, HttpStatus status, HttpHeaders headers) {
+    Map<String, String> error = new HashMap<>();
+    error.put("error", message);
+    error.put("status", status.getReasonPhrase());
+    return new ResponseEntity<>(error, headers, status);
+  }
+
+  /**
+   * Extracts the UUID base from a versioned UID. Or, if
+   *
+   * @param versionUid
+   * @return
+   */
+  protected UUID extractVersionedObjectUidFromVersionUid(String versionUid) {
+    if (!versionUid.contains("::")) return UUID.fromString(versionUid);
+    return UUID.fromString(versionUid.substring(0, versionUid.indexOf("::")));
+  }
+
+  protected int extractVersionFromVersionUid(String versionUid) {
+    if (!versionUid.contains("::")) return 0; // current version
+    // extract the version from string of format "$UUID::$SYSTEM::$VERSION"
+    // via making a substring starting at last occurrence of "::" + 2
+    return Integer.parseInt(versionUid.substring(versionUid.lastIndexOf("::") + 2));
+  }
+
+  /**
+   * Add attribute to the current request.
+   *
+   * @param attributeName
+   * @param value
+   */
+  protected void enrichRequestAttribute(String attributeName, Object value) {
+    RequestContextHolder.currentRequestAttributes()
+        .setAttribute(attributeName, value, RequestAttributes.SCOPE_REQUEST);
+  }
+
+  /**
+   * Resolves the Content-Type based on Accept header.
+   *
+   * @param acceptHeader Accept header value
+   * @return Content-Type of the response
+   */
+  protected MediaType resolveContentType(String acceptHeader) {
+    return resolveContentType(acceptHeader, MediaType.APPLICATION_JSON);
+  }
+
+  /**
+   * Resolves the Content-Type based on Accept header.
+   *
+   * @param acceptHeader Accept header value
+   * @param defaultMediaType Default Content-Type
+   * @return Content-Type of the response
+   */
+  protected MediaType resolveContentType(String acceptHeader, MediaType defaultMediaType) {
+    List<MediaType> mediaTypes = MediaType.parseMediaTypes(acceptHeader);
+    if (mediaTypes.isEmpty()) {
+      return defaultMediaType;
     }
 
-    protected String getBaseEnvLinkURL() {
-        String baseEnvLinkURL = null;
-        HttpServletRequest currentRequest =
-                ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-        // lazy about determining protocol but can be done too
-        baseEnvLinkURL = "http://" + currentRequest.getLocalName();
-        if (currentRequest.getLocalPort() != 80) {
-            baseEnvLinkURL += ":" + currentRequest.getLocalPort();
-        }
-        if (!StringUtils.isEmpty(currentRequest.getContextPath())) {
-            baseEnvLinkURL += currentRequest.getContextPath();
-        }
-        return baseEnvLinkURL;
+    MediaType.sortBySpecificityAndQuality(mediaTypes);
+    MediaType contentType =
+        mediaTypes.stream()
+            .filter(
+                mediaType ->
+                    mediaType.isCompatibleWith(MediaType.APPLICATION_JSON)
+                        || mediaType.isCompatibleWith(MediaType.APPLICATION_XML))
+            .findFirst()
+            .orElseThrow(
+                () -> new InvalidApiParameterException("Wrong Content-Type header in request"));
+
+    if (contentType.equals(MediaType.ALL)) {
+      return defaultMediaType;
     }
 
-    /**
-     * Helper to allow string UUID input from controllers, which throws an ObjectNotFound exception when no UUID representation
-     * can be created. This case is equal to no matching object.
-     *
-     * @param ehrIdString Input String representation of the ehrId
-     * @return UUID representation of the ehrId
-     * @throws ObjectNotFoundException when no UUID can't be created from input
-     */
-    protected UUID getEhrUuid(String ehrIdString) {
-        return extractUUIDFromStringWithError(ehrIdString, "ehr", "EHR not found, in fact, only UUID-type IDs are supported");
+    return contentType;
+  }
+
+  protected Optional<OffsetDateTime> getVersionAtTimeParam() {
+    Map<String, String> queryParams = ServletUriComponentsBuilder.fromCurrentRequest().build()
+            .getQueryParams()
+            .toSingleValueMap();
+
+    String versionAtTime = queryParams.get("version_at_time");
+    if (StringUtils.isBlank(versionAtTime)) {
+        return Optional.empty();
     }
 
-    /**
-     * Helper to allow string UUID input from controllers, which throws an ObjectNotFound exception when no UUID representation
-     * can be created. This case is equal to no matching object.
-     *
-     * @param compositionVersionedObjectUidString Input String representation
-     * @return UUID representation
-     * @throws ObjectNotFoundException when no UUID can't be created from input
-     */
-    protected UUID getCompositionVersionedObjectUidString(String compositionVersionedObjectUidString) {
-        return extractUUIDFromStringWithError(compositionVersionedObjectUidString, "composition", "Composition not found, in fact, only UUID-type versionedObjectUids are supported");
+    try {
+        return Optional.of(OffsetDateTime.parse(UriUtils.decode(versionAtTime, StandardCharsets.UTF_8)));
+    } catch (DateTimeParseException e) {
+      throw new IllegalArgumentException("Value '" + versionAtTime + "' is not valid for version_at_time parameter. " +
+              "Value must be in the extended ISO 8601 format.", e);
     }
+  }
 
-    /**
-     * Helper to allow string UUID input from controllers, which throws an ObjectNotFound exception when no UUID representation
-     * can be created. This case is equal to no matching object.
-     *
-     * @param compositionVersionedObjectUidString Input String representation
-     * @return UUID representation
-     * @throws ObjectNotFoundException when no UUID can't be created from input
-     */
-    protected UUID getContributionVersionedObjectUidString(String compositionVersionedObjectUidString) {
-        return extractUUIDFromStringWithError(compositionVersionedObjectUidString, "contribution", "Contribution not found, in fact, only UUID-type versionedObjectUids are supported");
+  /*
+  EXCEPTION HANDLING GENERAL BEHAVIOR DEFINITION
+   */
+
+  // 204 No content is handled in controllers, as it refers to a non-error situation.
+
+  /**
+   * Handler for project-custom exception.
+   *
+   * @return ResponseEntity<Map < String, String>> as ALREADY_REPORTED - 208
+   */
+  @ExceptionHandler(DuplicateObjectException.class)
+  public ResponseEntity<Map<String, String>> restErrorHandler(DuplicateObjectException e) {
+    return createErrorResponse(e.getMessage(), HttpStatus.ALREADY_REPORTED);
+  }
+
+  /**
+   * Handler for broad and general Java standard exception IllegalArgumentException. Shall be
+   * replaced with a more specific exception like InvalidApiParameterException in backend code with
+   * time.
+   *
+   * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
+   * @deprecated Throw a more specific exception.
+   */
+  @Deprecated
+  @ExceptionHandler(IllegalArgumentException.class)
+  public ResponseEntity<Map<String, String>> restErrorHandler(IllegalArgumentException e) {
+    return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+  }
+
+  /**
+   * Handler for project-custom exception.
+   *
+   * @return ResponseEntity<Map<String, String>> as BAD_REQUEST - 400
+   */
+  @ExceptionHandler(java.rmi.UnmarshalException.class)
+  public ResponseEntity<Map<String, String>> restErrorHandler(java.rmi.UnmarshalException e) {
+    return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+  }
+
+  /**
+   * Handler for project-custom exception.
+   *
+   * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
+   */
+  @ExceptionHandler(GeneralRequestProcessingException.class)
+  public ResponseEntity<Map<String, String>> restErrorHandler(GeneralRequestProcessingException e) {
+    return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+  }
+
+  /**
+   * Handler for project-custom exception.
+   *
+   * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
+   */
+  @ExceptionHandler(InvalidApiParameterException.class)
+  public ResponseEntity<Map<String, String>> restErrorHandler(InvalidApiParameterException e) {
+    return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+  }
+
+  /**
+   * This handler catches the exception automatically generated and thrown by the framework, when
+   * specified parameters are not present or matching.
+   *
+   * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
+   */
+  @ExceptionHandler(MissingServletRequestParameterException.class)
+  public ResponseEntity<Map<String, String>> restErrorHandler(
+      MissingServletRequestParameterException e) {
+    return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+  }
+
+  /**
+   * This handler catches the exception automatically generated and thrown by the framework, when
+   * the request's message can't be read. For example, due to missing body, while required.
+   *
+   * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
+   */
+  @ExceptionHandler(HttpMessageNotReadableException.class)
+  public ResponseEntity<Map<String, String>> restErrorHandler(HttpMessageNotReadableException e) {
+    return createErrorResponse(
+        "Bad Request: HTTP message not readable, for instance, due to missing parameter. Error: "
+            + e.getMessage(),
+        HttpStatus.BAD_REQUEST);
+  }
+
+  /**
+   * Handler for validation errors
+   *
+   * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
+   */
+  @ExceptionHandler(ValidationException.class)
+  public ResponseEntity<Map<String, String>> restErrorHandler(ValidationException e) {
+    return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+  }
+
+  /**
+   * Handler for unmarshalling error (f.e. invalid EhrStatus)
+   *
+   * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
+   */
+  @ExceptionHandler(UnmarshalException.class)
+  public ResponseEntity<Map<String, String>> restErrorHandler(UnmarshalException e) {
+    return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+  }
+
+  /**
+   * Handler for parsing input string parameters to specific type (e.g. time string that cannot be
+   * parsed into Instant since it is not a valid ISO 6801 date time string
+   *
+   * @param req - Request
+   * @param e - Exception thrown from converter
+   * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
+   */
+  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+  public ResponseEntity<Map<String, String>> restErrorHandler(
+      HttpServletRequest req, MethodArgumentTypeMismatchException e) {
+    return createErrorResponse(
+        String.format("Value %s for parameter %s is not valid.", e.getValue(), e.getName()),
+        HttpStatus.BAD_REQUEST);
+  }
+
+  // 401 Unauthorized is created automatically by framework
+
+  /**
+   * Handler for project-custom exception.
+   *
+   * @return ResponseEntity<Map < String, String>> as NOT_FOUND - 404
+   */
+  @ExceptionHandler(ObjectNotFoundException.class)
+  public ResponseEntity<Map<String, String>> restErrorHandler(ObjectNotFoundException e) {
+    return createErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND);
+  }
+
+  /**
+   * Handler for project-custom exception.
+   *
+   * @return ResponseEntity<Map < String, String>> as NOT_ACCEPTABLE - 406
+   */
+  @ExceptionHandler(NotAcceptableException.class)
+  public ResponseEntity<Map<String, String>> restErrorHandler(NotAcceptableException e) {
+    return createErrorResponse(e.getMessage(), HttpStatus.NOT_ACCEPTABLE);
+  }
+
+  /**
+   * Handler for project-custom exception.
+   *
+   * @return ResponseEntity<Map < String, String>> as CONFLICT - 409
+   */
+  @ExceptionHandler(StateConflictException.class)
+  public ResponseEntity<Map<String, String>> restErrorHandler(StateConflictException e) {
+    return createErrorResponse(e.getMessage(), HttpStatus.CONFLICT);
+  }
+
+  /**
+   * Handler for project-custom exception.
+   *
+   * @return ResponseEntity<Map < String, String>> as PRECONDITION FAILED - 412
+   */
+  @ExceptionHandler(PreconditionFailedException.class)
+  public ResponseEntity<Map<String, String>> restErrorHandler(PreconditionFailedException e) {
+
+    if (e.getUrl() == null || e.getCurrentVersionUid() == null) {
+      return createErrorResponse(e.getMessage(), HttpStatus.PRECONDITION_FAILED);
+    } else {
+      HttpHeaders headers = new HttpHeaders();
+      headers.setETag("\"" + e.getCurrentVersionUid() + "\"");
+      headers.setLocation(URI.create(e.getUrl()));
+      return createErrorResponse(e.getMessage(), HttpStatus.PRECONDITION_FAILED, headers);
     }
+  }
 
-    // Internal abstraction layer helper, so calling methods above can invoke with meaningful error messages depending on context.
-    private UUID extractUUIDFromStringWithError(String uuidString, String type, String error) {
-        UUID uuid;
-        try {
-            uuid = UUID.fromString(uuidString);
-        } catch (IllegalArgumentException e) {
-            throw new ObjectNotFoundException(type, error);
-        }
-        return uuid;
-    }
+  /**
+   * Handler for all exceptions that are caused by a payload that cannot be processed by a service
+   * or subordinated handlers.
+   *
+   * @param e - UnsupportedMediaTypeException thrown at handler mechanism
+   * @return ResponseEntity<Map < String, String>> as UNSUPPORTED MEDIA Type - 415
+   */
+  @ExceptionHandler(UnsupportedMediaTypeException.class)
+  public ResponseEntity<Map<String, String>> restErrorHandler(UnsupportedMediaTypeException e) {
+    return createErrorResponse(e.getMessage(), HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+  }
 
-    /**
-     * Extracts the {@link CompositionFormat} from the REST request's input {@link MediaType} style content type header string.
-     *
-     * @param contentType String representation of REST request's input {@link MediaType} style content type header
-     * @return {@link CompositionFormat} expressing the content type
-     * @throws NotAcceptableException when content type is not supported or input is invalid
-     */
-    protected CompositionFormat extractCompositionFormat(String contentType) {
-        final CompositionFormat compositionFormat;
+  /**
+   * Handler for project-custom exception.
+   *
+   * @return ResponseEntity<Map < String, String>> as UNPROCESSABLE ENTITY Type - 422
+   */
+  @ExceptionHandler(UnprocessableEntityException.class)
+  public ResponseEntity<Map<String, String>> restErrorHandler(UnprocessableEntityException e) {
+    return createErrorResponse(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+  }
 
-        MediaType mediaType = resolveContentType(contentType);
-        if (mediaType.isCompatibleWith(MediaType.APPLICATION_XML)) {
-            compositionFormat = CompositionFormat.XML;
-        } else if (mediaType.isCompatibleWith(MediaType.APPLICATION_JSON)) {
-            compositionFormat = CompositionFormat.JSON;
-        } else {
-            throw new NotAcceptableException("Only compositions in XML or JSON are supported at the moment");
-        }
-        return compositionFormat;
-    }
+  // TODO: Maybe remove this redundant handler since fallback will cover the same functionality
 
-    /**
-     * Convenience helper to encode path strings to URI-safe strings
-     *
-     * @param path input
-     * @return URI-safe escaped string
-     * @throws InternalServerException when encoding failed
-     */
-    public String encodePath(String path) {
+  /**
+   * Handler for less specific internal error
+   *
+   * @return ResponseEntity<Map < String, String>> as INTERNAL_SERVER_ERROR - 500
+   */
+  @ExceptionHandler(InternalServerException.class)
+  public ResponseEntity<Map<String, String>> restErrorHandler(InternalServerException e) {
+    return createErrorResponse(
+        "Internal Server Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+  }
 
-        path = UriUtils.encodePath(path, "UTF-8");
+  /**
+   * Handler for project-custom exception.
+   *
+   * @return ResponseEntity<Map < String, String>> as BAD_GATEWAY - 502
+   */
+  @ExceptionHandler(BadGatewayException.class)
+  public ResponseEntity<Map<String, String>> restErrorHandler(BadGatewayException e) {
+    return createErrorResponse("Bad Gateway: Proxied connection failed", HttpStatus.BAD_GATEWAY);
+  }
 
-        return path;
-    }
-
-    protected ResponseEntity<Map<String, String>> createErrorResponse(String message, HttpStatus status) {
-        Map<String, String> error = new HashMap<>();
-        error.put("error", message);
-        error.put("status", status.getReasonPhrase());
-        return new ResponseEntity<>(error, status);
-    }
-
-    protected ResponseEntity<Map<String, String>> createErrorResponse(String message, HttpStatus status, HttpHeaders headers) {
-        Map<String, String> error = new HashMap<>();
-        error.put("error", message);
-        error.put("status", status.getReasonPhrase());
-        return new ResponseEntity<>(error, headers, status);
-    }
-
-    /**
-     * Extracts the UUID base from a versioned UID. Or, if
-     *
-     * @param versionUid
-     * @return
-     */
-    protected UUID extractVersionedObjectUidFromVersionUid(String versionUid) {
-        if (!versionUid.contains("::"))
-            return UUID.fromString(versionUid);
-        return UUID.fromString(versionUid.substring(0, versionUid.indexOf("::")));
-    }
-
-    protected int extractVersionFromVersionUid(String versionUid) {
-        if (!versionUid.contains("::"))
-            return 0; //current version
-        // extract the version from string of format "$UUID::$SYSTEM::$VERSION"
-        // via making a substring starting at last occurrence of "::" + 2
-        return Integer.parseInt(versionUid.substring(versionUid.lastIndexOf("::") + 2));
-    }
-
-    /**
-     * Add attribute to the current request.
-     *
-     * @param attributeName
-     * @param value
-     */
-    protected void enrichRequestAttribute(String attributeName, Object value) {
-        RequestContextHolder.currentRequestAttributes()
-                .setAttribute(attributeName, value, RequestAttributes.SCOPE_REQUEST);
-    }
-
-    /**
-     * Resolves the Content-Type based on Accept header.
-     *
-     * @param acceptHeader Accept header value
-     * @return Content-Type of the response
-     */
-    protected MediaType resolveContentType(String acceptHeader) {
-        return resolveContentType(acceptHeader, MediaType.APPLICATION_JSON);
-    }
-
-    /**
-     * Resolves the Content-Type based on Accept header.
-     *
-     * @param acceptHeader     Accept header value
-     * @param defaultMediaType Default Content-Type
-     * @return Content-Type of the response
-     */
-    protected MediaType resolveContentType(String acceptHeader, MediaType defaultMediaType) {
-        List<MediaType> mediaTypes = MediaType.parseMediaTypes(acceptHeader);
-        if (mediaTypes.isEmpty()) {
-            return defaultMediaType;
-        }
-
-        MediaType.sortBySpecificityAndQuality(mediaTypes);
-        MediaType contentType = mediaTypes.stream()
-                .filter(mediaType -> mediaType.isCompatibleWith(MediaType.APPLICATION_JSON) ||
-                        mediaType.isCompatibleWith(MediaType.APPLICATION_XML))
-                .findFirst()
-                .orElseThrow(() -> new InvalidApiParameterException("Wrong Content-Type header in request"));
-
-        if (contentType.equals(MediaType.ALL)) {
-            return defaultMediaType;
-        }
-
-        return contentType;
-    }
-
-    /*
-    EXCEPTION HANDLING GENERAL BEHAVIOR DEFINITION
-     */
-
-    // 204 No content is handled in controllers, as it refers to a non-error situation.
-
-    /**
-     * Handler for project-custom exception.
-     *
-     * @return ResponseEntity<Map < String, String>> as ALREADY_REPORTED - 208
-     */
-    @ExceptionHandler(DuplicateObjectException.class)
-    public ResponseEntity<Map<String, String>> restErrorHandler(DuplicateObjectException e) {
-        return createErrorResponse(e.getMessage(), HttpStatus.ALREADY_REPORTED);
-    }
-
-    /**
-     * Handler for broad and general Java standard exception IllegalArgumentException. Shall be replaced with a more
-     * specific exception like InvalidApiParameterException in backend code with time.
-     *
-     * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
-     * @deprecated Throw a more specific exception.
-     */
-    @Deprecated
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, String>> restErrorHandler(IllegalArgumentException e) {
-        return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
-    }
-
-    /**
-     * Handler for project-custom exception.
-     *
-     * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
-     */
-    @ExceptionHandler(GeneralRequestProcessingException.class)
-    public ResponseEntity<Map<String, String>> restErrorHandler(GeneralRequestProcessingException e) {
-        return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
-    }
-
-    /**
-     * Handler for project-custom exception.
-     *
-     * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
-     */
-    @ExceptionHandler(InvalidApiParameterException.class)
-    public ResponseEntity<Map<String, String>> restErrorHandler(InvalidApiParameterException e) {
-        return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
-    }
-
-    /**
-     * This handler catches the exception automatically generated and thrown by the framework, when specified
-     * parameters are not present or matching.
-     *
-     * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
-     */
-    @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ResponseEntity<Map<String, String>> restErrorHandler(MissingServletRequestParameterException e) {
-        return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
-    }
-
-    /**
-     * This handler catches the exception automatically generated and thrown by the framework, when the request's
-     * message can't be read. For example, due to missing body, while required.
-     *
-     * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
-     */
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<Map<String, String>> restErrorHandler(HttpMessageNotReadableException e) {
-        return createErrorResponse("Bad Request: HTTP message not readable, for instance, due to missing parameter. Error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
-    }
-
-    /**
-     * Handler for validation errors
-     *
-     * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
-     */
-    @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<Map<String, String>> restErrorHandler(ValidationException e) {
-        return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
-    }
-
-    /**
-     * Handler for unmarshalling error (f.e. invalid EhrStatus)
-     *
-     * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
-     */
-    @ExceptionHandler(UnmarshalException.class)
-    public ResponseEntity<Map<String, String>> restErrorHandler(UnmarshalException e) {
-        return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
-    }
-
-    /**
-     * Handler for parsing input string parameters to specific type (e.g. time string that cannot be parsed into
-     * Instant since it is not a valid ISO 6801 date time string
-     *
-     * @param req - Request
-     * @param e   - Exception thrown from converter
-     * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
-     */
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<Map<String, String>> restErrorHandler(HttpServletRequest req, MethodArgumentTypeMismatchException e) {
-        return createErrorResponse(String.format(
-                "Value %s for parameter %s is not valid.",
-                e.getValue(),
-                e.getName()
-        ), HttpStatus.BAD_REQUEST);
-    }
-
-    // 401 Unauthorized is created automatically by framework
-
-
-    /**
-     * Handler for project-custom exception.
-     *
-     * @return ResponseEntity<Map < String, String>> as NOT_FOUND - 404
-     */
-    @ExceptionHandler(ObjectNotFoundException.class)
-    public ResponseEntity<Map<String, String>> restErrorHandler(ObjectNotFoundException e) {
-        return createErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND);
-    }
-
-    /**
-     * Handler for project-custom exception.
-     *
-     * @return ResponseEntity<Map < String, String>> as NOT_ACCEPTABLE - 406
-     */
-    @ExceptionHandler(NotAcceptableException.class)
-    public ResponseEntity<Map<String, String>> restErrorHandler(NotAcceptableException e) {
-        return createErrorResponse(e.getMessage(), HttpStatus.NOT_ACCEPTABLE);
-    }
-
-    /**
-     * Handler for project-custom exception.
-     *
-     * @return ResponseEntity<Map < String, String>> as CONFLICT - 409
-     */
-    @ExceptionHandler(StateConflictException.class)
-    public ResponseEntity<Map<String, String>> restErrorHandler(StateConflictException e) {
-        return createErrorResponse(e.getMessage(), HttpStatus.CONFLICT);
-    }
-
-    /**
-     * Handler for project-custom exception.
-     *
-     * @return ResponseEntity<Map < String, String>> as PRECONDITION FAILED - 412
-     */
-    @ExceptionHandler(PreconditionFailedException.class)
-    public ResponseEntity<Map<String, String>> restErrorHandler(PreconditionFailedException e) {
-
-        if (e.getUrl() == null || e.getCurrentVersionUid() == null) {
-            return createErrorResponse(e.getMessage(), HttpStatus.PRECONDITION_FAILED);
-        } else {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setETag("\"" + e.getCurrentVersionUid() + "\"");
-            headers.setLocation(URI.create(e.getUrl()));
-            return createErrorResponse(e.getMessage(), HttpStatus.PRECONDITION_FAILED, headers);
-        }
-    }
-
-    /**
-     * Handler for all exceptions that are caused by a payload that cannot be
-     * processed by a service or subordinated handlers.
-     *
-     * @param e - UnsupportedMediaTypeException thrown at handler mechanism
-     * @return ResponseEntity<Map < String, String>> as UNSUPPORTED MEDIA Type - 415
-     */
-    @ExceptionHandler(UnsupportedMediaTypeException.class)
-    public ResponseEntity<Map<String, String>> restErrorHandler(UnsupportedMediaTypeException e) {
-        return createErrorResponse(e.getMessage(), HttpStatus.UNSUPPORTED_MEDIA_TYPE);
-    }
-
-    /**
-     * Handler for project-custom exception.
-     *
-     * @return ResponseEntity<Map < String, String>> as UNPROCESSABLE ENTITY Type - 422
-     */
-    @ExceptionHandler(UnprocessableEntityException.class)
-    public ResponseEntity<Map<String, String>> restErrorHandler(UnprocessableEntityException e) {
-        return createErrorResponse(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
-    }
-
-    // TODO: Maybe remove this redundant handler since fallback will cover the same functionality
-
-    /**
-     * Handler for less specific internal error
-     *
-     * @return ResponseEntity<Map < String, String>> as INTERNAL_SERVER_ERROR - 500
-     */
-    @ExceptionHandler(InternalServerException.class)
-    public ResponseEntity<Map<String, String>> restErrorHandler(InternalServerException e) {
-        return createErrorResponse("Internal Server Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    /**
-     * Handler for project-custom exception.
-     *
-     * @return ResponseEntity<Map < String, String>> as BAD_GATEWAY - 502
-     */
-    @ExceptionHandler(BadGatewayException.class)
-    public ResponseEntity<Map<String, String>> restErrorHandler(BadGatewayException e) {
-        return createErrorResponse("Bad Gateway: Proxied connection failed", HttpStatus.BAD_GATEWAY);
-    }
-
-    /**
-     * Fallback error handler.
-     *
-     * @return ResponseEntity<Map < String, String>> as INTERNAL_SERVER_ERROR - 500
-     */
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, String>> restErrorHandler(Exception e) {
-        return createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+  /**
+   * Fallback error handler.
+   *
+   * @return ResponseEntity<Map < String, String>> as INTERNAL_SERVER_ERROR - 500
+   */
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<Map<String, String>> restErrorHandler(Exception e) {
+    return createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+  }
 }

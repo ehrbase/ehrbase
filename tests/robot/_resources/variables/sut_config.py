@@ -47,7 +47,7 @@ DEV_CONFIG = {
     "SUT": "DEV",
     "BASEURL": "http://localhost:8080/ehrbase/rest/openehr/v1",
     "ADMIN_BASEURL": "http://localhost:8080/ehrbase/rest/admin",
-    "HEARTBEAT_URL": "http://localhost:8080/ehrbase/",
+    "HEARTBEAT_URL": "http://localhost:8080/ehrbase/rest/status",
     "CREDENTIALS": ["ehrbase-user", "SuperSecretPassword"],
     "SECURITY_AUTHTYPE": "BASIC",
     "AUTHORIZATION": {
@@ -73,6 +73,8 @@ DEV_CONFIG = {
     "KEYCLOAK_URL": KEYCLOAK_URL,
     "KC_AUTH_URL": KC_AUTH_URL,
     "KC_ACCESS_TOKEN_URL": KC_ACCESS_TOKEN_URL,
+    "OAUTH_USER_ROLE": "ehrbase.org/user",
+    "OAUTH_ADMIN_ROLE": "ehrbase.org/administrator"
 }
 
 # admin-dev environment: for local test of admin interface
@@ -81,7 +83,7 @@ ADMIN_DEV_CONFIG = {
     "SUT": "ADMIN-DEV",
     "BASEURL": "http://localhost:8080/ehrbase/rest/openehr/v1",
     "ADMIN_BASEURL": "http://localhost:8080/ehrbase/rest/admin",
-    "HEARTBEAT_URL": "http://localhost:8080/ehrbase/",
+    "HEARTBEAT_URL": "http://localhost:8080/ehrbase/rest/status",
     "CREDENTIALS": ["ehrbase-admin", "EvenMoreSecretPassword"],
     "SECURITY_AUTHTYPE": "BASIC",
     "AUTHORIZATION": {
@@ -103,6 +105,8 @@ ADMIN_DEV_CONFIG = {
     "KEYCLOAK_URL": KEYCLOAK_URL,
     "KC_AUTH_URL": KC_AUTH_URL,
     "KC_ACCESS_TOKEN_URL": KC_ACCESS_TOKEN_URL,
+    "OAUTH_USER_ROLE": "ehrbase.org/user",
+    "OAUTH_ADMIN_ROLE": "ehrbase.org/administrator"
 }
 
 # test environment: used on CI pipeline, can be used locally, too
@@ -111,7 +115,7 @@ TEST_CONFIG = {
     "SUT": "TEST",
     "BASEURL": "http://localhost:8080/ehrbase/rest/openehr/v1",
     "ADMIN_BASEURL": "http://localhost:8080/ehrbase/rest/admin",
-    "HEARTBEAT_URL": "http://localhost:8080/ehrbase/",
+    "HEARTBEAT_URL": "http://localhost:8080/ehrbase/rest/status",
     "CREDENTIALS": ["ehrbase-user", "SuperSecretPassword"],
     "SECURITY_AUTHTYPE": "BASIC",
     "AUTHORIZATION": {
@@ -133,6 +137,8 @@ TEST_CONFIG = {
     "KEYCLOAK_URL": KEYCLOAK_URL,
     "KC_AUTH_URL": KC_AUTH_URL,
     "KC_ACCESS_TOKEN_URL": KC_ACCESS_TOKEN_URL,
+    "OAUTH_USER_ROLE": "ehrbase.org/user",
+    "OAUTH_ADMIN_ROLE": "ehrbase.org/administrator"
 }
 
 # admin-test environment: used on CI to test admin interface, can be used locally, too
@@ -141,7 +147,7 @@ ADMIN_TEST_CONFIG = {
     "SUT": "ADMIN-TEST",
     "BASEURL": "http://localhost:8080/ehrbase/rest/openehr/v1",
     "ADMIN_BASEURL": "http://localhost:8080/ehrbase/rest/admin",
-    "HEARTBEAT_URL": "http://localhost:8080/ehrbase/",
+    "HEARTBEAT_URL": "http://localhost:8080/ehrbase/rest/status",
     "CREDENTIALS": ["ehrbase-admin", "EvenMoreSecretPassword"],
     "SECURITY_AUTHTYPE": "BASIC",
     "AUTHORIZATION": {
@@ -163,6 +169,8 @@ ADMIN_TEST_CONFIG = {
     "KEYCLOAK_URL": KEYCLOAK_URL,
     "KC_AUTH_URL": KC_AUTH_URL,
     "KC_ACCESS_TOKEN_URL": KC_ACCESS_TOKEN_URL,
+    "OAUTH_USER_ROLE": "ehrbase.org/user",
+    "OAUTH_ADMIN_ROLE": "ehrbase.org/administrator"
 }
 
 

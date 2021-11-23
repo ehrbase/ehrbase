@@ -21,11 +21,12 @@
 
 package org.ehrbase.aql.sql;
 
+import org.ehrbase.aql.definition.LateralJoinDefinition;
 import org.jooq.Condition;
 import org.jooq.SelectQuery;
-import org.jooq.Table;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 /**
  * Created by christian on 2/17/2017.
@@ -34,10 +35,10 @@ import java.util.List;
 public class QuerySteps {
     private final SelectQuery selectQuery;
     private Condition whereCondition; //can be force to a NULL condition (f.e. 1 = 0)
-    private final List<Table<?>> lateralJoins;
+    private final List<LateralJoinDefinition> lateralJoins;
     private final String templateId;
 
-    public QuerySteps(SelectQuery selectQuery, Condition whereCondition, List<Table<?>> lateralJoins, String templateId) {
+    public QuerySteps(SelectQuery selectQuery, Condition whereCondition, List<LateralJoinDefinition> lateralJoins, String templateId) {
         this.selectQuery = selectQuery;
         this.whereCondition = whereCondition;
         this.lateralJoins = lateralJoins;
@@ -56,11 +57,37 @@ public class QuerySteps {
         return templateId;
     }
 
-    public List<Table<?>> getLateralJoins() {
+    public List<LateralJoinDefinition> getLateralJoins() {
         return lateralJoins;
     }
 
     public void setWhereCondition(Condition whereCondition){
         this.whereCondition = whereCondition;
+    }
+
+    public static boolean compare(QuerySteps querySteps1, QuerySteps querySteps2){
+
+        if (!querySteps1.getTemplateId().equals(querySteps2.getTemplateId()))
+            return false;
+        //compare select part
+        if (!querySteps1.getSelectQuery().getSQL().equals(querySteps2.getSelectQuery().getSQL()))
+            return false;
+        if (querySteps1.getLateralJoins().size() != querySteps2.getLateralJoins().size())
+            return false;
+        boolean isEquals = IntStream.
+                range(0, querySteps1.getLateralJoins().size()).
+                allMatch(j -> querySteps1.getLateralJoins().get(j).getSqlExpression().equals(querySteps2.getLateralJoins().get(j).getSqlExpression()));
+        if (!isEquals)
+            return false;
+        //check condition
+        return querySteps1.getWhereCondition().toString().equals(querySteps2.getWhereCondition().toString());
+    }
+
+    public static boolean isIncludedInList(QuerySteps querySteps, List<QuerySteps> queryStepsList){
+        for (QuerySteps queryStepsToCompare: queryStepsList){
+            if (compare(querySteps, queryStepsToCompare))
+                return true;
+        }
+        return false;
     }
 }

@@ -678,7 +678,7 @@ MF-050 - Create new EHR providing an ehr_id (invalid ehr_status)
     ...                 Sets {"Accept": "*/*"} by default!
     ...                 NOTE: this test is not executed on CI!
     [Tags]              libtest
-    ${resp}=            Post Request        ${SUT}   /ehr
+    ${resp}=            POST On Session      ${SUT}   /ehr    expected_status=anything
                         #...                 headers=${headers}
                         Set Test Variable   ${response}    ${resp}
                         Log To Console   \nREQUEST HEADERS: \n${response.request.headers}

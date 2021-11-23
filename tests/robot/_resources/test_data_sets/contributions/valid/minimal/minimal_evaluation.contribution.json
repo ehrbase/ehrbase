@@ -1,250 +1,228 @@
 {
-  "_type": "CONTRIBUTION",
-  "versions": [
-    {
-      "_type": "ORIGINAL_VERSION",
-      "commit_audit": {
-        "_type": "AUDIT_DETAILS",
-        "system_id": "test-system-id",
-        "committer": {
-          "_type": "PARTY_IDENTIFIED",
-          "name": "<optional name of the committer>",
-          "external_ref": {
-            "id": {
-              "_type": "GENERIC_ID",
-              "value": "<OBJECT_ID>",
-              "scheme": "<ID SCHEME NAME>"
-            },
-            "namespace": "demographic",
-            "type": "PERSON"
-          }
-        },
-        "change_type": {
-          "value": "creation",
-          "defining_code": {
-            "terminology_id": {
-              "value": "openehr"
-            },
-            "code_string": "249"
-          }
-        },
-        "description": {
-          "value": "<optional audit description>"
-        }
-      },
-      "data": {
-      	"_type": "COMPOSITION",
-      	"name": {
-      		"_type": "DV_TEXT",
-      		"value": "Minimal"
-      	},
-      	"archetype_details": {
-      		"_type": "ARCHETYPED",
-      		"archetype_id": {
-      			"_type": "ARCHETYPE_ID",
-      			"value": "openEHR-EHR-COMPOSITION.minimal.v1"
-      		},
-      		"template_id": {
-      			"_type": "TEMPLATE_ID",
-      			"value": "minimal_evaluation.en.v1"
-      		},
-      		"rm_version": "1.0.2"
-      	},
-      	"archetype_node_id": "openEHR-EHR-COMPOSITION.minimal.v1",
-      	"language": {
-      		"_type": "CODE_PHRASE",
-      		"terminology_id": {
-      			"_type": "TERMINOLOGY_ID",
-      			"value": "ISO_639-1"
-      		},
-      		"code_string": "en"
-      	},
-      	"territory": {
-      		"_type": "CODE_PHRASE",
-      		"terminology_id": {
-      			"_type": "TERMINOLOGY_ID",
-      			"value": "ISO_3166-1"
-      		},
-      		"code_string": "UY"
-      	},
-      	"category": {
-      		"_type": "DV_CODED_TEXT",
-      		"value": "event",
-      		"defining_code": {
-      			"_type": "CODE_PHRASE",
-      			"terminology_id": {
-      				"_type": "TERMINOLOGY_ID",
-      				"value": "openehr"
-      			},
-      			"code_string": "433"
-      		}
-      	},
-      	"composer": {
-      		"_type": "PARTY_IDENTIFIED",
-      		"external_ref": {
-      			"_type": "PARTY_REF",
-      			"id": {
-      				"_type": "HIER_OBJECT_ID",
-      				"value": "830f2fb4-1bbf-4376-9d52-77ef4b8f92e8"
-      			},
-      			"namespace": "DEMOGRAPHIC",
-      			"type": "PERSON"
-      		},
-      		"name": "Dr. Yamamoto"
-      	},
-      	"context": {
-      		"_type": "EVENT_CONTEXT",
-      		"start_time": {
-      			"_type": "DV_DATE_TIME",
-      			"value": "2019-01-28T21:22:19,979+0000"
-      		},
-      		"setting": {
-      			"_type": "DV_CODED_TEXT",
-      			"value": "primary nursing care",
-      			"defining_code": {
-      				"_type": "CODE_PHRASE",
-      				"terminology_id": {
-      					"_type": "TERMINOLOGY_ID",
-      					"value": "openehr"
-      				},
-      				"code_string": "229"
-      			}
-      		},
-      		"participations": [{
-      			"_type": "PARTICIPATION",
-      			"function": {
-      				"_type": "DV_TEXT",
-      				"value": "companion"
-      			},
-      			"performer": {
-      				"_type": "PARTY_RELATED",
-      				"name": "Betty Bix",
-      				"relationship": {
-      					"_type": "DV_CODED_TEXT",
-      					"value": "sister",
-      					"defining_code": {
-      						"_type": "CODE_PHRASE",
-      						"terminology_id": {
-      							"_type": "TERMINOLOGY_ID",
-      							"value": "openehr"
-      						},
-      						"code_string": "24"
-      					}
-      				}
-      			},
-      			"mode": {
-      				"_type": "DV_CODED_TEXT",
-      				"value": "not specified",
-      				"defining_code": {
-      					"_type": "CODE_PHRASE",
-      					"terminology_id": {
-      						"_type": "TERMINOLOGY_ID",
-      						"value": "openehr"
-      					},
-      					"code_string": "193"
-      				}
-      			}
-      		}]
-      	},
-      	"content": [{
-      		"_type": "EVALUATION",
-      		"name": {
-      			"_type": "DV_TEXT",
-      			"value": "Minimal"
-      		},
-					"archetype_details": {
-						"_type": "ARCHETYPED",
-						"archetype_id": {
-							"_type": "ARCHETYPE_ID",
-							"value": "openEHR-EHR-EVALUATION.minimal.v1"
-						},
-						"template_id": {
-							"_type": "TEMPLATE_ID",
-							"value": "minimal_evaluation.en.v1"
-						},
-						"rm_version": "1.0.2"
+	"_type": "CONTRIBUTION",
+	"versions": [{
+		"_type": "ORIGINAL_VERSION",
+		"contribution": {
+			"id": {
+				"_type": "HIER_OBJECT_ID",
+				"value": "720ed9fa-4bba-4817-9173-4c05b00acf6a"
+			},
+			"namespace": "EHR::COMMON",
+			"type": "CONTRIBUTION"
+		},
+		"commit_audit": {
+			"_type": "AUDIT_DETAILS",
+			"system_id": "CABOLABS_EHRSERVER",
+			"time_committed": {
+				"value": "2021-09-21T21:52:31.869-03:00"
+			},
+			"change_type": {
+				"value": "creation",
+				"defining_code": {
+					"terminology_id": {
+						"value": "openehr"
 					},
-      		"archetype_node_id": "openEHR-EHR-EVALUATION.minimal.v1",
-      		"language": {
-      			"_type": "CODE_PHRASE",
-      			"terminology_id": {
-      				"_type": "TERMINOLOGY_ID",
-      				"value": "ISO_639-1"
-      			},
-      			"code_string": "en"
-      		},
-      		"encoding": {
-      			"_type": "CODE_PHRASE",
-      			"terminology_id": {
-      				"_type": "TERMINOLOGY_ID",
-      				"value": "IANA_character-sets"
-      			},
-      			"code_string": "UTF-8"
-      		},
-      		"subject": {
-      			"_type": "PARTY_SELF"
-      		},
-      		"data": {
-      			"_type": "ITEM_TREE",
-      			"name": {
-      				"_type": "DV_TEXT",
-      				"value": "Arbol"
-      			},
-      			"archetype_node_id": "at0001",
-      			"items": [{
-      				"_type": "ELEMENT",
-      				"name": {
-      					"_type": "DV_TEXT",
-      					"value": "quantity"
-      				},
-      				"archetype_node_id": "at0002",
-      				"value": {
-      					"_type": "DV_QUANTITY",
-      					"magnitude": 78.5,
-      					"units": "kg"
-      				}
-      			}]
-      		}
-      	}]
-      },
-      "lifecycle_state": {
-        "value": "complete",
-        "defining_code": {
-          "terminology_id": {
-            "value": "openehr"
-          },
-          "code_string": "532"
-        }
-      }
-    }
-  ],
-  "audit": {
-    "_type": "AUDIT_DETAILS",
-    "system_id": "test-system-id",
-    "committer": {
-      "_type": "PARTY_IDENTIFIED",
-      "name": "<optional name of the committer>",
-      "external_ref": {
-        "id": {
-          "_type": "GENERIC_ID",
-          "value": "<OBJECT_ID>",
-          "scheme": "<ID SCHEME NAME>"
-        },
-        "namespace": "demographic",
-        "type": "PERSON"
-      }
-    },
-    "change_type": {
-      "value": "creation",
-      "defining_code": {
-        "terminology_id": {
-          "value": "openehr"
-        },
-        "code_string": "249"
-      }
-    },
-    "description": {
-      "value": "<optional audit description>"
-    }
-  }
+					"code_string": "249"
+				}
+			},
+			"committer": {
+				"_type": "PARTY_IDENTIFIED",
+				"external_ref": {
+					"id": {
+						"_type": "HIER_OBJECT_ID",
+						"value": "f7e48c23-21b2-4b58-b9e0-a3ccece1bcf1"
+					},
+					"namespace": "DEMOGRAPHIC",
+					"type": "PERSON"
+				},
+				"name": "Dr. Yamamoto"
+			}
+		},
+		"uid": {
+			"_type": "OBJECT_VERSION_ID",
+			"value": "d11739a8-545d-4137-9bcd-9e5617252a0b::EMR_APP::1"
+		},
+		"data": {
+			"_type": "COMPOSITION",
+			"name": {
+				"_type": "DV_TEXT",
+				"value": "Minimal"
+			},
+			"archetype_details": {
+				"archetype_id": {
+					"value": "openEHR-EHR-COMPOSITION.minimal.v1"
+				},
+				"template_id": {
+					"value": "minimal_evaluation.en.v1"
+				},
+				"rm_version": "1.0.2"
+			},
+			"archetype_node_id": "openEHR-EHR-COMPOSITION.minimal.v1",
+			"language": {
+				"terminology_id": {
+					"value": "ISO_639-1"
+				},
+				"code_string": "en"
+			},
+			"territory": {
+				"terminology_id": {
+					"value": "ISO_3166-1"
+				},
+				"code_string": "UY"
+			},
+			"category": {
+				"value": "event",
+				"defining_code": {
+					"terminology_id": {
+						"value": "openehr"
+					},
+					"code_string": "433"
+				}
+			},
+			"composer": {
+				"_type": "PARTY_IDENTIFIED",
+				"external_ref": {
+					"id": {
+						"_type": "HIER_OBJECT_ID",
+						"value": "fc376c46-29c1-4090-bc01-5cc046af7f26"
+					},
+					"namespace": "DEMOGRAPHIC",
+					"type": "PERSON"
+				},
+				"name": "Dr. House"
+			},
+			"context": {
+				"start_time": {
+					"value": "2021-09-21T21:52:31.927-03:00"
+				},
+				"setting": {
+					"value": "primary medical care",
+					"defining_code": {
+						"terminology_id": {
+							"value": "openehr"
+						},
+						"code_string": "228"
+					}
+				},
+				"participations": [{
+					"function": {
+						"value": "legal guardian consent author"
+					},
+					"performer": {
+						"_type": "PARTY_RELATED",
+						"name": "Alexandra Alamo",
+						"relationship": {
+							"value": "mother",
+							"defining_code": {
+								"terminology_id": {
+									"value": "openehr"
+								},
+								"code_string": "10"
+							}
+						}
+					},
+					"mode": {
+						"value": "not specified",
+						"defining_code": {
+							"terminology_id": {
+								"value": "openehr"
+							},
+							"code_string": "193"
+						}
+					}
+				}]
+			},
+			"content": [{
+				"_type": "EVALUATION",
+				"name": {
+					"_type": "DV_TEXT",
+					"value": "Minimal"
+				},
+				"archetype_details": {
+					"archetype_id": {
+						"value": "openEHR-EHR-EVALUATION.minimal.v1"
+					},
+					"template_id": {
+						"value": "minimal_evaluation.en.v1"
+					},
+					"rm_version": "1.0.2"
+				},
+				"archetype_node_id": "openEHR-EHR-EVALUATION.minimal.v1",
+				"language": {
+					"terminology_id": {
+						"value": "ISO_639-1"
+					},
+					"code_string": "en"
+				},
+				"encoding": {
+					"terminology_id": {
+						"value": "IANA_character-sets"
+					},
+					"code_string": "UTF-8"
+				},
+				"subject": {
+					"_type": "PARTY_SELF"
+				},
+				"data": {
+					"_type": "ITEM_TREE",
+					"name": {
+						"_type": "DV_TEXT",
+						"value": "Arbol"
+					},
+					"archetype_node_id": "at0001",
+					"items": [{
+						"_type": "ELEMENT",
+						"name": {
+							"_type": "DV_TEXT",
+							"value": "quantity"
+						},
+						"archetype_node_id": "at0002",
+						"value": {
+							"_type": "DV_QUANTITY",
+							"magnitude": 974.0,
+							"units": "kg"
+						}
+					}]
+				}
+			}]
+		},
+		"lifecycle_state": {
+			"value": "complete",
+			"defining_code": {
+				"terminology_id": {
+					"value": "openehr"
+				},
+				"code_string": "532"
+			}
+		}
+	}],
+	"audit": {
+		"_type": "AUDIT_DETAILS",
+		"system_id": "test-system-id",
+		"committer": {
+			"_type": "PARTY_IDENTIFIED",
+			"name": "<optional name of the committer>",
+			"external_ref": {
+				"id": {
+					"_type": "GENERIC_ID",
+					"value": "<OBJECT_ID>",
+					"scheme": "<ID SCHEME NAME>"
+				},
+				"namespace": "demographic",
+				"type": "PERSON"
+			}
+		},
+		"change_type": {
+			"value": "creation",
+			"defining_code": {
+				"terminology_id": {
+					"value": "openehr"
+				},
+				"code_string": "249"
+			}
+		},
+		"description": {
+			"value": "<optional audit description>"
+		}
+	}
 }

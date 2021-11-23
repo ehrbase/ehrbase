@@ -31,19 +31,19 @@ Force Tags      125    future
 
 
 *** Test Cases ***
-Alternative flow 2 create persistent COMPOSITION for the same opt twice RAW_JSON
-    commit composition   format=RAW_JSON
+Alternative flow 2 create persistent COMPOSITION for the same opt twice CANONICAL_JSON
+    commit composition   format=CANONICAL_JSON
     ...                  composition=persistent_minimal.en.v1__full.json
     check status_code of commit composition   201
-    commit composition   format=RAW_JSON
+    commit composition   format=CANONICAL_JSON
     ...                  composition=persistent_minimal.en.v1__full.json
     check status_code of commit composition   400
 
-Alternative flow 2 create persistent COMPOSITION for the same opt twice RAW_XML
-    commit composition   format=RAW_XML
+Alternative flow 2 create persistent COMPOSITION for the same opt twice CANONICAL_XML
+    commit composition   format=CANONICAL_XML
     ...                  composition=persistent_minimal.en.v1__full.xml
     check status_code of commit composition   201
-    commit composition   format=RAW_XML
+    commit composition   format=CANONICAL_XML
     ...                  composition=persistent_minimal.en.v1__full.xml
     check status_code of commit composition   400
 

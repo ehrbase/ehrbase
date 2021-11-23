@@ -17,10 +17,6 @@
  */
 package org.ehrbase.application.config.security;
 
-
-import static org.ehrbase.application.config.security.SecurityYAMLConfig.ADMIN;
-import static org.ehrbase.application.config.security.SecurityYAMLConfig.USER;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -58,18 +54,23 @@ public class OAuth2SecurityConfig extends WebSecurityConfigurerAdapter {
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
+    String userRole = securityYAMLConfig.getOauth2UserRole();
+    String adminRole = securityYAMLConfig.getOauth2AdminRole();
 
     logger.info("Using OAuth2 authentication.");
     logger.info("Using issuer URI: {}", securityYAMLConfig.getOauth2IssuerUri());
+    logger.info("Using user role: {}", userRole);
+    logger.info("Using admin role: {}", adminRole);
+
     http.cors()
         .and()
         .authorizeRequests()
         // Specific routes with ../admin/.. and actuator /management/.. endpoints require admin role
         .antMatchers("/rest/admin/**", "/management/**")
-        .hasRole(ADMIN)
+        .hasRole(adminRole)
         // Everything else is open to all users of role admin and user
         .antMatchers("/**")
-        .hasAnyRole(ADMIN, USER, PROFILE_SCOPE)
+        .hasAnyRole(adminRole, userRole, PROFILE_SCOPE)
         .and()
         .oauth2ResourceServer()
         .jwt()

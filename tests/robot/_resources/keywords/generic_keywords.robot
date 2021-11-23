@@ -18,7 +18,7 @@
 
 *** Settings ***
 
-Resource   ../suite_settings.robot
+# Resource   ../suite_settings.robot
 Resource    db_keywords.robot
 
 
@@ -215,6 +215,8 @@ start openehr server
 start server process without coverage
                         Set Environment Variable    SECURITY_AUTHTYPE    ${SECURITY_AUTHTYPE}
                         IF    '${SECURITY_AUTHTYPE}' == 'OAUTH'
+                              Set Environment Variable    SECURITY_OAUTH2USERROLE    ${OAUTH_USER_ROLE}
+                              Set Environment Variable    SECURITY_OAUTH2ADMINROLE    ${OAUTH_ADMIN_ROLE}
                               Set Environment Variable
                               ...    SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI    ${JWT_ISSUERURI}
                         END
@@ -255,7 +257,14 @@ wait until openehr server is online
 openehr server is online
     prepare new request session  JSON
     REST.GET    ${HEARTBEAT_URL}
-    Integer     response status    404    200
+    Output    response body
+
+    Integer   response status    200
+    String    response body ehrbase_version
+    String    response body jvm_version
+    String    response body openehr_sdk_version
+    String    response body os_version
+    String    response body postgres_version
 
 
 abort test execution
@@ -358,15 +367,15 @@ set request headers
                         Set To Dictionary    ${headers}
                         ...                  Content-Type=${content}
                         ...                  Accept=${accept}
+                        ...                  &{authorization}
                         ...                  &{extra_headers}
 
     # comment: headers for RESTinstance Library
     &{headers}=         Set Headers         ${headers}
-                        Set Headers         ${authorization}
 
     # comment: headers for RequestLibrary
                         Create Session      ${SUT}    ${BASEURL}    debug=2
-                        ...                 auth=${CREDENTIALS}    verify=True
+                        ...                 headers=${headers}    verify=True
 
                         Set Suite Variable   ${headers}    ${headers}
 
@@ -448,7 +457,7 @@ remind to restart manual test environment
     Log    ${EMPTY}                                                                             level=WARN
     Log    /////////////////////////////////////////////////////////////////////                level=WARN
     Log    //${SPACE * 64}///                                                                   level=WARN
-    Log    //${SPACE * 13}REMBER TO PROPERLY RESTART YOUR SUT! ${SPACE * 13} ///                level=WARN
+    Log    //${SPACE * 13}REMEMBER TO PROPERLY RESTART YOUR SUT! ${SPACE * 13} ///              level=WARN
     Log    //${SPACE * 64}///                                                                   level=WARN
     Log    /////////////////////////////////////////////////////////////////////                level=WARN
     Log    ${EMPTY}                                                                             level=WARN

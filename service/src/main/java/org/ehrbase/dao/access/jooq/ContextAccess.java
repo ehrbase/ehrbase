@@ -53,12 +53,7 @@ import org.ehrbase.serialisation.dbencoding.RawJson;
 import org.ehrbase.service.RecordedDvCodedText;
 import org.ehrbase.service.RecordedDvDateTime;
 import org.ehrbase.service.RecordedDvText;
-import org.jooq.DSLContext;
-import org.jooq.InsertQuery;
-import org.jooq.JSONB;
-import org.jooq.Record;
-import org.jooq.Result;
-import org.jooq.UpdateQuery;
+import org.jooq.*;
 import org.jooq.exception.DataAccessException;
 
 import java.sql.Timestamp;
@@ -66,12 +61,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static org.ehrbase.jooq.pg.Tables.EVENT_CONTEXT;
-import static org.ehrbase.jooq.pg.Tables.EVENT_CONTEXT_HISTORY;
-import static org.ehrbase.jooq.pg.Tables.IDENTIFIER;
-import static org.ehrbase.jooq.pg.Tables.PARTICIPATION;
-import static org.ehrbase.jooq.pg.Tables.PARTICIPATION_HISTORY;
-import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
+import static org.ehrbase.jooq.pg.Tables.*;
 
 /**
  * Created by Christian Chevalley on 4/9/2015.
@@ -155,8 +145,8 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         List<Participation> participationList = new ArrayList<>();
         //get the participations
         domainAccess.getContext().fetch(PARTICIPATION_HISTORY,
-                PARTICIPATION_HISTORY.EVENT_CONTEXT.eq(eventContextHistoryRecord.getId())
-                        .and(PARTICIPATION_HISTORY.SYS_TRANSACTION.eq(transactionTime)))
+                        PARTICIPATION_HISTORY.EVENT_CONTEXT.eq(eventContextHistoryRecord.getId())
+                                .and(PARTICIPATION_HISTORY.SYS_TRANSACTION.eq(transactionTime)))
                 .forEach(record -> {
                     //retrieve performer
                     PartyProxy performer = new PersistedPartyProxy(domainAccess).retrieve(record.getPerformer());
@@ -207,11 +197,11 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
     public void setRecordFields(UUID id, EventContext eventContext) {
         RecordedDvDateTime recordedDvDateTime = new RecordedDvDateTime(eventContext.getStartTime());
         eventContextRecord.setStartTime(recordedDvDateTime.toTimestamp());
-        eventContextRecord.setStartTimeTzid(recordedDvDateTime.zoneId());
+        recordedDvDateTime.zoneId().ifPresent(eventContextRecord::setStartTimeTzid);
         if (eventContext.getEndTime() != null) {
             recordedDvDateTime = new RecordedDvDateTime(eventContext.getEndTime());
             eventContextRecord.setEndTime(recordedDvDateTime.toTimestamp());
-            eventContextRecord.setEndTimeTzid(recordedDvDateTime.zoneId());
+            recordedDvDateTime.zoneId().ifPresent(eventContextRecord::setEndTimeTzid);
         }
         eventContextRecord.setId(id != null ? id : UUID.randomUUID());
 
@@ -236,17 +226,18 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                 if (participation.getMode() != null)
                     new RecordedDvCodedText().toDB(participationRecord, PARTICIPATION.MODE, participation.getMode());
                 if (participation.getTime() != null) {
-                    DvDateTime lower = (DvDateTime) participation.getTime().getLower();
+                    DvDateTime lower = participation.getTime().getLower();
                     if (lower != null) {
                         recordedDvDateTime = new RecordedDvDateTime(lower);
                         participationRecord.setTimeLower(recordedDvDateTime.toTimestamp());
-                        participationRecord.setTimeLowerTz(recordedDvDateTime.zoneId());
+                        recordedDvDateTime.zoneId().ifPresent(participationRecord::setTimeLowerTz);
+
                     }
-                    DvDateTime upper = (DvDateTime) participation.getTime().getUpper();
+                    DvDateTime upper = participation.getTime().getUpper();
                     if (upper != null) {
                         recordedDvDateTime = new RecordedDvDateTime(upper);
                         participationRecord.setTimeUpper(recordedDvDateTime.toTimestamp());
-                        participationRecord.setTimeUpperTz(recordedDvDateTime.zoneId());
+                        recordedDvDateTime.zoneId().ifPresent(participationRecord::setTimeUpperTz);
                     }
 
                 }
@@ -256,7 +247,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                 PartyProxy setPerformer = participation.getPerformer();
 
                 if (!(setPerformer instanceof PartyIdentified)) {
-                    log.warn("Set performer is using unsupported type:" + setPerformer.toString());
+                    log.warn("Set performer is using unsupported type: {}", setPerformer);
                     break;
                 }
 

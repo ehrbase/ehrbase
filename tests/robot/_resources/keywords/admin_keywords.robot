@@ -50,7 +50,7 @@ Resource        template_opt1.4_keywords.robot
                         Create Session       ${SUT}    ${ADMIN_BASEURL}    debug=2
                         ...                  auth=${CREDENTIALS}    verify=True
 
-    ${resp}=            Put Request    ${SUT}    /template/${template_id}
+    ${resp}=            Put On Session    ${SUT}    /template/${template_id}   expected_status=anything
                         ...    data=${file}    headers=${headers}
                         Set Test Variable    ${response}    ${resp}
                         Set Test Variable    ${prefer_return}    ${prefer_return}
