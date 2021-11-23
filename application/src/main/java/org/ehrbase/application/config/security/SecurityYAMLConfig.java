@@ -27,7 +27,7 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "security")
 public class SecurityYAMLConfig {
 
-    // Roles, independent of auth type
+    // Roles, when not using OAuth2
     public static final String ADMIN = "ADMIN";
     public static final String USER = "USER";
 
@@ -40,6 +40,8 @@ public class SecurityYAMLConfig {
     private String authPassword;
     private String authAdminUser;
     private String authAdminPassword;
+    private String oauth2UserRole;
+    private String oauth2AdminRole;
     @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
     private String oauth2IssuerUri;
 
@@ -82,6 +84,14 @@ public class SecurityYAMLConfig {
     public void setAuthAdminPassword(String authAdminPassword) {
         this.authAdminPassword = authAdminPassword;
     }
+
+    public String getOauth2UserRole() { return oauth2UserRole; }
+
+    public void setOauth2UserRole(String oauth2UserRole) { this.oauth2UserRole = oauth2UserRole.toUpperCase(); }
+
+    public String getOauth2AdminRole() { return oauth2AdminRole; }
+
+    public void setOauth2AdminRole(String oauth2AdminRole) { this.oauth2AdminRole = oauth2AdminRole.toUpperCase(); }
 
     public String getOauth2IssuerUri() {
         return oauth2IssuerUri;

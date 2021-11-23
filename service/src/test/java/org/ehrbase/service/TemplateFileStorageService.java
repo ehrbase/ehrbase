@@ -54,8 +54,6 @@ public class TemplateFileStorageService implements TemplateStorage {
 
     private String optPath;
 
-
-    @Autowired
     public TemplateFileStorageService() {
     }
 
@@ -182,7 +180,7 @@ public class TemplateFileStorageService implements TemplateStorage {
      */
     @Override
     public boolean deleteTemplate(String templateId) {
-        boolean deleted = false;
+        boolean deleted;
         try {
             File file = optFileMap.get(templateId);
             if (!file.exists()) {

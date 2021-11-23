@@ -74,6 +74,8 @@ DEV_CONFIG = {
     "KEYCLOAK_URL": KEYCLOAK_URL,
     "KC_AUTH_URL": KC_AUTH_URL,
     "KC_ACCESS_TOKEN_URL": KC_ACCESS_TOKEN_URL,
+    "OAUTH_USER_ROLE": "ehrbase.org/user",
+    "OAUTH_ADMIN_ROLE": "ehrbase.org/administrator"
 }
 
 # admin-dev environment: for local test of admin interface
@@ -105,6 +107,8 @@ ADMIN_DEV_CONFIG = {
     "KEYCLOAK_URL": KEYCLOAK_URL,
     "KC_AUTH_URL": KC_AUTH_URL,
     "KC_ACCESS_TOKEN_URL": KC_ACCESS_TOKEN_URL,
+    "OAUTH_USER_ROLE": "ehrbase.org/user",
+    "OAUTH_ADMIN_ROLE": "ehrbase.org/administrator"
 }
 
 # test environment: used on CI pipeline, can be used locally, too
@@ -136,6 +140,8 @@ TEST_CONFIG = {
     "KEYCLOAK_URL": KEYCLOAK_URL,
     "KC_AUTH_URL": KC_AUTH_URL,
     "KC_ACCESS_TOKEN_URL": KC_ACCESS_TOKEN_URL,
+    "OAUTH_USER_ROLE": "ehrbase.org/user",
+    "OAUTH_ADMIN_ROLE": "ehrbase.org/administrator"
 }
 
 # admin-test environment: used on CI to test admin interface, can be used locally, too
@@ -167,6 +173,8 @@ ADMIN_TEST_CONFIG = {
     "KEYCLOAK_URL": KEYCLOAK_URL,
     "KC_AUTH_URL": KC_AUTH_URL,
     "KC_ACCESS_TOKEN_URL": KC_ACCESS_TOKEN_URL,
+    "OAUTH_USER_ROLE": "ehrbase.org/user",
+    "OAUTH_ADMIN_ROLE": "ehrbase.org/administrator"
 }
 
 

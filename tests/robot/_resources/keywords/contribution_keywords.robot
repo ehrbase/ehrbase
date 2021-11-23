@@ -317,7 +317,7 @@ GET /ehr/ehr_id/contribution/contribution_uid
                         Run Keyword If      $format=='XML'    prepare new request session
                         ...                 XML    Prefer=return=representation
 
-    ${resp}=            Get Request         ${SUT}   /ehr/${ehr_id}/contribution/${contribution_uid}
+    ${resp}=            GET On Session         ${SUT}   /ehr/${ehr_id}/contribution/${contribution_uid}   expected_status=anything
                         ...                 headers=${headers}
 
                         Set Test Variable   ${response}    ${resp}
@@ -334,7 +334,7 @@ GET /ehr/ehr_id/contributions
                         Run Keyword If      $format=='XML'    prepare new request session
                         ...                 XML    Prefer=return=representation
                         # NOTE: edpoint does not exist (any more)???
-    ${resp}=            Get Request         ${SUT}   /ehr/${ehr_id}/contributions
+    ${resp}=            GET On Session         ${SUT}   /ehr/${ehr_id}/contributions   expected_status=anything
                         ...                 headers=${headers}
 
                         Set Test Variable   ${response}    ${resp}

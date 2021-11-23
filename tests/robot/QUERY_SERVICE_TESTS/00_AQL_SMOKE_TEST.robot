@@ -352,7 +352,9 @@ Preconditions (PART 2) - Generate Test-Data and Expected-Results (MINIMAL SET)
     upload OPT    minimal/minimal_evaluation.opt
     upload OPT    minimal/minimal_action.opt
     upload OPT    minimal/minimal_action_2.opt
-    upload OPT    all_types/Test_all_types.opt
+    ### REL TO https://github.com/ehrbase/ehrbase/issues/643
+    ###upload OPT    all_types/Test_all_types.opt
+    upload OPT    all_types/Test_all_types_v2.opt
 
     Create EHR Record On The Server    1    ${ehr data sets}/ehr_status_01.json
     Commit Compo     1    1    ${compo data sets}/minimal_admin_1.composition.json
@@ -360,7 +362,9 @@ Preconditions (PART 2) - Generate Test-Data and Expected-Results (MINIMAL SET)
     Commit Compo     3    1    ${compo data sets}/minimal_instruction_1.composition.json
     Commit Compo     4    1    ${compo data sets}/minimal_observation_1.composition.json
     Commit Compo     5    1    ${compo data sets}/minimal_action2_1.composition.json
-    Commit Compo     6    1    ${compo data sets}/all_types.composition.json
+    ### REL TO https://github.com/ehrbase/ehrbase/issues/643
+    ###Commit Compo     6    1    ${compo data sets}/all_types.composition.json
+    Commit Compo     6    1    ${compo data sets}/all_types_v2.composition.json
 
     Create EHR Record On The Server    2    ${ehr data sets}/ehr_status_01.json
     Commit Compo     1    2    ${compo data sets}/minimal_admin_1.composition.json

@@ -34,8 +34,6 @@ import org.ehrbase.aql.parser.AqlParser;
 
 import java.util.*;
 
-import static org.ehrbase.aql.parser.AqlLexer.*;
-
 /**
  * AQL compilation pass 2<p>
  * This pass uses the results of pass 1 to:
@@ -87,6 +85,8 @@ public class QueryCompilerPass2 extends AqlBaseListener {
         if (identifiedPathContext != null) {
             VariableDefinition variableDefinition;
             variableDefinition = new IdentifiedPathVariable(identifiedPathContext, selectExprContext, isDistinct, predicateDefinitionMap.get(selectExprContext)).definition();
+            if (variableDefinition.getAlias() != null)
+                variableDefinition.setVoidAlias(false);
             pushVariableDefinition(variableDefinition);
         } else if (selectExprContext.stdExpression() != null) {
             //function handling

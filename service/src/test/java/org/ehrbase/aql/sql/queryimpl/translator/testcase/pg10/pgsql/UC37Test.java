@@ -33,7 +33,7 @@ public class UC37Test extends UC37 {
         this.expectedSqlExpression =
                 "select avg(\"avg_magnitude\") as \"avg_magnitude\" from (select ARRAY.COLUMN::bigint as \"avg_magnitude\" from \"ehr\".\"entry\" join lateral (\n" +
                         "  select cast((ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0004],0,/value,magnitude}') as bigint) \n" +
-                        " AS COLUMN) as \"ARRAY\" on 1 = 1 where (\"ehr\".\"entry\".\"template_id\" = ? and ARRAY.COLUMN is not null)) as \"\"";
+                        " AS COLUMN) as \"ARRAY\" on 1 = 1 where \"ehr\".\"entry\".\"template_id\" = ?) as \"\"";
     }
 
     @Test

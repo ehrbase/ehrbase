@@ -29,7 +29,7 @@ import org.ehrbase.aql.containment.JsonPathQueryResult;
 import org.ehrbase.aql.containment.TemplateIdAqlTuple;
 import org.ehrbase.aql.containment.TemplateIdQueryTuple;
 import org.ehrbase.aql.sql.queryimpl.ItemInfo;
-import org.ehrbase.configuration.CacheConfiguration;
+import org.ehrbase.cache.CacheOptions;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.ehrbase.webtemplate.model.WebTemplate;
@@ -42,8 +42,6 @@ import org.openehr.schemas.v1.TEMPLATEID;
 import org.openehr.schemas.v1.TemplateDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,8 +58,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
-
-import static org.ehrbase.configuration.CacheConfiguration.*;
 
 /**
  * Look up and caching for archetypes, openEHR showTemplates and Operational Templates. Search in
@@ -89,46 +85,42 @@ import static org.ehrbase.configuration.CacheConfiguration.*;
 public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectService {
 
   public static final String ELEMENT = "ELEMENT";
+
   private final Logger log = LoggerFactory.getLogger(this.getClass());
 
   private final TemplateStorage templateStorage;
-  private final Cache<TemplateIdQueryTuple, JsonPathQueryResult> jsonPathQueryResultCache;
+  private final CacheManager cacheManager;
+  private final CacheOptions cacheOptions;
 
+  private final Cache<TemplateIdQueryTuple, JsonPathQueryResult> jsonPathQueryResultCache;
   private final Cache<String, OPERATIONALTEMPLATE> atOptCache;
   private final Cache<UUID, WebTemplate> webTemplateCache;
   private final Cache<TemplateIdAqlTuple, ItemInfo> fieldCache;
+  @SuppressWarnings("rawtypes")
   private final Cache<String, List> multivaluedCache;
 
   // index uuid to templateId
-  private Map<UUID, String> idxCacheUuidToTemplateId = new ConcurrentHashMap<>();
+  private final Map<UUID, String> idxCacheUuidToTemplateId = new ConcurrentHashMap<>();
   // index templateId to uuid
-  private Map<String, UUID> idxCacheTemplateIdToUuid = new ConcurrentHashMap<>();
+  private final Map<String, UUID> idxCacheTemplateIdToUuid = new ConcurrentHashMap<>();
 
   private Set<String> allTemplateId = new HashSet<>();
-
-  private final CacheManager cacheManager;
-  private final CacheConfiguration cacheConfiguration;
 
   @Value("${system.allow-template-overwrite:false}")
   private boolean allowTemplateOverwrite;
 
-  @Autowired
-  public KnowledgeCacheService(
-      @Qualifier("templateDBStorageService") TemplateStorage templateStorage,
-      CacheManager cacheManager,
-      CacheConfiguration cacheConfiguration) {
+  public KnowledgeCacheService(TemplateStorage templateStorage,
+                               CacheManager cacheManager,
+                               CacheOptions cacheOptions) {
     this.templateStorage = templateStorage;
     this.cacheManager = cacheManager;
+    this.cacheOptions = cacheOptions;
 
-    atOptCache =
-        cacheManager.getCache(OPERATIONAL_TEMPLATE_CACHE, String.class, OPERATIONALTEMPLATE.class);
-    webTemplateCache =
-        cacheManager.getCache(CacheConfiguration.INTROSPECT_CACHE, UUID.class, WebTemplate.class);
-    jsonPathQueryResultCache =
-        cacheManager.getCache(QUERY_CACHE, TemplateIdQueryTuple.class, JsonPathQueryResult.class);
-    fieldCache = cacheManager.getCache(FIELDS_CACHE, TemplateIdAqlTuple.class, ItemInfo.class);
-    multivaluedCache = cacheManager.getCache(MULTI_VALUE_CACHE, String.class, List.class);
-    this.cacheConfiguration = cacheConfiguration;
+    atOptCache = cacheManager.getCache(CacheOptions.OPERATIONAL_TEMPLATE_CACHE, String.class, OPERATIONALTEMPLATE.class);
+    webTemplateCache = cacheManager.getCache(CacheOptions.INTROSPECT_CACHE, UUID.class, WebTemplate.class);
+    jsonPathQueryResultCache = cacheManager.getCache(CacheOptions.QUERY_CACHE, TemplateIdQueryTuple.class, JsonPathQueryResult.class);
+    fieldCache = cacheManager.getCache(CacheOptions.FIELDS_CACHE, TemplateIdAqlTuple.class, ItemInfo.class);
+    multivaluedCache = cacheManager.getCache(CacheOptions.MULTI_VALUE_CACHE, String.class, List.class);
   }
 
   @PostConstruct
@@ -177,7 +169,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
       multivaluedCache.clear();
     }
 
-    if (cacheConfiguration.isPreBuildQueries()) {
+    if (cacheOptions.isPreBuildQueries()) {
       ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
 
       executor.submit(
@@ -255,7 +247,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     if (!allowTemplateOverwrite
         && !overwrite
         && retrieveOperationalTemplate(templateId).isPresent()) {
-      throw new StateConflictException("Operational template with this template ID already exists");
+      throw new StateConflictException("Operational template with this template ID already exists:"+templateId);
     } else {
       invalidateCache(template);
     }
@@ -264,7 +256,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
     putIntoCache(template);
 
-    if (cacheConfiguration.isPreBuildQueries()) {
+    if (cacheOptions.isPreBuildQueries()) {
       ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
       executor.submit(
           () -> {
@@ -301,7 +293,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
     getQueryOptMetaData(templateId).findAllContainmentCombinations().stream()
         .filter(s -> !s.isEmpty())
-        .filter(s -> s.size() <= cacheConfiguration.getPreBuildQueriesDepth())
+        .filter(s -> s.size() <= cacheOptions.getPreBuildQueriesDepth())
         .forEach(s -> resolveForTemplate(templateId, s));
   }
 
@@ -333,14 +325,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     log.debug("retrieveOperationalTemplate({})", key);
     // CCH, 29.3.21: systematically retrieve the operational template from the DB.
     //        OPERATIONALTEMPLATE template = getFromCache(key, atOptCache);
-    OPERATIONALTEMPLATE template = null;
-
-    if (template
-        == null) { // null if not in cache already, which triggers the following retrieval and
-      // putting into cache
-      template = getOperationaltemplateFromFileStorage(key);
-    }
-    return Optional.ofNullable(template);
+    return Optional.ofNullable(getOperationaltemplateFromFileStorage(key));
   }
 
   @Override
@@ -368,37 +353,21 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
   }
 
   private String findTemplateIdByUuid(UUID uuid) {
-    String templateId = idxCacheUuidToTemplateId.get(uuid);
-
-    if (templateId == null) {
-      templateId =
-          listAllOperationalTemplates().stream()
-              .filter(t -> t.getErrorList().isEmpty())
-              .filter(t -> t.getOperationaltemplate().getUid().getValue().equals(uuid.toString()))
-              .map(t -> t.getOperationaltemplate().getTemplateId().getValue())
-              .findFirst()
-              .orElse(null);
-      idxCacheUuidToTemplateId.put(uuid, templateId);
-    }
-
-    return templateId;
+    return idxCacheUuidToTemplateId.computeIfAbsent(uuid, templateUuid -> listAllOperationalTemplates().stream()
+            .filter(t -> t.getErrorList().isEmpty())
+            .filter(t -> t.getOperationaltemplate().getUid().getValue().equals(templateUuid.toString()))
+            .map(t -> t.getOperationaltemplate().getTemplateId().getValue())
+            .findFirst()
+            .orElse(null));
   }
 
   private UUID findUuidByTemplateId(String templateId) {
-    UUID uuid = idxCacheTemplateIdToUuid.get(templateId);
-    if (uuid == null) {
-      uuid =
-          UUID.fromString(
-              retrieveOperationalTemplate(templateId)
-                  .orElseThrow(
-                      () ->
-                          new IllegalArgumentException(
+    return idxCacheTemplateIdToUuid.computeIfAbsent(templateId, id ->
+          UUID.fromString(retrieveOperationalTemplate(id)
+                  .orElseThrow(() -> new IllegalArgumentException(
                               String.format("Unknown template %s", templateId)))
                   .getUid()
-                  .getValue());
-      idxCacheTemplateIdToUuid.put(templateId, uuid);
-    }
-    return uuid;
+                  .getValue()));
   }
 
   @Override
@@ -587,6 +556,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public List<String> multiValued(String templateId) {
     List<String> list = getFromCache(templateId, multivaluedCache);
     if (list == null) {

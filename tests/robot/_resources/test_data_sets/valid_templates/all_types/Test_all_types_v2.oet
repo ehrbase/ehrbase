@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<template xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="openEHR/v1/Template">
+  <id>bb12c042-d6c5-436f-a1e4-e5d28ff5049c</id>
+  <name>Test all types</name>
+  <description>
+    <lifecycle_state>Initial</lifecycle_state>
+    <details>
+      <purpose />
+      <use />
+      <misuse />
+    </details>
+    <other_details>
+      <item>
+        <key>MetaDataSet:Sample Set </key>
+        <value>Template metadata sample set </value>
+      </item>
+      <item>
+        <key>Acknowledgements</key>
+        <value />
+      </item>
+      <item>
+        <key>Business Process Level</key>
+        <value />
+      </item>
+      <item>
+        <key>Care setting</key>
+        <value />
+      </item>
+      <item>
+        <key>Client group</key>
+        <value />
+      </item>
+      <item>
+        <key>Clinical Record Element</key>
+        <value />
+      </item>
+      <item>
+        <key>Copyright</key>
+        <value />
+      </item>
+      <item>
+        <key>Issues</key>
+        <value />
+      </item>
+      <item>
+        <key>Owner</key>
+        <value />
+      </item>
+      <item>
+        <key>Sign off</key>
+        <value />
+      </item>
+      <item>
+        <key>Speciality</key>
+        <value />
+      </item>
+      <item>
+        <key>User roles</key>
+        <value />
+      </item>
+    </other_details>
+  </description>
+  <definition xsi:type="COMPOSITION" archetype_id="openEHR-EHR-COMPOSITION.test_all_types.v1" concept_name="Test all types">
+    <Content xsi:type="OBSERVATION" archetype_id="openEHR-EHR-OBSERVATION.test_all_types.v2" concept_name="Test all types" path="/content[at0001]" />
+    <Content xsi:type="EVALUATION" archetype_id="openEHR-EHR-EVALUATION.test_all_types.v1" concept_name="Test all types" path="/content[at0002]" />
+    <Content xsi:type="SECTION" archetype_id="openEHR-EHR-SECTION.test_all_types.v1" concept_name="Test all types" path="/content[at0003]">
+      <Item xsi:type="INSTRUCTION" archetype_id="openEHR-EHR-INSTRUCTION.test_all_types.v1" concept_name="Test all types" path="/items[at0001]/items[at0002]/items[at0003]" />
+      <Item xsi:type="ACTION" archetype_id="openEHR-EHR-ACTION.test_all_types.v1" concept_name="Test all types" path="/items[at0001]/items[at0002]/items[at0004]">
+        <Items xsi:type="CLUSTER" archetype_id="openEHR-EHR-CLUSTER.test_all_types.v1" concept_name="Test all types" path="/description[at0001]/items[at0002]" />
+      </Item>
+      <Item xsi:type="ADMIN_ENTRY" archetype_id="openEHR-EHR-ADMIN_ENTRY.test_all_types.v1" concept_name="Test all types" path="/items[at0001]/items[at0005]" />
+    </Content>
+    <Context />
+  </definition>
+</template>

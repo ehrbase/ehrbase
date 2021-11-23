@@ -566,7 +566,7 @@ GET /ehr/ehr_id/directory/version_uid
 
                         prepare new request session    ${format}
 
-    ${resp}=            Get Request         ${SUT}   /ehr/${ehr_id}/directory/${version_uid}
+    ${resp}=            GET On Session         ${SUT}   /ehr/${ehr_id}/directory/${version_uid}   expected_status=anything
                         ...                 headers=${headers}
 
                         Set Test Variable   ${response}    ${resp}
@@ -582,7 +582,7 @@ GET /ehr/ehr_id/directory/version_uid?path
 
                         prepare new request session    ${format}
 
-    ${resp}=            Get Request         ${SUT}   /ehr/${ehr_id}/directory/${version_uid}?path=${path}
+    ${resp}=            GET On Session         ${SUT}   /ehr/${ehr_id}/directory/${version_uid}   params=path=${path}   expected_status=anything
                         ...                 headers=${headers}
 
                         Set Test Variable   ${response}    ${resp}
@@ -598,7 +598,7 @@ GET /ehr/ehr_id/directory
 
                         prepare new request session    ${format}
 
-    ${resp}=            Get Request         ${SUT}   /ehr/${ehr_id}/directory
+    ${resp}=            GET On Session         ${SUT}   /ehr/${ehr_id}/directory   expected_status=anything
                         ...                 headers=${headers}
 
                         Set Test Variable   ${response}    ${resp}
@@ -614,7 +614,7 @@ GET /ehr/ehr_id/directory?version_at_time
 
                         prepare new request session    ${format}
 
-    ${resp}=            Get Request         ${SUT}   /ehr/${ehr_id}/directory?version_at_time=${version_at_time}
+    ${resp}=            GET On Session         ${SUT}   /ehr/${ehr_id}/directory   params=version_at_time=${version_at_time}   expected_status=anything
                         ...                 headers=${headers}
 
                         Set Test Variable   ${response}    ${resp}
@@ -630,7 +630,7 @@ GET /ehr/ehr_id/directory?path
 
                         prepare new request session    ${format}
 
-    ${resp}=            Get Request         ${SUT}   /ehr/${ehr_id}/directory?paht=${path}
+    ${resp}=            GET On Session         ${SUT}   /ehr/${ehr_id}/directory   params=path=${path}   expected_status=anything
                         ...                 headers=${headers}
 
                         Set Test Variable   ${response}    ${resp}
@@ -646,7 +646,7 @@ GET /ehr/ehr_id/directory?version_at_time&path
 
                         prepare new request session    ${format}
 
-    ${resp}=            Get Request         ${SUT}   /ehr/${ehr_id}/directory?version_at_time=${version_at_time}&paht=${path}
+    ${resp}=            GET On Session         ${SUT}   /ehr/${ehr_id}/directory   params=version_at_time=${version_at_time}   params=path=${path}  expected_status=anything
                         ...                 headers=${headers}
 
                         Set Test Variable   ${response}    ${resp}
