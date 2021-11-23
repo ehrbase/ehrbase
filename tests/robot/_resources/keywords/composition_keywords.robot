@@ -910,11 +910,6 @@ capture point in time
     ...                 for DateTime Library docs
 
     ${time}=            Get Current Date    result_format=%Y-%m-%dT%H:%M:%S.%f+00:00
-    # TODO: uncomment or remove the next two lines below this comment depending on the outcome of
-    #       issue https://github.com/ehrbase/ehrbase/issues/619 and
-    #       issue https://github.com/ehrbase/project_management/issues/353
-    # ${timeurlencoded}=  Replace String    ${time}    :    %3A
-    # ${timeurlencoded}=  Replace String    ${timeurlencoded}    +    %2B
                         Set Suite Variable   ${time_${point_in_time}}   ${time}
 
                         Sleep               1
