@@ -17,7 +17,6 @@
 package org.ehrbase.application.config.cache;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.core.io.Resource;
 
 /**
  * {@link ConfigurationProperties} for EHRbase cache configuration.
@@ -28,43 +27,23 @@ import org.springframework.core.io.Resource;
 @ConfigurationProperties(prefix = "cache")
 public class CacheProperties {
 
-    private boolean enabled = true;
+  private boolean preBuildQueries = true;
 
-    private Resource config;
+  private Integer preBuildQueriesDepth = 4;
 
-    private boolean preBuildQueries = true;
+  public boolean isPreBuildQueries() {
+    return preBuildQueries;
+  }
 
-    private Integer preBuildQueriesDepth = 4;
+  public void setPreBuildQueries(boolean preBuildQueries) {
+    this.preBuildQueries = preBuildQueries;
+  }
 
-    public boolean isEnabled() {
-        return enabled;
-    }
+  public Integer getPreBuildQueriesDepth() {
+    return preBuildQueriesDepth;
+  }
 
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public Resource getConfig() {
-        return config;
-    }
-
-    public void setConfig(Resource config) {
-        this.config = config;
-    }
-
-    public boolean isPreBuildQueries() {
-        return preBuildQueries;
-    }
-
-    public void setPreBuildQueries(boolean preBuildQueries) {
-        this.preBuildQueries = preBuildQueries;
-    }
-
-    public Integer getPreBuildQueriesDepth() {
-        return preBuildQueriesDepth;
-    }
-
-    public void setPreBuildQueriesDepth(Integer preBuildQueriesDepth) {
-        this.preBuildQueriesDepth = preBuildQueriesDepth;
-    }
+  public void setPreBuildQueriesDepth(Integer preBuildQueriesDepth) {
+    this.preBuildQueriesDepth = preBuildQueriesDepth;
+  }
 }
