@@ -292,8 +292,12 @@ commit composition
         Set To Dictionary   ${headers}   Content-Type=application/xml
         Set To Dictionary   ${headers}   Accept=application/xml
     ELSE IF   '${format}'=='FLAT'
-        Set To Dictionary   ${headers}   Content-Type=application/openehr.wt.flat+json
-        Set To Dictionary   ${headers}   Accept=application/openehr.wt.flat+json
+        Extract Template_id From OPT File
+        Set To Dictionary   ${headers}   Content-Type=application/json
+        Set To Dictionary   ${headers}   Accept=application/json
+        &{params}=          Create Dictionary     format=FLAT   ehrId=${ehr_id}  templateId=${template_id}
+        Create Session      ${SUT}    ${ECISURL}    debug=2
+                        ...                 auth=${CREDENTIALS}    verify=True
     ELSE IF   '${format}'=='TDD'
         Set To Dictionary   ${headers}   Content-Type=application/openehr.tds2+xml
         Set To Dictionary   ${headers}   Accept=application/openehr.tds2+xml
@@ -302,7 +306,11 @@ commit composition
         Set To Dictionary   ${headers}   Accept=application/openehr.wt.structured+json
     END
 
+    IF   '${format}'=='FLAT'
+    ${resp}=            POST On Session     ${SUT}   composition   params=${params}  expected_status=anything   data=${file}   headers=${headers}
+    ELSE
     ${resp}=            POST On Session     ${SUT}   /ehr/${ehr_id}/composition   expected_status=anything   data=${file}   headers=${headers}
+    END
 
     Set Test Variable   ${response}     ${resp}
     Set Test Variable   ${format}       ${format}

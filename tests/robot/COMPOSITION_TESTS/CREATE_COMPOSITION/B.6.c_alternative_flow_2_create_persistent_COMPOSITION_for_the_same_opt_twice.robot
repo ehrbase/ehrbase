@@ -48,7 +48,7 @@ Alternative flow 2 create persistent COMPOSITION for the same opt twice CANONICA
     check status_code of commit composition   400
 
 Alternative flow 2 create persistent COMPOSITION for the same opt twice FLAT
-    [Tags]    future
+    [Tags]    not-ready
     commit composition   format=FLAT
     ...                  composition=persistent_minimal.en.v1__full.json
     check status_code of commit composition   201

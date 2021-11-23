@@ -40,7 +40,7 @@ Alternative flow 1 create new persistent COMPOSITION CANONICAL_XML
     check the successful result of commit composition
 
 Alternative flow 1 create new persistent COMPOSITION FLAT
-    [Tags]    future
+    [Tags]    not-ready
     commit composition   format=FLAT
     ...                  composition=persistent_minimal.en.v1__full.json
     check the successful result of commit composition   persistent_minimal
