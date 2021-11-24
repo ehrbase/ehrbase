@@ -899,16 +899,21 @@ capture time before first commit
 
 capture point in time
     [Arguments]         ${point_in_time}
-    [Documentation]     :point_in_time: integer [0, 1, 2]
-    ...                 exposes to test level scope a variable e.g. `${time_1}`
-    ...                 which's value is a given time in the extended ISO8601 format
+    [Documentation]     :point_in_time: integer (0, 1, 2) or string (i.e. initial_version, first_version, etc.)
+    ...                 Gets the current date/time when this keyword is called and
+    ...                 exposes it as a variable to test level scope with whatever name was given
+    ...                 to point_in_time parameter, i.e. ${time_0}, ${time_initial_version}, etc.
+    ...
+    ...                 The value of the exposed variable is a timestamp in extended ISO8601 format
     ...                 e.g. 2015-01-20T19:30:22.765+01:00
     ...                 s. http://robotframework.org/robotframework/latest/libraries/DateTime.html
     ...                 for DateTime Library docs
+                        Sleep    1   # gives DB some time to finish it's operation
+    ${zone}=            Set Suite Variable    ${time_zone}    ${{ tzlocal.get_localzone() }}
+    ${time}=            Set Variable    ${{ datetime.datetime.now(tz=tzlocal.get_localzone()).isoformat() }}
+    ${offset}=          Set Suite Variable    ${utc_offset}    ${time}[-6:]
+                        Set Suite Variable   ${time_${point_in_time}}   ${time}
 
-    ${time}=            Get Current Date    result_format=%Y-%m-%dT%H:%M:%S.%f
-                        Set Suite Variable   ${time_${point_in_time}}   ${time}+00:00
-                        Sleep               1
 
 
 create EHR and commit a composition for versioned composition tests
