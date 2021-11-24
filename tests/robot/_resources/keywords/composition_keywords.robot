@@ -276,6 +276,8 @@ commit composition
     @{template}=        Split String    ${composition}   __
     ${template}=        Get From List   ${template}      0
 
+    Set Suite Variable    ${template_id}    ${template}
+
     ${file}=           Get File   ${COMPO DATA SETS}/${format}/${composition}
 
     &{headers}=        Create Dictionary   Prefer=return=${prefer}
@@ -292,16 +294,19 @@ commit composition
         Set To Dictionary   ${headers}   Content-Type=application/xml
         Set To Dictionary   ${headers}   Accept=application/xml
     ELSE IF   '${format}'=='FLAT'
-        Extract Template_id From OPT File
         Set To Dictionary   ${headers}   Content-Type=application/json
         Set To Dictionary   ${headers}   Accept=application/json
         &{params}=          Create Dictionary     format=FLAT   ehrId=${ehr_id}  templateId=${template_id}
         Create Session      ${SUT}    ${ECISURL}    debug=2
-                        ...                 auth=${CREDENTIALS}    verify=True
+        ...                 auth=${CREDENTIALS}    verify=True
     ELSE IF   '${format}'=='TDD'
+        Create Session      ${SUT}    ${BASEURL}    debug=2
+        ...                 auth=${CREDENTIALS}    verify=True
         Set To Dictionary   ${headers}   Content-Type=application/openehr.tds2+xml
         Set To Dictionary   ${headers}   Accept=application/openehr.tds2+xml
     ELSE IF   '${format}'=='STRUCTURED'
+        Create Session      ${SUT}    ${BASEURL}    debug=2
+        ...                 auth=${CREDENTIALS}    verify=True
         Set To Dictionary   ${headers}   Content-Type=application/openehr.wt.structured+json
         Set To Dictionary   ${headers}   Accept=application/openehr.wt.structured+json
     END
