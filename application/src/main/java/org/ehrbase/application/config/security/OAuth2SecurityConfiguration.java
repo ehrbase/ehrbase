@@ -15,6 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ehrbase.application.config.security;
 
 import java.util.Arrays;
@@ -23,8 +24,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -37,48 +40,55 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 
-@ConditionalOnProperty(name = "security.authType", havingValue = "OAUTH")
 @Configuration
+@ConditionalOnProperty(prefix = "security", name = "auth-type", havingValue = "oauth")
 @EnableWebSecurity
-public class OAuth2SecurityConfig extends WebSecurityConfigurerAdapter {
+public class OAuth2SecurityConfiguration extends WebSecurityConfigurerAdapter {
+
+  private static final Logger LOG = LoggerFactory.getLogger(OAuth2SecurityConfiguration.class);
+
+  @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
+  private String issuerUri;
+
   // OAuth scope to allow as normal user
   public static final String PROFILE_SCOPE = "PROFILE";
 
-  private final SecurityYAMLConfig securityYAMLConfig;
+  private final SecurityProperties properties;
 
-  private final Logger logger = LoggerFactory.getLogger(getClass());
+  public OAuth2SecurityConfiguration(SecurityProperties properties) {
+    this.properties = properties;
+  }
 
-  public OAuth2SecurityConfig(SecurityYAMLConfig securityYAMLConfig) {
-    this.securityYAMLConfig = securityYAMLConfig;
+  @PostConstruct
+  public void initialize() {
+    LOG.info("Using OAuth2 authentication.");
+    LOG.info("Using issuer URI: {}", issuerUri);
+    LOG.info("Using user role: {}", properties.getOauth2UserRole());
+    LOG.info("Using admin role: {}", properties.getOauth2AdminRole());
   }
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
-    String userRole = securityYAMLConfig.getOauth2UserRole();
-    String adminRole = securityYAMLConfig.getOauth2AdminRole();
+    String userRole = properties.getOauth2UserRole();
+    String adminRole = properties.getOauth2AdminRole();
 
-    logger.info("Using OAuth2 authentication.");
-    logger.info("Using issuer URI: {}", securityYAMLConfig.getOauth2IssuerUri());
-    logger.info("Using user role: {}", userRole);
-    logger.info("Using admin role: {}", adminRole);
-
-    http.cors()
-        .and()
+    // @formatter:off
+    http
+        .cors()
+          .and()
         .authorizeRequests()
-        // Specific routes with ../admin/.. and actuator /management/.. endpoints require admin role
-        .antMatchers("/rest/admin/**", "/management/**")
-        .hasRole(adminRole)
-        // Everything else is open to all users of role admin and user
-        .antMatchers("/**")
-        .hasAnyRole(adminRole, userRole, PROFILE_SCOPE)
-        .and()
+          .antMatchers("/rest/admin/**", "/management/**").hasRole(adminRole)
+          .anyRequest().hasAnyRole(adminRole, userRole, PROFILE_SCOPE)
+          .and()
         .oauth2ResourceServer()
-        .jwt()
-        .jwtAuthenticationConverter(getJwtAuthenticationConverter());
+          .jwt()
+            .jwtAuthenticationConverter(getJwtAuthenticationConverter());
+    // @formatter:on
   }
 
   // Converter creates list of "ROLE_*" (upper case) authorities for each "realm access" role
   // and "roles" role from JWT
+  @SuppressWarnings("unchecked")
   private Converter<Jwt, AbstractAuthenticationToken> getJwtAuthenticationConverter() {
     var converter = new JwtAuthenticationConverter();
     converter.setJwtGrantedAuthoritiesConverter(
@@ -95,7 +105,6 @@ public class OAuth2SecurityConfig extends WebSecurityConfigurerAdapter {
                 .collect(Collectors.toList()));
           }
 
-          //Collection<GrantedAuthority> finalAuthority = authority;
           if (jwt.getClaims().containsKey("scope")) {
             authority.addAll(Arrays.stream(jwt.getClaims().get("scope").toString().split(" "))
                 .map(roleName -> "ROLE_" + roleName.toUpperCase())
