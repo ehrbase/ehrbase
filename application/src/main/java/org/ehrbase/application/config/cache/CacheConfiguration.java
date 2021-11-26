@@ -17,6 +17,8 @@
 package org.ehrbase.application.config.cache;
 
 import org.ehrbase.cache.CacheOptions;
+import org.ehrbase.service.KnowledgeCacheService;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -33,17 +35,17 @@ import org.springframework.context.annotation.Configuration;
 @EnableCaching
 public class CacheConfiguration {
 
-  private final CacheProperties properties;
-
-  public CacheConfiguration(CacheProperties properties) {
-    this.properties = properties;
-  }
-
   @Bean
-  public CacheOptions cacheOptions() {
+  public CacheOptions cacheOptions(CacheProperties properties) {
     var options = new CacheOptions();
     options.setPreBuildQueries(properties.isPreBuildQueries());
     options.setPreBuildQueriesDepth(properties.getPreBuildQueriesDepth());
     return options;
+  }
+
+  @Bean
+  @ConditionalOnProperty(prefix = "cache", name = "init-on-startup", havingValue = "true")
+  public CacheInitializer cacheInitializer(KnowledgeCacheService knowledgeCacheService) {
+    return new CacheInitializer(knowledgeCacheService);
   }
 }

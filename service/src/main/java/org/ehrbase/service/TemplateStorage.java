@@ -20,11 +20,11 @@
 
 package org.ehrbase.service;
 
-import org.ehrbase.ehr.knowledge.TemplateMetaData;
-import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
-
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import org.ehrbase.ehr.knowledge.TemplateMetaData;
+import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
 public interface TemplateStorage {
 
@@ -34,6 +34,14 @@ public interface TemplateStorage {
      * @return @see {@link TemplateMetaData}
      */
     List<TemplateMetaData> listAllOperationalTemplates();
+
+
+    /**
+     * Find all templates ids in the store;
+     *
+     * @return the list of template ids
+     */
+    Set<String> findAllTemplateIds();
 
     /**
      * Save a template in the store

@@ -27,9 +27,28 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "cache")
 public class CacheProperties {
 
+  /**
+   * Whether to initialize the caches during application startup.
+   */
+  private boolean initOnStartup = true;
+
+  /**
+   * Whether to pre-build queries when a new template is added.
+   */
   private boolean preBuildQueries = true;
 
+  /**
+   * The default node depth for pre-built queries.
+   */
   private Integer preBuildQueriesDepth = 4;
+
+  public boolean isInitOnStartup() {
+    return initOnStartup;
+  }
+
+  public void setInitOnStartup(boolean initOnStartup) {
+    this.initOnStartup = initOnStartup;
+  }
 
   public boolean isPreBuildQueries() {
     return preBuildQueries;

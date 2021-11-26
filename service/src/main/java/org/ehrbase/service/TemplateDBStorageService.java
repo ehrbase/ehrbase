@@ -20,11 +20,14 @@
 
 package org.ehrbase.service;
 
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_TemplateStoreAccess;
 import org.ehrbase.dao.access.support.ServiceDataAccess;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
+import org.ehrbase.util.TemplateUtils;
 import org.jooq.DSLContext;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,14 +51,20 @@ public class TemplateDBStorageService implements TemplateStorage {
 
     @Override
     public List<TemplateMetaData> listAllOperationalTemplates() {
-
         return I_TemplateStoreAccess.fetchAll(getDataAccess());
     }
 
+    // Extracts and stores the template ID in a separate column?
+    @Override
+    public Set<String> findAllTemplateIds() {
+        return listAllOperationalTemplates()
+            .stream()
+            .map(metadata -> TemplateUtils.getTemplateId(metadata.getOperationaltemplate()))
+            .collect(Collectors.toSet());
+    }
 
     @Override
     public void storeTemplate(OPERATIONALTEMPLATE template) {
-
         if (readOperationaltemplate(template.getTemplateId().getValue()).isPresent()) {
             I_TemplateStoreAccess.getInstance(getDataAccess(), template).update();
         } else {

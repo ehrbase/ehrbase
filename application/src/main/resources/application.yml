@@ -98,6 +98,7 @@ httpclient:
 #proxyPort: 1234
 
 cache:
+  init-on-startup: true
   pre-build-queries: true
   pre-build-queries-depth: 4
 
