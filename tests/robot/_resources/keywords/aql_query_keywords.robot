@@ -36,7 +36,10 @@ ${QUERY RESULTS LOADED DB}   ${PROJECT_ROOT}/tests/robot/_resources/test_data_se
 ${QUERY RESULTS EMPTY DB}    ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/query/expected_results/empty_db
 
 ${aql_queries}    ${VALID QUERY DATA SETS}
-
+${TIME QUERY DATA SET}     get_time_from_ehr.json
+${Berlin Time Zone Expected DATA SET}     get_time_from_ehr_Berlin_time_zone.json
+${No Time Zone Expected DATA SET}     get_time_from_ehr_no_time_zone.json
+${UTC Time Zone Expected DATA SET}     get_time_from_ehr_utc_time_zone.json
 
 
 *** Keywords ***
@@ -163,6 +166,14 @@ load expected results-data-set (EMPTY DB)
 
     ${file}=            Load JSON From File    ${QUERY RESULTS EMPTY DB}/${expected_result_data_set}
                         Set Test Variable      ${expected_result}    ${file}
+
+Replace Uid With Actual
+    [Arguments]    ${input file}  ${uid}  ${output file}
+    [Documentation]     Takes the uid and aql file as input and replace the string 'replaceme' with the uid
+    ${template} = 	Get File 	${input file}
+    ${replaced_template}=  Replace String  ${template}  replaceme  ${uid}
+    Create File     ${output file}    ${replaced_template}
+    Output Debug Info To Console
 
 
 
@@ -521,7 +532,9 @@ Preconditions (PART 2) - Generate Test-Data and Expected-Results
     upload OPT      minimal/minimal_evaluation.opt
     upload OPT      minimal/minimal_action.opt
     upload OPT      minimal/minimal_action_2.opt
-    upload OPT      all_types/Test_all_types.opt
+    ### REL TO https://github.com/ehrbase/ehrbase/issues/643
+    ###upload OPT      all_types/Test_all_types.opt
+    upload OPT    all_types/Test_all_types_v2.opt
 
     Populate SUT with Test-Data and Prepare Expected Results    1    ${ehr data sets}/ehr_status_01.json
     Populate SUT with Test-Data and Prepare Expected Results    2    ${ehr data sets}/ehr_status_02.json
@@ -549,8 +562,11 @@ Populate SUT with Test-Data and Prepare Expected Results
     Commit Compo     5    ${ehr_index}    ${compo data sets}/minimal_evaluation_2.composition.json
     # Commit Compo     6    ${ehr_index}    ${compo data sets}/minimal_evaluation_3.composition.json
     # Commit Compo     7    ${ehr_index}    ${compo data sets}/minimal_evaluation_4.composition.json
-### TODO: reactivate when https://github.com/ehrbase/project_management/issues/588 is solved
-###    Commit Compo     8    ${ehr_index}    ${compo data sets}/all_types.composition.json
+    ### REL TO https://github.com/ehrbase/ehrbase/issues/643
+    ###     TODO: reuse all_types.composition.json in a negative test case?
+    ###           see comment https://github.com/ehrbase/ehrbase/issues/643#issuecomment-975483623
+    ### Commit Compo     8    ${ehr_index}    ${compo data sets}/all_types.composition.json
+    Commit Compo     8    ${ehr_index}    ${compo data sets}/all_types_v2.composition.json
 
     Commit Compo     9    ${ehr_index}    ${compo data sets}/minimal_instruction_1.composition.json
     Commit Compo    10    ${ehr_index}    ${compo data sets}/minimal_instruction_2.composition.json

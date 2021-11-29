@@ -19,7 +19,18 @@
 package org.ehrbase.rest;
 
 import org.apache.commons.lang3.StringUtils;
-import org.ehrbase.api.exception.*;
+import org.ehrbase.api.exception.BadGatewayException;
+import org.ehrbase.api.exception.DuplicateObjectException;
+import org.ehrbase.api.exception.GeneralRequestProcessingException;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.InvalidApiParameterException;
+import org.ehrbase.api.exception.NotAcceptableException;
+import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.exception.PreconditionFailedException;
+import org.ehrbase.api.exception.StateConflictException;
+import org.ehrbase.api.exception.UnprocessableEntityException;
+import org.ehrbase.api.exception.UnsupportedMediaTypeException;
+import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.serialisation.exception.UnmarshalException;
 import org.springframework.http.HttpHeaders;
@@ -33,13 +44,18 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -47,6 +63,18 @@ import java.util.UUID;
  * includes error handling and utils.
  */
 public abstract class BaseController {
+
+  // HTTP Headers
+
+  public static final String OPENEHR_AUDIT_DETAILS = "openEHR-AUDIT_DETAILS";
+
+  public static final String OPENEHR_VERSION = "openEHR-VERSION";
+
+  public static final String PREFER = "Prefer";
+
+  public static final String RETURN_MINIMAL = "return=minimal";
+
+  public static final String RETURN_REPRESENTATION = "return=representation";
 
   // Fixed header identifiers
   public static final String CONTENT_TYPE = HttpHeaders.CONTENT_TYPE;
@@ -58,12 +86,11 @@ public abstract class BaseController {
   public static final String RESP_CONTENT_TYPE_DESC = "Format of response";
   // Audit
   public static final String REST_OPERATION = "RestOperation";
-  public static final String RETURN_MINIMAL = "return=minimal";
-  public static final String RETURN_REPRESENTATION = "return=representation";
+
   public static final String LOCATION = HttpHeaders.LOCATION;
   public static final String ETAG = HttpHeaders.ETAG;
   public static final String LAST_MODIFIED = HttpHeaders.LAST_MODIFIED;
-  public static final String PREFER = "PREFER";
+
   public static final String IF_MATCH = HttpHeaders.IF_MATCH;
   public static final String IF_NONE_MATCH = HttpHeaders.IF_NONE_MATCH;
   // Configuration of swagger-ui description fields
@@ -298,6 +325,24 @@ public abstract class BaseController {
     }
 
     return contentType;
+  }
+
+  protected Optional<OffsetDateTime> getVersionAtTimeParam() {
+    Map<String, String> queryParams = ServletUriComponentsBuilder.fromCurrentRequest().build()
+            .getQueryParams()
+            .toSingleValueMap();
+
+    String versionAtTime = queryParams.get("version_at_time");
+    if (StringUtils.isBlank(versionAtTime)) {
+        return Optional.empty();
+    }
+
+    try {
+        return Optional.of(OffsetDateTime.parse(UriUtils.decode(versionAtTime, StandardCharsets.UTF_8)));
+    } catch (DateTimeParseException e) {
+      throw new IllegalArgumentException("Value '" + versionAtTime + "' is not valid for version_at_time parameter. " +
+              "Value must be in the extended ISO 8601 format.", e);
+    }
   }
 
   /*

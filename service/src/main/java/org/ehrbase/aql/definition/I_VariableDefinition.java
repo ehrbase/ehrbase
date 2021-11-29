@@ -86,4 +86,8 @@ public interface I_VariableDefinition extends Cloneable {
 
     DataType getSelectType();
 
+    boolean isVoidAlias();
+
+    void setVoidAlias(boolean isVoidAlias);
+
 }

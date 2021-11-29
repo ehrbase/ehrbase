@@ -11,6 +11,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Migrated to Archie openEHR library version > 1.0.0, incl. its new strict invariant checks (
   see: https://github.com/ehrbase/ehrbase/pull/570)
+- Support Structured format on ecis composition endpoints (see https://github.com/ehrbase/ehrbase/pull/648)
+- Add new configuration options to customise user/admin role names when using OAuth authentication
+(see https://github.com/ehrbase/ehrbase/pull/667)
 
 ### Changed
 
@@ -22,6 +25,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - many fixes to the flat support (see https://github.com/ehrbase/ehrbase/pull/627)
 - Fix conversion between `DvDateTime` and `Timestamp` (see https://github.com/ehrbase/ehrbase/pull/634)
 - Fix FLAT format does not return the archetype data if the archetype_id contains the letters "and"
+- Datetime inconsistent handling (see https://github.com/ehrbase/ehrbase/pull/649)
+- Fix issue using DV_DATE_TIME without time-zone (see https://github.com/ehrbase/ehrbase/pull/658)
 
 ## [0.17.2]
 

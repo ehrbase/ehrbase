@@ -169,6 +169,16 @@ public class I_VariableDefinitionHelper {
             public DataType getSelectType() {
                 return null;
             }
+
+            @Override
+            public boolean isVoidAlias() {
+                return false;
+            }
+
+            @Override
+            public void setVoidAlias(boolean isVoidAlias) {
+
+            }
         };
     }
 

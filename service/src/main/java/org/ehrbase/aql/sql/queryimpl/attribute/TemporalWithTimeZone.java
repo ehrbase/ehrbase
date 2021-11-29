@@ -41,7 +41,7 @@ public class TemporalWithTimeZone extends SimpleEventContextAttribute {
         //                "ehr.js_dv_date_time("+tableField+"::timestamptz, COALESCE("+timeZoneField+"::text,'UTC'))::json #>>'{value}'")
         return as(field(
                 jsonpathItemAsText(
-                        jsDvDateTime(tableField, timeZoneField.coalesce(DSL.val("UTC"))).cast(JSONB.class),
+                        jsDvDateTime(tableField, timeZoneField).cast(JSONB.class),
                         jsonpathParameters("value")
                 )
         ));

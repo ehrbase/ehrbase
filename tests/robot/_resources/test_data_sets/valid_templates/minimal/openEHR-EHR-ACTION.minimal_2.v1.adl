@@ -49,7 +49,6 @@ definition
 							DV_PROPORTION matches {
 								numerator matches {|>=0.0|}
 								denominator matches {|>0.0|}
-								is_integral matches {False}
 								type matches {3, 4}
 							}
 						}

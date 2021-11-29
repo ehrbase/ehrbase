@@ -34,7 +34,7 @@ public class UC5Test extends UC5 {
                         " from \"ehr\".\"entry\" join lateral (\n" +
                         "  select (ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') \n" +
                         " AS COLUMN) as \"ARRAY\" on 1 = 1" +
-                        " where (\"ehr\".\"entry\".\"template_id\" = ? and ARRAY.COLUMN is not null)";
+                        " where \"ehr\".\"entry\".\"template_id\" = ?";
     }
 
     @Test
