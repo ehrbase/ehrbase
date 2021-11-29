@@ -21,7 +21,6 @@ package org.ehrbase.application.config;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.application.util.IsoDateTimeConverter;
-import org.ehrbase.application.util.StringToEnumConverter;
 import org.ehrbase.rest.openehr.audit.CompositionAuditInterceptor;
 import org.ehrbase.rest.openehr.audit.EhrAuditInterceptor;
 import org.ehrbase.rest.openehr.audit.QueryAuditInterceptor;
@@ -31,12 +30,10 @@ import org.springframework.format.FormatterRegistry;
 import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 @Configuration
-public class WebMvcConfig extends WebMvcConfigurerAdapter implements WebMvcConfigurer {
+public class WebMvcConfig implements WebMvcConfigurer {
 
     private final AuditContext auditContext;
 
@@ -50,17 +47,8 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements WebMvcConfi
         this.compositionService = compositionService;
     }
 
-    /**
-     * This config allows paths parameters to be of form "uuid::domain::version" - more specifically, it allows "." in domains.
-     */
-    @Override
-    public void configurePathMatch(PathMatchConfigurer matcher) {
-        matcher.setUseSuffixPatternMatch(false);
-    }
-
     @Override
     public void addFormatters(FormatterRegistry registry) {
-        registry.addConverter(new StringToEnumConverter());
         registry.addConverter(new IsoDateTimeConverter()); // Converter for version_at_time and other ISO date params
     }
 
