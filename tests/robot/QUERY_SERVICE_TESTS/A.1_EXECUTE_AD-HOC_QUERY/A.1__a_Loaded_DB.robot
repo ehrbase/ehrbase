@@ -280,9 +280,10 @@ B-802 Execute Ad-Hoc Query - Get Compositions By UID
     [Documentation]     B/802: SELECT c FROM COMPOSITION c WHERE c/uid/value='123::node.name.com::1'
     ...                 B/803: SELECT c FROM COMPOSITION c WHERE c/uid/value=$uid
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TODO
+    [Tags]              [Tags]              586    not-ready
     B/802_query.tmp.json    B/802.tmp.json
     B/803_query.tmp.json    B/803.tmp.json
+    [Teardown]          TRACE GITHUB ISSUE  586  bug
 
 
 D-200 Execute Ad-HOc Query - Get Data
