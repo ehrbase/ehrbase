@@ -8,11 +8,11 @@
   "columns": [
     {
       "path": "/ehr_id/value",
-      "name": "ehr_id"
+      "name": "#0"
     },
     {
       "path": "/time_created/value",
-      "name": "time_created"
+      "name": "#1"
     }
   ],
   "rows": [
