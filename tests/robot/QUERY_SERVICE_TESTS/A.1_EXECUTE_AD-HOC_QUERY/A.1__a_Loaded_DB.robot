@@ -98,15 +98,15 @@ A-106 Execute Ad-Hoc Query - Get EHRs
 
 A-107 Execute Ad-Hoc Query - Get EHRs (filtered: top 5)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TODO
+    [Tags]              
     A/107_get_ehrs_top_5.json    A/107.tmp.json
     [Teardown]          TRACE GITHUB ISSUE  103  not-ready_test-issue
 
 
 A-108 Execute Ad-Hoc Query - Get EHRs (ordered by: time-created)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TODO
-    A/108_get_ehrs_orderby_time-created.json    A/108.tmp.json
+    [Tags]              
+    A/108_get_ehrs_orderby_time-created.json    A/108.tmp.json    ignore_order=${FALSE}
     [Teardown]          TRACE GITHUB ISSUE  118  not-ready_test-issue
 
 
@@ -220,10 +220,9 @@ B-300 Execute Ad-Hoc Query - Get Compositions From All EHRs
 B-400 Execute Ad-Hoc Query - Get Composition(s)
     [Documentation]     Test w/ "all_types.composition.json" commit
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              586    587    not-ready    false-positive
+    [Tags]              586    587    not-ready
     B/400_get_compositions_contains_section_with_archetype_from_all_ehrs.json    B/400.tmp.json
     [Teardown]          TRACE GITHUB ISSUE  586  bug
-    ### TODO: retest when https://github.com/ehrbase/project_management/issues/588 is resolved
 
 
 B-500 Execute Ad-Hoc Query - Get Composition(s)

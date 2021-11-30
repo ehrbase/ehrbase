@@ -109,12 +109,12 @@ execute invalid ad-hoc query and check result (empty DB)
 
 
 execute ad-hoc query and check result (loaded DB)
-    [Arguments]         ${aql_payload}    ${expected}
+    [Arguments]         ${aql_payload}    ${expected}    ${ignore_order}=${TRUE}
     [Documentation]     LOADED DB
 
                         execute ad-hoc query    ${aql_payload}
                         check response: is positive
-                        check response (LOADED DB): returns correct content  ${expected}
+                        check response (LOADED DB): returns correct content  ${expected}  ${ignore_order}
 
 
 execute ad-hoc query (no result comparison)
@@ -318,7 +318,7 @@ check response: is positive
 
 
 check response (LOADED DB): returns correct content
-    [Arguments]         ${path_to_expected}
+    [Arguments]         ${path_to_expected}    ${ignore_order}=${TRUE}
 
                         load expected results-data-set (LOADED DB)    ${path_to_expected}
 
@@ -330,6 +330,7 @@ check response (LOADED DB): returns correct content
                                                      #          properties to be ignored
     ...                 report_repetition=${TRUE}
     ...                 ignore_string_case=${TRUE}
+    ...                 ignore_order=${ignore_order}
 
                         Should Be Empty  ${diff}  msg=DIFF DETECTED!
 
@@ -601,7 +602,6 @@ Create EHR Record On The Server
                         #          The value is at index 0 in that list
                         Set Suite Variable    ${ehr_id}    ${ehr_id_value}[0]
 
-
     ${time_created_obj}  Object    response body time_created
     ${time_created}=    String    response body time_created value
                         Set Suite Variable    ${time_created}    ${time_created}[0]
@@ -688,7 +688,7 @@ Commit Compo
                         Set Suite Variable    ${compo_category_value}    ${response.body.category.value}
                         Set Suite Variable    ${compo_category}    ${response.body.category}
 
-
+    # comment: some fields exist only in OBSERVATION.minimal compositions
     IF      "${compo_content_archetype_node_id}"=="openEHR-EHR-OBSERVATION.minimal.v1"
             ${compo_data_origin_value}=    Set Variable    ${response.body.content[0].data.origin.value}
             Set Suite Variable    ${compo_data_origin_value}    ${compo_data_origin_value}
@@ -708,11 +708,6 @@ Commit Compo
                     # NOTE: above lines contain a workaround to set "{content[0].data.events[0].data.items[0].value.value}"
                     #       which normaly fails cause Robot/Python considers 'items' to be a method/function
     END
-
-
-
-
-
 
     ###########################################################################################
     #                                                                                         #
@@ -981,15 +976,19 @@ A/106
                         Output    ${A/106}    ${QUERY RESULTS LOADED DB}/A/106.tmp.json
 
 A/107
-                        Return From Keyword If    ${ehr_index}<6   NOT IN TOP 5!
-    ${A/107}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/107.tmp.json
-    ${A/107}=           Add Object To Json    ${A/107}    $.rows    ${ehr_id_value}
-                        Output    ${A/107}    ${QUERY RESULTS LOADED DB}/A/107.tmp.json
+    [Documentation]     Generates expected-result-set for query \n\n
+    ...                 SELECT TOP 5 e/ehr_id/value, e/time_created/value FROM EHR e ORDER BY e/time_created ASC
+    IF    ${ehr_index} <= 5
+        ${A/107}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/107.tmp.json
+        ${temp}=            Create List  ${ehr_id_value}[0]  ${time_created}
+        ${A/107}=           Add Object To Json    ${A/107}    $.rows    ${temp}
+                            Output    ${A/107}    ${QUERY RESULTS LOADED DB}/A/107.tmp.json
+    END
 
 A/108
     ${A/108}=           Load JSON From File    ${QUERY RESULTS LOADED DB}/A/108.tmp.json
-    ${A/108}=           Add Object To Json    ${A/108}    $.rows    ${ehr_id_value}
-    ${A/108}=           Add Object To Json    ${A/108}    $.rows    EHRs SHOULD BE ORDERED BY TIME-CREATED!  #TODO: rm when fixed
+    ${temp}=            Create List  ${ehr_id_value}[0]  ${time_created}
+    ${A/108}=           Add Object To Json    ${A/108}    $.rows    ${temp}
                         Output    ${A/108}    ${QUERY RESULTS LOADED DB}/A/108.tmp.json
 
 A/109
@@ -1133,13 +1132,13 @@ B/100
                         Output    ${B/100}     ${QUERY RESULTS LOADED DB}/B/100.tmp.json
 
 B/102
-    [Documentation]     This KW is executed at the end of all iterations in
-    ...                 'establish precondition' step only. At this point all
+    [Documentation]     This KW is executed once at the end of all iterations in
+    ...                 'establish precondition' step. This ensures that all
     ...                 composition names and their content exist in memory and
-    ...                 are accessible via variable names like \${A_Minimal_1}, \${A_Minimal_2},
+    ...                 is accessible via variable names like \${A_Minimal_1}, \${A_Minimal_2},
     ...                 \${B_Minimal_1}, \${B_Minimal_2}, etc.\n\n
     ...                 NOTE:  Adjust ehr_index and compo_index accordingly to any changes in
-    ...                        'establish precondition' KW. They must both be set to max values,
+    ...                        'establish precondition' KW. Both must be set to max values,
     ...                        i.e. if there are max 2 EHRs and max 18 Compositions created in the
     ...                        the precondition step, then set them to 2 and 18.
 
@@ -1171,7 +1170,8 @@ B/102
 
 B/104
     [Documentation]     Generates expected-result-set for query\n\n
-    ...                 SELECT TOP 5 c FROM COMPOSITION c ORDER BY c/context/start_time ASC
+    ...                 SELECT TOP 5 c FROM COMPOSITION c ORDER BY c/context/start_time ASC \n\n
+    ...                 NOTE: see also documentation of B/102 KW
 
     IF    (${ehr_index} == 2) and (${compo_index} == 18)
         ${B/104}=       Load JSON From File    ${QUERY RESULTS LOADED DB}/B/104.tmp.json
@@ -1187,8 +1187,8 @@ B/104
 B/105
     [Documentation]     Generates expected-result-set for query\n\n
     ...                 SELECT TOP 5 c FROM COMPOSITION c ORDER BY c/context/start_time DESC \n\n
-    ...
-    ...                 NOTE: ehr_index and compo_idex must be set to max values
+    ...                 NOTE: see also documentation of B/102 KW
+    ...                       i.e. ehr_index and compo_idex must be set to max values
 
     IF    (${ehr_index} == 2) and (${compo_index} == 18)
         ${B/105}=       Load JSON From File    ${QUERY RESULTS LOADED DB}/B/105.tmp.json
@@ -1203,7 +1203,8 @@ B/105
 
 B/106
     [Documentation]     Generates expected-result-set for query\n\n
-    ...                 SELECT TOP 5 c FROM COMPOSITION c ORDER BY c/context/start_time ASC
+    ...                 SELECT TOP 5 c FROM COMPOSITION c ORDER BY c/context/start_time ASC \n\n
+    ...                 NOTE: see also documentation of B/102 KW
 
     IF    (${ehr_index} == 2) and (${compo_index} == 18)
         ${B/106}=       Load JSON From File    ${QUERY RESULTS LOADED DB}/B/106.tmp.json
