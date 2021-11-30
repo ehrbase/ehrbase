@@ -17,7 +17,6 @@
 package org.ehrbase.application.config.cache;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.core.io.Resource;
 
 /**
  * {@link ConfigurationProperties} for EHRbase cache configuration.
@@ -28,43 +27,42 @@ import org.springframework.core.io.Resource;
 @ConfigurationProperties(prefix = "cache")
 public class CacheProperties {
 
-    private boolean enabled = true;
+  /**
+   * Whether to initialize the caches during application startup.
+   */
+  private boolean initOnStartup = true;
 
-    private Resource config;
+  /**
+   * Whether to pre-build queries when a new template is added.
+   */
+  private boolean preBuildQueries = true;
 
-    private boolean preBuildQueries = true;
+  /**
+   * The default node depth for pre-built queries.
+   */
+  private Integer preBuildQueriesDepth = 4;
 
-    private Integer preBuildQueriesDepth = 4;
+  public boolean isInitOnStartup() {
+    return initOnStartup;
+  }
 
-    public boolean isEnabled() {
-        return enabled;
-    }
+  public void setInitOnStartup(boolean initOnStartup) {
+    this.initOnStartup = initOnStartup;
+  }
 
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
+  public boolean isPreBuildQueries() {
+    return preBuildQueries;
+  }
 
-    public Resource getConfig() {
-        return config;
-    }
+  public void setPreBuildQueries(boolean preBuildQueries) {
+    this.preBuildQueries = preBuildQueries;
+  }
 
-    public void setConfig(Resource config) {
-        this.config = config;
-    }
+  public Integer getPreBuildQueriesDepth() {
+    return preBuildQueriesDepth;
+  }
 
-    public boolean isPreBuildQueries() {
-        return preBuildQueries;
-    }
-
-    public void setPreBuildQueries(boolean preBuildQueries) {
-        this.preBuildQueries = preBuildQueries;
-    }
-
-    public Integer getPreBuildQueriesDepth() {
-        return preBuildQueriesDepth;
-    }
-
-    public void setPreBuildQueriesDepth(Integer preBuildQueriesDepth) {
-        this.preBuildQueriesDepth = preBuildQueriesDepth;
-    }
+  public void setPreBuildQueriesDepth(Integer preBuildQueriesDepth) {
+    this.preBuildQueriesDepth = preBuildQueriesDepth;
+  }
 }

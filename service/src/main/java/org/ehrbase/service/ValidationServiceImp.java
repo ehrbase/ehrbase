@@ -37,10 +37,10 @@ import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 
-import javax.cache.Cache;
-import javax.cache.CacheManager;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -59,13 +59,13 @@ public class ValidationServiceImp implements ValidationService {
 
     private final TerminologyService terminologyService;
 
-    private final Cache<UUID, Validator> validatorCache;
+    private final Cache validatorCache;
 
     private ExternalTerminologyValidationSupport externalTerminologyValidator;
 
     @Autowired
     public ValidationServiceImp(CacheManager cacheManager, I_KnowledgeCache knowledgeCache, TerminologyService terminologyService, ServerConfig serverConfig) {
-        this.validatorCache = cacheManager.getCache(CacheOptions.VALIDATOR_CACHE, UUID.class, Validator.class);
+        this.validatorCache = cacheManager.getCache(CacheOptions.VALIDATOR_CACHE);
         this.knowledgeCache = knowledgeCache;
         this.terminologyService = terminologyService;
 
@@ -79,7 +79,7 @@ public class ValidationServiceImp implements ValidationService {
     public void check(UUID templateUUID, Composition composition) throws Exception {
 
         //check if a validator is already in the cache
-        Validator validator = validatorCache.get(templateUUID);
+        Validator validator = validatorCache.get(templateUUID, Validator.class);
 
         if (validator == null) {
             //create a new one for template
@@ -185,7 +185,7 @@ public class ValidationServiceImp implements ValidationService {
 
     @Override
     public void invalidate() {
-        validatorCache.removeAll();
+        validatorCache.invalidate();
     }
 
     @Autowired(required = false)

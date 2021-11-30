@@ -32,6 +32,8 @@ import org.junit.rules.TemporaryFolder;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
+import org.springframework.cache.support.SimpleCacheManager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -109,7 +111,7 @@ public class KnowledgeCacheServiceTest {
         TemplateFileStorageService templateFileStorageService = new TemplateFileStorageService();
         templateFileStorageService.setOptPath(operationalTemplatesemplates.getPath());
 
-        return new KnowledgeCacheService(templateFileStorageService, cacheRule.cacheManager, new CacheOptions());
+        return new KnowledgeCacheService(templateFileStorageService, new ConcurrentMapCacheManager(), new CacheOptions());
     }
 
 
