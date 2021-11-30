@@ -7,12 +7,12 @@
   "q": "SELECT TOP 5 e/ehr_id/value, e/time_created/value FROM EHR e ORDER BY e/time_created ASC",
   "columns": [
     {
-      "name": "#0",
-      "path": "/ehr_id/value"
+      "path": "/ehr_id/value",
+      "name": "ehr_id"
     },
     {
-      "name": "#1",
-       "path": "/time_created/value"
+      "path": "/time_created/value",
+      "name": "time_created"
     }
   ],
   "rows": [
