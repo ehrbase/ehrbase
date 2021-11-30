@@ -259,10 +259,11 @@ B-600 Execute Ad-Hoc Query - Get Composition(s)
 
 B-700 Execute Ad-Hoc Query - Get Composition(s)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TODO    not-ready_test-issue
+    [Tags]              586    not-ready
     B/700_get_compositions_by_contains_entry_with_archetype_and_condition_from_all_ehrs.json    B/700.tmp.json
     B/701_get_compositions_by_contains_entry_with_archetype_and_condition_from_all_ehrs.json    B/701.tmp.json
     B/702_get_compositions_by_contains_entry_with_archetype_and_condition_from_all_ehrs.json    B/702.tmp.json
+    [Teardown]          TRACE GITHUB ISSUE  586  bug
 
 
 B-800 Execute Ad-Hoc Query - Get Compositions By UID
