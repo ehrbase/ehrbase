@@ -9,6 +9,10 @@
     {
       "name": "#0",
       "path": "/ehr_id/value"
+    },
+    {
+      "name": "#1",
+       "path": "/time_created/value"
     }
   ],
   "rows": [
