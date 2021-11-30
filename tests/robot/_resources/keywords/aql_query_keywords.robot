@@ -1598,14 +1598,14 @@ D/311
                         Update 'rows' in Temp Result-Data-Set    D/311
 
 D/312
-    [Documentation]     Same flow as D/200 but have to limit result to TOP 5
-                        Return From Keyword If    ${compo_index}!=1    NOTHING TO DO HERE!
-                        Return From Keyword If    ${ehr_index}>5   NOT IN TOP 5!
+    [Documentation]     Same flow as D/200 but have to limit result to TOP 5 (ordered by time created ASC) \n\n 
+    ...                 q: select TOP 5 e/ehr_id/value, e/time_created/value, e/system_id/value from EHR e CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] ORDER BY e/time_created ASC
+    IF    ${ehr_index} <= 5 and ${compo_index} == 1
                         Create Temp List    ${ehr_id_value}[0]
                         ...                 ${time_created}
                         ...                 ${system_id}[0]
-                        ...                 TODOO: CLARIFY w/ @PABLO - TOP5 newest OR oldest?
                         Update 'rows' in Temp Result-Data-Set    D/312
+    END
 
 D/400
     [Documentation]     Conditions are set to meet reqs of expected result-data-set.

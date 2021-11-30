@@ -377,9 +377,10 @@ D-311 Execute Ad-HOc Query - Get Data
 
 
 D-312 Execute Ad-HOc Query - Get Data
-    [Documentation]     Get Data related query.
+    [Documentation]     Get Data related query. \n\n
+    ...                 select TOP 5 e/ehr_id/value, e/time_created/value, e/system_id/value from EHR e CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1]
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TODO  # @WLAD implement a flow w/ TOP5 + ORDERED BY time_created
+    [Tags]              
     D/312_select_data_values_from_all_ehrs_contains_composition_with_archetype_top_5.json    D/312.tmp.json
 
 
