@@ -4,7 +4,7 @@
     "_created": "2019-10-29T00:14:57.613Z",
     "_executed_aql": "SELECT TOP 5 e/ehr_id/value FROM EHR e"
   },
-  "q": "SELECT TOP 5 e/ehr_id/value FROM EHR e",
+  "q": "SELECT TOP 5 e/ehr_id/value, e/time_created/value FROM EHR e ORDER BY e/time_created ASC",
   "columns": [
     {
       "name": "#0",
