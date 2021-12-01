@@ -1,31 +1,40 @@
 {
   "meta": {
     "_type": "RESULTSET",
-    "_created": "2019-10-29T00:14:57.613Z",
-    "_executed_aql": "SELECT TOP 5 e/ehr_id/value FROM EHR e"
+    "_created": "2021-11-29T00:14:57.613Z",
+    "_executed_aql": "SELECT TOP 5 e/ehr_id/value, e/time_created/value FROM EHR e ORDER BY e/time_created ASC"
   },
-  "q": "SELECT TOP 5 e/ehr_id/value FROM EHR e",
+  "q": "SELECT TOP 5 e/ehr_id/value, e/time_created/value FROM EHR e ORDER BY e/time_created ASC",
   "columns": [
     {
       "name": "#0",
       "path": "/ehr_id/value"
+    },
+    {
+        "path": "/time_created/value",
+        "name": "#1"
     }
   ],
   "rows": [
     [
-      "__MODIFY_EHR_ID_1__"
+      "__MODIFY_EHR_ID_1__",
+      "__MODIFY_EHR_ID_1_TIME_CREAED__"
     ],
     [
-      "__MODIFY_EHR_ID_2__"
+      "__MODIFY_EHR_ID_2__",
+      "__MODIFY_EHR_ID_2_TIME_CREAED__"
     ],
     [
-      "__MODIFY_EHR_ID_3__"
+      "__MODIFY_EHR_ID_3__",
+      "__MODIFY_EHR_ID_3_TIME_CREAED__"
     ],
     [
-      "__MODIFY_EHR_ID_4__"
+      "__MODIFY_EHR_ID_4__",
+      "__MODIFY_EHR_ID_4_TIME_CREAED__"
     ],
     [
-      "__MODIFY_EHR_ID_5__"
+      "__MODIFY_EHR_ID_5__",
+      "__MODIFY_EHR_ID_5_TIME_CREAED__"
     ]
   ]
 }
