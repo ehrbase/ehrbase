@@ -39,7 +39,7 @@ Alternative flow 6 create new event COMPOSITION EHR doesnt exist CANONICAL_XML
     check status_code of commit composition    404
 
 Alternative flow 6 create new event COMPOSITION EHR doesnt exist FLAT
-    [Tags]    not-ready
+    [Tags]
     commit composition   format=FLAT
     ...                  composition=nested.en.v1__full.xml.flat.json
     check status_code of commit composition    404
@@ -67,7 +67,7 @@ Alternative flow 6 create new persistent COMPOSITION EHR doesnt exist CANONICAL_
     check status_code of commit composition    404
 
 Alternative flow 6 create new persistent COMPOSITION EHR doesnt exist FLAT
-    [Tags]    not-ready
+    [Tags]
     commit composition   format=FLAT
     ...                  composition=persistent_minimal.en.v1__full.xml.flat.json
     check status_code of commit composition    404

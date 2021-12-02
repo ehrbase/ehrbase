@@ -40,7 +40,7 @@ Alternative flow 4 create new invalid persistent COMPOSITION CANONICAL_XML
     check status_code of commit composition    400
 
 Alternative flow 4 create new invalid persistent COMPOSITION FLAT
-    [Tags]    not-ready
+    [Tags]
     commit composition   format=FLAT
     ...                  composition=persistent_minimal.en.v1__invalid_wrong_structure.json
     check status_code of commit composition    400
