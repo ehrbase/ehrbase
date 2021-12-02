@@ -30,10 +30,12 @@ Suite Teardown  restart SUT
 
 *** Test Cases ***
 Main flow create new event COMPOSITION FLAT
-    [Tags]
+    [Tags]      593  not-ready  bug
     commit composition   format=FLAT
     ...                  composition=EHRN_Vital_Signs__.json
+    TRACE GITHUB ISSUE  593  bug
     check the successful result of commit composition
+
 
 *** Keywords ***
 Precondition

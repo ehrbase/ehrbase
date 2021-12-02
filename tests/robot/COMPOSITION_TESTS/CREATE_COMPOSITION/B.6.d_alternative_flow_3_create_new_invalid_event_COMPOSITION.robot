@@ -40,9 +40,10 @@ Alternative flow 3 create new invalid event COMPOSITION RAW_XML
     check status_code of commit composition    400
 
 Alternative flow 3 create new invalid event COMPOSITION FLAT
-    [Tags]
+    [Tags]      596  not-ready  bug
     commit composition   format=FLAT
     ...                  composition=nested.en.v1__invalid_wrong_structure.json
+    TRACE GITHUB ISSUE  596  bug
     check status_code of commit composition    400
 
 Alternative flow 3 create new invalid event COMPOSITION TDD
