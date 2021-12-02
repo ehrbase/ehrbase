@@ -45,9 +45,9 @@
         <value>e4e0438b-7e9c-414f-bc9e-fd2ee1c62e5b</value>
     </uid>
     <template_id>
-        <value>EHRN Vital Signs</value>
+        <value>EHRN_Vital_Signs</value>
     </template_id>
-    <concept>EHRN Vital Signs</concept>
+    <concept>EHRN_Vital_Signs</concept>
     <definition>
         <rm_type_name>COMPOSITION</rm_type_name>
         <occurrences>

@@ -32,10 +32,10 @@ Suite Teardown  restart SUT
 Main flow create new event COMPOSITION FLAT
     [Tags]
     commit composition   format=FLAT
-    ...                  composition=EHRN Vital Signs__.json
+    ...                  composition=EHRN_Vital_Signs__.json
     check the successful result of commit composition
 
 *** Keywords ***
 Precondition
-    upload OPT    all_types/EHRN Vital signs.opt
+    upload OPT    all_types/EHRN_Vital_Signs.opt
     create EHR
