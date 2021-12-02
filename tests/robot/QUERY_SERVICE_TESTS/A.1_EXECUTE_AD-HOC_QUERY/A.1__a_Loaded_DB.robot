@@ -91,23 +91,20 @@ A-106 Execute Ad-Hoc Query - Get EHRs
     [Documentation]     Execute AQL query\n\n
     ...                 SELECT e/ehr_id, e/time_created, e/system_id, e/ehr_status FROM EHR e
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              642
+    [Tags]              
     A/106_get_ehrs.json    A/106.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  642
 
 
 A-107 Execute Ad-Hoc Query - Get EHRs (filtered: top 5)
     [Template]          execute ad-hoc query and check result (loaded DB)
     [Tags]              
     A/107_get_ehrs_top_5.json    A/107.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  103  not-ready_test-issue
 
 
 A-108 Execute Ad-Hoc Query - Get EHRs (ordered by: time-created)
     [Template]          execute ad-hoc query and check result (loaded DB)
     [Tags]              
     A/108_get_ehrs_orderby_time-created.json    A/108.tmp.json    ignore_order=${FALSE}
-    [Teardown]          TRACE GITHUB ISSUE  118  not-ready_test-issue
 
 
 A-109 Execute Ad-Hoc Query - Get EHRs (filtered: timewindow)
