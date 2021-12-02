@@ -30,7 +30,7 @@ Suite Teardown  restart SUT
 
 *** Test Cases ***
 Main flow create new event COMPOSITION FLAT
-    [Tags]    not-ready
+    [Tags]
     commit composition   format=FLAT
     ...                  composition=EHRN Vital Signs__.json
     check the successful result of commit composition
