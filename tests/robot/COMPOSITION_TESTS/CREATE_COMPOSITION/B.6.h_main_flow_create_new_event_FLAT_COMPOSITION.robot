@@ -29,36 +29,15 @@ Suite Teardown  restart SUT
 
 
 *** Test Cases ***
-Main flow create new event COMPOSITION CANONICAL_JSON
-    commit composition   format=CANONICAL_JSON
-    ...                  composition=nested.en.v1__full_without_links.json
-    check the successful result of commit composition
-
-Main flow create new event COMPOSITION CANONICAL_XML
-    commit composition   format=CANONICAL_XML
-    ...                  composition=nested.en.v1__full_without_links.xml
-    check the successful result of commit composition
-
 Main flow create new event COMPOSITION FLAT
-    [Tags]      594  not-ready  bug
+    [Tags]      593  not-ready  bug
     commit composition   format=FLAT
-    ...                  composition=nested.en.v1__full.xml.flat.json
-    TRACE GITHUB ISSUE  594  bug
-    check the successful result of commit composition   nesting
-
-Main flow create new event COMPOSITION TDD
-    [Tags]    future
-    commit composition   format=TDD
-    ...                  composition=nested.en.v1__full.xml
+    ...                  composition=EHRN_Vital_Signs__.json
+    TRACE GITHUB ISSUE  593  bug
     check the successful result of commit composition
 
-Main flow create new event COMPOSITION STRUCTURED
-    [Tags]    future
-    commit composition   format=STRUCTURED
-    ...                  composition=nested.en.v1__full.json
-    check the successful result of commit composition   nesting
 
 *** Keywords ***
 Precondition
-    upload OPT    nested/nested.opt
+    upload OPT    all_types/EHRN_Vital_Signs.opt
     create EHR
