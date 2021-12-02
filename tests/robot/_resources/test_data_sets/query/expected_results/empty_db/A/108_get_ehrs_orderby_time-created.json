@@ -2,13 +2,17 @@
   "meta": {
     "_type": "RESULTSET",
     "_created": "2019-10-17T19:35:13.372Z",
-    "_executed_aql": "SELECT e/ehr_id/value FROM EHR e ORDER BY e/time_created ASC"
+    "_executed_aql": "SELECT e/ehr_id/value as ehr_id, e/time_created/value as time_created FROM EHR e ORDER BY e/time_created ASC"
   },
-  "q": "SELECT e/ehr_id/value FROM EHR e ORDER BY e/time_created ASC",
+  "q": "SELECT e/ehr_id/value as ehr_id, e/time_created/value as time_created FROM EHR e ORDER BY e/time_created ASC",
   "columns": [
     {
-      "name": "#0",
-      "path": "/ehr_id/value"
+      "path": "/ehr_id/value",
+      "name": "ehr_id"
+    },
+    {
+      "path": "/time_created/value",
+      "name": "time_created"
     }
   ],
   "rows": [

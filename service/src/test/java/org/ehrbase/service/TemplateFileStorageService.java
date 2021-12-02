@@ -18,13 +18,15 @@
 
 package org.ehrbase.service;
 
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.xmlbeans.XmlOptions;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
+import org.ehrbase.util.TemplateUtils;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 import javax.xml.namespace.QName;
@@ -115,6 +117,14 @@ public class TemplateFileStorageService implements TemplateStorage {
             templateMetaDataList.add(template);
         }
         return templateMetaDataList;
+    }
+
+    @Override
+    public Set<String> findAllTemplateIds() {
+        return listAllOperationalTemplates()
+            .stream()
+            .map(metadata -> TemplateUtils.getTemplateId(metadata.getOperationaltemplate()))
+            .collect(Collectors.toSet());
     }
 
     @Override

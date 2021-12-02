@@ -32,6 +32,11 @@
 spring:
   application:
     name: ehrbase
+
+  cache:
+    jcache:
+      config: classpath:ehcache.xml
+
   security:
     oauth2:
       resourceserver:
@@ -93,8 +98,7 @@ httpclient:
 #proxyPort: 1234
 
 cache:
-  enabled: true
-  config: classpath:/ehcache.xml
+  init-on-startup: true
   pre-build-queries: true
   pre-build-queries-depth: 4
 

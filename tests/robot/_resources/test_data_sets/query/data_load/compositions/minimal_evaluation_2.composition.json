@@ -2,7 +2,7 @@
     "_type": "COMPOSITION",
     "name": {
         "_type": "DV_TEXT",
-        "value": "Minimal"
+        "value": "D_Minimal"
     },
     "archetype_details": {
         "archetype_id": {
@@ -49,7 +49,7 @@
     },
     "context": {
         "start_time": {
-            "value": "2021-09-21T21:52:31.927-03:00"
+            "value": "2021-10-16T13:16:16.166-03:00"
         },
         "setting": {
             "value": "primary medical care",
