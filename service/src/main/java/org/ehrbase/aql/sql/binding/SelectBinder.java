@@ -104,7 +104,7 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
 
                 multiFields = expressionField.toSql(className, templateId, identifier, SELECT);
 
-                if (multiFields.isEmpty()) { //the field cannot be resolved with containment (f.e. empty DB)
+                if (multiFields == null || multiFields.isEmpty()) { //the field cannot be resolved with containment (f.e. empty DB)
                     continue;
                 }
 
@@ -135,7 +135,7 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
             if (new SetReturningFunction(selectQuery.toString()).isUsed()){
                 String alias = sqlField.getName();
                 MultiFields unaliasedFields = new ExpressionField(variableDefinition, jsonbEntryQuery, compositionAttributeQuery).toSql(className, templateId, variableDefinition.getIdentifier(), IQueryImpl.Clause.WHERE);
-                //TODO: evaluate for multiple paths in a single template!
+
                 TaggedStringBuilder taggedStringBuilder = new TaggedStringBuilder();
                 taggedStringBuilder.append(unaliasedFields.getLastQualifiedField().getSQLField().toString());
                 new LateralJoins().create(templateId, taggedStringBuilder, variableDefinition, SELECT);
