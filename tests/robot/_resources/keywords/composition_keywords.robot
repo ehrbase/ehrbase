@@ -313,6 +313,8 @@ commit composition
 
     IF   '${format}'=='FLAT'
     ${resp}=            POST On Session     ${SUT}   composition   params=${params}  expected_status=anything   data=${file}   headers=${headers}
+    ${compositionUid}=    Collections.Get From Dictionary    ${resp.json()}    compositionUid
+    Set Test Variable   ${compositionUid}  ${composition_uid}
     ELSE
     ${resp}=            POST On Session     ${SUT}   /ehr/${ehr_id}/composition   expected_status=anything   data=${file}   headers=${headers}
     END
@@ -563,6 +565,24 @@ get composition by composition_uid
     ${resp}=            GET On Session         ${SUT}    /ehr/${ehr_id}/composition/${uid}    expected_status=anything   headers=${headers}
                         log to console      ${resp.content}
                         Set Test Variable   ${response}    ${resp}
+
+# TODO: rename keyword properly e.g. by version_uid
+(FLAT) get composition by composition_uid
+    [Arguments]         ${uid}
+    [Documentation]     :uid: version_uid
+    ...                 DEPENDENCY: `prepare new request session` with proper Headers
+    ...                     e.g. Content-Type=application/xml  Accept=application/xml  Prefer=return=representation
+    ...                     and `commit composition (JSON/XML)` keywords
+
+    # the uid param in the doc is verioned_object.uid but is really the version.uid,
+    # because the response from the create compo has this endpoint in the Location header
+    &{params}=          Create Dictionary     format=FLAT
+    Create Session      ${SUT}    ${ECISURL}    debug=2
+        ...                 auth=${CREDENTIALS}    verify=True
+    ${resp}=            GET On Session         ${SUT}  composition/${uid}  params=${params}  expected_status=anything   headers=${headers}
+                        log to console      ${resp.content}
+                        Set Test Variable   ${response}    ${resp}
+
 
 
 get versioned composition by uid
