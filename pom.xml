@@ -159,6 +159,9 @@
         <skipIntegrationTests>true</skipIntegrationTests>
         <include.tests>**/*Test.java</include.tests>
         <test.profile>unit</test.profile>
+
+        <surefireArgLine/>
+        <failsafeArgLine/>
     </properties>
 
     <build>
@@ -540,37 +543,37 @@
 
             <!-- sdk -->
             <dependency>
-                <groupId>com.github.ehrbase.openEHR_SDK</groupId>
+                <groupId>org.ehrbase.openehr.sdk</groupId>
                 <artifactId>response-dto</artifactId>
                 <version>${ehrbase.sdk.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.github.ehrbase.openEHR_SDK</groupId>
+                <groupId>org.ehrbase.openehr.sdk</groupId>
                 <artifactId>opt-1.4</artifactId>
                 <version>${ehrbase.sdk.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.github.ehrbase.openEHR_SDK</groupId>
+                <groupId>org.ehrbase.openehr.sdk</groupId>
                 <artifactId>serialisation</artifactId>
                 <version>${ehrbase.sdk.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.github.ehrbase.openEHR_SDK</groupId>
+                <groupId>org.ehrbase.openehr.sdk</groupId>
                 <artifactId>terminology</artifactId>
                 <version>${ehrbase.sdk.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.github.ehrbase.openEHR_SDK</groupId>
+                <groupId>org.ehrbase.openehr.sdk</groupId>
                 <artifactId>validation</artifactId>
                 <version>${ehrbase.sdk.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.github.ehrbase.openEHR_SDK</groupId>
+                <groupId>org.ehrbase.openehr.sdk</groupId>
                 <artifactId>web-template</artifactId>
                 <version>${ehrbase.sdk.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.github.ehrbase.openEHR_SDK</groupId>
+                <groupId>org.ehrbase.openehr.sdk</groupId>
                 <artifactId>test-data</artifactId>
                 <version>${ehrbase.sdk.version}</version>
                 <scope>test</scope>
