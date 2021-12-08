@@ -146,7 +146,7 @@
         <keycloak.version>4.0.0.Final</keycloak.version>
         <springdoc-openapi.version>1.5.11</springdoc-openapi.version>
         <postgressql.version>42.2.18</postgressql.version>
-        <ehrbase.sdk.version>41b4db1</ehrbase.sdk.version>
+        <ehrbase.sdk.version>1.6.0-SNAPSHOT</ehrbase.sdk.version>
         <flyway.version>7.11.3</flyway.version>
         <joda.version>2.10.6</joda.version>
         <jacoco.version>0.8.6</jacoco.version>
@@ -680,6 +680,16 @@
     </dependencyManagement>
 
     <repositories>
+        <repository>
+            <id>ossrh-snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
         <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
