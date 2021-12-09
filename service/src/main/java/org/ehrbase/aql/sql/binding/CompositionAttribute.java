@@ -42,7 +42,8 @@ public class CompositionAttribute {
 
         if (variableDefinition.getPath() != null && variableDefinition.getPath().startsWith("content")) {
             qualifiedAqlFields = jsonbEntryQuery.makeField(templateId, identifier, variableDefinition, clause);
-            qualifiedAqlFields.setUseEntryTable(true);
+            if (qualifiedAqlFields != null)
+                qualifiedAqlFields.setUseEntryTable(true);
         } else {
             qualifiedAqlFields = compositionAttributeQuery.makeField(templateId, identifier, variableDefinition, clause);
         }
