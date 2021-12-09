@@ -584,7 +584,6 @@ get composition by composition_uid
                         Set Test Variable   ${response}    ${resp}
 
 
-
 get versioned composition by uid
     [Arguments]         ${format}    ${uid}
     [Documentation]     :uid: versioned_object_uid
@@ -719,6 +718,18 @@ check content of compositions latest version (JSON)
                         # should be the content in the 2nd committed compo "modified value"
                         Set Test Variable     ${text}    ${response.json()['data']['content'][0]['data']['events'][0]['data']['items'][0]['value']['value']}
                         Should Be Equal       ${text}    modified value
+
+Compare content of compositions with the Original (FLAT)
+    [Arguments]         ${expected_result_data_set}
+                        ${file}=            Load JSON From File    ${expected_result_data_set}
+                        Set Test Variable      ${expected_result}    ${file}
+                        Log To Console  \n/////////// EXPECTED //////////////////////////////
+                        Output    ${expected result}
+                        Set Test Variable  ${xresp}   ${response.json()}
+                        Log To Console  \n/////////// ACTUAL  //////////////////////////////
+                        Output    ${xresp}
+    &{diff}=            compare_jsons_ignoring_properties  ${xresp["composition"]}  ${expected result}  ehrn_vital_signs.v2/_uid
+                        Should Be Empty  ${diff}  msg=DIFF DETECTED!
 
 
 check content of compositions latest version (XML)
