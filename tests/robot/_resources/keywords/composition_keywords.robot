@@ -728,7 +728,7 @@ Compare content of compositions with the Original (FLAT)
                         Set Test Variable  ${xresp}   ${response.json()}
                         Log To Console  \n/////////// ACTUAL  //////////////////////////////
                         Output    ${xresp}
-    &{diff}=            compare_jsons_ignoring_properties  ${xresp["composition"]}  ${expected result}  ehrn_vital_signs.v2/_uid
+    &{diff}=            compare_jsons_ignoring_properties  ${xresp["composition"]}  ${expected result}  ${template_id}/_uid
                         Should Be Empty  ${diff}  msg=DIFF DETECTED!
 
 

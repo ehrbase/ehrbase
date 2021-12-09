@@ -29,23 +29,23 @@ Force Tags
 *** Test Cases ***
 Main flow has existing COMPOSITION (FLAT)
     [Tags]
-    upload OPT    all_types/EHRN_Vital_Signs.v2.opt
+    upload OPT    all_types/ehrn_vital_signs.v2.opt
     create EHR
     commit composition   format=FLAT
-    ...                  composition=EHRN_Vital_Signs.v2__.json
+    ...                  composition=ehrn_vital_signs.v2__.json
     (FLAT) get composition by composition_uid    ${composition_uid}
     check composition exists
 
     [Teardown]    restart SUT
 
 Compare content of compositions with the Original (FLAT)
-    [Tags]      wip
-    upload OPT    all_types/EHRN_Vital_Signs.v2.opt
+    [Tags]
+    upload OPT    all_types/ehrn_vital_signs.v2.opt
     create EHR
     commit composition   format=FLAT
-    ...                  composition=EHRN_Vital_Signs.v2__.json
+    ...                  composition=ehrn_vital_signs.v2__.json
     (FLAT) get composition by composition_uid    ${composition_uid}
     check composition exists
-    Compare content of compositions with the Original (FLAT)  ${COMPO DATA SETS}/FLAT/EHRN_Vital_Signs.v2__.json
+    Compare content of compositions with the Original (FLAT)  ${COMPO DATA SETS}/FLAT/ehrn_vital_signs.v2__.json
 
     [Teardown]    restart SUT
