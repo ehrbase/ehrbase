@@ -39,15 +39,15 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.ehrbase.openEHR_SDK</groupId>
+            <groupId>org.ehrbase.openehr.sdk</groupId>
             <artifactId>response-dto</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.ehrbase.openEHR_SDK</groupId>
+            <groupId>org.ehrbase.openehr.sdk</groupId>
             <artifactId>serialisation</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.ehrbase.openEHR_SDK</groupId>
+            <groupId>org.ehrbase.openehr.sdk</groupId>
             <artifactId>web-template</artifactId>
         </dependency>
         <dependency>

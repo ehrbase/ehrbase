@@ -146,7 +146,7 @@
         <keycloak.version>4.0.0.Final</keycloak.version>
         <springdoc-openapi.version>1.5.11</springdoc-openapi.version>
         <postgressql.version>42.2.18</postgressql.version>
-        <ehrbase.sdk.version>41b4db1</ehrbase.sdk.version>
+        <ehrbase.sdk.version>1.6.0-SNAPSHOT</ehrbase.sdk.version>
         <flyway.version>7.11.3</flyway.version>
         <joda.version>2.10.6</joda.version>
         <jacoco.version>0.8.6</jacoco.version>
@@ -159,6 +159,9 @@
         <skipIntegrationTests>true</skipIntegrationTests>
         <include.tests>**/*Test.java</include.tests>
         <test.profile>unit</test.profile>
+
+        <surefireArgLine/>
+        <failsafeArgLine/>
     </properties>
 
     <build>
@@ -540,37 +543,37 @@
 
             <!-- sdk -->
             <dependency>
-                <groupId>com.github.ehrbase.openEHR_SDK</groupId>
+                <groupId>org.ehrbase.openehr.sdk</groupId>
                 <artifactId>response-dto</artifactId>
                 <version>${ehrbase.sdk.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.github.ehrbase.openEHR_SDK</groupId>
+                <groupId>org.ehrbase.openehr.sdk</groupId>
                 <artifactId>opt-1.4</artifactId>
                 <version>${ehrbase.sdk.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.github.ehrbase.openEHR_SDK</groupId>
+                <groupId>org.ehrbase.openehr.sdk</groupId>
                 <artifactId>serialisation</artifactId>
                 <version>${ehrbase.sdk.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.github.ehrbase.openEHR_SDK</groupId>
+                <groupId>org.ehrbase.openehr.sdk</groupId>
                 <artifactId>terminology</artifactId>
                 <version>${ehrbase.sdk.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.github.ehrbase.openEHR_SDK</groupId>
+                <groupId>org.ehrbase.openehr.sdk</groupId>
                 <artifactId>validation</artifactId>
                 <version>${ehrbase.sdk.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.github.ehrbase.openEHR_SDK</groupId>
+                <groupId>org.ehrbase.openehr.sdk</groupId>
                 <artifactId>web-template</artifactId>
                 <version>${ehrbase.sdk.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.github.ehrbase.openEHR_SDK</groupId>
+                <groupId>org.ehrbase.openehr.sdk</groupId>
                 <artifactId>test-data</artifactId>
                 <version>${ehrbase.sdk.version}</version>
                 <scope>test</scope>
@@ -680,6 +683,16 @@
     </dependencyManagement>
 
     <repositories>
+        <repository>
+            <id>ossrh-snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
         <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>

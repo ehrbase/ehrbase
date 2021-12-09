@@ -97,7 +97,7 @@
             <artifactId>api</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.ehrbase.openEHR_SDK</groupId>
+            <groupId>org.ehrbase.openehr.sdk</groupId>
             <artifactId>serialisation</artifactId>
         </dependency>
         <dependency>
@@ -137,7 +137,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.ehrbase.openEHR_SDK</groupId>
+            <groupId>org.ehrbase.openehr.sdk</groupId>
             <artifactId>test-data</artifactId>
             <scope>test</scope>
         </dependency>
